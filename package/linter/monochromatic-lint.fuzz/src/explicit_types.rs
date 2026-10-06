@@ -1,5 +1,8 @@
-//! What: Structured policy oracles and arbitrary-source bounds for explicit Rust annotations.
-//! Why: Valid counterexamples must be reached on every draw, not lost among malformed parser inputs.
+//! What:
+//!  Structured policy oracles and arbitrary-source bounds for explicit Rust annotations.
+//! Why:
+//!  Valid counterexamples must be reached on every draw,
+//!  not lost among malformed parser inputs.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -17,7 +20,8 @@ use std::path::Path;
 /// Fixed declarations give generated calls real generic and nongeneric identities.
 const PREFIX: &str = "struct Generic; impl Generic { fn parse<T>(&self, value: T) -> T { return value; } } struct Plain; impl Plain { fn parse(&self, value: u16) -> u16 { return value; } } fn named(value: u16) -> u16 { return value; } fn main() {\n";
 
-/// Fragments and independently counted policy violations, not counts derived from the checker.
+/// Fragments and independently counted policy violations,
+///  not counts derived from the checker.
 const CASES: &[(&str, usize)] = &[
     ("let value: u16 = Generic.parse::<u16>(1_u16);\n", 0),
     ("let value: u16 = Generic.parse(1_u16);\n", 1),
@@ -46,7 +50,8 @@ pub fn generated_explicit_source(data: &[u8]) -> (String, usize) {
     return (source, expected);
 }
 
-/// Validate all emitted source ranges, including reported failures on malformed or unresolved input.
+/// Validate all emitted source ranges,
+///  including reported failures on malformed or unresolved input.
 fn check_bounds(source: &str, findings: &[Diagnostic]) {
     for finding in findings {
         assert!(finding.fix.is_none());

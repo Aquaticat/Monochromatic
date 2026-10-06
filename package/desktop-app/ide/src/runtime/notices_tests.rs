@@ -1,4 +1,7 @@
-//! License and notice selection, headings, and damage, on a small table sorted as the build writes it.
+//! License and notice selection,
+//!  headings,
+//!  and damage,
+//!  on a small table sorted as the build writes it.
 
 use super::{collect, is_notice, write};
 use crate::{
@@ -6,7 +9,8 @@ use crate::{
     runtime::embedded::{EmbeddedFile, EmbeddedRuntime},
 };
 
-/// One file of each kind the executable embeds, sorted by path.
+/// One file of each kind the executable embeds,
+///  sorted by path.
 static FILES: [EmbeddedFile; 9] = [
     EmbeddedFile {
         path: "LICENSES/LGPL-3.0-or-later.txt",

@@ -1,7 +1,13 @@
-//! What: Render a configuration value as strict, indented JSON.
-//! Why: `--print-config` output is read by people and by tools such as `jq`. The repository's
-//! JSONC emitter writes trailing commas and comments, which JSONC accepts and strict JSON parsers
-//! reject; this writer keeps the same data and drops both.
+//! What:
+//!  Render a configuration value as strict,
+//!  indented JSON.
+//! Why:
+//!  `--print-config` output is read by people and by tools such as `jq`.
+//!  The repository's
+//! JSONC emitter writes trailing commas and comments,
+//!  which JSONC accepts and strict JSON parsers
+//! reject;
+//!  this writer keeps the same data and drops both.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,8 +17,10 @@
 /// Import the JSONC value model and its string-literal encoder.
 use monochromatic_jsonc_edit::{JsoncKind, JsoncValue, encode_quoted};
 
-/// What: Append two spaces per nesting level.
-/// Why: Indentation makes the effective configuration readable without changing its data.
+/// What:
+///  Append two spaces per nesting level.
+/// Why:
+///  Indentation makes the effective configuration readable without changing its data.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,9 +32,15 @@ fn indent(output: &mut String, depth: usize) {
     }
 }
 
-/// What: Append one value and everything inside it.
-/// Why: Recursion follows the value's own nesting. Printed configuration is bounded: an envelope,
-/// a rules record, one settings object per rule, and at most one array of strings inside it.
+/// What:
+///  Append one value and everything inside it.
+/// Why:
+///  Recursion follows the value's own nesting.
+///  Printed configuration is bounded:
+///  an envelope,
+/// a rules record,
+///  one settings object per rule,
+///  and at most one array of strings inside it.
 /// Text is re-encoded from its decoded units and numbers keep their exact source token.
 ///
 /// In TS you'd write (pseudocode):
@@ -81,8 +95,11 @@ fn write(value: &JsoncValue, depth: usize, output: &mut String) {
     }
 }
 
-/// What: Render a value as a complete JSON document ending in one newline.
-/// Why: Callers print the result as-is; the final newline keeps terminals and line tools tidy.
+/// What:
+///  Render a value as a complete JSON document ending in one newline.
+/// Why:
+///  Callers print the result as-is;
+///  the final newline keeps terminals and line tools tidy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -95,7 +112,8 @@ pub fn strict_json(value: &JsoncValue) -> String {
     return output;
 }
 
-/// Shape, escaping and strictness controls stay outside release artifacts.
+/// Shape,
+///  escaping and strictness controls stay outside release artifacts.
 #[cfg(test)]
 #[path = "run_json_tests.rs"]
 mod tests;

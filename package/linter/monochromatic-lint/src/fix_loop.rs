@@ -1,5 +1,8 @@
-//! What: Bounded, cycle-aware source fixing with a fresh check after each edit pass.
-//! Why: Every pass uses current byte offsets and no filesystem write occurs before the complete result is accepted.
+//! What:
+//!  Bounded,
+//!  cycle-aware source fixing with a fresh check after each edit pass.
+//! Why:
+//!  Every pass uses current byte offsets and no filesystem write occurs before the complete result is accepted.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -15,16 +18,19 @@ const MAX_PASSES: usize = 10;
 
 /// A language/processor session that reparses the exact supplied snapshot on each call.
 pub trait SourceChecker {
-    /// Return current findings or an explicit inability to check; caller-owned source remains immutable.
+    /// Return current findings or an explicit inability to check;
+    ///  caller-owned source remains immutable.
     fn check(&mut self, source: &str) -> Result<Vec<Diagnostic>, FixError>;
 }
 
-/// Normal reasons to stop applying fixes; processing failures use the error channel instead.
+/// Normal reasons to stop applying fixes;
+///  processing failures use the error channel instead.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FixStop {
     /// No accepted edit changed the source.
     Unchanged,
-    /// The newest snapshot repeats an earlier one, ending a circular fix sequence.
+    /// The newest snapshot repeats an earlier one,
+    ///  ending a circular fix sequence.
     Cycle,
     /// The allowed edit-pass count was consumed.
     Limit,
@@ -33,13 +39,17 @@ pub enum FixStop {
 /// A complete in-memory result ready for the caller's later atomic write.
 #[derive(Debug)]
 pub struct FixedSource {
-    /// Accepted final bytes; no filesystem operation is performed by the loop.
+    /// Accepted final bytes;
+    ///  no filesystem operation is performed by the loop.
     pub source: String,
-    /// Findings from a fresh final check, not stale findings from the preceding edit pass.
+    /// Findings from a fresh final check,
+    ///  not stale findings from the preceding edit pass.
     pub diagnostics: Vec<Diagnostic>,
     /// Number of passes that actually changed the source.
     pub changed_passes: usize,
-    /// Whether the loop reached a stable source, a cycle, or its fixed budget.
+    /// Whether the loop reached a stable source,
+    ///  a cycle,
+    ///  or its fixed budget.
     pub stop: FixStop,
 }
 
@@ -58,8 +68,11 @@ fn verify_processing(findings: &[Diagnostic]) -> Result<(), FixError> {
     return Ok(());
 }
 
-/// What: Run the agreed bounded fixpoint algorithm against one owned checker session.
-/// Why: Exact snapshot equality detects cycles without hashes or collision assumptions; history is capped by ten passes.
+/// What:
+///  Run the agreed bounded fixpoint algorithm against one owned checker session.
+/// Why:
+///  Exact snapshot equality detects cycles without hashes or collision assumptions;
+///  history is capped by ten passes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

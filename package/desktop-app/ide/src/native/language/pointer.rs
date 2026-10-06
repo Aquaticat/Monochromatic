@@ -1,13 +1,19 @@
-//! The resting pointer: which source character it is over, and since when.
+//! The resting pointer:
+//!  which source character it is over,
+//!  and since when.
 //!
 //! editord asks for hover information when the pointer has not moved for 350 ms
 //! (`HOVER_DEBOUNCE_MS` in `package-paused/desktop-daemon/editord/src/client/timing.ts`).
-//! This view does the same per character: moving within one character keeps the timer.
+//! This view does the same per character:
+//!  moving within one character keeps the timer.
 
 /// The source state holds the shaped rows the pointer is resolved against.
 use crate::native::State;
-/// What: `Duration` is a time span; `Instant` is a point on a clock that never goes backwards.
-/// Why: Resting is measured from the last move to another character.
+/// What:
+///  `Duration` is a time span;
+///  `Instant` is a point on a clock that never goes backwards.
+/// Why:
+///  Resting is measured from the last move to another character.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,10 +24,15 @@ use std::time::{Duration, Instant};
 /// How long the pointer rests on one character before hover information is asked for.
 pub(super) const REST: Duration = Duration::from_millis(350);
 
-/// What: Where the pointer rests. `Option<(Option<usize>, Instant)>` is "nothing" while the
-///       pointer is outside the source, or the character it is over (nothing between lines'
+/// What:
+///  Where the pointer rests.
+///  `Option<(Option<usize>, Instant)>` is "nothing" while the
+///       pointer is outside the source,
+///  or the character it is over (nothing between lines'
 ///       ends and gutters) with the moment it arrived there.
-/// Why: A hover request is sent once per rest, and resting over no character hides the popup.
+/// Why:
+///  A hover request is sent once per rest,
+///  and resting over no character hides the popup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,7 +48,8 @@ pub(super) struct Rest {
 
 /// Movement and timing.
 impl Rest {
-    /// The pointer moved to `character`; a different character restarts the rest.
+    /// The pointer moved to `character`;
+    ///  a different character restarts the rest.
     pub(super) fn moved(&mut self, character: Option<usize>) {
         // `map` reads the character of the present rest, if any.
         if self.at.map(|(current, _)| return current) == Some(character) {
@@ -59,8 +71,12 @@ impl Rest {
         return self.at.is_some();
     }
 
-    /// What: The character to ask hover information for, once the rest lasted long enough.
-    /// Why: Only one request per rest; the caller marks it asked.
+    /// What:
+    ///  The character to ask hover information for,
+    ///  once the rest lasted long enough.
+    /// Why:
+    ///  Only one request per rest;
+    ///  the caller marks it asked.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -86,10 +102,19 @@ impl Rest {
     }
 }
 
-/// What: The source character under a point: `y` is the logical distance from the top of the text
-///       and `x` the logical distance from the start of a line's text, negative over the line numbers.
-/// Why: Hover and Ctrl+click ask about the character the pointer is over, not the nearest caret
-///      boundary; a point past the end of a line, over the gutter, below the text, or on a line's
+/// What:
+///  The source character under a point:
+///  `y` is the logical distance from the top of the text
+///       and `x` the logical distance from the start of a line's text,
+///  negative over the line numbers.
+/// Why:
+///  Hover and Ctrl+click ask about the character the pointer is over,
+///  not the nearest caret
+///      boundary;
+///  a point past the end of a line,
+///  over the gutter,
+///  below the text,
+///  or on a line's
 ///      virtual rows (its hints and diagnostic messages) is over no character.
 ///
 /// In TS you'd write (pseudocode):

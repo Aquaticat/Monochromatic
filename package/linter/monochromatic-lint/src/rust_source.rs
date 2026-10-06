@@ -1,5 +1,7 @@
-//! What: One parsed Rust source and its reusable code-line and position indexes.
-//! Why: Both Rust rules inspect the same syntax tree without reparsing or counting comments as code.
+//! What:
+//!  One parsed Rust source and its reusable code-line and position indexes.
+//! Why:
+//!  Both Rust rules inspect the same syntax tree without reparsing or counting comments as code.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,28 +13,35 @@ use crate::diagnostic::Span;
 /// Import the exact rust-analyzer syntax interface already used by the incumbent.
 use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode};
 
-/// What: Owned per-file source with a parser-owned syntax handle.
-/// Why: The context outlives individual rule calls while lending read-only views.
+/// What:
+///  Owned per-file source with a parser-owned syntax handle.
+/// Why:
+///  The context outlives individual rule calls while lending read-only views.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class RustSource { filename: string; source: string; syntax: SyntaxNode }
 /// ```
 pub struct RustSource {
-    /// Real or virtual input name; processors later map findings to their host.
+    /// Real or virtual input name;
+    ///  processors later map findings to their host.
     pub filename: String,
     /// Exact text parsed by the lexer.
     pub source: String,
     /// Parser handle retained for documentable-item traversal.
     syntax: SyntaxNode,
-    /// Byte offset of every LF-delimited line start, including an empty final line.
+    /// Byte offset of every LF-delimited line start,
+    ///  including an empty final line.
     line_starts: Vec<usize>,
-    /// One-based lines touched by non-comment, non-whitespace tokens.
+    /// One-based lines touched by non-comment,
+    ///  non-whitespace tokens.
     code_lines: Vec<usize>,
 }
 
-/// What: Build the incumbent Rust line-index convention in a single byte walk.
-/// Why: Rust findings retain their existing LF and byte-column behavior.
+/// What:
+///  Build the incumbent Rust line-index convention in a single byte walk.
+/// Why:
+///  Rust findings retain their existing LF and byte-column behavior.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,8 +57,10 @@ fn line_starts(source: &str) -> Vec<usize> {
     return starts;
 }
 
-/// What: Find the containing line by binary search over sorted byte starts.
-/// Why: Tokens already carry byte positions and do not need text rescanning.
+/// What:
+///  Find the containing line by binary search over sorted byte starts.
+/// Why:
+///  Tokens already carry byte positions and do not need text rescanning.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,8 +70,10 @@ fn line_index(offset: usize, starts: &[usize]) -> usize {
     return starts.partition_point(|start| return *start <= offset) - 1;
 }
 
-/// What: Classify code lines using the real lexer instead of comment-like substrings.
-/// Why: Comments inside string literals remain code and multiline tokens cover all their lines.
+/// What:
+///  Classify code lines using the real lexer instead of comment-like substrings.
+/// Why:
+///  Comments inside string literals remain code and multiline tokens cover all their lines.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -97,8 +110,11 @@ fn code_lines(syntax: &SyntaxNode, starts: &[usize]) -> Vec<usize> {
     return result;
 }
 
-/// What: Construct and query one Rust parse.
-/// Why: Parser errors are deliberately not findings, preserving compile_fail-snippet behavior.
+/// What:
+///  Construct and query one Rust parse.
+/// Why:
+///  Parser errors are deliberately not findings,
+///  preserving compile_fail-snippet behavior.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -125,8 +141,11 @@ impl RustSource {
         return RustSource::indexed(filename, source, syntax);
     }
 
-    /// What: Reuse a semantic database's registered syntax root and its exact lossless text.
-    /// Why: Semantic queries require nodes belonging to that database; a second standalone parse loses that identity.
+    /// What:
+    ///  Reuse a semantic database's registered syntax root and its exact lossless text.
+    /// Why:
+    ///  Semantic queries require nodes belonging to that database;
+    ///  a second standalone parse loses that identity.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -153,7 +172,8 @@ impl RustSource {
         return self.code_lines.get(index).copied();
     }
 
-    /// Return a whole LF-delimited line span, excluding the final LF exactly as the incumbent does.
+    /// Return a whole LF-delimited line span,
+    ///  excluding the final LF exactly as the incumbent does.
     pub fn line_span(&self, line: usize) -> Option<Span> {
         if line == 0 {
             return None;
@@ -178,7 +198,8 @@ impl RustSource {
         });
     }
 
-    /// Resolve a byte range and clamp its underline to the first line, preserving Rust byte columns.
+    /// Resolve a byte range and clamp its underline to the first line,
+    ///  preserving Rust byte columns.
     pub fn span(&self, offset: usize, length: usize) -> Span {
         let index = line_index(offset, self.line_starts.as_slice());
         let start = self.line_starts[index];

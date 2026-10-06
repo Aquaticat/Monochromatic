@@ -1,5 +1,8 @@
-//! What: Controls for the candidate error value.
-//! Why: The cause is what callers branch on and the message is the whole diagnostic, so
+//! What:
+//!  Controls for the candidate error value.
+//! Why:
+//!  The cause is what callers branch on and the message is the whole diagnostic,
+//!  so
 //!      constructing and printing the error must carry both unchanged.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,7 +13,8 @@
 /// Import the error under test.
 use super::{CandidateError, CandidateFailure};
 
-/// Printing yields exactly the stored message, and the cause is kept beside it.
+/// Printing yields exactly the stored message,
+///  and the cause is kept beside it.
 #[test]
 fn display_prints_exactly_the_message() {
     for message in ["git diff-index failed", "two\nlines \"quoted\"", ""] {
@@ -23,7 +27,8 @@ fn display_prints_exactly_the_message() {
     }
 }
 
-/// Errors compare by cause and message, and report no underlying cause.
+/// Errors compare by cause and message,
+///  and report no underlying cause.
 #[test]
 fn errors_compare_by_cause_and_message() {
     let stale: CandidateError = CandidateError::new(CandidateFailure::StaleCandidate, "a");

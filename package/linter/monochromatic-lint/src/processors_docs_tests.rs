@@ -1,5 +1,8 @@
-//! What: Exact virtual Markdown text and host edits for Rustdoc margins, blank lines and block bodies.
-//! Why: Margin arithmetic is visible only where authored lines indent differently or contain no ASCII margin.
+//! What:
+//!  Exact virtual Markdown text and host edits for Rustdoc margins,
+//!  blank lines and block bodies.
+//! Why:
+//!  Margin arithmetic is visible only where authored lines indent differently or contain no ASCII margin.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -25,7 +28,8 @@ fn processors_keep_relative_indentation_in_line_doc_runs_without_a_margin() {
     );
 }
 
-/// A common margin is removed once from every line; deeper lines keep only their extra indentation.
+/// A common margin is removed once from every line;
+///  deeper lines keep only their extra indentation.
 #[test]
 fn processors_strip_only_the_common_margin_from_line_doc_runs() {
     let host: &str = "///   Alpha.\n///     indented.\n///\n///   Beta.\nfn item() {}\n";
@@ -69,7 +73,8 @@ fn processors_strip_only_the_common_margin_from_line_doc_runs() {
     );
 }
 
-/// A line holding only non-ASCII whitespace is authored content: margin removal never consumes or splits it.
+/// A line holding only non-ASCII whitespace is authored content:
+///  margin removal never consumes or splits it.
 #[test]
 fn processors_keep_non_ascii_whitespace_lines_outside_stripped_margins() {
     assert_eq!(
@@ -82,7 +87,8 @@ fn processors_keep_non_ascii_whitespace_lines_outside_stripped_margins() {
     );
 }
 
-/// CRLF line docs keep each carriage return beside its line feed, including on an empty comment line.
+/// CRLF line docs keep each carriage return beside its line feed,
+///  including on an empty comment line.
 #[test]
 fn processors_keep_crlf_pairs_whole_in_line_doc_runs() {
     assert_eq!(
@@ -93,7 +99,8 @@ fn processors_keep_crlf_pairs_whole_in_line_doc_runs() {
     assert_eq!(doc_text("/// Alpha.\n/// Beta."), "Alpha.\nBeta.");
 }
 
-/// The opening line of a block loses one conventional space; opening prose fixes the continuation margin at zero.
+/// The opening line of a block loses one conventional space;
+///  opening prose fixes the continuation margin at zero.
 #[test]
 fn processors_strip_one_conventional_space_from_block_doc_opening_lines() {
     assert_eq!(
@@ -130,7 +137,9 @@ fn processors_strip_only_the_common_margin_from_undecorated_block_docs() {
     );
 }
 
-/// Extract every Rustdoc input of a host as owned (virtual name, exact virtual text) pairs, in extraction order.
+/// Extract every Rustdoc input of a host as owned (virtual name,
+///  exact virtual text) pairs,
+///  in extraction order.
 fn named_texts(host: &str) -> Vec<(String, String)> {
     // Owned pairs outlive the extracted inputs, so assertions compare plain strings.
     let mut result: Vec<(String, String)> = Vec::new();
@@ -141,7 +150,8 @@ fn named_texts(host: &str) -> Vec<(String, String)> {
 }
 
 /// Adjacent doc comments are separate virtual files unless they form one line-comment run:
-/// two adjacent block docs with the same prefix, an inner line doc directly followed by an outer one,
+/// two adjacent block docs with the same prefix,
+///  an inner line doc directly followed by an outer one,
 /// and an outer line doc directly followed by a block doc each stay apart.
 #[test]
 fn processors_keep_adjacent_blocks_and_changed_prefixes_in_separate_virtual_files() {
@@ -175,7 +185,8 @@ fn processors_keep_adjacent_blocks_and_changed_prefixes_in_separate_virtual_file
     );
 }
 
-/// Decorated block lines lose their star and one space; a bare star line becomes an empty virtual line.
+/// Decorated block lines lose their star and one space;
+///  a bare star line becomes an empty virtual line.
 #[test]
 fn processors_strip_star_decoration_and_keep_relative_indentation_in_block_docs() {
     assert_eq!(

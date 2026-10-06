@@ -1,7 +1,10 @@
-//! Click counting and unit-wise drag extension for pointer selection, without a window.
+//! Click counting and unit-wise drag extension for pointer selection,
+//!  without a window.
 
-/// What: Import Helix's rope and the production pointer-selection functions.
-/// Why: The native pointer callbacks call exactly these functions on the document's rope.
+/// What:
+///  Import Helix's rope and the production pointer-selection functions.
+/// Why:
+///  The native pointer callbacks call exactly these functions on the document's rope.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -9,12 +12,17 @@
 /// import { CLICK_INTERVAL, CLICK_SLOP, ClickCounter, Granularity, extended, unit } from 'ide-app/pointer-selection';
 /// ```
 use helix_core::Rope;
-/// The counter, its limits, and the drag rule under test.
+/// The counter,
+///  its limits,
+///  and the drag rule under test.
 use ide_app::pointer_selection::{
     CLICK_INTERVAL, CLICK_SLOP, ClickCounter, Granularity, extended, unit,
 };
-/// What: `Instant` is a point on a monotonic clock; adding a `Duration` gives a later point.
-/// Why: Tests state the pause between presses instead of sleeping for it.
+/// What:
+///  `Instant` is a point on a monotonic clock;
+///  adding a `Duration` gives a later point.
+/// Why:
+///  Tests state the pause between presses instead of sleeping for it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,7 +30,10 @@ use ide_app::pointer_selection::{
 /// ```
 use std::time::{Duration, Instant};
 
-/// Quick presses at one place count character, word, line, and then start over.
+/// Quick presses at one place count character,
+///  word,
+///  line,
+///  and then start over.
 #[test]
 fn quick_presses_cycle_through_character_word_and_line() {
     let mut clicks = ClickCounter::default();
@@ -39,7 +50,9 @@ fn quick_presses_cycle_through_character_word_and_line() {
     assert_eq!(clicks.press(start + pause * 4, 3, 41.0), Granularity::Word);
 }
 
-/// A press that is too late, on another row, or too far away is a single click again.
+/// A press that is too late,
+///  on another row,
+///  or too far away is a single click again.
 #[test]
 fn slow_or_distant_presses_are_single_clicks() {
     let start = Instant::now();

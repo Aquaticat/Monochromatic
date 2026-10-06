@@ -4,8 +4,11 @@
 use crate::document::{Document, Reload};
 /// I/O failures retain their affected input and operation context.
 use anyhow::{Context, Result, bail};
-/// What: Path borrows a filesystem name, unlike the owned PathBuf sibling.
-/// Why: A read operation need not copy or retain the caller's path.
+/// What:
+///  Path borrows a filesystem name,
+///  unlike the owned PathBuf sibling.
+/// Why:
+///  A read operation need not copy or retain the caller's path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

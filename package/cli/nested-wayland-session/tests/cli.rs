@@ -1,7 +1,9 @@
 //! Verify the real executable's help and usage behavior without any display.
 
-/// What: Command launches the compiled fixture and Output owns its exit/stdio.
-/// Why: Parser-only tests cannot prove main treats help as a successful exit.
+/// What:
+///  Command launches the compiled fixture and Output owns its exit/stdio.
+/// Why:
+///  Parser-only tests cannot prove main treats help as a successful exit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,7 +56,8 @@ fn version_exits_successfully_without_startup() {
     assert!(output.stderr.is_empty());
 }
 
-/// Usage errors use clap's exit 2, not a later missing-Wayland error.
+/// Usage errors use clap's exit 2,
+///  not a later missing-Wayland error.
 #[test]
 fn usage_errors_are_reported_before_startup() {
     for input in [vec![], vec!["--unknown"], vec!["--socket"],

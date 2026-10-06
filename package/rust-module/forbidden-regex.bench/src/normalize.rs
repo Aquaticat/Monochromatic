@@ -1,14 +1,22 @@
 //! Normalizes a rule body into the forbidden-regex dialect.
 //!
-//! What: string-level substitutions (POSIX classes, case flags, `\_`/`\x60`) plus an
-//! escape-aware rewrite of capturing groups and unbounded quantifiers. Why: the real
-//! ruleset is written in a richer dialect than this engine accepts, so each rule is
+//! What:
+//!  string-level substitutions (POSIX classes,
+//!  case flags,
+//!  `\_`/`\x60`) plus an
+//! escape-aware rewrite of capturing groups and unbounded quantifiers.
+//!  Why:
+//!  the real
+//! ruleset is written in a richer dialect than this engine accepts,
+//!  so each rule is
 //! adapted before it is parsed.
 
 /// Imports the class-span helper shared with the porter.
 use crate::port::class_end;
 
-/// Upper bound substituted for an unbounded `*`, `+`, or `{n,}` quantifier.
+/// Upper bound substituted for an unbounded `*`,
+///  `+`,
+///  or `{n,}` quantifier.
 const QUANT_CAP: usize = 512;
 
 /// POSIX class spellings and their byte-class equivalents.
@@ -20,10 +28,17 @@ const POSIX_CLASSES: [(&str, &str); 5] = [
     ("[[:space:]]", "\\s"),
 ];
 
-/// Applies the string-level substitutions, then the scan-based rewrite.
+/// Applies the string-level substitutions,
+///  then the scan-based rewrite.
 ///
-/// What: POSIX classes, case-flag stripping, `\_`/`\x60` literals, then capturing
-/// and quantifier rewriting. Why: the cheap global replacements first keep the scan
+/// What:
+///  POSIX classes,
+///  case-flag stripping,
+///  `\_`/`\x60` literals,
+///  then capturing
+/// and quantifier rewriting.
+///  Why:
+///  the cheap global replacements first keep the scan
 /// simpler.
 pub(crate) fn normalize(inner: &str) -> String {
     let mut s = inner.to_string();
@@ -40,9 +55,14 @@ pub(crate) fn normalize(inner: &str) -> String {
 
 /// Rewrites capturing groups and unbounded quantifiers in one escape-aware pass.
 ///
-/// What: a plain `(` becomes `(?:`, `*`/`+` become bounded repetitions, and `{n,}`
-/// gains an upper bound; complement parens and class contents are left untouched.
-/// Why: the engine has no capturing groups and rejects unbounded repetition.
+/// What:
+///  a plain `(` becomes `(?:`,
+///  `*`/`+` become bounded repetitions,
+///  and `{n,}`
+/// gains an upper bound;
+///  complement parens and class contents are left untouched.
+/// Why:
+///  the engine has no capturing groups and rejects unbounded repetition.
 fn scan_rewrite(s: &str) -> String {
     let b = s.as_bytes();
     let mut out = String::new();
@@ -68,10 +88,18 @@ fn scan_rewrite(s: &str) -> String {
     return out
 }
 
-/// Rewrites one non-class, non-escape token, returning the next index.
+/// Rewrites one non-class,
+///  non-escape token,
+///  returning the next index.
 ///
-/// What: handles a group open, the `*`/`+` quantifiers, and a `{n,}` bound; copies
-/// anything else verbatim. Why: keeps `scan_rewrite` within its line budget.
+/// What:
+///  handles a group open,
+///  the `*`/`+` quantifiers,
+///  and a `{n,}` bound;
+///  copies
+/// anything else verbatim.
+///  Why:
+///  keeps `scan_rewrite` within its line budget.
 fn rewrite_token(s: &str, b: &[u8], i: usize, out: &mut String) -> usize {
     match b[i] {
         b'(' if open_is_capturing(b, i) => {
@@ -96,7 +124,10 @@ fn rewrite_token(s: &str, b: &[u8], i: usize, out: &mut String) -> usize {
 
 /// Reports whether a `(` at `i` opens a plain capturing group.
 ///
-/// What: false when it is `(?...` or the complement `~(`. Why: only capturing
+/// What:
+///  false when it is `(?...` or the complement `~(`.
+///  Why:
+///  only capturing
 /// groups are rewritten to non-capturing.
 fn open_is_capturing(b: &[u8], i: usize) -> bool {
     let is_flagged = i + 1 < b.len() && b[i + 1] == b'?';
@@ -104,9 +135,14 @@ fn open_is_capturing(b: &[u8], i: usize) -> bool {
     return !is_flagged && !is_complement
 }
 
-/// Rewrites a `{...}` token, bounding `{n,}`, returning the next index.
+/// Rewrites a `{...}` token,
+///  bounding `{n,}`,
+///  returning the next index.
 ///
-/// What: copies `{n}`/`{n,m}` as-is and turns `{n,}` into `{n,CAP}`. Why: the engine
+/// What:
+///  copies `{n}`/`{n,m}` as-is and turns `{n,}` into `{n,CAP}`.
+///  Why:
+///  the engine
 /// rejects an open-ended upper bound.
 fn rewrite_brace(s: &str, b: &[u8], i: usize, out: &mut String) -> usize {
     let Some(close) = b[i..].iter().position(|&x| return x == b'}').map(|p| return i + p) else {

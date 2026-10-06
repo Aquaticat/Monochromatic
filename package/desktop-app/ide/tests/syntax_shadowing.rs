@@ -1,15 +1,24 @@
-//! Highlighting reads only the application's own runtime: a query file below
-//! `$XDG_CONFIG_HOME/helix/runtime`, which Helix's own lookup prefers over every other runtime
-//! directory, must not replace a bundled query.
+//! Highlighting reads only the application's own runtime:
+//!  a query file below
+//! `$XDG_CONFIG_HOME/helix/runtime`,
+//!  which Helix's own lookup prefers over every other runtime
+//! directory,
+//!  must not replace a bundled query.
 //!
-//! The case comes from the packaged-application check of 2026-10-05: an empty
-//! `queries/sql/highlights.scm` there turned SQL into plain text (16 colored spans without it, 0 with it).
+//! The case comes from the packaged-application check of 2026-10-05:
+//!  an empty
+//! `queries/sql/highlights.scm` there turned SQL into plain text (16 colored spans without it,
+//!  0 with it).
 
 /// Canonical text and the application-owned highlighting engine.
 use helix_core::Rope;
 use ide_app::syntax::SyntaxEngine;
-/// What: Files, paths, and child processes.
-/// Why: The check runs in a child process whose `XDG_CONFIG_HOME` points at a disposable folder,
+/// What:
+///  Files,
+///  paths,
+///  and child processes.
+/// Why:
+///  The check runs in a child process whose `XDG_CONFIG_HOME` points at a disposable folder,
 ///      because Helix reads that variable once per process and the test must not change its own.
 ///
 /// In TS you'd write (pseudocode):
@@ -18,10 +27,14 @@ use ide_app::syntax::SyntaxEngine;
 /// ```
 use std::{fs, path::Path, process::Command};
 
-/// Set in the child process, which performs the check instead of starting another child.
+/// Set in the child process,
+///  which performs the check instead of starting another child.
 const CHILD: &str = "IDE_SYNTAX_SHADOWING_CHILD";
 
-/// A statement with keywords, an identifier, a number, and punctuation for the SQL rules to color.
+/// A statement with keywords,
+///  an identifier,
+///  a number,
+///  and punctuation for the SQL rules to color.
 const SQL: &str = "SELECT name FROM cats WHERE age > 3;\n";
 
 #[test]

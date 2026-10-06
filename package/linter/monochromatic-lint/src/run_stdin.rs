@@ -1,5 +1,7 @@
-//! What: Lint or fix one source read from standard input.
-//! Why: A commit pipeline pipes the bytes it is about to commit and owns what happens to them;
+//! What:
+//!  Lint or fix one source read from standard input.
+//! Why:
+//!  A commit pipeline pipes the bytes it is about to commit and owns what happens to them;
 //! this mode reads no file for content and writes none.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,7 +9,9 @@
 //! // runStdin(options, store, stdin) -> RunOutput
 //! ```
 
-/// Import the command grammar, planning, contained processing and the shared finish step.
+/// Import the command grammar,
+///  planning,
+///  contained processing and the shared finish step.
 use crate::{
     cli_options::CliOptions,
     config_lookup::CONFIG_NAME,
@@ -25,8 +29,12 @@ use crate::{
 /// Import the reader trait for standard input and borrowed native paths.
 use std::{io::Read, path::Path};
 
-/// What: Lint one source read from standard input as if it lived at `--stdin-filename`.
-/// Why: The caller owns the bytes it commits: no file is read for content or written. With
+/// What:
+///  Lint one source read from standard input as if it lived at `--stdin-filename`.
+/// Why:
+///  The caller owns the bytes it commits:
+///  no file is read for content or written.
+///  With
 /// `--fix` the (possibly unchanged) source goes to standard output and findings to standard error.
 ///
 /// In TS you'd write (pseudocode):

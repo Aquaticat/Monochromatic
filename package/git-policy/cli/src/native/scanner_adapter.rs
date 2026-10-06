@@ -1,14 +1,29 @@
-//! What: The repository's forbidden-strings scanner, linked in and loaded once per invocation.
-//! Why: The TypeScript wrapper wrote each candidate to a temporary file, started the
-//!      scanner as a child process and parsed its standard error. Here candidate bytes
-//!      go straight to the scanner library, and its own typed findings come back.
-//!      Nothing is re-derived: rule loading, the rule cache, matching, redaction and
+//! What:
+//!  The repository's forbidden-strings scanner,
+//!  linked in and loaded once per invocation.
+//! Why:
+//!  The TypeScript wrapper wrote each candidate to a temporary file,
+//!  started the
+//!      scanner as a child process and parsed its standard error.
+//!  Here candidate bytes
+//!      go straight to the scanner library,
+//!  and its own typed findings come back.
+//!      Nothing is re-derived:
+//!  rule loading,
+//!  the rule cache,
+//!  matching,
+//!  redaction and
 //!      the fail-closed findings all stay the scanner's.
 //!
 //! What the linking executable owes the scanner (`package/cli/forbidden-strings/README.md`,
-//! "In-process candidate scans"): an unwinding panic strategy, which this file checks at
-//! build time, and a panic hook that prints no payload, installed before the first scan.
-//! The scanner catches its own loader and matcher panics; this module adds no catch of its own.
+//! "In-process candidate scans"):
+//!  an unwinding panic strategy,
+//!  which this file checks at
+//! build time,
+//!  and a panic hook that prints no payload,
+//!  installed before the first scan.
+//! The scanner catches its own loader and matcher panics;
+//!  this module adds no catch of its own.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -19,9 +34,15 @@
 use super::candidate_version::Candidate;
 /// Import the byte-preserving conversion from Git path bytes to a native path.
 use super::git_metadata::path_from_git_bytes;
-/// What: The scanner library's public types: its fixed-token cache diagnostic, its
-///       per-candidate result, and the loaded rule set.
-/// Why:  They are returned to callers unchanged, so findings are never re-encoded.
+/// What:
+///  The scanner library's public types:
+///  its fixed-token cache diagnostic,
+///  its
+///       per-candidate result,
+///  and the loaded rule set.
+/// Why:
+///   They are returned to callers unchanged,
+///  so findings are never re-encoded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,9 +67,14 @@ const _: () = assert!(
     "git-policy-cli links the forbidden-strings scanner, whose fail-closed catch boundaries need panic = \"unwind\""
 );
 
-/// What: Why a scan could not be set up or carried out.
-///       `#[derive(...)]` generates copying, debug printing and `==`.
-/// Why:  Both causes stop policy evaluation: no rules means nothing was checked, and a
+/// What:
+///  Why a scan could not be set up or carried out.
+///       `#[derive(...)]` generates copying,
+///  debug printing and `==`.
+/// Why:
+///   Both causes stop policy evaluation:
+///  no rules means nothing was checked,
+///  and a
 ///       pathname that cannot be handed to the scanner was not checked.
 ///
 /// In TS you'd write (pseudocode):
@@ -57,15 +83,19 @@ const _: () = assert!(
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ScannerFailure {
-    /// The scanner refused to load its rules; no partial rule set exists.
+    /// The scanner refused to load its rules;
+    ///  no partial rule set exists.
     RulesNotLoaded,
     /// A candidate pathname cannot be expressed as a native path on this platform.
     PathnameUnrepresentable,
 }
 
-/// What: One scanner failure: its cause and a complete explanation.
+/// What:
+///  One scanner failure:
+///  its cause and a complete explanation.
 ///       `String` owns the text (sibling `&str` would borrow a temporary).
-/// Why:  The explanation of a load failure is the scanner's own redacted message,
+/// Why:
+///   The explanation of a load failure is the scanner's own redacted message,
 ///       which names a path or an opaque rule index and never rule text.
 ///
 /// In TS you'd write (pseudocode):
@@ -80,15 +110,19 @@ pub struct ScannerError {
     pub message: String,
 }
 
-/// What: `impl std::fmt::Display for ScannerError` supplies Rust's "print me" interface.
-/// Why:  The executable writes the message with ordinary formatting, not field access.
+/// What:
+///  `impl std::fmt::Display for ScannerError` supplies Rust's "print me" interface.
+/// Why:
+///   The executable writes the message with ordinary formatting,
+///  not field access.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// toString(): string { return this.message; }
 /// ```
 impl std::fmt::Display for ScannerError {
-    /// `&self` borrows this error read-only; `&mut` lends the formatter for writing.
+    /// `&self` borrows this error read-only;
+    ///  `&mut` lends the formatter for writing.
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // `.as_str()` lends the owned message as a borrowed view for the writer.
         return formatter.write_str(self.message.as_str());
@@ -98,11 +132,15 @@ impl std::fmt::Display for ScannerError {
 /// An empty `impl` marks the type as a standard error value.
 impl std::error::Error for ScannerError {}
 
-/// What: Which rules file to load and whether its absence is an error.
+/// What:
+///  Which rules file to load and whether its absence is an error.
 ///       `PathBuf` owns the path (sibling `&Path` would borrow the caller's).
-/// Why:  The standalone scanner tolerates a missing default rules file when the
-///       built-in baseline is on, and never a missing file that was named
-///       explicitly. The same two facts are passed to the library.
+/// Why:
+///   The standalone scanner tolerates a missing default rules file when the
+///       built-in baseline is on,
+///  and never a missing file that was named
+///       explicitly.
+///  The same two facts are passed to the library.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,37 +148,58 @@ impl std::error::Error for ScannerError {}
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RulesSource {
-    /// The runtime rules file, absolute.
+    /// The runtime rules file,
+    ///  absolute.
     pub path: PathBuf,
     /// Whether the file was named by configuration instead of being the default location.
     pub explicit: bool,
 }
 
-/// What: The loaded scanner. The field is private: the only way to obtain a value is `load`.
-/// Why:  Holding the loaded rules in one value is what makes "load once, scan many"
-///       a property of the type: scanning borrows it and cannot reload.
+/// What:
+///  The loaded scanner.
+///  The field is private:
+///  the only way to obtain a value is `load`.
+/// Why:
+///   Holding the loaded rules in one value is what makes "load once,
+///  scan many"
+///       a property of the type:
+///  scanning borrows it and cannot reload.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class CandidateScanner { readonly #scanner: Scanner }
 /// ```
 pub struct CandidateScanner {
-    /// The scanner library's loaded runtime rules, optional baseline and cache warnings.
+    /// The scanner library's loaded runtime rules,
+    ///  optional baseline and cache warnings.
     scanner: Scanner,
 }
 
-/// What: `impl CandidateScanner { ... }` attaches the adapter's operations, like class methods.
-/// Why:  Loading is the only fallible, expensive step; scanning afterwards is cheap and repeatable.
+/// What:
+///  `impl CandidateScanner { ... }` attaches the adapter's operations,
+///  like class methods.
+/// Why:
+///   Loading is the only fallible,
+///  expensive step;
+///  scanning afterwards is cheap and repeatable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class CandidateScanner { static load(rules, builtinRules) {} scan(candidate, bytes) {} }
 /// ```
 impl CandidateScanner {
-    /// What: Load the runtime rules file and, when asked, the built-in baseline.
-    ///       `&RulesSource` borrows the selection; `Result<T, E>` is "a value or a failure".
-    /// Why:  The scanner's loader validates rules, reuses its compiled-rule cache and
-    ///       catches its own panics. Any failure leaves no scanner at all, so nothing
+    /// What:
+    ///  Load the runtime rules file and,
+    ///  when asked,
+    ///  the built-in baseline.
+    ///       `&RulesSource` borrows the selection;
+    ///  `Result<T, E>` is "a value or a failure".
+    /// Why:
+    ///   The scanner's loader validates rules,
+    ///  reuses its compiled-rule cache and
+    ///       catches its own panics.
+    ///  Any failure leaves no scanner at all,
+    ///  so nothing
     ///       can be scanned with half a rule set.
     ///
     /// In TS you'd write (pseudocode):
@@ -175,9 +234,13 @@ impl CandidateScanner {
         }
     }
 
-    /// What: The cache diagnostics of this load, as the scanner's own fixed-token values.
+    /// What:
+    ///  The cache diagnostics of this load,
+    ///  as the scanner's own fixed-token values.
     ///       `&[CacheWarning]` borrows the list read-only.
-    /// Why:  A stale or missing rule cache is recovered by recompiling, which is slow;
+    /// Why:
+    ///   A stale or missing rule cache is recovered by recompiling,
+    ///  which is slow;
     ///       the caller reports that once per invocation.
     ///
     /// In TS you'd write (pseudocode):
@@ -188,11 +251,17 @@ impl CandidateScanner {
         return self.scanner.cache_warnings();
     }
 
-    /// What: Scan one candidate's pathname and exact bytes.
-    ///       `&[u8]` borrows the bytes; the result is the scanner's own `CandidateScan`.
-    /// Why:  The scan's identity is the candidate's position in its version, so a
-    ///       finding is attributed without reading the pathname, which may be masked.
-    ///       Fail-closed findings (an engine error, a line break in a pathname) are
+    /// What:
+    ///  Scan one candidate's pathname and exact bytes.
+    ///       `&[u8]` borrows the bytes;
+    ///  the result is the scanner's own `CandidateScan`.
+    /// Why:
+    ///   The scan's identity is the candidate's position in its version,
+    ///  so a
+    ///       finding is attributed without reading the pathname,
+    ///  which may be masked.
+    ///       Fail-closed findings (an engine error,
+    ///  a line break in a pathname) are
     ///       returned like any other finding and are never filtered here.
     ///
     /// In TS you'd write (pseudocode):

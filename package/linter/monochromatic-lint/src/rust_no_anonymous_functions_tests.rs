@@ -1,13 +1,20 @@
-//! What: Positive and negative controls for the Rust anonymous-function ban.
-//! Why: Real closure nodes must be rejected without treating pipes, strings or named callbacks as closures.
+//! What:
+//!  Positive and negative controls for the Rust anonymous-function ban.
+//! Why:
+//!  Real closure nodes must be rejected without treating pipes,
+//!  strings or named callbacks as closures.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Parse fixtures, run the real rule, and inspect its source ranges and configuration contract.
 //! ```
 
-/// What: Import the actual rule, its diagnostic types, and the shared source parser.
-/// Why: No test-only checker may replace the production traversal.
+/// What:
+///  Import the actual rule,
+///  its diagnostic types,
+///  and the shared source parser.
+/// Why:
+///  No test-only checker may replace the production traversal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,8 +28,10 @@ use crate::rust_source::RustSource;
 /// Import the exact parser interface to validate that positive fixtures contain real Rust syntax.
 use ra_ap_syntax::{Edition, Parse, SourceFile};
 
-/// What: Parse a borrowed fixture and return its actual rule findings.
-/// Why: Validating syntax prevents a parser recovery artifact from standing in for a closure.
+/// What:
+///  Parse a borrowed fixture and return its actual rule findings.
+/// Why:
+///  Validating syntax prevents a parser recovery artifact from standing in for a closure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,7 +53,8 @@ fn check(source: &str, severity: Severity) -> Vec<Diagnostic> {
     return check_no_anonymous_functions(&context, severity);
 }
 
-/// Reject every supported closure header shape, even when its parameters and result are annotated.
+/// Reject every supported closure header shape,
+///  even when its parameters and result are annotated.
 #[test]
 fn rejects_bound_and_qualified_closures() {
     for expression in [
@@ -93,7 +103,8 @@ fn rejects_bound_and_qualified_closures() {
     }
 }
 
-/// Nested closure bodies produce separate findings in source order; direct callback arguments are included.
+/// Nested closure bodies produce separate findings in source order;
+///  direct callback arguments are included.
 #[test]
 fn rejects_nested_and_direct_callback_closures() {
     let findings: Vec<Diagnostic> = check("fn main() { invoke(|| || 1); }", Severity::Warn);
@@ -103,7 +114,9 @@ fn rejects_nested_and_direct_callback_closures() {
     assert!(findings[0].labels[0].span.offset < findings[1].labels[0].span.offset);
 }
 
-/// Names, function pointers, async blocks and ordinary pipe operators are not anonymous functions.
+/// Names,
+///  function pointers,
+///  async blocks and ordinary pipe operators are not anonymous functions.
 #[test]
 fn accepts_named_callbacks_and_non_function_syntax() {
     let source: &str = r#"
@@ -153,7 +166,8 @@ fn preserves_byte_offsets_and_first_line_underlines() {
     assert_eq!(findings[0].labels[0].span.length, "move || {".len());
 }
 
-/// The registry accepts only severity settings for this rule, including an explicit disabled state.
+/// The registry accepts only severity settings for this rule,
+///  including an explicit disabled state.
 #[test]
 fn registers_severities_without_unrequested_options() {
     for severity in ["off", "warn", "error"] {

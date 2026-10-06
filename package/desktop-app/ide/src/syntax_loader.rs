@@ -1,33 +1,58 @@
 //! The highlighting language loader that reads only the application's own runtime.
 //!
-//! What: [`OwnLoader`] answers the two questions the parser library (`tree-house`, Helix's syntax
-//!       crate) asks while parsing and highlighting: which language an injection marker names, and
-//!       the compiled grammar and queries of a language. Recognition comes from Helix's built-in
-//!       language table; grammar libraries and query texts come from [`crate::runtime`].
-//! Why: Helix's own loader (`helix_core::syntax::Loader`) compiles languages through
-//!      `helix_loader::runtime_file`, which prefers `$XDG_CONFIG_HOME/helix/runtime` over any other
-//!      directory. A stray empty `highlights.scm` there turned SQL into plain text (measured on
-//!      2026-10-05: 16 colored spans without it, 0 with it). Implementing the loader here keeps every
+//! What:
+//!  [`OwnLoader`] answers the two questions the parser library (`tree-house`,
+//!  Helix's syntax
+//!       crate) asks while parsing and highlighting:
+//!  which language an injection marker names,
+//!  and
+//!       the compiled grammar and queries of a language.
+//!  Recognition comes from Helix's built-in
+//!       language table;
+//!  grammar libraries and query texts come from [`crate::runtime`].
+//! Why:
+//!  Helix's own loader (`helix_core::syntax::Loader`) compiles languages through
+//!      `helix_loader::runtime_file`,
+//!  which prefers `$XDG_CONFIG_HOME/helix/runtime` over any other
+//!      directory.
+//!  A stray empty `highlights.scm` there turned SQL into plain text (measured on
+//!      2026-10-05:
+//!  16 colored spans without it,
+//!  0 with it).
+//!  Implementing the loader here keeps every
 //!      read inside the application's own runtime.
 
 /// The only source of grammar libraries and query texts.
 use crate::runtime;
-/// Helix's built-in language table, used for recognition only.
+/// Helix's built-in language table,
+///  used for recognition only.
 use helix_core::syntax::Loader;
-/// One lazily filled cell per language, and the set of bundled grammar names.
+/// One lazily filled cell per language,
+///  and the set of bundled grammar names.
 use std::{cell::OnceCell, collections::HashSet};
-/// The parser library's loader interface, compiled language type, palette entry, and grammar loader.
+/// The parser library's loader interface,
+///  compiled language type,
+///  palette entry,
+///  and grammar loader.
 use tree_house::{
     InjectionLanguageMarker, Language, LanguageConfig, LanguageLoader, highlighter::Highlight,
     tree_sitter::Grammar,
 };
 
-/// What: Helix's built-in language table plus one lazily compiled configuration per language.
-///       `OnceCell` holds a value computed on first use and then only read, on one thread (sibling:
-///       `OnceLock`, the same for several threads). `Result<LanguageConfig, String>` keeps either the
+/// What:
+///  Helix's built-in language table plus one lazily compiled configuration per language.
+///       `OnceCell` holds a value computed on first use and then only read,
+///  on one thread (sibling:
+///       `OnceLock`,
+///  the same for several threads).
+///  `Result<LanguageConfig, String>` keeps either the
 ///       compiled language or the message explaining why it could not be compiled.
-/// Why: Compiling every language at startup would load every parser library; compiling on first use
-///      loads only what the displayed files need, and a failure is reported once, not retried per file.
+/// Why:
+///  Compiling every language at startup would load every parser library;
+///  compiling on first use
+///      loads only what the displayed files need,
+///  and a failure is reported once,
+///  not retried per file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,19 +60,30 @@ use tree_house::{
 ///   configs: Array<{ value?: LanguageConfig | Error }> };
 /// ```
 pub(crate) struct OwnLoader {
-    /// Filename, shebang, and injection-name rules; never used to compile a language.
+    /// Filename,
+    ///  shebang,
+    ///  and injection-name rules;
+    ///  never used to compile a language.
     pub(crate) helix: Loader,
-    /// Grammar names the runtime manifest lists; other grammars stay plain text.
+    /// Grammar names the runtime manifest lists;
+    ///  other grammars stay plain text.
     pub(crate) provisioned: HashSet<String>,
-    /// Highlight names the engine paints, in palette order.
+    /// Highlight names the engine paints,
+    ///  in palette order.
     scopes: &'static [&'static str],
-    /// One cell per language of `helix`, in the same order as its language numbers.
+    /// One cell per language of `helix`,
+    ///  in the same order as its language numbers.
     configs: Vec<OnceCell<Result<LanguageConfig, String>>>,
 }
 
-/// What: The palette index for one capture name such as `keyword.control.import`: the scope sharing
-///       the most leading dot-separated parts wins. `Option<Highlight>` is a palette entry or none.
-/// Why: The same rule as Helix's private `reconfigure_highlights`, so colors match what the engine
+/// What:
+///  The palette index for one capture name such as `keyword.control.import`:
+///  the scope sharing
+///       the most leading dot-separated parts wins.
+///  `Option<Highlight>` is a palette entry or none.
+/// Why:
+///  The same rule as Helix's private `reconfigure_highlights`,
+///  so colors match what the engine
 ///      painted before this loader existed.
 ///
 /// In TS you'd write (pseudocode):
@@ -106,9 +142,14 @@ fn best_scope(capture: &str, scopes: &[&str]) -> Option<Highlight> {
     return best.map(Highlight::new);
 }
 
-/// What: Read one query kind of a language, following `; inherits:` lines into other languages'
-///       files. `tree_house::read_query` calls the arrow function once per language it needs.
-/// Why: That callback cannot return an error, so the first failure is kept aside and returned after.
+/// What:
+///  Read one query kind of a language,
+///  following `; inherits:` lines into other languages'
+///       files.
+///  `tree_house::read_query` calls the arrow function once per language it needs.
+/// Why:
+///  That callback cannot return an error,
+///  so the first failure is kept aside and returned after.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -148,8 +189,11 @@ fn read_rules(
 
 /// Construction and per-language compilation.
 impl OwnLoader {
-    /// What: Wrap Helix's language table; `count` is its number of languages.
-    /// Why: The cells must line up with Helix's language numbers.
+    /// What:
+    ///  Wrap Helix's language table;
+    ///  `count` is its number of languages.
+    /// Why:
+    ///  The cells must line up with Helix's language numbers.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -177,8 +221,10 @@ impl OwnLoader {
         };
     }
 
-    /// What: Load the grammar library and compile the three query kinds of one language.
-    /// Why: Called once per language through its cell.
+    /// What:
+    ///  Load the grammar library and compile the three query kinds of one language.
+    /// Why:
+    ///  Called once per language through its cell.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -242,9 +288,14 @@ impl OwnLoader {
         return Ok(compiled);
     }
 
-    /// What: The compiled language, compiling it on first use. `Result<&LanguageConfig, &String>`
+    /// What:
+    ///  The compiled language,
+    ///  compiling it on first use.
+    ///  `Result<&LanguageConfig, &String>`
     ///       lends the compiled value or the stored message.
-    /// Why: The engine reports the reason a displayed file's language failed; injections only skip it.
+    /// Why:
+    ///  The engine reports the reason a displayed file's language failed;
+    ///  injections only skip it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -269,17 +320,28 @@ impl OwnLoader {
     }
 }
 
-/// What: `impl LanguageLoader for OwnLoader` makes this type usable wherever the parser library
-///       wants a loader, like implementing a TS interface.
-/// Why: Parsing, injections, and highlighting all ask the loader, so this is the single gate.
+/// What:
+///  `impl LanguageLoader for OwnLoader` makes this type usable wherever the parser library
+///       wants a loader,
+///  like implementing a TS interface.
+/// Why:
+///  Parsing,
+///  injections,
+///  and highlighting all ask the loader,
+///  so this is the single gate.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class OwnLoader implements LanguageLoader { languageForMarker(...) {...} getConfig(...) {...} }
 /// ```
 impl LanguageLoader for OwnLoader {
-    /// What: Which language an injection marker (a name, a filename, a shebang) refers to.
-    /// Why: Recognition is Helix's built-in table; it reads no runtime files.
+    /// What:
+    ///  Which language an injection marker (a name,
+    ///  a filename,
+    ///  a shebang) refers to.
+    /// Why:
+    ///  Recognition is Helix's built-in table;
+    ///  it reads no runtime files.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -289,8 +351,11 @@ impl LanguageLoader for OwnLoader {
         return self.helix.language_for_marker(marker);
     }
 
-    /// What: The compiled language, or `None` when it cannot be compiled.
-    /// Why: An injected language that fails is left uncolored instead of failing the whole file.
+    /// What:
+    ///  The compiled language,
+    ///  or `None` when it cannot be compiled.
+    /// Why:
+    ///  An injected language that fails is left uncolored instead of failing the whole file.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

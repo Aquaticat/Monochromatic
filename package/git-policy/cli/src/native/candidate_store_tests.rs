@@ -1,7 +1,14 @@
-//! What: Disposable-repository controls for candidate versions and bytes against real Git 2.56.0.
-//! Why: Candidates must describe exactly what Git would record (staged or committed),
-//!      never the live worktree, for every kind of entry: non-UTF-8 names and content,
-//!      symbolic links, submodules, deletions, renames and empty files.
+//! What:
+//!  Disposable-repository controls for candidate versions and bytes against real Git 2.56.0.
+//! Why:
+//!  Candidates must describe exactly what Git would record (staged or committed),
+//!      never the live worktree,
+//!  for every kind of entry:
+//!  non-UTF-8 names and content,
+//!      symbolic links,
+//!  submodules,
+//!  deletions,
+//!  renames and empty files.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -48,8 +55,10 @@ pub(super) fn write(repository: &Path, name: &[u8], content: &[u8]) {
     std::fs::write(repository.join(OsStr::from_bytes(name)), content).expect("worktree file");
 }
 
-/// The candidate at a pathname, which the control requires to exist.
-/// `'version` says the returned candidate is borrowed from the version, not from the pathname.
+/// The candidate at a pathname,
+///  which the control requires to exist.
+/// `'version` says the returned candidate is borrowed from the version,
+///  not from the pathname.
 pub(super) fn at<'version>(
     version: &'version CandidateVersion,
     path: &[u8],
@@ -70,7 +79,9 @@ pub(super) fn paths(version: &CandidateVersion) -> Vec<Vec<u8>> {
     return names;
 }
 
-/// A base commit, then one staged change of every kind; returns the repository.
+/// A base commit,
+///  then one staged change of every kind;
+///  returns the repository.
 pub(super) fn staged_changes(root: &Path) -> PathBuf {
     let repo: PathBuf = repository(root, "repo");
     write(repo.as_path(), b"keep.txt", b"unchanged\n");
@@ -109,7 +120,9 @@ pub(super) fn staged_changes(root: &Path) -> PathBuf {
     return repo;
 }
 
-/// The staged version lists every changed path with its mode, change and object, and nothing unchanged.
+/// The staged version lists every changed path with its mode,
+///  change and object,
+///  and nothing unchanged.
 #[test]
 fn staged_version_describes_every_kind_of_entry() {
     let root: PathBuf = fixture("store-staged");
@@ -195,7 +208,13 @@ fn staged_version_describes_every_kind_of_entry() {
     remove(root.as_path());
 }
 
-/// Bytes are exactly what the index names: text, binary, empty, link target, submodule commit name, and nothing for a deletion.
+/// Bytes are exactly what the index names:
+///  text,
+///  binary,
+///  empty,
+///  link target,
+///  submodule commit name,
+///  and nothing for a deletion.
 #[test]
 fn staged_bytes_are_exact_for_every_kind_of_entry() {
     let root: PathBuf = fixture("store-bytes");
@@ -223,7 +242,8 @@ fn staged_bytes_are_exact_for_every_kind_of_entry() {
     remove(root.as_path());
 }
 
-/// A deletion and a submodule entry are answered without the object reader; a blob starts it.
+/// A deletion and a submodule entry are answered without the object reader;
+///  a blob starts it.
 #[test]
 fn reader_starts_only_for_blob_content() {
     let root: PathBuf = fixture("store-lazy");
@@ -255,7 +275,8 @@ fn reader_starts_only_for_blob_content() {
     remove(root.as_path());
 }
 
-/// Candidate bytes are the staged bytes even when the worktree file was changed, emptied or removed afterwards.
+/// Candidate bytes are the staged bytes even when the worktree file was changed,
+///  emptied or removed afterwards.
 #[test]
 fn bytes_ignore_the_live_worktree() {
     let root: PathBuf = fixture("store-isolation");

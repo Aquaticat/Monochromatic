@@ -1,6 +1,9 @@
-//! Conversion of server answers into the application's replies, against the ticket's text.
+//! Conversion of server answers into the application's replies,
+//!  against the ticket's text.
 
-/// The ticket names the text, the column unit, and the document an answer belongs to.
+/// The ticket names the text,
+///  the column unit,
+///  and the document an answer belongs to.
 use super::Ticket;
 /// Server ranges become character offsets only through the shared converter.
 use crate::language::position::from_lsp_range;
@@ -8,8 +11,10 @@ use crate::language::position::from_lsp_range;
 use crate::language::reply::{HoverText, OpenTarget, RequestOutcome, Target};
 /// Locations are validated before any file is read.
 use crate::language::target::{Classified, classify};
-/// What: `Rope` is Helix's character-indexed text buffer.
-/// Why: A target in another file is converted against that file's text.
+/// What:
+///  `Rope` is Helix's character-indexed text buffer.
+/// Why:
+///  A target in another file is converted against that file's text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +23,10 @@ use crate::language::target::{Classified, classify};
 use helix_core::Rope;
 /// The protocol's data types.
 use helix_lsp::lsp;
-/// What: `Path` is a borrowed filesystem path.
-/// Why: Targets are judged against the project root.
+/// What:
+///  `Path` is a borrowed filesystem path.
+/// Why:
+///  Targets are judged against the project root.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,12 +34,19 @@ use helix_lsp::lsp;
 /// ```
 use std::path::Path;
 
-/// Largest target file read to convert a location, in bytes. `u64` matches file sizes.
+/// Largest target file read to convert a location,
+///  in bytes.
+///  `u64` matches file sizes.
 const MAX_TARGET_BYTES: u64 = 16 * 1024 * 1024;
 
-/// What: Read a target file's text, or nothing when it is too large or not readable as text.
-///       `Option<Rope>` is "a text, or nothing".
-/// Why: A location in another file is given in that file's lines and columns; without its text
+/// What:
+///  Read a target file's text,
+///  or nothing when it is too large or not readable as text.
+///       `Option<Rope>` is "a text,
+///  or nothing".
+/// Why:
+///  A location in another file is given in that file's lines and columns;
+///  without its text
 ///      only the line number can be reported.
 ///
 /// In TS you'd write (pseudocode):
@@ -52,8 +66,12 @@ fn read_target(path: &Path) -> Option<Rope> {
     return Some(Rope::from_str(&content));
 }
 
-/// What: Validate and convert one location a server returned.
-/// Why: Refused addresses are reported as unavailable, never read and never dropped; openable
+/// What:
+///  Validate and convert one location a server returned.
+/// Why:
+///  Refused addresses are reported as unavailable,
+///  never read and never dropped;
+///  openable
 ///      ones carry character offsets of the text they were converted against.
 ///
 /// In TS you'd write (pseudocode):
@@ -125,7 +143,8 @@ pub(super) fn definition_outcome(
     return RequestOutcome::Locations(targets);
 }
 
-/// Convert a references answer; `null` and an empty list are both an empty successful result.
+/// Convert a references answer;
+///  `null` and an empty list are both an empty successful result.
 pub(super) fn references_outcome(
     ticket: &Ticket,
     root: &Path,
@@ -142,7 +161,8 @@ pub(super) fn references_outcome(
     return RequestOutcome::Locations(targets);
 }
 
-/// Render one legacy hover part; a language-tagged part becomes a fenced code block.
+/// Render one legacy hover part;
+///  a language-tagged part becomes a fenced code block.
 fn marked(part: lsp::MarkedString) -> String {
     return match part {
         lsp::MarkedString::String(text) => text,
@@ -152,8 +172,12 @@ fn marked(part: lsp::MarkedString) -> String {
     };
 }
 
-/// What: Convert a hover answer. The three content shapes become one text plus a Markdown flag.
-/// Why: The interface shows text; it does not interpret the protocol's legacy shapes.
+/// What:
+///  Convert a hover answer.
+///  The three content shapes become one text plus a Markdown flag.
+/// Why:
+///  The interface shows text;
+///  it does not interpret the protocol's legacy shapes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

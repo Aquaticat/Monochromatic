@@ -1,5 +1,8 @@
-//! What: Small read-only questions over a tokenized Git argument region.
-//! Why: Git applies options in order and the last use wins, so command modules ask for
+//! What:
+//!  Small read-only questions over a tokenized Git argument region.
+//! Why:
+//!  Git applies options in order and the last use wins,
+//!  so command modules ask for
 //!      final states and positions instead of counting spellings.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,10 @@
 //! // lastOccurrence(parsed, id), isEnabled(parsed, id), positionalTokens(parsed, length), ...
 //! ```
 
-/// What: Bring the tokenizer result types into this file.
-/// Why:  Every question reads the lists the tokenizer produced.
+/// What:
+///  Bring the tokenizer result types into this file.
+/// Why:
+///   Every question reads the lists the tokenizer produced.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,9 +23,14 @@ use super::command_options::{Boundary, Occurrence, OptionValue, ParsedOptions, W
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: The final use of the option `id`, or nothing. `&ParsedOptions` borrows the result
-///       read-only; `u16` is the identifier type of table rows.
-/// Why:  Git's variables keep what the last matching option wrote.
+/// What:
+///  The final use of the option `id`,
+///  or nothing.
+///  `&ParsedOptions` borrows the result
+///       read-only;
+///  `u16` is the identifier type of table rows.
+/// Why:
+///   Git's variables keep what the last matching option wrote.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,8 +49,11 @@ pub fn last_occurrence(parsed: &ParsedOptions, id: u16) -> Option<Occurrence> {
     return last;
 }
 
-/// What: Whether the option was written at all, in either form.
-/// Why:  An explicit `--no-only` is a stated choice even though it turns the option off.
+/// What:
+///  Whether the option was written at all,
+///  in either form.
+/// Why:
+///   An explicit `--no-only` is a stated choice even though it turns the option off.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,8 +63,11 @@ pub fn is_stated(parsed: &ParsedOptions, id: u16) -> bool {
     return last_occurrence(parsed, id).is_some();
 }
 
-/// What: Whether the option is on after every use was applied.
-/// Why:  `--all --no-all` leaves `all` off, exactly as Git's `OPT_BOOL` does.
+/// What:
+///  Whether the option is on after every use was applied.
+/// Why:
+///   `--all --no-all` leaves `all` off,
+///  exactly as Git's `OPT_BOOL` does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,10 +81,17 @@ pub fn is_enabled(parsed: &ParsedOptions, id: u16) -> bool {
     return false;
 }
 
-/// What: Every non-option token index in order: those before the boundary, then every
-///       token after it. `length` is the region's token count.
-/// Why:  Git hands the command both groups as its remaining arguments.
-/// Gotcha: Under `Boundary::NonOption` the boundary token itself is positional; under
+/// What:
+///  Every non-option token index in order:
+///  those before the boundary,
+///  then every
+///       token after it.
+///  `length` is the region's token count.
+/// Why:
+///   Git hands the command both groups as its remaining arguments.
+/// Gotcha:
+///  Under `Boundary::NonOption` the boundary token itself is positional;
+///  under
 ///         `--` and `--end-of-options` it is not.
 ///
 /// In TS you'd write (pseudocode):
@@ -99,8 +122,12 @@ pub fn positional_tokens(parsed: &ParsedOptions, length: usize) -> Vec<usize> {
     return tokens;
 }
 
-/// What: The exact bytes of an option value. `&[u8]` borrows them from `arguments`.
-/// Why:  Values are compared as bytes; converting to `String` would reject non-UTF-8 text.
+/// What:
+///  The exact bytes of an option value.
+///  `&[u8]` borrows them from `arguments`.
+/// Why:
+///   Values are compared as bytes;
+///  converting to `String` would reject non-UTF-8 text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -116,9 +143,13 @@ pub fn value_bytes(arguments: &[OsString], value: OptionValue) -> &[u8] {
     return &arguments[token].as_encoded_bytes()[offset..];
 }
 
-/// What: Wrapper-only flags found in option position, split into the command's own escape
+/// What:
+///  Wrapper-only flags found in option position,
+///  split into the command's own escape
 ///       hatch and every other flag the caller listed.
-/// Why:  A rule asks "was my hatch written?", while the caller removes all of them by position.
+/// Why:
+///   A rule asks "was my hatch written?",
+///  while the caller removes all of them by position.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -128,14 +159,20 @@ pub fn value_bytes(arguments: &[OsString], value: OptionValue) -> &[u8] {
 pub struct WrapperFlags {
     /// Region token indexes of the command's own escape hatch.
     pub escape: Vec<usize>,
-    /// Other wrapper flags; `flag` indexes the caller's list.
+    /// Other wrapper flags;
+    ///  `flag` indexes the caller's list.
     pub other: Vec<WrapperOccurrence>,
 }
 
-/// What: Split the wrapper occurrences of a parse whose flag list was built as
-///       "own escape hatch first, then the caller's flags". `&[WrapperOccurrence]` borrows
+/// What:
+///  Split the wrapper occurrences of a parse whose flag list was built as
+///       "own escape hatch first,
+///  then the caller's flags".
+///  `&[WrapperOccurrence]` borrows
 ///       the occurrence list of that parse.
-/// Why:  Every command module builds its list that way, so the caller's indexes are the
+/// Why:
+///   Every command module builds its list that way,
+///  so the caller's indexes are the
 ///       tokenizer's indexes minus one.
 ///
 /// In TS you'd write (pseudocode):
@@ -159,9 +196,13 @@ pub fn split_wrapper_flags(occurrences: &[WrapperOccurrence]) -> WrapperFlags {
     return WrapperFlags { escape, other };
 }
 
-/// What: Copy `arguments` without the tokens at `removed`, which are indexes relative to
+/// What:
+///  Copy `arguments` without the tokens at `removed`,
+///  which are indexes relative to
 ///       `offset` (the index of the first region token).
-/// Why:  Wrapper-only flags are deleted by position, so an equal-looking value or path stays.
+/// Why:
+///   Wrapper-only flags are deleted by position,
+///  so an equal-looking value or path stays.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

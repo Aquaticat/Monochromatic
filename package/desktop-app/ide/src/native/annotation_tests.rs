@@ -1,6 +1,12 @@
-//! Injected hint and diagnostic snapshots through real key and pointer events: reading results, copying, and
-//! find rectangles are those of the text without annotations, virtual rows are never source text, the problems
-//! at the caret are described in full, and stale snapshots paint nothing while their space is held.
+//! Injected hint and diagnostic snapshots through real key and pointer events:
+//!  reading results,
+//!  copying,
+//!  and
+//! find rectangles are those of the text without annotations,
+//!  virtual rows are never source text,
+//!  the problems
+//! at the caret are described in full,
+//!  and stale snapshots paint nothing while their space is held.
 
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
@@ -20,8 +26,13 @@ use ide_app::language::{
 };
 /// One line's block of virtual rows and the heights it is built from.
 use ide_app::virtual_row::{BLOCK_GAP, Block, ROW_HEIGHT};
-/// What: Window events as a seat delivers them, and a point in logical window pixels.
-/// Why: Presses and keys go through the real `TouchArea`, `FocusScope`, and callbacks.
+/// What:
+///  Window events as a seat delivers them,
+///  and a point in logical window pixels.
+/// Why:
+///  Presses and keys go through the real `TouchArea`,
+///  `FocusScope`,
+///  and callbacks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,8 +42,12 @@ use slint::{
     ComponentHandle, LogicalPosition, Model,
     platform::{Key, PointerEventButton, WindowEvent},
 };
-/// What: Disposable fixtures, shared snapshot pointers, and `Duration` for held space.
-/// Why: Held space is given up after a time the test waits out.
+/// What:
+///  Disposable fixtures,
+///  shared snapshot pointers,
+///  and `Duration` for held space.
+/// Why:
+///  Held space is given up after a time the test waits out.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,13 +55,22 @@ use slint::{
 /// ```
 use std::{fs, sync::Arc, time::Duration};
 
-/// Where source text starts in the window, derived in `sidebar_tests` from the tree, divider, and gutter widths.
+/// Where source text starts in the window,
+///  derived in `sidebar_tests` from the tree,
+///  divider,
+///  and gutter widths.
 pub(super) use super::sidebar_tests::TEXT_LEFT;
 /// Source rows start below the 32 px file label.
 pub(super) const TEXT_TOP: f32 = 32.0;
 
-/// Three lines: a call with hints and an error, a line with a tab, CJK, a combining mark, and a ligature,
-/// and a last line; the last terminator ends the text.
+/// Three lines:
+///  a call with hints and an error,
+///  a line with a tab,
+///  CJK,
+///  a combining mark,
+///  and a ligature,
+/// and a last line;
+///  the last terminator ends the text.
 pub(super) const FIXTURE: &str =
     "let total = area(2, 3);\n\tlet 猫 = e\u{301} != x;\nfn main() {}\n";
 
@@ -89,10 +113,25 @@ pub(super) fn hint(position: usize, label: &str) -> InlayHint {
     };
 }
 
-/// What: The fixture's snapshots for `stamp`: hints after `total`, before `2`, and after `猫`; an error over the
-///       call, a warning on `猫`, a hint over `!=`, a warning from `x` onto the next line, and a point at the
-///       end of the last line. The pair is (hints, diagnostics).
-/// Why: Every test injects the same realistic mix of overlapping, multi-line, CJK, and point ranges.
+/// What:
+///  The fixture's snapshots for `stamp`:
+///  hints after `total`,
+///  before `2`,
+///  and after `猫`;
+///  an error over the
+///       call,
+///  a warning on `猫`,
+///  a hint over `!=`,
+///  a warning from `x` onto the next line,
+///  and a point at the
+///       end of the last line.
+///  The pair is (hints,
+///  diagnostics).
+/// Why:
+///  Every test injects the same realistic mix of overlapping,
+///  multi-line,
+///  CJK,
+///  and point ranges.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -147,9 +186,15 @@ pub(super) fn annotate(reader: &Reader) {
     set_annotations(&reader.window, &reader.source, hints, diagnostics);
 }
 
-/// What: Window point over the code row of source line `line`, `x` logical pixels into the text, in the middle
-///       of the row. The row's place comes from the reader's vertical mapping.
-/// Why: With virtual rows above lines, a line's code row is no longer at its number times one row height.
+/// What:
+///  Window point over the code row of source line `line`,
+///  `x` logical pixels into the text,
+///  in the middle
+///       of the row.
+///  The row's place comes from the reader's vertical mapping.
+/// Why:
+///  With virtual rows above lines,
+///  a line's code row is no longer at its number times one row height.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -163,8 +208,11 @@ pub(super) fn point(reader: &Reader, line: usize, x: f32) -> LogicalPosition {
     );
 }
 
-/// What: Window point `rise` logical pixels above the top of line `line`'s code row: inside its virtual rows.
-/// Why: Presses and pointer rests on hint and message rows are part of what the tests pin.
+/// What:
+///  Window point `rise` logical pixels above the top of line `line`'s code row:
+///  inside its virtual rows.
+/// Why:
+///  Presses and pointer rests on hint and message rows are part of what the tests pin.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -178,7 +226,9 @@ pub(super) fn above(reader: &Reader, line: usize, x: f32, rise: f32) -> LogicalP
     );
 }
 
-/// The block of virtual rows above `line`, or nothing; `Option<Arc<Block>>` is a shared block or nothing.
+/// The block of virtual rows above `line`,
+///  or nothing;
+///  `Option<Arc<Block>>` is a shared block or nothing.
 pub(super) fn block(reader: &Reader, line: usize) -> Option<Arc<Block>> {
     let source = reader.source.borrow();
     for candidate in &source.blocks {
@@ -190,8 +240,14 @@ pub(super) fn block(reader: &Reader, line: usize) -> Option<Arc<Block>> {
     return None;
 }
 
-/// What: How many hint texts, message-row texts, and underline runs the displayed frame paints; a triple.
-/// Why: Hints and messages are pixels of the source image now; the frame's positioned records say what was drawn.
+/// What:
+///  How many hint texts,
+///  message-row texts,
+///  and underline runs the displayed frame paints;
+///  a triple.
+/// Why:
+///  Hints and messages are pixels of the source image now;
+///  the frame's positioned records say what was drawn.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -233,9 +289,19 @@ pub(super) fn click(window: &AppWindow, position: LogicalPosition) {
         });
 }
 
-/// What: Drive one fixed script of clicks, double clicks, keys, copying, and find, recording every resulting
-///       selection, copied text, and find rectangle as text; `Vec<String>` is the ordered record.
-/// Why: The same script on a reader with annotations and one without must produce the same record.
+/// What:
+///  Drive one fixed script of clicks,
+///  double clicks,
+///  keys,
+///  copying,
+///  and find,
+///  recording every resulting
+///       selection,
+///  copied text,
+///  and find rectangle as text;
+///  `Vec<String>` is the ordered record.
+/// Why:
+///  The same script on a reader with annotations and one without must produce the same record.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -307,8 +373,14 @@ fn script(reader: &Reader) -> Vec<String> {
     return record;
 }
 
-/// Caret placement, clicks past the text, word selection, keys, copying, and find rectangles give the same
-/// results with annotations as without them; only where the code rows are differs.
+/// Caret placement,
+///  clicks past the text,
+///  word selection,
+///  keys,
+///  copying,
+///  and find rectangles give the same
+/// results with annotations as without them;
+///  only where the code rows are differs.
 #[test]
 fn annotations_leave_reading_geometry_copy_and_find_unchanged() {
     let plain_fixture = tempfile::tempdir().expect("disposable plain project");
@@ -359,8 +431,12 @@ fn annotations_leave_reading_geometry_copy_and_find_unchanged() {
     assert_eq!(annotated.window.get_source_text(), FIXTURE);
 }
 
-/// Virtual rows are not source text. A press or a drag on them acts on the code row they belong to, the one
-/// beneath them; the caret and selection rectangles are only ever on code rows; find does not match their text.
+/// Virtual rows are not source text.
+///  A press or a drag on them acts on the code row they belong to,
+///  the one
+/// beneath them;
+///  the caret and selection rectangles are only ever on code rows;
+///  find does not match their text.
 #[test]
 fn virtual_rows_are_not_source_text() {
     let fixture = tempfile::tempdir().expect("disposable virtual-row project");
@@ -455,9 +531,12 @@ fn virtual_rows_are_not_source_text() {
     key(window, Key::Escape);
 }
 
-/// The problems at the caret are named in full, worst first, for the source view's accessible description;
+/// The problems at the caret are named in full,
+///  worst first,
+///  for the source view's accessible description;
 /// the text is empty elsewhere and follows the caret into a CJK range and onto a point at a line end.
-/// Nothing is drawn for it: every message already stands above its line.
+/// Nothing is drawn for it:
+///  every message already stands above its line.
 #[test]
 fn caret_problems_follow_the_caret_and_are_spelled_out_in_full() {
     let fixture = tempfile::tempdir().expect("disposable problem project");
@@ -523,8 +602,12 @@ fn caret_problems_follow_the_caret_and_are_spelled_out_in_full() {
     );
 }
 
-/// After an external change and after a file switch, the old snapshots paint nothing and name no problem until
-/// snapshots for the new text arrive. After a change the rows' space stays open, so lines keep their place; it
+/// After an external change and after a file switch,
+///  the old snapshots paint nothing and name no problem until
+/// snapshots for the new text arrive.
+///  After a change the rows' space stays open,
+///  so lines keep their place;
+///  it
 /// is given up when its time has passed without new annotations.
 #[test]
 fn stale_snapshots_disappear_after_reload_and_file_switch() {
@@ -604,8 +687,11 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
     );
 }
 
-/// The Language poll's path: snapshots accepted into the state's store, hints and diagnostics independently,
-/// show after one render, and a snapshot for other text is refused and changes nothing.
+/// The Language poll's path:
+///  snapshots accepted into the state's store,
+///  hints and diagnostics independently,
+/// show after one render,
+///  and a snapshot for other text is refused and changes nothing.
 #[test]
 fn accepted_snapshots_show_after_one_render() {
     let fixture = tempfile::tempdir().expect("disposable accept project");

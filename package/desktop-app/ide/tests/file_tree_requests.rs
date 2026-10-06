@@ -15,7 +15,8 @@ fn child(parent: &str, name: &str, is_directory: bool) -> DirectoryEntry {
     };
 }
 
-/// A pending read is not requested again; cloned tokens identify the same single-use request.
+/// A pending read is not requested again;
+///  cloned tokens identify the same single-use request.
 #[test]
 fn pending_root_request_is_consumed_once() {
     let root = Path::new("/project");
@@ -148,7 +149,8 @@ fn removed_directory_tokens_stay_stale_after_path_reuse() {
     );
 }
 
-/// A sibling refresh keeps independent pending reads; a synchronous same-directory snapshot supersedes them.
+/// A sibling refresh keeps independent pending reads;
+///  a synchronous same-directory snapshot supersedes them.
 #[test]
 fn independent_requests_survive_sibling_updates() {
     let root = Path::new("/project");
@@ -176,7 +178,8 @@ fn independent_requests_survive_sibling_updates() {
     assert!(tree.begin_listing(&a.join("new.rs")).is_err());
 }
 
-/// An initial failure restores the missing request; malformed current snapshots preserve existing rows.
+/// An initial failure restores the missing request;
+///  malformed current snapshots preserve existing rows.
 #[test]
 fn failed_or_invalid_current_replies_release_the_request_slot() {
     let root = Path::new("/project");

@@ -1,7 +1,11 @@
-//! What: Real Git 2.56.0 controls for branch creation by `git checkout` and `git switch`,
+//! What:
+//!  Real Git 2.56.0 controls for branch creation by `git checkout` and `git switch`,
 //!       explicit and by matching the single remote branch `origin/topic`.
-//! Why: Which argument Git turns into a new local branch is decided deep inside
-//!      `parse_branchname_arg`; here the binary creates or does not create, and the parser's
+//! Why:
+//!  Which argument Git turns into a new local branch is decided deep inside
+//!      `parse_branchname_arg`;
+//!  here the binary creates or does not create,
+//!  and the parser's
 //!      answer is compared with what happened to the repository.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,7 +13,8 @@
 //! // expect(await branchesAfter(['checkout', 'topic'])).toEqual(['topic']);
 //! ```
 
-/// The parser, the command names and the real-Git fixture helpers.
+/// The parser,
+///  the command names and the real-Git fixture helpers.
 use super::BranchCreationCommand::{Checkout, Switch};
 use super::{BranchCreationCommand, BranchCreationRegion, parse_branch_creation_region};
 use crate::command_test_support::{
@@ -19,7 +24,8 @@ use std::path::{Path, PathBuf};
 use std::process::Output;
 
 /// A repository on `main` whose only remote `origin` has the branches `topic` and `main`,
-/// and an empty file `list`; returns the fixture directory and the repository root.
+/// and an empty file `list`;
+///  returns the fixture directory and the repository root.
 fn guess_fixture(name: &str) -> (PathBuf, PathBuf) {
     let directory: PathBuf = fixture(name);
     let root: PathBuf = repository(directory.as_path(), "repository");
@@ -34,8 +40,10 @@ fn guess_fixture(name: &str) -> (PathBuf, PathBuf) {
     return (directory, root);
 }
 
-/// Run `git <word> <line>`. Report every branch other than `main` that exists afterwards,
-/// and the unborn branch `HEAD` names after `--orphan`; then return to `main` and delete them.
+/// Run `git <word> <line>`.
+///  Report every branch other than `main` that exists afterwards,
+/// and the unborn branch `HEAD` names after `--orphan`;
+///  then return to `main` and delete them.
 fn branches_after(root: &Path, word: &str, line: &str) -> Vec<String> {
     let mut full: Vec<&str> = vec![word];
     full.extend(line.split_whitespace());
@@ -64,8 +72,11 @@ fn branches_after(root: &Path, word: &str, line: &str) -> Vec<String> {
     return created;
 }
 
-/// Whether the parser says this region creates a branch in the fixture: explicitly, or by
-/// naming `topic`, the only name the fixture's remote can supply.
+/// Whether the parser says this region creates a branch in the fixture:
+///  explicitly,
+///  or by
+/// naming `topic`,
+///  the only name the fixture's remote can supply.
 fn predicted(command: BranchCreationCommand, line: &str) -> bool {
     let values: Vec<&str> = line.split_whitespace().collect();
     let parsed: BranchCreationRegion =
@@ -94,7 +105,10 @@ fn assert_cases(root: &Path, word: &str, command: BranchCreationCommand, cases: 
     }
 }
 
-/// `git checkout`: the guess, the forms that stop it, and explicit creation.
+/// `git checkout`:
+///  the guess,
+///  the forms that stop it,
+///  and explicit creation.
 #[test]
 fn checkout_creation_matches_git() {
     let (directory, root): (PathBuf, PathBuf) = guess_fixture("checkout-guess");
@@ -148,7 +162,10 @@ fn checkout_creation_matches_git() {
     remove(directory.as_path());
 }
 
-/// `git switch`: one reference, no paths, `--` does not stop the guess.
+/// `git switch`:
+///  one reference,
+///  no paths,
+///  `--` does not stop the guess.
 #[test]
 fn switch_creation_matches_git() {
     let (directory, root): (PathBuf, PathBuf) = guess_fixture("switch-guess");
@@ -185,8 +202,11 @@ fn switch_creation_matches_git() {
     remove(directory.as_path());
 }
 
-/// The parser reads names and counts only: where Git refuses for a value or a combination
-/// of options, it still answers "creates". Each line is refused by the binary.
+/// The parser reads names and counts only:
+///  where Git refuses for a value or a combination
+/// of options,
+///  it still answers "creates".
+///  Each line is refused by the binary.
 #[test]
 fn refusals_git_makes_later_are_still_reported_as_creation() {
     let (directory, root): (PathBuf, PathBuf) = guess_fixture("guess-over-report");

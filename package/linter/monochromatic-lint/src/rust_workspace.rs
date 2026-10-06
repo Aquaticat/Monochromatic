@@ -1,12 +1,15 @@
-//! What: Load Cargo metadata and generated semantic inputs through a fixed native backend.
-//! Why: Build-script errors cannot be logged and silently treated as complete type information.
+//! What:
+//!  Load Cargo metadata and generated semantic inputs through a fixed native backend.
+//! Why:
+//!  Build-script errors cannot be logged and silently treated as complete type information.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Discover an explicit Cargo manifest and compiler source, prepare the requested inputs, then own the loaded session.
 //! ```
 
-/// Import typed setup failures, session ownership and validated toolchain discovery.
+/// Import typed setup failures,
+///  session ownership and validated toolchain discovery.
 use crate::rust_semantic_error::SemanticError;
 use crate::rust_semantic_session::RustSemanticSession;
 use crate::rust_toolchain::{RustToolchain, absolute_utf8, discover_toolchain};
@@ -23,10 +26,12 @@ use ra_ap_vfs::{AbsPathBuf, Vfs};
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
-/// Preparation is fixed by the host workflow, never an arbitrary executable from JSONC.
+/// Preparation is fixed by the host workflow,
+///  never an arbitrary executable from JSONC.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum WorkspacePreparation {
-    /// Read source/metadata only; unavailable generated definitions remain explicit resolution failures.
+    /// Read source/metadata only;
+    ///  unavailable generated definitions remain explicit resolution failures.
     SourceOnly,
     /// Run locked/offline Cargo checking and load its macro artifacts for complete generated-source context.
     BuildGenerated,
@@ -71,11 +76,19 @@ pub fn discover_manifest(input: &Path) -> Result<PathBuf, SemanticError> {
     return Err(SemanticError::new(format!("No Cargo.toml owns Rust input {}. Provide a Cargo workspace context or configure this semantic rule off for an intentional standalone snippet.", input.display()).as_str()));
 }
 
-/// What: The backend's Cargo settings for one validated toolchain.
-/// Why: Each field is a policy the backend would otherwise decide by itself. `sysroot_src` names the
-/// standard-library source `discover_toolchain` checked; without it the backend reads `RUST_SRC_PATH`
-/// first. `--offline --locked` goes to `cargo metadata` and to the build-script `cargo check`: Cargo
-/// fetches nothing, and a stale or missing lockfile is reported instead of resolved again. The
+/// What:
+///  The backend's Cargo settings for one validated toolchain.
+/// Why:
+///  Each field is a policy the backend would otherwise decide by itself.
+///  `sysroot_src` names the
+/// standard-library source `discover_toolchain` checked;
+///  without it the backend reads `RUST_SRC_PATH`
+/// first.
+///  `--offline --locked` goes to `cargo metadata` and to the build-script `cargo check`:
+///  Cargo
+/// fetches nothing,
+///  and a stale or missing lockfile is reported instead of resolved again.
+///  The
 /// backend's own build output stays in a subdirectory of the target directory.
 ///
 /// In TS you'd write (pseudocode):

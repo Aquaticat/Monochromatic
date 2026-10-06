@@ -1,11 +1,17 @@
-//! Lazy, filesystem-free tree presentation over read-only directory snapshots.
+//! Lazy,
+//!  filesystem-free tree presentation over read-only directory snapshots.
 
 /// Directory metadata retains native filenames and filesystem enumeration order.
 use crate::workspace::DirectoryEntry;
 /// Invalid tree operations report affected paths instead of silently changing unrelated rows.
 use anyhow::{Result, bail};
-/// What: Maps own cached snapshots; sets own expansion state; Path borrows names and PathBuf owns them.
-/// Why: Unlike a recursive node graph, these let background results update one directory independently.
+/// What:
+///  Maps own cached snapshots;
+///  sets own expansion state;
+///  Path borrows names and PathBuf owns them.
+/// Why:
+///  Unlike a recursive node graph,
+///  these let background results update one directory independently.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,10 +34,15 @@ mod rows;
 /// One visible row keeps its native path rather than reconstructing it from a display label.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TreeRow {
-    /// Original dirent metadata; symbolic links retain their non-directory classification.
+    /// Original dirent metadata;
+    ///  symbolic links retain their non-directory classification.
     pub entry: DirectoryEntry,
-    /// What: usize indexes nested rows; unlike u32/u64/i32 it matches collection lengths.
-    /// Why: Indentation is derived from the visible traversal, not lossy path-string parsing.
+    /// What:
+    ///  usize indexes nested rows;
+    ///  unlike u32/u64/i32 it matches collection lengths.
+    /// Why:
+    ///  Indentation is derived from the visible traversal,
+    ///  not lossy path-string parsing.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -42,8 +53,11 @@ pub struct TreeRow {
     pub expanded: bool,
 }
 
-/// What: Arc shares an immutable path allocation across the UI and worker, unlike thread-local Rc.
-/// Why: Allocation identity distinguishes repeated reads without a counter that can wrap or be reused.
+/// What:
+///  Arc shares an immutable path allocation across the UI and worker,
+///  unlike thread-local Rc.
+/// Why:
+///  Allocation identity distinguishes repeated reads without a counter that can wrap or be reused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -58,19 +72,22 @@ pub struct DirectoryRequest {
 /// Cached snapshots and expansion state for a single canonical Workspace root.
 #[derive(Debug)]
 pub struct FileTree {
-    /// Canonical root supplied by Workspace; this model is not an OS write-confinement boundary.
+    /// Canonical root supplied by Workspace;
+    ///  this model is not an OS write-confinement boundary.
     root: PathBuf,
     /// Native directory names map to snapshots retaining filesystem order.
     directories: BTreeMap<PathBuf, Vec<DirectoryEntry>>,
     /// Collapsing an ancestor retains descendant expansion until that subtree is removed.
     expanded: BTreeSet<PathBuf>,
-    /// Latest request for each directory; replacements supersede older in-flight copies.
+    /// Latest request for each directory;
+    ///  replacements supersede older in-flight copies.
     pending: BTreeMap<PathBuf, DirectoryRequest>,
 }
 
 /// Tree state transitions never read files or block the UI on directory enumeration.
 impl FileTree {
-    /// Start without reading the root; missing_listings requests its first background snapshot.
+    /// Start without reading the root;
+    ///  missing_listings requests its first background snapshot.
     pub fn new(root: &Path) -> Self {
         // What: to_path_buf copies the borrowed path into model-owned storage.
         // Why: The tree outlives the caller's temporary path borrow.
@@ -108,7 +125,8 @@ impl FileTree {
         return self.directories.contains_key(directory);
     }
 
-    /// Borrow a known entry from its parent's snapshot, including collapsed descendants.
+    /// Borrow a known entry from its parent's snapshot,
+    ///  including collapsed descendants.
     fn entry(&self, path: &Path) -> Option<&DirectoryEntry> {
         // What: ? returns None when the optional parent or snapshot is absent.
         // Why: An unknown row is distinct from a known non-directory row.
@@ -123,7 +141,8 @@ impl FileTree {
         return entries.iter().find(|entry| return entry.path == path);
     }
 
-    /// Toggle a known directory; files and symbolic links cannot become expandable tree nodes.
+    /// Toggle a known directory;
+    ///  files and symbolic links cannot become expandable tree nodes.
     pub fn toggle(&mut self, path: &Path) -> Result<bool> {
         // What: let-else extracts Some(entry) or exits through a descriptive error.
         // Why: Stale UI row identifiers cannot accidentally create new expansion state.

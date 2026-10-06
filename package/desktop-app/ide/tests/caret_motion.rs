@@ -1,7 +1,13 @@
-//! Keyboard caret movement over graphemes, words, lines, and the whole text, at Unicode and line-end boundaries.
+//! Keyboard caret movement over graphemes,
+//!  words,
+//!  lines,
+//!  and the whole text,
+//!  at Unicode and line-end boundaries.
 
-/// What: Import the production movement functions and Helix's rope through the library's public interface.
-/// Why: The native key handler calls exactly these functions on the document's rope.
+/// What:
+///  Import the production movement functions and Helix's rope through the library's public interface.
+/// Why:
+///  The native key handler calls exactly these functions on the document's rope.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -12,9 +18,13 @@ use helix_core::Rope;
 /// The movements under test.
 use ide_app::caret_motion::{Motion, line_range, moved, word_range};
 
-/// What: Apply one movement repeatedly and collect every position it visits;
-/// `Vec<usize>` is a growable list of address-sized character positions (siblings: `[usize; N]`, `&[usize]`).
-/// Why: A whole walk shows skipped or split graphemes in one readable assertion.
+/// What:
+///  Apply one movement repeatedly and collect every position it visits;
+/// `Vec<usize>` is a growable list of address-sized character positions (siblings:
+///  `[usize; N]`,
+///  `&[usize]`).
+/// Why:
+///  A whole walk shows skipped or split graphemes in one readable assertion.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,7 +57,9 @@ fn step(source: &str, head: usize, motion: Motion) -> usize {
     return moved(rope.slice(..), head, motion);
 }
 
-/// Left and Right step over a combining sequence, an astral character, and CRLF as single units.
+/// Left and Right step over a combining sequence,
+///  an astral character,
+///  and CRLF as single units.
 #[test]
 fn grapheme_steps_never_split_combining_astral_or_crlf_sequences() {
     // a(0) 猫(1) e(2) U+0301(3) 𝒳(4) CR(5) LF(6) b(7), eight characters.
@@ -60,7 +72,8 @@ fn grapheme_steps_never_split_combining_astral_or_crlf_sequences() {
     assert_eq!(walk(emoji, 8, Motion::Left), [7, 5, 0]);
 }
 
-/// Home and End stay on the line and stop before LF and CRLF; the last line needs no terminator.
+/// Home and End stay on the line and stop before LF and CRLF;
+///  the last line needs no terminator.
 #[test]
 fn line_start_and_end_respect_terminators_and_the_end_of_text() {
     // a(0) b(1) CR(2) LF(3) c(4) d(5) LF(6) LF(7) e(8) f(9).
@@ -98,7 +111,8 @@ fn line_start_and_end_respect_terminators_and_the_end_of_text() {
     assert_eq!(step("", 0, Motion::DocumentEnd), 0);
 }
 
-/// Ctrl+Right stops at the end of each word or punctuation run; Ctrl+Left at each start.
+/// Ctrl+Right stops at the end of each word or punctuation run;
+///  Ctrl+Left at each start.
 #[test]
 fn word_steps_stop_at_word_and_punctuation_runs_across_lines() {
     // foo_bar(0..7) two blanks b a z(9..12) .(12) qux(13..16) ((16) 猫猫(17..19) blank e+accent t(20..23) )(23)
@@ -135,7 +149,8 @@ fn word(source: &str, position: usize) -> (usize, usize) {
     return word_range(rope.slice(..), position);
 }
 
-/// A double click selects the word at the boundary, preferring a word over neighboring blanks or punctuation.
+/// A double click selects the word at the boundary,
+///  preferring a word over neighboring blanks or punctuation.
 #[test]
 fn word_range_prefers_a_word_and_stays_on_its_line() {
     let source = "foo_bar  baz.qux(猫猫 e\u{301}t)\n  x";
@@ -191,7 +206,8 @@ fn line(source: &str, position: usize) -> (usize, usize) {
     return line_range(rope.slice(..), position);
 }
 
-/// A triple click selects the whole line with its terminator; the last line ends at the end of text.
+/// A triple click selects the whole line with its terminator;
+///  the last line ends at the end of text.
 #[test]
 fn line_range_includes_the_terminator_when_there_is_one() {
     let source = "ab\r\ncd\n\nef";
@@ -212,7 +228,8 @@ fn line_range_includes_the_terminator_when_there_is_one() {
     assert_eq!(line("", 0), (0, 0));
 }
 
-/// Only LF and CRLF end a line of the document; a lone carriage return stays inside its line.
+/// Only LF and CRLF end a line of the document;
+///  a lone carriage return stays inside its line.
 #[test]
 fn lone_carriage_return_is_not_a_line_break() {
     // a(0) CR(1) b(2) LF(3) c(4).

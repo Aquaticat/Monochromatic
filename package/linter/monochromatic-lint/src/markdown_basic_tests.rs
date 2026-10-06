@@ -1,5 +1,8 @@
-//! What: Existing behavior controls for the initial native Markdown rules.
-//! Why: Diagnostics and localized edits must preserve content, including Unicode and MDX boundaries.
+//! What:
+//!  Existing behavior controls for the initial native Markdown rules.
+//! Why:
+//!  Diagnostics and localized edits must preserve content,
+//!  including Unicode and MDX boundaries.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -24,7 +27,8 @@ fn document(source: &str, mdx: bool) -> MarkdownSource {
     .expect("fixture parses");
 }
 
-/// Apply only the findings' advertised fixes, using the same atomic implementation as production.
+/// Apply only the findings' advertised fixes,
+///  using the same atomic implementation as production.
 fn fixed(source: &str, findings: &[Diagnostic]) -> String {
     let mut fixes = Vec::new();
     for finding in findings {
@@ -37,7 +41,8 @@ fn fixed(source: &str, findings: &[Diagnostic]) -> String {
         .source;
 }
 
-/// Heading baselines and decreases are allowed; only upward skips are findings.
+/// Heading baselines and decreases are allowed;
+///  only upward skips are findings.
 #[test]
 fn heading_increment_matches_existing_messages_and_positions() {
     let source = document("### First\n\n# Reset\n\n### Skipped\n\n## Back\n", false);
@@ -52,7 +57,8 @@ fn heading_increment_matches_existing_messages_and_positions() {
     assert!(heading_increment(&document("plain\n", false), Severity::Error).is_empty());
 }
 
-/// Every legal one-step increase and repeated depth remains clean, including deeper starting levels.
+/// Every legal one-step increase and repeated depth remains clean,
+///  including deeper starting levels.
 #[test]
 fn heading_increment_accepts_adjacent_depths_and_equal_siblings() {
     for source in [
@@ -81,7 +87,8 @@ fn single_h1_ignores_frontmatter_title() {
     );
 }
 
-/// Sentence punctuation, mixed paragraphs and emphasized list labels stay valid.
+/// Sentence punctuation,
+///  mixed paragraphs and emphasized list labels stay valid.
 #[test]
 fn emphasis_heading_exceptions_remain_exact() {
     let findings = no_emphasis_as_heading(
@@ -103,7 +110,8 @@ fn emphasis_heading_exceptions_remain_exact() {
     }
 }
 
-/// A Markdown bare URL/email gets an autolink; scheme-less www and explicit links are left alone.
+/// A Markdown bare URL/email gets an autolink;
+///  scheme-less www and explicit links are left alone.
 #[test]
 fn bare_markdown_links_keep_exact_written_bytes() {
     let source = "🚀 https://example.com/a\n\nname@example.com\n\nwww.example.com\n\n<https://already.example>\n";
@@ -147,7 +155,9 @@ fn shortcut_references_become_collapsed_without_changing_definitions() {
     assert!(link_image_style(&complete, Severity::Error).is_empty());
 }
 
-/// Fence length, indentation, whitespace and newline spelling survive the language insertion.
+/// Fence length,
+///  indentation,
+///  whitespace and newline spelling survive the language insertion.
 #[test]
 fn fence_language_fixes_preserve_opener_shape() {
     let source = "  ~~~~  \nbody\n  ~~~~\n";
@@ -169,7 +179,8 @@ fn fence_language_fixes_preserve_opener_shape() {
     );
 }
 
-/// Native fenced spans start at the marker, not at indentation or enclosing container text.
+/// Native fenced spans start at the marker,
+///  not at indentation or enclosing container text.
 #[test]
 fn fence_spans_preserve_native_marker_boundaries() {
     for (source, start, expected) in [

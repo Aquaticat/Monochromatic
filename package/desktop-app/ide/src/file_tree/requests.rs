@@ -4,9 +4,11 @@
 use super::{DirectoryRequest, FileTree};
 /// Completed requests carry the reader's original ordered snapshot or failure.
 use crate::workspace::DirectoryEntry;
-/// Request failures identify the directory; stale failures never replace a current diagnostic.
+/// Request failures identify the directory;
+///  stale failures never replace a current diagnostic.
 use anyhow::{Result, bail};
-/// Path borrows native names; Arc preserves one allocation identity across threads.
+/// Path borrows native names;
+///  Arc preserves one allocation identity across threads.
 use std::{path::Path, sync::Arc};
 
 /// Expose the read target without exposing mutation of its opaque identity.
@@ -24,9 +26,12 @@ impl DirectoryRequest {
     }
 }
 
-/// A request becomes stale when superseded, completed, or removed by an ancestor snapshot.
+/// A request becomes stale when superseded,
+///  completed,
+///  or removed by an ancestor snapshot.
 impl FileTree {
-    /// Start or supersede a read for a known directory; actual I/O belongs to the worker.
+    /// Start or supersede a read for a known directory;
+    ///  actual I/O belongs to the worker.
     pub fn begin_listing(&mut self, directory: &Path) -> Result<DirectoryRequest> {
         if directory != self.root {
             // What: Option::is_some_and runs the closure only for a present borrowed entry.
@@ -70,7 +75,8 @@ impl FileTree {
         return Ok(request);
     }
 
-    /// Accept a current reply once; stale success and failure replies both return false without side effects.
+    /// Accept a current reply once;
+    ///  stale success and failure replies both return false without side effects.
     pub fn complete_listing(
         &mut self,
         request: &DirectoryRequest,

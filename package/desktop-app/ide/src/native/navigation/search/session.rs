@@ -2,7 +2,8 @@
 
 /// Native navigation owns the sole project and latest file-open intent.
 use super::super::{AppWindow, Navigation, State, open};
-/// Bounded row presentation is cleared on every input change, not only after debounce.
+/// Bounded row presentation is cleared on every input change,
+///  not only after debounce.
 use super::{Search, present};
 /// Queue and worker shutdown errors stay visible at the native boundary.
 use anyhow::Result;
@@ -11,7 +12,8 @@ use ide_app::{search::SearchKind, search_input::SearchInput};
 /// UI-only ownership and monotonic edit timestamps never cross the worker boundary.
 use std::{cell::RefCell, rc::Rc, time::Instant};
 
-/// Remember an actual tree interaction, not programmatic ancestor reveal for a recent file.
+/// Remember an actual tree interaction,
+///  not programmatic ancestor reveal for a recent file.
 pub(super) fn remember(navigation: &mut Navigation, index: i32) {
     if index < 0 {
         return;
@@ -29,7 +31,8 @@ pub(super) fn remember(navigation: &mut Navigation, index: i32) {
     };
 }
 
-/// Editing invalidates both the result model and subprocess generation immediately, before the debounce delay.
+/// Editing invalidates both the result model and subprocess generation immediately,
+///  before the debounce delay.
 pub(super) fn edit(window: &AppWindow, search: &mut Search, raw: &str) -> Result<()> {
     search.input = SearchInput::parse(raw);
     search.edited = None;
@@ -46,7 +49,8 @@ pub(super) fn edit(window: &AppWindow, search: &mut Search, raw: &str) -> Result
     return Ok(());
 }
 
-/// Capture the selected directory once; later tree refresh cannot silently broaden the open overlay's search.
+/// Capture the selected directory once;
+///  later tree refresh cannot silently broaden the open overlay's search.
 pub(super) fn start(window: &AppWindow, navigation: &mut Navigation) -> Result<()> {
     if window.get_tree_has_focus() {
         remember(navigation, window.get_tree_focused_row());
@@ -93,7 +97,9 @@ pub(super) fn close(window: &AppWindow, search: &mut Search) -> Result<()> {
     return search.worker.clear();
 }
 
-/// Native hit identity, not its rendered text, supplies the latest source-open intent.
+/// Native hit identity,
+///  not its rendered text,
+///  supplies the latest source-open intent.
 pub(super) fn choose(
     window: &AppWindow,
     source: &Rc<RefCell<State>>,

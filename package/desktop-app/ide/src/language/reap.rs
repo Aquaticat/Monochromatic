@@ -1,31 +1,52 @@
 //! Waiting until every server process the worker thread started has been reaped.
 //!
-//! A process that has ended stays in the kernel's process table, as a "zombie", until its parent
-//! collects its exit status ("reaps" it). helix-lsp owns the process handles and kills on drop.
-//! tokio reaps the process of a dropped handle only while one of its runtimes keeps running, and
-//! only after the kernel reported that a child ended. Two things follow for the worker:
+//! A process that has ended stays in the kernel's process table,
+//!  as a "zombie",
+//!  until its parent
+//! collects its exit status ("reaps" it).
+//!  helix-lsp owns the process handles and kills on drop.
+//! tokio reaps the process of a dropped handle only while one of its runtimes keeps running,
+//!  and
+//! only after the kernel reported that a child ended.
+//!  Two things follow for the worker:
 //!
-//! - Its own runtime must be dropped first. helix-lsp keeps a client alive inside the task that
-//!   awaits `initialize`, so a server that never answered is killed only when that task is
-//!   dropped, which happens when the runtime is dropped.
-//! - Something must then keep reaping until no child is left. A killed process is not gone at
-//!   once; under load it can take longer than any fixed pause.
+//! - Its own runtime must be dropped first.
+//!    helix-lsp keeps a client alive inside the task that
+//!   awaits `initialize`,
+//!    so a server that never answered is killed only when that task is
+//!   dropped,
+//!    which happens when the runtime is dropped.
+//! - Something must then keep reaping until no child is left.
+//!    A killed process is not gone at
+//!   once;
+//!    under load it can take longer than any fixed pause.
 //!
-//! So after its runtime is gone, the worker thread runs a second, short-lived runtime here and
-//! waits until the kernel lists no child of this thread any more. The kernel's list needs no
-//! process handle, which is why it works although helix-lsp owns them all.
+//! So after its runtime is gone,
+//!  the worker thread runs a second,
+//!  short-lived runtime here and
+//! waits until the kernel lists no child of this thread any more.
+//!  The kernel's list needs no
+//! process handle,
+//!  which is why it works although helix-lsp owns them all.
 
-/// What: `Duration` is a time span.
-/// Why: The wait and the pauses inside it are bounded.
+/// What:
+///  `Duration` is a time span.
+/// Why:
+///  The wait and the pauses inside it are bounded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Duration = number; // milliseconds
 /// ```
 use std::time::Duration;
-/// What: `Instant` is a point on the clock; `sleep` returns a future (a promise) that resolves
+/// What:
+///  `Instant` is a point on the clock;
+///  `sleep` returns a future (a promise) that resolves
 ///       after a time span.
-/// Why: While the wait sleeps, the runtime runs its drivers, and reaping happens there.
+/// Why:
+///  While the wait sleeps,
+///  the runtime runs its drivers,
+///  and reaping happens there.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,17 +55,27 @@ use std::time::Duration;
 use tokio::time::{Instant, sleep};
 
 /// The kernel's list of processes that the reading thread started and has not reaped yet,
-/// zombies included: process numbers separated by spaces. The worker thread starts language
-/// servers and nothing else that outlives a call, so this list is exactly its servers.
+/// zombies included:
+///  process numbers separated by spaces.
+///  The worker thread starts language
+/// servers and nothing else that outlives a call,
+///  so this list is exactly its servers.
 const CHILDREN_OF_THIS_THREAD: &str = "/proc/thread-self/children";
 
 /// Pause between two looks at the list.
 const POLL: Duration = Duration::from_millis(2);
 
-/// What: The numbers of this thread's unreaped child processes, or nothing when the kernel does
-///       not offer the list. `Option<Vec<u32>>` is "a growable list of unsigned 32-bit numbers,
-///       or nothing" (siblings of `u32`: `i32`, `u64`; a process number is a positive 32-bit value).
-/// Why: An empty list is the one reliable sign that no server process is left to reap.
+/// What:
+///  The numbers of this thread's unreaped child processes,
+///  or nothing when the kernel does
+///       not offer the list.
+///  `Option<Vec<u32>>` is "a growable list of unsigned 32-bit numbers,
+///       or nothing" (siblings of `u32`:
+///  `i32`,
+///  `u64`;
+///  a process number is a positive 32-bit value).
+/// Why:
+///  An empty list is the one reliable sign that no server process is left to reap.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,9 +119,13 @@ fn unreaped() -> Option<Vec<u32>> {
     return Some(found);
 }
 
-/// What: Wait until this thread has no unreaped child process, at most `grace`.
+/// What:
+///  Wait until this thread has no unreaped child process,
+///  at most `grace`.
 ///       `async fn` returns a future (a promise).
-/// Why: Each pause lets the runtime that awaits this reap; an empty list ends the wait early,
+/// Why:
+///  Each pause lets the runtime that awaits this reap;
+///  an empty list ends the wait early,
 ///      which is at once when every server had ended by itself.
 ///
 /// In TS you'd write (pseudocode):
@@ -134,10 +169,15 @@ async fn until_reaped(grace: Duration) {
     }
 }
 
-/// What: Reap the worker thread's server processes on a runtime of its own, waiting at most
+/// What:
+///  Reap the worker thread's server processes on a runtime of its own,
+///  waiting at most
 ///       `grace` for the last of them.
-/// Why: Call this on the worker thread after its runtime was dropped: dropping the runtime
-///      drops every task and with it the last process handles, and this runtime then reaps what
+/// Why:
+///  Call this on the worker thread after its runtime was dropped:
+///  dropping the runtime
+///      drops every task and with it the last process handles,
+///  and this runtime then reaps what
 ///      those drops killed.
 ///
 /// In TS you'd write (pseudocode):

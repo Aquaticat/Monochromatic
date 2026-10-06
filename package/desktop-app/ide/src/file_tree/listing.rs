@@ -4,9 +4,11 @@
 use super::FileTree;
 /// Preserve native names and dirent kinds from the existing read-only workspace reader.
 use crate::workspace::DirectoryEntry;
-/// Invalid snapshots are errors, not partial updates or empty-directory fallbacks.
+/// Invalid snapshots are errors,
+///  not partial updates or empty-directory fallbacks.
 use anyhow::{Result, bail};
-/// Sets detect duplicate paths without changing input order; paths retain non-UTF-8 names.
+/// Sets detect duplicate paths without changing input order;
+///  paths retain non-UTF-8 names.
 use std::{
     collections::BTreeSet,
     path::{Component, Path},
@@ -61,7 +63,8 @@ fn validate(directory: &Path, entries: &[DirectoryEntry]) -> Result<()> {
 
 /// Apply snapshots without performing I/O or treating the presentation model as security confinement.
 impl FileTree {
-    /// Replace a synchronous snapshot atomically; asynchronous readers must use complete_listing's token check.
+    /// Replace a synchronous snapshot atomically;
+    ///  asynchronous readers must use complete_listing's token check.
     /// Removed or reclassified subtrees lose stale caches and pending reads.
     pub fn apply_listing(&mut self, directory: &Path, entries: Vec<DirectoryEntry>) -> Result<()> {
         if directory != self.root {

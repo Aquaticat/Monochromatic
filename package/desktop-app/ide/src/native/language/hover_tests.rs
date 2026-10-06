@@ -1,4 +1,7 @@
-//! Hover by Ctrl+Q and by the resting pointer: content, placement, and every dismissal.
+//! Hover by Ctrl+Q and by the resting pointer:
+//!  content,
+//!  placement,
+//!  and every dismissal.
 
 /// Fixtures and real key and pointer events.
 use super::test_support::{
@@ -10,7 +13,9 @@ use crate::native::{find_tests::key, navigation_tests::row};
 /// Encoded keys and window points.
 use slint::{LogicalPosition, platform::Key};
 
-/// Forty lines: words on even lines, blank odd lines.
+/// Forty lines:
+///  words on even lines,
+///  blank odd lines.
 fn sample() -> String {
     let mut text = String::new();
     for index in 0..40 {
@@ -23,7 +28,8 @@ fn sample() -> String {
     return text;
 }
 
-/// Character offset of the start of `line` in `sample()`: even lines have 13 characters.
+/// Character offset of the start of `line` in `sample()`:
+///  even lines have 13 characters.
 fn start(line: usize) -> usize {
     return (line / 2) * 14 + (line % 2) * 13;
 }
@@ -36,7 +42,8 @@ fn sample_reader() -> (super::test_support::Project, LanguageReader) {
     return (fixture, opened);
 }
 
-/// Ctrl+Q shows the server's text below the caret line; Escape removes it.
+/// Ctrl+Q shows the server's text below the caret line;
+///  Escape removes it.
 #[test]
 fn control_q_shows_hover_below_the_caret_line_and_escape_dismisses_it() {
     let (_fixture, reader) = sample_reader();
@@ -77,7 +84,9 @@ fn hover_near_the_bottom_is_placed_above_its_line() {
     );
 }
 
-/// Caret movement, scrolling, and a file switch each dismiss the hover.
+/// Caret movement,
+///  scrolling,
+///  and a file switch each dismiss the hover.
 #[test]
 fn hover_is_dismissed_by_caret_movement_scrolling_and_a_file_switch() {
     let (_fixture, reader) = sample_reader();
@@ -115,7 +124,8 @@ fn hover_is_dismissed_by_caret_movement_scrolling_and_a_file_switch() {
     });
 }
 
-/// A reload of the displayed file dismisses the hover, whose positions describe the old text.
+/// A reload of the displayed file dismisses the hover,
+///  whose positions describe the old text.
 #[test]
 fn hover_is_dismissed_when_the_file_reloads() {
     let (fixture, reader) = sample_reader();
@@ -136,7 +146,8 @@ fn hover_is_dismissed_when_the_file_reloads() {
     });
 }
 
-/// A resting pointer shows the hover of the character under it; leaving the source hides it,
+/// A resting pointer shows the hover of the character under it;
+///  leaving the source hides it,
 /// and so does resting where there is no character.
 #[test]
 fn resting_pointer_shows_hover_and_leaving_or_resting_on_nothing_hides_it() {
@@ -164,7 +175,8 @@ fn resting_pointer_shows_hover_and_leaving_or_resting_on_nothing_hides_it() {
     assert_eq!(popup(&reader), "");
 }
 
-/// Ctrl+Q where the server has nothing explains that; a resting pointer stays silent.
+/// Ctrl+Q where the server has nothing explains that;
+///  a resting pointer stays silent.
 #[test]
 fn empty_hover_is_explained_for_ctrl_q_only() {
     let (_fixture, reader) = sample_reader();

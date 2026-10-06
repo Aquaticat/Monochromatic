@@ -6,7 +6,8 @@ use nested_wayland_session::{
     screen_geometry::OutputScale,
 };
 
-/// Parse a scale the test knows is valid; a parse failure stops the test with its message.
+/// Parse a scale the test knows is valid;
+///  a parse failure stops the test with its message.
 fn scale(text: &str) -> OutputScale {
     return OutputScale::parse(text).expect(text);
 }
@@ -22,7 +23,8 @@ fn scale_values_match_the_startup_option() {
     assert_eq!(parse_command("scale \t 1").unwrap(), Command::Scale(OutputScale::ONE));
 }
 
-/// The verb itself is known, so a malformed value names the verb instead of "unknown command".
+/// The verb itself is known,
+///  so a malformed value names the verb instead of "unknown command".
 #[test]
 fn scale_rejects_missing_unknown_and_extra_values() {
     for command in [

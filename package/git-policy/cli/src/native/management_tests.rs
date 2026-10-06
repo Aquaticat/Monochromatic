@@ -1,7 +1,12 @@
-//! What: Decision controls for `git cli-git` against real Git.
-//! Why: Help and retired commands must answer without Git or a repository; direct
+//! What:
+//!  Decision controls for `git cli-git` against real Git.
+//! Why:
+//!  Help and retired commands must answer without Git or a repository;
+//!  direct
 //!      commands must reject unknown policies and invalid configuration on standard
-//!      output with exit status 2, run the policies that are ported, and refuse instead
+//!      output with exit status 2,
+//!  run the policies that are ported,
+//!  and refuse instead
 //!      of reporting a clean result for a policy that cannot read its files yet.
 //!
 //! In TS you'd write (pseudocode):
@@ -23,7 +28,8 @@ use crate::wrapper_controls::{Controls, no_controls};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-/// Inputs whose PATH holds nothing: any attempt to resolve Git fails visibly.
+/// Inputs whose PATH holds nothing:
+///  any attempt to resolve Git fails visibly.
 fn no_git(root: &Path) -> ResolutionInputs {
     return ResolutionInputs {
         platform: Platform::Unix,
@@ -83,15 +89,18 @@ fn exit(code: i32, stdout: &str, stderr: &str) -> Action {
 /// The fix summary of a direct fix that corrected `a.txt` in one pass.
 const FIXED_A: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summary\",\"trigger\":\"direct-fix\",\"passes\":1,\"changedPaths\":[\"a.txt\"]}\n";
 
-/// The final-newline warning of a direct check about `a.txt`, as event number `sequence`.
+/// The final-newline warning of a direct check about `a.txt`,
+///  as event number `sequence`.
 fn final_newline_warning(sequence: u64) -> String {
     return format!(
         "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"a.txt\",\"fix\":\"none\"}}\n"
     );
 }
 
-/// The standard output of a direct command whose scope could not be projected, which the
-/// control requires to be one `transaction-failed` event for `trigger`, its message
+/// The standard output of a direct command whose scope could not be projected,
+///  which the
+/// control requires to be one `transaction-failed` event for `trigger`,
+///  its message
 /// starting with `message`.
 fn projection_failed(action: Action, trigger: &str, message: &str) {
     match action {
@@ -116,7 +125,8 @@ fn projection_failed(action: Action, trigger: &str, message: &str) {
     }
 }
 
-/// The require-root finding of a direct check run in `nested/` of `repo`, as event number `sequence`.
+/// The require-root finding of a direct check run in `nested/` of `repo`,
+///  as event number `sequence`.
 fn not_at_root(sequence: u64, repo: &Path) -> String {
     return format!(
         "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"require-root\",\"severity\":\"error\",\"code\":\"require-root/not-at-root\",\"message\":\"cli-git: not at the root of the git repository. Repo root is {root} but effective cwd is {root}/nested. Tip: cd to {root} or pass -C {root} before the subcommand.\",\"fix\":\"none\"}}\n",
@@ -124,7 +134,8 @@ fn not_at_root(sequence: u64, repo: &Path) -> String {
     );
 }
 
-/// Help, usage refusals and scope refusals answer without resolving Git.
+/// Help,
+///  usage refusals and scope refusals answer without resolving Git.
 #[test]
 fn help_and_refusals_need_no_git() {
     let root: PathBuf = fixture("management-no-git");
@@ -248,8 +259,10 @@ fn unknown_selected_policy_is_reported_on_stdout() {
     remove(root.as_path());
 }
 
-/// A direct command projects its scope before any policy runs, then runs the policies
-/// over the selected worktree files; a scope Git refuses is a lifecycle failure.
+/// A direct command projects its scope before any policy runs,
+///  then runs the policies
+/// over the selected worktree files;
+///  a scope Git refuses is a lifecycle failure.
 #[test]
 fn direct_commands_project_their_scope_and_run_the_policies() {
     let root: PathBuf = fixture("management-direct");
@@ -357,7 +370,8 @@ fn direct_commands_project_their_scope_and_run_the_policies() {
     remove(root.as_path());
 }
 
-/// The first error stops a direct check; keep-going and escapes written before `cli-git` apply.
+/// The first error stops a direct check;
+///  keep-going and escapes written before `cli-git` apply.
 #[test]
 fn controls_before_the_namespace_reach_a_direct_command() {
     let root: PathBuf = fixture("management-controls");
@@ -403,7 +417,8 @@ fn controls_before_the_namespace_reach_a_direct_command() {
     remove(root.as_path());
 }
 
-/// Configuration decides which policies a direct command runs, and `check` alone reports a legacy file.
+/// Configuration decides which policies a direct command runs,
+///  and `check` alone reports a legacy file.
 #[test]
 fn direct_commands_use_the_repository_configuration() {
     let root: PathBuf = fixture("management-configured");
@@ -531,7 +546,9 @@ fn direct_commands_refuse_beside_registered_transactions() {
     remove(root.as_path());
 }
 
-/// A direct command without a usable real Git, or with uninterpretable Git output, stops in prose.
+/// A direct command without a usable real Git,
+///  or with uninterpretable Git output,
+///  stops in prose.
 #[test]
 fn direct_commands_report_git_failures() {
     let root: PathBuf = fixture("management-git-failure");

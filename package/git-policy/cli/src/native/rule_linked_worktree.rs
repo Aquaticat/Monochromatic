@@ -1,9 +1,16 @@
-//! What: Pure decision of the linked-worktree-only policy: commands that can discard
+//! What:
+//!  Pure decision of the linked-worktree-only policy:
+//!  commands that can discard
 //!       worktree state run only in a linked worktree.
-//! Why: `git stash`, a deleting `git clean` and a `git reset` that rewrites files can throw
-//!      away work in the primary checkout. The policy confines them to linked worktrees.
-//!      This file decides from the arguments alone whether the command is guarded, and
-//!      from the worktree kind the caller measured whether to reject it. It starts no
+//! Why:
+//!  `git stash`,
+//!  a deleting `git clean` and a `git reset` that rewrites files can throw
+//!      away work in the primary checkout.
+//!  The policy confines them to linked worktrees.
+//!      This file decides from the arguments alone whether the command is guarded,
+//!  and
+//!      from the worktree kind the caller measured whether to reject it.
+//!  It starts no
 //!      process.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,9 +18,13 @@
 //! // decideLinkedWorktree(['clean', '-fd']) => { kind: 'needs-effective-target', command: 'clean' }
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  Whether a clean deletes and whether a reset rewrites files come from Git's own
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   Whether a clean deletes and whether a reset rewrites files come from Git's own
 ///       option tables of those commands.
 ///
 /// In TS you'd write (pseudocode):
@@ -25,9 +36,14 @@ use super::command_options::OptionError;
 use super::command_reset::{ResetRegion, parse_reset_region, reset_changes_worktree};
 use super::effective_target::EffectiveTarget;
 use super::global_arguments::command_tokens;
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  Arguments are compared as bytes and never decoded.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Arguments are compared as bytes and never decoded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,9 +51,12 @@ use super::global_arguments::command_tokens;
 /// ```
 use std::ffi::OsString;
 
-/// What: The finding code of a linked-worktree rejection. `&str` is borrowed text baked
+/// What:
+///  The finding code of a linked-worktree rejection.
+///  `&str` is borrowed text baked
 ///       into the program.
-/// Why:  Callers identify the finding by this stable code.
+/// Why:
+///   Callers identify the finding by this stable code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,9 +64,13 @@ use std::ffi::OsString;
 /// ```
 pub const LINKED_WORKTREE_REQUIRED_CODE: &str = "linked-worktree-required";
 
-/// What: The commands the policy guards. An `enum` is a closed set of named alternatives.
-///       `#[derive(...)]` asks the compiler to generate copying, debug printing and `==`.
-/// Why:  Each has its own rejection text.
+/// What:
+///  The commands the policy guards.
+///  An `enum` is a closed set of named alternatives.
+///       `#[derive(...)]` asks the compiler to generate copying,
+///  debug printing and `==`.
+/// Why:
+///   Each has its own rejection text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,12 +82,15 @@ pub enum GuardedCommand {
     Stash,
     /// A `git clean` that is not a dry run.
     Clean,
-    /// A `git reset` with `--hard`, `--merge` or `--keep`.
+    /// A `git reset` with `--hard`,
+    ///  `--merge` or `--keep`.
     Reset,
 }
 
-/// What: The outcome of looking at the argument list only.
-/// Why:  Most commands are not guarded and need no repository query at all.
+/// What:
+///  The outcome of looking at the argument list only.
+/// Why:
+///   Most commands are not guarded and need no repository query at all.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,19 +98,31 @@ pub enum GuardedCommand {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LinkedWorktreeDecision {
-    /// Not a guarded command, a harmless form, or a region Git refuses.
+    /// Not a guarded command,
+    ///  a harmless form,
+    ///  or a region Git refuses.
     Pass,
-    /// The caller classifies the worktree the command targets, then calls
+    /// The caller classifies the worktree the command targets,
+    ///  then calls
     /// `resolve_linked_worktree`.
     NeedsEffectiveTarget(GuardedCommand),
 }
 
-/// What: Whether a guarded region can change worktree files. `&[u8]` borrows the
-///       subcommand word; `Option<T>` is "a value or nothing": nothing for another command.
+/// What:
+///  Whether a guarded region can change worktree files.
+///  `&[u8]` borrows the
+///       subcommand word;
+///  `Option<T>` is "a value or nothing":
+///  nothing for another command.
 ///       `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  `stash` is guarded in every form, as the incumbent guards it; `clean` and `reset`
+/// Why:
+///   `stash` is guarded in every form,
+///  as the incumbent guards it;
+///  `clean` and `reset`
 ///       only in the forms Git lets touch files.
-/// Gotcha: A trailing `?` returns Git's refusal to our caller, or unwraps the facts.
+/// Gotcha:
+///  A trailing `?` returns Git's refusal to our caller,
+///  or unwraps the facts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -116,9 +154,15 @@ fn guarded_command(
     return Ok(None);
 }
 
-/// What: Decide from the argument list. `&[OsString]` borrows the arguments, already free
+/// What:
+///  Decide from the argument list.
+///  `&[OsString]` borrows the arguments,
+///  already free
 ///       of wrapper controls.
-/// Why:  A command that is not guarded, or that Git itself refuses, needs no measurement.
+/// Why:
+///   A command that is not guarded,
+///  or that Git itself refuses,
+///  needs no measurement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -140,9 +184,12 @@ pub fn decide_linked_worktree(arguments: &[OsString]) -> LinkedWorktreeDecision 
     return LinkedWorktreeDecision::Pass;
 }
 
-/// What: The rejection text for a command run where there is no worktree. `&'static str`
+/// What:
+///  The rejection text for a command run where there is no worktree.
+///  `&'static str`
 ///       is text baked into the program.
-/// Why:  The text says what the command could destroy and how to run it safely.
+/// Why:
+///   The text says what the command could destroy and how to run it safely.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -169,8 +216,10 @@ pub fn outside_worktree_message(command: GuardedCommand) -> &'static str {
     }
 }
 
-/// What: The rejection text for a command run in the main worktree.
-/// Why:  The text says what the command could destroy and where to run it instead.
+/// What:
+///  The rejection text for a command run in the main worktree.
+/// Why:
+///   The text says what the command could destroy and where to run it instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -196,9 +245,13 @@ pub fn main_worktree_message(command: GuardedCommand) -> &'static str {
     }
 }
 
-/// What: Decide from the measured worktree kind: the rejection text, or nothing to let the
+/// What:
+///  Decide from the measured worktree kind:
+///  the rejection text,
+///  or nothing to let the
 ///       command through.
-/// Why:  A linked worktree and an allowlisted tool cache are the two places where these
+/// Why:
+///   A linked worktree and an allowlisted tool cache are the two places where these
 ///       commands may run.
 ///
 /// In TS you'd write (pseudocode):
@@ -217,7 +270,8 @@ pub fn resolve_linked_worktree(
     }
 }
 
-/// Guarded forms, harmless forms and every rejection text.
+/// Guarded forms,
+///  harmless forms and every rejection text.
 #[cfg(test)]
 #[path = "rule_linked_worktree_tests.rs"]
 mod tests;

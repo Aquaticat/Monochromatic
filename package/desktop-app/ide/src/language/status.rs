@@ -1,9 +1,13 @@
-//! Latest-value description of what language support the displayed file has, and why not.
+//! Latest-value description of what language support the displayed file has,
+//!  and why not.
 
 /// Each status row names the server process it describes.
 use super::identity::ServerIdentity;
-/// What: `PathBuf` is an owned filesystem path (sibling: borrowed `&Path`).
-/// Why: A refused root is reported with the directory that was refused.
+/// What:
+///  `PathBuf` is an owned filesystem path (sibling:
+///  borrowed `&Path`).
+/// Why:
+///  A refused root is reported with the directory that was refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -11,9 +15,15 @@ use super::identity::ServerIdentity;
 /// ```
 use std::path::PathBuf;
 
-/// What: A tagged union of every state one configured server can be in for the displayed file.
-///       `String` fields own their text (sibling: borrowed `&str`).
-/// Why: Each state needs a different response from the reader: wait, show a reason, or nothing.
+/// What:
+///  A tagged union of every state one configured server can be in for the displayed file.
+///       `String` fields own their text (sibling:
+///  borrowed `&str`).
+/// Why:
+///  Each state needs a different response from the reader:
+///  wait,
+///  show a reason,
+///  or nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,35 +36,45 @@ use std::path::PathBuf;
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ServerState {
-    /// The server's real program is not installed, or the project has no usable copy of it.
+    /// The server's real program is not installed,
+    ///  or the project has no usable copy of it.
     MissingExecutable {
         /// Which program was looked for and where.
         reason: String,
     },
-    /// The launch policy could not produce a safe launch; nothing was spawned in its place.
+    /// The launch policy could not produce a safe launch;
+    ///  nothing was spawned in its place.
     LaunchRefused {
         /// What the policy or the launch preparation reported.
         reason: String,
     },
-    /// The process runs but has not answered `initialize`; no request may be sent yet.
+    /// The process runs but has not answered `initialize`;
+    ///  no request may be sent yet.
     Starting,
-    /// Initialized; requests are answered or report an unsupported feature individually.
+    /// Initialized;
+    ///  requests are answered or report an unsupported feature individually.
     Ready,
-    /// The process could not be started, ended before initializing, or never answered `initialize`.
+    /// The process could not be started,
+    ///  ended before initializing,
+    ///  or never answered `initialize`.
     FailedToStart {
         /// What was observed.
         reason: String,
     },
-    /// Running, but it takes no change notifications and cannot be resynchronized for this file.
+    /// Running,
+    ///  but it takes no change notifications and cannot be resynchronized for this file.
     Unsynchronized,
-    /// The process ended after initializing; the next open or position request starts a new one.
+    /// The process ended after initializing;
+    ///  the next open or position request starts a new one.
     Exited,
-    /// Helix would root this server at a directory outside the project, so it was not started.
+    /// Helix would root this server at a directory outside the project,
+    ///  so it was not started.
     RootOutsideProject {
         /// The directory that would have become the server's root.
         root: PathBuf,
     },
-    /// The process working directory does not contain the project, so no root can be computed.
+    /// The process working directory does not contain the project,
+    ///  so no root can be computed.
     WrongWorkingDirectory {
         /// The directory Helix resolves roots from.
         directory: PathBuf,
@@ -66,8 +86,12 @@ pub enum ServerState {
     },
 }
 
-/// What: A record of five booleans. `Copy` lets it be passed like a number.
-/// Why: A ready server may still lack a feature; the reader can hide what cannot work.
+/// What:
+///  A record of five booleans.
+///  `Copy` lets it be passed like a number.
+/// Why:
+///  A ready server may still lack a feature;
+///  the reader can hide what cannot work.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -96,23 +120,30 @@ pub struct Features {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ServerStatus {
-    /// Server name and process generation; generation zero means it was never started.
+    /// Server name and process generation;
+    ///  generation zero means it was never started.
     pub server: ServerIdentity,
     /// Current state.
     pub state: ServerState,
-    /// What: `Option<Features>` is "features, or nothing".
-    /// Why: Capabilities are known only after the server initialized.
+    /// What:
+    ///  `Option<Features>` is "features,
+    ///  or nothing".
+    /// Why:
+    ///  Capabilities are known only after the server initialized.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// features?: Features;
     /// ```
     pub features: Option<Features>,
-    /// Title of work the server reports as running, coalesced to the latest one.
+    /// Title of work the server reports as running,
+    ///  coalesced to the latest one.
     pub progress: Option<String>,
 }
 
-/// Why a displayed file has, or does not have, servers at all.
+/// Why a displayed file has,
+///  or does not have,
+///  servers at all.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -126,7 +157,8 @@ pub enum DocumentState {
     NoLanguage,
     /// The language has no language server in Helix's configuration.
     NoServerConfigured,
-    /// The file is outside the project root; only servers that already run are asked about it.
+    /// The file is outside the project root;
+    ///  only servers that already run are asked about it.
     OutsideProject,
     /// The rows in `servers` describe the language's servers.
     Attached,
@@ -140,14 +172,20 @@ pub enum DocumentState {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LanguageStatus {
-    /// File-open generation this status describes; absent when nothing is displayed.
+    /// File-open generation this status describes;
+    ///  absent when nothing is displayed.
     pub file: Option<u64>,
-    /// Helix language name, for example `rust`.
+    /// Helix language name,
+    ///  for example `rust`.
     pub language: Option<String>,
     /// Whether servers apply to the displayed file at all.
     pub document: DocumentState,
-    /// What: `Vec<ServerStatus>` is a growable list (siblings: fixed `[T; N]`, borrowed `&[T]`).
-    /// Why: The number of configured servers differs per language.
+    /// What:
+    ///  `Vec<ServerStatus>` is a growable list (siblings:
+    ///  fixed `[T; N]`,
+    ///  borrowed `&[T]`).
+    /// Why:
+    ///  The number of configured servers differs per language.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

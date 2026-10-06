@@ -86,7 +86,9 @@ fn create_process(
     return std::fs::write(process.join("cgroup"), cgroup);
 }
 
-/// Finds named groups plus exact Helium, Pale Moon, and Firefox Nightly executable groups.
+/// Finds named groups plus exact Helium,
+///  Pale Moon,
+///  and Firefox Nightly executable groups.
 #[test]
 fn scan_combines_named_and_process_targets() -> io::Result<()> {
     let scratch = std::env::temp_dir().join(format!(

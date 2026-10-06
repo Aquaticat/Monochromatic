@@ -1,14 +1,20 @@
-//! One bounded directory read at a time, with opaque tree-request identity carried across the thread.
+//! One bounded directory read at a time,
+//!  with opaque tree-request identity carried across the thread.
 
-/// Tree state remains on the caller thread; only requests and owned snapshots cross the channel.
+/// Tree state remains on the caller thread;
+///  only requests and owned snapshots cross the channel.
 use crate::{
     file_tree::{DirectoryRequest, FileTree},
     workspace::{DirectoryEntry, Workspace},
 };
 /// Thread startup and unexpected disconnects remain actionable errors.
 use anyhow::{Context, Result, bail};
-/// What: Bounded channels transfer messages; JoinHandle owns worker shutdown; Path borrows the requested name.
-/// Why: The native input thread never blocks on directory enumeration or a growing work queue.
+/// What:
+///  Bounded channels transfer messages;
+///  JoinHandle owns worker shutdown;
+///  Path borrows the requested name.
+/// Why:
+///  The native input thread never blocks on directory enumeration or a growing work queue.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,7 +26,8 @@ use std::{
     thread::{self, JoinHandle},
 };
 
-/// Private reply preserves the exact request identity, not merely equal directory path text.
+/// Private reply preserves the exact request identity,
+///  not merely equal directory path text.
 struct Reply {
     /// Opaque token created by the UI-owned tree.
     request: DirectoryRequest,
@@ -28,7 +35,8 @@ struct Reply {
     result: Result<Vec<DirectoryEntry>>,
 }
 
-/// UI-owned background reader, including at most one executing or unread reply.
+/// UI-owned background reader,
+///  including at most one executing or unread reply.
 pub struct DirectoryWorker {
     /// Optional sender permits closing input before joining during Drop.
     requests: Option<SyncSender<DirectoryRequest>>,
@@ -36,7 +44,8 @@ pub struct DirectoryWorker {
     replies: Receiver<Reply>,
     /// Outstanding work includes a completed response until it is consumed.
     busy: bool,
-    /// Thread is joined on shutdown, never detached.
+    /// Thread is joined on shutdown,
+    ///  never detached.
     thread: Option<JoinHandle<()>>,
 }
 
@@ -114,7 +123,8 @@ impl DirectoryWorker {
         });
     }
 
-    /// Return false while busy, without creating or superseding any tree request.
+    /// Return false while busy,
+    ///  without creating or superseding any tree request.
     pub fn request(&mut self, tree: &mut FileTree, directory: &Path) -> Result<bool> {
         if self.busy {
             return Ok(false);
@@ -146,7 +156,8 @@ impl DirectoryWorker {
         return Ok(true);
     }
 
-    /// Apply a ready current reply; false means no ready change or a discarded stale reply.
+    /// Apply a ready current reply;
+    ///  false means no ready change or a discarded stale reply.
     pub fn poll(&mut self, tree: &mut FileTree) -> Result<bool> {
         // Extract a ready reply or distinguish an empty queue from an unexpected worker disconnect.
         match self.replies.try_recv() {
@@ -171,7 +182,8 @@ impl DirectoryWorker {
     }
 }
 
-/// Close input before joining, allowing the sole outstanding reply to fit without blocking shutdown.
+/// Close input before joining,
+///  allowing the sole outstanding reply to fit without blocking shutdown.
 impl Drop for DirectoryWorker {
     /// Join the owned thread and log unexpected panics rather than detaching background work.
     fn drop(&mut self) {

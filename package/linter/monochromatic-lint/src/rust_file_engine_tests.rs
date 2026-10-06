@@ -1,5 +1,7 @@
-//! What: Invocation-level lazy workspace and selected-rule dispatch controls.
-//! Why: Syntax-only and disabled checks must work without a physical file or installed project context.
+//! What:
+//!  Invocation-level lazy workspace and selected-rule dispatch controls.
+//! Why:
+//!  Syntax-only and disabled checks must work without a physical file or installed project context.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,7 +18,8 @@ use crate::rust_workspace::WorkspacePreparation;
 use crate::test_fs::Fixture;
 use std::path::{Path, PathBuf};
 
-/// Syntax-only checks cannot need project discovery, because this path deliberately has no physical source.
+/// Syntax-only checks cannot need project discovery,
+///  because this path deliberately has no physical source.
 #[test]
 fn no_semantic_selection_avoids_workspace_initialization() {
     let mut engine: RustFileEngine =

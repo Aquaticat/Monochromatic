@@ -1,5 +1,9 @@
-//! What: The incumbent `lfs-image-url` rule cases, ported one for one, plus BOM and astral controls.
-//! Why: What the rule reports and fixes is frozen by `package/cli/markdown-lint/src/rule/lfs-image-url.unit.test.ts`;
+//! What:
+//!  The incumbent `lfs-image-url` rule cases,
+//!  ported one for one,
+//!  plus BOM and astral controls.
+//! Why:
+//!  What the rule reports and fixes is frozen by `package/cli/markdown-lint/src/rule/lfs-image-url.unit.test.ts`;
 //! the added controls prove byte offsets need no astral-character correction.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,7 +11,8 @@
 //! describe('lfs-image-url', () => { /* fake resolver: one tracked image, one plain image */ });
 //! ```
 
-/// Import the rule under test, its context model and the production grouped-fix applier.
+/// Import the rule under test,
+///  its context model and the production grouped-fix applier.
 use super::lfs_image_url;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::{Fix, apply_fixes};
@@ -32,7 +37,10 @@ fn gallery_url() -> String {
     return format!("{BASE}/{CURRENT_OID}/{GALLERY}");
 }
 
-/// Per-file context: one tracked image, one plain image, everything else missing.
+/// Per-file context:
+///  one tracked image,
+///  one plain image,
+///  everything else missing.
 fn context() -> LfsImageContext {
     let mut targets: BTreeMap<String, LfsImageTarget> = BTreeMap::<String, LfsImageTarget>::new();
     targets.insert(
@@ -71,7 +79,9 @@ fn fix(source: &str) -> String {
         .source;
 }
 
-/// Relative LFS targets become object URLs; titles, angle brackets and dot segments are preserved or resolved.
+/// Relative LFS targets become object URLs;
+///  titles,
+///  angle brackets and dot segments are preserved or resolved.
 #[test]
 fn relative_lfs_images_are_rewritten_in_place() {
     let url: String = gallery_url();
@@ -93,7 +103,12 @@ fn relative_lfs_images_are_rewritten_in_place() {
     );
 }
 
-/// Plain, missing, external, site-absolute, fragment, data and repository-escaping destinations are not this rule's.
+/// Plain,
+///  missing,
+///  external,
+///  site-absolute,
+///  fragment,
+///  data and repository-escaping destinations are not this rule's.
 #[test]
 fn destinations_outside_the_rule_are_left_alone() {
     assert!(lint("![plain](asset/readme/plain.svg)\n", false).is_empty());
@@ -108,7 +123,9 @@ fn destinations_outside_the_rule_are_left_alone() {
     assert!(lint("![up](../../../outside/shot.png)\n", false).is_empty());
 }
 
-/// An object URL is accepted when current, refreshed when stale, and ignored without a path segment.
+/// An object URL is accepted when current,
+///  refreshed when stale,
+///  and ignored without a path segment.
 #[test]
 fn object_urls_track_the_current_oid() {
     let url: String = gallery_url();
@@ -128,7 +145,8 @@ fn object_urls_track_the_current_oid() {
     assert!(lint(format!("![shot]({BASE}/{CURRENT_OID})\n").as_str(), false).is_empty());
 }
 
-/// A vanished path is reported without a fix; a path that left LFS returns to a relative link.
+/// A vanished path is reported without a fix;
+///  a path that left LFS returns to a relative link.
 #[test]
 fn object_urls_follow_missing_and_untracked_targets() {
     let gone: Vec<Diagnostic> = lint(
@@ -178,7 +196,8 @@ fn definitions_are_rewritten_only_for_image_references() {
     );
 }
 
-/// MDX documents are checked outside their JSX, expression and ESM subtrees.
+/// MDX documents are checked outside their JSX,
+///  expression and ESM subtrees.
 #[test]
 fn mdx_documents_are_rewritten_outside_mdx_subtrees() {
     let findings: Vec<Diagnostic> = lint(
@@ -191,7 +210,8 @@ fn mdx_documents_are_rewritten_outside_mdx_subtrees() {
     assert_eq!(group.edits[0].replacement, gallery_url());
 }
 
-/// The finding is anchored at the image, with the rule id and the incumbent message.
+/// The finding is anchored at the image,
+///  with the rule id and the incumbent message.
 #[test]
 fn findings_are_anchored_at_the_image() {
     let findings: Vec<Diagnostic> = lint(
@@ -230,7 +250,8 @@ fn unlocatable_destinations_are_reported_without_a_fix() {
     );
 }
 
-/// A leading BOM and astral characters before, inside and after the image leave every other byte identical.
+/// A leading BOM and astral characters before,
+///  inside and after the image leave every other byte identical.
 #[test]
 fn bom_and_astral_text_keep_exact_byte_edits() {
     let url: String = gallery_url();

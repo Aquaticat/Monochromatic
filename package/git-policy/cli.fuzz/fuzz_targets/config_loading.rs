@@ -1,5 +1,8 @@
-//! What: Raw and generated argument vectors through the configuration-loading invariants.
-//! Why: Skipping configuration skips policy, so the classification is checked over byte-valued arguments.
+//! What:
+//!  Raw and generated argument vectors through the configuration-loading invariants.
+//! Why:
+//!  Skipping configuration skips policy,
+//!  so the classification is checked over byte-valued arguments.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

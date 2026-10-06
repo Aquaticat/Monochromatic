@@ -1,7 +1,8 @@
 //! Real executable help and usage must finish before any project or native display startup.
 #![cfg(feature = "gui")]
 
-/// Subprocess outputs verify exit status and streams at the actual CLI boundary; times age the
+/// Subprocess outputs verify exit status and streams at the actual CLI boundary;
+///  times age the
 /// seeded cache folders.
 use std::{
     ffi::OsStr,
@@ -35,7 +36,9 @@ fn invoke(root: &Path, args: &[&OsStr]) -> Output {
     return command.output().expect("run native CLI");
 }
 
-/// Real help/version print only to stdout, exit zero, and do not create private state or read a missing root.
+/// Real help/version print only to stdout,
+///  exit zero,
+///  and do not create private state or read a missing root.
 #[test]
 fn executable_help_and_version_exit_without_startup() {
     let fixture = tempfile::tempdir().expect("disposable CLI environment");
@@ -57,7 +60,8 @@ fn executable_help_and_version_exit_without_startup() {
     );
 }
 
-/// Bad option grammar has status 2 and stderr, not an attempted native backend connection.
+/// Bad option grammar has status 2 and stderr,
+///  not an attempted native backend connection.
 #[test]
 fn executable_usage_errors_exit_before_startup() {
     let fixture = tempfile::tempdir().expect("disposable CLI environment");
@@ -108,8 +112,11 @@ fn invalid_project_and_non_regular_source_have_input_specific_errors() {
     );
 }
 
-/// Without a project argument the disposable home folder is opened: startup gets past the project
-/// checks to the display connection, which fails in this test on purpose. Without any home folder
+/// Without a project argument the disposable home folder is opened:
+///  startup gets past the project
+/// checks to the display connection,
+///  which fails in this test on purpose.
+///  Without any home folder
 /// the grammar reports a usage error before anything starts.
 #[test]
 fn missing_project_opens_the_home_folder_or_reports_its_absence() {
@@ -139,7 +146,10 @@ fn missing_project_opens_the_home_folder_or_reports_its_absence() {
     );
 }
 
-/// Every file below `directory`, as (path relative to it with `/` separators, full path), sorted.
+/// Every file below `directory`,
+///  as (path relative to it with `/` separators,
+///  full path),
+///  sorted.
 fn files_below(directory: &Path) -> Vec<(String, PathBuf)> {
     let mut found = Vec::new();
     let mut pending = vec![directory.to_path_buf()];
@@ -162,9 +172,13 @@ fn files_below(directory: &Path) -> Vec<(String, PathBuf)> {
     return found;
 }
 
-/// The license and notice texts the executable must carry, read from the files its build embedded:
-/// every grammar notice, Helix's license and the license files among its queries, the application's
-/// license texts, and the two font notices.
+/// The license and notice texts the executable must carry,
+///  read from the files its build embedded:
+/// every grammar notice,
+///  Helix's license and the license files among its queries,
+///  the application's
+/// license texts,
+///  and the two font notices.
 fn expected_notices() -> Vec<(String, PathBuf)> {
     let runtime = Path::new(env!("CARGO_BIN_EXE_monochromatic-ide"))
         .parent()
@@ -205,9 +219,14 @@ fn expected_notices() -> Vec<(String, PathBuf)> {
     return expected;
 }
 
-/// `--licenses` prints every embedded license and notice text in full, each under a heading that
-/// names its component and its embedded path, and exits 0 without a display, a project, or a home
-/// folder, writing nothing.
+/// `--licenses` prints every embedded license and notice text in full,
+///  each under a heading that
+/// names its component and its embedded path,
+///  and exits 0 without a display,
+///  a project,
+///  or a home
+/// folder,
+///  writing nothing.
 #[test]
 fn licenses_prints_every_embedded_text_without_a_display_or_home() {
     let fixture = tempfile::tempdir().expect("disposable CLI environment");
@@ -276,8 +295,11 @@ fn licenses_prints_every_embedded_text_without_a_display_or_home() {
 }
 
 /// A start renews this build's parser cache folder and removes the folders of other builds unused
-/// for more than 30 days, before any window: here the display connection fails afterwards on
-/// purpose, and the cache is inspected.
+/// for more than 30 days,
+///  before any window:
+///  here the display connection fails afterwards on
+/// purpose,
+///  and the cache is inspected.
 #[test]
 fn a_start_removes_cache_folders_of_other_builds_unused_for_30_days() {
     let fixture = tempfile::tempdir().expect("disposable CLI environment");

@@ -1,6 +1,10 @@
-//! What: Controls for the stage-record parser, the delta between two index states and the
+//! What:
+//!  Controls for the stage-record parser,
+//!  the delta between two index states and the
 //!       two ways of turning entries into candidate records.
-//! Why: A record misread, a changed path missed or a deletion invented would let staged
+//! Why:
+//!  A record misread,
+//!  a changed path missed or a deletion invented would let staged
 //!      content go unchecked or report content that is not staged.
 //!
 //! In TS you'd write (pseudocode):
@@ -31,7 +35,8 @@ fn record(path: &str, digit: u8, stage: u8) -> StageRecord {
     };
 }
 
-/// The changed pathnames as text, in order.
+/// The changed pathnames as text,
+///  in order.
 fn changed_paths(changed: &[ChangedPath]) -> Vec<String> {
     let mut paths: Vec<String> = Vec::new();
     for path in changed {
@@ -55,7 +60,8 @@ fn baseline(path: &str, change: CandidateChange) -> CandidateRecord {
     };
 }
 
-/// The failure a call returned, which the control requires.
+/// The failure a call returned,
+///  which the control requires.
 fn failure<T: std::fmt::Debug>(result: Result<T, CandidateError>) -> CandidateError {
     match result {
         Ok(value) => panic!("expected a failure, got {value:?}"),
@@ -63,7 +69,8 @@ fn failure<T: std::fmt::Debug>(result: Result<T, CandidateError>) -> CandidateEr
     }
 }
 
-/// Git's listing format is read field by field, a tab inside a pathname included.
+/// Git's listing format is read field by field,
+///  a tab inside a pathname included.
 #[test]
 fn stage_records_are_read_from_git_output() {
     assert_eq!(parse_stage_records(b"").expect("empty listing"), Vec::new());
@@ -103,7 +110,8 @@ fn stage_records_are_read_from_git_output() {
     );
 }
 
-/// Output that is not a complete stage listing is refused whole, naming the record by position.
+/// Output that is not a complete stage listing is refused whole,
+///  naming the record by position.
 #[test]
 fn malformed_stage_listings_are_refused() {
     let name: String = "a".repeat(40);
@@ -177,7 +185,8 @@ fn malformed_stage_listings_are_refused() {
     }
 }
 
-/// Unchanged states have no delta; each kind of change is found and reported in the installed wrapper's order.
+/// Unchanged states have no delta;
+///  each kind of change is found and reported in the installed wrapper's order.
 #[test]
 fn the_delta_holds_exactly_the_changed_paths_in_report_order() {
     let before: Vec<StageRecord> = vec![
@@ -220,7 +229,9 @@ fn the_delta_holds_exactly_the_changed_paths_in_report_order() {
     );
 }
 
-/// Conflict stages are compared as one list per path: resolving counts, an untouched conflict does not.
+/// Conflict stages are compared as one list per path:
+///  resolving counts,
+///  an untouched conflict does not.
 #[test]
 fn conflict_stages_are_compared_per_path() {
     // Groups of one, three and one record, so every group boundary is crossed.
@@ -280,7 +291,8 @@ fn conflict_stages_are_compared_per_path() {
     assert_eq!(changed_paths(edge_changed.as_slice()), vec!["c.txt"]);
 }
 
-/// Present paths become additions or modifications by the baseline; removed paths become deletions only when the baseline has them.
+/// Present paths become additions or modifications by the baseline;
+///  removed paths become deletions only when the baseline has them.
 #[test]
 fn delta_candidates_follow_the_baseline() {
     let changed: Vec<ChangedPath> = vec![
@@ -377,7 +389,8 @@ fn an_unmerged_changed_path_is_refused() {
     assert!(single.message.contains("record 0"), "{}", single.message);
 }
 
-/// Every merged entry of a scope is a candidate; the baseline decides addition or modification.
+/// Every merged entry of a scope is a candidate;
+///  the baseline decides addition or modification.
 #[test]
 fn scope_candidates_hold_every_entry() {
     let entries: Vec<StageRecord> = vec![

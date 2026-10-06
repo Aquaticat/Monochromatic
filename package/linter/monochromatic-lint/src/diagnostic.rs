@@ -1,5 +1,9 @@
-//! What: The unified linter's JSONL finding model.
-//! Why: Rules, processors and output share one owned representation, with fixes kept off the wire.
+//! What:
+//!  The unified linter's JSONL finding model.
+//! Why:
+//!  Rules,
+//!  processors and output share one owned representation,
+//!  with fixes kept off the wire.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -7,12 +11,18 @@
 //! ```
 
 use crate::edits::Fix;
-/// What: Import Serde's field encoder and the internal atomic-fix model.
-/// Why: The existing JSON encoder handles quotes, controls and Unicode at the output boundary.
+/// What:
+///  Import Serde's field encoder and the internal atomic-fix model.
+/// Why:
+///  The existing JSON encoder handles quotes,
+///  controls and Unicode at the output boundary.
 use serde::Serialize;
 
-/// What: Severities that can appear in a reported finding.
-/// Why: Off is configuration, not a third kind of diagnostic.
+/// What:
+///  Severities that can appear in a reported finding.
+/// Why:
+///  Off is configuration,
+///  not a third kind of diagnostic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,8 +37,10 @@ pub enum Severity {
     Error,
 }
 
-/// What: One source range in the established diagnostic wire shape.
-/// Why: Byte addressing remains separate from human-facing line and column units.
+/// What:
+///  One source range in the established diagnostic wire shape.
+/// Why:
+///  Byte addressing remains separate from human-facing line and column units.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -42,12 +54,15 @@ pub struct Span {
     pub length: usize,
     /// One-based host line number.
     pub line: usize,
-    /// One-based column, preserving the originating language's established units.
+    /// One-based column,
+    ///  preserving the originating language's established units.
     pub column: usize,
 }
 
-/// What: A labelled source range in the JSONL record.
-/// Why: Keeping the wrapper preserves the current consumer's labels[].span structure.
+/// What:
+///  A labelled source range in the JSONL record.
+/// Why:
+///  Keeping the wrapper preserves the current consumer's labels[].span structure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,8 +74,10 @@ pub struct Label {
     pub span: Span,
 }
 
-/// What: A finding plus its optional internal fix.
-/// Why: All strings are owned so findings can outlive borrowed parser nodes.
+/// What:
+///  A finding plus its optional internal fix.
+/// Why:
+///  All strings are owned so findings can outlive borrowed parser nodes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,15 +86,18 @@ pub struct Label {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct Diagnostic {
-    /// Human-readable explanation, encoded by Serde at rendering time.
+    /// Human-readable explanation,
+    ///  encoded by Serde at rendering time.
     pub message: String,
-    /// Descriptive rule ID, or a core processing-failure code.
+    /// Descriptive rule ID,
+    ///  or a core processing-failure code.
     pub code: String,
     /// Effective severity for this finding.
     pub severity: Severity,
     /// The established wire format requires an empty causes array.
     pub causes: [(); 0],
-    /// Display path of the real host file, never a virtual snippet name.
+    /// Display path of the real host file,
+    ///  never a virtual snippet name.
     pub filename: String,
     /// Mapped host-source ranges.
     pub labels: Vec<Label>,
@@ -89,16 +109,20 @@ pub struct Diagnostic {
     /// Optional remediation detail.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub help: Option<String>,
-    /// The fixing engine consumes this; it is not part of the accepted JSONL shape.
+    /// The fixing engine consumes this;
+    ///  it is not part of the accepted JSONL shape.
     #[serde(skip)]
     pub fix: Option<Fix>,
-    /// The driver distinguishes inability to check from an ordinary rule violation; omitted from JSONL.
+    /// The driver distinguishes inability to check from an ordinary rule violation;
+    ///  omitted from JSONL.
     #[serde(skip)]
     pub processing_failure: bool,
 }
 
-/// What: Construct ordinary single-span rule findings.
-/// Why: Rules supply their behavior while shared wire defaults stay in one place.
+/// What:
+///  Construct ordinary single-span rule findings.
+/// Why:
+///  Rules supply their behavior while shared wire defaults stay in one place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -129,8 +153,11 @@ impl Diagnostic {
     }
 }
 
-/// What: Serialize one compact object per finding with an LF terminator.
-/// Why: Encoding failure is propagated; it must not silently become an empty output line.
+/// What:
+///  Serialize one compact object per finding with an LF terminator.
+/// Why:
+///  Encoding failure is propagated;
+///  it must not silently become an empty output line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

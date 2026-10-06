@@ -1,50 +1,83 @@
 //! Lane-owned vertical scrolling for the pane strip.
 //!
-//! Full columns are static canvases. The outer scroller owns vertical wheel input for the whole app.
-//! Each sibling-group lane, one parent pane plus its direct children, reacts to that global app
+//! Full columns are static canvases.
+//!  The outer scroller owns vertical wheel input for the whole app.
+//! Each sibling-group lane,
+//!  one parent pane plus its direct children,
+//!  reacts to that global app
 //! scroll and independently applies a bounded sticky offset inside its green-box range.
 
-/// What: imports the hash-map container.
-/// Why: resolved pane positions are keyed by stable `PaneId`.
+/// What:
+///  imports the hash-map container.
+/// Why:
+///  resolved pane positions are keyed by stable `PaneId`.
 use std::collections::HashMap;
-/// What: imports the reference-counted pointer.
-/// Why: GTK adjustment callbacks hold weak references to `StripLayout`.
+/// What:
+///  imports the reference-counted pointer.
+/// Why:
+///  GTK adjustment callbacks hold weak references to `StripLayout`.
 use std::rc::Rc;
 
-/// What: imports GTK widget traits.
-/// Why: lane sync moves fixed children and places debug overlays.
+/// What:
+///  imports GTK widget traits.
+/// Why:
+///  lane sync moves fixed children and places debug overlays.
 use gtk4::prelude::*;
-/// What: imports concrete GTK alignment type used by debug overlay positioning.
-/// Why: debug rails need explicit alignment inside the strip overlay.
+/// What:
+///  imports concrete GTK alignment type used by debug overlay positioning.
+/// Why:
+///  debug rails need explicit alignment inside the strip overlay.
 use gtk4::Align;
 
-/// What: imports pane and viewport geometry constants.
-/// Why: lane boxes, sticky offsets, and clamping share the same pixel grid.
+/// What:
+///  imports pane and viewport geometry constants.
+/// Why:
+///  lane boxes,
+///  sticky offsets,
+///  and clamping share the same pixel grid.
 use crate::constants::{DEFAULT_HEIGHT, PANE_GAP, PANE_HEIGHT, PANE_WIDTH};
-/// What: imports debug-tint helpers.
-/// Why: debug mode draws rounded green lane boxes with labels.
+/// What:
+///  imports debug-tint helpers.
+/// Why:
+///  debug mode draws rounded green lane boxes with labels.
 use crate::debug_tint;
-/// What: imports the stable pane identity type.
-/// Why: lane offsets are keyed by parent pane id.
+/// What:
+///  imports the stable pane identity type.
+/// Why:
+///  lane offsets are keyed by parent pane id.
 use crate::types::PaneId;
 
-/// What: imports parent layout types and row-coordinate helper.
-/// Why: lane methods extend `StripLayout` and use `PanePlacement` snapshots.
+/// What:
+///  imports parent layout types and row-coordinate helper.
+/// Why:
+///  lane methods extend `StripLayout` and use `PanePlacement` snapshots.
 use super::{PanePlacement, StripLayout, scroll};
 
-/// What: lane geometry helpers.
-/// Why: grouping, rectangles, and lane dimensions are pure calculations split out to keep this file
+/// What:
+///  lane geometry helpers.
+/// Why:
+///  grouping,
+///  rectangles,
+///  and lane dimensions are pure calculations split out to keep this file
 ///      under the max-lines budget.
 mod geometry;
-/// What: imports lane geometry helper functions and rectangle type.
-/// Why: app-scroll sync uses these helpers while keeping GTK-specific code in this file.
+/// What:
+///  imports lane geometry helper functions and rectangle type.
+/// Why:
+///  app-scroll sync uses these helpers while keeping GTK-specific code in this file.
 use geometry::{LaneRect, direct_child_groups, lane_base_bottom, lane_width, placement_by_id};
 
-/// What: app-scroll sync and debug-lane methods on the layout adapter.
-/// Why: vertical scroll ownership belongs to the whole app, while lane offsets react here.
+/// What:
+///  app-scroll sync and debug-lane methods on the layout adapter.
+/// Why:
+///  vertical scroll ownership belongs to the whole app,
+///  while lane offsets react here.
 impl StripLayout {
-    /// What: sync lane offsets whenever the whole-app vertical scroller moves.
-    /// Why: wheel input should scroll the entire app first; lanes then independently try to remain
+    /// What:
+    ///  sync lane offsets whenever the whole-app vertical scroller moves.
+    /// Why:
+    ///  wheel input should scroll the entire app first;
+    ///  lanes then independently try to remain
     ///      visible within their green-box limits.
     pub(super) fn install_app_scroll_sync(self: &Rc<Self>) {
         let weak = Rc::downgrade(self);
@@ -55,8 +88,10 @@ impl StripLayout {
         });
     }
 
-    /// What: prune stale lane offsets and clamp live offsets to their current scroll ranges.
-    /// Why: closing panes or relayout can remove lanes or shrink how far they may scroll.
+    /// What:
+    ///  prune stale lane offsets and clamp live offsets to their current scroll ranges.
+    /// Why:
+    ///  closing panes or relayout can remove lanes or shrink how far they may scroll.
     pub(super) fn prune_lane_offsets(&self) {
         let placements = self.placements.borrow().clone();
         let groups = direct_child_groups(&placements);
@@ -80,8 +115,11 @@ impl StripLayout {
         self.sync_lane_offsets_to_app_scroll();
     }
 
-    /// What: move every pane widget to its resolved non-overlapping visual row.
-    /// Why: columns are static canvases, so lane sticky offsets are implemented by moving panes while
+    /// What:
+    ///  move every pane widget to its resolved non-overlapping visual row.
+    /// Why:
+    ///  columns are static canvases,
+    ///  so lane sticky offsets are implemented by moving panes while
     ///      preserving row order and rail bounds.
     pub(super) fn position_all_widgets(&self) {
         let placements = self.placements.borrow().clone();
@@ -101,8 +139,11 @@ impl StripLayout {
         }
     }
 
-    /// What: redraw debug child-lane overlays from the latest placement snapshot.
-    /// Why: lane rectangles live over the visible column viewports, so scroll changes require moving
+    /// What:
+    ///  redraw debug child-lane overlays from the latest placement snapshot.
+    /// Why:
+    ///  lane rectangles live over the visible column viewports,
+    ///  so scroll changes require moving
     ///      them even when pane placements have not changed.
     pub(super) fn refresh_child_lanes(&self) {
         self.clear_child_lanes();
@@ -118,8 +159,11 @@ impl StripLayout {
         }
     }
 
-    /// What: clear every debug child-lane overlay.
-    /// Why: lane geometry depends on placement and current offsets, so redraw is simpler and less
+    /// What:
+    ///  clear every debug child-lane overlay.
+    /// Why:
+    ///  lane geometry depends on placement and current offsets,
+    ///  so redraw is simpler and less
     ///      error-prone than incremental geometry updates.
     fn clear_child_lanes(&self) {
         for (_, lane) in self.lanes.borrow_mut().drain() {
@@ -127,8 +171,10 @@ impl StripLayout {
         }
     }
 
-    /// What: reveal `placement` vertically by adjusting the whole-app vertical scroller.
-    /// Why: spawning a child should bring that child into view while lanes react to app scroll.
+    /// What:
+    ///  reveal `placement` vertically by adjusting the whole-app vertical scroller.
+    /// Why:
+    ///  spawning a child should bring that child into view while lanes react to app scroll.
     pub(super) fn reveal_lane_member(&self, placement: PanePlacement) -> bool {
         let adj = self.outer.vadjustment();
         let page = adj.page_size();
@@ -150,8 +196,11 @@ impl StripLayout {
         return start >= settled && start + f64::from(PANE_HEIGHT) <= settled + page
     }
 
-    /// What: recompute every sibling-group lane offset from the whole-app vertical scroll.
-    /// Why: the app scrolls first; each green-box lane then applies its own bounded sticky offset so
+    /// What:
+    ///  recompute every sibling-group lane offset from the whole-app vertical scroll.
+    /// Why:
+    ///  the app scrolls first;
+    ///  each green-box lane then applies its own bounded sticky offset so
     ///      it tries to stay visible without preventing the app scroll.
     fn sync_lane_offsets_to_app_scroll(&self) {
         let placements = self.placements.borrow().clone();
@@ -173,15 +222,19 @@ impl StripLayout {
         self.refresh_child_lanes();
     }
 
-    /// What: choose the maximum scroll offset for a lane.
-    /// Why: at max offset the lane's deepest direct child bottom reaches the viewport bottom.
+    /// What:
+    ///  choose the maximum scroll offset for a lane.
+    /// Why:
+    ///  at max offset the lane's deepest direct child bottom reaches the viewport bottom.
     fn lane_max_offset(&self, parent: PanePlacement, children: &[PanePlacement]) -> f64 {
         let bottom = lane_base_bottom(parent, children);
         return (bottom - self.viewport_height()).max(0.0)
     }
 
-    /// What: compute `placement`'s resolved content y-coordinate.
-    /// Why: reveal code needs the same non-overlap and rail-bound position used by rendering.
+    /// What:
+    ///  compute `placement`'s resolved content y-coordinate.
+    /// Why:
+    ///  reveal code needs the same non-overlap and rail-bound position used by rendering.
     pub(super) fn visual_y_for_pane(&self, placement: PanePlacement) -> f64 {
         let placements = self.placements.borrow().clone();
         return self.resolved_y_positions(&placements)
@@ -190,8 +243,11 @@ impl StripLayout {
             .unwrap_or_else(|| return self.desired_y_for_pane(placement))
     }
 
-    /// What: resolve all pane y positions without overlap inside every green rail.
-    /// Why: individual clamping can collapse siblings onto one boundary; resolving per column keeps
+    /// What:
+    ///  resolve all pane y positions without overlap inside every green rail.
+    /// Why:
+    ///  individual clamping can collapse siblings onto one boundary;
+    ///  resolving per column keeps
     ///      the row stack ordered while respecting each pane's rail interval.
     fn resolved_y_positions(&self, placements: &[PanePlacement]) -> HashMap<PaneId, f64> {
         let groups = direct_child_groups(placements);
@@ -210,8 +266,10 @@ impl StripLayout {
         return positions
     }
 
-    /// What: resolve one column's pane positions with forward/backward spacing passes.
-    /// Why: preserving `PANE_HEIGHT + PANE_GAP` spacing prevents overlap while clamping to rail
+    /// What:
+    ///  resolve one column's pane positions with forward/backward spacing passes.
+    /// Why:
+    ///  preserving `PANE_HEIGHT + PANE_GAP` spacing prevents overlap while clamping to rail
     ///      intervals keeps panes inside their green boxes.
     fn resolve_column_positions(
         &self,
@@ -241,14 +299,20 @@ impl StripLayout {
         return rows.into_iter().map(|(id, y, _, _)| return (id, y)).collect()
     }
 
-    /// What: compute desired sticky content y before rail and overlap constraints.
-    /// Why: resolved layout starts from the sticky target, then constrains it.
+    /// What:
+    ///  compute desired sticky content y before rail and overlap constraints.
+    /// Why:
+    ///  resolved layout starts from the sticky target,
+    ///  then constrains it.
     fn desired_y_for_pane(&self, placement: PanePlacement) -> f64 {
         return scroll::row_y(placement.row) + self.effective_offset_for_pane(placement.id)
     }
 
-    /// What: compute vertical bounds shared by every green rail containing `placement`.
-    /// Why: a pane can be both a child in one lane and the parent of another; both rails constrain it.
+    /// What:
+    ///  compute vertical bounds shared by every green rail containing `placement`.
+    /// Why:
+    ///  a pane can be both a child in one lane and the parent of another;
+    ///  both rails constrain it.
     fn allowed_y_for_pane_in(
         &self,
         placement: PanePlacement,
@@ -275,8 +339,12 @@ impl StripLayout {
         return Some((min_y, max_y.max(min_y)))
     }
 
-    /// What: compute lane offsets affecting `id`.
-    /// Why: non-root panes use their parent lane; root panes have no parent lane, so they use their
+    /// What:
+    ///  compute lane offsets affecting `id`.
+    /// Why:
+    ///  non-root panes use their parent lane;
+    ///  root panes have no parent lane,
+    ///  so they use their
     ///      own root lane.
     fn effective_offset_for_pane(&self, id: PaneId) -> f64 {
         let placements = self.placements.borrow();
@@ -296,8 +364,12 @@ impl StripLayout {
         return total
     }
 
-    /// What: compute a lane's fixed app-layout rectangle.
-    /// Why: green boxes are rails in the broader layout; panes may stick inside them, but the boxes
+    /// What:
+    ///  compute a lane's fixed app-layout rectangle.
+    /// Why:
+    ///  green boxes are rails in the broader layout;
+    ///  panes may stick inside them,
+    ///  but the boxes
     ///      themselves must not receive sticky offsets.
     fn lane_rect(&self, parent: PanePlacement, children: &[PanePlacement]) -> LaneRect {
         let end_column = children
@@ -318,9 +390,12 @@ impl StripLayout {
         }
     }
 
-    /// What: draw one immediate-child lane around `parent` and its direct child panes.
-    /// Why: a lane spans from the parent column through the child column and from the parent row
-    ///      down to the deepest direct child's bottom, including empty grid cells in that span.
+    /// What:
+    ///  draw one immediate-child lane around `parent` and its direct child panes.
+    /// Why:
+    ///  a lane spans from the parent column through the child column and from the parent row
+    ///      down to the deepest direct child's bottom,
+    ///  including empty grid cells in that span.
     fn add_child_lane(&self, parent: PanePlacement, children: &[PanePlacement]) {
         let rect = self.lane_rect(parent, children);
         let max_child_row = children
@@ -357,8 +432,11 @@ impl StripLayout {
         self.lanes.borrow_mut().insert(parent.id, lane);
     }
 
-    /// What: visible viewport height in pixels.
-    /// Why: lane max offsets and reveal behavior clamp against the actual window, with startup
+    /// What:
+    ///  visible viewport height in pixels.
+    /// Why:
+    ///  lane max offsets and reveal behavior clamp against the actual window,
+    ///  with startup
     ///      fallback before GTK has allocated a height.
     fn viewport_height(&self) -> f64 {
         let height = self.outer.height();

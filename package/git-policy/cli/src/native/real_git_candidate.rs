@@ -1,28 +1,45 @@
-//! What: Decide whether one PATH candidate is real Git, a cli-git wrapper, or unusable.
-//! Why: The wrapper shadows `git` on PATH and must never select itself, a copy of
-//!      itself, or a script that starts the TypeScript wrapper.
+//! What:
+//!  Decide whether one PATH candidate is real Git,
+//!  a cli-git wrapper,
+//!  or unusable.
+//! Why:
+//!  The wrapper shadows `git` on PATH and must never select itself,
+//!  a copy of
+//!      itself,
+//!  or a script that starts the TypeScript wrapper.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // classifyCandidate('/usr/bin/git', ownExecutable) === 'real-git'
 //! ```
 
-/// What: Import the trait that gives files `.read(..)`.
-///       A trait is an interface; its methods exist only while it is in scope.
-/// Why:  Candidates are inspected through bounded reads, never loaded whole by default.
+/// What:
+///  Import the trait that gives files `.read(..)`.
+///       A trait is an interface;
+///  its methods exist only while it is in scope.
+/// Why:
+///   Candidates are inspected through bounded reads,
+///  never loaded whole by default.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { open } from 'node:fs/promises';
 /// ```
 use std::io::Read;
-/// `Path` is a borrowed filesystem path of raw OS bytes (owned sibling: `PathBuf`).
+/// `Path` is a borrowed filesystem path of raw OS bytes (owned sibling:
+///  `PathBuf`).
 use std::path::Path;
 
-/// What: Largest script inspected for wrapper markers, 64 kibibytes.
-///       `usize` is the platform's index and length type (siblings `u32`, `u64`).
-/// Why:  Generated command shims are tiny launchers; a fixed bound keeps an arbitrary
-///       PATH file from controlling how much the resolver reads. `usize` matches the
+/// What:
+///  Largest script inspected for wrapper markers,
+///  64 kibibytes.
+///       `usize` is the platform's index and length type (siblings `u32`,
+///  `u64`).
+/// Why:
+///   Generated command shims are tiny launchers;
+///  a fixed bound keeps an arbitrary
+///       PATH file from controlling how much the resolver reads.
+///  `usize` matches the
 ///       buffer lengths it is compared with.
 ///
 /// In TS you'd write (pseudocode):
@@ -31,10 +48,15 @@ use std::path::Path;
 /// ```
 pub const MAX_SCRIPT_INSPECTION_BYTES: usize = 64 * 1024;
 
-/// What: Leading bytes of ELF, PE, Mach-O and universal Mach-O executables.
+/// What:
+///  Leading bytes of ELF,
+///  PE,
+///  Mach-O and universal Mach-O executables.
 ///       `&[&[u8]]` is a borrowed list of borrowed byte strings compiled into the program.
-/// Why:  A native executable that is not this wrapper is treated as Git after one
-///       four-byte read; only scripts are searched for wrapper markers.
+/// Why:
+///   A native executable that is not this wrapper is treated as Git after one
+///       four-byte read;
+///  only scripts are searched for wrapper markers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,9 +75,13 @@ const NATIVE_EXECUTABLE_PREFIXES: &[&[u8]] = &[
     b"\xbf\xba\xfe\xca",
 ];
 
-/// What: Text that identifies a script delegating to the TypeScript cli-git wrapper:
-///       its package name and bundled entry path, in POSIX and Windows spellings.
-/// Why:  Such a script is the other wrapper; selecting it as real Git would make the
+/// What:
+///  Text that identifies a script delegating to the TypeScript cli-git wrapper:
+///       its package name and bundled entry path,
+///  in POSIX and Windows spellings.
+/// Why:
+///   Such a script is the other wrapper;
+///  selecting it as real Git would make the
 ///       two wrappers call each other.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,9 +95,12 @@ const WRAPPER_SCRIPT_MARKERS: &[&[u8]] = &[
     b"package\\git-policy\\cli\\dist\\final\\node\\index.mjs",
 ];
 
-/// What: The three verdicts for one candidate path.
-///       `#[derive(...)]` generates copying, debug printing and `==`.
-/// Why:  The resolver counts skipped wrappers separately from unusable entries so its
+/// What:
+///  The three verdicts for one candidate path.
+///       `#[derive(...)]` generates copying,
+///  debug printing and `==`.
+/// Why:
+///   The resolver counts skipped wrappers separately from unusable entries so its
 ///       failure message can say why nothing was selected.
 ///
 /// In TS you'd write (pseudocode):
@@ -82,14 +111,22 @@ const WRAPPER_SCRIPT_MARKERS: &[&[u8]] = &[
 pub enum CandidateKind {
     /// An executable regular file that is not a cli-git wrapper.
     RealGit,
-    /// This executable, a byte-identical copy of it, or a script starting the TypeScript wrapper.
+    /// This executable,
+    ///  a byte-identical copy of it,
+    ///  or a script starting the TypeScript wrapper.
     Wrapper,
-    /// Missing, not a regular file, not executable, unreadable, or an oversized script.
+    /// Missing,
+    ///  not a regular file,
+    ///  not executable,
+    ///  unreadable,
+    ///  or an oversized script.
     Unusable,
 }
 
-/// What: Report whether the bytes begin with a native executable signature.
-/// Why:  Native candidates skip the script-marker search entirely.
+/// What:
+///  Report whether the bytes begin with a native executable signature.
+/// Why:
+///   Native candidates skip the script-marker search entirely.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -105,8 +142,11 @@ pub fn is_native_header(header: &[u8]) -> bool {
     return false;
 }
 
-/// What: Report whether `needle` occurs anywhere inside `haystack`.
-/// Why:  Byte slices have no built-in substring search, and scripts are searched as
+/// What:
+///  Report whether `needle` occurs anywhere inside `haystack`.
+/// Why:
+///   Byte slices have no built-in substring search,
+///  and scripts are searched as
 ///       bytes so a non-UTF-8 script cannot hide a marker.
 ///
 /// In TS you'd write (pseudocode):
@@ -129,8 +169,10 @@ fn contains_bytes(haystack: &[u8], needle: &[u8]) -> bool {
     return false;
 }
 
-/// What: Report whether script bytes contain a TypeScript-wrapper marker.
-/// Why:  This is the version-independent recognition of the other wrapper's launchers.
+/// What:
+///  Report whether script bytes contain a TypeScript-wrapper marker.
+/// Why:
+///   This is the version-independent recognition of the other wrapper's launchers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -145,11 +187,17 @@ pub fn has_wrapper_marker(content: &[u8]) -> bool {
     return false;
 }
 
-/// What: Report whether file metadata says the file can be run.
+/// What:
+///  Report whether file metadata says the file can be run.
 ///       `#[cfg(unix)]` and `#[cfg(not(unix))]` each compile one of the two inner blocks.
-/// Why:  PATH lookup only runs executable files; a non-executable `git` is skipped.
-///       On Unix this checks the mode bits, not the calling user's access as `access(2)`
-///       would. Other systems have no execute bit: every regular file named by PATHEXT
+/// Why:
+///   PATH lookup only runs executable files;
+///  a non-executable `git` is skipped.
+///       On Unix this checks the mode bits,
+///  not the calling user's access as `access(2)`
+///       would.
+///  Other systems have no execute bit:
+///  every regular file named by PATHEXT
 ///       can run.
 ///
 /// In TS you'd write (pseudocode):
@@ -172,9 +220,13 @@ fn is_executable(metadata: &std::fs::Metadata) -> bool {
     }
 }
 
-/// What: Report whether two metadata records name the same file on the same device.
-/// Why:  On Unix, device and inode numbers identify a file through any symbolic link,
-///       hard link or repeated PATH entry. Other systems expose no stable inode here,
+/// What:
+///  Report whether two metadata records name the same file on the same device.
+/// Why:
+///   On Unix,
+///  device and inode numbers identify a file through any symbolic link,
+///       hard link or repeated PATH entry.
+///  Other systems expose no stable inode here,
 ///       so the answer is "not proven the same" and canonical paths decide instead.
 ///
 /// In TS you'd write (pseudocode):
@@ -196,9 +248,15 @@ fn same_inode(first: &std::fs::Metadata, second: &std::fs::Metadata) -> bool {
     }
 }
 
-/// What: Report whether two paths name the same existing file.
-/// Why:  Self-exclusion must hold through symbolic links, hard links, relative
-///       spellings and repeated PATH directories. Either check alone suffices; an
+/// What:
+///  Report whether two paths name the same existing file.
+/// Why:
+///   Self-exclusion must hold through symbolic links,
+///  hard links,
+///  relative
+///       spellings and repeated PATH directories.
+///  Either check alone suffices;
+///  an
 ///       inspection failure means "not proven the same".
 ///
 /// In TS you'd write (pseudocode):
@@ -230,9 +288,14 @@ pub fn same_file(first: &Path, second: &Path) -> bool {
     return false;
 }
 
-/// What: Report whether two files have the same length and the same bytes.
-/// Why:  A copy of this executable under another name or directory is still this
-///       wrapper, although its inode differs. Lengths are compared first, so real Git
+/// What:
+///  Report whether two files have the same length and the same bytes.
+/// Why:
+///   A copy of this executable under another name or directory is still this
+///       wrapper,
+///  although its inode differs.
+///  Lengths are compared first,
+///  so real Git
 ///       is never read in full for this check.
 ///
 /// In TS you'd write (pseudocode):
@@ -255,11 +318,16 @@ pub fn identical_content(first: &Path, second: &Path) -> bool {
     return first_bytes == second_bytes;
 }
 
-/// What: Read from a file until `limit` bytes are collected or the file ends.
+/// What:
+///  Read from a file until `limit` bytes are collected or the file ends.
 ///       `&mut std::fs::File` lends the open file for reading (reading moves its position).
-///       `Option<Vec<u8>>` is the owned bytes, or `None` when the read failed.
-/// Why:  One `read` call may return fewer bytes than requested. The standard library's
-///       bounded reader repeats the read until the limit or the end of the file, so the
+///       `Option<Vec<u8>>` is the owned bytes,
+///  or `None` when the read failed.
+/// Why:
+///   One `read` call may return fewer bytes than requested.
+///  The standard library's
+///       bounded reader repeats the read until the limit or the end of the file,
+///  so the
 ///       bound is exact and there is no loop here to keep in step.
 ///
 /// In TS you'd write (pseudocode):
@@ -287,9 +355,14 @@ fn read_up_to(file: &mut std::fs::File, limit: usize) -> Option<Vec<u8>> {
     }
 }
 
-/// What: Classify one candidate against this wrapper's own executable.
-/// Why:  This is the whole self-exclusion decision: the same file (any link or
-///       spelling), an identical copy, or a TypeScript-wrapper launcher is a wrapper;
+/// What:
+///  Classify one candidate against this wrapper's own executable.
+/// Why:
+///   This is the whole self-exclusion decision:
+///  the same file (any link or
+///       spelling),
+///  an identical copy,
+///  or a TypeScript-wrapper launcher is a wrapper;
 ///       any other executable regular file is Git.
 ///
 /// In TS you'd write (pseudocode):
@@ -343,7 +416,9 @@ pub fn classify_candidate(candidate: &Path, own_executable: &Path) -> CandidateK
     return CandidateKind::RealGit;
 }
 
-/// Controls for the header, marker, identity and content primitives.
+/// Controls for the header,
+///  marker,
+///  identity and content primitives.
 #[cfg(test)]
 #[path = "real_git_candidate_primitive_tests.rs"]
 mod primitive_tests;

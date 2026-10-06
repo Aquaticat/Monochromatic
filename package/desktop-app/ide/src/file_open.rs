@@ -1,6 +1,8 @@
 //! Latest-request-wins source opening without replacing the displayed document before a successful read.
 
-/// Opened source reuses the existing revision-aware reader, syntax engine, and read-only project boundary.
+/// Opened source reuses the existing revision-aware reader,
+///  syntax engine,
+///  and read-only project boundary.
 use crate::{
     document::{Document, ReadingPosition},
     reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxReply},
@@ -13,23 +15,27 @@ use std::path::PathBuf;
 
 /// Ready-to-display source and its matching classifications from one successful background read.
 pub struct OpenedFile {
-    /// Canonical target returned by project-boundary resolution, not a lossy label or symlink alias.
+    /// Canonical target returned by project-boundary resolution,
+    ///  not a lossy label or symlink alias.
     pub path: PathBuf,
     /// Fresh reading state starts at the beginning rather than mapping the previous file's selection.
     pub document: Document,
     /// Classification may report an independent parser failure without discarding readable text.
     pub syntax: Option<SyntaxReply>,
-    /// True for a file outside the project, opened read-only from a language target.
+    /// True for a file outside the project,
+    ///  opened read-only from a language target.
     pub outside_project: bool,
 }
 
-/// One executing read plus one replaceable desired target; no unbounded file-open queue.
+/// One executing read plus one replaceable desired target;
+///  no unbounded file-open queue.
 pub struct FileOpener {
     /// Boundary resolution runs on the reader thread for every new target.
     workspace: Workspace,
     /// Reuse the existing bounded read/diff/classification lifecycle.
     worker: ReloadWorker,
-    /// Latest requested open identity, independent of displayed-file and document revision identities.
+    /// Latest requested open identity,
+    ///  independent of displayed-file and document revision identities.
     generation: u64,
     /// Only the latest waiting target is retained while an older read finishes.
     pending: Option<PathBuf>,
@@ -136,10 +142,14 @@ impl FileOpener {
         return Ok(());
     }
 
-    /// What: Request a file outside the project, read without project resolution.
-    /// Why: A language server can name a standard-library or dependency file as a definition.
+    /// What:
+    ///  Request a file outside the project,
+    ///  read without project resolution.
+    /// Why:
+    ///  A language server can name a standard-library or dependency file as a definition.
     ///      The caller passes only a canonical path the Language module validated as an existing
-    ///      regular file outside the root; tree and search opens never come here.
+    ///      regular file outside the root;
+    ///  tree and search opens never come here.
     pub fn request_outside(&mut self, path: PathBuf) -> Result<()> {
         self.cancel()?;
         tracing::debug!(path = %path.display(), generation = self.generation, "requested outside-project source open");
@@ -148,12 +158,14 @@ impl FileOpener {
         return Ok(());
     }
 
-    /// True includes waiting work and unread replies, including a cancelled read still finishing in the background.
+    /// True includes waiting work and unread replies,
+    ///  including a cancelled read still finishing in the background.
     pub fn has_pending(&self) -> bool {
         return self.pending.is_some() || self.worker.is_busy();
     }
 
-    /// Return only the latest successful open; current errors propagate while stale failures are logged and discarded.
+    /// Return only the latest successful open;
+    ///  current errors propagate while stale failures are logged and discarded.
     pub fn poll(&mut self) -> Result<Option<OpenedFile>> {
         // A stopped transport must release the waiting target as well as the worker's own busy slot.
         let completed = match self.worker.try_take() {

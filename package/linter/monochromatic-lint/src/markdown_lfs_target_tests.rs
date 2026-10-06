@@ -1,6 +1,10 @@
-//! What: Destination classification, lexical resolution and traversal controls.
-//! Why: Which repository path a destination names is frozen by
-//! `package/cli/markdown-lint/src/lfs-image-context.unit.test.ts`; the added cases cover delimiters,
+//! What:
+//!  Destination classification,
+//!  lexical resolution and traversal controls.
+//! Why:
+//!  Which repository path a destination names is frozen by
+//! `package/cli/markdown-lint/src/lfs-image-context.unit.test.ts`;
+//!  the added cases cover delimiters,
 //! traversal tokens and non-UTF-8 components at this text-to-path boundary.
 //!
 //! In TS you'd write (pseudocode):
@@ -20,7 +24,10 @@ const OID: &str = "de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66f
 /// Object base used by the object-URL fixtures.
 const BASE: &str = "https://lfs.example";
 
-/// Relative paths are accepted; schemes, fragments, site-absolute paths and the empty destination are not.
+/// Relative paths are accepted;
+///  schemes,
+///  fragments,
+///  site-absolute paths and the empty destination are not.
 #[test]
 fn relative_paths_are_distinguished_from_other_destinations() {
     assert!(is_relative_path("asset/shot.png"));
@@ -39,7 +46,8 @@ fn relative_paths_are_distinguished_from_other_destinations() {
     assert!(is_relative_path("a/b:c"));
 }
 
-/// The cut is at the first query or fragment delimiter, whichever comes first.
+/// The cut is at the first query or fragment delimiter,
+///  whichever comes first.
 #[test]
 fn query_and_fragment_are_removed_at_the_first_delimiter() {
     assert_eq!(path_part("a.png?x#y"), "a.png");
@@ -50,7 +58,10 @@ fn query_and_fragment_are_removed_at_the_first_delimiter() {
     assert_eq!(path_part("?x"), "");
 }
 
-/// A destination resolves against the file's directory; one leaving the root, or the root itself, names nothing.
+/// A destination resolves against the file's directory;
+///  one leaving the root,
+///  or the root itself,
+///  names nothing.
 #[test]
 fn relative_destinations_resolve_against_the_file_directory() {
     let root: &Path = Path::new("/r");
@@ -131,7 +142,8 @@ fn lexical_normalization_resolves_dot_components() {
     );
 }
 
-/// A component that is not valid UTF-8 cannot be written in a URL, so the path names nothing.
+/// A component that is not valid UTF-8 cannot be written in a URL,
+///  so the path names nothing.
 #[cfg(unix)]
 #[test]
 fn non_utf8_components_name_nothing() {
@@ -143,7 +155,8 @@ fn non_utf8_components_name_nothing() {
     assert_eq!(repo_relative(Path::new("/r"), &path), None);
 }
 
-/// The oid and path are split under an exact base prefix; query and fragment are not part of the path.
+/// The oid and path are split under an exact base prefix;
+///  query and fragment are not part of the path.
 #[test]
 fn object_urls_are_split_under_the_exact_base() {
     assert_eq!(
@@ -189,7 +202,8 @@ fn object_urls_are_split_under_the_exact_base() {
     );
 }
 
-/// The link from a file's directory climbs to the shared ancestor, then descends to the target.
+/// The link from a file's directory climbs to the shared ancestor,
+///  then descends to the target.
 #[test]
 fn relative_links_climb_then_descend() {
     assert_eq!(

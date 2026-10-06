@@ -1,6 +1,8 @@
 //! Match rectangles come from the shaped rows used by selection and never change shaping.
 
-/// Canonical source, the production matcher, and the production geometry path.
+/// Canonical source,
+///  the production matcher,
+///  and the production geometry path.
 use ide_app::{
     document::{Document, ReadingPosition},
     find::{FindRange, MAX_FIND_MATCHES, find_matches},
@@ -20,7 +22,8 @@ fn viewport(first: usize, count: usize) -> Viewport {
     };
 }
 
-/// Glyph identities of every materialized row, in visual order.
+/// Glyph identities of every materialized row,
+///  in visual order.
 fn glyphs(view: &ShapedView) -> Vec<u32> {
     // What: `Vec::new()` creates an empty growable list; `u32` is a fixed 32-bit unsigned glyph index.
     // Why: Comparing identities detects any substitution change, even with equal glyph counts.
@@ -51,7 +54,8 @@ fn glyphs(view: &ShapedView) -> Vec<u32> {
     return result;
 }
 
-/// Production matches of `query` in the document, as a plain list.
+/// Production matches of `query` in the document,
+///  as a plain list.
 fn ranges(document: &Document, query: &str) -> Vec<FindRange> {
     // What: `to_string` copies the rope into one owned string; `expect` fails the test on a matcher error.
     // Why: The matcher takes contiguous text, exactly as the worker supplies it.
@@ -65,7 +69,8 @@ fn ranges(document: &Document, query: &str) -> Vec<FindRange> {
     return matches.ranges.to_vec();
 }
 
-/// Each character inside the `===` ligature is its own match rectangle; shaping is untouched.
+/// Each character inside the `===` ligature is its own match rectangle;
+///  shaping is untouched.
 #[test]
 fn matches_inside_a_ligature_use_selection_geometry_without_reshaping() {
     let mut document = Document::new("a === b");
@@ -108,7 +113,8 @@ fn matches_inside_a_ligature_use_selection_geometry_without_reshaping() {
     );
 }
 
-/// The active match is drawn as the selection, so it is left out of the other-match rectangles.
+/// The active match is drawn as the selection,
+///  so it is left out of the other-match rectangles.
 #[test]
 fn active_match_is_excluded_from_other_match_rectangles() {
     let document = Document::new("needle and needle and needle");
@@ -169,7 +175,9 @@ fn rectangles_are_limited_to_materialized_rows_and_the_horizontal_tile() {
     assert!(rectangles(&view, &[], None, 0.0, 500.0).is_empty());
 }
 
-/// Tabs, CJK, and combining marks keep match rectangles aligned with their source characters.
+/// Tabs,
+///  CJK,
+///  and combining marks keep match rectangles aligned with their source characters.
 #[test]
 fn rectangles_follow_tabs_wide_glyphs_and_combining_marks() {
     let document = Document::new("\t猫 cafe\u{301} 猫");

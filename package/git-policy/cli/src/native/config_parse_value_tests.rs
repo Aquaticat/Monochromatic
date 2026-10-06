@@ -1,6 +1,11 @@
-//! What: Rejection controls for invalid values inside known configuration keys.
-//! Why: A wrong type, an out-of-range number, an unknown policy ID or an unknown option
-//!      must fail with a message naming the key, and must reject the whole document.
+//! What:
+//!  Rejection controls for invalid values inside known configuration keys.
+//! Why:
+//!  A wrong type,
+//!  an out-of-range number,
+//!  an unknown policy ID or an unknown option
+//!      must fail with a message naming the key,
+//!  and must reject the whole document.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,7 +16,8 @@
 use super::parse_config;
 use super::tests::{assert_rejections, rejection};
 
-/// Concurrency sections reject wrong shapes, unknown nested keys and out-of-range numbers.
+/// Concurrency sections reject wrong shapes,
+///  unknown nested keys and out-of-range numbers.
 #[test]
 fn invalid_concurrency_values_are_rejected_by_key() {
     assert_rejections(&[
@@ -78,7 +84,9 @@ fn invalid_concurrency_values_are_rejected_by_key() {
     ]);
 }
 
-/// Unknown policy IDs, including traversal-shaped and namespace near misses, list the shipped IDs.
+/// Unknown policy IDs,
+///  including traversal-shaped and namespace near misses,
+///  list the shipped IDs.
 #[test]
 fn unknown_policy_ids_are_rejected_with_the_shipped_list() {
     let listed: &str = "Shipped policies: require-root, linked-worktree-only, branch-worktree-only, \
@@ -180,7 +188,9 @@ fn invalid_policy_settings_are_rejected_by_key() {
     ]);
 }
 
-/// Option keys outside each policy's schema, including program-selecting ones, are rejected.
+/// Option keys outside each policy's schema,
+///  including program-selecting ones,
+///  are rejected.
 #[test]
 fn invalid_policy_options_are_rejected_by_key() {
     assert_rejections(&[
@@ -251,7 +261,8 @@ fn invalid_policy_options_are_rejected_by_key() {
     ]);
 }
 
-/// A rejected later key never leaks earlier settings: the whole document fails.
+/// A rejected later key never leaks earlier settings:
+///  the whole document fails.
 #[test]
 fn any_invalid_key_rejects_the_whole_document() {
     assert!(

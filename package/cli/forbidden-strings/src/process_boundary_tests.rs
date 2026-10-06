@@ -1,5 +1,7 @@
-//! What: Process-level positive controls for redacted panic output.
-//! Why: A passing absence assertion is meaningful only if the default hook demonstrably prints the synthetic payload.
+//! What:
+//!  Process-level positive controls for redacted panic output.
+//! Why:
+//!  A passing absence assertion is meaningful only if the default hook demonstrably prints the synthetic payload.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,7 +12,8 @@
 use super::{omit_panic_payload, run};
 use std::process::{Command, ExitCode, Output};
 
-/// Deliberate fault exists only in the test binary, never behind a production environment trigger.
+/// Deliberate fault exists only in the test binary,
+///  never behind a production environment trigger.
 fn synthetic_panic() -> anyhow::Result<i32> {
     panic!("SYNTHETIC_PRIVATE_PAYLOAD_7f1c");
 }
@@ -25,7 +28,8 @@ fn ordinary_success() -> anyhow::Result<i32> {
     return Ok(1);
 }
 
-/// Child entry selected by its exact test name; no hook is changed in the ordinary parent test process.
+/// Child entry selected by its exact test name;
+///  no hook is changed in the ordinary parent test process.
 #[test]
 fn isolated_boundary_probe() {
     let Ok(mode) = std::env::var("FORBIDDEN_STRINGS_BOUNDARY_TEST") else { return; };
@@ -52,7 +56,8 @@ fn probe(mode: &str) -> Output {
         .expect("isolated boundary probe");
 }
 
-/// Default output is a positive control; protected output retains the error without private payloads.
+/// Default output is a positive control;
+///  protected output retains the error without private payloads.
 #[test]
 fn process_owner_redacts_payloads_without_turning_panics_into_success() {
     let default: Output = probe("default");

@@ -30,7 +30,8 @@ pub(crate) struct OklchAlpha {
 
 /// Mixes one pigment toward an achromatic endpoint in OKLCH coordinates.
 ///
-/// Chroma approaches zero while source hue remains stable. No RGB or HSV
+/// Chroma approaches zero while source hue remains stable.
+///  No RGB or HSV
 /// coordinate is manipulated.
 #[must_use]
 pub(crate) fn mix_with_neutral(options: OklchNeutralMix) -> Color {

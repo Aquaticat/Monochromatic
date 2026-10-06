@@ -1,5 +1,8 @@
-//! What: Cargo discovery and generated-source loading at the production boundary.
-//! Why: A source-only context must not pretend generated definitions exist, and failed Cargo preparation must remain an error.
+//! What:
+//!  Cargo discovery and generated-source loading at the production boundary.
+//! Why:
+//!  A source-only context must not pretend generated definitions exist,
+//!  and failed Cargo preparation must remain an error.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -49,8 +52,12 @@ fn cargo_discovery_keeps_its_owner_boundary() {
     assert!(error.message.contains("must name Cargo.toml"));
 }
 
-/// Discovery walks past ancestors that are regular files: the operating system answers "not a directory" for a
-/// manifest below a file, which means no manifest there, not an unreadable one. No Cargo command runs.
+/// Discovery walks past ancestors that are regular files:
+///  the operating system answers "not a directory" for a
+/// manifest below a file,
+///  which means no manifest there,
+///  not an unreadable one.
+///  No Cargo command runs.
 #[test]
 fn manifest_discovery_walks_past_a_regular_file_on_the_path() {
     let fixture: Fixture = Fixture::new();
@@ -65,10 +72,16 @@ fn manifest_discovery_walks_past_a_regular_file_on_the_path() {
 }
 
 /// The backend receives the checked standard-library source and `--offline --locked` for every Cargo command,
-/// and every other setting at the backend's default. Without `sysroot_src` the backend reads `RUST_SRC_PATH`
-/// before the toolchain's source; without `--locked` it resolves a stale or missing lockfile again in a temporary
-/// copy, so the analysis would describe dependencies the workspace has not locked. Neither difference shows in the
-/// container, which sets no `RUST_SRC_PATH` and whose fixtures have current lockfiles, so the settings are pinned here.
+/// and every other setting at the backend's default.
+///  Without `sysroot_src` the backend reads `RUST_SRC_PATH`
+/// before the toolchain's source;
+///  without `--locked` it resolves a stale or missing lockfile again in a temporary
+/// copy,
+///  so the analysis would describe dependencies the workspace has not locked.
+///  Neither difference shows in the
+/// container,
+///  which sets no `RUST_SRC_PATH` and whose fixtures have current lockfiles,
+///  so the settings are pinned here.
 #[test]
 fn cargo_settings_name_the_checked_library_and_keep_cargo_offline_and_locked() {
     let fixture: Fixture = Fixture::new();
@@ -93,8 +106,10 @@ fn cargo_settings_name_the_checked_library_and_keep_cargo_offline_and_locked() {
     );
 }
 
-/// Real Cargo-generated definitions are available only after successful preparation: both a build script's output
-/// and a function-like procedural macro of a workspace member, which only the proc-macro server of the generated
+/// Real Cargo-generated definitions are available only after successful preparation:
+///  both a build script's output
+/// and a function-like procedural macro of a workspace member,
+///  which only the proc-macro server of the generated
 /// preparation expands.
 #[test]
 fn generated_definitions_and_build_failures_are_distinct() {

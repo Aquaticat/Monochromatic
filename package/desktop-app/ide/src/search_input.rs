@@ -3,8 +3,11 @@
 /// Injected elapsed time keeps double-Shift tests independent of wall-clock adjustments and sleep timing.
 use std::time::Duration;
 
-/// What: Rust's Unicode whitespace predicate includes NEXT LINE and excludes the byte-order mark.
-/// Why: The reference's JavaScript trim does the reverse, so copied queries need these explicit boundaries.
+/// What:
+///  Rust's Unicode whitespace predicate includes NEXT LINE and excludes the byte-order mark.
+/// Why:
+///  The reference's JavaScript trim does the reverse,
+///  so copied queries need these explicit boundaries.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,13 +49,16 @@ impl SearchInput {
 /// Shift releases form one opening gesture unless another key was pressed between them.
 #[derive(Default, Debug)]
 pub struct DoubleShift {
-    /// The first release's monotonic elapsed time, absent after a completed gesture.
+    /// The first release's monotonic elapsed time,
+    ///  absent after a completed gesture.
     last_release: Option<Duration>,
     /// A non-Shift keypress invalidates the prior release as the start of a double-Shift gesture.
     intervening_key: bool,
 }
 
-/// Observe key events without consuming normal source, tree, or input-field behavior.
+/// Observe key events without consuming normal source,
+///  tree,
+///  or input-field behavior.
 impl DoubleShift {
     /// Classify the key at the toolkit boundary and retain only the gesture-relevant fact.
     pub fn press(&mut self, is_shift: bool) {

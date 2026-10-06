@@ -1,9 +1,16 @@
-//! Application logging: which records are written, how helix-lsp's records are labelled, and a
+//! Application logging:
+//!  which records are written,
+//!  how helix-lsp's records are labelled,
+//!  and a
 //! writer that never makes a logging thread wait for the output.
 //!
-//! By default the log holds warnings and errors. The standard `RUST_LOG` variable adds detail with
-//! `tracing-subscriber`'s directive syntax, for example `RUST_LOG=ide_app=debug`. Whatever it says,
-//! helix-lsp stays at warnings unless `RUST_LOG` names a `helix_lsp` target itself, because
+//! By default the log holds warnings and errors.
+//!  The standard `RUST_LOG` variable adds detail with
+//! `tracing-subscriber`'s directive syntax,
+//!  for example `RUST_LOG=ide_app=debug`.
+//!  Whatever it says,
+//! helix-lsp stays at warnings unless `RUST_LOG` names a `helix_lsp` target itself,
+//!  because
 //! helix-lsp writes every protocol message in full at INFO.
 
 /// Queue and writer thread between the subscriber and the output.
@@ -12,13 +19,18 @@ pub mod background;
 /// The `log` logger that re-labels helix-lsp's records for healthy servers.
 pub mod relabel;
 
-/// Each language server's last standard-error lines, for the language worker's records of a
-/// server that ended unexpectedly or failed to start; never for a user-facing note.
+/// Each language server's last standard-error lines,
+///  for the language worker's records of a
+/// server that ended unexpectedly or failed to start;
+///  never for a user-facing note.
 pub mod stderr_tail;
 
-/// What: `EnvFilter` decides which records are written from directives such as `ide_app=debug`;
+/// What:
+///  `EnvFilter` decides which records are written from directives such as `ide_app=debug`;
 ///       `MakeWriter` is how the subscriber obtains an output for each record.
-/// Why: The filter and the output are what callers choose; everything else is fixed here.
+/// Why:
+///  The filter and the output are what callers choose;
+///  everything else is fixed here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,9 +38,18 @@ pub mod stderr_tail;
 /// ```
 use tracing_subscriber::{EnvFilter, fmt::MakeWriter};
 
-/// What: `LevelFilter` is a level threshold: OFF, ERROR, WARN, INFO, DEBUG, TRACE, ordered from
+/// What:
+///  `LevelFilter` is a level threshold:
+///  OFF,
+///  ERROR,
+///  WARN,
+///  INFO,
+///  DEBUG,
+///  TRACE,
+///  ordered from
 ///       least to most detail.
-/// Why: A bare level in `RUST_LOG` is read to keep helix-lsp from showing more than it asks for.
+/// Why:
+///  A bare level in `RUST_LOG` is read to keep helix-lsp from showing more than it asks for.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,13 +57,21 @@ use tracing_subscriber::{EnvFilter, fmt::MakeWriter};
 /// ```
 use tracing::level_filters::LevelFilter;
 
-/// The process's base level: warnings and errors.
+/// The process's base level:
+///  warnings and errors.
 pub const BASE_DIRECTIVE: &str = "warn";
 
-/// What: helix-lsp's directive for a given override: warnings, or the override's own bare level
-///       when that shows less (`RUST_LOG=error` means errors only, helix-lsp included).
-///       `parse::<LevelFilter>()` reads a level name and fails for anything else, such as a target.
-/// Why: helix-lsp's directive names a target, so it would otherwise outrank a less detailed bare level.
+/// What:
+///  helix-lsp's directive for a given override:
+///  warnings,
+///  or the override's own bare level
+///       when that shows less (`RUST_LOG=error` means errors only,
+///  helix-lsp included).
+///       `parse::<LevelFilter>()` reads a level name and fails for anything else,
+///  such as a target.
+/// Why:
+///  helix-lsp's directive names a target,
+///  so it would otherwise outrank a less detailed bare level.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,10 +96,21 @@ fn helix_directive(requested: Option<&str>) -> String {
     };
 }
 
-/// What: The directive text for a filter: the base level, then helix-lsp's directive, then the
-///       caller's `defaults`, then the `requested` override. `Option<&str>` is borrowed text or nothing.
-/// Why: When two directives name the same target, `tracing-subscriber` keeps the later one, so this
-///      order lets `RUST_LOG` replace any earlier choice, including helix-lsp's, but only by naming it.
+/// What:
+///  The directive text for a filter:
+///  the base level,
+///  then helix-lsp's directive,
+///  then the
+///       caller's `defaults`,
+///  then the `requested` override.
+///  `Option<&str>` is borrowed text or nothing.
+/// Why:
+///  When two directives name the same target,
+///  `tracing-subscriber` keeps the later one,
+///  so this
+///      order lets `RUST_LOG` replace any earlier choice,
+///  including helix-lsp's,
+///  but only by naming it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -96,9 +136,14 @@ pub fn directives(defaults: &str, requested: Option<&str>) -> String {
     return parts.join(",");
 }
 
-/// What: The filter for this process: `defaults` plus the `RUST_LOG` override, when it is set.
+/// What:
+///  The filter for this process:
+///  `defaults` plus the `RUST_LOG` override,
+///  when it is set.
 ///       Directives `RUST_LOG` gets wrong are reported on standard error and skipped.
-/// Why: The application passes no defaults (warnings only); test tools pass the detail they read.
+/// Why:
+///  The application passes no defaults (warnings only);
+///  test tools pass the detail they read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,11 +163,19 @@ pub fn filter(defaults: &str) -> EnvFilter {
     return EnvFilter::builder().parse_lossy(directives(defaults, requested.as_deref()));
 }
 
-/// What: Install the process-wide subscriber with `filter` and `writer`, then the helix-lsp bridge.
-///       `ansi` chooses colored levels; `None` keeps the library's choice, which honors `NO_COLOR`.
+/// What:
+///  Install the process-wide subscriber with `filter` and `writer`,
+///  then the helix-lsp bridge.
+///       `ansi` chooses colored levels;
+///  `None` keeps the library's choice,
+///  which honors `NO_COLOR`.
 ///       `W: for<'writer> MakeWriter<'writer>` accepts any output the subscriber can write through.
-/// Why: The application, the inspection tool, and the tests that read the log install the same
-///      pipeline, so a test sees what a user would.
+/// Why:
+///  The application,
+///  the inspection tool,
+///  and the tests that read the log install the same
+///      pipeline,
+///  so a test sees what a user would.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -153,7 +206,8 @@ where
     return Ok(());
 }
 
-/// Directive order and the override rules, without installing anything.
+/// Directive order and the override rules,
+///  without installing anything.
 #[cfg(test)]
 #[path = "logging_tests.rs"]
 mod tests;

@@ -1,12 +1,16 @@
-//! What: Rust-rule behavior and carve-out controls.
-//! Why: Namespace migration must not change documentability, messages or line-budget boundaries.
+//! What:
+//!  Rust-rule behavior and carve-out controls.
+//! Why:
+//!  Namespace migration must not change documentability,
+//!  messages or line-budget boundaries.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! describe('ported Rust rules', () => { /* kind catalog and boundary controls */ });
 //! ```
 
-/// Import the production checks, source context and effective severities.
+/// Import the production checks,
+///  source context and effective severities.
 use super::{check_max_lines, check_rustdoc};
 use crate::diagnostic::Severity;
 use crate::rust_source::RustSource;
@@ -16,7 +20,8 @@ fn context(source: &str) -> RustSource {
     return RustSource::new(String::from("fixture.rs"), String::from(source));
 }
 
-/// Exact-budget files pass; the first over-budget code line receives the finding.
+/// Exact-budget files pass;
+///  the first over-budget code line receives the finding.
 #[test]
 fn max_lines_preserves_boundaries_message_and_severity() {
     let source = context("// comment\nfn main() {\n\n  work();\n}\n");
@@ -76,7 +81,8 @@ fn documentation_kind_catalog_is_exercised() {
     assert_eq!(empty[0].message, "Missing rustdoc on file.");
 }
 
-/// Rustdoc forms satisfy the rule, while ordinary comments and suppression-looking text do not.
+/// Rustdoc forms satisfy the rule,
+///  while ordinary comments and suppression-looking text do not.
 #[test]
 fn only_real_doc_comments_satisfy_documentation() {
     for source in [
@@ -102,7 +108,8 @@ fn only_real_doc_comments_satisfy_documentation() {
     );
 }
 
-/// Macro invocations and extern blocks are excluded, but their documentable foreign items remain covered.
+/// Macro invocations and extern blocks are excluded,
+///  but their documentable foreign items remain covered.
 #[test]
 fn unsatisfiable_macro_and_extern_block_docs_are_not_required() {
     let macros = context("//! file\nmacro_rules! m { () => {} }\nm!();");
@@ -122,7 +129,8 @@ fn unsatisfiable_macro_and_extern_block_docs_are_not_required() {
     );
 }
 
-/// cxx-qt exempts imports and trait-impl members, not inherent methods.
+/// cxx-qt exempts imports and trait-impl members,
+///  not inherent methods.
 #[test]
 fn cxx_qt_carve_out_is_scoped_to_the_established_items() {
     let bridge = context(
@@ -153,7 +161,8 @@ fn comments_and_strings_cannot_enable_cxx_qt_exemptions() {
     }
 }
 
-/// Findings start at the declaration or attribute, not at attached ordinary comments.
+/// Findings start at the declaration or attribute,
+///  not at attached ordinary comments.
 #[test]
 fn declaration_offsets_skip_trivia_but_keep_attributes() {
     let source = context("//! file\n// ordinary\n  #[inline]\nfn f() {}");

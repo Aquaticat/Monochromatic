@@ -1,6 +1,8 @@
-//! Editord-compatible smart-case filename filtering, independent of content-regex semantics.
+//! Editord-compatible smart-case filename filtering,
+//!  independent of content-regex semantics.
 
-/// Matching uses project-relative names; absolute root text must not create a filename hit.
+/// Matching uses project-relative names;
+///  absolute root text must not create a filename hit.
 use std::path::Path;
 
 /// Immutable normalized query avoids repeating its lowercase conversion for every candidate.
@@ -12,7 +14,8 @@ pub struct PathQuery {
     needle: String,
 }
 
-/// Path queries are literal substrings, not regular expressions or fuzzy patterns.
+/// Path queries are literal substrings,
+///  not regular expressions or fuzzy patterns.
 impl PathQuery {
     /// Keep the same uppercase-detection rule used by editord's filename search.
     pub fn new(query: &str) -> Self {

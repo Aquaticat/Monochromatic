@@ -1,10 +1,15 @@
-//! What:     Unit tests for fuzzer-driven address selection.
-//! Why:      The edit target only exercises edits if the addresses it draws actually resolve. A
+//! What:
+//!      Unit tests for fuzzer-driven address selection.
+//! Why:
+//!       The edit target only exercises edits if the addresses it draws actually resolve.
+//!  A
 //!           picker that returned mostly missing addresses would turn that campaign into a
 //!           not-found test and hide the interesting failures.
 
-/// What:     Import the unstructured-input type.
-/// Why:      Tests drive selection from explicit byte buffers.
+/// What:
+///      Import the unstructured-input type.
+/// Why:
+///       Tests drive selection from explicit byte buffers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -12,8 +17,11 @@
 /// ```
 use arbitrary::Unstructured;
 
-/// What:     Import the picker under test.
-/// Why:      Its guarantees are resolution, bounded length and coverage of both segment kinds.
+/// What:
+///      Import the picker under test.
+/// Why:
+///       Its guarantees are resolution,
+///  bounded length and coverage of both segment kinds.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,8 +29,10 @@ use arbitrary::Unstructured;
 /// ```
 use crate::path_pick::random_path;
 
-/// What:     Import the crate's address model and queries.
-/// Why:      Resolution is checked with the same `jsonc_has` a consumer would call.
+/// What:
+///      Import the crate's address model and queries.
+/// Why:
+///       Resolution is checked with the same `jsonc_has` a consumer would call.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,14 +40,18 @@ use crate::path_pick::random_path;
 /// ```
 use monochromatic_jsonc_edit::{jsonc_has, parse_jsonc, JsoncPathSegment};
 
-/// What:     Draw one address from a seed.
-/// Why:      Every case needs a fresh budget, and the seed makes the draw reproducible.
+/// What:
+///      Draw one address from a seed.
+/// Why:
+///       Every case needs a fresh budget,
+///  and the seed makes the draw reproducible.
 fn draw(document: &monochromatic_jsonc_edit::JsoncValue, seed: &[u8]) -> Vec<JsoncPathSegment> {
     let mut unstructured = Unstructured::new(seed);
     return random_path(document, &mut unstructured).expect("selection succeeds");
 }
 
-/// Every drawn address must resolve, and must stay within the documented length cap.
+/// Every drawn address must resolve,
+///  and must stay within the documented length cap.
 #[test]
 fn drawn_addresses_resolve_and_stay_bounded() {
     let document = parse_jsonc("{\"a\":{\"b\":[10,{\"c\":true}]},\"d\":null}").expect("test document parses");
@@ -70,7 +84,8 @@ fn drawn_addresses_resolve_and_stay_bounded() {
     assert!(saw_index, "no index segment was ever drawn");
 }
 
-/// An empty container has no members, so the only address is the root.
+/// An empty container has no members,
+///  so the only address is the root.
 #[test]
 fn empty_containers_yield_the_root_address() {
     for source in ["{}", "[]"] {

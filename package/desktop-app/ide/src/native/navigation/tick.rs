@@ -60,8 +60,11 @@ fn directory_reply(navigation: &mut Navigation) -> bool {
     }
 }
 
-/// Fill one available read slot: first listings of expanded folders, then notified folders,
-/// then unwatched folders on the old 500 ms round robin, then the safety sweep.
+/// Fill one available read slot:
+///  first listings of expanded folders,
+///  then notified folders,
+/// then unwatched folders on the old 500 ms round robin,
+///  then the safety sweep.
 /// A folder whose first listing failed is retried at most every 500 ms.
 fn schedule(navigation: &mut Navigation) -> Result<()> {
     if !navigation.reader_available || navigation.reader.is_busy() {
@@ -98,7 +101,8 @@ fn schedule(navigation: &mut Navigation) -> Result<()> {
     return Ok(());
 }
 
-/// Apply current results before scheduling more work, keeping source selection independent of tree reads.
+/// Apply current results before scheduling more work,
+///  keeping source selection independent of tree reads.
 pub(super) fn update(
     window: &AppWindow,
     source: &Rc<RefCell<State>>,

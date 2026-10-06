@@ -1,39 +1,68 @@
-//! The application's own language runtime: parser libraries, highlighting queries, and the manifest.
+//! The application's own language runtime:
+//!  parser libraries,
+//!  highlighting queries,
+//!  and the manifest.
 //!
-//! What: The one place syntax highlighting reads language files from. The application binary
-//!       installs the table its build embedded ([`RuntimeSource::Embedded`]); tests and development
-//!       tools, which have no embedded table, read the directory that `HELIX_RUNTIME` names
-//!       ([`RuntimeSource::Directory`]), prepared by the package `runtime` task.
-//! Why: Helix's own lookup (`helix_loader::runtime_file`) searches several directories and takes the
-//!      first that has a file, with `$XDG_CONFIG_HOME/helix/runtime` ahead of every other choice, so
-//!      a stray file there silently replaced a bundled query. Nothing here calls that lookup: the
-//!      application reads only its own files, whatever is installed elsewhere.
+//! What:
+//!  The one place syntax highlighting reads language files from.
+//!  The application binary
+//!       installs the table its build embedded ([`RuntimeSource::Embedded`]);
+//!  tests and development
+//!       tools,
+//!  which have no embedded table,
+//!  read the directory that `HELIX_RUNTIME` names
+//!       ([`RuntimeSource::Directory`]),
+//!  prepared by the package `runtime` task.
+//! Why:
+//!  Helix's own lookup (`helix_loader::runtime_file`) searches several directories and takes the
+//!      first that has a file,
+//!  with `$XDG_CONFIG_HOME/helix/runtime` ahead of every other choice,
+//!  so
+//!      a stray file there silently replaced a bundled query.
+//!  Nothing here calls that lookup:
+//!  the
+//!      application reads only its own files,
+//!  whatever is installed elsewhere.
 
-/// The shared private cache directory, where embedded parser libraries are unpacked.
+/// The shared private cache directory,
+///  where embedded parser libraries are unpacked.
 use crate::app_cache::application_cache;
-/// Errors carry the file, what happened, and the remedy for the source in use.
+/// Errors carry the file,
+///  what happened,
+///  and the remedy for the source in use.
 use anyhow::{Context, Result, anyhow, bail};
-/// Paths, the not-found error kind, and the process-wide once-set value.
+/// Paths,
+///  the not-found error kind,
+///  and the process-wide once-set value.
 use std::{
     io::ErrorKind,
     path::{Path, PathBuf},
     sync::OnceLock,
 };
 
-/// Unpack parser libraries into the private cache, compared byte for byte on every load.
+/// Unpack parser libraries into the private cache,
+///  compared byte for byte on every load.
 pub mod cache;
 /// The table of files the build script compiled into the application binary.
 pub mod embedded;
-/// The embedded license and notice texts, as `--licenses` prints them.
+/// The embedded license and notice texts,
+///  as `--licenses` prints them.
 pub mod notices;
 /// Renew the current build's cache folder and remove other builds' folders unused for 30 days.
 pub mod retention;
 
-/// What: Where language files come from. `enum` is a value that is exactly one of these variants,
-///       like a TS discriminated union. `&'static EmbeddedRuntime` borrows the table stored in the
-///       executable; `PathBuf` owns a directory path.
-/// Why: The application binary and the test or tool programs have different sources, and every
-///      reader goes through this one type, so neither can fall back to Helix's directory search.
+/// What:
+///  Where language files come from.
+///  `enum` is a value that is exactly one of these variants,
+///       like a TS discriminated union.
+///  `&'static EmbeddedRuntime` borrows the table stored in the
+///       executable;
+///  `PathBuf` owns a directory path.
+/// Why:
+///  The application binary and the test or tool programs have different sources,
+///  and every
+///      reader goes through this one type,
+///  so neither can fall back to Helix's directory search.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,15 +75,22 @@ pub enum RuntimeSource {
         /// The table the build script generated.
         &'static embedded::EmbeddedRuntime,
     ),
-    /// A prepared runtime directory, used by tests and development tools only.
+    /// A prepared runtime directory,
+    ///  used by tests and development tools only.
     Directory(
-        /// The directory holding `manifest.json`, `grammars/`, and `queries/`.
+        /// The directory holding `manifest.json`,
+        ///  `grammars/`,
+        ///  and `queries/`.
         PathBuf,
     ),
 }
 
-/// What: What to do about an unusable embedded runtime; `&str` borrows text stored in the program.
-/// Why: A user of the single executable cannot run a package task, so the remedy is a fresh copy.
+/// What:
+///  What to do about an unusable embedded runtime;
+///  `&str` borrows text stored in the program.
+/// Why:
+///  A user of the single executable cannot run a package task,
+///  so the remedy is a fresh copy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -62,8 +98,11 @@ pub enum RuntimeSource {
 /// ```
 pub const EMBEDDED_REMEDY: &str = "Replace the executable with a fresh copy of the application, or build it again from source, then restart the application.";
 
-/// What: What to do about an unusable runtime directory.
-/// Why: Only tests and development tools read a directory, and their users can run the package task.
+/// What:
+///  What to do about an unusable runtime directory.
+/// Why:
+///  Only tests and development tools read a directory,
+///  and their users can run the package task.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -71,9 +110,15 @@ pub const EMBEDDED_REMEDY: &str = "Replace the executable with a fresh copy of t
 /// ```
 pub const DIRECTORY_REMEDY: &str = "Prepare the directory with the package runtime task (mise run //package/desktop-app/ide:runtime); only tests and development tools read a language runtime from a directory.";
 
-/// What: The source chosen for this process. `OnceLock` holds a value that is set once and then
-///       only read, safely from any thread (sibling: `OnceCell`, the same for one thread only).
-/// Why: Highlighting runs on worker threads that start after `main` chose the source.
+/// What:
+///  The source chosen for this process.
+///  `OnceLock` holds a value that is set once and then
+///       only read,
+///  safely from any thread (sibling:
+///  `OnceCell`,
+///  the same for one thread only).
+/// Why:
+///  Highlighting runs on worker threads that start after `main` chose the source.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -81,8 +126,11 @@ pub const DIRECTORY_REMEDY: &str = "Prepare the directory with the package runti
 /// ```
 static INSTALLED: OnceLock<RuntimeSource> = OnceLock::new();
 
-/// What: Choose this process's source; the first choice stays.
-/// Why: The application binary calls this before any window or worker exists.
+/// What:
+///  Choose this process's source;
+///  the first choice stays.
+/// Why:
+///  The application binary calls this before any window or worker exists.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -102,11 +150,20 @@ pub fn install(source: RuntimeSource) {
     }
 }
 
-/// What: At start, renew the cache folder of `runtime`'s key, then remove the folders of other
+/// What:
+///  At start,
+///  renew the cache folder of `runtime`'s key,
+///  then remove the folders of other
 ///       builds unused for longer than [`retention::UNUSED_LIMIT`].
-/// Why: The application binary calls this once, before any window exists, so the current key is in
-///      place before anything is removed. It runs on the starting thread: it lists one small
-///      folder and removes at most a few old ones, and a removal must not be cut short by an exit.
+/// Why:
+///  The application binary calls this once,
+///  before any window exists,
+///  so the current key is in
+///      place before anything is removed.
+///  It runs on the starting thread:
+///  it lists one small
+///      folder and removes at most a few old ones,
+///  and a removal must not be cut short by an exit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -139,9 +196,16 @@ pub fn tidy_cache(runtime: &embedded::EmbeddedRuntime) {
     );
 }
 
-/// What: The chosen source; without one, the directory `HELIX_RUNTIME` names. `&'static` borrows
+/// What:
+///  The chosen source;
+///  without one,
+///  the directory `HELIX_RUNTIME` names.
+///  `&'static` borrows
 ///       the stored value for the rest of the program.
-/// Why: Tests and tools never call [`install`]; the application binary always does, so it never
+/// Why:
+///  Tests and tools never call [`install`];
+///  the application binary always does,
+///  so it never
 ///      reads `HELIX_RUNTIME`.
 ///
 /// In TS you'd write (pseudocode):
@@ -169,10 +233,15 @@ pub fn current() -> Result<&'static RuntimeSource> {
     }));
 }
 
-/// Reading the manifest, queries, and parser libraries from whichever source is in use.
+/// Reading the manifest,
+///  queries,
+///  and parser libraries from whichever source is in use.
 impl RuntimeSource {
-    /// What: A short description for logs. `&self` borrows the value the method is called on.
-    /// Why: A log line must say which source a process used.
+    /// What:
+    ///  A short description for logs.
+    ///  `&self` borrows the value the method is called on.
+    /// Why:
+    ///  A log line must say which source a process used.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -189,8 +258,12 @@ impl RuntimeSource {
         };
     }
 
-    /// What: What the reader of an error should do, depending on the source.
-    /// Why: A user of the single executable cannot run a package task; a developer can.
+    /// What:
+    ///  What the reader of an error should do,
+    ///  depending on the source.
+    /// Why:
+    ///  A user of the single executable cannot run a package task;
+    ///  a developer can.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -203,8 +276,13 @@ impl RuntimeSource {
         };
     }
 
-    /// What: The manifest text and where it came from, for messages. `(String, String)` is a pair.
-    /// Why: The manifest lists the bundled grammars; recognition depends on it.
+    /// What:
+    ///  The manifest text and where it came from,
+    ///  for messages.
+    ///  `(String, String)` is a pair.
+    /// Why:
+    ///  The manifest lists the bundled grammars;
+    ///  recognition depends on it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -242,8 +320,12 @@ impl RuntimeSource {
         }
     }
 
-    /// What: The text of one query file of one language, or empty text when the runtime has none.
-    /// Why: Languages ship only some query kinds (many have no `locals.scm`), and Helix's own reader
+    /// What:
+    ///  The text of one query file of one language,
+    ///  or empty text when the runtime has none.
+    /// Why:
+    ///  Languages ship only some query kinds (many have no `locals.scm`),
+    ///  and Helix's own reader
     ///      treats a missing file as empty in the same way.
     ///
     /// In TS you'd write (pseudocode):
@@ -276,9 +358,13 @@ impl RuntimeSource {
         }
     }
 
-    /// What: A file path of the parser library for one grammar: unpacked into the private cache for
-    ///       the embedded source, or inside the directory.
-    /// Why: The dynamic loader opens libraries by path.
+    /// What:
+    ///  A file path of the parser library for one grammar:
+    ///  unpacked into the private cache for
+    ///       the embedded source,
+    ///  or inside the directory.
+    /// Why:
+    ///  The dynamic loader opens libraries by path.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

@@ -1,19 +1,34 @@
-//! The find box's clear control through real pointer events: its 48px cell, its edges, focus, and find results.
+//! The find box's clear control through real pointer events:
+//!  its 48px cell,
+//!  its edges,
+//!  focus,
+//!  and find results.
 
 /// The generated window type from the shipped markup.
 use super::AppWindow;
-/// Real key events, the full production reader, and bounded waits shared with the find tests.
+/// Real key events,
+///  the full production reader,
+///  and bounded waits shared with the find tests.
 use super::find_tests::{chord, eventually, reader, status_for, type_text};
 /// Pointer helpers that dispatch real window events and then lay the window out again.
 use super::sidebar_tests::{click, resize, settle};
-/// Toolkit key names, window ownership, and the model interface that counts match rectangles.
+/// Toolkit key names,
+///  window ownership,
+///  and the model interface that counts match rectangles.
 use slint::{ComponentHandle, Model, platform::Key};
 /// Fixture files are written into a disposable project directory.
 use std::fs;
 
-/// What: A record of four `f32` values, the 32-bit float Slint uses for logical pixels (sibling `f64`
-/// has twice the precision): the clear cell's left edge, top edge, width, and height in the window.
-/// Why: Every click in these tests is placed relative to the cell the layout actually produced,
+/// What:
+///  A record of four `f32` values,
+///  the 32-bit float Slint uses for logical pixels (sibling `f64`
+/// has twice the precision):
+///  the clear cell's left edge,
+///  top edge,
+///  width,
+///  and height in the window.
+/// Why:
+///  Every click in these tests is placed relative to the cell the layout actually produced,
 /// so the tests measure the cell instead of assuming it.
 ///
 /// In TS you'd write (pseudocode):
@@ -31,8 +46,12 @@ struct Cell {
     height: f32,
 }
 
-/// What: `window: &AppWindow` lends the window without giving it away; the answer is an owned `Cell`.
-/// Why: The cell is read after a layout pass, from the properties the box reports about itself.
+/// What:
+///  `window: &AppWindow` lends the window without giving it away;
+///  the answer is an owned `Cell`.
+/// Why:
+///  The cell is read after a layout pass,
+///  from the properties the box reports about itself.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,8 +74,13 @@ fn found(window: &AppWindow) {
     settle(window);
 }
 
-/// What: The answer is a pair: the disposable directory (`TempDir`, deleted when dropped) and the reader.
-/// Why: The directory must outlive the reader's file workers, so the caller keeps both.
+/// What:
+///  The answer is a pair:
+///  the disposable directory (`TempDir`,
+///  deleted when dropped) and the reader.
+/// Why:
+///  The directory must outlive the reader's file workers,
+///  so the caller keeps both.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,8 +110,11 @@ pub(super) fn opened() -> (tempfile::TempDir, super::find_tests::Reader) {
     return (fixture, opened);
 }
 
-/// The cell measures at least 48px by 48px. A click on each of its corners and on its center clears the
-/// find text, keeps keyboard focus in the box, and removes the count and the highlights.
+/// The cell measures at least 48px by 48px.
+///  A click on each of its corners and on its center clears the
+/// find text,
+///  keeps keyboard focus in the box,
+///  and removes the count and the highlights.
 #[test]
 fn find_clear_cell_is_48px_and_every_part_of_it_clears() {
     // `_fixture` keeps the directory alive until the test ends.
@@ -155,8 +182,12 @@ fn find_clear_cell_is_48px_and_every_part_of_it_clears() {
     window.hide().expect("close clear window");
 }
 
-/// A click one pixel outside each edge of the cell clears nothing. The control exists only while the box
-/// has keyboard focus and text, which is the toolkit's rule; hidden, its cell is the 12px trailing padding.
+/// A click one pixel outside each edge of the cell clears nothing.
+///  The control exists only while the box
+/// has keyboard focus and text,
+///  which is the toolkit's rule;
+///  hidden,
+///  its cell is the 12px trailing padding.
 #[test]
 fn find_clear_cell_ends_at_its_edges_and_hides_without_focus_or_text() {
     let (_fixture, reader) = opened();

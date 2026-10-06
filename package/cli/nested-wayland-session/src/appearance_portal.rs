@@ -15,15 +15,27 @@ use std::path::PathBuf;
 /// Imports private-bus process and pipe construction.
 use std::process::{Child, ChildStdout, Command, Stdio};
 
-/// What:     A grouped `use` of thread-safe primitives. `Arc<T>` is a shared owner of one heap
-///           value, freed when its last owner goes away (siblings: single-owner `Box<T>`,
-///           single-thread `Rc<T>`). `AtomicU32` and `AtomicU64` are integer cells several
-///           threads may read and write without a lock (sibling: `Mutex<u32>`, which locks).
-///           `Ordering` selects how strictly those accesses are sequenced. `mpsc` is a
+/// What:
+///      A grouped `use` of thread-safe primitives.
+///  `Arc<T>` is a shared owner of one heap
+///           value,
+///  freed when its last owner goes away (siblings:
+///  single-owner `Box<T>`,
+///           single-thread `Rc<T>`).
+///  `AtomicU32` and `AtomicU64` are integer cells several
+///           threads may read and write without a lock (sibling:
+///  `Mutex<u32>`,
+///  which locks).
+///           `Ordering` selects how strictly those accesses are sequenced.
+///  `mpsc` is a
 ///           channel between threads.
-/// Why:      The D-Bus service thread reads the served value while the compositor thread
-///           switches it, so both need the same cell. The sequence counter keeps fixture
-///           paths unique, and the channel bounds the private-bus address read.
+/// Why:
+///       The D-Bus service thread reads the served value while the compositor thread
+///           switches it,
+///  so both need the same cell.
+///  The sequence counter keeps fixture
+///           paths unique,
+///  and the channel bounds the private-bus address read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,10 +52,16 @@ use std::time::Duration;
 /// Imports shared error context and result channel.
 use anyhow::{Context, Result};
 
-/// What:     Import the blocking D-Bus connection and two variant types. `OwnedValue` owns a
-///           dynamically typed D-Bus value for method replies; `Value` is the same wrapper
-///           for a value serialized immediately, here the signal body.
-/// Why:      Portal settings travel as D-Bus variants, so a typed integer must be wrapped.
+/// What:
+///      Import the blocking D-Bus connection and two variant types.
+///  `OwnedValue` owns a
+///           dynamically typed D-Bus value for method replies;
+///  `Value` is the same wrapper
+///           for a value serialized immediately,
+///  here the signal body.
+/// Why:
+///       Portal settings travel as D-Bus variants,
+///  so a typed integer must be wrapped.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,21 +96,43 @@ const PRIVATE_BUS_ADDRESS_TIMEOUT: Duration = Duration::from_secs(2);
 /// Produces collision-free paths when tests start more than one private bus.
 static PRIVATE_BUS_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
-/// Configuration of the private bus: the stock session bus minus every service directory.
+/// Configuration of the private bus:
+///  the stock session bus minus every service directory.
 ///
-/// What:     `const PRIVATE_BUS_CONFIG: &str = r#"..."#;`. A string baked into the binary.
-///           `r#"..."#` is a raw string literal: backslashes and quotes inside it are literal
-///           text, so the XML needs no escaping. It keeps the stock `session.conf` elements that
-///           make this a session bus (`<type>`, `<keep_umask/>`, `<auth>`, the allow-all
-///           policy) and omits `<standard_session_servicedirs/>`, every `<servicedir>`, and every
-///           `<include>`/`<includedir>`, which could add service directories back.
-/// Why:      Without a service directory the daemon has no `.service` file to read, so a
+/// What:
+///      `const PRIVATE_BUS_CONFIG: &str = r#"..."#;`.
+///  A string baked into the binary.
+///           `r#"..."#` is a raw string literal:
+///  backslashes and quotes inside it are literal
+///           text,
+///  so the XML needs no escaping.
+///  It keeps the stock `session.conf` elements that
+///           make this a session bus (`<type>`,
+///  `<keep_umask/>`,
+///  `<auth>`,
+///  the allow-all
+///           policy) and omits `<standard_session_servicedirs/>`,
+///  every `<servicedir>`,
+///  and every
+///           `<include>`/`<includedir>`,
+///  which could add service directories back.
+/// Why:
+///       Without a service directory the daemon has no `.service` file to read,
+///  so a
 ///           hosted client asking it to start a name (as `slint-viewer` did for `org.a11y.Bus`)
-///           gets `org.freedesktop.DBus.Error.ServiceUnknown` at once, and no host program is
-///           ever executed for it. `dbus-daemon` refuses a configuration without `<listen>`,
-///           so the element names a path that cannot be bound; the `--address` option, which
-///           the daemon documents as overriding `<listen>`, supplies the real socket.
-/// Gotcha:   No path is interpolated into this text, so no XML escaping is needed. Adding one
+///           gets `org.freedesktop.DBus.Error.ServiceUnknown` at once,
+///  and no host program is
+///           ever executed for it.
+///  `dbus-daemon` refuses a configuration without `<listen>`,
+///           so the element names a path that cannot be bound;
+///  the `--address` option,
+///  which
+///           the daemon documents as overriding `<listen>`,
+///  supplies the real socket.
+/// Gotcha:
+///    No path is interpolated into this text,
+///  so no XML escaping is needed.
+///  Adding one
 ///           later would make the text a syntax boundary.
 ///
 /// In TS you'd write (pseudocode):
@@ -148,10 +188,16 @@ impl ColorSchemePreference {
 
 /// Result of asking the running private portal to serve a color scheme.
 ///
-/// What:     `pub enum SwitchOutcome { Changed, Unchanged }`. A closed set of two data-less
-///           variants. `#[derive(...)]` asks the compiler to generate copying, debug printing,
+/// What:
+///      `pub enum SwitchOutcome { Changed, Unchanged }`.
+///  A closed set of two data-less
+///           variants.
+///  `#[derive(...)]` asks the compiler to generate copying,
+///  debug printing,
 ///           and equality comparison for it.
-/// Why:      The portal contract emits `SettingChanged` only when a setting changes, so callers
+/// Why:
+///       The portal contract emits `SettingChanged` only when a setting changes,
+///  so callers
 ///           need to know whether hosted clients were notified or nothing happened.
 ///
 /// In TS you'd write (pseudocode):
@@ -162,14 +208,16 @@ impl ColorSchemePreference {
 pub enum SwitchOutcome {
     /// The served value changed and one `SettingChanged` signal was emitted.
     Changed,
-    /// The requested value was already served; no signal was emitted.
+    /// The requested value was already served;
+    ///  no signal was emitted.
     Unchanged,
 }
 
 /// Minimal Settings interface serving only deterministic appearance color scheme.
 #[derive(Clone, Debug)]
 struct PortalSettings {
-    /// Portal value returned for appearance color-scheme reads; runtime switches replace it.
+    /// Portal value returned for appearance color-scheme reads;
+    ///  runtime switches replace it.
     served_value: Arc<AtomicU32>,
 }
 
@@ -408,12 +456,19 @@ impl AppearancePortal {
 
     /// Serves `preference` from now on and notifies subscribed clients on the private bus.
     ///
-    /// What:     `pub fn set_color_scheme(&self, preference: ColorSchemePreference) ->
-    ///           Result<SwitchOutcome>`. `&self` lends this handle read-only; the shared cell
+    /// What:
+    ///      `pub fn set_color_scheme(&self, preference: ColorSchemePreference) ->
+    ///           Result<SwitchOutcome>`.
+    ///  `&self` lends this handle read-only;
+    ///  the shared cell
     ///           is still writable because atomics change through a shared reference.
-    /// Why:      Toolkits such as Slint read the value once, then follow `SettingChanged`.
-    ///           The signal leaves on the connection that owns the portal name, because
-    ///           subscribers filter by that sender. No other bus is ever opened here.
+    /// Why:
+    ///       Toolkits such as Slint read the value once,
+    ///  then follow `SettingChanged`.
+    ///           The signal leaves on the connection that owns the portal name,
+    ///  because
+    ///           subscribers filter by that sender.
+    ///  No other bus is ever opened here.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

@@ -1,4 +1,7 @@
-//! Server states, stale replies, a stopped module, and closing while a request is pending.
+//! Server states,
+//!  stale replies,
+//!  a stopped module,
+//!  and closing while a request is pending.
 
 /// Fixtures and real key events.
 use super::test_support::{
@@ -7,25 +10,31 @@ use super::test_support::{
 };
 /// A tree-row lookup shared with the navigation tests.
 use crate::native::navigation_tests::row;
-/// What: `anyhow!` builds an error from a message, like `new Error(...)`.
-/// Why: A worker that failed to start is passed to the binding as such an error.
+/// What:
+///  `anyhow!` builds an error from a message,
+///  like `new Error(...)`.
+/// Why:
+///  A worker that failed to start is passed to the binding as such an error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const failure = new Error('simulated');
 /// ```
 use anyhow::anyhow;
-/// What a launch policy receives and returns; the refusing policy of one test is written with them.
+/// What a launch policy receives and returns;
+///  the refusing policy of one test is written with them.
 use ide_app::language::launch::{LaunchRequest, ServerLaunch};
 /// Hiding the window after the binding was closed.
 use slint::ComponentHandle;
-/// Child processes are read from the process table; elapsed time bounds shutdown.
+/// Child processes are read from the process table;
+///  elapsed time bounds shutdown.
 use std::{fs, time::Instant};
 
 /// Three lines of words.
 const TEXT: &str = "alpha beta\ngamma delta\nepsilon\n";
 
-/// Ctrl+Q while the server is starting says so; once it is ready the same key shows the hover.
+/// Ctrl+Q while the server is starting says so;
+///  once it is ready the same key shows the hover.
 #[test]
 fn starting_server_is_explained_and_answers_once_ready() {
     let fixture = project(&[("main.scripted", TEXT)]);
@@ -62,11 +71,18 @@ fn missing_server_program_is_named_with_its_remedy() {
     assert!(reader.window.get_language_popup_note());
 }
 
-/// What: A launch policy that refuses every server. `_request` is deliberately unused.
-///       `Err(...)` is the failure variant of `Result`; `.to_string()` copies the literal into
-///       an owned `String`, which the policy's return type requires (sibling: borrowed `&str`).
-/// Why: The production policy refuses when bubblewrap or namespaces are unavailable and never
-///      falls back to an unconfined launch; this stands in for that with a fixed reason.
+/// What:
+///  A launch policy that refuses every server.
+///  `_request` is deliberately unused.
+///       `Err(...)` is the failure variant of `Result`;
+///  `.to_string()` copies the literal into
+///       an owned `String`,
+///  which the policy's return type requires (sibling:
+///  borrowed `&str`).
+/// Why:
+///  The production policy refuses when bubblewrap or namespaces are unavailable and never
+///      falls back to an unconfined launch;
+///  this stands in for that with a fixed reason.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -76,7 +92,8 @@ fn refuse(_request: &LaunchRequest) -> Result<ServerLaunch, String> {
     return Err("simulated refusal".to_string());
 }
 
-/// A refused launch is explained with its reason, and the window keeps working.
+/// A refused launch is explained with its reason,
+///  and the window keeps working.
 #[test]
 fn refused_launch_is_explained_with_its_reason() {
     let fixture = project(&[("main.scripted", TEXT)]);
@@ -107,7 +124,9 @@ fn unsupported_feature_is_named() {
     });
 }
 
-/// A failed request, here the references Ctrl+B falls back to, is explained with the server's error.
+/// A failed request,
+///  here the references Ctrl+B falls back to,
+///  is explained with the server's error.
 #[test]
 fn failed_request_is_explained_with_the_server_error() {
     let fixture = project(&[("main.scripted", TEXT)]);
@@ -160,7 +179,8 @@ fn empty_answer_and_unknown_language_are_explained() {
     });
 }
 
-/// A hover answer for text a reload replaced is never shown; the reader is told to ask again.
+/// A hover answer for text a reload replaced is never shown;
+///  the reader is told to ask again.
 #[test]
 fn hover_answer_overtaken_by_a_reload_is_not_shown() {
     let fixture = project(&[("main.scripted", TEXT)]);

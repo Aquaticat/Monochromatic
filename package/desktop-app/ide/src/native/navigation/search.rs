@@ -1,4 +1,6 @@
-//! Native search owns debounce, immutable result identity, and one cancellable worker.
+//! Native search owns debounce,
+//!  immutable result identity,
+//!  and one cancellable worker.
 
 /// Worker startup failures remain explicit rather than silently disabling the shortcut.
 use anyhow::Result;
@@ -9,7 +11,8 @@ use ide_app::{
     search_worker::SearchWorker,
     workspace::Workspace,
 };
-/// Native paths are kept separately from lossy labels; monotonic clocks drive debounce and gestures.
+/// Native paths are kept separately from lossy labels;
+///  monotonic clocks drive debounce and gestures.
 use std::{path::PathBuf, time::Instant};
 
 /// Input and overlay lifecycle callbacks retain the navigation owner.
@@ -18,7 +21,10 @@ mod bindings;
 mod poll;
 /// Convert immutable hits to native display rows without reconstructing their paths.
 mod present;
-/// Open, edit, close, and choose transitions own cancellation and source navigation.
+/// Open,
+///  edit,
+///  close,
+///  and choose transitions own cancellation and source navigation.
 mod session;
 
 /// Share the binding entry point without exposing search state beyond native navigation.
@@ -28,15 +34,19 @@ pub(super) use poll::update;
 
 /// Window-local search state contains no cross-thread mutable source data.
 pub(super) struct Search {
-    /// Only this worker starts search children; closing or editing cancels its current generation.
+    /// Only this worker starts search children;
+    ///  closing or editing cancels its current generation.
     worker: SearchWorker,
-    /// Last tree interaction's directory, independent of programmatic file reveal.
+    /// Last tree interaction's directory,
+    ///  independent of programmatic file reveal.
     directory: Option<PathBuf>,
-    /// Scope captured when opening the overlay, stable while background tree refresh continues.
+    /// Scope captured when opening the overlay,
+    ///  stable while background tree refresh continues.
     scope: PathBuf,
     /// Parsed input is absent when no useful pattern exists.
     input: Option<SearchInput>,
-    /// Debounce starts at the most recent edit, not at worker completion.
+    /// Debounce starts at the most recent edit,
+    ///  not at worker completion.
     edited: Option<Instant>,
     /// Native hit identities align exactly with the displayed row indices.
     hits: Vec<SearchHit>,
@@ -48,10 +58,14 @@ pub(super) struct Search {
     return_tree: bool,
 }
 
-/// Construct worker ownership once per window, without scanning any project files.
+/// Construct worker ownership once per window,
+///  without scanning any project files.
 impl Search {
-    /// What: `Result<Self>` carries either the new state or a startup error; `?` forwards that error.
-    /// Why: Window startup must report a missing worker instead of offering a nonfunctional overlay.
+    /// What:
+    ///  `Result<Self>` carries either the new state or a startup error;
+    ///  `?` forwards that error.
+    /// Why:
+    ///  Window startup must report a missing worker instead of offering a nonfunctional overlay.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

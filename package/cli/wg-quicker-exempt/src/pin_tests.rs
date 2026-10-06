@@ -351,7 +351,8 @@ fn socket_child() -> io::Result<()> {
     return Ok(());
 }
 
-/// Foreground watcher covers named targets and future Ghostty scopes, then drops all links on signal.
+/// Foreground watcher covers named targets and future Ghostty scopes,
+///  then drops all links on signal.
 #[test]
 #[ignore = "requires root and writable cgroup v2 mount"]
 fn application_watcher_covers_named_targets_and_future_ghostty() -> io::Result<()> {
@@ -479,7 +480,9 @@ fn recovery_rejects_uncommitted_candidate() -> io::Result<()> {
     return Ok(());
 }
 
-/// Recovery adopts committed candidate, removes marker, then performs next replacement.
+/// Recovery adopts committed candidate,
+///  removes marker,
+///  then performs next replacement.
 #[test]
 #[ignore = "requires root and writable cgroup v2 plus bpffs mounts"]
 fn recovery_adopts_committed_candidate() -> io::Result<()> {
@@ -578,7 +581,9 @@ fn all_protocol_hooks_mark_and_drop_cleanly() -> io::Result<()> {
     return Ok(());
 }
 
-/// Verifies process-exit persistence, replacement, and idempotent exact detach through real CLI.
+/// Verifies process-exit persistence,
+///  replacement,
+///  and idempotent exact detach through real CLI.
 #[test]
 #[ignore = "requires root and writable cgroup v2 plus bpffs mounts"]
 fn persisted_protocol_lifecycle() -> io::Result<()> {

@@ -1,14 +1,24 @@
-//! Up, Down, and page movement by shaped pixel position with a remembered column, without a window.
+//! Up,
+//!  Down,
+//!  and page movement by shaped pixel position with a remembered column,
+//!  without a window.
 
-/// Canonical source, the production shaper, and the vertical movement under test.
+/// Canonical source,
+///  the production shaper,
+///  and the vertical movement under test.
 use ide_app::{
     document::{Document, ReadingPosition},
     shaped_text::TextShaper,
     vertical_motion::{PreferredColumn, vertical},
 };
 
-/// What: A document with its caret at `head`; `usize` is an address-sized character index (siblings `u32`, `u64`).
-/// Why: Vertical movement starts from the document's own caret, as in the native window.
+/// What:
+///  A document with its caret at `head`;
+///  `usize` is an address-sized character index (siblings `u32`,
+///  `u64`).
+/// Why:
+///  Vertical movement starts from the document's own caret,
+///  as in the native window.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,9 +34,13 @@ fn at(source: &str, head: usize) -> Document {
     return document;
 }
 
-/// What: Apply a list of row steps like consecutive key presses and collect the caret after each;
-/// `&[isize]` borrows signed steps (siblings: owned `Vec<isize>`, unsigned `usize`).
-/// Why: The remembered column only matters across several movements.
+/// What:
+///  Apply a list of row steps like consecutive key presses and collect the caret after each;
+/// `&[isize]` borrows signed steps (siblings:
+///  owned `Vec<isize>`,
+///  unsigned `usize`).
+/// Why:
+///  The remembered column only matters across several movements.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -74,7 +88,9 @@ fn preferred_column_survives_short_and_empty_lines() {
     );
 }
 
-/// Up on the first line goes to the start of text, Down on the last line to its end; neither moves further.
+/// Up on the first line goes to the start of text,
+///  Down on the last line to its end;
+///  neither moves further.
 #[test]
 fn first_and_last_line_stop_at_the_ends_of_text() {
     let source = "abcdefgh\nab\n\nabcdefgh\nabcd";
@@ -143,7 +159,8 @@ fn crlf_lines_are_entered_before_the_terminator() {
     assert_eq!(travel(source, 4, &[1, 1, -1, -1]), [8, 14, 8, 4]);
 }
 
-/// The target is found by pixel position: wide glyphs and tabs do not count as one column each.
+/// The target is found by pixel position:
+///  wide glyphs and tabs do not count as one column each.
 #[test]
 fn target_position_follows_pixels_across_cjk_and_tabs() {
     // Line starts: 0 "abcdefgh", 9 "猫猫猫猫", 14 tab "x", 17 "abcdefgh".

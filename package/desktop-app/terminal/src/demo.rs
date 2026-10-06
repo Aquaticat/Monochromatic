@@ -1,9 +1,13 @@
 //! Demo VT stream for the first prototype checkpoint.
 
-/// What:     `pub fn demo_vt() -> Vec<u8>` returns owned bytes. `Vec<u8>` is a
-///           growable byte array; siblings are borrowed slices `&[u8]` and fixed
+/// What:
+///      `pub fn demo_vt() -> Vec<u8>` returns owned bytes.
+///  `Vec<u8>` is a
+///           growable byte array;
+///  siblings are borrowed slices `&[u8]` and fixed
 ///           arrays `[u8; N]`.
-/// Why:      The prototype feeds deterministic VT content until PTY I/O is added.
+/// Why:
+///       The prototype feeds deterministic VT content until PTY I/O is added.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

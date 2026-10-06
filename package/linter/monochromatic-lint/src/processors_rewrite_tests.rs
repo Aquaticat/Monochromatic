@@ -1,5 +1,9 @@
-//! What: Atomic-group validation, whole-line envelopes and container re-extraction refusals.
-//! Why: A refused group must name its real reason, and an accepted one must produce exact host bytes.
+//! What:
+//!  Atomic-group validation,
+//!  whole-line envelopes and container re-extraction refusals.
+//! Why:
+//!  A refused group must name its real reason,
+//!  and an accepted one must produce exact host bytes.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,7 +15,8 @@ use super::{Edit, Fix, ProcessorLanguage, VirtualSource, fixed, inputs};
 /// Typed refusals carry the explanation under test.
 use crate::processors::ProcessorError;
 
-/// Refusal text for a range that is reversed, out of bounds or inside a character.
+/// Refusal text for a range that is reversed,
+///  out of bounds or inside a character.
 const INVALID_RANGE: &str = "Processor fix has an invalid byte range or splits a UTF-8 character.";
 /// Refusal text for a boundary between the two bytes of one authored newline.
 const SPLIT_CRLF: &str = "Processor fix splits an authored CRLF newline.";
@@ -130,7 +135,8 @@ fn processors_project_insertions_before_a_leading_line_feed() {
     );
 }
 
-/// Whole-line deletion removes the deleted line's own prefix; a partial deletion keeps it.
+/// Whole-line deletion removes the deleted line's own prefix;
+///  a partial deletion keeps it.
 #[test]
 fn processors_project_line_deletions_between_differently_indented_prefixes() {
     let host: &str = "/// First.\n    /// Removed.\n/// Last.\nfn item() {}\n";
@@ -181,7 +187,9 @@ fn processors_name_generated_text_in_refusals_that_reach_synthetic_main() {
     );
 }
 
-/// A rewrite that removes its own container, or leaves a different preparation, is refused.
+/// A rewrite that removes its own container,
+///  or leaves a different preparation,
+///  is refused.
 #[test]
 fn processors_refuse_rewrites_whose_container_disappears_or_regenerates() {
     let line_host: &str = "///First.\nfn item() {}\n";

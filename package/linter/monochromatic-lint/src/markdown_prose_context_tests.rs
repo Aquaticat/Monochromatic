@@ -1,5 +1,9 @@
-//! What: Continuation-prefix and paragraph-ancestry controls through actual Markdown/MDX parses.
-//! Why: A prefix copied from the wrong line, or a paragraph chosen from the wrong ancestor, rewrites container syntax.
+//! What:
+//!  Continuation-prefix and paragraph-ancestry controls through actual Markdown/MDX parses.
+//! Why:
+//!  A prefix copied from the wrong line,
+//!  or a paragraph chosen from the wrong ancestor,
+//!  rewrites container syntax.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,9 +14,11 @@
 use super::{continuation_prefix, paragraph_for};
 /// Import the severity every rule entry point takes.
 use crate::diagnostic::Severity;
-/// Import the grouped fix record and the production applier, so fixes are applied exactly as released.
+/// Import the grouped fix record and the production applier,
+///  so fixes are applied exactly as released.
 use crate::edits::{Fix, apply_fixes};
-/// Import the consuming rule; the prefix only matters through the breaks it inserts.
+/// Import the consuming rule;
+///  the prefix only matters through the breaks it inserts.
 use crate::markdown_semantic_breaks::semantic_line_breaks;
 /// Import the native parser adapter that owns exact source bytes and node offsets.
 use crate::markdown_source::MarkdownSource;
@@ -26,7 +32,8 @@ fn parse(source: &str, mdx: bool) -> MarkdownSource {
         .expect("fixture parses");
 }
 
-/// Find the first node of one kind, failing when the fixture did not exercise that syntax.
+/// Find the first node of one kind,
+///  failing when the fixture did not exercise that syntax.
 fn first(context: &MarkdownSource, kind: MdastNodeType) -> u32 {
     // Node ids are u32 arena indexes; all_nodes lists them in source order.
     for id in context.all_nodes() {
@@ -37,13 +44,15 @@ fn first(context: &MarkdownSource, kind: MdastNodeType) -> u32 {
     panic!("fixture did not create the requested node kind");
 }
 
-/// Walk one node's ancestors through the production bounded walk; a parse never has a parent cycle.
+/// Walk one node's ancestors through the production bounded walk;
+///  a parse never has a parent cycle.
 fn chain(context: &MarkdownSource, id: u32) -> Vec<u32> {
     // `.expect` unwraps `Ok(list)` or fails the test with this message on `Err`.
     return context.ancestors(id).expect("an acyclic parse");
 }
 
-/// Answer one ancestry question through the production query, failing the test on a parent cycle.
+/// Answer one ancestry question through the production query,
+///  failing the test on a parent cycle.
 fn has_ancestor(context: &MarkdownSource, id: u32, kind: MdastNodeType) -> bool {
     return context.has_ancestor(id, kind).expect("an acyclic parse");
 }
@@ -59,7 +68,8 @@ fn fixed(source: &str) -> String {
     return apply_fixes(source, fixes.as_slice()).expect("apply").source;
 }
 
-/// A paragraph below earlier lines copies its own line's prefix, for every line-ending spelling.
+/// A paragraph below earlier lines copies its own line's prefix,
+///  for every line-ending spelling.
 #[test]
 fn later_line_paragraphs_copy_only_their_own_line_prefix() {
     for newline in ["\n", "\r\n", "\r"] {
@@ -105,7 +115,8 @@ fn nested_later_line_containers_keep_markers_and_blank_list_bullets() {
     );
 }
 
-/// Authored tabs stay tabs in the copied prefix; only list-marker characters become spaces.
+/// Authored tabs stay tabs in the copied prefix;
+///  only list-marker characters become spaces.
 #[test]
 fn tab_indentation_survives_in_the_continuation_prefix() {
     let list: MarkdownSource = parse("-\tfirst, second here.\n", false);
@@ -124,7 +135,8 @@ fn tab_indentation_survives_in_the_continuation_prefix() {
     );
 }
 
-/// Text under inline wrappers resolves to its one paragraph; non-prose ancestors exclude it.
+/// Text under inline wrappers resolves to its one paragraph;
+///  non-prose ancestors exclude it.
 #[test]
 fn paragraph_lookup_climbs_inline_wrappers_and_respects_exclusions() {
     let nested: MarkdownSource = parse("> - **_deep, text_** and ~~more, text~~ here\n", false);
@@ -164,7 +176,8 @@ fn paragraph_lookup_climbs_inline_wrappers_and_respects_exclusions() {
     }
 }
 
-/// The parser never places a paragraph inside another paragraph, in Markdown or below MDX elements.
+/// The parser never places a paragraph inside another paragraph,
+///  in Markdown or below MDX elements.
 #[test]
 fn paragraphs_never_nest_inside_paragraphs() {
     for (source, mdx) in [

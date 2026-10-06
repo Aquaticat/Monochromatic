@@ -1,6 +1,11 @@
-//! What: Disposable-file controls for wrapper self-exclusion.
-//! Why: The wrapper must recognise itself through every link, spelling and copy, and
-//!      recognise the TypeScript wrapper's launchers, without misjudging real Git.
+//! What:
+//!  Disposable-file controls for wrapper self-exclusion.
+//! Why:
+//!  The wrapper must recognise itself through every link,
+//!  spelling and copy,
+//!  and
+//!      recognise the TypeScript wrapper's launchers,
+//!  without misjudging real Git.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -20,7 +25,8 @@ fn classify_content(root: &Path, name: &str, content: &[u8]) -> CandidateKind {
     return classify_candidate(candidate.as_path(), root.join("own").as_path());
 }
 
-/// This executable is a wrapper through every link, relative spelling and byte-identical copy.
+/// This executable is a wrapper through every link,
+///  relative spelling and byte-identical copy.
 #[test]
 fn own_executable_is_a_wrapper_through_links_and_copies() {
     let root: PathBuf = fixture("classify-self");
@@ -49,7 +55,8 @@ fn own_executable_is_a_wrapper_through_links_and_copies() {
     remove(root.as_path());
 }
 
-/// Native executables and marker-free scripts are Git; real Git 2.56.0 itself is Git.
+/// Native executables and marker-free scripts are Git;
+///  real Git 2.56.0 itself is Git.
 #[test]
 fn other_executables_are_real_git() {
     let root: PathBuf = fixture("classify-real");
@@ -83,7 +90,8 @@ fn other_executables_are_real_git() {
     remove(root.as_path());
 }
 
-/// Scripts that start the TypeScript wrapper are wrappers, wherever the marker sits within the bound.
+/// Scripts that start the TypeScript wrapper are wrappers,
+///  wherever the marker sits within the bound.
 #[test]
 fn typescript_wrapper_launchers_are_wrappers() {
     let root: PathBuf = fixture("classify-shim");
@@ -125,7 +133,9 @@ fn typescript_wrapper_launchers_are_wrappers() {
     remove(root.as_path());
 }
 
-/// The script inspection bound is exact: at the bound is inspected, one byte more is unusable.
+/// The script inspection bound is exact:
+///  at the bound is inspected,
+///  one byte more is unusable.
 #[test]
 fn script_inspection_bound_is_exact() {
     let root: PathBuf = fixture("classify-bound");
@@ -156,8 +166,11 @@ fn script_inspection_bound_is_exact() {
     remove(root.as_path());
 }
 
-/// The bound is the incumbent's 64 KiB (`package/git/executable/src/self-shim.ts`): a launcher
-/// padded to just under it, with its marker in the last bytes, is still recognised.
+/// The bound is the incumbent's 64 KiB (`package/git/executable/src/self-shim.ts`):
+///  a launcher
+/// padded to just under it,
+///  with its marker in the last bytes,
+///  is still recognised.
 #[test]
 fn script_inspection_bound_matches_the_incumbent() {
     assert_eq!(MAX_SCRIPT_INSPECTION_BYTES, 65_536);
@@ -175,7 +188,8 @@ fn script_inspection_bound_matches_the_incumbent() {
     remove(root.as_path());
 }
 
-/// Entries that cannot be run as a file are unusable, and a named pipe never blocks classification.
+/// Entries that cannot be run as a file are unusable,
+///  and a named pipe never blocks classification.
 #[test]
 fn unusable_candidates_are_skipped() {
     use std::os::unix::fs::PermissionsExt;

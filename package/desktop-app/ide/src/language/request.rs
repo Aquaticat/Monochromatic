@@ -1,7 +1,16 @@
-//! Sending the five feature requests: routing by feature, the readiness gate, and bookkeeping.
+//! Sending the five feature requests:
+//!  routing by feature,
+//!  the readiness gate,
+//!  and bookkeeping.
 //!
-//! Every request captures a ticket: the stamp, the text, the column unit, and the server
-//! process it was sent to. The answer is converted against that ticket, never against later state.
+//! Every request captures a ticket:
+//!  the stamp,
+//!  the text,
+//!  the column unit,
+//!  and the server
+//! process it was sent to.
+//!  The answer is converted against that ticket,
+//!  never against later state.
 
 /// Hint windows and the latest-value snapshot.
 use super::hints::{HintWindow, HintsSnapshot, InlayHint, request_lines};
@@ -17,9 +26,13 @@ use super::session::{Session, allowed};
 use super::status::ServerState;
 /// The worker whose state these steps change.
 use super::worker::Worker;
-/// What: `Rope` is Helix's character-indexed text buffer; `LanguageServerFeature` names the
+/// What:
+///  `Rope` is Helix's character-indexed text buffer;
+///  `LanguageServerFeature` names the
 ///       features a language's configuration can restrict per server.
-/// Why: A ticket keeps the text of the revision it asks about; routing honors the configuration.
+/// Why:
+///  A ticket keeps the text of the revision it asks about;
+///  routing honors the configuration.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,9 +41,15 @@ use super::worker::Worker;
 use helix_core::{Rope, syntax::config::LanguageServerFeature};
 /// The column unit of one server and the protocol's data types.
 use helix_lsp::{OffsetEncoding, lsp};
-/// What: `Future` is Rust's promise; `Pin<Box<dyn Future>>` is an owned, heap-stored promise
-///       whose concrete type is erased; `PathBuf` is an owned filesystem path.
-/// Why: Each helix-lsp request method returns a differently typed future; erasing the type lets
+/// What:
+///  `Future` is Rust's promise;
+///  `Pin<Box<dyn Future>>` is an owned,
+///  heap-stored promise
+///       whose concrete type is erased;
+///  `PathBuf` is an owned filesystem path.
+/// Why:
+///  Each helix-lsp request method returns a differently typed future;
+///  erasing the type lets
 ///      one place await all five.
 ///
 /// In TS you'd write (pseudocode):
@@ -39,7 +58,9 @@ use helix_lsp::{OffsetEncoding, lsp};
 /// ```
 use std::{future::Future, path::PathBuf, pin::Pin};
 
-/// Classifying failures, retrying, and storing or replying.
+/// Classifying failures,
+///  retrying,
+///  and storing or replying.
 mod answer;
 /// Converting answers against the ticket's text.
 mod convert;
@@ -59,7 +80,9 @@ pub(super) use route::{position, retry};
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Ask {
-    /// Definition, references, or hover at a character offset.
+    /// Definition,
+    ///  references,
+    ///  or hover at a character offset.
     Position(
         /// Which of the three position requests.
         RequestKind,
@@ -75,10 +98,18 @@ pub(super) enum Ask {
     Pull,
 }
 
-/// What: Everything a late answer needs to be judged and converted, captured when the request
-///       is sent. `u32` is an unsigned 32-bit count (siblings: `u64`, `usize`).
-/// Why: An answer must be converted against the text it was asked about, and tagged with the
-///      revision and server process it belongs to, so the interface can drop it when stale.
+/// What:
+///  Everything a late answer needs to be judged and converted,
+///  captured when the request
+///       is sent.
+///  `u32` is an unsigned 32-bit count (siblings:
+///  `u64`,
+///  `usize`).
+/// Why:
+///  An answer must be converted against the text it was asked about,
+///  and tagged with the
+///      revision and server process it belongs to,
+///  so the interface can drop it when stale.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -87,7 +118,8 @@ pub(super) enum Ask {
 /// ```
 #[derive(Clone, Debug)]
 pub(super) struct Ticket {
-    /// Request number of a position request; zero for requests the worker makes on its own.
+    /// Request number of a position request;
+    ///  zero for requests the worker makes on its own.
     pub(super) number: u64,
     /// What was asked.
     pub(super) ask: Ask,
@@ -95,9 +127,11 @@ pub(super) struct Ticket {
     pub(super) position: usize,
     /// File generation and revision the request was sent for.
     pub(super) stamp: DocumentStamp,
-    /// Text of that revision; a rope clone shares its chunks.
+    /// Text of that revision;
+    ///  a rope clone shares its chunks.
     pub(super) text: Rope,
-    /// Resolved path of the document, to recognize targets inside it.
+    /// Resolved path of the document,
+    ///  to recognize targets inside it.
     pub(super) path: PathBuf,
     /// Column unit of the server that was asked.
     pub(super) encoding: OffsetEncoding,
@@ -107,7 +141,8 @@ pub(super) struct Ticket {
     pub(super) attempt: u32,
 }
 
-/// The typed result of one request, as helix-lsp delivers it.
+/// The typed result of one request,
+///  as helix-lsp delivers it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -116,22 +151,30 @@ pub(super) struct Ticket {
 pub(super) enum Payload {
     /// Answer to `textDocument/definition`.
     Definition(
-        /// Locations, `null`, or the request error.
+        /// Locations,
+        ///  `null`,
+        ///  or the request error.
         helix_lsp::Result<Option<lsp::GotoDefinitionResponse>>,
     ),
     /// Answer to `textDocument/references`.
     References(
-        /// Locations, `null`, or the request error.
+        /// Locations,
+        ///  `null`,
+        ///  or the request error.
         helix_lsp::Result<Option<Vec<lsp::Location>>>,
     ),
     /// Answer to `textDocument/hover`.
     Hover(
-        /// Hover content, `null`, or the request error.
+        /// Hover content,
+        ///  `null`,
+        ///  or the request error.
         helix_lsp::Result<Option<lsp::Hover>>,
     ),
     /// Answer to `textDocument/inlayHint`.
     Hints(
-        /// Hints, `null`, or the request error.
+        /// Hints,
+        ///  `null`,
+        ///  or the request error.
         helix_lsp::Result<Option<Vec<lsp::InlayHint>>>,
     ),
     /// Answer to `textDocument/diagnostic`.
@@ -141,9 +184,12 @@ pub(super) enum Payload {
     ),
 }
 
-/// A finished request: its ticket and what the server said.
+/// A finished request:
+///  its ticket and what the server said.
 pub(super) struct Answer {
-    /// What was asked, of whom, about which text.
+    /// What was asked,
+    ///  of whom,
+    ///  about which text.
     pub(super) ticket: Ticket,
     /// The server's result or the failure.
     pub(super) payload: Payload,
@@ -152,13 +198,20 @@ pub(super) struct Answer {
 /// The erased future every request is converted to before it is awaited.
 type PayloadFuture = Pin<Box<dyn Future<Output = Payload> + Send>>;
 
-/// A pending request as the worker loop awaits it: it resolves to the answer with its ticket.
+/// A pending request as the worker loop awaits it:
+///  it resolves to the answer with its ticket.
 pub(super) type AnswerFuture = Pin<Box<dyn Future<Output = Answer> + Send>>;
 
-/// What: Store any future that yields a payload on the heap behind the erased type. `F` is one
-///       type parameter: "some future that yields a `Payload`, may move between threads, and
+/// What:
+///  Store any future that yields a payload on the heap behind the erased type.
+///  `F` is one
+///       type parameter:
+///  "some future that yields a `Payload`,
+///  may move between threads,
+///  and
 ///       borrows nothing".
-/// Why: Five differently typed futures then fit one variable and one place that awaits them.
+/// Why:
+///  Five differently typed futures then fit one variable and one place that awaits them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -173,7 +226,8 @@ where
 
 /// What happened when a request was to be sent to one server.
 enum Sent {
-    /// The request is on its way; the worker loop awaits its answer.
+    /// The request is on its way;
+    ///  the worker loop awaits its answer.
     Spawned,
     /// The server has not finished `initialize`.
     Starting,
@@ -181,7 +235,10 @@ enum Sent {
     Unsynchronized,
     /// The server does not offer the feature.
     Unsupported,
-    /// The server is not asked: no process, feature excluded by configuration, or no valid position.
+    /// The server is not asked:
+    ///  no process,
+    ///  feature excluded by configuration,
+    ///  or no valid position.
     Skipped,
 }
 
@@ -196,10 +253,19 @@ fn feature(ask: Ask) -> LanguageServerFeature {
     };
 }
 
-/// What: Send one request to one server, or say why it was not sent. `index` is the server's
-///       record; `number`, `position`, and `attempt` go into the ticket.
-/// Why: This is the single place where the application calls helix-lsp's request methods. Each
-///      of them panics on a client that has not initialized, so the readiness gate comes first.
+/// What:
+///  Send one request to one server,
+///  or say why it was not sent.
+///  `index` is the server's
+///       record;
+///  `number`,
+///  `position`,
+///  and `attempt` go into the ticket.
+/// Why:
+///  This is the single place where the application calls helix-lsp's request methods.
+///  Each
+///      of them panics on a client that has not initialized,
+///  so the readiness gate comes first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -332,10 +398,15 @@ fn dispatch(
     return Sent::Spawned;
 }
 
-/// What: Ask one server for diagnostics of the displayed document, if it offers pull diagnostics.
+/// What:
+///  Ask one server for diagnostics of the displayed document,
+///  if it offers pull diagnostics.
 ///       `matches!` is true when the outcome is the "request is on its way" variant.
-/// Why: The outcome needs no reply: an unsupported or unready server simply contributes nothing.
-///      Once a request is on its way, the server owes nothing until that request ends.
+/// Why:
+///  The outcome needs no reply:
+///  an unsupported or unready server simply contributes nothing.
+///      Once a request is on its way,
+///  the server owes nothing until that request ends.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -352,11 +423,21 @@ pub(super) fn pull_diagnostics(worker: &mut Worker, index: usize, attempt: u32) 
     }
 }
 
-/// What: The hint request for the last reported window against the displayed text, or nothing
-///       when no file is displayed or no window was reported. `&Session` lends the session
-///       read-only; `Option<Ask>` is "a request, or nothing".
-/// Why: First asks, retries, and catch-up asks all name the lines wanted now, never the lines an
-///      earlier request named, so a request sent again after a wait cannot bring back hints for
+/// What:
+///  The hint request for the last reported window against the displayed text,
+///  or nothing
+///       when no file is displayed or no window was reported.
+///  `&Session` lends the session
+///       read-only;
+///  `Option<Ask>` is "a request,
+///  or nothing".
+/// Why:
+///  First asks,
+///  retries,
+///  and catch-up asks all name the lines wanted now,
+///  never the lines an
+///      earlier request named,
+///  so a request sent again after a wait cannot bring back hints for
 ///      lines the reader has scrolled away from.
 ///
 /// In TS you'd write (pseudocode):
@@ -379,7 +460,8 @@ pub(super) fn hint_ask(session: &Session) -> Option<Ask> {
     });
 }
 
-/// Ask one server for hints of the last reported window, if any window was reported.
+/// Ask one server for hints of the last reported window,
+///  if any window was reported.
 pub(super) fn hints(worker: &mut Worker, index: usize, attempt: u32) {
     let Some(ask) = hint_ask(&worker.session) else {
         return;
@@ -390,11 +472,18 @@ pub(super) fn hints(worker: &mut Worker, index: usize, attempt: u32) {
     }
 }
 
-/// What: The server at `index` just sent something: ask it again for the hints and pull
-///       diagnostics it still owes for the displayed text, if the catch-up rule allows.
-/// Why: A request that stayed unanswered through its retries is not repeated on a timer. A
-///      message of any kind shows that the server processes its input again, which is the
-///      moment a new request can succeed. `Owed::catch_up` bounds how often this happens.
+/// What:
+///  The server at `index` just sent something:
+///  ask it again for the hints and pull
+///       diagnostics it still owes for the displayed text,
+///  if the catch-up rule allows.
+/// Why:
+///  A request that stayed unanswered through its retries is not repeated on a timer.
+///  A
+///      message of any kind shows that the server processes its input again,
+///  which is the
+///      moment a new request can succeed.
+///  `Owed::catch_up` bounds how often this happens.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -418,8 +507,11 @@ pub(super) fn catch_up(worker: &mut Worker, index: usize) {
     }
 }
 
-/// What: The interface reported the visible lines: remember them and ask every server for hints.
-/// Why: The window is kept so hints can be asked for again after a reload and after a late start.
+/// What:
+///  The interface reported the visible lines:
+///  remember them and ask every server for hints.
+/// Why:
+///  The window is kept so hints can be asked for again after a reload and after a late start.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -444,9 +536,12 @@ pub(super) fn window(worker: &mut Worker, stamp: DocumentStamp, window: HintWind
     }
 }
 
-/// What: Merge the stored hints of every server into the latest-value snapshot, or nothing when
+/// What:
+///  Merge the stored hints of every server into the latest-value snapshot,
+///  or nothing when
 ///       no server has answered for the displayed text.
-/// Why: The interface draws one ordered list regardless of how many servers contributed.
+/// Why:
+///  The interface draws one ordered list regardless of how many servers contributed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

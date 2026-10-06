@@ -1,4 +1,5 @@
-//! Stale-result fencing without a server: each identity component is moved on its own.
+//! Stale-result fencing without a server:
+//!  each identity component is moved on its own.
 
 use super::{Fence, FenceCounts, FenceVerdict};
 use crate::language::identity::{DocumentStamp, ServerIdentity};

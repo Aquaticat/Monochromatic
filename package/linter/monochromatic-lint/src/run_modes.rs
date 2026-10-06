@@ -1,5 +1,9 @@
-//! What: The command modes that do not lint: `--rules`, `--init` and `--print-config`.
-//! Why: Each answers a question about the tool or its configuration and must work without
+//! What:
+//!  The command modes that do not lint:
+//!  `--rules`,
+//!  `--init` and `--print-config`.
+//! Why:
+//!  Each answers a question about the tool or its configuration and must work without
 //! reading or rewriting any source file.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,7 +11,8 @@
 //! // rulesListing(); initConfiguration(cwd); printConfiguration(store, cwd, path)
 //! ```
 
-/// Import configuration matching, the lookup store and the registry of shipped rule identifiers.
+/// Import configuration matching,
+///  the lookup store and the registry of shipped rule identifiers.
 use crate::{
     config_error::ConfigError,
     config_lookup::CONFIG_NAME,
@@ -29,8 +34,12 @@ use std::{
     sync::Arc,
 };
 
-/// What: A failure that stops the run before or instead of linting, reported with exit status 2.
-/// Why: Usage, configuration and discovery errors are not findings about a source file.
+/// What:
+///  A failure that stops the run before or instead of linting,
+///  reported with exit status 2.
+/// Why:
+///  Usage,
+///  configuration and discovery errors are not findings about a source file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -42,8 +51,11 @@ pub struct SetupError {
     pub message: String,
 }
 
-/// What: Construct a setup failure from any displayable cause.
-/// Why: Typed configuration and discovery errors keep their own text; this only changes the exit path.
+/// What:
+///  Construct a setup failure from any displayable cause.
+/// Why:
+///  Typed configuration and discovery errors keep their own text;
+///  this only changes the exit path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -58,8 +70,11 @@ impl SetupError {
     }
 }
 
-/// What: One shipped rule's identifier and documented capabilities.
-/// Why: `--rules` output is one JSON object per rule, like findings are one per line.
+/// What:
+///  One shipped rule's identifier and documented capabilities.
+/// Why:
+///  `--rules` output is one JSON object per rule,
+///  like findings are one per line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -75,8 +90,13 @@ pub struct RuleInfo {
     pub options: &'static [&'static str],
 }
 
-/// What: Capabilities of every shipped rule, in registry order.
-/// Why: The listing is data, checked against the configuration registry by a test, so a rule
+/// What:
+///  Capabilities of every shipped rule,
+///  in registry order.
+/// Why:
+///  The listing is data,
+///  checked against the configuration registry by a test,
+///  so a rule
 /// cannot be accepted by configuration yet missing from `--rules`.
 ///
 /// In TS you'd write (pseudocode):
@@ -171,8 +191,11 @@ pub const RULES: &[RuleInfo] = &[
     },
 ];
 
-/// What: Render the rule listing as JSON Lines.
-/// Why: The registry order is kept, and an identifier the registry accepts but this table lacks is
+/// What:
+///  Render the rule listing as JSON Lines.
+/// Why:
+///  The registry order is kept,
+///  and an identifier the registry accepts but this table lacks is
 /// an error instead of a silently shorter listing.
 ///
 /// In TS you'd write (pseudocode):
@@ -202,9 +225,13 @@ pub fn rules_listing() -> Result<String, SetupError> {
     return Ok(output);
 }
 
-/// What: The configuration `--init` writes.
-/// Why: It selects the syntax-only Rust rules and every Markdown rule for all files, as a
-/// starting point; `rust/require-explicit-types` is left out because it needs a Cargo workspace.
+/// What:
+///  The configuration `--init` writes.
+/// Why:
+///  It selects the syntax-only Rust rules and every Markdown rule for all files,
+///  as a
+/// starting point;
+///  `rust/require-explicit-types` is left out because it needs a Cargo workspace.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -244,8 +271,12 @@ pub const STARTER_CONFIGURATION: &str = r#"// monochromatic-lint.config.jsonc
 ]
 "#;
 
-/// What: Create the starter configuration in the working directory, refusing to overwrite.
-/// Why: `create_new` fails when the file exists, so an existing configuration is never replaced.
+/// What:
+///  Create the starter configuration in the working directory,
+///  refusing to overwrite.
+/// Why:
+///  `create_new` fails when the file exists,
+///  so an existing configuration is never replaced.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -273,8 +304,11 @@ pub fn init_configuration(cwd: &Path) -> Result<PathBuf, SetupError> {
     return Ok(path);
 }
 
-/// What: Build one string-valued record member.
-/// Why: The emitter quotes and escapes the text, so paths with quotes or control characters stay valid JSONC.
+/// What:
+///  Build one string-valued record member.
+/// Why:
+///  The emitter quotes and escapes the text,
+///  so paths with quotes or control characters stay valid JSONC.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -287,9 +321,18 @@ fn member(key: &str, value: &str) -> JsoncEntry {
     };
 }
 
-/// What: Print the effective configuration for one real or virtual path, without linting it.
-/// Why: The answer distinguishes four states: no configuration file, ignored, matched by no
-/// block, and configured with the merged rules shown. The document is strict JSON, so tools that
+/// What:
+///  Print the effective configuration for one real or virtual path,
+///  without linting it.
+/// Why:
+///  The answer distinguishes four states:
+///  no configuration file,
+///  ignored,
+///  matched by no
+/// block,
+///  and configured with the merged rules shown.
+///  The document is strict JSON,
+///  so tools that
 /// reject trailing commas and comments can read it.
 ///
 /// In TS you'd write (pseudocode):
@@ -327,7 +370,8 @@ pub fn print_configuration(
     return Ok(strict_json(&JsoncValue::record(entries)));
 }
 
-/// Listing, starter and effective-configuration controls stay outside release artifacts.
+/// Listing,
+///  starter and effective-configuration controls stay outside release artifacts.
 #[cfg(test)]
 #[path = "run_modes_tests.rs"]
 mod tests;

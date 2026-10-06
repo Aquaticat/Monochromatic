@@ -1,12 +1,23 @@
-//! The control-socket wire protocol: newline-delimited text requests and responses.
+//! The control-socket wire protocol:
+//!  newline-delimited text requests and responses.
 //!
-//! Each request is one line: a verb plus arguments. Each request yields exactly one
-//! response line: `ok`, `ok <data>`, or `err <message>`. This module is pure text
-//! parsing and formatting with no Wayland types, so it is unit-tested directly,
+//! Each request is one line:
+//!  a verb plus arguments.
+//!  Each request yields exactly one
+//! response line:
+//!  `ok`,
+//!  `ok <data>`,
+//!  or `err <message>`.
+//!  This module is pure text
+//! parsing and formatting with no Wayland types,
+//!  so it is unit-tested directly,
 //! including adversarial inputs (the tests live in `protocol_tests.rs`).
 
-/// What:     `use std::path::PathBuf;`. Owned filesystem path.
-/// Why:      A screenshot request carries an owned destination path.
+/// What:
+///      `use std::path::PathBuf;`.
+///  Owned filesystem path.
+/// Why:
+///       A screenshot request carries an owned destination path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -14,8 +25,10 @@
 /// ```
 use std::path::PathBuf;
 
-/// What:     Import the closed set of appearance values the private portal can serve.
-/// Why:      A runtime appearance request carries the same typed value as the startup option,
+/// What:
+///      Import the closed set of appearance values the private portal can serve.
+/// Why:
+///       A runtime appearance request carries the same typed value as the startup option,
 ///           so no second spelling of `dark` and `light` can drift from it.
 ///
 /// In TS you'd write (pseudocode):
@@ -36,8 +49,12 @@ mod color_scheme;
 #[path = "protocol_scale.rs"]
 mod scale;
 
-/// What:     Import the output-scale value a `scale` request carries.
-/// Why:      The command holds the parsed, validated scale, never the raw text.
+/// What:
+///      Import the output-scale value a `scale` request carries.
+/// Why:
+///       The command holds the parsed,
+///  validated scale,
+///  never the raw text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,10 +64,16 @@ use crate::screen_geometry::OutputScale;
 
 /// Which pointer button a click uses.
 ///
-/// What:     `pub enum PointerButton { Left, Right, Middle }`. A closed set of three
-///           variants. In Rust an `enum` is a tagged union; here each variant carries
+/// What:
+///      `pub enum PointerButton { Left, Right, Middle }`.
+///  A closed set of three
+///           variants.
+///  In Rust an `enum` is a tagged union;
+///  here each variant carries
 ///           no data.
-/// Why:      Name the button symbolically at the protocol layer; the input layer maps
+/// Why:
+///       Name the button symbolically at the protocol layer;
+///  the input layer maps
 ///           each to its evdev button code.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,15 +92,22 @@ pub enum PointerButton {
 
 /// Button-to-evdev-code mapping for pointer buttons.
 ///
-/// What:     `impl PointerButton { ... }`. One method turning the enum into the raw
+/// What:
+///      `impl PointerButton { ... }`.
+///  One method turning the enum into the raw
 ///           `BTN_*` code.
-/// Why:      Keep the code mapping beside the button enum.
+/// Why:
+///       Keep the code mapping beside the button enum.
 impl PointerButton {
     /// Map the button to its Linux evdev button code.
     ///
-    /// What:     `pub fn evdev_code(self) -> u32`. Takes `self` by value (the enum is
-    ///           `Copy`), returns the `BTN_*` code as an unsigned 32-bit integer.
-    /// Why:      Smithay's `ButtonEvent.button` field is the raw evdev code.
+    /// What:
+    ///      `pub fn evdev_code(self) -> u32`.
+    ///  Takes `self` by value (the enum is
+    ///           `Copy`),
+    ///  returns the `BTN_*` code as an unsigned 32-bit integer.
+    /// Why:
+    ///       Smithay's `ButtonEvent.button` field is the raw evdev code.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -103,8 +133,13 @@ impl PointerButton {
 
 /// What action a key request performs.
 ///
-/// What:     `pub enum KeyAction { Press, Release, Tap }`. Three data-less variants.
-/// Why:      A test may hold a key down, release it, or tap (press then release).
+/// What:
+///      `pub enum KeyAction { Press, Release, Tap }`.
+///  Three data-less variants.
+/// Why:
+///       A test may hold a key down,
+///  release it,
+///  or tap (press then release).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -122,9 +157,15 @@ pub enum KeyAction {
 
 /// A parsed control command.
 ///
-/// What:     `pub enum Command { ... }`. A tagged union where each variant carries its
-///           own arguments (`Screenshot` a path, `Click` coordinates, and so on).
-/// Why:      One typed value the executor matches on, decoupling parsing from action.
+/// What:
+///      `pub enum Command { ... }`.
+///  A tagged union where each variant carries its
+///           own arguments (`Screenshot` a path,
+///  `Click` coordinates,
+///  and so on).
+/// Why:
+///       One typed value the executor matches on,
+///  decoupling parsing from action.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -171,7 +212,9 @@ pub enum Command {
     },
     /// Press/release/tap a named key.
     Key {
-        /// Key name (e.g. `a`, `enter`, `space`).
+        /// Key name (e.g. `a`,
+        ///  `enter`,
+        ///  `space`).
         name: String,
         /// What to do with it.
         action: KeyAction,
@@ -181,11 +224,14 @@ pub enum Command {
         /// Text to type verbatim.
         String,
     ),
-    /// Resize the nested screen, keeping the output scale.
+    /// Resize the nested screen,
+    ///  keeping the output scale.
     Resize {
-        /// New width in logical pixels; the framebuffer is this times the scale.
+        /// New width in logical pixels;
+        ///  the framebuffer is this times the scale.
         width: i32,
-        /// New height in logical pixels; the framebuffer is this times the scale.
+        /// New height in logical pixels;
+        ///  the framebuffer is this times the scale.
         height: i32,
     },
     /// Originate a compositor-side file drag toward the hosted app (inbound DnD test).
@@ -224,9 +270,15 @@ pub enum Command {
 
 /// A response to send back on the control socket.
 ///
-/// What:     `pub enum Response { Ok, OkWith(String), Err(String) }`. Success with no
-///           data, success with a payload, or an error message.
-/// Why:      A uniform, machine-readable reply shape.
+/// What:
+///      `pub enum Response { Ok, OkWith(String), Err(String) }`.
+///  Success with no
+///           data,
+///  success with a payload,
+///  or an error message.
+/// Why:
+///       A uniform,
+///  machine-readable reply shape.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -234,7 +286,8 @@ pub enum Command {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub enum Response {
-    /// Success, no payload.
+    /// Success,
+    ///  no payload.
     Ok,
     /// Success with a text payload.
     OkWith(
@@ -250,9 +303,13 @@ pub enum Response {
 
 /// Format a response as its single wire line (no trailing newline).
 ///
-/// What:     `pub fn format_response(response: &Response) -> String`. Borrows the
-///           response, returns an owned `String`.
-/// Why:      The control thread appends a newline and writes this to the socket.
+/// What:
+///      `pub fn format_response(response: &Response) -> String`.
+///  Borrows the
+///           response,
+///  returns an owned `String`.
+/// Why:
+///       The control thread appends a newline and writes this to the socket.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -278,11 +335,16 @@ pub fn format_response(response: &Response) -> String {
 
 /// Parse one request line into a `Command`.
 ///
-/// What:     `pub fn parse_command(raw: &str) -> Result<Command, String>`. Borrows the
-///           raw line, returns the parsed command or a human-readable error string. The
+/// What:
+///      `pub fn parse_command(raw: &str) -> Result<Command, String>`.
+///  Borrows the
+///           raw line,
+///  returns the parsed command or a human-readable error string.
+///  The
 ///           `Result` error type is `String` (not `anyhow`) so the error can be sent
 ///           straight back as an `err <message>` line.
-/// Why:      Central grammar for the control protocol.
+/// Why:
+///       Central grammar for the control protocol.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -364,10 +426,14 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
 
 /// Parse the arguments of a `record` command (`<dir> [fps] [format]` or `stop`).
 ///
-/// What:     `fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`. The first token is either `stop` (stop recording) or the output
-///           directory, optionally followed by an fps and a format name.
-/// Why:      Isolate the recorder command grammar.
+/// What:
+///      `fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
+///           String>`.
+///  The first token is either `stop` (stop recording) or the output
+///           directory,
+///  optionally followed by an fps and a format name.
+/// Why:
+///       Isolate the recorder command grammar.
 fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
     // What:     `let first = tokens.next().ok_or_else(|| "record requires a directory or
     //           'stop'".to_string())?;`. Require the first token.
@@ -420,9 +486,14 @@ fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command, Strin
 
 /// Parse the arguments of a `click` command.
 ///
-/// What:     `fn parse_click(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`. Consumes the remaining tokens (an x, a y, and an optional button).
-/// Why:      Keep the numeric/button parsing out of the top-level `match`.
+/// What:
+///      `fn parse_click(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
+///           String>`.
+///  Consumes the remaining tokens (an x,
+///  a y,
+///  and an optional button).
+/// Why:
+///       Keep the numeric/button parsing out of the top-level `match`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -454,9 +525,12 @@ fn parse_click(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String
 
 /// Parse the arguments of a `key` command.
 ///
-/// What:     `fn parse_key(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`. Consumes a key name and an optional action word.
-/// Why:      Isolate key parsing.
+/// What:
+///      `fn parse_key(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
+///           String>`.
+///  Consumes a key name and an optional action word.
+/// Why:
+///       Isolate key parsing.
 fn parse_key(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
     // What:     `let name = tokens.next().ok_or_else(|| "key requires a name".to_string())?
     //           .to_string();`. Take the key name (owned copy).
@@ -484,9 +558,12 @@ fn parse_key(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> 
 
 /// Parse the arguments of a `resize` command.
 ///
-/// What:     `fn parse_resize(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`. Consumes a width and a height.
-/// Why:      Isolate resize parsing.
+/// What:
+///      `fn parse_resize(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
+///           String>`.
+///  Consumes a width and a height.
+/// Why:
+///       Isolate resize parsing.
 fn parse_resize(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
     // What:     `let width = parse_i32(tokens.next(), "resize width")?;`. Parse the width.
     // Why:      New screen width.
@@ -510,12 +587,20 @@ fn parse_resize(tokens: &mut std::str::SplitWhitespace) -> Result<Command, Strin
 
 /// Parse the arguments of a `drop-file` command (`<path> [x y]`).
 ///
-/// What:     `fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) ->
-///           Result<Command, String>`. The first token is the file path; two optional
-///           trailing tokens are the drop x and y. The path is a single whitespace-free
-///           token (unlike `screenshot`, because x/y follow it), which is enough for a
+/// What:
+///      `fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) ->
+///           Result<Command, String>`.
+///  The first token is the file path;
+///  two optional
+///           trailing tokens are the drop x and y.
+///  The path is a single whitespace-free
+///           token (unlike `screenshot`,
+///  because x/y follow it),
+///  which is enough for a
 ///           test fixture dropping paths like `/tmp/hello.txt`.
-/// Why:      Isolate the drop-file grammar; both coordinates or neither.
+/// Why:
+///       Isolate the drop-file grammar;
+///  both coordinates or neither.
 fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
     // What:     `let path = PathBuf::from(tokens.next().ok_or_else(...)?);`. Require the
     //           first token and wrap it as an owned path.
@@ -553,12 +638,18 @@ fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) -> Result<Command, St
     return Ok(Command::DropFile { path, x, y })
 }
 
-/// Parse an optional-and-may-be-absent token as `f64`, with a field name for errors.
+/// Parse an optional-and-may-be-absent token as `f64`,
+///  with a field name for errors.
 ///
-/// What:     `fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>,
-///           String>`. Unlike `parse_f64`, a missing token is `Ok(None)` (not an error);
+/// What:
+///      `fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>,
+///           String>`.
+///  Unlike `parse_f64`,
+///  a missing token is `Ok(None)` (not an error);
 ///           only a present-but-non-numeric token errors.
-/// Why:      `drop-file` coordinates are optional, so absence is valid.
+/// Why:
+///       `drop-file` coordinates are optional,
+///  so absence is valid.
 fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>, String> {
     // What:     `match token { None => Ok(None), Some(text) => Ok(Some(text.parse::<f64>()
     //           .map_err(...)?)) }`. Map absence to `None`; parse a present token, mapping a
@@ -573,11 +664,15 @@ fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>, String
     }
 }
 
-/// Parse an optional token as `f64`, with a field name for errors.
+/// Parse an optional token as `f64`,
+///  with a field name for errors.
 ///
-/// What:     `fn parse_f64(token: Option<&str>, field: &str) -> Result<f64, String>`.
-///           `f64` is a 64-bit float (sibling: 32-bit `f32`).
-/// Why:      Click coordinates are floating-point logical positions.
+/// What:
+///      `fn parse_f64(token: Option<&str>, field: &str) -> Result<f64, String>`.
+///           `f64` is a 64-bit float (sibling:
+///  32-bit `f32`).
+/// Why:
+///       Click coordinates are floating-point logical positions.
 fn parse_f64(token: Option<&str>, field: &str) -> Result<f64, String> {
     // What:     `token.ok_or_else(|| format!("{field} missing"))?.parse::<f64>()
     //           .map_err(|_| format!("{field} is not a number"))`. Require the token, then
@@ -590,10 +685,13 @@ fn parse_f64(token: Option<&str>, field: &str) -> Result<f64, String> {
         .map_err(|_| format!("{field} is not a number"))
 }
 
-/// Parse an optional token as `i32`, with a field name for errors.
+/// Parse an optional token as `i32`,
+///  with a field name for errors.
 ///
-/// What:     `fn parse_i32(token: Option<&str>, field: &str) -> Result<i32, String>`.
-/// Why:      Resize dimensions are signed integers (to match Smithay geometry).
+/// What:
+///      `fn parse_i32(token: Option<&str>, field: &str) -> Result<i32, String>`.
+/// Why:
+///       Resize dimensions are signed integers (to match Smithay geometry).
 fn parse_i32(token: Option<&str>, field: &str) -> Result<i32, String> {
     // What:     `token.ok_or_else(...)?.parse::<i32>().map_err(...)`. Same shape as
     //           `parse_f64` for integers.
@@ -606,9 +704,12 @@ fn parse_i32(token: Option<&str>, field: &str) -> Result<i32, String> {
 
 /// Parse a pointer-button name.
 ///
-/// What:     `fn parse_button(name: &str) -> Result<PointerButton, String>`. Maps a name
+/// What:
+///      `fn parse_button(name: &str) -> Result<PointerButton, String>`.
+///  Maps a name
 ///           to a variant.
-/// Why:      Accept `left`/`right`/`middle` in click commands.
+/// Why:
+///       Accept `left`/`right`/`middle` in click commands.
 fn parse_button(name: &str) -> Result<PointerButton, String> {
     // What:     `match name { "left" => Ok(Left), "right" => Ok(Right), "middle" =>
     //           Ok(Middle), other => Err(...) }`. Map names to variants.
@@ -621,9 +722,12 @@ fn parse_button(name: &str) -> Result<PointerButton, String> {
     }
 }
 
-/// What:     `#[cfg(test)] #[path = "protocol_tests.rs"] mod tests;`. Declares the unit
+/// What:
+///      `#[cfg(test)] #[path = "protocol_tests.rs"] mod tests;`.
+///  Declares the unit
 ///           test module (compiled only for tests) from the sibling file.
-/// Why:      Keep the adversarial parser/response tests beside the grammar they guard.
+/// Why:
+///       Keep the adversarial parser/response tests beside the grammar they guard.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,13 +1,22 @@
 //! Spawning and lifecycle of the single hosted client process.
 //!
-//! The fixture forks exactly one client, pointed at the nested socket via
-//! `WAYLAND_DISPLAY`, and stops the event loop (propagating the exit code) when that
-//! client exits. Child exit is detected by a periodic calloop timer that polls
-//! `try_wait`, which keeps everything on the event loop's single thread.
+//! The fixture forks exactly one client,
+//!  pointed at the nested socket via
+//! `WAYLAND_DISPLAY`,
+//!  and stops the event loop (propagating the exit code) when that
+//! client exits.
+//!  Child exit is detected by a periodic calloop timer that polls
+//! `try_wait`,
+//!  which keeps everything on the event loop's single thread.
 
-/// What:     `use std::time::Duration;`. `Duration` is the exit-poll interval. The child
-///           `Command` itself is built by the `systemd` module, so it is not named here.
-/// Why:      Needed to schedule the exit poll.
+/// What:
+///      `use std::time::Duration;`.
+///  `Duration` is the exit-poll interval.
+///  The child
+///           `Command` itself is built by the `systemd` module,
+///  so it is not named here.
+/// Why:
+///       Needed to schedule the exit poll.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,8 +28,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// What:     Grouped `use` of the calloop timer types and loop handle.
-/// Why:      `register_exit_poll` inserts a `Timer` source through the `LoopHandle`.
+/// What:
+///      Grouped `use` of the calloop timer types and loop handle.
+/// Why:
+///       `register_exit_poll` inserts a `Timer` source through the `LoopHandle`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,17 +42,26 @@ use smithay::reexports::calloop::{
     LoopHandle,
 };
 
-/// What:     `use anyhow::{Context, Result};`. Error helpers.
-/// Why:      `spawn_child` returns `Result` and annotates spawn failures.
+/// What:
+///      `use anyhow::{Context, Result};`.
+///  Error helpers.
+/// Why:
+///       `spawn_child` returns `Result` and annotates spawn failures.
 use anyhow::{Context, Result};
 
-/// What:     `use tracing::{info, warn};`. Structured log macros.
-/// Why:      Report spawn and exit events.
+/// What:
+///      `use tracing::{info, warn};`.
+///  Structured log macros.
+/// Why:
+///       Report spawn and exit events.
 use tracing::{info, warn};
 
-/// What:     `use crate::{state::Compositor, systemd::Isolation};`. Our state type and the
+/// What:
+///      `use crate::{state::Compositor, systemd::Isolation};`.
+///  Our state type and the
 ///           CPU-isolation settings.
-/// Why:      `spawn_child` reads/writes state and builds the child command per the isolation
+/// Why:
+///       `spawn_child` reads/writes state and builds the child command per the isolation
 ///           settings.
 ///
 /// In TS you'd write (pseudocode):
@@ -52,9 +72,13 @@ use crate::{state::Compositor, systemd::Isolation};
 
 /// How often to poll the hosted child for exit.
 ///
-/// What:     `const POLL_INTERVAL: Duration = Duration::from_millis(200);`. A fixed
+/// What:
+///      `const POLL_INTERVAL: Duration = Duration::from_millis(200);`.
+///  A fixed
 ///           200-millisecond interval.
-/// Why:      Frequent enough to shut down promptly after the app exits, rare enough to
+/// Why:
+///       Frequent enough to shut down promptly after the app exits,
+///  rare enough to
 ///           cost nothing measurable.
 ///
 /// In TS you'd write (pseudocode):
@@ -84,13 +108,16 @@ fn configure_child_environment(
     }
 }
 
-/// Spawn the hosted client, pointed at the nested Wayland socket.
+/// Spawn the hosted client,
+///  pointed at the nested Wayland socket.
 ///
-/// What:     `pub fn spawn_child(...) -> Result<()>` receives compositor state,
+/// What:
+///      `pub fn spawn_child(...) -> Result<()>` receives compositor state,
 ///           command,
 ///           isolation,
 ///           and optional private session-bus address.
-/// Why:      Launch the one client on nested Wayland and isolated appearance portal
+/// Why:
+///       Launch the one client on nested Wayland and isolated appearance portal
 ///           rather than host compositor or host Settings portal.
 ///
 /// In TS you'd write (pseudocode):
@@ -176,9 +203,12 @@ fn shutdown_expired(deadline: Option<Instant>, now: Instant) -> bool {
 
 /// Register the periodic child-exit poll on the event loop.
 ///
-/// What:     `pub fn register_exit_poll(loop_handle: &LoopHandle<Compositor>)`. Borrows
+/// What:
+///      `pub fn register_exit_poll(loop_handle: &LoopHandle<Compositor>)`.
+///  Borrows
 ///           the loop handle to insert a repeating timer source.
-/// Why:      Turns "the child exited" into a loop-stopping event without a second thread.
+/// Why:
+///       Turns "the child exited" into a loop-stopping event without a second thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -206,10 +236,15 @@ pub fn register_exit_poll(loop_handle: &LoopHandle<Compositor>) {
         .expect("failed to register the child-exit poll timer");
 }
 
-/// Check whether the hosted child has exited; if so, record its code and stop the loop.
+/// Check whether the hosted child has exited;
+///  if so,
+///  record its code and stop the loop.
 ///
-/// What:     `fn poll_child(state: &mut Compositor)`. Private helper called by the timer.
-/// Why:      Centralise the try-wait / record-code / stop-loop sequence.
+/// What:
+///      `fn poll_child(state: &mut Compositor)`.
+///  Private helper called by the timer.
+/// Why:
+///       Centralise the try-wait / record-code / stop-loop sequence.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

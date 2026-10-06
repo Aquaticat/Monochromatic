@@ -1,5 +1,7 @@
-//! What: Exact-snapshot and redacted-identity controls for the embedding interface.
-//! Why: The standalone text protocol cannot be used as the source of candidate identity.
+//! What:
+//!  Exact-snapshot and redacted-identity controls for the embedding interface.
+//! Why:
+//!  The standalone text protocol cannot be used as the source of candidate identity.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

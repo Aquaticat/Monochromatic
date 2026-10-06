@@ -1,4 +1,5 @@
-//! What the worker thread remembers: the displayed document and every server process it knows.
+//! What the worker thread remembers:
+//!  the displayed document and every server process it knows.
 
 /// The store that decides which diagnostic sets are current.
 use super::diagnostics::DiagnosticStore;
@@ -10,9 +11,13 @@ use super::identity::{DocumentStamp, ServerIdentity};
 use super::owed::Owed;
 /// The latest-value status rows are built from these records.
 use super::status::{DocumentState, Features, LanguageStatus, ServerState, ServerStatus};
-/// What: `Rope` is Helix's character-indexed text buffer; the `config` types describe one
+/// What:
+///  `Rope` is Helix's character-indexed text buffer;
+///  the `config` types describe one
 ///       language and name the features a server may be asked for.
-/// Why: The worker keeps the text it last told servers about, and routes by configured features.
+/// Why:
+///  The worker keeps the text it last told servers about,
+///  and routes by configured features.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,11 +27,19 @@ use helix_core::{
     Rope,
     syntax::config::{LanguageConfiguration, LanguageServerFeature},
 };
-/// helix-lsp's client handle, its server key, and the protocol's data types.
+/// helix-lsp's client handle,
+///  its server key,
+///  and the protocol's data types.
 use helix_lsp::{Client, LanguageServerId, lsp};
-/// What: `PathBuf` is an owned filesystem path; `Arc` is a thread-safe shared pointer
-///       (siblings: `Rc` for one thread, `Box` for one owner).
-/// Why: helix-lsp hands clients out as `Arc<Client>`; the worker keeps clones of them.
+/// What:
+///  `PathBuf` is an owned filesystem path;
+///  `Arc` is a thread-safe shared pointer
+///       (siblings:
+///  `Rc` for one thread,
+///  `Box` for one owner).
+/// Why:
+///  helix-lsp hands clients out as `Arc<Client>`;
+///  the worker keeps clones of them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,9 +47,16 @@ use helix_lsp::{Client, LanguageServerId, lsp};
 /// ```
 use std::{path::PathBuf, sync::Arc};
 
-/// What: One server the worker knows about: a running process, or a configured server that
-///       could not be started. `Option<Arc<Client>>` is "a shared client, or nothing".
-/// Why: Status rows exist for servers that never ran, and running servers outlive file switches.
+/// What:
+///  One server the worker knows about:
+///  a running process,
+///  or a configured server that
+///       could not be started.
+///  `Option<Arc<Client>>` is "a shared client,
+///  or nothing".
+/// Why:
+///  Status rows exist for servers that never ran,
+///  and running servers outlive file switches.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,18 +74,24 @@ pub(super) struct ServerRecord {
     pub(super) attached: bool,
     /// True once `didOpen` for the displayed document was sent to it.
     pub(super) opened: bool,
-    /// Work the server reported as begun and not yet ended, with its title.
+    /// Work the server reported as begun and not yet ended,
+    ///  with its title.
     pub(super) progress: Vec<(lsp::ProgressToken, String)>,
     /// Hints and pull diagnostics for the displayed text that this server left unanswered
-    /// through their retries; they are asked again when the server next sends anything.
+    /// through their retries;
+    ///  they are asked again when the server next sends anything.
     pub(super) owed: Owed,
 }
 
 /// Record behavior.
 impl ServerRecord {
-    /// What: The helix-lsp key of the running process, or nothing. `LanguageServerId` is a small
+    /// What:
+    ///  The helix-lsp key of the running process,
+    ///  or nothing.
+    ///  `LanguageServerId` is a small
     ///       copyable key.
-    /// Why: Server traffic arrives tagged with this key.
+    /// Why:
+    ///  Server traffic arrives tagged with this key.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -76,7 +102,9 @@ impl ServerRecord {
         return self.client.as_ref().map(|client| return client.id());
     }
 
-    /// The client, only when it has finished `initialize`; every helix-lsp call needs this gate.
+    /// The client,
+    ///  only when it has finished `initialize`;
+    ///  every helix-lsp call needs this gate.
     pub(super) fn ready(&self) -> Option<&Arc<Client>> {
         // What: `filter` keeps the value only when the closure accepts it.
         // Why: helix-lsp's request and notification methods panic on a client whose capabilities
@@ -102,42 +130,57 @@ impl ServerRecord {
 ///                       window?: HintWindow };
 /// ```
 pub(super) struct OpenDocument {
-    /// Resolved path, used to match diagnostics and targets.
+    /// Resolved path,
+    ///  used to match diagnostics and targets.
     pub(super) path: PathBuf,
-    /// Address sent in `didOpen`, in the spelling Helix uses for the project root.
+    /// Address sent in `didOpen`,
+    ///  in the spelling Helix uses for the project root.
     pub(super) url: lsp::Url,
     /// Text of the displayed revision.
     pub(super) text: Rope,
     /// File generation and revision of that text.
     pub(super) stamp: DocumentStamp,
-    /// Protocol version: zero at `didOpen`, plus one per reload. `i32` is the signed 32-bit
-    /// integer the protocol mandates (siblings: `u32`, `i64`).
+    /// Protocol version:
+    ///  zero at `didOpen`,
+    ///  plus one per reload.
+    ///  `i32` is the signed 32-bit
+    /// integer the protocol mandates (siblings:
+    ///  `u32`,
+    ///  `i64`).
     pub(super) version: i32,
-    /// The language's Helix configuration; absent when the file has no recognized language.
+    /// The language's Helix configuration;
+    ///  absent when the file has no recognized language.
     pub(super) config: Option<Arc<LanguageConfiguration>>,
     /// Language identifier sent to servers.
     pub(super) language_id: String,
     /// Whether servers apply to this file at all.
     pub(super) state: DocumentState,
-    /// Visible lines last reported by the interface, for hint requests after a reload.
+    /// Visible lines last reported by the interface,
+    ///  for hint requests after a reload.
     pub(super) window: Option<HintWindow>,
 }
 
 /// Everything the worker thread owns besides helix-lsp's registry.
 pub(super) struct Session {
-    /// The displayed document; absent when none is displayed.
+    /// The displayed document;
+    ///  absent when none is displayed.
     pub(super) document: Option<OpenDocument>,
-    /// Every known server, in the order they were first seen.
+    /// Every known server,
+    ///  in the order they were first seen.
     pub(super) servers: Vec<ServerRecord>,
-    /// Process generation given to the next started server. `u64` never wraps in practice.
+    /// Process generation given to the next started server.
+    ///  `u64` never wraps in practice.
     pub(super) next_instance: u64,
     /// Diagnostics for the displayed document.
     pub(super) diagnostics: DiagnosticStore,
-    /// Hints for the displayed document, per answering server.
+    /// Hints for the displayed document,
+    ///  per answering server.
     pub(super) hints: Vec<(ServerIdentity, Vec<InlayHint>)>,
-    /// Requested hint lines of the stored hints, as `(first, last)`.
+    /// Requested hint lines of the stored hints,
+    ///  as `(first, last)`.
     pub(super) hint_lines: (usize, usize),
-    /// Position requests with answers outstanding, as `(request number, servers still to answer)`.
+    /// Position requests with answers outstanding,
+    ///  as `(request number, servers still to answer)`.
     pub(super) pending: Vec<(u64, usize)>,
 }
 
@@ -174,9 +217,12 @@ impl Session {
         };
     }
 
-    /// What: Index of the record whose running process has this helix-lsp key.
-    ///       `Option<usize>` is "an index, or nothing".
-    /// Why: Indexes are used instead of borrowed records so the worker can keep using its other
+    /// What:
+    ///  Index of the record whose running process has this helix-lsp key.
+    ///       `Option<usize>` is "an index,
+    ///  or nothing".
+    /// Why:
+    ///  Indexes are used instead of borrowed records so the worker can keep using its other
     ///      fields while it changes one record.
     ///
     /// In TS you'd write (pseudocode):
@@ -199,13 +245,17 @@ impl Session {
             .position(|record| return &record.identity == identity);
     }
 
-    /// The displayed document's stamp, or nothing.
+    /// The displayed document's stamp,
+    ///  or nothing.
     pub(super) fn stamp(&self) -> Option<DocumentStamp> {
         return self.document.as_ref().map(|document| return document.stamp);
     }
 
-    /// What: Detach every record from the document and forget servers that never ran.
-    /// Why: Running servers stay for the next file of their language; rows that only explained
+    /// What:
+    ///  Detach every record from the document and forget servers that never ran.
+    /// Why:
+    ///  Running servers stay for the next file of their language;
+    ///  rows that only explained
     ///      the previous file's state do not.
     ///
     /// In TS you'd write (pseudocode):
@@ -309,8 +359,10 @@ impl Session {
         };
     }
 
-    /// What: Count one answer for a position request and return how many are still outstanding.
-    /// Why: The interface learns from `remaining == 0` that no further reply will come.
+    /// What:
+    ///  Count one answer for a position request and return how many are still outstanding.
+    /// Why:
+    ///  The interface learns from `remaining == 0` that no further reply will come.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

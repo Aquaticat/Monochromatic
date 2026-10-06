@@ -1,29 +1,38 @@
-//! What: Linear JSONC token and comment scanning over a borrowed source string.
-//! Why: The published parser models required by this port either lose surrogate data or use regex.
+//! What:
+//!  Linear JSONC token and comment scanning over a borrowed source string.
+//! Why:
+//!  The published parser models required by this port either lose surrogate data or use regex.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! type Scanner = { source: string; offset: number };
 //! ```
 
-/// What: Import comment and parse-error values from the owned value model.
-/// Why: Scanner errors and trivia must use the same interface as parser results.
+/// What:
+///  Import comment and parse-error values from the owned value model.
+/// Why:
+///  Scanner errors and trivia must use the same interface as parser results.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncComment, JsoncCommentKind, JsoncParseError } from './value';
 /// ```
 use crate::error::JsoncParseError;
-/// What:     Import the exact-number identity that a scanned token must produce.
-/// Why:      A number token is only usable when its mathematical identity is canonical and exact.
+/// What:
+///      Import the exact-number identity that a scanned token must produce.
+/// Why:
+///       A number token is only usable when its mathematical identity is canonical and exact.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { JsoncNumberIdentity } from './number';
 /// ```
 use crate::number::JsoncNumberIdentity;
-/// What:     Import the comment types the scanner returns for trivia.
-/// Why:      Comments are data in this crate, so scanning produces the same types the document stores.
+/// What:
+///      Import the comment types the scanner returns for trivia.
+/// Why:
+///       Comments are data in this crate,
+///  so scanning produces the same types the document stores.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,24 +40,35 @@ use crate::number::JsoncNumberIdentity;
 /// ```
 use crate::value::{JsoncComment, JsoncCommentKind};
 
-/// What: Borrow a source string and track its next UTF-8 byte offset.
-/// Why: The scanner never copies whole input merely to navigate it.
+/// What:
+///  Borrow a source string and track its next UTF-8 byte offset.
+/// Why:
+///  The scanner never copies whole input merely to navigate it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Scanner = { source: string; offset: number };
 /// ```
 pub struct Scanner<'a> {
-    /// What: Borrowed UTF-8 source, unlike an owned `String` that would copy it.
-    /// Why: Parsed nodes retain only their required raw scalar slices.
+    /// What:
+    ///  Borrowed UTF-8 source,
+    ///  unlike an owned `String` that would copy it.
+    /// Why:
+    ///  Parsed nodes retain only their required raw scalar slices.
     pub source: &'a str,
-    /// What: The next source byte, not a UTF-16 index.
-    /// Why: Errors and raw slices point directly at Rust UTF-8 input.
+    /// What:
+    ///  The next source byte,
+    ///  not a UTF-16 index.
+    /// Why:
+    ///  Errors and raw slices point directly at Rust UTF-8 input.
     pub offset: usize,
 }
 
-/// What: Same-line comments and whether the one separating comma was consumed.
-/// Why: A value's trailing comment attaches to that value, not the next entry.
+/// What:
+///  Same-line comments and whether the one separating comma was consumed.
+/// Why:
+///  A value's trailing comment attaches to that value,
+///  not the next entry.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,8 +81,11 @@ pub struct Trailing {
     pub comma: bool,
 }
 
-/// What: Convert an ASCII hexadecimal digit to its nibble value.
-/// Why: `\u` escapes represent UTF-16 code units, including lone surrogates.
+/// What:
+///  Convert an ASCII hexadecimal digit to its nibble value.
+/// Why:
+///  `\u` escapes represent UTF-16 code units,
+///  including lone surrogates.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -93,16 +116,22 @@ fn hex_digit(byte: u8) -> Option<u16> {
     return None;
 }
 
-/// What:     The scanner's token, trivia and error operations.
-/// Why:      One cursor type owns source navigation, so the parser never indexes the document itself.
+/// What:
+///      The scanner's token,
+///  trivia and error operations.
+/// Why:
+///       One cursor type owns source navigation,
+///  so the parser never indexes the document itself.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class Scanner { byte(): number | undefined; consume(expected: number): boolean; string(): [number[], string] }
 /// ```
 impl<'a> Scanner<'a> {
-    /// What: Create a source-borrowing scanner positioned at the start.
-    /// Why: The parser owns its scanner and never mutates caller-owned input.
+    /// What:
+    ///  Create a source-borrowing scanner positioned at the start.
+    /// Why:
+    ///  The parser owns its scanner and never mutates caller-owned input.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -112,8 +141,10 @@ impl<'a> Scanner<'a> {
         return Self { source, offset: 0 };
     }
 
-    /// What: Read the current byte without changing the scanner offset.
-    /// Why: Parser branches can select syntax before committing input consumption.
+    /// What:
+    ///  Read the current byte without changing the scanner offset.
+    /// Why:
+    ///  Parser branches can select syntax before committing input consumption.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -130,8 +161,10 @@ impl<'a> Scanner<'a> {
         return self.source.as_bytes().get(self.offset).copied();
     }
 
-    /// What: Consume one expected ASCII byte when it is present.
-    /// Why: Container delimiters and punctuation move the cursor exactly once.
+    /// What:
+    ///  Consume one expected ASCII byte when it is present.
+    /// Why:
+    ///  Container delimiters and punctuation move the cursor exactly once.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -145,8 +178,10 @@ impl<'a> Scanner<'a> {
         return true;
     }
 
-    /// What: Build a parse error at the current UTF-8 byte offset.
-    /// Why: Callers receive a source position and neutral operation message.
+    /// What:
+    ///  Build a parse error at the current UTF-8 byte offset.
+    /// Why:
+    ///  Callers receive a source position and neutral operation message.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -156,8 +191,11 @@ impl<'a> Scanner<'a> {
         return JsoncParseError { offset: self.offset, message: message.to_string() };
     }
 
-    /// What: Consume one C-style line or block comment, without its delimiters.
-    /// Why: The parser attaches the body to a key or value instead of dropping it.
+    /// What:
+    ///  Consume one C-style line or block comment,
+    ///  without its delimiters.
+    /// Why:
+    ///  The parser attaches the body to a key or value instead of dropping it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -195,8 +233,10 @@ impl<'a> Scanner<'a> {
         return Err(self.error("expected JSONC comment"));
     }
 
-    /// What: Skip JSON whitespace and gather comments before the next token.
-    /// Why: Leading comments must be assigned to the following key or value.
+    /// What:
+    ///  Skip JSON whitespace and gather comments before the next token.
+    /// Why:
+    ///  Leading comments must be assigned to the following key or value.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -233,8 +273,10 @@ impl<'a> Scanner<'a> {
         return Ok(comments);
     }
 
-    /// What: Gather at most one comma and following comments on a value's line.
-    /// Why: Inline comments belong to the value just parsed even after its comma.
+    /// What:
+    ///  Gather at most one comma and following comments on a value's line.
+    /// Why:
+    ///  Inline comments belong to the value just parsed even after its comma.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -260,8 +302,10 @@ impl<'a> Scanner<'a> {
         return Ok(Trailing { comments, comma });
     }
 
-    /// What: Consume exactly four hexadecimal digits after a JSON `\u` marker.
-    /// Why: Every code unit remains valid even when it represents a lone surrogate.
+    /// What:
+    ///  Consume exactly four hexadecimal digits after a JSON `\u` marker.
+    /// Why:
+    ///  Every code unit remains valid even when it represents a lone surrogate.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -285,8 +329,10 @@ impl<'a> Scanner<'a> {
         return Ok(value);
     }
 
-    /// What: Parse a JSON quoted token into UTF-16 units and unchanged raw spelling.
-    /// Why: Rust `String` alone cannot represent escaped unpaired surrogate values.
+    /// What:
+    ///  Parse a JSON quoted token into UTF-16 units and unchanged raw spelling.
+    /// Why:
+    ///  Rust `String` alone cannot represent escaped unpaired surrogate values.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -342,8 +388,10 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    /// What: Parse an unrounded JSON number and retain its exact literal spelling.
-    /// Why: Large integers and exponents must not pass through `f64`.
+    /// What:
+    ///  Parse an unrounded JSON number and retain its exact literal spelling.
+    /// Why:
+    ///  Large integers and exponents must not pass through `f64`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

@@ -1,4 +1,8 @@
-//! Document synchronization: `didOpen`, `didChange` with its fallbacks, `didSave`, and `didClose`.
+//! Document synchronization:
+//!  `didOpen`,
+//!  `didChange` with its fallbacks,
+//!  `didSave`,
+//!  and `didClose`.
 
 /// Starting and attaching servers is its own step.
 use super::attach;
@@ -16,8 +20,10 @@ use super::status::{DocumentState, ServerState};
 use super::sync::{DocumentOpen, DocumentReload};
 /// The worker whose state these steps change.
 use super::worker::{Internal, Worker};
-/// What: `compare_ropes` computes the edit list between two texts.
-/// Why: It is the fallback when a reload does not continue from the text servers were told about.
+/// What:
+///  `compare_ropes` computes the edit list between two texts.
+/// Why:
+///  It is the fallback when a reload does not continue from the text servers were told about.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,8 +32,10 @@ use super::worker::{Internal, Worker};
 use helix_core::diff::compare_ropes;
 /// helix-lsp's client handle and the protocol's data types.
 use helix_lsp::{Client, lsp};
-/// What: `Duration` is a time span.
-/// Why: The diagnostics hold has a fixed fallback delay.
+/// What:
+///  `Duration` is a time span.
+/// Why:
+///  The diagnostics hold has a fixed fallback delay.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,13 +44,21 @@ use helix_lsp::{Client, lsp};
 use std::time::Duration;
 
 /// How long an unversioned-diagnostics hold lasts for a server that answers no request after a
-/// reload. Chosen, not measured: longer than the answers observed in the integration spike for
-/// the first request after a change, short enough that diagnostics do not stay hidden.
+/// reload.
+///  Chosen,
+///  not measured:
+///  longer than the answers observed in the integration spike for
+/// the first request after a change,
+///  short enough that diagnostics do not stay hidden.
 const HOLD_FALLBACK: Duration = Duration::from_secs(2);
 
-/// What: Build the address a document is announced under. `Option<lsp::Url>` is "an address,
+/// What:
+///  Build the address a document is announced under.
+///  `Option<lsp::Url>` is "an address,
 ///       or nothing" for a path that cannot be expressed as a `file` address.
-/// Why: Below the project root the address uses Helix's spelling of the root, so it agrees with
+/// Why:
+///  Below the project root the address uses Helix's spelling of the root,
+///  so it agrees with
 ///      the root address Helix sends in `initialize`.
 ///
 /// In TS you'd write (pseudocode):
@@ -65,9 +81,16 @@ fn address(worker: &Worker, path: &std::path::Path) -> Option<lsp::Url> {
     return lsp::Url::from_file_path(spelled).ok();
 }
 
-/// What: Display a file: close the previous one, record the new one, and attach its servers.
-///       `async fn` returns a future (a promise); `&mut Worker` lends the worker for modification.
-/// Why: There is exactly one displayed document; servers of other languages keep running.
+/// What:
+///  Display a file:
+///  close the previous one,
+///  record the new one,
+///  and attach its servers.
+///       `async fn` returns a future (a promise);
+///  `&mut Worker` lends the worker for modification.
+/// Why:
+///  There is exactly one displayed document;
+///  servers of other languages keep running.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -96,9 +119,15 @@ pub(super) async fn open(worker: &mut Worker, open: DocumentOpen) {
     attach::attach(worker).await;
 }
 
-/// What: Send `didOpen` to one server if it is initialized, serves the document, and has not
-///       received it yet; then ask it for diagnostics and hints.
-/// Why: helix-lsp silently drops notifications sent before initialization, so this runs both
+/// What:
+///  Send `didOpen` to one server if it is initialized,
+///  serves the document,
+///  and has not
+///       received it yet;
+///  then ask it for diagnostics and hints.
+/// Why:
+///  helix-lsp silently drops notifications sent before initialization,
+///  so this runs both
 ///      when a file is displayed on a ready server and when a server reports `initialized`.
 ///
 /// In TS you'd write (pseudocode):
@@ -149,10 +178,15 @@ fn accepts_open_close(client: &Client) -> bool {
     };
 }
 
-/// What: Tell one server about the new text; returns false when it cannot be synchronized.
-/// Why: `text_document_did_change` picks full text or incremental ranges from the negotiated
-///      kind and returns nothing when the server takes no changes. Such a server is closed and
-///      reopened with the new text if it accepts that; otherwise it is out of sync for this file.
+/// What:
+///  Tell one server about the new text;
+///  returns false when it cannot be synchronized.
+/// Why:
+///  `text_document_did_change` picks full text or incremental ranges from the negotiated
+///      kind and returns nothing when the server takes no changes.
+///  Such a server is closed and
+///      reopened with the new text if it accepts that;
+///  otherwise it is out of sync for this file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -198,9 +232,14 @@ fn synchronize(client: &Client, document: &OpenDocument, reload: &DocumentReload
     return true;
 }
 
-/// What: Apply an accepted external reload: advance the document, synchronize every server that
-///       holds it, and ask again for diagnostics and hints.
-/// Why: Results for the previous revision are invalid from this moment on.
+/// What:
+///  Apply an accepted external reload:
+///  advance the document,
+///  synchronize every server that
+///       holds it,
+///  and ask again for diagnostics and hints.
+/// Why:
+///  Results for the previous revision are invalid from this moment on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -275,8 +314,12 @@ pub(super) fn reload(worker: &mut Worker, mut reload: DocumentReload) {
     }
 }
 
-/// What: Stop displaying the document: `didClose` to every server that received `didOpen`.
-/// Why: Servers stay running for the next file of their language; everything derived from the
+/// What:
+///  Stop displaying the document:
+///  `didClose` to every server that received `didOpen`.
+/// Why:
+///  Servers stay running for the next file of their language;
+///  everything derived from the
 ///      closed file is cleared.
 ///
 /// In TS you'd write (pseudocode):

@@ -1,6 +1,11 @@
-//! What: Path and language facts the executable derives for each input.
-//! Why: One file has three names: its absolute location (for reads and writes), its display name
-//! (for findings), and its configuration-relative logical path (for `files` and `ignores` patterns).
+//! What:
+//!  Path and language facts the executable derives for each input.
+//! Why:
+//!  One file has three names:
+//!  its absolute location (for reads and writes),
+//!  its display name
+//! (for findings),
+//!  and its configuration-relative logical path (for `files` and `ignores` patterns).
 //! Keeping the derivations together stops the three from drifting apart.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,14 +15,19 @@
 
 /// Import lexical normalization and the processor's language tag.
 use crate::{markdown_lfs_target::lexical_normal, processors::ProcessorLanguage};
-/// Import native path types; `OsStr` compares extension bytes without lossy conversion.
+/// Import native path types;
+///  `OsStr` compares extension bytes without lossy conversion.
 use std::{
     ffi::{OsStr, OsString},
     path::{Component, Path, PathBuf},
 };
 
-/// What: The language a file's extension selects.
-/// Why: `.rs` is Rust, `.md` is Markdown and `.mdx` is MDX; nothing else is linted.
+/// What:
+///  The language a file's extension selects.
+/// Why:
+///  `.rs` is Rust,
+///  `.md` is Markdown and `.mdx` is MDX;
+///  nothing else is linted.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -29,12 +39,16 @@ pub enum Language {
     Rust,
     /// A `.md` file.
     Markdown,
-    /// A `.mdx` file; MDX syntax is parsed, never executed.
+    /// A `.mdx` file;
+    ///  MDX syntax is parsed,
+    ///  never executed.
     Mdx,
 }
 
-/// What: Conversions from the file-level language.
-/// Why: The processor interface has its own tag for the same three languages.
+/// What:
+///  Conversions from the file-level language.
+/// Why:
+///  The processor interface has its own tag for the same three languages.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -51,8 +65,12 @@ impl Language {
     }
 }
 
-/// What: Choose a language from a path's extension, or `None` for an unsupported file.
-/// Why: Extension bytes are compared exactly; `README.MD` is not a Markdown input.
+/// What:
+///  Choose a language from a path's extension,
+///  or `None` for an unsupported file.
+/// Why:
+///  Extension bytes are compared exactly;
+///  `README.MD` is not a Markdown input.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,8 +90,12 @@ pub fn language_of(path: &Path) -> Option<Language> {
     return None;
 }
 
-/// What: Resolve a possibly relative path against the working directory and remove `.` and `..`.
-/// Why: Later prefix comparisons (display names, configuration bases, repository roots) are lexical.
+/// What:
+///  Resolve a possibly relative path against the working directory and remove `.` and `..`.
+/// Why:
+///  Later prefix comparisons (display names,
+///  configuration bases,
+///  repository roots) are lexical.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,9 +108,15 @@ pub fn absolute_normal(path: &Path, cwd: &Path) -> PathBuf {
     return lexical_normal(&cwd.join(path));
 }
 
-/// What: The name findings report: relative to the working directory when the file is inside it.
-/// Why: Consumers match findings against the paths they passed; a file outside the working
-/// directory keeps its absolute path. Bytes that are not UTF-8 are replaced, since JSON text cannot carry them.
+/// What:
+///  The name findings report:
+///  relative to the working directory when the file is inside it.
+/// Why:
+///  Consumers match findings against the paths they passed;
+///  a file outside the working
+/// directory keeps its absolute path.
+///  Bytes that are not UTF-8 are replaced,
+///  since JSON text cannot carry them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -103,9 +131,14 @@ pub fn display_name(absolute: &Path, cwd: &Path) -> String {
     return absolute.to_string_lossy().into_owned();
 }
 
-/// What: The path from `base` to `absolute`, using `..` for each directory left behind.
-/// Why: Configuration patterns match a path relative to the configuration's base, and `--config`
-/// may select a file outside that base. Both inputs are absolute and lexically normal.
+/// What:
+///  The path from `base` to `absolute`,
+///  using `..` for each directory left behind.
+/// Why:
+///  Configuration patterns match a path relative to the configuration's base,
+///  and `--config`
+/// may select a file outside that base.
+///  Both inputs are absolute and lexically normal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -139,8 +172,11 @@ pub fn relative_from(base: &Path, absolute: &Path) -> PathBuf {
     return relative;
 }
 
-/// What: Append a virtual-file suffix such as `/42.md/0.rs` to a host's logical path.
-/// Why: A virtual file is matched by configuration under its host's path; appending to the native
+/// What:
+///  Append a virtual-file suffix such as `/42.md/0.rs` to a host's logical path.
+/// Why:
+///  A virtual file is matched by configuration under its host's path;
+///  appending to the native
 /// string keeps host bytes that are not UTF-8.
 ///
 /// In TS you'd write (pseudocode):

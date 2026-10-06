@@ -1,6 +1,9 @@
-//! What: Load the policy configuration of the worktree one invocation runs in, and render
+//! What:
+//!  Load the policy configuration of the worktree one invocation runs in,
+//!  and render
 //!       the events configuration loading can produce.
-//! Why: Both wrapped Git commands and `git cli-git check`/`fix` need the same answer:
+//! Why:
+//!  Both wrapped Git commands and `git cli-git check`/`fix` need the same answer:
 //!      what does the `cli-git.config.jsonc` of the worktree Git reported say.
 //!
 //! In TS you'd write (pseudocode):
@@ -20,11 +23,18 @@ use super::worktree_identity::{WorktreeIdentity, worktree_root};
 /// `PathBuf` is an owned filesystem path of raw OS bytes.
 use std::path::PathBuf;
 
-/// What: Load the configuration for the worktree Git reported for this invocation.
+/// What:
+///  Load the configuration for the worktree Git reported for this invocation.
 ///       `&WorktreeIdentity` borrows that answer;
 ///       `Result<LoadedConfig, ConfigError>` is the settings or the rejection.
-/// Why:  The caller already asked Git where the command runs, once, so this function
-///       starts no process. Outside a worktree (no repository, a bare repository, the
+/// Why:
+///   The caller already asked Git where the command runs,
+///  once,
+///  so this function
+///       starts no process.
+///  Outside a worktree (no repository,
+///  a bare repository,
+///  the
 ///       inside of `.git`) there is no configuration file and the defaults apply.
 ///
 /// In TS you'd write (pseudocode):
@@ -46,9 +56,13 @@ pub fn load_identity_config(identity: &WorktreeIdentity) -> Result<LoadedConfig,
     return load_repository_config(root);
 }
 
-/// What: Render the `config-invalid` event for a rejected configuration.
-///       `String` is the owned, line-terminated JSON line.
-/// Why:  Configuration failures are machine-readable events with exit status 2, on
+/// What:
+///  Render the `config-invalid` event for a rejected configuration.
+///       `String` is the owned,
+///  line-terminated JSON line.
+/// Why:
+///   Configuration failures are machine-readable events with exit status 2,
+///  on
 ///       standard error for wrapped commands and standard output for direct commands.
 ///
 /// In TS you'd write (pseudocode):
@@ -59,9 +73,12 @@ pub fn config_invalid_event(error: &ConfigError) -> String {
     return render_engine_failure(0, EngineFailureCode::ConfigInvalid, error.message.as_str());
 }
 
-/// What: Render one warning event per legacy file left beside the JSONC file.
-/// Why:  The stale executable configuration is reported on every configuration load,
-///       never ignored silently; events are numbered from zero in file order.
+/// What:
+///  Render one warning event per legacy file left beside the JSONC file.
+/// Why:
+///   The stale executable configuration is reported on every configuration load,
+///       never ignored silently;
+///  events are numbered from zero in file order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,9 +1,13 @@
-//! The embedded table: sorted lookups, digest checks, and the messages for damage and absence.
+//! The embedded table:
+//!  sorted lookups,
+//!  digest checks,
+//!  and the messages for damage and absence.
 
 use super::{EmbeddedFile, EmbeddedRuntime};
 use crate::content_digest::fnv1a;
 
-/// An intact table, sorted by path as the build script writes it.
+/// An intact table,
+///  sorted by path as the build script writes it.
 static INTACT: [EmbeddedFile; 3] = [
     EmbeddedFile {
         path: "runtime/grammars/sql.so",

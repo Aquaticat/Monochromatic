@@ -1,5 +1,8 @@
-//! What:    Character-class `[...]` parsing.
-//! Why:     This file is the Rust module that groups the class implementation, so the
+//! What:
+//!     Character-class `[...]` parsing.
+//! Why:
+//!      This file is the Rust module that groups the class implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,11 @@
 //! // module class: see exported functions and types below.
 //! ```
 
-/// What:    Imports the byte-set accumulator and node constructor.
-/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+/// What:
+///     Imports the byte-set accumulator and node constructor.
+/// Why:
+///      The code below uses `ByteSet` directly;
+///  importing from `crate/charset` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +23,11 @@
 /// ```
 use crate::charset::ByteSet;
 
-/// What:    Imports the node algebra produced by a class.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra produced by a class.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,8 +36,11 @@ use crate::charset::ByteSet;
 /// ```
 use crate::ast::node::Node;
 
-/// What:    Imports the class smart constructor (collapses an empty set to `Fail`).
-/// Why:     The code below uses `class` directly; importing from `crate/ast/smart` keeps each
+/// What:
+///     Imports the class smart constructor (collapses an empty set to `Fail`).
+/// Why:
+///      The code below uses `class` directly;
+///  importing from `crate/ast/smart` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -37,8 +49,11 @@ use crate::ast::node::Node;
 /// ```
 use crate::ast::smart::class;
 
-/// What:    Imports the error type for malformed classes.
-/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+/// What:
+///     Imports the error type for malformed classes.
+/// Why:
+///      The code below uses `CompileError` directly;
+///  importing from `crate/error` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -47,8 +62,11 @@ use crate::ast::smart::class;
 /// ```
 use crate::error::CompileError;
 
-/// What:    Imports the cursor.
-/// Why:     The code below uses `Cursor` directly; importing from `crate/parse/cursor` keeps
+/// What:
+///     Imports the cursor.
+/// Why:
+///      The code below uses `Cursor` directly;
+///  importing from `crate/parse/cursor` keeps
 ///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -57,8 +75,12 @@ use crate::error::CompileError;
 /// ```
 use crate::parse::cursor::Cursor;
 
-/// What:    Imports the escape parser and its result kind.
-/// Why:     The code below uses `EscapeResult`, `parse_escape` directly; importing from
+/// What:
+///     Imports the escape parser and its result kind.
+/// Why:
+///      The code below uses `EscapeResult`,
+///  `parse_escape` directly;
+///  importing from
 ///          `crate/parse/escape` keeps each call site focused on the matcher logic instead of
 ///          the full Rust path.
 ///
@@ -70,8 +92,11 @@ use crate::parse::escape::{EscapeResult, parse_escape};
 
 /// One element inside a character class.
 ///
-/// What: either a concrete byte (a possible range endpoint) or a shorthand set.
-/// Why: ranges are only meaningful between two bytes, so the parser must know
+/// What:
+///  either a concrete byte (a possible range endpoint) or a shorthand set.
+/// Why:
+///  ranges are only meaningful between two bytes,
+///  so the parser must know
 /// which kind it just read.
 ///
 /// In TS you'd write (pseudocode):
@@ -80,8 +105,10 @@ use crate::parse::escape::{EscapeResult, parse_escape};
 ///   | { kind: "variant" };
 /// ```
 enum ClassAtom {
-    /// What:    A single byte that may begin or end a range.
-    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    /// What:
+    ///     A single byte that may begin or end a range.
+    /// Why:
+    ///      The surrounding function uses this step to keep the matcher behavior correct
     ///          at this point.
     ///
     /// In TS you'd write (pseudocode):
@@ -89,8 +116,11 @@ enum ClassAtom {
     /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
     /// ```
     Byte(
-        /// What:    Byte value, usable as a range endpoint.
-        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        /// What:
+        ///     Byte value,
+        ///  usable as a range endpoint.
+        /// Why:
+        ///      The surrounding function uses this step to keep the matcher behavior
         ///          correct at this point.
         ///
         /// In TS you'd write (pseudocode):
@@ -99,8 +129,10 @@ enum ClassAtom {
         /// ```
         u8,
     ),
-    /// What:    A shorthand set that cannot participate in a range.
-    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    /// What:
+    ///     A shorthand set that cannot participate in a range.
+    /// Why:
+    ///      The surrounding function uses this step to keep the matcher behavior correct
     ///          at this point.
     ///
     /// In TS you'd write (pseudocode):
@@ -108,8 +140,11 @@ enum ClassAtom {
     /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
     /// ```
     Set(
-        /// What:    Shorthand set, never a range endpoint.
-        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        /// What:
+        ///     Shorthand set,
+        ///  never a range endpoint.
+        /// Why:
+        ///      The surrounding function uses this step to keep the matcher behavior
         ///          correct at this point.
         ///
         /// In TS you'd write (pseudocode):
@@ -122,9 +157,14 @@ enum ClassAtom {
 
 /// Parses a `[...]` (or `[^...]`) class into a class node.
 ///
-/// What: reads members and ranges until the closing `]`, with no verbose-mode
-/// skipping (whitespace and `#` are literal inside a class), then negates the
-/// accumulated set when the class opened with `^`. Why: byte classes are the
+/// What:
+///  reads members and ranges until the closing `]`,
+///  with no verbose-mode
+/// skipping (whitespace and `#` are literal inside a class),
+///  then negates the
+/// accumulated set when the class opened with `^`.
+///  Why:
+///  byte classes are the
 /// engine's main alphabet primitive and need their own grammar distinct from the
 /// whitespace-insensitive outer one.
 ///
@@ -183,9 +223,16 @@ pub fn parse_class(cur: &mut Cursor) -> Result<Node, CompileError> {
 
 /// Reads one element (member or range) and folds it into `set`.
 ///
-/// What: parses an atom, then, when it is a byte followed by a `-` and a real
-/// endpoint, reads a range; otherwise inserts the single byte or unions the
-/// shorthand. Why: keeps the loop in `parse_class` short and the range logic in
+/// What:
+///  parses an atom,
+///  then,
+///  when it is a byte followed by a `-` and a real
+/// endpoint,
+///  reads a range;
+///  otherwise inserts the single byte or unions the
+/// shorthand.
+///  Why:
+///  keeps the loop in `parse_class` short and the range logic in
 /// one place.
 ///
 /// In TS you'd write (pseudocode):
@@ -242,10 +289,15 @@ fn read_class_element(cur: &mut Cursor, pos: usize, set: &mut ByteSet) -> Result
     return Ok(())
 }
 
-/// Parses one class atom: an escape or a literal byte.
+/// Parses one class atom:
+///  an escape or a literal byte.
 ///
-/// What: dispatches a backslash to the shared escape parser, otherwise consumes
-/// one literal byte. Why: classes admit the same escapes as atoms except `\b`,
+/// What:
+///  dispatches a backslash to the shared escape parser,
+///  otherwise consumes
+/// one literal byte.
+///  Why:
+///  classes admit the same escapes as atoms except `\b`,
 /// which the escape parser rejects when `in_class` is set.
 ///
 /// In TS you'd write (pseudocode):

@@ -1,5 +1,9 @@
-//! What:    Position-dependent nullability: does a node match the empty string here?
-//! Why:     This file is the Rust module that groups the nullable implementation, so the
+//! What:
+//!     Position-dependent nullability:
+//!  does a node match the empty string here?
+//! Why:
+//!      This file is the Rust module that groups the nullable implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +11,11 @@
 //! // module nullable: see exported functions and types below.
 //! ```
 
-/// What:    Imports the node algebra being tested.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra being tested.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +24,11 @@
 /// ```
 use crate::ast::node::Node;
 
-/// What:    Imports the boundary context that resolves anchors.
-/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+/// What:
+///     Imports the boundary context that resolves anchors.
+/// Why:
+///      The code below uses `Ctx` directly;
+///  importing from `crate/context` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -29,12 +39,23 @@ use crate::context::Ctx;
 
 /// Reports whether `node` accepts the empty string at the given boundary.
 ///
-/// What: the standard Brzozowski nullability function, extended so the anchors
-/// read `ctx`. `Empty`/`Top` are nullable; `Fail`/`Class` are not; `Concat` and
-/// `Inter` need all children nullable; `Alt` needs one; `Comp` flips its child;
+/// What:
+///  the standard Brzozowski nullability function,
+///  extended so the anchors
+/// read `ctx`.
+///  `Empty`/`Top` are nullable;
+///  `Fail`/`Class` are not;
+///  `Concat` and
+/// `Inter` need all children nullable;
+///  `Alt` needs one;
+///  `Comp` flips its child;
 /// `Repeat` is nullable when zero copies are allowed or the body itself is
-/// nullable; the anchors consult the context. Why: a string is accepted exactly
-/// when the residual after consuming it is nullable, so this is the acceptance
+/// nullable;
+///  the anchors consult the context.
+///  Why:
+///  a string is accepted exactly
+/// when the residual after consuming it is nullable,
+///  so this is the acceptance
 /// test the matcher and DFA builder both rely on.
 ///
 /// In TS you'd write (pseudocode):
@@ -64,8 +85,11 @@ pub fn nullable(node: &Node, ctx: Ctx) -> bool {
     }
 }
 
-/// What:    Unit tests for nullability, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for nullability,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

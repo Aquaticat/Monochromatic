@@ -1,5 +1,9 @@
-//! What: Real disposable filesystem controls for source discovery.
-//! Why: Hidden paths, multiple excludes, explicit files and failed ignore inputs must not silently change the candidate set.
+//! What:
+//!  Real disposable filesystem controls for source discovery.
+//! Why:
+//!  Hidden paths,
+//!  multiple excludes,
+//!  explicit files and failed ignore inputs must not silently change the candidate set.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -56,7 +60,8 @@ fn hidden_sources_and_builtin_exclusions_are_distinct() {
     assert_eq!(files.len(), 4, ".git remains excluded");
 }
 
-/// All command-line exclusions must participate, rather than only the last supplied pattern.
+/// All command-line exclusions must participate,
+///  rather than only the last supplied pattern.
 #[test]
 fn multiple_exclusions_and_explicit_files_keep_their_contracts() {
     let fixture: Fixture = Fixture::new();
@@ -81,7 +86,8 @@ fn multiple_exclusions_and_explicit_files_keep_their_contracts() {
     );
 }
 
-/// An explicit ignore file is applied, and an unreadable requested ignore file is a failure.
+/// An explicit ignore file is applied,
+///  and an unreadable requested ignore file is a failure.
 #[test]
 fn explicit_ignore_files_are_applied_or_reported() {
     let fixture: Fixture = Fixture::new();

@@ -1,4 +1,9 @@
-//! The parser cache on disposable directories: first use, reuse, damage, concurrency, permissions.
+//! The parser cache on disposable directories:
+//!  first use,
+//!  reuse,
+//!  damage,
+//!  concurrency,
+//!  permissions.
 
 use super::unpack;
 use std::{
@@ -10,7 +15,8 @@ use std::{
     thread,
 };
 
-/// Bytes standing in for a parser library; large enough that a torn write would be visible.
+/// Bytes standing in for a parser library;
+///  large enough that a torn write would be visible.
 fn library() -> Vec<u8> {
     return (0..1_048_576u32)
         .map(|index| return (index % 251) as u8)
@@ -112,9 +118,12 @@ fn a_damaged_or_shortened_cached_library_is_written_again() {
     );
 }
 
-/// A rewrite puts a new file in place of the old one instead of writing into it: a process that already
-/// opened (or loaded) the old file keeps reading it whole, and a reader of the name sees either file whole.
-/// This is what makes concurrent first starts safe; a write into the file in place would fail it.
+/// A rewrite puts a new file in place of the old one instead of writing into it:
+///  a process that already
+/// opened (or loaded) the old file keeps reading it whole,
+///  and a reader of the name sees either file whole.
+/// This is what makes concurrent first starts safe;
+///  a write into the file in place would fail it.
 #[test]
 fn a_rewrite_replaces_the_file_instead_of_writing_into_it() {
     let base = tempfile::tempdir().expect("disposable cache");
@@ -141,8 +150,10 @@ fn a_rewrite_replaces_the_file_instead_of_writing_into_it() {
     assert_eq!(fs::read(&path).expect("rewritten"), bytes);
 }
 
-/// Several first starts at once (threads stand in for processes; the rename that makes a write
-/// visible is atomic for both) all get a complete library, and no partial file stays behind.
+/// Several first starts at once (threads stand in for processes;
+///  the rename that makes a write
+/// visible is atomic for both) all get a complete library,
+///  and no partial file stays behind.
 #[test]
 fn concurrent_first_uses_all_get_the_complete_library() {
     let base = tempfile::tempdir().expect("disposable cache");

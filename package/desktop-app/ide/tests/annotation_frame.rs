@@ -1,7 +1,11 @@
-//! The frame stamp repaints for a different set of visible annotations or inks, and reuses the image for an
-//! equal set, whatever happened to the snapshots outside the materialized rows.
+//! The frame stamp repaints for a different set of visible annotations or inks,
+//!  and reuses the image for an
+//! equal set,
+//!  whatever happened to the snapshots outside the materialized rows.
 
-/// The stamp, its inputs, and the visible annotation records.
+/// The stamp,
+///  its inputs,
+///  and the visible annotation records.
 use ide_app::{
     annotation::{Mark, Visible},
     annotation_layout::AnnotationColors,
@@ -43,7 +47,9 @@ fn stamp(document: &Document, visible: Visible, inks: AnnotationColors) -> Frame
         .with_annotations(Arc::new(visible), inks);
 }
 
-/// The block above line 0 with one hint `label`, one message row `message`, and `held` message space.
+/// The block above line 0 with one hint `label`,
+///  one message row `message`,
+///  and `held` message space.
 fn block(label: &str, message: &str, held: f32) -> Block {
     return Block {
         line: 0,
@@ -65,7 +71,8 @@ fn block(label: &str, message: &str, held: f32) -> Block {
     };
 }
 
-/// One block with a hint and a message, and one mark of `severity`.
+/// One block with a hint and a message,
+///  and one mark of `severity`.
 fn shown(label: &str, severity: Severity) -> Visible {
     return Visible {
         blocks: vec![Arc::new(block(label, "Error: wrong", 0.0))],
@@ -77,7 +84,12 @@ fn shown(label: &str, severity: Severity) -> Visible {
     };
 }
 
-/// Equal visible annotations reuse the image; a different label, message, held space, mark, or ink repaints.
+/// Equal visible annotations reuse the image;
+///  a different label,
+///  message,
+///  held space,
+///  mark,
+///  or ink repaints.
 #[test]
 fn visible_annotations_and_inks_are_paint_inputs() {
     let document = Document::new("let x = 1;");

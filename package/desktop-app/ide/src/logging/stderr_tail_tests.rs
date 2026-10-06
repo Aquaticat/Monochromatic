@@ -1,4 +1,6 @@
-//! The store of servers' last standard-error lines. Every test uses its own server name, because
+//! The store of servers' last standard-error lines.
+//!  Every test uses its own server name,
+//!  because
 //! the store is shared by the whole test process.
 
 use super::{

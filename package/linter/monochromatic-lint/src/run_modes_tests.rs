@@ -1,5 +1,9 @@
-//! What: Controls for `--rules`, `--init` and `--print-config`.
-//! Why: These modes describe the tool and its configuration; their output must agree with what
+//! What:
+//!  Controls for `--rules`,
+//!  `--init` and `--print-config`.
+//! Why:
+//!  These modes describe the tool and its configuration;
+//!  their output must agree with what
 //! configuration parsing and matching actually do.
 //!
 //! In TS you'd write (pseudocode):
@@ -23,7 +27,9 @@ use monochromatic_jsonc_edit::{
 };
 use std::path::Path;
 
-/// The listing has one JSON object per registered rule, in registry order, with its capabilities.
+/// The listing has one JSON object per registered rule,
+///  in registry order,
+///  with its capabilities.
 #[test]
 fn the_listing_describes_every_registered_rule_in_order() {
     let listing: String = rules_listing().expect("listing");
@@ -89,7 +95,8 @@ fn the_starter_configuration_is_valid_and_selects_the_documented_rules() {
     assert_eq!(selected, expected);
 }
 
-/// `--init` writes the starter once and refuses to overwrite, leaving the existing bytes alone.
+/// `--init` writes the starter once and refuses to overwrite,
+///  leaving the existing bytes alone.
 #[test]
 fn init_creates_once_and_never_overwrites() {
     let fixture: Fixture = Fixture::new();
@@ -115,7 +122,9 @@ fn member(document: &JsoncValue, key: &str) -> Option<String> {
     return Some(String::from_utf16(value.text_units()?).expect("text"));
 }
 
-/// The four states are distinguished, and configured rules are the merged, defaulted settings.
+/// The four states are distinguished,
+///  and configured rules are the merged,
+///  defaulted settings.
 #[test]
 fn effective_configuration_distinguishes_its_four_states() {
     let fixture: Fixture = Fixture::new();

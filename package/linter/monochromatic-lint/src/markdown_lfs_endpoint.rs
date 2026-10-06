@@ -1,10 +1,15 @@
-//! What: The one place an LFS endpoint becomes a credential-free object base URL.
-//! Why: The rule recognizes existing object URLs by an exact string prefix of this base and builds
-//! new ones by literal concatenation, so a changed serialization changes both findings and fixes.
+//! What:
+//!  The one place an LFS endpoint becomes a credential-free object base URL.
+//! Why:
+//!  The rule recognizes existing object URLs by an exact string prefix of this base and builds
+//! new ones by literal concatenation,
+//!  so a changed serialization changes both findings and fixes.
 //! This is the restricted normalizer selected in
 //! `doc/planning/native-lfs-url-normalization-evaluation.md` (section `Selected owner`):
-//! it accepts `http` and `https` endpoints written in a plain ASCII form, returns exactly what the
-//! incumbent `lfsObjectBase` returns for them, and rejects every other input with a named reason.
+//! it accepts `http` and `https` endpoints written in a plain ASCII form,
+//!  returns exactly what the
+//! incumbent `lfsObjectBase` returns for them,
+//!  and rejects every other input with a named reason.
 //! It is not a URL parser and never returns a best-effort string.
 //! `fixtures/lfs-url-parity.json` holds the measured incumbent outputs it is tested against.
 //!
@@ -14,9 +19,13 @@
 //! // return url.href.endsWith('/') ? url.href.slice(0, -1) : url.href;
 //! ```
 
-/// What: Why an endpoint is outside the supported form; variants are listed in evaluation order.
-/// Why: The first applicable reason is part of the contract and is what the parity fixture records.
-/// The message never contains the endpoint, which may hold credentials.
+/// What:
+///  Why an endpoint is outside the supported form;
+///  variants are listed in evaluation order.
+/// Why:
+///  The first applicable reason is part of the contract and is what the parity fixture records.
+/// The message never contains the endpoint,
+///  which may hold credentials.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,11 +41,16 @@ pub enum LfsUrlRejection {
     Ipv6Literal,
     /// Nothing stands between the credentials and the port or path.
     EmptyHost,
-    /// The host holds a byte other than an ASCII letter, digit, `-`, `.` or `_`.
+    /// The host holds a byte other than an ASCII letter,
+    ///  digit,
+    ///  `-`,
+    ///  `.` or `_`.
     HostCharacter,
     /// The host is longer than 253 bytes.
     HostLength,
-    /// The host has an empty label: a leading, trailing or doubled full stop.
+    /// The host has an empty label:
+    ///  a leading,
+    ///  trailing or doubled full stop.
     EmptyHostLabel,
     /// The last host label is a number and the host is not a canonical dotted-decimal IPv4 address.
     NumericHost,
@@ -46,12 +60,16 @@ pub enum LfsUrlRejection {
     PortRange,
     /// The path holds a byte outside the supported path set.
     PathCharacter,
-    /// A path segment is a single-dot or double-dot segment, including `%2e` spellings.
+    /// A path segment is a single-dot or double-dot segment,
+    ///  including `%2e` spellings.
     DotSegment,
 }
 
-/// What: The fixture identifier and the user-facing explanation of each rejection.
-/// Why: Tests compare the identifier with the measured fixture; a person reading the diagnostic
+/// What:
+///  The fixture identifier and the user-facing explanation of each rejection.
+/// Why:
+///  Tests compare the identifier with the measured fixture;
+///  a person reading the diagnostic
 /// needs what was wrong and how to write the endpoint instead.
 ///
 /// In TS you'd write (pseudocode):
@@ -77,7 +95,8 @@ impl LfsUrlRejection {
         }
     }
 
-    /// What the endpoint did, then how to write it so this linter accepts it.
+    /// What the endpoint did,
+    ///  then how to write it so this linter accepts it.
     pub fn explanation(self) -> &'static str {
         match self {
             LfsUrlRejection::Scheme => {
@@ -131,8 +150,12 @@ impl std::fmt::Display for LfsUrlRejection {
 /// Mark the rejection as a standard error for application error handling.
 impl std::error::Error for LfsUrlRejection {}
 
-/// What: The longest supported host, in bytes.
-/// Why: 253 bytes is the longest host name that fits DNS; the incumbent returns longer hosts unchanged.
+/// What:
+///  The longest supported host,
+///  in bytes.
+/// Why:
+///  253 bytes is the longest host name that fits DNS;
+///  the incumbent returns longer hosts unchanged.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -140,8 +163,12 @@ impl std::error::Error for LfsUrlRejection {}
 /// ```
 const MAX_HOST_BYTES: usize = 253;
 
-/// What: The greatest port number.
-/// Why: A port is 16 bits. `u32` (not `u16`) holds the value while one more digit is added, so
+/// What:
+///  The greatest port number.
+/// Why:
+///  A port is 16 bits.
+///  `u32` (not `u16`) holds the value while one more digit is added,
+///  so
 /// the range check runs before anything can overflow.
 ///
 /// In TS you'd write (pseudocode):
@@ -150,8 +177,10 @@ const MAX_HOST_BYTES: usize = 253;
 /// ```
 const MAX_PORT: u32 = 65_535;
 
-/// What: Path bytes kept unchanged besides ASCII letters and digits.
-/// Why: These are the bytes the incumbent serializes without encoding or rewriting.
+/// What:
+///  Path bytes kept unchanged besides ASCII letters and digits.
+/// Why:
+///  These are the bytes the incumbent serializes without encoding or rewriting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,8 +188,12 @@ const MAX_PORT: u32 = 65_535;
 /// ```
 const PATH_PUNCTUATION: &[u8] = b"-._~!$&'()*+,;=:@/%";
 
-/// What: Lowercase spellings of single-dot and double-dot path segments.
-/// Why: The incumbent resolves these, including their percent-encoded forms; this function rejects them instead.
+/// What:
+///  Lowercase spellings of single-dot and double-dot path segments.
+/// Why:
+///  The incumbent resolves these,
+///  including their percent-encoded forms;
+///  this function rejects them instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -188,9 +221,14 @@ fn is_hex_byte(byte: u8) -> bool {
     return byte.is_ascii_hexdigit();
 }
 
-/// What: Whether every byte of the text satisfies a named predicate.
-/// Why: One explicit loop serves the host, port, path and number checks.
-/// `fn(u8) -> bool` is a plain function pointer, so no closure is needed.
+/// What:
+///  Whether every byte of the text satisfies a named predicate.
+/// Why:
+///  One explicit loop serves the host,
+///  port,
+///  path and number checks.
+/// `fn(u8) -> bool` is a plain function pointer,
+///  so no closure is needed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -210,8 +248,12 @@ fn is_decimal(text: &str) -> bool {
     return !text.is_empty() && all_bytes(text, is_digit_byte);
 }
 
-/// What: Whether a host label is a number as the incumbent's host parser sees it.
-/// Why: A last label of decimal digits, or `0x` followed by zero or more hexadecimal digits, makes
+/// What:
+///  Whether a host label is a number as the incumbent's host parser sees it.
+/// Why:
+///  A last label of decimal digits,
+///  or `0x` followed by zero or more hexadecimal digits,
+///  makes
 /// the incumbent parse the whole host as an IPv4 address.
 ///
 /// In TS you'd write (pseudocode):
@@ -228,8 +270,13 @@ fn is_number_label(label: &str) -> bool {
     return false;
 }
 
-/// What: Whether one dotted part is canonical: one to three digits, no leading zero, at most 255.
-/// Why: Only canonical parts serialize unchanged in the incumbent.
+/// What:
+///  Whether one dotted part is canonical:
+///  one to three digits,
+///  no leading zero,
+///  at most 255.
+/// Why:
+///  Only canonical parts serialize unchanged in the incumbent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -269,8 +316,11 @@ fn is_dot_segment(segment: &str) -> bool {
     return false;
 }
 
-/// What: The lowercase scheme and its default port when the endpoint begins with a supported scheme and `://`.
-/// Why: Scheme letters compare without case; the output scheme is always lowercase.
+/// What:
+///  The lowercase scheme and its default port when the endpoint begins with a supported scheme and `://`.
+/// Why:
+///  Scheme letters compare without case;
+///  the output scheme is always lowercase.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -287,8 +337,14 @@ fn supported_scheme(endpoint: &str) -> Option<(&'static str, u32)> {
     return None;
 }
 
-/// What: The port to serialize: `None` when absent, empty, or the scheme's default.
-/// Why: The incumbent drops a default port and leading zeros; the bound is checked on every digit
+/// What:
+///  The port to serialize:
+///  `None` when absent,
+///  empty,
+///  or the scheme's default.
+/// Why:
+///  The incumbent drops a default port and leading zeros;
+///  the bound is checked on every digit
 /// so no integer overflows on a long digit string.
 ///
 /// In TS you'd write (pseudocode):
@@ -315,8 +371,15 @@ fn parse_port(digits: &str, default_port: u32) -> Result<Option<u32>, LfsUrlReje
     return Ok(Some(value));
 }
 
-/// What: Validate and lowercase the host.
-/// Why: The checks run in the contract's order: empty, character set, length, empty label, numeric form.
+/// What:
+///  Validate and lowercase the host.
+/// Why:
+///  The checks run in the contract's order:
+///  empty,
+///  character set,
+///  length,
+///  empty label,
+///  numeric form.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -346,8 +409,12 @@ fn supported_host(raw_host: &str) -> Result<String, LfsUrlRejection> {
     return Ok(host);
 }
 
-/// What: Validate the path's bytes and segments.
-/// Why: `%` is kept as written whatever follows it; escapes are neither validated, decoded nor case-normalized.
+/// What:
+///  Validate the path's bytes and segments.
+/// Why:
+///  `%` is kept as written whatever follows it;
+///  escapes are neither validated,
+///  decoded nor case-normalized.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -365,10 +432,17 @@ fn check_path(path: &str) -> Result<(), LfsUrlRejection> {
     return Ok(());
 }
 
-/// What: Turn an `lfs.url` or `remote.<name>.lfsurl` value into the base that object URLs start with.
-/// Why: Whenever this returns `Ok`, the string equals the incumbent `lfsObjectBase` output for the
-/// same endpoint; every other input returns the first applicable rejection. Credentials, query and
-/// fragment are discarded without inspection, and exactly one final slash is removed.
+/// What:
+///  Turn an `lfs.url` or `remote.<name>.lfsurl` value into the base that object URLs start with.
+/// Why:
+///  Whenever this returns `Ok`,
+///  the string equals the incumbent `lfsObjectBase` output for the
+/// same endpoint;
+///  every other input returns the first applicable rejection.
+///  Credentials,
+///  query and
+/// fragment are discarded without inspection,
+///  and exactly one final slash is removed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

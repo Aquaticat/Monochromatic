@@ -1,6 +1,11 @@
-//! What: Disposable-repository controls for repository and worktree identity.
-//! Why: Configuration location and worktree policies depend on what real Git 2.56.0
-//!      reports for main, linked, bare, absent and option-selected repositories.
+//! What:
+//!  Disposable-repository controls for repository and worktree identity.
+//! Why:
+//!  Configuration location and worktree policies depend on what real Git 2.56.0
+//!      reports for main,
+//!  linked,
+//!  bare,
+//!  absent and option-selected repositories.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -30,7 +35,9 @@ fn identity(parts: &[&Path]) -> WorktreeIdentity {
         .expect("identity query");
 }
 
-/// Four lines on success are a worktree: main when both directories are equal, linked otherwise.
+/// Four lines on success are a worktree:
+///  main when both directories are equal,
+///  linked otherwise.
 #[test]
 fn successful_output_is_a_main_or_linked_worktree() {
     assert_eq!(
@@ -61,7 +68,9 @@ fn successful_output_is_a_main_or_linked_worktree() {
     );
 }
 
-/// A failed query is "outside" with no output, bare after three lines saying so, and outside inside `.git`.
+/// A failed query is "outside" with no output,
+///  bare after three lines saying so,
+///  and outside inside `.git`.
 #[test]
 fn failed_output_distinguishes_absent_bare_and_git_directory() {
     assert_eq!(
@@ -110,7 +119,8 @@ fn unexpected_output_shapes_are_rejected() {
     }
 }
 
-/// Real Git reports main and linked worktrees with canonical paths, from any directory inside them.
+/// Real Git reports main and linked worktrees with canonical paths,
+///  from any directory inside them.
 #[test]
 fn native_git_identifies_main_and_linked_worktrees() {
     let root: PathBuf = fixture("identity-worktrees");
@@ -152,7 +162,10 @@ fn native_git_identifies_main_and_linked_worktrees() {
     remove(root.as_path());
 }
 
-/// Global options select the repository exactly as Git applies them: chained `-C`, symbolic links, `--git-dir`.
+/// Global options select the repository exactly as Git applies them:
+///  chained `-C`,
+///  symbolic links,
+///  `--git-dir`.
 #[test]
 fn native_git_applies_global_selection_options() {
     let root: PathBuf = fixture("identity-options");
@@ -194,7 +207,9 @@ fn native_git_applies_global_selection_options() {
     remove(root.as_path());
 }
 
-/// Bare repositories, the inside of `.git`, non-repositories and missing directories have no worktree.
+/// Bare repositories,
+///  the inside of `.git`,
+///  non-repositories and missing directories have no worktree.
 #[test]
 fn native_git_reports_locations_without_a_worktree() {
     let root: PathBuf = fixture("identity-none");
@@ -255,7 +270,8 @@ fn native_git_identifies_non_utf8_repository_paths() {
     remove(root.as_path());
 }
 
-/// A program that cannot be started is an error, never "outside a worktree".
+/// A program that cannot be started is an error,
+///  never "outside a worktree".
 #[test]
 fn unstartable_git_is_an_error() {
     assert_eq!(

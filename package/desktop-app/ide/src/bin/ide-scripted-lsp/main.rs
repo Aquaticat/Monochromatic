@@ -1,26 +1,40 @@
-//! Scripted language server for integration tests: it speaks the protocol over standard streams
-//! and produces, on demand, the states real servers do not produce reliably.
+//! Scripted language server for integration tests:
+//!  it speaks the protocol over standard streams
+//! and produces,
+//!  on demand,
+//!  the states real servers do not produce reliably.
 //!
-//! It is configured only through `IDE_SCRIPTED_*` environment variables, which tests set through
-//! the server definition's `environment` table. It never writes anything except the report file
-//! a test names, and that file lives in the test's own temporary directory.
+//! It is configured only through `IDE_SCRIPTED_*` environment variables,
+//!  which tests set through
+//! the server definition's `environment` table.
+//!  It never writes anything except the report file
+//! a test names,
+//!  and that file lives in the test's own temporary directory.
 
 /// What the server can see and change from inside a sandbox.
 mod audit;
 /// Text mirroring and position arithmetic in the advertised column unit.
 mod document;
-/// Message framing on standard input and output, plus the report file.
+/// Message framing on standard input and output,
+///  plus the report file.
 mod framing;
-/// Requests this server sends to the client, to check the client's replies.
+/// Requests this server sends to the client,
+///  to check the client's replies.
 mod probe;
 /// Environment-variable settings.
 mod script;
 /// Request and notification handling.
 mod server;
 
-/// What: `fn main()` is the program entry point; it returns nothing.
-/// Why: All behavior lives in `server::run`; a failure there is printed to standard error, which
-///      the client logs, and the process exits with a failure status.
+/// What:
+///  `fn main()` is the program entry point;
+///  it returns nothing.
+/// Why:
+///  All behavior lives in `server::run`;
+///  a failure there is printed to standard error,
+///  which
+///      the client logs,
+///  and the process exits with a failure status.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

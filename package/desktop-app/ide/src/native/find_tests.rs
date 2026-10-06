@@ -1,8 +1,17 @@
-//! In-file find through real window key events: open, type, step, wrap, reveal, reload, and close.
+//! In-file find through real window key events:
+//!  open,
+//!  type,
+//!  step,
+//!  wrap,
+//!  reveal,
+//!  reload,
+//!  and close.
 
 /// Bounded waits and tree-row lookup shared with the navigation tests.
 use super::navigation_tests::wait_until;
-/// The production window, source state, and every binding the shipped application installs.
+/// The production window,
+///  source state,
+///  and every binding the shipped application installs.
 use super::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, find, navigation,
     reload, render,
@@ -14,8 +23,11 @@ use slint::{
     ComponentHandle, Model, SharedString, Timer,
     platform::{Key, WindowEvent},
 };
-/// What: `Rc<RefCell<State>>` is the window's shared source state; `Path` borrows a filesystem name.
-/// Why: Assertions read canonical character positions instead of guessing from pixels.
+/// What:
+///  `Rc<RefCell<State>>` is the window's shared source state;
+///  `Path` borrows a filesystem name.
+/// Why:
+///  Assertions read canonical character positions instead of guessing from pixels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -29,13 +41,18 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// A complete reader: source refresh, in-file find, and project navigation on one window.
+/// A complete reader:
+///  source refresh,
+///  in-file find,
+///  and project navigation on one window.
 pub(super) struct Reader {
     /// Native window built from the shipped markup.
     pub(super) window: AppWindow,
     /// Source state shared with every binding.
     pub(super) source: Rc<RefCell<State>>,
-    /// Dropping the timers releases the reload, find, and navigation workers.
+    /// Dropping the timers releases the reload,
+    ///  find,
+    ///  and navigation workers.
     _timers: [Timer; 3],
 }
 
@@ -79,7 +96,8 @@ pub(super) fn reader(root: &Path, name: &str) -> Reader {
     };
 }
 
-/// Press and release one key through the window, exactly like a seat key event.
+/// Press and release one key through the window,
+///  exactly like a seat key event.
 pub(super) fn key(window: &AppWindow, text: impl Into<SharedString>) {
     let encoded: SharedString = text.into();
     window.window().dispatch_event(WindowEvent::KeyPressed {
@@ -90,7 +108,8 @@ pub(super) fn key(window: &AppWindow, text: impl Into<SharedString>) {
         .dispatch_event(WindowEvent::KeyReleased { text: encoded });
 }
 
-/// Hold one modifier around one key, releasing it afterwards.
+/// Hold one modifier around one key,
+///  releasing it afterwards.
 pub(super) fn chord(window: &AppWindow, modifier: Key, text: impl Into<SharedString>) {
     window.window().dispatch_event(WindowEvent::KeyPressed {
         text: modifier.into(),
@@ -113,7 +132,8 @@ pub(super) fn status(window: &AppWindow, expected: &str) {
     wait_until(|| return window.get_find_status() == expected);
 }
 
-/// Advance native timers until `ready` holds, failing with a message naming the missing behavior.
+/// Advance native timers until `ready` holds,
+///  failing with a message naming the missing behavior.
 pub(super) fn eventually(message: &str, mut ready: impl FnMut() -> bool) {
     let start = Instant::now();
     loop {
@@ -126,16 +146,27 @@ pub(super) fn eventually(message: &str, mut ready: impl FnMut() -> bool) {
     }
 }
 
-/// What: `fn status_for(window: &AppWindow, query: &str, expected: &str)` takes three borrowed values
-///       (`&` lends them; the caller keeps ownership) and waits for one combined condition:
-///       the bar shows `expected`, and the active match, which is the reading selection,
+/// What:
+///  `fn status_for(window: &AppWindow, query: &str, expected: &str)` takes three borrowed values
+///       (`&` lends them;
+///  the caller keeps ownership) and waits for one combined condition:
+///       the bar shows `expected`,
+///  and the active match,
+///  which is the reading selection,
 ///       spells the whole `query` ignoring case.
-/// Why:  Typing sends one find request per character, and a reply for a shorter prefix can
-///       show the same count; `n` and `needle` both give 301 matches in the paint fixture,
-///       and `am ` and `am a` both give one in the reload fixture. Waiting on the count alone
+/// Why:
+///   Typing sends one find request per character,
+///  and a reply for a shorter prefix can
+///       show the same count;
+///  `n` and `needle` both give 301 matches in the paint fixture,
+///       and `am ` and `am a` both give one in the reload fixture.
+///  Waiting on the count alone
 ///       let those tests assert against the prefix's results and fail intermittently.
-/// Gotcha: Only use this after typing, with an `expected` count whose active index is at least 1;
-///         a `0/N` count has no active match, so the selection never spells the query.
+/// Gotcha:
+///  Only use this after typing,
+///  with an `expected` count whose active index is at least 1;
+///         a `0/N` count has no active match,
+///  so the selection never spells the query.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -178,7 +209,8 @@ pub(super) fn settle() {
     }
 }
 
-/// The selection as (start, end) source character positions.
+/// The selection as (start,
+///  end) source character positions.
 pub(super) fn selection(reader: &Reader) -> (usize, usize) {
     let position = reader.source.borrow().document.position();
     return (
@@ -187,7 +219,14 @@ pub(super) fn selection(reader: &Reader) -> (usize, usize) {
     );
 }
 
-/// Ctrl+F, typing, Enter, Shift+Enter, wrapping, reveal, Escape, and the remembered query.
+/// Ctrl+F,
+///  typing,
+///  Enter,
+///  Shift+Enter,
+///  wrapping,
+///  reveal,
+///  Escape,
+///  and the remembered query.
 #[test]
 fn native_find_opens_types_steps_wraps_reveals_and_closes() {
     let fixture = tempfile::tempdir().expect("disposable find project");
@@ -364,7 +403,8 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
     window.hide().expect("close reload window");
 }
 
-/// Matches are drawn only for materialized rows, and a far column is scrolled into view.
+/// Matches are drawn only for materialized rows,
+///  and a far column is scrolled into view.
 #[test]
 fn native_find_paints_visible_matches_only_and_reveals_far_columns() {
     let fixture = tempfile::tempdir().expect("disposable paint project");

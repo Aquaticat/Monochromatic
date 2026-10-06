@@ -1,7 +1,12 @@
-//! What: Controls for both private-index candidate sources against real Git 2.56.0.
-//! Why: `git add` candidates must be exactly what that command would stage, and a direct
-//!      command's candidates exactly the selected worktree files, for every kind of entry,
-//!      while the real index stays byte for byte as it was. Staged and worktree bytes are
+//! What:
+//!  Controls for both private-index candidate sources against real Git 2.56.0.
+//! Why:
+//!  `git add` candidates must be exactly what that command would stage,
+//!  and a direct
+//!      command's candidates exactly the selected worktree files,
+//!  for every kind of entry,
+//!      while the real index stays byte for byte as it was.
+//!  Staged and worktree bytes are
 //!      swapped between the two sides so a source that read the wrong side would fail.
 //!
 //! In TS you'd write (pseudocode):
@@ -24,7 +29,8 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-/// The arguments of a request, written as text.
+/// The arguments of a request,
+///  written as text.
 fn arguments(values: &[&str]) -> Vec<OsString> {
     let mut list: Vec<OsString> = Vec::new();
     for value in values {
@@ -47,19 +53,22 @@ fn prepare_with(
     );
 }
 
-/// The prediction of `git add` with these arguments, which the control requires to succeed.
+/// The prediction of `git add` with these arguments,
+///  which the control requires to succeed.
 fn add(directory: &Path, values: &[&str]) -> PreparedCandidates {
     return prepare_with(directory, &[], &CandidateRequest::Add(arguments(values)))
         .expect("prediction");
 }
 
-/// The projection of these pathspecs, which the control requires to succeed.
+/// The projection of these pathspecs,
+///  which the control requires to succeed.
 fn direct(directory: &Path, values: &[&str]) -> PreparedCandidates {
     return prepare_with(directory, &[], &CandidateRequest::Direct(arguments(values)))
         .expect("projection");
 }
 
-/// The failure of a preparation, which the control requires.
+/// The failure of a preparation,
+///  which the control requires.
 fn refused(directory: &Path, request: &CandidateRequest) -> CandidateError {
     match prepare_with(directory, &[], request) {
         Ok(prepared) => panic!(
@@ -70,7 +79,9 @@ fn refused(directory: &Path, request: &CandidateRequest) -> CandidateError {
     }
 }
 
-/// Each candidate's pathname, as text, with its change.
+/// Each candidate's pathname,
+///  as text,
+///  with its change.
 fn listed(prepared: &PreparedCandidates) -> Vec<(String, CandidateChange)> {
     let mut found: Vec<(String, CandidateChange)> = Vec::new();
     for candidate in prepared.version.candidates() {
@@ -98,7 +109,8 @@ fn index_bytes(repo: &Path) -> Vec<u8> {
     return std::fs::read(repo.join(".git/index")).expect("real index");
 }
 
-/// The entries of the Git directory left by a private index, which must be none.
+/// The entries of the Git directory left by a private index,
+///  which must be none.
 fn private_leftovers(git_dir: &Path) -> Vec<String> {
     let mut found: Vec<String> = Vec::new();
     for entry in std::fs::read_dir(git_dir).expect("Git directory") {
@@ -114,7 +126,10 @@ fn private_leftovers(git_dir: &Path) -> Vec<String> {
     return found;
 }
 
-/// A committed base: `tracked.txt`, `remove.txt`, `link` and `keep.txt`.
+/// A committed base:
+///  `tracked.txt`,
+///  `remove.txt`,
+///  `link` and `keep.txt`.
 fn base(root: &Path, name: &str) -> PathBuf {
     let repo: PathBuf = repository(root, name);
     std::fs::write(repo.join("tracked.txt"), b"tracked\n").expect("tracked");
@@ -126,7 +141,9 @@ fn base(root: &Path, name: &str) -> PathBuf {
     return repo;
 }
 
-/// `git add` candidates are the staged changes it would make, with worktree bytes, and the real index is untouched.
+/// `git add` candidates are the staged changes it would make,
+///  with worktree bytes,
+///  and the real index is untouched.
 #[test]
 fn add_candidates_are_what_the_add_would_stage() {
     let root: PathBuf = fixture("predict-add");
@@ -191,7 +208,9 @@ fn add_candidates_are_what_the_add_would_stage() {
     remove(root.as_path());
 }
 
-/// The add's candidate holds the worktree bytes it would stage, never what is already staged, in both directions.
+/// The add's candidate holds the worktree bytes it would stage,
+///  never what is already staged,
+///  in both directions.
 #[test]
 fn add_candidates_read_the_worktree_not_the_staged_copy() {
     let root: PathBuf = fixture("predict-add-swap");
@@ -220,7 +239,9 @@ fn add_candidates_read_the_worktree_not_the_staged_copy() {
     remove(root.as_path());
 }
 
-/// Additions without content, a reverted file, a dry run and a never-committed removal follow the installed wrapper.
+/// Additions without content,
+///  a reverted file,
+///  a dry run and a never-committed removal follow the installed wrapper.
 #[test]
 fn intent_to_add_reverts_dry_runs_and_uncommitted_removals() {
     let root: PathBuf = fixture("predict-add-kinds");
@@ -270,7 +291,9 @@ fn intent_to_add_reverts_dry_runs_and_uncommitted_removals() {
     remove(root.as_path());
 }
 
-/// During a merge conflict, adding another path ignores the conflict, and adding the conflicted path resolves it.
+/// During a merge conflict,
+///  adding another path ignores the conflict,
+///  and adding the conflicted path resolves it.
 #[test]
 fn a_conflict_elsewhere_does_not_stop_the_prediction() {
     let root: PathBuf = fixture("predict-add-conflict");
@@ -308,7 +331,9 @@ fn a_conflict_elsewhere_does_not_stop_the_prediction() {
     remove(root.as_path());
 }
 
-/// Names that are not UTF-8, a subdirectory, a repository without commits and a linked worktree all work.
+/// Names that are not UTF-8,
+///  a subdirectory,
+///  a repository without commits and a linked worktree all work.
 #[test]
 fn names_directories_unborn_heads_and_linked_worktrees() {
     let root: PathBuf = fixture("predict-add-places");
@@ -417,7 +442,9 @@ fn literal_pathspec_mode_cannot_empty_the_prediction() {
     remove(root.as_path());
 }
 
-/// A replay Git refuses, or a Git that cannot start, is a failure that names Git's reason and leaves nothing behind.
+/// A replay Git refuses,
+///  or a Git that cannot start,
+///  is a failure that names Git's reason and leaves nothing behind.
 #[test]
 fn failures_report_git_and_leave_the_index_alone() {
     let root: PathBuf = fixture("predict-failures");
@@ -485,7 +512,9 @@ fn failures_report_git_and_leave_the_index_alone() {
     remove(root.as_path());
 }
 
-/// A direct scope holds every selected worktree file with worktree bytes, tracked and new, never ignored ones.
+/// A direct scope holds every selected worktree file with worktree bytes,
+///  tracked and new,
+///  never ignored ones.
 #[test]
 fn direct_candidates_are_every_selected_worktree_file() {
     let root: PathBuf = fixture("project-direct");

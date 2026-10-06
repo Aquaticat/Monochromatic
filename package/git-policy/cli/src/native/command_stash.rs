@@ -1,7 +1,12 @@
-//! What: Which `git stash` subcommand a region runs in Git 2.56.0, and where wrapper-only
+//! What:
+//!  Which `git stash` subcommand a region runs in Git 2.56.0,
+//!  and where wrapper-only
 //!       flags sit in it.
-//! Why: The linked-worktree policy guards stash; its escape hatch must be found in option
-//!      position of the subcommand that actually reads the arguments, so a message or a
+//! Why:
+//!  The linked-worktree policy guards stash;
+//!  its escape hatch must be found in option
+//!      position of the subcommand that actually reads the arguments,
+//!  so a message or a
 //!      path that spells the hatch is forwarded untouched.
 //!
 //! In TS you'd write (pseudocode):
@@ -19,9 +24,13 @@ use super::command_stash_table::{
     STASH_KEEP_UNKNOWN_MODE, STASH_PLAIN_MODE, STASH_POP_TABLE, STASH_PUSH_TABLE, STASH_SAVE_TABLE,
     STASH_SHOW_TABLE, STASH_STOP_MODE, STASH_STORE_TABLE,
 };
-/// What: Bring the shared hatch spelling, the tokenizer, its questions and the stash tables
+/// What:
+///  Bring the shared hatch spelling,
+///  the tokenizer,
+///  its questions and the stash tables
 ///       into this file.
-/// Why:  This module only dispatches as `cmd_stash` does and interprets the tokenizer.
+/// Why:
+///   This module only dispatches as `cmd_stash` does and interprets the tokenizer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,9 +40,13 @@ use super::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: The subcommand `cmd_stash` dispatches to (builtin/stash.c:2465-2479). An `enum` is
+/// What:
+///  The subcommand `cmd_stash` dispatches to (builtin/stash.c:2465-2479).
+///  An `enum` is
 ///       a closed set of named alternatives.
-/// Why:  `AssumedPush` is the form without a subcommand word, which Git parses as `push`
+/// Why:
+///   `AssumedPush` is the form without a subcommand word,
+///  which Git parses as `push`
 ///       with stricter flags (2515-2528).
 ///
 /// In TS you'd write (pseudocode):
@@ -58,7 +71,8 @@ pub enum StashSubcommand {
     Show,
     /// `git stash store`.
     Store,
-    /// `git stash create`: every argument is message text.
+    /// `git stash create`:
+    ///  every argument is message text.
     Create,
     /// `git stash push`.
     Push,
@@ -66,14 +80,18 @@ pub enum StashSubcommand {
     Export,
     /// `git stash import`.
     Import,
-    /// `git stash save`, the legacy spelling of `push`.
+    /// `git stash save`,
+    ///  the legacy spelling of `push`.
     Save,
     /// `git stash` with no subcommand word.
     AssumedPush,
 }
 
-/// What: Facts of one `git stash` region.
-/// Why:  The shipped policy guards every stash form; the subcommand is reported for its
+/// What:
+///  Facts of one `git stash` region.
+/// Why:
+///   The shipped policy guards every stash form;
+///  the subcommand is reported for its
 ///       diagnostics and the hatch for its bypass.
 ///
 /// In TS you'd write (pseudocode):
@@ -84,11 +102,13 @@ pub enum StashSubcommand {
 pub struct StashRegion {
     /// The subcommand that reads the arguments.
     pub subcommand: StashSubcommand,
-    /// Wrapper-only flags in option position; `escape` is `--no-enforce-worktree`.
+    /// Wrapper-only flags in option position;
+    ///  `escape` is `--no-enforce-worktree`.
     pub wrapper: WrapperFlags,
 }
 
-/// Subcommand words in `cmd_stash` table order, each with the subcommand it selects.
+/// Subcommand words in `cmd_stash` table order,
+///  each with the subcommand it selects.
 const SUBCOMMAND_WORDS: &[(&str, StashSubcommand)] = &[
     ("apply", StashSubcommand::Apply),
     ("clear", StashSubcommand::Clear),
@@ -105,8 +125,13 @@ const SUBCOMMAND_WORDS: &[(&str, StashSubcommand)] = &[
     ("save", StashSubcommand::Save),
 ];
 
-/// What: The subcommand a word selects, or nothing. `&[u8]` borrows the word's bytes.
-/// Why:  Git compares the whole word exactly (`parse_subcommand`, parse-options.c:609-619).
+/// What:
+///  The subcommand a word selects,
+///  or nothing.
+///  `&[u8]` borrows the word's bytes.
+/// Why:
+///   Git compares the whole word exactly (`parse_subcommand`,
+///  parse-options.c:609-619).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -123,9 +148,11 @@ fn subcommand_of(word: &[u8]) -> Option<StashSubcommand> {
     return None;
 }
 
-/// What: The table and flags a subcommand parses its arguments with.
+/// What:
+///  The table and flags a subcommand parses its arguments with.
 ///       `(&'static [OptionSpec], ParseMode)` is a pair of a baked-in table and its mode.
-/// Why:  Each `*_stash` function calls `parse_options` with its own table and flags.
+/// Why:
+///   Each `*_stash` function calls `parse_options` with its own table and flags.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -153,14 +180,23 @@ fn grammar_of(subcommand: StashSubcommand) -> (&'static [OptionSpec], ParseMode)
     };
 }
 
-/// What: Refuse a first token that spells a subcommand word after one dash.
-///       `Result<(), OptionError>` is "nothing on success, or a refusal".
-/// Why:  Before assuming `push`, Git's top-level pass applies the typo check against the
-///       subcommand words, so `git stash -push` is an error (parse-options.c:622-640,
-///       1067-1072, 1127-1131).
-/// Gotcha: That pass also refuses `-no-<x>` and shows usage for `--help` and for a cluster
-///         starting with `h`. The assumed-push pass that follows refuses those tokens with
-///         the same kind at the same index, so they need no check here.
+/// What:
+///  Refuse a first token that spells a subcommand word after one dash.
+///       `Result<(), OptionError>` is "nothing on success,
+///  or a refusal".
+/// Why:
+///   Before assuming `push`,
+///  Git's top-level pass applies the typo check against the
+///       subcommand words,
+///  so `git stash -push` is an error (parse-options.c:622-640,
+///       1067-1072,
+///  1127-1131).
+/// Gotcha:
+///  That pass also refuses `-no-<x>` and shows usage for `--help` and for a cluster
+///         starting with `h`.
+///  The assumed-push pass that follows refuses those tokens with
+///         the same kind at the same index,
+///  so they need no check here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -184,9 +220,14 @@ fn check_top_level_token(token: &[u8], index: usize) -> Result<(), OptionError> 
     return Ok(());
 }
 
-/// What: Parse the region after `stash`. `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  Leading wrapper flags are skipped first, so `git stash --no-enforce-worktree list`
-///       still dispatches to `list`; the rest follows the selected subcommand's grammar.
+/// What:
+///  Parse the region after `stash`.
+///  `Result<A, B>` is "either success `A` or failure `B`".
+/// Why:
+///   Leading wrapper flags are skipped first,
+///  so `git stash --no-enforce-worktree list`
+///       still dispatches to `list`;
+///  the rest follows the selected subcommand's grammar.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -267,7 +308,9 @@ pub fn parse_stash_region(
     });
 }
 
-/// Dispatch, per-subcommand value positions, and real-Git controls of the tables.
+/// Dispatch,
+///  per-subcommand value positions,
+///  and real-Git controls of the tables.
 #[cfg(test)]
 #[path = "command_stash_tests.rs"]
 mod tests;

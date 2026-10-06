@@ -1,5 +1,8 @@
-//! What: Standalone consumer of the built internal library artifact.
-//! Why: Module registration, exports and grouped edits must work outside the crate's unit tests.
+//! What:
+//!  Standalone consumer of the built internal library artifact.
+//! Why:
+//!  Module registration,
+//!  exports and grouped edits must work outside the crate's unit tests.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

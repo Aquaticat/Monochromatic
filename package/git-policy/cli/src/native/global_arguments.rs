@@ -1,12 +1,16 @@
-//! What: Locate Git 2.56.0 command boundaries without reconstructing native arguments.
-//! Why: Policy stages need the command index, but Git remains authoritative for option validation and -C semantics.
+//! What:
+//!  Locate Git 2.56.0 command boundaries without reconstructing native arguments.
+//! Why:
+//!  Policy stages need the command index,
+//!  but Git remains authoritative for option validation and -C semantics.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Scan argument boundaries; forward the original global prefix to every repository query.
 //! ```
 
-/// Import native argument storage; no lossy UTF-8 conversion occurs.
+/// Import native argument storage;
+///  no lossy UTF-8 conversion occurs.
 use std::ffi::OsString;
 
 /// Which native Git path follows the global prefix.
@@ -16,9 +20,11 @@ pub enum GlobalOutcome {
     Command,
     /// Git prints help/version/path/command inventory without executing a repository command.
     Query,
-    /// A value-taking global option has no following token; Git must render its own error.
+    /// A value-taking global option has no following token;
+    ///  Git must render its own error.
     MissingValue,
-    /// Git 2.56.0 does not recognize this global option; do not reinterpret it as a subcommand.
+    /// Git 2.56.0 does not recognize this global option;
+    ///  do not reinterpret it as a subcommand.
     InvalidOption,
     /// The argument list ended without a subcommand.
     NoCommand,
@@ -45,7 +51,8 @@ pub(crate) const VALUE_OPTIONS: &[&[u8]] = &[
     b"--attr-source",
 ];
 
-/// Complete no-value globals accepted by that same release, not a cross-version fallback list.
+/// Complete no-value globals accepted by that same release,
+///  not a cross-version fallback list.
 const FLAG_OPTIONS: &[&[u8]] = &[
     b"-p",
     b"--paginate",
@@ -72,9 +79,13 @@ const INLINE_OPTIONS: &[&[u8]] = &[
     b"--attr-source=",
 ];
 
-/// What: Find a command/query/error boundary with one forward scan.
-/// Why: Values such as '-h', empty -C paths and non-UTF-8 filenames remain original opaque argument values.
-/// Symlink-sensitive -C chaining is not approximated lexically; repository queries forward the complete prefix.
+/// What:
+///  Find a command/query/error boundary with one forward scan.
+/// Why:
+///  Values such as '-h',
+///  empty -C paths and non-UTF-8 filenames remain original opaque argument values.
+/// Symlink-sensitive -C chaining is not approximated lexically;
+///  repository queries forward the complete prefix.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,11 +170,18 @@ pub fn global_layout(arguments: &[OsString]) -> GlobalLayout {
     };
 }
 
-/// What: The command word and the tokens after it, when the arguments name a command.
-///       `Option<(&OsString, &[OsString])>` is "a pair of borrowed views, or nothing":
-///       the word, and the list of everything after it.
-/// Why:  Every rule that reads a command's own options needs exactly this split. Taking it
-///       from one function means no rule computes an offset of its own, so no rule can
+/// What:
+///  The command word and the tokens after it,
+///  when the arguments name a command.
+///       `Option<(&OsString, &[OsString])>` is "a pair of borrowed views,
+///  or nothing":
+///       the word,
+///  and the list of everything after it.
+/// Why:
+///   Every rule that reads a command's own options needs exactly this split.
+///  Taking it
+///       from one function means no rule computes an offset of its own,
+///  so no rule can
 ///       read the command word as one of its options by an arithmetic slip.
 ///
 /// In TS you'd write (pseudocode):

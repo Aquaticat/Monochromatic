@@ -1,5 +1,8 @@
-//! What: The environment variables cli-git adds for every real Git it starts.
-//! Why: Native Git must write lock-owner PID files, and a wrapper must be able to
+//! What:
+//!  The environment variables cli-git adds for every real Git it starts.
+//! Why:
+//!  Native Git must write lock-owner PID files,
+//!  and a wrapper must be able to
 //!      notice that another wrapper selected it as "real Git".
 //!
 //! In TS you'd write (pseudocode):
@@ -7,9 +10,12 @@
 //! // spawn(gitPath, args, { env: { ...process.env, ...childEnvironmentOverlay(process.env, gitPath) } });
 //! ```
 
-/// What: `OsStr` is borrowed operating-system text; `OsString` is its owned form.
+/// What:
+///  `OsStr` is borrowed operating-system text;
+///  `OsString` is its owned form.
 ///       They hold raw OS bytes (siblings `&str`/`String` must be valid UTF-8).
-/// Why:  Environment names and values need not be UTF-8 and are passed through unchanged.
+/// Why:
+///   Environment names and values need not be UTF-8 and are passed through unchanged.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,9 +28,12 @@ use std::path::Path;
 /// Git's count variable for environment-supplied configuration.
 pub const COUNT_VARIABLE: &str = "GIT_CONFIG_COUNT";
 
-/// What: The variable naming the executable this wrapper selected as real Git.
-/// Why:  If the selected executable is itself a cli-git wrapper (for example another
-///       build that file identity cannot recognise), it finds its own path here and
+/// What:
+///  The variable naming the executable this wrapper selected as real Git.
+/// Why:
+///   If the selected executable is itself a cli-git wrapper (for example another
+///       build that file identity cannot recognise),
+///  it finds its own path here and
 ///       stops instead of forwarding back and forth forever.
 ///
 /// In TS you'd write (pseudocode):
@@ -33,12 +42,20 @@ pub const COUNT_VARIABLE: &str = "GIT_CONFIG_COUNT";
 /// ```
 pub const FORWARD_TARGET_VARIABLE: &str = "CLI_GIT_NATIVE_FORWARD_TARGET";
 
-/// Key spelling written into the environment; Git compares it case-insensitively.
+/// Key spelling written into the environment;
+///  Git compares it case-insensitively.
 const LOCKFILE_PID_KEY: &str = "core.lockfilePid";
 
-/// What: Largest count Git accepts (`INT_MAX`), as an unsigned 64-bit integer.
-///       Siblings: `u32`, `usize`, `i64`.
-/// Why:  `u64` holds every value C's `strtoul` can return on a 64-bit platform, so
+/// What:
+///  Largest count Git accepts (`INT_MAX`),
+///  as an unsigned 64-bit integer.
+///       Siblings:
+///  `u32`,
+///  `usize`,
+///  `i64`.
+/// Why:
+///   `u64` holds every value C's `strtoul` can return on a 64-bit platform,
+///  so
 ///       the comparison Git makes can be repeated without wrapping.
 ///
 /// In TS you'd write (pseudocode):
@@ -47,10 +64,14 @@ const LOCKFILE_PID_KEY: &str = "core.lockfilePid";
 /// ```
 const GIT_MAX_CONFIG_COUNT: u64 = 2_147_483_647;
 
-/// What: Look one variable up the way C's `getenv` does: the first entry wins.
+/// What:
+///  Look one variable up the way C's `getenv` does:
+///  the first entry wins.
 ///       `&[(OsString, OsString)]` borrows a list of name/value pairs.
 ///       `Option<OsString>` is "an owned value or nothing".
-/// Why:  The overlay must read exactly what the Git child will read. Returning an
+/// Why:
+///   The overlay must read exactly what the Git child will read.
+///  Returning an
 ///       owned copy keeps the function free of borrow bookkeeping for the caller.
 ///
 /// In TS you'd write (pseudocode):
@@ -82,14 +103,20 @@ pub fn environment_value(environment: &[(OsString, OsString)], name: &str) -> Op
     return None;
 }
 
-/// What: Parse `GIT_CONFIG_COUNT` exactly as Git 2.56.0 `config.c` does with
+/// What:
+///  Parse `GIT_CONFIG_COUNT` exactly as Git 2.56.0 `config.c` does with
 ///       `strtoul(env, &endp, 10)` followed by its `*endp` and `INT_MAX` checks.
-///       `Option<u64>` is `Some(count)` when Git accepts the value, `None` when Git
+///       `Option<u64>` is `Some(count)` when Git accepts the value,
+///  `None` when Git
 ///       would report "bogus count" or "too many entries".
-/// Why:  The overlay must append after the entries Git will really read, and must
+/// Why:
+///   The overlay must append after the entries Git will really read,
+///  and must
 ///       leave a value Git rejects untouched so Git reports the caller's own mistake.
-///       `strtoul` skips leading whitespace and accepts one sign; a negated nonzero
-///       value wraps above `INT_MAX`, so only `-0` survives with a minus sign.
+///       `strtoul` skips leading whitespace and accepts one sign;
+///  a negated nonzero
+///       value wraps above `INT_MAX`,
+///  so only `-0` survives with a minus sign.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -149,9 +176,16 @@ pub fn parse_config_count(value: &OsStr) -> Option<u64> {
     return Some(count);
 }
 
-/// What: Report whether a configuration value is one of the true spellings cli-git
-///       itself writes or recognises (`true`, `yes`, `on`, `1`, any ASCII case).
-/// Why:  When the last numbered `core.lockfilePid` entry already reads as true, a
+/// What:
+///  Report whether a configuration value is one of the true spellings cli-git
+///       itself writes or recognises (`true`,
+///  `yes`,
+///  `on`,
+///  `1`,
+///  any ASCII case).
+/// Why:
+///   When the last numbered `core.lockfilePid` entry already reads as true,
+///  a
 ///       nested cli-git must not grow the list again.
 ///
 /// In TS you'd write (pseudocode):
@@ -169,14 +203,24 @@ fn is_true_spelling(value: &OsStr) -> bool {
     return false;
 }
 
-/// What: Compute the variables that append `core.lockfilePid=true` to an environment's
-///       numbered Git configuration. `Vec<(OsString, OsString)>` is an owned list of
-///       name/value pairs; it is empty when nothing must change.
-/// Why:  Native Git then writes an owner PID file beside each lock it takes, which
-///       lock-ownership checks rely on. Numbered entries are read before
-///       `GIT_CONFIG_PARAMETERS`, so a caller's explicit `-c core.lockfilePid=false`
-///       still wins. A count Git would reject, or a numbered entry Git would report
-///       as missing, is left untouched so Git reports the caller's own mistake.
+/// What:
+///  Compute the variables that append `core.lockfilePid=true` to an environment's
+///       numbered Git configuration.
+///  `Vec<(OsString, OsString)>` is an owned list of
+///       name/value pairs;
+///  it is empty when nothing must change.
+/// Why:
+///   Native Git then writes an owner PID file beside each lock it takes,
+///  which
+///       lock-ownership checks rely on.
+///  Numbered entries are read before
+///       `GIT_CONFIG_PARAMETERS`,
+///  so a caller's explicit `-c core.lockfilePid=false`
+///       still wins.
+///  A count Git would reject,
+///  or a numbered entry Git would report
+///       as missing,
+///  is left untouched so Git reports the caller's own mistake.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -246,9 +290,14 @@ pub fn lockfile_pid_overlay(environment: &[(OsString, OsString)]) -> Vec<(OsStri
     ];
 }
 
-/// What: Compute every variable cli-git sets for a real Git child: the lock PID
+/// What:
+///  Compute every variable cli-git sets for a real Git child:
+///  the lock PID
 ///       injection plus the forward-target marker naming `real_git`.
-/// Why:  Every Git the wrapper starts, forwarded or queried, gets the same additions;
+/// Why:
+///   Every Git the wrapper starts,
+///  forwarded or queried,
+///  gets the same additions;
 ///       the rest of the caller's environment is inherited unchanged.
 ///
 /// In TS you'd write (pseudocode):
@@ -268,7 +317,8 @@ pub fn child_environment_overlay(
     return overlay;
 }
 
-/// Lookup and count-parsing controls, checked against real Git.
+/// Lookup and count-parsing controls,
+///  checked against real Git.
 #[cfg(test)]
 #[path = "child_environment_count_tests.rs"]
 mod count_tests;

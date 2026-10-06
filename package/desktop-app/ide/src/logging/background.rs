@@ -1,27 +1,51 @@
 //! A log writer that never makes the logging thread wait for the log output.
 //!
-//! Every formatted record is handed to one writer thread over a queue, and only that thread
-//! writes to the output. A reader that stops reading the output, or a disk that stalls an append
-//! for seconds, then blocks the writer thread and nothing else: the interface thread keeps
+//! Every formatted record is handed to one writer thread over a queue,
+//!  and only that thread
+//! writes to the output.
+//!  A reader that stops reading the output,
+//!  or a disk that stalls an append
+//! for seconds,
+//!  then blocks the writer thread and nothing else:
+//!  the interface thread keeps
 //! drawing and handling input.
 //!
-//! The queue holds at most a fixed number of bytes. A record that does not fit is dropped and
-//! counted, never waited for. The next record that does fit carries the count, and the writer
-//! thread writes one warning line with it right before that record, so the gap is visible where
-//! it happened. At a clean exit, [`LogFlush`] waits a bounded time for the queue to be written.
+//! The queue holds at most a fixed number of bytes.
+//!  A record that does not fit is dropped and
+//! counted,
+//!  never waited for.
+//!  The next record that does fit carries the count,
+//!  and the writer
+//! thread writes one warning line with it right before that record,
+//!  so the gap is visible where
+//! it happened.
+//!  At a clean exit,
+//!  [`LogFlush`] waits a bounded time for the queue to be written.
 
-/// What: `Write` is the trait of byte outputs (files, pipes, standard error); `io::Result` is a
+/// What:
+///  `Write` is the trait of byte outputs (files,
+///  pipes,
+///  standard error);
+///  `io::Result` is a
 ///       success value or an operating-system error.
-/// Why: The writer thread writes to any output, and the logging side presents itself as one.
+/// Why:
+///  The writer thread writes to any output,
+///  and the logging side presents itself as one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// interface Write { write(bytes: Uint8Array): number; flush(): void; }
 /// ```
 use std::io::{self, Write};
-/// What: `Arc` is a thread-safe shared pointer; `Mutex` guards a value that several threads
-///       change; `mpsc` is a multi-producer, single-consumer queue between threads.
-/// Why: The loss count is shared by every logging thread and the writer thread, and records
+/// What:
+///  `Arc` is a thread-safe shared pointer;
+///  `Mutex` guards a value that several threads
+///       change;
+///  `mpsc` is a multi-producer,
+///  single-consumer queue between threads.
+/// Why:
+///  The loss count is shared by every logging thread and the writer thread,
+///  and records
 ///      cross from any thread to the one writer thread.
 ///
 /// In TS you'd write (pseudocode):
@@ -33,18 +57,27 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     mpsc,
 };
-/// What: `thread` starts operating-system threads; `Duration` is a time span.
-/// Why: The writer is its own thread, and the exit flush waits a bounded time.
+/// What:
+///  `thread` starts operating-system threads;
+///  `Duration` is a time span.
+/// Why:
+///  The writer is its own thread,
+///  and the exit flush waits a bounded time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const writer = new Worker('log-writer');
 /// ```
 use std::{thread, time::Duration};
-/// What: `FormatTime` writes a timestamp; `SystemTime` is the clock the log's other lines use;
-///       `Writer` is the text sink a timestamp is written into; `MakeWriter` is how the log
+/// What:
+///  `FormatTime` writes a timestamp;
+///  `SystemTime` is the clock the log's other lines use;
+///       `Writer` is the text sink a timestamp is written into;
+///  `MakeWriter` is how the log
 ///       subscriber obtains a writer for each record.
-/// Why: The loss warning carries the same timestamp format as every other line, and the queue
+/// Why:
+///  The loss warning carries the same timestamp format as every other line,
+///  and the queue
 ///      plugs into the subscriber as its output.
 ///
 /// In TS you'd write (pseudocode):
@@ -57,18 +90,30 @@ use tracing_subscriber::fmt::{
     time::{FormatTime, SystemTime},
 };
 
-/// Bytes of formatted records that may wait for the output at once. A burst of debug records fits;
-/// a stalled output fills it within seconds at the most detailed level, and from then on new
+/// Bytes of formatted records that may wait for the output at once.
+///  A burst of debug records fits;
+/// a stalled output fills it within seconds at the most detailed level,
+///  and from then on new
 /// records are counted as lost instead of growing memory without bound.
 pub const QUEUE_BUDGET: usize = 8 * 1024 * 1024;
 
-/// Longest wait at a clean exit for the queued records to reach the output. An output that
-/// accepts nothing for this long keeps whatever is still queued; the exit is not held up longer.
+/// Longest wait at a clean exit for the queued records to reach the output.
+///  An output that
+/// accepts nothing for this long keeps whatever is still queued;
+///  the exit is not held up longer.
 pub const FLUSH_GRACE: Duration = Duration::from_secs(1);
 
-/// What: Records that were not written: how many, and how many bytes. `u64` is an unsigned
-///       64-bit integer (siblings: `u32`, `usize`); a count over a long session needs the range.
-/// Why: The warning that marks a gap says how much is missing.
+/// What:
+///  Records that were not written:
+///  how many,
+///  and how many bytes.
+///  `u64` is an unsigned
+///       64-bit integer (siblings:
+///  `u32`,
+///  `usize`);
+///  a count over a long session needs the range.
+/// Why:
+///  The warning that marks a gap says how much is missing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,8 +127,12 @@ pub struct Loss {
     pub bytes: u64,
 }
 
-/// What: What travels to the writer thread. An `enum` with data is a tagged union.
-/// Why: Records and the exit flush share one queue, so a flush comes after every record queued
+/// What:
+///  What travels to the writer thread.
+///  An `enum` with data is a tagged union.
+/// Why:
+///  Records and the exit flush share one queue,
+///  so a flush comes after every record queued
 ///      before it.
 ///
 /// In TS you'd write (pseudocode):
@@ -91,14 +140,16 @@ pub struct Loss {
 /// type Message = { kind: 'record'; bytes: Uint8Array; lostBefore: Loss } | { kind: 'flush'; done: () => void };
 /// ```
 enum Message {
-    /// One formatted record, with the loss that happened right before it.
+    /// One formatted record,
+    ///  with the loss that happened right before it.
     Record(
         /// The record's bytes.
         Vec<u8>,
         /// Records dropped since the previous record that was queued.
         Loss,
     ),
-    /// Write everything queued so far, then report through this sender.
+    /// Write everything queued so far,
+    ///  then report through this sender.
     Flush(
         /// Answered once the queue up to this point was written.
         mpsc::Sender<()>,
@@ -117,9 +168,13 @@ struct Shared {
 
 /// Counting and taking losses.
 impl Shared {
-    /// What: Add to the loss count. `&self` borrows the shared state; the lock is held only for
+    /// What:
+    ///  Add to the loss count.
+    ///  `&self` borrows the shared state;
+    ///  the lock is held only for
     ///       the addition.
-    /// Why: Several threads may drop records at the same moment.
+    /// Why:
+    ///  Several threads may drop records at the same moment.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -135,9 +190,12 @@ impl Shared {
         lost.bytes = lost.bytes.saturating_add(loss.bytes);
     }
 
-    /// What: Take the loss count and reset it. `std::mem::take` returns the value and leaves the
+    /// What:
+    ///  Take the loss count and reset it.
+    ///  `std::mem::take` returns the value and leaves the
     ///       type's default (zero) in its place.
-    /// Why: Each loss is reported once.
+    /// Why:
+    ///  Each loss is reported once.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -152,9 +210,13 @@ impl Shared {
     }
 }
 
-/// What: The log subscriber's output: hands every record to the writer thread. `Clone` copies
+/// What:
+///  The log subscriber's output:
+///  hands every record to the writer thread.
+///  `Clone` copies
 ///       the queue's sending end and the shared pointer.
-/// Why: Logging from any thread costs one queue push and never waits for the output.
+/// Why:
+///  Logging from any thread costs one queue push and never waits for the output.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -170,9 +232,15 @@ pub struct BackgroundWriter {
 
 /// Queuing one record.
 impl BackgroundWriter {
-    /// What: Queue one record, or count it as lost when the queue is full or the writer thread is
-    ///       gone. `bytes.to_vec()` copies the borrowed bytes into an owned list.
-    /// Why: The caller is any logging thread, the interface thread included; it must never wait.
+    /// What:
+    ///  Queue one record,
+    ///  or count it as lost when the queue is full or the writer thread is
+    ///       gone.
+    ///  `bytes.to_vec()` copies the borrowed bytes into an owned list.
+    /// Why:
+    ///  The caller is any logging thread,
+    ///  the interface thread included;
+    ///  it must never wait.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -213,9 +281,13 @@ impl BackgroundWriter {
     }
 }
 
-/// What: The writer handed out for one record. `'owner` is a lifetime: the record writer only
+/// What:
+///  The writer handed out for one record.
+///  `'owner` is a lifetime:
+///  the record writer only
 ///       borrows the background writer and cannot outlive it.
-/// Why: The log subscriber asks for a writer per record and writes the whole record through it.
+/// Why:
+///  The log subscriber asks for a writer per record and writes the whole record through it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -228,13 +300,15 @@ pub struct RecordWriter<'owner> {
 
 /// Every write is queued whole and reported as fully written.
 impl Write for RecordWriter<'_> {
-    /// Queue the bytes; claiming them all keeps the subscriber from splitting the record.
+    /// Queue the bytes;
+    ///  claiming them all keeps the subscriber from splitting the record.
     fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
         self.owner.enqueue(bytes);
         return Ok(bytes.len());
     }
 
-    /// Nothing is held here; the writer thread writes in order.
+    /// Nothing is held here;
+    ///  the writer thread writes in order.
     fn flush(&mut self) -> io::Result<()> {
         return Ok(());
     }
@@ -242,7 +316,8 @@ impl Write for RecordWriter<'_> {
 
 /// The log subscriber obtains one record writer per record.
 impl<'owner> MakeWriter<'owner> for BackgroundWriter {
-    /// The per-record writer, borrowing this background writer.
+    /// The per-record writer,
+    ///  borrowing this background writer.
     type Writer = RecordWriter<'owner>;
 
     /// Lend this background writer to one record.
@@ -251,16 +326,23 @@ impl<'owner> MakeWriter<'owner> for BackgroundWriter {
     }
 }
 
-/// What: Kept alive until a clean exit; dropping it waits up to its grace for the queue to be
-///       written. `impl Drop` below runs that wait.
-/// Why: Records written just before exit, such as the language shutdown, must reach the output.
+/// What:
+///  Kept alive until a clean exit;
+///  dropping it waits up to its grace for the queue to be
+///       written.
+///  `impl Drop` below runs that wait.
+/// Why:
+///  Records written just before exit,
+///  such as the language shutdown,
+///  must reach the output.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// using flush = logFlush; // [Symbol.dispose]() waits up to the grace
 /// ```
 pub struct LogFlush {
-    /// Sending end of the same queue, for the flush request.
+    /// Sending end of the same queue,
+    ///  for the flush request.
     sender: mpsc::Sender<Message>,
     /// Longest wait.
     grace: Duration,
@@ -268,7 +350,8 @@ pub struct LogFlush {
 
 /// Waiting for the queue at exit.
 impl Drop for LogFlush {
-    /// Queue a flush request behind every record and wait for its answer, at most the grace.
+    /// Queue a flush request behind every record and wait for its answer,
+    ///  at most the grace.
     fn drop(&mut self) {
         let (done, answered) = mpsc::channel();
         if self.sender.send(Message::Flush(done)).is_err() {
@@ -287,9 +370,14 @@ impl Drop for LogFlush {
     }
 }
 
-/// What: Write the warning line that marks a gap, when there is one. `&mut O` lends the output
-///       for writing; `O: Write` accepts any output.
-/// Why: A dropped record must leave a trace where it would have been.
+/// What:
+///  Write the warning line that marks a gap,
+///  when there is one.
+///  `&mut O` lends the output
+///       for writing;
+///  `O: Write` accepts any output.
+/// Why:
+///  A dropped record must leave a trace where it would have been.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -311,9 +399,15 @@ fn report<O: Write>(output: &mut O, loss: Loss) -> bool {
     return output.write_all(line.as_bytes()).is_ok();
 }
 
-/// What: The writer thread's loop: write each record in order, mark gaps, answer flushes. The loop
+/// What:
+///  The writer thread's loop:
+///  write each record in order,
+///  mark gaps,
+///  answer flushes.
+///  The loop
 ///       ends when every sending end is gone.
-/// Why: Only this thread ever waits for the output.
+/// Why:
+///  Only this thread ever waits for the output.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -350,9 +444,12 @@ fn drain<O: Write>(receiver: &mpsc::Receiver<Message>, output: &mut O, shared: &
     }
 }
 
-/// What: Start the writer thread for `output` with the default budget and grace.
+/// What:
+///  Start the writer thread for `output` with the default budget and grace.
 ///       `O: Write + Send + 'static` means the output can move to another thread and lives on its own.
-/// Why: The application hands standard output to this; tests hand an output they control.
+/// Why:
+///  The application hands standard output to this;
+///  tests hand an output they control.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -364,9 +461,11 @@ pub fn background<O: Write + Send + 'static>(
     return background_with(output, QUEUE_BUDGET, FLUSH_GRACE);
 }
 
-/// What: Start the writer thread for `output` with an explicit budget and exit grace.
+/// What:
+///  Start the writer thread for `output` with an explicit budget and exit grace.
 ///       The tuple `(BackgroundWriter, LogFlush)` returns two values at once.
-/// Why: Tests use a small budget to reach the full queue quickly.
+/// Why:
+///  Tests use a small budget to reach the full queue quickly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -406,7 +505,10 @@ pub fn background_with<O: Write + Send + 'static>(
     return Ok((writer, flush));
 }
 
-/// Queuing, dropping, gap reports, and the exit flush with outputs the tests control.
+/// Queuing,
+///  dropping,
+///  gap reports,
+///  and the exit flush with outputs the tests control.
 #[cfg(test)]
 #[path = "background_tests.rs"]
 mod tests;

@@ -1,7 +1,13 @@
-//! The vertical mapping between pixels and source lines, without fonts or a window.
+//! The vertical mapping between pixels and source lines,
+//!  without fonts or a window.
 
-/// What: Import the production mapping through the library's public interface.
-/// Why: Painting, hit testing, and scrolling call exactly these functions; the tests must not use a copy.
+/// What:
+///  Import the production mapping through the library's public interface.
+/// Why:
+///  Painting,
+///  hit testing,
+///  and scrolling call exactly these functions;
+///  the tests must not use a copy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,7 +31,9 @@ fn block(line: usize) -> Place {
     };
 }
 
-/// Without blocks, line `n` starts at exactly `n` code rows, as the view placed rows before virtual rows existed.
+/// Without blocks,
+///  line `n` starts at exactly `n` code rows,
+///  as the view placed rows before virtual rows existed.
 #[test]
 fn plain_text_places_line_n_at_n_code_rows() {
     let map = RowMap::plain(1000);
@@ -49,7 +57,8 @@ fn plain_text_places_line_n_at_n_code_rows() {
     assert_eq!(map.lines(), 1000);
 }
 
-/// An empty text still has one line, and a block on a line the text lacks or without height is left out.
+/// An empty text still has one line,
+///  and a block on a line the text lacks or without height is left out.
 #[test]
 fn degenerate_inputs_are_normalized() {
     let empty = RowMap::plain(0);
@@ -63,7 +72,8 @@ fn degenerate_inputs_are_normalized() {
     );
 }
 
-/// A block pushes its own code row and every later line down by its height, and nothing above it.
+/// A block pushes its own code row and every later line down by its height,
+///  and nothing above it.
 #[test]
 fn blocks_push_their_line_and_everything_beneath_down() {
     // Lines 2, 3, and 7 own blocks of 26, 42, and 16 px.
@@ -87,7 +97,8 @@ fn blocks_push_their_line_and_everything_beneath_down() {
     assert_eq!(map.block_height(4), 0.0);
 }
 
-/// Every pixel belongs to exactly one line, and a block belongs to the code row beneath it.
+/// Every pixel belongs to exactly one line,
+///  and a block belongs to the code row beneath it.
 #[test]
 fn every_pixel_belongs_to_one_line_and_blocks_to_the_row_beneath() {
     let map = RowMap::new(10, &[(2, 26.0), (3, 42.0), (7, 16.0)]);
@@ -126,7 +137,8 @@ fn every_pixel_belongs_to_one_line_and_blocks_to_the_row_beneath() {
     assert_eq!(previous, 9);
 }
 
-/// A block above the first line starts the text; the first code row is then below it.
+/// A block above the first line starts the text;
+///  the first code row is then below it.
 #[test]
 fn first_line_can_own_a_block() {
     let map = RowMap::new(2, &[(0, 26.0)]);

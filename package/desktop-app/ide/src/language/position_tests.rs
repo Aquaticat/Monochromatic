@@ -4,10 +4,16 @@ use super::{from_lsp_position, from_lsp_range, to_lsp_position, to_lsp_range};
 use helix_core::Rope;
 use helix_lsp::{OffsetEncoding, lsp};
 
-/// Line 0 has a tab and CRLF; line 1 has a combining mark and an astral character; line 2 has no line break.
+/// Line 0 has a tab and CRLF;
+///  line 1 has a combining mark and an astral character;
+///  line 2 has no line break.
 const SOURCE: &str = "a\tb\r\ne\u{301}\u{1F600}x\r\nlast";
 
-/// Character offset of `x` on line 1: five characters on line 0, then `e`, the mark, and the emoji.
+/// Character offset of `x` on line 1:
+///  five characters on line 0,
+///  then `e`,
+///  the mark,
+///  and the emoji.
 const X_OFFSET: usize = 8;
 
 #[test]

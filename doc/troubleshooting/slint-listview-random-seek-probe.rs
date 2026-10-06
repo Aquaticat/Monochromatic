@@ -1,8 +1,10 @@
-//! Standalone driver around the exact upstream virtualization function, with scalar geometry/property adapters.
+//! Standalone driver around the exact upstream virtualization function,
+//!  with scalar geometry/property adapters.
 
 /// Cell/RefCell model property writes and row-position output without a GUI or filesystem access.
 use std::cell::{Cell, RefCell};
-/// Desktop Slint uses floating-point coordinates; integer-coordinate embedded builds are outside this probe.
+/// Desktop Slint uses floating-point coordinates;
+///  integer-coordinate embedded builds are outside this probe.
 type Coord = f32;
 /// Minimal adapter for the upstream logical-length accessors used by the extracted function.
 #[derive(Default, Clone, Copy)]
@@ -56,7 +58,8 @@ impl RepeaterInstanceOps for Rows {
         200.0
     }
 }
-/// Cells behave like direct, unbound geometry properties at this algorithm boundary.
+/// Cells behave like direct,
+///  unbound geometry properties at this algorithm boundary.
 #[derive(Default)]
 struct Props { y: Cell<f32>, height: Cell<f32>, width: Cell<f32>, binding: bool }
 impl ListViewProperties for Props {

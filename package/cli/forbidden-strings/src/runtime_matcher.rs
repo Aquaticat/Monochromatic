@@ -1,7 +1,9 @@
 //! Hybrid runtime matcher for exact literals and restricted regular expressions.
 //!
-//! Bare literals stay out of `RegexSet`: one Aho-Corasick automaton handles them
-//! directly, while explicit and multiline regex rules retain the in-house engine.
+//! Bare literals stay out of `RegexSet`:
+//!  one Aho-Corasick automaton handles them
+//! directly,
+//!  while explicit and multiline regex rules retain the in-house engine.
 //! Both subset-local matchers map back to original runtime rule ids before findings.
 
 /// Imports overlapping multi-literal matcher.
@@ -36,7 +38,8 @@ pub(crate) enum RuntimeMatcherError {
     ),
     /// Existing regex engine rejected original rule id.
     Regex {
-        /// Original runtime rule id, not subset-local index.
+        /// Original runtime rule id,
+        ///  not subset-local index.
         index: usize,
         /// Static engine reason that never carries pattern bytes.
         reason: CompileError,
@@ -66,7 +69,9 @@ pub(crate) struct RuntimeRules {
     regex_rule_ids: Vec<usize>,
 }
 
-/// Hybrid matcher construction, artifact projection, and scan behavior.
+/// Hybrid matcher construction,
+///  artifact projection,
+///  and scan behavior.
 impl RuntimeRules {
     /// Parses and compiles authoritative runtime source.
     pub(crate) fn compile(text: &str) -> Result<Self, RuntimeMatcherError> {

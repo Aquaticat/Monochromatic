@@ -1,5 +1,8 @@
-//! What: Thread-isolated rule-load requests executed through a named unwind boundary.
-//! Why: Loading may fail before a Scanner exists; no partial ruleset or panic payload may become a successful result.
+//! What:
+//!  Thread-isolated rule-load requests executed through a named unwind boundary.
+//! Why:
+//!  Loading may fail before a Scanner exists;
+//!  no partial ruleset or panic payload may become a successful result.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -36,11 +39,13 @@ struct LoadRequest {
 // // A synchronous per-thread request slot, not one shared process variable or captured callback.
 // ```
 std::thread_local! {
-    /// The pending request is taken before loading; None is the normal idle state.
+    /// The pending request is taken before loading;
+    ///  None is the normal idle state.
     static PENDING: Cell<Option<LoadRequest>> = const { Cell::new(None) };
 }
 
-/// Consume the request before invoking any compiler or logging callbacks, permitting safe nested loads.
+/// Consume the request before invoking any compiler or logging callbacks,
+///  permitting safe nested loads.
 fn execute_pending() -> Result<LoadedRules> {
     // take leaves None in this thread's slot before loader work begins.
     let Some(request): Option<LoadRequest> = PENDING.take() else {

@@ -1,12 +1,15 @@
-//! What: Configuration fast-path decisions over native Git argument shapes.
-//! Why: An optional presentation flag must not consume a branch/tag name and hide a mutation.
+//! What:
+//!  Configuration fast-path decisions over native Git argument shapes.
+//! Why:
+//!  An optional presentation flag must not consume a branch/tag name and hide a mutation.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Cover listing, mutation, separator and opaque-value paths independently.
 //! ```
 
-/// Import actual classification, the private mutation list and native argument ownership.
+/// Import actual classification,
+///  the private mutation list and native argument ownership.
 use super::{ConfigLoading, classify_config_loading, mutating_long};
 use std::ffi::OsString;
 
@@ -43,7 +46,10 @@ fn recognized_inspection_forms_keep_the_fast_path() {
     }
 }
 
-/// A global option Git refuses, and one whose value is missing, are Git's to report: each skips on its own.
+/// A global option Git refuses,
+///  and one whose value is missing,
+///  are Git's to report:
+///  each skips on its own.
 #[test]
 fn global_option_errors_keep_the_fast_path() {
     for args in [
@@ -95,7 +101,8 @@ fn mutation_flags_and_positionals_never_become_false_inspection() {
     }
 }
 
-/// Run real Git only inside a newly created fixture, with no global/system configuration.
+/// Run real Git only inside a newly created fixture,
+///  with no global/system configuration.
 fn git(directory: &std::path::Path, arguments: &[&str]) -> std::process::Output {
     let output = std::process::Command::new("/usr/bin/git")
         .current_dir(directory)
@@ -174,7 +181,8 @@ fn option_values_and_separators_remain_opaque() {
     );
 }
 
-/// A commit filter lists even with a pattern; `--format` and `--sort` never turn a name into a pattern.
+/// A commit filter lists even with a pattern;
+///  `--format` and `--sort` never turn a name into a pattern.
 #[test]
 fn only_commit_filters_imply_listing() {
     for args in [
@@ -209,7 +217,9 @@ fn only_commit_filters_imply_listing() {
     }
 }
 
-/// Each short letter keeps its own command's meaning; a lone dash is a name, not a flag cluster.
+/// Each short letter keeps its own command's meaning;
+///  a lone dash is a name,
+///  not a flag cluster.
 #[test]
 fn short_letters_are_judged_per_command() {
     for args in [

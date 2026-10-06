@@ -1,13 +1,21 @@
 //! Wayland protocol handler implementations for `Compositor`.
 //!
 //! Smithay dispatches each protocol's events by calling trait methods on the state.
-//! This file holds the seat (input focus), data-device (clipboard), and output
-//! handlers plus their `delegate_*!` glue; the compositor/shm, xdg-shell, and dmabuf
+//! This file holds the seat (input focus),
+//!  data-device (clipboard),
+//!  and output
+//! handlers plus their `delegate_*!` glue;
+//!  the compositor/shm,
+//!  xdg-shell,
+//!  and dmabuf
 //! handlers live in the submodules declared below.
 
-/// What:     `pub mod compositor;`. Declares the `compositor` submodule from
+/// What:
+///      `pub mod compositor;`.
+///  Declares the `compositor` submodule from
 ///           `src/handler/compositor.rs` and re-exports it publicly.
-/// Why:      Holds the surface-commit and shared-memory handlers.
+/// Why:
+///       Holds the surface-commit and shared-memory handlers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,8 +23,11 @@
 /// ```
 pub mod compositor;
 
-/// What:     `pub mod xdg_shell;`. Declares the xdg-shell submodule.
-/// Why:      Holds the toplevel/popup handler that maps the app fullscreen.
+/// What:
+///      `pub mod xdg_shell;`.
+///  Declares the xdg-shell submodule.
+/// Why:
+///       Holds the toplevel/popup handler that maps the app fullscreen.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,8 +35,11 @@ pub mod compositor;
 /// ```
 pub mod xdg_shell;
 
-/// What:     `pub mod dmabuf;`. Declares the dmabuf submodule.
-/// Why:      Holds the GPU-buffer import handler.
+/// What:
+///      `pub mod dmabuf;`.
+///  Declares the dmabuf submodule.
+/// Why:
+///       Holds the GPU-buffer import handler.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,8 +53,13 @@ pub mod clipboard;
 /// Fractional-scale and viewporter handlers tell new surfaces the output scale.
 pub mod scale;
 
-/// What:     Grouped `use` of the seat, output, data-device, and delegate items.
-/// Why:      Bring the traits and macros the impls below need into scope.
+/// What:
+///      Grouped `use` of the seat,
+///  output,
+///  data-device,
+///  and delegate items.
+/// Why:
+///       Bring the traits and macros the impls below need into scope.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -62,11 +81,17 @@ use smithay::{
     },
 };
 
-/// What:     Grouped `use` of a file wrapper, the write trait, and an owned file
+/// What:
+///      Grouped `use` of a file wrapper,
+///  the write trait,
+///  and an owned file
 ///           descriptor.
-/// Why:      `ServerDndGrabHandler::send` writes the pending uri-list bytes into the fd the
-///           app handed us. `OwnedFd` is an owning file descriptor (closing it on drop
-///           signals EOF to the app's reader); `File::from(fd)` gives it `Write`.
+/// Why:
+///       `ServerDndGrabHandler::send` writes the pending uri-list bytes into the fd the
+///           app handed us.
+///  `OwnedFd` is an owning file descriptor (closing it on drop
+///           signals EOF to the app's reader);
+///  `File::from(fd)` gives it `Write`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -74,12 +99,21 @@ use smithay::{
 /// ```
 use std::{fs::File, io::Write, os::fd::OwnedFd};
 
-/// What:     `use tracing::{info, warn};`. Structured log macros.
-/// Why:      Trace the server-drag hooks (drop, data request, finish, cancel).
+/// What:
+///      `use tracing::{info, warn};`.
+///  Structured log macros.
+/// Why:
+///       Trace the server-drag hooks (drop,
+///  data request,
+///  finish,
+///  cancel).
 use tracing::{info, warn};
 
-/// What:     `use crate::state::Compositor;`. `crate::` is "this crate's root".
-/// Why:      All the handler impls are `impl Trait for Compositor`.
+/// What:
+///      `use crate::state::Compositor;`.
+///  `crate::` is "this crate's root".
+/// Why:
+///       All the handler impls are `impl Trait for Compositor`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -89,10 +123,17 @@ use crate::state::Compositor;
 
 /// Implement the seat (input focus) handler for the compositor.
 ///
-/// What:     `impl SeatHandler for Compositor`. Declares the focus types and the
-///           hooks Smithay calls when focus changes. The three associated types are
-///           all `WlSurface`: keyboard, pointer, and touch focus are all surfaces.
-/// Why:      Tells Smithay how focus is represented and lets us mirror keyboard focus
+/// What:
+///      `impl SeatHandler for Compositor`.
+///  Declares the focus types and the
+///           hooks Smithay calls when focus changes.
+///  The three associated types are
+///           all `WlSurface`:
+///  keyboard,
+///  pointer,
+///  and touch focus are all surfaces.
+/// Why:
+///       Tells Smithay how focus is represented and lets us mirror keyboard focus
 ///           onto the data device (clipboard).
 ///
 /// In TS you'd write (pseudocode):
@@ -107,19 +148,27 @@ impl SeatHandler for Compositor {
     /// Touch focus is a surface.
     type TouchFocus = WlSurface;
 
-    /// What:     `fn seat_state(&mut self) -> &mut SeatState<Compositor>`. Hands
+    /// What:
+    ///      `fn seat_state(&mut self) -> &mut SeatState<Compositor>`.
+    ///  Hands
     ///           Smithay a mutable borrow of our seat state.
-    /// Why:      Smithay mutates seat bookkeeping through this accessor.
+    /// Why:
+    ///       Smithay mutates seat bookkeeping through this accessor.
     fn seat_state(&mut self) -> &mut SeatState<Compositor> {
         // What:     `&mut self.seat_state`. A mutable borrow of the field (tail expr).
         // Why:      Return the seat state Smithay asked for.
         return &mut self.seat_state
     }
 
-    /// What:     `fn cursor_image(&mut self, _seat: &Seat<Self>, _image:
-    ///           CursorImageStatus) {}`. Called when the client sets a cursor; both
+    /// What:
+    ///      `fn cursor_image(&mut self, _seat: &Seat<Self>, _image:
+    ///           CursorImageStatus) {}`.
+    ///  Called when the client sets a cursor;
+    ///  both
     ///           arguments ignored.
-    /// Why:      A headless testing fixture draws no cursor, so this is a no-op.
+    /// Why:
+    ///       A headless testing fixture draws no cursor,
+    ///  so this is a no-op.
     fn cursor_image(
         &mut self,
         _seat: &Seat<Self>,
@@ -127,10 +176,14 @@ impl SeatHandler for Compositor {
     ) {
     }
 
-    /// What:     `fn focus_changed(&mut self, seat: &Seat<Self>, focused:
-    ///           Option<&WlSurface>)`. Called when keyboard focus moves; `focused` is
+    /// What:
+    ///      `fn focus_changed(&mut self, seat: &Seat<Self>, focused:
+    ///           Option<&WlSurface>)`.
+    ///  Called when keyboard focus moves;
+    ///  `focused` is
     ///           the newly focused surface or `None`.
-    /// Why:      Keep the data device's focus in sync so clipboard offers reach the
+    /// Why:
+    ///       Keep the data device's focus in sync so clipboard offers reach the
     ///           focused client.
     fn focus_changed(&mut self, seat: &Seat<Self>, focused: Option<&WlSurface>) {
         // What:     `let dh = &self.display_handle;`. Borrow the display handle.
@@ -169,10 +222,14 @@ delegate_seat!(Compositor);
 
 /// Implement the selection (clipboard) handler.
 ///
-/// What:     `impl SelectionHandler for Compositor { type SelectionUserData = (); }`.
-///           The associated type `()` is the unit type (an empty tuple, "no data"),
+/// What:
+///      `impl SelectionHandler for Compositor { type SelectionUserData = (); }`.
+///           The associated type `()` is the unit type (an empty tuple,
+///  "no data"),
 ///           meaning we attach no extra data to selections.
-/// Why:      Required companion trait for the data device; we keep it minimal.
+/// Why:
+///       Required companion trait for the data device;
+///  we keep it minimal.
 impl SelectionHandler for Compositor {
     /// No extra per-selection data.
     type SelectionUserData = ();
@@ -180,11 +237,17 @@ impl SelectionHandler for Compositor {
 
 /// Implement the data-device (clipboard / DnD) handler.
 ///
-/// What:     `impl DataDeviceHandler for Compositor`. Exposes the data-device state.
-/// Why:      Smithay routes clipboard requests through this accessor.
+/// What:
+///      `impl DataDeviceHandler for Compositor`.
+///  Exposes the data-device state.
+/// Why:
+///       Smithay routes clipboard requests through this accessor.
 impl DataDeviceHandler for Compositor {
-    /// What:     `fn data_device_state(&self) -> &DataDeviceState`. Read-only borrow.
-    /// Why:      Smithay reads the data-device state through it.
+    /// What:
+    ///      `fn data_device_state(&self) -> &DataDeviceState`.
+    ///  Read-only borrow.
+    /// Why:
+    ///       Smithay reads the data-device state through it.
     fn data_device_state(&self) -> &DataDeviceState {
         // What:     `&self.data_device_state`. Borrow the field (tail expression).
         // Why:      Hand Smithay the state.
@@ -192,24 +255,41 @@ impl DataDeviceHandler for Compositor {
     }
 }
 
-/// What:     `impl ClientDndGrabHandler for Compositor {}`. Empty impl: accept the
+/// What:
+///      `impl ClientDndGrabHandler for Compositor {}`.
+///  Empty impl:
+///  accept the
 ///           default (no custom client drag-and-drop grab behaviour).
-/// Why:      Required by the data-device delegate; defaults suffice for a fixture.
+/// Why:
+///       Required by the data-device delegate;
+///  defaults suffice for a fixture.
 impl ClientDndGrabHandler for Compositor {}
 
 /// Implement server-initiated drag-and-drop so the compositor can BE the drag source.
 ///
-/// What:     `impl ServerDndGrabHandler for Compositor`. Overrides the hooks Smithay's
-///           server DnD grab calls: `send` (the app requests the drag data), `dropped`,
-///           `finished`, and `cancelled`.
-/// Why:      The `drop-file` control command (via `crate::dnd`) drives a compositor-side
-///           drag toward the hosted app; these hooks deliver the `text/uri-list` payload and
-///           trace the outcome, making the inbound-drop path testable without a file manager.
+/// What:
+///      `impl ServerDndGrabHandler for Compositor`.
+///  Overrides the hooks Smithay's
+///           server DnD grab calls:
+///  `send` (the app requests the drag data),
+///  `dropped`,
+///           `finished`,
+///  and `cancelled`.
+/// Why:
+///       The `drop-file` control command (via `crate::dnd`) drives a compositor-side
+///           drag toward the hosted app;
+///  these hooks deliver the `text/uri-list` payload and
+///           trace the outcome,
+///  making the inbound-drop path testable without a file manager.
 impl ServerDndGrabHandler for Compositor {
-    /// What:     `fn send(&mut self, mime_type: String, fd: OwnedFd, _seat: Seat<Self>)`. The
-    ///           app requested the drag data for `mime_type` on the receive `fd`; the seat is
+    /// What:
+    ///      `fn send(&mut self, mime_type: String, fd: OwnedFd, _seat: Seat<Self>)`.
+    ///  The
+    ///           app requested the drag data for `mime_type` on the receive `fd`;
+    ///  the seat is
     ///           unused.
-    /// Why:      Write the pending uri-list bytes so the app's inbound reader receives them.
+    /// Why:
+    ///       Write the pending uri-list bytes so the app's inbound reader receives them.
     fn send(&mut self, mime_type: String, fd: OwnedFd, _seat: Seat<Self>) {
         // What:     `info!(...)`. Note which mime type the app asked for.
         // Why:      Confirm the app reached the receive step of the drop.
@@ -238,17 +318,23 @@ impl ServerDndGrabHandler for Compositor {
         }
     }
 
-    /// What:     `fn dropped(&mut self, _seat: Seat<Self>)`. The drag was released over the
+    /// What:
+    ///      `fn dropped(&mut self, _seat: Seat<Self>)`.
+    ///  The drag was released over the
     ///           app (a validated drop).
-    /// Why:      Marks that the app accepted the offer and the drop is proceeding.
+    /// Why:
+    ///       Marks that the app accepted the offer and the drop is proceeding.
     fn dropped(&mut self, _seat: Seat<Self>) {
         // What:     `info!(...)`. Log the validated drop.
         // Why:      Distinguish a real drop from a cancellation.
         info!("drop-file: server drag dropped onto the app (accepted)");
     }
 
-    /// What:     `fn finished(&mut self, _seat: Seat<Self>)`. The app finished with the offer.
-    /// Why:      Clear the pending payload now that the transfer is complete.
+    /// What:
+    ///      `fn finished(&mut self, _seat: Seat<Self>)`.
+    ///  The app finished with the offer.
+    /// Why:
+    ///       Clear the pending payload now that the transfer is complete.
     fn finished(&mut self, _seat: Seat<Self>) {
         // What:     `info!(...)` then `self.pending_dnd_uri_list = None;`. Log and clear.
         // Why:      Release the payload so a later drag starts clean.
@@ -256,9 +342,12 @@ impl ServerDndGrabHandler for Compositor {
         self.pending_dnd_uri_list = None;
     }
 
-    /// What:     `fn cancelled(&mut self, _seat: Seat<Self>)`. The drag ended without a
+    /// What:
+    ///      `fn cancelled(&mut self, _seat: Seat<Self>)`.
+    ///  The drag ended without a
     ///           validated drop (the app did not accept a mime type or choose an action).
-    /// Why:      Surface the failure loudly (this is the exact symptom being diagnosed) and
+    /// Why:
+    ///       Surface the failure loudly (this is the exact symptom being diagnosed) and
     ///           clear the payload.
     fn cancelled(&mut self, _seat: Seat<Self>) {
         // What:     `warn!(...)` then clear. A cancellation is the "drop did not register"
@@ -273,9 +362,13 @@ impl ServerDndGrabHandler for Compositor {
 // Why:      Wire `wl_data_device_manager` to our handler.
 delegate_data_device!(Compositor);
 
-/// What:     `impl OutputHandler for Compositor {}`. Empty impl; the default output
+/// What:
+///      `impl OutputHandler for Compositor {}`.
+///  Empty impl;
+///  the default output
 ///           behaviour is all a single-output fixture needs.
-/// Why:      Required to delegate `wl_output`.
+/// Why:
+///       Required to delegate `wl_output`.
 impl OutputHandler for Compositor {}
 
 // What:     `delegate_output!(Compositor);`. Generates the output dispatch glue.

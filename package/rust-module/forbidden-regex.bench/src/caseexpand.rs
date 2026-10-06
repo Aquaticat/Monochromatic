@@ -1,19 +1,33 @@
 //! Three-casing expansion for inline `(?i)` scopes in the faithful port.
 //!
-//! What: rewrites the case-insensitive spans of a rule body into case-sensitive dialect that
-//! covers the three shapes people actually write. A keyword literal run under `(?i)` becomes a
-//! non-capturing alternation of its lowercase, per-run-Capitalized, and UPPERCASE forms
-//! (`adobe` -> `(?:adobe|Adobe|ADOBE)`, `api_key` -> `(?:api_key|Api_Key|API_KEY)`); a character
-//! class under `(?i)` widens each letter range or single to both cases (`[a-z]` -> `[a-zA-Z]`); a
-//! single quantified letter under `(?i)` widens to a two-case class (`A{22}` -> `[aA]{22}`). Why:
-//! the engine has no case-insensitivity flag, and the decided policy prefers matching the three
+//! What:
+//!  rewrites the case-insensitive spans of a rule body into case-sensitive dialect that
+//! covers the three shapes people actually write.
+//!  A keyword literal run under `(?i)` becomes a
+//! non-capturing alternation of its lowercase,
+//!  per-run-Capitalized,
+//!  and UPPERCASE forms
+//! (`adobe` -> `(?:adobe|Adobe|ADOBE)`,
+//!  `api_key` -> `(?:api_key|Api_Key|API_KEY)`);
+//!  a character
+//! class under `(?i)` widens each letter range or single to both cases (`[a-z]` -> `[a-zA-Z]`);
+//!  a
+//! single quantified letter under `(?i)` widens to a two-case class (`A{22}` -> `[aA]{22}`).
+//!  Why:
+//! the engine has no case-insensitivity flag,
+//!  and the decided policy prefers matching the three
 //! consistent shapes over a per-character both-case expansion that would also match mixed-case
 //! noise like `AdOBe_`.
 //!
-//! Scope tracking follows PCRE: `(?i)` turns case-insensitivity on for the remainder of its
-//! enclosing group, `(?i:...)` turns it on inside the group, and `(?-i:...)` turns it back off;
-//! child groups inherit the flag state at their point. A pattern with no inline case flag is
-//! returned byte-identical, so only the affected rules are transformed.
+//! Scope tracking follows PCRE:
+//!  `(?i)` turns case-insensitivity on for the remainder of its
+//! enclosing group,
+//!  `(?i:...)` turns it on inside the group,
+//!  and `(?-i:...)` turns it back off;
+//! child groups inherit the flag state at their point.
+//!  A pattern with no inline case flag is
+//! returned byte-identical,
+//!  so only the affected rules are transformed.
 
 /// Imports the class-span and group-span helpers shared with the porter.
 use crate::port::{class_end, matching_close};
@@ -22,7 +36,8 @@ use crate::port::{class_end, matching_close};
 enum CaseMode {
     /// Every letter lowercase.
     Lower,
-    /// First letter of each alphabetic run uppercase, the rest lowercase.
+    /// First letter of each alphabetic run uppercase,
+    ///  the rest lowercase.
     Cap,
     /// Every letter uppercase.
     Upper,
@@ -30,12 +45,16 @@ enum CaseMode {
 
 /// Expands every inline case-insensitive span of `pattern` into case-sensitive dialect.
 ///
-/// What: returns `pattern` unchanged when it carries no inline case flag, else walks it under a
-/// case-insensitivity flag that starts off. Why: guaranteeing byte-identity for the flagless
+/// What:
+///  returns `pattern` unchanged when it carries no inline case flag,
+///  else walks it under a
+/// case-insensitivity flag that starts off.
+///  Why:
+///  guaranteeing byte-identity for the flagless
 /// rules keeps the port's non-case output exactly as before.
 ///
 /// @example
-/// ```
+/// ```rust
 /// assert_eq!(expand_case("(?i)adobe"), "(?:adobe|Adobe|ADOBE)");
 /// ```
 pub(crate) fn expand_case(pattern: &str) -> String {
@@ -47,17 +66,31 @@ pub(crate) fn expand_case(pattern: &str) -> String {
 
 /// Reports whether `s` carries any inline case flag the walker must interpret.
 ///
-/// What: true for `(?i)`, `(?i:`, or `(?-i:`. Why: gates the byte-identity fast path.
+/// What:
+///  true for `(?i)`,
+///  `(?i:`,
+///  or `(?-i:`.
+///  Why:
+///  gates the byte-identity fast path.
 fn has_case_flag(s: &str) -> bool {
     return s.contains("(?i)") || s.contains("(?i:") || s.contains("(?-i:");
 }
 
 /// Processes one (sub)pattern under case-insensitivity flag `initial_ci`.
 ///
-/// What: accumulates consecutive literal bytes into a run, flushing it (three-cased when the
-/// flag is on) at every class, group, metacharacter, or flag change; recurses into each group
-/// with the child's flag; an inline `(?i)` turns the flag on for the rest of this scope. Why:
-/// PCRE scopes a flag to its enclosing group, so a single left-to-right walk with per-group
+/// What:
+///  accumulates consecutive literal bytes into a run,
+///  flushing it (three-cased when the
+/// flag is on) at every class,
+///  group,
+///  metacharacter,
+///  or flag change;
+///  recurses into each group
+/// with the child's flag;
+///  an inline `(?i)` turns the flag on for the rest of this scope.
+///  Why:
+/// PCRE scopes a flag to its enclosing group,
+///  so a single left-to-right walk with per-group
 /// recursion models the exact case-insensitive spans.
 fn expand_scope(s: &str, initial_ci: bool) -> String {
     let b = s.as_bytes();
@@ -158,10 +191,16 @@ fn expand_scope(s: &str, initial_ci: bool) -> String {
     return out;
 }
 
-/// Emits the pending literal run, three-cased when the case-insensitivity flag is on.
+/// Emits the pending literal run,
+///  three-cased when the case-insensitivity flag is on.
 ///
-/// What: no-op on an empty run; otherwise appends the three-casing alternation (flag on) or the
-/// run verbatim (flag off), then clears it. Why: a run is the unit the three-casing applies to.
+/// What:
+///  no-op on an empty run;
+///  otherwise appends the three-casing alternation (flag on) or the
+/// run verbatim (flag off),
+///  then clears it.
+///  Why:
+///  a run is the unit the three-casing applies to.
 fn flush_run(run: &mut String, ci: bool, out: &mut String) {
     if run.is_empty() {
         return;
@@ -176,8 +215,14 @@ fn flush_run(run: &mut String, ci: bool, out: &mut String) {
 
 /// Builds the non-capturing three-casing alternation of a literal run.
 ///
-/// What: the distinct lowercase, per-run-Capitalized, and UPPERCASE forms joined with `|` inside
-/// `(?:...)`; a run with no letter (all three forms equal) is returned bare. Why: matching only
+/// What:
+///  the distinct lowercase,
+///  per-run-Capitalized,
+///  and UPPERCASE forms joined with `|` inside
+/// `(?:...)`;
+///  a run with no letter (all three forms equal) is returned bare.
+///  Why:
+///  matching only
 /// the three consistent shapes is the decided approximation of case-insensitivity.
 fn three_case(run: &str) -> String {
     let mut forms: Vec<String> = Vec::new();
@@ -196,10 +241,17 @@ fn three_case(run: &str) -> String {
     return format!("(?:{})", forms.join("|"));
 }
 
-/// Applies one casing to a literal run, casing bare ASCII letters and copying escapes intact.
+/// Applies one casing to a literal run,
+///  casing bare ASCII letters and copying escapes intact.
 ///
-/// What: lowercases, uppercases, or Capitalizes (first letter of each alphabetic run upper, rest
-/// lower); a backslash escape and any non-letter break the alphabetic run and pass through. Why:
+/// What:
+///  lowercases,
+///  uppercases,
+///  or Capitalizes (first letter of each alphabetic run upper,
+///  rest
+/// lower);
+///  a backslash escape and any non-letter break the alphabetic run and pass through.
+///  Why:
 /// an escape such as `\_` or `\x60` must never have its bytes recased.
 fn recase(run: &str, mode: CaseMode) -> String {
     let b = run.as_bytes();
@@ -237,9 +289,14 @@ fn recase(run: &str, mode: CaseMode) -> String {
 
 /// Widens each letter range or single of a `[...]` class to cover both cases.
 ///
-/// What: preserves a leading `^` and every non-letter member, and inserts the opposite-case
-/// range or letter after each letter one it does not already contain. Why: a class under `(?i)`
-/// matched both cases, so widening is exact.
+/// What:
+///  preserves a leading `^` and every non-letter member,
+///  and inserts the opposite-case
+/// range or letter after each letter one it does not already contain.
+///  Why:
+///  a class under `(?i)`
+/// matched both cases,
+///  so widening is exact.
 fn widen_class(class: &str) -> String {
     if class.len() < 2 || !class.ends_with(']') {
         return class.to_string();
@@ -276,9 +333,14 @@ fn widen_class(class: &str) -> String {
     return out;
 }
 
-/// Reads one class member (an escape pair or a single byte), returning it and the next index.
+/// Reads one class member (an escape pair or a single byte),
+///  returning it and the next index.
 ///
-/// What: two bytes for `\X`, else one byte. Why: range detection must step over whole members.
+/// What:
+///  two bytes for `\X`,
+///  else one byte.
+///  Why:
+///  range detection must step over whole members.
 fn read_class_atom(body: &str, i: usize) -> (String, usize) {
     let bb = body.as_bytes();
     if bb[i] == b'\\' && i + 1 < bb.len() {
@@ -287,9 +349,13 @@ fn read_class_atom(body: &str, i: usize) -> (String, usize) {
     return (body[i..i + 1].to_string(), i + 1);
 }
 
-/// Returns the opposite-case range for a same-case letter range absent from `body`, or `None`.
+/// Returns the opposite-case range for a same-case letter range absent from `body`,
+///  or `None`.
 ///
-/// What: for `a-z` yields `A-Z` unless `body` already contains it. Why: avoids re-adding a case
+/// What:
+///  for `a-z` yields `A-Z` unless `body` already contains it.
+///  Why:
+///  avoids re-adding a case
 /// a class such as `[a-zA-Z0-9]` already spans.
 fn widen_letter_range(lo: &str, hi: &str, body: &str) -> Option<String> {
     let (l, h) = (single_letter(lo)?, single_letter(hi)?);
@@ -303,9 +369,13 @@ fn widen_letter_range(lo: &str, hi: &str, body: &str) -> Option<String> {
     return Some(opp);
 }
 
-/// Returns the opposite-case letter for a single-letter member absent from `body`, or `None`.
+/// Returns the opposite-case letter for a single-letter member absent from `body`,
+///  or `None`.
 ///
-/// What: for `a` yields `A` unless `body` already contains it. Why: widens a lone letter such as
+/// What:
+///  for `a` yields `A` unless `body` already contains it.
+///  Why:
+///  widens a lone letter such as
 /// the `a` through `f` of a hex class.
 fn widen_letter_single(atom: &str, body: &str) -> Option<String> {
     let a = single_letter(atom)?;
@@ -316,9 +386,13 @@ fn widen_letter_single(atom: &str, body: &str) -> Option<String> {
     return Some(opp.to_string());
 }
 
-/// Returns the byte of a one-character ASCII-letter atom, or `None`.
+/// Returns the byte of a one-character ASCII-letter atom,
+///  or `None`.
 ///
-/// What: `Some(byte)` only for a bare single letter. Why: only letters have an opposite case.
+/// What:
+///  `Some(byte)` only for a bare single letter.
+///  Why:
+///  only letters have an opposite case.
 fn single_letter(atom: &str) -> Option<u8> {
     let bytes = atom.as_bytes();
     if bytes.len() == 1 && bytes[0].is_ascii_alphabetic() {
@@ -327,10 +401,16 @@ fn single_letter(atom: &str) -> Option<u8> {
     return None;
 }
 
-/// Emits one quantified literal unit, widening a single letter to a two-case class under `(?i)`.
+/// Emits one quantified literal unit,
+///  widening a single letter to a two-case class under `(?i)`.
 ///
-/// What: `A{22}` under the flag becomes `[aA]{22}`; anything non-letter or with the flag off is
-/// emitted verbatim with its quantifier. Why: a quantifier binds one atom, so the letter cannot
+/// What:
+///  `A{22}` under the flag becomes `[aA]{22}`;
+///  anything non-letter or with the flag off is
+/// emitted verbatim with its quantifier.
+///  Why:
+///  a quantifier binds one atom,
+///  so the letter cannot
 /// join a keyword run and instead widens like a class.
 fn emit_quantified_unit(unit: &str, quant: &str, ci: bool, out: &mut String) {
     let bytes = unit.as_bytes();
@@ -348,16 +428,29 @@ fn emit_quantified_unit(unit: &str, quant: &str, ci: bool, out: &mut String) {
 
 /// Reports whether `\n` denotes a literal that joins a run rather than a shorthand or anchor.
 ///
-/// What: false for the class shorthands, anchors, control escapes, and backreference digits;
-/// true otherwise. Why: escaped punctuation such as `\_` is part of a keyword, but `\w` or `\b`
+/// What:
+///  false for the class shorthands,
+///  anchors,
+///  control escapes,
+///  and backreference digits;
+/// true otherwise.
+///  Why:
+///  escaped punctuation such as `\_` is part of a keyword,
+///  but `\w` or `\b`
 /// ends the run.
 fn is_run_literal_escape(n: u8) -> bool {
     return !n.is_ascii_digit() && !b"wWdDsSbBAzZGnrtfv".contains(&n);
 }
 
-/// Returns the byte length of a quantifier at `pos`, or zero when none.
+/// Returns the byte length of a quantifier at `pos`,
+///  or zero when none.
 ///
-/// What: one for `?`/`*`/`+`, the full `{...}` span for a brace, zero otherwise. Why: the walker
+/// What:
+///  one for `?`/`*`/`+`,
+///  the full `{...}` span for a brace,
+///  zero otherwise.
+///  Why:
+///  the walker
 /// must consume a quantifier together with the unit it binds.
 fn quant_len(b: &[u8], pos: usize) -> usize {
     match b.get(pos) {
@@ -373,9 +466,13 @@ fn quant_len(b: &[u8], pos: usize) -> usize {
     }
 }
 
-/// Returns the index just past the `}` closing a brace at `pos`, or `pos + 1` when unterminated.
+/// Returns the index just past the `}` closing a brace at `pos`,
+///  or `pos + 1` when unterminated.
 ///
-/// What: scans forward to the first `}`. Why: a `{n,m}` quantifier is copied or measured whole.
+/// What:
+///  scans forward to the first `}`.
+///  Why:
+///  a `{n,m}` quantifier is copied or measured whole.
 fn brace_end(b: &[u8], pos: usize) -> usize {
     for (offset, byte) in b[pos + 1..].iter().enumerate() {
         if *byte == b'}' {
@@ -385,9 +482,13 @@ fn brace_end(b: &[u8], pos: usize) -> usize {
     return pos + 1;
 }
 
-/// Returns the opposite ASCII case of a letter byte, leaving non-letters unchanged.
+/// Returns the opposite ASCII case of a letter byte,
+///  leaving non-letters unchanged.
 ///
-/// What: lowercase to uppercase and the reverse. Why: widening inserts the counterpart case.
+/// What:
+///  lowercase to uppercase and the reverse.
+///  Why:
+///  widening inserts the counterpart case.
 fn swap_case(c: u8) -> u8 {
     if c.is_ascii_lowercase() {
         return c.to_ascii_uppercase();

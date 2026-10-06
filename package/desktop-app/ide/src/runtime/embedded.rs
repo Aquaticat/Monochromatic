@@ -1,6 +1,10 @@
-//! Language files compiled into the application executable, with the digest recorded at build time.
+//! Language files compiled into the application executable,
+//!  with the digest recorded at build time.
 //!
-//! - [`EmbeddedFile`] is one file: its path in the old directory layout, its bytes, and its digest.
+//! - [`EmbeddedFile`] is one file:
+//!    its path in the old directory layout,
+//!    its bytes,
+//!    and its digest.
 //! - [`EmbeddedRuntime`] is the whole table that `build.rs` generates for the application binary.
 //! - [`EmbeddedRuntime::verified`] finds a file and checks its digest before anyone uses the bytes.
 
@@ -9,10 +13,19 @@ use crate::content_digest::fnv1a;
 /// Damage and absence are errors with a message and a remedy.
 use anyhow::{Result, bail};
 
-/// What: One embedded file. `&'static str` is borrowed text that lives as long as the program
-///       (sibling: `String`, owned text); `&'static [u8]` is a borrowed view of bytes stored inside
-///       the executable (siblings `Vec<u8>`, `[u8; N]`); `u64` holds the digest.
-/// Why: The build script writes these as constants, so nothing is copied or allocated at run time;
+/// What:
+///  One embedded file.
+///  `&'static str` is borrowed text that lives as long as the program
+///       (sibling:
+///  `String`,
+///  owned text);
+///  `&'static [u8]` is a borrowed view of bytes stored inside
+///       the executable (siblings `Vec<u8>`,
+///  `[u8; N]`);
+///  `u64` holds the digest.
+/// Why:
+///  The build script writes these as constants,
+///  so nothing is copied or allocated at run time;
 ///      `'static` says the bytes live in the executable itself.
 ///
 /// In TS you'd write (pseudocode):
@@ -21,17 +34,24 @@ use anyhow::{Result, bail};
 /// ```
 #[derive(Debug)]
 pub struct EmbeddedFile {
-    /// Path in the layout of the former application directory, for example `runtime/grammars/sql.so`.
+    /// Path in the layout of the former application directory,
+    ///  for example `runtime/grammars/sql.so`.
     pub path: &'static str,
     /// The file's bytes as they were when the executable was built.
     pub bytes: &'static [u8],
-    /// [`fnv1a`] of `bytes`, computed by the build script.
+    /// [`fnv1a`] of `bytes`,
+    ///  computed by the build script.
     pub digest: u64,
 }
 
-/// What: The embedded table. `&'static [EmbeddedFile]` is a borrowed list stored in the executable.
-/// Why: One value names the whole language runtime of this build, and its key names the cache
-///      directory, so two builds with different files never share unpacked parsers.
+/// What:
+///  The embedded table.
+///  `&'static [EmbeddedFile]` is a borrowed list stored in the executable.
+/// Why:
+///  One value names the whole language runtime of this build,
+///  and its key names the cache
+///      directory,
+///  so two builds with different files never share unpacked parsers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,15 +59,22 @@ pub struct EmbeddedFile {
 /// ```
 #[derive(Debug)]
 pub struct EmbeddedRuntime {
-    /// Digest over every path and file digest, written as 16 hexadecimal digits.
+    /// Digest over every path and file digest,
+    ///  written as 16 hexadecimal digits.
     pub key: &'static str,
-    /// Every embedded file, sorted by `path` so lookups can halve the search each step.
+    /// Every embedded file,
+    ///  sorted by `path` so lookups can halve the search each step.
     pub files: &'static [EmbeddedFile],
 }
 
-/// What: Name the running executable for messages; `std::env::current_exe()` returns
-///       `Result<PathBuf>`, and `map_or` supplies a fallback when the lookup failed.
-/// Why: A damaged or incomplete executable is fixed by replacing that file, so the message names it.
+/// What:
+///  Name the running executable for messages;
+///  `std::env::current_exe()` returns
+///       `Result<PathBuf>`,
+///  and `map_or` supplies a fallback when the lookup failed.
+/// Why:
+///  A damaged or incomplete executable is fixed by replacing that file,
+///  so the message names it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,10 +96,16 @@ pub fn executable_name() -> String {
 
 /// Lookups and digest checks over the sorted table.
 impl EmbeddedRuntime {
-    /// What: Find a file by path. `binary_search_by` halves the sorted list each step and returns
-    ///       `Ok(index)` when found or `Err(insertion point)` when not; `.ok()` keeps only the index
-    ///       as `Option<usize>`. `Option<&'static EmbeddedFile>` is the file or nothing.
-    /// Why: Query lookups happen for every language prepared; a sorted list needs no map built at run time.
+    /// What:
+    ///  Find a file by path.
+    ///  `binary_search_by` halves the sorted list each step and returns
+    ///       `Ok(index)` when found or `Err(insertion point)` when not;
+    ///  `.ok()` keeps only the index
+    ///       as `Option<usize>`.
+    ///  `Option<&'static EmbeddedFile>` is the file or nothing.
+    /// Why:
+    ///  Query lookups happen for every language prepared;
+    ///  a sorted list needs no map built at run time.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -101,10 +134,17 @@ impl EmbeddedRuntime {
         return files.get(index);
     }
 
-    /// What: Find a file and check its digest. `Result<Option<&'static [u8]>>` is an error, no file
-    ///       (`Ok(None)`), or the checked bytes (`Ok(Some(bytes))`).
-    /// Why: Bytes that no longer match their build-time digest come from a damaged executable; loading
-    ///      a damaged parser library could crash the process, so the damage is reported instead.
+    /// What:
+    ///  Find a file and check its digest.
+    ///  `Result<Option<&'static [u8]>>` is an error,
+    ///  no file
+    ///       (`Ok(None)`),
+    ///  or the checked bytes (`Ok(Some(bytes))`).
+    /// Why:
+    ///  Bytes that no longer match their build-time digest come from a damaged executable;
+    ///  loading
+    ///      a damaged parser library could crash the process,
+    ///  so the damage is reported instead.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -148,8 +188,13 @@ impl EmbeddedRuntime {
         return Ok(Some(file.bytes));
     }
 
-    /// What: Find a file that must exist, check its digest, and fail when it is absent.
-    /// Why: The manifest and every grammar it lists are required; their absence means the executable
+    /// What:
+    ///  Find a file that must exist,
+    ///  check its digest,
+    ///  and fail when it is absent.
+    /// Why:
+    ///  The manifest and every grammar it lists are required;
+    ///  their absence means the executable
     ///      was built from an incomplete runtime or was cut short.
     ///
     /// In TS you'd write (pseudocode):
@@ -169,7 +214,9 @@ impl EmbeddedRuntime {
     }
 }
 
-/// Lookups, digest checks, and the messages for a damaged or incomplete table.
+/// Lookups,
+///  digest checks,
+///  and the messages for a damaged or incomplete table.
 #[cfg(test)]
 #[path = "embedded_tests.rs"]
 mod tests;

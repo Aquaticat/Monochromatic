@@ -1,4 +1,5 @@
-//! Removal of unused key folders on disposable cache folders, with injected times.
+//! Removal of unused key folders on disposable cache folders,
+//!  with injected times.
 
 use super::{MARKER, Sweep, UNUSED_LIMIT, mark_used, remove_unused, unpack_marked};
 use std::{
@@ -16,13 +17,16 @@ fn days(count: u64) -> Duration {
     return Duration::from_secs(count * 86_400);
 }
 
-/// Set the modification time of a file or folder, without following a link at `path`'s end.
+/// Set the modification time of a file or folder,
+///  without following a link at `path`'s end.
 fn set_time(path: &Path, time: SystemTime) {
     let handle = fs::File::open(path).expect("open to set its time");
     handle.set_modified(time).expect("set modification time");
 }
 
-/// A key folder holding a cached library, with its marker last renewed at `used`, or no marker.
+/// A key folder holding a cached library,
+///  with its marker last renewed at `used`,
+///  or no marker.
 fn key_folder(runtime: &Path, key: &str, used: Option<SystemTime>) {
     let folder = runtime.join(key);
     fs::create_dir_all(folder.join("grammars")).expect("key folder");
@@ -33,7 +37,8 @@ fn key_folder(runtime: &Path, key: &str, used: Option<SystemTime>) {
     }
 }
 
-/// Entry names below `runtime`, sorted.
+/// Entry names below `runtime`,
+///  sorted.
 fn names(runtime: &Path) -> Vec<String> {
     let mut found: Vec<String> = fs::read_dir(runtime)
         .expect("runtime folder")
@@ -49,7 +54,8 @@ fn names(runtime: &Path) -> Vec<String> {
     return found;
 }
 
-/// Sorted copy of a list of names, for comparing sweeps regardless of listing order.
+/// Sorted copy of a list of names,
+///  for comparing sweeps regardless of listing order.
 fn sorted(list: &[String]) -> Vec<String> {
     let mut copy = list.to_vec();
     copy.sort();

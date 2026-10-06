@@ -1,4 +1,8 @@
-//! Start states: nothing to start, missing program, on-demand start, and the three failed starts.
+//! Start states:
+//!  nothing to start,
+//!  missing program,
+//!  on-demand start,
+//!  and the three failed starts.
 
 use crate::support::{self, Probe, SERVER};
 use ide_app::language::{
@@ -6,7 +10,9 @@ use ide_app::language::{
     status::{DocumentState, ServerState},
 };
 
-/// A file without a recognized language, and a language without a server, start nothing.
+/// A file without a recognized language,
+///  and a language without a server,
+///  start nothing.
 #[test]
 fn files_without_language_or_server_start_nothing() {
     let Some(root) = support::child_root() else {
@@ -73,7 +79,9 @@ fn missing_program_is_reported_without_starting_anything() {
     assert_eq!(probe.answers(number)[0].outcome, RequestOutcome::NoServer);
 }
 
-/// A server starts when its first file is displayed, and receives `didOpen` once, after `initialized`.
+/// A server starts when its first file is displayed,
+///  and receives `didOpen` once,
+///  after `initialized`.
 #[test]
 fn server_starts_on_demand_and_is_opened_once_after_initialized() {
     let Some(root) = support::child_root() else {
@@ -153,7 +161,8 @@ fn server_starts_on_demand_and_is_opened_once_after_initialized() {
     );
 }
 
-/// A request sent while the server is still starting is answered "starting"; nothing reaches the server.
+/// A request sent while the server is still starting is answered "starting";
+///  nothing reaches the server.
 #[test]
 fn request_before_initialize_is_answered_starting_and_nothing_is_sent() {
     let Some(root) = support::child_root() else {
@@ -247,7 +256,8 @@ fn exit_during_initialize_is_a_failed_start() {
     support::children_until_none();
 }
 
-/// A server that answers `initialize` with an error stays alive; only the deadline reveals the failure.
+/// A server that answers `initialize` with an error stays alive;
+///  only the deadline reveals the failure.
 #[test]
 fn error_reply_to_initialize_is_a_failed_start_by_deadline() {
     let Some(root) = support::child_root() else {

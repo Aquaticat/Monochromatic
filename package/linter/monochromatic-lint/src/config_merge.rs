@@ -1,16 +1,24 @@
-//! What: Ordered merging of the JSONC values used by rule settings.
-//! Why: The linter needs record merging and array concatenation, not a general JavaScript merge library.
-//! Inputs are borrowed and never changed; configuration validation rejects duplicate keys first.
-//! Merged records retain each key's first spelling and key comment; the final value owns its value comment.
+//! What:
+//!  Ordered merging of the JSONC values used by rule settings.
+//! Why:
+//!  The linter needs record merging and array concatenation,
+//!  not a general JavaScript merge library.
+//! Inputs are borrowed and never changed;
+//!  configuration validation rejects duplicate keys first.
+//! Merged records retain each key's first spelling and key comment;
+//!  the final value owns its value comment.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // merge all matching rule-settings objects together, not pairwise.
 //! ```
 
-/// What: Import an ordered lookup map from Rust's standard library.
-/// Why: Grouping equal decoded keys avoids repeatedly searching all earlier object members.
-/// A map supplies lookup; a separate vector retains the author's first-seen key order.
+/// What:
+///  Import an ordered lookup map from Rust's standard library.
+/// Why:
+///  Grouping equal decoded keys avoids repeatedly searching all earlier object members.
+/// A map supplies lookup;
+///  a separate vector retains the author's first-seen key order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +26,11 @@
 /// ```
 use std::collections::BTreeMap;
 
-/// What: Import the parser's value, key and object-member types.
-/// Why: Merging retains exact numbers and string code units without a second JSON representation.
+/// What:
+///  Import the parser's value,
+///  key and object-member types.
+/// Why:
+///  Merging retains exact numbers and string code units without a second JSON representation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,8 +38,10 @@ use std::collections::BTreeMap;
 /// ```
 use monochromatic_jsonc_edit::{JsoncEntry, JsoncKey, JsoncValue};
 
-/// What: Merge every input together in its original order.
-/// Why: A type mismatch anywhere in the input group makes the final value win outright.
+/// What:
+///  Merge every input together in its original order.
+/// Why:
+///  A type mismatch anywhere in the input group makes the final value win outright.
 /// Pairwise folding would incorrectly merge later matching values after an earlier mismatch.
 /// An empty input group produces an empty settings object.
 ///
@@ -98,9 +111,12 @@ pub fn merge_values(values: &[&JsoncValue]) -> JsoncValue {
     return result;
 }
 
-/// What: Merge groups already proven to contain only records.
-/// Why: Each key must see all its values at once to preserve the all-input mismatch rule.
-/// Parsed documents have bounded structural depth; no recursion walks a flat member list.
+/// What:
+///  Merge groups already proven to contain only records.
+/// Why:
+///  Each key must see all its values at once to preserve the all-input mismatch rule.
+/// Parsed documents have bounded structural depth;
+///  no recursion walks a flat member list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -177,8 +193,10 @@ fn merge_records(values: &[&JsoncValue]) -> JsoncValue {
     return JsoncValue::record(merged);
 }
 
-/// What: Concatenate groups already proven to contain only arrays.
-/// Why: Array elements append in input order and are not merged with one another.
+/// What:
+///  Concatenate groups already proven to contain only arrays.
+/// Why:
+///  Array elements append in input order and are not merged with one another.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -210,8 +228,10 @@ fn merge_arrays(values: &[&JsoncValue]) -> JsoncValue {
     return JsoncValue::array(merged);
 }
 
-/// What: Compile regression tests only for the test build.
-/// Why: Verification inputs and assertions do not belong in the installed executable.
+/// What:
+///  Compile regression tests only for the test build.
+/// Why:
+///  Verification inputs and assertions do not belong in the installed executable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

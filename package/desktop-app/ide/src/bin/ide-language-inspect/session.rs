@@ -1,4 +1,7 @@
-//! One inspection session: the worker handle, the document as the application holds it, and
+//! One inspection session:
+//!  the worker handle,
+//!  the document as the application holds it,
+//!  and
 //! the polling loop every step waits in.
 
 /// Plan steps.
@@ -22,9 +25,14 @@ use ide_app::language::{
 };
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
-/// What: `Path`/`PathBuf` are borrowed and owned filesystem paths; `Arc` is a thread-safe shared
-///       pointer; `Duration` and `Instant` measure time.
-/// Why: Every wait is bounded, so a missing answer ends the step instead of hanging it.
+/// What:
+///  `Path`/`PathBuf` are borrowed and owned filesystem paths;
+///  `Arc` is a thread-safe shared
+///       pointer;
+///  `Duration` and `Instant` measure time.
+/// Why:
+///  Every wait is bounded,
+///  so a missing answer ends the step instead of hanging it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,7 +44,8 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Pause between polls, as the application's timer polls its workers.
+/// Pause between polls,
+///  as the application's timer polls its workers.
 const POLL: Duration = Duration::from_millis(20);
 
 /// Pause before a position request is repeated while a server warms up.
@@ -52,7 +61,8 @@ pub struct Session {
     path: PathBuf,
     /// The displayed document.
     document: Document,
-    /// File-open generation. `u64` is an unsigned 64-bit counter.
+    /// File-open generation.
+    ///  `u64` is an unsigned 64-bit counter.
     file: u64,
     /// Latest status seen.
     status: Arc<LanguageStatus>,
@@ -62,7 +72,8 @@ pub struct Session {
     diagnostics: Option<Arc<DiagnosticsSnapshot>>,
     /// Latest hints seen.
     hints: Option<Arc<HintsSnapshot>>,
-    /// When the session started, for timestamps.
+    /// When the session started,
+    ///  for timestamps.
     started: Instant,
 }
 
@@ -74,7 +85,8 @@ fn emit(started: Instant, mut record: Value) {
 
 /// Session steps.
 impl Session {
-    /// Start the worker for a project; no server starts until a file is opened.
+    /// Start the worker for a project;
+    ///  no server starts until a file is opened.
     pub fn new(project: &Path, setup: LanguageSetup) -> Result<Self> {
         // The trailing `?` returns the start error to the caller.
         let worker = LanguageWorker::with_setup(project, setup)?;
@@ -101,9 +113,15 @@ impl Session {
         };
     }
 
-    /// What: Take everything the worker published, printing each change. `&mut self` allows
+    /// What:
+    ///  Take everything the worker published,
+    ///  printing each change.
+    ///  `&mut self` allows
     ///       storing what was taken.
-    /// Why: This is the application's polling contract: nothing blocks, stale results never appear.
+    /// Why:
+    ///  This is the application's polling contract:
+    ///  nothing blocks,
+    ///  stale results never appear.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -138,9 +156,13 @@ impl Session {
         return Ok(());
     }
 
-    /// What: Poll until `done` accepts the session or the time is up; returns whether it did.
+    /// What:
+    ///  Poll until `done` accepts the session or the time is up;
+    ///  returns whether it did.
     ///       `&dyn Fn(&Session) -> bool` borrows any function or closure with that signature.
-    /// Why: Real servers answer after an unknown warm-up; every step states its own limit.
+    /// Why:
+    ///  Real servers answer after an unknown warm-up;
+    ///  every step states its own limit.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -160,7 +182,8 @@ impl Session {
         }
     }
 
-    /// Send one position request; nothing is returned when the command queue is full.
+    /// Send one position request;
+    ///  nothing is returned when the command queue is full.
     fn ask(&mut self, kind: RequestKind, at: usize) -> Result<Option<u64>> {
         let request = PositionRequest {
             stamp: self.stamp(),
@@ -185,8 +208,11 @@ impl Session {
         return Ok(());
     }
 
-    /// What: Repeat a position request until its outcome is the wanted kind or time is up.
-    /// Why: A server that is still loading answers `null` or "content modified"; the record
+    /// What:
+    ///  Repeat a position request until its outcome is the wanted kind or time is up.
+    /// Why:
+    ///  A server that is still loading answers `null` or "content modified";
+    ///  the record
     ///      keeps every attempt so the warm-up is visible.
     ///
     /// In TS you'd write (pseudocode):
@@ -242,8 +268,11 @@ impl Session {
         }
     }
 
-    /// What: Run one plan step and print its result.
-    /// Why: A step that does not reach its goal is recorded as such; only a broken session is an error.
+    /// What:
+    ///  Run one plan step and print its result.
+    /// Why:
+    ///  A step that does not reach its goal is recorded as such;
+    ///  only a broken session is an error.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -362,7 +391,8 @@ impl Session {
         return Ok(());
     }
 
-    /// Print the final counters; dropping the session then stops every server.
+    /// Print the final counters;
+    ///  dropping the session then stops every server.
     pub fn finish(self) {
         let counts = self.worker.fence_counts();
         emit(

@@ -1,9 +1,15 @@
-//! Containment at the project root, and shutdown that leaves no watch behind.
+//! Containment at the project root,
+//!  and shutdown that leaves no watch behind.
 
-/// Waits, kernel probes, and fixture helpers shared by this crate.
+/// Waits,
+///  kernel probes,
+///  and fixture helpers shared by this crate.
 use super::support::{arrive, kernel_watches, quiet, set, settle, start, watching};
-/// What: notify's event constructors build a synthetic event exactly like the inotify backend's.
-/// Why: A path outside the root can only reach the handler through a moved watch; the seam shows the filter.
+/// What:
+///  notify's event constructors build a synthetic event exactly like the inotify backend's.
+/// Why:
+///  A path outside the root can only reach the handler through a moved watch;
+///  the seam shows the filter.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,8 +19,13 @@ use notify::{
     Event, EventKind,
     event::{DataChange, ModifyKind},
 };
-/// What: `std::os::unix::fs::symlink` creates a symbolic link (siblings: `fs::hard_link`, `fs::copy`).
-/// Why: A folder inside the root that links outside must not be watched, because inotify follows links.
+/// What:
+///  `std::os::unix::fs::symlink` creates a symbolic link (siblings:
+///  `fs::hard_link`,
+///  `fs::copy`).
+/// Why:
+///  A folder inside the root that links outside must not be watched,
+///  because inotify follows links.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,7 +37,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Folders outside the root, directly or through a symbolic link, are refused, and their changes are never reported.
+/// Folders outside the root,
+///  directly or through a symbolic link,
+///  are refused,
+///  and their changes are never reported.
 #[test]
 fn folders_outside_the_root_are_never_watched_or_reported() {
     let fixture = tempfile::tempdir().expect("disposable project");

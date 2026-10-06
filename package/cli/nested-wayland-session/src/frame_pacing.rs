@@ -1,14 +1,26 @@
 //! Keep the hosted client drawing when the parent compositor stops presenting this window.
 //!
-//! The live redraw path sends frame callbacks only after presenting to the parent, and winit
-//! delivers the next redraw only after the parent's own frame callback. A locked or hidden
-//! parent window therefore starved the hosted client: it committed no new buffer, and
-//! `screenshot` kept compositing its last one. This module paces the client from a timer
-//! whenever the parent has been silent, so capture never depends on host visibility.
+//! The live redraw path sends frame callbacks only after presenting to the parent,
+//!  and winit
+//! delivers the next redraw only after the parent's own frame callback.
+//!  A locked or hidden
+//! parent window therefore starved the hosted client:
+//!  it committed no new buffer,
+//!  and
+//! `screenshot` kept compositing its last one.
+//!  This module paces the client from a timer
+//! whenever the parent has been silent,
+//!  so capture never depends on host visibility.
 
-/// What:     `Duration` is a span of time; `Instant` is an opaque monotonic timestamp, not a
-///           wall clock (sibling: `SystemTime`, which can jump when the clock is adjusted).
-/// Why:      Stall detection compares "now" against the last presentation on a clock that
+/// What:
+///      `Duration` is a span of time;
+///  `Instant` is an opaque monotonic timestamp,
+///  not a
+///           wall clock (sibling:
+///  `SystemTime`,
+///  which can jump when the clock is adjusted).
+/// Why:
+///       Stall detection compares "now" against the last presentation on a clock that
 ///           never runs backwards.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,9 +29,13 @@
 /// ```
 use std::time::{Duration, Instant};
 
-/// What:     A grouped `use` of calloop's timer source, its reschedule instruction, and the
+/// What:
+///      A grouped `use` of calloop's timer source,
+///  its reschedule instruction,
+///  and the
 ///           handle used to register event sources on the compositor's event loop.
-/// Why:      The fallback runs on the same single thread as every protocol handler.
+/// Why:
+///       The fallback runs on the same single thread as every protocol handler.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,13 +46,19 @@ use smithay::reexports::calloop::{
     LoopHandle,
 };
 
-/// What:     `use tracing::info;` imports the structured informational log macro.
-/// Why:      Entering and leaving fallback pacing explains otherwise invisible host states.
+/// What:
+///      `use tracing::info;` imports the structured informational log macro.
+/// Why:
+///       Entering and leaving fallback pacing explains otherwise invisible host states.
 use tracing::info;
 
-/// What:     A grouped `use` of the output refresh constant, the shared frame-callback
-///           sender, and the compositor state type from this package (`crate`).
-/// Why:      The fallback sends the same callbacks the live redraw and the recorder send.
+/// What:
+///      A grouped `use` of the output refresh constant,
+///  the shared frame-callback
+///           sender,
+///  and the compositor state type from this package (`crate`).
+/// Why:
+///       The fallback sends the same callbacks the live redraw and the recorder send.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,10 +70,18 @@ use crate::{backend::OUTPUT_REFRESH_MHZ, render, state::Compositor};
 
 /// One frame at the nested output's advertised refresh rate.
 ///
-/// What:     `pub const FRAME_INTERVAL: Duration`. The rate is in millihertz, so the period in
-///           nanoseconds is 10^12 divided by it. `as u64` converts the signed constant to the
-///           unsigned 64-bit type `Duration::from_nanos` takes (siblings: `u32`, `i64`).
-/// Why:      A starved client is paced at the rate the nested output promises, not faster.
+/// What:
+///      `pub const FRAME_INTERVAL: Duration`.
+///  The rate is in millihertz,
+///  so the period in
+///           nanoseconds is 10^12 divided by it.
+///  `as u64` converts the signed constant to the
+///           unsigned 64-bit type `Duration::from_nanos` takes (siblings:
+///  `u32`,
+///  `i64`).
+/// Why:
+///       A starved client is paced at the rate the nested output promises,
+///  not faster.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,8 +91,12 @@ pub const FRAME_INTERVAL: Duration = Duration::from_nanos(1_000_000_000_000 / OU
 
 /// Parent silence at or beyond this span means the parent is not presenting this window.
 ///
-/// What:     `pub const STALL_THRESHOLD: Duration`, three frames at 60 Hz.
-/// Why:      A parent presenting at 30 Hz or faster never trips the fallback, so the visible
+/// What:
+///      `pub const STALL_THRESHOLD: Duration`,
+///  three frames at 60 Hz.
+/// Why:
+///       A parent presenting at 30 Hz or faster never trips the fallback,
+///  so the visible
 ///           path keeps owning the cadence whenever it works.
 ///
 /// In TS you'd write (pseudocode):
@@ -73,10 +107,15 @@ pub const STALL_THRESHOLD: Duration = Duration::from_millis(50);
 
 /// Decide whether the fallback timer must send frame callbacks.
 ///
-/// What:     `pub fn parent_stalled(recording: bool, since_presented: Duration) -> bool`.
-///           A pure function of two plain values, so tests need no display or clock.
-/// Why:      While recording, the recorder's own timer already sends frame callbacks at the
-///           requested rate, and a second sender would raise the client above that rate.
+/// What:
+///      `pub fn parent_stalled(recording: bool, since_presented: Duration) -> bool`.
+///           A pure function of two plain values,
+///  so tests need no display or clock.
+/// Why:
+///       While recording,
+///  the recorder's own timer already sends frame callbacks at the
+///           requested rate,
+///  and a second sender would raise the client above that rate.
 ///           Otherwise the fallback takes over once the parent has been silent long enough.
 ///
 /// In TS you'd write (pseudocode):
@@ -99,10 +138,13 @@ pub fn parent_stalled(recording: bool, since_presented: Duration) -> bool {
     return since_presented >= STALL_THRESHOLD;
 }
 
-/// When the parent last presented, and whether the fallback is currently pacing the client.
+/// When the parent last presented,
+///  and whether the fallback is currently pacing the client.
 ///
-/// What:     `pub struct FramePacing { ... }` is a record with two private fields.
-/// Why:      One small owner keeps the stall decision and its transition logging together.
+/// What:
+///      `pub struct FramePacing { ... }` is a record with two private fields.
+/// Why:
+///       One small owner keeps the stall decision and its transition logging together.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -119,8 +161,11 @@ pub struct FramePacing {
 impl FramePacing {
     /// Start with the parent considered current as of `now`.
     ///
-    /// What:     `pub fn new(now: Instant) -> Self`. `Self` names the type being implemented.
-    /// Why:      Taking `now` as a parameter lets tests pass exact times instead of sleeping.
+    /// What:
+    ///      `pub fn new(now: Instant) -> Self`.
+    ///  `Self` names the type being implemented.
+    /// Why:
+    ///       Taking `now` as a parameter lets tests pass exact times instead of sleeping.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -132,9 +177,13 @@ impl FramePacing {
 
     /// Record that a frame was just submitted to the parent compositor.
     ///
-    /// What:     `pub fn parent_presented(&mut self, now: Instant)`. `&mut self` lends this
+    /// What:
+    ///      `pub fn parent_presented(&mut self, now: Instant)`.
+    ///  `&mut self` lends this
     ///           record for modification.
-    /// Why:      The visible path owns the cadence again, so the fallback stands down.
+    /// Why:
+    ///       The visible path owns the cadence again,
+    ///  so the fallback stands down.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -148,12 +197,16 @@ impl FramePacing {
         }
     }
 
-    /// Report whether the fallback must send frame callbacks now, logging each transition once.
+    /// Report whether the fallback must send frame callbacks now,
+    ///  logging each transition once.
     ///
-    /// What:     `pub fn fallback_due(&mut self, recording: bool, now: Instant) -> bool`.
+    /// What:
+    ///      `pub fn fallback_due(&mut self, recording: bool, now: Instant) -> bool`.
     ///           `saturating_duration_since` returns zero instead of panicking when `now` is
     ///           earlier than the stored time.
-    /// Why:      The timer asks every frame; the log must not repeat every frame.
+    /// Why:
+    ///       The timer asks every frame;
+    ///  the log must not repeat every frame.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -177,12 +230,17 @@ impl FramePacing {
 
 /// Register the fallback pacing timer and mark the parent current as of now.
 ///
-/// What:     `pub fn register(loop_handle: &LoopHandle<Compositor>, state: &mut Compositor)`.
-///           `&` lends the loop handle read-only; `&mut` lends the state for one assignment.
+/// What:
+///      `pub fn register(loop_handle: &LoopHandle<Compositor>, state: &mut Compositor)`.
+///           `&` lends the loop handle read-only;
+///  `&mut` lends the state for one assignment.
 ///           The closure `|_, _, timer_state: &mut Compositor| { ... }` ignores the fire time
-///           and metadata and receives the state on every tick. `.expect(...)` stops the
+///           and metadata and receives the state on every tick.
+///  `.expect(...)` stops the
 ///           program with a message if registration fails.
-/// Why:      Called right before the loop starts, so setup time is not mistaken for a stall.
+/// Why:
+///       Called right before the loop starts,
+///  so setup time is not mistaken for a stall.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

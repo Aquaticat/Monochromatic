@@ -1,14 +1,19 @@
-//! What: The thin native cli-git executable.
-//! Why: Process facts are gathered once here; every decision lives in the library.
+//! What:
+//!  The thin native cli-git executable.
+//! Why:
+//!  Process facts are gathered once here;
+//!  every decision lives in the library.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! process.exit(runProcess(process.argv.slice(2), Object.entries(process.env)));
 //! ```
 
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  Arguments and environment values reach Git exactly as the caller gave them.
+/// Why:
+///   Arguments and environment values reach Git exactly as the caller gave them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -16,9 +21,16 @@
 /// ```
 use std::ffi::OsString;
 
-/// What: The program entry point: collect arguments and environment, run, exit.
-/// Why:  `args_os`/`vars_os` never decode, so non-UTF-8 arguments neither panic nor
-///       change. A forwarded command replaces this process and never reaches the exit.
+/// What:
+///  The program entry point:
+///  collect arguments and environment,
+///  run,
+///  exit.
+/// Why:
+///   `args_os`/`vars_os` never decode,
+///  so non-UTF-8 arguments neither panic nor
+///       change.
+///  A forwarded command replaces this process and never reaches the exit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

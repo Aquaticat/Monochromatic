@@ -1,6 +1,10 @@
-//! What: The pure core of the index-against-`HEAD` check used by the commit-only transform.
-//! Why: The caller runs real Git; this module only says which command to run and what its
-//!      exit status means, so the decision is testable without a process.
+//! What:
+//!  The pure core of the index-against-`HEAD` check used by the commit-only transform.
+//! Why:
+//!  The caller runs real Git;
+//!  this module only says which command to run and what its
+//!      exit status means,
+//!  so the decision is testable without a process.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,8 +14,13 @@
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: Comparison of staged content with `HEAD`. An `enum` is a closed set of alternatives.
-/// Why:  `Unknown` means Git could not answer (unborn `HEAD`, no repository); the transform
+/// What:
+///  Comparison of staged content with `HEAD`.
+///  An `enum` is a closed set of alternatives.
+/// Why:
+///   `Unknown` means Git could not answer (unborn `HEAD`,
+///  no repository);
+///  the transform
 ///       then defers to real Git instead of rejecting.
 ///
 /// In TS you'd write (pseudocode):
@@ -28,12 +37,20 @@ pub enum IndexVsHead {
     Unknown,
 }
 
-/// The query whose exit status answers the question: 0 for equal, 1 for staged changes.
+/// The query whose exit status answers the question:
+///  0 for equal,
+///  1 for staged changes.
 pub const INDEX_QUERY: &[&str] = &["diff-index", "--quiet", "--cached", "HEAD", "--"];
 
-/// What: Build the real-Git argument list: the caller's global options, then the query.
-///       `&[OsString]` borrows the global prefix; `Vec<OsString>` is the owned result.
-/// Why:  The check must inspect the same repository the commit will run in, so `-C`,
+/// What:
+///  Build the real-Git argument list:
+///  the caller's global options,
+///  then the query.
+///       `&[OsString]` borrows the global prefix;
+///  `Vec<OsString>` is the owned result.
+/// Why:
+///   The check must inspect the same repository the commit will run in,
+///  so `-C`,
 ///       `--git-dir` and the other global options are forwarded unchanged.
 ///
 /// In TS you'd write (pseudocode):
@@ -50,9 +67,15 @@ pub fn index_query_arguments(global_prefix: &[OsString]) -> Vec<OsString> {
     return arguments;
 }
 
-/// What: Interpret the query's exit status. `Option<i32>` is "an exit code, or nothing when
-///       a signal ended the process"; `i32` is the platform's exit-code integer type.
-/// Why:  Only the two documented codes are answers; everything else is "Git cannot say".
+/// What:
+///  Interpret the query's exit status.
+///  `Option<i32>` is "an exit code,
+///  or nothing when
+///       a signal ended the process";
+///  `i32` is the platform's exit-code integer type.
+/// Why:
+///   Only the two documented codes are answers;
+///  everything else is "Git cannot say".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

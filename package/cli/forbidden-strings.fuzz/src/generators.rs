@@ -2,17 +2,26 @@
 //! targets.
 //!
 //! The engine swap (#383/#384/#385) reshaped the scanner's rule surface into the
-//! two-form file format (`compile_from_text` in `rule/frx`): a line is a bare literal,
+//! two-form file format (`compile_from_text` in `rule/frx`):
+//!  a line is a bare literal,
 //! a `/PATTERN/FLAGS` regex whose trailing run is all ASCII-lowercase (with `m`/`x`
-//! accepted as no-ops and every other letter a hard load error), a `#` comment, or a
-//! blank. This module produces that shape plus a content buffer seeded from the rules'
-//! own match bytes, so `fuzz_ruleset_scan_invariants` and `fuzz_scan_format` exercise
+//! accepted as no-ops and every other letter a hard load error),
+//!  a `#` comment,
+//!  or a
+//! blank.
+//!  This module produces that shape plus a content buffer seeded from the rules'
+//! own match bytes,
+//!  so `fuzz_ruleset_scan_invariants` and `fuzz_scan_format` exercise
 //! the strict loader and the columnless scan path on inputs that actually match instead
 //! of rejecting almost every iteration.
 //!
 //! Bounds keep the search space small enough for coverage-guided fuzzing (an unbounded
 //! `derive(Arbitrary)` would burn the byte budget on length and never reach scan
-//! coverage): rules per file, literal/body byte widths, content lines, and total
+//! coverage):
+//!  rules per file,
+//!  literal/body byte widths,
+//!  content lines,
+//!  and total
 //! content size are all capped.
 //!
 //! In TS you'd write (pseudocode):
@@ -25,7 +34,9 @@
 //! //   | { kind: "blank" };
 //! ```
 
-/// Imports the `Arbitrary` trait, its `Result` alias, and the byte-cursor `Unstructured`.
+/// Imports the `Arbitrary` trait,
+///  its `Result` alias,
+///  and the byte-cursor `Unstructured`.
 // What:     `use arbitrary::{Arbitrary, Result, Unstructured};` pulls the three names
 //           every manual `Arbitrary` impl needs: the trait libFuzzer calls per input,
 //           the crate's `Result<T> = Result<T, arbitrary::Error>` alias, and the cursor
@@ -60,31 +71,45 @@ pub const MAX_CONTENT_BYTES: usize = 4096;
 /// The trailing flag run after the closing slash of a `/body/flags` regex line.
 ///
 /// The strict loader accepts an empty run and `m`/`x` (both engine no-ops) and fails
-/// closed on any other lowercase letter. `Bad` carries one such letter so a target can
-/// exercise the hard-error path; the letter stays ASCII-lowercase so the line still
+/// closed on any other lowercase letter.
+///  `Bad` carries one such letter so a target can
+/// exercise the hard-error path;
+///  the letter stays ASCII-lowercase so the line still
 /// classifies as a regex (a non-lowercase trailing run would reclassify as a literal).
 #[derive(Debug)]
 pub enum FlagRun {
-    /// No flags: `/body/`.
+    /// No flags:
+    ///  `/body/`.
     None,
-    /// The multiline no-op: `/body/m`.
+    /// The multiline no-op:
+    ///  `/body/m`.
     Multiline,
-    /// The verbose no-op: `/body/x`.
+    /// The verbose no-op:
+    ///  `/body/x`.
     Verbose,
-    /// Both no-ops: `/body/mx`.
+    /// Both no-ops:
+    ///  `/body/mx`.
     Both,
-    /// One lowercase letter outside `{m, x}`: a hard-error flag such as `i`.
+    /// One lowercase letter outside `{m, x}`:
+    ///  a hard-error flag such as `i`.
     Bad(BadFlag),
 }
 
 /// One ASCII-lowercase flag letter the strict loader rejects.
 ///
-/// A closed set drawn from letters that are neither `m` nor `x`, so rendering one always
-/// produces a genuine `UnsupportedFlag`. `derive(Arbitrary)` is sound: finite, no
-/// recursion, one byte per value.
+/// A closed set drawn from letters that are neither `m` nor `x`,
+///  so rendering one always
+/// produces a genuine `UnsupportedFlag`.
+///  `derive(Arbitrary)` is sound:
+///  finite,
+///  no
+/// recursion,
+///  one byte per value.
 #[derive(Debug, Arbitrary)]
 pub enum BadFlag {
-    /// Case-insensitive: silently dropping it would change semantics, so it hard-errors.
+    /// Case-insensitive:
+    ///  silently dropping it would change semantics,
+    ///  so it hard-errors.
     I,
     /// Dot-matches-newline.
     S,
@@ -110,9 +135,11 @@ impl BadFlag {
     }
 }
 
-/// Picks a flag run, biased toward the accepted forms so most rulesets load.
+/// Picks a flag run,
+///  biased toward the accepted forms so most rulesets load.
 impl<'a> Arbitrary<'a> for FlagRun {
-    /// Reads one tag byte and maps it to a flag run; five of eight land on accepted forms.
+    /// Reads one tag byte and maps it to a flag run;
+    ///  five of eight land on accepted forms.
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let tag = u.int_in_range(0u8..=7)?;
         return Ok(match tag {
@@ -151,15 +178,19 @@ impl FlagRun {
 /// One line of the two-form rule file.
 ///
 /// Each variant renders to exactly one line the loader classifies deterministically:
-/// `Literal` to an escaped literal rule, `Regex` to a `/body/flags` rule, `Comment` to a
-/// skipped `#` line, `Blank` to a skipped empty line.
+/// `Literal` to an escaped literal rule,
+///  `Regex` to a `/body/flags` rule,
+///  `Comment` to a
+/// skipped `#` line,
+///  `Blank` to a skipped empty line.
 #[derive(Debug)]
 pub enum RuleLine {
     /// A bare literal line whose bytes the loader escapes into the verbose dialect.
     Literal(SafeBytes),
     /// A `/body/flags` regex line.
     Regex {
-        /// ASCII-alphanumeric body, matched literally by the verbose-mode engine.
+        /// ASCII-alphanumeric body,
+        ///  matched literally by the verbose-mode engine.
         body: AlnumBytes,
         /// Trailing flag run controlling the load outcome.
         flags: FlagRun,
@@ -170,9 +201,11 @@ pub enum RuleLine {
     Blank,
 }
 
-/// Picks a rule-line shape, biased toward literals and regexes that carry scan work.
+/// Picks a rule-line shape,
+///  biased toward literals and regexes that carry scan work.
 impl<'a> Arbitrary<'a> for RuleLine {
-    /// Reads one tag byte, then the variant payload.
+    /// Reads one tag byte,
+    ///  then the variant payload.
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let tag = u.int_in_range(0u8..=7)?;
         return Ok(match tag {
@@ -207,11 +240,15 @@ impl RuleLine {
         }
     }
 
-    /// Returns the bytes this line matches when it loads, for seeding content.
+    /// Returns the bytes this line matches when it loads,
+    ///  for seeding content.
     ///
-    /// A literal matches its own bytes; a regex matches its alphanumeric body verbatim
-    /// (verbose mode leaves alphanumerics untouched); a comment or blank matches nothing.
-    /// A bad-flag regex never loads, so it contributes no match bytes.
+    /// A literal matches its own bytes;
+    ///  a regex matches its alphanumeric body verbatim
+    /// (verbose mode leaves alphanumerics untouched);
+    ///  a comment or blank matches nothing.
+    /// A bad-flag regex never loads,
+    ///  so it contributes no match bytes.
     fn match_bytes(&self) -> Option<Vec<u8>> {
         return match self {
             RuleLine::Literal(bytes) => Some(bytes.0.clone()),
@@ -227,18 +264,28 @@ impl RuleLine {
 
 /// A non-empty ASCII byte run safe to render as a literal or comment body.
 ///
-/// The alphabet is alphanumerics, spaces, and the escapable metacharacters, so the
+/// The alphabet is alphanumerics,
+///  spaces,
+///  and the escapable metacharacters,
+///  so the
 /// literal escaper has real work (escaping `.`/`#`/space/backslash and friends) while
 /// the bytes stay valid UTF-8 (all ASCII) and free of `\n`/`\r` (which would split the
-/// rendered rule across lines). The first and last bytes are forced alphanumeric so a
-/// literal never begins with `#` (comment), `/` (regex), or whitespace (trimmed away),
+/// rendered rule across lines).
+///  The first and last bytes are forced alphanumeric so a
+/// literal never begins with `#` (comment),
+///  `/` (regex),
+///  or whitespace (trimmed away),
 /// keeping its classification and its match bytes stable.
 #[derive(Debug)]
 pub struct SafeBytes(pub Vec<u8>);
 
-/// A byte from the literal alphabet: alphanumeric, space, or an escapable metacharacter.
+/// A byte from the literal alphabet:
+///  alphanumeric,
+///  space,
+///  or an escapable metacharacter.
 fn safe_byte(u: &mut Unstructured<'_>) -> Result<u8> {
-    /// Escapable metacharacters plus space, mirroring the escaper's escape set.
+    /// Escapable metacharacters plus space,
+    ///  mirroring the escaper's escape set.
     const METAS: &[u8] = b" .[](){}?|&~^$\\#-/*+";
     let pick = u.int_in_range(0u8..=3)?;
     return Ok(match pick {
@@ -249,7 +296,8 @@ fn safe_byte(u: &mut Unstructured<'_>) -> Result<u8> {
     })
 }
 
-/// An ASCII alphanumeric byte, forced so a literal's ends never reclassify the line.
+/// An ASCII alphanumeric byte,
+///  forced so a literal's ends never reclassify the line.
 fn alnum_byte(u: &mut Unstructured<'_>) -> Result<u8> {
     let pick = u.int_in_range(0u8..=2)?;
     return Ok(match pick {
@@ -261,7 +309,9 @@ fn alnum_byte(u: &mut Unstructured<'_>) -> Result<u8> {
 
 /// Builds a `SafeBytes` with alphanumeric ends and a safe-alphabet interior.
 impl<'a> Arbitrary<'a> for SafeBytes {
-    /// Reads a bounded length, then bytes, forcing the first and last to be alphanumeric.
+    /// Reads a bounded length,
+    ///  then bytes,
+    ///  forcing the first and last to be alphanumeric.
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let len = u.int_in_range(1usize..=MAX_LITERAL_BYTES)?;
         let mut bytes: Vec<u8> = Vec::with_capacity(len);
@@ -281,7 +331,9 @@ impl<'a> Arbitrary<'a> for SafeBytes {
 
 /// Appends a `SafeBytes` value as UTF-8 text (its bytes are ASCII by construction).
 impl SafeBytes {
-    /// Writes the bytes into `out`; every byte is ASCII, so the string stays valid UTF-8.
+    /// Writes the bytes into `out`;
+    ///  every byte is ASCII,
+    ///  so the string stays valid UTF-8.
     fn render(&self, out: &mut String) {
         for &byte in &self.0 {
             out.push(byte as char);
@@ -291,7 +343,8 @@ impl SafeBytes {
 
 /// A non-empty ASCII-alphanumeric run used as a regex body.
 ///
-/// Alphanumerics compile to a plain literal pattern that matches themselves, so a regex
+/// Alphanumerics compile to a plain literal pattern that matches themselves,
+///  so a regex
 /// rule always compiles (never an empty-matchable or dialect error) and its match bytes
 /// are predictable for content seeding.
 #[derive(Debug)]
@@ -299,7 +352,8 @@ pub struct AlnumBytes(pub Vec<u8>);
 
 /// Builds an `AlnumBytes` of bounded length.
 impl<'a> Arbitrary<'a> for AlnumBytes {
-    /// Reads a bounded length, then that many alphanumeric bytes.
+    /// Reads a bounded length,
+    ///  then that many alphanumeric bytes.
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let len = u.int_in_range(1usize..=MAX_BODY_BYTES)?;
         let mut bytes: Vec<u8> = Vec::with_capacity(len);
@@ -312,7 +366,8 @@ impl<'a> Arbitrary<'a> for AlnumBytes {
 
 /// Appends an `AlnumBytes` value as UTF-8 text.
 impl AlnumBytes {
-    /// Writes the bytes into `out`; every byte is ASCII alphanumeric.
+    /// Writes the bytes into `out`;
+    ///  every byte is ASCII alphanumeric.
     fn render(&self, out: &mut String) {
         for &byte in &self.0 {
             out.push(byte as char);
@@ -333,7 +388,8 @@ pub struct RuleFile {
 
 /// Builds a `RuleFile` of one to `MAX_RULES` lines.
 impl<'a> Arbitrary<'a> for RuleFile {
-    /// Reads a bounded line count, then that many rule lines.
+    /// Reads a bounded line count,
+    ///  then that many rule lines.
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let count = u.int_in_range(1usize..=MAX_RULES)?;
         let mut lines: Vec<RuleLine> = Vec::with_capacity(count);
@@ -344,7 +400,9 @@ impl<'a> Arbitrary<'a> for RuleFile {
     }
 }
 
-/// Renders the file, reports its load outcome, and collects its match bytes.
+/// Renders the file,
+///  reports its load outcome,
+///  and collects its match bytes.
 impl RuleFile {
     /// Renders the lines into one newline-joined two-form source string.
     pub fn render(&self) -> String {
@@ -372,7 +430,9 @@ impl RuleFile {
 
     /// Reports whether any regex line carries a flag the strict loader rejects.
     ///
-    /// When true, the loader fails closed regardless of line order, so a target can
+    /// When true,
+    ///  the loader fails closed regardless of line order,
+    ///  so a target can
     /// predict a load error without re-implementing the loader.
     pub fn has_bad_flag(&self) -> bool {
         return self.lines.iter().any(|line| {
@@ -380,7 +440,8 @@ impl RuleFile {
         })
     }
 
-    /// Collects the bytes the loading rules can match, for content seeding.
+    /// Collects the bytes the loading rules can match,
+    ///  for content seeding.
     pub fn match_literals(&self) -> Vec<Vec<u8>> {
         let mut out: Vec<Vec<u8>> = Vec::new();
         for line in &self.lines {
@@ -399,7 +460,8 @@ impl RuleFile {
 /// A rule file paired with a content buffer seeded from the rules' match bytes.
 ///
 /// The seeded content plants each rule's match bytes on their own lines amid random
-/// filler and blank lines, so the scan path finds real hits (exercising the columnless
+/// filler and blank lines,
+///  so the scan path finds real hits (exercising the columnless
 /// `PATH:LINE rule=N` format) instead of scanning noise that never matches.
 #[derive(Debug)]
 pub struct RuleFileAndContent {
@@ -409,9 +471,12 @@ pub struct RuleFileAndContent {
     pub content: Vec<u8>,
 }
 
-/// Builds the pair: rules first, then content synthesized from their match bytes.
+/// Builds the pair:
+///  rules first,
+///  then content synthesized from their match bytes.
 impl<'a> Arbitrary<'a> for RuleFileAndContent {
-    /// Generates the rule file, then seeds content from its collected match bytes.
+    /// Generates the rule file,
+    ///  then seeds content from its collected match bytes.
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let rules = RuleFile::arbitrary(u)?;
         let literals = rules.match_literals();
@@ -422,10 +487,16 @@ impl<'a> Arbitrary<'a> for RuleFileAndContent {
 
 /// Synthesizes a multi-line content buffer biased toward the given match bytes.
 ///
-/// Each line is one of: a planted match literal (optionally with filler around it), a
-/// random filler line, or an empty line. Blank and comment-skipping paths in the scan
-/// stay exercised by the empty lines. A few post-hoc single-byte mutations perturb the
-/// buffer to reach near-miss edges. The result is capped at `MAX_CONTENT_BYTES`.
+/// Each line is one of:
+///  a planted match literal (optionally with filler around it),
+///  a
+/// random filler line,
+///  or an empty line.
+///  Blank and comment-skipping paths in the scan
+/// stay exercised by the empty lines.
+///  A few post-hoc single-byte mutations perturb the
+/// buffer to reach near-miss edges.
+///  The result is capped at `MAX_CONTENT_BYTES`.
 fn synth_content(literals: &[Vec<u8>], u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
     let mut out: Vec<u8> = Vec::with_capacity(256);
     let line_count = u.int_in_range(1usize..=MAX_CONTENT_LINES)?;
@@ -463,7 +534,8 @@ fn synth_content(literals: &[Vec<u8>], u: &mut Unstructured<'_>) -> Result<Vec<u
     return Ok(out)
 }
 
-/// Appends `count` lowercase filler bytes, stopping at the content cap.
+/// Appends `count` lowercase filler bytes,
+///  stopping at the content cap.
 fn push_filler(out: &mut Vec<u8>, count: usize, u: &mut Unstructured<'_>) -> Result<()> {
     for _ in 0..count {
         if out.len() >= MAX_CONTENT_BYTES {
@@ -480,9 +552,12 @@ fn push_filler(out: &mut Vec<u8>, count: usize, u: &mut Unstructured<'_>) -> Res
 
 /// Fingerprints content as a length and SHA-256 for a redacted crash message.
 ///
-/// A fuzz crash must never paste raw content (it can carry secret-shaped bytes); this
-/// returns the reproducer shape the README prescribes, a length plus lowercase hex
-/// digest, which uniquely identifies the input without echoing it.
+/// A fuzz crash must never paste raw content (it can carry secret-shaped bytes);
+///  this
+/// returns the reproducer shape the README prescribes,
+///  a length plus lowercase hex
+/// digest,
+///  which uniquely identifies the input without echoing it.
 pub fn redacted_fingerprint(content: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(content);
@@ -492,7 +567,8 @@ pub fn redacted_fingerprint(content: &[u8]) -> String {
 
 //endregion Redacted fingerprint
 
-/// Registers the generator unit tests (sidecar; the fuzz crate does not lint them).
+/// Registers the generator unit tests (sidecar;
+///  the fuzz crate does not lint them).
 #[cfg(test)]
 #[path = "generators_tests.rs"]
 mod tests;

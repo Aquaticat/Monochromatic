@@ -1,21 +1,34 @@
-//! The license and notice texts embedded in the executable, as `monochromatic-ide --licenses`
+//! The license and notice texts embedded in the executable,
+//!  as `monochromatic-ide --licenses`
 //! prints them.
 //!
-//! What: [`is_notice`] decides which embedded files are license or notice texts, [`collect`] checks
-//!       their digests, and [`write`] prints each one in full under a heading.
-//! Why: The user chose on 2026-10-06 that the executable shows the texts it carries through a
-//!      `--licenses` flag; the files sit inside the executable, so nothing else can show them.
+//! What:
+//!  [`is_notice`] decides which embedded files are license or notice texts,
+//!  [`collect`] checks
+//!       their digests,
+//!  and [`write`] prints each one in full under a heading.
+//! Why:
+//!  The user chose on 2026-10-06 that the executable shows the texts it carries through a
+//!      `--licenses` flag;
+//!  the files sit inside the executable,
+//!  so nothing else can show them.
 
 /// Each text is digest-checked before anything is printed.
 use super::embedded::EmbeddedRuntime;
 /// Damage is an error with the file and the remedy.
 use anyhow::Result;
-/// Printing goes to any writer: standard output in the executable, a buffer in tests.
+/// Printing goes to any writer:
+///  standard output in the executable,
+///  a buffer in tests.
 use std::io::Write;
 
-/// What: One license or notice text: its path in the embedded table and its checked bytes.
+/// What:
+///  One license or notice text:
+///  its path in the embedded table and its checked bytes.
 ///       `&'static` borrows data stored in the executable for the whole program.
-/// Why: The heading names the path, so a reader can find the same file in the source tree.
+/// Why:
+///  The heading names the path,
+///  so a reader can find the same file in the source tree.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,19 +36,30 @@ use std::io::Write;
 /// ```
 #[derive(Debug)]
 pub struct Notice {
-    /// Path in the embedded table, for example `runtime/licenses/rust/LICENSE`.
+    /// Path in the embedded table,
+    ///  for example `runtime/licenses/rust/LICENSE`.
     pub path: &'static str,
     /// The text exactly as it was when the executable was built.
     pub text: &'static [u8],
 }
 
-/// What: Whether an embedded path is a license or notice text: everything below `LICENSES/` and
-///       `runtime/licenses/`, and any other file whose name (ignoring case) contains `LICENSE` or
-///       `LICENCE` or starts with `COPYING` or `NOTICE`. `rsplit('/')` walks the path's parts from
-///       the end, so its first item is the file name.
-/// Why: Most texts sit in those two folders, but Helix also ships a license beside some query files
-///      (`runtime/queries/snakemake/LICENSE`). Query read-me files are documentation or a source
-///      link, not license terms, so they are left out.
+/// What:
+///  Whether an embedded path is a license or notice text:
+///  everything below `LICENSES/` and
+///       `runtime/licenses/`,
+///  and any other file whose name (ignoring case) contains `LICENSE` or
+///       `LICENCE` or starts with `COPYING` or `NOTICE`.
+///  `rsplit('/')` walks the path's parts from
+///       the end,
+///  so its first item is the file name.
+/// Why:
+///  Most texts sit in those two folders,
+///  but Helix also ships a license beside some query files
+///      (`runtime/queries/snakemake/LICENSE`).
+///  Query read-me files are documentation or a source
+///      link,
+///  not license terms,
+///  so they are left out.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,9 +76,14 @@ pub fn is_notice(path: &str) -> bool {
         || name.starts_with("NOTICE");
 }
 
-/// What: Every license and notice text of `runtime`, in path order, each digest-checked.
+/// What:
+///  Every license and notice text of `runtime`,
+///  in path order,
+///  each digest-checked.
 ///       `Result<Vec<Notice>>` is the list or the first damage found.
-/// Why: All texts are checked before any is printed, so a damaged executable prints no partial list.
+/// Why:
+///  All texts are checked before any is printed,
+///  so a damaged executable prints no partial list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -84,9 +113,13 @@ pub fn collect(runtime: &EmbeddedRuntime) -> Result<Vec<Notice>> {
     return Ok(notices);
 }
 
-/// What: The heading line for one text, saying whose text it is.
-///       `strip_prefix` returns the rest of the text after a prefix, or `None` without it.
-/// Why: A reader scanning the output must see which component each text belongs to.
+/// What:
+///  The heading line for one text,
+///  saying whose text it is.
+///       `strip_prefix` returns the rest of the text after a prefix,
+///  or `None` without it.
+/// Why:
+///  A reader scanning the output must see which component each text belongs to.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -115,9 +148,15 @@ fn heading(path: &str) -> String {
     return path.to_string();
 }
 
-/// What: Print an introduction, then every text in full under a framed heading that names its
-///       component and its embedded path. `&mut impl Write` lends any writer for writing.
-/// Why: One plain-text stream that a pager, a file, or a terminal can hold.
+/// What:
+///  Print an introduction,
+///  then every text in full under a framed heading that names its
+///       component and its embedded path.
+///  `&mut impl Write` lends any writer for writing.
+/// Why:
+///  One plain-text stream that a pager,
+///  a file,
+///  or a terminal can hold.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -150,7 +189,10 @@ pub fn write(notices: &[Notice], version: &str, out: &mut impl Write) -> std::io
     return Ok(());
 }
 
-/// Selection, headings, and damage, on a small table.
+/// Selection,
+///  headings,
+///  and damage,
+///  on a small table.
 #[cfg(test)]
 #[path = "notices_tests.rs"]
 mod tests;

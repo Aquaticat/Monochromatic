@@ -1,5 +1,9 @@
-//! What: Controls for atomic replacement on real disposable files.
-//! Why: The contents, the permission bits, symbolic links and the directory's other entries must
+//! What:
+//!  Controls for atomic replacement on real disposable files.
+//! Why:
+//!  The contents,
+//!  the permission bits,
+//!  symbolic links and the directory's other entries must
 //! all be exactly as specified after a success and after a failure.
 //!
 //! In TS you'd write (pseudocode):
@@ -47,7 +51,10 @@ fn set_mode(path: &Path, bits: u32) {
     std::fs::set_permissions(path, std::fs::Permissions::from_mode(bits)).expect("chmod");
 }
 
-/// New contents replace old ones exactly, including when shorter, empty or not text, with no leftover files.
+/// New contents replace old ones exactly,
+///  including when shorter,
+///  empty or not text,
+///  with no leftover files.
 #[test]
 fn contents_are_replaced_exactly_without_leftovers() {
     let fixture: Fixture = Fixture::new();
@@ -63,7 +70,8 @@ fn contents_are_replaced_exactly_without_leftovers() {
     assert_eq!(entries(&fixture.path), ["a.md", "sibling.md"]);
 }
 
-/// The replacement carries the original permission bits exactly, whatever the process umask.
+/// The replacement carries the original permission bits exactly,
+///  whatever the process umask.
 #[cfg(unix)]
 #[test]
 fn permission_bits_are_kept_exactly() {
@@ -79,7 +87,8 @@ fn permission_bits_are_kept_exactly() {
     }
 }
 
-/// A symbolic link stays a link; the file it names is the one replaced.
+/// A symbolic link stays a link;
+///  the file it names is the one replaced.
 #[cfg(unix)]
 #[test]
 fn symbolic_links_are_followed_not_replaced() {
@@ -99,7 +108,8 @@ fn symbolic_links_are_followed_not_replaced() {
     assert_eq!(entries(&fixture.path), ["link.md", "real"]);
 }
 
-/// A missing target is an error naming the path, and nothing is created.
+/// A missing target is an error naming the path,
+///  and nothing is created.
 #[test]
 fn a_missing_target_is_an_error_and_creates_nothing() {
     let fixture: Fixture = Fixture::new();
@@ -110,7 +120,8 @@ fn a_missing_target_is_an_error_and_creates_nothing() {
     assert!(entries(&fixture.path).is_empty());
 }
 
-/// When the directory refuses new files, the original bytes and mode stay and no temporary file remains.
+/// When the directory refuses new files,
+///  the original bytes and mode stay and no temporary file remains.
 #[cfg(unix)]
 #[test]
 fn a_failed_write_leaves_the_original_untouched() {
@@ -154,7 +165,8 @@ fn a_failed_rename_removes_the_temporary_file() {
     assert_eq!(read(&fixture.path, "target/inside.md"), "kept\n");
 }
 
-/// Rewrite one file several times; the last round's contents must be the final contents.
+/// Rewrite one file several times;
+///  the last round's contents must be the final contents.
 fn rewrite_rounds(path: &Path) {
     for round in 0..8 {
         write_atomically(path, format!("round {round}\n").as_bytes()).expect("replace");

@@ -1,8 +1,13 @@
-//! wl_compositor and wl_shm handlers: surface commits and shared-memory buffers.
+//! wl_compositor and wl_shm handlers:
+//!  surface commits and shared-memory buffers.
 
-/// What:     Grouped `use` of the compositor/shm handler traits, the buffer handler,
-///           the on-commit helper, and the delegate macros.
-/// Why:      Bring in everything the two impls below reference.
+/// What:
+///      Grouped `use` of the compositor/shm handler traits,
+///  the buffer handler,
+///           the on-commit helper,
+///  and the delegate macros.
+/// Why:
+///       Bring in everything the two impls below reference.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,8 +29,12 @@ use smithay::{
     },
 };
 
-/// What:     `use crate::state::{ClientState, Compositor};`. Pull in our state types.
-/// Why:      The impls are for `Compositor`, and one method reaches per-client state.
+/// What:
+///      `use crate::state::{ClientState, Compositor};`.
+///  Pull in our state types.
+/// Why:
+///       The impls are for `Compositor`,
+///  and one method reaches per-client state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,25 +44,37 @@ use crate::state::{ClientState, Compositor};
 
 /// Implement the wl_compositor handler (surface lifecycle and commits).
 ///
-/// What:     `impl CompositorHandler for Compositor`. Provides the compositor state
+/// What:
+///      `impl CompositorHandler for Compositor`.
+///  Provides the compositor state
 ///           accessors and the per-commit hook.
-/// Why:      Every buffer the client attaches arrives through `commit`; this is where
+/// Why:
+///       Every buffer the client attaches arrives through `commit`;
+///  this is where
 ///           the fixture reacts to the app drawing a frame.
 impl CompositorHandler for Compositor {
-    /// What:     `fn compositor_state(&mut self) -> &mut CompositorState`. Mutable
+    /// What:
+    ///      `fn compositor_state(&mut self) -> &mut CompositorState`.
+    ///  Mutable
     ///           accessor for the compositor protocol state.
-    /// Why:      Smithay mutates surface bookkeeping through it.
+    /// Why:
+    ///       Smithay mutates surface bookkeeping through it.
     fn compositor_state(&mut self) -> &mut CompositorState {
         // What:     `&mut self.compositor_state`. Mutable borrow (tail expression).
         // Why:      Return the state Smithay asked for.
         return &mut self.compositor_state
     }
 
-    /// What:     `fn client_compositor_state<'a>(&self, client: &'a Client) -> &'a
-    ///           CompositorClientState`. The `<'a>` is a lifetime parameter: it says
+    /// What:
+    ///      `fn client_compositor_state<'a>(&self, client: &'a Client) -> &'a
+    ///           CompositorClientState`.
+    ///  The `<'a>` is a lifetime parameter:
+    ///  it says
     ///           the returned borrow lives exactly as long as the `client` borrow
-    ///           passed in. Reaches into the client's per-connection data.
-    /// Why:      Smithay needs the compositor sub-state scoped to a specific client.
+    ///           passed in.
+    ///  Reaches into the client's per-connection data.
+    /// Why:
+    ///       Smithay needs the compositor sub-state scoped to a specific client.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -68,9 +89,14 @@ impl CompositorHandler for Compositor {
         return &client.get_data::<ClientState>().unwrap().compositor_state
     }
 
-    /// What:     `fn commit(&mut self, surface: &WlSurface)`. Called every time a
+    /// What:
+    ///      `fn commit(&mut self, surface: &WlSurface)`.
+    ///  Called every time a
     ///           client commits new surface content (a drawn frame or a state change).
-    /// Why:      Drive buffer import, send the initial configure, and keep the
+    /// Why:
+    ///       Drive buffer import,
+    ///  send the initial configure,
+    ///  and keep the
     ///           window's mapping fresh.
     fn commit(&mut self, surface: &WlSurface) {
         // What:     `on_commit_buffer_handler::<Self>(surface);`. Smithay helper that
@@ -124,24 +150,40 @@ impl CompositorHandler for Compositor {
 
 /// Implement the buffer handler (buffer destruction callback).
 ///
-/// What:     `impl BufferHandler for Compositor`. One hook, called when a `wl_buffer`
+/// What:
+///      `impl BufferHandler for Compositor`.
+///  One hook,
+///  called when a `wl_buffer`
 ///           is destroyed.
-/// Why:      Required companion to shm/dmabuf; we need no cleanup, so it is a no-op.
+/// Why:
+///       Required companion to shm/dmabuf;
+///  we need no cleanup,
+///  so it is a no-op.
 impl BufferHandler for Compositor {
-    /// What:     `fn buffer_destroyed(&mut self, _buffer: &wl_buffer::WlBuffer) {}`.
+    /// What:
+    ///      `fn buffer_destroyed(&mut self, _buffer: &wl_buffer::WlBuffer) {}`.
     ///           Ignores the destroyed buffer.
-    /// Why:      Smithay's renderer already drops the imported texture; nothing extra
+    /// Why:
+    ///       Smithay's renderer already drops the imported texture;
+    ///  nothing extra
     ///           to do.
     fn buffer_destroyed(&mut self, _buffer: &wl_buffer::WlBuffer) {}
 }
 
 /// Implement the wl_shm handler (shared-memory buffer pool state).
 ///
-/// What:     `impl ShmHandler for Compositor`. Exposes the shm state.
-/// Why:      Even though the GPU app uses dmabuf, wl_shm must be functional.
+/// What:
+///      `impl ShmHandler for Compositor`.
+///  Exposes the shm state.
+/// Why:
+///       Even though the GPU app uses dmabuf,
+///  wl_shm must be functional.
 impl ShmHandler for Compositor {
-    /// What:     `fn shm_state(&self) -> &ShmState`. Read-only accessor.
-    /// Why:      Smithay reads advertised SHM formats through it.
+    /// What:
+    ///      `fn shm_state(&self) -> &ShmState`.
+    ///  Read-only accessor.
+    /// Why:
+    ///       Smithay reads advertised SHM formats through it.
     fn shm_state(&self) -> &ShmState {
         // What:     `&self.shm_state`. Borrow the field (tail expression).
         // Why:      Return the shm state.

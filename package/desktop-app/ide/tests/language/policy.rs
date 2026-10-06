@@ -1,10 +1,13 @@
-//! Server-to-client requests: every one is answered by policy, and every edit is refused.
+//! Server-to-client requests:
+//!  every one is answered by policy,
+//!  and every edit is refused.
 
 use crate::support::{self, Probe};
 use ide_app::language::reply::{RequestKind, RequestOutcome};
 use serde_json::{Value, json};
 
-/// The reply the scripted server recorded for a method; the second `workspace/applyEdit` is the malformed one.
+/// The reply the scripted server recorded for a method;
+///  the second `workspace/applyEdit` is the malformed one.
 fn replies(lines: &[Value], method: &str) -> Vec<Value> {
     let mut found = Vec::new();
     for line in lines {
@@ -15,7 +18,10 @@ fn replies(lines: &[Value], method: &str) -> Vec<Value> {
     return found;
 }
 
-/// The server sends every request it can; the client refuses the edit, answers the rest, and goes on.
+/// The server sends every request it can;
+///  the client refuses the edit,
+///  answers the rest,
+///  and goes on.
 #[test]
 fn server_requests_get_policy_replies_and_edits_change_nothing() {
     let Some(root) = support::child_root() else {

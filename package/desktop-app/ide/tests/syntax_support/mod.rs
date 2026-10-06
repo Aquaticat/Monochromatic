@@ -1,22 +1,32 @@
-//! Shared assertion for syntax tests: one sample is recognized and painted by the application engine.
+//! Shared assertion for syntax tests:
+//!  one sample is recognized and painted by the application engine.
 
-/// What: `use helix_core::Rope;` brings the `Rope` type into this file under its short name.
+/// What:
+///  `use helix_core::Rope;` brings the `Rope` type into this file under its short name.
 ///       A rope is the text container the application keeps source in.
-/// Why:  The engine classifies exactly this type, so tests must build the same input.
+/// Why:
+///   The engine classifies exactly this type,
+///  so tests must build the same input.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { Rope } from 'helix-core';
 /// ```
 use helix_core::Rope;
-/// The application-owned adapter under test; no Helix loader is constructed here.
+/// The application-owned adapter under test;
+///  no Helix loader is constructed here.
 use ide_app::syntax::SyntaxEngine;
 /// Paths drive filename recognition exactly as a project file would.
 use std::path::Path;
 
-/// What: `const ROLES: &[&str]` is a fixed, read-only list of borrowed text values.
-///       Siblings: `Vec<String>` (growable, owned) and `[&str; 13]` (length in the type).
-/// Why:  The engine numbers paint roles as one plus the position in this same ordered list,
+/// What:
+///  `const ROLES: &[&str]` is a fixed,
+///  read-only list of borrowed text values.
+///       Siblings:
+///  `Vec<String>` (growable,
+///  owned) and `[&str; 13]` (length in the type).
+/// Why:
+///   The engine numbers paint roles as one plus the position in this same ordered list,
 ///       so tests can name a role (`"keyword"`) instead of repeating its number.
 ///
 /// In TS you'd write (pseudocode):
@@ -39,11 +49,16 @@ const ROLES: &[&str] = &[
     "special",
 ];
 
-/// What: `pub fn assert_reads_as(path: &str, ...)` is a public function taking five borrowed
-///       text values (`&str`: the caller keeps ownership; sibling `String` would take it).
+/// What:
+///  `pub fn assert_reads_as(path: &str, ...)` is a public function taking five borrowed
+///       text values (`&str`:
+///  the caller keeps ownership;
+///  sibling `String` would take it).
 ///       It returns nothing and stops the test by panicking when an expectation fails.
-/// Why:  Every bundled language needs the same two facts checked through the application path:
-///       the file is recognized as `language`, and `fragment` is painted with `role`.
+/// Why:
+///   Every bundled language needs the same two facts checked through the application path:
+///       the file is recognized as `language`,
+///  and `fragment` is painted with `role`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,5 +1,8 @@
-//! The records of an ended server and a timed-out start, under a capture subscriber on a runtime
-//! like the worker's. Every test uses its own server name, because the kept lines are shared by
+//! The records of an ended server and a timed-out start,
+//!  under a capture subscriber on a runtime
+//! like the worker's.
+//!  Every test uses its own server name,
+//!  because the kept lines are shared by
 //! the whole test process.
 
 use super::{SETTLE, ended_unexpectedly, stopped_during_start};
@@ -33,8 +36,10 @@ impl<'writer> MakeWriter<'writer> for Capture {
     }
 }
 
-/// Run `body` on a current-thread runtime under a capture subscriber, drop the runtime while the
-/// subscriber is still the default, and return what was written.
+/// Run `body` on a current-thread runtime under a capture subscriber,
+///  drop the runtime while the
+/// subscriber is still the default,
+///  and return what was written.
 fn logged<F>(body: F) -> String
 where
     F: Future<Output = ()>,

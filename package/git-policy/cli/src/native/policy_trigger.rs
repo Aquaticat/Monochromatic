@@ -1,7 +1,13 @@
-//! What: The lifecycle points at which policies run, which shipped policy runs at which
-//!       point, and which points this executable can serve.
-//! Why: A policy runs only for the triggers it declares. A trigger whose lifecycle is not
-//!      ported must be answered as "unavailable", never as an empty result that would read
+//! What:
+//!  The lifecycle points at which policies run,
+//!  which shipped policy runs at which
+//!       point,
+//!  and which points this executable can serve.
+//! Why:
+//!  A policy runs only for the triggers it declares.
+//!  A trigger whose lifecycle is not
+//!      ported must be answered as "unavailable",
+//!  never as an empty result that would read
 //!      as "checked and clean".
 //!
 //! In TS you'd write (pseudocode):
@@ -9,9 +15,13 @@
 //! // type PolicyTrigger = 'pre-forward' | 'post-commit' | 'manual-push' | 'direct-check' | 'direct-fix';
 //! ```
 
-/// What: `use` brings a name from a sibling file into this file; `super::` means "the
-///       parent module", where every sibling file of this crate is declared.
-/// Why:  The trigger table is keyed by the registry's typed policy identity.
+/// What:
+///  `use` brings a name from a sibling file into this file;
+///  `super::` means "the
+///       parent module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   The trigger table is keyed by the registry's typed policy identity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,10 +29,17 @@
 /// ```
 use super::policy_registry::PolicyId;
 
-/// What: One lifecycle point. An `enum` is a closed set of named alternatives.
-///       `#[derive(...)]` asks the compiler to generate copying (`Clone`, `Copy`), debug
-///       printing (`Debug`) and `==` (`Eq`, `PartialEq`).
-/// Why:  The set is fixed by the event format, where each event names its trigger.
+/// What:
+///  One lifecycle point.
+///  An `enum` is a closed set of named alternatives.
+///       `#[derive(...)]` asks the compiler to generate copying (`Clone`,
+///  `Copy`),
+///  debug
+///       printing (`Debug`) and `==` (`Eq`,
+///  `PartialEq`).
+/// Why:
+///   The set is fixed by the event format,
+///  where each event names its trigger.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,9 +49,11 @@ use super::policy_registry::PolicyId;
 pub enum Trigger {
     /// Before a wrapped Git command is forwarded.
     PreForward,
-    /// After a commit landed, against the landed commit.
+    /// After a commit landed,
+    ///  against the landed commit.
     PostCommit,
-    /// Before a manual `git push`, against newly published content.
+    /// Before a manual `git push`,
+    ///  against newly published content.
     ManualPush,
     /// `git cli-git check`.
     DirectCheck,
@@ -42,9 +61,12 @@ pub enum Trigger {
     DirectFix,
 }
 
-/// What: The wire spelling of a trigger. `&'static str` is text baked into the program
+/// What:
+///  The wire spelling of a trigger.
+///  `&'static str` is text baked into the program
 ///       for its whole run (sibling `String` would be an owned copy).
-/// Why:  Events print exactly the spellings the incumbent emitted.
+/// Why:
+///   Events print exactly the spellings the incumbent emitted.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,9 +83,16 @@ pub fn trigger_name(trigger: Trigger) -> &'static str {
     }
 }
 
-/// What: Every trigger. `&[Trigger]` is a borrowed, read-only list (siblings: `Vec<T>`,
-///       owned and growable; `[T; N]`, fixed length in the type).
-/// Why:  Two shipped policies check content at every lifecycle point.
+/// What:
+///  Every trigger.
+///  `&[Trigger]` is a borrowed,
+///  read-only list (siblings:
+///  `Vec<T>`,
+///       owned and growable;
+///  `[T; N]`,
+///  fixed length in the type).
+/// Why:
+///   Two shipped policies check content at every lifecycle point.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -77,8 +106,12 @@ const EVERY_TRIGGER: &[Trigger] = &[
     Trigger::DirectFix,
 ];
 
-/// What: The triggers a shipped policy declares, copied from the incumbent definitions.
-/// Why:  The engine skips a policy at every other lifecycle point, exactly as the
+/// What:
+///  The triggers a shipped policy declares,
+///  copied from the incumbent definitions.
+/// Why:
+///   The engine skips a policy at every other lifecycle point,
+///  exactly as the
 ///       incumbent's stage did.
 ///
 /// In TS you'd write (pseudocode):
@@ -113,8 +146,11 @@ pub fn policy_triggers(id: PolicyId) -> &'static [Trigger] {
     }
 }
 
-/// What: Whether a policy declares a trigger. `bool` is true or false.
-/// Why:  The stage asks this once per policy before anything else.
+/// What:
+///  Whether a policy declares a trigger.
+///  `bool` is true or false.
+/// Why:
+///   The stage asks this once per policy before anything else.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -125,9 +161,12 @@ pub fn policy_runs_on(id: PolicyId, trigger: Trigger) -> bool {
     return policy_triggers(id).contains(&trigger);
 }
 
-/// What: Whether this executable implements the lifecycle a trigger belongs to.
-/// Why:  The post-commit and manual-push lifecycles need a landed commit and a push probe
-///       that are not ported. The engine answers those triggers with a typed
+/// What:
+///  Whether this executable implements the lifecycle a trigger belongs to.
+/// Why:
+///   The post-commit and manual-push lifecycles need a landed commit and a push probe
+///       that are not ported.
+///  The engine answers those triggers with a typed
 ///       "unavailable" instead of running zero policies and looking clean.
 ///
 /// In TS you'd write (pseudocode):
@@ -141,7 +180,8 @@ pub fn trigger_is_ported(trigger: Trigger) -> bool {
     }
 }
 
-/// Trigger sets, spellings and the ported set stay out of the release executable.
+/// Trigger sets,
+///  spellings and the ported set stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_trigger_tests.rs"]
 mod tests;

@@ -1,5 +1,8 @@
-//! What: Fence-language normalization over exact authored source.
-//! Why: Indented code stays unchanged, and unlabeled rustdoc fences must retain Rust semantics.
+//! What:
+//!  Fence-language normalization over exact authored source.
+//! Why:
+//!  Indented code stays unchanged,
+//!  and unlabeled rustdoc fences must retain Rust semantics.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,8 +16,12 @@ use crate::markdown_source::MarkdownSource;
 /// Import native code data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_code_data};
 
-/// What: Return a fenced opener's absolute marker end, independent of its language label.
-/// Why: Native fenced-code spans already begin at the marker, excluding indentation/container prefixes.
+/// What:
+///  Return a fenced opener's absolute marker end,
+///  independent of its language label.
+/// Why:
+///  Native fenced-code spans already begin at the marker,
+///  excluding indentation/container prefixes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

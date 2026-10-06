@@ -1,5 +1,9 @@
-//! What: Disposable-PATH controls for real-Git resolution.
-//! Why: Candidate order, platform names, conventional-location priority and wrapper
+//! What:
+//!  Disposable-PATH controls for real-Git resolution.
+//! Why:
+//!  Candidate order,
+//!  platform names,
+//!  conventional-location priority and wrapper
 //!      skipping decide which program every forwarded command runs.
 //!
 //! In TS you'd write (pseudocode):
@@ -39,7 +43,8 @@ fn environment(pairs: &[(&str, &str)]) -> Vec<(OsString, OsString)> {
     return result;
 }
 
-/// Unix tries `git` alone; Windows tries each non-empty extension with a dot.
+/// Unix tries `git` alone;
+///  Windows tries each non-empty extension with a dot.
 #[test]
 fn executable_names_follow_platform_rules() {
     for platform in [Platform::Unix, Platform::MacOs] {
@@ -133,7 +138,9 @@ fn common_paths_follow_platform_rules() {
     );
 }
 
-/// PATH order is kept, relative and empty entries resolve against the current directory, repeats collapse.
+/// PATH order is kept,
+///  relative and empty entries resolve against the current directory,
+///  repeats collapse.
 #[test]
 fn candidate_sequence_preserves_path_order_and_removes_repeats() {
     let mut resolution: ResolutionInputs =
@@ -161,7 +168,8 @@ fn candidate_sequence_preserves_path_order_and_removes_repeats() {
     );
 }
 
-/// A conventional location wins only when PATH exposes it, in its PATH spelling and conventional order.
+/// A conventional location wins only when PATH exposes it,
+///  in its PATH spelling and conventional order.
 #[test]
 fn common_paths_are_promoted_only_when_exposed() {
     let mut resolution: ResolutionInputs =
@@ -210,7 +218,9 @@ fn windows_candidates_use_extensions_and_case_insensitive_identity() {
     );
 }
 
-/// Wrappers are skipped through links, duplicates, copies and launcher scripts until real Git is reached.
+/// Wrappers are skipped through links,
+///  duplicates,
+///  copies and launcher scripts until real Git is reached.
 #[test]
 fn resolution_skips_every_wrapper_form() {
     let root: PathBuf = fixture("resolve-skip");
@@ -238,7 +248,8 @@ fn resolution_skips_every_wrapper_form() {
     remove(root.as_path());
 }
 
-/// When only wrappers and unusable entries exist, the failure reports both counts.
+/// When only wrappers and unusable entries exist,
+///  the failure reports both counts.
 #[test]
 fn resolution_failure_reports_examined_and_skipped_counts() {
     let root: PathBuf = fixture("resolve-fail");
@@ -291,7 +302,8 @@ fn resolution_prefers_exposed_common_locations() {
     remove(root.as_path());
 }
 
-/// The gate runs on Linux, whose rules are the Unix ones.
+/// The gate runs on Linux,
+///  whose rules are the Unix ones.
 #[cfg(target_os = "linux")]
 #[test]
 fn host_platform_is_unix_on_linux() {

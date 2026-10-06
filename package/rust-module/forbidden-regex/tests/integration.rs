@@ -1,5 +1,8 @@
-//! What:    End-to-end tests exercising the public API across the compilation boundary.
-//! Why:     This file is the Rust module that groups the integration implementation, so the
+//! What:
+//!     End-to-end tests exercising the public API across the compilation boundary.
+//! Why:
+//!      This file is the Rust module that groups the integration implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,8 +12,11 @@
 
 use forbidden_regex::{CompileError, RegexSet, compile};
 
-/// What:    A valid 20-byte AWS-style key: `AKIA` plus 16 bytes from `[A-Z2-7]`.
-/// Why:     The program gives this fixed value a name so every caller uses the same setting.
+/// What:
+///     A valid 20-byte AWS-style key:
+///  `AKIA` plus 16 bytes from `[A-Z2-7]`.
+/// Why:
+///      The program gives this fixed value a name so every caller uses the same setting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

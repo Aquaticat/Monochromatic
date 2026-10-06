@@ -1,13 +1,24 @@
-//! Every request a server can send to the client, sent once so a test can check each reply.
+//! Every request a server can send to the client,
+//!  sent once so a test can check each reply.
 
-/// The shared output stream, report file, and reply table.
+/// The shared output stream,
+///  report file,
+///  and reply table.
 use crate::framing::Wire;
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
 
-/// What: Send one request, wait for its reply, and record both. `&Wire` lends the shared stream;
-///       `&str` borrows the method name; `params` is moved in.
-/// Why: The report line is what the test asserts: an exact reply for each method, and none missing.
+/// What:
+///  Send one request,
+///  wait for its reply,
+///  and record both.
+///  `&Wire` lends the shared stream;
+///       `&str` borrows the method name;
+///  `params` is moved in.
+/// Why:
+///  The report line is what the test asserts:
+///  an exact reply for each method,
+///  and none missing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,8 +31,12 @@ fn probe_one(wire: &Wire, method: &str, params: Value) {
     wire.record(json!({ "probe": { "method": method, "response": response } }));
 }
 
-/// What: Send a notification, reporting a write failure on standard error.
-/// Why: Notifications have no reply; the client must simply not stall or fail on them.
+/// What:
+///  Send a notification,
+///  reporting a write failure on standard error.
+/// Why:
+///  Notifications have no reply;
+///  the client must simply not stall or fail on them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,9 +48,15 @@ fn notify(wire: &Wire, method: &str, params: Value) {
     }
 }
 
-/// What: Run the whole probe against the document at `uri`.
-/// Why: It covers the edit request the read-only client must refuse, every request it must
-///      answer, an unknown method, malformed parameters, and notifications it must tolerate.
+/// What:
+///  Run the whole probe against the document at `uri`.
+/// Why:
+///  It covers the edit request the read-only client must refuse,
+///  every request it must
+///      answer,
+///  an unknown method,
+///  malformed parameters,
+///  and notifications it must tolerate.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

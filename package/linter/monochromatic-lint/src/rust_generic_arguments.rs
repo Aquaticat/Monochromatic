@@ -1,5 +1,9 @@
-//! What: Associate written generic arguments with their resolved declaration.
-//! Why: Enum constructors accept arguments on the type or variant, aliases can bind parameters, and names alone are insufficient.
+//! What:
+//!  Associate written generic arguments with their resolved declaration.
+//! Why:
+//!  Enum constructors accept arguments on the type or variant,
+//!  aliases can bind parameters,
+//!  and names alone are insufficient.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -18,8 +22,10 @@ use ra_ap_syntax::ast::HasGenericArgs;
 /// Import typed syntax views and the shared generic-argument accessor.
 use ra_ap_syntax::{AstNode, SyntaxKind, SyntaxNode, ast};
 
-/// What: Written arguments paired with the declaration that supplies their meaning.
-/// Why: A fixed alias can eliminate an underlying enum's parameters without requiring redundant variant arguments.
+/// What:
+///  Written arguments paired with the declaration that supplies their meaning.
+/// Why:
+///  A fixed alias can eliminate an underlying enum's parameters without requiring redundant variant arguments.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,7 +34,8 @@ use ra_ap_syntax::{AstNode, SyntaxKind, SyntaxNode, ast};
 pub(crate) struct GenericSite {
     /// Resolved declaration whose explicit parameters can be supplied at this site.
     pub definition: GenericDef,
-    /// Argument count from the permitted spelling; function-trait parentheses supply one tuple argument.
+    /// Argument count from the permitted spelling;
+    ///  function-trait parentheses supply one tuple argument.
     pub provided: usize,
 }
 
@@ -50,7 +57,8 @@ pub(crate) fn generic_definition(item: ModuleDef) -> Option<GenericDef> {
     }
 }
 
-/// Count the final segment's explicit arguments, including Rust's Fn(Args) shorthand.
+/// Count the final segment's explicit arguments,
+///  including Rust's Fn(Args) shorthand.
 fn written_arguments(path: &ast::Path) -> usize {
     let Some(segment): Option<ast::PathSegment> = path.segment() else {
         return 0;
@@ -92,7 +100,8 @@ fn variant_site(
     };
 }
 
-/// True when the parent path selects an enum variant, which owns the combined enum/alias argument check.
+/// True when the parent path selects an enum variant,
+///  which owns the combined enum/alias argument check.
 fn followed_by_variant(semantics: &Semantics<'_, dyn HirDatabase>, path: &ast::Path) -> bool {
     let Some(parent): Option<SyntaxNode> = path.syntax().parent() else {
         return false;
@@ -108,7 +117,8 @@ fn followed_by_variant(semantics: &Semantics<'_, dyn HirDatabase>, path: &ast::P
     return false;
 }
 
-/// Return a type/expression site's actual generic declaration, with valid nongeneric items returning absence.
+/// Return a type/expression site's actual generic declaration,
+///  with valid nongeneric items returning absence.
 pub(crate) fn path_site(
     semantics: &Semantics<'_, dyn HirDatabase>,
     path: &ast::Path,
@@ -128,7 +138,8 @@ pub(crate) fn path_site(
     });
 }
 
-/// Type and expression paths carry instantiations; imports and match patterns do not create this requirement.
+/// Type and expression paths carry instantiations;
+///  imports and match patterns do not create this requirement.
 pub(crate) fn is_instantiation_path(path: &ast::Path) -> bool {
     let mut current: Option<SyntaxNode> = path.syntax().parent();
     while let Some(parent) = current {
@@ -144,7 +155,8 @@ pub(crate) fn is_instantiation_path(path: &ast::Path) -> bool {
     return false;
 }
 
-/// Distinguish a required type/constant slot from lifetimes, compiler-introduced slots and fixed defaults.
+/// Distinguish a required type/constant slot from lifetimes,
+///  compiler-introduced slots and fixed defaults.
 fn is_required(database: &dyn HirDatabase, parameter: GenericParam, target: DisplayTarget) -> bool {
     if let GenericParam::TypeParam(ty) = parameter {
         return !ty.is_implicit(database) && ty.default(database).is_none();
@@ -155,7 +167,9 @@ fn is_required(database: &dyn HirDatabase, parameter: GenericParam, target: Disp
     return false;
 }
 
-/// Count only explicit required type/constant parameters; lifetimes, implicit impl-Trait parameters and defaults are exempt.
+/// Count only explicit required type/constant parameters;
+///  lifetimes,
+///  implicit impl-Trait parameters and defaults are exempt.
 pub(crate) fn required_arguments(database: &dyn HirDatabase, definition: GenericDef) -> usize {
     let module: Module = definition.module(database);
     let krate: Crate = module.krate(database);

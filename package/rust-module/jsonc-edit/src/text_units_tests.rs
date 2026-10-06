@@ -1,5 +1,10 @@
-//! What:     Tests for quoted-string decoding, the fallible conversion to Rust text, and re-encoding.
-//! Why:      Escaped unpaired surrogates must survive as code units, and any replacement value must be
+//! What:
+//!      Tests for quoted-string decoding,
+//!  the fallible conversion to Rust text,
+//!  and re-encoding.
+//! Why:
+//!       Escaped unpaired surrogates must survive as code units,
+//!  and any replacement value must be
 //!           written back as a legal JSON string literal that decodes to the same units.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +12,10 @@
 //! describe('textUnits', () => { /* decode, convert, encode round trip */ });
 //! ```
 
-/// What:     Import the conversions under test.
-/// Why:      These tests use the same public functions a caller uses.
+/// What:
+///      Import the conversions under test.
+/// Why:
+///       These tests use the same public functions a caller uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -56,7 +63,8 @@ fn rejects_malformed_quoted_tokens() {
     }
 }
 
-/// Check the fallible conversion to Rust text, including the lone-surrogate rejection.
+/// Check the fallible conversion to Rust text,
+///  including the lone-surrogate rejection.
 #[test]
 fn converts_units_to_rust_text_only_when_valid() {
     // Ordinary text converts directly.

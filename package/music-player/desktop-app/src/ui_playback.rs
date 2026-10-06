@@ -1,7 +1,9 @@
 //! Playback-mode conversion and displayed-page scope helpers for the generated UI.
 
-/// What:     `PlaybackMode` is the engine's four-state enum.
-/// Why:      Slint carries an integer while commands carry the named Rust value.
+/// What:
+///      `PlaybackMode` is the engine's four-state enum.
+/// Why:
+///       Slint carries an integer while commands carry the named Rust value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -9,8 +11,10 @@
 /// ```
 use music_player::command::PlaybackMode;
 
-/// What:     `Model` exposes iteration over generated Slint list properties.
-/// Why:      Page-scope calculation reads the complete queue model from AppWindow.
+/// What:
+///      `Model` exposes iteration over generated Slint list properties.
+/// Why:
+///       Page-scope calculation reads the complete queue model from AppWindow.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +22,10 @@ use music_player::command::PlaybackMode;
 /// ```
 use slint::Model;
 
-/// What:     Generated window type imported from the binary crate root.
-/// Why:      Page-scope calculation reads selected-page source data from the UI.
+/// What:
+///      Generated window type imported from the binary crate root.
+/// Why:
+///       Page-scope calculation reads selected-page source data from the UI.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,7 +61,8 @@ pub(crate) fn int_to_playback_mode(value: i32) -> PlaybackMode {
     return PlaybackMode::InOrder;
 }
 
-/// Resolves a reconciled page by prior label, falling back to its prior index.
+/// Resolves a reconciled page by prior label,
+///  falling back to its prior index.
 pub(crate) fn kept_page(app: &AppWindow, pages: &[music_player::pagination::Page]) -> i32 {
     let previous_page = app.get_selected_page();
     if previous_page < 0 {

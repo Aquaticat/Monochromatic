@@ -1,17 +1,26 @@
-//! Pointer selection by character, word, or line: counting clicks and extending a drag by whole units.
+//! Pointer selection by character,
+//!  word,
+//!  or line:
+//!  counting clicks and extending a drag by whole units.
 
 /// Word and line ranges come from the same rope functions as keyboard movement.
 use crate::caret_motion::{line_range, word_range};
-/// What: Helix's borrowed view of the document rope.
-/// Why: Units are looked up in the text without copying it.
+/// What:
+///  Helix's borrowed view of the document rope.
+/// Why:
+///  Units are looked up in the text without copying it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { RopeSlice } from 'helix-core';
 /// ```
 use helix_core::RopeSlice;
-/// What: `Instant` is a point on a clock that never goes backwards; `Duration` is a span of time.
-/// Why: A multi-click is defined by the time between presses, which wall-clock adjustments must not change.
+/// What:
+///  `Instant` is a point on a clock that never goes backwards;
+///  `Duration` is a span of time.
+/// Why:
+///  A multi-click is defined by the time between presses,
+///  which wall-clock adjustments must not change.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,11 +28,15 @@ use helix_core::RopeSlice;
 /// ```
 use std::time::{Duration, Instant};
 
-/// Longest pause between two presses of one multi-click; the toolkit's own double-click default.
+/// Longest pause between two presses of one multi-click;
+///  the toolkit's own double-click default.
 pub const CLICK_INTERVAL: Duration = Duration::from_millis(500);
 
-/// What: `f32` is a 32-bit float (sibling `f64`), the unit of logical pixels.
-/// Why: A hand does not hold the pointer perfectly still between the presses of a double click.
+/// What:
+///  `f32` is a 32-bit float (sibling `f64`),
+///  the unit of logical pixels.
+/// Why:
+///  A hand does not hold the pointer perfectly still between the presses of a double click.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,8 +44,11 @@ pub const CLICK_INTERVAL: Duration = Duration::from_millis(500);
 /// ```
 pub const CLICK_SLOP: f32 = 4.0;
 
-/// What: `enum` lists the selection units as named variants; `derive` generates copying and comparison.
-/// Why: The unit chosen by the press also governs how the following drag extends.
+/// What:
+///  `enum` lists the selection units as named variants;
+///  `derive` generates copying and comparison.
+/// Why:
+///  The unit chosen by the press also governs how the following drag extends.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,16 +56,23 @@ pub const CLICK_SLOP: f32 = 4.0;
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Granularity {
-    /// A single press: caret placement and character-wise drag.
+    /// A single press:
+    ///  caret placement and character-wise drag.
     Character,
-    /// A double press: whole words.
+    /// A double press:
+    ///  whole words.
     Word,
-    /// A triple press: whole lines including their terminator.
+    /// A triple press:
+    ///  whole lines including their terminator.
     Line,
 }
 
-/// What: The previous press; `usize` is an address-sized row index (siblings `u32`, `u64`).
-/// Why: The next press continues a multi-click only when it is soon enough and close enough.
+/// What:
+///  The previous press;
+///  `usize` is an address-sized row index (siblings `u32`,
+///  `u64`).
+/// Why:
+///  The next press continues a multi-click only when it is soon enough and close enough.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -63,12 +86,15 @@ struct Press {
     row: usize,
     /// Logical x inside the source text.
     x: f32,
-    /// Position of this press in its multi-click, starting at one.
+    /// Position of this press in its multi-click,
+    ///  starting at one.
     count: u8,
 }
 
-/// What: `Option<Press>` holds either the previous press or nothing (TypeScript's `Press | undefined`).
-/// Why: The first press of a session has no predecessor.
+/// What:
+///  `Option<Press>` holds either the previous press or nothing (TypeScript's `Press | undefined`).
+/// Why:
+///  The first press of a session has no predecessor.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -76,16 +102,20 @@ struct Press {
 /// ```
 #[derive(Default)]
 pub struct ClickCounter {
-    /// The most recent press, if any.
+    /// The most recent press,
+    ///  if any.
     last: Option<Press>,
 }
 
-/// Count presses into single, double, and triple clicks.
+/// Count presses into single,
+///  double,
+///  and triple clicks.
 impl ClickCounter {
     /// Record a press and return the unit it selects.
     ///
     /// A press continues the multi-click when it follows within [`CLICK_INTERVAL`] on the same row
-    /// and within [`CLICK_SLOP`] pixels. A fourth press starts over with a single click.
+    /// and within [`CLICK_SLOP`] pixels.
+    ///  A fourth press starts over with a single click.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -118,14 +148,16 @@ impl ClickCounter {
         return Granularity::Character;
     }
 
-    /// Forget the previous press, so the next one is a single click.
+    /// Forget the previous press,
+    ///  so the next one is a single click.
     /// A press that extends the selection with Shift is never part of a multi-click.
     pub fn reset(&mut self) {
         self.last = None;
     }
 }
 
-/// The unit of `granularity` at caret boundary `position`, as a start and an end position.
+/// The unit of `granularity` at caret boundary `position`,
+///  as a start and an end position.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -144,8 +176,10 @@ pub fn unit(text: RopeSlice, position: usize, granularity: Granularity) -> (usiz
 
 /// Anchor and head of a drag from the pressed unit `origin` to the pointer position `hit`.
 ///
-/// The pressed unit always stays selected. Dragging before it selects back to the start of the unit under
-/// the pointer; dragging after it selects forward to the end of that unit.
+/// The pressed unit always stays selected.
+///  Dragging before it selects back to the start of the unit under
+/// the pointer;
+///  dragging after it selects forward to the end of that unit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

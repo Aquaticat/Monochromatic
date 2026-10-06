@@ -1,9 +1,14 @@
 //! The `RegexSet`-level combined literal prefilter over the seeded rules.
 //!
-//! What: [`SetGate`] is one multi-pattern matcher over the union of every seeded
-//! rule's required literals, mapping each literal back to its rule. Why: a line is
+//! What:
+//!  [`SetGate`] is one multi-pattern matcher over the union of every seeded
+//! rule's required literals,
+//!  mapping each literal back to its rule.
+//!  Why:
+//!  a line is
 //! checked only against the rules whose literal it actually contains (one combined
-//! Teddy pass) instead of every rule; the literal-free rules are handled separately
+//! Teddy pass) instead of every rule;
+//!  the literal-free rules are handled separately
 //! by the set's union automaton.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,8 +16,13 @@
 //! // module gate: see exported functions and types below.
 //! ```
 
-/// What:    Imports the multi-pattern matcher and its kind, to map a hit back to its rules.
-/// Why:     The code below uses `AhoCorasick`, `AhoCorasickKind` directly; importing from
+/// What:
+///     Imports the multi-pattern matcher and its kind,
+///  to map a hit back to its rules.
+/// Why:
+///      The code below uses `AhoCorasick`,
+///  `AhoCorasickKind` directly;
+///  importing from
 ///          `aho_corasick` keeps each call site focused on the matcher logic instead of the full
 ///          Rust path.
 ///
@@ -22,8 +32,11 @@
 /// ```
 use aho_corasick::{AhoCorasick, AhoCorasickKind};
 
-/// What:    Imports the leftmost match-kind for the SIMD prefilter.
-/// Why:     The code below uses `MatchKind` directly; importing from `regex_automata` keeps each
+/// What:
+///     Imports the leftmost match-kind for the SIMD prefilter.
+/// Why:
+///      The code below uses `MatchKind` directly;
+///  importing from `regex_automata` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -32,8 +45,11 @@ use aho_corasick::{AhoCorasick, AhoCorasickKind};
 /// ```
 use regex_automata::MatchKind;
 
-/// What:    Imports the SIMD literal prefilter and the span it searches.
-/// Why:     The code below uses `Prefilter` directly; importing from
+/// What:
+///     Imports the SIMD literal prefilter and the span it searches.
+/// Why:
+///      The code below uses `Prefilter` directly;
+///  importing from
 ///          `regex_automata/util/prefilter` keeps each call site focused on the matcher logic
 ///          instead of the full Rust path.
 ///
@@ -43,8 +59,11 @@ use regex_automata::MatchKind;
 /// ```
 use regex_automata::util::prefilter::Prefilter;
 
-/// What:    Imports the span type the prefilter searches over.
-/// Why:     The code below uses `Span` directly; importing from `regex_automata` keeps each call
+/// What:
+///     Imports the span type the prefilter searches over.
+/// Why:
+///      The code below uses `Span` directly;
+///  importing from `regex_automata` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -55,10 +74,15 @@ use regex_automata::Span;
 
 /// A combined required-literal gate over the seeded rules of a ruleset.
 ///
-/// What: a SIMD prefilter over every seeded rule's literals for the negative-line
-/// fast reject, plus an aho-corasick matcher mapping a hit back to its rules. Why:
+/// What:
+///  a SIMD prefilter over every seeded rule's literals for the negative-line
+/// fast reject,
+///  plus an aho-corasick matcher mapping a hit back to its rules.
+///  Why:
 /// the prefilter rejects most lines at SIMD speed (hundreds of literals exceed
-/// aho-corasick's SIMD capacity, so it alone would run scalar), and the matcher is
+/// aho-corasick's SIMD capacity,
+///  so it alone would run scalar),
+///  and the matcher is
 /// only consulted on the rare line that does contain a seed.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,9 +93,14 @@ use regex_automata::Span;
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct SetGate {
-    /// What:    SIMD prefilter over the seeded literals, or `None` when none are seeded.
-    /// Why:     `prefilter` stores sIMD prefilter over the seeded literals, or `None` when none
-    ///          are seeded, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     SIMD prefilter over the seeded literals,
+    ///  or `None` when none are seeded.
+    /// Why:
+    ///      `prefilter` stores sIMD prefilter over the seeded literals,
+    ///  or `None` when none
+    ///          are seeded,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -79,9 +108,14 @@ pub struct SetGate {
     /// prefilter: Prefilter | null;
     /// ```
     prefilter: Option<Prefilter>,
-    /// What:    Matcher over every seeded rule's literals, or `None` when none are seeded.
-    /// Why:     `matcher` stores matcher over every seeded rule's literals, or `None` when none
-    ///          are seeded, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     Matcher over every seeded rule's literals,
+    ///  or `None` when none are seeded.
+    /// Why:
+    ///      `matcher` stores matcher over every seeded rule's literals,
+    ///  or `None` when none
+    ///          are seeded,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -89,9 +123,14 @@ pub struct SetGate {
     /// matcher: AhoCorasick | null;
     /// ```
     matcher: Option<AhoCorasick>,
-    /// What:    Rule id for each literal pattern in `matcher`, by pattern index.
-    /// Why:     `literal_rule` stores rule id for each literal pattern in `matcher`, by pattern
-    ///          index, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     Rule id for each literal pattern in `matcher`,
+    ///  by pattern index.
+    /// Why:
+    ///      `literal_rule` stores rule id for each literal pattern in `matcher`,
+    ///  by pattern
+    ///          index,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -101,8 +140,10 @@ pub struct SetGate {
     literal_rule: Vec<usize>,
 }
 
-/// What:    Construction and candidate selection.
-/// Why:     The program attaches these functions to the named Rust type so callers can use
+/// What:
+///     Construction and candidate selection.
+/// Why:
+///      The program attaches these functions to the named Rust type so callers can use
 ///          method syntax.
 ///
 /// In TS you'd write (pseudocode):
@@ -112,8 +153,10 @@ pub struct SetGate {
 impl SetGate {
     /// Builds the gate from each rule's seeds (`None` for a literal-free rule).
     ///
-    /// What: collects every seeded rule's literals with its rule id into one matcher;
-    /// literal-free rules are skipped (the set's union automaton covers them). Why:
+    /// What:
+    ///  collects every seeded rule's literals with its rule id into one matcher;
+    /// literal-free rules are skipped (the set's union automaton covers them).
+    ///  Why:
     /// the matcher fast-rejects against the rules that have a required literal.
     ///
     /// In TS you'd write (pseudocode):
@@ -163,8 +206,12 @@ impl SetGate {
     /// Reports whether any seeded rule whose literal occurs in `line` satisfies
     /// `check`.
     ///
-    /// What: runs `check` on each rule whose literal is present, stopping at the first
-    /// hit. Why: the boolean any-rule path over the seeded rules.
+    /// What:
+    ///  runs `check` on each rule whose literal is present,
+    ///  stopping at the first
+    /// hit.
+    ///  Why:
+    ///  the boolean any-rule path over the seeded rules.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -200,9 +247,13 @@ impl SetGate {
         return false
     }
 
-    /// Profiling hook: reports whether the SIMD prefilter alone flags a seed.
+    /// Profiling hook:
+    ///  reports whether the SIMD prefilter alone flags a seed.
     ///
-    /// What: just the prefilter find, with no aho-corasick or per-rule fallback. Why:
+    /// What:
+    ///  just the prefilter find,
+    ///  with no aho-corasick or per-rule fallback.
+    ///  Why:
     /// isolates the prefilter's own cost from the cost of the per-rule check it gates.
     ///
     /// In TS you'd write (pseudocode):
@@ -220,11 +271,17 @@ impl SetGate {
 
     /// Reports the start of the next seeded literal at or after `at` in `buf`.
     ///
-    /// What: a positional SIMD prefilter search over `buf[at..]`, `None` when no seed
-    /// occurs there (or no rule is seeded). Why: the batch path sweeps the whole
-    /// concatenated corpus in one pass to mark which lines hold a seed, so Teddy runs at
+    /// What:
+    ///  a positional SIMD prefilter search over `buf[at..]`,
+    ///  `None` when no seed
+    /// occurs there (or no rule is seeded).
+    ///  Why:
+    ///  the batch path sweeps the whole
+    /// concatenated corpus in one pass to mark which lines hold a seed,
+    ///  so Teddy runs at
     /// full SIMD width over a long buffer instead of paying per-line setup on each short
-    /// line, which is where the negative-line cost dominates.
+    /// line,
+    ///  which is where the negative-line cost dominates.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -239,8 +296,12 @@ impl SetGate {
 
     /// Calls `visit` for each seeded rule whose literal occurs in `line`.
     ///
-    /// What: visits every rule with a literal hit and the hit's start, possibly with
-    /// repeats. Why: the attribution path collects all seeded hits and the position
+    /// What:
+    ///  visits every rule with a literal hit and the hit's start,
+    ///  possibly with
+    /// repeats.
+    ///  Why:
+    ///  the attribution path collects all seeded hits and the position
     /// lets an anchorable rule be checked anchored.
     ///
     /// In TS you'd write (pseudocode):
@@ -258,8 +319,11 @@ impl SetGate {
     }
 }
 
-/// What:    Unit tests for the set-level gate, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for the set-level gate,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

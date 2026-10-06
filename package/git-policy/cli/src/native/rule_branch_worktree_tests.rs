@@ -1,7 +1,13 @@
-//! What: Branch-worktree decisions, the rejection text, and the one-query remote guess with
+//! What:
+//!  Branch-worktree decisions,
+//!  the rejection text,
+//!  and the one-query remote guess with
 //!       real Git 2.56.0 controls.
-//! Why: The guess decides whether `git switch <name>` is a harmless switch or a branch
-//!      creation. Its listing is read line by line, so a prefix match or a miscounted remote
+//! Why:
+//!  The guess decides whether `git switch <name>` is a harmless switch or a branch
+//!      creation.
+//!  Its listing is read line by line,
+//!  so a prefix match or a miscounted remote
 //!      would reject a switch to an existing branch or let a creation through.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,7 +15,9 @@
 //! // expect(remoteGuessCreatesBranch('refs/remotes/origin/topic\n', 'topic')).toBe(true);
 //! ```
 
-/// The decision, its message, the guess query and the real-Git fixture helpers.
+/// The decision,
+///  its message,
+///  the guess query and the real-Git fixture helpers.
 use super::{
     BRANCH_CREATION_CODE, BranchWorktreeDecision, branch_creation_message, decide_branch_worktree,
     remote_guess_creates_branch, remote_guess_query_arguments,
@@ -27,7 +35,8 @@ fn decide(values: &[&str]) -> BranchWorktreeDecision {
     return decide_branch_worktree(os_arguments(values).as_slice());
 }
 
-/// Explicit creation is decided from the arguments, behind global options too.
+/// Explicit creation is decided from the arguments,
+///  behind global options too.
 #[test]
 fn explicit_creation_is_decided_from_arguments() {
     assert_eq!(BRANCH_CREATION_CODE, "branch-creation-requires-worktree");
@@ -63,7 +72,8 @@ fn explicit_creation_is_decided_from_arguments() {
     }
 }
 
-/// A bare name after `switch` or `checkout` needs the repository's branches; the name keeps its bytes.
+/// A bare name after `switch` or `checkout` needs the repository's branches;
+///  the name keeps its bytes.
 #[test]
 fn a_bare_name_needs_the_remote_guess() {
     assert_eq!(
@@ -90,7 +100,9 @@ fn a_bare_name_needs_the_remote_guess() {
     );
 }
 
-/// Other commands, forms that create nothing, and regions Git refuses pass.
+/// Other commands,
+///  forms that create nothing,
+///  and regions Git refuses pass.
 #[test]
 fn everything_else_passes() {
     for values in [
@@ -118,7 +130,9 @@ fn everything_else_passes() {
     }
 }
 
-/// The rejection names the command, the guessed branch when known, the worktree form and the bypass.
+/// The rejection names the command,
+///  the guessed branch when known,
+///  the worktree form and the bypass.
 #[test]
 fn rejection_text_is_the_incumbent_message() {
     assert_eq!(
@@ -146,7 +160,8 @@ fn rejection_text_is_the_incumbent_message() {
     );
 }
 
-/// The guess is one listing of the local branch and the remote branches of that name, after the global options.
+/// The guess is one listing of the local branch and the remote branches of that name,
+///  after the global options.
 #[test]
 fn the_guess_query_lists_local_and_remote_names_once() {
     assert_eq!(
@@ -234,7 +249,8 @@ fn guessed(root: &Path, target: &str) -> bool {
     return remote_guess_creates_branch(listing.stdout.as_slice(), target.as_bytes());
 }
 
-/// Whether a local branch of that name exists after `git switch <name>` in real Git; the branch is removed again.
+/// Whether a local branch of that name exists after `git switch <name>` in real Git;
+///  the branch is removed again.
 fn switch_created(root: &Path, target: &str) -> bool {
     let before: bool = git_status(
         root,

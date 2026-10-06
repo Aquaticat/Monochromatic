@@ -1,5 +1,9 @@
-//! What: Target-independent Windows prefix forms driven through production normalization, counting and scanning.
-//! Why: Windows's native prefix parser runs only on Windows, so these controls supply the prefix bytes it returns
+//! What:
+//!  Target-independent Windows prefix forms driven through production normalization,
+//!  counting and scanning.
+//! Why:
+//!  Windows's native prefix parser runs only on Windows,
+//!  so these controls supply the prefix bytes it returns
 //! and check that the scan skips exactly that prefix before treating every following component as a name.
 //!
 //! Each fixture prefix is the raw `Component::Prefix` byte prefix the standard library produces for its path:
@@ -17,17 +21,22 @@
 use super::{scan_normalized_records, PathScanRecords};
 /// Import the production Windows normalization and prefix counting rather than a test-local copy.
 use crate::path_name_bytes::{count_prefix_parts, normalize_bytes};
-/// Import loaded matcher sets, the type the scan borrows.
+/// Import loaded matcher sets,
+///  the type the scan borrows.
 use crate::frx_load::LoadedRules;
 /// Import the structured finding compared by every assertion.
 use crate::ScanFinding;
 
-/// What: One native Windows prefix with a forbidden-name candidate and a clean control under the same prefix.
-/// Why: Every prefix form needs both a positive and a negative observation from one shared assertion.
+/// What:
+///  One native Windows prefix with a forbidden-name candidate and a clean control under the same prefix.
+/// Why:
+///  Every prefix form needs both a positive and a negative observation from one shared assertion.
 ///
 /// `&'static [u8]` is a borrowed byte slice baked into the test binary.
-/// Siblings are `Vec<u8>` (owned, growable) and `[u8; N]` (fixed length);
-/// fixture literals never change, so a borrowed static slice needs no allocation.
+/// Siblings are `Vec<u8>` (owned,
+///  growable) and `[u8; N]` (fixed length);
+/// fixture literals never change,
+///  so a borrowed static slice needs no allocation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -42,12 +51,16 @@ struct PrefixForm {
     hit_display: &'static str,
     /// Native pathname under the same prefix whose names are all clean.
     clean: &'static [u8],
-    /// Expected display of the clean control, with nothing masked.
+    /// Expected display of the clean control,
+    ///  with nothing masked.
     clean_display: &'static str,
 }
 
-/// What: Load the single forbidden fixture name used by every form.
-/// Why: Rules compile in memory, so no user-owned cache is read or written.
+/// What:
+///  Load the single forbidden fixture name used by every form.
+/// Why:
+///  Rules compile in memory,
+///  so no user-owned cache is read or written.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,8 +70,11 @@ fn load_rules() -> LoadedRules {
     return crate::frx_load::test_rules("VAULTTOKEN_LONG\n");
 }
 
-/// What: Scan one native Windows pathname with its separately supplied native prefix bytes.
-/// Why: This is the production Windows composition, `normalized_path` plus `prefix_parts`,
+/// What:
+///  Scan one native Windows pathname with its separately supplied native prefix bytes.
+/// Why:
+///  This is the production Windows composition,
+///  `normalized_path` plus `prefix_parts`,
 /// minus only the native `Component::Prefix` detection that Linux cannot run.
 ///
 /// In TS you'd write (pseudocode):
@@ -79,8 +95,11 @@ fn scan_windows_form(path: &[u8], prefix: &[u8], loaded: &LoadedRules) -> PathSc
     return scan_normalized_records(&normalized, parts, loaded);
 }
 
-/// What: The single expected finding for a forbidden first name after a prefix.
-/// Why: Component numbering starts at 1 after the prefix, and the fixture rule is unnamed rule 0.
+/// What:
+///  The single expected finding for a forbidden first name after a prefix.
+/// Why:
+///  Component numbering starts at 1 after the prefix,
+///  and the fixture rule is unnamed rule 0.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -91,8 +110,11 @@ fn first_name() -> Vec<ScanFinding> {
     return vec![ScanFinding::Name { component: 1, rule: String::from("0") }];
 }
 
-/// What: Assert one form's positive candidate is reported and masked and its clean control stays visible.
-/// Why: Every prefix form shares the same contract, so one assertion keeps the forms comparable.
+/// What:
+///  Assert one form's positive candidate is reported and masked and its clean control stays visible.
+/// Why:
+///  Every prefix form shares the same contract,
+///  so one assertion keeps the forms comparable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -108,7 +130,8 @@ fn assert_prefix_form(form: &PrefixForm) {
     assert!(clean.findings.is_empty());
 }
 
-/// A drive prefix `C:` is one part; the first directory after it is name 1.
+/// A drive prefix `C:` is one part;
+///  the first directory after it is name 1.
 #[test]
 fn drive_prefix_form() {
     // br"..." is a raw byte-string literal: backslashes are literal bytes, never escapes.
@@ -169,7 +192,9 @@ fn verbatim_drive_prefix_form() {
     });
 }
 
-/// A verbatim UNC prefix skips `?`, `UNC`, server and share.
+/// A verbatim UNC prefix skips `?`,
+///  `UNC`,
+///  server and share.
 #[test]
 fn verbatim_unc_prefix_form() {
     assert_prefix_form(&PrefixForm {
@@ -193,7 +218,8 @@ fn verbatim_name_prefix_form() {
     });
 }
 
-/// A device-namespace port prefix skips its `.` marker and device name, and nothing after them.
+/// A device-namespace port prefix skips its `.` marker and device name,
+///  and nothing after them.
 #[test]
 fn device_namespace_port_prefix_form() {
     assert_prefix_form(&PrefixForm {
@@ -205,7 +231,8 @@ fn device_namespace_port_prefix_form() {
     });
 }
 
-/// A device-namespace volume prefix skips its `.` marker and drive, and nothing after them.
+/// A device-namespace volume prefix skips its `.` marker and drive,
+///  and nothing after them.
 #[test]
 fn device_namespace_drive_prefix_form() {
     assert_prefix_form(&PrefixForm {
@@ -341,7 +368,8 @@ fn unc_share_spelled_parent_marker_is_prefix() {
     });
 }
 
-/// A verbatim prefix containing `/./` (`Verbatim("a/./b")`) counts the `.` run as a part, because verbatim parsing
+/// A verbatim prefix containing `/./` (`Verbatim("a/./b")`) counts the `.` run as a part,
+///  because verbatim parsing
 /// splits only at backslashes while the scan splits at both separators.
 #[test]
 fn verbatim_prefix_with_current_marker_run_is_prefix() {

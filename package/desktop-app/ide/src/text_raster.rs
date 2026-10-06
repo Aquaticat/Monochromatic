@@ -1,4 +1,5 @@
-//! Rasterize shared shaped rows; glyphs retain their common baseline and advances.
+//! Rasterize shared shaped rows;
+//!  glyphs retain their common baseline and advances.
 
 /// Diagnostic underline styles and the tile both they and glyphs are drawn into.
 use crate::annotation_paint::{Tile, TilePlace, paint_underlines};
@@ -127,7 +128,8 @@ impl TextRaster {
         };
     }
 
-    /// Paint only the bounded materialized viewport; horizontal offset stays fractional.
+    /// Paint only the bounded materialized viewport;
+    ///  horizontal offset stays fractional.
     /// Virtual-row texts and diagnostic underlines of `view.annotations` are painted after the source glyphs.
     pub fn paint(
         &mut self,
@@ -223,10 +225,16 @@ impl TextRaster {
         });
     }
 
-    /// What: Composite every glyph of `layout` into `tile`, moved by the physical `origin` (x, then y).
-    ///       `fixed` is one ink for every glyph, or `None` for the syntax roles of `colors`;
+    /// What:
+    ///  Composite every glyph of `layout` into `tile`,
+    ///  moved by the physical `origin` (x,
+    ///  then y).
+    ///       `fixed` is one ink for every glyph,
+    ///  or `None` for the syntax roles of `colors`;
     ///       `selected` holds physical intervals drawn in selection ink.
-    /// Why: Source rows and hint labels go through one glyph path, so both use the same cache and clipping.
+    /// Why:
+    ///  Source rows and hint labels go through one glyph path,
+    ///  so both use the same cache and clipping.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

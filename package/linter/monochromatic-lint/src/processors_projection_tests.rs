@@ -1,5 +1,9 @@
-//! What: Real grouped host edits across Markdown, Rustdoc and preparation layers.
-//! Why: Newline insertion, full-line deletion and overlapping fixes must not damage prefixes.
+//! What:
+//!  Real grouped host edits across Markdown,
+//!  Rustdoc and preparation layers.
+//! Why:
+//!  Newline insertion,
+//!  full-line deletion and overlapping fixes must not damage prefixes.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,7 +15,8 @@ use super::{Edit, Fix, ProcessorLanguage, fixed, inputs};
 /// Conflict selection belongs to the existing host edit engine.
 use crate::edits::apply_fixes;
 
-/// Newlines inserted into /// prose gain the original indentation, prefix and CRLF spelling.
+/// Newlines inserted into /// prose gain the original indentation,
+///  prefix and CRLF spelling.
 #[test]
 fn processors_project_rustdoc_newlines_with_prefixes_and_untouched_bytes() {
     let source: &str =
@@ -40,7 +45,8 @@ fn processors_project_rustdoc_newlines_with_prefixes_and_untouched_bytes() {
     );
 }
 
-/// Removing one entire virtual line removes its own prefix, never joining adjacent comment markers.
+/// Removing one entire virtual line removes its own prefix,
+///  never joining adjacent comment markers.
 #[test]
 fn processors_project_whole_doc_line_deletion_without_prefix_concatenation() {
     let source: &str = "/// First.\n/// Removed.\n/// Last.\nfn item() {}\n";

@@ -1,6 +1,10 @@
-//! What: Argument and output-shape controls for the one location query.
-//! Why: Whether a command runs from the repository root is read from the last line of this
-//!      query. A misread line turns a subdirectory into the root, or the reverse.
+//! What:
+//!  Argument and output-shape controls for the one location query.
+//! Why:
+//!  Whether a command runs from the repository root is read from the last line of this
+//!      query.
+//!  A misread line turns a subdirectory into the root,
+//!  or the reverse.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -28,7 +32,9 @@ fn main_at_r() -> WorktreeIdentity {
     };
 }
 
-/// On success the last line is the prefix: empty at the top level, the exact bytes below it.
+/// On success the last line is the prefix:
+///  empty at the top level,
+///  the exact bytes below it.
 #[test]
 fn successful_output_ends_with_the_prefix() {
     assert_eq!(PREFIX_OPTION, "--show-prefix");
@@ -67,7 +73,8 @@ fn successful_output_ends_with_the_prefix() {
     );
 }
 
-/// A failed query has an empty prefix: Git stopped at the missing worktree before printing one.
+/// A failed query has an empty prefix:
+///  Git stopped at the missing worktree before printing one.
 #[test]
 fn failed_output_has_no_prefix() {
     assert_eq!(
@@ -125,7 +132,9 @@ fn unexpected_output_shapes_are_rejected() {
     );
 }
 
-/// The query is the caller's global options, the identity options, then the prefix option last.
+/// The query is the caller's global options,
+///  the identity options,
+///  then the prefix option last.
 #[test]
 fn the_query_puts_the_global_prefix_first_and_the_prefix_option_last() {
     assert_eq!(
@@ -146,7 +155,8 @@ fn the_query_puts_the_global_prefix_first_and_the_prefix_option_last() {
     assert_eq!(location_query_arguments(&[]).len(), 7);
 }
 
-/// The effective directory is the top level itself for an empty prefix, and the joined path otherwise.
+/// The effective directory is the top level itself for an empty prefix,
+///  and the joined path otherwise.
 #[test]
 fn effective_directory_joins_the_prefix() {
     assert_eq!(

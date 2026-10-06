@@ -1,8 +1,16 @@
-//! What: A consumer of the candidate and scanner layers that sees only the library's public interface.
-//! Why: The policy engine will call these layers from other modules. This control makes
-//!      one whole policy pass the way that caller must: list, load rules once, scan,
-//!      attribute findings by identity, then invalidate after a fix and pass again.
-//!      Unit controls inside the modules can reach private items; this one cannot.
+//! What:
+//!  A consumer of the candidate and scanner layers that sees only the library's public interface.
+//! Why:
+//!  The policy engine will call these layers from other modules.
+//!  This control makes
+//!      one whole policy pass the way that caller must:
+//!  list,
+//!  load rules once,
+//!  scan,
+//!      attribute findings by identity,
+//!  then invalidate after a fix and pass again.
+//!      Unit controls inside the modules can reach private items;
+//!  this one cannot.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,7 +18,8 @@
 //! ```
 #![cfg(unix)]
 
-/// The public interface under control, imported the way another crate would.
+/// The public interface under control,
+///  imported the way another crate would.
 use forbidden_strings::{CandidateScan, ScanFinding};
 use git_policy_cli::candidate_error::CandidateFailure;
 use git_policy_cli::candidate_record::CandidateChange;
@@ -27,10 +36,12 @@ use std::rc::Rc;
 /// The real Git 2.56.0 executable installed in the verification image.
 const REAL_GIT: &str = "/usr/bin/git";
 
-/// Set only in the re-executed child: names the directory the control may use.
+/// Set only in the re-executed child:
+///  names the directory the control may use.
 const ISOLATED_FIXTURE_VARIABLE: &str = "CLI_GIT_NATIVE_CONSUMER_FIXTURE";
 
-/// Run real Git in a fixture with no system or global configuration and a fixed identity, and require success.
+/// Run real Git in a fixture with no system or global configuration and a fixed identity,
+///  and require success.
 fn git(directory: &Path, arguments: &[&str]) {
     let output: Output = Command::new(REAL_GIT)
         .current_dir(directory)
@@ -52,7 +63,8 @@ fn git(directory: &Path, arguments: &[&str]) {
     );
 }
 
-/// The pathnames of the candidates whose scans hold at least one finding, sorted.
+/// The pathnames of the candidates whose scans hold at least one finding,
+///  sorted.
 fn reported_paths(version: &CandidateVersion, scans: &[CandidateScan]) -> Vec<Vec<u8>> {
     let mut reported: Vec<Vec<u8>> = Vec::new();
     for scan in scans {
@@ -68,7 +80,11 @@ fn reported_paths(version: &CandidateVersion, scans: &[CandidateScan]) -> Vec<Ve
     return reported;
 }
 
-/// Body: one policy pass, a fix, an invalidation and a second pass, all through public items.
+/// Body:
+///  one policy pass,
+///  a fix,
+///  an invalidation and a second pass,
+///  all through public items.
 fn policy_pass(directory: &Path) {
     // The token is assembled at run time so this repository's own commit policy cannot report it here.
     let token: String = ["PLANTED", "CONSUMER", "NEEDLE"].join("_");
@@ -156,7 +172,8 @@ fn policy_pass(directory: &Path) {
     assert!(reported_paths(&fixed, after.as_slice()).is_empty());
 }
 
-/// One whole policy pass through the public interface reports staged bytes only, before and after a fix.
+/// One whole policy pass through the public interface reports staged bytes only,
+///  before and after a fix.
 #[test]
 fn public_interface_runs_a_policy_pass() {
     if let Some(directory) = std::env::var_os(ISOLATED_FIXTURE_VARIABLE) {

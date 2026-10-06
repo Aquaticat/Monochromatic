@@ -1,21 +1,33 @@
 //! The TypeScript family uses the project's own TypeScript 7 server instead of Helix's default.
 //!
-//! Helix's default, `typescript-language-server`, needs a `tsserver.js` that TypeScript 7 no
-//! longer ships. TypeScript 7 has its own server, `tsc --lsp --stdio`; a project without it
-//! shows the missing-executable state. Adopted in `doc/planning/slint-ide-language-intelligence.md`.
+//! Helix's default,
+//!  `typescript-language-server`,
+//!  needs a `tsserver.js` that TypeScript 7 no
+//! longer ships.
+//!  TypeScript 7 has its own server,
+//!  `tsc --lsp --stdio`;
+//!  a project without it
+//! shows the missing-executable state.
+//!  Adopted in `doc/planning/slint-ide-language-intelligence.md`.
 
 /// Helix's typed configuration and one server definition.
 use helix_core::syntax::config::{Configuration, LanguageServerConfiguration};
-/// What: `Value` is any JSON value; `json!` builds one from literal syntax.
-/// Why: The server's settings table is JSON.
+/// What:
+///  `Value` is any JSON value;
+///  `json!` builds one from literal syntax.
+/// Why:
+///  The server's settings table is JSON.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Value = unknown;
 /// ```
 use serde_json::{Value, json};
-/// What: `HashMap` is a key-value table; `Path`/`PathBuf` are borrowed and owned paths.
-/// Why: The launcher is located below the project root.
+/// What:
+///  `HashMap` is a key-value table;
+///  `Path`/`PathBuf` are borrowed and owned paths.
+/// Why:
+///  The launcher is located below the project root.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,21 +38,27 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// Name of Helix's default server for the TypeScript family, which is replaced.
+/// Name of Helix's default server for the TypeScript family,
+///  which is replaced.
 const DEFAULT_SERVER: &str = "typescript-language-server";
 
 /// Name of the application's definition of the TypeScript 7 server.
 pub(super) const SERVER: &str = "typescript-native";
 
-/// The launcher a project's TypeScript package installs, relative to the project root.
+/// The launcher a project's TypeScript package installs,
+///  relative to the project root.
 const LAUNCHER: &str = "node_modules/typescript/bin/tsc";
 
 /// The package manifest that states the project's TypeScript version.
 const MANIFEST: &str = "node_modules/typescript/package.json";
 
-/// What: The settings the server needs before it returns inlay hints.
-/// Why: Measured in the integration spike: the server returned no hints until its settings held
-///      these Visual Studio Code style keys under `typescript.inlayHints`; the keys of Helix's
+/// What:
+///  The settings the server needs before it returns inlay hints.
+/// Why:
+///  Measured in the integration spike:
+///  the server returned no hints until its settings held
+///      these Visual Studio Code style keys under `typescript.inlayHints`;
+///  the keys of Helix's
 ///      `typescript-language-server` table produced none.
 ///
 /// In TS you'd write (pseudocode):
@@ -62,10 +80,14 @@ fn settings() -> Value {
     });
 }
 
-/// What: Add the TypeScript 7 server definition and point every language that used Helix's
-///       default TypeScript server at it. `&mut Configuration` lends the configuration for
+/// What:
+///  Add the TypeScript 7 server definition and point every language that used Helix's
+///       default TypeScript server at it.
+///  `&mut Configuration` lends the configuration for
 ///       modification.
-/// Why: The command is an absolute path below the project root, so it does not depend on the
+/// Why:
+///  The command is an absolute path below the project root,
+///  so it does not depend on the
 ///      process working directory the way a relative command would.
 ///
 /// In TS you'd write (pseudocode):
@@ -112,10 +134,17 @@ pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
     }
 }
 
-/// What: Find the project's TypeScript 7 launcher, or explain why there is none.
+/// What:
+///  Find the project's TypeScript 7 launcher,
+///  or explain why there is none.
 ///       `Result<PathBuf, String>` is the absolute launcher path or a user-facing reason.
-/// Why: A project without TypeScript, or with a version before 7, has no built-in language
-///      server; both are the missing-executable state, with a reason that names the remedy.
+/// Why:
+///  A project without TypeScript,
+///  or with a version before 7,
+///  has no built-in language
+///      server;
+///  both are the missing-executable state,
+///  with a reason that names the remedy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

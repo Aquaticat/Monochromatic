@@ -1,9 +1,13 @@
-//! Shared fixtures for Language integration tests: a child process per test, a scripted server,
+//! Shared fixtures for Language integration tests:
+//!  a child process per test,
+//!  a scripted server,
 //! and a polling probe around the worker handle.
 //!
 //! Helix derives every server root from the process working directory and keeps the first
-//! value it reads. A test that starts a server therefore runs its body in a child process whose
-//! working directory was set when it was spawned; the test process itself never changes directory.
+//! value it reads.
+//!  A test that starts a server therefore runs its body in a child process whose
+//! working directory was set when it was spawned;
+//!  the test process itself never changes directory.
 
 use helix_core::Rope;
 use ide_app::document::Document;
@@ -35,12 +39,16 @@ pub const SERVER: &str = "scripted-ls";
 /// Longest wait for any expected state.
 const PATIENCE: Duration = Duration::from_secs(20);
 
-/// When set in the environment, the child process prints the worker's debug log and helix-lsp's
-/// protocol log to standard error, with wall-clock times. An intermittent failure is diagnosed
+/// When set in the environment,
+///  the child process prints the worker's debug log and helix-lsp's
+/// protocol log to standard error,
+///  with wall-clock times.
+///  An intermittent failure is diagnosed
 /// from that log together with the scripted server's report.
 const LOG_VARIABLE: &str = "IDE_LANGUAGE_TEST_LOG";
 
-/// Install the opt-in log once per process; later probes of the same test find it installed.
+/// Install the opt-in log once per process;
+///  later probes of the same test find it installed.
 fn install_log() {
     if std::env::var_os(LOG_VARIABLE).is_none() {
         return;
@@ -54,18 +62,23 @@ fn install_log() {
     let _already_installed = ide_app::logging::install(filter, std::io::stderr, None);
 }
 
-/// Where the child process works: its project root, its working directory, and its `PWD`.
+/// Where the child process works:
+///  its project root,
+///  its working directory,
+///  and its `PWD`.
 pub struct Layout {
     /// Project root handed to the worker.
     pub root: PathBuf,
     /// Working directory of the child process.
     pub cwd: PathBuf,
-    /// Value of the `PWD` variable, which Helix prefers when it names the working directory;
+    /// Value of the `PWD` variable,
+    ///  which Helix prefers when it names the working directory;
     /// nothing removes the variable.
     pub pwd: Option<PathBuf>,
 }
 
-/// The usual layout: the project root is the working directory.
+/// The usual layout:
+///  the project root is the working directory.
 pub fn standard(base: &Path) -> Layout {
     let root = base.join("project");
     fs::create_dir(&root).expect("project directory");
@@ -76,13 +89,18 @@ pub fn standard(base: &Path) -> Layout {
     };
 }
 
-/// In the child process: the project root. In the test process: nothing.
+/// In the child process:
+///  the project root.
+///  In the test process:
+///  nothing.
 pub fn child_root() -> Option<PathBuf> {
     return std::env::var_os(ROOT_VARIABLE).map(PathBuf::from);
 }
 
-/// Run the named test again in a child process laid out by `layout`, and require it to pass.
-/// `test` is the full test name, including its module.
+/// Run the named test again in a child process laid out by `layout`,
+///  and require it to pass.
+/// `test` is the full test name,
+///  including its module.
 pub fn run_child(test: &str, layout: fn(&Path) -> Layout) {
     let directory = tempfile::tempdir().expect("test directory");
     let base = directory
@@ -113,7 +131,8 @@ pub fn run_child(test: &str, layout: fn(&Path) -> Layout) {
     assert!(status.success(), "child process of {test} failed: {status}");
 }
 
-/// The scratch directory beside the project, for report files and outside-project fixtures.
+/// The scratch directory beside the project,
+///  for report files and outside-project fixtures.
 pub fn scratch(root: &Path) -> PathBuf {
     let mut current = root;
     loop {
@@ -137,7 +156,8 @@ pub fn scripted(root: &Path, variables: &[(&str, &str)], timeout: u64) -> String
     return scripted_with_roots(root, variables, timeout, "[]");
 }
 
-/// Like `scripted`, with root-marker file names in TOML array syntax.
+/// Like `scripted`,
+///  with root-marker file names in TOML array syntax.
 pub fn scripted_with_roots(
     root: &Path,
     variables: &[(&str, &str)],
@@ -176,7 +196,8 @@ pub struct Probe {
     pub worker: LanguageWorker,
     /// Latest status seen.
     pub status: Arc<LanguageStatus>,
-    /// Every reply the fence let through, in arrival order.
+    /// Every reply the fence let through,
+    ///  in arrival order.
     pub replies: Vec<LanguageReply>,
     /// Latest diagnostics seen.
     pub diagnostics: Option<Arc<DiagnosticsSnapshot>>,
@@ -224,7 +245,8 @@ impl Probe {
         };
     }
 
-    /// Write `text` to `path` and display it, as the application does after reading a file.
+    /// Write `text` to `path` and display it,
+    ///  as the application does after reading a file.
     pub fn open(&mut self, path: &Path, text: &str) {
         fs::write(path, text).expect("source file");
         self.display(path, text);
@@ -289,7 +311,8 @@ impl Probe {
         }
     }
 
-    /// Poll until `done` holds, or fail with the last observed state.
+    /// Poll until `done` holds,
+    ///  or fail with the last observed state.
     pub fn until(&mut self, what: &str, done: impl Fn(&Probe) -> bool) {
         let start = Instant::now();
         loop {
@@ -343,7 +366,8 @@ impl Probe {
         return found;
     }
 
-    /// Every message of the displayed diagnostics, in group and position order.
+    /// Every message of the displayed diagnostics,
+    ///  in group and position order.
     pub fn messages(&self) -> Vec<String> {
         let mut found = Vec::new();
         if let Some(snapshot) = &self.diagnostics {
@@ -372,7 +396,8 @@ pub fn report(root: &Path) -> Vec<Value> {
     return lines;
 }
 
-/// Wait until the report satisfies `done`, and return it.
+/// Wait until the report satisfies `done`,
+///  and return it.
 pub fn report_until(root: &Path, what: &str, done: impl Fn(&[Value]) -> bool) -> Vec<Value> {
     let start = Instant::now();
     loop {
@@ -388,7 +413,8 @@ pub fn report_until(root: &Path, what: &str, done: impl Fn(&[Value]) -> bool) ->
     }
 }
 
-/// Methods the server received, in order.
+/// Methods the server received,
+///  in order.
 pub fn received(lines: &[Value]) -> Vec<String> {
     let mut methods = Vec::new();
     for line in lines {
@@ -399,7 +425,8 @@ pub fn received(lines: &[Value]) -> Vec<String> {
     return methods;
 }
 
-/// The server's latest copy of the document text, with the version it was sent under.
+/// The server's latest copy of the document text,
+///  with the version it was sent under.
 pub fn server_text(lines: &[Value]) -> Option<(i64, String)> {
     let mut latest = None;
     for line in lines {
@@ -424,7 +451,8 @@ pub fn server_text_until(root: &Path, expected: &str) -> Vec<Value> {
     );
 }
 
-/// Processes whose parent is this process, as `(pid, state letter, command name)`.
+/// Processes whose parent is this process,
+///  as `(pid, state letter, command name)`.
 pub fn children() -> Vec<(u32, char, String)> {
     let own = std::process::id();
     let mut found = Vec::new();
@@ -456,7 +484,8 @@ pub fn children() -> Vec<(u32, char, String)> {
     return found;
 }
 
-/// Wait until this process has no child left, alive or unreaped.
+/// Wait until this process has no child left,
+///  alive or unreaped.
 pub fn children_until_none() {
     let start = Instant::now();
     loop {

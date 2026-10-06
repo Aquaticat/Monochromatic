@@ -1,5 +1,7 @@
-//! What: Coverage-guided structured inputs for the native settings merge.
-//! Why: The existing JSONC generator supplies valid trees instead of relying on accidental valid byte strings.
+//! What:
+//!  Coverage-guided structured inputs for the native settings merge.
+//! Why:
+//!  The existing JSONC generator supplies valid trees instead of relying on accidental valid byte strings.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -7,7 +9,8 @@
 //! ```
 #![no_main]
 
-/// Import the existing structured generator, native parser and verified invariants.
+/// Import the existing structured generator,
+///  native parser and verified invariants.
 use jsonc_edit_fuzz::GeneratedDocument;
 use libfuzzer_sys::fuzz_target;
 use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};

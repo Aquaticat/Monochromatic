@@ -1,5 +1,8 @@
-//! What: Typed execution settings for the shipped Markdown rules.
-//! Why: File matching yields validated JSONC; rule dispatch should read a typed selection once
+//! What:
+//!  Typed execution settings for the shipped Markdown rules.
+//! Why:
+//!  File matching yields validated JSONC;
+//!  rule dispatch should read a typed selection once
 //! instead of reinterpreting option objects for every rule.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,10 @@
 //! type MarkdownRuleSettings = { headingIncrement?: Severity; /* ... */ lfsImageUrl?: { severity: Severity; exclude: PathPatterns } };
 //! ```
 
-/// Import the existing schema readers and validation; no second configuration grammar is added.
-/// Import the diagnostic severity, which intentionally has no Off variant.
+/// Import the existing schema readers and validation;
+///  no second configuration grammar is added.
+/// Import the diagnostic severity,
+///  which intentionally has no Off variant.
 /// Import the gitignore-syntax matcher the `exclude` option compiles to.
 use crate::{
     config_data::{key_text, strings, text, validate_data},
@@ -20,8 +25,11 @@ use crate::{
 /// Import the exact JSONC representation.
 use monochromatic_jsonc_edit::JsoncValue;
 
-/// What: The selected `markdown/lfs-image-url` rule with its compiled `exclude` option.
-/// Why: Patterns are compiled once per resolved configuration, and an invalid pattern is a setup
+/// What:
+///  The selected `markdown/lfs-image-url` rule with its compiled `exclude` option.
+/// Why:
+///  Patterns are compiled once per resolved configuration,
+///  and an invalid pattern is a setup
 /// error before any file is linted.
 ///
 /// In TS you'd write (pseudocode):
@@ -32,12 +40,17 @@ use monochromatic_jsonc_edit::JsoncValue;
 pub struct LfsSetting {
     /// Severity selected by matching configuration blocks.
     pub severity: Severity,
-    /// Gitignore-syntax patterns, relative to the repository root, of files the rule leaves alone.
+    /// Gitignore-syntax patterns,
+    ///  relative to the repository root,
+    ///  of files the rule leaves alone.
     pub exclude: PathPatterns,
 }
 
-/// What: Immutable Markdown rule selection; absence and explicit `off` both leave a rule disabled.
-/// Why: `Option<Severity>` makes "not selected" unrepresentable as a severity.
+/// What:
+///  Immutable Markdown rule selection;
+///  absence and explicit `off` both leave a rule disabled.
+/// Why:
+///  `Option<Severity>` makes "not selected" unrepresentable as a severity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,12 +82,15 @@ pub struct MarkdownRuleSettings {
     pub no_pipe_tables: Option<Severity>,
     /// `markdown/semantic-line-breaks`.
     pub semantic_line_breaks: Option<Severity>,
-    /// `markdown/lfs-image-url`, with its compiled exclusions.
+    /// `markdown/lfs-image-url`,
+    ///  with its compiled exclusions.
     pub lfs_image_url: Option<LfsSetting>,
 }
 
-/// What: Read a rule's severity and `exclude` list after ordinary schema validation.
-/// Why: The outer `Option` distinguishes a missing severity (a configuration error) from `off`.
+/// What:
+///  Read a rule's severity and `exclude` list after ordinary schema validation.
+/// Why:
+///  The outer `Option` distinguishes a missing severity (a configuration error) from `off`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -112,8 +128,12 @@ fn options(setting: &JsoncValue) -> Result<(Option<Severity>, Vec<String>), Conf
     return Ok((severity, exclude));
 }
 
-/// What: Convert merged rules into a typed Markdown selection.
-/// Why: Rules of other languages are skipped, unselected rules stay disabled, and a Markdown rule
+/// What:
+///  Convert merged rules into a typed Markdown selection.
+/// Why:
+///  Rules of other languages are skipped,
+///  unselected rules stay disabled,
+///  and a Markdown rule
 /// without an execution adapter is an error instead of a silently unchecked rule.
 ///
 /// In TS you'd write (pseudocode):

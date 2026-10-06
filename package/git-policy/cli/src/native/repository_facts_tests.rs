@@ -1,5 +1,9 @@
-//! What: The real-Git facts provider against disposable repositories, with its query count.
-//! Why: Every rule that needs a repository fact trusts these answers, and the count is the
+//! What:
+//!  The real-Git facts provider against disposable repositories,
+//!  with its query count.
+//! Why:
+//!  Every rule that needs a repository fact trusts these answers,
+//!  and the count is the
 //!      evidence that one invocation asks Git once for the location and never for a fact
 //!      no rule requested.
 //!
@@ -9,7 +13,8 @@
 //! ```
 #![cfg(unix)]
 
-/// The provider under test, the fact types and the real-Git fixture helpers.
+/// The provider under test,
+///  the fact types and the real-Git fixture helpers.
 use super::{GitFacts, RepositoryFacts, git_facts, head_file_exists};
 use crate::command_test_support::{
     git, git_status, repository, repository_with_tracked_file, start_conflicted_merge,
@@ -37,7 +42,10 @@ fn located(directories: &[&Path]) -> RepositoryLocation {
     return facts_in(directories).location().expect("location query");
 }
 
-/// Real Git reports the prefix for the top level, a nested directory, a chained `-C`, a link and a linked worktree.
+/// Real Git reports the prefix for the top level,
+///  a nested directory,
+///  a chained `-C`,
+///  a link and a linked worktree.
 #[test]
 fn location_is_what_real_git_reports() {
     let root: PathBuf = fixture("facts-location");
@@ -108,7 +116,8 @@ fn location_is_what_real_git_reports() {
     remove(root.as_path());
 }
 
-/// Outside a repository, in a bare repository and inside `.git` there is no worktree and an empty prefix.
+/// Outside a repository,
+///  in a bare repository and inside `.git` there is no worktree and an empty prefix.
 #[test]
 fn location_without_a_worktree_has_an_empty_prefix() {
     let root: PathBuf = fixture("facts-absent");
@@ -144,7 +153,9 @@ fn location_without_a_worktree_has_an_empty_prefix() {
     remove(root.as_path());
 }
 
-/// A provider starts no process until asked, asks for the location once, and counts every other query.
+/// A provider starts no process until asked,
+///  asks for the location once,
+///  and counts every other query.
 #[test]
 fn queries_are_lazy_and_the_location_is_asked_once() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("facts-count");
@@ -174,7 +185,10 @@ fn queries_are_lazy_and_the_location_is_asked_once() {
     remove(directory.as_path());
 }
 
-/// The index state follows `git diff-index --quiet --cached HEAD`: equal, different, or unanswerable.
+/// The index state follows `git diff-index --quiet --cached HEAD`:
+///  equal,
+///  different,
+///  or unanswerable.
 #[test]
 fn index_state_is_what_real_git_reports() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("facts-index");
@@ -209,7 +223,9 @@ fn index_state_is_what_real_git_reports() {
     remove(directory.as_path());
 }
 
-/// A conflicted merge, a stopped cherry-pick and a stopped revert each await their commit; a clean repository does not.
+/// A conflicted merge,
+///  a stopped cherry-pick and a stopped revert each await their commit;
+///  a clean repository does not.
 #[test]
 fn sequencer_state_is_what_the_head_files_say() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("facts-sequencer");
@@ -313,7 +329,9 @@ fn remote_guess_is_what_the_refs_say() {
     remove(directory.as_path());
 }
 
-/// Every query is one process: the caller's global options first, the overlay in its environment.
+/// Every query is one process:
+///  the caller's global options first,
+///  the overlay in its environment.
 #[test]
 fn each_fact_is_one_process_with_the_global_prefix_and_overlay() {
     let root: PathBuf = fixture("facts-probe");
@@ -357,7 +375,8 @@ fn each_fact_is_one_process_with_the_global_prefix_and_overlay() {
     remove(root.as_path());
 }
 
-/// A Git that cannot be started is a failure naming the executable and the fact, for every fact.
+/// A Git that cannot be started is a failure naming the executable and the fact,
+///  for every fact.
 #[test]
 fn an_unstartable_git_fails_every_fact() {
     let root: PathBuf = fixture("facts-missing");
@@ -385,7 +404,8 @@ fn an_unstartable_git_fails_every_fact() {
     remove(root.as_path());
 }
 
-/// Output the sequencer query never produces is a failure, not a guess.
+/// Output the sequencer query never produces is a failure,
+///  not a guess.
 #[test]
 fn uninterpretable_answers_are_failures() {
     let root: PathBuf = fixture("facts-garbled");
@@ -412,7 +432,9 @@ fn uninterpretable_answers_are_failures() {
     remove(root.as_path());
 }
 
-/// A head file is present whatever it is, even a link to nowhere; a missing or empty path is absent.
+/// A head file is present whatever it is,
+///  even a link to nowhere;
+///  a missing or empty path is absent.
 #[test]
 fn head_file_presence_does_not_follow_links() {
     let root: PathBuf = fixture("facts-head-file");

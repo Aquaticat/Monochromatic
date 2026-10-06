@@ -1,7 +1,12 @@
-//! What: Gitignore-syntax path matching for the LFS rule's two pattern lists.
-//! Why: Root `.gitattributes` `filter=lfs` lines decide which files are LFS-tracked, and the rule's
-//! `exclude` option names files the rule leaves alone. The incumbent evaluates both with one
-//! gitignore matcher, so both keep last-match-wins and excluded-parent semantics here.
+//! What:
+//!  Gitignore-syntax path matching for the LFS rule's two pattern lists.
+//! Why:
+//!  Root `.gitattributes` `filter=lfs` lines decide which files are LFS-tracked,
+//!  and the rule's
+//! `exclude` option names files the rule leaves alone.
+//!  The incumbent evaluates both with one
+//! gitignore matcher,
+//!  so both keep last-match-wins and excluded-parent semantics here.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,14 +15,18 @@
 
 /// Import the shared ECMAScript trim so attribute lines split as the incumbent splits them.
 use crate::markdown_lfs_config::js_trim;
-/// Import the walker family's gitignore compiler and match outcome, already a dependency of file discovery.
+/// Import the walker family's gitignore compiler and match outcome,
+///  already a dependency of file discovery.
 use ignore::{
     Match,
     gitignore::{Gitignore, GitignoreBuilder},
 };
 
-/// What: A rejected pattern, naming its text and the compiler's reason.
-/// Why: A pattern that cannot compile must not silently match nothing.
+/// What:
+///  A rejected pattern,
+///  naming its text and the compiler's reason.
+/// Why:
+///  A pattern that cannot compile must not silently match nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,8 +49,10 @@ impl std::fmt::Display for PathPatternError {
 /// Mark the rejection as a standard error for application error handling.
 impl std::error::Error for PathPatternError {}
 
-/// What: A compiled ordered pattern list over forward-slash paths relative to the repository root.
-/// Why: Compiling once lets every image target and every linted file reuse the same matcher.
+/// What:
+///  A compiled ordered pattern list over forward-slash paths relative to the repository root.
+/// Why:
+///  Compiling once lets every image target and every linted file reuse the same matcher.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,20 +60,28 @@ impl std::error::Error for PathPatternError {}
 /// ```
 #[derive(Clone, Debug)]
 pub struct PathPatterns {
-    /// Compiled globs in authored order; a later match overrides an earlier one.
+    /// Compiled globs in authored order;
+    ///  a later match overrides an earlier one.
     matcher: Gitignore,
 }
 
-/// What: Build and query one pattern list.
-/// Why: Callers never see glob compilation or parent-directory walking.
+/// What:
+///  Build and query one pattern list.
+/// Why:
+///  Callers never see glob compilation or parent-directory walking.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// new PathPatterns(patterns).matches(path)
 /// ```
 impl PathPatterns {
-    /// What: Compile patterns in order, each in gitignore syntax (`!` negates, a trailing `/` names a directory).
-    /// Why: The empty root keeps candidate paths exactly as given; they are already repository-relative.
+    /// What:
+    ///  Compile patterns in order,
+    ///  each in gitignore syntax (`!` negates,
+    ///  a trailing `/` names a directory).
+    /// Why:
+    ///  The empty root keeps candidate paths exactly as given;
+    ///  they are already repository-relative.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -88,9 +107,13 @@ impl PathPatterns {
         }
     }
 
-    /// What: Decide whether a file path is selected, checking each ancestor directory from the top first.
-    /// Why: In gitignore semantics a file under an excluded directory stays excluded even if a later
-    /// pattern negates the file itself; only when no ancestor is excluded does the file's own last match decide.
+    /// What:
+    ///  Decide whether a file path is selected,
+    ///  checking each ancestor directory from the top first.
+    /// Why:
+    ///  In gitignore semantics a file under an excluded directory stays excluded even if a later
+    /// pattern negates the file itself;
+    ///  only when no ancestor is excluded does the file's own last match decide.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -120,8 +143,10 @@ impl PathPatterns {
     }
 }
 
-/// What: Split one attribute line on runs of spaces and tabs.
-/// Why: The attribute grammar separates a pattern from its attributes by blanks only.
+/// What:
+///  Split one attribute line on runs of spaces and tabs.
+/// Why:
+///  The attribute grammar separates a pattern from its attributes by blanks only.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -137,9 +162,13 @@ fn split_on_blanks(line: &str) -> Vec<&str> {
     return tokens;
 }
 
-/// What: Translate `.gitattributes` text into the gitignore-syntax pattern list of LFS-tracked paths.
-/// Why: A line that sets `filter=lfs` selects its pattern; a later line that unsets the filter
-/// (`-filter` or `!filter`) becomes a negation, matching git's last-match-wins attribute resolution.
+/// What:
+///  Translate `.gitattributes` text into the gitignore-syntax pattern list of LFS-tracked paths.
+/// Why:
+///  A line that sets `filter=lfs` selects its pattern;
+///  a later line that unsets the filter
+/// (`-filter` or `!filter`) becomes a negation,
+///  matching git's last-match-wins attribute resolution.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,14 +1,19 @@
 //! Derive the find bar's count text and the active match from accepted results and the selection.
 
-/// The displayed document, its identity, and the accepted results live in one source state.
+/// The displayed document,
+///  its identity,
+///  and the accepted results live in one source state.
 use crate::native::State;
 /// A match is a source character range.
 use ide_app::find::FindRange;
 /// Count text and active-match rules are pure library functions with their own tests.
 use ide_app::find_navigation::{FindStatus, active, positioned_matches, status};
 
-/// What: `Option<T>` is a value or nothing; here "nothing" has a meaning for each field.
-/// Why: Rendering decides in one place what the bar says and which match is drawn as active.
+/// What:
+///  `Option<T>` is a value or nothing;
+///  here "nothing" has a meaning for each field.
+/// Why:
+///  Rendering decides in one place what the bar says and which match is drawn as active.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,7 +22,8 @@ use ide_app::find_navigation::{FindStatus, active, positioned_matches, status};
 pub(in crate::native) struct Presented {
     /// `None` keeps the previous count text while results for a new file or revision are pending.
     pub(in crate::native) status: Option<FindStatus>,
-    /// The match exactly covered by the selection, drawn as the selection with a heavier boundary.
+    /// The match exactly covered by the selection,
+    ///  drawn as the selection with a heavier boundary.
     pub(in crate::native) active: Option<FindRange>,
 }
 

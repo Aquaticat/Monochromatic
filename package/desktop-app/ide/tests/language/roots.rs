@@ -1,4 +1,6 @@
-//! Workspace roots: the project root is the only acceptable server root, whatever the working
+//! Workspace roots:
+//!  the project root is the only acceptable server root,
+//!  whatever the working
 //! directory and the surrounding tree look like.
 
 use crate::support::{self, Layout, Probe, SERVER};
@@ -74,7 +76,8 @@ fn nested(base: &Path) -> Layout {
     };
 }
 
-/// Without a root marker Helix would root the server at the enclosing tree; that is refused.
+/// Without a root marker Helix would root the server at the enclosing tree;
+///  that is refused.
 #[test]
 fn nested_project_without_root_marker_is_refused() {
     let Some(root) = support::child_root() else {
@@ -105,7 +108,8 @@ fn nested_project_without_root_marker_is_refused() {
     );
 }
 
-/// With a root marker in the project, the project is the root even inside a larger tree,
+/// With a root marker in the project,
+///  the project is the root even inside a larger tree,
 /// and even when the tree's top has the same marker.
 #[test]
 fn nested_project_with_root_marker_is_rooted_at_the_project() {
@@ -135,7 +139,8 @@ fn nested_project_with_root_marker_is_rooted_at_the_project() {
     );
 }
 
-/// A marker only in a subdirectory roots the server there, which is still inside the project.
+/// A marker only in a subdirectory roots the server there,
+///  which is still inside the project.
 #[test]
 fn marker_in_a_subdirectory_roots_the_server_inside_the_project() {
     let Some(root) = support::child_root() else {
@@ -169,8 +174,10 @@ fn linked(base: &Path) -> Layout {
     };
 }
 
-/// Helix then spells the working directory through the link; the worker follows that spelling
-/// for the root and the document address, and still recognizes the document by resolved path.
+/// Helix then spells the working directory through the link;
+///  the worker follows that spelling
+/// for the root and the document address,
+///  and still recognizes the document by resolved path.
 #[test]
 fn project_reached_through_a_linked_working_directory_is_rooted_at_the_project() {
     let Some(root) = support::child_root() else {

@@ -1,22 +1,40 @@
-//! Native language navigation: go to definition, references, and hover through the Language module.
+//! Native language navigation:
+//!  go to definition,
+//!  references,
+//!  and hover through the Language module.
 //!
-//! This module owns the window's one `LanguageWorker`. A 20 ms timer keeps the worker told about
-//! the displayed file, polls status, replies, and snapshots, and applies a reply only while it
-//! still answers the request it was sent for and describes the displayed text. Accepted inlay hints
-//! and diagnostics go into `State::annotations`, the library's `ide_app::annotation::Annotations`,
-//! which the source renderer reads with the stamp of the text it draws; this module does not draw them.
+//! This module owns the window's one `LanguageWorker`.
+//!  A 20 ms timer keeps the worker told about
+//! the displayed file,
+//!  polls status,
+//!  replies,
+//!  and snapshots,
+//!  and applies a reply only while it
+//! still answers the request it was sent for and describes the displayed text.
+//!  Accepted inlay hints
+//! and diagnostics go into `State::annotations`,
+//!  the library's `ide_app::annotation::Annotations`,
+//! which the source renderer reads with the stamp of the text it draws;
+//!  this module does not draw them.
 
-/// One source owner, one window, and the navigation state that opens other files.
+/// One source owner,
+///  one window,
+///  and the navigation state that opens other files.
 use super::{AppWindow, State, navigation::Navigation};
-/// What: `anyhow::Result<T>` is a value or an error with a readable chain of causes.
-/// Why: The worker may fail to start; the window still opens and explains it when asked.
+/// What:
+///  `anyhow::Result<T>` is a value or an error with a readable chain of causes.
+/// Why:
+///  The worker may fail to start;
+///  the window still opens and explains it when asked.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Result<T> = T; // a failure is a thrown Error
 /// ```
 use anyhow::Result;
-/// The handle, the identities results carry, and the states and replies it reports.
+/// The handle,
+///  the identities results carry,
+///  and the states and replies it reports.
 use ide_app::language::{
     LanguageWorker,
     identity::{DocumentStamp, ServerIdentity},
@@ -25,10 +43,15 @@ use ide_app::language::{
 };
 /// Weak window handles and a retained repeating timer.
 use slint::{ComponentHandle, Timer, TimerMode};
-/// What: `Rc<RefCell<T>>` is one shared, run-time borrow-checked owner on this thread; `Arc` is a
-///       thread-safe shared pointer; `Path` and `PathBuf` are borrowed and owned paths;
+/// What:
+///  `Rc<RefCell<T>>` is one shared,
+///  run-time borrow-checked owner on this thread;
+///  `Arc` is a
+///       thread-safe shared pointer;
+///  `Path` and `PathBuf` are borrowed and owned paths;
 ///       `Duration` and `Instant` are a time span and a point on a monotonic clock.
-/// Why: The timer and every callback change the same language state on the interface thread.
+/// Why:
+///  The timer and every callback change the same language state on the interface thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -42,7 +65,11 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Window callbacks: keys, pointer, list choices, and dismissal.
+/// Window callbacks:
+///  keys,
+///  pointer,
+///  list choices,
+///  and dismissal.
 mod actions;
 /// The native checks every reply passes before it is applied.
 mod guard;
@@ -50,47 +77,71 @@ mod guard;
 mod hover_text;
 /// Sentences for requests that cannot be satisfied.
 mod message;
-/// What a finished request does: navigate, list, show, or explain.
+/// What a finished request does:
+///  navigate,
+///  list,
+///  show,
+///  or explain.
 mod outcome;
 /// The resting pointer and the character under it.
 mod pointer;
-/// Polling: status, replies, snapshots, and due requests.
+/// Polling:
+///  status,
+///  replies,
+///  snapshots,
+///  and due requests.
 mod poll;
-/// The popup and the location list: showing and dismissing.
+/// The popup and the location list:
+///  showing and dismissing.
 mod surface;
 /// Telling the worker about the displayed file and its visible lines.
 mod sync;
-/// Places a target names, and opening them.
+/// Places a target names,
+///  and opening them.
 mod targets;
 
 /// The file-open path places the caret at a target once its file is shown.
 pub(super) use targets::{Jump, place};
 
-/// Server hints and diagnostics painted by the poll, and the problem card yielding to the popup.
+/// Server hints and diagnostics painted by the poll,
+///  and the problem card yielding to the popup.
 #[cfg(test)]
 mod annotation_wiring_tests;
-/// Ctrl+B, Ctrl+click, and the references fallback through real window events.
+/// Ctrl+B,
+///  Ctrl+click,
+///  and the references fallback through real window events.
 #[cfg(test)]
 mod definition_tests;
 /// Reply admission rules on fabricated replies.
 #[cfg(test)]
 mod guard_tests;
-/// Hover by key and pointer, its placement, and every dismissal.
+/// Hover by key and pointer,
+///  its placement,
+///  and every dismissal.
 #[cfg(test)]
 mod hover_tests;
 /// Message sentences and hover text rendering without a window.
 #[cfg(test)]
 mod message_tests;
-/// Server states, stale replies, and closing while a request is pending.
+/// Server states,
+///  stale replies,
+///  and closing while a request is pending.
 #[cfg(test)]
 mod state_tests;
-/// A complete reader with the scripted language server, shared by the window tests.
+/// A complete reader with the scripted language server,
+///  shared by the window tests.
 #[cfg(test)]
 mod test_support;
 
-/// What: The user action a request serves. A plain `enum` is a closed set of names.
-/// Why: The same reply leads to different results: Ctrl+B falls back to references, a
-///      Ctrl+click does not, and a resting pointer never shows a failure.
+/// What:
+///  The user action a request serves.
+///  A plain `enum` is a closed set of names.
+/// Why:
+///  The same reply leads to different results:
+///  Ctrl+B falls back to references,
+///  a
+///      Ctrl+click does not,
+///  and a resting pointer never shows a failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -102,7 +153,8 @@ pub(super) enum Action {
     Definition,
     /// Ctrl+click on a character.
     PointerDefinition,
-    /// Ctrl+B at a definition: its references.
+    /// Ctrl+B at a definition:
+    ///  its references.
     References,
     /// Ctrl+Q at the caret.
     Hover,
@@ -121,12 +173,14 @@ impl Action {
         };
     }
 
-    /// True for an action the user asked for; only those explain a failure.
+    /// True for an action the user asked for;
+    ///  only those explain a failure.
     pub(super) fn explicit(self) -> bool {
         return self != Self::PointerHover;
     }
 
-    /// The input that repeats this action, as a message names it.
+    /// The input that repeats this action,
+    ///  as a message names it.
     pub(super) fn key(self) -> &'static str {
         return match self {
             Self::Definition | Self::References => "Ctrl+B",
@@ -136,9 +190,15 @@ impl Action {
     }
 }
 
-/// What: One request the window waits for. `Option<u64>` is the request number, or nothing
-///       before the worker accepted it; the list holds each server's answer with its name.
-/// Why: Replies are matched by number and stamp, and a request with several servers finishes
+/// What:
+///  One request the window waits for.
+///  `Option<u64>` is the request number,
+///  or nothing
+///       before the worker accepted it;
+///  the list holds each server's answer with its name.
+/// Why:
+///  Replies are matched by number and stamp,
+///  and a request with several servers finishes
 ///      only when the last of them answered.
 ///
 /// In TS you'd write (pseudocode):
@@ -154,7 +214,8 @@ pub(super) struct Pending {
     pub(super) stamp: DocumentStamp,
     /// Character offset asked about.
     pub(super) position: usize,
-    /// Number the worker's replies carry; nothing until the request was queued.
+    /// Number the worker's replies carry;
+    ///  nothing until the request was queued.
     pub(super) number: Option<u64>,
     /// Every accepted answer so far.
     pub(super) outcomes: Vec<(Option<ServerIdentity>, RequestOutcome)>,
@@ -164,21 +225,26 @@ pub(super) struct Pending {
 
 /// What the window's language state holds between ticks.
 pub(super) struct Language {
-    /// The handle; nothing after it stopped or after the window closed.
+    /// The handle;
+    ///  nothing after it stopped or after the window closed.
     worker: Option<LanguageWorker>,
-    /// Why language support is unavailable, once it is.
+    /// Why language support is unavailable,
+    ///  once it is.
     failure: Option<String>,
-    /// Canonical project root, for location labels.
+    /// Canonical project root,
+    ///  for location labels.
     root: PathBuf,
     /// Displayed text the worker was last told about.
     synced: Option<DocumentStamp>,
-    /// An explicit action asked to display the file again, so the worker re-resolves its servers.
+    /// An explicit action asked to display the file again,
+    ///  so the worker re-resolves its servers.
     reopen: bool,
     /// Latest status for the displayed file.
     status: Arc<LanguageStatus>,
     /// The request of the latest key or Ctrl+click action.
     action: Option<Pending>,
-    /// The request of the resting pointer, kept apart so hovering never replaces an action.
+    /// The request of the resting pointer,
+    ///  kept apart so hovering never replaces an action.
     hover: Option<Pending>,
     /// What is on screen.
     shown: surface::Shown,
@@ -188,7 +254,9 @@ pub(super) struct Language {
     hints: sync::HintLines,
 }
 
-/// The running binding: the timer and the shared state, closed explicitly at window shutdown.
+/// The running binding:
+///  the timer and the shared state,
+///  closed explicitly at window shutdown.
 pub(super) struct LanguageBinding {
     /// Polls every 20 ms while it lives.
     timer: Timer,
@@ -198,8 +266,12 @@ pub(super) struct LanguageBinding {
 
 /// Shutdown.
 impl LanguageBinding {
-    /// What: Stop polling and drop the worker, which stops every server and waits up to about a second.
-    /// Why: Called after the window closed, so the wait never freezes a visible window.
+    /// What:
+    ///  Stop polling and drop the worker,
+    ///  which stops every server and waits up to about a second.
+    /// Why:
+    ///  Called after the window closed,
+    ///  so the wait never freezes a visible window.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -215,9 +287,13 @@ impl LanguageBinding {
     }
 }
 
-/// What: Bind the language callbacks and start polling. `worker` is the started handle or the
+/// What:
+///  Bind the language callbacks and start polling.
+///  `worker` is the started handle or the
 ///       reason it could not start.
-/// Why: A worker that failed to start leaves every other feature working; the reason is shown
+/// Why:
+///  A worker that failed to start leaves every other feature working;
+///  the reason is shown
 ///      when the user asks for a language feature.
 ///
 /// In TS you'd write (pseudocode):

@@ -1,16 +1,23 @@
-//! One bounded source-read/diff job at a time, outside the native event loop.
+//! One bounded source-read/diff job at a time,
+//!  outside the native event loop.
 
-/// Snapshots share immutable rope chunks; replies carry only prepared changes.
+/// Snapshots share immutable rope chunks;
+///  replies carry only prepared changes.
 use crate::{
     document::{Document, Reload},
     source_style::SourceStyles,
     syntax::SyntaxEngine,
     workspace::Workspace,
 };
-/// Preserve worker-start, request, and unexpected-disconnect diagnostics.
+/// Preserve worker-start,
+///  request,
+///  and unexpected-disconnect diagnostics.
 use anyhow::{Context, Result, bail};
-/// What: Channels transfer owned messages between threads; capacity one bounds queued work.
-/// Why: UI input remains independent of filesystem reads and Helix diff computation.
+/// What:
+///  Channels transfer owned messages between threads;
+///  capacity one bounds queued work.
+/// Why:
+///  UI input remains independent of filesystem reads and Helix diff computation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,21 +31,26 @@ use std::{
 
 /// A file generation prevents applying an old file's result after navigation.
 pub struct ReloadRequest {
-    /// Source target supplied by the UI, never inferred from a background result.
+    /// Source target supplied by the UI,
+    ///  never inferred from a background result.
     pub path: PathBuf,
     /// Displayed base revision used by correspondence.
     pub snapshot: Document,
-    /// Monotonic file-open identity, separate from each document's revision.
+    /// Monotonic file-open identity,
+    ///  separate from each document's revision.
     pub generation: u64,
-    /// Request initial/retried classification even without a text change; changed source always classifies.
+    /// Request initial/retried classification even without a text change;
+    ///  changed source always classifies.
     pub highlight_unchanged: bool,
 }
 
 /// Classifications identify the exact source revision they describe.
 pub struct SyntaxReply {
-    /// Expected revision after accepting the associated reload, or the unchanged revision.
+    /// Expected revision after accepting the associated reload,
+    ///  or the unchanged revision.
     pub revision: u64,
-    /// None means unrecognized plain text; missing parser assets remain an error.
+    /// None means unrecognized plain text;
+    ///  missing parser assets remain an error.
     pub result: Result<Option<SourceStyles>>,
 }
 
@@ -46,9 +58,11 @@ pub struct SyntaxReply {
 pub struct ReloadReply {
     /// File-open generation that requested this work.
     pub generation: u64,
-    /// Resolved project-open target or the existing refresh target; absent after resolution failure.
+    /// Resolved project-open target or the existing refresh target;
+    ///  absent after resolution failure.
     pub resolved_path: Option<PathBuf>,
-    /// Prepared change or unchanged result; failure leaves displayed source intact.
+    /// Prepared change or unchanged result;
+    ///  failure leaves displayed source intact.
     pub result: Result<Option<Reload>>,
     /// Present for changed source and explicitly requested unchanged-source classification.
     pub syntax: Option<SyntaxReply>,
@@ -58,7 +72,8 @@ pub struct ReloadReply {
 struct QueuedRead {
     /// Source snapshot and file-open identity.
     request: ReloadRequest,
-    /// Present only for a new project-relative open; ordinary refreshes retain their accepted path.
+    /// Present only for a new project-relative open;
+    ///  ordinary refreshes retain their accepted path.
     workspace: Option<Workspace>,
 }
 
@@ -135,7 +150,8 @@ impl ReloadWorker {
         });
     }
 
-    /// Refresh an already accepted source path; false means the worker still owns earlier work.
+    /// Refresh an already accepted source path;
+    ///  false means the worker still owns earlier work.
     pub fn request(&mut self, request: ReloadRequest) -> Result<bool> {
         // None retains the existing accepted target rather than adding another project-path lookup.
         return self.send(QueuedRead {
@@ -178,7 +194,8 @@ impl ReloadWorker {
         return self.busy;
     }
 
-    /// Poll without blocking the native event loop; None means no reply yet.
+    /// Poll without blocking the native event loop;
+    ///  None means no reply yet.
     pub fn try_take(&mut self) -> Result<Option<ReloadReply>> {
         match self.replies.try_recv() {
             Ok(reply) => {
@@ -205,7 +222,8 @@ impl ReloadWorker {
 #[path = "reload_worker_tests.rs"]
 mod tests;
 
-/// Close input before joining, allowing the last bounded reply to complete.
+/// Close input before joining,
+///  allowing the last bounded reply to complete.
 impl Drop for ReloadWorker {
     /// End the owned thread without leaving a blocked reply sender behind.
     fn drop(&mut self) {

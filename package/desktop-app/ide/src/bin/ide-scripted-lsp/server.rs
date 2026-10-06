@@ -1,16 +1,25 @@
-//! Request and notification handling: one blocking read loop on the main thread.
+//! Request and notification handling:
+//!  one blocking read loop on the main thread.
 
 /// Text mirroring and position arithmetic.
 use crate::document::{apply_change, line_at, offset_at};
-/// Framing, the report, and pending client replies.
+/// Framing,
+///  the report,
+///  and pending client replies.
 use crate::framing::{Wire, read_message};
 /// Settings of this run.
 use crate::script::{Hover, Init, Script};
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
-/// What: `HashMap` is a key-value table; `Arc` is a thread-safe shared pointer (siblings: `Rc`
-///       for one thread, `Box` for one owner); `thread` starts helper threads.
-/// Why: A delayed hover answer and the client probe must not block the read loop.
+/// What:
+///  `HashMap` is a key-value table;
+///  `Arc` is a thread-safe shared pointer (siblings:
+///  `Rc`
+///       for one thread,
+///  `Box` for one owner);
+///  `thread` starts helper threads.
+/// Why:
+///  A delayed hover answer and the client probe must not block the read loop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +27,13 @@ use serde_json::{Value, json};
 /// ```
 use std::{collections::HashMap, io, sync::Arc, thread, time::Duration};
 
-/// What: The loop's own state. `String` owns its text (sibling: borrowed `&str`).
-/// Why: Only the main thread reads and edits documents, so no lock is needed for them.
+/// What:
+///  The loop's own state.
+///  `String` owns its text (sibling:
+///  borrowed `&str`).
+/// Why:
+///  Only the main thread reads and edits documents,
+///  so no lock is needed for them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,7 +42,9 @@ use std::{collections::HashMap, io, sync::Arc, thread, time::Duration};
 struct Session {
     /// Settings of this run.
     script: Script,
-    /// Shared output stream, report, and reply table.
+    /// Shared output stream,
+    ///  report,
+    ///  and reply table.
     wire: Arc<Wire>,
     /// Text of every open document by address.
     documents: HashMap<String, String>,
@@ -70,8 +86,12 @@ fn capabilities(script: &Script) -> Value {
 
 /// Session behavior.
 impl Session {
-    /// What: Send a message, turning a write failure into a line on standard error.
-    /// Why: A closed pipe ends the loop at the next read; one failed write needs no other handling.
+    /// What:
+    ///  Send a message,
+    ///  turning a write failure into a line on standard error.
+    /// Why:
+    ///  A closed pipe ends the loop at the next read;
+    ///  one failed write needs no other handling.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -83,10 +103,19 @@ impl Session {
         }
     }
 
-    /// What: Sleep once, on the read loop itself, before the first message of the scripted
-    ///       method is handled. `&mut self` allows remembering that the stall happened.
-    /// Why: Unlike a delayed hover answer, which a helper thread sends late, this holds back
-    ///      everything: the message itself and all the client sends after it wait unread, so
+    /// What:
+    ///  Sleep once,
+    ///  on the read loop itself,
+    ///  before the first message of the scripted
+    ///       method is handled.
+    ///  `&mut self` allows remembering that the stall happened.
+    /// Why:
+    ///  Unlike a delayed hover answer,
+    ///  which a helper thread sends late,
+    ///  this holds back
+    ///      everything:
+    ///  the message itself and all the client sends after it wait unread,
+    ///  so
     ///      a request sent meanwhile can pass its timeout before the server reads it.
     ///
     /// In TS you'd write (pseudocode):
@@ -101,7 +130,9 @@ impl Session {
         thread::sleep(Duration::from_millis(self.script.stall));
     }
 
-    /// Record the server's copy of a document and, when configured, push diagnostics that quote it.
+    /// Record the server's copy of a document and,
+    ///  when configured,
+    ///  push diagnostics that quote it.
     fn publish(&self, uri: &str, version: &Value) {
         // `get` returns `Option<&String>`; `map_or` substitutes empty text for an unknown document.
         let text = self
@@ -129,8 +160,14 @@ impl Session {
         self.send(json!({ "method": "textDocument/publishDiagnostics", "params": params }));
     }
 
-    /// What: Answer a hover request according to the script. `&mut self` allows counting requests.
-    /// Why: Hover is the request tests use for delay, crash, supersession, and silence.
+    /// What:
+    ///  Answer a hover request according to the script.
+    ///  `&mut self` allows counting requests.
+    /// Why:
+    ///  Hover is the request tests use for delay,
+    ///  crash,
+    ///  supersession,
+    ///  and silence.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -322,9 +359,13 @@ impl Session {
     }
 }
 
-/// What: Run until the client closes standard input or sends `exit`. `io::Result<()>` is success
+/// What:
+///  Run until the client closes standard input or sends `exit`.
+///  `io::Result<()>` is success
 ///       without a value or an I/O error.
-/// Why: Every received message is recorded before it is handled, so the report shows the exact
+/// Why:
+///  Every received message is recorded before it is handled,
+///  so the report shows the exact
 ///      order the client produced.
 ///
 /// In TS you'd write (pseudocode):

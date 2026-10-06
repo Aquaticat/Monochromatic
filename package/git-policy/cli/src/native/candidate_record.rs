@@ -1,9 +1,17 @@
-//! What: Parse the NUL-delimited raw records of `git diff-index` and `git diff-tree`.
-//! Why: One listing process names every changed path with its mode, object and change
-//!      kind, so no per-path Git process is ever needed. Pathnames are kept as the raw
-//!      bytes Git printed; they are never decoded.
+//! What:
+//!  Parse the NUL-delimited raw records of `git diff-index` and `git diff-tree`.
+//! Why:
+//!  One listing process names every changed path with its mode,
+//!  object and change
+//!      kind,
+//!  so no per-path Git process is ever needed.
+//!  Pathnames are kept as the raw
+//!      bytes Git printed;
+//!  they are never decoded.
 //!
-//! Git 2.56.0 (`Documentation/diff-format.adoc`, "RAW OUTPUT FORMAT") prints, with `-z`:
+//! Git 2.56.0 (`Documentation/diff-format.adoc`,
+//!  "RAW OUTPUT FORMAT") prints,
+//!  with `-z`:
 //! `:<old mode> SP <new mode> SP <old oid> SP <new oid> SP <status> NUL <path> NUL`.
 //!
 //! In TS you'd write (pseudocode):
@@ -13,12 +21,17 @@
 
 /// Import the layer's failure type and its closed list of causes.
 use super::candidate_error::{CandidateError, CandidateFailure};
-/// Import the validated object name, the candidate modes and their parsers.
+/// Import the validated object name,
+///  the candidate modes and their parsers.
 use super::candidate_object::{CandidateMode, ObjectId, mode_from_git, parse_object_id};
 
-/// What: How a path differs from the baseline it was compared with.
-///       `#[derive(...)]` generates copying, debug printing and `==`.
-/// Why:  A deleted path has no content to read, and policies may treat new files
+/// What:
+///  How a path differs from the baseline it was compared with.
+///       `#[derive(...)]` generates copying,
+///  debug printing and `==`.
+/// Why:
+///   A deleted path has no content to read,
+///  and policies may treat new files
 ///       differently from changed ones.
 ///
 /// In TS you'd write (pseudocode):
@@ -29,17 +42,22 @@ use super::candidate_object::{CandidateMode, ObjectId, mode_from_git, parse_obje
 pub enum CandidateChange {
     /// The baseline lacks the path.
     Added,
-    /// Both sides hold the path with different content, mode or type.
+    /// Both sides hold the path with different content,
+    ///  mode or type.
     Modified,
     /// The baseline holds the path and the candidate state does not.
     Deleted,
 }
 
-/// What: One listed path.
+/// What:
+///  One listed path.
 ///       `Vec<u8>` is an owned byte list (sibling `String` would require UTF-8).
 ///       `Option<ObjectId>` is "an object name or nothing".
-/// Why:  Git pathnames are arbitrary bytes on Unix and must round-trip exactly. A
-///       deleted path has no object on the candidate side, which the type states
+/// Why:
+///   Git pathnames are arbitrary bytes on Unix and must round-trip exactly.
+///  A
+///       deleted path has no object on the candidate side,
+///  which the type states
 ///       instead of carrying Git's all-zero placeholder name.
 ///
 /// In TS you'd write (pseudocode):
@@ -48,20 +66,27 @@ pub enum CandidateChange {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CandidateRecord {
-    /// Repository-relative pathname with `/` separators, exactly as Git printed it.
+    /// Repository-relative pathname with `/` separators,
+    ///  exactly as Git printed it.
     pub path: Vec<u8>,
-    /// Mode on the candidate side, or the baseline's mode for a deleted path.
+    /// Mode on the candidate side,
+    ///  or the baseline's mode for a deleted path.
     pub mode: CandidateMode,
     /// Change against the baseline.
     pub change: CandidateChange,
-    /// Object on the candidate side; absent for a deleted path.
+    /// Object on the candidate side;
+    ///  absent for a deleted path.
     pub object: Option<ObjectId>,
 }
 
-/// What: Build a failure naming the record by position.
-///       `usize` is the unsigned integer every index uses (siblings `u32`, `u64`).
-/// Why:  The position identifies the entry in the same listing a person can rerun,
-///       without printing the pathname, which may itself be a forbidden string.
+/// What:
+///  Build a failure naming the record by position.
+///       `usize` is the unsigned integer every index uses (siblings `u32`,
+///  `u64`).
+/// Why:
+///   The position identifies the entry in the same listing a person can rerun,
+///       without printing the pathname,
+///  which may itself be a forbidden string.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,7 +103,8 @@ fn record_failure(failure: CandidateFailure, position: usize, detail: &str) -> C
     );
 }
 
-/// Named predicate for splitting output into tokens; `&u8` borrows one byte.
+/// Named predicate for splitting output into tokens;
+///  `&u8` borrows one byte.
 fn is_nul(byte: &u8) -> bool {
     return *byte == 0;
 }
@@ -88,11 +114,19 @@ fn is_space(byte: &u8) -> bool {
     return *byte == b' ';
 }
 
-/// What: Turn one metadata token and its path token into a record.
+/// What:
+///  Turn one metadata token and its path token into a record.
 ///       `Result<T, E>` is "a value or a failure".
-/// Why:  Only the statuses a listing without rename detection can print are
-///       interpreted: `A`, `M`, `T` (type change) and `D`. `U` is a conflicted index
-///       entry, which has no single content to check. Anything else is refused.
+/// Why:
+///   Only the statuses a listing without rename detection can print are
+///       interpreted:
+///  `A`,
+///  `M`,
+///  `T` (type change) and `D`.
+///  `U` is a conflicted index
+///       entry,
+///  which has no single content to check.
+///  Anything else is refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -174,7 +208,10 @@ fn parse_record(
     });
 }
 
-/// Map an already accepted status letter to its change kind: `A` adds, `D` deletes, `M` and `T` modify.
+/// Map an already accepted status letter to its change kind:
+///  `A` adds,
+///  `D` deletes,
+///  `M` and `T` modify.
 fn change_of(status: &[u8]) -> CandidateChange {
     if status == b"A" {
         return CandidateChange::Added;
@@ -185,11 +222,18 @@ fn change_of(status: &[u8]) -> CandidateChange {
     return CandidateChange::Modified;
 }
 
-/// What: Parse complete raw `-z` output into records, in Git's order.
-///       `&[u8]` borrows the output; the records own copies of what they keep.
-/// Why:  Each record is two NUL-terminated tokens. Output that does not end with a NUL,
-///       or that holds an odd number of tokens, was cut short or is not raw output,
-///       and is refused whole: a partial list would leave paths unchecked.
+/// What:
+///  Parse complete raw `-z` output into records,
+///  in Git's order.
+///       `&[u8]` borrows the output;
+///  the records own copies of what they keep.
+/// Why:
+///   Each record is two NUL-terminated tokens.
+///  Output that does not end with a NUL,
+///       or that holds an odd number of tokens,
+///  was cut short or is not raw output,
+///       and is refused whole:
+///  a partial list would leave paths unchecked.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

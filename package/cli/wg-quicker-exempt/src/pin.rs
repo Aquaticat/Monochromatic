@@ -1,4 +1,6 @@
-//! Owns bpffs validation, collision-free cgroup pin paths, and atomic link replacement.
+//! Owns bpffs validation,
+//!  collision-free cgroup pin paths,
+//!  and atomic link replacement.
 
 /// Raw BPF attachment function and exact hook pin names.
 use crate::bpf::{attach_marker, HOOK_NAMES};
@@ -30,7 +32,8 @@ const BPF_FS_MAGIC: libc::c_long = 0xcafe4a11;
 const RENAME_EXCHANGE: libc::c_uint = 2;
 /// Process-local sequence for staging directory names.
 static STAGING_SEQUENCE: AtomicU64 = AtomicU64::new(0);
-/// Hex digits avoid dots, which bpffs reserves for future extensions.
+/// Hex digits avoid dots,
+///  which bpffs reserves for future extensions.
 const HEX_DIGITS: &[u8; 16] = b"0123456789abcdef";
 /// Source bytes per encoded component keep every bpffs name within `NAME_MAX`.
 const PIN_KEY_CHUNK_BYTES: usize = 100;
@@ -75,7 +78,8 @@ fn filesystem_type(path: &str) -> io::Result<libc::c_long> {
     return Ok(info.f_type);
 }
 
-/// Verifies `/sys/fs/bpf` is a bpffs mount boundary, then creates tool root.
+/// Verifies `/sys/fs/bpf` is a bpffs mount boundary,
+///  then creates tool root.
 pub fn ensure_pin_root() -> io::Result<()> {
     let filesystem_magic = filesystem_type(BPF_FS)?;
     if filesystem_magic != BPF_FS_MAGIC {
@@ -172,7 +176,8 @@ fn staging_dir_for() -> PathBuf {
     ));
 }
 
-/// Removes each expected link pin, then removes directory only when empty.
+/// Removes each expected link pin,
+///  then removes directory only when empty.
 fn remove_exact_pin_dir(pin_dir: &Path) -> io::Result<()> {
     let mut first_error: Option<io::Error> = None;
     for hook_name in HOOK_NAMES {

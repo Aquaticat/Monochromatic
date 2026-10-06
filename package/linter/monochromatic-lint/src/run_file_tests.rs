@@ -1,5 +1,12 @@
-//! What: Controls for the per-file pipeline: read, check or fix, refuse, write.
-//! Why: What lands on disk and what is reported must agree in every outcome, including refusals.
+//! What:
+//!  Controls for the per-file pipeline:
+//!  read,
+//!  check or fix,
+//!  refuse,
+//!  write.
+//! Why:
+//!  What lands on disk and what is reported must agree in every outcome,
+//!  including refusals.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -15,7 +22,8 @@ use crate::run_write::WriteError;
 use crate::test_fs::Fixture;
 use std::path::Path;
 
-/// The codes of an outcome's findings, in report order.
+/// The codes of an outcome's findings,
+///  in report order.
 fn codes(findings: &[crate::diagnostic::Diagnostic]) -> Vec<&str> {
     let mut found: Vec<&str> = Vec::<&str>::new();
     for finding in findings {
@@ -102,7 +110,8 @@ fn clean_files_stay_untouched() {
     assert_eq!(read(&fixture.path, "a.md"), "# Title\n\nOne sentence.\n");
 }
 
-/// A fix that would empty a non-empty file is refused: the file is unchanged and the refusal is reported.
+/// A fix that would empty a non-empty file is refused:
+///  the file is unchanged and the refusal is reported.
 #[test]
 fn a_fix_that_would_empty_the_file_is_refused() {
     let fixture: Fixture = Fixture::new();
@@ -138,7 +147,9 @@ fn a_fix_that_would_empty_the_file_is_refused() {
     );
 }
 
-/// A processing failure anywhere in the file stops fixing: no edit is published, and both the failure and the refusal are reported.
+/// A processing failure anywhere in the file stops fixing:
+///  no edit is published,
+///  and both the failure and the refusal are reported.
 #[test]
 fn incomplete_processing_blocks_every_fix_in_the_file() {
     let fixture: Fixture = Fixture::new();
@@ -167,7 +178,8 @@ fn incomplete_processing_blocks_every_fix_in_the_file() {
     );
 }
 
-/// Unreadable and non-UTF-8 files are processing findings at the start of the file, in both modes.
+/// Unreadable and non-UTF-8 files are processing findings at the start of the file,
+///  in both modes.
 #[test]
 fn unreadable_and_non_utf8_files_are_processing_findings() {
     let fixture: Fixture = Fixture::new();
@@ -204,7 +216,8 @@ fn unreadable_and_non_utf8_files_are_processing_findings() {
     );
 }
 
-/// The in-memory step returns fixed source only in fix mode, and unchanged source when nothing applies.
+/// The in-memory step returns fixed source only in fix mode,
+///  and unchanged source when nothing applies.
 #[test]
 fn in_memory_processing_returns_fixed_source_only_when_fixing() {
     let fixture: Fixture = Fixture::new();
@@ -225,7 +238,8 @@ fn in_memory_processing_returns_fixed_source_only_when_fixing() {
     assert!(!fixture.path.join("virtual").exists());
 }
 
-/// A directory named like a source file cannot be read and is a processing finding, not a crash.
+/// A directory named like a source file cannot be read and is a processing finding,
+///  not a crash.
 #[test]
 fn a_directory_named_like_a_source_file_is_a_processing_finding() {
     let fixture: Fixture = Fixture::new();
@@ -240,7 +254,8 @@ fn a_directory_named_like_a_source_file_is_a_processing_finding() {
     assert!(fixture.path.join("dir.md").is_dir());
 }
 
-/// A writer that always refuses, standing in for a full disk or a read-only directory.
+/// A writer that always refuses,
+///  standing in for a full disk or a read-only directory.
 fn refusing_writer(path: &Path, _contents: &[u8]) -> Result<(), WriteError> {
     return Err(WriteError {
         message: format!(
@@ -250,7 +265,8 @@ fn refusing_writer(path: &Path, _contents: &[u8]) -> Result<(), WriteError> {
     });
 }
 
-/// A failed write reports the original source's findings plus the write failure, and changes nothing.
+/// A failed write reports the original source's findings plus the write failure,
+///  and changes nothing.
 #[test]
 fn a_failed_write_reports_the_original_findings() {
     let fixture: Fixture = Fixture::new();

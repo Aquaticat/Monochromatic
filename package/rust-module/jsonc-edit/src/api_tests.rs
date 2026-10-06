@@ -1,6 +1,12 @@
-//! What:     Tests for the remaining public surface: address helpers, identity accessors, comment merging
+//! What:
+//!      Tests for the remaining public surface:
+//!  address helpers,
+//!  identity accessors,
+//!  comment merging
 //!           and every error rendering.
-//! Why:      A published crate is not complete until each exported item has been exercised, including the
+//! Why:
+//!       A published crate is not complete until each exported item has been exercised,
+//!  including the
 //!           diagnostics a consumer prints.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,8 +14,10 @@
 //! describe('public api', () => { /* paths, identities, comments, errors */ });
 //! ```
 
-/// What:     Import the error types whose rendering is part of the public contract.
-/// Why:      Shared fixtures compare messages across the Rust and TypeScript implementations.
+/// What:
+///      Import the error types whose rendering is part of the public contract.
+/// Why:
+///       Shared fixtures compare messages across the Rust and TypeScript implementations.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,32 +26,40 @@
 use crate::error::{
     JsoncEditError, JsoncNumberError, JsoncParseError, JsoncPathNotFoundError, JsoncTypeError,
 };
-/// What:     Import the comment merge function and the comment types.
-/// Why:      Stacked comments collapse into one queryable comment per owner.
+/// What:
+///      Import the comment merge function and the comment types.
+/// Why:
+///       Stacked comments collapse into one queryable comment per owner.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { mergeComments } from './mergeComments';
 /// ```
 use crate::merge_comments;
-/// What:     Import the exact-number identity.
-/// Why:      Its accessors are how a consumer inspects a normalized value.
+/// What:
+///      Import the exact-number identity.
+/// Why:
+///       Its accessors are how a consumer inspects a normalized value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { JsoncNumberIdentity } from './number';
 /// ```
 use crate::number::JsoncNumberIdentity;
-/// What:     Import the address helpers.
-/// Why:      Callers build addresses from key text and ask which kind a segment is.
+/// What:
+///      Import the address helpers.
+/// Why:
+///       Callers build addresses from key text and ask which kind a segment is.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { jsoncKeyPath, JsoncPathSegment } from './path';
 /// ```
 use crate::path::{jsonc_key_path, JsoncPathSegment};
-/// What:     Import the quoted-text conversion and the document model.
-/// Why:      Key and value constructors are part of the edit surface a consumer uses.
+/// What:
+///      Import the quoted-text conversion and the document model.
+/// Why:
+///       Key and value constructors are part of the edit surface a consumer uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

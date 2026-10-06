@@ -1,14 +1,23 @@
-//! Shaped tabs end on pixel tab stops for Latin, CJK, combining, astral, and ligature prefixes at any scale.
+//! Shaped tabs end on pixel tab stops for Latin,
+//!  CJK,
+//!  combining,
+//!  astral,
+//!  and ligature prefixes at any scale.
 
-/// Canonical source, the production shaper, and the font-free stop arithmetic it must agree with.
+/// Canonical source,
+///  the production shaper,
+///  and the font-free stop arithmetic it must agree with.
 use ide_app::{
     document::{Document, ReadingPosition},
     shaped_text::{ShapedView, TextShaper, Viewport},
     tab_stop::{TAB_SPACES, tab_advance},
 };
 
-/// What: Shape `source` at `scale` into one materialized viewport; `f32` is a 32-bit float (sibling `f64`).
-/// Why: Every assertion reads the same geometry the native window paints and hit-tests.
+/// What:
+///  Shape `source` at `scale` into one materialized viewport;
+///  `f32` is a 32-bit float (sibling `f64`).
+/// Why:
+///  Every assertion reads the same geometry the native window paints and hit-tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,7 +64,9 @@ fn close(actual: f32, expected: f32) -> bool {
     return (actual - expected).abs() < 0.01;
 }
 
-/// Leading tabs, tabs after Latin text, and several tabs per line end on multiples of two space advances.
+/// Leading tabs,
+///  tabs after Latin text,
+///  and several tabs per line end on multiples of two space advances.
 #[test]
 fn tabs_end_on_multiples_of_two_measured_space_advances() {
     let stop = space() * TAB_SPACES;
@@ -80,7 +91,10 @@ fn tabs_end_on_multiples_of_two_measured_space_advances() {
     }
 }
 
-/// A tab after CJK, combining, astral, or ligature text ends on the same pixel stops as after Latin text.
+/// A tab after CJK,
+///  combining,
+///  astral,
+///  or ligature text ends on the same pixel stops as after Latin text.
 #[test]
 fn tab_after_mixed_script_prefix_ends_on_a_pixel_stop() {
     let advance = space();
@@ -144,7 +158,8 @@ fn tab_geometry_is_the_same_at_every_scale() {
     }
 }
 
-/// A point inside a widened tab resolves to the nearer edge, and the tab's selection covers it exactly.
+/// A point inside a widened tab resolves to the nearer edge,
+///  and the tab's selection covers it exactly.
 #[test]
 fn hit_selection_and_copy_treat_a_tab_as_one_source_character() {
     let advance = space();

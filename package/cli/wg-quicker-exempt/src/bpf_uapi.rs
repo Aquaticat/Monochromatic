@@ -3,15 +3,22 @@
 /// Standard syscall error result.
 use std::io;
 
-/// `bpf(2)` command: create a map.
+/// `bpf(2)` command:
+///  create a map.
 pub const BPF_MAP_CREATE: i32 = 0;
-/// `bpf(2)` command: update a map element.
+/// `bpf(2)` command:
+///  update a map element.
 pub const BPF_MAP_UPDATE_ELEM: i32 = 2;
-/// `bpf(2)` command: load a program.
+/// `bpf(2)` command:
+///  load a program.
 pub const BPF_PROG_LOAD: i32 = 5;
-/// `bpf(2)` command: pin a map, program, or link.
+/// `bpf(2)` command:
+///  pin a map,
+///  program,
+///  or link.
 pub const BPF_OBJ_PIN: i32 = 6;
-/// `bpf(2)` command: create link against cgroup target.
+/// `bpf(2)` command:
+///  create link against cgroup target.
 pub const BPF_LINK_CREATE: i32 = 28;
 /// Fixed-size array map type.
 pub const BPF_MAP_TYPE_ARRAY: u32 = 2;

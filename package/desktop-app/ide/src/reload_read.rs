@@ -1,4 +1,5 @@
-//! Resolve project opens on the reader thread, then prepare source correspondence and classifications.
+//! Resolve project opens on the reader thread,
+//!  then prepare source correspondence and classifications.
 
 /// Existing source reads retain regular-file and UTF-8 validation before producing a prepared change.
 use crate::{
@@ -33,7 +34,8 @@ fn classify(engine: &Result<SyntaxEngine>, path: &Path, text: &Rope, revision: u
     return SyntaxReply { revision, result };
 }
 
-/// Project opens resolve within the explicit root; ordinary refreshes retain their already accepted target.
+/// Project opens resolve within the explicit root;
+///  ordinary refreshes retain their already accepted target.
 pub(crate) fn prepare(
     request: ReloadRequest,
     workspace: Option<Workspace>,

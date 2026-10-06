@@ -1,12 +1,24 @@
-//! What: Generators and invariants for the content-policy boundaries that read untrusted
-//!       text: the index listing a `git add` prediction parses, the staged delta computed
-//!       from two listings, the `rulesFile` option value, and the final-newline rule over
+//! What:
+//!  Generators and invariants for the content-policy boundaries that read untrusted
+//!       text:
+//!  the index listing a `git add` prediction parses,
+//!  the staged delta computed
+//!       from two listings,
+//!  the `rulesFile` option value,
+//!  and the final-newline rule over
 //!       file bytes.
-//! Why: Listing pathnames, configuration values and file contents are chosen by whoever
-//!      writes the repository. Each check states its property without calling the code
-//!      under test a second time: a listing is rendered back to bytes, a delta is
-//!      recomputed from sorted maps, a rules-file name is joined to a root and inspected
-//!      component by component, and normalized bytes are compared with the trimmed input.
+//! Why:
+//!  Listing pathnames,
+//!  configuration values and file contents are chosen by whoever
+//!      writes the repository.
+//!  Each check states its property without calling the code
+//!      under test a second time:
+//!  a listing is rendered back to bytes,
+//!  a delta is
+//!      recomputed from sorted maps,
+//!  a rules-file name is joined to a root and inspected
+//!      component by component,
+//!  and normalized bytes are compared with the trimmed input.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -17,7 +29,8 @@
 use git_policy_cli::candidate_error::CandidateFailure;
 /// Import the mode type and the object-name parser.
 use git_policy_cli::candidate_object::{CandidateMode, parse_object_id};
-/// Import the listing parser, the delta and their record types.
+/// Import the listing parser,
+///  the delta and their record types.
 use git_policy_cli::candidate_stage::{
     ChangedPath, StageRecord, parse_stage_records, staged_delta,
 };
@@ -27,10 +40,12 @@ use git_policy_cli::config_rules_file::{RulesFileRefusal, check_rules_file};
 use git_policy_cli::policy_final_newline::normalized_final_newline;
 /// `BTreeMap<K, V>` is a map kept sorted by key.
 use std::collections::BTreeMap;
-/// `Component`, `Path` and `PathBuf` read a filesystem path component by component.
+/// `Component`,
+///  `Path` and `PathBuf` read a filesystem path component by component.
 use std::path::{Component, Path, PathBuf};
 
-/// Git's mode text for a candidate mode, restated from `git ls-files --stage` output.
+/// Git's mode text for a candidate mode,
+///  restated from `git ls-files --stage` output.
 fn mode_text(mode: CandidateMode) -> &'static str {
     match mode {
         CandidateMode::Regular => return "100644",
@@ -40,8 +55,11 @@ fn mode_text(mode: CandidateMode) -> &'static str {
     }
 }
 
-/// What: Git's `ls-files --stage -z` bytes for a list of records.
-/// Why:  Whatever the parser accepts must be exactly these bytes, so acceptance is
+/// What:
+///  Git's `ls-files --stage -z` bytes for a list of records.
+/// Why:
+///   Whatever the parser accepts must be exactly these bytes,
+///  so acceptance is
 ///       checked by rendering the result and comparing.
 ///
 /// In TS you'd write (pseudocode):
@@ -66,10 +84,15 @@ pub fn render_stage_records(records: &[StageRecord]) -> Vec<u8> {
     return rendered;
 }
 
-/// What: Assert the invariants of parsing arbitrary bytes as an index listing.
-/// Why:  An accepted listing is exactly Git's rendering of what was returned, so no
-///       byte was skipped or invented; a refusal is a malformed listing or a mode the
-///       candidate layer does not read, never anything else.
+/// What:
+///  Assert the invariants of parsing arbitrary bytes as an index listing.
+/// Why:
+///   An accepted listing is exactly Git's rendering of what was returned,
+///  so no
+///       byte was skipped or invented;
+///  a refusal is a malformed listing or a mode the
+///       candidate layer does not read,
+///  never anything else.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -115,15 +138,18 @@ struct Cursor<'a> {
     rest: &'a [u8],
 }
 
-/// What: `impl Cursor<'_>` attaches the one read.
-/// Why:  Generators draw small choices from the input in order.
+/// What:
+///  `impl Cursor<'_>` attaches the one read.
+/// Why:
+///   Generators draw small choices from the input in order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class Cursor { next(): number }
 /// ```
 impl Cursor<'_> {
-    /// The next byte, or zero after the input ends.
+    /// The next byte,
+    ///  or zero after the input ends.
     fn next(&mut self) -> u8 {
         match self.rest.split_first() {
             Some((first, rest)) => {
@@ -135,7 +161,9 @@ impl Cursor<'_> {
     }
 }
 
-/// Pathnames a generated listing draws from: few enough to collide, odd enough to matter.
+/// Pathnames a generated listing draws from:
+///  few enough to collide,
+///  odd enough to matter.
 const PATHS: [&[u8]; 8] = [
     b"a.txt",
     b"b",
@@ -147,7 +175,8 @@ const PATHS: [&[u8]; 8] = [
     b"z",
 ];
 
-/// Object names a generated listing draws from, in both hash formats.
+/// Object names a generated listing draws from,
+///  in both hash formats.
 const OBJECTS: [&str; 3] = [
     "0123456789abcdef0123456789abcdef01234567",
     "fedcba9876543210fedcba9876543210fedcba98",
@@ -162,9 +191,15 @@ const MODES: [CandidateMode; 4] = [
     CandidateMode::Gitlink,
 ];
 
-/// What: One generated index: at most one record per path and stage, in Git's order
-///       (pathname bytes, then stage).
-/// Why:  `git ls-files --stage` lists a real index that way, which the delta relies on.
+/// What:
+///  One generated index:
+///  at most one record per path and stage,
+///  in Git's order
+///       (pathname bytes,
+///  then stage).
+/// Why:
+///   `git ls-files --stage` lists a real index that way,
+///  which the delta relies on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -201,9 +236,16 @@ fn generated_index(cursor: &mut Cursor<'_>) -> Vec<StageRecord> {
     return by_key.into_values().collect();
 }
 
-/// What: Two generated indexes, before and after an add, drawn from the input.
-/// Why:  The second is often the first with a few entries changed, added or removed,
-///       so equal, changed, removed and new paths all occur.
+/// What:
+///  Two generated indexes,
+///  before and after an add,
+///  drawn from the input.
+/// Why:
+///   The second is often the first with a few entries changed,
+///  added or removed,
+///       so equal,
+///  changed,
+///  removed and new paths all occur.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -234,11 +276,17 @@ pub fn generated_listings(data: &[u8]) -> (Vec<StageRecord>, Vec<StageRecord>) {
     return (before, by_key.into_values().collect());
 }
 
-/// The pathnames of a listing in first-seen order, and each one's records in listing order.
+/// The pathnames of a listing in first-seen order,
+///  and each one's records in listing order.
 type PathGroups = (Vec<Vec<u8>>, BTreeMap<Vec<u8>, Vec<StageRecord>>);
 
-/// What: Each pathname's records, in listing order, and the pathnames in first-seen order.
-/// Why:  The delta's expected value is computed from these maps, not from the subject.
+/// What:
+///  Each pathname's records,
+///  in listing order,
+///  and the pathnames in first-seen order.
+/// Why:
+///   The delta's expected value is computed from these maps,
+///  not from the subject.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -259,9 +307,15 @@ fn records_by_path(records: &[StageRecord]) -> PathGroups {
     return (order, groups);
 }
 
-/// What: Assert the staged delta of two listings: every pathname whose records differ,
-///       with its records afterwards, paths of the first listing first, then new ones.
-/// Why:  This is what a `git add` stages, so a missed path escapes every content policy
+/// What:
+///  Assert the staged delta of two listings:
+///  every pathname whose records differ,
+///       with its records afterwards,
+///  paths of the first listing first,
+///  then new ones.
+/// Why:
+///   This is what a `git add` stages,
+///  so a missed path escapes every content policy
 ///       and an extra one is checked for nothing.
 ///
 /// In TS you'd write (pseudocode):
@@ -303,8 +357,10 @@ pub fn check_staged_delta(before: &[StageRecord], after: &[StageRecord]) {
     }
 }
 
-/// What: Assert the generated-listing invariants for one input.
-/// Why:  One call per fuzz input reaches the delta through well-formed listings.
+/// What:
+///  Assert the generated-listing invariants for one input.
+/// Why:
+///   One call per fuzz input reaches the delta through well-formed listings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -320,9 +376,18 @@ fn is_slash(character: char) -> bool {
     return character == '/';
 }
 
-/// What: The refusal a `rulesFile` value must get, stated from its words alone, or nothing.
-/// Why:  An independent statement of the documented order: empty, absolute, drive,
-///       backslash, NUL, then the first component that is empty or a dot name.
+/// What:
+///  The refusal a `rulesFile` value must get,
+///  stated from its words alone,
+///  or nothing.
+/// Why:
+///   An independent statement of the documented order:
+///  empty,
+///  absolute,
+///  drive,
+///       backslash,
+///  NUL,
+///  then the first component that is empty or a dot name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -356,9 +421,14 @@ fn expected_refusal(value: &str) -> Option<RulesFileRefusal> {
     return None;
 }
 
-/// What: Assert the `rulesFile` check for one value: its answer is the stated one, and an
+/// What:
+///  Assert the `rulesFile` check for one value:
+///  its answer is the stated one,
+///  and an
 ///       accepted value joined to a root names a path below that root.
-/// Why:  The option exists so configuration can name a file in the repository; a value
+/// Why:
+///   The option exists so configuration can name a file in the repository;
+///  a value
 ///       that left it would let configuration pick any file on the machine.
 ///
 /// In TS you'd write (pseudocode):
@@ -408,8 +478,12 @@ const RULES_WORDS: [&str; 14] = [
     ":",
 ];
 
-/// What: A `rulesFile` value built from the input: words joined by `/` or nothing.
-/// Why:  Raw bytes rarely spell `..` between slashes; built values reach every refusal.
+/// What:
+///  A `rulesFile` value built from the input:
+///  words joined by `/` or nothing.
+/// Why:
+///   Raw bytes rarely spell `..` between slashes;
+///  built values reach every refusal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -426,10 +500,18 @@ pub fn generated_rules_file(data: &[u8]) -> String {
     return value;
 }
 
-/// What: Assert the final-newline rule over one byte string.
-/// Why:  Left alone means empty, holding NUL, not UTF-8, or already ending with exactly
-///       one LF; a replacement keeps every byte before the trailing LF run, ends with
-///       exactly one LF, and is itself left alone.
+/// What:
+///  Assert the final-newline rule over one byte string.
+/// Why:
+///   Left alone means empty,
+///  holding NUL,
+///  not UTF-8,
+///  or already ending with exactly
+///       one LF;
+///  a replacement keeps every byte before the trailing LF run,
+///  ends with
+///       exactly one LF,
+///  and is itself left alone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -458,8 +540,11 @@ fn is_line_feed(byte: &&u8) -> bool {
     return **byte == b'\n';
 }
 
-/// What: Text built from the input with a chosen number of trailing line feeds.
-/// Why:  Raw bytes are mostly not UTF-8; built text reaches every correction.
+/// What:
+///  Text built from the input with a chosen number of trailing line feeds.
+/// Why:
+///   Raw bytes are mostly not UTF-8;
+///  built text reaches every correction.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -2,14 +2,16 @@
 
 /// The worker owns request identity and immutable reply publication.
 use super::{Request, SearchReply};
-/// Search scopes do not create another project; they narrow the existing read-only boundary.
+/// Search scopes do not create another project;
+///  they narrow the existing read-only boundary.
 use crate::{search::SearchResults, search_process, workspace::Workspace};
 /// Resolution and directory-kind failures retain their affected input.
 use anyhow::{Context, Result, bail};
 /// Native scope paths retain byte identity across relative and absolute input forms.
 use std::{fs, path::PathBuf};
 
-/// Validate a selected directory on the background thread, before ripgrep can enumerate it.
+/// Validate a selected directory on the background thread,
+///  before ripgrep can enumerate it.
 fn scope(workspace: &Workspace, request: &Request) -> Result<PathBuf> {
     let path = if let Some(selected) = &request.scope {
         workspace.resolve(selected)?
@@ -24,7 +26,8 @@ fn scope(workspace: &Workspace, request: &Request) -> Result<PathBuf> {
     return Ok(path);
 }
 
-/// A scope failure belongs to the whole query; both streams report the same operation-specific diagnostic.
+/// A scope failure belongs to the whole query;
+///  both streams report the same operation-specific diagnostic.
 pub(super) async fn run(workspace: &Workspace, request: &Request) -> Option<SearchReply> {
     if request.cancellation.is_cancelled() {
         return None;

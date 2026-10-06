@@ -1,6 +1,10 @@
-//! What: Controls for host rules plus always-on processors over one snapshot.
-//! Why: Virtual files must be matched by their own logical paths, reported at host positions,
-//! and fixed through the host, and every inability to check must surface as a processing finding.
+//! What:
+//!  Controls for host rules plus always-on processors over one snapshot.
+//! Why:
+//!  Virtual files must be matched by their own logical paths,
+//!  reported at host positions,
+//! and fixed through the host,
+//!  and every inability to check must surface as a processing finding.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -27,7 +31,8 @@ fn check(root: &Path, config: &str, file: &str, source: &str) -> Vec<Diagnostic>
     return checker.check_snapshot(source);
 }
 
-/// The codes of findings with their host line numbers, in report order.
+/// The codes of findings with their host line numbers,
+///  in report order.
 fn located(findings: &[Diagnostic]) -> Vec<(String, usize)> {
     let mut pairs: Vec<(String, usize)> = Vec::<(String, usize)>::new();
     for finding in findings {
@@ -36,7 +41,8 @@ fn located(findings: &[Diagnostic]) -> Vec<(String, usize)> {
     return pairs;
 }
 
-/// The first finding with a code, failing the test when none has it.
+/// The first finding with a code,
+///  failing the test when none has it.
 fn with_code<'found>(findings: &'found [Diagnostic], code: &str) -> &'found Diagnostic {
     for finding in findings {
         if finding.code == code {
@@ -59,7 +65,8 @@ fn fixed(source: &str, findings: &[Diagnostic]) -> String {
         .source;
 }
 
-/// A Rust fence in Markdown is checked under the rules its virtual path resolves to, at host positions.
+/// A Rust fence in Markdown is checked under the rules its virtual path resolves to,
+///  at host positions.
 #[test]
 fn markdown_fences_are_checked_as_virtual_rust_at_host_positions() {
     let fixture: Fixture = Fixture::new();
@@ -92,7 +99,10 @@ fn markdown_fences_are_checked_as_virtual_rust_at_host_positions() {
     assert_eq!(closure.severity, Severity::Error);
 }
 
-/// A virtual path no block selects, or one a block ignores, is not checked; the host's own rules still run.
+/// A virtual path no block selects,
+///  or one a block ignores,
+///  is not checked;
+///  the host's own rules still run.
 #[test]
 fn unconfigured_and_ignored_virtual_paths_are_not_checked() {
     let fixture: Fixture = Fixture::new();
@@ -119,7 +129,9 @@ fn unconfigured_and_ignored_virtual_paths_are_not_checked() {
     );
 }
 
-/// Rustdoc is checked as virtual Markdown, doc tests two levels deep, and fixes land in the host comment.
+/// Rustdoc is checked as virtual Markdown,
+///  doc tests two levels deep,
+///  and fixes land in the host comment.
 #[test]
 fn rustdoc_and_doc_tests_are_checked_and_fixed_through_the_host() {
     let fixture: Fixture = Fixture::new();
@@ -150,7 +162,8 @@ fn rustdoc_and_doc_tests_are_checked_and_fixed_through_the_host() {
     );
 }
 
-/// A host that does not parse is one processing finding; extraction is not attempted on it.
+/// A host that does not parse is one processing finding;
+///  extraction is not attempted on it.
 #[test]
 fn an_mdx_error_is_one_processing_finding() {
     let fixture: Fixture = Fixture::new();
@@ -181,7 +194,8 @@ fn an_mdx_error_is_one_processing_finding() {
     assert_eq!(extracted[0].filename, "doc/a.mdx");
 }
 
-/// Unavailable semantic coverage is a processing finding on host and virtual Rust; syntax rules still report.
+/// Unavailable semantic coverage is a processing finding on host and virtual Rust;
+///  syntax rules still report.
 #[test]
 fn unavailable_semantic_coverage_is_reported_and_syntax_rules_still_run() {
     let fixture: Fixture = Fixture::new();

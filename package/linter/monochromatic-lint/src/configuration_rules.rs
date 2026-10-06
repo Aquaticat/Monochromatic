@@ -1,5 +1,7 @@
-//! What: Rule identifiers and option shapes accepted by unified-linter configuration.
-//! Why: The shipped-only design must reject misspelled rules and unsupported options.
+//! What:
+//!  Rule identifiers and option shapes accepted by unified-linter configuration.
+//! Why:
+//!  The shipped-only design must reject misspelled rules and unsupported options.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,8 +14,11 @@ use crate::config_error::ConfigError;
 /// Import the JSONC model so numbers stay exact until their rule-specific conversion.
 use monochromatic_jsonc_edit::{JsoncKind, JsoncValue};
 
-/// What: The exact identifiers of the currently specified built-in rules.
-/// Why: No package name, executable or callback can add a runtime policy.
+/// What:
+///  The exact identifiers of the currently specified built-in rules.
+/// Why:
+///  No package name,
+///  executable or callback can add a runtime policy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,9 +44,14 @@ pub const RULE_IDS: &[&str] = &[
     "markdown/lfs-image-url",
 ];
 
-/// What: Convert an exact JSON number to an unsigned platform-sized line count.
-/// Why: usize matches source indexing; fractional, negative and overflowing counts are errors,
-/// rather than rounded floating-point values. u32 or u64 would impose a different indexing range.
+/// What:
+///  Convert an exact JSON number to an unsigned platform-sized line count.
+/// Why:
+///  usize matches source indexing;
+///  fractional,
+///  negative and overflowing counts are errors,
+/// rather than rounded floating-point values.
+///  u32 or u64 would impose a different indexing range.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -98,8 +108,10 @@ pub(crate) fn line_limit(value: &JsoncValue) -> Result<usize, ConfigError> {
     return Ok(result);
 }
 
-/// What: Validate one rule-settings object without filling in missing fields.
-/// Why: Later matching blocks can supply severity or override options before final resolution.
+/// What:
+///  Validate one rule-settings object without filling in missing fields.
+/// Why:
+///  Later matching blocks can supply severity or override options before final resolution.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -145,8 +157,11 @@ pub(crate) fn validate_setting(id: &str, setting: &JsoncValue) -> Result<(), Con
     return Ok(());
 }
 
-/// What: Validate the names and option objects within one rules record.
-/// Why: Disabled rules are still checked, so invalid settings do not become latent surprises.
+/// What:
+///  Validate the names and option objects within one rules record.
+/// Why:
+///  Disabled rules are still checked,
+///  so invalid settings do not become latent surprises.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

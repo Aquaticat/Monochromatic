@@ -1,12 +1,19 @@
-//! Watch exactly what the window shows, and turn change notifications into due rereads.
-//! Notifications never carry listings or text: the existing readers reread and fence their replies.
+//! Watch exactly what the window shows,
+//!  and turn change notifications into due rereads.
+//! Notifications never carry listings or text:
+//!  the existing readers reread and fence their replies.
 
-/// Navigation owns the watcher and the directory schedule; the source state owns its own schedule.
+/// Navigation owns the watcher and the directory schedule;
+///  the source state owns its own schedule.
 use super::{Navigation, State};
 /// A full reread treats the displayed file as changed and finished.
 use ide_app::change_watch::SourceChange;
-/// What: `Rc<RefCell<State>>` is the UI-thread shared source state; `BTreeSet` is an ordered set.
-/// Why: The watcher compares whole sets, so an unchanged tree sends nothing to the watch thread.
+/// What:
+///  `Rc<RefCell<State>>` is the UI-thread shared source state;
+///  `BTreeSet` is an ordered set.
+/// Why:
+///  The watcher compares whole sets,
+///  so an unchanged tree sends nothing to the watch thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,7 +28,9 @@ use std::{
 };
 
 /// Recompute the shown directories from the visible rows and send them with the displayed file.
-/// Collapsed folders drop out, so their watches are removed; descendants of collapsed folders are not shown.
+/// Collapsed folders drop out,
+///  so their watches are removed;
+///  descendants of collapsed folders are not shown.
 pub(super) fn show(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     // `to_path_buf` copies the canonical root; it is always shown, even before its first listing.
     let mut shown = vec![navigation.workspace.root().to_path_buf()];
@@ -43,7 +52,8 @@ pub(super) fn show(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     navigation.shown = shown;
 }
 
-/// Apply notifications: notified shown directories and the displayed file become due for a reread.
+/// Apply notifications:
+///  notified shown directories and the displayed file become due for a reread.
 pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     let changes = navigation.watcher.take();
     let now = Instant::now();

@@ -1,5 +1,8 @@
-//! What: Structured and raw-source checks for the implemented Markdown/MDX rules.
-//! Why: Always-valid cases prove rule reach; raw bytes exercise syntax recovery and fix boundary safety.
+//! What:
+//!  Structured and raw-source checks for the implemented Markdown/MDX rules.
+//! Why:
+//!  Always-valid cases prove rule reach;
+//!  raw bytes exercise syntax recovery and fix boundary safety.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -17,13 +20,17 @@ use monochromatic_lint::markdown_headings::{heading_increment, no_emphasis_as_he
 use monochromatic_lint::markdown_links::{link_image_style, no_bare_urls};
 use monochromatic_lint::markdown_punctuation::no_trailing_punctuation;
 use monochromatic_lint::markdown_semantic_breaks::semantic_line_breaks;
-/// Import the real parser, source spans and atomic fix applier.
+/// Import the real parser,
+///  source spans and atomic fix applier.
 use monochromatic_lint::markdown_source::MarkdownSource;
 /// Import the newly integrated table and prose checks through their actual implementation boundary.
 use monochromatic_lint::markdown_tables::no_pipe_tables;
 
-/// What: A plain named function pointer; no captured closure or per-input executable configuration.
-/// Why: The pure rules share one parse while the fence rule receives its explicit rustdoc flag.
+/// What:
+///  A plain named function pointer;
+///  no captured closure or per-input executable configuration.
+/// Why:
+///  The pure rules share one parse while the fence rule receives its explicit rustdoc flag.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,8 +38,10 @@ use monochromatic_lint::markdown_tables::no_pipe_tables;
 /// ```
 type Checker = fn(&MarkdownSource, Severity) -> Vec<Diagnostic>;
 
-/// What: Fixed grammar cases with independently known combined finding counts.
-/// Why: A raw-only generator could miss every successfully parsed violation.
+/// What:
+///  Fixed grammar cases with independently known combined finding counts.
+/// Why:
+///  A raw-only generator could miss every successfully parsed violation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,7 +89,8 @@ fn findings(context: &MarkdownSource) -> Vec<Diagnostic> {
     return result;
 }
 
-/// Verify diagnostic ranges and every advertised edit, allowing only the deliberate empty-file refusal.
+/// Verify diagnostic ranges and every advertised edit,
+///  allowing only the deliberate empty-file refusal.
 fn check_source(source: &str, mdx: bool) -> Option<usize> {
     // Own each snapshot; the parser cannot retain references into the fuzzer's changing input buffer.
     let parsed = MarkdownSource::new(String::from("fuzz.md"), String::from(source), mdx);

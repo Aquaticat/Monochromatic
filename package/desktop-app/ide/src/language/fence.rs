@@ -1,10 +1,16 @@
-//! The interface-side fence: only results for the displayed text and the current server process pass.
+//! The interface-side fence:
+//!  only results for the displayed text and the current server process pass.
 
-/// Results are compared by file generation, revision, and server process.
+/// Results are compared by file generation,
+///  revision,
+///  and server process.
 use super::identity::{DocumentStamp, ServerIdentity};
 
-/// What: A closed set of four names. `Copy` lets it be passed like a number.
-/// Why: Tests and logs must be able to say which part of the identity made a result stale.
+/// What:
+///  A closed set of four names.
+///  `Copy` lets it be passed like a number.
+/// Why:
+///  Tests and logs must be able to say which part of the identity made a result stale.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,9 +46,15 @@ pub struct FenceCounts {
     pub old_server: u64,
 }
 
-/// What: The fence's memory: the displayed text's identity and the current server processes.
-///       `Option<DocumentStamp>` is "a stamp, or nothing"; `Vec<ServerIdentity>` is a growable list.
-/// Why: A reply carries only what it was asked for; whether that is still what the reader
+/// What:
+///  The fence's memory:
+///  the displayed text's identity and the current server processes.
+///       `Option<DocumentStamp>` is "a stamp,
+///  or nothing";
+///  `Vec<ServerIdentity>` is a growable list.
+/// Why:
+///  A reply carries only what it was asked for;
+///  whether that is still what the reader
 ///      shows can be decided only against this record.
 ///
 /// In TS you'd write (pseudocode):
@@ -51,7 +63,8 @@ pub struct FenceCounts {
 /// ```
 #[derive(Debug, Default)]
 pub struct Fence {
-    /// Stamp of the text the reader currently displays; absent when no file is displayed.
+    /// Stamp of the text the reader currently displays;
+    ///  absent when no file is displayed.
     displayed: Option<DocumentStamp>,
     /// Current process generation of every server named in the latest status.
     servers: Vec<ServerIdentity>,
@@ -61,7 +74,8 @@ pub struct Fence {
 
 /// Fence operations.
 impl Fence {
-    /// Record which text is displayed now. `&mut self` allows changing the fence in place.
+    /// Record which text is displayed now.
+    ///  `&mut self` allows changing the fence in place.
     pub fn display(&mut self, stamp: Option<DocumentStamp>) {
         self.displayed = stamp;
     }
@@ -81,9 +95,17 @@ impl Fence {
         return self.counts;
     }
 
-    /// What: Decide whether a result may be shown, without counting it. `Option<&ServerIdentity>`
-    ///       is "a borrowed identity, or nothing" for results no server produced.
-    /// Why: File generation is compared first, then revision, then server process, so the
+    /// What:
+    ///  Decide whether a result may be shown,
+    ///  without counting it.
+    ///  `Option<&ServerIdentity>`
+    ///       is "a borrowed identity,
+    ///  or nothing" for results no server produced.
+    /// Why:
+    ///  File generation is compared first,
+    ///  then revision,
+    ///  then server process,
+    ///  so the
     ///      verdict names the outermost identity that moved on.
     ///
     /// In TS you'd write (pseudocode):
@@ -124,7 +146,8 @@ impl Fence {
         return FenceVerdict::Accepted;
     }
 
-    /// Decide and count; true means the caller may show the result.
+    /// Decide and count;
+    ///  true means the caller may show the result.
     pub fn admit(&mut self, stamp: DocumentStamp, server: Option<&ServerIdentity>) -> bool {
         let verdict = self.verdict(stamp, server);
         match verdict {

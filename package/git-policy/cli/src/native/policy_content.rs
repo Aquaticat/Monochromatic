@@ -1,10 +1,20 @@
-//! What: What one lifecycle offers the content policies, and the candidates it prepared
-//!       for them, read once and shared by every content policy of the invocation.
-//! Why: A forwarded command other than `git add` has no candidates, so its content
-//!      policies find nothing. `git add` and the direct commands have candidates, which
-//!      are prepared the first time a content policy reads them: an invocation whose
-//!      content policies are all off or escaped starts no Git process for them. A failure
-//!      to prepare is remembered, so it is reported once and never retried.
+//! What:
+//!  What one lifecycle offers the content policies,
+//!  and the candidates it prepared
+//!       for them,
+//!  read once and shared by every content policy of the invocation.
+//! Why:
+//!  A forwarded command other than `git add` has no candidates,
+//!  so its content
+//!      policies find nothing.
+//!  `git add` and the direct commands have candidates,
+//!  which
+//!      are prepared the first time a content policy reads them:
+//!  an invocation whose
+//!      content policies are all off or escaped starts no Git process for them.
+//!  A failure
+//!      to prepare is remembered,
+//!  so it is reported once and never retried.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +23,8 @@
 
 /// Import the layer's failure type and its causes.
 use super::candidate_error::{CandidateError, CandidateFailure};
-/// Import the candidate's mode, which a correction keeps.
+/// Import the candidate's mode,
+///  which a correction keeps.
 use super::candidate_object::CandidateMode;
 /// Import what a lifecycle asks for and what preparing it yields.
 use super::candidate_prediction::{CandidateRequest, PreparedCandidates};
@@ -21,7 +32,8 @@ use super::candidate_prediction::{CandidateRequest, PreparedCandidates};
 use super::candidate_store::CandidateStore;
 /// Import the candidate and the immutable version type.
 use super::candidate_version::{Candidate, CandidateVersion};
-/// Import the change a converged fix installs, which also records a corrected file.
+/// Import the change a converged fix installs,
+///  which also records a corrected file.
 use super::direct_fix_install::InstallChange;
 /// Import the outcome a check returns.
 use super::policy_engine::PolicyOutcome;
@@ -31,13 +43,18 @@ use super::repository_facts::RepositoryFacts;
 use super::scanner_adapter::CandidateScanner;
 /// Import the code of each candidate failure.
 use super::scanner_failure_code::candidate_failure_code;
-/// Import the scan pass, its byte reader and its failure.
+/// Import the scan pass,
+///  its byte reader and its failure.
 use super::scanner_run::{CandidateBytes, ScanRunError, scan_version};
 /// The scanner library's per-candidate result.
 use forbidden_strings::CandidateScan;
-/// What: `BTreeMap<K, V>` is a map kept sorted by key (sibling `HashMap` is unordered).
-/// Why:  Corrected files are keyed by pathname bytes, and their sorted order is Git's
-///       byte order, the order a fix summary lists them in.
+/// What:
+///  `BTreeMap<K, V>` is a map kept sorted by key (sibling `HashMap` is unordered).
+/// Why:
+///   Corrected files are keyed by pathname bytes,
+///  and their sorted order is Git's
+///       byte order,
+///  the order a fix summary lists them in.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,14 +63,26 @@ use forbidden_strings::CandidateScan;
 use std::collections::BTreeMap;
 /// `Path` is a borrowed filesystem path.
 use std::path::Path;
-/// `Rc<T>` is a shared, read-only handle; versions and bytes are shared, not copied.
+/// `Rc<T>` is a shared,
+///  read-only handle;
+///  versions and bytes are shared,
+///  not copied.
 use std::rc::Rc;
 
-/// What: What the current lifecycle offers a content policy. An `enum` is a closed set
-///       of named alternatives; `Requested` carries what to prepare. `#[derive(...)]`
-///       generates cloning, debug printing and `==`.
-/// Why:  "There are no files to check" and "there are files, prepared on demand" must
-///       never be confused: the first is clean, the second must be read.
+/// What:
+///  What the current lifecycle offers a content policy.
+///  An `enum` is a closed set
+///       of named alternatives;
+///  `Requested` carries what to prepare.
+///  `#[derive(...)]`
+///       generates cloning,
+///  debug printing and `==`.
+/// Why:
+///   "There are no files to check" and "there are files,
+///  prepared on demand" must
+///       never be confused:
+///  the first is clean,
+///  the second must be read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,38 +90,57 @@ use std::rc::Rc;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum LifecycleContent {
-    /// The lifecycle has no candidate content, as for a forwarded command other than `git add`.
+    /// The lifecycle has no candidate content,
+    ///  as for a forwarded command other than `git add`.
     None,
-    /// The lifecycle has candidates; they are prepared when a content policy first reads them.
+    /// The lifecycle has candidates;
+    ///  they are prepared when a content policy first reads them.
     Requested(
         /// What to prepare.
         CandidateRequest,
     ),
 }
 
-/// What: The candidates of one invocation once prepared, or the remembered failure.
-///       `Option<Result<..>>` is "not yet asked", "prepared" or "failed".
-/// Why:  Every content policy of the invocation reads the same version through one store.
+/// What:
+///  The candidates of one invocation once prepared,
+///  or the remembered failure.
+///       `Option<Result<..>>` is "not yet asked",
+///  "prepared" or "failed".
+/// Why:
+///   Every content policy of the invocation reads the same version through one store.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ContentState { #prepared?: PreparedCandidates | CandidateError }
 /// ```
 pub struct ContentState {
-    /// The prepared candidates, or the failure of the one attempt to prepare them.
+    /// The prepared candidates,
+    ///  or the failure of the one attempt to prepare them.
     prepared: Option<Result<PreparedCandidates, CandidateError>>,
-    /// Each corrected file by pathname: its mode, original bytes and corrected bytes.
+    /// Each corrected file by pathname:
+    ///  its mode,
+    ///  original bytes and corrected bytes.
     ///  Every other file keeps its object's bytes.
     corrected: BTreeMap<Vec<u8>, InstallChange>,
-    /// The corrections policies proposed in the current pass, in proposal order.
+    /// The corrections policies proposed in the current pass,
+    ///  in proposal order.
     proposals: Vec<Correction>,
 }
 
-/// What: One proposed full-content correction: the file, the bytes it held when the policy
-///       read it, and the bytes it should hold. `#[derive(...)]` generates cloning, debug
+/// What:
+///  One proposed full-content correction:
+///  the file,
+///  the bytes it held when the policy
+///       read it,
+///  and the bytes it should hold.
+///  `#[derive(...)]` generates cloning,
+///  debug
 ///       printing and `==`.
-/// Why:  A correction replaces a file's whole content, so applying it needs no patch
-///       format; the bytes it replaces are kept so the original of a file is known
+/// Why:
+///   A correction replaces a file's whole content,
+///  so applying it needs no patch
+///       format;
+///  the bytes it replaces are kept so the original of a file is known
 ///       without reading it again.
 ///
 /// In TS you'd write (pseudocode):
@@ -101,9 +149,12 @@ pub struct ContentState {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Correction {
-    /// The pathname, relative to the repository's top level, as Git's raw bytes.
+    /// The pathname,
+    ///  relative to the repository's top level,
+    ///  as Git's raw bytes.
     pub path: Vec<u8>,
-    /// The file's mode, which the correction keeps.
+    /// The file's mode,
+    ///  which the correction keeps.
     pub mode: CandidateMode,
     /// The bytes the file held when the policy read it.
     pub before: Rc<[u8]>,
@@ -111,9 +162,13 @@ pub struct Correction {
     pub after: Rc<[u8]>,
 }
 
-/// What: The prepared store with the corrections laid over it, as a scan's byte reader.
+/// What:
+///  The prepared store with the corrections laid over it,
+///  as a scan's byte reader.
 ///       `'a` names how long both borrows last.
-/// Why:  A later pass of a direct fix scans the corrected bytes, not the objects.
+/// Why:
+///   A later pass of a direct fix scans the corrected bytes,
+///  not the objects.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -122,20 +177,26 @@ pub struct Correction {
 struct OverlaidStore<'a> {
     /// The store bound to the private index.
     store: &'a mut CandidateStore,
-    /// The corrected files, by pathname.
+    /// The corrected files,
+    ///  by pathname.
     corrected: &'a BTreeMap<Vec<u8>, InstallChange>,
 }
 
-/// What: `impl CandidateBytes for OverlaidStore<'_>` reads corrected bytes first.
-/// Why:  The one byte rule every reader of a direct fix shares.
+/// What:
+///  `impl CandidateBytes for OverlaidStore<'_>` reads corrected bytes first.
+/// Why:
+///   The one byte rule every reader of a direct fix shares.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class OverlaidStore implements CandidateBytes {}
 /// ```
 impl CandidateBytes for OverlaidStore<'_> {
-    /// What: The corrected bytes of the candidate's file, or its object's bytes.
-    /// Why:  See `overlaid_bytes`.
+    /// What:
+    ///  The corrected bytes of the candidate's file,
+    ///  or its object's bytes.
+    /// Why:
+    ///   See `overlaid_bytes`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -146,9 +207,12 @@ impl CandidateBytes for OverlaidStore<'_> {
     }
 }
 
-/// What: The corrected bytes of a candidate's file when a correction gave it some, else
+/// What:
+///  The corrected bytes of a candidate's file when a correction gave it some,
+///  else
 ///       the bytes of its object through the store.
-/// Why:  Every policy of a later pass must read what the earlier passes made of the file.
+/// Why:
+///   Every policy of a later pass must read what the earlier passes made of the file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -166,10 +230,15 @@ fn overlaid_bytes(
     return store.bytes(candidate);
 }
 
-/// What: The outcome of a content policy whose candidates could not be prepared or read.
-///       `&CandidateError` borrows the failure; its code follows its cause.
-/// Why:  Every cause but a sequencing defect is unreadable content; the message is the
-///       layer's own, which never contains a candidate's pathname.
+/// What:
+///  The outcome of a content policy whose candidates could not be prepared or read.
+///       `&CandidateError` borrows the failure;
+///  its code follows its cause.
+/// Why:
+///   Every cause but a sequencing defect is unreadable content;
+///  the message is the
+///       layer's own,
+///  which never contains a candidate's pathname.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -183,8 +252,11 @@ pub fn candidate_failure(error: &CandidateError) -> PolicyOutcome {
     };
 }
 
-/// What: `impl ContentState { ... }` attaches the constructor and the two reads.
-/// Why:  Preparation and reading stay behind one owner, so no policy can read bytes of a
+/// What:
+///  `impl ContentState { ... }` attaches the constructor and the two reads.
+/// Why:
+///   Preparation and reading stay behind one owner,
+///  so no policy can read bytes of a
 ///       version it did not get from here.
 ///
 /// In TS you'd write (pseudocode):
@@ -192,8 +264,10 @@ pub fn candidate_failure(error: &CandidateError) -> PolicyOutcome {
 /// class ContentState { version(lifecycle, facts) {} bytes(candidate) {} }
 /// ```
 impl ContentState {
-    /// What: A state that has prepared nothing.
-    /// Why:  Preparation waits until a content policy reads.
+    /// What:
+    ///  A state that has prepared nothing.
+    /// Why:
+    ///   Preparation waits until a content policy reads.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -208,11 +282,19 @@ impl ContentState {
         };
     }
 
-    /// What: The candidate version, prepared on first use; `Ok(None)` when the lifecycle
-    ///       has no candidates. `<F: RepositoryFacts>` accepts any facts provider;
-    ///       `Err(error)` is the candidate layer's failure, remembered for later calls.
-    /// Why:  A direct command prepares its scope before any policy runs, as the installed
-    ///       wrapper does, and reports a failure as a lifecycle failure of its own.
+    /// What:
+    ///  The candidate version,
+    ///  prepared on first use;
+    ///  `Ok(None)` when the lifecycle
+    ///       has no candidates.
+    ///  `<F: RepositoryFacts>` accepts any facts provider;
+    ///       `Err(error)` is the candidate layer's failure,
+    ///  remembered for later calls.
+    /// Why:
+    ///   A direct command prepares its scope before any policy runs,
+    ///  as the installed
+    ///       wrapper does,
+    ///  and reports a failure as a lifecycle failure of its own.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -239,10 +321,16 @@ impl ContentState {
         }
     }
 
-    /// What: The candidate version for a content policy: as `prepare`, with a failure
+    /// What:
+    ///  The candidate version for a content policy:
+    ///  as `prepare`,
+    ///  with a failure
     ///       turned into the outcome the policy returns as it is.
-    /// Why:  The first content policy that reads pays for the preparation; later ones
-    ///       share it, and a failure is reported the same way to each.
+    /// Why:
+    ///   The first content policy that reads pays for the preparation;
+    ///  later ones
+    ///       share it,
+    ///  and a failure is reported the same way to each.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -259,8 +347,12 @@ impl ContentState {
         }
     }
 
-    /// What: The bytes of a candidate of the prepared version, with corrections applied.
-    /// Why:  Bytes come from the store bound to the private index, never the live worktree,
+    /// What:
+    ///  The bytes of a candidate of the prepared version,
+    ///  with corrections applied.
+    /// Why:
+    ///   Bytes come from the store bound to the private index,
+    ///  never the live worktree,
     ///       unless a correction of this invocation replaced them.
     ///
     /// In TS you'd write (pseudocode):
@@ -280,8 +372,11 @@ impl ContentState {
         }
     }
 
-    /// What: The real index the prepared candidates were copied from, once prepared.
-    /// Why:  A direct fix proves that installing its corrections left that index unchanged.
+    /// What:
+    ///  The real index the prepared candidates were copied from,
+    ///  once prepared.
+    /// Why:
+    ///   A direct fix proves that installing its corrections left that index unchanged.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -296,17 +391,26 @@ impl ContentState {
     }
 }
 
-/// What: `impl ContentState { ... }` continued: corrections of a fixing lifecycle.
-/// Why:  A policy proposes, the fix loop applies after the pass, and later passes read
-///       the corrected bytes; nothing reaches the worktree until the fix installs them.
+/// What:
+///  `impl ContentState { ... }` continued:
+///  corrections of a fixing lifecycle.
+/// Why:
+///   A policy proposes,
+///  the fix loop applies after the pass,
+///  and later passes read
+///       the corrected bytes;
+///  nothing reaches the worktree until the fix installs them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ContentState { propose(c) {} takeProposals() {} apply(cs) {} }
 /// ```
 impl ContentState {
-    /// What: Record one correction a policy proposes in the current pass.
-    /// Why:  Corrections wait until the pass ends, so every policy of the pass reads the
+    /// What:
+    ///  Record one correction a policy proposes in the current pass.
+    /// Why:
+    ///   Corrections wait until the pass ends,
+    ///  so every policy of the pass reads the
     ///       same bytes.
     ///
     /// In TS you'd write (pseudocode):
@@ -317,9 +421,12 @@ impl ContentState {
         self.proposals.push(correction);
     }
 
-    /// What: Hand over the current pass's proposals and forget them.
+    /// What:
+    ///  Hand over the current pass's proposals and forget them.
     ///       `std::mem::take` moves the list out and leaves an empty one behind.
-    /// Why:  Each pass starts with no proposals, and a proposal is applied at most once.
+    /// Why:
+    ///   Each pass starts with no proposals,
+    ///  and a proposal is applied at most once.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -329,11 +436,17 @@ impl ContentState {
         return std::mem::take(&mut self.proposals);
     }
 
-    /// What: Apply corrections in order. A file whose correction restores its original
+    /// What:
+    ///  Apply corrections in order.
+    ///  A file whose correction restores its original
     ///       bytes is no longer corrected.
-    /// Why:  The corrected map then equals another state's map exactly when both states
-    ///       hold the same bytes in every file, which the fix loop's cycle check needs. A
-    ///       file's original is the bytes its first correction replaced; a file restored
+    /// Why:
+    ///   The corrected map then equals another state's map exactly when both states
+    ///       hold the same bytes in every file,
+    ///  which the fix loop's cycle check needs.
+    ///  A
+    ///       file's original is the bytes its first correction replaced;
+    ///  a file restored
     ///       and corrected again replaces those same bytes.
     ///
     /// In TS you'd write (pseudocode):
@@ -362,8 +475,12 @@ impl ContentState {
         }
     }
 
-    /// What: A copy of every corrected file, by pathname. Copies share the bytes.
-    /// Why:  The fix loop keeps one per changed state to recognize a repeated state.
+    /// What:
+    ///  A copy of every corrected file,
+    ///  by pathname.
+    ///  Copies share the bytes.
+    /// Why:
+    ///   The fix loop keeps one per changed state to recognize a repeated state.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -373,8 +490,12 @@ impl ContentState {
         return self.corrected.clone();
     }
 
-    /// What: Every corrected file, in Git's byte order of pathnames.
-    /// Why:  These are the changes a converged fix installs, and the order its summary
+    /// What:
+    ///  Every corrected file,
+    ///  in Git's byte order of pathnames.
+    /// Why:
+    ///   These are the changes a converged fix installs,
+    ///  and the order its summary
     ///       lists them in.
     ///
     /// In TS you'd write (pseudocode):
@@ -387,8 +508,11 @@ impl ContentState {
     }
 }
 
-/// What: `impl ContentState { ... }` continued: the scan of every scannable candidate.
-/// Why:  The scan pass reads bytes through the store the candidates were prepared in,
+/// What:
+///  `impl ContentState { ... }` continued:
+///  the scan of every scannable candidate.
+/// Why:
+///   The scan pass reads bytes through the store the candidates were prepared in,
 ///       with this invocation's corrections laid over it.
 ///
 /// In TS you'd write (pseudocode):
@@ -396,9 +520,15 @@ impl ContentState {
 /// class ContentState { scan(scanner, rulesPath) {} }
 /// ```
 impl ContentState {
-    /// What: Scan the prepared version through `scanner`. `Option<&[u8]>` is the rules
-    ///       file's own pathname, which is not scanned, or nothing.
-    /// Why:  `scan_version` is the candidate layer's one scan pass; this lends it the store
+    /// What:
+    ///  Scan the prepared version through `scanner`.
+    ///  `Option<&[u8]>` is the rules
+    ///       file's own pathname,
+    ///  which is not scanned,
+    ///  or nothing.
+    /// Why:
+    ///   `scan_version` is the candidate layer's one scan pass;
+    ///  this lends it the store
     ///       and the version together.
     ///
     /// In TS you'd write (pseudocode):
@@ -424,10 +554,16 @@ impl ContentState {
     }
 }
 
-/// What: The failure of a read made before any version was prepared.
-/// Why:  Only a defect in a calling policy can cause it. It is reported as a stale
-///       candidate, whose code is `policy-incomplete`: the policy's own sequencing
-///       failed, and the read must still not look clean.
+/// What:
+///  The failure of a read made before any version was prepared.
+/// Why:
+///   Only a defect in a calling policy can cause it.
+///  It is reported as a stale
+///       candidate,
+///  whose code is `policy-incomplete`:
+///  the policy's own sequencing
+///       failed,
+///  and the read must still not look clean.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -440,15 +576,20 @@ fn not_prepared_error() -> CandidateError {
     );
 }
 
-/// What: `impl Default for ContentState` lets `ContentState::default()` build the empty state.
-/// Why:  Clippy asks a type with a `new()` without arguments to provide `Default` too.
+/// What:
+///  `impl Default for ContentState` lets `ContentState::default()` build the empty state.
+/// Why:
+///   Clippy asks a type with a `new()` without arguments to provide `Default` too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// static default(): ContentState { return new ContentState(); }
 /// ```
 impl Default for ContentState {
-    /// What: The state that has prepared nothing. Why: same as `new`.
+    /// What:
+    ///  The state that has prepared nothing.
+    ///  Why:
+    ///  same as `new`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -459,7 +600,8 @@ impl Default for ContentState {
     }
 }
 
-/// Preparation, sharing and failure controls stay out of the release executable.
+/// Preparation,
+///  sharing and failure controls stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_content_tests.rs"]
 mod tests;

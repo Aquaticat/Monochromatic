@@ -1,4 +1,5 @@
-//! Compiles the Slint UI markup into generated Rust at build time, and on
+//! Compiles the Slint UI markup into generated Rust at build time,
+//!  and on
 //! Windows embeds the application icon into the .exe.
 
 fn main() {

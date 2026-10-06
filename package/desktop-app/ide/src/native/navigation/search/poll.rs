@@ -46,7 +46,8 @@ fn tick(window: &AppWindow, search: &mut Search) -> Result<()> {
     return Ok(());
 }
 
-/// A stopped worker reports once; it does not alternate busy/error states on every timer tick.
+/// A stopped worker reports once;
+///  it does not alternate busy/error states on every timer tick.
 pub(in crate::native::navigation) fn update(window: &AppWindow, search: &mut Search) {
     if let Err(error) = tick(window, search) {
         tracing::warn!(%error, "native search could not advance");

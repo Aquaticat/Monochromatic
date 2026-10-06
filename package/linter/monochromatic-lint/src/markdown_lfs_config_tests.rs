@@ -1,6 +1,11 @@
-//! What: `.lfsconfig` line-grammar and file-read controls.
-//! Why: The declarations found, and their order, are frozen by
-//! `package/cli/markdown-lint/src/lfs-config.unit.test.ts`; the added cases cover the trim set,
+//! What:
+//!  `.lfsconfig` line-grammar and file-read controls.
+//! Why:
+//!  The declarations found,
+//!  and their order,
+//!  are frozen by
+//! `package/cli/markdown-lint/src/lfs-config.unit.test.ts`;
+//!  the added cases cover the trim set,
 //! case folding and read failures the incumbent handled implicitly.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,11 +13,14 @@
 //! describe(parseLfsConfig.name, () => { /* sections, keys, comments, order */ });
 //! ```
 
-/// Import the scanner, the file reader and disposable directories.
+/// Import the scanner,
+///  the file reader and disposable directories.
 use super::{js_trim, lfs_endpoints, read_lfs_object_base, read_optional_text};
 use crate::test_fs::Fixture;
 
-/// `lfs.url` and `remote.<name>.lfsurl` are read; comments, blanks and other sections are not.
+/// `lfs.url` and `remote.<name>.lfsurl` are read;
+///  comments,
+///  blanks and other sections are not.
 #[test]
 fn endpoints_come_from_lfs_and_remote_sections_in_file_order() {
     assert_eq!(
@@ -37,8 +45,11 @@ fn endpoints_come_from_lfs_and_remote_sections_in_file_order() {
     );
 }
 
-/// A commented-out declaration declares nothing, with either comment character, with or without a
-/// space after it, and under both sections that could otherwise name an endpoint.
+/// A commented-out declaration declares nothing,
+///  with either comment character,
+///  with or without a
+/// space after it,
+///  and under both sections that could otherwise name an endpoint.
 #[test]
 fn commented_out_declarations_declare_nothing() {
     for source in [
@@ -62,7 +73,9 @@ fn commented_out_declarations_declare_nothing() {
     );
 }
 
-/// Section and key names fold case; values keep their spelling, including later `=` characters.
+/// Section and key names fold case;
+///  values keep their spelling,
+///  including later `=` characters.
 #[test]
 fn names_fold_case_and_values_keep_their_bytes() {
     assert_eq!(
@@ -80,7 +93,9 @@ fn names_fold_case_and_values_keep_their_bytes() {
     assert!(lfs_endpoints("[remotes]\nlfsurl = https://x.example\n").is_empty());
 }
 
-/// Keys before any section, lines without `=`, and empty values declare nothing.
+/// Keys before any section,
+///  lines without `=`,
+///  and empty values declare nothing.
 #[test]
 fn incomplete_lines_declare_nothing() {
     assert!(lfs_endpoints("url = https://x.example\n").is_empty());
@@ -101,7 +116,9 @@ fn trimming_follows_the_ecmascript_set() {
     );
 }
 
-/// An absent file is ordinary, a present file is read, and a directory in its place is a failure.
+/// An absent file is ordinary,
+///  a present file is read,
+///  and a directory in its place is a failure.
 #[test]
 fn optional_reads_distinguish_absence_from_failure() {
     let fixture: Fixture = Fixture::new();

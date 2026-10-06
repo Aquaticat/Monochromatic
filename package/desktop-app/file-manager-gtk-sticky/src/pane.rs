@@ -1,57 +1,100 @@
-//! Directory-listing and preview panes, trimmed from the original's `pane.rs`.
+//! Directory-listing and preview panes,
+//!  trimmed from the original's `pane.rs`.
 //!
-//! Same virtualized `ListView` rows, single-click/Enter activation, Ctrl-forced duplicates, and
-//! header close button as the original; the thumbnail service and drag-and-drop shims are out of
-//! scope for this layout prototype, so a preview pane shows a typed icon plus filename only.
+//! Same virtualized `ListView` rows,
+//!  single-click/Enter activation,
+//!  Ctrl-forced duplicates,
+//!  and
+//! header close button as the original;
+//!  the thumbnail service and drag-and-drop shims are out of
+//! scope for this layout prototype,
+//!  so a preview pane shows a typed icon plus filename only.
 
-/// What: imports the single-slot interior-mutability cell.
-/// Why: the Ctrl-at-activation flag is shared between the click/key controllers and activation.
+/// What:
+///  imports the single-slot interior-mutability cell.
+/// Why:
+///  the Ctrl-at-activation flag is shared between the click/key controllers and activation.
 use std::cell::Cell;
-/// What: imports the borrowed path type.
-/// Why: a preview pane takes the previewed file path by reference.
+/// What:
+///  imports the borrowed path type.
+/// Why:
+///  a preview pane takes the previewed file path by reference.
 use std::path::Path;
-/// What: imports the reference-counted pointer.
-/// Why: the shared Ctrl flag is held by three closures on the same pane.
+/// What:
+///  imports the reference-counted pointer.
+/// Why:
+///  the shared Ctrl flag is held by three closures on the same pane.
 use std::rc::Rc;
 
-/// What: imports the GTK widget-extension traits (builders, controllers, list/box helpers).
-/// Why: the pane adds event controllers and presents a scrolled list, all via prelude traits.
+/// What:
+///  imports the GTK widget-extension traits (builders,
+///  controllers,
+///  list/box helpers).
+/// Why:
+///  the pane adds event controllers and presents a scrolled list,
+///  all via prelude traits.
 use gtk4::prelude::*;
-/// What: imports the key symbol and modifier-mask types.
-/// Why: activation checks whether Ctrl was held and whether a key press was an activation key.
+/// What:
+///  imports the key symbol and modifier-mask types.
+/// Why:
+///  activation checks whether Ctrl was held and whether a key press was an activation key.
 use gtk4::gdk::{Key, ModifierType};
-/// What: imports the boxed-any wrapper and the event-propagation verdict enum.
-/// Why: `FileEntry` rides a `BoxedAnyObject` through the model; the key handler returns
+/// What:
+///  imports the boxed-any wrapper and the event-propagation verdict enum.
+/// Why:
+///  `FileEntry` rides a `BoxedAnyObject` through the model;
+///  the key handler returns
 ///      `Propagation`.
 use gtk4::glib::{BoxedAnyObject, Propagation};
-/// What: imports the list-store model type.
-/// Why: the pane's rows live in a `ListStore` of boxed entries feeding the `ListView`.
+/// What:
+///  imports the list-store model type.
+/// Why:
+///  the pane's rows live in a `ListStore` of boxed entries feeding the `ListView`.
 use gtk4::gio::ListStore;
-/// What: imports the text-ellipsization mode enum.
-/// Why: a long directory path in the header truncates in the middle rather than widening the pane.
+/// What:
+///  imports the text-ellipsization mode enum.
+/// Why:
+///  a long directory path in the header truncates in the middle rather than widening the pane.
 use gtk4::pango::EllipsizeMode;
-/// What: imports the concrete widget, controller, and factory types the pane is built from.
-/// Why: named explicitly so construction reads without a glob import.
+/// What:
+///  imports the concrete widget,
+///  controller,
+///  and factory types the pane is built from.
+/// Why:
+///  named explicitly so construction reads without a glob import.
 use gtk4::{
     Box as GtkBox, Button, EventControllerKey, GestureClick, Image, Label, ListItem, ListView,
     Orientation, PropagationPhase, ScrolledWindow, SignalListItemFactory, SingleSelection,
 };
 
-/// What: imports the snapshot, entry, and kind domain types from the original app's crate.
-/// Why: the pane renders the shared model's `DirectorySnapshot` of `FileEntry` rows.
+/// What:
+///  imports the snapshot,
+///  entry,
+///  and kind domain types from the original app's crate.
+/// Why:
+///  the pane renders the shared model's `DirectorySnapshot` of `FileEntry` rows.
 use file_manager::types::{DirectorySnapshot, EntryKind, FileEntry};
 
-/// What: horizontal gap in pixels between a row's icon and its name label (and header items).
-/// Why: named so the one spacing value is not a bare magic literal.
+/// What:
+///  horizontal gap in pixels between a row's icon and its name label (and header items).
+/// Why:
+///  named so the one spacing value is not a bare magic literal.
 const ROW_SPACING: i32 = 6;
 
-/// What: pixel size of the icon shown in a preview pane body.
-/// Why: a large themed glyph stands in for real previews, which are out of this prototype's scope.
+/// What:
+///  pixel size of the icon shown in a preview pane body.
+/// Why:
+///  a large themed glyph stands in for real previews,
+///  which are out of this prototype's scope.
 const PREVIEW_ICON_SIZE: i32 = 96;
 
-/// What: build a directory-listing pane from `snapshot`, calling `on_activate(entry, force_dup)`
-///       when a row is single-clicked or Enter-activated, and `on_close` on the header button.
-/// Why: identical interaction contract to the original so the boundary tests drive both apps with
+/// What:
+///  build a directory-listing pane from `snapshot`,
+///  calling `on_activate(entry, force_dup)`
+///       when a row is single-clicked or Enter-activated,
+///  and `on_close` on the header button.
+/// Why:
+///  identical interaction contract to the original so the boundary tests drive both apps with
 ///      the same key sequences.
 pub(crate) fn build_listing_pane<A, C>(
     snapshot: &DirectorySnapshot,
@@ -91,10 +134,15 @@ where
     return container
 }
 
-/// What: wire row activation to `on_activate`, tracking whether Ctrl was held via a capture-phase
+/// What:
+///  wire row activation to `on_activate`,
+///  tracking whether Ctrl was held via a capture-phase
 ///       click gesture and a key controller feeding a shared cell that activation reads and clears.
-/// Why: `connect_activate` carries no modifier state, so the last pointer/key press before it
-///      records Ctrl; both controllers run before activation.
+/// Why:
+///  `connect_activate` carries no modifier state,
+///  so the last pointer/key press before it
+///      records Ctrl;
+///  both controllers run before activation.
 fn install_force_duplicate_tracking<A>(list: &ListView, on_activate: A)
 where
     A: Fn(&FileEntry, bool) + 'static,
@@ -130,8 +178,12 @@ where
     });
 }
 
-/// What: build a pane header: the pane's title path (ellipsized) beside a close button.
-/// Why: the close button is the explicit-close lifecycle trigger; shared by listing and preview
+/// What:
+///  build a pane header:
+///  the pane's title path (ellipsized) beside a close button.
+/// Why:
+///  the close button is the explicit-close lifecycle trigger;
+///  shared by listing and preview
 ///      panes.
 pub(crate) fn build_pane_header<C>(path: &str, on_close: C) -> GtkBox
 where
@@ -157,9 +209,14 @@ where
     return header
 }
 
-/// What: build a preview pane for `path`: a header (path + close) over a typed icon and filename.
-/// Why: previews exist so the model's preview-vs-directory dedup semantics stay exercised; real
-///      thumbnails are the original's concern, not this layout prototype's.
+/// What:
+///  build a preview pane for `path`:
+///  a header (path + close) over a typed icon and filename.
+/// Why:
+///  previews exist so the model's preview-vs-directory dedup semantics stay exercised;
+///  real
+///      thumbnails are the original's concern,
+///  not this layout prototype's.
 pub(crate) fn build_preview_pane<C>(path: &Path, on_close: C) -> GtkBox
 where
     C: Fn() + 'static,
@@ -178,9 +235,13 @@ where
     return container
 }
 
-/// What: build the factory that creates and binds one row (icon + name label).
-/// Why: `setup` builds an empty row once per realized slot; `bind` fills it from the row's boxed
-///      `FileEntry`, so only visible rows ever touch a `FileEntry`.
+/// What:
+///  build the factory that creates and binds one row (icon + name label).
+/// Why:
+///  `setup` builds an empty row once per realized slot;
+///  `bind` fills it from the row's boxed
+///      `FileEntry`,
+///  so only visible rows ever touch a `FileEntry`.
 fn build_row_factory() -> SignalListItemFactory {
     let factory = SignalListItemFactory::new();
     factory.connect_setup(|_, item| {
@@ -206,8 +267,11 @@ fn build_row_factory() -> SignalListItemFactory {
     return factory
 }
 
-/// What: map an `EntryKind` to a freedesktop icon-theme name.
-/// Why: uses the OS icon theme for a real, cheap glyph per kind.
+/// What:
+///  map an `EntryKind` to a freedesktop icon-theme name.
+/// Why:
+///  uses the OS icon theme for a real,
+///  cheap glyph per kind.
 fn icon_name(kind: EntryKind) -> &'static str {
     match kind {
         EntryKind::Directory => return "folder",

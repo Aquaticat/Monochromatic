@@ -1,9 +1,15 @@
 //! Pixel-to-row scroll mapping for the Slint/libghostty-vt bridge.
 
-/// What:     `pub const DEFAULT_CELL_WIDTH_PX: f32 = 9.0;` declares a public
-///           32-bit floating-point constant. Sibling numeric types include `f64`,
-///           `u32`, and `usize`; `f32` matches Slint's `float`/`length` mapping.
-/// Why:      Rust tests and non-UI callers need a fallback cell width; the Slint
+/// What:
+///      `pub const DEFAULT_CELL_WIDTH_PX: f32 = 9.0;` declares a public
+///           32-bit floating-point constant.
+///  Sibling numeric types include `f64`,
+///           `u32`,
+///  and `usize`;
+///  `f32` matches Slint's `float`/`length` mapping.
+/// Why:
+///       Rust tests and non-UI callers need a fallback cell width;
+///  the Slint
 ///           binary replaces this with renderer-measured font metrics at runtime.
 ///
 /// In TS you'd write (pseudocode):
@@ -12,10 +18,14 @@
 /// ```
 pub const DEFAULT_CELL_WIDTH_PX: f32 = 9.0;
 
-/// What:     `pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;` is the vertical cell
-///           height in logical pixels. `f32` is chosen for Slint interop; `usize`
+/// What:
+///      `pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;` is the vertical cell
+///           height in logical pixels.
+///  `f32` is chosen for Slint interop;
+///  `usize`
 ///           would be awkward because Slint passes fractional lengths.
-/// Why:      This is the denominator for pixel-to-row scrolling.
+/// Why:
+///       This is the denominator for pixel-to-row scrolling.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,9 +43,12 @@ pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;
 // type ScrollMapping = { pixelScroll: number; wholeRowOffset: number; fractionalPx: number };
 // ```
 #[derive(Clone, Copy, Debug, PartialEq)]
-/// What:     `pub struct ScrollMapping` declares a public record. Siblings include
+/// What:
+///      `pub struct ScrollMapping` declares a public record.
+///  Siblings include
 ///           tuple structs for unnamed fields and enums for tagged unions.
-/// Why:      The UI needs every part of the pixel-to-row split.
+/// Why:
+///       The UI needs every part of the pixel-to-row split.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,25 +59,38 @@ pub const DEFAULT_CELL_HEIGHT_PX: f32 = 18.0;
 /// };
 /// ```
 pub struct ScrollMapping {
-    /// What:     `pub pixel_scroll: f32` stores the clamped pixel offset. `f32`
-    ///           matches Slint; `f64` would add casts without useful precision.
-    /// Why:      The status text and tests can report the exact pixel position used.
+    /// What:
+    ///      `pub pixel_scroll: f32` stores the clamped pixel offset.
+    ///  `f32`
+    ///           matches Slint;
+    ///  `f64` would add casts without useful precision.
+    /// Why:
+    ///       The status text and tests can report the exact pixel position used.
     pub pixel_scroll: f32,
-    /// What:     `pub whole_row_offset: usize` stores a non-negative row count.
-    ///           Sibling integers include `u32`/`u64`/`i32`; `usize` matches Rust
+    /// What:
+    ///      `pub whole_row_offset: usize` stores a non-negative row count.
+    ///           Sibling integers include `u32`/`u64`/`i32`;
+    ///  `usize` matches Rust
     ///           indexing and libghostty-vt scrollback row counts.
-    /// Why:      This is the absolute row offset sent to libghostty-vt.
+    /// Why:
+    ///       This is the absolute row offset sent to libghostty-vt.
     pub whole_row_offset: usize,
-    /// What:     `pub fractional_px: f32` stores the leftover pixels after taking
+    /// What:
+    ///      `pub fractional_px: f32` stores the leftover pixels after taking
     ///           the whole-row floor.
-    /// Why:      Slint keeps this fractional motion smooth between row updates.
+    /// Why:
+    ///       Slint keeps this fractional motion smooth between row updates.
     pub fractional_px: f32,
 }
 
-/// What:     `pub fn map_pixel_scroll(...) -> ScrollMapping` declares a public
-///           pure function. Parameters use `f32` for Slint pixels and `usize` for
+/// What:
+///      `pub fn map_pixel_scroll(...) -> ScrollMapping` declares a public
+///           pure function.
+///  Parameters use `f32` for Slint pixels and `usize` for
 ///           row counts because those are the native caller types.
-/// Why:      This is the required bridge: floor(pixel / cell_height) plus modulo.
+/// Why:
+///       This is the required bridge:
+///  floor(pixel / cell_height) plus modulo.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -150,15 +176,22 @@ pub fn map_pixel_scroll(
     }
 }
 
-/// What:     `#[cfg(test)] #[path = "scroll_tests.rs"] mod tests;`
+/// What:
+///      `#[cfg(test)] #[path = "scroll_tests.rs"] mod tests;`
 ///           declares a test-only submodule whose code lives in the sibling
-///           file `scroll_tests.rs`. `#[cfg(test)]` gates it to test
-///           builds only; `#[path = "..."]` aims the module at a flat sibling
+///           file `scroll_tests.rs`.
+///  `#[cfg(test)]` gates it to test
+///           builds only;
+///  `#[path = "..."]` aims the module at a flat sibling
 ///           file instead of the default `scroll/tests.rs`
-///           subdirectory lookup. The file stays the `tests` CHILD of
-///           scroll, so its `use super::*` reaches the module items
+///           subdirectory lookup.
+///  The file stays the `tests` CHILD of
+///           scroll,
+///  so its `use super::*` reaches the module items
 ///           (including private ones) unchanged.
-/// Why:      Keep `scroll.rs` to production code; the tests live
+/// Why:
+///       Keep `scroll.rs` to production code;
+///  the tests live
 ///           beside it without inflating this file or its max-lines budget
 ///           (sibling `*_tests.rs` files are exempt from the linter).
 ///

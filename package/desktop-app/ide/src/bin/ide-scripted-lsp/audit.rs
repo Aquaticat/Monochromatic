@@ -1,15 +1,22 @@
-//! What the server can see and change from inside its sandbox, recorded once at start.
+//! What the server can see and change from inside its sandbox,
+//!  recorded once at start.
 
-/// What: `Value` is any JSON value; `json!` builds one from literal syntax.
-/// Why: The audit is one report line.
+/// What:
+///  `Value` is any JSON value;
+///  `json!` builds one from literal syntax.
+/// Why:
+///  The audit is one report line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Value = unknown;
 /// ```
 use serde_json::{Value, json};
-/// What: `Write` adds `write_all` to files; `OpenOptions` opens a file with chosen modes.
-/// Why: Write attempts use the same open-for-append the build-script probe uses.
+/// What:
+///  `Write` adds `write_all` to files;
+///  `OpenOptions` opens a file with chosen modes.
+/// Why:
+///  Write attempts use the same open-for-append the build-script probe uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,8 +24,13 @@ use serde_json::{Value, json};
 /// ```
 use std::{fs::OpenOptions, io::Write};
 
-/// What: Mount points mounted read-write, from `/proc/self/mountinfo`.
-/// Why: Inside the sandbox only the private state, `/tmp`, and the kernel file systems may be writable.
+/// What:
+///  Mount points mounted read-write,
+///  from `/proc/self/mountinfo`.
+/// Why:
+///  Inside the sandbox only the private state,
+///  `/tmp`,
+///  and the kernel file systems may be writable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -51,8 +63,11 @@ fn attempt_write(path: &str) -> Value {
     };
 }
 
-/// What: Build the audit record. `writes` is a colon-separated list of files to try writing.
-/// Why: The confinement acceptance tests read this record through the application's real start path.
+/// What:
+///  Build the audit record.
+///  `writes` is a colon-separated list of files to try writing.
+/// Why:
+///  The confinement acceptance tests read this record through the application's real start path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,5 +1,8 @@
-//! What: Run selected syntax-only Rust rules over one shared parse.
-//! Why: Disabling semantic checking must avoid Cargo/toolchain initialization, not merely hide its diagnostics.
+//! What:
+//!  Run selected syntax-only Rust rules over one shared parse.
+//! Why:
+//!  Disabling semantic checking must avoid Cargo/toolchain initialization,
+//!  not merely hide its diagnostics.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

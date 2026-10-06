@@ -1,8 +1,15 @@
-//! What: The built-in `final-newline` policy: a non-empty UTF-8 text file without NUL
+//! What:
+//!  The built-in `final-newline` policy:
+//!  a non-empty UTF-8 text file without NUL
 //!       bytes must end with exactly one LF byte.
-//! Why: The rule, its five preserved path families and its finding are the installed
-//!      wrapper's (`final-newline-policy.ts`, `final-newline-normalize.ts`), so the native
-//!      wrapper reports the same files with the same words. The normalized bytes are
+//! Why:
+//!  The rule,
+//!  its five preserved path families and its finding are the installed
+//!      wrapper's (`final-newline-policy.ts`,
+//!  `final-newline-normalize.ts`),
+//!  so the native
+//!      wrapper reports the same files with the same words.
+//!  The normalized bytes are
 //!      also the full-content correction a fixing lifecycle applies.
 //!
 //! In TS you'd write (pseudocode):
@@ -20,22 +27,28 @@ use super::candidate_version::{Candidate, CandidateVersion};
 use super::policy_content::{ContentState, Correction, LifecycleContent};
 /// Import the finding and outcome types of a check.
 use super::policy_engine::{PolicyFinding, PolicyOutcome};
-/// Import the lifecycle points; only a direct fix corrects.
+/// Import the lifecycle points;
+///  only a direct fix corrects.
 use super::policy_trigger::Trigger;
 /// Import the facts interface that prepares candidates.
 use super::repository_facts::RepositoryFacts;
-/// `Rc<T>` is a shared, read-only handle.
+/// `Rc<T>` is a shared,
+///  read-only handle.
 use std::rc::Rc;
 
 /// The policy-local code of a final-newline finding.
 pub const FINAL_NEWLINE_CODE: &str = "noncanonical-final-newline";
 
-/// The message of a final-newline finding, as the installed wrapper words it.
+/// The message of a final-newline finding,
+///  as the installed wrapper words it.
 pub const FINAL_NEWLINE_MESSAGE: &str = "Non-empty text file must end with exactly one LF byte.";
 
-/// What: Path prefixes whose files keep their exact bytes. `&[&[u8]]` is a borrowed list
+/// What:
+///  Path prefixes whose files keep their exact bytes.
+///  `&[&[u8]]` is a borrowed list
 ///       of byte strings baked into the program.
-/// Why:  Fuzz seeds and a fixture source are inputs whose trailing bytes are the test.
+/// Why:
+///   Fuzz seeds and a fixture source are inputs whose trailing bytes are the test.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,8 +60,12 @@ const PRESERVED_PREFIXES: &[&[u8]] = &[
     b"package/test-fixture/toml-edit/src/",
 ];
 
-/// What: Whether one byte is `/`, the separator of Git pathnames.
-/// Why:  A named predicate for `split`, because the repository bans anonymous functions.
+/// What:
+///  Whether one byte is `/`,
+///  the separator of Git pathnames.
+/// Why:
+///   A named predicate for `split`,
+///  because the repository bans anonymous functions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -58,9 +75,14 @@ fn is_slash(byte: &u8) -> bool {
     return *byte == b'/';
 }
 
-/// What: Whether the policy preserves the bytes of the file at `path`.
-/// Why:  The three prefixes above, any file below a `dist/final/node/` directory, and any
-///       file below a `bundle/node/` directory hold generated or fixture bytes. A path
+/// What:
+///  Whether the policy preserves the bytes of the file at `path`.
+/// Why:
+///   The three prefixes above,
+///  any file below a `dist/final/node/` directory,
+///  and any
+///       file below a `bundle/node/` directory hold generated or fixture bytes.
+///  A path
 ///       that merely ends in such a directory name holds no file below it.
 ///
 /// In TS you'd write (pseudocode):
@@ -89,8 +111,10 @@ pub fn is_final_newline_excluded(path: &[u8]) -> bool {
     return false;
 }
 
-/// What: Whether one byte is not LF.
-/// Why:  A named predicate for `rposition`.
+/// What:
+///  Whether one byte is not LF.
+/// Why:
+///   A named predicate for `rposition`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,11 +124,18 @@ fn is_content_byte(byte: &u8) -> bool {
     return *byte != b'\n';
 }
 
-/// What: The canonical bytes of a file, or nothing when they are already canonical or
-///       not text. `Option<Vec<u8>>` is "replacement bytes or nothing".
-/// Why:  Empty files, files with a NUL byte and files that are not UTF-8 are left alone;
-///       every other file ends with exactly one LF: missing ones are added and extra
-///       ones removed, interior bytes untouched.
+/// What:
+///  The canonical bytes of a file,
+///  or nothing when they are already canonical or
+///       not text.
+///  `Option<Vec<u8>>` is "replacement bytes or nothing".
+/// Why:
+///   Empty files,
+///  files with a NUL byte and files that are not UTF-8 are left alone;
+///       every other file ends with exactly one LF:
+///  missing ones are added and extra
+///       ones removed,
+///  interior bytes untouched.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,8 +166,11 @@ pub fn normalized_final_newline(bytes: &[u8]) -> Option<Vec<u8>> {
     return Some(normalized);
 }
 
-/// What: Whether the policy reads a candidate at all.
-/// Why:  Deletions have no content; symbolic links and submodules are not files of text;
+/// What:
+///  Whether the policy reads a candidate at all.
+/// Why:
+///   Deletions have no content;
+///  symbolic links and submodules are not files of text;
 ///       preserved paths keep their bytes.
 ///
 /// In TS you'd write (pseudocode):
@@ -153,9 +187,14 @@ fn is_checked(candidate: &Candidate) -> bool {
     return !is_final_newline_excluded(candidate.path.as_slice());
 }
 
-/// What: The finding for one candidate. `String::from_utf8_lossy` renders the pathname
-///       as text, replacing bytes that are not UTF-8.
-/// Why:  The finding names the file the person must change, and says whether this
+/// What:
+///  The finding for one candidate.
+///  `String::from_utf8_lossy` renders the pathname
+///       as text,
+///  replacing bytes that are not UTF-8.
+/// Why:
+///   The finding names the file the person must change,
+///  and says whether this
 ///       lifecycle proposed the correction.
 ///
 /// In TS you'd write (pseudocode):
@@ -172,13 +211,21 @@ fn finding(candidate: &Candidate, fix_available: bool) -> PolicyFinding {
     };
 }
 
-/// What: Check every candidate of the lifecycle. `<F: RepositoryFacts>` accepts any facts
-///       provider; `&mut ContentState` lends the shared candidates for reading and takes
+/// What:
+///  Check every candidate of the lifecycle.
+///  `<F: RepositoryFacts>` accepts any facts
+///       provider;
+///  `&mut ContentState` lends the shared candidates for reading and takes
 ///       the corrections.
-/// Why:  One finding per file whose bytes are not canonical, in candidate order; no
-///       candidates means no findings, and unreadable content means the policy failed.
+/// Why:
+///   One finding per file whose bytes are not canonical,
+///  in candidate order;
+///  no
+///       candidates means no findings,
+///  and unreadable content means the policy failed.
 ///       Only a direct fix applies corrections (the installed wrapper's
-///       `canApplyPatches`), so only there does each finding carry one.
+///       `canApplyPatches`),
+///  so only there does each finding carry one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -223,7 +270,8 @@ pub fn check_final_newline<F: RepositoryFacts>(
     return PolicyOutcome::Findings(findings);
 }
 
-/// Normalization, exclusion and check controls stay out of the release executable.
+/// Normalization,
+///  exclusion and check controls stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_final_newline_tests.rs"]
 mod tests;

@@ -1,5 +1,9 @@
-//! What: Exact prepared doctest text for hidden markers, helper functions and Rustdoc identity.
-//! Why: Substring checks cannot tell a stripped marker from a kept one, or a wrapped fragment from a bare one.
+//! What:
+//!  Exact prepared doctest text for hidden markers,
+//!  helper functions and Rustdoc identity.
+//! Why:
+//!  Substring checks cannot tell a stripped marker from a kept one,
+//!  or a wrapped fragment from a bare one.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,7 +15,8 @@ use super::{Edit, Fix, ProcessorLanguage, VirtualSource, fixed, inputs};
 /// Typed refusals carry the explanation and authored anchor under test.
 use crate::processors::ProcessorError;
 
-/// Only a function named main suppresses the generated wrapper; any other top-level function is wrapped.
+/// Only a function named main suppresses the generated wrapper;
+///  any other top-level function is wrapped.
 #[test]
 fn processors_wrap_fragments_whose_only_functions_are_helpers() {
     let virtuals: Vec<VirtualSource> = inputs(
@@ -33,7 +38,9 @@ fn processors_wrap_fragments_whose_only_functions_are_helpers() {
     );
 }
 
-/// A bare hidden marker becomes an empty line, at any indentation, and never opens the wrapper.
+/// A bare hidden marker becomes an empty line,
+///  at any indentation,
+///  and never opens the wrapper.
 #[test]
 fn processors_strip_bare_hidden_markers_to_empty_lines() {
     let host: &str = "```rust\n//! Example.\n#\n## visible\n  #\n# let x: u32 = 1;\nlet text = \"fn main()\";\n```\n";
@@ -79,7 +86,8 @@ fn processors_strip_bare_hidden_markers_to_empty_lines() {
     );
 }
 
-/// Rustdoc identity belongs to comment-derived Markdown only, never to the Rust it embeds.
+/// Rustdoc identity belongs to comment-derived Markdown only,
+///  never to the Rust it embeds.
 #[test]
 fn processors_mark_only_comment_derived_markdown_as_rustdoc() {
     let virtuals: Vec<VirtualSource> = inputs(

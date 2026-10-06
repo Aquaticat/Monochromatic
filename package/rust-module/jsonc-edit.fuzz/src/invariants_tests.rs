@@ -1,11 +1,20 @@
-//! What:     Unit tests for the shared invariant checks.
-//! Why:      An invariant that cannot fail is not an invariant. Each check here is proven in both
-//!           directions: a positive control where it must hold, and a deliberately broken input
-//!           where it must panic, so a fuzz campaign that reports nothing is evidence rather than
+//! What:
+//!      Unit tests for the shared invariant checks.
+//! Why:
+//!       An invariant that cannot fail is not an invariant.
+//!  Each check here is proven in both
+//!           directions:
+//!  a positive control where it must hold,
+//!  and a deliberately broken input
+//!           where it must panic,
+//!  so a fuzz campaign that reports nothing is evidence rather than
 //!           silence.
 
-/// What:     Import the panic-capture helpers.
-/// Why:      The negative controls assert that a check panics, and the default hook would print a
+/// What:
+///      Import the panic-capture helpers.
+/// Why:
+///       The negative controls assert that a check panics,
+///  and the default hook would print a
 ///           backtrace for every one of them.
 ///
 /// In TS you'd write (pseudocode):
@@ -14,8 +23,10 @@
 /// ```
 use std::panic::{catch_unwind, set_hook, take_hook};
 
-/// What:     Import the checks under test.
-/// Why:      Every exported invariant needs a passing and a failing case.
+/// What:
+///      Import the checks under test.
+/// Why:
+///       Every exported invariant needs a passing and a failing case.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,8 +37,11 @@ use crate::invariants::{
     collect_comments, depth_of,
 };
 
-/// What:     Import the crate's model and parse entry point.
-/// Why:      Negative controls need trees that the parser would never produce, which means building
+/// What:
+///      Import the crate's model and parse entry point.
+/// Why:
+///       Negative controls need trees that the parser would never produce,
+///  which means building
 ///           them directly.
 ///
 /// In TS you'd write (pseudocode):
@@ -36,8 +50,12 @@ use crate::invariants::{
 /// ```
 use monochromatic_jsonc_edit::{emit_jsonc_value, parse_jsonc, JsoncKind, JsoncValue};
 
-/// What:     Report whether a closure panics, without printing the panic.
-/// Why:      Negative controls intentionally trip assertions, and their output would bury the real
+/// What:
+///      Report whether a closure panics,
+///  without printing the panic.
+/// Why:
+///       Negative controls intentionally trip assertions,
+///  and their output would bury the real
 ///           test results.
 fn panics<F>(body: F) -> bool
 where
@@ -50,8 +68,12 @@ where
     return outcome.is_err();
 }
 
-/// What:     Parse one document, failing the test with the parser's own message if it refuses.
-/// Why:      Every case here starts from text, and a rejection at that point is a test bug.
+/// What:
+///      Parse one document,
+///  failing the test with the parser's own message if it refuses.
+/// Why:
+///       Every case here starts from text,
+///  and a rejection at that point is a test bug.
 fn parse(source: &str) -> JsoncValue {
     return parse_jsonc(source).unwrap_or_else(|error| panic!("test source must parse: {error}\n{source}"));
 }
@@ -62,7 +84,8 @@ fn canonical_emission_is_a_fixed_point() {
     assert_canonical_stability("// lead\n{/* k */\"a\":1e0,// v\n\"b\":[true,null,],}/* block */");
 }
 
-/// Comments must be collected from the root, from keys and from values.
+/// Comments must be collected from the root,
+///  from keys and from values.
 #[test]
 fn comments_are_collected_from_every_owner() {
     let document = parse("// root\n{/* key */\"a\":/* value */1}");
@@ -85,7 +108,8 @@ fn dropped_comment_fails_the_preservation_check() {
     );
 }
 
-/// Depth must count containers, and the bound must reject one past the limit.
+/// Depth must count containers,
+///  and the bound must reject one past the limit.
 #[test]
 fn depth_bound_accepts_the_limit_and_rejects_one_past_it() {
     let accepted = parse(&format!("{}0{}", "[".repeat(512), "]".repeat(512)));
@@ -102,7 +126,8 @@ fn depth_bound_accepts_the_limit_and_rejects_one_past_it() {
     assert!(panics(|| return assert_depth_bound(&too_deep)), "depth 513 must violate the bound");
 }
 
-/// Two parses of the same text must compare equal, and different documents must not.
+/// Two parses of the same text must compare equal,
+///  and different documents must not.
 #[test]
 fn tree_equality_separates_identical_from_different() {
     let source = "{\"a\":[1,2],\"b\":null}";
@@ -117,7 +142,8 @@ fn tree_equality_separates_identical_from_different() {
     );
 }
 
-/// Comment style is presentation, so a re-rendered comment must not break equality.
+/// Comment style is presentation,
+///  so a re-rendered comment must not break equality.
 #[test]
 fn comment_style_does_not_break_equality() {
     // A single-line block comment is re-rendered in `//` form by canonical emission, and a reparse

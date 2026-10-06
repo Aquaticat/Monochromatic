@@ -1,7 +1,10 @@
 //! Selected-text ink follows the selection background's lightness in both color schemes.
 
-/// What: Import the production contrast helpers through the library's public interface.
-/// Why: The native renderer calls exactly these functions; the tests must not use a copy.
+/// What:
+///  Import the production contrast helpers through the library's public interface.
+/// Why:
+///  The native renderer calls exactly these functions;
+///  the tests must not use a copy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -9,8 +12,14 @@
 /// ```
 use ide_app::selection_ink::{WHITE_MINIMUM, contrast, legible_ink};
 
-/// What: `const` names a compile-time value; `[u8; 4]` is a fixed four-byte color (red, green, blue, alpha).
-/// Why: The toolkit's fluent selection background is the same in the dark and the light scheme.
+/// What:
+///  `const` names a compile-time value;
+///  `[u8; 4]` is a fixed four-byte color (red,
+///  green,
+///  blue,
+///  alpha).
+/// Why:
+///  The toolkit's fluent selection background is the same in the dark and the light scheme.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -51,7 +60,9 @@ fn light_scheme_selection_ink_is_unchanged() {
     assert_eq!(legible_ink(FLUENT_SELECTION, WHITE), WHITE);
 }
 
-/// A light selection background, such as the fluent dark accent, gets dark ink with a high ratio.
+/// A light selection background,
+///  such as the fluent dark accent,
+///  gets dark ink with a high ratio.
 #[test]
 fn light_selection_background_gets_dark_ink() {
     let background = [0x60, 0xCD, 0xFF, 0xFF];
@@ -95,7 +106,8 @@ fn every_gray_background_keeps_the_minimum_ratio_and_switches_once() {
     );
 }
 
-/// A translucent background has no known lightness, so the toolkit's own ink is kept.
+/// A translucent background has no known lightness,
+///  so the toolkit's own ink is kept.
 #[test]
 fn translucent_selection_background_keeps_the_palette_ink() {
     assert_eq!(legible_ink([0x00, 0x78, 0xD4, 0x4D], BLACK), BLACK);

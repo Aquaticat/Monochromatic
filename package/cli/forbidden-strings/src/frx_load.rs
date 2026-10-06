@@ -1,18 +1,28 @@
 //! Loads the scan's rule sets onto the in-house forbidden-regex engine.
 //!
 //! Stage two of the engine swap (#384) routes rule loading through the stage-one frx
-//! compiler instead of the resharp/`regex` pipeline. Two sources feed a scan:
+//! compiler instead of the resharp/`regex` pipeline.
+//!  Two sources feed a scan:
 //!
 //! - the resolved runtime rules file (the `forbidden-strings.local.txt` precedence
-//!   chain), loaded through the validated per-user runtime cache with text fallback; and
-//! - the builtin baseline, embedded as a precompiled serialized `RegexSet` and
-//!   rebuilt via `load_precompiled` (never recompiled), active only under
+//!   chain),
+//!    loaded through the validated per-user runtime cache with text fallback;
+//!    and
+//! - the builtin baseline,
+//!    embedded as a precompiled serialized `RegexSet` and
+//!   rebuilt via `load_precompiled` (never recompiled),
+//!    active only under
 //!   `--builtin-rules`.
 //!
-//! A scan runs each set in order and attributes findings by rule id. The two sets
-//! carry independent 0-based id spaces, so the builtin's ids are offset past the
-//! runtime set's rule count: the runtime rules keep ids `0..user_len` and the
-//! builtin takes `user_len..`, mirroring the old "user rules first, baseline
+//! A scan runs each set in order and attributes findings by rule id.
+//!  The two sets
+//! carry independent 0-based id spaces,
+//!  so the builtin's ids are offset past the
+//! runtime set's rule count:
+//!  the runtime rules keep ids `0..user_len` and the
+//! builtin takes `user_len..`,
+//!  mirroring the old "user rules first,
+//!  baseline
 //! appended" ordering the `--builtin-rules` contract documents.
 
 /// Imports the CLI-boundary error channel and its construction macro.
@@ -26,7 +36,9 @@ use std::fs;
 /// Native rule-file paths must not be converted to lossy strings before filesystem reads.
 use std::path::Path;
 
-/// Imports runtime cache module, hybrid matcher, and precompiled builtin path.
+/// Imports runtime cache module,
+///  hybrid matcher,
+///  and precompiled builtin path.
 use crate::{load_precompiled, runtime_cache, runtime_matcher::RuntimeRules};
 
 /// Imports text compiler used only by in-memory fuzzing loader.
@@ -60,25 +72,36 @@ impl ScanMatcher {
 
 /// One compiled rule set plus the identity data applied to its findings.
 ///
-/// A named rule renders as `rule=<name>`; an unnamed rule falls back to `base` plus
-/// its index, giving each source a disjoint numeric range in the combined output.
+/// A named rule renders as `rule=<name>`;
+///  an unnamed rule falls back to `base` plus
+/// its index,
+///  giving each source a disjoint numeric range in the combined output.
 pub(crate) struct ScanSet {
     /// Matcher whose local ids are attributed against `base` and `names`.
     pub(crate) matcher: ScanMatcher,
-    /// Rule-id offset for unnamed rules: the runtime set's rule count for the
-    /// builtin, else 0.
+    /// Rule-id offset for unnamed rules:
+    ///  the runtime set's rule count for the
+    /// builtin,
+    ///  else 0.
     pub(crate) base: usize,
-    /// Per-rule section names parallel to the set's indices; `None` falls back to
+    /// Per-rule section names parallel to the set's indices;
+    ///  `None` falls back to
     /// the offset numeric id.
     pub(crate) names: Vec<Option<String>>,
 }
 
-/// The ordered rule sets a scan runs, each contributing identified findings.
+/// The ordered rule sets a scan runs,
+///  each contributing identified findings.
 ///
-/// Built by [`load`]; consumed by the scan path, which runs every set against each
-/// file's lines. Holding the sets in one value keeps the scan loop source-agnostic.
+/// Built by [`load`];
+///  consumed by the scan path,
+///  which runs every set against each
+/// file's lines.
+///  Holding the sets in one value keeps the scan loop source-agnostic.
 pub struct LoadedRules {
-    /// Sets scanned in order: the runtime set first (when present), then the builtin.
+    /// Sets scanned in order:
+    ///  the runtime set first (when present),
+    ///  then the builtin.
     sets: Vec<ScanSet>,
     /// Redacted cache warnings emitted before findings.
     cache_warnings: Vec<runtime_cache::CacheWarning>,
@@ -89,7 +112,8 @@ impl LoadedRules {
     /// Iterates each compiled set with its rule-id base offset and name table.
     ///
     /// The scan path runs `line_matches` on each set and renders every rule id
-    /// through the set's names (falling back to `base` plus the id), so runtime and
+    /// through the set's names (falling back to `base` plus the id),
+    ///  so runtime and
     /// builtin findings never collide.
     pub(crate) fn iter_sets(&self) -> impl Iterator<Item = &ScanSet> {
         return self.sets.iter()
@@ -103,9 +127,14 @@ impl LoadedRules {
 
 /// Parses the builtin baseline's embedded name sidecar into a per-rule name table.
 ///
-/// The build step writes one line per baseline rule, in compiled order: the rule's
-/// section name, or an empty line for an unnamed legacy rule. An entry count that
-/// disagrees with the compiled set is a build-invariant break, surfaced fail-closed
+/// The build step writes one line per baseline rule,
+///  in compiled order:
+///  the rule's
+/// section name,
+///  or an empty line for an unnamed legacy rule.
+///  An entry count that
+/// disagrees with the compiled set is a build-invariant break,
+///  surfaced fail-closed
 /// rather than misattributing findings.
 fn parse_builtin_names(text: &str, expected: usize) -> Result<Vec<Option<String>>> {
     let names: Vec<Option<String>> = text
@@ -122,17 +151,30 @@ fn parse_builtin_names(text: &str, expected: usize) -> Result<Vec<Option<String>
     return Ok(names)
 }
 
-/// Loads the runtime rules file and, under the flag, the precompiled builtin baseline.
+/// Loads the runtime rules file and,
+///  under the flag,
+///  the precompiled builtin baseline.
 ///
-/// Reads the resolved `rules_path`, loads or repairs its compiled runtime cache,
+/// Reads the resolved `rules_path`,
+///  loads or repairs its compiled runtime cache,
 /// and (when `builtin_rules`) appends the embedded baseline rebuilt from `precompiled` with its name sidecar
-/// `builtin_names`. A missing implicit default file is tolerated only under
-/// `--builtin-rules` (the baseline alone scans); an explicitly named missing file, or
-/// any other read failure, errors. A runtime rule whose name collides with a builtin
-/// name fails the load closed, so a finding's `rule=<name>` is never ambiguous.
-/// Every error is redacted: an I/O error names only the path, a compile error
-/// carries only an opaque rule index plus the engine's static reason, and a
-/// collision carries only the section name, never rule text.
+/// `builtin_names`.
+///  A missing implicit default file is tolerated only under
+/// `--builtin-rules` (the baseline alone scans);
+///  an explicitly named missing file,
+///  or
+/// any other read failure,
+///  errors.
+///  A runtime rule whose name collides with a builtin
+/// name fails the load closed,
+///  so a finding's `rule=<name>` is never ambiguous.
+/// Every error is redacted:
+///  an I/O error names only the path,
+///  a compile error
+/// carries only an opaque rule index plus the engine's static reason,
+///  and a
+/// collision carries only the section name,
+///  never rule text.
 pub fn load(
     rules_path: impl AsRef<Path>,
     builtin_rules: bool,
@@ -203,15 +245,24 @@ pub fn load(
     return Ok(LoadedRules { sets, cache_warnings })
 }
 
-/// Builds a single-set `LoadedRules` from in-memory rule text, for the fuzz targets.
+/// Builds a single-set `LoadedRules` from in-memory rule text,
+///  for the fuzz targets.
 ///
 /// Compiles `text` through the same strict loader the runtime path uses
-/// (`compile_rules`: escape literals, drop `m`/`x`, fail closed on any other flag,
-/// names carried for tail-format sources), then wraps the one resulting set at
-/// rule-id base 0. It skips the file read and the precompiled builtin baseline so a
-/// target can drive the loader and scan path from an in-memory source. The redacted
+/// (`compile_rules`:
+///  escape literals,
+///  drop `m`/`x`,
+///  fail closed on any other flag,
+/// names carried for tail-format sources),
+///  then wraps the one resulting set at
+/// rule-id base 0.
+///  It skips the file read and the precompiled builtin baseline so a
+/// target can drive the loader and scan path from an in-memory source.
+///  The redacted
 /// `LoadError` is returned verbatim so a target can assert the strict-loader
-/// contract. Gated on `fuzzing`; the production loader is [`load`].
+/// contract.
+///  Gated on `fuzzing`;
+///  the production loader is [`load`].
 #[cfg(feature = "fuzzing")]
 pub fn load_from_text(text: &str) -> std::result::Result<LoadedRules, crate::LoadError> {
     let compiled = compile_rules(text)?;
@@ -247,7 +298,8 @@ pub(crate) fn test_rules(text: &str) -> LoadedRules {
     return hybrid_from_text(text).expect("compile pathname test rules");
 }
 
-/// Registers the loader precedence and offset tests (sidecar, lint-exempt).
+/// Registers the loader precedence and offset tests (sidecar,
+///  lint-exempt).
 #[cfg(test)]
 #[path = "frx_load_tests.rs"]
 mod tests;

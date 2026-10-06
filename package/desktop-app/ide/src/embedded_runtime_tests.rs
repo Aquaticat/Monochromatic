@@ -1,6 +1,11 @@
-//! The table this build embeds: every digest holds, the table is sorted, every listed grammar and
-//! its notices are present, and every language on a bundled grammar compiles from the table alone,
-//! unpacking into a disposable cache, with a shadowing user Helix query present.
+//! The table this build embeds:
+//!  every digest holds,
+//!  the table is sorted,
+//!  every listed grammar and
+//! its notices are present,
+//!  and every language on a bundled grammar compiles from the table alone,
+//! unpacking into a disposable cache,
+//!  with a shadowing user Helix query present.
 
 use crate::embedded_runtime::EMBEDDED_RUNTIME;
 use helix_core::syntax::config::Configuration;
@@ -10,7 +15,8 @@ use ide_app::{
 };
 use std::{collections::HashSet, fs, path::Path, process::Command};
 
-/// Set in the child process, which performs the compile check instead of starting another child.
+/// Set in the child process,
+///  which performs the compile check instead of starting another child.
 const CHILD: &str = "IDE_EMBEDDED_RUNTIME_CHILD";
 
 /// The grammar names the embedded manifest lists.

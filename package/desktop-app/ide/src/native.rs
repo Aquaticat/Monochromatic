@@ -1,7 +1,10 @@
-//! Source-view binding gate; filesystem and language integration follow separately.
+//! Source-view binding gate;
+//!  filesystem and language integration follow separately.
 
-/// What: Slint's procedural macro imports the actual UI while retaining generated-code provenance.
-/// Why: Clippy can distinguish compiler output from app bindings without relaxing source lint rules.
+/// What:
+///  Slint's procedural macro imports the actual UI while retaining generated-code provenance.
+/// Why:
+///  Clippy can distinguish compiler output from app bindings without relaxing source lint rules.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,11 +23,16 @@ use anyhow::{Context, bail};
 use ide_app::annotation::Annotations;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
-/// The Language module's handle, its startup rule, and the reload record.
+/// The Language module's handle,
+///  its startup rule,
+///  and the reload record.
 use ide_app::language::{LanguageWorker, enter_project_directory, sync::DocumentReload};
-/// The log filter, the subscriber with the helix-lsp bridge, and the writer thread.
+/// The log filter,
+///  the subscriber with the helix-lsp bridge,
+///  and the writer thread.
 use ide_app::logging::{self, background};
-/// The displayed file is reread on change notifications, or on the old timer while unwatched.
+/// The displayed file is reread on change notifications,
+///  or on the old timer while unwatched.
 use ide_app::refresh_policy::SourceRefresh;
 /// The one vertical mapping between pixels and source lines.
 use ide_app::row_map::RowMap;
@@ -42,8 +50,11 @@ use ide_app::{cli::Options, workspace::Workspace};
 use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.
 use slint::{ComponentHandle, SharedString, VecModel};
-/// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
-/// Why: Callbacks need the same document without cross-thread Arc/Mutex overhead.
+/// What:
+///  Rc shares one UI-thread owner;
+///  RefCell permits checked mutable borrowing.
+/// Why:
+///  Callbacks need the same document without cross-thread Arc/Mutex overhead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,35 +64,60 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc, sync::Arc, time::Instant};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
-/// Inlay hints and diagnostics: the snapshot setter, the visible subset, and the problems at the caret.
+/// Inlay hints and diagnostics:
+///  the snapshot setter,
+///  the visible subset,
+///  and the problems at the caret.
 mod annotate;
-/// The gutter's severity letters in front of line numbers, in both schemes, with measured contrast.
+/// The gutter's severity letters in front of line numbers,
+///  in both schemes,
+///  with measured contrast.
 #[cfg(test)]
 mod annotation_gutter_tests;
-/// Rendered annotation pixels in both schemes, visible-only repaints, the scroll range, and display scale.
+/// Rendered annotation pixels in both schemes,
+///  visible-only repaints,
+///  the scroll range,
+///  and display scale.
 #[cfg(test)]
 mod annotation_paint_tests;
-/// Which rendered pixels may move when virtual rows arrive, change, or vanish, and which may not.
+/// Which rendered pixels may move when virtual rows arrive,
+///  change,
+///  or vanish,
+///  and which may not.
 #[cfg(test)]
 mod annotation_stability_tests;
 /// Injected hint and diagnostic snapshots through real key and pointer events.
 #[cfg(test)]
 mod annotation_tests;
-/// Real key events drive caret movement, Shift selection, paging, and caret-following scroll.
+/// Real key events drive caret movement,
+///  Shift selection,
+///  paging,
+///  and caret-following scroll.
 #[cfg(test)]
 mod caret_tests;
-/// In-file find bar, worker polling, and selection-based match navigation.
+/// In-file find bar,
+///  worker polling,
+///  and selection-based match navigation.
 mod find;
-/// The find box's 48px clear cell: every corner clears, its edges end it, and it follows focus and text.
+/// The find box's 48px clear cell:
+///  every corner clears,
+///  its edges end it,
+///  and it follows focus and text.
 #[cfg(test)]
 mod find_clear_tests;
 /// File switching and the modal search overlay must coexist with an open find bar.
 #[cfg(test)]
 mod find_interplay_tests;
-/// Real key events drive the find bar, reloads, file switches, and the search overlay together.
+/// Real key events drive the find bar,
+///  reloads,
+///  file switches,
+///  and the search overlay together.
 #[cfg(test)]
 mod find_tests;
-/// Tab traversal between tree, source, and find bar; typing never edits the read-only source.
+/// Tab traversal between tree,
+///  source,
+///  and find bar;
+///  typing never edits the read-only source.
 #[cfg(test)]
 mod focus_tests;
 /// Native font instance changes must repaint rather than reuse stale glyphs.
@@ -89,10 +125,13 @@ mod focus_tests;
 mod font_tests;
 /// Source selection and keyboard callbacks.
 mod input;
-/// Inspection-only hint and diagnostic injection from a JSON file; debug builds only.
+/// Inspection-only hint and diagnostic injection from a JSON file;
+///  debug builds only.
 #[cfg(debug_assertions)]
 mod inspect;
-/// Go to definition, references, and hover through the Language module.
+/// Go to definition,
+///  references,
+///  and hover through the Language module.
 mod language;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
@@ -102,16 +141,27 @@ mod navigation_reveal_tests;
 /// Native project callbacks exercise actual reader/timer and source replacement boundaries.
 #[cfg(test)]
 mod navigation_tests;
-/// Real pointer events select by character, word, and line, extend with Shift, and drag without panning.
+/// Real pointer events select by character,
+///  word,
+///  and line,
+///  extend with Shift,
+///  and drag without panning.
 #[cfg(test)]
 mod pointer_tests;
-/// Rendered search box in both schemes: placeholder, focus mark, selection colors, and clear states.
+/// Rendered search box in both schemes:
+///  placeholder,
+///  focus mark,
+///  selection colors,
+///  and clear states.
 #[cfg(test)]
 mod query_input_paint_tests;
-/// The find box keeps the toolkit box's editing keys, context menu, and scrolling of long text.
+/// The find box keeps the toolkit box's editing keys,
+///  context menu,
+///  and scrolling of long text.
 #[cfg(test)]
 mod query_input_tests;
-/// External-write-to-window timings for the tree and the displayed source; ignored by default.
+/// External-write-to-window timings for the tree and the displayed source;
+///  ignored by default.
 #[cfg(test)]
 mod refresh_latency_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
@@ -126,7 +176,10 @@ mod search_clear_tests;
 /// Replacement search queries cannot redirect an in-progress result click.
 #[cfg(test)]
 mod search_pointer_tests;
-/// Combined search exercises native key capture, real ripgrep, scope, and source-line navigation.
+/// Combined search exercises native key capture,
+///  real ripgrep,
+///  scope,
+///  and source-line navigation.
 #[cfg(test)]
 mod search_tests;
 /// Selected rows of the tree and both lists use the ink chosen from the selection fill.
@@ -135,10 +188,14 @@ mod selected_row_tests;
 /// Tree rows and source text beside the sidebar divider keep their own clicks at every width.
 #[cfg(test)]
 mod sidebar_adjacent_tests;
-/// The sidebar divider is a Tab stop adjusted by keys, and absent without a project.
+/// The sidebar divider is a Tab stop adjusted by keys,
+///  and absent without a project.
 #[cfg(test)]
 mod sidebar_keyboard_tests;
-/// Source repaint, window resizing, the find bar, and the search overlay beside a resized sidebar.
+/// Source repaint,
+///  window resizing,
+///  the find bar,
+///  and the search overlay beside a resized sidebar.
 #[cfg(test)]
 mod sidebar_layout_tests;
 /// Rendered divider states and tree painting inside the narrowest sidebar.
@@ -153,7 +210,9 @@ mod source_font_tests;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
-/// A live system color-scheme change repaints source ink, find overlays, and window chrome.
+/// A live system color-scheme change repaints source ink,
+///  find overlays,
+///  and window chrome.
 #[cfg(test)]
 mod theme_tests;
 /// Windowed rows must not redirect an in-progress click after scrolling.
@@ -164,10 +223,12 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
-/// External changes reach the tree and source through inotify notifications, faster than polling could.
+/// External changes reach the tree and source through inotify notifications,
+///  faster than polling could.
 #[cfg(test)]
 mod watch_tests;
-/// A save in progress is not shown before it finishes; an ignored measurement finds the pause that is.
+/// A save in progress is not shown before it finishes;
+///  an ignored measurement finds the pause that is.
 #[cfg(test)]
 mod write_wait_tests;
 /// An ignored measurement of saves that begin when the safety sweep comes due.
@@ -180,11 +241,13 @@ use render::{bind_appearance, render};
 /// Bind viewport changes without line-snapping native scrolling.
 use viewport::bind_viewport;
 
-/// Shared UI-thread state; there is no project-writing operation.
+/// Shared UI-thread state;
+///  there is no project-writing operation.
 struct State {
     /// Canonical source and current reading position.
     document: Document,
-    /// Optional authoritative disk file; absent only for the explicit in-memory fixture.
+    /// Optional authoritative disk file;
+    ///  absent only for the explicit in-memory fixture.
     file_path: Option<PathBuf>,
     /// File-open identity rejects worker replies after future navigation.
     file_generation: u64,
@@ -192,19 +255,23 @@ struct State {
     file_error: Option<String>,
     /// New-file open failures remain visible independently of the displayed file's refresh result.
     navigation_error: Option<String>,
-    /// Last revision whose highlighting result was accepted, including plain-text or failed results.
+    /// Last revision whose highlighting result was accepted,
+    ///  including plain-text or failed results.
     syntax_revision: Option<u64>,
     /// Highlight failures remain distinct from file-read failures.
     syntax_error: Option<String>,
-    /// Highlight ranges, populated by the syntax integration.
+    /// Highlight ranges,
+    ///  populated by the syntax integration.
     styles: SourceStyles,
-    /// First materialized source line, including viewport overscan.
+    /// First materialized source line,
+    ///  including viewport overscan.
     first: usize,
     /// Bounded number of materialized source lines.
     count: usize,
     /// Logical width of the visible code area.
     width: f32,
-    /// Horizontal tile origin; native Flickable supplies fractional movement.
+    /// Horizontal tile origin;
+    ///  native Flickable supplies fractional movement.
     horizontal: f32,
     /// Widest measured line of the current document.
     document_width: f32,
@@ -216,22 +283,37 @@ struct State {
     shaped: Option<ShapedView>,
     /// Avoid cloning whole source for accessibility on each selection change.
     presented_revision: Option<u64>,
-    /// Last materialized image inputs; reset when changing the displayed file.
+    /// Last materialized image inputs;
+    ///  reset when changing the displayed file.
     frame_stamp: Option<FrameStamp>,
-    /// Where every line of the displayed text is vertically; kept current by `rows::refresh`.
+    /// Where every line of the displayed text is vertically;
+    ///  kept current by `rows::refresh`.
     row_map: RowMap,
-    /// What: The blocks of virtual rows of every annotated line, in line order; `Arc` shares each block
-    ///       with the frames that paint it (siblings: single-thread `Rc`, owning `Box`).
-    /// Why: The map takes its block heights from these, and a frame takes the blocks of its lines.
+    /// What:
+    ///  The blocks of virtual rows of every annotated line,
+    ///  in line order;
+    ///  `Arc` shares each block
+    ///       with the frames that paint it (siblings:
+    ///  single-thread `Rc`,
+    ///  owning `Box`).
+    /// Why:
+    ///  The map takes its block heights from these,
+    ///  and a frame takes the blocks of its lines.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// blocks: Readonly<Block>[];
     /// ```
     blocks: Vec<Arc<Block>>,
-    /// What: What `blocks` and `row_map` were built from: the displayed text's stamp, the annotation store's
-    ///       change counter, and the display scale as exact bits; `Option<...>` is nothing before the first build.
-    /// Why: Blocks are assembled again only when one of the three changed.
+    /// What:
+    ///  What `blocks` and `row_map` were built from:
+    ///  the displayed text's stamp,
+    ///  the annotation store's
+    ///       change counter,
+    ///  and the display scale as exact bits;
+    ///  `Option<...>` is nothing before the first build.
+    /// Why:
+    ///  Blocks are assembled again only when one of the three changed.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -240,17 +322,25 @@ struct State {
     row_key: Option<rows::RowKey>,
     /// Vertical scroll offset the materialized lines were last chosen for.
     offset: f32,
-    /// What: When the reader last scrolled vertically; `Option<Instant>` is that moment or nothing.
-    /// Why: A change of rows that would move the scroll offset waits until the toolkit's scroll animation,
-    ///      which runs through a binding on that offset, has had time to finish.
+    /// What:
+    ///  When the reader last scrolled vertically;
+    ///  `Option<Instant>` is that moment or nothing.
+    /// Why:
+    ///  A change of rows that would move the scroll offset waits until the toolkit's scroll animation,
+    ///      which runs through a binding on that offset,
+    ///  has had time to finish.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// scrolledAt?: number;
     /// ```
     scrolled_at: Option<Instant>,
-    /// What: `Rc<VecModel<f32>>` is a shared, growable toolkit list of floats.
-    /// Why: The window draws one line number per entry at that vertical position; the list is updated in
+    /// What:
+    ///  `Rc<VecModel<f32>>` is a shared,
+    ///  growable toolkit list of floats.
+    /// Why:
+    ///  The window draws one line number per entry at that vertical position;
+    ///  the list is updated in
     ///      place while scrolling.
     ///
     /// In TS you'd write (pseudocode):
@@ -258,27 +348,38 @@ struct State {
     /// lineTops: ArrayModel<number>;
     /// ```
     line_tops: Rc<VecModel<f32>>,
-    /// What: `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers (sibling `f32` for the tops).
-    /// Why: Per materialized line, the gutter's severity letter: 0 for none, otherwise one more than the rank of
-    ///      the worst diagnostic starting on the line. Updated in place like the line tops.
+    /// What:
+    ///  `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers (sibling `f32` for the tops).
+    /// Why:
+    ///  Per materialized line,
+    ///  the gutter's severity letter:
+    ///  0 for none,
+    ///  otherwise one more than the rank of
+    ///      the worst diagnostic starting on the line.
+    ///  Updated in place like the line tops.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// lineMarks: ArrayModel<number>;
     /// ```
     line_marks: Rc<VecModel<i32>>,
-    /// Accepted in-file matches; painted only while they describe the displayed file and revision.
+    /// Accepted in-file matches;
+    ///  painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
     /// The latest accepted external reload the Language module has not been told about yet.
     language_reload: Option<DocumentReload>,
-    /// Latest accepted hint and diagnostic snapshots, stored by the language poll;
+    /// Latest accepted hint and diagnostic snapshots,
+    ///  stored by the language poll;
     /// painted and handed out only while they describe the displayed file and revision.
     annotations: Annotations,
-    /// The displayed file lies outside the project; it was opened read-only from a language target.
+    /// The displayed file lies outside the project;
+    ///  it was opened read-only from a language target.
     outside_project: bool,
     /// Where the caret goes once the file of a language target is installed.
     pending_jump: Option<language::Jump>,
-    /// When to reread the displayed file: on change notifications, or on a timer while unwatched.
+    /// When to reread the displayed file:
+    ///  on change notifications,
+    ///  or on a timer while unwatched.
     refresh: SourceRefresh,
 }
 
@@ -325,11 +426,19 @@ impl State {
     }
 }
 
-/// What: Success when this window may start language servers, otherwise the reason it starts none.
-///       `anyhow::Result<()>` is success without a value, or an error.
-/// Why: A debug build started with `IDE_INSPECT_ANNOTATIONS` shows that file's hints and diagnostics. A worker
-///      without servers still publishes "no problems" for the displayed text, which would replace the file's
-///      diagnostics, so such a window runs without the worker; asking for a language feature explains why.
+/// What:
+///  Success when this window may start language servers,
+///  otherwise the reason it starts none.
+///       `anyhow::Result<()>` is success without a value,
+///  or an error.
+/// Why:
+///  A debug build started with `IDE_INSPECT_ANNOTATIONS` shows that file's hints and diagnostics.
+///  A worker
+///      without servers still publishes "no problems" for the displayed text,
+///  which would replace the file's
+///      diagnostics,
+///  so such a window runs without the worker;
+///  asking for a language feature explains why.
 ///      Release builds do not read the variable.
 ///
 /// In TS you'd write (pseudocode):

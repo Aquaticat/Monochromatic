@@ -1,5 +1,9 @@
-//! What: Atomic application of grouped, byte-addressed source fixes.
-//! Why: Competing findings may overlap, but a multi-edit fix must never be applied only partly.
+//! What:
+//!  Atomic application of grouped,
+//!  byte-addressed source fixes.
+//! Why:
+//!  Competing findings may overlap,
+//!  but a multi-edit fix must never be applied only partly.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -9,8 +13,11 @@
 /// Import the ordered interval lookup used to detect conflicts.
 use std::collections::BTreeMap;
 
-/// What: One replacement of a half-open UTF-8 byte range.
-/// Why: The original and replacement strings stay owned by their callers; offsets never use UTF-16 indexing.
+/// What:
+///  One replacement of a half-open UTF-8 byte range.
+/// Why:
+///  The original and replacement strings stay owned by their callers;
+///  offsets never use UTF-16 indexing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,14 +27,17 @@ use std::collections::BTreeMap;
 pub struct Edit {
     /// Inclusive byte offset.
     pub start: usize,
-    /// Exclusive byte offset; equal to start for insertion.
+    /// Exclusive byte offset;
+    ///  equal to start for insertion.
     pub end: usize,
     /// Owned replacement source.
     pub replacement: String,
 }
 
-/// What: All edits supplied by one finding.
-/// Why: This group is the unit accepted or rejected when edits conflict.
+/// What:
+///  All edits supplied by one finding.
+/// Why:
+///  This group is the unit accepted or rejected when edits conflict.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,8 +49,10 @@ pub struct Fix {
     pub edits: Vec<Edit>,
 }
 
-/// What: An invalid edit plan or a refused empty rewrite.
-/// Why: Rule failures become processing findings rather than partially changed files.
+/// What:
+///  An invalid edit plan or a refused empty rewrite.
+/// Why:
+///  Rule failures become processing findings rather than partially changed files.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,8 +64,10 @@ pub struct FixError {
     pub message: String,
 }
 
-/// What: Result of selecting compatible whole fixes.
-/// Why: The caller can distinguish conflicts from actual changes before writing atomically.
+/// What:
+///  Result of selecting compatible whole fixes.
+/// Why:
+///  The caller can distinguish conflicts from actual changes before writing atomically.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,7 +75,8 @@ pub struct FixError {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AppliedFixes {
-    /// New source; the input string itself is never modified.
+    /// New source;
+    ///  the input string itself is never modified.
     pub source: String,
     /// Original finding indexes whose entire fix was selected.
     pub applied: Vec<usize>,
@@ -80,8 +95,11 @@ impl std::fmt::Display for FixError {
 /// Integrate processing failures with application error handling.
 impl std::error::Error for FixError {}
 
-/// What: Compare a candidate interval with its nearest earlier selected interval.
-/// Why: Ordered neighbors are sufficient; no scan over every earlier fix is necessary.
+/// What:
+///  Compare a candidate interval with its nearest earlier selected interval.
+/// Why:
+///  Ordered neighbors are sufficient;
+///  no scan over every earlier fix is necessary.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -95,8 +113,10 @@ fn conflicts_before(edit: &Edit, accepted: &BTreeMap<usize, &Edit>) -> bool {
     return *start == edit.start || previous.end > edit.start;
 }
 
-/// What: Compare a candidate interval with its nearest later selected interval.
-/// Why: A replacement must not cover an already accepted insertion or replacement.
+/// What:
+///  Compare a candidate interval with its nearest later selected interval.
+/// Why:
+///  A replacement must not cover an already accepted insertion or replacement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,8 +130,10 @@ fn conflicts_after(edit: &Edit, accepted: &BTreeMap<usize, &Edit>) -> bool {
     return *start < edit.end;
 }
 
-/// What: Validate a fix and return its edit indexes in source order.
-/// Why: Owned indexes avoid tying a returned reference to either borrowed input.
+/// What:
+///  Validate a fix and return its edit indexes in source order.
+/// Why:
+///  Owned indexes avoid tying a returned reference to either borrowed input.
 /// Invalid ranges or internal overlap must not reach unchecked string slicing.
 ///
 /// In TS you'd write (pseudocode):
@@ -149,8 +171,12 @@ fn ordered_edit_indexes(source: &str, fix: &Fix) -> Result<Vec<usize>, FixError>
     return Ok(ordered);
 }
 
-/// What: Select whole fixes in finding order, then construct output in one forward source walk.
-/// Why: Selection is independent from writing, so a late conflict cannot leave half a fix applied.
+/// What:
+///  Select whole fixes in finding order,
+///  then construct output in one forward source walk.
+/// Why:
+///  Selection is independent from writing,
+///  so a late conflict cannot leave half a fix applied.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

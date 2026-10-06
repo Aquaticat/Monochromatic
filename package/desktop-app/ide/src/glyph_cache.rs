@@ -2,8 +2,11 @@
 
 /// Propagate an oversized glyph instead of retaining unbounded image memory.
 use anyhow::{Result, bail};
-/// What: HashMap owns key/value entries, like Map in TypeScript.
-/// Why: Glyph identities need lookup rather than a scan of previously rendered images.
+/// What:
+///  HashMap owns key/value entries,
+///  like Map in TypeScript.
+/// Why:
+///  Glyph identities need lookup rather than a scan of previously rendered images.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,10 +16,12 @@ use std::collections::HashMap;
 /// Swash provides both cached images and the scaler used on cache misses.
 use swash::scale::{Render, Scaler, Source, StrikeWith, image::Image};
 
-/// Every outline-affecting input; theme colors are applied during compositing.
+/// Every outline-affecting input;
+///  theme colors are applied during compositing.
 #[derive(Hash, PartialEq, Eq)]
 pub(crate) struct GlyphKey {
-    /// Font blob identity, not just the selected primary font family.
+    /// Font blob identity,
+    ///  not just the selected primary font family.
     pub font: u64,
     /// Collection face index distinguishes faces within one font blob.
     pub face: u32,
@@ -24,7 +29,8 @@ pub(crate) struct GlyphKey {
     pub size: u32,
     /// Variable-font coordinates alter glyph outlines.
     pub variations: Vec<i16>,
-    /// Font-local glyph ID, not a Unicode character.
+    /// Font-local glyph ID,
+    ///  not a Unicode character.
     pub glyph: u16,
     /// Exact fractional x bits retain existing antialiasing.
     pub x: u32,
@@ -32,19 +38,26 @@ pub(crate) struct GlyphKey {
     pub y: u32,
 }
 
-/// Store empty glyph results too, avoiding repeated work for spaces.
+/// Store empty glyph results too,
+///  avoiding repeated work for spaces.
 #[derive(Default)]
 pub(crate) struct GlyphCache {
-    /// What: Option<Image> distinguishes ink from a successfully empty glyph.
-    /// Why: None is a cached result, not a missing map entry.
+    /// What:
+    ///  Option<Image> distinguishes ink from a successfully empty glyph.
+    /// Why:
+    ///  None is a cached result,
+    ///  not a missing map entry.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// private images = new Map<GlyphKey, Image | undefined>();
     /// ```
     images: HashMap<GlyphKey, Option<Image>>,
-    /// What: usize indexes memory, unlike fixed-width u32/u64 or signed i32/i64.
-    /// Why: Byte counts use the same address-sized integer as Vec::len().
+    /// What:
+    ///  usize indexes memory,
+    ///  unlike fixed-width u32/u64 or signed i32/i64.
+    /// Why:
+    ///  Byte counts use the same address-sized integer as Vec::len().
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -55,7 +68,8 @@ pub(crate) struct GlyphCache {
 
 /// Reuse exact glyph images while enforcing the entry and byte budgets.
 impl GlyphCache {
-    /// Borrow an image until the next cache operation, rendering only on a miss.
+    /// Borrow an image until the next cache operation,
+    ///  rendering only on a miss.
     /// The anonymous Scaler lifetime means its borrowed font cannot outlive its owner.
     pub(crate) fn image(
         &mut self,

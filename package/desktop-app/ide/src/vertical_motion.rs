@@ -1,18 +1,30 @@
-//! Up, Down, PageUp, and PageDown by shaped pixel position instead of character columns.
+//! Up,
+//!  Down,
+//!  PageUp,
+//!  and PageDown by shaped pixel position instead of character columns.
 //!
 //! The caret keeps aiming for the horizontal position where a run of vertical movements started,
 //! so passing through a short or empty line does not pull it to the left for the lines after it.
-//! Target lines are shaped on demand, because a page movement usually leaves the materialized viewport.
+//! Target lines are shaped on demand,
+//!  because a page movement usually leaves the materialized viewport.
 
 /// Canonical source and the current caret.
 use crate::document::Document;
 /// The same shaper that paints the viewport supplies the advances for hit testing.
 use crate::shaped_text::TextShaper;
 
-/// What: A copyable record; `usize` is an address-sized character index (siblings `u32`, `u64`),
+/// What:
+///  A copyable record;
+///  `usize` is an address-sized character index (siblings `u32`,
+///  `u64`),
 /// `f32` a 32-bit float of logical pixels (sibling `f64`).
-/// Why: The remembered x is only meaningful for the caret position it was produced for.
-/// Storing that position with it makes every other caret change (pointer, find, reload, Left, Right)
+/// Why:
+///  The remembered x is only meaningful for the caret position it was produced for.
+/// Storing that position with it makes every other caret change (pointer,
+///  find,
+///  reload,
+///  Left,
+///  Right)
 /// invalidate the memory without those code paths knowing about it.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,11 +39,15 @@ pub struct PreferredColumn {
     pub x: f32,
 }
 
-/// Move the caret `rows` lines down (negative: up) and return the new position with its remembered x.
+/// Move the caret `rows` lines down (negative:
+///  up) and return the new position with its remembered x.
 ///
-/// `remembered` is used only when it belongs to the current caret position; otherwise the caret's own x is taken.
-/// Moving up from the first line goes to the start of the text, and down from the last line to its end,
-/// as an ordinary text view does. A larger step than the remaining lines stops on the first or last line.
+/// `remembered` is used only when it belongs to the current caret position;
+///  otherwise the caret's own x is taken.
+/// Moving up from the first line goes to the start of the text,
+///  and down from the last line to its end,
+/// as an ordinary text view does.
+///  A larger step than the remaining lines stops on the first or last line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

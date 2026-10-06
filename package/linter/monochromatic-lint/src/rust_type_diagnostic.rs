@@ -1,12 +1,15 @@
-//! What: Findings and explicit coverage failures for the Rust type-annotation rule.
-//! Why: An unresolved call is not proof that no generic arguments are needed.
+//! What:
+//!  Findings and explicit coverage failures for the Rust type-annotation rule.
+//! Why:
+//!  An unresolved call is not proof that no generic arguments are needed.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Keep style findings separate from failures to establish the semantic facts.
 //! ```
 
-/// Import the shared finding, severity and byte-span model.
+/// Import the shared finding,
+///  severity and byte-span model.
 use crate::diagnostic::{Diagnostic, Severity, Span};
 /// Import the exact input bytes and their indexed positions.
 use crate::rust_source::RustSource;
@@ -39,8 +42,11 @@ pub(crate) fn type_finding(
     return diagnostic;
 }
 
-/// What: Record a failure to obtain type information, not a successful or exempt check.
-/// Why: The driver must fail processing even when ordinary type-policy findings were configured as warnings.
+/// What:
+///  Record a failure to obtain type information,
+///  not a successful or exempt check.
+/// Why:
+///  The driver must fail processing even when ordinary type-policy findings were configured as warnings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

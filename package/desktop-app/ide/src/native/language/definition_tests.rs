@@ -7,10 +7,13 @@ use super::test_support::{
 };
 /// Key events for the list and a tree-row lookup shared with the navigation tests.
 use crate::native::{find_tests::key, navigation_tests::row};
-/// Toolkit models, encoded keys, and window handles.
+/// Toolkit models,
+///  encoded keys,
+///  and window handles.
 use slint::{LogicalPosition, Model, SharedString, platform::Key};
 
-/// One hundred and twenty lines of 13 characters plus a newline: `line 007 word`.
+/// One hundred and twenty lines of 13 characters plus a newline:
+///  `line 007 word`.
 fn numbered() -> String {
     let mut text = String::new();
     for index in 0..120 {
@@ -69,7 +72,9 @@ fn definition_in_the_same_file_moves_the_caret_and_reveals_it() {
     assert_eq!(reader.window.get_language_popup_text(), "");
 }
 
-/// Ctrl+B at the definition lists its references; arrows wrap, Enter opens the chosen one with history.
+/// Ctrl+B at the definition lists its references;
+///  arrows wrap,
+///  Enter opens the chosen one with history.
 #[test]
 fn definition_at_the_caret_lists_references_and_enter_opens_the_chosen_one() {
     let other_text = "first\n  second line\n";
@@ -131,7 +136,8 @@ fn definition_at_the_caret_lists_references_and_enter_opens_the_chosen_one() {
     assert!(!reader.window.get_file_outside_project());
 }
 
-/// Ctrl+click asks for the definition under the pointer, without the references fallback.
+/// Ctrl+click asks for the definition under the pointer,
+///  without the references fallback.
 #[test]
 fn control_click_opens_a_definition_in_another_project_file() {
     let fixture = project(&[
@@ -163,7 +169,8 @@ fn control_click_opens_a_definition_in_another_project_file() {
     assert_eq!(badge(&reader, "other.scripted"), "0");
 }
 
-/// An outside-project target opens read-only and marked, without a tree row or a history slot.
+/// An outside-project target opens read-only and marked,
+///  without a tree row or a history slot.
 #[test]
 fn outside_project_definition_opens_marked_without_tree_reveal_or_history() {
     let fixture = project(&[("main.scripted", &numbered())]);
@@ -212,7 +219,8 @@ fn outside_project_definition_opens_marked_without_tree_reveal_or_history() {
     assert!(reader.window.get_source_text().starts_with("line 000"));
 }
 
-/// Several definitions are listed; Escape and an outside click close the list and return focus.
+/// Several definitions are listed;
+///  Escape and an outside click close the list and return focus.
 #[test]
 fn several_definitions_are_listed_and_closing_returns_focus_to_the_source() {
     let fixture = project(&[("main.scripted", &numbered())]);
@@ -255,7 +263,9 @@ fn several_definitions_are_listed_and_closing_returns_focus_to_the_source() {
     assert!(reader.window.get_source_has_focus());
 }
 
-/// Unopenable targets are explained: a single one at once, a listed one when chosen.
+/// Unopenable targets are explained:
+///  a single one at once,
+///  a listed one when chosen.
 #[test]
 fn unavailable_targets_explain_why_they_cannot_be_opened() {
     let fixture = project(&[("main.scripted", &numbered())]);

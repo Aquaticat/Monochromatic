@@ -2,12 +2,15 @@
 
 /// Fontique's immutable font blob is already used by Parley and Slint.
 use parley::fontique::Blob;
-/// LazyLock constructs each font identity once; Arc retains immutable embedded bytes across threads.
+/// LazyLock constructs each font identity once;
+///  Arc retains immutable embedded bytes across threads.
 use std::sync::{Arc, LazyLock};
 
-/// JetBrains Mono variable roman, with its original wght axis and OpenType features.
+/// JetBrains Mono variable roman,
+///  with its original wght axis and OpenType features.
 pub const CODE_ROMAN: &[u8] = include_bytes!("../asset/font/JetBrainsMono-Variable.ttf");
-/// Genuine JetBrains Mono italic design, not a skew transform of the roman face.
+/// Genuine JetBrains Mono italic design,
+///  not a skew transform of the roman face.
 pub const CODE_ITALIC: &[u8] = include_bytes!("../asset/font/JetBrainsMono-VariableItalic.ttf");
 /// Inter's variable text/display optical-size and weight design.
 pub const UI_ROMAN: &[u8] = include_bytes!("../asset/font/InterVariable.ttf");
@@ -21,15 +24,18 @@ static CODE_ROMAN_BLOB: LazyLock<Blob<u8>> =
 static CODE_ITALIC_BLOB: LazyLock<Blob<u8>> =
     LazyLock::new(|| return Blob::new(Arc::new(CODE_ITALIC)));
 
-/// The roman interface face has one identity for every shaper, so cached glyph masks are shared between frames.
+/// The roman interface face has one identity for every shaper,
+///  so cached glyph masks are shared between frames.
 static UI_ROMAN_BLOB: LazyLock<Blob<u8>> = LazyLock::new(|| return Blob::new(Arc::new(UI_ROMAN)));
 
-/// Return shared handles for both real code faces; cloning retains each blob's ID.
+/// Return shared handles for both real code faces;
+///  cloning retains each blob's ID.
 pub(crate) fn code_faces() -> [Blob<u8>; 2] {
     return [CODE_ROMAN_BLOB.clone(), CODE_ITALIC_BLOB.clone()];
 }
 
-/// Return the shared handle of the roman interface face, which sets the text of virtual rows:
+/// Return the shared handle of the roman interface face,
+///  which sets the text of virtual rows:
 /// inlay hints and diagnostic messages above a code row.
 pub(crate) fn row_face() -> Blob<u8> {
     return UI_ROMAN_BLOB.clone();

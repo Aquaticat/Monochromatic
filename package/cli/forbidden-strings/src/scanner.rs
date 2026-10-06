@@ -1,5 +1,7 @@
-//! What: In-process scanning of caller-owned candidate snapshots.
-//! Why: cli-git must scan the selected version's exact bytes and logical name without temporary content files or text parsing.
+//! What:
+//!  In-process scanning of caller-owned candidate snapshots.
+//! Why:
+//!  cli-git must scan the selected version's exact bytes and logical name without temporary content files or text parsing.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -23,8 +25,11 @@ use crate::runtime_cache::CacheWarning;
 /// Native paths preserve operating-system encoding until matching/display boundaries.
 use std::path::Path;
 
-/// What: Caller-owned identity plus safely displayable results from one exact candidate snapshot.
-/// Why: Matching pathname components may have identical masked labels; identity must remain independent of display text.
+/// What:
+///  Caller-owned identity plus safely displayable results from one exact candidate snapshot.
+/// Why:
+///  Matching pathname components may have identical masked labels;
+///  identity must remain independent of display text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,7 +37,8 @@ use std::path::Path;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CandidateScan {
-    /// Opaque identity chosen by the caller, not derived from any possibly redacted pathname.
+    /// Opaque identity chosen by the caller,
+    ///  not derived from any possibly redacted pathname.
     pub identity: usize,
     /// Logical pathname with matching components masked and protocol-sensitive characters escaped.
     pub display_path: String,
@@ -48,14 +54,18 @@ pub struct CandidateScan {
 /// The library catches load/matcher unwinds but deliberately does not replace process-wide hooks;
 /// Rust invokes the host's hook before an unwind can be caught.
 pub struct Scanner {
-    /// The incumbent loader retains hybrid runtime rules, embedded baseline and cache warnings.
+    /// The incumbent loader retains hybrid runtime rules,
+    ///  embedded baseline and cache warnings.
     loaded: LoadedRules,
 }
 
 /// Load once and scan exact snapshots without reading candidate files from the live worktree.
 impl Scanner {
-    /// What: Load runtime rules and the optional shipped baseline through the incumbent cache/validation path.
-    /// Why: The embedding adapter does not create a second compiler, cache or builtin-rules loader.
+    /// What:
+    ///  Load runtime rules and the optional shipped baseline through the incumbent cache/validation path.
+    /// Why:
+    ///  The embedding adapter does not create a second compiler,
+    ///  cache or builtin-rules loader.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -72,8 +82,10 @@ impl Scanner {
         return self.loaded.cache_warnings();
     }
 
-    /// What: Scan a candidate's logical pathname and exact immutable bytes.
-    /// Why: Historical/index candidates must never substitute the current worktree file or its temporary materialization name.
+    /// What:
+    ///  Scan a candidate's logical pathname and exact immutable bytes.
+    /// Why:
+    ///  Historical/index candidates must never substitute the current worktree file or its temporary materialization name.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -105,7 +117,8 @@ pub fn scanner_from_text_for_fuzzing(text: &str) -> Result<Scanner> {
     return Ok(Scanner { loaded });
 }
 
-/// Embedded-consumer controls use cache-free, disposable rule fixtures.
+/// Embedded-consumer controls use cache-free,
+///  disposable rule fixtures.
 #[cfg(test)]
 #[path = "scanner_tests.rs"]
 mod tests;

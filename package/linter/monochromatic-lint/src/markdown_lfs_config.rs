@@ -1,5 +1,7 @@
-//! What: Read the Git LFS endpoint declarations of a repository's committed `.lfsconfig`.
-//! Why: `markdown/lfs-image-url` builds object URLs on the server that file declares;
+//! What:
+//!  Read the Git LFS endpoint declarations of a repository's committed `.lfsconfig`.
+//! Why:
+//!  `markdown/lfs-image-url` builds object URLs on the server that file declares;
 //! the scan keeps the incumbent's line grammar so the same declarations are found in the same order.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +9,11 @@
 //! // parseLfsConfig(text) -> normalized bases in file order; readLfsObjectBase(root) -> first or none.
 //! ```
 
-/// Import the single endpoint normalizer; no other code turns an endpoint into an object base.
-/// Import ECMAScript's trim set, which differs from Rust's `str::trim` (it includes U+FEFF, excludes U+0085).
+/// Import the single endpoint normalizer;
+///  no other code turns an endpoint into an object base.
+/// Import ECMAScript's trim set,
+///  which differs from Rust's `str::trim` (it includes U+FEFF,
+///  excludes U+0085).
 use crate::{
     markdown_lfs_endpoint::{LfsUrlRejection, lfs_object_base},
     markdown_table_text::trim_space,
@@ -16,8 +21,10 @@ use crate::{
 /// Import native paths and I/O error classification.
 use std::{io::ErrorKind, path::Path};
 
-/// What: The file name git-lfs reads for repository-level configuration.
-/// Why: Its directory is also the repository root every object path is relative to.
+/// What:
+///  The file name git-lfs reads for repository-level configuration.
+/// Why:
+///  Its directory is also the repository root every object path is relative to.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,9 +32,13 @@ use std::{io::ErrorKind, path::Path};
 /// ```
 pub(crate) const LFS_CONFIG_FILENAME: &str = ".lfsconfig";
 
-/// What: Remove ECMAScript whitespace and line terminators from both ends of a borrowed string.
-/// Why: The incumbent calls `String.prototype.trim`, so a trailing carriage return or BOM is not part of a value.
-/// The result is a `&str` view into the input, not a new `String`.
+/// What:
+///  Remove ECMAScript whitespace and line terminators from both ends of a borrowed string.
+/// Why:
+///  The incumbent calls `String.prototype.trim`,
+///  so a trailing carriage return or BOM is not part of a value.
+/// The result is a `&str` view into the input,
+///  not a new `String`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,10 +48,16 @@ pub(crate) fn js_trim(text: &str) -> &str {
     return text.trim_matches(trim_space);
 }
 
-/// What: Collect endpoint values exactly as written, in file order.
-/// Why: `url` under `[lfs]` and `lfsurl` under any `[remote "..."]` section name the LFS server;
-/// comments, blank lines and unrelated keys pass through. Lines split on U+000A only.
-/// Section and key names fold ASCII case: the evaluation measured over every code point that no
+/// What:
+///  Collect endpoint values exactly as written,
+///  in file order.
+/// Why:
+///  `url` under `[lfs]` and `lfsurl` under any `[remote "..."]` section name the LFS server;
+/// comments,
+///  blank lines and unrelated keys pass through.
+///  Lines split on U+000A only.
+/// Section and key names fold ASCII case:
+///  the evaluation measured over every code point that no
 /// non-ASCII character lowercases to text containing a letter of the compared names.
 /// `Vec<String>` owns each value because the caller outlives the borrowed file text.
 ///
@@ -76,8 +93,11 @@ pub(crate) fn lfs_endpoints(text: &str) -> Vec<String> {
     return endpoints;
 }
 
-/// What: Normalize every declared endpoint, in file order.
-/// Why: The incumbent normalizes all declarations before selecting one,
+/// What:
+///  Normalize every declared endpoint,
+///  in file order.
+/// Why:
+///  The incumbent normalizes all declarations before selecting one,
 /// so a malformed later declaration fails the read instead of being skipped.
 ///
 /// In TS you'd write (pseudocode):
@@ -93,8 +113,11 @@ pub(crate) fn parse_lfs_config(text: &str) -> Result<Vec<String>, LfsUrlRejectio
     return Ok(bases);
 }
 
-/// What: A failed read of repository LFS configuration.
-/// Why: An unreadable or malformed `.lfsconfig` must surface as a processing failure, never as "no LFS here".
+/// What:
+///  A failed read of repository LFS configuration.
+/// Why:
+///  An unreadable or malformed `.lfsconfig` must surface as a processing failure,
+///  never as "no LFS here".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,8 +140,12 @@ impl std::fmt::Display for LfsConfigError {
 /// Mark the failure as a standard error for application error handling.
 impl std::error::Error for LfsConfigError {}
 
-/// What: Read one text file, mapping absence to `None` and every other failure to a typed error.
-/// Why: A missing `.lfsconfig` or `.gitattributes` is ordinary; a permission or encoding failure is not.
+/// What:
+///  Read one text file,
+///  mapping absence to `None` and every other failure to a typed error.
+/// Why:
+///  A missing `.lfsconfig` or `.gitattributes` is ordinary;
+///  a permission or encoding failure is not.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -138,8 +165,11 @@ pub(crate) fn read_optional_text(path: &Path) -> Result<Option<String>, LfsConfi
     }
 }
 
-/// What: The first object base a repository root declares, or `None` without a file or declaration.
-/// Why: The rule is inert for a repository that names no LFS server.
+/// What:
+///  The first object base a repository root declares,
+///  or `None` without a file or declaration.
+/// Why:
+///  The rule is inert for a repository that names no LFS server.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

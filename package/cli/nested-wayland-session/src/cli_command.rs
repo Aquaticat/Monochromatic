@@ -1,7 +1,11 @@
-//! Clap owns option grammar, generated help, and parent/child argument separation.
+//! Clap owns option grammar,
+//!  generated help,
+//!  and parent/child argument separation.
 
-/// What: Import clap's command and argument builders.
-/// Why: Help and validation are defined with the options instead of a manual loop.
+/// What:
+///  Import clap's command and argument builders.
+/// Why:
+///  Help and validation are defined with the options instead of a manual loop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

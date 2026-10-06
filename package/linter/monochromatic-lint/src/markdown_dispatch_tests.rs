@@ -1,5 +1,9 @@
-//! What: Selection and ordering controls for Markdown dispatch.
-//! Why: A rule must run exactly when selected, in registry order, with rustdoc and LFS context
+//! What:
+//!  Selection and ordering controls for Markdown dispatch.
+//! Why:
+//!  A rule must run exactly when selected,
+//!  in registry order,
+//!  with rustdoc and LFS context
 //! reaching the rules that use them.
 //!
 //! In TS you'd write (pseudocode):
@@ -20,7 +24,8 @@ use std::path::PathBuf;
 /// One document that violates every Markdown rule except the LFS rule at least once.
 const DOCUMENT: &str = "# One\n\n### Skipped level.\n\n# One\n\n**Emphasis as heading**\n\n```sh\n$ ls\n```\n\n```\nunlabeled\n```\n\nSee https://example.com and [shortcut] here. Second sentence follows on one line.\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n\n![shot](asset/shot.png)\n\n[shortcut]: https://example.com/a\n[unused]: https://example.com/b\n";
 
-/// Rule identifiers in registry order, excluding the LFS rule.
+/// Rule identifiers in registry order,
+///  excluding the LFS rule.
 const IDS: [&str; 12] = [
     "markdown/heading-increment",
     "markdown/commands-show-output",
@@ -48,7 +53,8 @@ fn settings(source: &str) -> MarkdownRuleSettings {
         .expect("valid settings");
 }
 
-/// The distinct codes of findings, in first-appearance order.
+/// The distinct codes of findings,
+///  in first-appearance order.
 fn distinct_codes(findings: &[Diagnostic]) -> Vec<String> {
     let mut codes: Vec<String> = Vec::<String>::new();
     for finding in findings {
@@ -76,7 +82,8 @@ fn lfs() -> LfsImageContext {
     };
 }
 
-/// With nothing selected no rule runs, even with an LFS context available.
+/// With nothing selected no rule runs,
+///  even with an LFS context available.
 #[test]
 fn nothing_selected_reports_nothing() {
     let findings: Vec<Diagnostic> = check_markdown_rules(
@@ -88,7 +95,8 @@ fn nothing_selected_reports_nothing() {
     assert!(findings.is_empty());
 }
 
-/// Each rule alone reports only its own code, with its configured severity.
+/// Each rule alone reports only its own code,
+///  with its configured severity.
 #[test]
 fn each_selected_rule_runs_alone() {
     let parsed: MarkdownSource = document();
@@ -103,7 +111,8 @@ fn each_selected_rule_runs_alone() {
     }
 }
 
-/// All rules together report in registry order, which decides fix precedence.
+/// All rules together report in registry order,
+///  which decides fix precedence.
 #[test]
 fn all_selected_rules_report_in_registry_order() {
     let mut source: String = String::from("{");
@@ -120,7 +129,8 @@ fn all_selected_rules_report_in_registry_order() {
     assert_eq!(distinct_codes(findings.as_slice()), expected);
 }
 
-/// The LFS rule needs both its selection and a context; either one alone leaves it inert.
+/// The LFS rule needs both its selection and a context;
+///  either one alone leaves it inert.
 #[test]
 fn the_lfs_rule_needs_selection_and_context() {
     let selected: MarkdownRuleSettings =
@@ -134,7 +144,8 @@ fn the_lfs_rule_needs_selection_and_context() {
     assert_eq!(findings[0].severity, Severity::Warn);
 }
 
-/// Inside rustdoc an unlabeled fence is a doc test, so the fix inserts `rust` instead of `text`.
+/// Inside rustdoc an unlabeled fence is a doc test,
+///  so the fix inserts `rust` instead of `text`.
 #[test]
 fn rustdoc_changes_the_fence_language_fix() {
     let selected: MarkdownRuleSettings =

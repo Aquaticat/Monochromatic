@@ -20,7 +20,8 @@ fn viewport() -> Viewport {
     };
 }
 
-/// Mixed CJK/Latin runs must share one baseline, also matching other source lines.
+/// Mixed CJK/Latin runs must share one baseline,
+///  also matching other source lines.
 #[test]
 fn mixed_script_runs_share_the_source_baseline() {
     let document = Document::new("I am a big cat.\n猫 and e\u{301} are grapheme test cases.");
@@ -78,7 +79,8 @@ fn selection_copies_source_not_projection() {
     assert!(!view.selection(&document).is_empty());
 }
 
-/// Source tile output contains glyph ink, with bounded physical dimensions.
+/// Source tile output contains glyph ink,
+///  with bounded physical dimensions.
 #[test]
 fn raster_has_ink_and_requested_dimensions() {
     let document = Document::new("猫 and a cat");

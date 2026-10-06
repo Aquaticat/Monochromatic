@@ -1,21 +1,44 @@
-//! Inspection-only annotation injection: debug builds started with `IDE_INSPECT_ANNOTATIONS` naming a JSON file
-//! install its hints and diagnostics for the displayed text, so nested-compositor frames can show them
-//! without a language server. Release builds do not contain this module, and without the variable it does nothing.
-//! A window started this way runs without the language worker (`servers_wanted` in the parent module): a worker
-//! without servers still publishes "no problems" for the displayed text, which would replace the file's diagnostics.
+//! Inspection-only annotation injection:
+//!  debug builds started with `IDE_INSPECT_ANNOTATIONS` naming a JSON file
+//! install its hints and diagnostics for the displayed text,
+//!  so nested-compositor frames can show them
+//! without a language server.
+//!  Release builds do not contain this module,
+//!  and without the variable it does nothing.
+//! A window started this way runs without the language worker (`servers_wanted` in the parent module):
+//!  a worker
+//! without servers still publishes "no problems" for the displayed text,
+//!  which would replace the file's diagnostics.
 //!
 //! The file holds `{ "hints": [{ "position", "label", "kind" }], "diagnostics": [{ "source", "start", "end",
 //! "severity", "code", "message" }], "delays": { "hints", "diagnostics" }, "reload_delays": { "hints",
-//! "diagnostics" } }` with character offsets of the initial file; `severity` is `error`, `warning`,
-//! `information`, `hint`, or absent, and `kind` is `type`, `parameter`, or absent.
+//! "diagnostics" } }` with character offsets of the initial file;
+//!  `severity` is `error`,
+//!  `warning`,
+//! `information`,
+//!  `hint`,
+//!  or absent,
+//!  and `kind` is `type`,
+//!  `parameter`,
+//!  or absent.
 //!
-//! Without `delays` and `reload_delays` both snapshots are installed at once for the initial text; an external
-//! change or a file switch makes them stale, and they disappear exactly as stale server snapshots do.
-//! `delays` gives milliseconds after startup at which hints and diagnostics arrive separately, as from a server
-//! that answers late. `reload_delays` makes them arrive again, that many milliseconds after each external
-//! reload, stamped for the new text; the offsets are reused, so the change must not move the annotated text.
+//! Without `delays` and `reload_delays` both snapshots are installed at once for the initial text;
+//!  an external
+//! change or a file switch makes them stale,
+//!  and they disappear exactly as stale server snapshots do.
+//! `delays` gives milliseconds after startup at which hints and diagnostics arrive separately,
+//!  as from a server
+//! that answers late.
+//!  `reload_delays` makes them arrive again,
+//!  that many milliseconds after each external
+//! reload,
+//!  stamped for the new text;
+//!  the offsets are reused,
+//!  so the change must not move the annotated text.
 
-/// The parent's state, the production setter, and the production repaint.
+/// The parent's state,
+///  the production setter,
+///  and the production repaint.
 use super::{AppWindow, State, annotate, render};
 /// A malformed inspection file stops startup with a message naming it.
 use anyhow::{Context, Result, bail};
@@ -25,8 +48,10 @@ use ide_app::language::{
     hints::{HintKind, HintsSnapshot, InlayHint},
     identity::{DocumentStamp, ServerIdentity},
 };
-/// What: `Deserialize` lets serde build a record from JSON.
-/// Why: The inspection file is JSON written by the probe script.
+/// What:
+///  `Deserialize` lets serde build a record from JSON.
+/// Why:
+///  The inspection file is JSON written by the probe script.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,7 +60,9 @@ use ide_app::language::{
 use serde::Deserialize;
 /// Timer callbacks and weak window references belong to the toolkit event loop.
 use slint::{ComponentHandle, Timer, TimerMode};
-/// Shared UI state, shared snapshot pointers, and the clock delayed arrivals are measured on.
+/// Shared UI state,
+///  shared snapshot pointers,
+///  and the clock delayed arrivals are measured on.
 use std::{
     cell::RefCell,
     rc::Rc,
@@ -50,8 +77,13 @@ struct FileHint {
     position: usize,
     /// Label text as a server would send it.
     label: String,
-    /// What: `Option<String>` is the kind word, `type` or `parameter`, or nothing.
-    /// Why: Real servers send both kinds; an omitted kind is a real protocol case too.
+    /// What:
+    ///  `Option<String>` is the kind word,
+    ///  `type` or `parameter`,
+    ///  or nothing.
+    /// Why:
+    ///  Real servers send both kinds;
+    ///  an omitted kind is a real protocol case too.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -69,17 +101,25 @@ struct FileProblem {
     start: usize,
     /// Character after the marked range.
     end: usize,
-    /// The severity word, or nothing for an omitted severity, which is a real protocol case worth showing.
+    /// The severity word,
+    ///  or nothing for an omitted severity,
+    ///  which is a real protocol case worth showing.
     severity: Option<String>,
     /// Rule or error code.
     code: Option<String>,
-    /// Message, possibly several lines.
+    /// Message,
+    ///  possibly several lines.
     message: String,
 }
 
-/// What: Milliseconds after which hints and diagnostics arrive; `u64` is an unsigned 64-bit integer
-///       (sibling `u32`), the type `Duration::from_millis` takes. `Copy` lets the pair be passed by value.
-/// Why: Servers answer hints and diagnostics separately and at different times.
+/// What:
+///  Milliseconds after which hints and diagnostics arrive;
+///  `u64` is an unsigned 64-bit integer
+///       (sibling `u32`),
+///  the type `Duration::from_millis` takes.
+///  `Copy` lets the pair be passed by value.
+/// Why:
+///  Servers answer hints and diagnostics separately and at different times.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -93,7 +133,8 @@ struct Delays {
     diagnostics: u64,
 }
 
-/// The whole inspection file; `#[serde(default)]` lets a list be left out.
+/// The whole inspection file;
+///  `#[serde(default)]` lets a list be left out.
 #[derive(Deserialize)]
 struct InspectionFile {
     /// Hint labels.
@@ -102,13 +143,16 @@ struct InspectionFile {
     /// Diagnostics.
     #[serde(default)]
     diagnostics: Vec<FileProblem>,
-    /// Arrival times after startup; absent for arrival at once.
+    /// Arrival times after startup;
+    ///  absent for arrival at once.
     delays: Option<Delays>,
-    /// Arrival times after each external reload; absent when a reload leaves the text without annotations.
+    /// Arrival times after each external reload;
+    ///  absent when a reload leaves the text without annotations.
     reload_delays: Option<Delays>,
 }
 
-/// Translate a severity word; an unknown word is an error in the inspection file.
+/// Translate a severity word;
+///  an unknown word is an error in the inspection file.
 fn severity(word: Option<&str>) -> Result<Option<Severity>> {
     let Some(known) = word else {
         return Ok(None);
@@ -128,7 +172,8 @@ fn severity(word: Option<&str>) -> Result<Option<Severity>> {
     bail!("Unknown severity {known:?} in the inspection annotation file");
 }
 
-/// Translate a hint kind word; an unknown word is an error in the inspection file.
+/// Translate a hint kind word;
+///  an unknown word is an error in the inspection file.
 fn kind(word: Option<&str>) -> Result<Option<HintKind>> {
     let Some(known) = word else {
         return Ok(None);
@@ -142,9 +187,13 @@ fn kind(word: Option<&str>) -> Result<Option<HintKind>> {
     bail!("Unknown hint kind {known:?} in the inspection annotation file");
 }
 
-/// What: The file's records in the Language module's shapes, without a stamp: hints in position order and
+/// What:
+///  The file's records in the Language module's shapes,
+///  without a stamp:
+///  hints in position order and
 ///       diagnostics grouped by source.
-/// Why: The same records are stamped for the initial text and again for every reloaded text.
+/// Why:
+///  The same records are stamped for the initial text and again for every reloaded text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -226,9 +275,13 @@ fn problem_snapshot(records: &Records, stamp: DocumentStamp) -> Arc<DiagnosticsS
     });
 }
 
-/// What: When the next hints and diagnostics are to arrive for the text `seen`; `Option<Instant>` is a moment
+/// What:
+///  When the next hints and diagnostics are to arrive for the text `seen`;
+///  `Option<Instant>` is a moment
 ///       or nothing once they arrived.
-/// Why: The timer installs each snapshot once, when its moment has come.
+/// Why:
+///  The timer installs each snapshot once,
+///  when its moment has come.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -253,9 +306,15 @@ fn moments(delays: Delays) -> (Option<Instant>, Option<Instant>) {
     );
 }
 
-/// What: One timer tick: schedule arrivals for a reloaded text, and install what is due through the entry
-///       points the language poll uses; the answer says whether the window must render.
-/// Why: Hints and diagnostics arrive separately and late, exactly as the poll would deliver them.
+/// What:
+///  One timer tick:
+///  schedule arrivals for a reloaded text,
+///  and install what is due through the entry
+///       points the language poll uses;
+///  the answer says whether the window must render.
+/// Why:
+///  Hints and diagnostics arrive separately and late,
+///  exactly as the poll would deliver them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -299,10 +358,18 @@ fn tick(
     return accepted;
 }
 
-/// What: Read `IDE_INSPECT_ANNOTATIONS` and install its snapshots: at once through the production setter, or
-///       by a timer when the file asks for delays. `Result<Option<Timer>>` is the timer to keep alive, nothing
-///       when none is needed, or an error naming the file.
-/// Why: Nested-compositor frames need hints and diagnostics on a fixture without a real server, also arriving
+/// What:
+///  Read `IDE_INSPECT_ANNOTATIONS` and install its snapshots:
+///  at once through the production setter,
+///  or
+///       by a timer when the file asks for delays.
+///  `Result<Option<Timer>>` is the timer to keep alive,
+///  nothing
+///       when none is needed,
+///  or an error naming the file.
+/// Why:
+///  Nested-compositor frames need hints and diagnostics on a fixture without a real server,
+///  also arriving
 ///      late and returning after a reload.
 ///
 /// In TS you'd write (pseudocode):

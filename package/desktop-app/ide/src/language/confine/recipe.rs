@@ -1,26 +1,44 @@
-//! The bubblewrap command line for one server, built without touching the system.
+//! The bubblewrap command line for one server,
+//!  built without touching the system.
 //!
 //! The shape is the one adopted in `doc/planning/slint-ide-write-confinement.md`
-//! ("Recommended launch shape"): the whole file system read-only, one private state directory
-//! and a private `/tmp` writable, `/run` hidden, no network, and a cleared environment that
-//! receives only an allowlist. The project is then bound again read-only at its own path, so a
-//! project below `/tmp`, `/run`, or `/dev` stays visible.
+//! ("Recommended launch shape"):
+//!  the whole file system read-only,
+//!  one private state directory
+//! and a private `/tmp` writable,
+//!  `/run` hidden,
+//!  no network,
+//!  and a cleared environment that
+//! receives only an allowlist.
+//!  The project is then bound again read-only at its own path,
+//!  so a
+//! project below `/tmp`,
+//!  `/run`,
+//!  or `/dev` stays visible.
 
 /// How the project is mounted inside.
 use super::project::project_binds;
 /// The seam's input and output types.
 use crate::language::launch::{LaunchRequest, ServerLaunch};
-/// What: `Value` is any JSON value; `json!` builds one from literal syntax.
-/// Why: Settings overrides are written into the server's JSON settings table.
+/// What:
+///  `Value` is any JSON value;
+///  `json!` builds one from literal syntax.
+/// Why:
+///  Settings overrides are written into the server's JSON settings table.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Value = unknown;
 /// ```
 use serde_json::{Value, json};
-/// What: `BTreeMap` is a key-value table kept sorted by key (sibling: `HashMap`, unordered);
+/// What:
+///  `BTreeMap` is a key-value table kept sorted by key (sibling:
+///  `HashMap`,
+///  unordered);
 ///       `Path`/`PathBuf` are borrowed and owned filesystem paths.
-/// Why: A sorted table gives the same argument order on every launch, so tests can compare
+/// Why:
+///  A sorted table gives the same argument order on every launch,
+///  so tests can compare
 ///      exact argument lists.
 ///
 /// In TS you'd write (pseudocode):
@@ -36,13 +54,19 @@ use std::{
 /// because helix-lsp always sends its own `processId` in `initialize` (measured in the confinement plan).
 pub const NO_PID_NAMESPACE: &[&str] = &["typescript-native", "typescript-language-server"];
 
-/// Servers that run cargo, whose target and build directories must move into private state.
+/// Servers that run cargo,
+///  whose target and build directories must move into private state.
 pub const CARGO_SERVERS: &[&str] = &["rust-analyzer"];
 
-/// Inherited variables a server receives; every other variable of the application is cleared,
-/// so credentials in the application's environment never reach project code. Bubblewrap adds
-/// `PWD` itself after clearing (measured). Measured needs: without `PATH` the TypeScript 7
-/// launcher's `#!/usr/bin/env node` fails; without `RUSTUP_TOOLCHAIN` the rustup proxy starts the
+/// Inherited variables a server receives;
+///  every other variable of the application is cleared,
+/// so credentials in the application's environment never reach project code.
+///  Bubblewrap adds
+/// `PWD` itself after clearing (measured).
+///  Measured needs:
+///  without `PATH` the TypeScript 7
+/// launcher's `#!/usr/bin/env node` fails;
+///  without `RUSTUP_TOOLCHAIN` the rustup proxy starts the
 /// default toolchain's rust-analyzer instead of the one the user selected.
 pub const ALLOWED_ENVIRONMENT: &[&str] = &[
     "PATH",
@@ -59,9 +83,13 @@ pub const ALLOWED_ENVIRONMENT: &[&str] = &[
     "RUSTUP_TOOLCHAIN",
 ];
 
-/// What: The namespace and mount options shared by the launch and the start-time probe.
-///       `Vec<String>` is a growable list of owned text values (sibling: `&[&str]`, borrowed).
-/// Why: The probe must test exactly the namespaces the server will get.
+/// What:
+///  The namespace and mount options shared by the launch and the start-time probe.
+///       `Vec<String>` is a growable list of owned text values (sibling:
+///  `&[&str]`,
+///  borrowed).
+/// Why:
+///  The probe must test exactly the namespaces the server will get.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -97,9 +125,14 @@ pub fn isolation(pid_namespace: bool) -> Vec<String> {
     return arguments;
 }
 
-/// What: Set one nested member of a JSON object, creating objects on the way. `&mut Value`
-///       lends the value for modification; `&[&str]` is a borrowed list of member names.
-/// Why: Overrides are merged into a settings table the user of the seam already filled.
+/// What:
+///  Set one nested member of a JSON object,
+///  creating objects on the way.
+///  `&mut Value`
+///       lends the value for modification;
+///  `&[&str]` is a borrowed list of member names.
+/// Why:
+///  Overrides are merged into a settings table the user of the seam already filled.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,8 +154,14 @@ fn set_path(target: &mut Value, path: &[&str], leaf: Value) {
     }
 }
 
-/// What: The settings a server gets inside the sandbox. `Option<Value>` is "settings, or none".
-/// Why: Without network, automatic type acquisition can only fail; switching it off keeps the
+/// What:
+///  The settings a server gets inside the sandbox.
+///  `Option<Value>` is "settings,
+///  or none".
+/// Why:
+///  Without network,
+///  automatic type acquisition can only fail;
+///  switching it off keeps the
 ///      TypeScript servers from starting `npm` at all (measured in the confinement plan).
 ///
 /// In TS you'd write (pseudocode):
@@ -146,9 +185,13 @@ pub fn confined_settings(server: &str, settings: Option<&Value>) -> Option<Value
     return result;
 }
 
-/// What: Build the complete launch for one server. `inherited` holds the application's values
-///       of the allowlisted variables, as `(name, value)` pairs.
-/// Why: Kept free of system access so the exact command line can be tested anywhere.
+/// What:
+///  Build the complete launch for one server.
+///  `inherited` holds the application's values
+///       of the allowlisted variables,
+///  as `(name, value)` pairs.
+/// Why:
+///  Kept free of system access so the exact command line can be tested anywhere.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

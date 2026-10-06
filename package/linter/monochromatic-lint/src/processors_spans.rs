@@ -1,5 +1,8 @@
-//! What: Original-host byte/line/column resolution through immutable map layers.
-//! Why: Synthetic text has no reporting address, while nested comments preserve authored positions.
+//! What:
+//!  Original-host byte/line/column resolution through immutable map layers.
+//! Why:
+//!  Synthetic text has no reporting address,
+//!  while nested comments preserve authored positions.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -47,7 +50,8 @@ pub(crate) fn direct(mapping: &Mapping, start: usize, end: usize) -> Option<(usi
     return None;
 }
 
-/// Resolve a nested range to the original host; malformed spans fail before slicing.
+/// Resolve a nested range to the original host;
+///  malformed spans fail before slicing.
 pub(crate) fn host_range(mapping: &Mapping, start: usize, end: usize) -> Option<(usize, usize)> {
     if start > end
         || end > mapping.text.len()

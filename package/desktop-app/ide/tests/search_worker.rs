@@ -1,4 +1,7 @@
-//! Real ripgrep subprocesses verify bounded results, independent errors, native paths, and latest-query ownership.
+//! Real ripgrep subprocesses verify bounded results,
+//!  independent errors,
+//!  native paths,
+//!  and latest-query ownership.
 
 /// Search replies preserve typed source locations and stream-specific errors.
 use ide_app::{
@@ -30,7 +33,8 @@ fn reply(worker: &mut SearchWorker) -> Arc<SearchReply> {
     }
 }
 
-/// Hidden/ignored files stay outside default ripgrep search, while path and content streams retain their own semantics.
+/// Hidden/ignored files stay outside default ripgrep search,
+///  while path and content streams retain their own semantics.
 #[test]
 fn real_search_preserves_path_and_content_semantics() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -77,7 +81,8 @@ fn real_search_preserves_path_and_content_semantics() {
         }));
 }
 
-/// Each result cap is independent, and only the first matching line in each file enters content results.
+/// Each result cap is independent,
+///  and only the first matching line in each file enters content results.
 #[test]
 fn both_result_streams_stop_at_their_approved_caps() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -237,7 +242,8 @@ fn latest_generation_wins_and_clear_discards_unread_results() {
     drop(worker);
 }
 
-/// A huge matching JSON line fails only the content stream, without allocating an unbounded result or losing path hits.
+/// A huge matching JSON line fails only the content stream,
+///  without allocating an unbounded result or losing path hits.
 #[test]
 fn oversized_content_record_retains_filename_results() {
     let fixture = tempfile::tempdir().expect("disposable project");

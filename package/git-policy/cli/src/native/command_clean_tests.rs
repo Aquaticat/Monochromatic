@@ -1,6 +1,11 @@
-//! What: `git clean` facts in every spelling Git 2.56.0 accepts, with real-Git controls for
-//!       the table, for clustered dry runs and for an interactive dry run.
-//! Why: A missed dry-run spelling blocks a harmless listing; a dry run read where Git sees
+//! What:
+//!  `git clean` facts in every spelling Git 2.56.0 accepts,
+//!  with real-Git controls for
+//!       the table,
+//!  for clustered dry runs and for an interactive dry run.
+//! Why:
+//!  A missed dry-run spelling blocks a harmless listing;
+//!  a dry run read where Git sees
 //!      none lets a deleting clean run in the main worktree.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +13,9 @@
 //! // expect(cleanChangesWorktree(parseCleanRegion(['-ndX']))).toBe(false);
 //! ```
 
-/// The parser, its table, the oracles and the real-Git fixture helpers.
+/// The parser,
+///  its table,
+///  the oracles and the real-Git fixture helpers.
 use super::{CLEAN_TABLE, CleanRegion, clean_changes_worktree, parse_clean_region};
 use crate::command_options::OptionErrorKind;
 use crate::command_test_completion::{git_completion, render_completion};
@@ -20,12 +27,15 @@ use crate::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use std::path::PathBuf;
 use std::process::Output;
 
-/// Parse a region Git accepts, with no other wrapper flags.
+/// Parse a region Git accepts,
+///  with no other wrapper flags.
 fn region(values: &[&str]) -> CleanRegion {
     return parse_clean_region(os_arguments(values).as_slice(), &[]).expect("valid region");
 }
 
-/// Dry runs in long, abbreviated, short and clustered forms delete nothing.
+/// Dry runs in long,
+///  abbreviated,
+///  short and clustered forms delete nothing.
 #[test]
 fn detects_dry_runs_in_every_spelling() {
     for values in [
@@ -49,7 +59,8 @@ fn detects_dry_runs_in_every_spelling() {
     }
 }
 
-/// Without a final dry run the clean can delete, including when `-n` is only a value.
+/// Without a final dry run the clean can delete,
+///  including when `-n` is only a value.
 #[test]
 fn detects_deleting_forms() {
     for values in [
@@ -75,7 +86,8 @@ fn detects_deleting_forms() {
     }
 }
 
-/// Interactive state is reported with Git's last-wins order; it does not decide deletion.
+/// Interactive state is reported with Git's last-wins order;
+///  it does not decide deletion.
 #[test]
 fn reports_the_final_interactive_state() {
     for values in [
@@ -114,7 +126,8 @@ fn finds_the_escape_hatch_in_option_position_only() {
     }
 }
 
-/// A region Git refuses is reported as refused; Git then deletes nothing.
+/// A region Git refuses is reported as refused;
+///  Git then deletes nothing.
 #[test]
 fn reports_what_git_refuses() {
     for (values, kind) in [
@@ -135,8 +148,10 @@ fn reports_what_git_refuses() {
     }
 }
 
-/// The copied table matches the binary; a clustered or abbreviated dry run keeps the file,
-/// `-e -n` deletes it, and an interactive dry run keeps it even after choosing "clean".
+/// The copied table matches the binary;
+///  a clustered or abbreviated dry run keeps the file,
+/// `-e -n` deletes it,
+///  and an interactive dry run keeps it even after choosing "clean".
 #[test]
 fn table_and_dry_run_readings_match_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("clean-table");

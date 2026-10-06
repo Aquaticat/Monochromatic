@@ -1,22 +1,39 @@
-//! Compositor-originated drag-and-drop, for testing a hosted app's INBOUND file drop.
+//! Compositor-originated drag-and-drop,
+//!  for testing a hosted app's INBOUND file drop.
 //!
 //! A real inbound drag needs a second client (a file manager) to be the drag source.
 //! Smithay 0.7 instead lets the compositor itself be the source via
-//! [`start_dnd`](smithay::wayland::selection::data_device::start_dnd): it installs a
-//! server pointer grab that, as the pointer moves over the hosted app's surface, sends
-//! the app a `wl_data_offer` + `enter`, then (on button release) a `drop`. The app
-//! then requests the data, which arrives in `ServerDndGrabHandler::send` (see
-//! `handler.rs`). This module drives that sequence from a `drop-file` control command,
-//! giving a deterministic, single-app inbound-drop test with no file manager involved.
+//! [`start_dnd`](smithay::wayland::selection::data_device::start_dnd):
+//!  it installs a
+//! server pointer grab that,
+//!  as the pointer moves over the hosted app's surface,
+//!  sends
+//! the app a `wl_data_offer` + `enter`,
+//!  then (on button release) a `drop`.
+//!  The app
+//! then requests the data,
+//!  which arrives in `ServerDndGrabHandler::send` (see
+//! `handler.rs`).
+//!  This module drives that sequence from a `drop-file` control command,
+//! giving a deterministic,
+//!  single-app inbound-drop test with no file manager involved.
 //!
-//! Why the release is deferred: Wayland DnD requires the target client to `accept` a
-//! mime type and choose an action (`set_actions`) BETWEEN the enter and the drop. Those
-//! are client round-trips. Releasing the button in the same synchronous call cancels the
-//! drop as unvalidated, so the release is scheduled on a short dwell timer instead.
+//! Why the release is deferred:
+//!  Wayland DnD requires the target client to `accept` a
+//! mime type and choose an action (`set_actions`) BETWEEN the enter and the drop.
+//!  Those
+//! are client round-trips.
+//!  Releasing the button in the same synchronous call cancels the
+//! drop as unvalidated,
+//!  so the release is scheduled on a short dwell timer instead.
 
-/// What:     `use std::{path::Path, time::Duration};`. A borrowed filesystem path and a
+/// What:
+///      `use std::{path::Path, time::Duration};`.
+///  A borrowed filesystem path and a
 ///           span of time.
-/// Why:      The drop source is named by path; the dwell before release is a `Duration`.
+/// Why:
+///       The drop source is named by path;
+///  the dwell before release is a `Duration`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,16 +41,27 @@
 /// ```
 use std::{path::Path, time::Duration};
 
-/// What:     `use anyhow::{anyhow, Context, Result};`. Error construction (`anyhow!`),
-///           context attachment (`.context`/`.with_context`), and the `Result` alias.
-/// Why:      `drop_file` reports human-readable failures to the control caller.
+/// What:
+///      `use anyhow::{anyhow, Context, Result};`.
+///  Error construction (`anyhow!`),
+///           context attachment (`.context`/`.with_context`),
+///  and the `Result` alias.
+/// Why:
+///       `drop_file` reports human-readable failures to the control caller.
 use anyhow::{anyhow, Context, Result};
 
-/// What:     Grouped `use` of the input state enum, the pointer event structs and the
-///           server-grab start data, the coordinate/serial utilities, the calloop timer
-///           types, the `DndAction` bitflags, and the `start_dnd` entry plus its
+/// What:
+///      Grouped `use` of the input state enum,
+///  the pointer event structs and the
+///           server-grab start data,
+///  the coordinate/serial utilities,
+///  the calloop timer
+///           types,
+///  the `DndAction` bitflags,
+///  and the `start_dnd` entry plus its
 ///           `SourceMetadata`.
-/// Why:      Everything the synthetic drag sequence references.
+/// Why:
+///       Everything the synthetic drag sequence references.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,12 +78,17 @@ use smithay::{
     wayland::selection::data_device::{start_dnd, SourceMetadata},
 };
 
-/// What:     `use tracing::info;`. Structured info-level log macro.
-/// Why:      Trace each stage of the drag so a failed drop can be localised.
+/// What:
+///      `use tracing::info;`.
+///  Structured info-level log macro.
+/// Why:
+///       Trace each stage of the drag so a failed drop can be localised.
 use tracing::info;
 
-/// What:     `use crate::{protocol::PointerButton, state::Compositor};`.
-/// Why:      Reuse the button-to-evdev-code mapping and operate on the compositor state.
+/// What:
+///      `use crate::{protocol::PointerButton, state::Compositor};`.
+/// Why:
+///       Reuse the button-to-evdev-code mapping and operate on the compositor state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,28 +97,46 @@ use tracing::info;
 /// ```
 use crate::{protocol::PointerButton, state::Compositor};
 
-/// What:     `const URI_LIST: &str = "text/uri-list";`. The drag's advertised mime type.
-/// Why:      File drops are carried as an RFC 2483 uri-list; the app filters on this exact
+/// What:
+///      `const URI_LIST: &str = "text/uri-list";`.
+///  The drag's advertised mime type.
+/// Why:
+///       File drops are carried as an RFC 2483 uri-list;
+///  the app filters on this exact
 ///           string.
 const URI_LIST: &str = "text/uri-list";
 
-/// What:     `const DWELL_MS: u64 = 200;`. Milliseconds the drag hovers before releasing.
-/// Why:      Long enough for the app to `accept` + `set_actions` (the round-trips a real
-///           drag needs) so the drop validates; short enough to keep the test snappy.
+/// What:
+///      `const DWELL_MS: u64 = 200;`.
+///  Milliseconds the drag hovers before releasing.
+/// Why:
+///       Long enough for the app to `accept` + `set_actions` (the round-trips a real
+///           drag needs) so the drop validates;
+///  short enough to keep the test snappy.
 const DWELL_MS: u64 = 200;
 
-/// What:     `const NUDGE_PX: f64 = 1.0;`. A one-pixel pointer move inside the grab.
-/// Why:      A distinct motion after the grab installs makes the grab emit the data offer
+/// What:
+///      `const NUDGE_PX: f64 = 1.0;`.
+///  A one-pixel pointer move inside the grab.
+/// Why:
+///       A distinct motion after the grab installs makes the grab emit the data offer
 ///           + `enter` to the app.
 const NUDGE_PX: f64 = 1.0;
 
-/// Originate a compositor-side file drag toward the hosted app, then release it after a
+/// Originate a compositor-side file drag toward the hosted app,
+///  then release it after a
 /// short dwell so the drop validates.
 ///
-/// What:     `pub fn drop_file(state: &mut Compositor, path: &Path, x: Option<f64>, y:
-///           Option<f64>) -> Result<()>`. Mutably borrows the compositor state, takes the
-///           source file path, and an optional logical drop point (both or neither).
-/// Why:      Backs the `drop-file` control command: a deterministic inbound-drop test.
+/// What:
+///      `pub fn drop_file(state: &mut Compositor, path: &Path, x: Option<f64>, y:
+///           Option<f64>) -> Result<()>`.
+///  Mutably borrows the compositor state,
+///  takes the
+///           source file path,
+///  and an optional logical drop point (both or neither).
+/// Why:
+///       Backs the `drop-file` control command:
+///  a deterministic inbound-drop test.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -265,9 +316,12 @@ pub fn drop_file(state: &mut Compositor, path: &Path, x: Option<f64>, y: Option<
 
 /// Compute the centre of the single hosted window in logical coordinates.
 ///
-/// What:     `fn window_centre(state: &Compositor) -> Result<(f64, f64)>`. Read-only borrow;
+/// What:
+///      `fn window_centre(state: &Compositor) -> Result<(f64, f64)>`.
+///  Read-only borrow;
 ///           returns the `(x, y)` centre or an error when no window is mapped.
-/// Why:      A coordinate-less `drop-file` targets the middle of the app.
+/// Why:
+///       A coordinate-less `drop-file` targets the middle of the app.
 fn window_centre(state: &Compositor) -> Result<(f64, f64)> {
     // What:     `let window = state.space.elements().next().ok_or_else(...)?;`. The first (and
     //           only) mapped window; error if none.
@@ -304,9 +358,12 @@ fn window_centre(state: &Compositor) -> Result<(f64, f64)> {
 
 /// Schedule the drag's button release after [`DWELL_MS`] on the event loop.
 ///
-/// What:     `fn schedule_release(state: &mut Compositor, button: u32) -> Result<()>`.
+/// What:
+///      `fn schedule_release(state: &mut Compositor, button: u32) -> Result<()>`.
 ///           Inserts a one-shot calloop timer that releases `button`.
-/// Why:      The release must happen after the app's accept round-trips, not synchronously.
+/// Why:
+///       The release must happen after the app's accept round-trips,
+///  not synchronously.
 fn schedule_release(state: &mut Compositor, button: u32) -> Result<()> {
     // What:     `let timer = Timer::from_duration(Duration::from_millis(DWELL_MS));`. A timer
     //           that fires once after the dwell.
@@ -335,11 +392,16 @@ fn schedule_release(state: &mut Compositor, button: u32) -> Result<()> {
     return Ok(())
 }
 
-/// Release the held left button, ending the server grab and delivering the drop.
+/// Release the held left button,
+///  ending the server grab and delivering the drop.
 ///
-/// What:     `fn release_drag(state: &mut Compositor, button: u32)`. Injects a button
+/// What:
+///      `fn release_drag(state: &mut Compositor, button: u32)`.
+///  Injects a button
 ///           release through the seat's pointer.
-/// Why:      The drop fires when the last button is released; the app then requests the data.
+/// Why:
+///       The drop fires when the last button is released;
+///  the app then requests the data.
 fn release_drag(state: &mut Compositor, button: u32) {
     // What:     `let Some(pointer) = state.seat.get_pointer() else { return; };`. The pointer
     //           handle, or bail if the seat lost its pointer (it should not).
@@ -371,12 +433,21 @@ fn release_drag(state: &mut Compositor, button: u32) {
     info!("drop-file: released the drag; drop delivered to the app");
 }
 
-/// Milliseconds since program start, used as an event timestamp.
+/// Milliseconds since program start,
+///  used as an event timestamp.
 ///
-/// What:     `fn event_time(state: &Compositor) -> u32`. Read-only borrow; returns a 32-bit
-///           millisecond count. `.as_millis()` yields a 128-bit integer, narrowed with `as
-///           u32` (Wayland event times are 32-bit and wrap, which clients tolerate).
-/// Why:      Mirrors `input::event_time`; kept local so this module does not reach into the
+/// What:
+///      `fn event_time(state: &Compositor) -> u32`.
+///  Read-only borrow;
+///  returns a 32-bit
+///           millisecond count.
+///  `.as_millis()` yields a 128-bit integer,
+///  narrowed with `as
+///           u32` (Wayland event times are 32-bit and wrap,
+///  which clients tolerate).
+/// Why:
+///       Mirrors `input::event_time`;
+///  kept local so this module does not reach into the
 ///           input module's private helper.
 fn event_time(state: &Compositor) -> u32 {
     // What:     `state.start_time.elapsed().as_millis() as u32`. Elapsed ms, narrowed. Tail

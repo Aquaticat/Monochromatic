@@ -1,8 +1,11 @@
 //! Parse the runtime `scale` control verb independently of the compositor.
 
-/// What:     `use super::Command;` brings the parent module's command union into scope.
-///           `super` names the module that declared this file, here `protocol`.
-/// Why:      This parser returns the same typed command every other control verb produces.
+/// What:
+///      `use super::Command;` brings the parent module's command union into scope.
+///           `super` names the module that declared this file,
+///  here `protocol`.
+/// Why:
+///       This parser returns the same typed command every other control verb produces.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -10,10 +13,14 @@
 /// ```
 use super::Command;
 
-/// What:     Import the output-scale value type from the display-independent geometry module.
+/// What:
+///      Import the output-scale value type from the display-independent geometry module.
 ///           `crate` names this package's own root.
-/// Why:      The verb accepts exactly what the `--scale` startup option accepts, through the
-///           same parser, so the two spellings cannot drift apart.
+/// Why:
+///       The verb accepts exactly what the `--scale` startup option accepts,
+///  through the
+///           same parser,
+///  so the two spellings cannot drift apart.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,11 +30,15 @@ use crate::screen_geometry::OutputScale;
 
 /// Parse the tokens after `scale` into the typed runtime output-scale command.
 ///
-/// What:     `pub(super) fn parse(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`. `pub(super)` exposes the function to the parent module only. `&mut`
+/// What:
+///      `pub(super) fn parse(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
+///           String>`.
+///  `pub(super)` exposes the function to the parent module only.
+///  `&mut`
 ///           lends the token iterator so this function consumes the remaining tokens.
 ///           `Result<Command, String>` is success with a command or failure with a message.
-/// Why:      Exactly one value keeps the verb unambiguous and rejects a second command
+/// Why:
+///       Exactly one value keeps the verb unambiguous and rejects a second command
 ///           smuggled behind it.
 ///
 /// In TS you'd write (pseudocode):

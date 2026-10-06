@@ -1,7 +1,14 @@
-//! Annotation pixels in the source tile: one underline style per severity in its ink, hints and messages on
-//! virtual rows above their line and never in a code row, and inks that follow the scheme.
+//! Annotation pixels in the source tile:
+//!  one underline style per severity in its ink,
+//!  hints and messages on
+//! virtual rows above their line and never in a code row,
+//!  and inks that follow the scheme.
 
-/// The production layout and packing, underline constants, vertical mapping, shaper, and raster.
+/// The production layout and packing,
+///  underline constants,
+///  vertical mapping,
+///  shaper,
+///  and raster.
 use ide_app::{
     annotation::{Label, Mark, Visible},
     annotation_layout::{AnnotationColors, lay_out, pack},
@@ -16,7 +23,8 @@ use ide_app::{
 /// Blocks are shared between the window state and the frames that paint them.
 use std::sync::Arc;
 
-/// Dark-scheme annotation inks for the tests; each differs from the source ink.
+/// Dark-scheme annotation inks for the tests;
+///  each differs from the source ink.
 const DARK: AnnotationColors = AnnotationColors {
     hint: [150, 160, 170, 255],
     error: [255, 110, 120, 255],
@@ -34,8 +42,12 @@ const LIGHT: AnnotationColors = AnnotationColors {
     suggestion: [100, 100, 100, 255],
 };
 
-/// What: Shape `source`, lay out `visible` with `inks`, and paint the tile at scale one.
-/// Why: The pixels come from exactly the path the native renderer takes.
+/// What:
+///  Shape `source`,
+///  lay out `visible` with `inks`,
+///  and paint the tile at scale one.
+/// Why:
+///  The pixels come from exactly the path the native renderer takes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -71,9 +83,15 @@ fn painted(source: &str, visible: &Visible, inks: AnnotationColors) -> (ShapedVi
     return (view, pixels);
 }
 
-/// What: The block above line `line` of `source` with one hint `hint` (position and text) and one message row
-///       per entry of `messages` (start, severity, text), packed by the production shaper.
-/// Why: The paint tests need real placements, not invented ones.
+/// What:
+///  The block above line `line` of `source` with one hint `hint` (position and text) and one message row
+///       per entry of `messages` (start,
+///  severity,
+///  text),
+///  packed by the production shaper.
+/// Why:
+///  The paint tests need real placements,
+///  not invented ones.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -124,8 +142,12 @@ fn count(pixels: &SourcePixels, rows: (usize, usize), ink: [u8; 4]) -> usize {
     return found;
 }
 
-/// What: Whether the premultiplied pixel at (`x`, `y`) is mostly covered and has `ink` once unpremultiplied.
-/// Why: Partly covered edge pixels keep the ink's hue; the source ink is never close to an annotation ink.
+/// What:
+///  Whether the premultiplied pixel at (`x`,
+///  `y`) is mostly covered and has `ink` once unpremultiplied.
+/// Why:
+///  Partly covered edge pixels keep the ink's hue;
+///  the source ink is never close to an annotation ink.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -153,9 +175,14 @@ fn inked(pixels: &SourcePixels, x: usize, y: usize, ink: [u8; 4]) -> bool {
     return true;
 }
 
-/// What: For each pixel column of `left..right`, the mean row of its `ink` pixels near the underline,
-///       or nothing when the column has none; `Vec<Option<f32>>` is a list of maybe-numbers.
-/// Why: Gaps show a broken line style; varying rows show a wave.
+/// What:
+///  For each pixel column of `left..right`,
+///  the mean row of its `ink` pixels near the underline,
+///       or nothing when the column has none;
+///  `Vec<Option<f32>>` is a list of maybe-numbers.
+/// Why:
+///  Gaps show a broken line style;
+///  varying rows show a wave.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -191,8 +218,12 @@ fn columns(
     return result;
 }
 
-/// Errors are a continuous wave, warnings flat dashes, information flat dots, and hint-severity sparse dots,
-/// each in its own ink, so severity is readable without color.
+/// Errors are a continuous wave,
+///  warnings flat dashes,
+///  information flat dots,
+///  and hint-severity sparse dots,
+/// each in its own ink,
+///  so severity is readable without color.
 #[test]
 fn each_severity_has_its_own_line_style_in_its_ink() {
     // Capital letters have no descenders, so only underline ink can appear below the baseline.
@@ -267,8 +298,12 @@ fn each_severity_has_its_own_line_style_in_its_ink() {
     );
 }
 
-/// Hints and messages are painted on their own rows above the code row, each in its ink; the gap above the
-/// block stays empty; and the code rows carry exactly the pixels they carry without annotations, so nothing
+/// Hints and messages are painted on their own rows above the code row,
+///  each in its ink;
+///  the gap above the
+/// block stays empty;
+///  and the code rows carry exactly the pixels they carry without annotations,
+///  so nothing
 /// that annotates a line is drawn on the line itself or after its end.
 #[test]
 fn virtual_rows_paint_above_the_code_row_and_never_in_it() {
@@ -347,7 +382,8 @@ fn virtual_rows_paint_above_the_code_row_and_never_in_it() {
     }
 }
 
-/// Inside a selection the underline keeps its line style but takes the selected-text ink, as selected glyphs do;
+/// Inside a selection the underline keeps its line style but takes the selected-text ink,
+///  as selected glyphs do;
 /// outside the selection it keeps the severity ink.
 #[test]
 fn selected_underlines_take_the_selected_ink() {
@@ -413,7 +449,8 @@ fn selected_underlines_take_the_selected_ink() {
     );
 }
 
-/// The same annotations painted with the light inks contain the light inks and none of the dark ones, and back.
+/// The same annotations painted with the light inks contain the light inks and none of the dark ones,
+///  and back.
 #[test]
 fn annotation_inks_follow_the_scheme() {
     let source = "ABCDEFHIK";

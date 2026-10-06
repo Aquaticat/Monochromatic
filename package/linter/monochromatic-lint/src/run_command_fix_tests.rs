@@ -1,6 +1,11 @@
-//! What: Whole-invocation controls for fixing, standard input and the LFS rule's end-to-end path.
-//! Why: `--fix` rewrites user files and `--stdin --fix` feeds a commit pipeline; both are verified
-//! as complete invocations, including the incumbent's standard-input cases.
+//! What:
+//!  Whole-invocation controls for fixing,
+//!  standard input and the LFS rule's end-to-end path.
+//! Why:
+//!  `--fix` rewrites user files and `--stdin --fix` feeds a commit pipeline;
+//!  both are verified
+//! as complete invocations,
+//!  including the incumbent's standard-input cases.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,10 +21,14 @@ use std::path::Path;
 /// Measured with coreutils `sha256sum` for the bytes `image bytes`.
 const IMAGE_OID: &str = "de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66faec";
 
-/// A configuration that selects only the LFS rule, as the commit-time adapter writes it.
+/// A configuration that selects only the LFS rule,
+///  as the commit-time adapter writes it.
 const LFS_ONLY: &str = r#"[{ "files": ["**/*.md", "**/*.mdx"], "rules": { "markdown/lfs-image-url": { "severity": "error" } } }]"#;
 
-/// The incumbent's repository fixture: endpoint with a credential, one tracked image, one plain file.
+/// The incumbent's repository fixture:
+///  endpoint with a credential,
+///  one tracked image,
+///  one plain file.
 fn lfs_repository(root: &Path) {
     write(
         root,
@@ -81,7 +90,8 @@ fn fix_rewrites_files_and_reports_the_remainder() {
     assert_eq!(again, output);
 }
 
-/// A rewritten file keeps its permission bits; an untouched file keeps its bytes and its modification state.
+/// A rewritten file keeps its permission bits;
+///  an untouched file keeps its bytes and its modification state.
 #[cfg(unix)]
 #[test]
 fn fixed_files_keep_their_mode() {
@@ -125,7 +135,8 @@ fn fixed_files_keep_their_mode() {
     assert_eq!(names, ["a.md", "b.md", CONFIG]);
 }
 
-/// Processor findings carry host positions, and a rustdoc fix lands inside the Rust host's comment.
+/// Processor findings carry host positions,
+///  and a rustdoc fix lands inside the Rust host's comment.
 #[test]
 fn processor_findings_and_fixes_use_the_host_file() {
     let fixture: Fixture = Fixture::new();
@@ -200,7 +211,8 @@ fn processor_findings_and_fixes_use_the_host_file() {
     );
 }
 
-/// Standard input is linted under the configuration of its logical filename; no file is read or written.
+/// Standard input is linted under the configuration of its logical filename;
+///  no file is read or written.
 #[test]
 fn standard_input_routes_source_and_findings() {
     let fixture: Fixture = Fixture::new();
@@ -358,7 +370,8 @@ fn standard_input_setup_failures_exit_two() {
     );
 }
 
-/// `--config` outside the repository resolves its patterns against the working directory, for files and standard input.
+/// `--config` outside the repository resolves its patterns against the working directory,
+///  for files and standard input.
 #[test]
 fn an_explicit_configuration_outside_the_tree_matches_tree_paths() {
     let fixture: Fixture = Fixture::new();
@@ -415,7 +428,11 @@ fn an_explicit_configuration_outside_the_tree_matches_tree_paths() {
     );
 }
 
-/// The incumbent's standard-input LFS cases: fix as if at the path, report without rewriting, exclude, and MDX.
+/// The incumbent's standard-input LFS cases:
+///  fix as if at the path,
+///  report without rewriting,
+///  exclude,
+///  and MDX.
 #[test]
 fn standard_input_lfs_rewrites_follow_the_incumbent_cases() {
     let fixture: Fixture = Fixture::new();
@@ -476,7 +493,10 @@ fn standard_input_lfs_rewrites_follow_the_incumbent_cases() {
     );
 }
 
-/// On disk, the LFS rule rewrites tracked images, leaves plain ones, and fails loudly on an unusable endpoint.
+/// On disk,
+///  the LFS rule rewrites tracked images,
+///  leaves plain ones,
+///  and fails loudly on an unusable endpoint.
 #[test]
 fn lfs_rewrites_files_and_unusable_endpoints_are_processing_failures() {
     let fixture: Fixture = Fixture::new();

@@ -1,26 +1,44 @@
-//! Application stylesheet, plus an opt-in debug tint.
+//! Application stylesheet,
+//!  plus an opt-in debug tint.
 
-/// What: imports the default-display accessor type.
-/// Why: the stylesheet is attached to the display so every window inherits it.
+/// What:
+///  imports the default-display accessor type.
+/// Why:
+///  the stylesheet is attached to the display so every window inherits it.
 use gtk4::gdk::Display;
-/// What: imports the CSS provider, the application priority constant, and the display-attach helper.
-/// Why: a provider at application priority overrides the theme's background across the app.
+/// What:
+///  imports the CSS provider,
+///  the application priority constant,
+///  and the display-attach helper.
+/// Why:
+///  a provider at application priority overrides the theme's background across the app.
 use gtk4::{
     CssProvider, STYLE_PROVIDER_PRIORITY_APPLICATION, style_context_add_provider_for_display,
 };
 
-/// What: imports the debug-tint env-var name.
-/// Why: the debug stylesheet is loaded only when that variable is set.
+/// What:
+///  imports the debug-tint env-var name.
+/// Why:
+///  the debug stylesheet is loaded only when that variable is set.
 use crate::constants::DEBUG_TINT_ENV;
 
-/// What: the app stylesheet: a pure-black background across the window and its views.
-/// Why: black is easier on the eyes than the theme's dark grey; row selection and text keep the
+/// What:
+///  the app stylesheet:
+///  a pure-black background across the window and its views.
+/// Why:
+///  black is easier on the eyes than the theme's dark grey;
+///  row selection and text keep the
 ///      theme's colors so highlighting and readability are unaffected.
 const APP_CSS: &str =
     "window, scrolledwindow, viewport, listview, .view { background-color: #000000; }";
 
-/// What: the debug stylesheet: distinct hues, outlines, and readable labels per structural layer.
-/// Why: debug tint should name every region in screenshots without implying that blank pane bodies
+/// What:
+///  the debug stylesheet:
+///  distinct hues,
+///  outlines,
+///  and readable labels per structural layer.
+/// Why:
+///  debug tint should name every region in screenshots without implying that blank pane bodies
 ///      are scroll-travel areas.
 const DEBUG_CSS: &str = "
 .fm-column-root:nth-child(4n+1) { background-color: rgba(255,64,64,0.12); }
@@ -43,8 +61,12 @@ const DEBUG_CSS: &str = "
 }
 ";
 
-/// What: load the app stylesheet onto the default display, plus the debug tint when its env is set.
-/// Why: installed once at startup (the display exists only after GTK init); a missing display is
+/// What:
+///  load the app stylesheet onto the default display,
+///  plus the debug tint when its env is set.
+/// Why:
+///  installed once at startup (the display exists only after GTK init);
+///  a missing display is
 ///      logged and skipped rather than panicking.
 pub(crate) fn install() {
     let Some(display) = Display::default() else {

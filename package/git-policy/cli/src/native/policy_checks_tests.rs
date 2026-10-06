@@ -1,6 +1,12 @@
-//! What: Each shipped policy's outcome from scripted facts, and which facts it asked for.
-//! Why: A check that asks Git for nothing must start no process; a check whose fact could
-//!      not be read must fail, not pass; and a content policy must never look clean where
+//! What:
+//!  Each shipped policy's outcome from scripted facts,
+//!  and which facts it asked for.
+//! Why:
+//!  A check that asks Git for nothing must start no process;
+//!  a check whose fact could
+//!      not be read must fail,
+//!  not pass;
+//!  and a content policy must never look clean where
 //!      candidates exist but cannot be read.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +14,8 @@
 //! // expect(await checks.check('require-root', 'pre-forward')).toEqual({ kind: 'findings', findings: [] });
 //! ```
 
-/// The adapter under test, the engine types it returns and the scripted facts.
+/// The adapter under test,
+///  the engine types it returns and the scripted facts.
 use super::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
 use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
@@ -27,7 +34,8 @@ use crate::test_support::{fixture, remove};
 use crate::worktree_identity::WorktreeIdentity;
 use std::path::PathBuf;
 
-/// The shipped checks over a command, the given facts and no candidates.
+/// The shipped checks over a command,
+///  the given facts and no candidates.
 fn checks(values: &[&str], facts: ScriptedFacts) -> ShippedChecks<ScriptedFacts> {
     return shipped_checks(
         facts,
@@ -83,7 +91,9 @@ fn location_only() -> Vec<String> {
     return vec![String::from("location")];
 }
 
-/// require-root: exempt commands ask nothing; other commands pass at the top level and outside a worktree.
+/// require-root:
+///  exempt commands ask nothing;
+///  other commands pass at the top level and outside a worktree.
 #[test]
 fn require_root_passes_exempt_commands_and_the_top_level() {
     for values in [
@@ -113,7 +123,8 @@ fn require_root_passes_exempt_commands_and_the_top_level() {
     }
 }
 
-/// require-root: below the top level the finding names the root and the directory Git reported.
+/// require-root:
+///  below the top level the finding names the root and the directory Git reported.
 #[test]
 fn require_root_rejects_a_directory_below_the_top_level() {
     assert_eq!(
@@ -150,7 +161,8 @@ fn require_root_rejects_a_directory_below_the_top_level() {
     );
 }
 
-/// require-root as a direct check has no command to exempt: it always measures.
+/// require-root as a direct check has no command to exempt:
+///  it always measures.
 #[test]
 fn require_root_direct_check_always_measures() {
     for values in [vec![], vec!["-C", "dir"]] {
@@ -170,7 +182,9 @@ fn require_root_direct_check_always_measures() {
     }
 }
 
-/// linked-worktree-only: harmless commands ask nothing; guarded ones are judged by the worktree kind.
+/// linked-worktree-only:
+///  harmless commands ask nothing;
+///  guarded ones are judged by the worktree kind.
 #[test]
 fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
     for values in [vec!["status"], vec!["clean", "-n"], vec!["reset", "--soft"]] {
@@ -236,7 +250,8 @@ fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
     );
 }
 
-/// linked-worktree-only: a main worktree whose Git directory lies under an exempt tool cache passes.
+/// linked-worktree-only:
+///  a main worktree whose Git directory lies under an exempt tool cache passes.
 #[test]
 fn linked_worktree_exempts_an_allowed_tool_cache() {
     let root: PathBuf = fixture("checks-tool-cache");
@@ -270,7 +285,9 @@ fn linked_worktree_exempts_an_allowed_tool_cache() {
     remove(root.as_path());
 }
 
-/// branch-worktree-only: explicit creation is rejected without a query; a bare name asks once.
+/// branch-worktree-only:
+///  explicit creation is rejected without a query;
+///  a bare name asks once.
 #[test]
 fn branch_worktree_rejects_creation_and_guessed_creation() {
     assert_eq!(
@@ -336,7 +353,8 @@ fn branch_worktree_rejects_creation_and_guessed_creation() {
     );
 }
 
-/// add-explicit: decided from arguments alone.
+/// add-explicit:
+///  decided from arguments alone.
 #[test]
 fn add_explicit_never_asks_for_a_fact() {
     assert_eq!(
@@ -365,7 +383,8 @@ fn unprepared() -> PolicyOutcome {
     };
 }
 
-/// Content policies report nothing without candidates; with candidates the ported ones
+/// Content policies report nothing without candidates;
+///  with candidates the ported ones
 /// read them and the unported ones refuse without reading.
 #[test]
 fn content_policies_follow_the_lifecycle_content() {

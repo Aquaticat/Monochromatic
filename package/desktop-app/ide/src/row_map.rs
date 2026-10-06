@@ -1,14 +1,28 @@
 //! The one mapping between vertical pixels and source lines.
 //!
-//! Every source line owns one code row of [`CODE_ROW`] logical pixels. A line with inlay hints or diagnostic
-//! messages also owns a block of virtual rows directly above its code row; the block's height includes the gap
-//! that separates it from the previous line. Everything that places or finds a line vertically asks this map:
-//! painting, hit testing, caret and selection rectangles, line numbers, scrolling, and the scroll extent.
-//! Without blocks, line `n` starts at exactly `n * CODE_ROW`.
+//! Every source line owns one code row of [`CODE_ROW`] logical pixels.
+//!  A line with inlay hints or diagnostic
+//! messages also owns a block of virtual rows directly above its code row;
+//!  the block's height includes the gap
+//! that separates it from the previous line.
+//!  Everything that places or finds a line vertically asks this map:
+//! painting,
+//!  hit testing,
+//!  caret and selection rectangles,
+//!  line numbers,
+//!  scrolling,
+//!  and the scroll extent.
+//! Without blocks,
+//!  line `n` starts at exactly `n * CODE_ROW`.
 
-/// What: Height of one code row in logical pixels; `f32` is a 32-bit float (sibling `f64`), the unit of every
+/// What:
+///  Height of one code row in logical pixels;
+///  `f32` is a 32-bit float (sibling `f64`),
+///  the unit of every
 ///       glyph advance and toolkit coordinate here.
-/// Why: The 15 px source text is set on 24 px rows; naming the value keeps it in one place.
+/// Why:
+///  The 15 px source text is set on 24 px rows;
+///  naming the value keeps it in one place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,13 +31,21 @@
 pub const CODE_ROW: f32 = 24.0;
 /// Distance from the top of a code row to the top of the caret bar and of selected-terminator marks.
 pub const CARET_INSET: f32 = 2.0;
-/// Height of the caret bar; it is centered in its code row.
+/// Height of the caret bar;
+///  it is centered in its code row.
 pub const CARET_HEIGHT: f32 = CODE_ROW - 2.0 * CARET_INSET;
 
-/// What: Where a vertical position falls: the source line and whether the point is in that line's block of
-///       virtual rows instead of its code row. `usize` is the line index type ropes use (siblings `u32`, `u64`).
-/// Why: A click in a block acts on the block's own code line, while hover and Ctrl+click treat a block as
-///      "over no character"; both need the line and the part.
+/// What:
+///  Where a vertical position falls:
+///  the source line and whether the point is in that line's block of
+///       virtual rows instead of its code row.
+///  `usize` is the line index type ropes use (siblings `u32`,
+///  `u64`).
+/// Why:
+///  A click in a block acts on the block's own code line,
+///  while hover and Ctrl+click treat a block as
+///      "over no character";
+///  both need the line and the part.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,14 +55,26 @@ pub const CARET_HEIGHT: f32 = CODE_ROW - 2.0 * CARET_INSET;
 pub struct Place {
     /// Zero-based source line.
     pub line: usize,
-    /// The point is above the line's code row, inside its virtual rows or their gap.
+    /// The point is above the line's code row,
+    ///  inside its virtual rows or their gap.
     pub in_block: bool,
 }
 
-/// What: The vertical layout of a whole text: its line count and the lines that own a block, each with the
-///       block's height. `Vec<T>` is a growable list (siblings: fixed `[T; N]`, borrowed `&[T]`).
-/// Why: Blocks are sparse, so only they are stored; positions come from two binary searches, whatever the
-///      file size. `before[i]` is the summed height of all blocks above block `i`.
+/// What:
+///  The vertical layout of a whole text:
+///  its line count and the lines that own a block,
+///  each with the
+///       block's height.
+///  `Vec<T>` is a growable list (siblings:
+///  fixed `[T; N]`,
+///  borrowed `&[T]`).
+/// Why:
+///  Blocks are sparse,
+///  so only they are stored;
+///  positions come from two binary searches,
+///  whatever the
+///      file size.
+///  `before[i]` is the summed height of all blocks above block `i`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,9 +82,12 @@ pub struct Place {
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct RowMap {
-    /// Number of source lines; an empty text still has one.
+    /// Number of source lines;
+    ///  an empty text still has one.
     lines: usize,
-    /// Lines owning a block, in ascending order, with the block height in logical pixels.
+    /// Lines owning a block,
+    ///  in ascending order,
+    ///  with the block height in logical pixels.
     blocks: Vec<(usize, f32)>,
     /// Summed height of the blocks before each entry of `blocks`.
     before: Vec<f32>,
@@ -58,15 +95,24 @@ pub struct RowMap {
 
 /// Build the map and answer where lines and pixels are.
 impl RowMap {
-    /// A text of `lines` lines without any block: line `n` starts at `n * CODE_ROW`.
+    /// A text of `lines` lines without any block:
+    ///  line `n` starts at `n * CODE_ROW`.
     pub fn plain(lines: usize) -> Self {
         return Self::new(lines, &[]);
     }
 
-    /// What: A text of `lines` lines where each `(line, height)` pair of `raised` puts a block of that height
-    ///       above that line's code row. `&[(usize, f32)]` lends the pairs, which must ascend by line.
-    /// Why: The annotation store computes block heights; the map only turns them into positions. A block of
-    ///      no height, or on a line the text does not have, is left out.
+    /// What:
+    ///  A text of `lines` lines where each `(line, height)` pair of `raised` puts a block of that height
+    ///       above that line's code row.
+    ///  `&[(usize, f32)]` lends the pairs,
+    ///  which must ascend by line.
+    /// Why:
+    ///  The annotation store computes block heights;
+    ///  the map only turns them into positions.
+    ///  A block of
+    ///      no height,
+    ///  or on a line the text does not have,
+    ///  is left out.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -97,8 +143,10 @@ impl RowMap {
         return self.lines;
     }
 
-    /// What: Index of the first stored block whose line is `line` or later.
-    /// Why: Every position query starts from the blocks above a line.
+    /// What:
+    ///  Index of the first stored block whose line is `line` or later.
+    /// Why:
+    ///  Every position query starts from the blocks above a line.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -134,7 +182,8 @@ impl RowMap {
         });
     }
 
-    /// Height of the block above `line`'s code row; zero for a line without one.
+    /// Height of the block above `line`'s code row;
+    ///  zero for a line without one.
     pub fn block_height(&self, line: usize) -> f32 {
         let index = self.index_of(line);
         // `get` lends the entry at `index`, or nothing past the end.
@@ -146,7 +195,9 @@ impl RowMap {
         return 0.0;
     }
 
-    /// Top of `line`'s block, which is the top of everything the line owns. `line` may equal the line count;
+    /// Top of `line`'s block,
+    ///  which is the top of everything the line owns.
+    ///  `line` may equal the line count;
     /// the answer is then the height of the whole text.
     pub fn block_top(&self, line: usize) -> f32 {
         let bounded = line.min(self.lines);
@@ -158,19 +209,26 @@ impl RowMap {
         return self.block_top(line) + self.block_height(line);
     }
 
-    /// Bottom of `line`'s code row, where the next line's block or code row starts.
+    /// Bottom of `line`'s code row,
+    ///  where the next line's block or code row starts.
     pub fn code_bottom(&self, line: usize) -> f32 {
         return self.code_top(line) + CODE_ROW;
     }
 
-    /// Height of the whole text: every code row and every block.
+    /// Height of the whole text:
+    ///  every code row and every block.
     pub fn height(&self) -> f32 {
         return self.lines as f32 * CODE_ROW + self.raised();
     }
 
-    /// What: The line owning vertical position `y`, and whether `y` is in its block. Positions above the text
+    /// What:
+    ///  The line owning vertical position `y`,
+    ///  and whether `y` is in its block.
+    ///  Positions above the text
     ///       belong to the first line and positions below it to the last line's code row.
-    /// Why: Pointer events and the scroll offset are pixels; everything else works on source lines.
+    /// Why:
+    ///  Pointer events and the scroll offset are pixels;
+    ///  everything else works on source lines.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -216,14 +274,20 @@ impl RowMap {
         };
     }
 
-    /// The line owning vertical position `y`, whichever of its parts the point is in.
+    /// The line owning vertical position `y`,
+    ///  whichever of its parts the point is in.
     pub fn line_at(&self, y: f32) -> usize {
         return self.locate(y).line;
     }
 
-    /// What: Height of everything `line` owns: its block and its code row. A line the text does not have
+    /// What:
+    ///  Height of everything `line` owns:
+    ///  its block and its code row.
+    ///  A line the text does not have
     ///       counts as one plain row.
-    /// Why: A page step is measured in whole lines, also where a page reaches past either end of the text.
+    /// Why:
+    ///  A page step is measured in whole lines,
+    ///  also where a page reaches past either end of the text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -236,11 +300,19 @@ impl RowMap {
         return self.block_height(line) + CODE_ROW;
     }
 
-    /// What: One page step from a view whose top edge is at `offset` and which is `height` tall: the number of
-    ///       lines that fit, at least one, and their summed height. `forward` counts from the top line down,
-    ///       otherwise the lines above it. The answer is a pair (tuple).
-    /// Why: PageUp and PageDown move the caret by whole lines and the view by exactly the pixels those lines
-    ///      take, which is no longer a multiple of one row height once blocks take space.
+    /// What:
+    ///  One page step from a view whose top edge is at `offset` and which is `height` tall:
+    ///  the number of
+    ///       lines that fit,
+    ///  at least one,
+    ///  and their summed height.
+    ///  `forward` counts from the top line down,
+    ///       otherwise the lines above it.
+    ///  The answer is a pair (tuple).
+    /// Why:
+    ///  PageUp and PageDown move the caret by whole lines and the view by exactly the pixels those lines
+    ///      take,
+    ///  which is no longer a multiple of one row height once blocks take space.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

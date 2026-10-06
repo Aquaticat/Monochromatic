@@ -1,6 +1,12 @@
-//! What: Raw and generated `git cat-file --batch` replies through the reply-reading invariants.
-//! Why: Reply content is file content, which is arbitrary and may imitate a reply, so
-//!      framing is checked over truncated, oversized, malformed and missing-object streams.
+//! What:
+//!  Raw and generated `git cat-file --batch` replies through the reply-reading invariants.
+//! Why:
+//!  Reply content is file content,
+//!  which is arbitrary and may imitate a reply,
+//!  so
+//!      framing is checked over truncated,
+//!  oversized,
+//!  malformed and missing-object streams.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

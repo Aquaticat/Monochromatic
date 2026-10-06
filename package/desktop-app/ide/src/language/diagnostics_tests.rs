@@ -1,4 +1,8 @@
-//! Diagnostics versioning, the unversioned freshness hold, invalidation, and aggregation, without a server.
+//! Diagnostics versioning,
+//!  the unversioned freshness hold,
+//!  invalidation,
+//!  and aggregation,
+//!  without a server.
 
 use super::store::PushVerdict;
 use super::{DiagnosticStore, Freshness, Severity};

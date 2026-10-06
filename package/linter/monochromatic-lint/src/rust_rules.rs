@@ -1,5 +1,8 @@
-//! What: The unified linter's existing Rust rule behavior.
-//! Why: Rule logic is ported without the old plugin, category or suppression machinery.
+//! What:
+//!  The unified linter's existing Rust rule behavior.
+//! Why:
+//!  Rule logic is ported without the old plugin,
+//!  category or suppression machinery.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,8 +16,11 @@ use crate::rust_source::RustSource;
 use ra_ap_syntax::ast::{DocCommentIter, Impl};
 use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode};
 
-/// What: Documentable node kinds paired with their established diagnostic labels.
-/// Why: One fixed table owns both selection and wording; macros and extern blocks remain excluded.
+/// What:
+///  Documentable node kinds paired with their established diagnostic labels.
+/// Why:
+///  One fixed table owns both selection and wording;
+///  macros and extern blocks remain excluded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,8 +45,10 @@ const DOCUMENTED_KINDS: &[(SyntaxKind, &str)] = &[
     (SyntaxKind::SOURCE_FILE, "file"),
 ];
 
-/// What: Look up a borrowed program-lifetime label for a documentable syntax kind.
-/// Why: Static literals need no owned allocation for every visited node.
+/// What:
+///  Look up a borrowed program-lifetime label for a documentable syntax kind.
+/// Why:
+///  Static literals need no owned allocation for every visited node.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,8 +63,11 @@ fn kind_label(kind: SyntaxKind) -> Option<&'static str> {
     return None;
 }
 
-/// What: Detect cxx-qt usage from identifier tokens, not comments or string contents.
-/// Why: Only the established bridge carve-out may exempt imports and trait-impl members.
+/// What:
+///  Detect cxx-qt usage from identifier tokens,
+///  not comments or string contents.
+/// Why:
+///  Only the established bridge carve-out may exempt imports and trait-impl members.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -76,8 +87,10 @@ fn uses_cxx_qt(root: &SyntaxNode) -> bool {
     return false;
 }
 
-/// What: Distinguish a trait implementation's associated item from a free or inherent item.
-/// Why: The bridge carve-out must not exempt inherent methods or trait declarations.
+/// What:
+///  Distinguish a trait implementation's associated item from a free or inherent item.
+/// Why:
+///  The bridge carve-out must not exempt inherent methods or trait declarations.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -99,8 +112,11 @@ fn is_trait_impl_member(node: &SyntaxNode) -> bool {
     return implementation.trait_().is_some();
 }
 
-/// What: Build the existing named or unnamed missing-documentation message.
-/// Why: The new rule ID changes the namespace, not what the rule tells the user.
+/// What:
+///  Build the existing named or unnamed missing-documentation message.
+/// Why:
+///  The new rule ID changes the namespace,
+///  not what the rule tells the user.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -115,8 +131,11 @@ fn missing_message(node: &SyntaxNode, label: &str) -> String {
     return format!("Missing rustdoc on {label}.");
 }
 
-/// What: Find the declaration's first non-trivia byte, including any attributes.
-/// Why: Attached ordinary comments must not move a finding away from the declaration.
+/// What:
+///  Find the declaration's first non-trivia byte,
+///  including any attributes.
+/// Why:
+///  Attached ordinary comments must not move a finding away from the declaration.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -134,8 +153,10 @@ fn declaration_offset(node: &SyntaxNode) -> usize {
     return usize::from(node.text_range().start());
 }
 
-/// What: Report a line-budget finding at the first code line beyond the configured limit.
-/// Why: Blank and comment-only lines were excluded once by the source context.
+/// What:
+///  Report a line-budget finding at the first code line beyond the configured limit.
+/// Why:
+///  Blank and comment-only lines were excluded once by the source context.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -163,8 +184,11 @@ pub fn check_max_lines(context: &RustSource, limit: usize, severity: Severity) -
     )];
 }
 
-/// What: Report missing docs on all documentable nodes, including private items and the file.
-/// Why: Visibility and suppression comments do not change this rule's accepted behavior.
+/// What:
+///  Report missing docs on all documentable nodes,
+///  including private items and the file.
+/// Why:
+///  Visibility and suppression comments do not change this rule's accepted behavior.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

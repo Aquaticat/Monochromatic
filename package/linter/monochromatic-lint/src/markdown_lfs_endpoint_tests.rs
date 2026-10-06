@@ -1,47 +1,61 @@
-//! What: The restricted endpoint normalizer against outputs measured from the unchanged incumbent.
-//! Why: `fixtures/lfs-url-parity.json` records what `lfsObjectBase` and `parseLfsConfig` returned
-//! under Node for 868 endpoints and 73 `.lfsconfig` texts, plus the native rejection each
-//! out-of-contract input must get. Self-authored expectations alone would not establish parity.
+//! What:
+//!  The restricted endpoint normalizer against outputs measured from the unchanged incumbent.
+//! Why:
+//!  `fixtures/lfs-url-parity.json` records what `lfsObjectBase` and `parseLfsConfig` returned
+//! under Node for 868 endpoints and 73 `.lfsconfig` texts,
+//!  plus the native rejection each
+//! out-of-contract input must get.
+//!  Self-authored expectations alone would not establish parity.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // for (const c of fixture.bases) expect(native(c.endpoint)).toEqual(c.rejection ?? c.expected);
 //! ```
 
-/// Import the normalizer, its rejection type and the config-level reader.
+/// Import the normalizer,
+///  its rejection type and the config-level reader.
 use super::{LfsUrlRejection, lfs_object_base};
 use crate::markdown_lfs_config::{parse_lfs_config, read_lfs_object_base};
 use crate::test_fs::Fixture;
 /// Import the existing typed JSON decoder for the committed measured fixture.
 use serde::Deserialize;
 
-/// One measured endpoint: the incumbent's output and the native rejection, if any.
+/// One measured endpoint:
+///  the incumbent's output and the native rejection,
+///  if any.
 #[derive(Deserialize)]
 struct BaseCase {
-    /// Corpus label, used only in failure messages.
+    /// Corpus label,
+    ///  used only in failure messages.
     class: String,
     /// Endpoint as it would be written in `.lfsconfig`.
     endpoint: String,
-    /// Incumbent output, or absent when the incumbent throws.
+    /// Incumbent output,
+    ///  or absent when the incumbent throws.
     expected: Option<String>,
-    /// Fixture name of the first native rejection, or absent when the native function must accept.
+    /// Fixture name of the first native rejection,
+    ///  or absent when the native function must accept.
     rejection: Option<String>,
 }
 
 /// One measured `.lfsconfig` text.
 #[derive(Deserialize)]
 struct ConfigCase {
-    /// Corpus label, used only in failure messages.
+    /// Corpus label,
+    ///  used only in failure messages.
     class: String,
     /// Complete file contents.
     text: String,
-    /// Incumbent bases in declaration order, or absent when the incumbent throws.
+    /// Incumbent bases in declaration order,
+    ///  or absent when the incumbent throws.
     expected: Option<Vec<String>>,
-    /// Fixture name of the first declaration's native rejection, or absent when all are accepted.
+    /// Fixture name of the first declaration's native rejection,
+    ///  or absent when all are accepted.
     rejection: Option<String>,
 }
 
-/// Measured catalogs; the JSON also retains incumbent source hashes and the oracle as provenance.
+/// Measured catalogs;
+///  the JSON also retains incumbent source hashes and the oracle as provenance.
 #[derive(Deserialize)]
 struct Cases {
     /// Endpoint cases.
@@ -50,7 +64,8 @@ struct Cases {
     configs: Vec<ConfigCase>,
 }
 
-/// Decode the embedded fixture, independent of live repository files during a container run.
+/// Decode the embedded fixture,
+///  independent of live repository files during a container run.
 fn cases() -> Cases {
     let source: &str = include_str!("../fixtures/lfs-url-parity.json");
     return serde_json::from_str::<Cases>(source).expect("measured fixture");
@@ -95,7 +110,8 @@ fn measured_endpoints_match_or_are_rejected_for_the_recorded_reason() {
     assert_eq!((matched, classified, both_reject), (459, 289, 120));
 }
 
-/// Every configuration text yields the incumbent's bases in order, or the first declaration's rejection.
+/// Every configuration text yields the incumbent's bases in order,
+///  or the first declaration's rejection.
 #[test]
 fn measured_configuration_texts_match_or_are_rejected_for_the_recorded_reason() {
     let catalog: Cases = cases();
@@ -132,7 +148,11 @@ fn measured_configuration_texts_match_or_are_rejected_for_the_recorded_reason() 
     assert_eq!((matched, classified, both_reject), (53, 11, 9));
 }
 
-/// The incumbent's own unit cases: userinfo, query, fragment and one final slash are removed; a path prefix stays.
+/// The incumbent's own unit cases:
+///  userinfo,
+///  query,
+///  fragment and one final slash are removed;
+///  a path prefix stays.
 #[test]
 fn incumbent_unit_cases_hold() {
     assert_eq!(
@@ -187,7 +207,8 @@ fn every_rejection_explains_itself_without_the_endpoint() {
     assert_eq!(names.len(), 12);
 }
 
-/// A repository root's first base is read; a rejected endpoint fails the read without echoing credentials.
+/// A repository root's first base is read;
+///  a rejected endpoint fails the read without echoing credentials.
 #[test]
 fn configuration_reads_use_the_normalizer_and_never_echo_credentials() {
     let fixture: Fixture = Fixture::new();

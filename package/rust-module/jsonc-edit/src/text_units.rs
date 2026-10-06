@@ -1,9 +1,14 @@
-//! What:     Conversion between quoted JSON string tokens and UTF-16 code units.
-//!           A JSON string may escape an unpaired UTF-16 surrogate such as `\uD800`, which Rust
-//!           `String` cannot hold, so this crate stores decoded text as `Vec<u16>` (an owned sequence
+//! What:
+//!      Conversion between quoted JSON string tokens and UTF-16 code units.
+//!           A JSON string may escape an unpaired UTF-16 surrogate such as `\uD800`,
+//!  which Rust
+//!           `String` cannot hold,
+//!  so this crate stores decoded text as `Vec<u16>` (an owned sequence
 //!           of 16-bit code units) and converts to `String` only when the caller asks and the units
 //!           allow it.
-//! Why:      The port must retain escaped lone surrogates instead of rejecting or replacing them, and
+//! Why:
+//!       The port must retain escaped lone surrogates instead of rejecting or replacing them,
+//!  and
 //!           must be able to write a replacement value back as a legal JSON string literal.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,16 +16,20 @@
 //! // module textUnits: decodeQuoted(raw), unitsToString(units), encodeQuoted(units).
 //! ```
 
-/// What:     Import the source-positioned parse failure type.
-/// Why:      A malformed quoted token must report the byte offset where scanning stopped.
+/// What:
+///      Import the source-positioned parse failure type.
+/// Why:
+///       A malformed quoted token must report the byte offset where scanning stopped.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncParseError } from './error';
 /// ```
 use crate::error::JsoncParseError;
-/// What:     Import the byte scanner that already implements JSON string escapes.
-/// Why:      Decoding a standalone quoted token must agree exactly with decoding inside a document.
+/// What:
+///      Import the byte scanner that already implements JSON string escapes.
+/// Why:
+///       Decoding a standalone quoted token must agree exactly with decoding inside a document.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,9 +37,12 @@ use crate::error::JsoncParseError;
 /// ```
 use crate::scan::Scanner;
 
-/// What:     Decode one complete quoted JSON string token into UTF-16 code units.
-/// Why:      Callers that hold a raw token (from an edit or a fixture) need the same decoding the
-///           parser performs, including escaped lone surrogates.
+/// What:
+///      Decode one complete quoted JSON string token into UTF-16 code units.
+/// Why:
+///       Callers that hold a raw token (from an edit or a fixture) need the same decoding the
+///           parser performs,
+///  including escaped lone surrogates.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,7 +50,9 @@ use crate::scan::Scanner;
 /// ```
 ///
 /// # Errors
-/// Returns the scanner's failure when the token is unterminated, holds an invalid escape, or is
+/// Returns the scanner's failure when the token is unterminated,
+///  holds an invalid escape,
+///  or is
 /// followed by extra bytes.
 pub fn decode_quoted(raw: &str) -> Result<Vec<u16>, JsoncParseError> {
     // What:     `Scanner::new` borrows the token text without copying it.
@@ -56,8 +70,12 @@ pub fn decode_quoted(raw: &str) -> Result<Vec<u16>, JsoncParseError> {
     return Ok(units);
 }
 
-/// What:     Convert stored code units into a Rust `String` when they form valid UTF-16 text.
-/// Why:      Most documents contain no lone surrogate, and callers want ordinary Rust text; the
+/// What:
+///      Convert stored code units into a Rust `String` when they form valid UTF-16 text.
+/// Why:
+///       Most documents contain no lone surrogate,
+///  and callers want ordinary Rust text;
+///  the
 ///           conversion must fail rather than substitute a replacement character.
 ///
 /// In TS you'd write (pseudocode):
@@ -79,9 +97,13 @@ pub fn units_to_string(units: &[u16]) -> Result<String, std::string::FromUtf16Er
     return String::from_utf16(units);
 }
 
-/// What:     Write code units as a quoted JSON string literal.
-/// Why:      An edit that replaces a string value must emit legal JSON text, escaping quotes,
-///           backslashes, control characters and any unpaired surrogate.
+/// What:
+///      Write code units as a quoted JSON string literal.
+/// Why:
+///       An edit that replaces a string value must emit legal JSON text,
+///  escaping quotes,
+///           backslashes,
+///  control characters and any unpaired surrogate.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

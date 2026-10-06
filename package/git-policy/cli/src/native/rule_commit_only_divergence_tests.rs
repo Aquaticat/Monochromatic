@@ -1,7 +1,13 @@
-//! What: Commit-only decisions the incumbent test did not cover: readings where Git 2.56.0
-//!       differs from the incumbent parser, `--fixup` suboptions, global-option outcomes,
+//! What:
+//!  Commit-only decisions the incumbent test did not cover:
+//!  readings where Git 2.56.0
+//!       differs from the incumbent parser,
+//!  `--fixup` suboptions,
+//!  global-option outcomes,
 //!       wrapper flags and Git's own refusals.
-//! Why: Each is a branch of the decision; real-Git controls for the Git behavior these
+//! Why:
+//!  Each is a branch of the decision;
+//!  real-Git controls for the Git behavior these
 //!      rely on are in `command_commit_git_tests.rs` and `rule_commit_only_git_tests.rs`.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,7 +15,8 @@
 //! // expect(await commitOnly(['commit', '-qa', '-m', 'x'])).rejects.toThrow('rejects -a/--all');
 //! ```
 
-/// The decision under test, the fact types and the shared argument builders.
+/// The decision under test,
+///  the fact types and the shared argument builders.
 use crate::command_options::OptionErrorKind;
 use crate::command_test_support::os_arguments;
 use crate::rule_commit_index::IndexVsHead;
@@ -37,7 +44,9 @@ fn is_all_flag_rejection(decision: &CommitOnlyDecision) -> bool {
     return false;
 }
 
-/// Divergence: `-a` is found in any cluster, and a later `--no-all` cancels it.
+/// Divergence:
+///  `-a` is found in any cluster,
+///  and a later `--no-all` cancels it.
 #[test]
 fn judges_the_final_all_state_in_any_spelling() {
     for values in [
@@ -69,8 +78,11 @@ fn judges_the_final_all_state_in_any_spelling() {
     ])));
 }
 
-/// Divergence: only option-position hatch tokens are removed; the incumbent removed every
-/// equal token, including a message value and a path after `--`.
+/// Divergence:
+///  only option-position hatch tokens are removed;
+///  the incumbent removed every
+/// equal token,
+///  including a message value and a path after `--`.
 #[test]
 fn removes_the_escape_hatch_by_position() {
     assert_eq!(
@@ -106,7 +118,8 @@ fn removes_the_escape_hatch_by_position() {
     );
 }
 
-/// `--fixup=reword:` owns `--only` itself; `--fixup=amend:` is a pathless-allowed mode;
+/// `--fixup=reword:` owns `--only` itself;
+///  `--fixup=amend:` is a pathless-allowed mode;
 /// a plain `--fixup` still needs a pathspec source.
 #[test]
 fn follows_git_for_fixup_suboptions() {
@@ -179,7 +192,9 @@ fn leaves_interactive_and_patch_selection_to_git() {
     );
 }
 
-/// Global forms that run no subcommand, and `commit` in a value position, are untouched.
+/// Global forms that run no subcommand,
+///  and `commit` in a value position,
+///  are untouched.
 #[test]
 fn acts_only_on_a_real_commit_subcommand() {
     for values in [
@@ -198,7 +213,8 @@ fn acts_only_on_a_real_commit_subcommand() {
     }
 }
 
-/// A command line Git itself refuses is reported, never decided from guessed facts.
+/// A command line Git itself refuses is reported,
+///  never decided from guessed facts.
 #[test]
 fn reports_what_git_refuses() {
     for (values, kind) in [
@@ -227,7 +243,8 @@ fn reports_what_git_refuses() {
     }
 }
 
-/// Other wrapper flags are tolerated and kept; the caller removes them by position.
+/// Other wrapper flags are tolerated and kept;
+///  the caller removes them by position.
 #[test]
 fn tolerates_other_wrapper_flags() {
     let arguments: Vec<OsString> =

@@ -1,5 +1,8 @@
-//! What: Own a loaded Rust workspace and analyze exact selected source snapshots.
-//! Why: Workspace types, source overlays and registered syntax must stay synchronized across lint/fix passes.
+//! What:
+//!  Own a loaded Rust workspace and analyze exact selected source snapshots.
+//! Why:
+//!  Workspace types,
+//!  source overlays and registered syntax must stay synchronized across lint/fix passes.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -30,7 +33,8 @@ use ra_ap_syntax::{AstNode, ast};
 use ra_ap_vfs::{FileExcluded, FileId, Vfs, VfsPath};
 /// Import setters for typed per-database request data.
 use salsa::Setter;
-/// Import the native caller path, without changing the process working directory.
+/// Import the native caller path,
+///  without changing the process working directory.
 use std::path::Path;
 
 /// Request payload owned by the semantic database instead of a captured callback or request-global variable.
@@ -44,8 +48,11 @@ struct SelectedFile {
     settings: RustRuleSettings,
 }
 
-/// What: One typed request per database, initially with no selected input.
-/// Why: Named callbacks retrieve the same request that check_file installed before entering the query scope.
+/// What:
+///  One typed request per database,
+///  initially with no selected input.
+/// Why:
+///  Named callbacks retrieve the same request that check_file installed before entering the query scope.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,11 +60,13 @@ struct SelectedFile {
 /// ```
 #[salsa::input(singleton)]
 struct Request {
-    /// Absence is the pre-query state, not a valid request for a successful empty result.
+    /// Absence is the pre-query state,
+    ///  not a valid request for a successful empty result.
     selected: Option<SelectedFile>,
 }
 
-/// Resolve only a file associated with an actual loaded crate, without guessing a fallback crate.
+/// Resolve only a file associated with an actual loaded crate,
+///  without guessing a fallback crate.
 fn inspect(database: &dyn HirDatabase) -> Result<Vec<Diagnostic>, SemanticError> {
     let request: Request = Request::get(database);
     let Some(selected): Option<SelectedFile> = request.selected(database) else {
@@ -97,8 +106,10 @@ fn panic_message(payload: &(dyn std::any::Any + Send)) -> String {
     return format!("non-text panic payload {:?}", payload.type_id());
 }
 
-/// What: Catch backend unwinding at the named query boundary.
-/// Why: A parser/resolver panic cannot be mistaken for an empty findings list.
+/// What:
+///  Catch backend unwinding at the named query boundary.
+/// Why:
+///  A parser/resolver panic cannot be mistaken for an empty findings list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,13 +132,18 @@ fn protect_query(
     }
 }
 
-/// Protected callback passed as a named function, without capturing the selected file.
+/// Protected callback passed as a named function,
+///  without capturing the selected file.
 fn protected_inspection() -> Result<Vec<Diagnostic>, SemanticError> {
     return protect_query(attached_inspection);
 }
 
-/// What: Semantic database, loaded file identities and macro-process ownership for one workspace.
-/// Why: The database is dropped before its macro process, and no query output borrows these owners.
+/// What:
+///  Semantic database,
+///  loaded file identities and macro-process ownership for one workspace.
+/// Why:
+///  The database is dropped before its macro process,
+///  and no query output borrows these owners.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -136,7 +152,8 @@ fn protected_inspection() -> Result<Vec<Diagnostic>, SemanticError> {
 pub struct RustSemanticSession {
     /// Borrowed only while the named semantic query runs.
     database: RootDatabase,
-    /// File membership supplied by the workspace loader, not arbitrary filesystem discovery.
+    /// File membership supplied by the workspace loader,
+    ///  not arbitrary filesystem discovery.
     files: Vfs,
     /// Updated before each query and consumed within its database scope.
     request: Request,
@@ -149,7 +166,8 @@ pub struct RustSemanticSession {
 #[path = "rust_semantic_session_tests.rs"]
 mod tests;
 
-/// Own and query a preloaded workspace; Cargo/toolchain discovery is a separate boundary.
+/// Own and query a preloaded workspace;
+///  Cargo/toolchain discovery is a separate boundary.
 impl RustSemanticSession {
     /// Adopt the loader's owners without launching a second loader or macro process.
     pub fn from_workspace(
@@ -166,7 +184,8 @@ impl RustSemanticSession {
         };
     }
 
-    /// Convenience entry for the explicit-types rule alone; uses the same production dispatch as full selections.
+    /// Convenience entry for the explicit-types rule alone;
+    ///  uses the same production dispatch as full selections.
     pub fn check_file(
         &mut self,
         path: &Path,

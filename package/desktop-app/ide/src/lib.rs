@@ -1,7 +1,10 @@
-//! Read-only document and workspace logic, independent of the native window.
+//! Read-only document and workspace logic,
+//!  independent of the native window.
 
-/// What: Export the document module without exporting a writable filesystem API.
-/// Why: Tests and the native window share the same state transitions.
+/// What:
+///  Export the document module without exporting a writable filesystem API.
+/// Why:
+///  Tests and the native window share the same state transitions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,25 +21,36 @@ pub mod recent;
 /// Tab projection retains exact source/display correspondence.
 pub mod text_projection;
 
-/// Pixel tab stops at multiples of two space advances, independent of the preceding script.
+/// Pixel tab stops at multiples of two space advances,
+///  independent of the preceding script.
 pub mod tab_stop;
 
 /// Two-pass shaping that widens each tab's stand-in space to its stop.
 mod tab_layout;
 
-/// The one mapping between vertical pixels and source lines, with blocks of virtual rows above annotated lines.
+/// The one mapping between vertical pixels and source lines,
+///  with blocks of virtual rows above annotated lines.
 pub mod row_map;
 
-/// One shaped row with its caret, hit-test, and range geometry.
+/// One shaped row with its caret,
+///  hit-test,
+///  and range geometry.
 pub mod shaped_row;
 
-/// Shared shaping for mixed-script source rows, caret, and hit testing.
+/// Shared shaping for mixed-script source rows,
+///  caret,
+///  and hit testing.
 pub mod shaped_text;
 
-/// Grapheme, word, line, and document caret movement over source characters.
+/// Grapheme,
+///  word,
+///  line,
+///  and document caret movement over source characters.
 pub mod caret_motion;
 
-/// Up, Down, and page movement by shaped pixel position with a remembered column.
+/// Up,
+///  Down,
+///  and page movement by shaped pixel position with a remembered column.
 pub mod vertical_motion;
 
 /// Click counting and unit-wise drag extension for pointer selection.
@@ -64,7 +78,9 @@ mod reload_read;
 pub mod app_cache;
 /// The fixed FNV-1a digest shared by the build script and the embedded-runtime checks.
 pub mod content_digest;
-/// The application's own language runtime: embedded in the binary, or a directory for tests and tools.
+/// The application's own language runtime:
+///  embedded in the binary,
+///  or a directory for tests and tools.
 pub mod runtime;
 /// Helix-backed source classifications use canonical character offsets.
 pub mod syntax;
@@ -74,20 +90,31 @@ mod syntax_loader;
 /// User-facing parser diagnostics distinguish limits from missing assets.
 mod syntax_error;
 
-/// Language-server feature paths run on one worker thread and are polled; server edits are refused.
+/// Language-server feature paths run on one worker thread and are polled;
+///  server edits are refused.
 pub mod language;
 
-/// The log: warnings by default and `RUST_LOG` for detail, helix-lsp records labelled by what they
-/// are, and a writer thread so no logging thread waits for the output.
+/// The log:
+///  warnings by default and `RUST_LOG` for detail,
+///  helix-lsp records labelled by what they
+/// are,
+///  and a writer thread so no logging thread waits for the output.
 pub mod logging;
 
-/// Inlay hints and diagnostics of the displayed file, grouped into blocks per line; stale snapshots paint nothing.
+/// Inlay hints and diagnostics of the displayed file,
+///  grouped into blocks per line;
+///  stale snapshots paint nothing.
 pub mod annotation;
 
-/// Underline runs and the texts of virtual rows, positioned from the shaped rows; hint rows are packed here.
+/// Underline runs and the texts of virtual rows,
+///  positioned from the shaped rows;
+///  hint rows are packed here.
 pub mod annotation_layout;
 
-/// The rows a line shows above its code row: placed hints, wrapped diagnostic messages, and their spacing.
+/// The rows a line shows above its code row:
+///  placed hints,
+///  wrapped diagnostic messages,
+///  and their spacing.
 pub mod virtual_row;
 
 /// Diagnostic underline pixels in one line style per severity.
@@ -96,7 +123,8 @@ pub mod annotation_paint;
 /// Partial ligature selection clips foreground against source selection geometry.
 mod selection_paint;
 
-/// Selected-text ink follows the selection background's lightness, not the color scheme.
+/// Selected-text ink follows the selection background's lightness,
+///  not the color scheme.
 pub mod selection_ink;
 
 /// One local project boundary exposes directory snapshots without mutation operations.
@@ -108,10 +136,14 @@ pub mod file_tree;
 /// Bounded background directory reads apply only current tree-request replies.
 pub mod directory_worker;
 
-/// inotify notifications for shown directories and the displayed file, reported as invalidations only.
+/// inotify notifications for shown directories and the displayed file,
+///  reported as invalidations only.
 pub mod change_watch;
 
-/// When to reread: on notifications, on today's timers while unwatched, and on a slow safety sweep.
+/// When to reread:
+///  on notifications,
+///  on today's timers while unwatched,
+///  and on a slow safety sweep.
 pub mod refresh_policy;
 
 /// Startup argument grammar is independent of filesystem and native display initialization.
@@ -147,13 +179,20 @@ mod search_collect;
 /// Read-only ripgrep subprocesses are killed and reaped on cancellation or output limits.
 mod search_process;
 
-/// Plain literal, case-insensitive in-file matching kept in one replaceable function.
+/// Plain literal,
+///  case-insensitive in-file matching kept in one replaceable function.
 pub mod find;
 
-/// Active, next, previous, and visible matches derived from the reading selection.
+/// Active,
+///  next,
+///  previous,
+///  and visible matches derived from the reading selection.
 pub mod find_navigation;
 
-/// One bounded in-file find job; replies are tagged by file generation, revision, and query.
+/// One bounded in-file find job;
+///  replies are tagged by file generation,
+///  revision,
+///  and query.
 pub mod find_worker;
 
 /// Match rectangles for materialized rows share selection's shaped geometry.
@@ -162,5 +201,7 @@ pub mod find_paint;
 /// Unmodified variable and real italic font assets with stable source-font identities.
 pub mod font_asset;
 
-/// Validated immutable source weight, italic, and OpenType feature settings.
+/// Validated immutable source weight,
+///  italic,
+///  and OpenType feature settings.
 pub mod source_typography;

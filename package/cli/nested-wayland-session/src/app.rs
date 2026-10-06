@@ -1,13 +1,28 @@
-//! Program orchestration: build the event loop, wire every source, spawn the client,
+//! Program orchestration:
+//!  build the event loop,
+//!  wire every source,
+//!  spawn the client,
 //! and run until it exits.
 //!
-//! `run` is the whole-program entry the binary calls. It stays deliberately thin: each
-//! subsystem (backend, state, child, rendering, per-event handling) lives in its own
-//! module, and this file only connects them and owns the event loop.
+//! `run` is the whole-program entry the binary calls.
+//!  It stays deliberately thin:
+//!  each
+//! subsystem (backend,
+//!  state,
+//!  child,
+//!  rendering,
+//!  per-event handling) lives in its own
+//! module,
+//!  and this file only connects them and owns the event loop.
 
-/// What:     Grouped `use` of the shared-memory import trait, the winit event enum, the
-///           event loop, and the display.
-/// Why:      `run` and `handle_winit_event` reference these.
+/// What:
+///      Grouped `use` of the shared-memory import trait,
+///  the winit event enum,
+///  the
+///           event loop,
+///  and the display.
+/// Why:
+///       `run` and `handle_winit_event` reference these.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,12 +36,20 @@ use smithay::{
     },
 };
 
-/// What:     `use anyhow::{Context, Result};`. Error helpers.
-/// Why:      `run` returns `Result<i32>` and annotates setup failures.
+/// What:
+///      `use anyhow::{Context, Result};`.
+///  Error helpers.
+/// Why:
+///       `run` returns `Result<i32>` and annotates setup failures.
 use anyhow::{Context, Result};
 
-/// What:     Grouped `use` of our own modules' items.
-/// Why:      `run` calls into backend, child, state, and the xdg-shell reconfigure.
+/// What:
+///      Grouped `use` of our own modules' items.
+/// Why:
+///       `run` calls into backend,
+///  child,
+///  state,
+///  and the xdg-shell reconfigure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,11 +66,17 @@ use crate::{
     systemd::Isolation,
 };
 
-/// Build everything, spawn the hosted client, and run the event loop to completion.
+/// Build everything,
+///  spawn the hosted client,
+///  and run the event loop to completion.
 ///
-/// What:     `pub fn run(config: Config) -> Result<i32>`. Consumes the parsed config,
+/// What:
+///      `pub fn run(config: Config) -> Result<i32>`.
+///  Consumes the parsed config,
 ///           returns the hosted client's exit code (or an error if setup failed).
-/// Why:      The single top-level function the binary invokes; returning the code lets
+/// Why:
+///       The single top-level function the binary invokes;
+///  returning the code lets
 ///           `main` propagate it to the shell.
 ///
 /// In TS you'd write (pseudocode):
@@ -195,11 +224,17 @@ pub fn run(config: Config) -> Result<i32> {
     return Ok(state.child_exit_code.unwrap_or(0));
 }
 
-/// Dispatch one winit event: resize the output, redraw, or stop on close.
+/// Dispatch one winit event:
+///  resize the output,
+///  redraw,
+///  or stop on close.
 ///
-/// What:     `fn handle_winit_event(event: WinitEvent, state: &mut Compositor)`. Private
+/// What:
+///      `fn handle_winit_event(event: WinitEvent, state: &mut Compositor)`.
+///  Private
 ///           per-event handler.
-/// Why:      Keep the event match out of `run` so `run` reads as pure orchestration.
+/// Why:
+///       Keep the event match out of `run` so `run` reads as pure orchestration.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

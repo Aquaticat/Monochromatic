@@ -1,5 +1,7 @@
-//! What: Duplicate heading checks within the incumbent's textual ancestor scope.
-//! Why: Equal text at different depths or under different parent headings is not a duplicate sibling.
+//! What:
+//!  Duplicate heading checks within the incumbent's textual ancestor scope.
+//! Why:
+//!  Equal text at different depths or under different parent headings is not a duplicate sibling.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

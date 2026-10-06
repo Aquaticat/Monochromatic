@@ -1,6 +1,8 @@
 //! Wires build-available page-control styles between Slint and desktop session persistence.
 
-/// Imports generated application, style-option, and component-handle types.
+/// Imports generated application,
+///  style-option,
+///  and component-handle types.
 use crate::{AppWindow, PageControlStyleOption};
 
 /// Imports named persisted page-control variants and session record.
@@ -20,7 +22,8 @@ struct BuildStyle {
     included: bool,
 }
 
-/// Central page-control build catalog. Change only `included` on one line to toggle a style.
+/// Central page-control build catalog.
+///  Change only `included` on one line to toggle a style.
 const BUILD_STYLES: [BuildStyle; 6] = [
     BuildStyle { style: PageControlStyle::Radio, label: "Radio controls", included: true },
     BuildStyle { style: PageControlStyle::Md1Tabs, label: "Multi-row MD1 tabs", included: true },
@@ -43,7 +46,9 @@ struct StyleResolution<'catalog> {
     catalog: &'catalog [BuildStyle],
 }
 
-/// Resolves requested style through Chromium, radio, then first-included fallback chain.
+/// Resolves requested style through Chromium,
+///  radio,
+///  then first-included fallback chain.
 fn resolve_style(options: StyleResolution<'_>) -> Option<PageControlStyle> {
     if options.catalog.iter().any(|entry| return entry.included && entry.style == options.requested) {
         return Some(options.requested);
@@ -68,7 +73,9 @@ fn settings_options(catalog: &[BuildStyle]) -> Vec<PageControlStyleOption> {
         .collect()
 }
 
-/// Restores effective style, supplies Settings options, and persists later selections.
+/// Restores effective style,
+///  supplies Settings options,
+///  and persists later selections.
 pub(crate) fn apply(app: &AppWindow) {
     let restored = Session::load().page_control_style;
     let resolved = resolve_style(StyleResolution { requested: restored, catalog: &BUILD_STYLES })

@@ -1,5 +1,7 @@
-//! What: Structured cache warnings exercised through the exported loader in isolated child consumers.
-//! Why: Constructor token tests alone do not prove real cache recovery reaches library callers without terminal output.
+//! What:
+//!  Structured cache warnings exercised through the exported loader in isolated child consumers.
+//! Why:
+//!  Constructor token tests alone do not prove real cache recovery reaches library callers without terminal output.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,8 +13,11 @@ use forbidden_strings::{Scanner, ScanFinding};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// What: `#[path = "..."] mod blocked_root;` compiles the named file as a private module of this test crate.
-/// Why:  The CLI integration suite includes the same file, so both assert one platform-specific reason
+/// What:
+///  `#[path = "..."] mod blocked_root;` compiles the named file as a private module of this test crate.
+/// Why:
+///   The CLI integration suite includes the same file,
+///  so both assert one platform-specific reason
 ///       for a cache root blocked by a regular file.
 ///
 /// In TS you'd write (pseudocode):
@@ -22,7 +27,8 @@ use std::process::Command;
 #[path = "support/blocked_root.rs"]
 mod blocked_root;
 
-/// Find only the artifact generated in this disposable fixture, never a user's cache.
+/// Find only the artifact generated in this disposable fixture,
+///  never a user's cache.
 fn artifact(root: &Path) -> PathBuf {
     // A Vec work stack walks bounded fixture directories without recursive call depth.
     let mut pending: Vec<PathBuf> = vec![root.to_path_buf()];
@@ -73,7 +79,8 @@ fn warning_consumer_probe() {
     }
 }
 
-/// Every warning mode runs with a separate cache/home and is proven to execute, not merely enumerate.
+/// Every warning mode runs with a separate cache/home and is proven to execute,
+///  not merely enumerate.
 #[test]
 fn public_warning_paths_preserve_scan_results_without_emitting_terminal_json() {
     for mode in ["blocked", "unavailable", "relative", "corrupt"] {

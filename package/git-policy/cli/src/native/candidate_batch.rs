@@ -1,11 +1,21 @@
-//! What: Read one `git cat-file --batch` reply from a byte stream, with no process involved.
-//! Why: Object bytes are untrusted input that may contain anything, including text that
-//!      looks like a reply header. The reply is therefore framed only by the header's
-//!      declared size, never by searching content, and every malformed shape is a
+//! What:
+//!  Read one `git cat-file --batch` reply from a byte stream,
+//!  with no process involved.
+//! Why:
+//!  Object bytes are untrusted input that may contain anything,
+//!  including text that
+//!      looks like a reply header.
+//!  The reply is therefore framed only by the header's
+//!      declared size,
+//!  never by searching content,
+//!  and every malformed shape is a
 //!      typed failure instead of a guess.
 //!
-//! Git 2.56.0 (`Documentation/git-cat-file.adoc`, "BATCH OUTPUT") prints, per request line:
-//! `<oid> SP <type> SP <size> LF <contents> LF`, or `<request> SP missing LF`.
+//! Git 2.56.0 (`Documentation/git-cat-file.adoc`,
+//!  "BATCH OUTPUT") prints,
+//!  per request line:
+//! `<oid> SP <type> SP <size> LF <contents> LF`,
+//!  or `<request> SP missing LF`.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,9 +26,14 @@
 use super::candidate_error::{CandidateError, CandidateFailure};
 /// Import the validated object name and its parser.
 use super::candidate_object::{ObjectId, parse_object_id};
-/// What: `BufRead` is the trait (interface) of buffered byte sources: it adds
-///       `.read_until(..)`. `Read` adds `.take(..)`, `.read_to_end(..)` and `.read_exact(..)`.
-/// Why:  The same function reads a real child's pipe and an in-memory test or fuzz buffer.
+/// What:
+///  `BufRead` is the trait (interface) of buffered byte sources:
+///  it adds
+///       `.read_until(..)`.
+///  `Read` adds `.take(..)`,
+///  `.read_to_end(..)` and `.read_exact(..)`.
+/// Why:
+///   The same function reads a real child's pipe and an in-memory test or fuzz buffer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,11 +41,20 @@ use super::candidate_object::{ObjectId, parse_object_id};
 /// ```
 use std::io::{BufRead, Read};
 
-/// What: The longest reply header accepted, in bytes, excluding its line feed.
-///       `usize` is the unsigned integer every length uses (siblings `u32`, `u64`).
-/// Why:  A real header is at most 64 name digits, a type word and a decimal size
-///       (under 100 bytes). Without a bound, a stream that never sends a line feed
-///       would be buffered without limit. `usize` matches `.len()`.
+/// What:
+///  The longest reply header accepted,
+///  in bytes,
+///  excluding its line feed.
+///       `usize` is the unsigned integer every length uses (siblings `u32`,
+///  `u64`).
+/// Why:
+///   A real header is at most 64 name digits,
+///  a type word and a decimal size
+///       (under 100 bytes).
+///  Without a bound,
+///  a stream that never sends a line feed
+///       would be buffered without limit.
+///  `usize` matches `.len()`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,8 +62,11 @@ use std::io::{BufRead, Read};
 /// ```
 pub const MAX_BATCH_HEADER_BYTES: usize = 128;
 
-/// What: The four object types Git stores.
-/// Why:  A candidate's bytes must come from a blob, and `HEAD` must resolve to a commit;
+/// What:
+///  The four object types Git stores.
+/// Why:
+///   A candidate's bytes must come from a blob,
+///  and `HEAD` must resolve to a commit;
 ///       the caller checks the type instead of assuming it.
 ///
 /// In TS you'd write (pseudocode):
@@ -48,7 +75,8 @@ pub const MAX_BATCH_HEADER_BYTES: usize = 128;
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ObjectKind {
-    /// File content, or a symbolic link's target.
+    /// File content,
+    ///  or a symbolic link's target.
     Blob,
     /// A directory listing.
     Tree,
@@ -58,9 +86,12 @@ pub enum ObjectKind {
     Tag,
 }
 
-/// What: What Git answered for one request line.
+/// What:
+///  What Git answered for one request line.
 ///       `Vec<u8>` is an owned byte list (sibling `String` would require UTF-8).
-/// Why:  File content is arbitrary bytes and must be kept exactly; a missing object is
+/// Why:
+///   File content is arbitrary bytes and must be kept exactly;
+///  a missing object is
 ///       an ordinary answer the caller decides about.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,7 +100,8 @@ pub enum ObjectKind {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum BatchReply {
-    /// The object exists; these are its exact bytes.
+    /// The object exists;
+    ///  these are its exact bytes.
     Found {
         /// The full object name Git resolved the request to.
         object: ObjectId,
@@ -82,10 +114,15 @@ pub enum BatchReply {
     Missing,
 }
 
-/// What: Build a failure whose message names the reply defect.
-///       `format!` builds owned text; `.as_str()` lends it to the constructor.
-/// Why:  Every defect means the stream can no longer be trusted, and the message says
-///       so without quoting reply bytes, which may be file content.
+/// What:
+///  Build a failure whose message names the reply defect.
+///       `format!` builds owned text;
+///  `.as_str()` lends it to the constructor.
+/// Why:
+///   Every defect means the stream can no longer be trusted,
+///  and the message says
+///       so without quoting reply bytes,
+///  which may be file content.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -102,11 +139,18 @@ fn reply_failure(failure: CandidateFailure, detail: &str) -> CandidateError {
     );
 }
 
-/// What: Read the header line, without its line feed, refusing an overlong one.
-///       `&mut dyn BufRead` lends any buffered source for reading; `dyn` means the
-///       concrete type is decided at run time, like a TS interface parameter.
+/// What:
+///  Read the header line,
+///  without its line feed,
+///  refusing an overlong one.
+///       `&mut dyn BufRead` lends any buffered source for reading;
+///  `dyn` means the
+///       concrete type is decided at run time,
+///  like a TS interface parameter.
 ///       `Result<T, E>` is "a value or a failure".
-/// Why:  The header is the only delimiter-searched part of a reply, so it is the only
+/// Why:
+///   The header is the only delimiter-searched part of a reply,
+///  so it is the only
 ///       part that needs a length bound.
 ///
 /// In TS you'd write (pseudocode):
@@ -176,11 +220,22 @@ fn read_header_line(stream: &mut dyn BufRead) -> Result<Vec<u8>, CandidateError>
     return Ok(line);
 }
 
-/// What: Parse a decimal object size. `Option<usize>` is "a size or nothing".
-/// Why:  The size decides how many content bytes are consumed, so only Git's canonical
-///       form is accepted: digits only, no sign, no leading zero, and no overflow.
-///       The standard parser does the arithmetic, so no hand-written digit loop can
-///       be off by one; it alone would also accept a leading `+`, which the digit
+/// What:
+///  Parse a decimal object size.
+///  `Option<usize>` is "a size or nothing".
+/// Why:
+///   The size decides how many content bytes are consumed,
+///  so only Git's canonical
+///       form is accepted:
+///  digits only,
+///  no sign,
+///  no leading zero,
+///  and no overflow.
+///       The standard parser does the arithmetic,
+///  so no hand-written digit loop can
+///       be off by one;
+///  it alone would also accept a leading `+`,
+///  which the digit
 ///       check refuses first.
 ///
 /// In TS you'd write (pseudocode):
@@ -210,7 +265,8 @@ fn parse_size(digits: &[u8]) -> Option<usize> {
     return text.parse::<usize>().ok();
 }
 
-/// Map Git's object type word to a kind; any other word is not a header this layer accepts.
+/// Map Git's object type word to a kind;
+///  any other word is not a header this layer accepts.
 fn object_kind(word: &[u8]) -> Option<ObjectKind> {
     if word == b"blob" {
         return Some(ObjectKind::Blob);
@@ -227,13 +283,18 @@ fn object_kind(word: &[u8]) -> Option<ObjectKind> {
     return None;
 }
 
-/// Named predicate for splitting a header into fields; `&u8` borrows one byte.
+/// Named predicate for splitting a header into fields;
+///  `&u8` borrows one byte.
 fn is_space(byte: &u8) -> bool {
     return *byte == b' ';
 }
 
-/// What: Parse `<oid> SP <type> SP <size>`. The result is a tuple, three values returned together.
-/// Why:  Exactly three fields in Git's canonical spelling is the only shape whose size
+/// What:
+///  Parse `<oid> SP <type> SP <size>`.
+///  The result is a tuple,
+///  three values returned together.
+/// Why:
+///   Exactly three fields in Git's canonical spelling is the only shape whose size
 ///       this layer will trust to frame the content.
 ///
 /// In TS you'd write (pseudocode):
@@ -258,8 +319,11 @@ fn parse_found_header(header: &[u8]) -> Option<(ObjectId, ObjectKind, usize)> {
     return Some((object, kind, size));
 }
 
-/// What: Read exactly `size` content bytes and the line feed that follows them.
-/// Why:  `.take(size).read_to_end(..)` grows the buffer only as bytes really arrive, so
+/// What:
+///  Read exactly `size` content bytes and the line feed that follows them.
+/// Why:
+///   `.take(size).read_to_end(..)` grows the buffer only as bytes really arrive,
+///  so
 ///       a header that lies about a huge size produces a truncated-reply failure
 ///       instead of one huge allocation.
 ///
@@ -306,11 +370,17 @@ fn read_content(stream: &mut dyn BufRead, size: usize) -> Result<Vec<u8>, Candid
     return Ok(bytes);
 }
 
-/// What: Read one complete reply to `request` from `stream`.
-///       `request` is the exact request line that was sent, without its line feed.
-/// Why:  Git echoes the request in a `missing` reply and prints the resolved name in a
-///       found reply. When the request is itself a complete object name, a found reply
-///       naming any other object means requests and replies are out of step, and its
+/// What:
+///  Read one complete reply to `request` from `stream`.
+///       `request` is the exact request line that was sent,
+///  without its line feed.
+/// Why:
+///   Git echoes the request in a `missing` reply and prints the resolved name in a
+///       found reply.
+///  When the request is itself a complete object name,
+///  a found reply
+///       naming any other object means requests and replies are out of step,
+///  and its
 ///       bytes are refused rather than attributed to the wrong object.
 ///
 /// In TS you'd write (pseudocode):

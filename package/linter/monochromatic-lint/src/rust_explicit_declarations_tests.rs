@@ -1,5 +1,9 @@
-//! What: Surface-annotation controls, independent of the later semantic checks.
-//! Why: A present underscore is not proof of a complete type, and syntax-only checks must not claim otherwise.
+//! What:
+//!  Surface-annotation controls,
+//!  independent of the later semantic checks.
+//! Why:
+//!  A present underscore is not proof of a complete type,
+//!  and syntax-only checks must not claim otherwise.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -40,7 +44,8 @@ fn flags_missing_types_on_simple_and_destructuring_bindings() {
     }
 }
 
-/// Written types satisfy only the presence check; inference holes still require semantic validation.
+/// Written types satisfy only the presence check;
+///  inference holes still require semantic validation.
 #[test]
 fn leaves_present_annotations_for_semantic_validation() {
     let source: &str = "fn main() { let port: u16 = input.parse::<u16>()?; let (a, b): (u8, u16) = pair; let Some(value): Option<u16> = item else { return; }; let inferred: _ = item; let partial: Vec<_> = values; }";
@@ -80,7 +85,9 @@ fn continues_into_nested_declarations() {
     );
 }
 
-/// Rust has no annotation slot on for, if-let, while-let or match binding patterns.
+/// Rust has no annotation slot on for,
+///  if-let,
+///  while-let or match binding patterns.
 #[test]
 fn does_not_demand_unavailable_pattern_annotation_syntax() {
     let source: &str = "fn main() { for value in values {} if let Some(value) = optional {} while let Some(value) = optional {} match optional { Some(value) => {}, None => {} } }";
@@ -89,7 +96,8 @@ fn does_not_demand_unavailable_pattern_annotation_syntax() {
     assert!(check("fn named() {} struct Item; impl Item { fn method(&self) {} }").is_empty());
 }
 
-/// Comment/string contents are not declarations, and recovery nodes without patterns are not bindings.
+/// Comment/string contents are not declarations,
+///  and recovery nodes without patterns are not bindings.
 #[test]
 fn ignores_text_and_patternless_recovery_nodes() {
     let source: &str =
@@ -109,7 +117,8 @@ fn accepts_only_declared_rule_settings() {
     ).is_err());
 }
 
-/// Underlines refer to the binding's UTF-8 bytes, not character or UTF-16 indexes.
+/// Underlines refer to the binding's UTF-8 bytes,
+///  not character or UTF-16 indexes.
 #[test]
 fn anchors_findings_to_the_whole_authored_pattern() {
     let source: &str = "fn main() {\n    /* 🚀 */ let (left, right) = value;\n}\n";

@@ -1,5 +1,8 @@
-//! What: Controls for rules-file selection and candidate eligibility.
-//! Why: A wrong rules path scans with the wrong rules or none, and a wrong eligibility
+//! What:
+//!  Controls for rules-file selection and candidate eligibility.
+//! Why:
+//!  A wrong rules path scans with the wrong rules or none,
+//!  and a wrong eligibility
 //!      decision either skips a file that must be checked or scans a rule source
 //!      against itself.
 //!
@@ -22,7 +25,8 @@ use std::ffi::{OsStr, OsString};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::{Path, PathBuf};
 
-/// One candidate with a pathname, a change kind and a mode.
+/// One candidate with a pathname,
+///  a change kind and a mode.
 fn candidate(path: &[u8], change: CandidateChange, mode: CandidateMode) -> Candidate {
     return Candidate {
         identity: CandidateIdentity {
@@ -51,7 +55,11 @@ fn names_match_the_standalone_scanner() {
     );
 }
 
-/// The configured file first, then the variable, then the default file in the root, which alone is tolerated when missing; every name is resolved against the root.
+/// The configured file first,
+///  then the variable,
+///  then the default file in the root,
+///  which alone is tolerated when missing;
+///  every name is resolved against the root.
 #[test]
 fn rules_file_precedence_matches_the_standalone_scanner() {
     let root: &Path = Path::new("/repo/root");
@@ -108,7 +116,10 @@ fn rules_file_precedence_matches_the_standalone_scanner() {
     );
 }
 
-/// A rules file inside the repository has a candidate pathname; one outside, or the root itself, has none.
+/// A rules file inside the repository has a candidate pathname;
+///  one outside,
+///  or the root itself,
+///  has none.
 #[test]
 fn rules_candidate_path_is_the_repository_relative_name() {
     let root: &Path = Path::new("/repo/root");
@@ -153,7 +164,10 @@ fn rules_candidate_path_is_the_repository_relative_name() {
     );
 }
 
-/// Deleted paths, the rule sources and the rules file are not scanned; everything else is, whatever its mode.
+/// Deleted paths,
+///  the rule sources and the rules file are not scanned;
+///  everything else is,
+///  whatever its mode.
 #[test]
 fn eligibility_excludes_only_deletions_and_rule_sources() {
     let rules: &[u8] = b"config/rules.txt";

@@ -1,5 +1,7 @@
-//! What: Resolve the selected project's compiler and already installed standard-library source.
-//! Why: Semantic checking must not silently install rust-src or change the caller's working directory.
+//! What:
+//!  Resolve the selected project's compiler and already installed standard-library source.
+//! Why:
+//!  Semantic checking must not silently install rust-src or change the caller's working directory.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -14,11 +16,14 @@ use ra_ap_vfs::AbsPathBuf;
 use std::path::Path;
 use std::process::{Command, Output};
 
-/// Validated compiler/source paths, without any executable override from linter configuration.
+/// Validated compiler/source paths,
+///  without any executable override from linter configuration.
 pub struct RustToolchain {
-    /// Compiler's installed root, as reported by that project's rustc selection.
+    /// Compiler's installed root,
+    ///  as reported by that project's rustc selection.
     pub sysroot: AbsPathBuf,
-    /// Existing standard-library source; passed explicitly to prevent automatic rustup fallback.
+    /// Existing standard-library source;
+    ///  passed explicitly to prevent automatic rustup fallback.
     pub library: AbsPathBuf,
 }
 
@@ -41,7 +46,9 @@ pub(crate) fn absolute_utf8(path: &Path) -> Result<AbsPathBuf, SemanticError> {
     }
 }
 
-/// Query only the selected project's compiler; missing rust-src is an actionable error, not an installation request.
+/// Query only the selected project's compiler;
+///  missing rust-src is an actionable error,
+///  not an installation request.
 pub fn discover_toolchain(directory: &Path) -> Result<RustToolchain, SemanticError> {
     absolute_utf8(directory)?;
     let output: Output = match Command::new("rustc").args(["--print", "sysroot"]).current_dir(directory).output() {

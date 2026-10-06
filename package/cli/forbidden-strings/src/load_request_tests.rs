@@ -1,5 +1,8 @@
-//! What: Named load-boundary failures, recovery and native-thread isolation.
-//! Why: A caught panic must not leave a pending request or mix another thread's rule source.
+//! What:
+//!  Named load-boundary failures,
+//!  recovery and native-thread isolation.
+//! Why:
+//!  A caught panic must not leave a pending request or mix another thread's rule source.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

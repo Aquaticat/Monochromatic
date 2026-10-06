@@ -1,5 +1,7 @@
-//! What: Differential controls measured from the unchanged TypeScript lexical helpers.
-//! Why: Self-authored native expectations alone do not establish incumbent parity.
+//! What:
+//!  Differential controls measured from the unchanged TypeScript lexical helpers.
+//! Why:
+//!  Self-authored native expectations alone do not establish incumbent parity.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -36,7 +38,8 @@ struct BlockCase {
     expected: bool,
 }
 
-/// Measured case catalogs; the JSON also retains source hashes as provenance.
+/// Measured case catalogs;
+///  the JSON also retains source hashes as provenance.
 #[derive(Deserialize)]
 struct Cases {
     /// Text-boundary cases.

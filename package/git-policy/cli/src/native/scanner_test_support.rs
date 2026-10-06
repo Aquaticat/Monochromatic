@@ -1,7 +1,11 @@
-//! What: Process isolation and rule fixtures shared by the scanner controls.
-//! Why: Loading runtime rules reads the home directory and writes a per-user rule cache.
-//!      A control must never touch the real ones, and changing this process's
-//!      environment would race the other test threads. Each such control therefore
+//! What:
+//!  Process isolation and rule fixtures shared by the scanner controls.
+//! Why:
+//!  Loading runtime rules reads the home directory and writes a per-user rule cache.
+//!      A control must never touch the real ones,
+//!  and changing this process's
+//!      environment would race the other test threads.
+//!  Each such control therefore
 //!      re-runs itself in a child process whose home and cache are a disposable fixture.
 //!
 //! In TS you'd write (pseudocode):
@@ -14,14 +18,21 @@ use crate::test_support::{fixture, remove};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// Set only in the child: names the fixture directory the control may use.
+/// Set only in the child:
+///  names the fixture directory the control may use.
 const ISOLATED_FIXTURE_VARIABLE: &str = "CLI_GIT_NATIVE_SCANNER_FIXTURE";
 
-/// What: Run a control's body in a child process with a disposable home and rule cache.
+/// What:
+///  Run a control's body in a child process with a disposable home and rule cache.
 ///       `fn(&Path)` is a plain function taking the fixture directory.
-/// Why:  In the parent this starts the same test binary filtered to exactly this
-///       control; in that child the variable is set, so the body runs there. The
-///       parent requires that exactly one test ran and passed, which also catches a
+/// Why:
+///   In the parent this starts the same test binary filtered to exactly this
+///       control;
+///  in that child the variable is set,
+///  so the body runs there.
+///  The
+///       parent requires that exactly one test ran and passed,
+///  which also catches a
 ///       mistyped control name.
 ///
 /// In TS you'd write (pseudocode):
@@ -60,8 +71,12 @@ pub(crate) fn run_isolated(test_path: &str, name: &str, body: fn(&Path)) {
     remove(root.as_path());
 }
 
-/// What: The planted forbidden token, assembled at run time.
-/// Why:  This repository's own commit policy scans these sources; a token that only
+/// What:
+///  The planted forbidden token,
+///  assembled at run time.
+/// Why:
+///   This repository's own commit policy scans these sources;
+///  a token that only
 ///       exists once the control runs can never be reported in the source itself.
 ///
 /// In TS you'd write (pseudocode):
@@ -72,7 +87,8 @@ pub(crate) fn needle() -> String {
     return ["PLANTED", "CANDIDATE", "NEEDLE"].join("_");
 }
 
-/// Write a rules file holding the planted token as its only rule, and return its path.
+/// Write a rules file holding the planted token as its only rule,
+///  and return its path.
 pub(crate) fn rules_file(directory: &Path) -> PathBuf {
     let path: PathBuf = directory.join("rules.txt");
     std::fs::write(&path, format!("{}\n", needle())).expect("rules file");

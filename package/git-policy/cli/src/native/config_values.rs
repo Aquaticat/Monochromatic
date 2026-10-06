@@ -1,5 +1,10 @@
-//! What: Typed readers over parsed JSONC values, each naming the key it rejects.
-//! Why: Every schema site reports the same actionable shape: which key, what was found,
+//! What:
+//!  Typed readers over parsed JSONC values,
+//!  each naming the key it rejects.
+//! Why:
+//!  Every schema site reports the same actionable shape:
+//!  which key,
+//!  what was found,
 //!      what is accepted.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,16 +12,21 @@
 //! // readBoolean(value, 'hooks.concurrentCommits') throws ConfigError naming that key.
 //! ```
 
-/// What: `use super::...` imports from a sibling module of this crate.
-/// Why:  Every reader fails with the configuration error type.
+/// What:
+///  `use super::...` imports from a sibling module of this crate.
+/// Why:
+///   Every reader fails with the configuration error type.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { ConfigError } from './config-error.ts';
 /// ```
 use super::config_error::ConfigError;
-/// What: Import the repository's JSONC value model and its UTF-16 decoder.
-/// Why:  The schema reads the parser's exact values; it never re-parses text.
+/// What:
+///  Import the repository's JSONC value model and its UTF-16 decoder.
+/// Why:
+///   The schema reads the parser's exact values;
+///  it never re-parses text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,10 +34,21 @@ use super::config_error::ConfigError;
 /// ```
 use monochromatic_jsonc_edit::{JsoncEntry, JsoncKind, JsoncValue, units_to_string};
 
-/// What: `u64` is an unsigned 64-bit integer. Siblings: `u32`, `usize`, `i64`, `f64`.
+/// What:
+///  `u64` is an unsigned 64-bit integer.
+///  Siblings:
+///  `u32`,
+///  `usize`,
+///  `i64`,
+///  `f64`.
 ///       The value is JavaScript's `Number.MAX_SAFE_INTEGER` (2^53 - 1).
-/// Why:  The incumbent accepted only safe integers, and journals written by either
-///       implementation must agree; `u64` holds that bound exactly, `u32` cannot, and
+/// Why:
+///   The incumbent accepted only safe integers,
+///  and journals written by either
+///       implementation must agree;
+///  `u64` holds that bound exactly,
+///  `u32` cannot,
+///  and
 ///       `f64` would reintroduce rounding.
 ///
 /// In TS you'd write (pseudocode):
@@ -36,8 +57,11 @@ use monochromatic_jsonc_edit::{JsoncEntry, JsoncKind, JsoncValue, units_to_strin
 /// ```
 pub(crate) const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 
-/// What: Join a parent key path and a member key with a dot; the top level has no parent.
-/// Why:  Diagnostics name nested keys the way the documentation writes them
+/// What:
+///  Join a parent key path and a member key with a dot;
+///  the top level has no parent.
+/// Why:
+///   Diagnostics name nested keys the way the documentation writes them
 ///       (`indexLock.unprovenOwnerTimeoutMs`).
 ///
 /// In TS you'd write (pseudocode):
@@ -59,8 +83,10 @@ pub(crate) fn member_path(parent: &str, key: &str) -> String {
     return format!("{parent}.{key}");
 }
 
-/// What: Describe a value's JSON type in words for a diagnostic.
-/// Why:  "found a string" tells the author what to change without reading the schema.
+/// What:
+///  Describe a value's JSON type in words for a diagnostic.
+/// Why:
+///   "found a string" tells the author what to change without reading the schema.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,8 +111,12 @@ pub(crate) fn kind_name(value: &JsoncValue) -> &'static str {
     }
 }
 
-/// What: Build the failure for a value of the wrong JSON type at a named key.
-/// Why:  Null gets its own wording: it is valid JSON but never a cli-git setting, and
+/// What:
+///  Build the failure for a value of the wrong JSON type at a named key.
+/// Why:
+///   Null gets its own wording:
+///  it is valid JSON but never a cli-git setting,
+///  and
 ///       the fix (remove the key) differs from a plain type mismatch.
 ///
 /// In TS you'd write (pseudocode):
@@ -120,13 +150,20 @@ pub(crate) fn wrong_kind(value: &JsoncValue, path: &str, expected: &str) -> Conf
     );
 }
 
-/// What: Decode every member key of one object and reject repeats.
-///       `&[JsoncEntry]` borrows the parser's member list; `Vec<String>` is an owned,
+/// What:
+///  Decode every member key of one object and reject repeats.
+///       `&[JsoncEntry]` borrows the parser's member list;
+///  `Vec<String>` is an owned,
 ///       growable list (sibling `&[String]` would borrow one that does not exist yet).
-///       `Result<T, E>` is "value or error": `Ok(keys)` or `Err(error)`.
-/// Why:  JSON allows a key twice, and `"hooks"` equals `"hooks"` after decoding;
-///       two definitions of one setting have no unambiguous meaning. The returned keys
-///       are parallel to `entries`, so callers index both by position.
+///       `Result<T, E>` is "value or error":
+///  `Ok(keys)` or `Err(error)`.
+/// Why:
+///   JSON allows a key twice,
+///  and `"hooks"` equals `"hooks"` after decoding;
+///       two definitions of one setting have no unambiguous meaning.
+///  The returned keys
+///       are parallel to `entries`,
+///  so callers index both by position.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -187,8 +224,10 @@ pub(crate) fn member_keys(entries: &[JsoncEntry], path: &str) -> Result<Vec<Stri
     return Ok(keys);
 }
 
-/// What: Name an object for a diagnostic about one of its keys.
-/// Why:  The top-level object has no key path of its own.
+/// What:
+///  Name an object for a diagnostic about one of its keys.
+/// Why:
+///   The top-level object has no key path of its own.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -201,8 +240,11 @@ fn container_name(path: &str) -> String {
     return String::from(path);
 }
 
-/// What: Require a JSON boolean at a named key.
-/// Why:  `"true"` and `1` are not switches; coercing them would hide typing mistakes.
+/// What:
+///  Require a JSON boolean at a named key.
+/// Why:
+///   `"true"` and `1` are not switches;
+///  coercing them would hide typing mistakes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -222,8 +264,12 @@ pub(crate) fn boolean(value: &JsoncValue, path: &str) -> Result<bool, ConfigErro
     return Err(wrong_kind(value, path, "true or false"));
 }
 
-/// What: Require a JSON string at a named key and decode it to Rust text.
-/// Why:  Severities, rule names and patterns are text; numbers and arrays are mistakes.
+/// What:
+///  Require a JSON string at a named key and decode it to Rust text.
+/// Why:
+///   Severities,
+///  rule names and patterns are text;
+///  numbers and arrays are mistakes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -254,8 +300,11 @@ pub(crate) fn text(value: &JsoncValue, path: &str) -> Result<String, ConfigError
     }
 }
 
-/// What: Require an array of strings at a named key.
-/// Why:  Rule lists and exclusion patterns never coerce other types into text; the
+/// What:
+///  Require an array of strings at a named key.
+/// Why:
+///   Rule lists and exclusion patterns never coerce other types into text;
+///  the
 ///       failing element's index is part of the reported key.
 ///
 /// In TS you'd write (pseudocode):
@@ -282,10 +331,17 @@ pub(crate) fn strings(value: &JsoncValue, path: &str) -> Result<Vec<String>, Con
     return Ok(result);
 }
 
-/// What: Require an exact integer between `minimum` and JavaScript's safe-integer bound.
-/// Why:  Timeouts and counters are whole numbers; `1.5`, `-1`, `"3"` and values past
-///       2^53 - 1 are rejected instead of being rounded. `1e3` and `2.0` are exact
-///       integers and stay accepted, as they were by the incumbent.
+/// What:
+///  Require an exact integer between `minimum` and JavaScript's safe-integer bound.
+/// Why:
+///   Timeouts and counters are whole numbers;
+///  `1.5`,
+///  `-1`,
+///  `"3"` and values past
+///       2^53 - 1 are rejected instead of being rounded.
+///  `1e3` and `2.0` are exact
+///       integers and stay accepted,
+///  as they were by the incumbent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

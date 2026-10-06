@@ -1,5 +1,8 @@
-//! What: Remove trailing periods/colons from a heading's final text node.
-//! Why: The edit must preserve inline markup and consume complete source escapes/entities, not only decoded character counts.
+//! What:
+//!  Remove trailing periods/colons from a heading's final text node.
+//! Why:
+//!  The edit must preserve inline markup and consume complete source escapes/entities,
+//!  not only decoded character counts.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -48,8 +51,10 @@ fn punctuation_entity(entity: &str) -> bool {
 }
 
 /// Locate the authored suffix without leaving a dangling escape or half an entity.
-/// Each successful step consumes the suffix it scanned; the first failed scan returns immediately.
-/// Therefore source bytes are scanned a bounded number of times, including backslash runs.
+/// Each successful step consumes the suffix it scanned;
+///  the first failed scan returns immediately.
+/// Therefore source bytes are scanned a bounded number of times,
+///  including backslash runs.
 fn suffix_start(written: &str, count: usize) -> Option<usize> {
     let bytes: &[u8] = written.as_bytes();
     let mut end: usize = bytes.len();
@@ -93,8 +98,10 @@ fn suffix_start(written: &str, count: usize) -> Option<usize> {
     return Some(end);
 }
 
-/// What: Build one optional deletion after finding its complete authored suffix.
-/// Why: Unmappable spellings keep their diagnostic but never receive a guessed edit.
+/// What:
+///  Build one optional deletion after finding its complete authored suffix.
+/// Why:
+///  Unmappable spellings keep their diagnostic but never receive a guessed edit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

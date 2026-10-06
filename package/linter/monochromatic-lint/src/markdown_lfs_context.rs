@@ -1,13 +1,22 @@
-//! What: Repository facts `markdown/lfs-image-url` needs, discovered once and resolved per file.
-//! Why: The rule itself stays a pure function over a parsed document; every filesystem read
-//! (`.lfsconfig`, root `.gitattributes`, image bytes) happens here, before the rule runs.
+//! What:
+//!  Repository facts `markdown/lfs-image-url` needs,
+//!  discovered once and resolved per file.
+//! Why:
+//!  The rule itself stays a pure function over a parsed document;
+//!  every filesystem read
+//! (`.lfsconfig`,
+//!  root `.gitattributes`,
+//!  image bytes) happens here,
+//!  before the rule runs.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // discoverLfsImageRepo(startDirectory) -> repo | undefined; prepareLfsImageContext({ repo, filePath, document })
 //! ```
 
-/// Import configuration reads, the tracked-path matcher, object ids and destination classification.
+/// Import configuration reads,
+///  the tracked-path matcher,
+///  object ids and destination classification.
 /// Import the parsed document whose images and definitions name candidate paths.
 use crate::{
     markdown_lfs_config::{
@@ -30,8 +39,11 @@ use std::{
     sync::{Mutex, MutexGuard},
 };
 
-/// What: The file name git reads for path attributes.
-/// Why: Only the repository root's file is consulted, as in the incumbent.
+/// What:
+///  The file name git reads for path attributes.
+/// Why:
+///  Only the repository root's file is consulted,
+///  as in the incumbent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,8 +51,13 @@ use std::{
 /// ```
 const GIT_ATTRIBUTES_FILENAME: &str = ".gitattributes";
 
-/// What: What a repository-relative path resolves to for image rewriting.
-/// Why: The three states drive three different outcomes: rewrite, leave alone, or report.
+/// What:
+///  What a repository-relative path resolves to for image rewriting.
+/// Why:
+///  The three states drive three different outcomes:
+///  rewrite,
+///  leave alone,
+///  or report.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,19 +65,24 @@ const GIT_ATTRIBUTES_FILENAME: &str = ".gitattributes";
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum LfsImageTarget {
-    /// The path exists and git-lfs tracks it; `oid` is its current object id.
+    /// The path exists and git-lfs tracks it;
+    ///  `oid` is its current object id.
     Lfs {
         /// 64 lowercase hexadecimal characters.
         oid: String,
     },
     /// The path exists as an ordinary git blob.
     Plain,
-    /// The path does not exist in the repository's working tree, or was never referenced.
+    /// The path does not exist in the repository's working tree,
+    ///  or was never referenced.
     Missing,
 }
 
-/// What: Repository-wide facts shared by every file under one `.lfsconfig`.
-/// Why: The object base and tracked patterns are read once; resolved targets are cached because a
+/// What:
+///  Repository-wide facts shared by every file under one `.lfsconfig`.
+/// Why:
+///  The object base and tracked patterns are read once;
+///  resolved targets are cached because a
 /// fixing run checks the same file several times and many files reference the same images.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,18 +91,24 @@ pub enum LfsImageTarget {
 /// ```
 #[derive(Debug)]
 pub struct LfsImageRepo {
-    /// Absolute, lexically normal directory holding `.lfsconfig`.
+    /// Absolute,
+    ///  lexically normal directory holding `.lfsconfig`.
     pub repo_root: PathBuf,
-    /// Credential-free object base; objects are addressed as `<base>/<oid>/<path>`.
+    /// Credential-free object base;
+    ///  objects are addressed as `<base>/<oid>/<path>`.
     pub object_base: String,
     /// Compiled `filter=lfs` patterns of the root `.gitattributes`.
     tracked: PathPatterns,
-    /// Resolved targets by normalized repository path; `Mutex` lets worker threads share one repository.
+    /// Resolved targets by normalized repository path;
+    ///  `Mutex` lets worker threads share one repository.
     resolved: Mutex<BTreeMap<String, LfsImageTarget>>,
 }
 
-/// What: Per-file facts handed to the rule.
-/// Why: Every candidate path was resolved while this was prepared, so the rule needs no I/O.
+/// What:
+///  Per-file facts handed to the rule.
+/// Why:
+///  Every candidate path was resolved while this was prepared,
+///  so the rule needs no I/O.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,9 +116,12 @@ pub struct LfsImageRepo {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LfsImageContext {
-    /// Absolute, lexically normal path of the Markdown file; relative destinations resolve against its directory.
+    /// Absolute,
+    ///  lexically normal path of the Markdown file;
+    ///  relative destinations resolve against its directory.
     pub file_path: PathBuf,
-    /// Absolute, lexically normal repository root.
+    /// Absolute,
+    ///  lexically normal repository root.
     pub repo_root: PathBuf,
     /// Credential-free object base URL.
     pub object_base: String,
@@ -98,8 +129,11 @@ pub struct LfsImageContext {
     pub targets: BTreeMap<String, LfsImageTarget>,
 }
 
-/// What: Look up a prepared target.
-/// Why: A path the preparation never saw reads as missing, never as an error.
+/// What:
+///  Look up a prepared target.
+/// Why:
+///  A path the preparation never saw reads as missing,
+///  never as an error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -115,9 +149,13 @@ impl LfsImageContext {
     }
 }
 
-/// What: The nearest directory, starting at `start` and walking toward the filesystem root, that
+/// What:
+///  The nearest directory,
+///  starting at `start` and walking toward the filesystem root,
+///  that
 /// holds a regular `.lfsconfig` file.
-/// Why: That directory is the repository root object paths are relative to.
+/// Why:
+///  That directory is the repository root object paths are relative to.
 /// A directory or other non-file entry with that name is not a configuration and is skipped.
 ///
 /// In TS you'd write (pseudocode):
@@ -145,10 +183,16 @@ pub(crate) fn find_lfs_repo_root(start: &Path) -> Result<Option<PathBuf>, LfsCon
     return Ok(None);
 }
 
-/// What: Discover the repository a directory belongs to, or `None` when no ancestor declares an LFS endpoint.
-/// Why: Without a declared server there is no object URL to write, so the rule is inert there.
-/// A found `.lfsconfig` without an endpoint ends the search; farther ancestors are not consulted.
-/// `start` is an absolute directory; `.` and `..` components are resolved lexically first.
+/// What:
+///  Discover the repository a directory belongs to,
+///  or `None` when no ancestor declares an LFS endpoint.
+/// Why:
+///  Without a declared server there is no object URL to write,
+///  so the rule is inert there.
+/// A found `.lfsconfig` without an endpoint ends the search;
+///  farther ancestors are not consulted.
+/// `start` is an absolute directory;
+///  `.` and `..` components are resolved lexically first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -181,9 +225,14 @@ pub fn discover_lfs_image_repo(start: &Path) -> Result<Option<LfsImageRepo>, Lfs
     }));
 }
 
-/// What: Whether the rule's `exclude` patterns name a file under lint.
-/// Why: Patterns are relative to the repository root; a file outside the repository is never
-/// excluded by them. Only the root is needed, so exclusion is decided before the repository's
+/// What:
+///  Whether the rule's `exclude` patterns name a file under lint.
+/// Why:
+///  Patterns are relative to the repository root;
+///  a file outside the repository is never
+/// excluded by them.
+///  Only the root is needed,
+///  so exclusion is decided before the repository's
 /// endpoint is read and an excluded file is unaffected by an unusable endpoint.
 ///
 /// In TS you'd write (pseudocode):
@@ -198,16 +247,22 @@ pub fn is_excluded(repo_root: &Path, file_path: &Path, exclude: &PathPatterns) -
     return exclude.matches(relative.as_str());
 }
 
-/// What: Repository operations that read the working tree.
-/// Why: Target resolution owns the cache lock; callers see only resolved values.
+/// What:
+///  Repository operations that read the working tree.
+/// Why:
+///  Target resolution owns the cache lock;
+///  callers see only resolved values.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// repo.resolveTarget(repoRelativePath)
 /// ```
 impl LfsImageRepo {
-    /// What: Read one normalized repository path from disk without consulting the cache.
-    /// Why: Existence, tracking and the current object id are three separate facts.
+    /// What:
+    ///  Read one normalized repository path from disk without consulting the cache.
+    /// Why:
+    ///  Existence,
+    ///  tracking and the current object id are three separate facts.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -253,9 +308,13 @@ impl LfsImageRepo {
         }
     }
 
-    /// What: Resolve a forward-slash path as a destination names it.
-    /// Why: `.` and `..` segments are resolved lexically first; a path that leaves the repository
-    /// is missing from it and is never read, so a Markdown file cannot make the linter open files
+    /// What:
+    ///  Resolve a forward-slash path as a destination names it.
+    /// Why:
+    ///  `.` and `..` segments are resolved lexically first;
+    ///  a path that leaves the repository
+    /// is missing from it and is never read,
+    ///  so a Markdown file cannot make the linter open files
     /// outside the repository.
     ///
     /// In TS you'd write (pseudocode):
@@ -290,10 +349,15 @@ impl LfsImageRepo {
     }
 }
 
-/// What: Prepare one file's context by resolving every path an image or image definition may name.
-/// Why: The rule then decides fixes synchronously; a fix only swaps a destination between the
-/// relative and object forms of the same path, so the candidate set is stable across fix passes.
-/// `file_path` is absolute; `.` and `..` components are resolved lexically first.
+/// What:
+///  Prepare one file's context by resolving every path an image or image definition may name.
+/// Why:
+///  The rule then decides fixes synchronously;
+///  a fix only swaps a destination between the
+/// relative and object forms of the same path,
+///  so the candidate set is stable across fix passes.
+/// `file_path` is absolute;
+///  `.` and `..` components are resolved lexically first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,7 +1,13 @@
-//! What: Consumer-level controls that start the built native executable.
-//! Why: Forwarding, self-exclusion, policy decisions and refusals are promises about the
-//!      program a caller runs as `git`, so they are checked through that program
-//!      against real Git 2.56.0, never only through library functions.
+//! What:
+//!  Consumer-level controls that start the built native executable.
+//! Why:
+//!  Forwarding,
+//!  self-exclusion,
+//!  policy decisions and refusals are promises about the
+//!      program a caller runs as `git`,
+//!  so they are checked through that program
+//!      against real Git 2.56.0,
+//!  never only through library functions.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +19,10 @@
 #[path = "binary_support.rs"]
 mod support;
 
-/// Exact forwarding of arguments, streams, exit codes, signals and environment.
+/// Exact forwarding of arguments,
+///  streams,
+///  exit codes,
+///  signals and environment.
 #[path = "binary_forwarding_tests.rs"]
 mod forwarding;
 
@@ -25,11 +34,13 @@ mod resolution;
 #[path = "binary_policy_tests.rs"]
 mod policy;
 
-/// Wrapper controls, escape hatches and commands Git refuses.
+/// Wrapper controls,
+///  escape hatches and commands Git refuses.
 #[path = "binary_controls_tests.rs"]
 mod controls;
 
-/// The refusal frontier: commands that need work this executable does not do.
+/// The refusal frontier:
+///  commands that need work this executable does not do.
 #[path = "binary_frontier_tests.rs"]
 mod frontier;
 

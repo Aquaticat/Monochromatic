@@ -4,12 +4,16 @@
 use crate::annotation_layout::AnnotationFrame;
 /// Canonical source remains in the read-only document.
 use crate::document::Document;
-/// Variable roman and real italic blobs retain stable cache identities; the interface face sets virtual rows.
+/// Variable roman and real italic blobs retain stable cache identities;
+///  the interface face sets virtual rows.
 use crate::font_asset::{code_faces, row_face};
-/// The one vertical mapping: where each line's code row starts and how tall rows and the caret are.
+/// The one vertical mapping:
+///  where each line's code row starts and how tall rows and the caret are.
 use crate::row_map::{CODE_ROW, RowMap};
-/// What: `pub use` re-exports the row types under this module's name.
-/// Why: Callers written against `shaped_text` keep their imports while row geometry lives in its own file.
+/// What:
+///  `pub use` re-exports the row types under this module's name.
+/// Why:
+///  Callers written against `shaped_text` keep their imports while row geometry lives in its own file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,7 +24,8 @@ pub use crate::shaped_row::{ReadingRect, ShapedRow};
 use crate::source_style::StyleSpan;
 /// Immutable font requests validate continuous weights before shaping.
 use crate::source_typography::SourceTypography;
-/// Tabs end on pixel tab stops, whatever script precedes them.
+/// Tabs end on pixel tab stops,
+///  whatever script precedes them.
 use crate::tab_layout::layout_with_tabs;
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::project_line;
@@ -36,11 +41,19 @@ use parley::{
 /// Font bytes are shared immutably across the font database.
 use std::borrow::Cow;
 
-/// Reading geometry of a prepared frame: hits, caret, selection and range rectangles, and rebasing.
+/// Reading geometry of a prepared frame:
+///  hits,
+///  caret,
+///  selection and range rectangles,
+///  and rebasing.
 mod view;
 
-/// What: `pub const` exports a compile-time value; `f32` is a 32-bit float of logical pixels (sibling `f64`).
-/// Why: A selected line terminator has no glyph; a mark about one space wide shows that it is selected.
+/// What:
+///  `pub const` exports a compile-time value;
+///  `f32` is a 32-bit float of logical pixels (sibling `f64`).
+/// Why:
+///  A selected line terminator has no glyph;
+///  a mark about one space wide shows that it is selected.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,8 +61,13 @@ mod view;
 /// ```
 pub const TERMINATOR_MARK: f32 = 9.0;
 
-/// What: Paint role of virtual-row glyphs, a number outside the syntax roles; `u32` is the brush type of layouts.
-/// Why: The raster paints hints and messages with one given ink each, never with a syntax or selection color.
+/// What:
+///  Paint role of virtual-row glyphs,
+///  a number outside the syntax roles;
+///  `u32` is the brush type of layouts.
+/// Why:
+///  The raster paints hints and messages with one given ink each,
+///  never with a syntax or selection color.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,13 +75,15 @@ pub const TERMINATOR_MARK: f32 = 9.0;
 /// ```
 pub const ROW_ROLE: u32 = 65;
 
-/// Family name of the bundled interface face, as its name table spells it.
+/// Family name of the bundled interface face,
+///  as its name table spells it.
 const ROW_FAMILY: &str = "Inter Variable";
 
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]
 pub struct Viewport {
-    /// First logical line materialized, including overscan.
+    /// First logical line materialized,
+    ///  including overscan.
     pub first: usize,
     /// Maximum number of source lines materialized.
     pub count: usize,
@@ -83,17 +103,25 @@ pub struct ShapedView {
     pub width: u32,
     /// Physical raster height.
     pub height: u32,
-    /// Top of the raster in logical pixels from the top of the text: the top of the first materialized
+    /// Top of the raster in logical pixels from the top of the text:
+    ///  the top of the first materialized
     /// line's block.
     pub origin: f32,
-    /// The vertical mapping this frame was shaped against; rows outside the frame are placed by it.
+    /// The vertical mapping this frame was shaped against;
+    ///  rows outside the frame are placed by it.
     pub map: RowMap,
     /// Shared logical selection rectangles drive both native backgrounds and glyph clipping.
     pub selections: Vec<ReadingRect>,
-    /// In-file find rectangles from the same row geometry; filled by the native renderer.
+    /// In-file find rectangles from the same row geometry;
+    ///  filled by the native renderer.
     pub matches: Vec<ReadingRect>,
-    /// What: `Option<AnnotationFrame>` is the frame's positioned hints and diagnostic marks, or nothing.
-    /// Why: The renderer fills it after shaping; rows are never changed by it, so reading geometry ignores it.
+    /// What:
+    ///  `Option<AnnotationFrame>` is the frame's positioned hints and diagnostic marks,
+    ///  or nothing.
+    /// Why:
+    ///  The renderer fills it after shaping;
+    ///  rows are never changed by it,
+    ///  so reading geometry ignores it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -102,15 +130,21 @@ pub struct ShapedView {
     pub annotations: Option<AnnotationFrame>,
 }
 
-/// Own font discovery and shaping scratch space, rather than recreate per glyph.
+/// Own font discovery and shaping scratch space,
+///  rather than recreate per glyph.
 pub struct TextShaper {
-    /// Primary and fallback fonts, including the embedded source face.
+    /// Primary and fallback fonts,
+    ///  including the embedded source face.
     fonts: FontContext,
     /// Reusable paragraph-building allocations.
     layouts: LayoutContext<u32>,
-    /// Immutable variable-weight, italic, and feature policy shared by rows and baseline probes.
+    /// Immutable variable-weight,
+    ///  italic,
+    ///  and feature policy shared by rows and baseline probes.
     typography: SourceTypography,
-    /// Measured space advance for one scale; typography is immutable, so only the scale can change it.
+    /// Measured space advance for one scale;
+    ///  typography is immutable,
+    ///  so only the scale can change it.
     space: Option<(f32, f32)>,
 }
 
@@ -124,14 +158,17 @@ impl Default for TextShaper {
 
 /// Shape complete source lines while retaining a reusable font context.
 impl TextShaper {
-    /// Register the embedded primary face; system fonts supply other scripts.
+    /// Register the embedded primary face;
+    ///  system fonts supply other scripts.
     pub fn new() -> Self {
         return Self::with_typography(SourceTypography::default())
             .expect("valid default source typography");
     }
 
-    /// Create a source shaper with explicit OpenType features, without changing source characters.
-    /// Settings are immutable for this shaper; replacing it also requires invalidating native frame state.
+    /// Create a source shaper with explicit OpenType features,
+    ///  without changing source characters.
+    /// Settings are immutable for this shaper;
+    ///  replacing it also requires invalidating native frame state.
     pub fn with_features(features: Vec<FontFeature>) -> Self {
         let typography = SourceTypography {
             features,
@@ -159,7 +196,8 @@ impl TextShaper {
     }
 
     /// Shape text with explicit source typography and no soft wrapping.
-    /// `spacings` pairs a display byte with extra advance in logical pixels; tabs use it to reach their stop.
+    /// `spacings` pairs a display byte with extra advance in logical pixels;
+    ///  tabs use it to reach their stop.
     pub(crate) fn line_layout(
         &mut self,
         text: &str,
@@ -202,11 +240,21 @@ impl TextShaper {
         return layout;
     }
 
-    /// What: Shape the text of one virtual row, an inlay hint or one row of a diagnostic message: the
-    ///       interface face at [`ROW_TEXT`] on a line box of [`ROW_HEIGHT`], regular weight, upright.
-    ///       `&str` lends the text; the answer is an owned layout.
-    /// Why: The reference editor sets these rows in its interface face, which tells them from source text at
-    ///      a glance. The text is never part of a source line, and the raster paints it in one given ink.
+    /// What:
+    ///  Shape the text of one virtual row,
+    ///  an inlay hint or one row of a diagnostic message:
+    ///  the
+    ///       interface face at [`ROW_TEXT`] on a line box of [`ROW_HEIGHT`],
+    ///  regular weight,
+    ///  upright.
+    ///       `&str` lends the text;
+    ///  the answer is an owned layout.
+    /// Why:
+    ///  The reference editor sets these rows in its interface face,
+    ///  which tells them from source text at
+    ///      a glance.
+    ///  The text is never part of a source line,
+    ///  and the raster paints it in one given ink.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -229,8 +277,11 @@ impl TextShaper {
         return layout;
     }
 
-    /// Physical advance of one space in the source font at `scale`, measured once per scale.
-    /// Tab stops are multiples of this advance, so it comes from the font, not from an assumed cell width.
+    /// Physical advance of one space in the source font at `scale`,
+    ///  measured once per scale.
+    /// Tab stops are multiples of this advance,
+    ///  so it comes from the font,
+    ///  not from an assumed cell width.
     pub(crate) fn space_advance(&mut self, scale: f32) -> f32 {
         // What: `if let Some((known, advance))` runs only when a measurement is stored, naming its two parts.
         // Why: A viewport reshapes many tab lines per frame; the font is asked once.
@@ -252,7 +303,8 @@ impl TextShaper {
         return advance;
     }
 
-    /// Baseline of the primary font at `scale`; a known primary glyph makes it the same for all source rows.
+    /// Baseline of the primary font at `scale`;
+    ///  a known primary glyph makes it the same for all source rows.
     fn baseline(&mut self, scale: f32) -> f32 {
         let probe = self.line_layout("M", scale, &[], &[]);
         return probe
@@ -309,16 +361,21 @@ impl TextShaper {
         };
     }
 
-    /// Shape one arbitrary source line for reading geometry, without syntax colors.
-    /// Caret movement uses it for lines outside the materialized viewport; `row` is clamped to the last line.
-    /// The row has no vertical position: its `top` is zero, and only its horizontal geometry is meaningful.
+    /// Shape one arbitrary source line for reading geometry,
+    ///  without syntax colors.
+    /// Caret movement uses it for lines outside the materialized viewport;
+    ///  `row` is clamped to the last line.
+    /// The row has no vertical position:
+    ///  its `top` is zero,
+    ///  and only its horizontal geometry is meaningful.
     pub fn row(&mut self, document: &Document, row: usize, scale: f32) -> ShapedRow {
         let last = document.text().len_lines().saturating_sub(1);
         let baseline = self.baseline(scale);
         return self.shape_row(document, (row.min(last), 0.0), scale, &[], baseline);
     }
 
-    /// Prepare a visible viewport of a text without virtual rows: line `n` starts at `n` code rows.
+    /// Prepare a visible viewport of a text without virtual rows:
+    ///  line `n` starts at `n` code rows.
     pub fn prepare(
         &mut self,
         document: &Document,
@@ -329,10 +386,17 @@ impl TextShaper {
         return self.prepare_rows(document, viewport, styles, &map);
     }
 
-    /// What: Prepare a visible viewport using native font advances rather than character cells, with every
-    ///       row placed by `map`. `&RowMap` lends the vertical mapping; the view keeps its own copy.
-    /// Why: Lines with virtual rows above them start lower than their line number alone says; the frame,
-    ///      its selection rectangles, and its raster all take row positions from this one mapping.
+    /// What:
+    ///  Prepare a visible viewport using native font advances rather than character cells,
+    ///  with every
+    ///       row placed by `map`.
+    ///  `&RowMap` lends the vertical mapping;
+    ///  the view keeps its own copy.
+    /// Why:
+    ///  Lines with virtual rows above them start lower than their line number alone says;
+    ///  the frame,
+    ///      its selection rectangles,
+    ///  and its raster all take row positions from this one mapping.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

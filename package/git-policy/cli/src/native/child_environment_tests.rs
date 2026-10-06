@@ -1,5 +1,8 @@
-//! What: Controls for the Git child environment additions, checked against real Git.
-//! Why: The overlay must append after exactly the entries Git 2.56.0 reads and must
+//! What:
+//!  Controls for the Git child environment additions,
+//!  checked against real Git.
+//! Why:
+//!  The overlay must append after exactly the entries Git 2.56.0 reads and must
 //!      never change what Git reports for a caller's malformed variables.
 //!
 //! In TS you'd write (pseudocode):
@@ -15,8 +18,10 @@ use std::ffi::OsString;
 use std::path::Path;
 use std::process::Command;
 
-/// What: Build an owned environment list from text pairs.
-/// Why: `pub(super)` lets the sibling count controls in `child_environment_count_tests.rs` reuse it.
+/// What:
+///  Build an owned environment list from text pairs.
+/// Why:
+///  `pub(super)` lets the sibling count controls in `child_environment_count_tests.rs` reuse it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,7 +70,9 @@ fn overlay_appends_after_existing_entries() {
     );
 }
 
-/// A last entry that already reads true, in any key or value case, adds nothing.
+/// A last entry that already reads true,
+///  in any key or value case,
+///  adds nothing.
 #[test]
 fn overlay_is_idempotent_when_the_last_entry_is_true() {
     for (key, value) in [
@@ -95,7 +102,8 @@ fn overlay_is_idempotent_when_the_last_entry_is_true() {
     );
 }
 
-/// Only the last matching entry decides; other keys and non-true spellings do not suppress the append.
+/// Only the last matching entry decides;
+///  other keys and non-true spellings do not suppress the append.
 #[test]
 fn overlay_appends_when_the_effective_entry_is_not_true() {
     for (first, last) in [
@@ -134,7 +142,8 @@ fn overlay_appends_when_the_effective_entry_is_not_true() {
     assert_eq!(lockfile_pid_overlay(beyond.as_slice()), appended(0));
 }
 
-/// Values Git itself rejects are left for Git to report: nothing is added.
+/// Values Git itself rejects are left for Git to report:
+///  nothing is added.
 #[test]
 fn overlay_leaves_malformed_numbered_configuration_untouched() {
     for pairs in [
@@ -194,7 +203,8 @@ fn forward_target_marker_preserves_non_utf8_paths() {
     );
 }
 
-/// Real Git applies the overlay, and an explicit caller `-c` still wins over it.
+/// Real Git applies the overlay,
+///  and an explicit caller `-c` still wins over it.
 #[test]
 fn native_git_reads_the_overlay_and_explicit_configuration_wins() {
     let inherited: Vec<(OsString, OsString)> = environment(&[

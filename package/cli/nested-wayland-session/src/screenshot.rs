@@ -1,23 +1,47 @@
-//! Screenshot capture: render one frame and read the framebuffer back as pixels.
+//! Screenshot capture:
+//!  render one frame and read the framebuffer back as pixels.
 //!
-//! This runs on the main (GL-context) thread. It binds an offscreen texture the size of the
-//! output mode, composites the current frame into it, and copies it to CPU memory with the
-//! renderer's `ExportMem` primitive. Capturing off screen keeps every capture the size the
-//! screen has now: the window's own back buffer only takes a new size after the next swap,
-//! and nothing swaps while recording or while the parent window is hidden. `read_frame` fills a caller-owned buffer (so the 60fps recorder
-//! can reuse buffers instead of allocating each frame); `capture` builds on it to write a
-//! single PNG. PNG encoding of the raw pixels lives in the `encoder` module, off this
-//! thread, so the recorder's per-tick cost stays minimal.
+//! This runs on the main (GL-context) thread.
+//!  It binds an offscreen texture the size of the
+//! output mode,
+//!  composites the current frame into it,
+//!  and copies it to CPU memory with the
+//! renderer's `ExportMem` primitive.
+//!  Capturing off screen keeps every capture the size the
+//! screen has now:
+//!  the window's own back buffer only takes a new size after the next swap,
+//! and nothing swaps while recording or while the parent window is hidden.
+//!  `read_frame` fills a caller-owned buffer (so the 60fps recorder
+//! can reuse buffers instead of allocating each frame);
+//!  `capture` builds on it to write a
+//! single PNG.
+//!  PNG encoding of the raw pixels lives in the `encoder` module,
+//!  off this
+//! thread,
+//!  so the recorder's per-tick cost stays minimal.
 
-/// What:     `use std::path::Path;`. Borrowed filesystem path.
-/// Why:      `capture` writes to a caller-provided path.
+/// What:
+///      `use std::path::Path;`.
+///  Borrowed filesystem path.
+/// Why:
+///       `capture` writes to a caller-provided path.
 use std::path::Path;
 
-/// What:     Grouped `use` of the dmabuf `Fourcc` format tag, the render-element, renderer,
-///           and texture types, the `Bind`/`ExportMem`/`Offscreen`/`Texture` traits,
-///           `render_output`, and the `Rectangle`/`Size`/`Buffer` geometry.
-/// Why:      Everything the readback references. `Offscreen` adds `create_buffer`, `Bind`
-///           makes a texture the draw target, `Texture` adds `size`, and `ExportMem` adds
+/// What:
+///      Grouped `use` of the dmabuf `Fourcc` format tag,
+///  the render-element,
+///  renderer,
+///           and texture types,
+///  the `Bind`/`ExportMem`/`Offscreen`/`Texture` traits,
+///           `render_output`,
+///  and the `Rectangle`/`Size`/`Buffer` geometry.
+/// Why:
+///       Everything the readback references.
+///  `Offscreen` adds `create_buffer`,
+///  `Bind`
+///           makes a texture the draw target,
+///  `Texture` adds `size`,
+///  and `ExportMem` adds
 ///           `copy_framebuffer` / `map_texture` to the renderer.
 ///
 /// In TS you'd write (pseudocode):
@@ -37,13 +61,21 @@ use smithay::{
     utils::{Buffer, Rectangle, Size},
 };
 
-/// What:     `use anyhow::{Context, Result};`. Error helpers.
-/// Why:      The functions return `Result` and annotate each fallible step.
+/// What:
+///      `use anyhow::{Context, Result};`.
+///  Error helpers.
+/// Why:
+///       The functions return `Result` and annotate each fallible step.
 use anyhow::{Context, Result};
 
-/// What:     `use crate::{encoder, render::CLEAR_COLOR, state::Compositor};`. Reuse the
-///           PNG encoder, the shared clear colour, and the state.
-/// Why:      Screenshots composite with the same background as the live frame and encode
+/// What:
+///      `use crate::{encoder, render::CLEAR_COLOR, state::Compositor};`.
+///  Reuse the
+///           PNG encoder,
+///  the shared clear colour,
+///  and the state.
+/// Why:
+///       Screenshots composite with the same background as the live frame and encode
 ///           through the same code path as the recorder.
 ///
 /// In TS you'd write (pseudocode):
@@ -56,19 +88,31 @@ use crate::{encoder, render::CLEAR_COLOR, state::Compositor};
 
 /// Number of bytes per pixel in the read-back `Abgr8888` framebuffer.
 ///
-/// What:     `pub const BYTES_PER_PIXEL: usize = 4;`. `usize` because it multiplies a
+/// What:
+///      `pub const BYTES_PER_PIXEL: usize = 4;`.
+///  `usize` because it multiplies a
 ///           pixel count to a byte count.
-/// Why:      Shared by the readback size check and the recorder's buffer sizing.
+/// Why:
+///       Shared by the readback size check and the recorder's buffer sizing.
 pub const BYTES_PER_PIXEL: usize = 4;
 
 /// Render the current frame and copy the framebuffer into `buffer` as raw RGBA pixels.
 ///
-/// What:     `pub fn read_frame(state: &mut Compositor, buffer: &mut Vec<u8>) ->
-///           Result<(u32, u32)>`. Mutably borrows the state and a caller-owned byte buffer
-///           it fills; returns the frame's `(width, height)`. The pixels are bottom-up
-///           (as `glReadPixels` returns them) and are NOT flipped here; the encoder flips
-///           when writing, keeping this hot path to a bind, a render, and one copy.
-/// Why:      The shared readback primitive for both single screenshots and the recorder.
+/// What:
+///      `pub fn read_frame(state: &mut Compositor, buffer: &mut Vec<u8>) ->
+///           Result<(u32, u32)>`.
+///  Mutably borrows the state and a caller-owned byte buffer
+///           it fills;
+///  returns the frame's `(width, height)`.
+///  The pixels are bottom-up
+///           (as `glReadPixels` returns them) and are NOT flipped here;
+///  the encoder flips
+///           when writing,
+///  keeping this hot path to a bind,
+///  a render,
+///  and one copy.
+/// Why:
+///       The shared readback primitive for both single screenshots and the recorder.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -211,9 +255,12 @@ pub fn read_frame(state: &mut Compositor, buffer: &mut Vec<u8>) -> Result<(u32, 
 
 /// Render the current frame and write it to `path` as a single PNG.
 ///
-/// What:     `pub fn capture(state: &mut Compositor, path: &Path) -> Result<()>`. Reads one
+/// What:
+///      `pub fn capture(state: &mut Compositor, path: &Path) -> Result<()>`.
+///  Reads one
 ///           frame and encodes it synchronously (a single screenshot is not on a hot path).
-/// Why:      The `screenshot` control command's implementation.
+/// Why:
+///       The `screenshot` control command's implementation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

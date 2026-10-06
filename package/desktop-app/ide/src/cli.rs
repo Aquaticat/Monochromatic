@@ -1,7 +1,9 @@
 //! Display-independent startup grammar for one project root and an optional initial source file.
 //!
-//! Without a project argument the application opens the user's home folder (`$HOME`), as a launcher
-//! entry started without a folder does (decision of 2026-10-06). `--licenses` prints the license and
+//! Without a project argument the application opens the user's home folder (`$HOME`),
+//!  as a launcher
+//! entry started without a folder does (decision of 2026-10-06).
+//!  `--licenses` prints the license and
 //! notice texts embedded in the executable instead of opening a window (decision of 2026-10-06).
 
 /// Preserve clap's typed help/usage errors inside the application's standard error envelope.
@@ -14,18 +16,27 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// Parsed startup inputs; filesystem validation happens after help and version handling.
+/// Parsed startup inputs;
+///  filesystem validation happens after help and version handling.
 #[derive(Debug)]
 pub struct Options {
-    /// Sole project directory: the argument, or the home folder when none was given.
+    /// Sole project directory:
+    ///  the argument,
+    ///  or the home folder when none was given.
     pub project: PathBuf,
-    /// Optional source path resolved relative to the project root, not the caller's cwd.
+    /// Optional source path resolved relative to the project root,
+    ///  not the caller's cwd.
     pub file: Option<PathBuf>,
 }
 
-/// What: What the command line asks for. `enum` is a value that is exactly one of these variants,
+/// What:
+///  What the command line asks for.
+///  `enum` is a value that is exactly one of these variants,
 ///       like a TS discriminated union.
-/// Why: Printing the license texts needs no project, no home folder, and no display.
+/// Why:
+///  Printing the license texts needs no project,
+///  no home folder,
+///  and no display.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,7 +49,8 @@ pub enum Startup {
         /// The project and the optional initial file.
         Options,
     ),
-    /// Print every embedded license and notice text, then exit with status 0.
+    /// Print every embedded license and notice text,
+    ///  then exit with status 0.
     Licenses,
 }
 
@@ -85,9 +97,15 @@ fn command() -> Command {
     return command;
 }
 
-/// What: The home folder from `HOME`, when it is an absolute path. `Option<PathBuf>` is an owned
-///       path or nothing; `var_os` keeps non-UTF-8 bytes.
-/// Why: The executable's no-argument start opens this folder; tests pass their own instead.
+/// What:
+///  The home folder from `HOME`,
+///  when it is an absolute path.
+///  `Option<PathBuf>` is an owned
+///       path or nothing;
+///  `var_os` keeps non-UTF-8 bytes.
+/// Why:
+///  The executable's no-argument start opens this folder;
+///  tests pass their own instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -106,15 +124,18 @@ pub fn home_folder() -> Option<PathBuf> {
         .filter(|path| return path.is_absolute());
 }
 
-/// Parse argv excluding the executable name, opening the `HOME` folder when no project is given;
+/// Parse argv excluding the executable name,
+///  opening the `HOME` folder when no project is given;
 /// no filesystem or toolkit operations occur here.
 pub fn parse_args(args: &[OsString]) -> Result<Startup> {
     // `home_folder().as_deref()` lends the owned path as `Option<&Path>`.
     return parse_args_with_home(args, home_folder().as_deref());
 }
 
-/// Parse argv excluding the executable name, with an explicit home folder for the no-project case.
-/// `home` is `None` when no usable home folder exists; then a missing project is a usage error.
+/// Parse argv excluding the executable name,
+///  with an explicit home folder for the no-project case.
+/// `home` is `None` when no usable home folder exists;
+///  then a missing project is a usage error.
 pub fn parse_args_with_home(args: &[OsString], home: Option<&Path>) -> Result<Startup> {
     // What: Vec owns a variable-length argv list; unlike String, OsString retains native non-UTF-8 bytes.
     // Why: The command name occupies argv[0] while project filenames remain exact native paths.

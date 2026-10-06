@@ -1,5 +1,7 @@
-//! What: Typed failures before a Rust semantic check can produce trustworthy findings.
-//! Why: Missing workspace membership and backend panics are not successful empty lint results.
+//! What:
+//!  Typed failures before a Rust semantic check can produce trustworthy findings.
+//! Why:
+//!  Missing workspace membership and backend panics are not successful empty lint results.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -9,7 +11,8 @@
 /// Owned explanation that survives releasing a workspace or parser.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SemanticError {
-    /// Operation and remediation, with the affected path supplied at the caller boundary.
+    /// Operation and remediation,
+    ///  with the affected path supplied at the caller boundary.
     pub message: String,
 }
 

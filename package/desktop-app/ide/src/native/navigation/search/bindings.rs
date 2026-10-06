@@ -9,7 +9,8 @@ use slint::{ComponentHandle, SharedString};
 /// Each callback clones UI-thread ownership rather than sharing mutable source with workers.
 use std::{cell::RefCell, rc::Rc};
 
-/// Bind once; native input continues to its normal widget unless a completed double-Shift opens search.
+/// Bind once;
+///  native input continues to its normal widget unless a completed double-Shift opens search.
 pub(in crate::native::navigation) fn bind(
     owner: &AppWindow,
     source: &Rc<RefCell<State>>,

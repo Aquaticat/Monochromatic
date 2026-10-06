@@ -1,18 +1,31 @@
-//! What: The wrapper-only control tokens, what each one means, and their removal from the
+//! What:
+//!  The wrapper-only control tokens,
+//!  what each one means,
+//!  and their removal from the
 //!       arguments that come before the Git subcommand.
-//! Why: Git refuses options it does not know, so every control must be gone before Git runs,
-//!      and every policy decision must read the arguments without them. A control is
-//!      recognized only where Git itself would look for an option, and it is removed by its
-//!      position, never by its spelling, so an equal-looking value or path is kept.
+//! Why:
+//!  Git refuses options it does not know,
+//!  so every control must be gone before Git runs,
+//!      and every policy decision must read the arguments without them.
+//!  A control is
+//!      recognized only where Git itself would look for an option,
+//!  and it is removed by its
+//!      position,
+//!  never by its spelling,
+//!  so an equal-looking value or path is kept.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const { args, keepGoing, escapedPolicyIds } = parsePolicyControls({ args: rawArgs });
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  The scan asks the Git 2.56.0 global-option reader where an unknown option sits,
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   The scan asks the Git 2.56.0 global-option reader where an unknown option sits,
 ///       and removes tokens through the one position-based removal function.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,9 +40,14 @@ use super::escape_hatch::{
 };
 use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
 use super::policy_registry::PolicyId;
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  Arguments may hold bytes that are not UTF-8 and are forwarded unchanged.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Arguments may hold bytes that are not UTF-8 and are forwarded unchanged.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,9 +55,13 @@ use super::policy_registry::PolicyId;
 /// ```
 use std::ffi::OsString;
 
-/// What: The control that lets later policies run after an error finding. `&str` is borrowed
-///       text; here it is baked into the program.
-/// Why:  A caller who wants every finding of one command in a single run passes it.
+/// What:
+///  The control that lets later policies run after an error finding.
+///  `&str` is borrowed
+///       text;
+///  here it is baked into the program.
+/// Why:
+///   A caller who wants every finding of one command in a single run passes it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,10 +69,17 @@ use std::ffi::OsString;
 /// ```
 pub const KEEP_GOING_FLAG: &str = "--cli-git-keep-going";
 
-/// What: What one control asks for. An `enum` is a closed set of named alternatives;
-///       `Escape` carries the policy it switches off. `#[derive(...)]` asks the compiler to
-///       generate copying (`Clone`, `Copy`), debug printing (`Debug`) and `==`.
-/// Why:  Recognition (a spelling) and effect (a meaning) are kept apart, so two spellings
+/// What:
+///  What one control asks for.
+///  An `enum` is a closed set of named alternatives;
+///       `Escape` carries the policy it switches off.
+///  `#[derive(...)]` asks the compiler to
+///       generate copying (`Clone`,
+///  `Copy`),
+///  debug printing (`Debug`) and `==`.
+/// Why:
+///   Recognition (a spelling) and effect (a meaning) are kept apart,
+///  so two spellings
 ///       of one escape cannot drift.
 ///
 /// In TS you'd write (pseudocode):
@@ -67,9 +96,14 @@ pub enum ControlMeaning {
     SkipWorktreeCopy,
 }
 
-/// What: One accepted control: its exact spelling and its meaning. A `struct` is a record
-///       with named fields; `&'static str` is text baked into the program for its whole run.
-/// Why:  The table below is the single list of spellings the wrapper recognizes.
+/// What:
+///  One accepted control:
+///  its exact spelling and its meaning.
+///  A `struct` is a record
+///       with named fields;
+///  `&'static str` is text baked into the program for its whole run.
+/// Why:
+///   The table below is the single list of spellings the wrapper recognizes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -77,18 +111,30 @@ pub enum ControlMeaning {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ControlSpelling {
-    /// The exact token; controls are never abbreviated and never carry `=value`.
+    /// The exact token;
+    ///  controls are never abbreviated and never carry `=value`.
     pub flag: &'static str,
     /// What the token asks for.
     pub meaning: ControlMeaning,
 }
 
-/// What: Every control spelling. `&[ControlSpelling]` is a borrowed, read-only list (siblings:
-///       `Vec<T>`, owned and growable; `[T; N]`, fixed length in the type).
-/// Why:  One `--no-enforce-<policy id>` per shipped policy, the three spellings that predate
-///       policy ids, the keep-going flag and the worktree-copy opt-out. A compiled-in list
+/// What:
+///  Every control spelling.
+///  `&[ControlSpelling]` is a borrowed,
+///  read-only list (siblings:
+///       `Vec<T>`,
+///  owned and growable;
+///  `[T; N]`,
+///  fixed length in the type).
+/// Why:
+///   One `--no-enforce-<policy id>` per shipped policy,
+///  the three spellings that predate
+///       policy ids,
+///  the keep-going flag and the worktree-copy opt-out.
+///  A compiled-in list
 ///       cannot be reordered or extended at run time.
-/// Gotcha: `wrapper_controls_tests.rs` pins that every shipped policy has exactly the
+/// Gotcha:
+///  `wrapper_controls_tests.rs` pins that every shipped policy has exactly the
 ///         spelling `--no-enforce-` followed by its registry name.
 ///
 /// In TS you'd write (pseudocode):
@@ -154,9 +200,14 @@ pub const CONTROL_SPELLINGS: &[ControlSpelling] = &[
     },
 ];
 
-/// What: Everything the controls of one invocation asked for. `bool` is true or false;
-///       `Vec<PolicyId>` is an owned, growable list of policy identities.
-/// Why:  The engine reads the effect of the removed tokens from this record, because the
+/// What:
+///  Everything the controls of one invocation asked for.
+///  `bool` is true or false;
+///       `Vec<PolicyId>` is an owned,
+///  growable list of policy identities.
+/// Why:
+///   The engine reads the effect of the removed tokens from this record,
+///  because the
 ///       tokens themselves are gone from the arguments it sees.
 ///
 /// In TS you'd write (pseudocode):
@@ -167,7 +218,9 @@ pub const CONTROL_SPELLINGS: &[ControlSpelling] = &[
 pub struct Controls {
     /// Later policies run after an error finding.
     pub keep_going: bool,
-    /// Policies skipped for this invocation, each listed once, in first-use order.
+    /// Policies skipped for this invocation,
+    ///  each listed once,
+    ///  in first-use order.
     pub escaped: Vec<PolicyId>,
     /// `--no-enforce-only` was written in option position of `git commit`.
     pub commit_only_escaped: bool,
@@ -175,9 +228,12 @@ pub struct Controls {
     pub skip_worktree_copy: bool,
 }
 
-/// What: The record of an invocation that used no control. `Vec::<PolicyId>::new()` is an
+/// What:
+///  The record of an invocation that used no control.
+///  `Vec::<PolicyId>::new()` is an
 ///       empty owned list.
-/// Why:  Every scan starts from "nothing was asked" and only adds.
+/// Why:
+///   Every scan starts from "nothing was asked" and only adds.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -192,9 +248,15 @@ pub fn no_controls() -> Controls {
     };
 }
 
-/// What: The meaning of a token that is exactly a control spelling, or nothing. `&[u8]`
-///       borrows raw bytes; `Option<T>` is "a value or nothing".
-/// Why:  Arguments are compared as bytes, so a non-UTF-8 argument is never decoded.
+/// What:
+///  The meaning of a token that is exactly a control spelling,
+///  or nothing.
+///  `&[u8]`
+///       borrows raw bytes;
+///  `Option<T>` is "a value or nothing".
+/// Why:
+///   Arguments are compared as bytes,
+///  so a non-UTF-8 argument is never decoded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -213,10 +275,16 @@ pub fn control_meaning(token: &[u8]) -> Option<ControlMeaning> {
     return None;
 }
 
-/// What: The control spellings as byte strings, in table order. `Vec<&'static [u8]>` is an
+/// What:
+///  The control spellings as byte strings,
+///  in table order.
+///  `Vec<&'static [u8]>` is an
 ///       owned list of borrowed byte strings baked into the program.
-/// Why:  Every Git option-table reader takes this list, so it reports a control found in
-///       option position instead of refusing it as an unknown option. The position in this
+/// Why:
+///   Every Git option-table reader takes this list,
+///  so it reports a control found in
+///       option position instead of refusing it as an unknown option.
+///  The position in this
 ///       list is the position in `CONTROL_SPELLINGS`.
 ///
 /// In TS you'd write (pseudocode):
@@ -233,9 +301,13 @@ pub fn control_flags() -> Vec<&'static [u8]> {
     return flags;
 }
 
-/// What: Add one control's effect to the record. `&mut Controls` lends the record for
+/// What:
+///  Add one control's effect to the record.
+///  `&mut Controls` lends the record for
 ///       writing (sibling `&Controls` lends it read-only).
-/// Why:  A repeated escape must not list its policy twice: the list is compared in tests
+/// Why:
+///   A repeated escape must not list its policy twice:
+///  the list is compared in tests
 ///       and printed in diagnostics.
 ///
 /// In TS you'd write (pseudocode):
@@ -257,8 +329,10 @@ pub fn record_control(controls: &mut Controls, meaning: ControlMeaning) {
     }
 }
 
-/// What: Whether a policy is skipped for this invocation.
-/// Why:  The engine asks by typed identity instead of scanning the list itself.
+/// What:
+///  Whether a policy is skipped for this invocation.
+/// Why:
+///   The engine asks by typed identity instead of scanning the list itself.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -268,15 +342,27 @@ pub fn is_escaped(controls: &Controls, policy: PolicyId) -> bool {
     return controls.escaped.contains(&policy);
 }
 
-/// What: Copy the arguments without the controls written before the subcommand, adding
-///       their effect to `controls`. `&[OsString]` borrows the argument list; `Vec<OsString>`
+/// What:
+///  Copy the arguments without the controls written before the subcommand,
+///  adding
+///       their effect to `controls`.
+///  `&[OsString]` borrows the argument list;
+///  `Vec<OsString>`
 ///       is the owned result.
-/// Why:  Git 2.56.0's global-option reader stops at the first option it does not know.
-///       When that option is exactly a control, it sits where Git would have read an
-///       option, so it is removed by its position and the reader is asked again. A value
-///       of `-C`, `-c` or another value-taking option is skipped by that reader and is
-///       therefore never removed, even when it spells a control.
-/// Gotcha: Each round removes one token, so the loop runs at most once per argument.
+/// Why:
+///   Git 2.56.0's global-option reader stops at the first option it does not know.
+///       When that option is exactly a control,
+///  it sits where Git would have read an
+///       option,
+///  so it is removed by its position and the reader is asked again.
+///  A value
+///       of `-C`,
+///  `-c` or another value-taking option is skipped by that reader and is
+///       therefore never removed,
+///  even when it spells a control.
+/// Gotcha:
+///  Each round removes one token,
+///  so the loop runs at most once per argument.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -305,7 +391,8 @@ pub fn strip_global_controls(arguments: &[OsString], controls: &mut Controls) ->
     return current;
 }
 
-/// Spelling, meaning and global-prefix controls stay out of the release executable.
+/// Spelling,
+///  meaning and global-prefix controls stay out of the release executable.
 #[cfg(test)]
 #[path = "wrapper_controls_tests.rs"]
 mod tests;

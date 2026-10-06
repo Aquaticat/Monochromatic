@@ -1,7 +1,10 @@
-//! Clipboard management stays on the nested seat, without a host clipboard bridge.
+//! Clipboard management stays on the nested seat,
+//!  without a host clipboard bridge.
 
-/// What: Import Smithay's existing protocol states and dispatch macros.
-/// Why: Both clipboard-manager protocols use the same seat selection as wl_data_device.
+/// What:
+///  Import Smithay's existing protocol states and dispatch macros.
+/// Why:
+///  Both clipboard-manager protocols use the same seat selection as wl_data_device.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,8 +52,10 @@ impl ClipboardProtocols {
 
 /// Expose the wlr protocol state to Smithay's generated request handlers.
 impl wlr_data_control::DataControlHandler for Compositor {
-    /// What: & lends the protocol state rather than transferring its ownership.
-    /// Why: Every request uses the same display-owned global and nested seat data.
+    /// What:
+    ///  & lends the protocol state rather than transferring its ownership.
+    /// Why:
+    ///  Every request uses the same display-owned global and nested seat data.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

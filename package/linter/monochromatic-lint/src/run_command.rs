@@ -1,7 +1,14 @@
-//! What: Turn parsed command options into output bytes and an exit status.
-//! Why: This is the one place the pieces meet: discovery, per-file planning, bounded workers,
-//! output routing and exit accounting. It takes the working directory and standard input as
-//! arguments, so tests drive the exact production path without touching process state.
+//! What:
+//!  Turn parsed command options into output bytes and an exit status.
+//! Why:
+//!  This is the one place the pieces meet:
+//!  discovery,
+//!  per-file planning,
+//!  bounded workers,
+//! output routing and exit accounting.
+//!  It takes the working directory and standard input as
+//! arguments,
+//!  so tests drive the exact production path without touching process state.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -32,8 +39,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// What: Plan every discovered file, separating lintable plans from skipped inputs.
-/// Why: All configuration errors surface here, before any file is linted or rewritten.
+/// What:
+///  Plan every discovered file,
+///  separating lintable plans from skipped inputs.
+/// Why:
+///  All configuration errors surface here,
+///  before any file is linted or rewritten.
 /// The count returned is how many files had no configuration file at all.
 ///
 /// In TS you'd write (pseudocode):
@@ -78,8 +89,13 @@ fn plan_files(
     return Ok((plans, without_configuration));
 }
 
-/// What: Lint or fix the files named by path arguments, defaulting to the working directory.
-/// Why: Discovery, planning, processing and routing run in that order so that setup errors never
+/// What:
+///  Lint or fix the files named by path arguments,
+///  defaulting to the working directory.
+/// Why:
+///  Discovery,
+///  planning,
+///  processing and routing run in that order so that setup errors never
 /// follow a rewritten file.
 ///
 /// In TS you'd write (pseudocode):
@@ -158,8 +174,11 @@ fn run_paths(
     return finish(options, findings.as_slice(), None, notes.as_slice());
 }
 
-/// What: Select and run the requested mode.
-/// Why: The command grammar already rejects conflicting modes; each remaining mode returns its
+/// What:
+///  Select and run the requested mode.
+/// Why:
+///  The command grammar already rejects conflicting modes;
+///  each remaining mode returns its
 /// own complete output.
 ///
 /// In TS you'd write (pseudocode):
@@ -207,8 +226,11 @@ fn execute(
     return run_paths(options, cwd, &mut store);
 }
 
-/// What: Run one invocation and always return output, converting a setup failure to status 2.
-/// Why: A setup or usage error prints one prefixed line on standard error and nothing on standard output.
+/// What:
+///  Run one invocation and always return output,
+///  converting a setup failure to status 2.
+/// Why:
+///  A setup or usage error prints one prefixed line on standard error and nothing on standard output.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -232,7 +254,8 @@ pub fn run_command(options: &CliOptions, cwd: &Path, stdin: &mut dyn Read) -> Ru
 #[path = "run_command_tests.rs"]
 mod tests;
 
-/// Fixing, standard-input and LFS invocation controls stay outside release artifacts.
+/// Fixing,
+///  standard-input and LFS invocation controls stay outside release artifacts.
 #[cfg(test)]
 #[path = "run_command_fix_tests.rs"]
 mod fix_tests;

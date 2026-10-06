@@ -1,14 +1,27 @@
 //! The Unix-socket control API.
 //!
-//! A dedicated thread owns the listening socket and does all blocking line I/O. For each
-//! request line it parses a `Command`, forwards it to the main (event-loop) thread over a
-//! calloop channel together with a one-shot reply channel, waits for the `Response`, and
-//! writes it back. Executing on the main thread is required because screenshot readback
-//! and input injection must touch the GL context and seat, which live there.
+//! A dedicated thread owns the listening socket and does all blocking line I/O.
+//!  For each
+//! request line it parses a `Command`,
+//!  forwards it to the main (event-loop) thread over a
+//! calloop channel together with a one-shot reply channel,
+//!  waits for the `Response`,
+//!  and
+//! writes it back.
+//!  Executing on the main thread is required because screenshot readback
+//! and input injection must touch the GL context and seat,
+//!  which live there.
 
-/// What:     Grouped `use` of the blocking I/O traits, the Unix socket types, paths, the
-///           one-shot reply channel, and threads.
-/// Why:      The control thread reads lines and writes responses; the reply channel bridges
+/// What:
+///      Grouped `use` of the blocking I/O traits,
+///  the Unix socket types,
+///  paths,
+///  the
+///           one-shot reply channel,
+///  and threads.
+/// Why:
+///       The control thread reads lines and writes responses;
+///  the reply channel bridges
 ///           back from the main thread.
 ///
 /// In TS you'd write (pseudocode):
@@ -22,23 +35,39 @@ use std::{
     sync::mpsc::{sync_channel, SyncSender},
 };
 
-/// What:     Grouped `use` of the calloop channel (cross-thread source) and loop handle.
-/// Why:      Register the channel as an event source on the main loop.
+/// What:
+///      Grouped `use` of the calloop channel (cross-thread source) and loop handle.
+/// Why:
+///       Register the channel as an event source on the main loop.
 use smithay::reexports::calloop::{
     channel::{channel, Event, Sender},
     LoopHandle,
 };
 
-/// What:     `use anyhow::{Context, Result};`. Error helpers.
-/// Why:      Socket binding and thread spawning return `Result`.
+/// What:
+///      `use anyhow::{Context, Result};`.
+///  Error helpers.
+/// Why:
+///       Socket binding and thread spawning return `Result`.
 use anyhow::{Context, Result};
 
-/// What:     `use tracing::{info, warn};`. Structured log macros.
-/// Why:      Report listening, accept errors, and connection errors.
+/// What:
+///      `use tracing::{info, warn};`.
+///  Structured log macros.
+/// Why:
+///       Report listening,
+///  accept errors,
+///  and connection errors.
 use tracing::{info, warn};
 
-/// What:     Grouped `use` of the protocol, input, keymap, screenshot, and state items.
-/// Why:      `execute` dispatches parsed commands into these subsystems.
+/// What:
+///      Grouped `use` of the protocol,
+///  input,
+///  keymap,
+///  screenshot,
+///  and state items.
+/// Why:
+///       `execute` dispatches parsed commands into these subsystems.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -51,12 +80,16 @@ use crate::{
     state::Compositor,
 };
 
-/// A command forwarded from the control thread to the main thread, with a reply channel.
+/// A command forwarded from the control thread to the main thread,
+///  with a reply channel.
 ///
-/// What:     `pub struct ControlRequest { pub command: Command, pub reply:
-///           SyncSender<Response> }`. `SyncSender<Response>` is the sending half of a
+/// What:
+///      `pub struct ControlRequest { pub command: Command, pub reply:
+///           SyncSender<Response> }`.
+///  `SyncSender<Response>` is the sending half of a
 ///           bounded one-shot channel the main thread answers on.
-/// Why:      Carries both the work and the way to return its result across threads.
+/// Why:
+///       Carries both the work and the way to return its result across threads.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,12 +102,19 @@ pub struct ControlRequest {
     pub reply: SyncSender<Response>,
 }
 
-/// Bind the control socket, register the channel source, and spawn the control thread.
+/// Bind the control socket,
+///  register the channel source,
+///  and spawn the control thread.
 ///
-/// What:     `pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) ->
-///           Result<()>`. Borrows the loop handle (to insert the channel source) and the
-///           socket path. The loop-handle lifetime is elided, matching `child.rs`.
-/// Why:      One call from `run` wires the whole control API when a socket is requested.
+/// What:
+///      `pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) ->
+///           Result<()>`.
+///  Borrows the loop handle (to insert the channel source) and the
+///           socket path.
+///  The loop-handle lifetime is elided,
+///  matching `child.rs`.
+/// Why:
+///       One call from `run` wires the whole control API when a socket is requested.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -130,9 +170,13 @@ pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) -> Result
 
 /// Bind (and clean up any stale) the control Unix socket.
 ///
-/// What:     `fn bind_listener(path: &Path) -> Result<UnixListener>`. Removes a stale
-///           socket file if present, then binds.
-/// Why:      A leftover socket file from a previous run would make `bind` fail.
+/// What:
+///      `fn bind_listener(path: &Path) -> Result<UnixListener>`.
+///  Removes a stale
+///           socket file if present,
+///  then binds.
+/// Why:
+///       A leftover socket file from a previous run would make `bind` fail.
 fn bind_listener(path: &Path) -> Result<UnixListener> {
     // What:     `if path.exists() { std::fs::remove_file(path).with_context(...)?; }`.
     //           Remove a pre-existing socket file.
@@ -157,11 +201,15 @@ fn bind_listener(path: &Path) -> Result<UnixListener> {
     return Ok(listener)
 }
 
-/// The control thread body: accept connections and handle each in turn.
+/// The control thread body:
+///  accept connections and handle each in turn.
 ///
-/// What:     `fn control_thread(listener: UnixListener, sender: Sender<ControlRequest>)`.
+/// What:
+///      `fn control_thread(listener: UnixListener, sender: Sender<ControlRequest>)`.
 ///           Owns the listener and the channel sender.
-/// Why:      Serialises control clients (a test harness connects one at a time), keeping
+/// Why:
+///       Serialises control clients (a test harness connects one at a time),
+///  keeping
 ///           the protocol simple.
 fn control_thread(listener: UnixListener, sender: Sender<ControlRequest>) {
     // What:     `for incoming in listener.incoming() { ... }`. Iterate accepted connections;
@@ -190,11 +238,16 @@ fn control_thread(listener: UnixListener, sender: Sender<ControlRequest>) {
     }
 }
 
-/// Handle one control connection: read request lines and write response lines.
+/// Handle one control connection:
+///  read request lines and write response lines.
 ///
-/// What:     `fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) ->
-///           Result<()>`. Reads until the client closes the connection.
-/// Why:      Implements the line-per-request, line-per-response loop for one client.
+/// What:
+///      `fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) ->
+///           Result<()>`.
+///  Reads until the client closes the connection.
+/// Why:
+///       Implements the line-per-request,
+///  line-per-response loop for one client.
 fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) -> Result<()> {
     // What:     `let reader_half = stream.try_clone().context(...)?;`. Duplicate the socket
     //           fd so one half reads while the other writes.
@@ -243,11 +296,15 @@ fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) -> Res
     return Ok(())
 }
 
-/// Parse one line and, if valid, run it on the main thread and await its response.
+/// Parse one line and,
+///  if valid,
+///  run it on the main thread and await its response.
 ///
-/// What:     `fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response`.
+/// What:
+///      `fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response`.
 ///           Always returns a `Response` (parse errors become `Err` responses).
-/// Why:      Bridge the control thread to the main thread for one command.
+/// Why:
+///       Bridge the control thread to the main thread for one command.
 fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response {
     // What:     `let command = match parse_command(line) { Ok(c) => c, Err(message) =>
     //           return Response::Err(message) };`. Parse; a parse error short-circuits to an
@@ -289,10 +346,13 @@ fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response {
 
 /// Execute a command against the live compositor state (runs on the main thread).
 ///
-/// What:     `pub fn execute(state: &mut Compositor, command: Command) -> Response`.
+/// What:
+///      `pub fn execute(state: &mut Compositor, command: Command) -> Response`.
 ///           Dispatches each command variant to its subsystem and maps the outcome to a
 ///           `Response`.
-/// Why:      The single place command semantics live; called from the channel source.
+/// Why:
+///       The single place command semantics live;
+///  called from the channel source.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

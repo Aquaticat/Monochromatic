@@ -1,7 +1,9 @@
 //! Apply background disk updates without suspending selection or blocking source input.
 
-/// What: Borrow UI-thread state while the worker only receives owned snapshots.
-/// Why: Filesystem reads and diff computation must never hold the UI RefCell borrow.
+/// What:
+///  Borrow UI-thread state while the worker only receives owned snapshots.
+/// Why:
+///  Filesystem reads and diff computation must never hold the UI RefCell borrow.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,7 +20,8 @@ use ide_app::reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxRep
 use ide_app::source_style::SourceStyles;
 /// Timer callbacks and weak window references belong to the toolkit event loop.
 use slint::{ComponentHandle, Timer, TimerMode};
-/// Rc/RefCell stay UI-local; Instant schedules reads without changing wall-clock state.
+/// Rc/RefCell stay UI-local;
+///  Instant schedules reads without changing wall-clock state.
 use std::{
     cell::RefCell,
     rc::Rc,
@@ -37,7 +40,8 @@ fn read_failed(window: &AppWindow, state: &Rc<RefCell<State>>, message: String) 
     render(window, state);
 }
 
-/// Accept classifications only for the installed source revision, without hiding parser failures.
+/// Accept classifications only for the installed source revision,
+///  without hiding parser failures.
 pub(super) fn apply_syntax(current: &mut State, reply: SyntaxReply) -> bool {
     if reply.revision != current.document.revision() {
         tracing::debug!(
@@ -136,9 +140,12 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
     }
 }
 
-/// Poll completed work on the UI thread; start a disk read when `State::refresh` says one is due:
-/// on a change notification for the displayed file, every 250 ms while its directory is unwatched,
-/// or on the safety sweep. Missing highlighting is requested again after the 100 ms reread gap.
+/// Poll completed work on the UI thread;
+///  start a disk read when `State::refresh` says one is due:
+/// on a change notification for the displayed file,
+///  every 250 ms while its directory is unwatched,
+/// or on the safety sweep.
+///  Missing highlighting is requested again after the 100 ms reread gap.
 /// The returned timer owns the worker and must remain alive until the window closes.
 pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Timer> {
     let mut worker = ReloadWorker::new()?;

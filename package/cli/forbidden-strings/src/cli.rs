@@ -1,7 +1,12 @@
 //! Clap-backed command-line declaration for the `forbidden-strings` binary.
 //!
-//! This module owns flags, positionals, help text, version text, and validation
-//! for argv-shaped input. Environment-variable fallback stays in `lib.rs` because
+//! This module owns flags,
+//!  positionals,
+//!  help text,
+//!  version text,
+//!  and validation
+//! for argv-shaped input.
+//!  Environment-variable fallback stays in `lib.rs` because
 //! it is not itself command-line syntax.
 
 /// Imports clap's parser trait and derive macro for this CLI declaration.
@@ -134,7 +139,8 @@ pub enum CliCommand {
     /// Compiles one authoritative runtime rules file into derived user cache.
     #[command(name = "compile-rules")]
     CompileRules {
-        /// Explicit authoritative rules path; environment fallback is deliberately absent.
+        /// Explicit authoritative rules path;
+        ///  environment fallback is deliberately absent.
         #[arg(
             long = "rules",
             value_name = "PATH",
@@ -243,11 +249,13 @@ pub struct Cli {
     )]
     pub builtin_rules: bool,
 
-    /// Logical repository path for each positional file, in matching order.
+    /// Logical repository path for each positional file,
+    ///  in matching order.
     ///
     /// Allows clients scanning historical candidate bytes from temporary files
     /// to name-scan the actual path without exposing their temporary path.
-    /// Each occurrence pairs with one positional file; no `--all` combination.
+    /// Each occurrence pairs with one positional file;
+    ///  no `--all` combination.
     #[arg(long = "name-path", value_name = "PATH", allow_hyphen_values = true)]
     pub name_paths: Vec<String>,
 

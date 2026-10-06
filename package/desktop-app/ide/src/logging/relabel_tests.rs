@@ -1,5 +1,7 @@
-//! Record shapes from helix-lsp's format strings at the pinned revision, near misses that keep
-//! their level, and the re-labelled record as the application's subscriber writes it.
+//! Record shapes from helix-lsp's format strings at the pinned revision,
+//!  near misses that keep
+//! their level,
+//!  and the re-labelled record as the application's subscriber writes it.
 
 use super::{Matched, RELABEL, Shape, matched, shape};
 use crate::logging::stderr_tail;
@@ -34,8 +36,12 @@ impl<'writer> MakeWriter<'writer> for Capture {
     }
 }
 
-/// Send one `log` record with this target, level, and text through the bridge, under a subscriber
-/// with `filter`, and return what the subscriber wrote.
+/// Send one `log` record with this target,
+///  level,
+///  and text through the bridge,
+///  under a subscriber
+/// with `filter`,
+///  and return what the subscriber wrote.
 fn written(filter: &str, target: &str, level: log::Level, text: &str) -> String {
     let capture = Capture::default();
     let subscriber = tracing_subscriber::fmt()

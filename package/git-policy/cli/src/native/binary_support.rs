@@ -1,6 +1,10 @@
-//! What: Disposable fixtures and bounded process helpers for binary-level controls.
-//! Why: Every control runs the built executable through a `git`-named link on a
-//!      fixture PATH, with no real home or global Git configuration, and a hard time
+//! What:
+//!  Disposable fixtures and bounded process helpers for binary-level controls.
+//! Why:
+//!  Every control runs the built executable through a `git`-named link on a
+//!      fixture PATH,
+//!  with no real home or global Git configuration,
+//!  and a hard time
 //!      bound so a forwarding loop fails the test instead of hanging it.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +12,8 @@
 //! // const fixture = await mkdtemp(...); await symlink(wrapper, join(fixture, 'bin/git'));
 //! ```
 
-/// Native string, path and process types used by the helpers.
+/// Native string,
+///  path and process types used by the helpers.
 use std::ffi::{OsStr, OsString};
 use std::io::Write;
 use std::os::unix::process::ExitStatusExt;
@@ -21,18 +26,22 @@ pub const WRAPPER: &str = env!("CARGO_BIN_EXE_cli-git-native");
 /// The real Git 2.56.0 executable installed in the verification image.
 pub const REAL_GIT: &str = "/usr/bin/git";
 
-/// Seconds after which a wrapped command is killed; real commands here finish in milliseconds.
+/// Seconds after which a wrapped command is killed;
+///  real commands here finish in milliseconds.
 /// The bound is short so a mutant that loops fails every affected control quickly.
 pub const TIME_BOUND_SECONDS: &str = "5";
 
-/// The signal that ends `timeout --signal=KILL` itself when the bound was hit: it kills
-/// the command, then re-raises the same signal on itself.
+/// The signal that ends `timeout --signal=KILL` itself when the bound was hit:
+///  it kills
+/// the command,
+///  then re-raises the same signal on itself.
 pub const TIMED_OUT_SIGNAL: i32 = 9;
 
 /// What one finished process showed its caller.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Observed {
-    /// Exit code, absent when a signal ended the process.
+    /// Exit code,
+    ///  absent when a signal ended the process.
     pub code: Option<i32>,
     /// Exact standard output bytes.
     pub stdout: Vec<u8>,
@@ -48,7 +57,8 @@ pub struct Fixture {
     pub wrapper: PathBuf,
 }
 
-/// Create a fixture: `<root>/wrapper/cli-git-native` (copy) and `<root>/bin/git` (symbolic link to it).
+/// Create a fixture:
+///  `<root>/wrapper/cli-git-native` (copy) and `<root>/bin/git` (symbolic link to it).
 pub fn fixture(name: &str) -> Fixture {
     let created: PathBuf =
         std::env::temp_dir().join(format!("native-binary-{}-{name}", std::process::id()));
@@ -86,14 +96,16 @@ fn hermetic(command: &mut Command, fixture: &Fixture, path: &OsStr) {
         .current_dir(&fixture.root);
 }
 
-/// The PATH most controls use: the wrapper's link directory ahead of real Git.
+/// The PATH most controls use:
+///  the wrapper's link directory ahead of real Git.
 pub fn wrapper_first_path(fixture: &Fixture) -> OsString {
     let mut path: OsString = fixture.root.join("bin").into_os_string();
     path.push(":/usr/bin:/bin");
     return path;
 }
 
-/// A command for `program` (a wrapper path) under the given PATH, killed after `seconds`.
+/// A command for `program` (a wrapper path) under the given PATH,
+///  killed after `seconds`.
 pub fn bounded_for(fixture: &Fixture, program: &Path, path: &OsStr, seconds: &str) -> Command {
     let mut command: Command = Command::new("/usr/bin/timeout");
     command.arg("--signal=KILL").arg(seconds).arg(program);
@@ -106,8 +118,10 @@ pub fn bounded(fixture: &Fixture, program: &Path, path: &OsStr) -> Command {
     return bounded_for(fixture, program, path, TIME_BOUND_SECONDS);
 }
 
-/// Expose real Git at `<root>/real/git`, a location that is not a conventional one.
-/// Conventional locations are promoted to the front of the candidate list, which would
+/// Expose real Git at `<root>/real/git`,
+///  a location that is not a conventional one.
+/// Conventional locations are promoted to the front of the candidate list,
+///  which would
 /// hide whether earlier PATH entries were examined and skipped.
 pub fn link_real_git(fixture: &Fixture) {
     std::fs::create_dir(fixture.root.join("real")).expect("real directory");
@@ -123,14 +137,16 @@ pub fn wrapped(fixture: &Fixture) -> Command {
     );
 }
 
-/// The same invocation sent straight to real Git, as the comparison oracle.
+/// The same invocation sent straight to real Git,
+///  as the comparison oracle.
 pub fn direct(fixture: &Fixture) -> Command {
     let mut command: Command = Command::new(REAL_GIT);
     hermetic(&mut command, fixture, OsStr::new("/usr/bin:/bin"));
     return command;
 }
 
-/// Run a command to completion, feeding `input` to its standard input.
+/// Run a command to completion,
+///  feeding `input` to its standard input.
 pub fn observe(command: &mut Command, input: &[u8]) -> Observed {
     let mut child = command
         .stdin(Stdio::piped())
@@ -168,7 +184,8 @@ pub fn git<S: AsRef<OsStr>>(fixture: &Fixture, directory: &Path, arguments: &[S]
     return output;
 }
 
-/// Create a repository with one empty commit on `main`, using real Git directly.
+/// Create a repository with one empty commit on `main`,
+///  using real Git directly.
 pub fn repository(fixture: &Fixture, name: &OsStr) -> PathBuf {
     let root: PathBuf = fixture.root.join(name);
     std::fs::create_dir(&root).expect("repository directory");
@@ -185,17 +202,23 @@ pub fn repository(fixture: &Fixture, name: &OsStr) -> PathBuf {
     return root;
 }
 
-/// Run a wrapped command in a directory, with empty standard input, and return what the caller saw.
+/// Run a wrapped command in a directory,
+///  with empty standard input,
+///  and return what the caller saw.
 pub fn run_wrapped(fixture: &Fixture, directory: &Path, arguments: &[&str]) -> Observed {
     return observe(wrapped(fixture).current_dir(directory).args(arguments), b"");
 }
 
-/// Run real Git directly in a directory, with empty standard input, and return what the caller saw.
+/// Run real Git directly in a directory,
+///  with empty standard input,
+///  and return what the caller saw.
 pub fn run_direct(fixture: &Fixture, directory: &Path, arguments: &[&str]) -> Observed {
     return observe(direct(fixture).current_dir(directory).args(arguments), b"");
 }
 
-/// Real Git's porcelain status of a repository, untracked files included, as text.
+/// Real Git's porcelain status of a repository,
+///  untracked files included,
+///  as text.
 pub fn porcelain(fixture: &Fixture, repo: &Path) -> String {
     let output: Output = git(
         fixture,
@@ -228,11 +251,19 @@ pub fn stderr_of(observed: &Observed) -> String {
     return String::from_utf8_lossy(&observed.stderr).into_owned();
 }
 
-/// What: Write an executable file, as a PATH candidate, through a child `tee` process.
-/// Why:  Controls run on several threads. If this process opened the file for writing, a
+/// What:
+///  Write an executable file,
+///  as a PATH candidate,
+///  through a child `tee` process.
+/// Why:
+///   Controls run on several threads.
+///  If this process opened the file for writing,
+///  a
 ///       child forked by another control at that moment would inherit the open file until
-///       it starts its own program, and running the candidate in that window fails with
-///       "Text file busy". A file only ever opened for writing by `tee` cannot be
+///       it starts its own program,
+///  and running the candidate in that window fails with
+///       "Text file busy".
+///  A file only ever opened for writing by `tee` cannot be
 ///       inherited by any other child of this process.
 ///
 /// In TS you'd write (pseudocode):
@@ -262,8 +293,12 @@ pub fn executable(path: &Path, content: &[u8]) {
         .expect("mark candidate executable");
 }
 
-/// What: Copy an executable through a child `cp` process, keeping its mode.
-/// Why:  A copy made by this process would be open for writing here, with the same
+/// What:
+///  Copy an executable through a child `cp` process,
+///  keeping its mode.
+/// Why:
+///   A copy made by this process would be open for writing here,
+///  with the same
 ///       "Text file busy" window as `executable` describes.
 ///
 /// In TS you'd write (pseudocode):

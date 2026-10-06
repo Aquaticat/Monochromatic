@@ -1,18 +1,41 @@
-//! The popup and the location list: what is shown, where, and when it goes away.
+//! The popup and the location list:
+//!  what is shown,
+//!  where,
+//!  and when it goes away.
 //!
-//! The popup shows hover content or a note beside the line of the position it is about, never
-//! over that line. It goes away on Escape, caret movement, scrolling, a reload, a file switch,
-//! and, for a pointer hover, when the pointer leaves both the source and the popup. The list
-//! closes on Escape, an outside click, a choice, a reload, and a file switch.
+//! The popup shows hover content or a note beside the line of the position it is about,
+//!  never
+//! over that line.
+//!  It goes away on Escape,
+//!  caret movement,
+//!  scrolling,
+//!  a reload,
+//!  a file switch,
+//! and,
+//!  for a pointer hover,
+//!  when the pointer leaves both the source and the popup.
+//!  The list
+//! closes on Escape,
+//!  an outside click,
+//!  a choice,
+//!  a reload,
+//!  and a file switch.
 
-/// The window, its generated row type, the source state, and the vertical placement of the anchoring line.
+/// The window,
+///  its generated row type,
+///  the source state,
+///  and the vertical placement of the anchoring line.
 use crate::native::{AppWindow, State, rows, ui::ReferenceEntry};
 /// Locations and the stamp they belong to.
 use ide_app::language::{identity::DocumentStamp, reply::Target};
 /// Toolkit models for the list rows.
 use slint::{ModelRc, SharedString, VecModel};
-/// What: `Rc` shares the row model with the window; `RefCell` is the borrow-checked state cell.
-/// Why: Slint models are shared pointers; the state is shared with the timer.
+/// What:
+///  `Rc` shares the row model with the window;
+///  `RefCell` is the borrow-checked state cell.
+/// Why:
+///  Slint models are shared pointers;
+///  the state is shared with the timer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,13 +43,24 @@ use slint::{ModelRc, SharedString, VecModel};
 /// ```
 use std::{cell::RefCell, rc::Rc};
 
-/// What: Where the popup or the list was opened: the stamp, the caret, the scroll offsets, and where
+/// What:
+///  Where the popup or the list was opened:
+///  the stamp,
+///  the caret,
+///  the scroll offsets,
+///  and where
 ///       the anchoring line's code row stood relative to the top edge of the view at that moment.
 ///       `(f32, f32)` is a pair of horizontal and vertical offsets.
-/// Why: Any later difference means the reader moved on, which dismisses the surface. Scrolling is
-///      told from virtual rows arriving: rows above the view change the offset while the line stays
-///      where it is on screen, and rows between the top edge and the line move the line while the
-///      offset stays; only the reader's own scrolling changes both.
+/// Why:
+///  Any later difference means the reader moved on,
+///  which dismisses the surface.
+///  Scrolling is
+///      told from virtual rows arriving:
+///  rows above the view change the offset while the line stays
+///      where it is on screen,
+///  and rows between the top edge and the line move the line while the
+///      offset stays;
+///  only the reader's own scrolling changes both.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,7 +78,8 @@ pub(super) struct Origin {
     pub(super) on_screen: f32,
 }
 
-/// What is on screen. An `enum` with data is a tagged union.
+/// What is on screen.
+///  An `enum` with data is a tagged union.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -68,14 +103,21 @@ pub(super) enum Shown {
     List {
         /// Where and when it was opened.
         origin: Origin,
-        /// The listed locations, in row order.
+        /// The listed locations,
+        ///  in row order.
         targets: Vec<Target>,
     },
 }
 
-/// What: The current origin: the displayed stamp, the caret head, the scroll offsets, and where the
+/// What:
+///  The current origin:
+///  the displayed stamp,
+///  the caret head,
+///  the scroll offsets,
+///  and where the
 ///       anchoring line's code row stands relative to the top edge of the view.
-/// Why: Recorded when a surface opens and compared on every tick afterwards.
+/// Why:
+///  Recorded when a surface opens and compared on every tick afterwards.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,10 +143,17 @@ pub(super) fn displayed(state: &State) -> DocumentStamp {
     };
 }
 
-/// What: Tell the window which character the surface belongs to: its line, its x, and where everything that
+/// What:
+///  Tell the window which character the surface belongs to:
+///  its line,
+///  its x,
+///  and where everything that
 ///       line owns lies vertically.
-/// Why: The markup turns these into window coordinates that follow layout and scrolling; the vertical place
-///      comes from the row map, so the surface covers neither the code row nor the line's virtual rows.
+/// Why:
+///  The markup turns these into window coordinates that follow layout and scrolling;
+///  the vertical place
+///      comes from the row map,
+///  so the surface covers neither the code row nor the line's virtual rows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -129,8 +178,11 @@ fn anchor(window: &AppWindow, state: &State, position: usize) {
     window.set_language_anchor_height(height);
 }
 
-/// What: Show `text` in the popup beside the line of `position`.
-/// Why: One popup serves hover content and notes; `note` switches its styling and live region.
+/// What:
+///  Show `text` in the popup beside the line of `position`.
+/// Why:
+///  One popup serves hover content and notes;
+///  `note` switches its styling and live region.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,8 +211,12 @@ pub(super) fn popup(
     };
 }
 
-/// What: Show the location list beside the line of `position`, select its first row, and focus it.
-/// Why: editord lists several references at the caret and selects the first one.
+/// What:
+///  Show the location list beside the line of `position`,
+///  select its first row,
+///  and focus it.
+/// Why:
+///  editord lists several references at the caret and selects the first one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -199,8 +255,15 @@ fn close_list(window: &AppWindow) {
     window.set_references_entries(ModelRc::default());
 }
 
-/// What: Remove whatever is shown. A list returns keyboard focus to the source view.
-/// Why: Every dismissal, by key, click, or a change of what is displayed, goes through here.
+/// What:
+///  Remove whatever is shown.
+///  A list returns keyboard focus to the source view.
+/// Why:
+///  Every dismissal,
+///  by key,
+///  click,
+///  or a change of what is displayed,
+///  goes through here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -225,8 +288,15 @@ pub(super) fn dismiss(window: &AppWindow, shown: &Shown, reason: &str) -> Shown 
     return Shown::Nothing;
 }
 
-/// What: Why the shown surface must go now, or nothing when it stays.
-/// Why: Caret movement, scrolling, a reload, a file switch, and the search overlay all end it;
+/// What:
+///  Why the shown surface must go now,
+///  or nothing when it stays.
+/// Why:
+///  Caret movement,
+///  scrolling,
+///  a reload,
+///  a file switch,
+///  and the search overlay all end it;
 ///      a pointer hover also ends when the pointer is over neither the source nor the popup.
 ///
 /// In TS you'd write (pseudocode):

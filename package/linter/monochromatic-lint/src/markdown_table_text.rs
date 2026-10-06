@@ -1,13 +1,20 @@
-//! What: Encode authored Markdown cell text for a raw HTML text boundary.
-//! Why: HTML-sensitive escapes must become literal characters before HTML encoding, never active markup.
+//! What:
+//!  Encode authored Markdown cell text for a raw HTML text boundary.
+//! Why:
+//!  HTML-sensitive escapes must become literal characters before HTML encoding,
+//!  never active markup.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Normalize only the incumbent's HTML-sensitive Markdown escapes, then encode at interpolation.
 //! ```
 
-/// What: JavaScript trim's whitespace set, including BOM and excluding NEXT LINE.
-/// Why: The incumbent trims cell padding with String.trim, not Rust's different Unicode White_Space set.
+/// What:
+///  JavaScript trim's whitespace set,
+///  including BOM and excluding NEXT LINE.
+/// Why:
+///  The incumbent trims cell padding with String.trim,
+///  not Rust's different Unicode White_Space set.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,8 +61,11 @@ fn append_text(output: &mut String, character: char, mdx: bool) {
     }
 }
 
-/// What: Convert raw cell content while preserving nonspecial Markdown spelling.
-/// Why: Code markers and emphasis remain literal; angle brackets and quotes cannot inject HTML.
+/// What:
+///  Convert raw cell content while preserving nonspecial Markdown spelling.
+/// Why:
+///  Code markers and emphasis remain literal;
+///  angle brackets and quotes cannot inject HTML.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

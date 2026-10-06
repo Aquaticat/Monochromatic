@@ -1,21 +1,28 @@
-//! What: Structured and malformed-source invariants for the anonymous-function rule.
-//! Why: A raw-only fuzzer can spend its entire budget in invalid syntax without reaching real closures.
+//! What:
+//!  Structured and malformed-source invariants for the anonymous-function rule.
+//! Why:
+//!  A raw-only fuzzer can spend its entire budget in invalid syntax without reaching real closures.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Every draw exercises a known closure count plus arbitrary source and diagnostic bounds.
 //! ```
 
-/// Import the production rule and owned source/finding models, not a second implementation.
+/// Import the production rule and owned source/finding models,
+///  not a second implementation.
 use monochromatic_lint::diagnostic::{Diagnostic, Severity, Span};
 /// Import the actual checker used by the linter.
 use monochromatic_lint::rust_no_anonymous_functions::check_no_anonymous_functions;
 /// Import the parser-owning input shared by all Rust rules.
 use monochromatic_lint::rust_source::RustSource;
 
-/// What: Grammar fragments paired with independently known closure counts.
-/// Why: Negative pipe/string/async-block controls keep lexical approximations from passing.
-/// &[...] borrows this fixed data; a Vec would allocate, and a fixed array type would repeat its length.
+/// What:
+///  Grammar fragments paired with independently known closure counts.
+/// Why:
+///  Negative pipe/string/async-block controls keep lexical approximations from passing.
+/// &[...] borrows this fixed data;
+///  a Vec would allocate,
+///  and a fixed array type would repeat its length.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,8 +60,11 @@ pub fn generated_source(data: &[u8]) -> (String, usize) {
     return (source, expected);
 }
 
-/// What: Check the real findings and their byte ranges without duplicating closure recognition.
-/// Why: Malformed input may recover partially, but it must not produce invalid spans or unsafe fixes.
+/// What:
+///  Check the real findings and their byte ranges without duplicating closure recognition.
+/// Why:
+///  Malformed input may recover partially,
+///  but it must not produce invalid spans or unsafe fixes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,7 +92,8 @@ fn check_source(source: &str) -> usize {
     return findings.len();
 }
 
-/// Exercise generated syntax on every draw, including non-UTF-8 byte inputs.
+/// Exercise generated syntax on every draw,
+///  including non-UTF-8 byte inputs.
 pub fn check_rust_style(data: &[u8]) {
     let (source, expected): (String, usize) = generated_source(data);
     // Borrow the generated String as a string slice for the real parser.

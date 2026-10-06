@@ -1,6 +1,8 @@
 //! Real Slint window events must invalidate source pixels even when source and logical size are unchanged.
 
-/// Reuse production initialization, viewport callbacks, and raster presentation.
+/// Reuse production initialization,
+///  viewport callbacks,
+///  and raster presentation.
 use super::{AppWindow, State, bind_appearance, bind_viewport, render};
 /// Native toolkit events and component ownership are exercised without a host window.
 use slint::{

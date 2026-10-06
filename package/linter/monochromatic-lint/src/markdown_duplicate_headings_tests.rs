@@ -1,5 +1,7 @@
-//! What: Textual heading-scope parity controls.
-//! Why: Structural keys must preserve the incumbent's hierarchy and rendered-text identity without delimiter collisions.
+//! What:
+//!  Textual heading-scope parity controls.
+//! Why:
+//!  Structural keys must preserve the incumbent's hierarchy and rendered-text identity without delimiter collisions.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -34,7 +36,9 @@ fn repeated_siblings_are_reported() {
     assert!(findings[0].fix.is_none());
 }
 
-/// Parent text, depth and exact case distinguish scopes; inline emphasis does not change rendered text.
+/// Parent text,
+///  depth and exact case distinguish scopes;
+///  inline emphasis does not change rendered text.
 #[test]
 fn scope_and_rendered_text_match_the_existing_policy() {
     assert!(check("# One\n\n## Child\n\n# Two\n\n## Child\n", false).is_empty());
@@ -49,7 +53,8 @@ fn scope_and_rendered_text_match_the_existing_policy() {
     assert!(check("plain\n", false).is_empty());
 }
 
-/// Quotes, bracket characters and MDX-only subtrees cannot create false structural collisions.
+/// Quotes,
+///  bracket characters and MDX-only subtrees cannot create false structural collisions.
 #[test]
 fn structural_keys_and_visible_traversal_are_not_string_heuristics() {
     assert!(check("# [a]\n\n## b\n\n# a\n\n## [b]\n", false).is_empty());

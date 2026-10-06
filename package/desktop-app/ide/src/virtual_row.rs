@@ -1,17 +1,33 @@
-//! Virtual rows: what a source line shows above its code row. Inlay hints come first, each at the pixel x of
-//! the character it annotates; diagnostic messages follow, one row per message line, starting at the pixel x of
-//! the diagnostic. The rows are not source text: nothing here changes a code row or a source position.
+//! Virtual rows:
+//!  what a source line shows above its code row.
+//!  Inlay hints come first,
+//!  each at the pixel x of
+//! the character it annotates;
+//!  diagnostic messages follow,
+//!  one row per message line,
+//!  starting at the pixel x of
+//! the diagnostic.
+//!  The rows are not source text:
+//!  nothing here changes a code row or a source position.
 //!
-//! A line's rows form a block. The block sits tight against its own code row and is separated from the previous
-//! line by [`BLOCK_GAP`], so the rows read as belonging to the line beneath them.
+//! A line's rows form a block.
+//!  The block sits tight against its own code row and is separated from the previous
+//! line by [`BLOCK_GAP`],
+//!  so the rows read as belonging to the line beneath them.
 
-/// Diagnostics as the annotation store indexes them, and the text one message shows.
+/// Diagnostics as the annotation store indexes them,
+///  and the text one message shows.
 use crate::annotation::{Problem, describe, severity_name};
 /// Severities as the Language module names them.
 use crate::language::diagnostics::Severity;
 
-/// What: Height of one virtual row in logical pixels; `f32` is a 32-bit float (sibling `f64`).
-/// Why: The 13 px row text needs 16 px: its font's own ascent plus descent. A row lower than a 24 px code row
+/// What:
+///  Height of one virtual row in logical pixels;
+///  `f32` is a 32-bit float (sibling `f64`).
+/// Why:
+///  The 13 px row text needs 16 px:
+///  its font's own ascent plus descent.
+///  A row lower than a 24 px code row
 ///      also shows at a glance that it is not source text.
 ///
 /// In TS you'd write (pseudocode):
@@ -19,32 +35,49 @@ use crate::language::diagnostics::Severity;
 /// export const ROW_HEIGHT = 16;
 /// ```
 pub const ROW_HEIGHT: f32 = 16.0;
-/// Empty space above a block. It makes the distance to the previous line's text visibly larger than the
-/// distance to the block's own code row, which is the only thing that says which line the rows belong to.
+/// Empty space above a block.
+///  It makes the distance to the previous line's text visibly larger than the
+/// distance to the block's own code row,
+///  which is the only thing that says which line the rows belong to.
 pub const BLOCK_GAP: f32 = 10.0;
 /// Least horizontal space between two hints on one row.
 pub const HINT_GAP: f32 = 8.0;
-/// Font size of virtual-row text in logical pixels, smaller than the 15 px source text.
+/// Font size of virtual-row text in logical pixels,
+///  smaller than the 15 px source text.
 pub const ROW_TEXT: f32 = 13.0;
 /// How far the second and later rows of one message start right of its first row.
 pub const CONTINUATION_INDENT: f32 = 16.0;
-/// What: A message row holds at most this many columns; `usize` is the count type (siblings `u32`, `u64`).
-/// Why: Long messages wrap instead of widening the scroll range without bound. The limit is counted in
-///      characters, so the number of rows never depends on the window or on shaping.
+/// What:
+///  A message row holds at most this many columns;
+///  `usize` is the count type (siblings `u32`,
+///  `u64`).
+/// Why:
+///  Long messages wrap instead of widening the scroll range without bound.
+///  The limit is counted in
+///      characters,
+///  so the number of rows never depends on the window or on shaping.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// export const WRAP_COLUMNS = 80;
 /// ```
 pub const WRAP_COLUMNS: usize = 80;
-/// At most this many rows are shown for one message; the last one then says how many lines are left out.
+/// At most this many rows are shown for one message;
+///  the last one then says how many lines are left out.
 pub const MESSAGE_ROWS: usize = 12;
-/// At most this many messages are shown above one line; one more row then says how many are left out.
+/// At most this many messages are shown above one line;
+///  one more row then says how many are left out.
 pub const LINE_MESSAGES: usize = 8;
 
-/// What: One inlay hint placed on a hint row; `String` owns the label (sibling: borrowed `&str`).
-///       `PartialEq` lets two placements be compared, which decides whether a frame must be repainted.
-/// Why: The row and the pixel x are decided once per snapshot by packing; every frame paints from them.
+/// What:
+///  One inlay hint placed on a hint row;
+///  `String` owns the label (sibling:
+///  borrowed `&str`).
+///       `PartialEq` lets two placements be compared,
+///  which decides whether a frame must be repainted.
+/// Why:
+///  The row and the pixel x are decided once per snapshot by packing;
+///  every frame paints from them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,20 +85,28 @@ pub const LINE_MESSAGES: usize = 8;
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct HintPlace {
-    /// Zero-based hint row inside the block, counted from the top.
+    /// Zero-based hint row inside the block,
+    ///  counted from the top.
     pub row: usize,
-    /// Source character the hint annotates; `usize` is the index type ropes use (siblings `u32`, `u64`).
+    /// Source character the hint annotates;
+    ///  `usize` is the index type ropes use (siblings `u32`,
+    ///  `u64`).
     pub position: usize,
-    /// Left edge in logical pixels from the start of the line's text: the caret x of the annotated position.
+    /// Left edge in logical pixels from the start of the line's text:
+    ///  the caret x of the annotated position.
     pub x: f32,
     /// Shaped width of the label in logical pixels.
     pub width: f32,
-    /// The label as the server sent it, without padding spaces.
+    /// The label as the server sent it,
+    ///  without padding spaces.
     pub text: String,
 }
 
-/// What: One row of a diagnostic message.
-/// Why: Rows are derived from the message text alone, so a line's row count is known without shaping.
+/// What:
+///  One row of a diagnostic message.
+/// Why:
+///  Rows are derived from the message text alone,
+///  so a line's row count is known without shaping.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -73,21 +114,31 @@ pub struct HintPlace {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MessageRow {
-    /// Source character whose pixel x the row is aligned to: the diagnostic's start.
+    /// Source character whose pixel x the row is aligned to:
+    ///  the diagnostic's start.
     pub start: usize,
-    /// A second or later row of its message; it is indented and does not start with the severity word.
+    /// A second or later row of its message;
+    ///  it is indented and does not start with the severity word.
     pub continued: bool,
-    /// Severity, which selects the row's ink.
+    /// Severity,
+    ///  which selects the row's ink.
     pub severity: Severity,
     /// Row text.
     pub text: String,
 }
 
-/// What: Everything one line shows above its code row; `Vec<T>` is a growable list (siblings `[T; N]`, `&[T]`).
+/// What:
+///  Everything one line shows above its code row;
+///  `Vec<T>` is a growable list (siblings `[T; N]`,
+///  `&[T]`).
 ///       `held` is a pair (tuple) of reserved heights.
-/// Why: The vertical mapping needs each block's height, and the frame paints its rows; both read this record.
+/// Why:
+///  The vertical mapping needs each block's height,
+///  and the frame paints its rows;
+///  both read this record.
 ///      After an external change the previous rows' space is held empty until annotations of the new text
-///      arrive, so the text does not jump twice.
+///      arrive,
+///  so the text does not jump twice.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,27 +151,35 @@ pub struct Block {
     pub line: usize,
     /// Number of hint rows.
     pub hint_rows: usize,
-    /// Hints with their rows and positions, in source order.
+    /// Hints with their rows and positions,
+    ///  in source order.
     pub hints: Vec<HintPlace>,
-    /// Message rows, top to bottom.
+    /// Message rows,
+    ///  top to bottom.
     pub messages: Vec<MessageRow>,
-    /// Height held for hint rows and for message rows of the previous text revision, in logical pixels.
+    /// Height held for hint rows and for message rows of the previous text revision,
+    ///  in logical pixels.
     pub held: (f32, f32),
 }
 
 /// Heights and row positions of one block.
 impl Block {
-    /// Height of the hint part: its rows, or the held space when that is taller.
+    /// Height of the hint part:
+    ///  its rows,
+    ///  or the held space when that is taller.
     pub fn hint_part(&self) -> f32 {
         return (self.hint_rows as f32 * ROW_HEIGHT).max(self.held.0);
     }
 
-    /// Height of the message part: its rows, or the held space when that is taller.
+    /// Height of the message part:
+    ///  its rows,
+    ///  or the held space when that is taller.
     pub fn message_part(&self) -> f32 {
         return (self.messages.len() as f32 * ROW_HEIGHT).max(self.held.1);
     }
 
-    /// Height of the whole block with the gap above it; zero for a block without rows or held space.
+    /// Height of the whole block with the gap above it;
+    ///  zero for a block without rows or held space.
     pub fn height(&self) -> f32 {
         let rows = self.hint_part() + self.message_part();
         if rows <= 0.0 {
@@ -129,8 +188,11 @@ impl Block {
         return BLOCK_GAP + rows;
     }
 
-    /// What: How far above the top of the code row hint row `row` starts.
-    /// Why: Rows are stacked upwards from the code row, so the block stays tight against its own line
+    /// What:
+    ///  How far above the top of the code row hint row `row` starts.
+    /// Why:
+    ///  Rows are stacked upwards from the code row,
+    ///  so the block stays tight against its own line
     ///      whatever space is held above the rows.
     ///
     /// In TS you'd write (pseudocode):
@@ -150,9 +212,15 @@ impl Block {
     }
 }
 
-/// What: Columns one character takes for wrapping: two for the wide scripts from the CJK radicals on, one
-///       otherwise. `char` is one Unicode scalar; `as u32` reads its number.
-/// Why: A row of eighty CJK characters would be about twice as wide as eighty Latin ones.
+/// What:
+///  Columns one character takes for wrapping:
+///  two for the wide scripts from the CJK radicals on,
+///  one
+///       otherwise.
+///  `char` is one Unicode scalar;
+///  `as u32` reads its number.
+/// Why:
+///  A row of eighty CJK characters would be about twice as wide as eighty Latin ones.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -165,9 +233,17 @@ fn columns(character: char) -> usize {
     return 1;
 }
 
-/// What: Break one message line into rows of at most `limit` columns at blanks; a word longer than a row is
-///       cut. Leading blanks stay on the first row, a tab counting as two. `&str` lends the line.
-/// Why: Messages nest their explanations by indentation, which must stay readable; everything else is prose.
+/// What:
+///  Break one message line into rows of at most `limit` columns at blanks;
+///  a word longer than a row is
+///       cut.
+///  Leading blanks stay on the first row,
+///  a tab counting as two.
+///  `&str` lends the line.
+/// Why:
+///  Messages nest their explanations by indentation,
+///  which must stay readable;
+///  everything else is prose.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -223,10 +299,18 @@ pub fn wrap(line: &str, limit: usize) -> Vec<String> {
     return rows;
 }
 
-/// What: The rows of one message: its text as [`describe`] spells it, each line wrapped, blank lines dropped,
-///       and at most [`MESSAGE_ROWS`] rows, the last of which then counts the lines left out.
+/// What:
+///  The rows of one message:
+///  its text as [`describe`] spells it,
+///  each line wrapped,
+///  blank lines dropped,
+///       and at most [`MESSAGE_ROWS`] rows,
+///  the last of which then counts the lines left out.
 ///       `&Problem` lends the diagnostic.
-/// Why: Every message is readable in place; only a pathological one is cut, and its full text stays in the
+/// Why:
+///  Every message is readable in place;
+///  only a pathological one is cut,
+///  and its full text stays in the
 ///      source view's accessible description while the caret is in its range.
 ///
 /// In TS you'd write (pseudocode):
@@ -262,10 +346,15 @@ fn rows_of(problem: &Problem) -> Vec<MessageRow> {
     return rows;
 }
 
-/// What: The message rows of one line from the diagnostics that start on it, already ordered worst first.
-///       `&[&Problem]` lends the list of lent diagnostics. Past [`LINE_MESSAGES`] messages one row counts
+/// What:
+///  The message rows of one line from the diagnostics that start on it,
+///  already ordered worst first.
+///       `&[&Problem]` lends the list of lent diagnostics.
+///  Past [`LINE_MESSAGES`] messages one row counts
 ///       the rest and names their worst severity.
-/// Why: Worst first means a cap never hides an error behind a hint; the count keeps a pile from burying the code.
+/// Why:
+///  Worst first means a cap never hides an error behind a hint;
+///  the count keeps a pile from burying the code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

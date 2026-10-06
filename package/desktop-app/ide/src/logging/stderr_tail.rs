@@ -1,20 +1,38 @@
-//! The last lines each language server wrote to its standard error, kept for the record the
+//! The last lines each language server wrote to its standard error,
+//!  kept for the record the
 //! language worker writes when a server ends unexpectedly or fails to start.
 //!
 //! helix-lsp owns every server's standard-error pipe and passes each line on only as a `log`
-//! record, at ERROR, so the log bridge (`relabel.rs`) sees every line whatever the log level shows
-//! and hands it here, together with the end of the stream. Nothing here reaches a user-facing note:
-//! the lines go only into the log, because a server's own output can hold paths and other details
+//! record,
+//!  at ERROR,
+//!  so the log bridge (`relabel.rs`) sees every line whatever the log level shows
+//! and hands it here,
+//!  together with the end of the stream.
+//!  Nothing here reaches a user-facing note:
+//! the lines go only into the log,
+//!  because a server's own output can hold paths and other details
 //! of the machine.
 //!
-//! helix-lsp names a line's server by its configured name only, so lines are kept by name, and two
-//! processes of the same name share one tail. A tail is removed when its lines are reported or the
-//! worker stops the server itself; lines the same process still writes afterwards are dropped until
-//! its stream ends, so they are never reported as the words of a later process of that name.
+//! helix-lsp names a line's server by its configured name only,
+//!  so lines are kept by name,
+//!  and two
+//! processes of the same name share one tail.
+//!  A tail is removed when its lines are reported or the
+//! worker stops the server itself;
+//!  lines the same process still writes afterwards are dropped until
+//! its stream ends,
+//!  so they are never reported as the words of a later process of that name.
 
-/// What: `BTreeMap` is a sorted map (sibling: `HashMap`, whose constructor cannot run in a
-///       `static`); `VecDeque` is a list with cheap removal at the front (sibling: `Vec`).
-/// Why: The map lives in a `static` shared by the log bridge and the worker; each tail drops its
+/// What:
+///  `BTreeMap` is a sorted map (sibling:
+///  `HashMap`,
+///  whose constructor cannot run in a
+///       `static`);
+///  `VecDeque` is a list with cheap removal at the front (sibling:
+///  `Vec`).
+/// Why:
+///  The map lives in a `static` shared by the log bridge and the worker;
+///  each tail drops its
 ///      oldest line when a new one arrives.
 ///
 /// In TS you'd write (pseudocode):
@@ -22,8 +40,12 @@
 /// const tails = new Map<string, { lines: string[]; closed: boolean; retired: boolean }>();
 /// ```
 use std::collections::{BTreeMap, VecDeque};
-/// What: `Mutex` guards a value that several threads change; `MutexGuard` is the held lock.
-/// Why: The log bridge runs on whichever thread logs; the worker reads from its own thread.
+/// What:
+///  `Mutex` guards a value that several threads change;
+///  `MutexGuard` is the held lock.
+/// Why:
+///  The log bridge runs on whichever thread logs;
+///  the worker reads from its own thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,17 +53,23 @@ use std::collections::{BTreeMap, VecDeque};
 /// ```
 use std::sync::{Mutex, MutexGuard};
 
-/// Lines kept per server: a panic message with its location, or the top of a short stack trace.
+/// Lines kept per server:
+///  a panic message with its location,
+///  or the top of a short stack trace.
 pub const KEPT_LINES: usize = 8;
 
-/// Longest kept line in bytes; a longer line is cut at a character boundary and marked.
+/// Longest kept line in bytes;
+///  a longer line is cut at a character boundary and marked.
 pub const LINE_BYTES: usize = 512;
 
 /// Marker appended to a cut line.
 pub const CUT_MARK: &str = " [cut]";
 
-/// What: One server's kept lines and where its stream stands.
-/// Why: The worker waits for the end of the stream before it reports, and lines of a process
+/// What:
+///  One server's kept lines and where its stream stands.
+/// Why:
+///  The worker waits for the end of the stream before it reports,
+///  and lines of a process
 ///      whose words were already reported must not be kept.
 #[derive(Default)]
 struct Tail {
@@ -49,17 +77,24 @@ struct Tail {
     lines: VecDeque<String>,
     /// The stream ended after the newest line.
     closed: bool,
-    /// The lines were reported or dropped while the stream was still open; everything until the
+    /// The lines were reported or dropped while the stream was still open;
+    ///  everything until the
     /// end of that stream is dropped.
     retired: bool,
 }
 
-/// Every server's tail, by server name.
+/// Every server's tail,
+///  by server name.
 static TAILS: Mutex<BTreeMap<String, Tail>> = Mutex::new(BTreeMap::new());
 
-/// What: Lock the tails. A panic while the lock was held leaves it "poisoned"; the data is still
-///       consistent here, so the guard is taken either way.
-/// Why: Missing log detail must never stop the worker or a logging thread.
+/// What:
+///  Lock the tails.
+///  A panic while the lock was held leaves it "poisoned";
+///  the data is still
+///       consistent here,
+///  so the guard is taken either way.
+/// Why:
+///  Missing log detail must never stop the worker or a logging thread.
 fn tails() -> MutexGuard<'static, BTreeMap<String, Tail>> {
     return match TAILS.lock() {
         Ok(guard) => guard,
@@ -67,10 +102,23 @@ fn tails() -> MutexGuard<'static, BTreeMap<String, Tail>> {
     };
 }
 
-/// What: Turn helix-lsp's quoted form of a line back into the line, in one pass over the
-///       characters. helix-lsp writes the line with Rust's debug quoting (`{line:?}`), which
-///       escapes `\`, `"`, tab, return, newline, NUL, and other unprintable characters as `\u{...}`.
-/// Why: The worker's record quotes the lines once more; without this, they would carry two layers
+/// What:
+///  Turn helix-lsp's quoted form of a line back into the line,
+///  in one pass over the
+///       characters.
+///  helix-lsp writes the line with Rust's debug quoting (`{line:?}`),
+///  which
+///       escapes `\`,
+///  `"`,
+///  tab,
+///  return,
+///  newline,
+///  NUL,
+///  and other unprintable characters as `\u{...}`.
+/// Why:
+///  The worker's record quotes the lines once more;
+///  without this,
+///  they would carry two layers
 ///      of escapes.
 ///
 /// In TS you'd write (pseudocode):
@@ -115,9 +163,11 @@ pub fn unescape(quoted: &str) -> String {
     return text;
 }
 
-/// What: Shorten a line to `LINE_BYTES` bytes at a character boundary and mark the cut.
+/// What:
+///  Shorten a line to `LINE_BYTES` bytes at a character boundary and mark the cut.
 ///       `is_char_boundary` tells whether a byte index starts a character.
-/// Why: One endless line must not fill the record.
+/// Why:
+///  One endless line must not fill the record.
 pub fn cut(line: &str) -> String {
     if line.len() <= LINE_BYTES {
         return line.to_string();
@@ -129,8 +179,11 @@ pub fn cut(line: &str) -> String {
     return format!("{}{CUT_MARK}", &line[..end]);
 }
 
-/// What: Keep one line a server wrote, given in helix-lsp's quoted form without the outer quotes.
-/// Why: Called by the log bridge for every standard-error line.
+/// What:
+///  Keep one line a server wrote,
+///  given in helix-lsp's quoted form without the outer quotes.
+/// Why:
+///  Called by the log bridge for every standard-error line.
 pub fn remember(server: &str, quoted: &str) {
     let text = unescape(quoted);
     // A line arrives with its newline; the record lists lines, so the newline is dropped.
@@ -151,8 +204,12 @@ pub fn remember(server: &str, quoted: &str) {
     }
 }
 
-/// What: Note that a server's standard error ended. Called by the log bridge.
-/// Why: The worker reports an ended server once this happened; a retired tail is finished then.
+/// What:
+///  Note that a server's standard error ended.
+///  Called by the log bridge.
+/// Why:
+///  The worker reports an ended server once this happened;
+///  a retired tail is finished then.
 pub fn ended(server: &str) {
     let mut all = tails();
     let tail = all.entry(server.to_string()).or_default();
@@ -170,9 +227,14 @@ pub fn is_closed(server: &str) -> bool {
         .is_some_and(|tail| return tail.closed && !tail.retired);
 }
 
-/// What: Remove and return a server's kept lines, oldest first; while its stream is still open,
+/// What:
+///  Remove and return a server's kept lines,
+///  oldest first;
+///  while its stream is still open,
 ///       leave a retired tail that drops the rest of that stream.
-/// Why: Each line is reported once, and only as the words of the process that wrote it.
+/// Why:
+///  Each line is reported once,
+///  and only as the words of the process that wrote it.
 pub fn take(server: &str) -> Vec<String> {
     let mut all = tails();
     let (lines, closed) = match all.remove(server) {
@@ -191,13 +253,20 @@ pub fn take(server: &str) -> Vec<String> {
     return lines;
 }
 
-/// What: Drop a server's kept lines without reporting them.
-/// Why: The worker stopped the server itself; nothing it wrote is a report.
+/// What:
+///  Drop a server's kept lines without reporting them.
+/// Why:
+///  The worker stopped the server itself;
+///  nothing it wrote is a report.
 pub fn forget(server: &str) {
     let _not_reported = take(server);
 }
 
-/// Unescaping, cutting, the line count, and stream ends, with server names no other test uses.
+/// Unescaping,
+///  cutting,
+///  the line count,
+///  and stream ends,
+///  with server names no other test uses.
 #[cfg(test)]
 #[path = "stderr_tail_tests.rs"]
 mod tests;

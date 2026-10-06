@@ -1,7 +1,14 @@
-//! What: Ask real Git which repository and worktree an invocation selects.
-//! Why: Configuration lives at the worktree top level, and worktree policies need to
-//!      know main versus linked. Git applies `-C`, `--git-dir`, `--work-tree` and its
-//!      environment itself, so the wrapper never re-implements that selection.
+//! What:
+//!  Ask real Git which repository and worktree an invocation selects.
+//! Why:
+//!  Configuration lives at the worktree top level,
+//!  and worktree policies need to
+//!      know main versus linked.
+//!  Git applies `-C`,
+//!  `--git-dir`,
+//!  `--work-tree` and its
+//!      environment itself,
+//!  so the wrapper never re-implements that selection.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,9 +17,11 @@
 
 /// Import the captured-query runner and its byte helpers.
 use super::git_metadata::{MetadataOutput, path_from_git_bytes, run_metadata_git, strip_git_line};
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  The caller's global options are replayed to Git unchanged.
+/// Why:
+///   The caller's global options are replayed to Git unchanged.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,11 +31,17 @@ use std::ffi::OsString;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
 use std::path::{Path, PathBuf};
 
-/// What: The repository shape an invocation selects.
-///       `#[derive(...)]` generates cloning, debug printing and `==`.
-/// Why:  Each shape needs different handling: no repository means no configuration,
-///       a bare repository has no worktree, and main versus linked decides worktree
-///       policies. All paths are Git's own canonical absolute paths.
+/// What:
+///  The repository shape an invocation selects.
+///       `#[derive(...)]` generates cloning,
+///  debug printing and `==`.
+/// Why:
+///   Each shape needs different handling:
+///  no repository means no configuration,
+///       a bare repository has no worktree,
+///  and main versus linked decides worktree
+///       policies.
+///  All paths are Git's own canonical absolute paths.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,38 +49,48 @@ use std::path::{Path, PathBuf};
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum WorktreeIdentity {
-    /// No repository, or a repository location without a worktree (inside `.git`).
+    /// No repository,
+    ///  or a repository location without a worktree (inside `.git`).
     OutsideWorktree,
-    /// A bare repository: Git directories but no worktree.
+    /// A bare repository:
+    ///  Git directories but no worktree.
     BareRepository {
         /// Canonical common Git directory.
         common_dir: PathBuf,
         /// Canonical invocation-specific Git directory.
         git_dir: PathBuf,
     },
-    /// The main worktree: its Git directory is the common directory.
+    /// The main worktree:
+    ///  its Git directory is the common directory.
     MainWorktree {
         /// Canonical common Git directory.
         common_dir: PathBuf,
         /// Canonical invocation-specific Git directory.
         git_dir: PathBuf,
-        /// Canonical worktree top level, where `cli-git.config.jsonc` lives.
+        /// Canonical worktree top level,
+        ///  where `cli-git.config.jsonc` lives.
         worktree_root: PathBuf,
     },
-    /// A linked worktree: its Git directory is separate from the common directory.
+    /// A linked worktree:
+    ///  its Git directory is separate from the common directory.
     LinkedWorktree {
         /// Canonical common Git directory.
         common_dir: PathBuf,
         /// Canonical invocation-specific Git directory.
         git_dir: PathBuf,
-        /// Canonical worktree top level, where `cli-git.config.jsonc` lives.
+        /// Canonical worktree top level,
+        ///  where `cli-git.config.jsonc` lives.
         worktree_root: PathBuf,
     },
 }
 
-/// What: The `rev-parse` options of the identity query, in output order.
+/// What:
+///  The `rev-parse` options of the identity query,
+///  in output order.
 ///       `&[&str]` is a borrowed list of borrowed strings compiled into the program.
-/// Why:  One query answers everything. `--show-toplevel` is last because Git stops
+/// Why:
+///   One query answers everything.
+///  `--show-toplevel` is last because Git stops
 ///       there in a bare repository after already printing the first three lines.
 ///
 /// In TS you'd write (pseudocode):
@@ -81,10 +106,13 @@ pub const IDENTITY_QUERY: &[&str] = &[
     "--show-toplevel",
 ];
 
-/// What: Build the error for identity output this module cannot interpret.
+/// What:
+///  Build the error for identity output this module cannot interpret.
 ///       `std::io::Error::other` wraps a message as an input/output error.
-/// Why:  Guessing a repository identity from unexpected output could apply the wrong
-///       configuration; failing names the limitation instead.
+/// Why:
+///   Guessing a repository identity from unexpected output could apply the wrong
+///       configuration;
+///  failing names the limitation instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -98,11 +126,16 @@ fn malformed(detail: &str) -> std::io::Error {
     ));
 }
 
-/// What: Interpret the identity query's exit state and output.
+/// What:
+///  Interpret the identity query's exit state and output.
 ///       `std::io::Result<T>` is `Result<T, std::io::Error>`.
-/// Why:  Success prints four lines. Failure after three lines is a repository without
-///       a worktree (bare when the first line says so). Failure with no output is
-///       "not a repository". Any other shape is rejected rather than guessed.
+/// Why:
+///   Success prints four lines.
+///  Failure after three lines is a repository without
+///       a worktree (bare when the first line says so).
+///  Failure with no output is
+///       "not a repository".
+///  Any other shape is rejected rather than guessed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -178,15 +211,21 @@ pub fn parse_identity_output(success: bool, stdout: &[u8]) -> std::io::Result<Wo
     });
 }
 
-/// Named predicate for splitting output into lines; `&u8` borrows one byte.
+/// Named predicate for splitting output into lines;
+///  `&u8` borrows one byte.
 fn is_line_feed(byte: &u8) -> bool {
     return *byte == b'\n';
 }
 
-/// What: Resolve the identity selected by the caller's global Git options.
-///       `&[OsString]` borrows the arguments before the subcommand, unchanged.
-/// Why:  Replaying the complete global prefix lets Git apply `-C` chains through
-///       symbolic links, `--git-dir`, `--work-tree` and environment selection exactly
+/// What:
+///  Resolve the identity selected by the caller's global Git options.
+///       `&[OsString]` borrows the arguments before the subcommand,
+///  unchanged.
+/// Why:
+///   Replaying the complete global prefix lets Git apply `-C` chains through
+///       symbolic links,
+///  `--git-dir`,
+///  `--work-tree` and environment selection exactly
 ///       as it will for the forwarded command.
 ///
 /// In TS you'd write (pseudocode):
@@ -209,9 +248,12 @@ pub fn resolve_worktree_identity(
     return parse_identity_output(output.success, output.stdout.as_slice());
 }
 
-/// What: The worktree top level of an identity, when it has one.
+/// What:
+///  The worktree top level of an identity,
+///  when it has one.
 ///       `Option<&Path>` is "a borrowed path or nothing".
-/// Why:  Configuration is loaded only for main and linked worktrees.
+/// Why:
+///   Configuration is loaded only for main and linked worktrees.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,6 +1,11 @@
-//! What: Framing controls for `git cat-file --batch` replies read from in-memory streams.
-//! Why: Object content is arbitrary bytes. These controls prove a reply is framed by its
-//!      declared size alone, that every malformed shape is a typed failure, and that
+//! What:
+//!  Framing controls for `git cat-file --batch` replies read from in-memory streams.
+//! Why:
+//!  Object content is arbitrary bytes.
+//!  These controls prove a reply is framed by its
+//!      declared size alone,
+//!  that every malformed shape is a typed failure,
+//!  and that
 //!      exactly one reply is consumed so the next request stays in step.
 //!
 //! In TS you'd write (pseudocode):
@@ -17,7 +22,8 @@ use std::io::{BufRead, Read};
 /// A complete SHA-1 object name used as the request in most controls.
 const NAME: &str = "0123456789abcdef0123456789abcdef01234567";
 
-/// A second, different object name.
+/// A second,
+///  different object name.
 const OTHER: &str = "89abcdef0123456789abcdef0123456789abcdef";
 
 /// The validated form of `NAME`.
@@ -39,7 +45,8 @@ fn failure_of(stream: &[u8]) -> CandidateFailure {
     return error.failure;
 }
 
-/// A byte source whose every read fails, standing in for a pipe that broke.
+/// A byte source whose every read fails,
+///  standing in for a pipe that broke.
 struct BrokenStream;
 
 /// Reading reports a broken pipe.
@@ -58,7 +65,9 @@ impl BufRead for BrokenStream {
     fn consume(&mut self, _amount: usize) {}
 }
 
-/// A found reply yields exactly the declared bytes, whatever they contain, and consumes nothing after its terminator.
+/// A found reply yields exactly the declared bytes,
+///  whatever they contain,
+///  and consumes nothing after its terminator.
 #[test]
 fn found_reply_is_framed_by_its_declared_size() {
     // The content holds NUL, a non-UTF-8 byte, line feeds and a forged header for another object.
@@ -100,7 +109,8 @@ fn empty_object_is_found_with_no_bytes() {
     assert!(remaining.is_empty());
 }
 
-/// Two replies in one stream are read one at a time, each from where the last ended.
+/// Two replies in one stream are read one at a time,
+///  each from where the last ended.
 #[test]
 fn consecutive_replies_stay_in_step() {
     let stream: String = format!("{NAME} blob 2\nhi\n{OTHER} missing\n{OTHER} tree 1\nT\n");
@@ -129,7 +139,8 @@ fn consecutive_replies_stay_in_step() {
     assert!(remaining.is_empty());
 }
 
-/// Every object type word is recognized, and a symbolic request accepts whichever object it resolved to.
+/// Every object type word is recognized,
+///  and a symbolic request accepts whichever object it resolved to.
 #[test]
 fn object_types_and_symbolic_requests_are_reported() {
     for (word, kind) in [
@@ -151,7 +162,8 @@ fn object_types_and_symbolic_requests_are_reported() {
     }
 }
 
-/// The missing form is the echoed request followed by the word; it consumes only its own line.
+/// The missing form is the echoed request followed by the word;
+///  it consumes only its own line.
 #[test]
 fn missing_reply_echoes_the_request() {
     for request in [NAME, "HEAD", ""] {
@@ -165,7 +177,11 @@ fn missing_reply_echoes_the_request() {
     }
 }
 
-/// Headers that are neither form are refused: wrong field counts, spellings, sizes, and a missing notice for another request.
+/// Headers that are neither form are refused:
+///  wrong field counts,
+///  spellings,
+///  sizes,
+///  and a missing notice for another request.
 #[test]
 fn malformed_headers_are_refused() {
     let huge: String = "9".repeat(30);
@@ -212,7 +228,8 @@ fn reply_for_another_object_is_refused() {
     );
 }
 
-/// A stream that ends anywhere inside a reply is reported as truncated, never as shorter content.
+/// A stream that ends anywhere inside a reply is reported as truncated,
+///  never as shorter content.
 #[test]
 fn truncated_replies_are_refused() {
     for stream in [
@@ -248,7 +265,9 @@ fn content_past_the_declared_size_is_refused() {
     );
 }
 
-/// A stream that ends before any reply byte, or that cannot be read, means the reader is gone.
+/// A stream that ends before any reply byte,
+///  or that cannot be read,
+///  means the reader is gone.
 #[test]
 fn ended_and_unreadable_streams_are_reader_failures() {
     assert_eq!(failure_of(b""), CandidateFailure::ReaderEnded);
@@ -259,7 +278,8 @@ fn ended_and_unreadable_streams_are_reader_failures() {
     assert!(error.message.contains("could not be read"), "{error}");
 }
 
-/// A read failure after a valid header is also a reader failure, not truncation.
+/// A read failure after a valid header is also a reader failure,
+///  not truncation.
 #[test]
 fn unreadable_content_is_a_reader_failure() {
     let header: String = format!("{NAME} blob 3\n");
@@ -271,7 +291,10 @@ fn unreadable_content_is_a_reader_failure() {
     assert_eq!(error.failure, CandidateFailure::ReaderEnded);
 }
 
-/// The header bound is exact: the longest accepted header, one byte more, and a stream ending at the bound.
+/// The header bound is exact:
+///  the longest accepted header,
+///  one byte more,
+///  and a stream ending at the bound.
 #[test]
 fn header_length_bound_is_exact() {
     assert_eq!(MAX_BATCH_HEADER_BYTES, 128);

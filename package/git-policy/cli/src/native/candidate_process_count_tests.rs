@@ -1,6 +1,11 @@
-//! What: Count the Git processes the candidate store starts, by a mechanism outside the store.
-//! Why: The store exists so that reading N files does not start N processes. The count is
-//!      taken by a counting stand-in every Git start must pass through, and a
+//! What:
+//!  Count the Git processes the candidate store starts,
+//!  by a mechanism outside the store.
+//! Why:
+//!  The store exists so that reading N files does not start N processes.
+//!  The count is
+//!      taken by a counting stand-in every Git start must pass through,
+//!  and a
 //!      deliberately per-file reader proves that stand-in does see one start per file.
 //!
 //! In TS you'd write (pseudocode):
@@ -19,13 +24,17 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::rc::Rc;
 
-/// Git processes one staged version may start, however many files it lists and reads:
+/// Git processes one staged version may start,
+///  however many files it lists and reads:
 /// the long-lived object reader and one listing.
 const STAGED_PROCESS_BOUND: usize = 2;
 
-/// A counting `git`: it appends one line per start to the count file, then becomes real Git.
+/// A counting `git`:
+///  it appends one line per start to the count file,
+///  then becomes real Git.
 /// Every Git start that goes through this path is recorded by the operating system's
-/// append, whatever the code under test believes it started.
+/// append,
+///  whatever the code under test believes it started.
 fn counting_git(root: &Path) -> (PathBuf, PathBuf) {
     let directory: PathBuf = root.join("counting-bin");
     std::fs::create_dir(&directory).expect("counting directory");
@@ -80,7 +89,8 @@ fn read_all(store: &mut CandidateStore, files: usize) {
     }
 }
 
-/// One, twenty and two hundred staged files are each listed and read with the same two Git processes.
+/// One,
+///  twenty and two hundred staged files are each listed and read with the same two Git processes.
 #[test]
 fn staged_candidates_are_read_with_a_fixed_number_of_processes() {
     let root: PathBuf = fixture("count-bound");
@@ -108,7 +118,9 @@ fn staged_candidates_are_read_with_a_fixed_number_of_processes() {
     remove(root.as_path());
 }
 
-/// Positive control: a per-file reader through the same stand-in is counted once per file, so the stand-in can show growth.
+/// Positive control:
+///  a per-file reader through the same stand-in is counted once per file,
+///  so the stand-in can show growth.
 #[test]
 fn per_file_reader_is_counted_once_per_file() {
     let root: PathBuf = fixture("count-control");
@@ -143,7 +155,8 @@ fn per_file_reader_is_counted_once_per_file() {
     remove(root.as_path());
 }
 
-/// A new listing after invalidation costs one more process, and a repository without commits one more for the empty tree.
+/// A new listing after invalidation costs one more process,
+///  and a repository without commits one more for the empty tree.
 #[test]
 fn invalidation_and_unborn_head_have_fixed_extra_costs() {
     let root: PathBuf = fixture("count-extra");

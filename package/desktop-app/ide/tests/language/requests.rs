@@ -1,5 +1,15 @@
-//! The five feature paths against the scripted server: targets, hover, hints, diagnostics, and
-//! the request states (unsupported, failed, superseded, empty, timeout, stale).
+//! The five feature paths against the scripted server:
+//!  targets,
+//!  hover,
+//!  hints,
+//!  diagnostics,
+//!  and
+//! the request states (unsupported,
+//!  failed,
+//!  superseded,
+//!  empty,
+//!  timeout,
+//!  stale).
 
 use crate::support::{self, Probe, SERVER};
 use ide_app::language::{
@@ -9,10 +19,13 @@ use ide_app::language::{
     target::TargetRefusal,
 };
 
-/// Line 0 has an accented letter and an astral character before offset 14; line 2 starts with both.
+/// Line 0 has an accented letter and an astral character before offset 14;
+///  line 2 starts with both.
 const SOURCE: &str = "caf\u{e9} \u{1F600} hello world\n\n\u{e9}\u{1F600}cdef tail\n";
 
-/// Definition answers are validated: openable inside and outside the project, or unavailable.
+/// Definition answers are validated:
+///  openable inside and outside the project,
+///  or unavailable.
 #[test]
 fn definition_targets_are_validated_and_converted() {
     let Some(root) = support::child_root() else {
@@ -82,7 +95,8 @@ fn definition_targets_are_validated_and_converted() {
     assert_eq!(library.range, Some((0, 1)));
 }
 
-/// A protocol error is a failed request with the server's code; hover still works afterwards.
+/// A protocol error is a failed request with the server's code;
+///  hover still works afterwards.
 #[test]
 fn failed_request_carries_the_servers_error_code() {
     let Some(root) = support::child_root() else {
@@ -153,7 +167,8 @@ fn hover_position_and_range_use_the_negotiated_column_unit() {
     }
 }
 
-/// `null` is an empty successful result, not a failure.
+/// `null` is an empty successful result,
+///  not a failure.
 #[test]
 fn hover_on_a_blank_line_is_an_empty_result() {
     let Some(root) = support::child_root() else {
@@ -231,7 +246,9 @@ fn missing_capabilities_are_reported_per_request() {
     );
 }
 
-/// `-32801` is retried while the text is unchanged, and reported as superseded, never as a failure.
+/// `-32801` is retried while the text is unchanged,
+///  and reported as superseded,
+///  never as a failure.
 #[test]
 fn superseded_request_is_retried_then_reported_as_superseded() {
     let Some(root) = support::child_root() else {
@@ -346,7 +363,8 @@ fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
     assert_eq!(hover.text, "line=changed text char=n");
 }
 
-/// A `-32801` answer for text that was reloaded meanwhile is not retried; the fence drops it as stale.
+/// A `-32801` answer for text that was reloaded meanwhile is not retried;
+///  the fence drops it as stale.
 #[test]
 fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     let Some(root) = support::child_root() else {
@@ -391,10 +409,13 @@ fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     );
 }
 
-/// Request timeout of the scripted server in the hint test, in seconds.
+/// Request timeout of the scripted server in the hint test,
+///  in seconds.
 const HINT_TIMEOUT_SECONDS: u64 = 3;
 
-/// Hints are shaped for drawing, tagged with their text, and asked for again after a reload.
+/// Hints are shaped for drawing,
+///  tagged with their text,
+///  and asked for again after a reload.
 #[test]
 fn inlay_hints_are_shaped_and_follow_reloads() {
     let Some(root) = support::child_root() else {
@@ -455,7 +476,8 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
     );
 }
 
-/// Versioned pushes are exact; they replace each other across reloads without any hold.
+/// Versioned pushes are exact;
+///  they replace each other across reloads without any hold.
 #[test]
 fn versioned_diagnostics_follow_the_displayed_version() {
     let Some(root) = support::child_root() else {
@@ -540,7 +562,8 @@ fn unversioned_diagnostics_are_held_after_a_reload() {
     });
 }
 
-/// Pull diagnostics are requested after open and after every reload, and fenced by stamp.
+/// Pull diagnostics are requested after open and after every reload,
+///  and fenced by stamp.
 #[test]
 fn pulled_diagnostics_follow_open_and_reload() {
     let Some(root) = support::child_root() else {

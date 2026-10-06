@@ -1,16 +1,23 @@
 //! Decide which locations returned by a language server a read-only reader may open.
 
-/// What: `lsp::Url` is the parsed address type the protocol uses for documents.
-/// Why: Servers name definition and reference targets by address, never by local path.
+/// What:
+///  `lsp::Url` is the parsed address type the protocol uses for documents.
+/// Why:
+///  Servers name definition and reference targets by address,
+///  never by local path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { lsp } from 'helix-lsp';
 /// ```
 use helix_lsp::lsp;
-/// What: `Path` is a borrowed filesystem path and `PathBuf` its owned, growable sibling,
-///       like `&str` and `String`; `fmt` holds the text-formatting traits.
-/// Why: Verdicts keep an owned path because they outlive the server reply they came from.
+/// What:
+///  `Path` is a borrowed filesystem path and `PathBuf` its owned,
+///  growable sibling,
+///       like `&str` and `String`;
+///  `fmt` holds the text-formatting traits.
+/// Why:
+///  Verdicts keep an owned path because they outlive the server reply they came from.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,9 +28,15 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// What: An `enum` with data in a variant is a tagged union. `#[derive(...)]` asks the compiler
-///       to generate copying, debug printing, and equality for it.
-/// Why: A target is refused for exactly one of these reasons, and the reader must be able to
+/// What:
+///  An `enum` with data in a variant is a tagged union.
+///  `#[derive(...)]` asks the compiler
+///       to generate copying,
+///  debug printing,
+///  and equality for it.
+/// Why:
+///  A target is refused for exactly one of these reasons,
+///  and the reader must be able to
 ///      say which instead of showing "no result".
 ///
 /// In TS you'd write (pseudocode):
@@ -34,7 +47,8 @@ use std::{
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TargetRefusal {
-    /// The address is not a `file` address, for example `untitled:` or `jdt:`.
+    /// The address is not a `file` address,
+    ///  for example `untitled:` or `jdt:`.
     UnsupportedScheme(
         /// The scheme the server used.
         String,
@@ -47,15 +61,18 @@ pub enum TargetRefusal {
     NotAFile,
 }
 
-/// What: `impl fmt::Display for X` defines how `X` is written by `{}` in format strings.
-/// Why: The native layer shows this sentence when a target cannot be opened.
+/// What:
+///  `impl fmt::Display for X` defines how `X` is written by `{}` in format strings.
+/// Why:
+///  The native layer shows this sentence when a target cannot be opened.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function describe(refusal: TargetRefusal): string { /* switch */ }
 /// ```
 impl fmt::Display for TargetRefusal {
-    /// Write the user-facing reason; `&mut fmt::Formatter` is the output sink being appended to.
+    /// Write the user-facing reason;
+    ///  `&mut fmt::Formatter` is the output sink being appended to.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         return match self {
             Self::UnsupportedScheme(scheme) => write!(
@@ -71,7 +88,8 @@ impl fmt::Display for TargetRefusal {
     }
 }
 
-/// A target either resolves to a real file inside or outside the project, or is refused.
+/// A target either resolves to a real file inside or outside the project,
+///  or is refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,7 +104,8 @@ pub enum Classified {
         /// Resolved path of the file.
         PathBuf,
     ),
-    /// Canonical path of an existing file elsewhere, such as a toolchain's standard library.
+    /// Canonical path of an existing file elsewhere,
+    ///  such as a toolchain's standard library.
     OutsideProject(
         /// Resolved path of the file.
         PathBuf,
@@ -98,10 +117,15 @@ pub enum Classified {
     ),
 }
 
-/// What: Classify one address against the canonical project root. `&lsp::Url` and `&Path` lend
+/// What:
+///  Classify one address against the canonical project root.
+///  `&lsp::Url` and `&Path` lend
 ///       the inputs read-only.
-/// Why: Containment is judged on the resolved location, so a link inside the project that
-///      leads elsewhere counts as outside, and two spellings of one path compare equal.
+/// Why:
+///  Containment is judged on the resolved location,
+///  so a link inside the project that
+///      leads elsewhere counts as outside,
+///  and two spellings of one path compare equal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -170,7 +194,9 @@ pub fn classify(uri: &lsp::Url, root: &Path) -> Classified {
     return Classified::OutsideProject(real);
 }
 
-/// Real directories, links, and encoded addresses exercise every verdict.
+/// Real directories,
+///  links,
+///  and encoded addresses exercise every verdict.
 #[cfg(test)]
 #[path = "target_tests.rs"]
 mod tests;

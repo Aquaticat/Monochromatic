@@ -1,18 +1,31 @@
-//! What:     Round-trip target: every generated document must parse, emit canonically and stay stable.
-//! Why:      This is the crate's core promise, so it is the first property fuzzing should attack:
-//!           canonical output must be a fixed point, comments must survive it, and the parsed tree
+//! What:
+//!      Round-trip target:
+//!  every generated document must parse,
+//!  emit canonically and stay stable.
+//! Why:
+//!       This is the crate's core promise,
+//!  so it is the first property fuzzing should attack:
+//!           canonical output must be a fixed point,
+//!  comments must survive it,
+//!  and the parsed tree
 //!           must respect the published nesting bound.
 
 #![no_main]
 
-/// What:     Import the harness macro.
-/// Why:      Every target in this sidecar is a libFuzzer entry point.
+/// What:
+///      Import the harness macro.
+/// Why:
+///       Every target in this sidecar is a libFuzzer entry point.
 use libfuzzer_sys::fuzz_target;
-/// What:     Import the shared invariants and the generated document type.
-/// Why:      This target asserts the round-trip contract and nothing else.
+/// What:
+///      Import the shared invariants and the generated document type.
+/// Why:
+///       This target asserts the round-trip contract and nothing else.
 use jsonc_edit_fuzz::{assert_canonical_stability, assert_comments_preserved, assert_depth_bound, GeneratedDocument};
-/// What:     Import the parse and emit entry points.
-/// Why:      Round-trip stability is a statement about those two functions together.
+/// What:
+///      Import the parse and emit entry points.
+/// Why:
+///       Round-trip stability is a statement about those two functions together.
 use monochromatic_jsonc_edit::{emit_jsonc_value, parse_jsonc};
 
 fuzz_target!(|document: GeneratedDocument| {

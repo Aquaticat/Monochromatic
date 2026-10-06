@@ -1,5 +1,7 @@
-//! What: Paragraph and delimiter boundaries for semantic prose breaks.
-//! Why: A break must stay within its original container and outside closing emphasis delimiters.
+//! What:
+//!  Paragraph and delimiter boundaries for semantic prose breaks.
+//! Why:
+//!  A break must stay within its original container and outside closing emphasis delimiters.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,9 +12,13 @@
 use crate::markdown_source::MarkdownSource;
 use satteri_ast::mdast::MdastNodeType;
 
-/// What: Find the enclosing paragraph among a text node's ancestors, unless a non-prose ancestor excludes the text.
-/// Why: The caller walks the ancestors once through the bounded `MarkdownSource::ancestors` and passes them in,
-/// so this lookup and `delimiter_tail` share one walk and neither can loop. `&[u32]` borrows that list read-only.
+/// What:
+///  Find the enclosing paragraph among a text node's ancestors,
+///  unless a non-prose ancestor excludes the text.
+/// Why:
+///  The caller walks the ancestors once through the bounded `MarkdownSource::ancestors` and passes them in,
+/// so this lookup and `delimiter_tail` share one walk and neither can loop.
+///  `&[u32]` borrows that list read-only.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,8 +56,11 @@ pub(crate) fn paragraph_for(context: &MarkdownSource, ancestors: &[u32]) -> Opti
     return paragraph;
 }
 
-/// What: Climb from text node `id` through inline delimiters whose final child is the current tail.
-/// Why: `ancestors` is the same nearest-first list `paragraph_for` reads, from the one bounded walk.
+/// What:
+///  Climb from text node `id` through inline delimiters whose final child is the current tail.
+/// Why:
+///  `ancestors` is the same nearest-first list `paragraph_for` reads,
+///  from the one bounded walk.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

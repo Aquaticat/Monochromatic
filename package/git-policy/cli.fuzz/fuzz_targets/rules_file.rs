@@ -1,5 +1,8 @@
-//! What: Raw and generated `rulesFile` option values through the value check.
-//! Why: The value comes from repository configuration; an accepted one must name a file
+//! What:
+//!  Raw and generated `rulesFile` option values through the value check.
+//! Why:
+//!  The value comes from repository configuration;
+//!  an accepted one must name a file
 //!      inside the repository whatever its words.
 //!
 //! In TS you'd write (pseudocode):

@@ -1,10 +1,16 @@
-//! Language module sessions against the scripted server: one child process per test, because
+//! Language module sessions against the scripted server:
+//!  one child process per test,
+//!  because
 //! Helix roots servers at the process working directory.
 
-/// What: `#[path = "..."]` names the file a module is read from. A test crate's root file looks
-///       for its modules beside itself, so the modules kept under `tests/language/` are named
+/// What:
+///  `#[path = "..."]` names the file a module is read from.
+///  A test crate's root file looks
+///       for its modules beside itself,
+///  so the modules kept under `tests/language/` are named
 ///       explicitly.
-/// Why:  One test crate links the application library once and lets every test share the
+/// Why:
+///   One test crate links the application library once and lets every test share the
 ///       support code without unused-code warnings.
 ///
 /// In TS you'd write (pseudocode):
@@ -14,7 +20,9 @@
 #[path = "language/support.rs"]
 mod support;
 
-/// Start states, the readiness gate, and the start deadline.
+/// Start states,
+///  the readiness gate,
+///  and the start deadline.
 #[path = "language/start.rs"]
 mod start;
 
@@ -30,15 +38,23 @@ mod requests;
 #[path = "language/again.rs"]
 mod again;
 
-/// Replies to server requests; refusal of server-initiated edits.
+/// Replies to server requests;
+///  refusal of server-initiated edits.
 #[path = "language/policy.rs"]
 mod policy;
 
-/// Crash, restart, file switches, launch refusal, and shutdown.
+/// Crash,
+///  restart,
+///  file switches,
+///  launch refusal,
+///  and shutdown.
 #[path = "language/lifecycle.rs"]
 mod lifecycle;
 
-/// What a clean open, request, close, and shutdown leave in the log and the process table.
+/// What a clean open,
+///  request,
+///  close,
+///  and shutdown leave in the log and the process table.
 #[path = "language/quiet.rs"]
 mod quiet;
 

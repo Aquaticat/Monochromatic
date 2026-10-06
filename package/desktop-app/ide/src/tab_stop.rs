@@ -1,15 +1,22 @@
-//! Tab stops are pixel positions, so a tab ends at the same place whatever script precedes it.
+//! Tab stops are pixel positions,
+//!  so a tab ends at the same place whatever script precedes it.
 //!
 //! This follows the CSS Text Level 3 rule that editord's `tab-size: 2` used:
 //! stops lie at multiples of the tab size from the line's start edge,
 //! the tab size is a multiple of the space character's advance,
 //! and a tab that would be narrower than half a space runs on to the following stop.
-//! Counting character columns instead would put a tab after a CJK glyph, whose fallback-font advance
-//! is not two Latin advances, at a different pixel position than a tab after two Latin letters.
+//! Counting character columns instead would put a tab after a CJK glyph,
+//!  whose fallback-font advance
+//! is not two Latin advances,
+//!  at a different pixel position than a tab after two Latin letters.
 
-/// What: `pub const` exports a compile-time value; `f32` is a 32-bit float (sibling `f64`).
-/// Why: Two space advances per stop match the visible indentation of editord's `tab-size: 2`.
-/// `f32` is the unit of every glyph advance in the shaping engine, so no conversion is needed.
+/// What:
+///  `pub const` exports a compile-time value;
+///  `f32` is a 32-bit float (sibling `f64`).
+/// Why:
+///  Two space advances per stop match the visible indentation of editord's `tab-size: 2`.
+/// `f32` is the unit of every glyph advance in the shaping engine,
+///  so no conversion is needed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,7 +27,8 @@ pub const TAB_SPACES: f32 = 2.0;
 /// Width of a tab that starts `position` pixels from the line's start edge.
 ///
 /// `space` is the measured advance of one space character in the same pixel unit.
-/// A space advance that is not a positive number has no stops; the tab then keeps the width of one space,
+/// A space advance that is not a positive number has no stops;
+///  the tab then keeps the width of one space,
 /// so a font without a usable space glyph cannot produce an infinite or undefined width.
 ///
 /// In TS you'd write (pseudocode):
@@ -50,8 +58,11 @@ pub fn tab_advance(position: f32, space: f32) -> f32 {
 
 /// Extra advance to add to each tab of one line so every tab ends on a stop.
 ///
-/// `naturals` holds, in reading order, the start position of each tab when every tab is drawn as one space.
-/// Widening an earlier tab moves every later one, so the correction accumulates from left to right.
+/// `naturals` holds,
+///  in reading order,
+///  the start position of each tab when every tab is drawn as one space.
+/// Widening an earlier tab moves every later one,
+///  so the correction accumulates from left to right.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

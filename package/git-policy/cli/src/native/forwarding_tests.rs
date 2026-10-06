@@ -1,5 +1,8 @@
-//! What: Process controls for starting real Git and reporting how it ended.
-//! Why: Arguments must arrive byte for byte, and exit codes and terminating signals
+//! What:
+//!  Process controls for starting real Git and reporting how it ended.
+//! Why:
+//!  Arguments must arrive byte for byte,
+//!  and exit codes and terminating signals
 //!      must be reported the way Git itself reports its children.
 //!
 //! In TS you'd write (pseudocode):
@@ -16,7 +19,9 @@ use std::os::unix::ffi::OsStringExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Exit codes pass through; a terminating signal becomes 128 plus its number, as in Git's run-command.
+/// Exit codes pass through;
+///  a terminating signal becomes 128 plus its number,
+///  as in Git's run-command.
 #[test]
 fn exit_codes_follow_git_child_convention() {
     for (outcome, expected) in [
@@ -33,7 +38,9 @@ fn exit_codes_follow_git_child_convention() {
     }
 }
 
-/// The command carries the exact program, each argument as its own unchanged element, and only the overlay.
+/// The command carries the exact program,
+///  each argument as its own unchanged element,
+///  and only the overlay.
 #[test]
 fn command_preserves_program_arguments_and_overlay() {
     let arguments: Vec<OsString> = vec![
@@ -121,7 +128,8 @@ fn run_reports_exit_codes_and_signals() {
     remove(root.as_path());
 }
 
-/// A program that cannot be started is an error for both forwarding forms, never a fake exit code.
+/// A program that cannot be started is an error for both forwarding forms,
+///  never a fake exit code.
 #[test]
 fn unstartable_program_is_an_error() {
     let missing: &Path = Path::new("/nonexistent-directory/git");

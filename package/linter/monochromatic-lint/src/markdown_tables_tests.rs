@@ -1,5 +1,8 @@
-//! What: Whole-table conversion, reporting and source-boundary controls.
-//! Why: The HTML fallback preserves alignment and literal cell content without rewriting enclosing containers.
+//! What:
+//!  Whole-table conversion,
+//!  reporting and source-boundary controls.
+//! Why:
+//!  The HTML fallback preserves alignment and literal cell content without rewriting enclosing containers.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -48,7 +51,8 @@ fn table_alignment_and_cell_spelling_survive_conversion() {
     );
 }
 
-/// Ordinary prose and existing HTML pass; containers and indentation remain report-only.
+/// Ordinary prose and existing HTML pass;
+///  containers and indentation remain report-only.
 #[test]
 fn conversion_respects_container_and_written_form_boundaries() {
     for source in ["A | pipe\n", "<table><tr><td>kept</td></tr></table>\n"] {
@@ -78,7 +82,8 @@ fn header_only_tables_and_escaped_terminal_pipes_are_preserved() {
     assert_eq!(cell_content(""), "");
 }
 
-/// The backslash run may reach the cell's first byte, and an empty delimited cell has no run at all.
+/// The backslash run may reach the cell's first byte,
+///  and an empty delimited cell has no run at all.
 #[test]
 fn escape_runs_reaching_the_cell_start_decide_the_final_pipe() {
     // One or three backslashes escape the pipe; two leave it as the closing delimiter.
@@ -91,7 +96,8 @@ fn escape_runs_reaching_the_cell_start_decide_the_final_pipe() {
     assert_eq!(cell_content("a|"), "a");
 }
 
-/// Rows without outer delimiters keep a final escaped pipe as cell text, also when it is the whole cell.
+/// Rows without outer delimiters keep a final escaped pipe as cell text,
+///  also when it is the whole cell.
 #[test]
 fn parsed_cells_ending_in_escaped_pipes_keep_their_text() {
     assert_eq!(
@@ -105,7 +111,8 @@ fn parsed_cells_ending_in_escaped_pipes_keep_their_text() {
     );
 }
 
-/// The emitted HTML must not contain literal attacker-controlled tags, quotes or MDX expressions.
+/// The emitted HTML must not contain literal attacker-controlled tags,
+///  quotes or MDX expressions.
 #[test]
 fn converted_text_cannot_introduce_markup_or_mdx_expressions() {
     let output: String = fixed(

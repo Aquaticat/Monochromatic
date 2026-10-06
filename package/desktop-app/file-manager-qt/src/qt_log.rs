@@ -1,9 +1,12 @@
 //! Route Qt's own logging into the non-blocking tracing sink.
 //!
-//! Qt's default message handler is synchronous on the emitting thread. The C++ shim in
-//! `qt_log.cpp` installs a `qInstallMessageHandler` that forwards every Qt message here, where
+//! Qt's default message handler is synchronous on the emitting thread.
+//!  The C++ shim in
+//! `qt_log.cpp` installs a `qInstallMessageHandler` that forwards every Qt message here,
+//!  where
 //! it becomes a tracing event and rides the same off-thread NonBlocking writer as the rest of
-//! the app, so Qt-internal logs cannot block the UI/render thread.
+//! the app,
+//!  so Qt-internal logs cannot block the UI/render thread.
 
 /// Imports the C string and integer FFI types used by the Qt-to-tracing callback.
 use std::ffi::{CStr, c_char, c_int};
@@ -14,8 +17,12 @@ unsafe extern "C" {
     fn fmqt_install_qt_message_handler();
 }
 
-/// What: install the Qt-to-tracing message-handler bridge.
-/// Why: call once at startup, after the tracing subscriber is set up, so Qt's own
+/// What:
+///  install the Qt-to-tracing message-handler bridge.
+/// Why:
+///  call once at startup,
+///  after the tracing subscriber is set up,
+///  so Qt's own
 ///      qDebug/qCDebug/qWarning flow off-thread through tracing instead of Qt's synchronous
 ///      default handler.
 pub fn install() {
@@ -24,14 +31,22 @@ pub fn install() {
     unsafe { fmqt_install_qt_message_handler() };
 }
 
-/// What: C-ABI callback the Qt handler invokes for each Qt log message.
-/// Why: maps QtMsgType (0 debug, 1 warning, 2 critical, 3 fatal, 4 info) to a tracing level
+/// What:
+///  C-ABI callback the Qt handler invokes for each Qt log message.
+/// Why:
+///  maps QtMsgType (0 debug,
+///  1 warning,
+///  2 critical,
+///  3 fatal,
+///  4 info) to a tracing level
 ///      and emits the event under target "qt" with the Qt logging category as a field.
 ///
 /// # Safety
 /// `category` and `message` must each be null or a valid nul-terminated C string that
-/// outlives this call. The Qt handler passes borrowed `QByteArray::constData` and the Qt
-/// category pointer, which satisfy this.
+/// outlives this call.
+///  The Qt handler passes borrowed `QByteArray::constData` and the Qt
+/// category pointer,
+///  which satisfy this.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn fmqt_forward_log(
     kind: c_int,

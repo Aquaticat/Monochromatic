@@ -1,9 +1,13 @@
-//! Validate UI declarations, require embedded resources in the native procedural-macro compilation,
+//! Validate UI declarations,
+//!  require embedded resources in the native procedural-macro compilation,
 //! and generate the table of language files the application binary carries inside itself.
 
-/// What: Include the shared digest function from the application's sources (`#[path]` names the
-///       file; `mod` makes it a module of this build script).
-/// Why: The digest recorded here must be computed exactly as the application recomputes it.
+/// What:
+///  Include the shared digest function from the application's sources (`#[path]` names the
+///       file;
+///  `mod` makes it a module of this build script).
+/// Why:
+///  The digest recorded here must be computed exactly as the application recomputes it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -12,8 +16,12 @@
 #[path = "src/content_digest.rs"]
 mod content_digest;
 
-/// What: File system access and path types. `Path` borrows a path, `PathBuf` owns one.
-/// Why: The generator walks the prepared runtime and writes one generated source file.
+/// What:
+///  File system access and path types.
+///  `Path` borrows a path,
+///  `PathBuf` owns one.
+/// Why:
+///  The generator walks the prepared runtime and writes one generated source file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,8 +33,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// What: The generated file's name below Cargo's `OUT_DIR`.
-/// Why: `src/main.rs` includes it by this name.
+/// What:
+///  The generated file's name below Cargo's `OUT_DIR`.
+/// Why:
+///  `src/main.rs` includes it by this name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,9 +44,15 @@ use std::{
 /// ```
 const GENERATED: &str = "embedded_runtime.rs";
 
-/// What: Every regular file below `root`, as (path relative to `root`, absolute path) pairs.
-///       `Vec<(String, PathBuf)>` is a growable list of pairs; a work list replaces recursion.
-/// Why: Query and notice directories are nested; a work list walks them without growing the stack.
+/// What:
+///  Every regular file below `root`,
+///  as (path relative to `root`,
+///  absolute path) pairs.
+///       `Vec<(String, PathBuf)>` is a growable list of pairs;
+///  a work list replaces recursion.
+/// Why:
+///  Query and notice directories are nested;
+///  a work list walks them without growing the stack.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -99,10 +115,17 @@ fn files_below(root: &Path) -> Vec<(String, PathBuf)> {
     return found;
 }
 
-/// What: The grammar file names `manifest.json` lists, such as `sql.so`. `Vec<String>` owns them.
-/// Why: The runtime directory may still hold libraries of an earlier selection; only listed ones ship.
-///      The manifest is the runtime task's own `JSON.stringify` output, so its `grammars` array is read
-///      directly; any entry that is not a plain `<name>.so` stops the build.
+/// What:
+///  The grammar file names `manifest.json` lists,
+///  such as `sql.so`.
+///  `Vec<String>` owns them.
+/// Why:
+///  The runtime directory may still hold libraries of an earlier selection;
+///  only listed ones ship.
+///      The manifest is the runtime task's own `JSON.stringify` output,
+///  so its `grammars` array is read
+///      directly;
+///  any entry that is not a plain `<name>.so` stops the build.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -151,9 +174,14 @@ fn listed_grammars(manifest: &str, location: &Path) -> Vec<String> {
     return names;
 }
 
-/// What: Collect every file the application binary embeds, as (path in the former application
-///       directory layout, absolute source path) pairs, sorted by path.
-/// Why: One list feeds both the generated table and the build's change tracking.
+/// What:
+///  Collect every file the application binary embeds,
+///  as (path in the former application
+///       directory layout,
+///  absolute source path) pairs,
+///  sorted by path.
+/// Why:
+///  One list feeds both the generated table and the build's change tracking.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -219,8 +247,10 @@ fn embedded_files(runtime: &Path, package: &Path) -> Vec<(String, PathBuf)> {
     return files;
 }
 
-/// What: Write the Rust source of the embedded table into `OUT_DIR` and tell Cargo what to watch.
-/// Why: `include_bytes!` in the generated file copies each file into the executable at compile time.
+/// What:
+///  Write the Rust source of the embedded table into `OUT_DIR` and tell Cargo what to watch.
+/// Why:
+///  `include_bytes!` in the generated file copies each file into the executable at compile time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -300,8 +330,11 @@ fn generate_embedded_runtime(out_directory: &Path, package: &Path) {
         .unwrap_or_else(|error| panic!("Cannot write {}: {error}", output.display()));
 }
 
-/// What: Build entry point invoked by Cargo, separate from application main.
-/// Why: The non-GUI tests can exercise document logic without opening a window or embedding files.
+/// What:
+///  Build entry point invoked by Cargo,
+///  separate from application main.
+/// Why:
+///  The non-GUI tests can exercise document logic without opening a window or embedding files.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

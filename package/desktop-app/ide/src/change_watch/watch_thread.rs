@@ -1,5 +1,6 @@
 //! The thread that owns the inotify watcher and applies the UI's desired directory set.
-//! Adding a watch blocks until notify's loop replies, so it must never run on the UI thread.
+//! Adding a watch blocks until notify's loop replies,
+//!  so it must never run on the UI thread.
 
 /// Classified invalidations and the non-blocking wake shared with the event handler.
 use super::{
@@ -8,19 +9,32 @@ use super::{
 };
 /// Containment uses the same canonical check as every project read.
 use crate::workspace::Workspace;
-/// Failures name the directory and, for the watch limit, the sysctl to raise.
+/// Failures name the directory and,
+///  for the watch limit,
+///  the sysctl to raise.
 use anyhow::{Result, bail};
-/// What: notify's inotify backend, its configuration, the non-recursive mode, and the `Watcher` trait
-///       whose methods (`new`, `watch`, `unwatch`) the backend implements.
-/// Why: Naming `INotifyWatcher` (not `RecommendedWatcher`) keeps a polling backend from ever being chosen.
+/// What:
+///  notify's inotify backend,
+///  its configuration,
+///  the non-recursive mode,
+///  and the `Watcher` trait
+///       whose methods (`new`,
+///  `watch`,
+///  `unwatch`) the backend implements.
+/// Why:
+///  Naming `INotifyWatcher` (not `RecommendedWatcher`) keeps a polling backend from ever being chosen.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { INotifyWatcher, Config, RecursiveMode } from 'notify';
 /// ```
 use notify::{Config, ErrorKind, INotifyWatcher, RecursiveMode, Watcher};
-/// What: `Arc` shares the state across threads; `Receiver`/`SyncSender` are the bounded wake channel's ends.
-/// Why: The handler and the UI wake this thread; it sleeps in `recv` otherwise.
+/// What:
+///  `Arc` shares the state across threads;
+///  `Receiver`/`SyncSender` are the bounded wake channel's ends.
+/// Why:
+///  The handler and the UI wake this thread;
+///  it sleeps in `recv` otherwise.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -66,7 +80,8 @@ fn add(watcher: &mut INotifyWatcher, workspace: &Workspace, path: &Path) -> Resu
     return Ok(());
 }
 
-/// Name the directory; the watch limit (`ENOSPC` from `inotify_add_watch`) gets the sysctl to raise.
+/// Name the directory;
+///  the watch limit (`ENOSPC` from `inotify_add_watch`) gets the sysctl to raise.
 pub(super) fn describe(error: &notify::Error, path: &Path) -> String {
     if let ErrorKind::MaxFilesWatch = error.kind {
         return format!(
@@ -82,7 +97,8 @@ pub(super) fn describe(error: &notify::Error, path: &Path) -> String {
 #[path = "watch_thread_tests.rs"]
 mod tests;
 
-/// Remove one watch; a watch the kernel already dropped (removed directory) is expected and only logged.
+/// Remove one watch;
+///  a watch the kernel already dropped (removed directory) is expected and only logged.
 fn remove(watcher: &mut INotifyWatcher, path: &Path) {
     if let Err(error) = watcher.unwatch(path) {
         tracing::debug!(path = %path.display(), %error, "watch was already gone");
@@ -93,10 +109,16 @@ fn remove(watcher: &mut INotifyWatcher, path: &Path) {
 struct Watches {
     /// Directories with a live watch.
     active: BTreeSet<PathBuf>,
-    /// What: `BTreeMap<PathBuf, String>` maps each directory whose last watch attempt failed to that
-    ///       failure's text (`BTreeSet`, the sibling, would hold the directories without their text).
-    /// Why: Failed directories are retried only on request, and a retry that fails with the same text
-    ///      is neither logged nor reported again, so a retry every sweep does not repeat itself.
+    /// What:
+    ///  `BTreeMap<PathBuf, String>` maps each directory whose last watch attempt failed to that
+    ///       failure's text (`BTreeSet`,
+    ///  the sibling,
+    ///  would hold the directories without their text).
+    /// Why:
+    ///  Failed directories are retried only on request,
+    ///  and a retry that fails with the same text
+    ///      is neither logged nor reported again,
+    ///  so a retry every sweep does not repeat itself.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -105,11 +127,13 @@ struct Watches {
     failed: BTreeMap<PathBuf, String>,
     /// The UI's latest desired set.
     desired: BTreeSet<PathBuf>,
-    /// The displayed file as of the previous wake, to notice a switch to another file.
+    /// The displayed file as of the previous wake,
+    ///  to notice a switch to another file.
     file: Option<PathBuf>,
 }
 
-/// Apply one wake's worth of requests; returns false when the UI handle is closing.
+/// Apply one wake's worth of requests;
+///  returns false when the UI handle is closing.
 fn apply(
     watcher: &mut INotifyWatcher,
     workspace: &Workspace,
@@ -222,7 +246,9 @@ fn apply(
     return true;
 }
 
-/// Thread body: create the watcher, then apply requests on every wake until the UI handle closes.
+/// Thread body:
+///  create the watcher,
+///  then apply requests on every wake until the UI handle closes.
 pub(super) fn run(
     workspace: Workspace,
     shared: Arc<Mutex<Shared>>,

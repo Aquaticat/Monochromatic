@@ -1,8 +1,15 @@
-//! What: `markdown/lfs-image-url`, object URLs for Markdown images whose target is LFS-tracked.
-//! Why: GitHub renders a relative link to an LFS-tracked image from its pointer, as a broken image.
-//! The rule rewrites such destinations to `<objectBase>/<oid>/<repo path>`, refreshes a stale oid,
+//! What:
+//!  `markdown/lfs-image-url`,
+//!  object URLs for Markdown images whose target is LFS-tracked.
+//! Why:
+//!  GitHub renders a relative link to an LFS-tracked image from its pointer,
+//!  as a broken image.
+//! The rule rewrites such destinations to `<objectBase>/<oid>/<repo path>`,
+//!  refreshes a stale oid,
 //! and returns an object URL to a relative link when its target leaves LFS.
-//! Edits replace only the written destination; byte offsets are used directly, with no
+//! Edits replace only the written destination;
+//!  byte offsets are used directly,
+//!  with no
 //! UTF-16 or astral-character correction.
 //!
 //! In TS you'd write (pseudocode):
@@ -24,7 +31,8 @@ use crate::{
     markdown_source::MarkdownSource,
     markdown_table_text::trim_space,
 };
-/// Import typed payload decoders; identifiers are already normalized by the parser.
+/// Import typed payload decoders;
+///  identifiers are already normalized by the parser.
 use satteri_ast::mdast::{
     DefinitionData, MdastNodeType, decode_definition_data, decode_image_data, decode_reference_data,
 };
@@ -34,8 +42,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// What: This rule's identifier in configuration and JSONL `code`.
-/// Why: One spelling is shared by every finding the rule emits.
+/// What:
+///  This rule's identifier in configuration and JSONL `code`.
+/// Why:
+///  One spelling is shared by every finding the rule emits.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,11 +53,18 @@ use std::{
 /// ```
 const ID: &str = "markdown/lfs-image-url";
 
-/// What: Locate the written destination inside a node's source, as absolute byte offsets.
-/// Why: The fix replaces only those bytes. The destination follows `](` in an image (searched from
-/// the end, because alt text may contain `](`) or `]:` in a definition, bare or in angle brackets.
+/// What:
+///  Locate the written destination inside a node's source,
+///  as absolute byte offsets.
+/// Why:
+///  The fix replaces only those bytes.
+///  The destination follows `](` in an image (searched from
+/// the end,
+///  because alt text may contain `](`) or `]:` in a definition,
+///  bare or in angle brackets.
 /// `None` means the written form differs from the parsed URL (an escaped or entity-encoded
-/// destination), and the finding is then reported without a fix.
+/// destination),
+///  and the finding is then reported without a fix.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -77,9 +94,12 @@ fn url_span(context: &MarkdownSource, id: u32, image: bool, url: &str) -> Option
     return None;
 }
 
-/// What: Build a finding whose fix replaces the written destination, or a report-only finding when
+/// What:
+///  Build a finding whose fix replaces the written destination,
+///  or a report-only finding when
 /// the destination cannot be located.
-/// Why: A destination this rule cannot find byte-exactly is left for a person to edit.
+/// Why:
+///  A destination this rule cannot find byte-exactly is left for a person to edit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,8 +138,12 @@ fn rewrite_finding(
     );
 }
 
-/// What: Check a destination already under the object base.
-/// Why: The embedded oid must match the file's current oid, the path must still exist, and a
+/// What:
+///  Check a destination already under the object base.
+/// Why:
+///  The embedded oid must match the file's current oid,
+///  the path must still exist,
+///  and a
 /// target that stopped being LFS-tracked returns to a relative link.
 ///
 /// In TS you'd write (pseudocode):
@@ -179,8 +203,11 @@ fn check_object_url(
     }
 }
 
-/// What: Check a relative destination.
-/// Why: An LFS-tracked target gets an object URL; anything else is left to other rules.
+/// What:
+///  Check a relative destination.
+/// Why:
+///  An LFS-tracked target gets an object URL;
+///  anything else is left to other rules.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -211,8 +238,11 @@ fn check_relative_url(
     ));
 }
 
-/// What: Report every image and image-used definition whose destination needs a change.
-/// Why: A definition used only by links keeps its target; only definitions some image reference
+/// What:
+///  Report every image and image-used definition whose destination needs a change.
+/// Why:
+///  A definition used only by links keeps its target;
+///  only definitions some image reference
 /// resolves to are rewritten.
 ///
 /// In TS you'd write (pseudocode):

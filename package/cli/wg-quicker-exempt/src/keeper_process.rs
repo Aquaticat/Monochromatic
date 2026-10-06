@@ -185,7 +185,9 @@ pub fn stop_command_process(
     ));
 }
 
-/// Sends SIGTERM, escalates exact surviving holder to SIGKILL, and confirms disappearance.
+/// Sends SIGTERM,
+///  escalates exact surviving holder to SIGKILL,
+///  and confirms disappearance.
 pub fn stop_process(process: KeeperProcess, cgroup_dir: &Path) -> io::Result<()> {
     let expected = expected_command(process, cgroup_dir)?;
     return stop_command_process(

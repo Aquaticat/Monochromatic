@@ -1,17 +1,31 @@
-//! What: The complete option tables of `git checkout` and `git switch` in Git 2.56.0.
-//! Why: Both commands create branches explicitly (`-b`, `-c`, `--orphan`, `--track`) and
-//!      implicitly (a name that matches one remote branch). The tables are assembled as
-//!      Git assembles them: the command's own rows, then the shared groups
-//!      (builtin/checkout.c:1786-1847, 2118-2129, 2170-2179).
+//! What:
+//!  The complete option tables of `git checkout` and `git switch` in Git 2.56.0.
+//! Why:
+//!  Both commands create branches explicitly (`-b`,
+//!  `-c`,
+//!  `--orphan`,
+//!  `--track`) and
+//!      implicitly (a name that matches one remote branch).
+//!  The tables are assembled as
+//!      Git assembles them:
+//!  the command's own rows,
+//!  then the shared groups
+//!      (builtin/checkout.c:1786-1847,
+//!  2118-2129,
+//!  2170-2179).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // export const CHECKOUT_TABLE: readonly OptionSpec[] = [ ... ];
 //! ```
 
-/// What: Bring the row type, its builder and the arity names into this file. `UNREAD` is the
+/// What:
+///  Bring the row type,
+///  its builder and the arity names into this file.
+///  `UNREAD` is the
 ///       identifier of rows no branch-creation fact reads.
-/// Why:  The tables are data for the shared tokenizer.
+/// Why:
+///   The tables are data for the shared tokenizer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,28 +33,42 @@
 /// ```
 use super::command_options::{Arity, OptionSpec, UNREAD, row};
 
-/// `checkout -b <branch>`, `switch -c`/`--create <branch>`.
+/// `checkout -b <branch>`,
+///  `switch -c`/`--create <branch>`.
 pub const NEW_BRANCH: u16 = 1;
-/// `checkout -B <branch>`, `switch -C`/`--force-create <branch>`.
+/// `checkout -B <branch>`,
+///  `switch -C`/`--force-create <branch>`.
 pub const NEW_BRANCH_FORCE: u16 = 2;
 /// `--orphan <new-branch>`.
 pub const ORPHAN: u16 = 3;
-/// `-t`, `--track[=(direct|inherit)]`; `--no-track` writes the same variable.
+/// `-t`,
+///  `--track[=(direct|inherit)]`;
+///  `--no-track` writes the same variable.
 pub const TRACK: u16 = 4;
-/// `--guess`, `--no-guess`.
+/// `--guess`,
+///  `--no-guess`.
 pub const GUESS: u16 = 5;
-/// `-d`, `--detach`.
+/// `-d`,
+///  `--detach`.
 pub const DETACH: u16 = 6;
 /// `checkout -p`/`--patch`.
 pub const PATCH: u16 = 7;
 /// `checkout -2`/`--ours` and `-3`/`--theirs`.
 pub const STAGE: u16 = 8;
-/// `checkout --overlay`, `--no-overlay`.
+/// `checkout --overlay`,
+///  `--no-overlay`.
 pub const OVERLAY: u16 = 9;
 
-/// What: `git checkout`: `checkout_options`, then the common, switch-branch and
-///       checkout-path groups. `Some(b'b')` with `None` is an option that has only a letter.
-/// Why:  `-b` and `-B` take the branch name as a value; `--track` and
+/// What:
+///  `git checkout`:
+///  `checkout_options`,
+///  then the common,
+///  switch-branch and
+///       checkout-path groups.
+///  `Some(b'b')` with `None` is an option that has only a letter.
+/// Why:
+///   `-b` and `-B` take the branch name as a value;
+///  `--track` and
 ///       `--recurse-submodules` take an attached value only.
 ///
 /// In TS you'd write (pseudocode):
@@ -105,8 +133,13 @@ pub const CHECKOUT_TABLE: &[OptionSpec] = &[
     row(UNREAD, None, Some("pathspec-file-nul"), Arity::None, true),
 ];
 
-/// What: `git switch`: `switch_options`, then the common and switch-branch groups.
-/// Why:  `switch` has no path options; `-c` and `-C` have long names and can be negated.
+/// What:
+///  `git switch`:
+///  `switch_options`,
+///  then the common and switch-branch groups.
+/// Why:
+///   `switch` has no path options;
+///  `-c` and `-C` have long names and can be negated.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

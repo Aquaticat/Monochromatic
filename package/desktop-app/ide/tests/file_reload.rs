@@ -166,7 +166,8 @@ fn worker_recovers_after_source_reappears() {
     assert!(reply(&mut worker).result.expect("recovered read").is_none());
 }
 
-/// Initial and changed syntax describe the exact source revision; unchanged accepted syntax is not reparsed.
+/// Initial and changed syntax describe the exact source revision;
+///  unchanged accepted syntax is not reparsed.
 #[test]
 fn worker_classifies_initial_and_changed_source_revisions() {
     let fixture = tempfile::tempdir().expect("disposable source directory");

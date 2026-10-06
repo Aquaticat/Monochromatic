@@ -1,12 +1,16 @@
-//! What: JSONL wire-shape and escaping regressions.
-//! Why: Messages and filenames may contain syntax delimiters; only the JSON encoder should interpret them.
+//! What:
+//!  JSONL wire-shape and escaping regressions.
+//! Why:
+//!  Messages and filenames may contain syntax delimiters;
+//!  only the JSON encoder should interpret them.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! describe('JSONL diagnostic output', () => { /* exact keys and hostile strings */ });
 //! ```
 
-/// Import the production model, renderer and internal fix type.
+/// Import the production model,
+///  renderer and internal fix type.
 use super::{Diagnostic, Severity, Span, render};
 use crate::edits::{Edit, Fix};
 
@@ -85,7 +89,8 @@ fn processing_failure_state_is_internal() {
     assert!(record.get("processing_failure").is_none());
 }
 
-/// A clean run prints no records, and multiple findings retain order without pretty-printing.
+/// A clean run prints no records,
+///  and multiple findings retain order without pretty-printing.
 #[test]
 fn clean_and_multiple_outputs_have_exact_line_cardinality() {
     assert_eq!(render(&[]).expect("empty findings"), "");

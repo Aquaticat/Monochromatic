@@ -1,16 +1,21 @@
 //! The language poll and the annotation renderer working together through real window events:
-//! hints and diagnostics from the server are painted by the poll that stored them, the language popup
-//! covers neither its line nor that line's virtual rows, and resting or Ctrl+clicking on a virtual row
+//! hints and diagnostics from the server are painted by the poll that stored them,
+//!  the language popup
+//! covers neither its line nor that line's virtual rows,
+//!  and resting or Ctrl+clicking on a virtual row
 //! asks the server nothing.
 
-/// Fixtures, the scripted server, and real key and pointer events.
+/// Fixtures,
+///  the scripted server,
+///  and real key and pointer events.
 use super::test_support::{
     TEXT_TOP, above, address, caret, caret_x, control_click, definitions, eventually, hover, idle,
     location, move_to, point, popup, project, reader, ready, rows,
 };
 /// The stamp of the displayed text and the production repaint.
 use crate::native::{annotate::displayed, render};
-/// One hint record and its snapshot, exactly as the Language module builds them.
+/// One hint record and its snapshot,
+///  exactly as the Language module builds them.
 use ide_app::language::{
     hints::{HintKind, HintsSnapshot, InlayHint},
     identity::ServerIdentity,
@@ -18,13 +23,16 @@ use ide_app::language::{
 /// Snapshots arrive behind shared pointers.
 use std::sync::Arc;
 
-/// Two lines. The scripted server warns about the first character of the first line
+/// Two lines.
+///  The scripted server warns about the first character of the first line
 /// and returns one hint after `alpha`.
 const TEXT: &str = "alpha beta\ngamma delta\n";
 
-/// What: The scripted server's setting that makes it push its warning on every publish;
+/// What:
+///  The scripted server's setting that makes it push its warning on every publish;
 ///       `&[(&str, &str)]` is a borrowed list of borrowed name and value pairs.
-/// Why: The shared test definitions turn pushed diagnostics off unless a test names `PUSH`.
+/// Why:
+///  The shared test definitions turn pushed diagnostics off unless a test names `PUSH`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,11 +40,14 @@ const TEXT: &str = "alpha beta\ngamma delta\n";
 /// ```
 ///
 /// The pushed warning comes from a server that starts answering only three seconds after it was started.
-/// The source refresh repaints once, when the file's first highlighting answer arrives. A server that
+/// The source refresh repaints once,
+///  when the file's first highlighting answer arrives.
+///  A server that
 /// answers after that leaves the language poll as the only thing that can paint its hints and warning.
 const LATE: &[(&str, &str)] = &[("PUSH", "1"), ("INIT_DELAY_MS", "3000")];
 
-/// Forty lines of two words each, so a line near the bottom of the view exists.
+/// Forty lines of two words each,
+///  so a line near the bottom of the view exists.
 fn tall() -> String {
     let mut text = String::new();
     for index in 0..40 {
@@ -45,8 +56,13 @@ fn tall() -> String {
     return text;
 }
 
-/// The server's hints and diagnostics appear with no key, pointer, scroll, reload, or highlighting
-/// answer after them: the poll that stores a snapshot also repaints the source.
+/// The server's hints and diagnostics appear with no key,
+///  pointer,
+///  scroll,
+///  reload,
+///  or highlighting
+/// answer after them:
+///  the poll that stores a snapshot also repaints the source.
 #[test]
 fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
     let fixture = project(&[("main.scripted", TEXT)]);
@@ -81,7 +97,8 @@ fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
     assert!(reader.source.borrow().row_map.code_top(0) > 0.0);
 }
 
-/// A popup placed above its line ends above that line's virtual rows too: the hints and messages of the
+/// A popup placed above its line ends above that line's virtual rows too:
+///  the hints and messages of the
 /// line the popup is about stay readable beside it.
 #[test]
 fn hover_popup_above_a_line_does_not_cover_its_virtual_rows() {
@@ -147,8 +164,11 @@ fn hover_popup_above_a_line_does_not_cover_its_virtual_rows() {
     );
 }
 
-/// A hint or message row is over no source character: a pointer resting on it asks for no hover, and
-/// Ctrl+click on it asks for no definition, while the code row beneath it answers both.
+/// A hint or message row is over no source character:
+///  a pointer resting on it asks for no hover,
+///  and
+/// Ctrl+click on it asks for no definition,
+///  while the code row beneath it answers both.
 #[test]
 fn resting_and_control_click_on_virtual_rows_ask_nothing() {
     let other_text = "first\n  second line\n";

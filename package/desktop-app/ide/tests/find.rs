@@ -1,4 +1,7 @@
-//! The production matching function: plain literal, case-insensitive, in source character positions.
+//! The production matching function:
+//!  plain literal,
+//!  case-insensitive,
+//!  in source character positions.
 
 /// The same function and bounds the worker and the reference comparison use.
 use ide_app::find::{
@@ -33,7 +36,8 @@ fn pairs(text: &str, query: &str) -> Vec<(usize, usize)> {
     return result;
 }
 
-/// ASCII and non-ASCII letters match regardless of case; matches never overlap.
+/// ASCII and non-ASCII letters match regardless of case;
+///  matches never overlap.
 #[test]
 fn case_is_ignored_for_ascii_and_unicode_letters() {
     assert_eq!(
@@ -60,7 +64,8 @@ fn regex_metacharacters_are_literal() {
     assert_eq!(pairs("\\d 7", "\\d"), [(0, 2)]);
 }
 
-/// No find text is a valid state without matches, not a match at every position.
+/// No find text is a valid state without matches,
+///  not a match at every position.
 #[test]
 fn empty_query_matches_nothing() {
     assert_eq!(pairs("anything", ""), []);
@@ -68,7 +73,8 @@ fn empty_query_matches_nothing() {
     assert_eq!(pairs("", "needle"), []);
 }
 
-/// Positions count Unicode scalar values, not UTF-8 bytes or UTF-16 units.
+/// Positions count Unicode scalar values,
+///  not UTF-8 bytes or UTF-16 units.
 #[test]
 fn positions_are_source_characters_for_cjk_and_astral_text() {
     assert_eq!(pairs("a 猫 b 猫", "猫"), [(2, 3), (6, 7)]);
@@ -78,7 +84,8 @@ fn positions_are_source_characters_for_cjk_and_astral_text() {
     assert_eq!(pairs("𝒳 x", "𝒳"), [(0, 1)]);
 }
 
-/// Combining marks are separate characters: no accent folding and no composition.
+/// Combining marks are separate characters:
+///  no accent folding and no composition.
 #[test]
 fn combining_marks_are_compared_as_written() {
     let decomposed = "cafe\u{301}";
@@ -89,7 +96,8 @@ fn combining_marks_are_compared_as_written() {
     assert_eq!(pairs("caf\u{e9}", "cafe"), []);
 }
 
-/// Line terminators are ordinary characters; a space does not stand in for a newline or tab.
+/// Line terminators are ordinary characters;
+///  a space does not stand in for a newline or tab.
 #[test]
 fn whitespace_and_line_terminators_are_literal() {
     assert_eq!(pairs("one\ntwo", "one two"), []);
@@ -136,7 +144,8 @@ fn match_count_is_bounded_and_reports_truncation() {
     );
 }
 
-/// Over-long find text is a diagnostic naming the bound, not a silent empty result.
+/// Over-long find text is a diagnostic naming the bound,
+///  not a silent empty result.
 #[test]
 fn query_length_is_bounded_with_a_diagnostic() {
     let longest = "a".repeat(MAX_FIND_QUERY_CHARS);

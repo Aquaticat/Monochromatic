@@ -1,5 +1,8 @@
-//! What:    The serializable DFA table and its allocation-free match loop.
-//! Why:     This file is the Rust module that groups the table implementation, so the
+//! What:
+//!     The serializable DFA table and its allocation-free match loop.
+//! Why:
+//!      This file is the Rust module that groups the table implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,12 @@
 //! // module table: see exported functions and types below.
 //! ```
 
-/// What:    Imports the serde derives for persisting a compiled automaton.
-/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+/// What:
+///     Imports the serde derives for persisting a compiled automaton.
+/// Why:
+///      The code below uses `Deserialize`,
+///  `Serialize` directly;
+///  importing from `serde`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +24,11 @@
 /// ```
 use serde::{Deserialize, Serialize};
 
-/// What:    Imports the error type for validation of a decoded automaton.
-/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+/// What:
+///     Imports the error type for validation of a decoded automaton.
+/// Why:
+///      The code below uses `CompileError` directly;
+///  importing from `crate/error` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,8 +37,11 @@ use serde::{Deserialize, Serialize};
 /// ```
 use crate::error::CompileError;
 
-/// What:    Imports the byte set used to report a DFA's possible first match bytes.
-/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+/// What:
+///     Imports the byte set used to report a DFA's possible first match bytes.
+/// Why:
+///      The code below uses `ByteSet` directly;
+///  importing from `crate/charset` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -39,9 +52,13 @@ use crate::charset::ByteSet;
 
 /// Returns the single-bit acceptance mask for one boundary context.
 ///
-/// What: encodes `(word_after, line_end)` into a bit index `0..=3` and shifts a
-/// `1` into it. Why: each state stores which of these four boundary contexts make
-/// it accepting, so the matcher tests acceptance with one mask-and.
+/// What:
+///  encodes `(word_after, line_end)` into a bit index `0..=3` and shifts a
+/// `1` into it.
+///  Why:
+///  each state stores which of these four boundary contexts make
+/// it accepting,
+///  so the matcher tests acceptance with one mask-and.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,12 +71,22 @@ pub fn accept_bit(word_after: bool, line_end: bool) -> u8 {
     return 1u8 << index
 }
 
-/// A compiled, table-driven deterministic automaton over byte classes.
+/// A compiled,
+///  table-driven deterministic automaton over byte classes.
 ///
-/// What: a byte-to-class map, per-class word/newline flags, a dense transition
-/// table, a per-state 4-bit acceptance mask, and the start state. Why: this flat
+/// What:
+///  a byte-to-class map,
+///  per-class word/newline flags,
+///  a dense transition
+/// table,
+///  a per-state 4-bit acceptance mask,
+///  and the start state.
+///  Why:
+///  this flat
 /// shape serializes directly with serde and matches in a tight per-byte loop with
-/// no allocation, which is what beats the lazy, lock-guarded alternatives.
+/// no allocation,
+///  which is what beats the lazy,
+///  lock-guarded alternatives.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,8 +96,11 @@ pub fn accept_bit(word_after: bool, line_end: bool) -> u8 {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Dfa {
-    /// What:    Number of distinct byte classes.
-    /// Why:     `nclasses` stores number of distinct byte classes, so matcher code reads that
+    /// What:
+    ///     Number of distinct byte classes.
+    /// Why:
+    ///      `nclasses` stores number of distinct byte classes,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -78,8 +108,11 @@ pub struct Dfa {
     /// nclasses: number;
     /// ```
     pub(crate) nclasses: u32,
-    /// What:    Length-256 map from a byte to its class id.
-    /// Why:     `class_map` stores length-256 map from a byte to its class id, so matcher code
+    /// What:
+    ///     Length-256 map from a byte to its class id.
+    /// Why:
+    ///      `class_map` stores length-256 map from a byte to its class id,
+    ///  so matcher code
     ///          reads that precomputed state by name instead of recomputing or passing it
     ///          separately.
     ///
@@ -88,9 +121,14 @@ pub struct Dfa {
     /// class_map: number[];
     /// ```
     pub(crate) class_map: Vec<u8>,
-    /// What:    Per-class flag: is a byte of this class a word byte (for `\b`)?
-    /// Why:     `class_word` stores per-class flag: is a byte of this class a word byte (for
-    ///          `\b`)?, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     Per-class flag:
+    ///  is a byte of this class a word byte (for `\b`)?
+    /// Why:
+    ///      `class_word` stores per-class flag:
+    ///  is a byte of this class a word byte (for
+    ///          `\b`)?,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -98,9 +136,14 @@ pub struct Dfa {
     /// class_word: boolean[];
     /// ```
     pub(crate) class_word: Vec<bool>,
-    /// What:    Per-class flag: is a byte of this class a newline (for `^`/`$`)?
-    /// Why:     `class_newline` stores per-class flag: is a byte of this class a newline (for
-    ///          `^`/`$`)?, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     Per-class flag:
+    ///  is a byte of this class a newline (for `^`/`$`)?
+    /// Why:
+    ///      `class_newline` stores per-class flag:
+    ///  is a byte of this class a newline (for
+    ///          `^`/`$`)?,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -110,14 +153,30 @@ pub struct Dfa {
     pub(crate) class_newline: Vec<bool>,
     /// Dense transition table of length `num_states * nclasses`.
     ///
-    /// What: state ids are `u16`, so the table is half the width of a `u32` one. Why:
-    /// the hot match loop reads one entry per byte, so a denser table fits more of the
-    /// automaton in cache; the build caps states at 65534, well above any real rule's
-    /// (and the engine cap of 20000), so a `u16` id never overflows.
-    /// Why:     `trans` stores state ids are `u16`, so the table is half the width of a `u32`
-    ///          one. Why: the hot match loop reads one entry per byte, so a denser table fits
-    ///          more of the automaton in cache; the build caps states at 65534, well above any
-    ///          real rule's (and the engine cap of 20000), so a `u16` id never overflows, so
+    /// What:
+    ///  state ids are `u16`,
+    ///  so the table is half the width of a `u32` one.
+    ///  Why:
+    /// the hot match loop reads one entry per byte,
+    ///  so a denser table fits more of the
+    /// automaton in cache;
+    ///  the build caps states at 65534,
+    ///  well above any real rule's
+    /// (and the engine cap of 20000),
+    ///  so a `u16` id never overflows.
+    /// Why:
+    ///      `trans` stores state ids are `u16`,
+    ///  so the table is half the width of a `u32`
+    ///          one.
+    ///  Why:
+    ///  the hot match loop reads one entry per byte,
+    ///  so a denser table fits
+    ///          more of the automaton in cache;
+    ///  the build caps states at 65534,
+    ///  well above any
+    ///          real rule's (and the engine cap of 20000),
+    ///  so a `u16` id never overflows,
+    ///  so
     ///          matcher code reads that precomputed state by name instead of recomputing or
     ///          passing it separately.
     ///
@@ -126,9 +185,12 @@ pub struct Dfa {
     /// trans: number[];
     /// ```
     pub(crate) trans: Vec<u16>,
-    /// What:    Per-state acceptance mask over the four `(word_after, line_end)` contexts.
-    /// Why:     `accept` stores per-state acceptance mask over the four `(word_after, line_end)`
-    ///          contexts, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     Per-state acceptance mask over the four `(word_after, line_end)` contexts.
+    /// Why:
+    ///      `accept` stores per-state acceptance mask over the four `(word_after, line_end)`
+    ///          contexts,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -136,8 +198,11 @@ pub struct Dfa {
     /// accept: number[];
     /// ```
     pub(crate) accept: Vec<u8>,
-    /// What:    Start state id.
-    /// Why:     `start` stores start state id, so matcher code reads that precomputed state by
+    /// What:
+    ///     Start state id.
+    /// Why:
+    ///      `start` stores start state id,
+    ///  so matcher code reads that precomputed state by
     ///          name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -145,8 +210,11 @@ pub struct Dfa {
     /// start: number;
     /// ```
     pub(crate) start: u16,
-    /// What:    Total number of states.
-    /// Why:     `num_states` stores total number of states, so matcher code reads that
+    /// What:
+    ///     Total number of states.
+    /// Why:
+    ///      `num_states` stores total number of states,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -154,16 +222,30 @@ pub struct Dfa {
     /// num_states: number;
     /// ```
     pub(crate) num_states: u16,
-    /// A non-accepting self-looping sink, or `num_states` when there is none.
+    /// A non-accepting self-looping sink,
+    ///  or `num_states` when there is none.
     ///
-    /// What: the dead state the match loop early-exits on; `num_states` (no real id)
-    /// disables the exit. Why: an anchored DFA dies on the first non-matching byte, so
-    /// without this the loop walks the rest of the line for nothing; this is the bulk
+    /// What:
+    ///  the dead state the match loop early-exits on;
+    ///  `num_states` (no real id)
+    /// disables the exit.
+    ///  Why:
+    ///  an anchored DFA dies on the first non-matching byte,
+    ///  so
+    /// without this the loop walks the rest of the line for nothing;
+    ///  this is the bulk
     /// of the gate's per-hit and line-start cost.
-    /// Why:     `dead` stores the dead state the match loop early-exits on; `num_states` (no
-    ///          real id) disables the exit. Why: an anchored DFA dies on the first non-matching
-    ///          byte, so without this the loop walks the rest of the line for nothing; this is
-    ///          the bulk of the gate's per-hit and line-start cost, so matcher code reads that
+    /// Why:
+    ///      `dead` stores the dead state the match loop early-exits on;
+    ///  `num_states` (no
+    ///          real id) disables the exit.
+    ///  Why:
+    ///  an anchored DFA dies on the first non-matching
+    ///          byte,
+    ///  so without this the loop walks the rest of the line for nothing;
+    ///  this is
+    ///          the bulk of the gate's per-hit and line-start cost,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -173,8 +255,10 @@ pub struct Dfa {
     pub(crate) dead: u16,
 }
 
-/// What:    Construction-from-parts and matching for `Dfa`.
-/// Why:     The program attaches these functions to the named Rust type so callers can use
+/// What:
+///     Construction-from-parts and matching for `Dfa`.
+/// Why:
+///      The program attaches these functions to the named Rust type so callers can use
 ///          method syntax.
 ///
 /// In TS you'd write (pseudocode):
@@ -184,9 +268,14 @@ pub struct Dfa {
 impl Dfa {
     /// Assembles a `Dfa` from already-built tables.
     ///
-    /// What: the builder's only constructor; takes ownership of each `u16`-id table.
-    /// Why: fields stay private so a `Dfa` can only arise from the builder or a
-    /// validated decode; ids are `u16` because the build caps states at 65534, so each
+    /// What:
+    ///  the builder's only constructor;
+    ///  takes ownership of each `u16`-id table.
+    /// Why:
+    ///  fields stay private so a `Dfa` can only arise from the builder or a
+    /// validated decode;
+    ///  ids are `u16` because the build caps states at 65534,
+    ///  so each
     /// caller narrows its own ids and the stored table is half a `u32` table's width.
     ///
     /// In TS you'd write (pseudocode):
@@ -222,10 +311,17 @@ impl Dfa {
 
     /// Reports whether the pattern matches some substring of `line`.
     ///
-    /// What: walks the byte-class transitions, checking the acceptance mask at
-    /// each boundary against the upcoming byte's context, and returns on the
-    /// first match. Why: this is the hot path; it is branch-light and never
-    /// allocates, and early exit makes a positive answer cheap.
+    /// What:
+    ///  walks the byte-class transitions,
+    ///  checking the acceptance mask at
+    /// each boundary against the upcoming byte's context,
+    ///  and returns on the
+    /// first match.
+    ///  Why:
+    ///  this is the hot path;
+    ///  it is branch-light and never
+    /// allocates,
+    ///  and early exit makes a positive answer cheap.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -275,9 +371,14 @@ impl Dfa {
 
     /// Adds to `set` every byte that could begin a match from the start state.
     ///
-    /// What: marks byte `b` when the start already accepts (an empty match, so any byte
-    /// qualifies) or its start transition does not go straight to the dead sink. Why: a
-    /// line-start rule is checked only when `line[0]` is one of these, so a single byte
+    /// What:
+    ///  marks byte `b` when the start already accepts (an empty match,
+    ///  so any byte
+    /// qualifies) or its start transition does not go straight to the dead sink.
+    ///  Why:
+    ///  a
+    /// line-start rule is checked only when `line[0]` is one of these,
+    ///  so a single byte
     /// test skips the anchored DFA call on almost every line.
     ///
     /// In TS you'd write (pseudocode):
@@ -300,9 +401,16 @@ impl Dfa {
 
     /// Validates a decoded automaton so the match loop cannot read out of bounds.
     ///
-    /// What: checks every length and that all class ids, transition targets, and
-    /// the start id are in range. Why: a serialized DFA may be hostile or
-    /// corrupt, and it is executed against attacker-influenced input, so it must
+    /// What:
+    ///  checks every length and that all class ids,
+    ///  transition targets,
+    ///  and
+    /// the start id are in range.
+    ///  Why:
+    ///  a serialized DFA may be hostile or
+    /// corrupt,
+    ///  and it is executed against attacker-influenced input,
+    ///  so it must
     /// be proven well-formed before first use.
     ///
     /// In TS you'd write (pseudocode):
@@ -369,8 +477,11 @@ impl Dfa {
     }
 }
 
-/// What:    Unit tests for the DFA table and match loop, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for the DFA table and match loop,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -381,12 +492,20 @@ impl Dfa {
 #[path = "table_tests.rs"]
 mod tests;
 
-/// Finds a non-accepting, fully self-looping sink state, or `num_states` if none.
+/// Finds a non-accepting,
+///  fully self-looping sink state,
+///  or `num_states` if none.
 ///
-/// What: scans for the first state whose acceptance mask is zero and whose every
-/// byte-class transition returns to itself. Why: from such a state no input can ever
-/// accept, so the match loop can stop there; minimization collapses all such states
-/// into one, and `num_states` (no real id) signals there is none.
+/// What:
+///  scans for the first state whose acceptance mask is zero and whose every
+/// byte-class transition returns to itself.
+///  Why:
+///  from such a state no input can ever
+/// accept,
+///  so the match loop can stop there;
+///  minimization collapses all such states
+/// into one,
+///  and `num_states` (no real id) signals there is none.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

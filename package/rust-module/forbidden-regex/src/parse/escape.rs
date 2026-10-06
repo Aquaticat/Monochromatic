@@ -1,5 +1,9 @@
-//! What:    Backslash escapes, shared by atom parsing and character-class parsing.
-//! Why:     This file is the Rust module that groups the escape implementation, so the
+//! What:
+//!     Backslash escapes,
+//!  shared by atom parsing and character-class parsing.
+//! Why:
+//!      This file is the Rust module that groups the escape implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,9 +11,16 @@
 //! // module escape: see exported functions and types below.
 //! ```
 
-/// What:    Imports the byte-set type for shorthand escapes.
-/// Why:     The code below uses `ByteSet`, `digit_set`, `singleton`, `space_set`, `word_set`
-///          directly; importing from `crate/charset` keeps each call site focused on the matcher
+/// What:
+///     Imports the byte-set type for shorthand escapes.
+/// Why:
+///      The code below uses `ByteSet`,
+///  `digit_set`,
+///  `singleton`,
+///  `space_set`,
+///  `word_set`
+///          directly;
+///  importing from `crate/charset` keeps each call site focused on the matcher
 ///          logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -24,8 +35,11 @@
 /// ```
 use crate::charset::{ByteSet, digit_set, singleton, space_set, word_set};
 
-/// What:    Imports the node algebra produced by an atom-position escape.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra produced by an atom-position escape.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -34,8 +48,11 @@ use crate::charset::{ByteSet, digit_set, singleton, space_set, word_set};
 /// ```
 use crate::ast::node::Node;
 
-/// What:    Imports the error type for unsupported escapes.
-/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+/// What:
+///     Imports the error type for unsupported escapes.
+/// Why:
+///      The code below uses `CompileError` directly;
+///  importing from `crate/error` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -44,8 +61,11 @@ use crate::ast::node::Node;
 /// ```
 use crate::error::CompileError;
 
-/// What:    Imports the cursor read by the escape parser.
-/// Why:     The code below uses `Cursor` directly; importing from `crate/parse/cursor` keeps
+/// What:
+///     Imports the cursor read by the escape parser.
+/// Why:
+///      The code below uses `Cursor` directly;
+///  importing from `crate/parse/cursor` keeps
 ///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -56,8 +76,13 @@ use crate::parse::cursor::Cursor;
 
 /// What a backslash escape denotes.
 ///
-/// What: either one literal byte, a shorthand byte set, or the `\b` word-boundary
-/// assertion. Why: the same escape grammar is reused inside a class (where only
+/// What:
+///  either one literal byte,
+///  a shorthand byte set,
+///  or the `\b` word-boundary
+/// assertion.
+///  Why:
+///  the same escape grammar is reused inside a class (where only
 /// `Byte`/`Set` are legal) and in atom position (where `Boundary` is also legal).
 ///
 /// In TS you'd write (pseudocode):
@@ -66,9 +91,14 @@ use crate::parse::cursor::Cursor;
 ///   | { kind: "variant" };
 /// ```
 pub enum EscapeResult {
-    /// What:    A single literal byte (`\t`, `\#`, an escaped metacharacter, escaped
+    /// What:
+    ///     A single literal byte (`\t`,
+    ///  `\#`,
+    ///  an escaped metacharacter,
+    ///  escaped
     ///          whitespace).
-    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    /// Why:
+    ///      The surrounding function uses this step to keep the matcher behavior correct
     ///          at this point.
     ///
     /// In TS you'd write (pseudocode):
@@ -76,8 +106,10 @@ pub enum EscapeResult {
     /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
     /// ```
     Byte(
-        /// What:    Literal byte value the escape denotes.
-        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        /// What:
+        ///     Literal byte value the escape denotes.
+        /// Why:
+        ///      The surrounding function uses this step to keep the matcher behavior
         ///          correct at this point.
         ///
         /// In TS you'd write (pseudocode):
@@ -86,8 +118,10 @@ pub enum EscapeResult {
         /// ```
         u8,
     ),
-    /// What:    A shorthand byte set (`\d \w \s` and their negations).
-    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    /// What:
+    ///     A shorthand byte set (`\d \w \s` and their negations).
+    /// Why:
+    ///      The surrounding function uses this step to keep the matcher behavior correct
     ///          at this point.
     ///
     /// In TS you'd write (pseudocode):
@@ -95,8 +129,10 @@ pub enum EscapeResult {
     /// // Same step as the Rust statement below, written with ordinary TS objects/functions.
     /// ```
     Set(
-        /// What:    Byte set the shorthand expands to.
-        /// Why:     The surrounding function uses this step to keep the matcher behavior
+        /// What:
+        ///     Byte set the shorthand expands to.
+        /// Why:
+        ///      The surrounding function uses this step to keep the matcher behavior
         ///          correct at this point.
         ///
         /// In TS you'd write (pseudocode):
@@ -105,8 +141,10 @@ pub enum EscapeResult {
         /// ```
         ByteSet,
     ),
-    /// What:    The `\b` word-boundary assertion.
-    /// Why:     The surrounding function uses this step to keep the matcher behavior correct
+    /// What:
+    ///     The `\b` word-boundary assertion.
+    /// Why:
+    ///      The surrounding function uses this step to keep the matcher behavior correct
     ///          at this point.
     ///
     /// In TS you'd write (pseudocode):
@@ -116,11 +154,17 @@ pub enum EscapeResult {
     Boundary,
 }
 
-/// Parses one backslash escape, rejecting anything outside the supported set.
+/// Parses one backslash escape,
+///  rejecting anything outside the supported set.
 ///
-/// What: consumes the backslash and its following byte and classifies it; `\b`
-/// is a boundary only outside a class and an error inside one. Why: the engine's
-/// escape vocabulary is deliberately small, and unknown escapes must fail loudly
+/// What:
+///  consumes the backslash and its following byte and classifies it;
+///  `\b`
+/// is a boundary only outside a class and an error inside one.
+///  Why:
+///  the engine's
+/// escape vocabulary is deliberately small,
+///  and unknown escapes must fail loudly
 /// rather than silently become literals.
 ///
 /// In TS you'd write (pseudocode):
@@ -187,8 +231,13 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
 
 /// Parses an escape in atom position and lifts it to a node.
 ///
-/// What: `Byte`/`Set` become one-byte classes; `Boundary` becomes the
-/// `WordBoundary` node. Why: atom parsing wants a `Node`, not the intermediate
+/// What:
+///  `Byte`/`Set` become one-byte classes;
+///  `Boundary` becomes the
+/// `WordBoundary` node.
+///  Why:
+///  atom parsing wants a `Node`,
+///  not the intermediate
 /// escape classification.
 ///
 /// In TS you'd write (pseudocode):

@@ -1,6 +1,11 @@
-//! What: Controls for bounded workers, result ordering and panic containment.
-//! Why: Output must not depend on scheduling, every plan must be processed exactly once at every
-//! concurrency limit, and a panic must become that file's finding.
+//! What:
+//!  Controls for bounded workers,
+//!  result ordering and panic containment.
+//! Why:
+//!  Output must not depend on scheduling,
+//!  every plan must be processed exactly once at every
+//! concurrency limit,
+//!  and a panic must become that file's finding.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -20,7 +25,8 @@ use crate::rust_file_engine::RustFileEngine;
 use crate::rust_workspace::WorkspacePreparation;
 use crate::test_fs::Fixture;
 
-/// Discard workspace progress; no test here loads a workspace.
+/// Discard workspace progress;
+///  no test here loads a workspace.
 fn progress(_message: String) {}
 
 /// An engine that must never be asked to load anything in these tests.
@@ -181,11 +187,18 @@ fn in_memory_processing_passes_ordinary_outcomes_through() {
     assert!(outcome.findings.is_empty());
 }
 
-/// Worker threads get the main thread's usual 8 MiB stack, so nesting that a default 2 MiB thread
-/// stack cannot hold still parses there. The Rust parser recurses once per parenthesis: in the bounded
+/// Worker threads get the main thread's usual 8 MiB stack,
+///  so nesting that a default 2 MiB thread
+/// stack cannot hold still parses there.
+///  The Rust parser recurses once per parenthesis:
+///  in the bounded
 /// container the debug executable needed more than 3 MiB and at most 4 MiB of main-thread stack for
-/// this depth (`ulimit -s` 3072 KiB overflowed, 4096 KiB passed). A smaller worker stack, or running
-/// these files on this 2 MiB test thread instead of on workers, overflows and aborts the test binary.
+/// this depth (`ulimit -s` 3072 KiB overflowed,
+///  4096 KiB passed).
+///  A smaller worker stack,
+///  or running
+/// these files on this 2 MiB test thread instead of on workers,
+///  overflows and aborts the test binary.
 #[test]
 fn workers_parse_nesting_deeper_than_a_default_thread_stack_holds() {
     let fixture: Fixture = Fixture::new();
@@ -212,12 +225,17 @@ fn workers_parse_nesting_deeper_than_a_default_thread_stack_holds() {
     }
 }
 
-/// Stack bytes the probe must use below its thread's first frame: 7.5 MiB, half a mebibyte under the lint
-/// stack, which leaves room for the thread's own start-up frames and its thread-local storage.
+/// Stack bytes the probe must use below its thread's first frame:
+///  7.5 MiB,
+///  half a mebibyte under the lint
+/// stack,
+///  which leaves room for the thread's own start-up frames and its thread-local storage.
 const PROBE_BYTES: usize = 7 * 1024 * 1024 + 512 * 1024;
 
-/// Recurse in frames of at least 4 KiB until the frames below `top` span `target` bytes, and return that span.
-/// The span is measured from frame addresses, so it does not depend on how large the compiler makes each frame.
+/// Recurse in frames of at least 4 KiB until the frames below `top` span `target` bytes,
+///  and return that span.
+/// The span is measured from frame addresses,
+///  so it does not depend on how large the compiler makes each frame.
 fn stack_reach(top: usize, target: usize) -> usize {
     let frame: [u8; 4096] = std::hint::black_box([0_u8; 4096]);
     let span: usize = top.abs_diff((&raw const frame).addr());
@@ -228,14 +246,19 @@ fn stack_reach(top: usize, target: usize) -> usize {
     return stack_reach(top, target).max(usize::from(std::hint::black_box(frame[0])));
 }
 
-/// Probe how much stack the current thread can use, starting from this frame.
+/// Probe how much stack the current thread can use,
+///  starting from this frame.
 fn probe_stack() -> usize {
     let anchor: u8 = std::hint::black_box(0);
     return stack_reach((&raw const anchor).addr(), PROBE_BYTES);
 }
 
-/// A thread from `lint_thread` holds 7.5 MiB of frames, so its stack is not below 8 MiB by more than its own
-/// start-up needs, and the constant is the documented 8 MiB. The nesting control passes from about 4 MiB, and every
+/// A thread from `lint_thread` holds 7.5 MiB of frames,
+///  so its stack is not below 8 MiB by more than its own
+/// start-up needs,
+///  and the constant is the documented 8 MiB.
+///  The nesting control passes from about 4 MiB,
+///  and every
 /// stack smaller than the probe's span overflows here and aborts the test binary.
 #[test]
 fn lint_threads_hold_the_documented_eight_mebibyte_stack() {
@@ -248,12 +271,15 @@ fn lint_threads_hold_the_documented_eight_mebibyte_stack() {
     assert_eq!(WORKER_STACK_BYTES, 8 * 1024 * 1024);
 }
 
-/// A writer that panics, standing in for a defect inside per-file processing.
+/// A writer that panics,
+///  standing in for a defect inside per-file processing.
 fn panicking_writer(_path: &std::path::Path, _contents: &[u8]) -> Result<(), WriteError> {
     panic!("writer exploded");
 }
 
-/// A real panic inside the contained region is caught, reported for that file, and leaves the file unchanged.
+/// A real panic inside the contained region is caught,
+///  reported for that file,
+///  and leaves the file unchanged.
 #[test]
 fn a_real_panic_is_contained_per_file() {
     let fixture: Fixture = Fixture::new();

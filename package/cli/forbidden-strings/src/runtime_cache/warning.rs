@@ -1,7 +1,8 @@
 //! Redacted cache diagnostics shared by scanner output and cli-git parsing.
 //!
 //! Every value is constructed from fixed ASCII tokens and rendered as one compact
-//! JSON line. Private token fields make an unsupported reason/recovery pairing
+//! JSON line.
+//!  Private token fields make an unsupported reason/recovery pairing
 //! unrepresentable without adding a constructor in this module.
 
 /// Cache condition recovered by compiling authoritative text.
@@ -15,9 +16,13 @@ pub(crate) enum CacheWarningReason {
     Unreadable,
     /// Envelope digest disagreed with current source content.
     SourceMismatch,
-    /// Envelope belongs to another schema, scanner, or platform.
+    /// Envelope belongs to another schema,
+    ///  scanner,
+    ///  or platform.
     Incompatible,
-    /// Envelope framing, names, or engine bytes failed validation.
+    /// Envelope framing,
+    ///  names,
+    ///  or engine bytes failed validation.
     Invalid,
 }
 

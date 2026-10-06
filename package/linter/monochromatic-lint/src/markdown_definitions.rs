@@ -1,5 +1,8 @@
-//! What: Used and unique Markdown reference definitions.
-//! Why: Reference identities come from the native parser, never a second case/whitespace normalization algorithm.
+//! What:
+//!  Used and unique Markdown reference definitions.
+//! Why:
+//!  Reference identities come from the native parser,
+//!  never a second case/whitespace normalization algorithm.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,12 +16,16 @@ use crate::edits::Edit;
 /// Import the common diagnostic builder and original-source view.
 use crate::markdown_finding::finding;
 use crate::markdown_source::MarkdownSource;
-/// Import typed payload decoders; identifiers are already normalized by the parser.
+/// Import typed payload decoders;
+///  identifiers are already normalized by the parser.
 use satteri_ast::mdast::{
     DefinitionData, MdastNodeType, ReferenceData, decode_definition_data, decode_reference_data,
 };
-/// What: BTreeSet keeps unique owned String values, unlike Vec which would need repeated linear scans.
-/// Why: Owned String identifiers avoid carrying borrowed &str lifetimes between traversal passes.
+/// What:
+///  BTreeSet keeps unique owned String values,
+///  unlike Vec which would need repeated linear scans.
+/// Why:
+///  Owned String identifiers avoid carrying borrowed &str lifetimes between traversal passes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,8 +33,11 @@ use satteri_ast::mdast::{
 /// ```
 use std::collections::BTreeSet;
 
-/// What: Delete a definition without joining adjacent container lines.
-/// Why: Whole-line removal is safe for whitespace-only prefixes; quote/list prefixes must retain their line ending.
+/// What:
+///  Delete a definition without joining adjacent container lines.
+/// Why:
+///  Whole-line removal is safe for whitespace-only prefixes;
+///  quote/list prefixes must retain their line ending.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,8 +95,10 @@ fn removal_edit(context: &MarkdownSource, id: u32) -> Edit {
     };
 }
 
-/// What: Return findings for unused definitions and later definitions of a used identifier.
-/// Why: Two passes account for references preceding or following their definitions.
+/// What:
+///  Return findings for unused definitions and later definitions of a used identifier.
+/// Why:
+///  Two passes account for references preceding or following their definitions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

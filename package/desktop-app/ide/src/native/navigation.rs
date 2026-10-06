@@ -1,10 +1,14 @@
-//! Native project tree, bounded directory refresh, and successful-file navigation.
+//! Native project tree,
+//!  bounded directory refresh,
+//!  and successful-file navigation.
 
 /// One source owner and one native window remain independent of background filesystem reads.
 use super::{AppWindow, State};
 /// Startup failures must not silently disable project navigation.
 use anyhow::Result;
-/// Reuse filesystem-free tree state, bounded workers, and editord-compatible session-local history.
+/// Reuse filesystem-free tree state,
+///  bounded workers,
+///  and editord-compatible session-local history.
 use ide_app::{
     change_watch::ChangeWatcher,
     directory_worker::DirectoryWorker,
@@ -25,7 +29,9 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Click, directory-navigation, and Ctrl+digit bindings.
+/// Click,
+///  directory-navigation,
+///  and Ctrl+digit bindings.
 mod actions;
 /// Content results set a reading position only after their file is successfully available.
 mod line;
@@ -43,9 +49,11 @@ mod watch;
 /// Language targets in other files open through the same latest-request-wins path as tree rows.
 pub(super) use open::request_jump;
 
-/// All tree interaction stays on the native event-loop thread; its fields stay private to navigation.
+/// All tree interaction stays on the native event-loop thread;
+///  its fields stay private to navigation.
 pub(super) struct Navigation {
-    /// Sole canonical root, also used for visible project context.
+    /// Sole canonical root,
+    ///  also used for visible project context.
     workspace: Workspace,
     /// Cached directory snapshots and expansion/request state.
     tree: FileTree,
@@ -55,21 +63,31 @@ pub(super) struct Navigation {
     reader_available: bool,
     /// Path associated with the current directory reply for diagnostic recovery.
     reading: Option<PathBuf>,
-    /// Last requested directory read; a failed first listing is retried at most this often plus 500 ms.
+    /// Last requested directory read;
+    ///  a failed first listing is retried at most this often plus 500 ms.
     last_read: Option<Instant>,
-    /// inotify watches for `shown` and the displayed file's directory; events only mark reads due.
+    /// inotify watches for `shown` and the displayed file's directory;
+    ///  events only mark reads due.
     watcher: ChangeWatcher,
-    /// Which shown directory to reread next: notified, unwatched on the old timer, or the safety sweep.
+    /// Which shown directory to reread next:
+    ///  notified,
+    ///  unwatched on the old timer,
+    ///  or the safety sweep.
     directories: DirectoryRefresh,
-    /// The root plus visible expanded folders, in visible order; exactly the watched tree directories.
+    /// The root plus visible expanded folders,
+    ///  in visible order;
+    ///  exactly the watched tree directories.
     shown: Vec<PathBuf>,
-    /// Directories with a live watch, as last reported by the watcher.
+    /// Directories with a live watch,
+    ///  as last reported by the watcher.
     watched: BTreeSet<PathBuf>,
-    /// Latest directory failure; unrelated successes must not erase its diagnostic.
+    /// Latest directory failure;
+    ///  unrelated successes must not erase its diagnostic.
     directory_error: Option<(PathBuf, String)>,
     /// Background source opens retain only the latest requested target.
     opener: FileOpener,
-    /// Optional search line belongs to the latest file-open intent, never an older reply.
+    /// Optional search line belongs to the latest file-open intent,
+    ///  never an older reply.
     pending_line: Option<usize>,
     /// Transient search worker and input state remain window-local.
     search: search::Search,
@@ -82,7 +100,8 @@ pub(super) struct Navigation {
 }
 
 /// Start navigation against the canonical root without synchronously enumerating its directories.
-/// Window tests without language navigation keep only the timer; the application uses `bind_shared`.
+/// Window tests without language navigation keep only the timer;
+///  the application uses `bind_shared`.
 #[cfg(test)]
 pub(super) fn bind(
     window: &AppWindow,
@@ -93,10 +112,17 @@ pub(super) fn bind(
     return bind_shared(window, source, workspace).map(|(timer, _navigation)| return timer);
 }
 
-/// What: Start navigation and also return its shared state. `(Timer, Rc<RefCell<Navigation>>)`
-///       is a pair: the polling timer and the state the timer and callbacks share.
-/// Why: The Language module opens definition and reference targets through this state, so they
-///      get history, tree reveal, and the latest-request-wins rule of every other open.
+/// What:
+///  Start navigation and also return its shared state.
+///  `(Timer, Rc<RefCell<Navigation>>)`
+///       is a pair:
+///  the polling timer and the state the timer and callbacks share.
+/// Why:
+///  The Language module opens definition and reference targets through this state,
+///  so they
+///      get history,
+///  tree reveal,
+///  and the latest-request-wins rule of every other open.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

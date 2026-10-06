@@ -1,8 +1,15 @@
-//! Match choice relative to the reading selection: active index, next, previous, wrapping, and validity.
+//! Match choice relative to the reading selection:
+//!  active index,
+//!  next,
+//!  previous,
+//!  wrapping,
+//!  and validity.
 
-/// Production matches feed the navigation helpers, so both are exercised together.
+/// Production matches feed the navigation helpers,
+///  so both are exercised together.
 use ide_app::find::{FindMatches, MAX_FIND_MATCHES, find_matches};
-/// The helpers under test are pure; the native bar only applies their answers.
+/// The helpers under test are pure;
+///  the native bar only applies their answers.
 use ide_app::find_navigation::{
     FindResults, active, at_or_after, at_or_before, navigable_matches, paint_ranges,
     positioned_matches, status, visible,
@@ -10,7 +17,9 @@ use ide_app::find_navigation::{
 /// Accepted results are tagged exactly like worker replies.
 use ide_app::find_worker::FindIdentity;
 
-/// Three matches at 0..2, 6..8, and 12..14 with gaps between them.
+/// Three matches at 0..2,
+///  6..8,
+///  and 12..14 with gaps between them.
 fn matches() -> FindMatches {
     // What: `expect` extracts the successful matches or fails the test with this message.
     // Why: The fixture query is valid, so an error would be a defect in the matcher.
@@ -102,7 +111,10 @@ fn visible_window_selects_intersecting_matches_only() {
     assert_eq!(visible(&[], 0, 10).len(), 0);
 }
 
-/// The count text distinguishes an active match, no active match, truncation, and no match.
+/// The count text distinguishes an active match,
+///  no active match,
+///  truncation,
+///  and no match.
 #[test]
 fn status_text_names_active_total_truncation_and_no_match() {
     let found = matches();
@@ -127,7 +139,10 @@ fn status_text_names_active_total_truncation_and_no_match() {
     assert!(absent.no_match);
 }
 
-/// The tag of the accepted fixture results: file generation 3, revision 5, query 7.
+/// The tag of the accepted fixture results:
+///  file generation 3,
+///  revision 5,
+///  query 7.
 fn accepted_identity() -> FindIdentity {
     return FindIdentity {
         file: 3,
@@ -169,7 +184,9 @@ fn results_are_painted_only_for_their_file_generation_and_revision() {
     assert!(positioned_matches(&None, 3, 5).is_none());
 }
 
-/// Enter must not step through matches of another file, revision, or superseded find text.
+/// Enter must not step through matches of another file,
+///  revision,
+///  or superseded find text.
 #[test]
 fn results_are_navigable_only_for_their_exact_identity() {
     let accepted = Some(FindResults::new(accepted_identity(), matches()));

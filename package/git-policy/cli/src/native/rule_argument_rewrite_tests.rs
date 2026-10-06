@@ -1,5 +1,7 @@
-//! What: Token insertion positions for fixed transforms.
-//! Why: An off-by-one would put `-o` before `commit` or after a pathspec.
+//! What:
+//!  Token insertion positions for fixed transforms.
+//! Why:
+//!  An off-by-one would put `-o` before `commit` or after a pathspec.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,7 +13,8 @@ use super::insert_tokens;
 use crate::command_test_support::os_arguments;
 use std::ffi::OsString;
 
-/// Tokens land before the indexed argument, or at the end when the index is the length.
+/// Tokens land before the indexed argument,
+///  or at the end when the index is the length.
 #[test]
 fn inserts_before_the_indexed_argument() {
     let arguments: Vec<OsString> = os_arguments(&["a", "b"]);

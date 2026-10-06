@@ -1,5 +1,7 @@
-//! What: Add-only semantic line breaks at verified prose boundaries.
-//! Why: Text-node tails must be interpreted through their inline delimiters and surrounding block syntax.
+//! What:
+//!  Add-only semantic line breaks at verified prose boundaries.
+//! Why:
+//!  Text-node tails must be interpreted through their inline delimiters and surrounding block syntax.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -18,7 +20,8 @@ use crate::markdown_prose_context::{continuation_prefix, delimiter_tail, paragra
 use crate::markdown_source::MarkdownSource;
 use satteri_ast::mdast::MdastNodeType;
 
-/// Report missing line breaks at their insertion points, not at the paragraph's beginning.
+/// Report missing line breaks at their insertion points,
+///  not at the paragraph's beginning.
 pub fn semantic_line_breaks(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
     // Match the incumbent's CRLF preference; existing breaks of either kind remain untouched.
     let newline: &str = if context.source.contains("\r\n") {

@@ -1,5 +1,8 @@
-//! What: Find the real Git executable on PATH without ever selecting this wrapper.
-//! Why: The wrapper is installed as `git` ahead of real Git; forwarding needs the
+//! What:
+//!  Find the real Git executable on PATH without ever selecting this wrapper.
+//! Why:
+//!  The wrapper is installed as `git` ahead of real Git;
+//!  forwarding needs the
 //!      first usable candidate that is not a cli-git wrapper.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,10 @@
 //! // const gitPath = resolveRealGit(processResolutionInputs()); // '/usr/bin/git'
 //! ```
 
-/// What: `use super::...` imports sibling modules of this crate.
-/// Why:  Inputs are read with getenv semantics and each candidate is classified by
+/// What:
+///  `use super::...` imports sibling modules of this crate.
+/// Why:
+///   Inputs are read with getenv semantics and each candidate is classified by
 ///       the self-exclusion rules.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,9 +22,11 @@
 /// ```
 use super::child_environment::environment_value;
 use super::real_git_candidate::{CandidateKind, classify_candidate};
-/// What: `OsStr`/`OsString` are borrowed/owned operating-system text of raw OS bytes
+/// What:
+///  `OsStr`/`OsString` are borrowed/owned operating-system text of raw OS bytes
 ///       (siblings `&str`/`String` must be UTF-8).
-/// Why:  PATH entries and executable paths need not be UTF-8.
+/// Why:
+///   PATH entries and executable paths need not be UTF-8.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,10 +39,15 @@ use std::path::{Path, PathBuf};
 /// Windows executable extensions in shell lookup order when `PATHEXT` is unset.
 pub const DEFAULT_WINDOWS_PATH_EXTENSIONS: &str = ".COM;.EXE;.BAT;.CMD";
 
-/// What: Which operating-system family's lookup rules apply.
-///       `#[derive(...)]` generates copying, debug printing and `==`.
-/// Why:  Executable names, conventional install locations and path identity differ by
-///       family; passing the family as a value keeps every branch testable on one host.
+/// What:
+///  Which operating-system family's lookup rules apply.
+///       `#[derive(...)]` generates copying,
+///  debug printing and `==`.
+/// Why:
+///   Executable names,
+///  conventional install locations and path identity differ by
+///       family;
+///  passing the family as a value keeps every branch testable on one host.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,17 +55,25 @@ pub const DEFAULT_WINDOWS_PATH_EXTENSIONS: &str = ".COM;.EXE;.BAT;.CMD";
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Platform {
-    /// Linux and other Unix-like systems: `git`, case-sensitive paths.
+    /// Linux and other Unix-like systems:
+    ///  `git`,
+    ///  case-sensitive paths.
     Unix,
-    /// macOS: Unix rules plus Homebrew and MacPorts locations.
+    /// macOS:
+    ///  Unix rules plus Homebrew and MacPorts locations.
     MacOs,
-    /// Windows: `git` plus `PATHEXT` extensions, case-insensitive paths.
+    /// Windows:
+    ///  `git` plus `PATHEXT` extensions,
+    ///  case-insensitive paths.
     Windows,
 }
 
-/// What: Everything resolution reads from the process, gathered into one value.
+/// What:
+///  Everything resolution reads from the process,
+///  gathered into one value.
 ///       `Vec<PathBuf>` is an owned list of owned paths.
-/// Why:  Tests inject a disposable PATH and executable identity instead of mutating
+/// Why:
+///   Tests inject a disposable PATH and executable identity instead of mutating
 ///       the real process environment.
 ///
 /// In TS you'd write (pseudocode):
@@ -65,21 +85,27 @@ pub enum Platform {
 pub struct ResolutionInputs {
     /// Lookup rules to apply.
     pub platform: Platform,
-    /// The `PATH` value; empty when unset.
+    /// The `PATH` value;
+    ///  empty when unset.
     pub path: OsString,
-    /// The `PATHEXT` value; only read on Windows.
+    /// The `PATHEXT` value;
+    ///  only read on Windows.
     pub path_extensions: OsString,
     /// Directory that relative PATH entries are resolved against.
     pub current_directory: PathBuf,
     /// Conventional Git locations promoted to the front when PATH exposes them.
     pub common_paths: Vec<PathBuf>,
-    /// This wrapper's own executable, excluded from selection.
+    /// This wrapper's own executable,
+    ///  excluded from selection.
     pub own_executable: PathBuf,
 }
 
-/// What: The failure when no PATH candidate can act as real Git.
-///       `usize` counts items; it is the length type of every Rust list.
-/// Why:  The counts tell the user whether Git is missing or only wrappers were found.
+/// What:
+///  The failure when no PATH candidate can act as real Git.
+///       `usize` counts items;
+///  it is the length type of every Rust list.
+/// Why:
+///   The counts tell the user whether Git is missing or only wrappers were found.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -93,15 +119,19 @@ pub struct RealGitNotFound {
     pub skipped_wrapper_count: usize,
 }
 
-/// What: `impl std::fmt::Display for ...` supplies Rust's "print me" interface.
-/// Why:  The executable prints the same guidance the TypeScript resolver gave.
+/// What:
+///  `impl std::fmt::Display for ...` supplies Rust's "print me" interface.
+/// Why:
+///   The executable prints the same guidance the TypeScript resolver gave.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// toString(): string { return `Could not find a real Git executable ...`; }
 /// ```
 impl std::fmt::Display for RealGitNotFound {
-    /// `&self` borrows the failure; `&mut` lends the formatter for writing; `'_` is an unnamed lifetime.
+    /// `&self` borrows the failure;
+    ///  `&mut` lends the formatter for writing;
+    ///  `'_` is an unnamed lifetime.
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // `write!` formats into the borrowed formatter and returns its result.
         return write!(
@@ -117,9 +147,15 @@ impl std::fmt::Display for RealGitNotFound {
 /// An empty `impl` marks the type as a standard error value.
 impl std::error::Error for RealGitNotFound {}
 
-/// What: List the file names PATH lookup tries, in order.
-/// Why:  Unix runs `git`; Windows tries `git` plus each `PATHEXT` extension, adding a
-///       missing leading dot. An extension that is not UTF-8 cannot name a file
+/// What:
+///  List the file names PATH lookup tries,
+///  in order.
+/// Why:
+///   Unix runs `git`;
+///  Windows tries `git` plus each `PATHEXT` extension,
+///  adding a
+///       missing leading dot.
+///  An extension that is not UTF-8 cannot name a file
 ///       portably and is skipped.
 ///
 /// In TS you'd write (pseudocode):
@@ -157,16 +193,22 @@ pub fn executable_names(platform: Platform, path_extensions: &OsStr) -> Vec<OsSt
     return names;
 }
 
-/// Named predicate for splitting `PATHEXT`; `&u8` borrows one byte.
+/// Named predicate for splitting `PATHEXT`;
+///  `&u8` borrows one byte.
 fn is_semicolon(byte: &u8) -> bool {
     return *byte == b';';
 }
 
-/// What: List conventional Git install locations for a platform.
+/// What:
+///  List conventional Git install locations for a platform.
 ///       `&[(OsString, OsString)]` borrows the environment as name/value pairs.
-/// Why:  A conventional location wins over an earlier PATH entry, so a stray `git`
-///       script early on PATH cannot displace the system Git. Windows roots come from
-///       the environment; a trailing separator on a root is dropped before joining.
+/// Why:
+///   A conventional location wins over an earlier PATH entry,
+///  so a stray `git`
+///       script early on PATH cannot displace the system Git.
+///  Windows roots come from
+///       the environment;
+///  a trailing separator on a root is dropped before joining.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -216,8 +258,10 @@ pub fn common_git_paths(platform: Platform, environment: &[(OsString, OsString)]
     return paths;
 }
 
-/// What: Copy a Windows root without trailing `\` or `/` separators.
-/// Why:  Joining `C:\Program Files\` and `\Git` must not produce a doubled separator
+/// What:
+///  Copy a Windows root without trailing `\` or `/` separators.
+/// Why:
+///   Joining `C:\Program Files\` and `\Git` must not produce a doubled separator
 ///       that no PATH candidate would equal.
 ///
 /// In TS you'd write (pseudocode):
@@ -244,8 +288,12 @@ fn trimmed_root(root: &OsStr) -> OsString {
     }
 }
 
-/// What: The form of a path used to compare candidates for equality.
-/// Why:  Windows paths are case-insensitive; ASCII case is folded there. Other
+/// What:
+///  The form of a path used to compare candidates for equality.
+/// Why:
+///   Windows paths are case-insensitive;
+///  ASCII case is folded there.
+///  Other
 ///       platforms compare the exact bytes.
 ///
 /// In TS you'd write (pseudocode):
@@ -259,9 +307,14 @@ fn candidate_identity(path: &Path, platform: Platform) -> OsString {
     return path.as_os_str().to_os_string();
 }
 
-/// What: Rebuild a path from its components.
-/// Why:  This removes `.` segments and repeated separators, so `/usr/./bin//git` and
-///       `/usr/bin/git` compare equal. `..` is kept: resolving it without the
+/// What:
+///  Rebuild a path from its components.
+/// Why:
+///   This removes `.` segments and repeated separators,
+///  so `/usr/./bin//git` and
+///       `/usr/bin/git` compare equal.
+///  `..` is kept:
+///  resolving it without the
 ///       filesystem would be wrong across symbolic links.
 ///
 /// In TS you'd write (pseudocode):
@@ -277,10 +330,15 @@ fn lexically_tidied(path: &Path) -> PathBuf {
     return result;
 }
 
-/// What: Build the ordered, de-duplicated list of absolute candidates.
-/// Why:  Every PATH directory contributes each executable name in order; conventional
+/// What:
+///  Build the ordered,
+///  de-duplicated list of absolute candidates.
+/// Why:
+///   Every PATH directory contributes each executable name in order;
+///  conventional
 ///       locations that PATH exposes are promoted to the front in their PATH spelling.
-///       Relative PATH entries are resolved against the current directory, as a shell does.
+///       Relative PATH entries are resolved against the current directory,
+///  as a shell does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -318,9 +376,13 @@ pub fn candidate_sequence(inputs: &ResolutionInputs) -> Vec<PathBuf> {
     return sequence;
 }
 
-/// What: Select the first candidate that is real Git.
+/// What:
+///  Select the first candidate that is real Git.
 ///       `Result<PathBuf, RealGitNotFound>` is the selected path or the typed failure.
-/// Why:  Wrappers are skipped and counted, unusable entries are skipped, and the
+/// Why:
+///   Wrappers are skipped and counted,
+///  unusable entries are skipped,
+///  and the
 ///       first remaining candidate in priority order is forwarded to.
 ///
 /// In TS you'd write (pseudocode):
@@ -348,9 +410,12 @@ pub fn resolve_real_git(inputs: &ResolutionInputs) -> Result<PathBuf, RealGitNot
     });
 }
 
-/// What: The lookup rules of the platform this executable was compiled for.
+/// What:
+///  The lookup rules of the platform this executable was compiled for.
 ///       `cfg!(...)` is a compile-time `true`/`false` about the target platform.
-/// Why:  Production uses the host's rules; tests pass a platform explicitly.
+/// Why:
+///   Production uses the host's rules;
+///  tests pass a platform explicitly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -366,10 +431,14 @@ pub fn host_platform() -> Platform {
     return Platform::Unix;
 }
 
-/// What: Gather resolution inputs from the running process.
+/// What:
+///  Gather resolution inputs from the running process.
 ///       `std::io::Result<T>` is `Result<T, std::io::Error>`.
-/// Why:  The wrapper must know its own executable to exclude it; if the operating
-///       system cannot report it (or the current directory), resolution fails rather
+/// Why:
+///   The wrapper must know its own executable to exclude it;
+///  if the operating
+///       system cannot report it (or the current directory),
+///  resolution fails rather
 ///       than risk selecting itself.
 ///
 /// In TS you'd write (pseudocode):

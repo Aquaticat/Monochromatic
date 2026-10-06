@@ -1,16 +1,24 @@
-//! Settings of one scripted-server run, read once from `IDE_SCRIPTED_*` environment variables.
+//! Settings of one scripted-server run,
+//!  read once from `IDE_SCRIPTED_*` environment variables.
 
-/// What: `Value` is a decoded JSON value of any shape, like TS's `unknown` from `JSON.parse`.
-/// Why: Tests hand whole definition and reference results to the server as JSON text.
+/// What:
+///  `Value` is a decoded JSON value of any shape,
+///  like TS's `unknown` from `JSON.parse`.
+/// Why:
+///  Tests hand whole definition and reference results to the server as JSON text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Value = unknown;
 /// ```
 use serde_json::Value;
-/// What: `env` reads process environment variables; `PathBuf` is an owned filesystem path
-///       (sibling: borrowed `&Path`).
-/// Why: Tests configure the server through the same `environment` table real servers receive.
+/// What:
+///  `env` reads process environment variables;
+///  `PathBuf` is an owned filesystem path
+///       (sibling:
+///  borrowed `&Path`).
+/// Why:
+///  Tests configure the server through the same `environment` table real servers receive.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,9 +26,12 @@ use serde_json::Value;
 /// ```
 use std::{env, path::PathBuf};
 
-/// What: A closed set of names for the column unit of protocol positions. `Copy` lets a value
+/// What:
+///  A closed set of names for the column unit of protocol positions.
+///  `Copy` lets a value
 ///       be passed like a number.
-/// Why: The client must convert positions for whichever unit the server announces.
+/// Why:
+///  The client must convert positions for whichever unit the server announces.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,7 +41,8 @@ use std::{env, path::PathBuf};
 pub enum Unit {
     /// Columns count bytes.
     Utf8,
-    /// Columns count UTF-16 code units; the protocol's default.
+    /// Columns count UTF-16 code units;
+    ///  the protocol's default.
     Utf16,
     /// Columns count characters.
     Utf32,
@@ -62,21 +74,29 @@ pub enum Init {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Hover {
-    /// Answer, after the configured delay.
+    /// Answer,
+    ///  after the configured delay.
     Answer,
     /// Exit with status 7 without answering.
     Crash,
     /// Always answer with error `-32801` (content modified).
     Modified,
-    /// Answer the first request with `-32801`, later ones normally.
+    /// Answer the first request with `-32801`,
+    ///  later ones normally.
     ModifiedOnce,
     /// Never answer.
     Silent,
 }
 
-/// What: One record of every setting. `Option<...>` fields are "a value, or nothing";
-///       `u64` is an unsigned 64-bit integer (siblings: `u32`, `usize`).
-/// Why: Reading the environment once keeps the handlers free of string lookups.
+/// What:
+///  One record of every setting.
+///  `Option<...>` fields are "a value,
+///  or nothing";
+///       `u64` is an unsigned 64-bit integer (siblings:
+///  `u32`,
+///  `usize`).
+/// Why:
+///  Reading the environment once keeps the handlers free of string lookups.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -84,14 +104,20 @@ pub enum Hover {
 /// ```
 #[derive(Clone, Debug)]
 pub struct Script {
-    /// Announced position encoding; absent means none is announced, which means UTF-16.
+    /// Announced position encoding;
+    ///  absent means none is announced,
+    ///  which means UTF-16.
     pub encoding: Option<Unit>,
-    /// Announced `textDocumentSync.change` (0 none, 1 full, 2 incremental); absent means the
+    /// Announced `textDocumentSync.change` (0 none,
+    ///  1 full,
+    ///  2 incremental);
+    ///  absent means the
     /// capability is omitted entirely.
     pub sync: Option<u64>,
     /// Behavior on `initialize`.
     pub init: Init,
-    /// When false, only synchronization and hover are announced.
+    /// When false,
+    ///  only synchronization and hover are announced.
     pub all_features: bool,
     /// Behavior on hover requests.
     pub hover: Hover,
@@ -101,15 +127,18 @@ pub struct Script {
     pub versioned_diagnostics: bool,
     /// Push diagnostics after every open and change.
     pub push_diagnostics: bool,
-    /// Push diagnostics again after every hover answer, as a server with delayed analysis does.
+    /// Push diagnostics again after every hover answer,
+    ///  as a server with delayed analysis does.
     pub push_after_hover: bool,
     /// Milliseconds to wait before answering `initialize`.
     pub init_delay: u64,
     /// Milliseconds the read loop sleeps before it handles the first message of `stall_at`;
-    /// everything the client sends meanwhile waits unread, as behind a server that stopped
+    /// everything the client sends meanwhile waits unread,
+    ///  as behind a server that stopped
     /// responding for a while.
     pub stall: u64,
-    /// Method whose first message starts the stall; empty text means no stall.
+    /// Method whose first message starts the stall;
+    ///  empty text means no stall.
     pub stall_at: String,
     /// Announce and answer pull diagnostics.
     pub pull_diagnostics: bool,
@@ -119,31 +148,48 @@ pub struct Script {
     pub probe: bool,
     /// File outside the project that the definition answer points at.
     pub outside: Option<PathBuf>,
-    /// File every received message and text mirror is appended to, one JSON value per line.
+    /// File every received message and text mirror is appended to,
+    ///  one JSON value per line.
     pub report: Option<PathBuf>,
-    /// What: `Option<Value>` is "a decoded JSON value, or nothing".
-    /// Why: When present, the definition answer is exactly this result, so a test can name its
-    ///      targets; absent keeps the fixed list of same-file and unavailable targets.
+    /// What:
+    ///  `Option<Value>` is "a decoded JSON value,
+    ///  or nothing".
+    /// Why:
+    ///  When present,
+    ///  the definition answer is exactly this result,
+    ///  so a test can name its
+    ///      targets;
+    ///  absent keeps the fixed list of same-file and unavailable targets.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// definition?: unknown;
     /// ```
     pub definition: Option<Value>,
-    /// When present, the references answer is exactly this result; absent keeps the fixed failure.
+    /// When present,
+    ///  the references answer is exactly this result;
+    ///  absent keeps the fixed failure.
     pub references: Option<Value>,
-    /// Ignore `exit` and stay alive after the client closed standard input, so that only a
+    /// Ignore `exit` and stay alive after the client closed standard input,
+    ///  so that only a
     /// kill ends the process.
     pub linger: bool,
-    /// One line written to standard error when `shutdown` arrives, as a real server reports its
-    /// own shutdown there, and right before the hover crash ends the process, as a crashing
-    /// server's last words; nothing when absent.
+    /// One line written to standard error when `shutdown` arrives,
+    ///  as a real server reports its
+    /// own shutdown there,
+    ///  and right before the hover crash ends the process,
+    ///  as a crashing
+    /// server's last words;
+    ///  nothing when absent.
     pub stderr_at_shutdown: Option<String>,
 }
 
-/// What: Decode the JSON text of one variable. `Option<Value>` is nothing when the variable is
+/// What:
+///  Decode the JSON text of one variable.
+///  `Option<Value>` is nothing when the variable is
 ///       unset or does not hold valid JSON.
-/// Why: A test passes a whole protocol result through the server definition's environment.
+/// Why:
+///  A test passes a whole protocol result through the server definition's environment.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -156,8 +202,12 @@ fn json(name: &str) -> Option<Value> {
     return serde_json::from_str(&read(name, "")).ok();
 }
 
-/// What: Read one variable, or the fallback when it is unset. `&str` parameters are borrowed text.
-/// Why: Every setting has a default so a test names only what it changes.
+/// What:
+///  Read one variable,
+///  or the fallback when it is unset.
+///  `&str` parameters are borrowed text.
+/// Why:
+///  Every setting has a default so a test names only what it changes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -178,7 +228,8 @@ fn read(name: &str, fallback: &str) -> String {
 
 /// Settings construction.
 impl Script {
-    /// Read every setting from the environment, applying defaults.
+    /// Read every setting from the environment,
+    ///  applying defaults.
     pub fn from_environment() -> Self {
         // What: `match` on borrowed text picks the first arm whose literal equals it; `_` is the
         //       catch-all arm.

@@ -1,15 +1,21 @@
-//! What: Immutable processor snapshots and their internal mapping records.
-//! Why: Callers never reconstruct comment prefixes or synthetic positions.
+//! What:
+//!  Immutable processor snapshots and their internal mapping records.
+//! Why:
+//!  Callers never reconstruct comment prefixes or synthetic positions.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! type Mapping = { text: string; parent?: Mapping; lines: MappedLine[] };
 //! ```
 
-/// Import the host diagnostic and owned, shared snapshot handle.
+/// Import the host diagnostic and owned,
+///  shared snapshot handle.
 use crate::diagnostic::{Diagnostic, Severity};
-/// What: Arc shares immutable owned records, unlike Rc (single-thread only) or Box (one owner).
-/// Why: Sibling virtual files reuse their host snapshot without copying host bytes.
+/// What:
+///  Arc shares immutable owned records,
+///  unlike Rc (single-thread only) or Box (one owner).
+/// Why:
+///  Sibling virtual files reuse their host snapshot without copying host bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,16 +26,22 @@ use std::sync::Arc;
 /// Language determines parsing and the original host's column convention.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ProcessorLanguage {
-    /// Native Rust, including prepared doctests.
+    /// Native Rust,
+    ///  including prepared doctests.
     Rust,
-    /// Markdown, including authored Rustdoc.
+    /// Markdown,
+    ///  including authored Rustdoc.
     Markdown,
-    /// Markdown with MDX discovery enabled, never executed.
+    /// Markdown with MDX discovery enabled,
+    ///  never executed.
     Mdx,
 }
 
-/// What: A typed refusal to extract, map or project unsupported source.
-/// Why: Inability to check is not an ordinary rule violation.
+/// What:
+///  A typed refusal to extract,
+///  map or project unsupported source.
+/// Why:
+///  Inability to check is not an ordinary rule violation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,10 +72,12 @@ impl std::fmt::Display for ProcessorError {
 /// Allow orchestration to propagate typed processor failures.
 impl std::error::Error for ProcessorError {}
 
-/// One copied physical line; synthetic text deliberately has no record.
+/// One copied physical line;
+///  synthetic text deliberately has no record.
 #[derive(Clone, Debug)]
 pub(crate) struct MappedLine {
-    /// Virtual half-open byte range, including its original newline.
+    /// Virtual half-open byte range,
+    ///  including its original newline.
     pub start: usize,
     /// Virtual exclusive byte end.
     pub end: usize,
@@ -78,11 +92,13 @@ pub(crate) struct MappedLine {
 /// Native re-extraction operation that proves a projected rewrite kept its container.
 #[derive(Clone, Debug)]
 pub(crate) enum Guard {
-    /// Physical host, with no extraction.
+    /// Physical host,
+    ///  with no extraction.
     Root,
     /// Fence marker's original byte address.
     Fence { marker: usize },
-    /// Physical line start of an authored comment run, or block marker address.
+    /// Physical line start of an authored comment run,
+    ///  or block marker address.
     Docs { anchor: usize },
     /// Hidden-line stripping and synthetic-main preparation.
     Prepared,
@@ -91,7 +107,8 @@ pub(crate) enum Guard {
 /// Exact child snapshot with its immutable direct parent and verification operation.
 #[derive(Clone, Debug)]
 pub(crate) struct Mapping {
-    /// Logical configuration path, not the display host filename.
+    /// Logical configuration path,
+    ///  not the display host filename.
     pub filename: String,
     /// Exact copied/prepared virtual bytes.
     pub text: String,

@@ -1,4 +1,6 @@
-//! Typography changes pass through the actual source-image, selection, and toolkit snapshot bindings.
+//! Typography changes pass through the actual source-image,
+//!  selection,
+//!  and toolkit snapshot bindings.
 
 /// Reuse the production window and rendering state rather than a lookalike Text widget.
 use super::{AppWindow, State, render};
@@ -8,8 +10,12 @@ use ide_app::document::ReadingPosition;
 use ide_app::{shaped_text::TextShaper, source_typography::SourceTypography};
 /// Flush pending property changes before taking the consumer's displayed pixels.
 use slint::{ComponentHandle, platform::update_timers_and_animations};
-/// What: Rc owns UI-thread shared state; RefCell checks temporary exclusive borrows.
-/// Why: Unlike Arc/Mutex, these match the production single-threaded callback boundary.
+/// What:
+///  Rc owns UI-thread shared state;
+///  RefCell checks temporary exclusive borrows.
+/// Why:
+///  Unlike Arc/Mutex,
+///  these match the production single-threaded callback boundary.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,7 +23,9 @@ use slint::{ComponentHandle, platform::update_timers_and_animations};
 /// ```
 use std::{cell::RefCell, rc::Rc};
 
-/// Install a new immutable shaper, invalidate its frame, and capture the real source view.
+/// Install a new immutable shaper,
+///  invalidate its frame,
+///  and capture the real source view.
 fn capture(window: &AppWindow, state: &Rc<RefCell<State>>, weight: f32, italic: bool) -> Vec<u8> {
     // What: borrow_mut lends the state exclusively until this inner block ends.
     // Why: Release the borrow before toolkit setters can invoke rendering callbacks.

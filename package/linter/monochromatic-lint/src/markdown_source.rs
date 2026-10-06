@@ -1,5 +1,9 @@
-//! What: The owned native Markdown/MDX parse and byte-safe source interface.
-//! Why: Rules share one arena, retain original source offsets, and never execute MDX code.
+//! What:
+//!  The owned native Markdown/MDX parse and byte-safe source interface.
+//! Why:
+//!  Rules share one arena,
+//!  retain original source offsets,
+//!  and never execute MDX code.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -15,8 +19,10 @@ use satteri_pulldown_cmark::{Options, parse};
 /// Import panic containment and the common diagnostic span.
 use std::panic::catch_unwind;
 
-/// What: A parser or native-tree failure with an original-source byte position.
-/// Why: The engine reports one processing failure instead of attempting fixes on an invalid parse.
+/// What:
+///  A parser or native-tree failure with an original-source byte position.
+/// Why:
+///  The engine reports one processing failure instead of attempting fixes on an invalid parse.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,13 +32,15 @@ use std::panic::catch_unwind;
 pub struct MarkdownError {
     /// Explanation supplied to the per-file processing finding.
     pub message: String,
-    /// Original-source byte location, including any leading BOM.
+    /// Original-source byte location,
+    ///  including any leading BOM.
     pub offset: usize,
 }
 
 /// Render parser failures through ordinary application error handling.
 impl std::fmt::Display for MarkdownError {
-    /// Emit only the stored explanation; the caller owns filename and position rendering.
+    /// Emit only the stored explanation;
+    ///  the caller owns filename and position rendering.
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         return formatter.write_str(self.message.as_str());
     }
@@ -41,8 +49,10 @@ impl std::fmt::Display for MarkdownError {
 /// Mark parser failures as standard errors.
 impl std::error::Error for MarkdownError {}
 
-/// What: Exact source plus an arena and validated traversal indexes.
-/// Why: Arena ids and byte offsets avoid the TypeScript wrapper's extra Unicode-offset conversion.
+/// What:
+///  Exact source plus an arena and validated traversal indexes.
+/// Why:
+///  Arena ids and byte offsets avoid the TypeScript wrapper's extra Unicode-offset conversion.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -51,21 +61,25 @@ impl std::error::Error for MarkdownError {}
 pub struct MarkdownSource {
     /// Filename or virtual name until processor mapping assigns its host.
     pub filename: String,
-    /// Exact original source, including a leading BOM if present.
+    /// Exact original source,
+    ///  including a leading BOM if present.
     pub source: String,
     /// Whether MDX syntax was enabled for this input.
     pub mdx: bool,
-    /// Parsed tree; string and type-data reads stay behind this module's methods.
+    /// Parsed tree;
+    ///  string and type-data reads stay behind this module's methods.
     arena: Arena<Mdast>,
     /// Source bytes stripped by the parser before producing offsets.
     bom: usize,
     /// Original-source line and UTF-16 position index.
     positions: MarkdownPositions,
-    /// Reachable nodes in source-tree order, including MDX subtrees.
+    /// Reachable nodes in source-tree order,
+    ///  including MDX subtrees.
     all_nodes: Vec<u32>,
     /// Rule-visible nodes with MDX nodes and their subtrees excluded.
     visible_nodes: Vec<u32>,
-    /// Parents derived from reachable child edges, rather than trusting separate parser metadata.
+    /// Parents derived from reachable child edges,
+    ///  rather than trusting separate parser metadata.
     parents: Vec<u32>,
 }
 
@@ -75,12 +89,16 @@ struct Traversal {
     all: Vec<u32>,
     /// Prose-rule-visible nodes.
     visible: Vec<u32>,
-    /// Reachable parent per node; u32::MAX is the root's absence sentinel.
+    /// Reachable parent per node;
+    ///  u32::MAX is the root's absence sentinel.
     parents: Vec<u32>,
 }
 
-/// What: The existing prose walker excludes MDX code and its descendants.
-/// Why: JSX, ESM and expression bodies are not Markdown prose-rule inputs.
+/// What:
+///  The existing prose walker excludes MDX code and its descendants.
+/// Why:
+///  JSX,
+///  ESM and expression bodies are not Markdown prose-rule inputs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -97,8 +115,10 @@ fn is_mdx(kind: MdastNodeType) -> bool {
     );
 }
 
-/// What: Validate reachable tree nodes and produce iterative traversal lists.
-/// Why: Invalid native ranges or repeated child references must not become unchecked slices or an endless walk.
+/// What:
+///  Validate reachable tree nodes and produce iterative traversal lists.
+/// Why:
+///  Invalid native ranges or repeated child references must not become unchecked slices or an endless walk.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -184,13 +204,16 @@ fn traversal(arena: &Arena<Mdast>, source: &str, bom: usize) -> Result<Traversal
     });
 }
 
-/// Direct native-arena guard controls, independent of what malformed text the parser happens to emit.
+/// Direct native-arena guard controls,
+///  independent of what malformed text the parser happens to emit.
 #[cfg(test)]
 #[path = "markdown_traversal_tests.rs"]
 mod traversal_tests;
 
-/// What: Parse with the exact accepted feature set and expose immutable views.
-/// Why: Defaults in the dependency enable unwanted math and omit TOML frontmatter.
+/// What:
+///  Parse with the exact accepted feature set and expose immutable views.
+/// Why:
+///  Defaults in the dependency enable unwanted math and omit TOML frontmatter.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -257,7 +280,8 @@ impl MarkdownSource {
         return self.visible_nodes.as_slice();
     }
 
-    /// Borrow every reachable node for processor discovery, including nodes below JSX.
+    /// Borrow every reachable node for processor discovery,
+    ///  including nodes below JSX.
     pub fn all_nodes(&self) -> &[u32] {
         return self.all_nodes.as_slice();
     }
@@ -314,7 +338,8 @@ impl MarkdownSource {
         return self.span(start, end - start);
     }
 
-    /// Read the reachable parent, with root absence represented explicitly.
+    /// Read the reachable parent,
+    ///  with root absence represented explicitly.
     pub fn parent(&self, id: u32) -> Option<u32> {
         let parent = self.parents[id as usize];
         if parent == u32::MAX {
@@ -323,14 +348,25 @@ impl MarkdownSource {
         return Some(parent);
     }
 
-    /// What: The ancestors of a node, nearest first and ending at the root; the root itself has none.
-    /// Why: Every ancestor walk goes through this one bounded loop. In a tree each node has at most
-    /// one ancestor per other node, so a walk that has not reached the root within the document's node
-    /// count has found a cycle in the parent index, and it reports one typed error instead of looping forever.
-    /// `traversal` derives that index from a validated, cycle-free child graph, so the error marks a
-    /// defect in this crate, never a property of the Markdown input.
+    /// What:
+    ///  The ancestors of a node,
+    ///  nearest first and ending at the root;
+    ///  the root itself has none.
+    /// Why:
+    ///  Every ancestor walk goes through this one bounded loop.
+    ///  In a tree each node has at most
+    /// one ancestor per other node,
+    ///  so a walk that has not reached the root within the document's node
+    /// count has found a cycle in the parent index,
+    ///  and it reports one typed error instead of looping forever.
+    /// `traversal` derives that index from a validated,
+    ///  cycle-free child graph,
+    ///  so the error marks a
+    /// defect in this crate,
+    ///  never a property of the Markdown input.
     /// `Result<Vec<u32>, MarkdownError>` is `Ok(list)` on success or `Err(error)` in place of a throw;
-    /// `Vec<u32>` is an owned growable list, unlike a borrowed `&[u32]` view or a fixed-size `[u32; N]`.
+    /// `Vec<u32>` is an owned growable list,
+    ///  unlike a borrowed `&[u32]` view or a fixed-size `[u32; N]`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -362,8 +398,12 @@ impl MarkdownSource {
         });
     }
 
-    /// What: Whether any ancestor of `id` has the given kind; `Err` reports a parent-index cycle.
-    /// Why: Ancestry is answered from the bounded walk, never from parser-internal parent bookkeeping.
+    /// What:
+    ///  Whether any ancestor of `id` has the given kind;
+    ///  `Err` reports a parent-index cycle.
+    /// Why:
+    ///  Ancestry is answered from the bounded walk,
+    ///  never from parser-internal parent bookkeeping.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -379,12 +419,20 @@ impl MarkdownSource {
         return Ok(false);
     }
 
-    /// What: A node followed by all its descendants, in source order.
-    /// Why: Every descendant walk goes through this one bounded loop, the downward twin of `ancestors`.
-    /// A tree holds each node once, so a walk that has visited more nodes than the document has
-    /// has found a cycle in the child index, and it reports one typed error instead of
-    /// looping until memory runs out. `traversal` rejects such an index when the document is built,
-    /// so the error marks a defect in this crate, never a property of the Markdown input.
+    /// What:
+    ///  A node followed by all its descendants,
+    ///  in source order.
+    /// Why:
+    ///  Every descendant walk goes through this one bounded loop,
+    ///  the downward twin of `ancestors`.
+    /// A tree holds each node once,
+    ///  so a walk that has visited more nodes than the document has
+    /// has found a cycle in the child index,
+    ///  and it reports one typed error instead of
+    /// looping until memory runs out.
+    ///  `traversal` rejects such an index when the document is built,
+    /// so the error marks a defect in this crate,
+    ///  never a property of the Markdown input.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -417,8 +465,12 @@ impl MarkdownSource {
         });
     }
 
-    /// What: The text and inline-code values below a node, joined in source order; `Err` reports a child-index cycle.
-    /// Why: This matches the incumbent's collectText helper.
+    /// What:
+    ///  The text and inline-code values below a node,
+    ///  joined in source order;
+    ///  `Err` reports a child-index cycle.
+    /// Why:
+    ///  This matches the incumbent's collectText helper.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -436,8 +488,14 @@ impl MarkdownSource {
         return Ok(output);
     }
 
-    /// What: The text nodes below a node, in source order, for localized text edits; `Err` reports a child-index cycle.
-    /// Why: A rule edits the last text node of a heading and needs its id, not only its text.
+    /// What:
+    ///  The text nodes below a node,
+    ///  in source order,
+    ///  for localized text edits;
+    ///  `Err` reports a child-index cycle.
+    /// Why:
+    ///  A rule edits the last text node of a heading and needs its id,
+    ///  not only its text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

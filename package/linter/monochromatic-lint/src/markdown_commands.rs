@@ -1,5 +1,8 @@
-//! What: Remove shell prompts from prompt-only top-level fenced examples.
-//! Why: Commands without shown output should be copyable, while output-bearing and indented examples remain unchanged.
+//! What:
+//!  Remove shell prompts from prompt-only top-level fenced examples.
+//! Why:
+//!  Commands without shown output should be copyable,
+//!  while output-bearing and indented examples remain unchanged.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -30,8 +33,12 @@ fn all_prompts(value: &str) -> bool {
     return seen;
 }
 
-/// What: Find authored prompt prefixes without replacing normalized code-node content.
-/// Why: LF, CRLF and bare CR remain byte-identical; opening and closing fences cannot begin with a shell prompt.
+/// What:
+///  Find authored prompt prefixes without replacing normalized code-node content.
+/// Why:
+///  LF,
+///  CRLF and bare CR remain byte-identical;
+///  opening and closing fences cannot begin with a shell prompt.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

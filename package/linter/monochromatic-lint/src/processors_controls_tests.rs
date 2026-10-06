@@ -1,5 +1,8 @@
-//! What: Unsupported mappings, malformed delimiters and deterministic bounded fuzz controls.
-//! Why: A corrupting fix or clean result on unsupported input would invalidate processor verification.
+//! What:
+//!  Unsupported mappings,
+//!  malformed delimiters and deterministic bounded fuzz controls.
+//! Why:
+//!  A corrupting fix or clean result on unsupported input would invalidate processor verification.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,7 +11,8 @@
 
 /// Import the real consumer seam and immutable fixture helpers.
 use super::{Edit, Fix, ProcessorLanguage, finding, fixed, inputs};
-/// Application guards apply to original hosts, not just extracted strings.
+/// Application guards apply to original hosts,
+///  not just extracted strings.
 use crate::edits::apply_fixes;
 
 /// A forged fence closer must not escape its enclosing container.
@@ -48,7 +52,8 @@ fn processors_refuse_delimiter_injection_and_synthetic_fix_ranges() {
     );
 }
 
-/// Invalid Unicode boundaries, internal group overlap and CRLF splitting fail explicitly.
+/// Invalid Unicode boundaries,
+///  internal group overlap and CRLF splitting fail explicitly.
 #[test]
 fn processors_refuse_invalid_byte_spans_and_atomic_group_overlap() {
     let virtuals = inputs("/// 😀 text.\r\nfn item() {}\r\n", ProcessorLanguage::Rust);
@@ -89,7 +94,8 @@ fn processors_refuse_invalid_byte_spans_and_atomic_group_overlap() {
     assert!(doc.project_diagnostic(invalid).is_err());
 }
 
-/// Unclosed block docs cannot promise a safe mapping; syntax errors inside compile_fail fences remain lintable.
+/// Unclosed block docs cannot promise a safe mapping;
+///  syntax errors inside compile_fail fences remain lintable.
 #[test]
 fn processors_handle_malformed_host_delimiters_without_guessing() {
     assert!(
@@ -170,7 +176,9 @@ fn processors_prepare_main_and_hidden_escape_controls() {
     );
 }
 
-/// Generated adversarial cases vary payloads, newline grammars, fence markers and Markdown/Rustdoc containers.
+/// Generated adversarial cases vary payloads,
+///  newline grammars,
+///  fence markers and Markdown/Rustdoc containers.
 #[test]
 fn processors_bounded_fuzz_roundtrips_preserve_untouched_host_bytes() {
     let mut exercised: usize = 0;

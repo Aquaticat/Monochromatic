@@ -1,15 +1,26 @@
-//! Telling the worker about the displayed file: opens, reloads, and the visible lines for hints.
+//! Telling the worker about the displayed file:
+//!  opens,
+//!  reloads,
+//!  and the visible lines for hints.
 //!
 //! A command the worker's queue cannot take now (`Ok(false)`) is sent again on the next tick.
-//! Requests are sent only after the worker was told about the displayed text, because the worker
-//! drops, without any reply, a request for text it does not hold.
+//! Requests are sent only after the worker was told about the displayed text,
+//!  because the worker
+//! drops,
+//!  without any reply,
+//!  a request for text it does not hold.
 
 /// The language state and the surface helper that reads the displayed stamp.
 use super::{Language, surface::displayed};
 /// The window reports the scroll offset and the viewport height.
 use crate::native::{AppWindow, State};
-/// What: `anyhow::Result<bool>` is "told the worker" (true), "try again" (false), or an error.
-/// Why: An error means the worker stopped; the caller then turns language support off.
+/// What:
+///  `anyhow::Result<bool>` is "told the worker" (true),
+///  "try again" (false),
+///  or an error.
+/// Why:
+///  An error means the worker stopped;
+///  the caller then turns language support off.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,11 +29,15 @@ use crate::native::{AppWindow, State};
 use anyhow::Result;
 /// Commands and the identities they carry.
 use ide_app::language::{hints::HintWindow, identity::DocumentStamp, sync::DocumentOpen};
-/// One code row is the least a line takes, which bounds how many lines the view can show.
+/// One code row is the least a line takes,
+///  which bounds how many lines the view can show.
 use ide_app::row_map::CODE_ROW;
-/// What: `Rc<RefCell<State>>` is the window's shared source state; `Duration` and `Instant`
+/// What:
+///  `Rc<RefCell<State>>` is the window's shared source state;
+///  `Duration` and `Instant`
 ///       measure how long the visible lines stayed the same.
-/// Why: The reload record is taken out of the source state once the worker accepted it.
+/// Why:
+///  The reload record is taken out of the source state once the worker accepted it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,13 +49,20 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// How long the visible lines must stay the same before hints are asked for them. Chosen, not
-/// measured: long enough that a wheel scroll asks once at its end, short enough to feel prompt.
+/// How long the visible lines must stay the same before hints are asked for them.
+///  Chosen,
+///  not
+/// measured:
+///  long enough that a wheel scroll asks once at its end,
+///  short enough to feel prompt.
 const HINT_SETTLE: Duration = Duration::from_millis(200);
 
-/// What: The visible lines last reported and the lines seen most recently with their time.
-///       `Option<(A, B)>` is "a pair, or nothing".
-/// Why: Hints are asked for once per settled view and once per newly displayed text.
+/// What:
+///  The visible lines last reported and the lines seen most recently with their time.
+///       `Option<(A, B)>` is "a pair,
+///  or nothing".
+/// Why:
+///  Hints are asked for once per settled view and once per newly displayed text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,9 +76,14 @@ pub(super) struct HintLines {
     seen: Option<(HintWindow, Instant)>,
 }
 
-/// What: Make the worker hold the displayed text. `Ok(true)` once it does.
-/// Why: A new file generation is an open; a new revision of the same file is the reload the
-///      reload path recorded; an explicit action can ask for the file to be displayed again so
+/// What:
+///  Make the worker hold the displayed text.
+///  `Ok(true)` once it does.
+/// Why:
+///  A new file generation is an open;
+///  a new revision of the same file is the reload the
+///      reload path recorded;
+///  an explicit action can ask for the file to be displayed again so
 ///      the worker re-resolves programs and restarts failed servers.
 ///
 /// In TS you'd write (pseudocode):
@@ -116,8 +143,12 @@ pub(super) fn update(language: &mut Language, source: &Rc<RefCell<State>>) -> Re
     return Ok(true);
 }
 
-/// What: Report the visible lines once they settled, or at once for newly displayed text.
-/// Why: Hints are asked for the lines in view and some around them; scrolling asks only when it stops.
+/// What:
+///  Report the visible lines once they settled,
+///  or at once for newly displayed text.
+/// Why:
+///  Hints are asked for the lines in view and some around them;
+///  scrolling asks only when it stops.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

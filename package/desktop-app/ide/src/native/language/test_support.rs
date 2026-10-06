@@ -1,20 +1,35 @@
-//! A complete reader with the scripted language server, for window tests of language navigation.
+//! A complete reader with the scripted language server,
+//!  for window tests of language navigation.
 //!
-//! `test:native` runs every test in its own process (nextest's default), so a test may make its
-//! disposable project the working directory, as the application does at startup; Helix roots
-//! servers there. The scripted server is the `ide-scripted-lsp` binary beside the test binary,
-//! built by the task before the tests run; its answers come from `IDE_SCRIPTED_*` variables.
+//! `test:native` runs every test in its own process (nextest's default),
+//!  so a test may make its
+//! disposable project the working directory,
+//!  as the application does at startup;
+//!  Helix roots
+//! servers there.
+//!  The scripted server is the `ide-scripted-lsp` binary beside the test binary,
+//! built by the task before the tests run;
+//!  its answers come from `IDE_SCRIPTED_*` variables.
 
-/// The production window, state, bindings, and the language binding under test.
+/// The production window,
+///  state,
+///  bindings,
+///  and the language binding under test.
 use super::{LanguageBinding, bind};
-/// Shared helpers of the other window tests: key events and bounded waiting.
+/// Shared helpers of the other window tests:
+///  key events and bounded waiting.
 use crate::native::find_tests::{chord, key};
-/// The production window, source state, and every binding the application installs.
+/// The production window,
+///  source state,
+///  and every binding the application installs.
 use crate::native::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, find, navigation,
     reload, render,
 };
-/// The handle, its setup, the launch policy seam, and the startup rule.
+/// The handle,
+///  its setup,
+///  the launch policy seam,
+///  and the startup rule.
 use ide_app::{
     language::{
         LanguageWorker,
@@ -30,8 +45,13 @@ use slint::{
     ComponentHandle, LogicalPosition, SharedString, Timer,
     platform::{Key, PointerEventButton, WindowEvent},
 };
-/// What: Disposable files, owned paths, the shared state cell, and bounded waits.
-/// Why: Every fixture lives in a temporary directory removed when the test ends.
+/// What:
+///  Disposable files,
+///  owned paths,
+///  the shared state cell,
+///  and bounded waits.
+/// Why:
+///  Every fixture lives in a temporary directory removed when the test ends.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,15 +68,24 @@ use std::{
 /// Name of the scripted server definition.
 pub(super) const SERVER: &str = "scripted-ls";
 
-/// Where source text starts in the window, derived in `sidebar_tests` from the tree, divider, and gutter widths.
+/// Where source text starts in the window,
+///  derived in `sidebar_tests` from the tree,
+///  divider,
+///  and gutter widths.
 pub(super) use super::super::sidebar_tests::TEXT_LEFT;
 
 /// Source rows start below the 32 px file label.
 pub(super) const TEXT_TOP: f32 = 32.0;
 
-/// What: A disposable project: the directory guard, the canonical root, and a scratch directory
+/// What:
+///  A disposable project:
+///  the directory guard,
+///  the canonical root,
+///  and a scratch directory
 ///       beside the project for outside-project files.
-/// Why: Dropping the guard removes everything; servers report canonical paths.
+/// Why:
+///  Dropping the guard removes everything;
+///  servers report canonical paths.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,7 +96,8 @@ pub(super) struct Project {
     _guard: tempfile::TempDir,
     /// Canonical project root.
     pub(super) root: PathBuf,
-    /// Canonical directory beside the project, outside it.
+    /// Canonical directory beside the project,
+    ///  outside it.
     pub(super) outside: PathBuf,
 }
 
@@ -91,21 +121,26 @@ pub(super) fn project(files: &[(&str, &str)]) -> Project {
     };
 }
 
-/// The `file` address of a canonical path, as a server names it.
+/// The `file` address of a canonical path,
+///  as a server names it.
 pub(super) fn address(path: &Path) -> String {
     return format!("file://{}", path.display());
 }
 
-/// A JSON location for the scripted server: an address and a zero-based line and column range.
+/// A JSON location for the scripted server:
+///  an address and a zero-based line and column range.
 pub(super) fn location(uri: &str, line: u32, start: u32, end: u32) -> String {
     return format!(
         r#"{{"uri":"{uri}","range":{{"start":{{"line":{line},"character":{start}}},"end":{{"line":{line},"character":{end}}}}}}}"#
     );
 }
 
-/// What: Language definitions for the scripted server with extra `IDE_SCRIPTED_*` variables.
-///       `command` replaces the server program, for the missing-program case.
-/// Why: Each test names exactly the answers it needs.
+/// What:
+///  Language definitions for the scripted server with extra `IDE_SCRIPTED_*` variables.
+///       `command` replaces the server program,
+///  for the missing-program case.
+/// Why:
+///  Each test names exactly the answers it needs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -164,8 +199,12 @@ language-servers = ["{SERVER}"]
     );
 }
 
-/// What: A reader with every production binding plus language navigation.
-/// Why: The tests drive the same callbacks, timers, and markup the application installs.
+/// What:
+///  A reader with every production binding plus language navigation.
+/// Why:
+///  The tests drive the same callbacks,
+///  timers,
+///  and markup the application installs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -176,14 +215,20 @@ pub(super) struct LanguageReader {
     pub(super) window: AppWindow,
     /// Source state shared with every binding.
     pub(super) source: Rc<RefCell<State>>,
-    /// The language binding; `close` consumes it.
+    /// The language binding;
+    ///  `close` consumes it.
     pub(super) binding: Option<LanguageBinding>,
-    /// Dropping the timers releases the reload, find, and navigation workers.
+    /// Dropping the timers releases the reload,
+    ///  find,
+    ///  and navigation workers.
     _timers: [Timer; 3],
 }
 
-/// What: Open `name` of `project` with the scripted server configured by `variables`.
-/// Why: The project becomes the working directory first, before any thread or Helix call.
+/// What:
+///  Open `name` of `project` with the scripted server configured by `variables`.
+/// Why:
+///  The project becomes the working directory first,
+///  before any thread or Helix call.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -196,9 +241,15 @@ pub(super) fn reader(project: &Project, name: &str, languages: String) -> Langua
     return reader_launching(project, name, languages, launch_directly);
 }
 
-/// What: Open `name` of `project` with the scripted server, started through `launch`.
-///       `LaunchPolicy` is a plain function pointer; sibling: a boxed closure, which could carry data.
-/// Why: A test passes a refusing policy to stand in for the production one refusing,
+/// What:
+///  Open `name` of `project` with the scripted server,
+///  started through `launch`.
+///       `LaunchPolicy` is a plain function pointer;
+///  sibling:
+///  a boxed closure,
+///  which could carry data.
+/// Why:
+///  A test passes a refusing policy to stand in for the production one refusing,
 ///      without depending on what the test machine has installed.
 ///
 /// In TS you'd write (pseudocode):
@@ -228,7 +279,8 @@ pub(super) fn reader_launching(
     return reader_with(project, name, worker);
 }
 
-/// Open `name` with an explicit worker result, such as a start failure.
+/// Open `name` with an explicit worker result,
+///  such as a start failure.
 pub(super) fn reader_with(
     project: &Project,
     name: &str,
@@ -261,7 +313,8 @@ pub(super) fn reader_with(
     };
 }
 
-/// Advance timers until `ready` holds, failing with `message` after ten seconds.
+/// Advance timers until `ready` holds,
+///  failing with `message` after ten seconds.
 pub(super) fn eventually(message: &str, mut ready: impl FnMut() -> bool) {
     let start = Instant::now();
     loop {
@@ -274,7 +327,8 @@ pub(super) fn eventually(message: &str, mut ready: impl FnMut() -> bool) {
     }
 }
 
-/// Wait until the scripted server is ready for the displayed file, as the binding polled it.
+/// Wait until the scripted server is ready for the displayed file,
+///  as the binding polled it.
 pub(super) fn ready(reader: &LanguageReader) {
     eventually("the scripted server did not become ready", || {
         // `let Some(...) = ... else` leaves with false after the binding was closed.
@@ -297,7 +351,8 @@ pub(super) fn idle(millis: u64) {
     }
 }
 
-/// Place the caret at `position` through the document, as a click would.
+/// Place the caret at `position` through the document,
+///  as a click would.
 pub(super) fn caret(reader: &LanguageReader, position: usize) {
     let mut current = reader.source.borrow_mut();
     let mut reading = current.document.position();
@@ -313,24 +368,33 @@ pub(super) fn head(reader: &LanguageReader) -> usize {
     return reader.source.borrow().document.position().head;
 }
 
-/// Ctrl+B, as a seat delivers it.
+/// Ctrl+B,
+///  as a seat delivers it.
 pub(super) fn definition(reader: &LanguageReader) {
     chord(&reader.window, Key::Control, "b");
 }
 
-/// Ctrl+Q, as a seat delivers it.
+/// Ctrl+Q,
+///  as a seat delivers it.
 pub(super) fn hover(reader: &LanguageReader) {
     chord(&reader.window, Key::Control, "q");
 }
 
-/// Escape, as a seat delivers it.
+/// Escape,
+///  as a seat delivers it.
 pub(super) fn escape(reader: &LanguageReader) {
     key(&reader.window, Key::Escape);
 }
 
-/// What: Window point over the code row of source `line`, `x` logical pixels into its text, in the middle of
-///       the row. The row's place comes from the reader's vertical mapping at the moment of the call.
-/// Why: The scripted server's hint and diagnostics take rows above the first line once they arrive, so a
+/// What:
+///  Window point over the code row of source `line`,
+///  `x` logical pixels into its text,
+///  in the middle of
+///       the row.
+///  The row's place comes from the reader's vertical mapping at the moment of the call.
+/// Why:
+///  The scripted server's hint and diagnostics take rows above the first line once they arrive,
+///  so a
 ///      line's code row is not at its number times one row height.
 ///
 /// In TS you'd write (pseudocode):
@@ -345,9 +409,13 @@ pub(super) fn point(reader: &LanguageReader, line: usize, x: f32) -> LogicalPosi
     );
 }
 
-/// What: Window point `rise` logical pixels above the top of `line`'s code row, `x` logical pixels into the
-///       text: inside the line's virtual rows when it has any.
-/// Why: Resting and Ctrl+clicking on a hint or message row must ask the server nothing.
+/// What:
+///  Window point `rise` logical pixels above the top of `line`'s code row,
+///  `x` logical pixels into the
+///       text:
+///  inside the line's virtual rows when it has any.
+/// Why:
+///  Resting and Ctrl+clicking on a hint or message row must ask the server nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -361,8 +429,12 @@ pub(super) fn above(reader: &LanguageReader, line: usize, x: f32, rise: f32) -> 
     );
 }
 
-/// What: How many hint texts and message-row texts the displayed frame paints; a pair (tuple).
-/// Why: Hints and messages are pixels of the source image; the frame's positioned records say what was drawn.
+/// What:
+///  How many hint texts and message-row texts the displayed frame paints;
+///  a pair (tuple).
+/// Why:
+///  Hints and messages are pixels of the source image;
+///  the frame's positioned records say what was drawn.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -435,7 +507,8 @@ pub(super) fn caret_x(reader: &LanguageReader, position: usize) -> f32 {
     panic!("line {line} is not materialized");
 }
 
-/// The popup text, or empty when no popup is shown.
+/// The popup text,
+///  or empty when no popup is shown.
 pub(super) fn popup(reader: &LanguageReader) -> String {
     return reader.window.get_language_popup_text().to_string();
 }

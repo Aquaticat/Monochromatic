@@ -1,5 +1,10 @@
-//! What: Exact physical line ranges, with CR, LF and CRLF retained.
-//! Why: Native decoded strings normalize newlines, but host rewrites must not.
+//! What:
+//!  Exact physical line ranges,
+//!  with CR,
+//!  LF and CRLF retained.
+//! Why:
+//!  Native decoded strings normalize newlines,
+//!  but host rewrites must not.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -9,8 +14,10 @@
 /// Import immutable mapped-line and snapshot records.
 use crate::processors_model::{MappedLine, Mapping};
 
-/// What: Byte indexes use usize rather than u32/u64/i32/i64.
-/// Why: usize addresses strings without truncating on the current platform.
+/// What:
+///  Byte indexes use usize rather than u32/u64/i32/i64.
+/// Why:
+///  usize addresses strings without truncating on the current platform.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,7 +33,8 @@ pub(crate) struct PhysicalLine {
     pub end: usize,
 }
 
-/// Scan borrowed UTF-8 source once; ASCII newline indexes cannot split a Unicode character.
+/// Scan borrowed UTF-8 source once;
+///  ASCII newline indexes cannot split a Unicode character.
 pub(crate) fn physical_lines(source: &str) -> Vec<PhysicalLine> {
     // What: Vec owns a growable list, unlike &[T] (borrowed) or [T; N] (fixed size).
     // Why: Authored files have a runtime-dependent number of lines.
@@ -100,7 +108,8 @@ pub(crate) fn copy_line(
     });
 }
 
-/// Return the physical line's newline spelling, choosing LF only for an unterminated input.
+/// Return the physical line's newline spelling,
+///  choosing LF only for an unterminated input.
 pub(crate) fn newline(source: &str, offset: usize) -> &str {
     // Borrow the indexed suffix; range syntax is a checked byte slice, not TS string indexing.
     let suffix: &str = &source[offset..];

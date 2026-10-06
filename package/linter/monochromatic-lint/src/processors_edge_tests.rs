@@ -1,5 +1,8 @@
-//! What: Endpoint, nesting and unsupported-container controls at the public processor seam.
-//! Why: Null diagnostics and refused fixes count only after positive authored controls.
+//! What:
+//!  Endpoint,
+//!  nesting and unsupported-container controls at the public processor seam.
+//! Why:
+//!  Null diagnostics and refused fixes count only after positive authored controls.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +16,8 @@ use crate::diagnostic::{Diagnostic, Severity};
 /// Exercise the empty-snippet documentation policy through typed real rule selection.
 use crate::rust_rule_settings::RustRuleSettings;
 
-/// First, middle and last full-line deletion preserve surviving prefixes and bytes.
+/// First,
+///  middle and last full-line deletion preserve surviving prefixes and bytes.
 #[test]
 fn processors_project_each_doc_line_endpoint_with_mixed_newline_spellings() {
     let source: &str = "/// Alpha.\r\n/// Beta.\n/// Gamma.\r\nfn item() {}\n";
@@ -59,7 +63,8 @@ fn processors_project_trailing_newline_replacements_without_orphan_prefixes() {
     assert_eq!(actual, "/// Beta.\r\n/// Gamma.\r\nfn item() {}\r\n");
 }
 
-/// Project through both allowed nested Rust-fence levels, not only one Markdown/Rustdoc pair.
+/// Project through both allowed nested Rust-fence levels,
+///  not only one Markdown/Rustdoc pair.
 #[test]
 fn processors_project_depth_two_fix_to_original_host() {
     let source: String = super::fixture("nested");
@@ -135,7 +140,8 @@ fn processors_report_missing_opening_docs_for_empty_rust_fences() {
     assert_eq!(mapped.labels[0].span.offset, 0);
 }
 
-/// Authored labels spanning multiple lines include original container bytes, with correct Unicode host columns.
+/// Authored labels spanning multiple lines include original container bytes,
+///  with correct Unicode host columns.
 #[test]
 fn processors_map_multi_line_unicode_labels_and_reject_wrong_language_dispatch() {
     let source: &str = "/// 😀 Alpha.\n/// Beta.\nfn item() {}\n";
@@ -304,7 +310,8 @@ fn processors_check_prepared_closures_and_documentable_items() {
     );
 }
 
-/// Multiple labels retain authored ranges; synthetic failures are never silently treated as clean.
+/// Multiple labels retain authored ranges;
+///  synthetic failures are never silently treated as clean.
 #[test]
 fn processors_map_multiple_labels_and_preserve_processing_failures() {
     let virtuals = inputs(

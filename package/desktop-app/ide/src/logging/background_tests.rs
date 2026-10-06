@@ -1,5 +1,7 @@
-//! The background writer against outputs the tests control: one that blocks until a gate opens,
-//! one that refuses a write, and one that accepts everything.
+//! The background writer against outputs the tests control:
+//!  one that blocks until a gate opens,
+//! one that refuses a write,
+//!  and one that accepts everything.
 
 use super::{Loss, background_with, report};
 use std::{
@@ -10,7 +12,8 @@ use std::{
 };
 use tracing_subscriber::fmt::MakeWriter;
 
-/// An output that blocks every write until its gate is open, then keeps the bytes.
+/// An output that blocks every write until its gate is open,
+///  then keeps the bytes.
 #[derive(Clone)]
 struct Gated {
     open: Arc<(Mutex<bool>, Condvar)>,
@@ -88,7 +91,8 @@ impl Write for RefusesFirst {
     }
 }
 
-/// The loss a gap report names, read back from the output.
+/// The loss a gap report names,
+///  read back from the output.
 fn reported(text: &str) -> Vec<Loss> {
     let mut found = Vec::new();
     for line in text.lines() {
@@ -113,8 +117,11 @@ fn write_record(writer: &impl for<'writer> MakeWriter<'writer>, text: &str) {
         .expect("a queued write never fails");
 }
 
-/// The defect this writer exists for: an output that stalls for seconds must not delay the thread
-/// that logs, through the real subscriber. Records that do not fit are counted and reported later.
+/// The defect this writer exists for:
+///  an output that stalls for seconds must not delay the thread
+/// that logs,
+///  through the real subscriber.
+///  Records that do not fit are counted and reported later.
 #[test]
 fn a_blocked_output_never_delays_the_logging_thread() {
     let output = Gated::closed();
@@ -160,7 +167,9 @@ fn a_blocked_output_never_delays_the_logging_thread() {
     );
 }
 
-/// At a clean exit every queued record reaches the output, in order, without a gap report.
+/// At a clean exit every queued record reaches the output,
+///  in order,
+///  without a gap report.
 #[test]
 fn queued_records_reach_the_output_in_order_at_the_exit_flush() {
     let output = Gated::closed();
@@ -177,7 +186,8 @@ fn queued_records_reach_the_output_in_order_at_the_exit_flush() {
     assert_eq!(output.text(), expected);
 }
 
-/// A gap is reported right before the next record that fits, with the dropped count and size.
+/// A gap is reported right before the next record that fits,
+///  with the dropped count and size.
 #[test]
 fn a_loss_is_reported_before_the_next_record_that_fits() {
     let output = Gated::closed();
@@ -217,7 +227,8 @@ fn a_loss_is_reported_before_the_next_record_that_fits() {
     assert!(!text.contains(&dropped));
 }
 
-/// A record larger than the whole budget is never queued; the exit flush reports it.
+/// A record larger than the whole budget is never queued;
+///  the exit flush reports it.
 #[test]
 fn a_record_larger_than_the_budget_is_reported_at_the_exit_flush() {
     let output = Gated::closed();
@@ -235,7 +246,8 @@ fn a_record_larger_than_the_budget_is_reported_at_the_exit_flush() {
     );
 }
 
-/// An output that refuses a write loses that record, and the loss is reported once it accepts again.
+/// An output that refuses a write loses that record,
+///  and the loss is reported once it accepts again.
 #[test]
 fn a_refused_write_is_counted_and_reported() {
     let written = Arc::new(Mutex::new(Vec::new()));
@@ -276,7 +288,8 @@ fn the_exit_flush_gives_up_after_its_grace() {
     );
 }
 
-/// The report line names the loss in words, after a timestamp in the subscriber's format.
+/// The report line names the loss in words,
+///  after a timestamp in the subscriber's format.
 #[test]
 fn the_gap_report_reads_like_a_warning_record() {
     let mut line = Vec::new();

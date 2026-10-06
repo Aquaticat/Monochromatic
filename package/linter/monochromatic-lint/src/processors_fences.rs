@@ -1,12 +1,16 @@
-//! What: Native Markdown/MDX Rust-fence discovery with exact physical payloads.
-//! Why: Markdown determines containers; processors never search prose for pretend fences.
+//! What:
+//!  Native Markdown/MDX Rust-fence discovery with exact physical payloads.
+//! Why:
+//!  Markdown determines containers;
+//!  processors never search prose for pretend fences.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Parse nodes, pair normalized code lines with authored suffixes, retain prefixes.
 //! ```
 
-/// Import the shared Markdown parse, typed native code decoder and mapping helpers.
+/// Import the shared Markdown parse,
+///  typed native code decoder and mapping helpers.
 use crate::markdown_code::fence_marker_end;
 /// Borrow the same native arena interface as Markdown rules.
 use crate::markdown_source::MarkdownSource;
@@ -19,7 +23,8 @@ use satteri_ast::mdast::{MdastNodeType, decode_code_data};
 /// Share exact parent snapshots between sibling fences.
 use std::sync::Arc;
 
-/// Extract selected Rust fences; unlabeled fences become Rust only inside authored Rustdoc.
+/// Extract selected Rust fences;
+///  unlabeled fences become Rust only inside authored Rustdoc.
 pub(crate) fn fences(parent: &Arc<Mapping>, rustdoc: bool) -> Result<Vec<Mapping>, ProcessorError> {
     // Owned parse inputs isolate the parser from the immutable mapping snapshot.
     let parsed: MarkdownSource = match MarkdownSource::new(

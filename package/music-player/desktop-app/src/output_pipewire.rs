@@ -1,24 +1,44 @@
-//! PipeWire output: the thin FFI boundary. ALL PipeWire/SPA/realtime code is
+//! PipeWire output:
+//!  the thin FFI boundary.
+//!  ALL PipeWire/SPA/realtime code is
 //! confined to this module so the rest of the player (engine.rs) only ever
-//! calls `Output::new`, `Output::reconfigure`, and pushes `f32` samples into
+//! calls `Output::new`,
+//!  `Output::reconfigure`,
+//!  and pushes `f32` samples into
 //! the returned ring-buffer producer.
 //!
-//! Mental model for a TypeScript reader: PipeWire is a C audio server. We open
-//! one background loop (its own OS thread, managed by C), create an output
-//! "stream", and register a `process` callback that the C loop calls on a
-//! realtime thread whenever the speakers need more samples. That callback
+//! Mental model for a TypeScript reader:
+//!  PipeWire is a C audio server.
+//!  We open
+//! one background loop (its own OS thread,
+//!  managed by C),
+//!  create an output
+//! "stream",
+//!  and register a `process` callback that the C loop calls on a
+//! realtime thread whenever the speakers need more samples.
+//!  That callback
 //! copies samples out of a lock-free queue (the ring buffer) and into the
-//! hardware buffer. We hand the WRITE end of that queue back to the engine.
+//! hardware buffer.
+//!  We hand the WRITE end of that queue back to the engine.
 //!
-//! Several types here are `!Send` (they use `Rc` internally, like a value that
-//! must stay on the thread that made it). So `Output` is created, used, and
-//! dropped entirely on the engine's controller thread; only the realtime
-//! `process` callback runs elsewhere (on PipeWire's own thread), and it touches
+//! Several types here are `!Send` (they use `Rc` internally,
+//!  like a value that
+//! must stay on the thread that made it).
+//!  So `Output` is created,
+//!  used,
+//!  and
+//! dropped entirely on the engine's controller thread;
+//!  only the realtime
+//! `process` callback runs elsewhere (on PipeWire's own thread),
+//!  and it touches
 //! only the ring-buffer consumer it was given.
 
-/// What:     `use std::io::Cursor;`. `Cursor` wraps an in-memory `Vec<u8>` and gives it
+/// What:
+///      `use std::io::Cursor;`.
+///  `Cursor` wraps an in-memory `Vec<u8>` and gives it
 ///           the `Read`/`Write` interface a serializer expects.
-/// Why:      The SPA pod serializer writes bytes into a `Cursor<Vec<u8>>`.
+/// Why:
+///       The SPA pod serializer writes bytes into a `Cursor<Vec<u8>>`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,9 +46,13 @@
 /// ```
 use std::io::Cursor;
 
-/// What:     `use std::mem::size_of;`. `size_of::<T>()` returns the byte size of a type at
+/// What:
+///      `use std::mem::size_of;`.
+///  `size_of::<T>()` returns the byte size of a type at
 ///           compile time (a `usize`).
-/// Why:      One `f32` sample is 4 bytes; we compute strides from this rather than
+/// Why:
+///       One `f32` sample is 4 bytes;
+///  we compute strides from this rather than
 ///           hard-coding `4`.
 ///
 /// In TS you'd write (pseudocode):
@@ -37,14 +61,23 @@ use std::io::Cursor;
 /// ```
 use std::mem::size_of;
 
-/// What:     `use std::sync::atomic::{AtomicBool, Ordering};`. `AtomicBool` is a `bool`
+/// What:
+///      `use std::sync::atomic::{AtomicBool, Ordering};`.
+///  `AtomicBool` is a `bool`
 ///           that can be read and written from multiple threads WITHOUT a lock (the
-///           hardware guarantees the read/write is indivisible). `Ordering` says how
-///           strictly this access is ordered against other memory operations; siblings
-///           range from `Relaxed` (loosest, just atomicity) up to `SeqCst` (strictest, a
+///           hardware guarantees the read/write is indivisible).
+///  `Ordering` says how
+///           strictly this access is ordered against other memory operations;
+///  siblings
+///           range from `Relaxed` (loosest,
+///  just atomicity) up to `SeqCst` (strictest,
+///  a
 ///           global order).
-/// Why:      The engine thread flips a "playing" flag and the realtime audio callback
-///           reads it; a plain `bool` shared across threads is undefined behaviour, so it
+/// Why:
+///       The engine thread flips a "playing" flag and the realtime audio callback
+///           reads it;
+///  a plain `bool` shared across threads is undefined behaviour,
+///  so it
 ///           must be atomic.
 ///
 /// In TS you'd write (pseudocode):
@@ -53,13 +86,23 @@ use std::mem::size_of;
 /// ```
 use std::sync::atomic::{AtomicBool, Ordering};
 
-/// What:     `use std::sync::Arc;`. `Arc<T>` is an ATOMICALLY reference-counted shared
-///           pointer: cloning it just bumps a thread-safe counter, and the inner `T` is
-///           freed when the last clone drops. Sibling: `Rc<T>`, the same idea but NOT
+/// What:
+///      `use std::sync::Arc;`.
+///  `Arc<T>` is an ATOMICALLY reference-counted shared
+///           pointer:
+///  cloning it just bumps a thread-safe counter,
+///  and the inner `T` is
+///           freed when the last clone drops.
+///  Sibling:
+///  `Rc<T>`,
+///  the same idea but NOT
 ///           thread-safe (single-thread only).
-/// Why:      The same `AtomicBool` must live in two places at once (the `Output` on the
-///           engine thread and the `ProcessData` on the audio thread); `Arc` lets both
-///           hold a clone of one shared cell. `Rc` would not compile here because the cell
+/// Why:
+///       The same `AtomicBool` must live in two places at once (the `Output` on the
+///           engine thread and the `ProcessData` on the audio thread);
+///  `Arc` lets both
+///           hold a clone of one shared cell.
+///  `Rc` would not compile here because the cell
 ///           crosses a thread boundary.
 ///
 /// In TS you'd write (pseudocode):
@@ -68,12 +111,21 @@ use std::sync::atomic::{AtomicBool, Ordering};
 /// ```
 use std::sync::Arc;
 
-/// What:     `use std::thread::Thread;`. `Thread` is a cheap, cloneable HANDLE to a running
-///           thread (it wraps an internal `Arc`). We only ever call `.unpark()` on it.
-///           Sibling you might expect: `JoinHandle`, which OWNS the thread and can wait for
-///           it; `Thread` is just a wake-able reference.
-/// Why:      The realtime audio callback holds one so it can wake (`unpark`) the engine
-///           worker after it drains the ring buffer, telling it to decode more.
+/// What:
+///      `use std::thread::Thread;`.
+///  `Thread` is a cheap,
+///  cloneable HANDLE to a running
+///           thread (it wraps an internal `Arc`).
+///  We only ever call `.unpark()` on it.
+///           Sibling you might expect:
+///  `JoinHandle`,
+///  which OWNS the thread and can wait for
+///           it;
+///  `Thread` is just a wake-able reference.
+/// Why:
+///       The realtime audio callback holds one so it can wake (`unpark`) the engine
+///           worker after it drains the ring buffer,
+///  telling it to decode more.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -81,8 +133,11 @@ use std::sync::Arc;
 /// ```
 use std::thread::Thread;
 
-/// What:     `use pipewire as pw;`. Import the crate and rename it `pw` for short.
-/// Why:      Every PipeWire call below is `pw::...`.
+/// What:
+///      `use pipewire as pw;`.
+///  Import the crate and rename it `pw` for short.
+/// Why:
+///       Every PipeWire call below is `pw::...`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -90,10 +145,16 @@ use std::thread::Thread;
 /// ```
 use pipewire as pw;
 
-/// What:     `use pw::{properties::properties, spa};`. Brings the `properties!` MACRO
+/// What:
+///      `use pw::{properties::properties, spa};`.
+///  Brings the `properties!` MACRO
 ///           (builds a key/value dictionary) and the `spa` submodule (the lower-level
-///           "Simple Plugin API" types: audio formats, pods) into scope.
-/// Why:      Stream creation needs properties; format negotiation needs spa.
+///           "Simple Plugin API" types:
+///  audio formats,
+///  pods) into scope.
+/// Why:
+///       Stream creation needs properties;
+///  format negotiation needs spa.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,9 +162,13 @@ use pipewire as pw;
 /// ```
 use pw::{properties::properties, spa};
 
-/// What:     `use pw::context::ContextRc;`. The PipeWire "context" object: the root handle
+/// What:
+///      `use pw::context::ContextRc;`.
+///  The PipeWire "context" object:
+///  the root handle
 ///           from which you connect to the server.
-/// Why:      We create one context and keep it alive for the program.
+/// Why:
+///       We create one context and keep it alive for the program.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -111,9 +176,14 @@ use pw::{properties::properties, spa};
 /// ```
 use pw::context::ContextRc;
 
-/// What:     `use pw::core::CoreRc;`. The connected "core": your session with the PipeWire
-///           server, created from a context.
-/// Why:      Streams are created from a `Core`.
+/// What:
+///      `use pw::core::CoreRc;`.
+///  The connected "core":
+///  your session with the PipeWire
+///           server,
+///  created from a context.
+/// Why:
+///       Streams are created from a `Core`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,10 +191,17 @@ use pw::context::ContextRc;
 /// ```
 use pw::core::CoreRc;
 
-/// What:     `use pw::stream::{StreamFlags, StreamListener, StreamRc};`. `Stream` is an
-///           audio stream; `StreamFlags` are connect-time options; a `StreamListener` is
+/// What:
+///      `use pw::stream::{StreamFlags, StreamListener, StreamRc};`.
+///  `Stream` is an
+///           audio stream;
+///  `StreamFlags` are connect-time options;
+///  a `StreamListener` is
 ///           the live registration of our callbacks (dropping it unregisters them).
-/// Why:      We create a stream, register a process callback, and connect it.
+/// Why:
+///       We create a stream,
+///  register a process callback,
+///  and connect it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -132,9 +209,12 @@ use pw::core::CoreRc;
 /// ```
 use pw::stream::{StreamFlags, StreamListener, StreamRc};
 
-/// What:     `use pw::thread_loop::ThreadLoopRc;`. A loop that runs on its OWN OS thread,
+/// What:
+///      `use pw::thread_loop::ThreadLoopRc;`.
+///  A loop that runs on its OWN OS thread,
 ///           spawned and driven by PipeWire's C code.
-/// Why:      Audio must run independently of our decode/command loop.
+/// Why:
+///       Audio must run independently of our decode/command loop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -142,11 +222,15 @@ use pw::stream::{StreamFlags, StreamListener, StreamRc};
 /// ```
 use pw::thread_loop::ThreadLoopRc;
 
-/// What:     `use spa::param::audio::{AudioFormat, AudioInfoRaw};`. `AudioFormat` names the
-///           sample encoding (we use `F32LE` = little-endian 32-bit float). `AudioInfoRaw`
+/// What:
+///      `use spa::param::audio::{AudioFormat, AudioInfoRaw};`.
+///  `AudioFormat` names the
+///           sample encoding (we use `F32LE` = little-endian 32-bit float).
+///  `AudioInfoRaw`
 ///           is a small struct describing format + rate + channels that we turn into a
 ///           "pod".
-/// Why:      To tell PipeWire we will feed interleaved f32 at a given rate/channels.
+/// Why:
+///       To tell PipeWire we will feed interleaved f32 at a given rate/channels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -154,11 +238,17 @@ use pw::thread_loop::ThreadLoopRc;
 /// ```
 use spa::param::audio::{AudioFormat, AudioInfoRaw};
 
-/// What:     `use spa::pod::{serialize::PodSerializer, Object, Pod, Value};`. A "pod"
-///           (Plain Old Data) is SPA's self-describing binary value format. `PodSerializer`
-///           turns a `Value` into bytes; `Object`/`Value` build the structured value; `Pod`
+/// What:
+///      `use spa::pod::{serialize::PodSerializer, Object, Pod, Value};`.
+///  A "pod"
+///           (Plain Old Data) is SPA's self-describing binary value format.
+///  `PodSerializer`
+///           turns a `Value` into bytes;
+///  `Object`/`Value` build the structured value;
+///  `Pod`
 ///           is a borrowed view over the bytes.
-/// Why:      Stream format parameters are passed to PipeWire as a serialized pod.
+/// Why:
+///       Stream format parameters are passed to PipeWire as a serialized pod.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -166,9 +256,16 @@ use spa::param::audio::{AudioFormat, AudioInfoRaw};
 /// ```
 use spa::pod::{serialize::PodSerializer, Object, Pod, Value};
 
-/// What:     `use spa::utils::Direction;`. Enum: is this stream `Output` (we produce audio)
-///           or `Input` (we capture)? Sibling: `Input`.
-/// Why:      A music player produces audio, so `Output`.
+/// What:
+///      `use spa::utils::Direction;`.
+///  Enum:
+///  is this stream `Output` (we produce audio)
+///           or `Input` (we capture)?
+///  Sibling:
+///  `Input`.
+/// Why:
+///       A music player produces audio,
+///  so `Output`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -176,10 +273,14 @@ use spa::pod::{serialize::PodSerializer, Object, Pod, Value};
 /// ```
 use spa::utils::Direction;
 
-/// What:     `use ringbuf::traits::{Consumer, Split};`. These TRAITS bring methods into
-///           scope: `Split::split` (cut a ring buffer into a producer and a consumer half)
+/// What:
+///      `use ringbuf::traits::{Consumer, Split};`.
+///  These TRAITS bring methods into
+///           scope:
+///  `Split::split` (cut a ring buffer into a producer and a consumer half)
 ///           and `Consumer::pop_slice` (drain samples out).
-/// Why:      We split the buffer and the callback pops from the consumer half.
+/// Why:
+///       We split the buffer and the callback pops from the consumer half.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -187,11 +288,16 @@ use spa::utils::Direction;
 /// ```
 use ringbuf::traits::{Consumer, Split};
 
-/// What:     `use ringbuf::{HeapCons, HeapProd, HeapRb};`. `HeapRb<T>` is a heap-allocated
-///           ring buffer; `.split()` yields a `HeapProd<T>` (write end) and `HeapCons<T>`
-///           (read end). Both halves can live on different threads (single-producer,
+/// What:
+///      `use ringbuf::{HeapCons, HeapProd, HeapRb};`.
+///  `HeapRb<T>` is a heap-allocated
+///           ring buffer;
+///  `.split()` yields a `HeapProd<T>` (write end) and `HeapCons<T>`
+///           (read end).
+///  Both halves can live on different threads (single-producer,
 ///           single-consumer).
-/// Why:      A lock-free hand-off of samples from the decode thread to the realtime audio
+/// Why:
+///       A lock-free hand-off of samples from the decode thread to the realtime audio
 ///           thread.
 ///
 /// In TS you'd write (pseudocode):
@@ -200,8 +306,11 @@ use ringbuf::traits::{Consumer, Split};
 /// ```
 use ringbuf::{HeapCons, HeapProd, HeapRb};
 
-/// What:     `use crate::error::PlayerError;`. Our one app-wide error type.
-/// Why:      Fallible methods here return `PlayerError`.
+/// What:
+///      `use crate::error::PlayerError;`.
+///  Our one app-wide error type.
+/// Why:
+///       Fallible methods here return `PlayerError`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -209,9 +318,12 @@ use ringbuf::{HeapCons, HeapProd, HeapRb};
 /// ```
 use crate::error::PlayerError;
 
-/// What:     `const F32_BYTES: usize = size_of::<f32>();`. Bytes in one `f32` sample (4).
+/// What:
+///      `const F32_BYTES: usize = size_of::<f32>();`.
+///  Bytes in one `f32` sample (4).
 ///           `usize` because it measures memory and feeds stride math.
-/// Why:      Stride = bytes per audio frame = `F32_BYTES * channels`.
+/// Why:
+///       Stride = bytes per audio frame = `F32_BYTES * channels`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -219,10 +331,16 @@ use crate::error::PlayerError;
 /// ```
 const F32_BYTES: usize = size_of::<f32>();
 
-/// What:     `struct ProcessData { ... }`. The state the realtime callback owns. It is
-///           moved INTO the stream listener; the C loop hands it back to our closure as
+/// What:
+///      `struct ProcessData { ... }`.
+///  The state the realtime callback owns.
+///  It is
+///           moved INTO the stream listener;
+///  the C loop hands it back to our closure as
 ///           `&mut ProcessData` on every call.
-/// Why:      The callback must not allocate or lock; it keeps its consumer and a reusable
+/// Why:
+///       The callback must not allocate or lock;
+///  it keeps its consumer and a reusable
 ///           scratch buffer here.
 ///
 /// In TS you'd write (pseudocode):
@@ -230,26 +348,36 @@ const F32_BYTES: usize = size_of::<f32>();
 /// type ProcessData = { consumer: RingConsumer; channels: number; scratch: Float32Array; playing: { value: boolean }; worker: WorkerRef };
 /// ```
 struct ProcessData {
-    /// What:     `consumer: HeapCons<f32>`. The READ half of the ring buffer.
-    /// Why:      The callback pops decoded samples from it.
+    /// What:
+    ///      `consumer: HeapCons<f32>`.
+    ///  The READ half of the ring buffer.
+    /// Why:
+    ///       The callback pops decoded samples from it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// consumer: RingConsumer<number>;
     /// ```
     consumer: HeapCons<f32>,
-    /// What:     `channels: usize`. Channel count of the current track (1 or 2...). `usize`
+    /// What:
+    ///      `channels: usize`.
+    ///  Channel count of the current track (1 or 2...).
+    ///  `usize`
     ///           for index/stride arithmetic without casts.
-    /// Why:      Needed to compute the per-frame stride and how many samples fill a buffer.
+    /// Why:
+    ///       Needed to compute the per-frame stride and how many samples fill a buffer.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// channels: number;
     /// ```
     channels: usize,
-    /// What:     `scratch: Vec<f32>`. A reusable buffer the callback pops into before
+    /// What:
+    ///      `scratch: Vec<f32>`.
+    ///  A reusable buffer the callback pops into before
     ///           converting to little-endian bytes.
-    /// Why:      Avoid allocating inside the realtime callback (grows at most once when the
+    /// Why:
+    ///       Avoid allocating inside the realtime callback (grows at most once when the
     ///           buffer size first stabilises).
     ///
     /// In TS you'd write (pseudocode):
@@ -257,22 +385,37 @@ struct ProcessData {
     /// scratch: Float32Array;
     /// ```
     scratch: Vec<f32>,
-    /// What:     `playing: Arc<AtomicBool>`. A shared cross-thread flag: `true` means feed
-    ///           real audio, `false` means output silence. This is a CLONE of the same cell
+    /// What:
+    ///      `playing: Arc<AtomicBool>`.
+    ///  A shared cross-thread flag:
+    ///  `true` means feed
+    ///           real audio,
+    ///  `false` means output silence.
+    ///  This is a CLONE of the same cell
     ///           the `Output` (and engine) hold.
-    /// Why:      Lets pause take effect instantly: the moment the engine flips the flag, the
+    /// Why:
+    ///       Lets pause take effect instantly:
+    ///  the moment the engine flips the flag,
+    ///  the
     ///           very next realtime callback stops draining the ring buffer and emits
-    ///           silence, instead of playing the ~1 second of audio already buffered.
+    ///           silence,
+    ///  instead of playing the ~1 second of audio already buffered.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// playing: { value: boolean };
     /// ```
     playing: Arc<AtomicBool>,
-    /// What:     `worker: Thread`. A cloneable handle to the engine worker thread. The
+    /// What:
+    ///      `worker: Thread`.
+    ///  A cloneable handle to the engine worker thread.
+    ///  The
     ///           callback calls `.unpark()` on it after popping samples.
-    /// Why:      Popping frees space in the ring buffer; waking the worker lets it decode
-    ///           more right away instead of waiting for a timeout. This is what replaces the
+    /// Why:
+    ///       Popping frees space in the ring buffer;
+    ///  waking the worker lets it decode
+    ///           more right away instead of waiting for a timeout.
+    ///  This is what replaces the
     ///           old busy-poll without re-introducing audio gaps.
     ///
     /// In TS you'd write (pseudocode):
@@ -282,11 +425,18 @@ struct ProcessData {
     worker: Thread,
 }
 
-/// What:     `pub struct Output { ... }`. Owns the whole PipeWire pipeline. FIELD ORDER IS
-///           THE DROP ORDER: Rust drops fields top-to-bottom, so the listener (which holds
-///           a raw pointer into the stream) drops before the stream, and both before the
+/// What:
+///      `pub struct Output { ... }`.
+///  Owns the whole PipeWire pipeline.
+///  FIELD ORDER IS
+///           THE DROP ORDER:
+///  Rust drops fields top-to-bottom,
+///  so the listener (which holds
+///           a raw pointer into the stream) drops before the stream,
+///  and both before the
 ///           core/context/loop.
-/// Why:      Keeps all the `!Send` PipeWire objects alive together and tears them down in a
+/// Why:
+///       Keeps all the `!Send` PipeWire objects alive together and tears them down in a
 ///           safe order.
 ///
 /// In TS you'd write (pseudocode):
@@ -294,63 +444,96 @@ struct ProcessData {
 /// class Output { listener; stream; core; context; threadLoop; playing; worker; }
 /// ```
 pub struct Output {
-    /// What:     `listener: Option<StreamListener<ProcessData>>`. The live callback
-    ///           registration, or `None` before the first stream. Dropping it unregisters
+    /// What:
+    ///      `listener: Option<StreamListener<ProcessData>>`.
+    ///  The live callback
+    ///           registration,
+    ///  or `None` before the first stream.
+    ///  Dropping it unregisters
     ///           the callback.
-    /// Why:      Must outlive nothing and be dropped first (it points into stream).
+    /// Why:
+    ///       Must outlive nothing and be dropped first (it points into stream).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// listener: StreamListener | null;
     /// ```
     listener: Option<StreamListener<ProcessData>>,
-    /// What:     `stream: Option<StreamRc>`. The current output stream, or `None`.
-    /// Why:      Recreated per track at that track's native rate/channels.
+    /// What:
+    ///      `stream: Option<StreamRc>`.
+    ///  The current output stream,
+    ///  or `None`.
+    /// Why:
+    ///       Recreated per track at that track's native rate/channels.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// stream: Stream | null;
     /// ```
     stream: Option<StreamRc>,
-    /// What:     `core: CoreRc`. The connected session. Held for the program's life.
-    /// Why:      Needed to create streams.
+    /// What:
+    ///      `core: CoreRc`.
+    ///  The connected session.
+    ///  Held for the program's life.
+    /// Why:
+    ///       Needed to create streams.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// core: Core;
     /// ```
     core: CoreRc,
-    /// What:     `_context: ContextRc`. The context the core came from. The leading `_` says
-    ///           "kept only to stay alive, not otherwise used".
-    /// Why:      The core depends on the context outliving it.
+    /// What:
+    ///      `_context: ContextRc`.
+    ///  The context the core came from.
+    ///  The leading `_` says
+    ///           "kept only to stay alive,
+    ///  not otherwise used".
+    /// Why:
+    ///       The core depends on the context outliving it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// private context: Context; // kept alive, never read
     /// ```
     _context: ContextRc,
-    /// What:     `thread_loop: ThreadLoopRc`. The background audio loop.
-    /// Why:      Drives the realtime callback; dropped last.
+    /// What:
+    ///      `thread_loop: ThreadLoopRc`.
+    ///  The background audio loop.
+    /// Why:
+    ///       Drives the realtime callback;
+    ///  dropped last.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// threadLoop: ThreadLoop;
     /// ```
     thread_loop: ThreadLoopRc,
-    /// What:     `playing: Arc<AtomicBool>`. The MASTER copy of the play/pause flag. Created
-    ///           once here and cloned into each new `ProcessData` on `reconfigure`, so the
+    /// What:
+    ///      `playing: Arc<AtomicBool>`.
+    ///  The MASTER copy of the play/pause flag.
+    ///  Created
+    ///           once here and cloned into each new `ProcessData` on `reconfigure`,
+    ///  so the
     ///           flag survives track changes.
-    /// Why:      `set_playing` writes it from the engine thread; the realtime callback reads
-    ///           its clone. One shared cell keeps them in sync.
+    /// Why:
+    ///       `set_playing` writes it from the engine thread;
+    ///  the realtime callback reads
+    ///           its clone.
+    ///  One shared cell keeps them in sync.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// playing: { value: boolean };
     /// ```
     playing: Arc<AtomicBool>,
-    /// What:     `worker: Thread`. The engine worker's thread handle, kept so each new
+    /// What:
+    ///      `worker: Thread`.
+    ///  The engine worker's thread handle,
+    ///  kept so each new
     ///           stream's callback (built in `reconfigure`) can be handed a clone.
-    /// Why:      The callback needs it to `unpark()` the worker when the ring buffer drains;
+    /// Why:
+    ///       The callback needs it to `unpark()` the worker when the ring buffer drains;
     ///           storing it here lets it survive across per-track reconfigures.
     ///
     /// In TS you'd write (pseudocode):
@@ -360,19 +543,30 @@ pub struct Output {
     worker: Thread,
 }
 
-/// What:     `impl Output { ... }`. Methods for the output pipeline.
-/// Why:      Construction and per-track reconfiguration.
+/// What:
+///      `impl Output { ... }`.
+///  Methods for the output pipeline.
+/// Why:
+///       Construction and per-track reconfiguration.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class Output { /* new, reconfigure, set_playing */ }
 /// ```
 impl Output {
-    /// What:     `pub fn new(worker: Thread) -> Result<Output, PlayerError>`. Initialise
-    ///           PipeWire, build the loop/context/core, and start the loop thread. `worker`
-    ///           is the engine worker's thread handle, taken by value (the caller hands us
+    /// What:
+    ///      `pub fn new(worker: Thread) -> Result<Output, PlayerError>`.
+    ///  Initialise
+    ///           PipeWire,
+    ///  build the loop/context/core,
+    ///  and start the loop thread.
+    ///  `worker`
+    ///           is the engine worker's thread handle,
+    ///  taken by value (the caller hands us
     ///           its own clone).
-    /// Why:      One-time setup of the audio pipeline; we keep `worker` so per-track
+    /// Why:
+    ///       One-time setup of the audio pipeline;
+    ///  we keep `worker` so per-track
     ///           callbacks can wake the worker on drain.
     ///
     /// In TS you'd write (pseudocode):
@@ -481,11 +675,17 @@ impl Output {
         })
     }
 
-    /// What:     `pub fn reconfigure(&mut self, rate: u32, channels: u16, capacity_frames: usize) -> Result<HeapProd<f32>, PlayerError>`.
+    /// What:
+    ///      `pub fn reconfigure(&mut self, rate: u32, channels: u16, capacity_frames: usize) -> Result<HeapProd<f32>, PlayerError>`.
     ///           Tear down any existing stream and build a fresh one negotiating the given
-    ///           native `rate`/`channels`, with a ring buffer holding `capacity_frames`
-    ///           frames. Returns the WRITE half of that buffer.
-    /// Why:      Per-track native rate: each new track gets a stream at its own rate, and a
+    ///           native `rate`/`channels`,
+    ///  with a ring buffer holding `capacity_frames`
+    ///           frames.
+    ///  Returns the WRITE half of that buffer.
+    /// Why:
+    ///       Per-track native rate:
+    ///  each new track gets a stream at its own rate,
+    ///  and a
     ///           fresh empty buffer so no stale audio leaks across.
     ///
     /// In TS you'd write (pseudocode):
@@ -1129,10 +1329,14 @@ impl Output {
         return Ok(producer)
     }
 
-    /// What:     `pub fn set_playing(&self, on: bool)`. Flip the shared pause/play flag.
+    /// What:
+    ///      `pub fn set_playing(&self, on: bool)`.
+    ///  Flip the shared pause/play flag.
     ///           Takes `&self` (read-only borrow) because writing an atomic does NOT need
-    ///           exclusive access; the cell handles concurrent writes.
-    /// Why:      The engine calls this on pause/play so the realtime callback can react
+    ///           exclusive access;
+    ///  the cell handles concurrent writes.
+    /// Why:
+    ///       The engine calls this on pause/play so the realtime callback can react
     ///           immediately.
     ///
     /// In TS you'd write (pseudocode):
@@ -1153,9 +1357,14 @@ impl Output {
     }
 }
 
-/// What:     `impl Drop for Output { ... }`. Custom cleanup when an `Output` is dropped
-///           (goes out of scope). `Drop` is the destructor trait.
-/// Why:      Stop the loop thread BEFORE the fields (stream/core/...) are destroyed, so no
+/// What:
+///      `impl Drop for Output { ... }`.
+///  Custom cleanup when an `Output` is dropped
+///           (goes out of scope).
+///  `Drop` is the destructor trait.
+/// Why:
+///       Stop the loop thread BEFORE the fields (stream/core/...) are destroyed,
+///  so no
 ///           realtime callback runs during teardown.
 ///
 /// In TS you'd write (pseudocode):
@@ -1163,8 +1372,13 @@ impl Output {
 /// class Output { [Symbol.dispose]() { this.threadLoop.stop(); } }
 /// ```
 impl Drop for Output {
-    /// What:     `fn drop(&mut self)`. Runs once, automatically, at end of life.
-    /// Why:      Stop the audio loop first.
+    /// What:
+    ///      `fn drop(&mut self)`.
+    ///  Runs once,
+    ///  automatically,
+    ///  at end of life.
+    /// Why:
+    ///       Stop the audio loop first.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

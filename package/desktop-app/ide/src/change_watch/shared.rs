@@ -1,7 +1,13 @@
-//! State shared by the UI handle, the watch thread, and notify's event-handler thread.
+//! State shared by the UI handle,
+//!  the watch thread,
+//!  and notify's event-handler thread.
 
-/// What: `BTreeSet` is an ordered set of owned paths; `PathBuf` owns a path, `Path` borrows one.
-/// Why: Pending invalidations collapse repeated events for one directory into a single entry.
+/// What:
+///  `BTreeSet` is an ordered set of owned paths;
+///  `PathBuf` owns a path,
+///  `Path` borrows one.
+/// Why:
+///  Pending invalidations collapse repeated events for one directory into a single entry.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,8 +21,12 @@ use std::{
 
 /// How finished an observed change to the displayed file looks.
 ///
-/// What: an `enum` with two payload-free variants, like a TS string-literal union.
-/// Why: A closed write can be read now; a write still in progress waits briefly,
+/// What:
+///  an `enum` with two payload-free variants,
+///  like a TS string-literal union.
+/// Why:
+///  A closed write can be read now;
+///  a write still in progress waits briefly,
 ///      so a truncated or half-written file never replaces the displayed text.
 ///
 /// In TS you'd write (pseudocode):
@@ -25,49 +35,73 @@ use std::{
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SourceChange {
-    /// Closed after writing, renamed into place, removed, or changed in permissions: read now.
+    /// Closed after writing,
+    ///  renamed into place,
+    ///  removed,
+    ///  or changed in permissions:
+    ///  read now.
     Settled,
-    /// Created or written but not yet closed: read after the writer goes quiet.
+    /// Created or written but not yet closed:
+    ///  read after the writer goes quiet.
     Unsettled,
 }
 
-/// Invalidations accumulated since the last `ChangeWatcher::take`; events carry no file data.
+/// Invalidations accumulated since the last `ChangeWatcher::take`;
+///  events carry no file data.
 #[derive(Debug, Default)]
 pub struct Changes {
-    /// Watched directories whose entries changed, or whose watch just started and needs a fresh read.
+    /// Watched directories whose entries changed,
+    ///  or whose watch just started and needs a fresh read.
     pub directories: BTreeSet<PathBuf>,
-    /// What: `Option<SourceChange>` is either `Some(change)` or `None`, like `SourceChange | undefined`.
-    /// Why: Only the latest event for the displayed file matters; `None` means it was untouched.
+    /// What:
+    ///  `Option<SourceChange>` is either `Some(change)` or `None`,
+    ///  like `SourceChange | undefined`.
+    /// Why:
+    ///  Only the latest event for the displayed file matters;
+    ///  `None` means it was untouched.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// source?: SourceChange;
     /// ```
     pub source: Option<SourceChange>,
-    /// Reread everything shown: queue overflow, a notification error, a lost or failed watch, or a stopped watcher.
+    /// Reread everything shown:
+    ///  queue overflow,
+    ///  a notification error,
+    ///  a lost or failed watch,
+    ///  or a stopped watcher.
     pub everything: bool,
-    /// The directories with a live watch, present only when that set changed since the last take.
+    /// The directories with a live watch,
+    ///  present only when that set changed since the last take.
     pub watched: Option<BTreeSet<PathBuf>>,
 }
 
-/// One lock guards all cross-thread state; no holder performs a filesystem call while holding it.
+/// One lock guards all cross-thread state;
+///  no holder performs a filesystem call while holding it.
 #[derive(Debug)]
 pub(super) struct Shared {
-    /// Canonical project root; events and watches outside it are ignored.
+    /// Canonical project root;
+    ///  events and watches outside it are ignored.
     pub(super) root: PathBuf,
-    /// Latest directory set the UI wants watched, not yet applied by the watch thread.
+    /// Latest directory set the UI wants watched,
+    ///  not yet applied by the watch thread.
     pub(super) desired: Option<BTreeSet<PathBuf>>,
     /// Displayed file whose own events become source invalidations.
     pub(super) file: Option<PathBuf>,
-    /// Retry watches that failed earlier, for example after a directory was recreated.
+    /// Retry watches that failed earlier,
+    ///  for example after a directory was recreated.
     pub(super) retry: bool,
-    /// Set once by the UI handle's Drop; the watch thread exits at its next wake.
+    /// Set once by the UI handle's Drop;
+    ///  the watch thread exits at its next wake.
     pub(super) closing: bool,
-    /// Live watches whose directory was removed or renamed; the watch thread drops and re-adds them.
+    /// Live watches whose directory was removed or renamed;
+    ///  the watch thread drops and re-adds them.
     pub(super) stale: BTreeSet<PathBuf>,
-    /// Invalidations for the UI, drained by `take`.
+    /// Invalidations for the UI,
+    ///  drained by `take`.
     pub(super) pending: Changes,
-    /// Directories with a live watch, as last published by the watch thread.
+    /// Directories with a live watch,
+    ///  as last published by the watch thread.
     pub(super) watched: BTreeSet<PathBuf>,
     /// The watched set changed since the UI last took it.
     pub(super) watched_changed: bool,
@@ -98,13 +132,20 @@ impl Shared {
     }
 }
 
-/// Lock the shared state, recovering it if a thread panicked while holding the lock.
+/// Lock the shared state,
+///  recovering it if a thread panicked while holding the lock.
 ///
-/// What: `MutexGuard<'_, Shared>` is the unlocked view; the lock is released when it goes out of scope.
+/// What:
+///  `MutexGuard<'_, Shared>` is the unlocked view;
+///  the lock is released when it goes out of scope.
 ///       `'_` ties the guard's lifetime to the borrowed `Mutex`.
-/// Why: A poisoned lock only means another thread panicked; the sets inside stay valid,
+/// Why:
+///  A poisoned lock only means another thread panicked;
+///  the sets inside stay valid,
 ///      and refusing them would stop all refresh instead of degrading to rereads.
-/// Gotcha: Unlike a TS object, the data is reachable only through the guard.
+/// Gotcha:
+///  Unlike a TS object,
+///  the data is reachable only through the guard.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

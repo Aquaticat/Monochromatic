@@ -1,7 +1,12 @@
-//! What: Explicit creation and the remote-guess candidate of tokenized `git checkout` and
+//! What:
+//!  Explicit creation and the remote-guess candidate of tokenized `git checkout` and
 //!       `git switch` regions in Git 2.56.0.
-//! Why: `git checkout topic` creates a local `topic` when exactly one remote has that
-//!      branch. Which argument is the candidate, and whether Git guesses at all, follows
+//! Why:
+//!  `git checkout topic` creates a local `topic` when exactly one remote has that
+//!      branch.
+//!  Which argument is the candidate,
+//!  and whether Git guesses at all,
+//!  follows
 //!      `checkout_main` and `parse_branchname_arg` (builtin/checkout.c:1414-1532,
 //!      1986-2021).
 //!
@@ -10,9 +15,12 @@
 //! // checkoutTarget(parsed, region): number | undefined
 //! ```
 
-/// What: Bring the shared checkout and switch option identifiers, the tokenizer result
+/// What:
+///  Bring the shared checkout and switch option identifiers,
+///  the tokenizer result
 ///       types and the tokenizer questions into this file.
-/// Why:  Both commands use the same identifiers for the same meanings.
+/// Why:
+///   Both commands use the same identifiers for the same meanings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,9 +34,16 @@ use super::command_options_query::{is_enabled, is_stated, last_occurrence, posit
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: Whether the options create a branch by themselves.
-/// Why:  `-b`, `-B`, `-c`, `-C` and `--orphan` name the new branch. `--track` and
-///       `--no-track` both leave the tracking mode specified, and Git then derives a new
+/// What:
+///  Whether the options create a branch by themselves.
+/// Why:
+///   `-b`,
+///  `-B`,
+///  `-c`,
+///  `-C` and `--orphan` name the new branch.
+///  `--track` and
+///       `--no-track` both leave the tracking mode specified,
+///  and Git then derives a new
 ///       branch name from the argument (checkout.c:1986-1997).
 ///
 /// In TS you'd write (pseudocode):
@@ -42,12 +57,21 @@ pub(crate) fn creates_explicitly(parsed: &ParsedOptions) -> bool {
         || is_stated(parsed, TRACK);
 }
 
-/// What: Whether Git may still create a branch by guessing a remote branch.
-/// Why:  `--no-guess` and `--patch` switch guessing off (checkout.c:2014-2018). With
-///       `--detach`, a stage option or an overlay option Git dies before creating anything
-///       (1686-1714, 550-552). A pathspec file does not stop guessing: when the file is
+/// What:
+///  Whether Git may still create a branch by guessing a remote branch.
+/// Why:
+///   `--no-guess` and `--patch` switch guessing off (checkout.c:2014-2018).
+///  With
+///       `--detach`,
+///  a stage option or an overlay option Git dies before creating anything
+///       (1686-1714,
+///  550-552).
+///  A pathspec file does not stop guessing:
+///  when the file is
 ///       empty Git still switches branches (2058-2101).
-/// Gotcha: Divergence from the incumbent, which treated `--pathspec-from-file` as ending
+/// Gotcha:
+///  Divergence from the incumbent,
+///  which treated `--pathspec-from-file` as ending
 ///         the guess.
 ///
 /// In TS you'd write (pseudocode):
@@ -68,10 +92,18 @@ pub(crate) fn guess_allowed(parsed: &ParsedOptions) -> bool {
         && !is_stated(parsed, OVERLAY);
 }
 
-/// What: Whether a name contains a glob character Git treats as a pattern. `&[u8]` borrows
-///       the name bytes; `u8` is one byte.
-/// Why:  Without `--`, `git checkout` does not guess for such a name (checkout.c:1512-1513;
-///       the characters are `*`, `?`, `[` and backslash, ctype.c:12).
+/// What:
+///  Whether a name contains a glob character Git treats as a pattern.
+///  `&[u8]` borrows
+///       the name bytes;
+///  `u8` is one byte.
+/// Why:
+///   Without `--`,
+///  `git checkout` does not guess for such a name (checkout.c:1512-1513;
+///       the characters are `*`,
+///  `?`,
+///  `[` and backslash,
+///  ctype.c:12).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,10 +120,15 @@ fn has_wildcard(name: &[u8]) -> bool {
     return false;
 }
 
-/// What: The token `git checkout` would turn into a new local branch if exactly one remote
-///       has a branch of that name. `Option<usize>` is "a region token index or nothing".
-/// Why:  Git guesses only for `git checkout <name>` and `git checkout <name> --`; a
-///       leading `--` means paths, and `-` means the previous branch.
+/// What:
+///  The token `git checkout` would turn into a new local branch if exactly one remote
+///       has a branch of that name.
+///  `Option<usize>` is "a region token index or nothing".
+/// Why:
+///   Git guesses only for `git checkout <name>` and `git checkout <name> --`;
+///  a
+///       leading `--` means paths,
+///  and `-` means the previous branch.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -137,9 +174,12 @@ pub(crate) fn checkout_target(parsed: &ParsedOptions, region: &[OsString]) -> Op
     return Some(arguments[0]);
 }
 
-/// What: The token `git switch` would turn into a new local branch by guessing.
-/// Why:  `git switch` accepts exactly one reference and no paths (checkout.c:1473-1477),
-///       so the single positional is the candidate, also after `--`.
+/// What:
+///  The token `git switch` would turn into a new local branch by guessing.
+/// Why:
+///   `git switch` accepts exactly one reference and no paths (checkout.c:1473-1477),
+///       so the single positional is the candidate,
+///  also after `--`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

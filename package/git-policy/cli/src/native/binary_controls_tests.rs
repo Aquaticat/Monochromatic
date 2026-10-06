@@ -1,15 +1,24 @@
-//! What: Wrapper controls and escape hatches through the built executable: where they are
-//!       removed, where they are left alone, and what happens to a command Git refuses.
-//! Why: A control Git sees is an "unknown option" failure; a control that hides the
-//!      subcommand from the rules lets a guarded command through; a file named like a
-//!      hatch must stay a file. All three are promises about the program run as `git`.
+//! What:
+//!  Wrapper controls and escape hatches through the built executable:
+//!  where they are
+//!       removed,
+//!  where they are left alone,
+//!  and what happens to a command Git refuses.
+//! Why:
+//!  A control Git sees is an "unknown option" failure;
+//!  a control that hides the
+//!      subcommand from the rules lets a guarded command through;
+//!  a file named like a
+//!      hatch must stay a file.
+//!  All three are promises about the program run as `git`.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(run(wrappedGit, ['--cli-git-keep-going', 'status'], { cwd: nested }).status).toBe(1);
 //! ```
 
-/// Import the shared fixtures, the bounded process helpers and the control table.
+/// Import the shared fixtures,
+///  the bounded process helpers and the control table.
 use super::support::{
     Fixture, Observed, fixture, git, porcelain, remove, repository, run_direct, run_wrapped,
     silent_success, stderr_of,
@@ -37,7 +46,8 @@ fn stopped_below_root(repo: &Path) -> Observed {
     };
 }
 
-/// `git --cli-git-keep-going status`: the control is gone before any rule reads the command.
+/// `git --cli-git-keep-going status`:
+///  the control is gone before any rule reads the command.
 #[test]
 fn keep_going_before_the_subcommand_is_removed_before_any_rule_runs() {
     let fixture: Fixture = fixture("controls-keep-going");
@@ -79,7 +89,8 @@ fn keep_going_before_the_subcommand_is_removed_before_any_rule_runs() {
     remove(&fixture);
 }
 
-/// Every wrapper control is removed before the subcommand, alone and between Git's own options.
+/// Every wrapper control is removed before the subcommand,
+///  alone and between Git's own options.
 #[test]
 fn every_control_before_the_subcommand_is_removed() {
     let fixture: Fixture = fixture("controls-global");
@@ -157,7 +168,8 @@ fn every_control_before_the_subcommand_is_removed() {
     remove(&fixture);
 }
 
-/// `git reset -- --no-enforce-worktree` names a file; the same token before `--` is a hatch.
+/// `git reset -- --no-enforce-worktree` names a file;
+///  the same token before `--` is a hatch.
 #[test]
 fn a_path_named_like_a_hatch_is_forwarded_and_a_hatch_is_removed() {
     let fixture: Fixture = fixture("controls-hatch");
@@ -239,7 +251,8 @@ fn a_path_named_like_a_hatch_is_forwarded_and_a_hatch_is_removed() {
     remove(&fixture);
 }
 
-/// A command whose options Git refuses is forwarded for Git to refuse, unless it must never be forwarded.
+/// A command whose options Git refuses is forwarded for Git to refuse,
+///  unless it must never be forwarded.
 #[test]
 fn a_region_git_refuses_is_forwarded_unless_the_command_is_never_forwarded() {
     let fixture: Fixture = fixture("controls-refused");

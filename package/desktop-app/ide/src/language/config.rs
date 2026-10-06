@@ -1,17 +1,24 @@
-//! The language registry: Helix's built-in definitions plus the application's overrides, built
-//! in code. No workspace or user Helix configuration is ever read, because a project-supplied
+//! The language registry:
+//!  Helix's built-in definitions plus the application's overrides,
+//!  built
+//! in code.
+//!  No workspace or user Helix configuration is ever read,
+//!  because a project-supplied
 //! `languages.toml` could replace a server's command.
 
 /// The launch seam decides what is spawned for each server.
 use super::launch::{
     LaunchPolicy, LaunchRequest, ServerLaunch, launch_directly, resolve_executable,
 };
-/// Helix's spelling of the project root, which servers are given.
+/// Helix's spelling of the project root,
+///  which servers are given.
 use super::root::RootView;
 /// Errors name the operation that failed.
 use anyhow::{Context, Result};
-/// What: `ArcSwap` is a cell holding a shared pointer that can be replaced atomically.
-/// Why: `helix_lsp::Registry` requires its language registry in exactly this wrapper.
+/// What:
+///  `ArcSwap` is a cell holding a shared pointer that can be replaced atomically.
+/// Why:
+///  `helix_lsp::Registry` requires its language registry in exactly this wrapper.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,9 +27,15 @@ use anyhow::{Context, Result};
 use arc_swap::ArcSwap;
 /// Helix's language registry and its typed configuration.
 use helix_core::syntax::{Loader, config::Configuration};
-/// What: `HashMap` is a key-value table; `Path`/`PathBuf` are borrowed and owned filesystem
-///       paths; `Arc` is a thread-safe shared pointer (siblings: `Rc`, `Box`).
-/// Why: Side tables are looked up by server or language name.
+/// What:
+///  `HashMap` is a key-value table;
+///  `Path`/`PathBuf` are borrowed and owned filesystem
+///       paths;
+///  `Arc` is a thread-safe shared pointer (siblings:
+///  `Rc`,
+///  `Box`).
+/// Why:
+///  Side tables are looked up by server or language name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,9 +50,13 @@ use std::{
 /// The TypeScript family is served by the project's own TypeScript 7 server.
 mod typescript;
 
-/// What: How the embedding application sets the Language module up. `Option<...>` fields are
-///       "a value, or nothing".
-/// Why: The launch policy and the private state directory are decided by the application;
+/// What:
+///  How the embedding application sets the Language module up.
+///  `Option<...>` fields are
+///       "a value,
+///  or nothing".
+/// Why:
+///  The launch policy and the private state directory are decided by the application;
 ///      extra definitions exist so tests can declare scripted servers.
 ///
 /// In TS you'd write (pseudocode):
@@ -48,25 +65,37 @@ mod typescript;
 /// ```
 #[derive(Clone, Debug)]
 pub struct LanguageSetup {
-    /// Decides what is spawned for every server; the default spawns the server itself.
+    /// Decides what is spawned for every server;
+    ///  the default spawns the server itself.
     pub launch: LaunchPolicy,
-    /// Private application state directory, not containing the project; needed by confining policies.
+    /// Private application state directory,
+    ///  not containing the project;
+    ///  needed by confining policies.
     pub state_root: Option<PathBuf>,
-    /// Extra language and server definitions in Helix's `languages.toml` syntax, merged over the
-    /// built-in ones. This is for definitions the application itself supplies; it must never be
+    /// Extra language and server definitions in Helix's `languages.toml` syntax,
+    ///  merged over the
+    /// built-in ones.
+    ///  This is for definitions the application itself supplies;
+    ///  it must never be
     /// filled from a project or user file.
     pub extra_languages: Option<String>,
 }
 
-/// What: `impl Default for X` defines the value `X::default()` returns.
-/// Why: The production setup is "built-in definitions, direct launch, no state directory".
+/// What:
+///  `impl Default for X` defines the value `X::default()` returns.
+/// Why:
+///  The production setup is "built-in definitions,
+///  direct launch,
+///  no state directory".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const defaultSetup: LanguageSetup = { launch: launchDirectly };
 /// ```
 impl Default for LanguageSetup {
-    /// Build the production setup: every server confined by bubblewrap, with private state
+    /// Build the production setup:
+    ///  every server confined by bubblewrap,
+    ///  with private state
     /// below the user's cache directory.
     fn default() -> Self {
         return Self {
@@ -79,9 +108,12 @@ impl Default for LanguageSetup {
 
 /// Setups other than the production one.
 impl LanguageSetup {
-    /// What: A setup whose servers run without any confinement.
-    /// Why: Only for tests with the scripted server and for guard controls on disposable
-    ///      projects; a real server launched this way can write into the project.
+    /// What:
+    ///  A setup whose servers run without any confinement.
+    /// Why:
+    ///  Only for tests with the scripted server and for guard controls on disposable
+    ///      projects;
+    ///  a real server launched this way can write into the project.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -96,8 +128,11 @@ impl LanguageSetup {
     }
 }
 
-/// What: Why a configured server cannot be started. An `enum` with data is a tagged union.
-/// Why: A missing program and a refused launch lead to different states and remedies.
+/// What:
+///  Why a configured server cannot be started.
+///  An `enum` with data is a tagged union.
+/// Why:
+///  A missing program and a refused launch lead to different states and remedies.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -105,12 +140,14 @@ impl LanguageSetup {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) enum Unavailable {
-    /// The server's own program was not found, or the project's copy is unusable.
+    /// The server's own program was not found,
+    ///  or the project's copy is unusable.
     Missing(
         /// Which program was looked for and what the remedy is.
         String,
     ),
-    /// The launch policy refused; nothing is spawned instead.
+    /// The launch policy refused;
+    ///  nothing is spawned instead.
     Refused(
         /// What the launch policy reported.
         String,
@@ -119,25 +156,34 @@ pub(super) enum Unavailable {
 
 /// What the registry remembers about one server definition besides what Helix holds.
 struct Definition {
-    /// Command as configured, before resolution and before the launch policy.
+    /// Command as configured,
+    ///  before resolution and before the launch policy.
     command: String,
-    /// Seconds a request, including `initialize`, may take. `u64` is an unsigned 64-bit integer.
+    /// Seconds a request,
+    ///  including `initialize`,
+    ///  may take.
+    ///  `u64` is an unsigned 64-bit integer.
     timeout: u64,
-    /// The launch the policy produced; absent for an unavailable server.
+    /// The launch the policy produced;
+    ///  absent for an unavailable server.
     launch: Option<ServerLaunch>,
 }
 
 /// The registry plus the side tables the worker reports states from.
 pub(super) struct Languages {
-    /// Shared with `helix_lsp::Registry`, which reads server definitions from it at every start.
+    /// Shared with `helix_lsp::Registry`,
+    ///  which reads server definitions from it at every start.
     pub(super) loader: Arc<ArcSwap<Loader>>,
     /// Canonical project root.
     root: PathBuf,
     /// The application's setup.
     setup: LanguageSetup,
-    /// Server names per language, in configured order, before unavailable ones were removed.
+    /// Server names per language,
+    ///  in configured order,
+    ///  before unavailable ones were removed.
     configured: HashMap<String, Vec<String>>,
-    /// Servers that cannot be started, with the reason.
+    /// Servers that cannot be started,
+    ///  with the reason.
     unavailable: HashMap<String, Unavailable>,
     /// Per-server facts kept outside Helix's registry.
     definitions: HashMap<String, Definition>,
@@ -145,7 +191,8 @@ pub(super) struct Languages {
 
 /// Everything `build` produces before it is wrapped for sharing.
 struct Built {
-    /// Helix's registry, without the unavailable servers.
+    /// Helix's registry,
+    ///  without the unavailable servers.
     loader: Loader,
     /// See `Languages::configured`.
     configured: HashMap<String, Vec<String>>,
@@ -155,9 +202,13 @@ struct Built {
     definitions: HashMap<String, Definition>,
 }
 
-/// What: Decide whether a server's program exists, returning its absolute path or the reason
+/// What:
+///  Decide whether a server's program exists,
+///  returning its absolute path or the reason
 ///       it is unavailable.
-/// Why: The check must see the real server, never a wrapper placed in front of it.
+/// Why:
+///  The check must see the real server,
+///  never a wrapper placed in front of it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -176,9 +227,16 @@ fn locate(server: &str, command: &str, root: &Path) -> Result<PathBuf, Unavailab
     });
 }
 
-/// What: Build the registry and its side tables. `&Path` and `&LanguageSetup` are lent read-only.
-/// Why: Definitions are assembled in code from Helix's compiled-in defaults: built-in table,
-///      application overrides, executable resolution, then the launch policy. Servers that are
+/// What:
+///  Build the registry and its side tables.
+///  `&Path` and `&LanguageSetup` are lent read-only.
+/// Why:
+///  Definitions are assembled in code from Helix's compiled-in defaults:
+///  built-in table,
+///      application overrides,
+///  executable resolution,
+///  then the launch policy.
+///  Servers that are
 ///      missing or refused are removed from every language so Helix can never start them.
 ///
 /// In TS you'd write (pseudocode):
@@ -316,8 +374,13 @@ impl Languages {
         });
     }
 
-    /// What: Server names configured for a language, in order. `&[String]` is a borrowed list.
-    /// Why: States are reported for every configured server, including the ones Helix never sees.
+    /// What:
+    ///  Server names configured for a language,
+    ///  in order.
+    ///  `&[String]` is a borrowed list.
+    /// Why:
+    ///  States are reported for every configured server,
+    ///  including the ones Helix never sees.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -331,12 +394,14 @@ impl Languages {
             .map_or(&[], |names| return names.as_slice());
     }
 
-    /// Why a server cannot be started, or nothing when it can.
+    /// Why a server cannot be started,
+    ///  or nothing when it can.
     pub(super) fn unavailable(&self, server: &str) -> Option<&Unavailable> {
         return self.unavailable.get(server);
     }
 
-    /// Seconds a server may take to answer `initialize`; Helix's default when the server is unknown.
+    /// Seconds a server may take to answer `initialize`;
+    ///  Helix's default when the server is unknown.
     pub(super) fn timeout(&self, server: &str) -> u64 {
         return self
             .definitions
@@ -344,7 +409,8 @@ impl Languages {
             .map_or(20, |definition| return definition.timeout);
     }
 
-    /// The launch the policy produced for a server, when it is available.
+    /// The launch the policy produced for a server,
+    ///  when it is available.
     pub(super) fn launch(&self, server: &str) -> Option<&ServerLaunch> {
         // `and_then` continues into the inner `Option`; `as_ref` borrows instead of moving.
         return self
@@ -353,14 +419,19 @@ impl Languages {
             .and_then(|definition| return definition.launch.as_ref());
     }
 
-    /// The application's private state directory, when one is configured.
+    /// The application's private state directory,
+    ///  when one is configured.
     pub(super) fn state_root(&self) -> Option<&Path> {
         return self.setup.state_root.as_deref();
     }
 
-    /// What: Rebuild the registry when a language's server programs appeared or disappeared
-    ///       since it was built; returns true when it was rebuilt.
-    /// Why: Programs are resolved when the registry is built, so a server installed later (or
+    /// What:
+    ///  Rebuild the registry when a language's server programs appeared or disappeared
+    ///       since it was built;
+    ///  returns true when it was rebuilt.
+    /// Why:
+    ///  Programs are resolved when the registry is built,
+    ///  so a server installed later (or
     ///      project dependencies installed after start) would otherwise stay "missing" until restart.
     ///
     /// In TS you'd write (pseudocode):
@@ -396,7 +467,9 @@ impl Languages {
     }
 }
 
-/// Registry assembly, the TypeScript override, and availability are exercised on disposable projects.
+/// Registry assembly,
+///  the TypeScript override,
+///  and availability are exercised on disposable projects.
 #[cfg(test)]
 #[path = "config_tests.rs"]
 mod tests;

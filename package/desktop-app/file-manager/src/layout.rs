@@ -1,50 +1,90 @@
 //! Deep GTK layout adapter for the pane strip.
 //!
 //! The product model only says that a pane has a `(column, row)` placement and an optional parent.
-//! This module hides every GTK detail needed to render that placement graph: the outer horizontal
-//! scroller, static per-column fixed canvases, pane-widget map, app-owned vertical scrolling, lane
-//! sticky offsets, and reveal retries. `strip.rs` now only mutates the pane model and asks this
+//! This module hides every GTK detail needed to render that placement graph:
+//!  the outer horizontal
+//! scroller,
+//!  static per-column fixed canvases,
+//!  pane-widget map,
+//!  app-owned vertical scrolling,
+//!  lane
+//! sticky offsets,
+//!  and reveal retries.
+//!  `strip.rs` now only mutates the pane model and asks this
 //! adapter to reconcile a placement snapshot.
 
-/// What: imports cells for closure-captured GTK state.
-/// Why: focus state and scroll epochs mutate from signal handlers.
+/// What:
+///  imports cells for closure-captured GTK state.
+/// Why:
+///  focus state and scroll epochs mutate from signal handlers.
 use std::cell::{Cell, RefCell};
-/// What: imports the hash-map container.
-/// Why: pane widgets, lane offsets, and debug lane widgets are keyed by stable `PaneId`.
+/// What:
+///  imports the hash-map container.
+/// Why:
+///  pane widgets,
+///  lane offsets,
+///  and debug lane widgets are keyed by stable `PaneId`.
 use std::collections::HashMap;
-/// What: imports the reference-counted pointer.
-/// Why: GTK signal closures hold weak references to the shared layout adapter.
+/// What:
+///  imports the reference-counted pointer.
+/// Why:
+///  GTK signal closures hold weak references to the shared layout adapter.
 use std::rc::Rc;
 
-/// What: imports GTK widget-extension traits.
-/// Why: layout construction, controller installation, focus, fixed positioning, and overlays use
+/// What:
+///  imports GTK widget-extension traits.
+/// Why:
+///  layout construction,
+///  controller installation,
+///  focus,
+///  fixed positioning,
+///  and overlays use
 ///      prelude methods.
 use gtk4::prelude::*;
-/// What: imports concrete GTK layout and event-controller types.
-/// Why: the strip is built from an outer scroller, overlay, horizontal box, fixed canvases, widgets,
+/// What:
+///  imports concrete GTK layout and event-controller types.
+/// Why:
+///  the strip is built from an outer scroller,
+///  overlay,
+///  horizontal box,
+///  fixed canvases,
+///  widgets,
 ///      and key controllers.
 use gtk4::{Box as GtkBox, EventControllerKey, Fixed, Orientation, Overlay, PolicyType, ScrolledWindow, Widget};
 
-/// What: imports pane geometry constants.
-/// Why: every placement and lane calculation uses one pane-size source of truth.
+/// What:
+///  imports pane geometry constants.
+/// Why:
+///  every placement and lane calculation uses one pane-size source of truth.
 use crate::constants::{PANE_HEIGHT, PANE_WIDTH};
-/// What: imports debug-tint helpers.
-/// Why: debug mode draws labeled overlays for scroll-region and lane debugging.
+/// What:
+///  imports debug-tint helpers.
+/// Why:
+///  debug mode draws labeled overlays for scroll-region and lane debugging.
 use crate::debug_tint;
-/// What: imports the stable pane identity type.
-/// Why: widget maps and placement snapshots are keyed by `PaneId`.
+/// What:
+///  imports the stable pane identity type.
+/// Why:
+///  widget maps and placement snapshots are keyed by `PaneId`.
 use crate::types::PaneId;
 
-/// What: app-owned vertical scroll sync and debug-lane implementation for `StripLayout`.
-/// Why: keeps the layout interface file under the max-lines budget while making lanes react to the
+/// What:
+///  app-owned vertical scroll sync and debug-lane implementation for `StripLayout`.
+/// Why:
+///  keeps the layout interface file under the max-lines budget while making lanes react to the
 ///      whole-app scroll.
 mod lane;
-/// What: horizontal reveal and row-coordinate helpers for `StripLayout`.
-/// Why: spawn still needs horizontal reveal even after vertical scrolling moved to lanes.
+/// What:
+///  horizontal reveal and row-coordinate helpers for `StripLayout`.
+/// Why:
+///  spawn still needs horizontal reveal even after vertical scrolling moved to lanes.
 mod scroll;
 
-/// What: immutable placement snapshot for one pane.
-/// Why: `StripLayout` needs only geometry and parent links, not the full `PaneStripState` interface.
+/// What:
+///  immutable placement snapshot for one pane.
+/// Why:
+///  `StripLayout` needs only geometry and parent links,
+///  not the full `PaneStripState` interface.
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct PanePlacement {
     /// Stable pane identity.
@@ -53,12 +93,16 @@ pub(crate) struct PanePlacement {
     pub(crate) column: usize,
     /// Zero-based vertical row within the global row coordinate space.
     pub(crate) row: usize,
-    /// Parent pane identity, if this pane was spawned from another pane.
+    /// Parent pane identity,
+    ///  if this pane was spawned from another pane.
     pub(crate) parent: Option<PaneId>,
 }
 
-/// What: one static column's GTK widgets.
-/// Why: columns are no longer scrollers; they are fixed canvases that lane offsets move panes across.
+/// What:
+///  one static column's GTK widgets.
+/// Why:
+///  columns are no longer scrollers;
+///  they are fixed canvases that lane offsets move panes across.
 struct ColumnView {
     /// Root widget inserted into the horizontal column box.
     root: Widget,
@@ -66,9 +110,16 @@ struct ColumnView {
     fixed: Fixed,
 }
 
-/// What: deep layout module for the pane strip.
-/// Why: callers only provide pane placements and widget builders; this implementation owns GTK
-///      canvases, focus bookkeeping, app scroll, lane sticky offsets, and reveal behavior.
+/// What:
+///  deep layout module for the pane strip.
+/// Why:
+///  callers only provide pane placements and widget builders;
+///  this implementation owns GTK
+///      canvases,
+///  focus bookkeeping,
+///  app scroll,
+///  lane sticky offsets,
+///  and reveal behavior.
 pub(crate) struct StripLayout {
     /// Outer horizontal scroller holding all columns.
     outer: ScrolledWindow,
@@ -85,17 +136,26 @@ pub(crate) struct StripLayout {
     lane_offsets: RefCell<HashMap<PaneId, f64>>,
     /// Debug child-lane overlay widgets by parent pane id.
     lanes: RefCell<HashMap<PaneId, Widget>>,
-    /// Latest placement snapshot, used by reveal and lane sync without borrowing the model.
+    /// Latest placement snapshot,
+    ///  used by reveal and lane sync without borrowing the model.
     placements: RefCell<Vec<PanePlacement>>,
-    /// Column whose pane last received focus, used by Left/Right keyboard navigation.
+    /// Column whose pane last received focus,
+    ///  used by Left/Right keyboard navigation.
     focused_column: Cell<usize>,
 }
 
-/// What: public interface for constructing, reconciling, focusing, and scrolling the strip layout.
-/// Why: keeps GTK layout policy behind a narrow seam so `strip.rs` remains a model/controller layer.
+/// What:
+///  public interface for constructing,
+///  reconciling,
+///  focusing,
+///  and scrolling the strip layout.
+/// Why:
+///  keeps GTK layout policy behind a narrow seam so `strip.rs` remains a model/controller layer.
 impl StripLayout {
-    /// What: build the GTK layout adapter and return it behind `Rc`.
-    /// Why: app-scroll sync needs weak references back to the adapter.
+    /// What:
+    ///  build the GTK layout adapter and return it behind `Rc`.
+    /// Why:
+    ///  app-scroll sync needs weak references back to the adapter.
     pub(crate) fn new() -> Rc<Self> {
         let columns_box = GtkBox::new(Orientation::Horizontal, crate::constants::PANE_GAP);
         let strip_overlay = Overlay::new();
@@ -122,32 +182,44 @@ impl StripLayout {
         return layout
     }
 
-    /// What: clone the root GTK widget for insertion into the window.
-    /// Why: callers should not know the root happens to be a `GtkScrolledWindow`.
+    /// What:
+    ///  clone the root GTK widget for insertion into the window.
+    /// Why:
+    ///  callers should not know the root happens to be a `GtkScrolledWindow`.
     pub(crate) fn widget(&self) -> Widget {
         return self.outer.clone().upcast::<Widget>()
     }
 
-    /// What: attach a key controller to the layout's root scroller.
-    /// Why: keyboard navigation is installed by `keys.rs`, but the concrete root widget stays hidden.
+    /// What:
+    ///  attach a key controller to the layout's root scroller.
+    /// Why:
+    ///  keyboard navigation is installed by `keys.rs`,
+    ///  but the concrete root widget stays hidden.
     pub(crate) fn add_column_key_controller(&self, controller: EventControllerKey) {
         self.outer.add_controller(controller);
     }
 
-    /// What: return the column that most recently received pane focus.
-    /// Why: Left/Right navigation computes its target relative to this value.
+    /// What:
+    ///  return the column that most recently received pane focus.
+    /// Why:
+    ///  Left/Right navigation computes its target relative to this value.
     pub(crate) fn focused_column(&self) -> usize {
         return self.focused_column.get()
     }
 
-    /// What: record the column that just received pane focus.
-    /// Why: spawn and keyboard navigation both update the origin for the next Left/Right move.
+    /// What:
+    ///  record the column that just received pane focus.
+    /// Why:
+    ///  spawn and keyboard navigation both update the origin for the next Left/Right move.
     pub(crate) fn set_focused_column(&self, column: usize) {
         self.focused_column.set(column);
     }
 
-    /// What: focus pane widget `id`, returning whether it existed.
-    /// Why: keyboard navigation can stop event propagation only when focus actually moved.
+    /// What:
+    ///  focus pane widget `id`,
+    ///  returning whether it existed.
+    /// Why:
+    ///  keyboard navigation can stop event propagation only when focus actually moved.
     pub(crate) fn focus_widget(&self, id: PaneId) -> bool {
         let Some(widget) = self.widgets.borrow().get(&id).cloned() else {
             return false;
@@ -156,9 +228,17 @@ impl StripLayout {
         return true
     }
 
-    /// What: reconcile GTK widgets to `placements`, building missing panes through `build_widget`.
-    /// Why: one idempotent pass after each model mutation grows/shrinks columns, removes stale
-    ///      widgets, creates missing widgets, clamps lane offsets, positions live widgets, and
+    /// What:
+    ///  reconcile GTK widgets to `placements`,
+    ///  building missing panes through `build_widget`.
+    /// Why:
+    ///  one idempotent pass after each model mutation grows/shrinks columns,
+    ///  removes stale
+    ///      widgets,
+    ///  creates missing widgets,
+    ///  clamps lane offsets,
+    ///  positions live widgets,
+    ///  and
     ///      redraws debug lanes.
     pub(crate) fn reconcile(
         self: &Rc<Self>,
@@ -186,8 +266,11 @@ impl StripLayout {
         self.refresh_child_lanes();
     }
 
-    /// What: grow or shrink the static column views to exactly `count`.
-    /// Why: descending adds columns and bulk-close removes them; each column owns a fixed pane canvas
+    /// What:
+    ///  grow or shrink the static column views to exactly `count`.
+    /// Why:
+    ///  descending adds columns and bulk-close removes them;
+    ///  each column owns a fixed pane canvas
     ///      but no vertical scroller.
     fn ensure_columns(self: &Rc<Self>, count: usize) {
         let mut columns = self.columns.borrow_mut();
@@ -215,8 +298,10 @@ impl StripLayout {
         }
     }
 
-    /// What: remove pane widgets whose ids no longer appear in `live`.
-    /// Why: closed panes must leave their column canvas and the widget map.
+    /// What:
+    ///  remove pane widgets whose ids no longer appear in `live`.
+    /// Why:
+    ///  closed panes must leave their column canvas and the widget map.
     fn remove_stale(&self, live: &HashMap<PaneId, (usize, usize)>) {
         let stale: Vec<PaneId> = self
             .widgets
@@ -234,8 +319,11 @@ impl StripLayout {
         }
     }
 
-    /// What: ensure `placement.id` has a widget in its target column.
-    /// Why: missing widgets are built and inserted; lane positioning happens in one later pass so
+    /// What:
+    ///  ensure `placement.id` has a widget in its target column.
+    /// Why:
+    ///  missing widgets are built and inserted;
+    ///  lane positioning happens in one later pass so
     ///      existing and new widgets use the same offset calculation.
     fn ensure_pane_widget(
         &self,
@@ -253,8 +341,10 @@ impl StripLayout {
         self.widgets.borrow_mut().insert(placement.id, widget);
     }
 
-    /// What: size each static column canvas to that column's deepest pane row.
-    /// Why: columns keep the shared row coordinate for alignment without adding vertical scroll
+    /// What:
+    ///  size each static column canvas to that column's deepest pane row.
+    /// Why:
+    ///  columns keep the shared row coordinate for alignment without adding vertical scroll
     ///      state of their own.
     fn set_content_height(&self, live: &HashMap<PaneId, (usize, usize)>) {
         for (index, view) in self.columns.borrow().iter().enumerate() {

@@ -83,7 +83,10 @@ fn selected_directory_is_validated_and_bound_to_query_generation() {
     );
 }
 
-/// Outside links, parent escapes, files, and missing scopes yield diagnostics without starting an outside search.
+/// Outside links,
+///  parent escapes,
+///  files,
+///  and missing scopes yield diagnostics without starting an outside search.
 #[test]
 fn invalid_scope_is_an_error_and_a_later_valid_scope_recovers() {
     let fixture = tempfile::tempdir().expect("disposable parent");

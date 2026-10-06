@@ -1,5 +1,8 @@
-//! What: Controls for the three names of an input file and its language.
-//! Why: A wrong display name misattributes findings, and a wrong logical path selects the wrong rules.
+//! What:
+//!  Controls for the three names of an input file and its language.
+//! Why:
+//!  A wrong display name misattributes findings,
+//!  and a wrong logical path selects the wrong rules.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -31,7 +34,8 @@ fn extensions_select_languages_exactly() {
     assert_eq!(Language::Mdx.processor(), ProcessorLanguage::Mdx);
 }
 
-/// Relative inputs join the working directory; dot components are resolved either way.
+/// Relative inputs join the working directory;
+///  dot components are resolved either way.
 #[test]
 fn absolute_paths_are_lexically_normal() {
     let cwd: &Path = Path::new("/work/repo");
@@ -49,7 +53,8 @@ fn absolute_paths_are_lexically_normal() {
     );
 }
 
-/// Files inside the working directory are named relative to it; others keep their absolute path.
+/// Files inside the working directory are named relative to it;
+///  others keep their absolute path.
 #[test]
 fn display_names_are_relative_inside_the_working_directory() {
     let cwd: &Path = Path::new("/work/repo");

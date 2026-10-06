@@ -1,8 +1,15 @@
-//! What: The sequencer-state query, its exact output reading and its decision, checked
-//!       against real Git 2.56.0 in a main worktree, a linked worktree and a directory
+//! What:
+//!  The sequencer-state query,
+//!  its exact output reading and its decision,
+//!  checked
+//!       against real Git 2.56.0 in a main worktree,
+//!  a linked worktree and a directory
 //!       whose name contains a newline.
-//! Why: A pathless commit is let through only while a merge, cherry-pick or revert awaits
-//!      its commit; a misread path would look in the wrong place.
+//! Why:
+//!  A pathless commit is let through only while a merge,
+//!  cherry-pick or revert awaits
+//!      its commit;
+//!  a misread path would look in the wrong place.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -66,7 +73,8 @@ fn builds_the_query_after_the_global_prefix() {
     );
 }
 
-/// Output is read as three paths of one directory, even when the directory has a newline.
+/// Output is read as three paths of one directory,
+///  even when the directory has a newline.
 #[test]
 fn reads_exact_query_output() {
     assert_eq!(
@@ -159,7 +167,8 @@ fn real_git_merge_conflict_is_in_progress() {
     remove(directory.as_path());
 }
 
-/// A linked worktree has its own head files, and a newline in the path is read exactly.
+/// A linked worktree has its own head files,
+///  and a newline in the path is read exactly.
 #[cfg(unix)]
 #[test]
 fn real_git_paths_follow_linked_worktrees_and_newlines() {

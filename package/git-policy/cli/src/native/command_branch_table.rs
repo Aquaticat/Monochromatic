@@ -1,6 +1,10 @@
-//! What: The complete option table of `git branch` in Git 2.56.0.
-//! Why: Whether `git branch <name>` creates a branch depends on which action options were
-//!      given, and whether a token is a name depends on each option's arity. Rows follow
+//! What:
+//!  The complete option table of `git branch` in Git 2.56.0.
+//! Why:
+//!  Whether `git branch <name>` creates a branch depends on which action options were
+//!      given,
+//!  and whether a token is a name depends on each option's arity.
+//!  Rows follow
 //!      `options[]` in `cmd_branch` (builtin/branch.c:992-1050) in source order.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,9 +12,13 @@
 //! // export const BRANCH_TABLE: readonly OptionSpec[] = [ ... ];
 //! ```
 
-/// What: Bring the row type, its builder and the arity names into this file. `UNREAD` is the
+/// What:
+///  Bring the row type,
+///  its builder and the arity names into this file.
+///  `UNREAD` is the
 ///       identifier of rows no branch fact reads.
-/// Why:  The table is data for the shared tokenizer.
+/// Why:
+///   The table is data for the shared tokenizer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,31 +26,47 @@
 /// ```
 use super::command_options::{Arity, OptionSpec, UNREAD, row};
 
-/// `-t`, `--track[=(direct|inherit)]`: writes the tracking mode.
+/// `-t`,
+///  `--track[=(direct|inherit)]`:
+///  writes the tracking mode.
 pub const TRACK: u16 = 1;
-/// `--set-upstream`: hidden, writes the tracking mode Git refuses when creating.
+/// `--set-upstream`:
+///  hidden,
+///  writes the tracking mode Git refuses when creating.
 pub const SET_UPSTREAM: u16 = 2;
-/// `-u`, `--set-upstream-to=<upstream>`.
+/// `-u`,
+///  `--set-upstream-to=<upstream>`.
 pub const SET_UPSTREAM_TO: u16 = 3;
 /// `--unset-upstream`.
 pub const UNSET_UPSTREAM: u16 = 4;
-/// `-r`/`--remotes` and `-a`/`--all`: both change the listed kind of ref.
+/// `-r`/`--remotes` and `-a`/`--all`:
+///  both change the listed kind of ref.
 pub const KIND: u16 = 5;
-/// `--contains`, `--no-contains`, `--with`, `--without`, `--merged`, `--no-merged`, `--forked`.
+/// `--contains`,
+///  `--no-contains`,
+///  `--with`,
+///  `--without`,
+///  `--merged`,
+///  `--no-merged`,
+///  `--forked`.
 pub const FILTER: u16 = 6;
-/// `-d`, `--delete`.
+/// `-d`,
+///  `--delete`.
 pub const DELETE: u16 = 7;
 /// `-D`.
 pub const DELETE_FORCE: u16 = 8;
-/// `-m`, `--move`.
+/// `-m`,
+///  `--move`.
 pub const MOVE: u16 = 9;
 /// `-M`.
 pub const MOVE_FORCE: u16 = 10;
-/// `-c`, `--copy`.
+/// `-c`,
+///  `--copy`.
 pub const COPY: u16 = 11;
 /// `-C`.
 pub const COPY_FORCE: u16 = 12;
-/// `-l`, `--list`.
+/// `-l`,
+///  `--list`.
 pub const LIST: u16 = 13;
 /// `--show-current`.
 pub const SHOW_CURRENT: u16 = 14;
@@ -50,17 +74,26 @@ pub const SHOW_CURRENT: u16 = 14;
 pub const EDIT_DESCRIPTION: u16 = 15;
 /// `--delete-merged=<pattern>`.
 pub const DELETE_MERGED: u16 = 16;
-/// `--dry-run`, valid only with `--delete-merged`.
+/// `--dry-run`,
+///  valid only with `--delete-merged`.
 pub const DRY_RUN: u16 = 17;
 /// `--points-at=<object>`.
 pub const POINTS_AT: u16 = 18;
-/// `--recurse-submodules`: Git accepts it only when creating a branch.
+/// `--recurse-submodules`:
+///  Git accepts it only when creating a branch.
 pub const RECURSE_SUBMODULES: u16 = 19;
 
-/// What: `pub const NAME: &[OptionSpec] = &[...]` is a table baked into the program.
-/// Why:  `--contains` and its relatives are `PARSE_OPT_LASTARG_DEFAULT`: they take the next
-///       token unless they are last. `--color`, `--abbrev`, `--column` and `--track` take
-///       an attached value only, so `git branch --color name` creates `name`.
+/// What:
+///  `pub const NAME: &[OptionSpec] = &[...]` is a table baked into the program.
+/// Why:
+///   `--contains` and its relatives are `PARSE_OPT_LASTARG_DEFAULT`:
+///  they take the next
+///       token unless they are last.
+///  `--color`,
+///  `--abbrev`,
+///  `--column` and `--track` take
+///       an attached value only,
+///  so `git branch --color name` creates `name`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

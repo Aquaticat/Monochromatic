@@ -1,6 +1,9 @@
-//! What: Controls proving the configuration generator reaches accepted settings.
-//! Why: The differential check is only evidence if generated documents really parse
-//!      and really vary; these controls count what the generator reaches and run the
+//! What:
+//!  Controls proving the configuration generator reaches accepted settings.
+//! Why:
+//!  The differential check is only evidence if generated documents really parse
+//!      and really vary;
+//!  these controls count what the generator reaches and run the
 //!      invariants on fixed rejection cases.
 //!
 //! In TS you'd write (pseudocode):

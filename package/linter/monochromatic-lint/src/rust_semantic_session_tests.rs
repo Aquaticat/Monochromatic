@@ -1,5 +1,7 @@
-//! What: Session failure boundaries and named-callback unwind controls.
-//! Why: Workspace problems and resolver panics must never become successful empty results.
+//! What:
+//!  Session failure boundaries and named-callback unwind controls.
+//! Why:
+//!  Workspace problems and resolver panics must never become successful empty results.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -27,7 +29,8 @@ fn text_panic() -> Result<Vec<Diagnostic>, SemanticError> {
     panic!("fixture panic");
 }
 
-/// Exercise a non-text payload, which still must produce a typed failure.
+/// Exercise a non-text payload,
+///  which still must produce a typed failure.
 fn numeric_panic() -> Result<Vec<Diagnostic>, SemanticError> {
     std::panic::panic_any::<u32>(42_u32);
 }

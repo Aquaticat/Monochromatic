@@ -7,7 +7,8 @@ use ide_app::{
     file_open::{FileOpener, OpenedFile},
     workspace::Workspace,
 };
-/// Files and links are disposable; every worker wait has a deadline.
+/// Files and links are disposable;
+///  every worker wait has a deadline.
 use std::{
     fs,
     os::unix::fs::symlink,
@@ -184,7 +185,9 @@ fn empty_file_and_inside_alias_are_valid_targets() {
     );
 }
 
-/// Project opens reject outside links, directories, and non-UTF-8 contents on the worker thread.
+/// Project opens reject outside links,
+///  directories,
+///  and non-UTF-8 contents on the worker thread.
 #[test]
 fn project_boundary_and_source_kind_failures_do_not_produce_documents() {
     let fixture = tempfile::tempdir().expect("disposable parent");
@@ -211,7 +214,8 @@ fn project_boundary_and_source_kind_failures_do_not_produce_documents() {
     }
 }
 
-/// An outside-project language target opens read-only and is marked; a later project open replaces it.
+/// An outside-project language target opens read-only and is marked;
+///  a later project open replaces it.
 #[test]
 fn outside_target_opens_marked_and_a_later_project_open_wins() {
     let fixture = tempfile::tempdir().expect("disposable parent");

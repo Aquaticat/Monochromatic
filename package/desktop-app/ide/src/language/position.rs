@@ -1,18 +1,27 @@
 //! The one place that converts between Helix character offsets and language-server positions.
 
-/// What: `Rope` is Helix's text buffer, indexed by Unicode scalar values ("characters"),
+/// What:
+///  `Rope` is Helix's text buffer,
+///  indexed by Unicode scalar values ("characters"),
 ///       not by bytes or UTF-16 units.
-/// Why: Every offset the application stores is a character index into this type.
+/// Why:
+///  Every offset the application stores is a character index into this type.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { type Rope } from 'helix-core';
 /// ```
 use helix_core::Rope;
-/// What: `OffsetEncoding` names the column unit one server negotiated (bytes, UTF-16 units, or
-///       characters); `lsp` holds the protocol's data types; the two `util` functions are Helix's
+/// What:
+///  `OffsetEncoding` names the column unit one server negotiated (bytes,
+///  UTF-16 units,
+///  or
+///       characters);
+///  `lsp` holds the protocol's data types;
+///  the two `util` functions are Helix's
 ///       own converters.
-/// Why: Reusing Helix's converters keeps the column arithmetic identical to the client that
+/// Why:
+///  Reusing Helix's converters keeps the column arithmetic identical to the client that
 ///      sends the document text.
 ///
 /// In TS you'd write (pseudocode):
@@ -24,10 +33,18 @@ use helix_lsp::{
     util::{lsp_pos_to_pos, pos_to_lsp_pos},
 };
 
-/// What: Convert a character offset into the line and column a server expects. `&Rope` lends the
-///       text read-only; `usize` is the address-sized unsigned index Helix uses (siblings: `u32`,
-///       `u64`); `Option<...>` is "a value or nothing", Rust's replacement for `T | undefined`.
-/// Why: Helix's converter panics for an offset past the end of the text, so the bound is checked
+/// What:
+///  Convert a character offset into the line and column a server expects.
+///  `&Rope` lends the
+///       text read-only;
+///  `usize` is the address-sized unsigned index Helix uses (siblings:
+///  `u32`,
+///       `u64`);
+///  `Option<...>` is "a value or nothing",
+///  Rust's replacement for `T | undefined`.
+/// Why:
+///  Helix's converter panics for an offset past the end of the text,
+///  so the bound is checked
 ///      here and reported as "no position" instead.
 ///
 /// In TS you'd write (pseudocode):
@@ -62,7 +79,9 @@ pub fn to_lsp_position(
     return Some(pos_to_lsp_pos(text, position, encoding));
 }
 
-/// Convert a character range, in either direction, into an ordered server range.
+/// Convert a character range,
+///  in either direction,
+///  into an ordered server range.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -87,10 +106,15 @@ pub fn to_lsp_range(
     return Some(lsp::Range::new(first, last));
 }
 
-/// What: Convert a server position into a character offset of `text`, or nothing when the
+/// What:
+///  Convert a server position into a character offset of `text`,
+///  or nothing when the
 ///       position names a line the text does not have.
-/// Why: Helix's converter maps a line past the end to the end of the text; anything the
-///      application draws or navigates to must instead be rejected, because such a position
+/// Why:
+///  Helix's converter maps a line past the end to the end of the text;
+///  anything the
+///      application draws or navigates to must instead be rejected,
+///  because such a position
 ///      belongs to another revision of the file.
 ///
 /// In TS you'd write (pseudocode):
@@ -120,10 +144,16 @@ pub fn from_lsp_position(
     return lsp_pos_to_pos(text, position, encoding);
 }
 
-/// What: Convert a server range into character offsets `(start, end)`. The parentheses form a
-///       tuple, a fixed pair of values.
-/// Why: The start must be on an existing line; an end past the last line means "through the end
-///      of the text", which the protocol uses to include a final line break.
+/// What:
+///  Convert a server range into character offsets `(start, end)`.
+///  The parentheses form a
+///       tuple,
+///  a fixed pair of values.
+/// Why:
+///  The start must be on an existing line;
+///  an end past the last line means "through the end
+///      of the text",
+///  which the protocol uses to include a final line break.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -151,7 +181,10 @@ pub fn from_lsp_range(
     return Some((start, end.max(start)));
 }
 
-/// Encodings, line endings, combining marks, and astral characters exercise every column unit.
+/// Encodings,
+///  line endings,
+///  combining marks,
+///  and astral characters exercise every column unit.
 #[cfg(test)]
 #[path = "position_tests.rs"]
 mod tests;

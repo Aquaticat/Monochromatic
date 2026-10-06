@@ -1,5 +1,9 @@
-//! What: Parsing of the linter's ordered, data-only JSONC configuration.
-//! Why: Syntax, schema and rule-option errors must be rejected before file matching or merging.
+//! What:
+//!  Parsing of the linter's ordered,
+//!  data-only JSONC configuration.
+//! Why:
+//!  Syntax,
+//!  schema and rule-option errors must be rejected before file matching or merging.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,8 +17,10 @@ use crate::configuration_rules::validate_rules;
 /// Import the repository's parser and exact value representation.
 use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};
 
-/// What: One immutable configuration block in source order.
-/// Why: File matching and rule merging need the same validated settings without rereading source.
+/// What:
+///  One immutable configuration block in source order.
+/// Why:
+///  File matching and rule merging need the same validated settings without rereading source.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,7 +29,8 @@ use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ConfigBlock {
-    /// Optional author-facing name, not a policy identity.
+    /// Optional author-facing name,
+    ///  not a policy identity.
     pub name: Option<String>,
     /// Patterns deciding where this block applies.
     pub files: Vec<String>,
@@ -35,8 +42,10 @@ pub struct ConfigBlock {
     pub global_ignore: bool,
 }
 
-/// What: Interpret one object after whole-document ambiguity validation.
-/// Why: The block has one shape regardless of how comments and trailing commas were written.
+/// What:
+///  Interpret one object after whole-document ambiguity validation.
+/// Why:
+///  The block has one shape regardless of how comments and trailing commas were written.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -107,8 +116,10 @@ fn parse_block(value: &JsoncValue) -> Result<ConfigBlock, ConfigError> {
     });
 }
 
-/// What: Parse and validate an ordered array of configuration blocks.
-/// Why: Duplicate keys and nulls must be rejected before any settings reach the merge function.
+/// What:
+///  Parse and validate an ordered array of configuration blocks.
+/// Why:
+///  Duplicate keys and nulls must be rejected before any settings reach the merge function.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,12 +1,15 @@
-//! A save in progress is not shown: an in-place save and a delete-then-rewrite reach the window only
-//! once finished, as long as the writer pauses for less than the write-quiet period.
+//! A save in progress is not shown:
+//!  an in-place save and a delete-then-rewrite reach the window only
+//! once finished,
+//!  as long as the writer pauses for less than the write-quiet period.
 //! An ignored measurement reports which pause lengths let a truncated file through.
 
 /// Shipped window setup and the bounded wait shared with the watch tests.
 use super::watch_tests::{open, promptly};
 /// The production window and the bounded wait for startup state.
 use super::{AppWindow, navigation_tests::wait_until, render};
-/// Reading positions, and the shipped write-wait intervals named in the measurement output.
+/// Reading positions,
+///  and the shipped write-wait intervals named in the measurement output.
 use ide_app::{
     document::ReadingPosition,
     refresh_policy::{REREAD_GAP, WRITE_QUIET, WRITE_WAIT_LIMIT},
@@ -14,8 +17,17 @@ use ide_app::{
 /// Real headless timers drive the same refresh timers as the shipped event loop;
 /// `ComponentHandle` provides `hide` on the generated window.
 use slint::{ComponentHandle, platform::update_timers_and_animations};
-/// What: `OpenOptions` opens a file with chosen flags; `Write` provides `write_all`; `Path` borrows a path.
-/// Why: The test plays a slow writer: truncate, wait, write, close, with the window running in between.
+/// What:
+///  `OpenOptions` opens a file with chosen flags;
+///  `Write` provides `write_all`;
+///  `Path` borrows a path.
+/// Why:
+///  The test plays a slow writer:
+///  truncate,
+///  wait,
+///  write,
+///  close,
+///  with the window running in between.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,15 +40,20 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Text on disk before each save, with `am a` selected.
+/// Text on disk before each save,
+///  with `am a` selected.
 pub(super) const OLD: &str = "I am a big cat\n";
 
-/// Text the save writes; the selection corresponds to `was a`.
+/// Text the save writes;
+///  the selection corresponds to `was a`.
 pub(super) const NEW: &str = "I was a big cat, but now I am a human!\n";
 
-/// How long the writer leaves the file unfinished in the asserting tests: below the 50 ms quiet period,
-/// and long enough for two 20 ms native ticks, so a read that did not wait happens during the pause.
-/// Timers run only inside the pause, so a stalled test thread cannot stretch the wait they observe.
+/// How long the writer leaves the file unfinished in the asserting tests:
+///  below the 50 ms quiet period,
+/// and long enough for two 20 ms native ticks,
+///  so a read that did not wait happens during the pause.
+/// Timers run only inside the pause,
+///  so a stalled test thread cannot stretch the wait they observe.
 pub(super) const PAUSE: Duration = Duration::from_millis(40);
 
 /// Record the window's source text when it differs from every text recorded so far.
@@ -54,7 +71,8 @@ fn note(window: &AppWindow, seen: &mut Vec<String>) {
     }
 }
 
-/// Run native timers for `span`, recording every distinct source text the window shows.
+/// Run native timers for `span`,
+///  recording every distinct source text the window shows.
 pub(super) fn watch_texts(window: &AppWindow, span: Duration, seen: &mut Vec<String>) {
     let start = Instant::now();
     // The time check comes first, so a stalled thread leaves the loop without running timers late.
@@ -65,7 +83,8 @@ pub(super) fn watch_texts(window: &AppWindow, span: Duration, seen: &mut Vec<Str
     }
 }
 
-/// Run native timers until the window shows `target`, recording every text shown on the way.
+/// Run native timers until the window shows `target`,
+///  recording every text shown on the way.
 pub(super) fn until_text(window: &AppWindow, target: &str, seen: &mut Vec<String>) {
     let start = Instant::now();
     loop {
@@ -83,16 +102,22 @@ pub(super) fn until_text(window: &AppWindow, target: &str, seen: &mut Vec<String
 }
 
 /// Run native timers until the gap between notified rereads has passed since the last read.
-/// After it, only the write wait can hold back the read of a notification that follows.
+/// After it,
+///  only the write wait can hold back the read of a notification that follows.
 fn rest(window: &AppWindow) {
     let mut ignored = Vec::new();
     watch_texts(window, REREAD_GAP + Duration::from_millis(50), &mut ignored);
 }
 
-/// Put `OLD` on disk by atomic replace, after a marker text, waiting until the window shows each.
-/// The read that shows `OLD` restarts the 1 s sweep clock, so the save that follows within a few
+/// Put `OLD` on disk by atomic replace,
+///  after a marker text,
+///  waiting until the window shows each.
+/// The read that shows `OLD` restarts the 1 s sweep clock,
+///  so the save that follows within a few
 /// hundred milliseconds cannot coincide with a sweep read.
-/// This is setup, so it waits with the 2 s bound; the watch tests assert that a replace shows promptly.
+/// This is setup,
+///  so it waits with the 2 s bound;
+///  the watch tests assert that a replace shows promptly.
 pub(super) fn baseline(window: &AppWindow, displayed: &Path) {
     for text in ["marker\n", OLD] {
         let staged = displayed.with_extension("tmp");
@@ -104,7 +129,11 @@ pub(super) fn baseline(window: &AppWindow, displayed: &Path) {
     rest(window);
 }
 
-/// An in-place save (truncate, part of the text, a pause, the rest, close) is shown only when finished,
+/// An in-place save (truncate,
+///  part of the text,
+///  a pause,
+///  the rest,
+///  close) is shown only when finished,
 /// and the selection follows the replaced region.
 #[test]
 fn native_source_does_not_show_an_in_place_save_before_it_finishes() {
@@ -146,7 +175,8 @@ fn native_source_does_not_show_an_in_place_save_before_it_finishes() {
 
 /// A save that deletes the file and writes it again is shown only when the new file is finished:
 /// neither the missing file nor the empty new file replaces the displayed text.
-/// The new file is created after the missing file was read and the reread gap has passed, so only
+/// The new file is created after the missing file was read and the reread gap has passed,
+///  so only
 /// the write wait keeps the empty file from being read.
 #[test]
 fn native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes() {
@@ -184,7 +214,8 @@ fn native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes() {
     window.hide().expect("close rewrite window");
 }
 
-/// For each pause between truncating the displayed file and writing it, count how often the window
+/// For each pause between truncating the displayed file and writing it,
+///  count how often the window
 /// showed the truncated (empty) file and how often the selection still followed the replacement.
 /// Pauses longer than the quiet period are expected to show the truncated file.
 #[test]

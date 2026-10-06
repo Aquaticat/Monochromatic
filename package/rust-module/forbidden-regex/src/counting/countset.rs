@@ -1,22 +1,37 @@
 //! A bounded set of live repetition counts stored as a bitset.
 //!
-//! What: [`CountSet`] holds the set of active counts of one `Counted` element as a
-//! bit per count value (`bit i` set means count `i` is live), bounded by the
-//! element's `max`. Why: a `Counted` element's counts only ever lie in `[0, max]`,
-//! so a fixed-width bitset replaces a heap `BTreeSet`; entry is one bit-or, the
-//! exit guard is one shift-and-test, and a matched byte advances every count at
-//! once with a single multi-word left shift, with no per-byte allocation.
+//! What:
+//!  [`CountSet`] holds the set of active counts of one `Counted` element as a
+//! bit per count value (`bit i` set means count `i` is live),
+//!  bounded by the
+//! element's `max`.
+//!  Why:
+//!  a `Counted` element's counts only ever lie in `[0, max]`,
+//! so a fixed-width bitset replaces a heap `BTreeSet`;
+//!  entry is one bit-or,
+//!  the
+//! exit guard is one shift-and-test,
+//!  and a matched byte advances every count at
+//! once with a single multi-word left shift,
+//!  with no per-byte allocation.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // module countset: see exported functions and types below.
 //! ```
 
-/// Live counts of one counted element as a bitset, one bit per count value.
+/// Live counts of one counted element as a bitset,
+///  one bit per count value.
 ///
-/// What: `words` is a little-endian bit array where bit `p` (word `p / 64`, bit
-/// `p % 64`) marks count `p` as live. Why: counts stay in `[0, max]`, so the array
-/// is sized once and reused; set operations become word ops.
+/// What:
+///  `words` is a little-endian bit array where bit `p` (word `p / 64`,
+///  bit
+/// `p % 64`) marks count `p` as live.
+///  Why:
+///  counts stay in `[0, max]`,
+///  so the array
+/// is sized once and reused;
+///  set operations become word ops.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,8 +40,13 @@
 /// };
 /// ```
 pub(crate) struct CountSet {
-    /// What:    Bit array of live counts, sized to address bit `max + 1`.
-    /// Why:     `words` stores bit array of live counts, sized to address bit `max + 1`, so
+    /// What:
+    ///     Bit array of live counts,
+    ///  sized to address bit `max + 1`.
+    /// Why:
+    ///      `words` stores bit array of live counts,
+    ///  sized to address bit `max + 1`,
+    ///  so
     ///          matcher code reads that precomputed state by name instead of recomputing or
     ///          passing it separately.
     ///
@@ -37,8 +57,10 @@ pub(crate) struct CountSet {
     words: Vec<u64>,
 }
 
-/// What:    Construction and the bounded-count set operations the simulation needs.
-/// Why:     The program attaches these functions to the named Rust type so callers can use
+/// What:
+///     Construction and the bounded-count set operations the simulation needs.
+/// Why:
+///      The program attaches these functions to the named Rust type so callers can use
 ///          method syntax.
 ///
 /// In TS you'd write (pseudocode):
@@ -48,8 +70,13 @@ pub(crate) struct CountSet {
 impl CountSet {
     /// Builds an empty set able to hold counts in `[0, max]`.
     ///
-    /// What: zeroed words sized to address bit `max + 1`. Why: a left shift can
-    /// momentarily set bit `max + 1`, which the advance then clears, so that bit
+    /// What:
+    ///  zeroed words sized to address bit `max + 1`.
+    ///  Why:
+    ///  a left shift can
+    /// momentarily set bit `max + 1`,
+    ///  which the advance then clears,
+    ///  so that bit
     /// must be representable.
     ///
     /// In TS you'd write (pseudocode):
@@ -66,8 +93,12 @@ impl CountSet {
 
     /// Empties the set in place without reallocating.
     ///
-    /// What: zeroes every word. Why: a reused buffer is cleared before the byte
-    /// step refills it, which is what removes per-byte allocation.
+    /// What:
+    ///  zeroes every word.
+    ///  Why:
+    ///  a reused buffer is cleared before the byte
+    /// step refills it,
+    ///  which is what removes per-byte allocation.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -79,10 +110,15 @@ impl CountSet {
         self.words.iter_mut().for_each(|word| *word = 0);
     }
 
-    /// Adds count zero, reporting whether the set changed.
+    /// Adds count zero,
+    ///  reporting whether the set changed.
     ///
-    /// What: sets bit 0. Why: entering a counted element seeds a fresh repetition
-    /// at count 0; the changed flag drives the closure fixpoint.
+    /// What:
+    ///  sets bit 0.
+    ///  Why:
+    ///  entering a counted element seeds a fresh repetition
+    /// at count 0;
+    ///  the changed flag drives the closure fixpoint.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -98,7 +134,10 @@ impl CountSet {
 
     /// Reports whether any live count is at least `min`.
     ///
-    /// What: tests every bit at position `>= min`. Why: counts never exceed `max`,
+    /// What:
+    ///  tests every bit at position `>= min`.
+    ///  Why:
+    ///  counts never exceed `max`,
     /// so "at least `min`" is exactly the exit guard's `[min, max]` membership.
     ///
     /// In TS you'd write (pseudocode):
@@ -120,7 +159,10 @@ impl CountSet {
 
     /// Reports whether no count is live.
     ///
-    /// What: every word is zero. Why: a dead counted element contributes nothing,
+    /// What:
+    ///  every word is zero.
+    ///  Why:
+    ///  a dead counted element contributes nothing,
     /// part of the thread-prune test.
     ///
     /// In TS you'd write (pseudocode):
@@ -133,11 +175,17 @@ impl CountSet {
         return self.words.iter().all(|&word| return word == 0)
     }
 
-    /// Sets this set to `src` with every count advanced by one, capped at `max`.
+    /// Sets this set to `src` with every count advanced by one,
+    ///  capped at `max`.
     ///
-    /// What: a multi-word left shift of `src` into `self`, then drop the count that
-    /// would exceed `max`. Why: a matched byte advances all live repetitions at
-    /// once; a count already at `max` has exited and is dropped.
+    /// What:
+    ///  a multi-word left shift of `src` into `self`,
+    ///  then drop the count that
+    /// would exceed `max`.
+    ///  Why:
+    ///  a matched byte advances all live repetitions at
+    /// once;
+    ///  a count already at `max` has exited and is dropped.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -156,7 +204,11 @@ impl CountSet {
 
     /// Clears the single stray count at `max + 1` a left shift can create.
     ///
-    /// What: clears bit `max + 1`. Why: counts stay in `[0, max]` by induction, so
+    /// What:
+    ///  clears bit `max + 1`.
+    ///  Why:
+    ///  counts stay in `[0, max]` by induction,
+    ///  so
     /// after a shift only that one position can be out of range.
     ///
     /// In TS you'd write (pseudocode):
@@ -176,7 +228,10 @@ impl CountSet {
 
 /// Returns the word count needed to address bit `max + 1`.
 ///
-/// What: enough 64-bit words for positions `0..=max + 1`. Why: sizing once here
+/// What:
+///  enough 64-bit words for positions `0..=max + 1`.
+///  Why:
+///  sizing once here
 /// keeps every `CountSet` of one element identically shaped for word-wise ops.
 ///
 /// In TS you'd write (pseudocode):
@@ -189,8 +244,11 @@ fn nwords(max: usize) -> usize {
     return (max + 1) / 64 + 1
 }
 
-/// What:    Unit tests for the bounded-count bitset, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for the bounded-count bitset,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

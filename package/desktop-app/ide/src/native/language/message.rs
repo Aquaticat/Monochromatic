@@ -1,19 +1,29 @@
 //! Sentences for language requests that cannot be satisfied.
 //!
-//! A message appears only after the user asked for something; each names what failed and what
-//! to do. Which server answered, and the latest status, decide between starting, missing,
-//! unsupported, failed, and empty.
+//! A message appears only after the user asked for something;
+//!  each names what failed and what
+//! to do.
+//!  Which server answered,
+//!  and the latest status,
+//!  decide between starting,
+//!  missing,
+//! unsupported,
+//!  failed,
+//!  and empty.
 
 /// The action names the feature and the key that repeats it.
 use super::Action;
-/// Replies, states, and the identity naming the server.
+/// Replies,
+///  states,
+///  and the identity naming the server.
 use ide_app::language::{
     identity::ServerIdentity,
     reply::{RequestFailure, RequestKind, RequestOutcome},
     status::{DocumentState, LanguageStatus, ServerState, ServerStatus},
 };
 
-/// The feature a request kind provides, as a message names it.
+/// The feature a request kind provides,
+///  as a message names it.
 fn feature(kind: RequestKind) -> &'static str {
     return match kind {
         RequestKind::Definition => "go to definition",
@@ -22,7 +32,8 @@ fn feature(kind: RequestKind) -> &'static str {
     };
 }
 
-/// The feature a request kind provides, capitalized to start a sentence.
+/// The feature a request kind provides,
+///  capitalized to start a sentence.
 fn heading(kind: RequestKind) -> &'static str {
     return match kind {
         RequestKind::Definition => "Go to definition",
@@ -31,9 +42,13 @@ fn heading(kind: RequestKind) -> &'static str {
     };
 }
 
-/// What: The name of the server that gave `outcome`, or a generic one.
-///       `Option<&ServerIdentity>` is "a borrowed identity, or nothing".
-/// Why: Replies without a server (no process could be asked) still need a subject.
+/// What:
+///  The name of the server that gave `outcome`,
+///  or a generic one.
+///       `Option<&ServerIdentity>` is "a borrowed identity,
+///  or nothing".
+/// Why:
+///  Replies without a server (no process could be asked) still need a subject.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,7 +61,9 @@ fn name(server: Option<&ServerIdentity>) -> String {
     });
 }
 
-/// The work a server reports, as " (title)", or nothing.
+/// The work a server reports,
+///  as " (title)",
+///  or nothing.
 fn progress(status: &LanguageStatus, server: Option<&ServerIdentity>) -> String {
     for row in &status.servers {
         // `is_some_and` tests the borrowed identity only when one is present.
@@ -59,9 +76,11 @@ fn progress(status: &LanguageStatus, server: Option<&ServerIdentity>) -> String 
     return String::new();
 }
 
-/// What: Explain a server state that keeps the action from being served.
+/// What:
+///  Explain a server state that keeps the action from being served.
 ///       `&ServerStatus` lends one status row.
-/// Why: A request answered "no server" is explained by why its server is not running.
+/// Why:
+///  A request answered "no server" is explained by why its server is not running.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -112,8 +131,12 @@ fn unsynchronized(server: &str, key: &str) -> String {
     );
 }
 
-/// What: Explain why no server answered, from the latest status.
-/// Why: "No server" alone gives no remedy; the document state and each server's state do.
+/// What:
+///  Explain why no server answered,
+///  from the latest status.
+/// Why:
+///  "No server" alone gives no remedy;
+///  the document state and each server's state do.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -172,8 +195,12 @@ fn failed(action: Action, server: Option<&ServerIdentity>, failure: &RequestFail
     };
 }
 
-/// What: Rank outcomes by how much they tell the user; lower is more telling.
-/// Why: With several servers, the most actionable answer explains the result.
+/// What:
+///  Rank outcomes by how much they tell the user;
+///  lower is more telling.
+/// Why:
+///  With several servers,
+///  the most actionable answer explains the result.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -193,9 +220,12 @@ fn rank(outcome: &RequestOutcome) -> u8 {
     };
 }
 
-/// What: The sentence for a finished request that produced nothing to show.
+/// What:
+///  The sentence for a finished request that produced nothing to show.
 ///       `&[...]` borrows the list of every server's answer.
-/// Why: Exactly one sentence is shown, chosen from the most telling answer.
+/// Why:
+///  Exactly one sentence is shown,
+///  chosen from the most telling answer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -265,14 +295,18 @@ pub(super) fn unavailable(address: &str, reason: &str) -> String {
     return format!("Cannot open {address}: {reason}.");
 }
 
-/// The sentence once the Language module stopped; `reason` is the handle's own explanation.
+/// The sentence once the Language module stopped;
+///  `reason` is the handle's own explanation.
 pub(super) fn stopped(reason: &str) -> String {
     return format!("{reason}.");
 }
 
-/// What: Whether displaying the file again could let a server serve it.
-/// Why: The worker re-resolves programs and restarts failed servers only when a file is
-///      displayed, so an explicit action displays it again when the status shows such a state
+/// What:
+///  Whether displaying the file again could let a server serve it.
+/// Why:
+///  The worker re-resolves programs and restarts failed servers only when a file is
+///      displayed,
+///  so an explicit action displays it again when the status shows such a state
 ///      and no server would answer as things are.
 ///
 /// In TS you'd write (pseudocode):

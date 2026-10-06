@@ -5,7 +5,8 @@ use ide_app::search_input::{DoubleShift, SearchInput};
 /// Inject elapsed times so the gesture boundary is measured exactly rather than through sleeps.
 use std::time::Duration;
 
-/// Percent applies only at the raw input's first character, and empty patterns do not start work.
+/// Percent applies only at the raw input's first character,
+///  and empty patterns do not start work.
 #[test]
 fn query_prefix_and_trimming_follow_the_reference_order() {
     assert_eq!(
@@ -41,7 +42,8 @@ fn query_prefix_and_trimming_follow_the_reference_order() {
     }
 }
 
-/// JavaScript trims the byte-order mark but retains NEXT LINE, unlike Rust's default whitespace predicate.
+/// JavaScript trims the byte-order mark but retains NEXT LINE,
+///  unlike Rust's default whitespace predicate.
 #[test]
 fn query_trimming_retains_javascript_whitespace_semantics() {
     assert_eq!(
@@ -58,7 +60,8 @@ fn query_trimming_retains_javascript_whitespace_semantics() {
     );
 }
 
-/// The second release must precede the 400ms boundary; successful gestures reset the pair.
+/// The second release must precede the 400ms boundary;
+///  successful gestures reset the pair.
 #[test]
 fn double_shift_uses_a_strict_timing_boundary_and_resets() {
     let mut gesture = DoubleShift::default();
@@ -71,7 +74,8 @@ fn double_shift_uses_a_strict_timing_boundary_and_resets() {
     assert!(gesture.release(true, Duration::from_millis(900)));
 }
 
-/// Other keypresses break the gesture, while unrelated releases do not manufacture a Shift release.
+/// Other keypresses break the gesture,
+///  while unrelated releases do not manufacture a Shift release.
 #[test]
 fn intervening_keys_and_reversed_time_do_not_open_search() {
     let mut gesture = DoubleShift::default();

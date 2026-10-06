@@ -1,5 +1,6 @@
 //! main support for the forbidden-strings scanner.
-/// The standalone process owns panic output; loading the library never changes a host's hook.
+/// The standalone process owns panic output;
+///  loading the library never changes a host's hook.
 mod process_boundary;
 /// Imports dependencies used by this module.
 // What:     `use forbidden_strings::run_cli_from_env;` imports the

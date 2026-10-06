@@ -1,6 +1,10 @@
-//! Places a definition or reference names, and how each one is opened.
+//! Places a definition or reference names,
+//!  and how each one is opened.
 
-/// The open path for files other than the displayed one, the window, source state, and scrolling.
+/// The open path for files other than the displayed one,
+///  the window,
+///  source state,
+///  and scrolling.
 use crate::native::{
     AppWindow, State,
     navigation::{Navigation, request_jump},
@@ -11,8 +15,12 @@ use crate::native::{
 use ide_app::language::reply::Target;
 /// Generated list rows carry toolkit strings.
 use slint::SharedString;
-/// What: `Rc<RefCell<T>>` is the shared, borrow-checked owner; `Path`/`PathBuf` are paths.
-/// Why: Placing the caret changes the shared source state.
+/// What:
+///  `Rc<RefCell<T>>` is the shared,
+///  borrow-checked owner;
+///  `Path`/`PathBuf` are paths.
+/// Why:
+///  Placing the caret changes the shared source state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,9 +32,16 @@ use std::{
     rc::Rc,
 };
 
-/// What: One openable place: a canonical file, whether it lies outside the project, the
-///       zero-based line, and character offsets when the target text could be read.
-/// Why: The file-open path keeps it until the file is installed, then puts the caret there.
+/// What:
+///  One openable place:
+///  a canonical file,
+///  whether it lies outside the project,
+///  the
+///       zero-based line,
+///  and character offsets when the target text could be read.
+/// Why:
+///  The file-open path keeps it until the file is installed,
+///  then puts the caret there.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,14 +55,19 @@ pub(in crate::native) struct Jump {
     pub(in crate::native) outside: bool,
     /// Zero-based line the server named.
     pub(in crate::native) line: usize,
-    /// Character offsets in that file's text, when known.
+    /// Character offsets in that file's text,
+    ///  when known.
     pub(in crate::native) range: Option<(usize, usize)>,
 }
 
-/// What: Put the caret at the start of `jump` in the displayed document and scroll it into view.
+/// What:
+///  Put the caret at the start of `jump` in the displayed document and scroll it into view.
 ///       `&Jump` lends the target.
-/// Why: Offsets older than the displayed text are clamped to it; without offsets the line start
-///      is used, so a target always lands on its line.
+/// Why:
+///  Offsets older than the displayed text are clamped to it;
+///  without offsets the line start
+///      is used,
+///  so a target always lands on its line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,9 +98,15 @@ pub(in crate::native) fn place(window: &AppWindow, source: &Rc<RefCell<State>>, 
     viewport::reveal(window, source, start, end);
 }
 
-/// What: Open one target. `Err(String)` is the sentence to show for a target that cannot be
-///       opened; `navigation` opens a file other than the displayed one.
-/// Why: Unavailable locations are explained, never dropped; the open path itself reports read failures.
+/// What:
+///  Open one target.
+///  `Err(String)` is the sentence to show for a target that cannot be
+///       opened;
+///  `navigation` opens a file other than the displayed one.
+/// Why:
+///  Unavailable locations are explained,
+///  never dropped;
+///  the open path itself reports read failures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,9 +143,15 @@ pub(super) fn open(
     return Ok(());
 }
 
-/// What: List rows for targets: a path relative to the project and a one-based line, or the
-///       server's address; the detail marks outside-project and unopenable entries.
-/// Why: The list shows editord's `path:line` labels; special entries say why they are special.
+/// What:
+///  List rows for targets:
+///  a path relative to the project and a one-based line,
+///  or the
+///       server's address;
+///  the detail marks outside-project and unopenable entries.
+/// Why:
+///  The list shows editord's `path:line` labels;
+///  special entries say why they are special.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

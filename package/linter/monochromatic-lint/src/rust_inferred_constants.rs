@@ -1,12 +1,15 @@
-//! What: Identify constant placeholders parsed in the ambiguous generic-argument type slot.
-//! Why: Rust's syntax tree alone cannot tell whether '::<_>' supplies a type or a const parameter.
+//! What:
+//!  Identify constant placeholders parsed in the ambiguous generic-argument type slot.
+//! Why:
+//!  Rust's syntax tree alone cannot tell whether '::<_>' supplies a type or a const parameter.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Match the written argument's position to the resolved declaration's explicit parameter list.
 //! ```
 
-/// Import resolved argument ownership, including aliases and enum variants.
+/// Import resolved argument ownership,
+///  including aliases and enum variants.
 use crate::rust_generic_arguments::{GenericSite, generic_definition, path_site};
 /// Import real declarations instead of identifier spelling.
 use ra_ap_hir::{GenericDef, GenericParam, ModuleDef, PathResolution, Semantics};

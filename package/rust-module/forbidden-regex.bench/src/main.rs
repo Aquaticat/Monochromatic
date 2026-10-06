@@ -1,11 +1,20 @@
-//! Throughput benchmark: forbidden-regex vs the regex crate on the real ruleset.
+//! Throughput benchmark:
+//!  forbidden-regex vs the regex crate on the real ruleset.
 //!
-//! What: loads the shipped forbidden-strings rules, ports each into this engine's
-//! dialect, compile-filters to the subset both engines accept, then feeds our
+//! What:
+//!  loads the shipped forbidden-strings rules,
+//!  ports each into this engine's
+//! dialect,
+//!  compile-filters to the subset both engines accept,
+//!  then feeds our
 //! scanner the `&`/`~` versions and `regex` the complement-stripped versions and
-//! times `is_match` over a mostly-non-matching corpus. Why: `regex` cannot express
-//! `&`/`~`, but on the overlapping dialect the restricted engine should still win on
-//! raw scanning throughput; this measures whether it does on realistic rules.
+//! times `is_match` over a mostly-non-matching corpus.
+//!  Why:
+//!  `regex` cannot express
+//! `&`/`~`,
+//!  but on the overlapping dialect the restricted engine should still win on
+//! raw scanning throughput;
+//!  this measures whether it does on realistic rules.
 
 /// The synthetic corpus generator.
 mod corpus;
@@ -40,9 +49,15 @@ const BUDGET_SECS: f64 = 10.0;
 /// Lines checked for engine parity before timing.
 const PARITY_SAMPLE: usize = 5_000;
 
-/// Builds both engines from the ported rules, checks parity, and times them.
+/// Builds both engines from the ported rules,
+///  checks parity,
+///  and times them.
 ///
-/// What: the whole benchmark, end to end. Why: a single command that proves the
+/// What:
+///  the whole benchmark,
+///  end to end.
+///  Why:
+///  a single command that proves the
 /// throughput claim or refutes it on the realistic ruleset.
 fn main() {
     // Send the [phase]/[diag]/[oracle]/WARNING diagnostics to stderr via tracing (RUST_LOG,
@@ -199,14 +214,22 @@ fn main() {
     kernels::bench_line_matches(&fset, &corpus);
 }
 
-/// Scans the corpus on repeat for `BUDGET_SECS` across `threads`, returning total
+/// Scans the corpus on repeat for `BUDGET_SECS` across `threads`,
+///  returning total
 /// lines per second.
 ///
-/// What: each worker builds its OWN matcher via `make` (a per-thread clone), then
-/// loops full corpus passes until the budget elapses, summing every line scanned.
-/// Why: a per-thread matcher gives each engine independent state, so both scale up
-/// with cores; sharing one matcher would serialize an engine on its internal cache
-/// and unfairly slow it down. The fixed time budget bounds the run.
+/// What:
+///  each worker builds its OWN matcher via `make` (a per-thread clone),
+///  then
+/// loops full corpus passes until the budget elapses,
+///  summing every line scanned.
+/// Why:
+///  a per-thread matcher gives each engine independent state,
+///  so both scale up
+/// with cores;
+///  sharing one matcher would serialize an engine on its internal cache
+/// and unfairly slow it down.
+///  The fixed time budget bounds the run.
 fn throughput<M, Make, Run>(corpus: &[Vec<u8>], make: Make, run: Run, threads: usize) -> f64
 where
     Make: Fn() -> M + Sync,
@@ -242,7 +265,10 @@ where
 
 /// Prints one engine's throughput line.
 ///
-/// What: reports lines/s and the derived MB/s from the average line length. Why: the
+/// What:
+///  reports lines/s and the derived MB/s from the average line length.
+///  Why:
+///  the
 /// two figures make the comparison legible at a glance.
 fn report(name: &str, lines_per_sec: f64, avg_len: f64) {
     let mb_per_sec = lines_per_sec * avg_len / 1_000_000.0;

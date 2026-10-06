@@ -1,6 +1,12 @@
-//! What: Exact-forwarding controls through the built executable.
-//! Why: For commands the wrapper adds nothing to, a caller must not be able to tell
-//!      the wrapper from Git: same argument bytes, streams, exit status and signals.
+//! What:
+//!  Exact-forwarding controls through the built executable.
+//! Why:
+//!  For commands the wrapper adds nothing to,
+//!  a caller must not be able to tell
+//!      the wrapper from Git:
+//!  same argument bytes,
+//!  streams,
+//!  exit status and signals.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -18,7 +24,8 @@ use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 
-/// Run the same arguments through the wrapper and through real Git, in one directory.
+/// Run the same arguments through the wrapper and through real Git,
+///  in one directory.
 fn both(
     fixture: &Fixture,
     directory: &Path,
@@ -61,7 +68,8 @@ fn version_is_identical_to_native_git() {
     remove(&fixture);
 }
 
-/// Every argument reaches Git as its own unchanged element, including non-UTF-8 and empty ones.
+/// Every argument reaches Git as its own unchanged element,
+///  including non-UTF-8 and empty ones.
 #[test]
 fn argument_bytes_reach_git_unchanged() {
     let fixture: Fixture = fixture("argv");
@@ -117,7 +125,8 @@ fn argument_bytes_reach_git_unchanged() {
     remove(&fixture);
 }
 
-/// Named predicate: the three raw non-UTF-8 bytes of the first adversarial argument.
+/// Named predicate:
+///  the three raw non-UTF-8 bytes of the first adversarial argument.
 fn is_raw_marker(window: &[u8]) -> bool {
     return window == b"\xff\xfe\x80";
 }
@@ -150,7 +159,8 @@ fn non_utf8_paths_select_and_report_exactly() {
     remove(&fixture);
 }
 
-/// Named predicate: a byte that cannot appear in ASCII output.
+/// Named predicate:
+///  a byte that cannot appear in ASCII output.
 fn is_high_byte(window: &[u8]) -> bool {
     return window[0] >= 0xfd;
 }
@@ -237,7 +247,8 @@ fn exit_codes_and_stderr_match_native_git() {
     remove(&fixture);
 }
 
-/// Wait until the process with this ID is real Git, proving the wrapper replaced itself.
+/// Wait until the process with this ID is real Git,
+///  proving the wrapper replaced itself.
 fn wait_until_git(child: &Child) {
     let link: PathBuf = PathBuf::from(format!("/proc/{}/exe", child.id()));
     for _attempt in 0..2_000 {
@@ -251,7 +262,8 @@ fn wait_until_git(child: &Child) {
     panic!("process {} never became {REAL_GIT}", child.id());
 }
 
-/// A signal sent to the wrapper's process ID ends Git itself, and the caller sees that signal.
+/// A signal sent to the wrapper's process ID ends Git itself,
+///  and the caller sees that signal.
 #[test]
 fn signals_reach_git_in_the_same_process() {
     let fixture: Fixture = fixture("signal");
@@ -287,7 +299,8 @@ fn signals_reach_git_in_the_same_process() {
 }
 
 /// Git receives the lock PID injection after the caller's own numbered configuration,
-/// the forward-target marker, and every other variable unchanged.
+/// the forward-target marker,
+///  and every other variable unchanged.
 #[test]
 fn environment_overlay_reaches_git() {
     let fixture: Fixture = fixture("environment");

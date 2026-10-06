@@ -1,39 +1,54 @@
-//! What:     The iterative spine walk that every immutable edit shares: descend an address while cloning
-//!           each level's children, then rebuild the document bottom-up.
-//! Why:      A recursive rebuild overflows a debug test thread's stack at the 512-container depth this
-//!           crate accepts, so the walk keeps its own explicit stack of levels instead of call frames.
+//! What:
+//!      The iterative spine walk that every immutable edit shares:
+//!  descend an address while cloning
+//!           each level's children,
+//!  then rebuild the document bottom-up.
+//! Why:
+//!       A recursive rebuild overflows a debug test thread's stack at the 512-container depth this
+//!           crate accepts,
+//!  so the walk keeps its own explicit stack of levels instead of call frames.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // module editSpine: descend(root, path), rebuild(levels, value), set/delete/replace entry points.
 //! ```
 
-/// What:     Import the edit failure constructors' underlying types.
-/// Why:      The walk reports a missing address and a wrong-shaped target as different failures.
+/// What:
+///      Import the edit failure constructors' underlying types.
+/// Why:
+///       The walk reports a missing address and a wrong-shaped target as different failures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { JsoncEditError, JsoncPathNotFoundError, JsoncTypeError } from './error';
 /// ```
 use crate::error::{JsoncEditError, JsoncPathNotFoundError, JsoncTypeError};
-/// What:     Import the member lookup helper.
-/// Why:      Duplicate keys resolve to the last member, the same rule reads use.
+/// What:
+///      Import the member lookup helper.
+/// Why:
+///       Duplicate keys resolve to the last member,
+///  the same rule reads use.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { findEntryIndex, keyUnits } from './navigate';
 /// ```
 use crate::navigate::{find_entry_index, key_units};
-/// What:     Import the address segment type.
-/// Why:      Each step is either a key or an index, and the walk must reject a mismatch.
+/// What:
+///      Import the address segment type.
+/// Why:
+///       Each step is either a key or an index,
+///  and the walk must reject a mismatch.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncPathSegment } from './path';
 /// ```
 use crate::path::JsoncPathSegment;
-/// What:     Import the document model types the walk clones and rebuilds.
-/// Why:      A level holds its children so one slot can be replaced without touching the others.
+/// What:
+///      Import the document model types the walk clones and rebuilds.
+/// Why:
+///       A level holds its children so one slot can be replaced without touching the others.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -41,9 +56,15 @@ use crate::path::JsoncPathSegment;
 /// ```
 use crate::value::{JsoncComment, JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
 
-/// What:     One descended level: a container's cloned children, the slot addressed there, and the
+/// What:
+///      One descended level:
+///  a container's cloned children,
+///  the slot addressed there,
+///  and the
 ///           container's own comment.
-/// Why:      Rebuilding needs the untouched siblings and the parent comment, and an absent slot index
+/// Why:
+///       Rebuilding needs the untouched siblings and the parent comment,
+///  and an absent slot index
 ///           means "insert here" rather than "replace here".
 ///
 /// In TS you'd write (pseudocode):
@@ -54,32 +75,43 @@ use crate::value::{JsoncComment, JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
 pub(crate) enum SpineLevel {
     /// A record level with its members cloned in source order.
     Record {
-        /// What:    Members cloned from the source document.
-        /// Why:     `entries` stores the siblings so one slot can change without re-reading the original.
+        /// What:
+        ///     Members cloned from the source document.
+        /// Why:
+        ///      `entries` stores the siblings so one slot can change without re-reading the original.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// entries: JsoncEntry[];
         /// ```
         entries: Vec<JsoncEntry>,
-        /// What:    The member position addressed at this level, or absence for an insertion.
-        /// Why:     `index` stores the resolved position, so rebuilding never re-searches the members.
+        /// What:
+        ///     The member position addressed at this level,
+        ///  or absence for an insertion.
+        /// Why:
+        ///      `index` stores the resolved position,
+        ///  so rebuilding never re-searches the members.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// index?: number;
         /// ```
         index: Option<usize>,
-        /// What:    The key text to append when this level inserts a new member.
-        /// Why:     `insert_key` stores the caller's requested name, which the document does not hold yet.
+        /// What:
+        ///     The key text to append when this level inserts a new member.
+        /// Why:
+        ///      `insert_key` stores the caller's requested name,
+        ///  which the document does not hold yet.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// insertKey?: string;
         /// ```
         insert_key: Option<String>,
-        /// What:    The record's own comment.
-        /// Why:     `comment` stores it so rebuilding preserves the container's attached comment.
+        /// What:
+        ///     The record's own comment.
+        /// Why:
+        ///      `comment` stores it so rebuilding preserves the container's attached comment.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -89,24 +121,32 @@ pub(crate) enum SpineLevel {
     },
     /// An array level with its elements cloned in source order.
     Array {
-        /// What:    Elements cloned from the source document.
-        /// Why:     `elements` stores the siblings so one slot can change without re-reading the original.
+        /// What:
+        ///     Elements cloned from the source document.
+        /// Why:
+        ///      `elements` stores the siblings so one slot can change without re-reading the original.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// elements: JsoncValue[];
         /// ```
         elements: Vec<JsoncValue>,
-        /// What:    The element position addressed at this level, or absence for an append.
-        /// Why:     `index` stores the resolved position, so rebuilding never re-checks the bounds.
+        /// What:
+        ///     The element position addressed at this level,
+        ///  or absence for an append.
+        /// Why:
+        ///      `index` stores the resolved position,
+        ///  so rebuilding never re-checks the bounds.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// index?: number;
         /// ```
         index: Option<usize>,
-        /// What:    The array's own comment.
-        /// Why:     `comment` stores it so rebuilding preserves the container's attached comment.
+        /// What:
+        ///     The array's own comment.
+        /// Why:
+        ///      `comment` stores it so rebuilding preserves the container's attached comment.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -116,8 +156,10 @@ pub(crate) enum SpineLevel {
     },
 }
 
-/// What:     Build the missing-address failure for one requested path.
-/// Why:      Every absent-address branch reports the address the caller supplied.
+/// What:
+///      Build the missing-address failure for one requested path.
+/// Why:
+///       Every absent-address branch reports the address the caller supplied.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -129,8 +171,12 @@ pub(crate) fn not_found(path: &[JsoncPathSegment]) -> JsoncEditError {
     };
 }
 
-/// What:     Build the wrong-shape failure for one message.
-/// Why:      Indexing a scalar, or an object with a position, is a caller mistake worth naming.
+/// What:
+///      Build the wrong-shape failure for one message.
+/// Why:
+///       Indexing a scalar,
+///  or an object with a position,
+///  is a caller mistake worth naming.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -140,9 +186,14 @@ pub(crate) fn type_error(message: String) -> JsoncEditError {
     return JsoncEditError::Type { error: JsoncTypeError { message } };
 }
 
-/// What:     Walk an address, cloning each container level, and return the levels with the addressed
+/// What:
+///      Walk an address,
+///  cloning each container level,
+///  and return the levels with the addressed
 ///           value when the whole path resolved.
-/// Why:      Descent and rebuild are separate phases so neither needs a call frame per container, which
+/// Why:
+///       Descent and rebuild are separate phases so neither needs a call frame per container,
+///  which
 ///           is what keeps the accepted 512-depth document editable.
 ///
 /// In TS you'd write (pseudocode):
@@ -151,8 +202,11 @@ pub(crate) fn type_error(message: String) -> JsoncEditError {
 /// ```
 ///
 /// # Errors
-/// Returns the missing address when a step names nothing, or a shape failure when a step does not fit its
-/// target. With `allow_final_insert`, a missing final segment records an insertion instead of failing.
+/// Returns the missing address when a step names nothing,
+///  or a shape failure when a step does not fit its
+/// target.
+///  With `allow_final_insert`,
+///  a missing final segment records an insertion instead of failing.
 pub(crate) fn descend<'a>(
     root: &'a JsoncValue,
     path: &[JsoncPathSegment],
@@ -223,9 +277,12 @@ pub(crate) fn descend<'a>(
     return Ok((levels, Some(current)));
 }
 
-/// What:     Rebuild a document by writing one value into the deepest recorded level and then folding the
+/// What:
+///      Rebuild a document by writing one value into the deepest recorded level and then folding the
 ///           levels back outward.
-/// Why:      A bottom-up loop replaces recursion, so rebuild cost grows with the address length rather
+/// Why:
+///       A bottom-up loop replaces recursion,
+///  so rebuild cost grows with the address length rather
 ///           than with the call stack.
 ///
 /// In TS you'd write (pseudocode):
@@ -272,8 +329,12 @@ pub(crate) fn rebuild(levels: Vec<SpineLevel>, value: JsoncValue) -> JsoncValue 
     return current;
 }
 
-/// What:     Return a new document with one address replaced, creating only a missing final segment.
-/// Why:      Replacement keeps the addressed node's own comment, because that comment describes the
+/// What:
+///      Return a new document with one address replaced,
+///  creating only a missing final segment.
+/// Why:
+///       Replacement keeps the addressed node's own comment,
+///  because that comment describes the
 ///           address rather than the incoming value.
 ///
 /// In TS you'd write (pseudocode):
@@ -282,7 +343,8 @@ pub(crate) fn rebuild(levels: Vec<SpineLevel>, value: JsoncValue) -> JsoncValue 
 /// ```
 ///
 /// # Errors
-/// Returns the missing address when a step names nothing, or a shape failure when a step does not fit.
+/// Returns the missing address when a step names nothing,
+///  or a shape failure when a step does not fit.
 pub(crate) fn set_value(
     root: &JsoncValue,
     path: &[JsoncPathSegment],
@@ -299,8 +361,10 @@ pub(crate) fn set_value(
     return Ok(rebuild(levels, replacement));
 }
 
-/// What:     Return a new document with the addressed value transformed in place.
-/// Why:      Comment edits change one field of one node and must not insert missing structure.
+/// What:
+///      Return a new document with the addressed value transformed in place.
+/// Why:
+///       Comment edits change one field of one node and must not insert missing structure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -308,7 +372,8 @@ pub(crate) fn set_value(
 /// ```
 ///
 /// # Errors
-/// Returns the missing address when a step names nothing, or a shape failure when a step does not fit.
+/// Returns the missing address when a step names nothing,
+///  or a shape failure when a step does not fit.
 pub(crate) fn replace_at(
     root: &JsoncValue,
     path: &[JsoncPathSegment],
@@ -323,8 +388,11 @@ pub(crate) fn replace_at(
     return Ok(rebuild(levels, transform(addressed)));
 }
 
-/// What:     Return a new document without the addressed member or element.
-/// Why:      Deleting a key removes every member with that name, matching the maintained TypeScript
+/// What:
+///      Return a new document without the addressed member or element.
+/// Why:
+///       Deleting a key removes every member with that name,
+///  matching the maintained TypeScript
 ///           behavior for unsupported duplicate keys.
 ///
 /// In TS you'd write (pseudocode):
@@ -333,7 +401,8 @@ pub(crate) fn replace_at(
 /// ```
 ///
 /// # Errors
-/// Returns a shape failure for an empty address or a mismatched step, and the missing address when a step
+/// Returns a shape failure for an empty address or a mismatched step,
+///  and the missing address when a step
 /// names nothing.
 pub(crate) fn delete_value(
     root: &JsoncValue,
@@ -378,8 +447,11 @@ pub(crate) fn delete_value(
     return Ok(rebuild(levels, rebuilt));
 }
 
-/// What:     Return a new document whose addressed member key carries the given comment.
-/// Why:      A key comment lives on the parent record's member, so the walk stops one segment early and
+/// What:
+///      Return a new document whose addressed member key carries the given comment.
+/// Why:
+///       A key comment lives on the parent record's member,
+///  so the walk stops one segment early and
 ///           rewrites that member's key.
 ///
 /// In TS you'd write (pseudocode):
@@ -388,7 +460,8 @@ pub(crate) fn delete_value(
 /// ```
 ///
 /// # Errors
-/// Returns a shape failure for an empty or index-final address, and the missing address when the parent is
+/// Returns a shape failure for an empty or index-final address,
+///  and the missing address when the parent is
 /// not a record or the member does not exist.
 pub(crate) fn set_key_comment(
     root: &JsoncValue,

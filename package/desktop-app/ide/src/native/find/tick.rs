@@ -1,15 +1,23 @@
-//! Keep the wanted find identity equal to what is displayed and typed; apply only its reply.
+//! Keep the wanted find identity equal to what is displayed and typed;
+//!  apply only its reply.
 
 /// Session state and the shared selection step.
 use super::{Find, session};
-/// Source state, the window, and the single rendering boundary.
+/// Source state,
+///  the window,
+///  and the single rendering boundary.
 use crate::native::{AppWindow, State, render};
-/// Accepted results keep their tag; incremental typing selects the first match at or after the selection.
+/// Accepted results keep their tag;
+///  incremental typing selects the first match at or after the selection.
 use ide_app::find_navigation::{FindResults, at_or_after};
 /// Every request carries the identity its reply must still match when it returns.
 use ide_app::find_worker::{FindIdentity, FindReply, FindRequest};
-/// What: `Rc<RefCell<State>>` is the shared, borrow-checked source state of this window.
-/// Why: Results are stored next to the document they describe, where rendering reads them.
+/// What:
+///  `Rc<RefCell<State>>` is the shared,
+///  borrow-checked source state of this window.
+/// Why:
+///  Results are stored next to the document they describe,
+///  where rendering reads them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,7 +25,9 @@ use ide_app::find_worker::{FindIdentity, FindReply, FindRequest};
 /// ```
 use std::{cell::RefCell, rc::Rc};
 
-/// The tag results must carry to describe the displayed file, its revision, and the current find text.
+/// The tag results must carry to describe the displayed file,
+///  its revision,
+///  and the current find text.
 pub(super) fn wanted(state: &State, find: &Find) -> FindIdentity {
     return FindIdentity {
         file: state.file_generation,
@@ -54,7 +64,9 @@ pub(super) fn fail(
     render(window, state);
 }
 
-/// Store an accepted reply beside the document and, after an edit, select the nearest match.
+/// Store an accepted reply beside the document and,
+///  after an edit,
+///  select the nearest match.
 fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, find: &mut Find, reply: FindReply) {
     // What: `match` extracts the matches or the worker's diagnostic.
     // Why: A refused query or oversized file is shown in the bar instead of "No matches".
@@ -111,7 +123,10 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, find: &mut Find, reply:
     render(window, state);
 }
 
-/// Request matches whenever the displayed file, its revision, or the find text changed; then poll once.
+/// Request matches whenever the displayed file,
+///  its revision,
+///  or the find text changed;
+///  then poll once.
 pub(super) fn update(window: &AppWindow, state: &Rc<RefCell<State>>, find: &mut Find) {
     if !find.open || !find.available {
         return;

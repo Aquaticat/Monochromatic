@@ -1,7 +1,14 @@
-//! Server-to-client traffic: what `helix-term` does around helix-lsp in the terminal editor.
+//! Server-to-client traffic:
+//!  what `helix-term` does around helix-lsp in the terminal editor.
 //!
-//! helix-lsp frames, matches replies, and delivers; everything a server sends on its own
-//! arrives here and is answered, stored, logged, or ignored.
+//! helix-lsp frames,
+//!  matches replies,
+//!  and delivers;
+//!  everything a server sends on its own
+//! arrives here and is answered,
+//!  stored,
+//!  logged,
+//!  or ignored.
 
 /// Server lifecycle steps triggered by synthetic notifications.
 use super::attach;
@@ -19,18 +26,27 @@ use super::target::{Classified, classify};
 use super::worker::Worker;
 /// The feature name pushed diagnostics are filed under in Helix's configuration.
 use helix_core::syntax::config::LanguageServerFeature;
-/// What: `Call` is one server-to-client message; `Notification` is helix-lsp's parsed form of
-///       the notifications it models; `jsonrpc` holds the wire-level types; `lsp` the protocol's
+/// What:
+///  `Call` is one server-to-client message;
+///  `Notification` is helix-lsp's parsed form of
+///       the notifications it models;
+///  `jsonrpc` holds the wire-level types;
+///  `lsp` the protocol's
 ///       data types.
-/// Why: Messages arrive unparsed so the embedder decides what each means.
+/// Why:
+///  Messages arrive unparsed so the embedder decides what each means.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { type Call, Notification, jsonrpc, lsp } from 'helix-lsp';
 /// ```
 use helix_lsp::{Call, Client, LanguageServerId, Notification, jsonrpc, lsp};
-/// What: `Arc` is a thread-safe shared pointer (siblings: `Rc`, `Box`).
-/// Why: File-watcher registrations keep a weak pointer made from the shared client.
+/// What:
+///  `Arc` is a thread-safe shared pointer (siblings:
+///  `Rc`,
+///  `Box`).
+/// Why:
+///  File-watcher registrations keep a weak pointer made from the shared client.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,7 +54,8 @@ use helix_lsp::{Call, Client, LanguageServerId, Notification, jsonrpc, lsp};
 /// ```
 use std::sync::Arc;
 
-/// Longest server message copied into the log, in characters.
+/// Longest server message copied into the log,
+///  in characters.
 const LOGGED_MESSAGE_CHARS: usize = 300;
 
 /// True for helix-lsp's synthetic notification that a server process ended.
@@ -60,8 +77,12 @@ fn shortened(message: &str) -> String {
     return message.chars().take(LOGGED_MESSAGE_CHARS).collect();
 }
 
-/// What: Answer one request a server sent, then apply its side effect.
-/// Why: The decision is made by the pure policy; this function only supplies the client's
+/// What:
+///  Answer one request a server sent,
+///  then apply its side effect.
+/// Why:
+///  The decision is made by the pure policy;
+///  this function only supplies the client's
 ///      settings and folders and carries out what the policy asks for.
 ///
 /// In TS you'd write (pseudocode):
@@ -122,9 +143,13 @@ async fn on_request(
     return;
 }
 
-/// What: Judge and store diagnostics a server pushed.
-/// Why: Only the displayed file's diagnostics are kept, compared by resolved path because
-///      servers spell the same path differently, and only from a server that holds the
+/// What:
+///  Judge and store diagnostics a server pushed.
+/// Why:
+///  Only the displayed file's diagnostics are kept,
+///  compared by resolved path because
+///      servers spell the same path differently,
+///  and only from a server that holds the
 ///      document open and in sync.
 ///
 /// In TS you'd write (pseudocode):
@@ -178,9 +203,14 @@ fn on_published(
     tracing::debug!(server = name, ?verdict, version = ?published.version, "judged pushed diagnostics");
 }
 
-/// What: Track which work a server reports as running. `&mut Worker` lends the worker for modification.
-/// Why: rust-analyzer sends hundreds of progress notifications during one start; only the begin
-///      and end of each token change what the status shows, so reports are dropped here.
+/// What:
+///  Track which work a server reports as running.
+///  `&mut Worker` lends the worker for modification.
+/// Why:
+///  rust-analyzer sends hundreds of progress notifications during one start;
+///  only the begin
+///      and end of each token change what the status shows,
+///  so reports are dropped here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -208,7 +238,8 @@ fn on_progress(worker: &mut Worker, server: LanguageServerId, progress: lsp::Pro
     }
 }
 
-/// Handle one notification, including the two helix-lsp injects itself.
+/// Handle one notification,
+///  including the two helix-lsp injects itself.
 fn on_notification(
     worker: &mut Worker,
     client: &Arc<Client>,
@@ -244,8 +275,11 @@ fn on_notification(
     }
 }
 
-/// What: Handle one message from the merged `Registry::incoming` stream.
-/// Why: Every request gets a reply and every lifecycle signal updates the session; a message
+/// What:
+///  Handle one message from the merged `Registry::incoming` stream.
+/// Why:
+///  Every request gets a reply and every lifecycle signal updates the session;
+///  a message
 ///      from a server that was already removed is dropped.
 ///
 /// In TS you'd write (pseudocode):

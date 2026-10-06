@@ -1,6 +1,11 @@
-//! What: Match one `--name[=value]` token against a Git option table as Git 2.56.0 does.
-//! Why: Git accepts any unambiguous prefix (`--am` for `--amend`), `--no-` negation and
-//!      `--no-no-` forms (`parse_long_opt`, parse-options.c:519-594). A list of exact
+//! What:
+//!  Match one `--name[=value]` token against a Git option table as Git 2.56.0 does.
+//! Why:
+//!  Git accepts any unambiguous prefix (`--am` for `--amend`),
+//!  `--no-` negation and
+//!      `--no-no-` forms (`parse_long_opt`,
+//!  parse-options.c:519-594).
+//!  A list of exact
 //!      spellings misses forms Git accepts.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,8 +13,10 @@
 //! // scanLongOption({ args, index, table, mode, parsed }): number  // tokens consumed
 //! ```
 
-/// What: Bring the tokenizer types and the shared value decision into this file.
-/// Why:  A long option appends to the same result the short-cluster scan appends to.
+/// What:
+///  Bring the tokenizer types and the shared value decision into this file.
+/// Why:
+///   A long option appends to the same result the short-cluster scan appends to.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,8 +30,11 @@ use super::command_options_value::{Spelling, take_value};
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: The row an abbreviation resolved to, with whether it is used in negated form.
-/// Why:  Git remembers the latest abbreviation candidate until the whole table is checked.
+/// What:
+///  The row an abbreviation resolved to,
+///  with whether it is used in negated form.
+/// Why:
+///   Git remembers the latest abbreviation candidate until the whole table is checked.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,10 +48,15 @@ struct Candidate {
     unset: bool,
 }
 
-/// What: Record a matched option and say whether it took the next token as its value.
-///       `&mut ParsedOptions` lends the result for writing; `bool` is true or false.
-/// Why:  Exact and abbreviated matches end the same way (`get_value`). The caller visits
-///       every token once and only needs to know whether to pass over the next one, so
+/// What:
+///  Record a matched option and say whether it took the next token as its value.
+///       `&mut ParsedOptions` lends the result for writing;
+///  `bool` is true or false.
+/// Why:
+///   Exact and abbreviated matches end the same way (`get_value`).
+///  The caller visits
+///       every token once and only needs to know whether to pass over the next one,
+///  so
 ///       no count is returned that a mistake could turn into "stay on this token".
 ///
 /// In TS you'd write (pseudocode):
@@ -73,8 +88,12 @@ fn accept(
     return Ok(matches!(value, Some(OptionValue::Detached { .. })));
 }
 
-/// What: Byte index of the first `=` in `bytes`, or the length when there is none.
-/// Why:  Git compares abbreviations up to the `=` only (`strchrnul`, parse-options.c:523).
+/// What:
+///  Byte index of the first `=` in `bytes`,
+///  or the length when there is none.
+/// Why:
+///   Git compares abbreviations up to the `=` only (`strchrnul`,
+///  parse-options.c:523).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -91,10 +110,15 @@ fn name_end(bytes: &[u8]) -> usize {
     return bytes.len();
 }
 
-/// What: Read the long option at `index` and return how many tokens it used (1 or 2).
-/// Why:  One table walk finds an exact match first and otherwise the unique abbreviation.
-/// Gotcha: `OPT_ALIAS` pairs are not modeled. No table in this crate holds an alias and its
-///         source that share a prefix, so the alias exception to ambiguity never applies.
+/// What:
+///  Read the long option at `index` and return how many tokens it used (1 or 2).
+/// Why:
+///   One table walk finds an exact match first and otherwise the unique abbreviation.
+/// Gotcha:
+///  `OPT_ALIAS` pairs are not modeled.
+///  No table in this crate holds an alias and its
+///         source that share a prefix,
+///  so the alias exception to ambiguity never applies.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -208,7 +232,8 @@ pub(crate) fn scan_long_option(
     });
 }
 
-/// Abbreviation, ambiguity and negation cases.
+/// Abbreviation,
+///  ambiguity and negation cases.
 #[cfg(test)]
 #[path = "command_options_long_tests.rs"]
 mod tests;

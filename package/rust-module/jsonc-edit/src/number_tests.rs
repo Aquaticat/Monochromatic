@@ -1,15 +1,26 @@
-//! What:     Exact-number identity tests: equal spellings, distinct values, invalid tokens, huge
-//!           exponents, hashing and an independently computed rational oracle.
-//! Why:      The identity is what makes `1`, `1.0` and `1e0` compare equal while
-//!           `9007199254740993` stays distinct, so its edges need explicit coverage.
+//! What:
+//!      Exact-number identity tests:
+//!  equal spellings,
+//!  distinct values,
+//!  invalid tokens,
+//!  huge
+//!           exponents,
+//!  hashing and an independently computed rational oracle.
+//! Why:
+//!       The identity is what makes `1`,
+//!  `1.0` and `1e0` compare equal while
+//!           `9007199254740993` stays distinct,
+//!  so its edges need explicit coverage.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! describe('JsoncNumberIdentity', () => { /* equality, rejection, oracle */ });
 //! ```
 
-/// What:     Import the identity under test.
-/// Why:      These tests exercise the same public constructor a caller uses.
+/// What:
+///      Import the identity under test.
+/// Why:
+///       These tests exercise the same public constructor a caller uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,7 +28,9 @@
 /// ```
 use crate::number::JsoncNumberIdentity;
 
-/// Check equivalent JSON spellings, huge exponents, and signed zero.
+/// Check equivalent JSON spellings,
+///  huge exponents,
+///  and signed zero.
 #[test]
 fn equal_values() {
     for (left, right) in [
@@ -105,8 +118,10 @@ fn hash_matches_value_equality() {
     assert!(seen.contains(&JsoncNumberIdentity::from_token("0.000").expect("valid zero")));
 }
 
-/// What: Represent a bounded decimal as an exact numerator and denominator.
-/// Why: This independent oracle can cross-multiply rather than reusing the normalization algorithm.
+/// What:
+///  Represent a bounded decimal as an exact numerator and denominator.
+/// Why:
+///  This independent oracle can cross-multiply rather than reusing the normalization algorithm.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

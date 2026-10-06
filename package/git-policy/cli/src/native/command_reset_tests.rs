@@ -1,6 +1,10 @@
-//! What: `git reset` modes in every spelling Git 2.56.0 accepts, with real-Git controls for
+//! What:
+//!  `git reset` modes in every spelling Git 2.56.0 accepts,
+//!  with real-Git controls for
 //!       the table and for last-mode-wins.
-//! Why: A missed `--hard` spelling lets a destructive reset run in the main worktree; a
+//! Why:
+//!  A missed `--hard` spelling lets a destructive reset run in the main worktree;
+//!  a
 //!      mode read as destructive after a later `--soft` blocks a harmless one.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +12,9 @@
 //! // expect(resetChangesWorktree(parseResetRegion(['--har', 'HEAD~1']))).toBe(true);
 //! ```
 
-/// The parser, its table, the oracles and the real-Git fixture helpers.
+/// The parser,
+///  its table,
+///  the oracles and the real-Git fixture helpers.
 use super::{RESET_TABLE, ResetMode, ResetRegion, parse_reset_region, reset_changes_worktree};
 use crate::command_options::OptionErrorKind;
 use crate::command_test_completion::{git_completion, render_completion};
@@ -18,12 +24,14 @@ use crate::command_test_support::{
 use crate::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 use std::path::PathBuf;
 
-/// Parse a region Git accepts, with no other wrapper flags.
+/// Parse a region Git accepts,
+///  with no other wrapper flags.
 fn region(values: &[&str]) -> ResetRegion {
     return parse_reset_region(os_arguments(values).as_slice(), &[]).expect("valid region");
 }
 
-/// Every abbreviation of the three worktree-changing modes; `--m` is ambiguous.
+/// Every abbreviation of the three worktree-changing modes;
+///  `--m` is ambiguous.
 #[test]
 fn detects_destructive_modes_in_every_abbreviation() {
     for (spellings, mode) in [
@@ -45,7 +53,11 @@ fn detects_destructive_modes_in_every_abbreviation() {
     );
 }
 
-/// Index-only forms: no mode, `--mixed`, `--soft`, patch mode and path resets.
+/// Index-only forms:
+///  no mode,
+///  `--mixed`,
+///  `--soft`,
+///  patch mode and path resets.
 #[test]
 fn detects_index_only_forms() {
     for values in [
@@ -71,7 +83,9 @@ fn detects_index_only_forms() {
     assert_eq!(region(&["HEAD"]).mode, None);
 }
 
-/// Divergence: the five modes write one variable, so the last one decides.
+/// Divergence:
+///  the five modes write one variable,
+///  so the last one decides.
 #[test]
 fn the_last_mode_option_decides() {
     assert_eq!(region(&["--hard", "--soft"]).mode, Some(ResetMode::Soft));
@@ -104,7 +118,8 @@ fn finds_the_escape_hatch_in_option_position_only() {
     }
 }
 
-/// A region Git refuses is reported as refused; Git then resets nothing.
+/// A region Git refuses is reported as refused;
+///  Git then resets nothing.
 #[test]
 fn reports_what_git_refuses() {
     for (values, kind) in [
@@ -125,7 +140,8 @@ fn reports_what_git_refuses() {
     }
 }
 
-/// The copied table matches the binary; `--har` discards a worktree change and a later
+/// The copied table matches the binary;
+///  `--har` discards a worktree change and a later
 /// `--soft` keeps it.
 #[test]
 fn table_abbreviation_and_last_mode_match_git() {

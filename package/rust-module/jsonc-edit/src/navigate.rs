@@ -1,9 +1,16 @@
-//! What:     Address resolution inside a parsed JSONC document.
-//!           A path is a slice of segments, and resolution walks one segment at a time through record
-//!           members and array elements, reporting a missing address and a wrong-shaped target
+//! What:
+//!      Address resolution inside a parsed JSONC document.
+//!           A path is a slice of segments,
+//!  and resolution walks one segment at a time through record
+//!           members and array elements,
+//!  reporting a missing address and a wrong-shaped target
 //!           separately.
-//! Why:      Reads, edits and comment queries all need the same walk, and duplicate object keys must
-//!           resolve the same way the maintained TypeScript package resolves them: the last member with
+//! Why:
+//!       Reads,
+//!  edits and comment queries all need the same walk,
+//!  and duplicate object keys must
+//!           resolve the same way the maintained TypeScript package resolves them:
+//!  the last member with
 //!           that key wins.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,24 +18,31 @@
 //! // module navigate: lookup(state, path), keys(state, path), has(state, path).
 //! ```
 
-/// What:     Import the edit failure enum and its two underlying causes.
-/// Why:      Resolution distinguishes "nothing at this address" from "this target has the wrong shape".
+/// What:
+///      Import the edit failure enum and its two underlying causes.
+/// Why:
+///       Resolution distinguishes "nothing at this address" from "this target has the wrong shape".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { JsoncEditError, JsoncPathNotFoundError, JsoncTypeError } from './error';
 /// ```
 use crate::error::{JsoncEditError, JsoncPathNotFoundError, JsoncTypeError};
-/// What:     Import the address segment type.
-/// Why:      A segment states whether the caller means an object key or an array index.
+/// What:
+///      Import the address segment type.
+/// Why:
+///       A segment states whether the caller means an object key or an array index.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncPathSegment } from './path';
 /// ```
 use crate::path::JsoncPathSegment;
-/// What:     Import the document model types resolution walks.
-/// Why:      Members keep key and value comments apart, so resolution must not flatten them.
+/// What:
+///      Import the document model types resolution walks.
+/// Why:
+///       Members keep key and value comments apart,
+///  so resolution must not flatten them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,8 +50,11 @@ use crate::path::JsoncPathSegment;
 /// ```
 use crate::value::{JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
 
-/// What:     Encode ordinary Rust text as UTF-16 code units.
-/// Why:      Stored keys are code units, so a requested key must be compared in the same form to match
+/// What:
+///      Encode ordinary Rust text as UTF-16 code units.
+/// Why:
+///       Stored keys are code units,
+///  so a requested key must be compared in the same form to match
 ///           a key written with escapes or holding a lone surrogate.
 ///
 /// In TS you'd write (pseudocode):
@@ -55,9 +72,13 @@ pub(crate) fn key_units(key: &str) -> Vec<u16> {
     return key.encode_utf16().collect();
 }
 
-/// What:     Find the last member whose decoded key equals the requested text.
-/// Why:      Duplicate keys are unsupported input, and the maintained TypeScript package reads the last
-///           one, so this crate resolves identically instead of picking an arbitrary match.
+/// What:
+///      Find the last member whose decoded key equals the requested text.
+/// Why:
+///       Duplicate keys are unsupported input,
+///  and the maintained TypeScript package reads the last
+///           one,
+///  so this crate resolves identically instead of picking an arbitrary match.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -81,8 +102,11 @@ pub(crate) fn find_entry_index(entries: &[JsoncEntry], key: &str) -> Option<usiz
     return found;
 }
 
-/// What:     Resolve one address step against one value.
-/// Why:      Every read and edit walks the same steps, and a wrong-shaped step must be reported as a
+/// What:
+///      Resolve one address step against one value.
+/// Why:
+///       Every read and edit walks the same steps,
+///  and a wrong-shaped step must be reported as a
 ///           shape failure rather than silently treated as absent.
 ///
 /// In TS you'd write (pseudocode):
@@ -138,8 +162,12 @@ pub(crate) fn child_at<'a>(
     };
 }
 
-/// What:     Walk a whole address and return the value it names.
-/// Why:      An empty address names the document root, and every other address names one descendant, so
+/// What:
+///      Walk a whole address and return the value it names.
+/// Why:
+///       An empty address names the document root,
+///  and every other address names one descendant,
+///  so
 ///           callers never handle those two cases separately.
 ///
 /// In TS you'd write (pseudocode):
@@ -148,7 +176,8 @@ pub(crate) fn child_at<'a>(
 /// ```
 ///
 /// # Errors
-/// Returns the missing address, or a shape failure when a step does not fit its target.
+/// Returns the missing address,
+///  or a shape failure when a step does not fit its target.
 pub(crate) fn resolve<'a>(
     root: &'a JsoncValue,
     path: &[JsoncPathSegment],
@@ -167,9 +196,13 @@ pub(crate) fn resolve<'a>(
     return Ok(current);
 }
 
-/// What:     Read the value one address names.
-/// Why:      This is the crate's read surface: a caller asks for a member or element and receives the
-///           stored value, comments included.
+/// What:
+///      Read the value one address names.
+/// Why:
+///       This is the crate's read surface:
+///  a caller asks for a member or element and receives the
+///           stored value,
+///  comments included.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -177,7 +210,8 @@ pub(crate) fn resolve<'a>(
 /// ```
 ///
 /// # Errors
-/// Returns the missing address, or a shape failure when a step does not fit its target.
+/// Returns the missing address,
+///  or a shape failure when a step does not fit its target.
 pub fn jsonc_lookup<'a>(
     root: &'a JsoncValue,
     path: &[JsoncPathSegment],
@@ -185,8 +219,11 @@ pub fn jsonc_lookup<'a>(
     return resolve(root, path);
 }
 
-/// What:     Report whether one address names a value.
-/// Why:      Existence checks must not be expressed as a caught error, which would hide shape failures.
+/// What:
+///      Report whether one address names a value.
+/// Why:
+///       Existence checks must not be expressed as a caught error,
+///  which would hide shape failures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -196,8 +233,11 @@ pub fn jsonc_has(root: &JsoncValue, path: &[JsoncPathSegment]) -> bool {
     return resolve(root, path).is_ok();
 }
 
-/// What:     List one record's member keys in source order.
-/// Why:      Callers iterating a document need its authored order and its key spellings, including keys
+/// What:
+///      List one record's member keys in source order.
+/// Why:
+///       Callers iterating a document need its authored order and its key spellings,
+///  including keys
 ///           that hold escapes or lone surrogates.
 ///
 /// In TS you'd write (pseudocode):
@@ -206,7 +246,8 @@ pub fn jsonc_has(root: &JsoncValue, path: &[JsoncPathSegment]) -> bool {
 /// ```
 ///
 /// # Errors
-/// Returns the missing address, or a shape failure when the target is not a record.
+/// Returns the missing address,
+///  or a shape failure when the target is not a record.
 pub fn jsonc_keys<'a>(
     root: &'a JsoncValue,
     path: &[JsoncPathSegment],

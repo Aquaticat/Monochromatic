@@ -1,21 +1,29 @@
-//! What: `git commit` region facts: every `commit.unit.test.ts` case, then the readings
+//! What:
+//!  `git commit` region facts:
+//!  every `commit.unit.test.ts` case,
+//!  then the readings
 //!       where the incumbent parser and Git 2.56.0 disagree.
-//! Why: The commit-only rule decides from these facts; a wrong fact is a bypass or a false
-//!      rejection. Real-Git controls for the disagreements are in `command_commit_git_tests.rs`.
+//! Why:
+//!  The commit-only rule decides from these facts;
+//!  a wrong fact is a bypass or a false
+//!      rejection.
+//!  Real-Git controls for the disagreements are in `command_commit_git_tests.rs`.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(parseCommitRegion(args).isDryRun).toBe(true);
 //! ```
 
-/// The parser under test, the tokenizer refusal types and the shared argument builders.
+/// The parser under test,
+///  the tokenizer refusal types and the shared argument builders.
 use super::{COMMIT_ESCAPE_HATCH, CommitRegion, FixupKind, parse_commit_region};
 use crate::command_options::{OptionError, OptionErrorKind, OptionValue, WrapperOccurrence};
 use crate::command_options_query::value_bytes;
 use crate::command_test_support::os_arguments;
 use std::ffi::OsString;
 
-/// Parse a region Git accepts, with no other wrapper flags.
+/// Parse a region Git accepts,
+///  with no other wrapper flags.
 fn region(values: &[&str]) -> CommitRegion {
     return parse_commit_region(os_arguments(values).as_slice(), &[]).expect("valid region");
 }
@@ -25,7 +33,8 @@ fn refusal(values: &[&str]) -> OptionError {
     return parse_commit_region(os_arguments(values).as_slice(), &[]).expect_err("refused region");
 }
 
-/// Ported: the eleven "detects dry run for ..." cases.
+/// Ported:
+///  the eleven "detects dry run for ..." cases.
 #[test]
 fn detects_dry_run_for_every_accepted_spelling() {
     for values in [
@@ -45,7 +54,8 @@ fn detects_dry_run_for_every_accepted_spelling() {
     }
 }
 
-/// Ported: the three "reports real commit for ..." cases.
+/// Ported:
+///  the three "reports real commit for ..." cases.
 #[test]
 fn reports_real_commits() {
     for values in [
@@ -57,7 +67,10 @@ fn reports_real_commits() {
     }
 }
 
-/// Ported: "detects include flag in short, long, and abbreviated forms" and
+/// Ported:
+///  "detects include flag in short,
+///  long,
+///  and abbreviated forms" and
 /// "reports no include flag for plain commits".
 #[test]
 fn detects_include_in_every_form() {
@@ -74,7 +87,8 @@ fn detects_include_in_every_form() {
     assert_eq!(refusal(&["--in"]).kind, OptionErrorKind::AmbiguousOption);
 }
 
-/// Ported: "extracts pathspecs without wrapper flags or option values".
+/// Ported:
+///  "extracts pathspecs without wrapper flags or option values".
 #[test]
 fn extracts_pathspecs_without_wrapper_flags_or_option_values() {
     let arguments: Vec<OsString> = os_arguments(&[
@@ -103,8 +117,10 @@ fn extracts_pathspecs_without_wrapper_flags_or_option_values() {
     );
 }
 
-/// Ported from `argv.unit.test.ts`: "keeps an ordinary undeclared joined git option working".
-/// With Git's whole table declared, the option is known and consumes nothing.
+/// Ported from `argv.unit.test.ts`:
+///  "keeps an ordinary undeclared joined git option working".
+/// With Git's whole table declared,
+///  the option is known and consumes nothing.
 #[test]
 fn reads_every_git_option_by_its_own_arity() {
     assert_eq!(
@@ -149,7 +165,9 @@ fn reads_every_git_option_by_its_own_arity() {
     );
 }
 
-/// Divergence: Git reads every letter of a cluster, so `-qa` and `-va` contain `-a`.
+/// Divergence:
+///  Git reads every letter of a cluster,
+///  so `-qa` and `-va` contain `-a`.
 #[test]
 fn finds_all_inside_any_cluster() {
     for values in [
@@ -167,7 +185,9 @@ fn finds_all_inside_any_cluster() {
     assert_eq!(region(&["-ua", "file.ts"]).pathspecs, vec![1]);
 }
 
-/// Git's last option wins; the facts are final states, not occurrence counts.
+/// Git's last option wins;
+///  the facts are final states,
+///  not occurrence counts.
 #[test]
 fn reports_final_states() {
     assert!(!region(&["--all", "--no-all"]).all);
@@ -190,7 +210,8 @@ fn reports_final_states() {
     assert!(region(&["--pathspec-file-nul"]).pathspec_file_nul);
 }
 
-/// The final `--pathspec-from-file` value is reported by position, whichever form it takes.
+/// The final `--pathspec-from-file` value is reported by position,
+///  whichever form it takes.
 #[test]
 fn reports_the_pathspec_file_value() {
     let separated: Vec<OsString> = os_arguments(&["--pathspec-from-file", "paths.txt", "x"]);
@@ -267,7 +288,8 @@ fn finds_the_escape_hatch_in_option_position_only() {
     );
 }
 
-/// A region Git refuses yields the refusal, never guessed facts.
+/// A region Git refuses yields the refusal,
+///  never guessed facts.
 #[test]
 fn refuses_regions_git_refuses() {
     for (values, kind, token) in [
@@ -290,7 +312,8 @@ fn refuses_regions_git_refuses() {
     }
 }
 
-/// Empty values, a leading terminator and bytes that are not UTF-8.
+/// Empty values,
+///  a leading terminator and bytes that are not UTF-8.
 #[cfg(unix)]
 #[test]
 fn keeps_empty_values_separators_and_non_utf8_bytes() {

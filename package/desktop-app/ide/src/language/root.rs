@@ -1,15 +1,27 @@
-//! Which directory Helix would root a language server at, checked before anything is spawned.
+//! Which directory Helix would root a language server at,
+//!  checked before anything is spawned.
 //!
-//! Helix derives the root from the process working directory, which it reads once and keeps
-//! (`helix-stdx/src/env.rs`), walking up to the first `.git`, `.svn`, `.jj`, or `.helix`. The
-//! application sets the working directory to the project root at startup; this module never
-//! changes it. It asks Helix's own public functions what they will compute and refuses every
-//! answer that is not inside the project, so a server is never started on an enclosing tree.
+//! Helix derives the root from the process working directory,
+//!  which it reads once and keeps
+//! (`helix-stdx/src/env.rs`),
+//!  walking up to the first `.git`,
+//!  `.svn`,
+//!  `.jj`,
+//!  or `.helix`.
+//!  The
+//! application sets the working directory to the project root at startup;
+//!  this module never
+//! changes it.
+//!  It asks Helix's own public functions what they will compute and refuses every
+//! answer that is not inside the project,
+//!  so a server is never started on an enclosing tree.
 
 /// Helix's per-language configuration supplies the root-marker file names.
 use helix_core::syntax::config::LanguageConfiguration;
-/// What: `Path` is a borrowed filesystem path and `PathBuf` its owned sibling.
-/// Why: Roots are compared by their resolved locations.
+/// What:
+///  `Path` is a borrowed filesystem path and `PathBuf` its owned sibling.
+/// Why:
+///  Roots are compared by their resolved locations.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,9 +29,14 @@ use helix_core::syntax::config::LanguageConfiguration;
 /// ```
 use std::path::{Path, PathBuf};
 
-/// What: Why no server may be started for a file. An `enum` with data is a tagged union.
-/// Why: A wrong working directory is a wiring fault of the application; an enclosing root is a
-///      property of the project. The reader reports them differently.
+/// What:
+///  Why no server may be started for a file.
+///  An `enum` with data is a tagged union.
+/// Why:
+///  A wrong working directory is a wiring fault of the application;
+///  an enclosing root is a
+///      property of the project.
+///  The reader reports them differently.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,18 +50,26 @@ pub(super) enum RootRefusal {
         /// The directory Helix resolves roots from.
         PathBuf,
     ),
-    /// Helix would root the server at this directory, which is outside the project.
+    /// Helix would root the server at this directory,
+    ///  which is outside the project.
     OutsideProject(
         /// The directory that would have become the server's root.
         PathBuf,
     ),
 }
 
-/// What: The project root in two spellings. `PathBuf` owns its path.
-/// Why: The application uses the resolved (canonical) path; Helix uses the working directory
-///      as the shell spelled it, which differs when the project is reached through a symbolic
-///      link (for example `/home` linking to `/var/home`). Paths handed to Helix must use
-///      Helix's spelling, or Helix concludes the file is outside its workspace.
+/// What:
+///  The project root in two spellings.
+///  `PathBuf` owns its path.
+/// Why:
+///  The application uses the resolved (canonical) path;
+///  Helix uses the working directory
+///      as the shell spelled it,
+///  which differs when the project is reached through a symbolic
+///      link (for example `/home` linking to `/var/home`).
+///  Paths handed to Helix must use
+///      Helix's spelling,
+///  or Helix concludes the file is outside its workspace.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,7 +77,8 @@ pub(super) enum RootRefusal {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct RootView {
-    /// Resolved project root, as `Workspace::root` reports it.
+    /// Resolved project root,
+    ///  as `Workspace::root` reports it.
     canonical: PathBuf,
     /// The same directory in the spelling Helix derives from its working directory.
     helix: PathBuf,
@@ -60,10 +86,13 @@ pub(super) struct RootView {
 
 /// Root computations.
 impl RootView {
-    /// What: Derive Helix's spelling of the project root from Helix's own workspace lookup.
+    /// What:
+    ///  Derive Helix's spelling of the project root from Helix's own workspace lookup.
     ///       `Result<Self, RootRefusal>` is the view (`Ok`) or the refusal (`Err`).
-    /// Why: `helix_core::find_workspace` is exactly what `helix_lsp` consults when it starts a
-    ///      server, so this view cannot disagree with it.
+    /// Why:
+    ///  `helix_core::find_workspace` is exactly what `helix_lsp` consults when it starts a
+    ///      server,
+    ///  so this view cannot disagree with it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -113,7 +142,8 @@ impl RootView {
         });
     }
 
-    /// The project root in Helix's spelling; passed as the only extra root directory.
+    /// The project root in Helix's spelling;
+    ///  passed as the only extra root directory.
     pub(super) fn helix(&self) -> &Path {
         return &self.helix;
     }
@@ -125,9 +155,11 @@ impl RootView {
             .is_ok_and(|resolved| return resolved.starts_with(&self.canonical));
     }
 
-    /// What: Respell a resolved path below the project root the way Helix spells the root.
+    /// What:
+    ///  Respell a resolved path below the project root the way Helix spells the root.
     ///       A path outside the project is returned unchanged.
-    /// Why: Helix compares the document path with its workspace textually.
+    /// Why:
+    ///  Helix compares the document path with its workspace textually.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -140,11 +172,15 @@ impl RootView {
         };
     }
 
-    /// What: Compute the root Helix would give a server for `document` (in Helix's spelling) and
+    /// What:
+    ///  Compute the root Helix would give a server for `document` (in Helix's spelling) and
     ///       accept it only inside the project.
-    /// Why: With no root-marker file in the project, Helix returns the enclosing version-controlled
+    /// Why:
+    ///  With no root-marker file in the project,
+    ///  Helix returns the enclosing version-controlled
     ///      tree even when the project is passed as a root directory (`helix-lsp/src/lib.rs`,
-    ///      `find_lsp_workspace`). Such a root is refused before any process exists.
+    ///      `find_lsp_workspace`).
+    ///  Such a root is refused before any process exists.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

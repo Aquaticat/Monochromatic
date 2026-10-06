@@ -1,5 +1,8 @@
-//! What: Rust lexical and source-position parity controls.
-//! Why: Blank lines, actual comments and comment-like text inside literals must not share a heuristic.
+//! What:
+//!  Rust lexical and source-position parity controls.
+//! Why:
+//!  Blank lines,
+//!  actual comments and comment-like text inside literals must not share a heuristic.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -29,7 +32,8 @@ fn reuses_registered_syntax_without_changing_source_bytes() {
     assert_eq!(context.line_span(2), separate.line_span(2));
 }
 
-/// Blank and comment-only lines do not count, while string contents remain code.
+/// Blank and comment-only lines do not count,
+///  while string contents remain code.
 #[test]
 fn real_lexer_distinguishes_comments_from_string_contents() {
     let source = RustSource::new(
@@ -47,7 +51,8 @@ fn real_lexer_distinguishes_comments_from_string_contents() {
     assert_eq!(source.filename, "input.rs");
 }
 
-/// Every physical line in a multiline literal counts, including its internally blank line.
+/// Every physical line in a multiline literal counts,
+///  including its internally blank line.
 #[test]
 fn multiline_literals_count_every_touched_line() {
     let source = RustSource::new(

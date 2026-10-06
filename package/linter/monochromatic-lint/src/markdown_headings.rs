@@ -1,5 +1,9 @@
-//! What: Heading-level, single-title and emphasis-heading checks.
-//! Why: Preserve the existing MD001, MD025 and MD036 behavior over the native tree.
+//! What:
+//!  Heading-level,
+//!  single-title and emphasis-heading checks.
+//! Why:
+//!  Preserve the existing MD001,
+//!  MD025 and MD036 behavior over the native tree.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -37,7 +41,8 @@ pub fn heading_increment(context: &MarkdownSource, severity: Severity) -> Vec<Di
     return findings;
 }
 
-/// Report every h1 after the first; frontmatter titles are not headings.
+/// Report every h1 after the first;
+///  frontmatter titles are not headings.
 pub fn single_h1(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
     let mut findings = Vec::new();
     let mut count = 0;
@@ -63,8 +68,10 @@ pub fn single_h1(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic
     return findings;
 }
 
-/// What: Sentence-ending punctuation accepted by the incumbent emphasis check.
-/// Why: Full-width punctuation and ASCII punctuation follow the same policy.
+/// What:
+///  Sentence-ending punctuation accepted by the incumbent emphasis check.
+/// Why:
+///  Full-width punctuation and ASCII punctuation follow the same policy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,6 +1,12 @@
-//! What: Process controls for the object reader against real Git 2.56.0 and failing stand-ins.
-//! Why: The reader must return exact stored bytes, read each blob once, stay usable after
-//!      an ordinary "missing" answer, refuse everything after a broken reply, and never
+//! What:
+//!  Process controls for the object reader against real Git 2.56.0 and failing stand-ins.
+//! Why:
+//!  The reader must return exact stored bytes,
+//!  read each blob once,
+//!  stay usable after
+//!      an ordinary "missing" answer,
+//!  refuse everything after a broken reply,
+//!  and never
 //!      leave a process behind.
 //!
 //! In TS you'd write (pseudocode):
@@ -19,7 +25,8 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-/// The global prefix selecting one repository: `-C <directory>`.
+/// The global prefix selecting one repository:
+///  `-C <directory>`.
 fn prefix(directory: &Path) -> Vec<OsString> {
     return vec![OsString::from("-C"), directory.as_os_str().to_os_string()];
 }
@@ -30,7 +37,8 @@ fn reader(directory: &Path) -> ObjectReader {
         .expect("reader starts");
 }
 
-/// Store exact bytes as a blob by writing a file and hashing it, and return its object name.
+/// Store exact bytes as a blob by writing a file and hashing it,
+///  and return its object name.
 fn store_blob(repository: &Path, bytes: &[u8]) -> ObjectId {
     let file: PathBuf = repository.join("blob-source");
     std::fs::write(&file, bytes).expect("blob source");
@@ -45,7 +53,11 @@ fn rev_parse(repository: &Path, revision: &str) -> ObjectId {
     return parse_object_id(strip_git_line(output.stdout.as_slice())).expect("object name");
 }
 
-/// Blob bytes come back exactly: text, binary with NUL and non-UTF-8 bytes, an empty blob, and a large one.
+/// Blob bytes come back exactly:
+///  text,
+///  binary with NUL and non-UTF-8 bytes,
+///  an empty blob,
+///  and a large one.
 #[test]
 fn blobs_are_returned_byte_for_byte() {
     let root: PathBuf = fixture("reader-bytes");
@@ -75,7 +87,9 @@ fn blobs_are_returned_byte_for_byte() {
     remove(root.as_path());
 }
 
-/// A blob already read is served from memory: it survives the reader being closed, and an unread one does not.
+/// A blob already read is served from memory:
+///  it survives the reader being closed,
+///  and an unread one does not.
 #[test]
 fn each_blob_is_read_once() {
     let root: PathBuf = fixture("reader-memo");
@@ -130,7 +144,8 @@ fn missing_and_non_blob_objects_are_failures_the_reader_survives() {
     remove(root.as_path());
 }
 
-/// `HEAD` resolves to the current commit, and to nothing in a repository without commits.
+/// `HEAD` resolves to the current commit,
+///  and to nothing in a repository without commits.
 #[test]
 fn head_commit_is_resolved_or_absent() {
     let root: PathBuf = fixture("reader-head");
@@ -159,7 +174,8 @@ fn head_commit_is_resolved_or_absent() {
     remove(root.as_path());
 }
 
-/// Objects written after the reader started are still found, as a fix that stages new content requires.
+/// Objects written after the reader started are still found,
+///  as a fix that stages new content requires.
 #[test]
 fn objects_written_after_start_are_found() {
     let root: PathBuf = fixture("reader-late");
@@ -175,7 +191,8 @@ fn objects_written_after_start_are_found() {
     remove(root.as_path());
 }
 
-/// Dropping the reader ends and collects its process: no live or zombie entry remains.
+/// Dropping the reader ends and collects its process:
+///  no live or zombie entry remains.
 #[test]
 fn dropping_the_reader_collects_its_process() {
     let root: PathBuf = fixture("reader-drop");
@@ -190,7 +207,8 @@ fn dropping_the_reader_collects_its_process() {
     remove(root.as_path());
 }
 
-/// The environment overlay reaches the reader: a private object directory hides the repository's own objects.
+/// The environment overlay reaches the reader:
+///  a private object directory hides the repository's own objects.
 #[test]
 fn overlay_selects_the_object_directory() {
     let root: PathBuf = fixture("reader-overlay");

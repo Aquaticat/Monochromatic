@@ -1,6 +1,9 @@
-//! What: Real Git 2.56.0 controls for the `git commit` table and for each reading where the
+//! What:
+//!  Real Git 2.56.0 controls for the `git commit` table and for each reading where the
 //!       incumbent parser disagreed with Git.
-//! Why: A divergence from the incumbent is only justified by what the binary does; each
+//! Why:
+//!  A divergence from the incumbent is only justified by what the binary does;
+//!  each
 //!      control runs the command in a disposable repository and checks the parser's facts
 //!      against the observed effect.
 //!
@@ -9,7 +12,9 @@
 //! // await git(repo, ['commit', '-qam', 'msg']); expect(await git(repo, ['status', '--porcelain'])).toBe('');
 //! ```
 
-/// The parser, its table, the oracles and the real-Git fixture helpers.
+/// The parser,
+///  its table,
+///  the oracles and the real-Git fixture helpers.
 use super::{CommitRegion, FixupKind, parse_commit_region};
 use crate::command_commit_table::COMMIT_TABLE;
 use crate::command_options::OptionErrorKind;
@@ -36,7 +41,8 @@ fn region(values: &[&str]) -> CommitRegion {
     return parse_commit_region(os_arguments(values).as_slice(), &[]).expect("valid region");
 }
 
-/// The copied table lists exactly the long options, required values and negations the
+/// The copied table lists exactly the long options,
+///  required values and negations the
 /// binary reports.
 #[test]
 fn table_matches_git_commit_completion_helper() {
@@ -49,7 +55,9 @@ fn table_matches_git_commit_completion_helper() {
     remove(directory.as_path());
 }
 
-/// Divergence: `-qam` contains `-a`. The incumbent only split clusters that it recognized.
+/// Divergence:
+///  `-qam` contains `-a`.
+///  The incumbent only split clusters that it recognized.
 #[test]
 fn clustered_all_stages_tracked_changes_in_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("commit-cluster");
@@ -62,7 +70,10 @@ fn clustered_all_stages_tracked_changes_in_git() {
     remove(directory.as_path());
 }
 
-/// Divergence: after `-u`, the letter `a` is the untracked-files mode, not `--all`.
+/// Divergence:
+///  after `-u`,
+///  the letter `a` is the untracked-files mode,
+///  not `--all`.
 #[test]
 fn letters_after_an_optional_value_letter_are_its_value_in_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("commit-optarg");
@@ -77,7 +88,8 @@ fn letters_after_an_optional_value_letter_are_its_value_in_git() {
     remove(directory.as_path());
 }
 
-/// Divergence: a separated token after `--untracked-files` is a pathspec.
+/// Divergence:
+///  a separated token after `--untracked-files` is a pathspec.
 #[test]
 fn a_separated_token_after_an_optional_value_option_is_a_pathspec_in_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("commit-optlong");
@@ -98,7 +110,8 @@ fn a_separated_token_after_an_optional_value_option_is_a_pathspec_in_git() {
     remove(directory.as_path());
 }
 
-/// Divergence: the last of `--dry-run`/`--no-dry-run` and of the status formats wins.
+/// Divergence:
+///  the last of `--dry-run`/`--no-dry-run` and of the status formats wins.
 #[test]
 fn the_last_dry_run_choice_wins_in_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("commit-dry-run");
@@ -120,7 +133,8 @@ fn the_last_dry_run_choice_wins_in_git() {
 }
 
 /// `--fixup=reword:` turns on `--only` itself and refuses an explicit `-o` and paths;
-/// `--fixup=amend:` permits a pathless `-o` (builtin/commit.c:1296-1307, 1395-1402).
+/// `--fixup=amend:` permits a pathless `-o` (builtin/commit.c:1296-1307,
+///  1395-1402).
 #[test]
 fn fixup_suboptions_behave_as_classified_in_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("commit-fixup");

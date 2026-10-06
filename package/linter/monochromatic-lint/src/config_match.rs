@@ -1,5 +1,7 @@
-//! What: Compile and apply configuration-relative file patterns.
-//! Why: Each selected configuration keeps its own pattern base and ordered rule settings.
+//! What:
+//!  Compile and apply configuration-relative file patterns.
+//! Why:
+//!  Each selected configuration keeps its own pattern base and ordered rule settings.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,14 +14,17 @@ use crate::config_lookup::ConfigurationSource;
 use crate::config_merge::merge_values;
 use crate::configuration::ConfigBlock;
 use crate::resolved_rules::complete_rules;
-/// Import the incumbent Rust glob compiler; it matches native path bytes.
+/// Import the incumbent Rust glob compiler;
+///  it matches native path bytes.
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 use monochromatic_jsonc_edit::JsoncValue;
 /// Import native paths and the configuration value model.
 use std::path::{Path, PathBuf};
 
-/// What: One compiled block and its validated settings.
-/// Why: Repeated files reuse pattern compilation instead of compiling each glob again.
+/// What:
+///  One compiled block and its validated settings.
+/// Why:
+///  Repeated files reuse pattern compilation instead of compiling each glob again.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,14 +33,17 @@ use std::path::{Path, PathBuf};
 struct CompiledBlock {
     /// Positive file selectors.
     files: GlobSet,
-    /// Exclusions, including directory descendants for trailing-slash patterns.
+    /// Exclusions,
+    ///  including directory descendants for trailing-slash patterns.
     ignores: GlobSet,
     /// Original ordered settings and global-ignore classification.
     block: ConfigBlock,
 }
 
-/// What: A prepared configuration with explicit source and matching base.
-/// Why: Callers can report source paths and derive relative candidate names without rereading configuration.
+/// What:
+///  A prepared configuration with explicit source and matching base.
+/// Why:
+///  Callers can report source paths and derive relative candidate names without rereading configuration.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,8 +58,12 @@ pub struct PreparedConfiguration {
     blocks: Vec<CompiledBlock>,
 }
 
-/// What: Distinguish global exclusion, no matching block, and configured files.
-/// Why: An empty effective rule set is not the same state as an unmatched file.
+/// What:
+///  Distinguish global exclusion,
+///  no matching block,
+///  and configured files.
+/// Why:
+///  An empty effective rule set is not the same state as an unmatched file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,15 +76,19 @@ pub enum FileConfiguration {
     Ignored,
     /// No ordinary block selected this candidate.
     Unconfigured,
-    /// At least one block selected the file; absent rules remain absent.
+    /// At least one block selected the file;
+    ///  absent rules remain absent.
     Configured {
         /// Final validated settings with per-rule option defaults.
         rules: JsoncValue,
     },
 }
 
-/// What: Compile one OR-set of configuration patterns.
-/// Why: A single * does not cross directories, and the pattern grammar is consistent across platforms.
+/// What:
+///  Compile one OR-set of configuration patterns.
+/// Why:
+///  A single * does not cross directories,
+///  and the pattern grammar is consistent across platforms.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,8 +126,10 @@ fn compile_patterns(patterns: &[String], directories: bool) -> Result<GlobSet, C
     }
 }
 
-/// What: Compile patterns once for the selected source.
-/// Why: This consumes validated blocks without making a second rule registry.
+/// What:
+///  Compile patterns once for the selected source.
+/// Why:
+///  This consumes validated blocks without making a second rule registry.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -137,8 +155,12 @@ pub fn prepare_configuration(
     });
 }
 
-/// What: Resolve one config-relative logical path, including virtual-file suffixes.
-/// Why: The same operation selects rules for real files, fenced Rust and rustdoc Markdown.
+/// What:
+///  Resolve one config-relative logical path,
+///  including virtual-file suffixes.
+/// Why:
+///  The same operation selects rules for real files,
+///  fenced Rust and rustdoc Markdown.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

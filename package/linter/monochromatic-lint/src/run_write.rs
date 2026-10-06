@@ -1,7 +1,12 @@
-//! What: Replace a file's contents atomically while keeping its permission bits.
-//! Why: Opening the target for writing truncates it first, so a crash mid-write could leave an
-//! empty file. Writing a complete sibling temporary file and renaming it over the target means
-//! readers see either the old bytes or the new bytes, never a partial file.
+//! What:
+//!  Replace a file's contents atomically while keeping its permission bits.
+//! Why:
+//!  Opening the target for writing truncates it first,
+//!  so a crash mid-write could leave an
+//! empty file.
+//!  Writing a complete sibling temporary file and renaming it over the target means
+//! readers see either the old bytes or the new bytes,
+//!  never a partial file.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -18,9 +23,14 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 
-/// What: A process-wide sequence for temporary file names.
-/// Why: Process id plus sequence keeps concurrent workers, and concurrent processes, from choosing
-/// the same temporary name in one directory. `AtomicU64` (not a plain `u64`) because worker
+/// What:
+///  A process-wide sequence for temporary file names.
+/// Why:
+///  Process id plus sequence keeps concurrent workers,
+///  and concurrent processes,
+///  from choosing
+/// the same temporary name in one directory.
+///  `AtomicU64` (not a plain `u64`) because worker
 /// threads increment it concurrently.
 ///
 /// In TS you'd write (pseudocode):
@@ -29,8 +39,12 @@ use std::{
 /// ```
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
-/// What: A failed replacement, naming the file and the operation that failed.
-/// Why: The caller reports that the original bytes are unchanged; the cause must be visible.
+/// What:
+///  A failed replacement,
+///  naming the file and the operation that failed.
+/// Why:
+///  The caller reports that the original bytes are unchanged;
+///  the cause must be visible.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,8 +67,12 @@ impl std::fmt::Display for WriteError {
 /// Mark the failure as a standard error for application error handling.
 impl std::error::Error for WriteError {}
 
-/// What: Build a typed failure from an operation name, a path and an I/O error.
-/// Why: Every step reports the same shape, so the message always names its file.
+/// What:
+///  Build a typed failure from an operation name,
+///  a path and an I/O error.
+/// Why:
+///  Every step reports the same shape,
+///  so the message always names its file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -66,9 +84,14 @@ fn failure(operation: &str, path: &Path, error: &std::io::Error) -> WriteError {
     };
 }
 
-/// What: Create the temporary file exclusively, readable and writable by its owner only.
-/// Why: `create_new` refuses an existing path, so a leftover or foreign file is never overwritten
-/// or followed. The restrictive initial mode keeps a private file's new contents private during
+/// What:
+///  Create the temporary file exclusively,
+///  readable and writable by its owner only.
+/// Why:
+///  `create_new` refuses an existing path,
+///  so a leftover or foreign file is never overwritten
+/// or followed.
+///  The restrictive initial mode keeps a private file's new contents private during
 /// the short time before the original permission bits are copied onto it.
 ///
 /// In TS you'd write (pseudocode):
@@ -90,9 +113,15 @@ fn create_temporary(temporary: &Path) -> Result<File, WriteError> {
     }
 }
 
-/// What: Write every byte, copy the original permission bits, and flush to disk.
-/// Why: Permissions are set on the open handle after writing, so the result carries the original
-/// mode exactly, independent of the process umask.
+/// What:
+///  Write every byte,
+///  copy the original permission bits,
+///  and flush to disk.
+/// Why:
+///  Permissions are set on the open handle after writing,
+///  so the result carries the original
+/// mode exactly,
+///  independent of the process umask.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -120,9 +149,14 @@ fn fill_temporary(
     return Ok(());
 }
 
-/// What: Replace `path` with `contents` through a same-directory temporary file and a rename.
-/// Why: The rename is atomic on one filesystem. A symbolic link is resolved first, so the link
-/// stays a link and its target file is the one replaced. On any failure the temporary file is
+/// What:
+///  Replace `path` with `contents` through a same-directory temporary file and a rename.
+/// Why:
+///  The rename is atomic on one filesystem.
+///  A symbolic link is resolved first,
+///  so the link
+/// stays a link and its target file is the one replaced.
+///  On any failure the temporary file is
 /// removed and the original bytes are untouched.
 ///
 /// In TS you'd write (pseudocode):
@@ -180,7 +214,8 @@ pub fn write_atomically(path: &Path, contents: &[u8]) -> Result<(), WriteError> 
     return outcome;
 }
 
-/// Mode, symlink and failure-cleanup controls stay outside release artifacts.
+/// Mode,
+///  symlink and failure-cleanup controls stay outside release artifacts.
 #[cfg(test)]
 #[path = "run_write_tests.rs"]
 mod tests;

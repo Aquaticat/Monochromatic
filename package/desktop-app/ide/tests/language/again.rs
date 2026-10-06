@@ -1,9 +1,14 @@
-//! Requests the worker makes on its own, asked again: an inlay-hint or pull-diagnostics request
+//! Requests the worker makes on its own,
+//!  asked again:
+//!  an inlay-hint or pull-diagnostics request
 //! the server leaves unanswered for its whole request timeout must not be the last one.
 //!
-//! The scripted server's stall holds its read loop, so whatever the client sends meanwhile waits
-//! unread in the server's input. That is what a server process that stopped running for a
-//! while looks like to the client, and it needs no load on the machine to happen.
+//! The scripted server's stall holds its read loop,
+//!  so whatever the client sends meanwhile waits
+//! unread in the server's input.
+//!  That is what a server process that stopped running for a
+//! while looks like to the client,
+//!  and it needs no load on the machine to happen.
 
 use crate::support::{self, Probe};
 use ide_app::language::{
@@ -12,13 +17,17 @@ use ide_app::language::{
 };
 use std::{path::Path, time::Instant};
 
-/// Request timeout of the scripted server in these tests, in seconds.
+/// Request timeout of the scripted server in these tests,
+///  in seconds.
 const TIMEOUT: u64 = 1;
 
-/// One and a half request timeouts: the first request times out, the one sent again is answered.
+/// One and a half request timeouts:
+///  the first request times out,
+///  the one sent again is answered.
 const STALL: &str = "1500";
 
-/// Longer than the first request and its three retries together, which end after four timeouts.
+/// Longer than the first request and its three retries together,
+///  which end after four timeouts.
 const LONG_STALL: &str = "4600";
 
 /// The visible lines every test reports.
@@ -27,7 +36,8 @@ const WINDOW: HintWindow = HintWindow {
     visible_lines: 20,
 };
 
-/// Text displayed first, and the text an external change replaces it with.
+/// Text displayed first,
+///  and the text an external change replaces it with.
 const BEFORE: &str = "plain text line\nsecond\n";
 const AFTER: &str = "longer plain text line\nsecond\nthird\n";
 
@@ -39,7 +49,9 @@ fn hint_requests(root: &Path) -> usize {
         .count();
 }
 
-/// Display `BEFORE`, report the window, and wait for the hints of that text.
+/// Display `BEFORE`,
+///  report the window,
+///  and wait for the hints of that text.
 fn display_with_hints(probe: &mut Probe, root: &Path) {
     probe.open(&root.join("main.scripted"), BEFORE);
     probe.until_ready();
@@ -54,8 +66,10 @@ fn display_with_hints(probe: &mut Probe, root: &Path) {
     });
 }
 
-/// Reload to `AFTER` and wait for hints of the new text. Every snapshot handed out after the
-/// reload must describe the new text; `what` names the wait in a failure.
+/// Reload to `AFTER` and wait for hints of the new text.
+///  Every snapshot handed out after the
+/// reload must describe the new text;
+///  `what` names the wait in a failure.
 fn reload_and_wait_for_hints(probe: &mut Probe, what: &str) {
     probe.reload(AFTER);
     let stamp = probe.stamp();
@@ -78,7 +92,8 @@ fn reload_and_wait_for_hints(probe: &mut Probe, what: &str) {
     assert_eq!(hints.hints.len(), 1);
 }
 
-/// The first hint request of a displayed file times out; the hints still arrive.
+/// The first hint request of a displayed file times out;
+///  the hints still arrive.
 #[test]
 fn hints_are_asked_again_when_the_first_request_times_out() {
     let Some(root) = support::child_root() else {
@@ -121,7 +136,8 @@ fn hints_are_asked_again_when_the_first_request_times_out() {
     );
 }
 
-/// The hint request that follows a reload times out; hints for the new text still arrive.
+/// The hint request that follows a reload times out;
+///  hints for the new text still arrive.
 #[test]
 fn hints_are_asked_again_after_a_reload_when_the_request_times_out() {
     let Some(root) = support::child_root() else {
@@ -152,7 +168,8 @@ fn hints_are_asked_again_after_a_reload_when_the_request_times_out() {
     );
 }
 
-/// The pull request that follows a reload times out; diagnostics for the new text still arrive.
+/// The pull request that follows a reload times out;
+///  diagnostics for the new text still arrive.
 #[test]
 fn pulled_diagnostics_are_asked_again_after_a_reload_when_the_request_times_out() {
     let Some(root) = support::child_root() else {
@@ -191,7 +208,8 @@ fn pulled_diagnostics_are_asked_again_after_a_reload_when_the_request_times_out(
     );
 }
 
-/// Every retry times out during a long stall; the server's next notification makes the worker
+/// Every retry times out during a long stall;
+///  the server's next notification makes the worker
 /// ask once more.
 #[test]
 fn hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_timed_out() {
@@ -219,7 +237,8 @@ fn hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_
     );
 }
 
-/// Every retry times out during a long stall and the server pushes nothing; its answer to a
+/// Every retry times out during a long stall and the server pushes nothing;
+///  its answer to a
 /// later hover request makes the worker ask once more.
 #[test]
 fn hints_are_asked_again_when_the_server_answers_another_request_after_every_retry_timed_out() {

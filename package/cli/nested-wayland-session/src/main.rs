@@ -1,7 +1,10 @@
 //! Parse informational/usage requests before logging or starting Wayland.
 
-/// What: ExitCode is the process status returned from main, unlike ().
-/// Why: The compositor must retain the hosted application's exit status.
+/// What:
+///  ExitCode is the process status returned from main,
+///  unlike ().
+/// Why:
+///  The compositor must retain the hosted application's exit status.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -10,15 +13,18 @@
 use std::process::ExitCode;
 /// Context retains application diagnostics without changing the public error type.
 use anyhow::{Context, Result};
-/// The library owns parsing and the compositor; this binary owns process policy.
+/// The library owns parsing and the compositor;
+///  this binary owns process policy.
 use nested_wayland_session::{parse_args, run};
 /// Log selection is installed only after command-line parsing succeeds.
 use tracing_subscriber::EnvFilter;
 
 /// Handle clap's help/version/usage exit policy while preserving other errors.
 ///
-/// What: downcast_ref borrows a typed clap error from anyhow's error envelope.
-/// Why: DisplayHelp exits successfully instead of becoming main's generic failure.
+/// What:
+///  downcast_ref borrows a typed clap error from anyhow's error envelope.
+/// Why:
+///  DisplayHelp exits successfully instead of becoming main's generic failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

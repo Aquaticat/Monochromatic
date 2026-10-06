@@ -1,6 +1,10 @@
-//! What: Per-run sharing of LFS repository facts across files and worker threads.
-//! Why: Every Markdown file under one `.lfsconfig` uses the same endpoint, tracked patterns and
-//! resolved image targets; discovering them once per repository keeps a large run from re-reading
+//! What:
+//!  Per-run sharing of LFS repository facts across files and worker threads.
+//! Why:
+//!  Every Markdown file under one `.lfsconfig` uses the same endpoint,
+//!  tracked patterns and
+//! resolved image targets;
+//!  discovering them once per repository keeps a large run from re-reading
 //! the same configuration and re-hashing the same images.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +12,8 @@
 //! // repos.contextFor(filePath, document, setting) -> LfsImageContext | undefined
 //! ```
 
-/// Import repository discovery, exclusion and per-file preparation.
+/// Import repository discovery,
+///  exclusion and per-file preparation.
 use crate::{
     markdown_lfs_config::LfsConfigError,
     markdown_lfs_context::{
@@ -18,15 +23,20 @@ use crate::{
     markdown_rule_settings::LfsSetting,
     markdown_source::MarkdownSource,
 };
-/// Import an ordered map, shared ownership (`Arc`, usable across threads unlike `Rc`) and a lock.
+/// Import an ordered map,
+///  shared ownership (`Arc`,
+///  usable across threads unlike `Rc`) and a lock.
 use std::{
     collections::BTreeMap,
     path::{Path, PathBuf},
     sync::{Arc, Mutex, MutexGuard},
 };
 
-/// What: A discovery outcome kept for the rest of the run, including a failed one.
-/// Why: A repository whose endpoint cannot be used fails every file the same way without being re-read.
+/// What:
+///  A discovery outcome kept for the rest of the run,
+///  including a failed one.
+/// Why:
+///  A repository whose endpoint cannot be used fails every file the same way without being re-read.
 /// `None` means the root's `.lfsconfig` declares no endpoint.
 ///
 /// In TS you'd write (pseudocode):
@@ -35,9 +45,13 @@ use std::{
 /// ```
 type Discovered = Result<Option<Arc<LfsImageRepo>>, LfsConfigError>;
 
-/// What: Discovered repositories by root directory.
-/// Why: `Mutex` gives worker threads one shared map; the lock is held only while a root is looked
-/// up or discovered, never while images are read.
+/// What:
+///  Discovered repositories by root directory.
+/// Why:
+///  `Mutex` gives worker threads one shared map;
+///  the lock is held only while a root is looked
+/// up or discovered,
+///  never while images are read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,8 +63,11 @@ pub struct LfsRepos {
     by_root: Mutex<BTreeMap<PathBuf, Discovered>>,
 }
 
-/// What: Look up or discover the repository a Markdown file belongs to and prepare its rule context.
-/// Why: The rule itself performs no I/O; this is the only path from a linted file to LFS facts.
+/// What:
+///  Look up or discover the repository a Markdown file belongs to and prepare its rule context.
+/// Why:
+///  The rule itself performs no I/O;
+///  this is the only path from a linted file to LFS facts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -62,8 +79,12 @@ impl LfsRepos {
         return LfsRepos::default();
     }
 
-    /// What: The shared repository for a root, discovering it on first use.
-    /// Why: Discovery reads `.lfsconfig` and `.gitattributes`; doing it under the lock means two
+    /// What:
+    ///  The shared repository for a root,
+    ///  discovering it on first use.
+    /// Why:
+    ///  Discovery reads `.lfsconfig` and `.gitattributes`;
+    ///  doing it under the lock means two
     /// workers never discover the same root twice.
     ///
     /// In TS you'd write (pseudocode):
@@ -87,10 +108,17 @@ impl LfsRepos {
         return discovered;
     }
 
-    /// What: The rule context for one file, or `None` when the rule is inert for it.
-    /// Why: The rule is inert without a `.lfsconfig` ancestor, without a declared endpoint, or when
-    /// the file matches the rule's `exclude` patterns. Exclusion is decided before the endpoint is
-    /// read. `file_path` is absolute and lexically normal.
+    /// What:
+    ///  The rule context for one file,
+    ///  or `None` when the rule is inert for it.
+    /// Why:
+    ///  The rule is inert without a `.lfsconfig` ancestor,
+    ///  without a declared endpoint,
+    ///  or when
+    /// the file matches the rule's `exclude` patterns.
+    ///  Exclusion is decided before the endpoint is
+    /// read.
+    ///  `file_path` is absolute and lexically normal.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

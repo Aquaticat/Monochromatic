@@ -1,5 +1,8 @@
-//! What: Controls proving the argument generators reach every classification outcome.
-//! Why: An invariant that is never reached proves nothing; these controls count the
+//! What:
+//!  Controls proving the argument generators reach every classification outcome.
+//! Why:
+//!  An invariant that is never reached proves nothing;
+//!  these controls count the
 //!      outcomes the generators produce and run the invariants on fixed hard cases.
 //!
 //! In TS you'd write (pseudocode):
@@ -17,7 +20,9 @@ use git_policy_cli::global_arguments::{GlobalOutcome, global_layout};
 use std::ffi::OsString;
 use std::os::unix::ffi::OsStringExt;
 
-/// NUL splitting keeps every other byte, including non-UTF-8 and empty pieces, and is bounded.
+/// NUL splitting keeps every other byte,
+///  including non-UTF-8 and empty pieces,
+///  and is bounded.
 #[test]
 fn raw_bytes_split_only_at_nul() {
     assert_eq!(arguments_from_bytes(b""), Vec::<OsString>::new());
@@ -116,7 +121,8 @@ fn invariants_hold_for_fixed_boundary_cases() {
     }
 }
 
-/// The mutation invariant can fail: a listing flag in first position does not require configuration.
+/// The mutation invariant can fail:
+///  a listing flag in first position does not require configuration.
 #[test]
 fn mutation_invariant_distinguishes_listing_from_mutating_flags() {
     let listing: Vec<OsString> = arguments_from_bytes(b"branch\0--list\0feature-*");

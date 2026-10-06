@@ -1,4 +1,8 @@
-//! Server lifetime: crash and restart, file switches, files outside the project, launch refusal,
+//! Server lifetime:
+//!  crash and restart,
+//!  file switches,
+//!  files outside the project,
+//!  launch refusal,
 //! and shutdown without leftover processes.
 
 use crate::support::{self, Probe, SERVER};
@@ -10,7 +14,8 @@ use ide_app::language::{
 };
 use serde_json::Value;
 
-/// Process identifiers of every scripted server that started, in order.
+/// Process identifiers of every scripted server that started,
+///  in order.
 fn started(lines: &[Value]) -> Vec<u64> {
     let mut pids = Vec::new();
     for line in lines {
@@ -21,7 +26,9 @@ fn started(lines: &[Value]) -> Vec<u64> {
     return pids;
 }
 
-/// A crash fails the pending request, removes the server, and the next open starts a new one.
+/// A crash fails the pending request,
+///  removes the server,
+///  and the next open starts a new one.
 #[test]
 fn crash_fails_the_pending_request_and_the_next_open_restarts() {
     let Some(root) = support::child_root() else {
@@ -212,7 +219,8 @@ fn refusing(request: &LaunchRequest) -> Result<ServerLaunch, String> {
     return Err(format!("no confinement for {}", request.server));
 }
 
-/// A launch policy that needs a private directory below the project, which the test configures as
+/// A launch policy that needs a private directory below the project,
+///  which the test configures as
 /// the state root itself.
 fn needing_state(request: &LaunchRequest) -> Result<ServerLaunch, String> {
     let mut launch = launch_directly(request)?;
@@ -278,7 +286,8 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
     );
 }
 
-/// Dropping the handle stops every server, including one that never initialized.
+/// Dropping the handle stops every server,
+///  including one that never initialized.
 #[test]
 fn dropping_the_worker_leaves_no_child_process() {
     let Some(root) = support::child_root() else {
@@ -311,8 +320,11 @@ fn dropping_the_worker_leaves_no_child_process() {
     support::children_until_none();
 }
 
-/// A server that ignores `exit` and the end of its input is killed after the grace, and it is
-/// reaped before the drop returns: no child is left, running or as a zombie.
+/// A server that ignores `exit` and the end of its input is killed after the grace,
+///  and it is
+/// reaped before the drop returns:
+///  no child is left,
+///  running or as a zombie.
 #[test]
 fn server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns() {
     let Some(root) = support::child_root() else {

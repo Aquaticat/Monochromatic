@@ -1,5 +1,8 @@
-//! What: Raw bytes and generated text through the final-newline rule.
-//! Why: File contents are arbitrary; the rule decides the bytes a direct fix writes.
+//! What:
+//!  Raw bytes and generated text through the final-newline rule.
+//! Why:
+//!  File contents are arbitrary;
+//!  the rule decides the bytes a direct fix writes.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

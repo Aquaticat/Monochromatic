@@ -2,15 +2,19 @@
 
 /// Expected reader failures remain ordinary results in this test helper.
 use anyhow::Result;
-/// The consumer combines the read-only workspace, UI-thread tree, and background reader.
+/// The consumer combines the read-only workspace,
+///  UI-thread tree,
+///  and background reader.
 use ide_app::{directory_worker::DirectoryWorker, file_tree::FileTree, workspace::Workspace};
-/// Filesystem fixtures are private; worker waits have an explicit deadline.
+/// Filesystem fixtures are private;
+///  worker waits have an explicit deadline.
 use std::{
     fs,
     time::{Duration, Instant},
 };
 
-/// Wait for one bounded reply; idle polls never block the caller.
+/// Wait for one bounded reply;
+///  idle polls never block the caller.
 fn finish(worker: &mut DirectoryWorker, tree: &mut FileTree) -> Result<bool> {
     let start = Instant::now();
     while worker.is_busy() {
@@ -131,7 +135,8 @@ fn workspace_boundary_rejects_foreign_tree_paths() {
     assert!(!worker.is_busy());
 }
 
-/// Invalid rows fail before occupying the queue; dropping busy and idle readers joins their threads.
+/// Invalid rows fail before occupying the queue;
+///  dropping busy and idle readers joins their threads.
 #[test]
 fn invalid_admission_and_shutdown_do_not_leave_background_work() {
     let fixture = tempfile::tempdir().expect("disposable workspace");

@@ -1,15 +1,22 @@
-//! What: Black-box controls that run the built `monochromatic-lint` executable.
-//! Why: Unit tests passing is not verification of a command-line program. These tests start the
+//! What:
+//!  Black-box controls that run the built `monochromatic-lint` executable.
+//! Why:
+//!  Unit tests passing is not verification of a command-line program.
+//!  These tests start the
 //! real binary as a child process in disposable directories and assert on its actual exit status,
-//! standard output and standard error bytes, and on what it left on disk.
-//! They run inside the bounded, mount-free, network-disabled test container with the other tests.
+//! standard output and standard error bytes,
+//!  and on what it left on disk.
+//! They run inside the bounded,
+//!  mount-free,
+//!  network-disabled test container with the other tests.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const { status, stdout, stderr } = spawnSync(binary, args, { cwd, input });
 //! ```
 
-/// Import child-process control, stream plumbing and native paths.
+/// Import child-process control,
+///  stream plumbing and native paths.
 use std::{
     io::Write,
     path::{Path, PathBuf},
@@ -64,7 +71,8 @@ impl Fixture {
         };
     }
 
-    /// Write one file below the root, creating its parent directories.
+    /// Write one file below the root,
+    ///  creating its parent directories.
     fn write(&self, relative: &str, contents: &str) -> PathBuf {
         let path: PathBuf = self.path.join(relative);
         std::fs::create_dir_all(path.parent().expect("fixture file has a parent"))
@@ -79,7 +87,8 @@ impl Fixture {
     }
 }
 
-/// Remove the directory this fixture created, including after a failed assertion.
+/// Remove the directory this fixture created,
+///  including after a failed assertion.
 impl Drop for Fixture {
     /// Delete only the path this instance created.
     fn drop(&mut self) {
@@ -89,7 +98,8 @@ impl Drop for Fixture {
 
 /// What one invocation produced.
 struct Run {
-    /// Exit status; a signal death has none and fails the test.
+    /// Exit status;
+    ///  a signal death has none and fails the test.
     status: i32,
     /// Standard output as text.
     stdout: String,
@@ -97,7 +107,8 @@ struct Run {
     stderr: String,
 }
 
-/// Run the executable in a directory with arguments and standard input, and wait for it.
+/// Run the executable in a directory with arguments and standard input,
+///  and wait for it.
 fn run(cwd: &Path, arguments: &[&str], input: &[u8]) -> Run {
     let mut child: Child = Command::new(BINARY)
         .args(arguments)
@@ -122,7 +133,8 @@ fn run(cwd: &Path, arguments: &[&str], input: &[u8]) -> Run {
     };
 }
 
-/// Decode JSONL: every non-empty line must be one JSON object.
+/// Decode JSONL:
+///  every non-empty line must be one JSON object.
 fn records(text: &str) -> Vec<serde_json::Value> {
     let mut values: Vec<serde_json::Value> = Vec::<serde_json::Value>::new();
     for line in text.lines() {
@@ -134,7 +146,8 @@ fn records(text: &str) -> Vec<serde_json::Value> {
     return values;
 }
 
-/// `filename code line column` for every record, in output order.
+/// `filename code line column` for every record,
+///  in output order.
 fn located(text: &str) -> Vec<String> {
     let mut found: Vec<String> = Vec::<String>::new();
     for record in records(text) {
@@ -165,7 +178,8 @@ fn entries(directory: &Path) -> Vec<String> {
     return names;
 }
 
-/// Help and version are parser outcomes with status 0; usage errors are status 2 with nothing on standard output.
+/// Help and version are parser outcomes with status 0;
+///  usage errors are status 2 with nothing on standard output.
 #[test]
 fn help_version_and_usage_errors_use_the_documented_statuses() {
     let fixture: Fixture = Fixture::new();
@@ -231,7 +245,9 @@ fn help_version_and_usage_errors_use_the_documented_statuses() {
     assert!(entries(&fixture.path).is_empty());
 }
 
-/// Status 0 prints nothing, status 1 prints JSONL on standard output only, status 2 explains itself on standard error.
+/// Status 0 prints nothing,
+///  status 1 prints JSONL on standard output only,
+///  status 2 explains itself on standard error.
 #[test]
 fn exit_statuses_and_streams_follow_the_contract() {
     let fixture: Fixture = Fixture::new();
@@ -296,7 +312,9 @@ fn exit_statuses_and_streams_follow_the_contract() {
     );
 }
 
-/// The walker reads ignore files, skips Git metadata and `node_modules`, enters hidden directories and picks only supported extensions.
+/// The walker reads ignore files,
+///  skips Git metadata and `node_modules`,
+///  enters hidden directories and picks only supported extensions.
 #[test]
 fn walking_selects_supported_files_and_honours_ignores() {
     let fixture: Fixture = Fixture::new();
@@ -392,7 +410,9 @@ fn walking_selects_supported_files_and_honours_ignores() {
     );
 }
 
-/// The nearest configuration is used alone, `--config` resolves against the working directory, and blocks merge in order.
+/// The nearest configuration is used alone,
+///  `--config` resolves against the working directory,
+///  and blocks merge in order.
 #[test]
 fn configuration_lookup_and_merging_follow_the_design() {
     let fixture: Fixture = Fixture::new();
@@ -509,7 +529,10 @@ fn configuration_lookup_and_merging_follow_the_design() {
     assert_eq!(located(below.stdout.as_str()), ["a.rs rust/max-lines 8 1"]);
 }
 
-/// `--fix` replaces files atomically, keeps their permission bits, leaves no temporary files, and reports the remainder.
+/// `--fix` replaces files atomically,
+///  keeps their permission bits,
+///  leaves no temporary files,
+///  and reports the remainder.
 #[cfg(unix)]
 #[test]
 fn fixing_writes_atomically_and_keeps_the_file_mode() {
@@ -601,7 +624,8 @@ fn fixing_writes_atomically_and_keeps_the_file_mode() {
     assert_eq!(entries(&refusal.path), ["a.md", CONFIG]);
 }
 
-/// Processor findings report the host file and host positions, and a rustdoc fix is written into the host comment.
+/// Processor findings report the host file and host positions,
+///  and a rustdoc fix is written into the host comment.
 #[test]
 fn processors_report_and_fix_at_host_positions() {
     let fixture: Fixture = Fixture::new();
@@ -765,7 +789,10 @@ fn standard_input_fixing_separates_source_from_findings() {
     );
 }
 
-/// The commit-time shape: a temporary one-rule configuration outside the repository, standard input, and fixing.
+/// The commit-time shape:
+///  a temporary one-rule configuration outside the repository,
+///  standard input,
+///  and fixing.
 #[test]
 fn the_commit_adapter_invocation_rewrites_lfs_images() {
     let repository: Fixture = Fixture::new();
@@ -907,8 +934,10 @@ fn rules_init_print_config_and_debug_modes() {
     assert_eq!(fixture.read("a.md"), "# Title.\n");
 }
 
-/// `--debug` streams semantic-workspace progress to standard error while a workspace loads, and a run without
-/// it prints nothing there. An unparsable `Cargo.toml` makes the load fail after its first progress message,
+/// `--debug` streams semantic-workspace progress to standard error while a workspace loads,
+///  and a run without
+/// it prints nothing there.
+///  An unparsable `Cargo.toml` makes the load fail after its first progress message,
 /// so both runs end quickly with the same single processing finding and status 2.
 #[test]
 fn debug_streams_workspace_progress_and_plain_runs_stay_silent() {
@@ -940,7 +969,8 @@ fn debug_streams_workspace_progress_and_plain_runs_stay_silent() {
     }
 }
 
-/// A write failure other than a closed pipe exits 2 whichever stream failed, instead of the findings' status.
+/// A write failure other than a closed pipe exits 2 whichever stream failed,
+///  instead of the findings' status.
 /// `/dev/full` refuses every write with "no space left on device".
 #[test]
 fn a_failing_output_stream_exits_two() {
@@ -983,9 +1013,12 @@ fn a_failing_output_stream_exits_two() {
     );
 }
 
-/// Run the executable as `run` does, but with the main thread's stack limited to `kibibytes` by the shell.
-/// `sh -c` receives the limit as `$0` and the executable with its arguments as `$@`, so nothing is quoted by hand,
-/// and `exec` replaces the shell, so the status is the executable's own.
+/// Run the executable as `run` does,
+///  but with the main thread's stack limited to `kibibytes` by the shell.
+/// `sh -c` receives the limit as `$0` and the executable with its arguments as `$@`,
+///  so nothing is quoted by hand,
+/// and `exec` replaces the shell,
+///  so the status is the executable's own.
 fn run_with_main_stack(cwd: &Path, kibibytes: &str, arguments: &[&str], input: &[u8]) -> Run {
     let mut child: Child = Command::new("sh")
         .args(["-c", "ulimit -s \"$0\" && exec \"$@\"", kibibytes, BINARY])
@@ -1014,10 +1047,18 @@ fn run_with_main_stack(cwd: &Path, kibibytes: &str, arguments: &[&str], input: &
     };
 }
 
-/// One file, `--concurrency 1` and standard input are linted on a thread with the explicit lint stack, not on the
-/// main thread, whose stack the platform sets (the MSVC linker reserves 1 MB by default). With the main thread
-/// limited to 1 MiB, Rust nested 1,200 parentheses deep, which needed between 3 and 4 MiB in the bounded container,
-/// still parses in every mode. Before the invocation thread existed, all three runs aborted with a stack overflow.
+/// One file,
+///  `--concurrency 1` and standard input are linted on a thread with the explicit lint stack,
+///  not on the
+/// main thread,
+///  whose stack the platform sets (the MSVC linker reserves 1 MB by default).
+///  With the main thread
+/// limited to 1 MiB,
+///  Rust nested 1,200 parentheses deep,
+///  which needed between 3 and 4 MiB in the bounded container,
+/// still parses in every mode.
+///  Before the invocation thread existed,
+///  all three runs aborted with a stack overflow.
 #[test]
 fn a_small_main_thread_stack_does_not_limit_nesting() {
     let fixture: Fixture = Fixture::new();
@@ -1049,7 +1090,8 @@ fn a_small_main_thread_stack_does_not_limit_nesting() {
     }
 }
 
-/// Output is the same at every concurrency limit, and a reader that closes the pipe early causes no error output.
+/// Output is the same at every concurrency limit,
+///  and a reader that closes the pipe early causes no error output.
 #[test]
 fn concurrency_and_closed_pipes_do_not_change_results() {
     let fixture: Fixture = Fixture::new();

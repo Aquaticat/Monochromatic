@@ -1,6 +1,12 @@
-//! What: The fixed transforms from scripted facts: what each inserts, what commit-only
-//!       rejects, and which repository fact it asked for.
-//! Why: A transform that silently skips its insertion weakens every push or commit; one
+//! What:
+//!  The fixed transforms from scripted facts:
+//!  what each inserts,
+//!  what commit-only
+//!       rejects,
+//!  and which repository fact it asked for.
+//! Why:
+//!  A transform that silently skips its insertion weakens every push or commit;
+//!  one
 //!      that asks Git for a fact it does not need slows every command.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +14,8 @@
 //! // expect((await applyFixedTransforms({ args: ['push', 'origin'] })).args).toEqual(['push', '--atomic', 'origin']);
 //! ```
 
-/// The stage under test, its result and the scripted facts.
+/// The stage under test,
+///  its result and the scripted facts.
 use super::{COMMIT_ONLY_CORE, TransformResult, apply_fixed_transforms};
 use crate::command_test_support::os_arguments;
 use crate::diagnostics::EngineFailureCode;
@@ -48,7 +55,8 @@ fn rejects(values: &[&str], code: &'static str, message: &str) -> TransformResul
     };
 }
 
-/// Facts that fail every question, to prove a command asked for nothing.
+/// Facts that fail every question,
+///  to prove a command asked for nothing.
 fn unanswerable() -> ScriptedFacts {
     let mut facts: ScriptedFacts = scripted_facts();
     facts.location = Err(String::from("unused"));
@@ -127,7 +135,8 @@ fn insertions_need_no_repository_fact() {
     }
 }
 
-/// `-a` is rejected from the arguments alone; the input is kept and nothing is asked.
+/// `-a` is rejected from the arguments alone;
+///  the input is kept and nothing is asked.
 #[test]
 fn commit_all_is_rejected_without_a_fact() {
     assert_eq!(
@@ -139,7 +148,8 @@ fn commit_all_is_rejected_without_a_fact() {
     );
 }
 
-/// A pathless commit asks whether an operation awaits its conclusion, and nothing else.
+/// A pathless commit asks whether an operation awaits its conclusion,
+///  and nothing else.
 #[test]
 fn pathless_commit_asks_for_the_sequencer_state() {
     let asked: Vec<String> = vec![String::from("sequencer")];
@@ -178,7 +188,8 @@ fn pathless_commit_asks_for_the_sequencer_state() {
     );
 }
 
-/// A pathless amend asks whether the index differs from `HEAD`, and nothing else.
+/// A pathless amend asks whether the index differs from `HEAD`,
+///  and nothing else.
 #[test]
 fn pathless_amend_asks_for_the_index_state() {
     let asked: Vec<String> = vec![String::from("index")];
@@ -222,7 +233,9 @@ fn pathless_amend_asks_for_the_index_state() {
     );
 }
 
-/// With the commit hatch the transform is skipped: nothing is inserted, rejected or asked.
+/// With the commit hatch the transform is skipped:
+///  nothing is inserted,
+///  rejected or asked.
 #[test]
 fn the_commit_hatch_skips_the_transform() {
     for values in [

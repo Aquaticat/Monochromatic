@@ -1,4 +1,7 @@
-//! On-demand start of a language's servers, after the program, the root, and the launch were checked.
+//! On-demand start of a language's servers,
+//!  after the program,
+//!  the root,
+//!  and the launch were checked.
 
 /// Removal of a server that must not keep running.
 use super::retire;
@@ -24,8 +27,14 @@ use crate::language::worker::{Internal, Worker};
 use helix_core::syntax::config::LanguageConfiguration;
 /// helix-lsp's client handle.
 use helix_lsp::Client;
-/// What: `Arc` is a thread-safe shared pointer (siblings: `Rc`, `Box`); `Duration` is a time span.
-/// Why: helix-lsp hands clients out as `Arc<Client>`, and the start deadline is a timer.
+/// What:
+///  `Arc` is a thread-safe shared pointer (siblings:
+///  `Rc`,
+///  `Box`);
+///  `Duration` is a time span.
+/// Why:
+///  helix-lsp hands clients out as `Arc<Client>`,
+///  and the start deadline is a timer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,9 +62,15 @@ fn refusal_state(refusal: &RootRefusal) -> ServerState {
     };
 }
 
-/// What: Take a client helix-lsp returned into the session: a new process gets a record, an
-///       identity, and a start deadline; a reused one keeps its record.
-/// Why: The workspace folders helix-lsp will announce are checked once more after the start;
+/// What:
+///  Take a client helix-lsp returned into the session:
+///  a new process gets a record,
+///  an
+///       identity,
+///  and a start deadline;
+///  a reused one keeps its record.
+/// Why:
+///  The workspace folders helix-lsp will announce are checked once more after the start;
 ///      a folder outside the project ends the server at once.
 ///
 /// In TS you'd write (pseudocode):
@@ -124,9 +139,13 @@ async fn adopt(worker: &mut Worker, name: String, client: Arc<Client>, view: &Ro
     }
 }
 
-/// What: Create the private directories of every server that is about to start; returns the
+/// What:
+///  Create the private directories of every server that is about to start;
+///  returns the
 ///       name and reason of the first failure.
-/// Why: A launch that cannot be prepared must not happen at all; there is no unconfined fallback.
+/// Why:
+///  A launch that cannot be prepared must not happen at all;
+///  there is no unconfined fallback.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -154,9 +173,14 @@ fn prepare_launches(worker: &Worker, names: &[String]) -> Option<(String, String
     return None;
 }
 
-/// What: Start or reuse the servers of the displayed document's language inside the project.
-/// Why: Each outcome of `Registry::get` is one of the states the interface must tell apart, and
-///      nothing is spawned before the executable, the root, and the launch were checked.
+/// What:
+///  Start or reuse the servers of the displayed document's language inside the project.
+/// Why:
+///  Each outcome of `Registry::get` is one of the states the interface must tell apart,
+///  and
+///      nothing is spawned before the executable,
+///  the root,
+///  and the launch were checked.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

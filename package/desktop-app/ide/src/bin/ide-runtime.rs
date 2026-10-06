@@ -1,4 +1,5 @@
-//! Build-time language assets; the read-only application never invokes this executable.
+//! Build-time language assets;
+//!  the read-only application never invokes this executable.
 
 /// Asset preparation failures must stop the build instead of shipping partial language support.
 use anyhow::{Context, Result, bail};
@@ -10,12 +11,21 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// What: `const GRAMMARS: &[&str]` is a fixed, read-only list of borrowed text values.
-///       Each entry is a pinned Helix grammar id (the parser name), not a language name:
-///       the `qml` language uses `qmljs`, and `markdown.inline` uses `markdown_inline`.
-///       Siblings a reader might expect: `Vec<String>` (growable, owned) and `[&str; 27]`
+/// What:
+///  `const GRAMMARS: &[&str]` is a fixed,
+///  read-only list of borrowed text values.
+///       Each entry is a pinned Helix grammar id (the parser name),
+///  not a language name:
+///       the `qml` language uses `qmljs`,
+///  and `markdown.inline` uses `markdown_inline`.
+///       Siblings a reader might expect:
+///  `Vec<String>` (growable,
+///  owned) and `[&str; 27]`
 ///       (a fixed-length array whose length is part of the type).
-/// Why:  The list never changes at run time, so no owned `Vec<String>` is needed, and a slice
+/// Why:
+///   The list never changes at run time,
+///  so no owned `Vec<String>` is needed,
+///  and a slice
 ///       avoids restating the length whenever the measured inventory changes.
 ///       Selection evidence lives in `doc/planning/slint-ide-runtime-languages.md`.
 ///
@@ -59,11 +69,13 @@ const GRAMMARS: &[&str] = &[
 /// Selection shape understood by the pinned Helix grammar manager.
 #[derive(Serialize)]
 struct Selection {
-    /// Compile only explicitly selected grammars, not the entire built-in catalog.
+    /// Compile only explicitly selected grammars,
+    ///  not the entire built-in catalog.
     only: Vec<String>,
 }
 
-/// Build-only configuration lives under target, never in the user's real Helix configuration.
+/// Build-only configuration lives under target,
+///  never in the user's real Helix configuration.
 #[derive(Serialize)]
 struct Configuration {
     /// Serde maps the Rust field name to the existing Helix key.
@@ -138,7 +150,8 @@ fn prepare(source: &Path, operation: &str) -> Result<()> {
     return Ok(());
 }
 
-/// Expose build-only fetch/build operations; help never touches runtime state.
+/// Expose build-only fetch/build operations;
+///  help never touches runtime state.
 fn main() -> Result<()> {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
     if arguments

@@ -1,5 +1,9 @@
-//! What: The index-against-`HEAD` exit-status mapping, checked against real Git 2.56.0.
-//! Why: The commit-only transform rejects only on `Differs`; a wrong mapping either blocks
+//! What:
+//!  The index-against-`HEAD` exit-status mapping,
+//!  checked against real Git 2.56.0.
+//! Why:
+//!  The commit-only transform rejects only on `Differs`;
+//!  a wrong mapping either blocks
 //!      valid amends or lets a staged change be ignored silently.
 //!
 //! In TS you'd write (pseudocode):
@@ -15,7 +19,8 @@ use crate::command_test_support::{
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-/// Only exit codes 0 and 1 are answers; every other outcome is "Git cannot say".
+/// Only exit codes 0 and 1 are answers;
+///  every other outcome is "Git cannot say".
 #[test]
 fn maps_exit_statuses() {
     assert_eq!(index_state_from_exit(Some(0)), IndexVsHead::Matches);
@@ -48,8 +53,11 @@ fn builds_the_query_after_the_global_prefix() {
     );
 }
 
-/// Real Git answers 0 for a clean index, 1 for a staged change, and another code when it
-/// cannot compare (unborn `HEAD`, no repository).
+/// Real Git answers 0 for a clean index,
+///  1 for a staged change,
+///  and another code when it
+/// cannot compare (unborn `HEAD`,
+///  no repository).
 #[test]
 fn real_git_exit_statuses_map_to_the_three_states() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("index-states");

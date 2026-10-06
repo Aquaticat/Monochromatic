@@ -1,5 +1,7 @@
-//! What: Configuration discovery with explicit filesystem ownership.
-//! Why: Nearest-file lookup and --config have different pattern bases and must be tested independently.
+//! What:
+//!  Configuration discovery with explicit filesystem ownership.
+//! Why:
+//!  Nearest-file lookup and --config have different pattern bases and must be tested independently.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,8 +14,10 @@ use crate::configuration::{ConfigBlock, parse_configuration};
 /// Import native path values rather than requiring filesystem names to be UTF-8 strings.
 use std::path::{Path, PathBuf};
 
-/// What: The sole discovered configuration filename.
-/// Why: HCL and executable configuration are not alternate formats for this implementation.
+/// What:
+///  The sole discovered configuration filename.
+/// Why:
+///  HCL and executable configuration are not alternate formats for this implementation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,8 +25,11 @@ use std::path::{Path, PathBuf};
 /// ```
 pub const CONFIG_NAME: &str = "monochromatic-lint.config.jsonc";
 
-/// What: One selected source and the directory its patterns are relative to.
-/// Why: An explicit temporary config uses cwd as its base, unlike a discovered config.
+/// What:
+///  One selected source and the directory its patterns are relative to.
+/// Why:
+///  An explicit temporary config uses cwd as its base,
+///  unlike a discovered config.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,28 +37,36 @@ pub const CONFIG_NAME: &str = "monochromatic-lint.config.jsonc";
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ConfigurationSource {
-    /// Selected source file, retained for diagnostics.
+    /// Selected source file,
+    ///  retained for diagnostics.
     pub path: PathBuf,
-    /// Pattern base, deliberately independent from the selected source path.
+    /// Pattern base,
+    ///  deliberately independent from the selected source path.
     pub base: PathBuf,
     /// Parsed blocks in authored order.
     pub blocks: Vec<ConfigBlock>,
 }
 
-/// What: The filesystem operation configuration discovery needs.
-/// Why: A memory-backed test adapter proves root and missing-file behavior without reading real user configuration.
+/// What:
+///  The filesystem operation configuration discovery needs.
+/// Why:
+///  A memory-backed test adapter proves root and missing-file behavior without reading real user configuration.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// interface ConfigFilesystem { read(path: Path): string | undefined }
 /// ```
 pub(crate) trait ConfigFilesystem {
-    /// Return absence only when no file exists; unreadable or non-file inputs are failures.
+    /// Return absence only when no file exists;
+    ///  unreadable or non-file inputs are failures.
     fn read(&self, path: &Path) -> Result<Option<String>, ConfigError>;
 }
 
-/// What: The native read-only configuration adapter.
-/// Why: Production discovery reads the actual filesystem, while tests can supply isolated trees.
+/// What:
+///  The native read-only configuration adapter.
+/// Why:
+///  Production discovery reads the actual filesystem,
+///  while tests can supply isolated trees.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,8 +74,10 @@ pub(crate) trait ConfigFilesystem {
 /// ```
 struct NativeConfigFilesystem;
 
-/// What: Implement native reads without accepting directories or other special entries as configuration.
-/// Why: A malformed nearest configuration must not silently fall through to an ancestor.
+/// What:
+///  Implement native reads without accepting directories or other special entries as configuration.
+/// Why:
+///  A malformed nearest configuration must not silently fall through to an ancestor.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -113,8 +130,10 @@ impl ConfigFilesystem for NativeConfigFilesystem {
     }
 }
 
-/// What: Resolve one possibly relative path against the caller's explicit working directory.
-/// Why: Lookup tests and the executable must not depend on a hidden process cwd read.
+/// What:
+///  Resolve one possibly relative path against the caller's explicit working directory.
+/// Why:
+///  Lookup tests and the executable must not depend on a hidden process cwd read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -128,8 +147,10 @@ fn absolute_path(path: &Path, cwd: &Path) -> PathBuf {
     return cwd.join(path);
 }
 
-/// What: Parse a selected file and attach its original path to syntax or schema failures.
-/// Why: Users need to know which of several ancestor configurations rejected their input.
+/// What:
+///  Parse a selected file and attach its original path to syntax or schema failures.
+/// Why:
+///  Users need to know which of several ancestor configurations rejected their input.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -151,8 +172,10 @@ fn selected(
     }
 }
 
-/// What: Discover one configuration through a supplied filesystem adapter.
-/// Why: Explicit config and nearest-ancestor lookup share error handling but not base-directory rules.
+/// What:
+///  Discover one configuration through a supplied filesystem adapter.
+/// Why:
+///  Explicit config and nearest-ancestor lookup share error handling but not base-directory rules.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -206,10 +229,15 @@ pub(crate) fn discover_with_filesystem(
     return Ok(None);
 }
 
-/// What: Read the configuration file of exactly one directory, without consulting its ancestors.
-/// Why: The executable memoizes nearest-file lookup per directory, so each candidate file is read
+/// What:
+///  Read the configuration file of exactly one directory,
+///  without consulting its ancestors.
+/// Why:
+///  The executable memoizes nearest-file lookup per directory,
+///  so each candidate file is read
 /// and parsed once per run instead of once per linted file.
-/// Its patterns resolve against that directory, as in ancestor discovery.
+/// Its patterns resolve against that directory,
+///  as in ancestor discovery.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -230,8 +258,10 @@ pub fn load_configuration_at(directory: &Path) -> Result<Option<ConfigurationSou
     return Ok(Some(result));
 }
 
-/// What: Production configuration lookup using the native read-only filesystem.
-/// Why: All runtime calls use the same discovery implementation exercised by the memory-backed tests.
+/// What:
+///  Production configuration lookup using the native read-only filesystem.
+/// Why:
+///  All runtime calls use the same discovery implementation exercised by the memory-backed tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

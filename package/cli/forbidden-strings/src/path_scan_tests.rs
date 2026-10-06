@@ -1,4 +1,6 @@
-//! Component-level matching, redaction, and path selection tests.
+//! Component-level matching,
+//!  redaction,
+//!  and path selection tests.
 
 /// Imports production name scanner and logical-path selection.
 use super::{logical_path, scan_path, scan_normalized_records};
@@ -96,10 +98,13 @@ fn navigation_markers_are_not_segments() {
 
 /// A repo-local absolute positional file is named by its repository-relative path in native spelling.
 ///
-/// Each root is paired with a file path built from that root: the canonical root,
+/// Each root is paired with a file path built from that root:
+///  the canonical root,
 /// which Windows spells with a `\\?\` verbatim prefix,
-/// and the plain temporary directory, the non-verbatim form Windows `current_dir` reports.
-/// The relative name is native (`nested\test.txt` on Windows), and the pathname scan displays it with `/` everywhere.
+/// and the plain temporary directory,
+///  the non-verbatim form Windows `current_dir` reports.
+/// The relative name is native (`nested\test.txt` on Windows),
+///  and the pathname scan displays it with `/` everywhere.
 #[test]
 fn absolute_path_under_root_uses_relative_name() {
     let loaded = load_rules("VAULTTOKEN_LONG\n");
@@ -118,7 +123,8 @@ fn absolute_path_under_root_uses_relative_name() {
     std::fs::remove_dir_all(&dir).expect("remove path fixture");
 }
 
-/// A symlink is named by its own entry, not the clean target it points at.
+/// A symlink is named by its own entry,
+///  not the clean target it points at.
 #[test]
 #[cfg(unix)]
 fn symlink_name_is_not_replaced_by_target() {
@@ -171,7 +177,8 @@ fn windows_volume_prefix_is_not_name_segment() {
     assert_eq!(drive_relative.findings, vec!["C\\x3a/[REDACTED]:name:1 rule=0"]);
 }
 
-/// Native Windows device-namespace prefixes are skipped exactly, so the following name is scanned.
+/// Native Windows device-namespace prefixes are skipped exactly,
+///  so the following name is scanned.
 #[test]
 #[cfg(windows)]
 fn windows_device_namespace_prefix_is_not_name_segment() {

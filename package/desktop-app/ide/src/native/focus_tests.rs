@@ -1,11 +1,17 @@
-//! Tab and Shift+Tab move between the tree, the source view, and the open find bar; typing never edits source.
+//! Tab and Shift+Tab move between the tree,
+//!  the source view,
+//!  and the open find bar;
+//!  typing never edits source.
 
 /// The production window whose focus state is read back.
 use super::AppWindow;
 /// The complete reader fixture and real key-event helpers shared with the find tests.
 use super::find_tests::{chord, key, reader, type_text};
-/// What: `Key` names toolkit special keys; converting one into text yields the encoded key string.
-/// Why: Tests dispatch the same encoded keys that the seat delivers.
+/// What:
+///  `Key` names toolkit special keys;
+///  converting one into text yields the encoded key string.
+/// Why:
+///  Tests dispatch the same encoded keys that the seat delivers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,8 +21,11 @@ use slint::{ComponentHandle, platform::Key};
 /// Disposable project files back every native window in these tests.
 use std::fs;
 
-/// What: `&'static str` is a borrowed string that lives for the whole program (sibling: owned `String`).
-/// Why: One comparable word per focus owner makes a wrong traversal order readable in the failure text.
+/// What:
+///  `&'static str` is a borrowed string that lives for the whole program (sibling:
+///  owned `String`).
+/// Why:
+///  One comparable word per focus owner makes a wrong traversal order readable in the failure text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,7 +64,9 @@ fn tab(window: &AppWindow, count: usize) -> Vec<&'static str> {
     return seen;
 }
 
-/// Press Shift+Tab `count` times, as the seat delivers it: the Tab key while Shift is held.
+/// Press Shift+Tab `count` times,
+///  as the seat delivers it:
+///  the Tab key while Shift is held.
 fn shift_tab(window: &AppWindow, count: usize) -> Vec<&'static str> {
     let mut seen = Vec::new();
     for _ in 0..count {
@@ -65,7 +76,10 @@ fn shift_tab(window: &AppWindow, count: usize) -> Vec<&'static str> {
     return seen;
 }
 
-/// Without a find bar the only stops are the tree, the sidebar divider, and the source view, in both directions.
+/// Without a find bar the only stops are the tree,
+///  the sidebar divider,
+///  and the source view,
+///  in both directions.
 #[test]
 fn tab_cycles_tree_divider_and_source_while_find_is_closed() {
     let fixture = tempfile::tempdir().expect("disposable focus project");
@@ -95,7 +109,10 @@ fn tab_cycles_tree_divider_and_source_while_find_is_closed() {
     window.hide().expect("close focus window");
 }
 
-/// With the find bar open the order is tree, source, find input, then the tree again.
+/// With the find bar open the order is tree,
+///  source,
+///  find input,
+///  then the tree again.
 #[test]
 fn tab_visits_tree_source_and_open_find_bar_in_reading_order() {
     let fixture = tempfile::tempdir().expect("disposable focus project");
@@ -133,7 +150,10 @@ fn tab_visits_tree_source_and_open_find_bar_in_reading_order() {
     window.hide().expect("close focus window");
 }
 
-/// Typing, deleting, pasting, and line breaks in the focused source view change neither text nor file.
+/// Typing,
+///  deleting,
+///  pasting,
+///  and line breaks in the focused source view change neither text nor file.
 #[test]
 fn typing_in_the_source_view_is_ignored() {
     let fixture = tempfile::tempdir().expect("disposable focus project");

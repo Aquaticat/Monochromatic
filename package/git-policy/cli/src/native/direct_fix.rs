@@ -1,13 +1,25 @@
-//! What: `git cli-git fix`: run policy passes over the selected files, apply the
-//!       corrections they propose in memory until a pass proposes none, then install the
+//! What:
+//!  `git cli-git fix`:
+//!  run policy passes over the selected files,
+//!  apply the
+//!       corrections they propose in memory until a pass proposes none,
+//!  then install the
 //!       corrected files into the worktree when that last pass is clean.
-//! Why: The installed wrapper's `direct-fix.ts` and `direct-fix-convergence.ts` decide the
-//!      behaviour: only the last pass is reported, a fix summary follows it only when a
-//!      file changed, nothing reaches the worktree unless the last pass exits 0, and a
-//!      fix that cycles or keeps changing ends with one engine failure. The bounded loop
-//!      itself is `policy_convergence::converge`; this module supplies its passes.
+//! Why:
+//!  The installed wrapper's `direct-fix.ts` and `direct-fix-convergence.ts` decide the
+//!      behaviour:
+//!  only the last pass is reported,
+//!  a fix summary follows it only when a
+//!      file changed,
+//!  nothing reaches the worktree unless the last pass exits 0,
+//!  and a
+//!      fix that cycles or keeps changing ends with one engine failure.
+//!  The bounded loop
+//!      itself is `policy_convergence::converge`;
+//!  this module supplies its passes.
 //!      Corrections replace whole file contents in memory instead of being staged into
-//!      the private index, so a pass starts no Git process for them.
+//!      the private index,
+//!  so a pass starts no Git process for them.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,9 +28,11 @@
 
 /// Import the engine-failure codes.
 use super::diagnostics::EngineFailureCode;
-/// Import the change list a converged fix installs, and the installer.
+/// Import the change list a converged fix installs,
+///  and the installer.
 use super::direct_fix_install::{InstallChange, install_corrections};
-/// Import the shipped checks, whose content state carries the corrections.
+/// Import the shipped checks,
+///  whose content state carries the corrections.
 use super::policy_checks::ShippedChecks;
 /// Import one proposed correction.
 use super::policy_content::Correction;
@@ -26,7 +40,8 @@ use super::policy_content::Correction;
 use super::policy_convergence::{
     Convergence, FIX_PASS_LIMIT_MESSAGE, FixPasses, PassResult as ConvergencePass, converge,
 };
-/// Import the stage request, how a stage ended and the exit code of a pass.
+/// Import the stage request,
+///  how a stage ended and the exit code of a pass.
 use super::policy_engine::{StageEnd, StageRequest, pass_exit_code};
 /// Import the events a fix reports.
 use super::policy_events::PolicyEvent;
@@ -41,7 +56,8 @@ use std::collections::BTreeMap;
 /// `Path` is a borrowed filesystem path.
 use std::path::Path;
 
-/// The message of a fix whose corrections returned to an earlier state, as the installed
+/// The message of a fix whose corrections returned to an earlier state,
+///  as the installed
 /// wrapper's direct fix words it.
 pub const DIRECT_FIX_CYCLE_MESSAGE: &str =
     "Policy patches entered a repeated candidate-state cycle.";
@@ -50,9 +66,15 @@ pub const DIRECT_FIX_CYCLE_MESSAGE: &str =
 pub const NO_WORKTREE_MESSAGE: &str =
     "cli-git fix could not install its corrections: the repository has no worktree.";
 
-/// What: The passes of one direct fix, as the bounded loop sees them. `'a` names how
+/// What:
+///  The passes of one direct fix,
+///  as the bounded loop sees them.
+///  `'a` names how
 ///       long the borrowed request and checks last.
-/// Why:  The loop owns the control flow; this owns running a pass, applying its
+/// Why:
+///   The loop owns the control flow;
+///  this owns running a pass,
+///  applying its
 ///       corrections and remembering each changed state.
 ///
 /// In TS you'd write (pseudocode):
@@ -62,17 +84,24 @@ pub const NO_WORKTREE_MESSAGE: &str =
 pub struct DirectFixPasses<'a, F: RepositoryFacts> {
     /// What every pass evaluates.
     request: &'a StageRequest,
-    /// The checks, kept across passes so candidates and rules are prepared once.
+    /// The checks,
+    ///  kept across passes so candidates and rules are prepared once.
     checks: &'a mut ShippedChecks<F>,
-    /// The most recent pass, which is the one reported.
+    /// The most recent pass,
+    ///  which is the one reported.
     last: Option<PassResult>,
-    /// The corrected files of every state: the first is the uncorrected one.
+    /// The corrected files of every state:
+    ///  the first is the uncorrected one.
     states: Vec<BTreeMap<Vec<u8>, InstallChange>>,
 }
 
-/// What: How the loop reads a pass's ending.
-/// Why:  A proposal asks for another pass; a pass that could not decide blocks the fix;
-///       a completed or stopped pass proposes nothing, so the content is stable.
+/// What:
+///  How the loop reads a pass's ending.
+/// Why:
+///   A proposal asks for another pass;
+///  a pass that could not decide blocks the fix;
+///       a completed or stopped pass proposes nothing,
+///  so the content is stable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,17 +115,23 @@ pub fn convergence_pass(end: StageEnd) -> ConvergencePass {
     }
 }
 
-/// What: `impl<F: RepositoryFacts> DirectFixPasses<'_, F> { ... }` attaches the constructor
+/// What:
+///  `impl<F: RepositoryFacts> DirectFixPasses<'_, F> { ... }` attaches the constructor
 ///       and the hand-back of what the loop left.
-/// Why:  The states start with the uncorrected one, which the cycle check compares against.
+/// Why:
+///   The states start with the uncorrected one,
+///  which the cycle check compares against.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class DirectFixPasses { constructor(request, checks) {} }
 /// ```
 impl<'a, F: RepositoryFacts> DirectFixPasses<'a, F> {
-    /// What: Passes over `checks` with no pass run yet and the uncorrected state stored.
-    /// Why:  State number `n` is the state after `n` changes, as the loop numbers them.
+    /// What:
+    ///  Passes over `checks` with no pass run yet and the uncorrected state stored.
+    /// Why:
+    ///   State number `n` is the state after `n` changes,
+    ///  as the loop numbers them.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -112,17 +147,24 @@ impl<'a, F: RepositoryFacts> DirectFixPasses<'a, F> {
     }
 }
 
-/// What: `impl FixPasses for DirectFixPasses<'_, F>` gives the loop its three operations.
-/// Why:  The loop is tested without Git; these are the real passes.
+/// What:
+///  `impl FixPasses for DirectFixPasses<'_, F>` gives the loop its three operations.
+/// Why:
+///   The loop is tested without Git;
+///  these are the real passes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class DirectFixPasses implements FixPasses {}
 /// ```
 impl<F: RepositoryFacts> FixPasses for DirectFixPasses<'_, F> {
-    /// What: Run one whole policy pass on the current content and remember it.
-    /// Why:  Proposals left from an earlier pass were applied already; a pass starts
-    ///       with none, so it is read only from what this pass proposes.
+    /// What:
+    ///  Run one whole policy pass on the current content and remember it.
+    /// Why:
+    ///   Proposals left from an earlier pass were applied already;
+    ///  a pass starts
+    ///       with none,
+    ///  so it is read only from what this pass proposes.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -145,8 +187,11 @@ impl<F: RepositoryFacts> FixPasses for DirectFixPasses<'_, F> {
         return result;
     }
 
-    /// What: Apply the last pass's proposals and store the resulting state.
-    /// Why:  Applying in memory cannot fail, so the fix is never blocked here.
+    /// What:
+    ///  Apply the last pass's proposals and store the resulting state.
+    /// Why:
+    ///   Applying in memory cannot fail,
+    ///  so the fix is never blocked here.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -159,8 +204,11 @@ impl<F: RepositoryFacts> FixPasses for DirectFixPasses<'_, F> {
         return true;
     }
 
-    /// What: Whether two stored states hold the same bytes in every file.
-    /// Why:  Equal corrected maps mean equal content, because a file whose bytes return to
+    /// What:
+    ///  Whether two stored states hold the same bytes in every file.
+    /// Why:
+    ///   Equal corrected maps mean equal content,
+    ///  because a file whose bytes return to
     ///       its original is no longer in the map.
     ///
     /// In TS you'd write (pseudocode):
@@ -172,10 +220,17 @@ impl<F: RepositoryFacts> FixPasses for DirectFixPasses<'_, F> {
     }
 }
 
-/// What: A fix result made of one engine failure of the fix, as the installed wrapper
-///       reports a cycle, a pass limit or an installation failure: earlier events are
-///       dropped. `&[std::ffi::OsString]` borrows the command's arguments.
-/// Why:  The person sees why nothing was installed, and nothing else.
+/// What:
+///  A fix result made of one engine failure of the fix,
+///  as the installed wrapper
+///       reports a cycle,
+///  a pass limit or an installation failure:
+///  earlier events are
+///       dropped.
+///  `&[std::ffi::OsString]` borrows the command's arguments.
+/// Why:
+///   The person sees why nothing was installed,
+///  and nothing else.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -200,10 +255,16 @@ pub fn fix_failure(
     };
 }
 
-/// What: The result of a settled fix: the last pass as it is, or that pass followed by a
-///       fix summary once its corrections were installed. `Option<&Path>` is the
+/// What:
+///  The result of a settled fix:
+///  the last pass as it is,
+///  or that pass followed by a
+///       fix summary once its corrections were installed.
+///  `Option<&Path>` is the
 ///       worktree's top level or nothing.
-/// Why:  Only a last pass that exits 0 installs anything, and the summary is reported only
+/// Why:
+///   Only a last pass that exits 0 installs anything,
+///  and the summary is reported only
 ///       after a file changed.
 ///
 /// In TS you'd write (pseudocode):
@@ -255,10 +316,16 @@ pub fn settled_fix<F: RepositoryFacts>(
     };
 }
 
-/// What: What a fix reports once the loop ended: `convergence` says how, `pass` is the
+/// What:
+///  What a fix reports once the loop ended:
+///  `convergence` says how,
+///  `pass` is the
 ///       last pass run.
-/// Why:  A settled fix may install; a blocked fix reports the pass that could not decide;
-///       a cycle and a pass limit report one engine failure each, as the installed
+/// Why:
+///   A settled fix may install;
+///  a blocked fix reports the pass that could not decide;
+///       a cycle and a pass limit report one engine failure each,
+///  as the installed
 ///       wrapper's `fixCycleFailure` and `fixPassLimitFailure` do.
 ///
 /// In TS you'd write (pseudocode):
@@ -293,9 +360,13 @@ pub fn finish_fix<F: RepositoryFacts>(
     }
 }
 
-/// What: Run a whole direct fix and return what it reports. `root` is the worktree's top
-///       level, where corrected files are installed.
-/// Why:  See the module comment.
+/// What:
+///  Run a whole direct fix and return what it reports.
+///  `root` is the worktree's top
+///       level,
+///  where corrected files are installed.
+/// Why:
+///   See the module comment.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -314,7 +385,8 @@ pub fn run_direct_fix<F: RepositoryFacts>(
     return finish_fix(convergence, pass, checks, root);
 }
 
-/// Pass, settlement and installation-boundary controls stay out of the release executable.
+/// Pass,
+///  settlement and installation-boundary controls stay out of the release executable.
 #[cfg(test)]
 #[path = "direct_fix_tests.rs"]
 mod tests;

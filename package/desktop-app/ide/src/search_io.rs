@@ -42,7 +42,8 @@ pub(crate) async fn record<R: AsyncBufRead + Unpin>(
     return Ok(Some(bytes));
 }
 
-/// Consume all stderr but retain only a bounded diagnostic prefix, including an explicit truncation marker.
+/// Consume all stderr but retain only a bounded diagnostic prefix,
+///  including an explicit truncation marker.
 pub(crate) async fn diagnostic<R: AsyncRead + Unpin>(mut reader: R) -> Result<String> {
     let mut retained = Vec::new();
     let mut truncated = false;

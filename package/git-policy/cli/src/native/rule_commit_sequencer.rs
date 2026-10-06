@@ -1,6 +1,12 @@
-//! What: The pure core of the "is a merge, cherry-pick or revert awaiting its commit" check.
-//! Why: The caller runs real Git and probes the filesystem; this module says which query to
-//!      run, reads its output exactly, and decides from three presence facts.
+//! What:
+//!  The pure core of the "is a merge,
+//!  cherry-pick or revert awaiting its commit" check.
+//! Why:
+//!  The caller runs real Git and probes the filesystem;
+//!  this module says which query to
+//!      run,
+//!  reads its output exactly,
+//!  and decides from three presence facts.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,8 +16,12 @@
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: Whether an operation is awaiting its concluding commit.
-/// Why:  While one is, Git forbids partial commits, so a pathless `git commit` is the
+/// What:
+///  Whether an operation is awaiting its concluding commit.
+/// Why:
+///   While one is,
+///  Git forbids partial commits,
+///  so a pathless `git commit` is the
 ///       documented conclusion and the commit-only transform lets it through.
 ///
 /// In TS you'd write (pseudocode):
@@ -20,17 +30,24 @@ use std::ffi::OsString;
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SequencerState {
-    /// A merge, cherry-pick or revert head file exists.
+    /// A merge,
+    ///  cherry-pick or revert head file exists.
     InProgress,
-    /// No head file exists, or Git could not answer; normal enforcement applies.
+    /// No head file exists,
+    ///  or Git could not answer;
+    ///  normal enforcement applies.
     NotInProgress,
 }
 
 /// Git-directory files whose presence marks an operation awaiting its concluding commit.
 pub const SEQUENCER_HEAD_FILES: &[&str] = &["MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD"];
 
-/// What: Existence of each head file, as the caller observed it. `bool` is true or false.
-/// Why:  These three facts are everything the decision needs from the repository.
+/// What:
+///  Existence of each head file,
+///  as the caller observed it.
+///  `bool` is true or false.
+/// Why:
+///   These three facts are everything the decision needs from the repository.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,8 +63,11 @@ pub struct SequencerFacts {
     pub revert_head: bool,
 }
 
-/// What: Why the path query's output could not be read.
-/// Why:  Output that is not exactly three paths in one directory is reported, never guessed.
+/// What:
+///  Why the path query's output could not be read.
+/// Why:
+///   Output that is not exactly three paths in one directory is reported,
+///  never guessed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -58,7 +78,8 @@ pub struct SequencerOutputError;
 
 /// `impl std::fmt::Display` supplies Rust's "print me" interface for the error.
 impl std::fmt::Display for SequencerOutputError {
-    /// `&self` borrows the error read-only; `&mut` lends the formatter for writing.
+    /// `&self` borrows the error read-only;
+    ///  `&mut` lends the formatter for writing.
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         return formatter.write_str(
             "git rev-parse --git-path did not print the three sequencer head paths of one Git directory",
@@ -69,9 +90,15 @@ impl std::fmt::Display for SequencerOutputError {
 /// An empty `impl` marks the type as a standard error value for generic handling.
 impl std::error::Error for SequencerOutputError {}
 
-/// What: Build the real-Git argument list: the caller's global options, then one
-///       `--git-path` per head file. `Vec<OsString>` is the owned result.
-/// Why:  `--git-path` resolves linked worktrees and `GIT_DIR`, which a lexical join cannot.
+/// What:
+///  Build the real-Git argument list:
+///  the caller's global options,
+///  then one
+///       `--git-path` per head file.
+///  `Vec<OsString>` is the owned result.
+/// Why:
+///   `--git-path` resolves linked worktrees and `GIT_DIR`,
+///  which a lexical join cannot.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -90,9 +117,13 @@ pub fn sequencer_query_arguments(global_prefix: &[OsString]) -> Vec<OsString> {
     return arguments;
 }
 
-/// What: Read the query output as three paths without splitting on newlines.
-///       `Result<Vec<Vec<u8>>, _>` is "three byte paths, or a refusal".
-/// Why:  A Git directory path may contain a newline. The three files share one directory,
+/// What:
+///  Read the query output as three paths without splitting on newlines.
+///       `Result<Vec<Vec<u8>>, _>` is "three byte paths,
+///  or a refusal".
+/// Why:
+///   A Git directory path may contain a newline.
+///  The three files share one directory,
 ///       so its length follows from the output length and the result is checked byte for byte.
 ///
 /// In TS you'd write (pseudocode):
@@ -134,8 +165,10 @@ pub fn sequencer_head_paths(stdout: &[u8]) -> Result<Vec<Vec<u8>>, SequencerOutp
     return Ok(paths);
 }
 
-/// What: Decide from the three presence facts.
-/// Why:  Any one head file means Git is waiting for the concluding commit.
+/// What:
+///  Decide from the three presence facts.
+/// Why:
+///   Any one head file means Git is waiting for the concluding commit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -148,8 +181,10 @@ pub fn sequencer_state(facts: SequencerFacts) -> SequencerState {
     return SequencerState::NotInProgress;
 }
 
-/// What: The state to use when the path query itself failed.
-/// Why:  The incumbent falls back to normal enforcement and lets real Git report its error.
+/// What:
+///  The state to use when the path query itself failed.
+/// Why:
+///   The incumbent falls back to normal enforcement and lets real Git report its error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,7 +194,8 @@ pub fn sequencer_state_when_query_fails() -> SequencerState {
     return SequencerState::NotInProgress;
 }
 
-/// Output parsing, the decision and real-Git controls of the query.
+/// Output parsing,
+///  the decision and real-Git controls of the query.
 #[cfg(test)]
 #[path = "rule_commit_sequencer_tests.rs"]
 mod tests;

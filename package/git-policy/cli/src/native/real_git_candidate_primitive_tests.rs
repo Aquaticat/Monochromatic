@@ -1,6 +1,11 @@
-//! What: Controls for the byte and identity primitives behind wrapper self-exclusion.
-//! Why: Classification is only as exact as its header, marker, identity and content
-//!      comparisons, so each one is pinned at its boundaries on disposable files.
+//! What:
+//!  Controls for the byte and identity primitives behind wrapper self-exclusion.
+//! Why:
+//!  Classification is only as exact as its header,
+//!  marker,
+//!  identity and content
+//!      comparisons,
+//!  so each one is pinned at its boundaries on disposable files.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +18,8 @@ use super::{has_wrapper_marker, identical_content, is_native_header, same_file};
 use crate::test_support::{executable, fixture, remove};
 use std::path::PathBuf;
 
-/// Every supported native signature is recognised, including two-byte PE.
+/// Every supported native signature is recognised,
+///  including two-byte PE.
 #[test]
 fn native_headers_are_recognised_by_prefix() {
     for header in [
@@ -44,7 +50,9 @@ fn native_headers_are_recognised_by_prefix() {
     }
 }
 
-/// Each marker is found at the start, middle and end; near misses are not markers.
+/// Each marker is found at the start,
+///  middle and end;
+///  near misses are not markers.
 #[test]
 fn wrapper_markers_are_found_anywhere_in_script_bytes() {
     for marker in [
@@ -75,7 +83,8 @@ fn wrapper_markers_are_found_anywhere_in_script_bytes() {
     }
 }
 
-/// The same file is recognised through symbolic links, hard links and relative spellings.
+/// The same file is recognised through symbolic links,
+///  hard links and relative spellings.
 #[test]
 fn same_file_holds_through_links_and_spellings() {
     let root: PathBuf = fixture("same-file");

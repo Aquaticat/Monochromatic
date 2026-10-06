@@ -1,7 +1,8 @@
 //! Minimal Linux `bpf(2)` UAPI bindings and the socket-marking program builder.
 //!
 //! The `libc` crate does not expose the BPF syscall's `bpf_attr` union or its
-//! constants, so the small stable-ABI subset used here is defined directly.
+//! constants,
+//!  so the small stable-ABI subset used here is defined directly.
 //! The program marks sockets with `SO_MARK` so a policy-routing rule can send
 //! their traffic outside the WireGuard tunnel.
 //!
@@ -15,7 +16,9 @@ compile_error!("wg-quicker-exempt currently supports little-endian Linux targets
 use std::io;
 /// Owned descriptor that closes automatically when its value leaves scope.
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
-/// Stable Linux command constants, attributes, and syscall wrapper.
+/// Stable Linux command constants,
+///  attributes,
+///  and syscall wrapper.
 use crate::bpf_uapi::{
     bpf,
     BpfAttr,
@@ -64,27 +67,37 @@ impl BpfInsn {
     }
 }
 
-/// Opcode: 64-bit immediate load (`ld_imm64`).
+/// Opcode:
+///  64-bit immediate load (`ld_imm64`).
 const BPF_LD_IMM64: u8 = 0x18;
-/// Opcode: 64-bit register move.
+/// Opcode:
+///  64-bit register move.
 const BPF_MOV64_REG: u8 = 0xbf;
-/// Opcode: 32-bit immediate move.
+/// Opcode:
+///  32-bit immediate move.
 const BPF_MOV32_IMM: u8 = 0xb4;
-/// Opcode: 64-bit register add immediate.
+/// Opcode:
+///  64-bit register add immediate.
 const BPF_ALU64_ADD: u8 = 0x07;
-/// Opcode: store 32-bit immediate to memory (`BPF_ST | BPF_MEM | BPF_W`).
+/// Opcode:
+///  store 32-bit immediate to memory (`BPF_ST | BPF_MEM | BPF_W`).
 const BPF_ST_MEM32: u8 = 0x62;
-/// Opcode: helper call (`BPF_JMP | BPF_CALL | BPF_X` = 0x85).
+/// Opcode:
+///  helper call (`BPF_JMP | BPF_CALL | BPF_X` = 0x85).
 const BPF_CALL: u8 = 0x85;
-/// Opcode: jump-if-equal immediate.
+/// Opcode:
+///  jump-if-equal immediate.
 const BPF_JEQ_IMM: u8 = 0x15;
-/// Opcode: program exit.
+/// Opcode:
+///  program exit.
 const BPF_EXIT: u8 = 0x95;
 /// Pseudo source marking an `ld_imm64` that references a map fd.
 const BPF_PSEUDO_MAP_FD: u8 = 1;
-/// Helper number: `bpf_map_lookup_elem`.
+/// Helper number:
+///  `bpf_map_lookup_elem`.
 const FN_MAP_LOOKUP: i32 = 1;
-/// Helper number: `bpf_setsockopt`.
+/// Helper number:
+///  `bpf_setsockopt`.
 const FN_SETSOCKOPT: i32 = 49;
 /// `SOL_SOCKET` socket level.
 const SOL_SOCKET: i32 = 1;
@@ -95,8 +108,12 @@ const SO_MARK_VALUE_SIZE: i32 = 4;
 
 /// Builds the socket-marking program referencing a mark map fd.
 ///
-/// Sequence: save ctx in r6, look up `mark_map[0]`, and when present call
-/// `setsockopt(ctx, SOL_SOCKET, SO_MARK, value_ptr, 4)`, then return 1 (allow).
+/// Sequence:
+///  save ctx in r6,
+///  look up `mark_map[0]`,
+///  and when present call
+/// `setsockopt(ctx, SOL_SOCKET, SO_MARK, value_ptr, 4)`,
+///  then return 1 (allow).
 fn mark_program(map_fd: i32) -> [BpfInsn; 19] {
     return [
         BpfInsn::new(BPF_MOV64_REG, 6, 1, 0, 0),
@@ -123,7 +140,9 @@ fn mark_program(map_fd: i32) -> [BpfInsn; 19] {
     ];
 }
 
-/// Returns stable opcode, offset, and immediate triples for unit verification.
+/// Returns stable opcode,
+///  offset,
+///  and immediate triples for unit verification.
 #[cfg(test)]
 pub fn mark_program_snapshot() -> [(u8, i16, i32); 19] {
     let program = mark_program(123);
@@ -230,7 +249,8 @@ fn pin_obj(fd: &OwnedFd, path: &std::ffi::CStr) -> io::Result<()> {
     return Ok(());
 }
 
-/// Attaches a program to a cgroup via `BPF_LINK_CREATE`, returning the link fd.
+/// Attaches a program to a cgroup via `BPF_LINK_CREATE`,
+///  returning the link fd.
 fn attach_link(prog_fd: &OwnedFd, cgroup_fd: i32, attach_type: u32) -> io::Result<OwnedFd> {
     let mut attr = BpfAttr {
         bytes: [0; 168],
@@ -247,7 +267,9 @@ fn attach_link(prog_fd: &OwnedFd, cgroup_fd: i32, attach_type: u32) -> io::Resul
     return Ok(unsafe { OwnedFd::from_raw_fd(fd as i32) });
 }
 
-/// All hooks the marker installs, covering TCP connect and UDP sendmsg, v4 and v6.
+/// All hooks the marker installs,
+///  covering TCP connect and UDP sendmsg,
+///  v4 and v6.
 pub const HOOKS: [u32; 4] = [
     BPF_CGROUP_INET4_CONNECT,
     BPF_CGROUP_INET6_CONNECT,
@@ -255,7 +277,8 @@ pub const HOOKS: [u32; 4] = [
     BPF_CGROUP_UDP6_SENDMSG,
 ];
 
-/// Hook names used for pinned-link file names, parallel to [`HOOKS`].
+/// Hook names used for pinned-link file names,
+///  parallel to [`HOOKS`].
 pub const HOOK_NAMES: [&str; 4] = [
     "connect4",
     "connect6",
@@ -269,13 +292,16 @@ pub struct MarkerLinks {
     _links: Vec<OwnedFd>,
 }
 
-/// Loads and attaches one hook, returning link descriptor that owns attachment.
+/// Loads and attaches one hook,
+///  returning link descriptor that owns attachment.
 fn create_link(map_fd: &OwnedFd, cgroup_fd: i32, hook: u32) -> io::Result<OwnedFd> {
     let prog_fd = load_prog(map_fd, hook)?;
     return attach_link(&prog_fd, cgroup_fd, hook);
 }
 
-/// Loads, attaches, and pins one hook while descriptors remain automatically owned.
+/// Loads,
+///  attaches,
+///  and pins one hook while descriptors remain automatically owned.
 fn attach_one(
     map_fd: &OwnedFd,
     cgroup_fd: i32,
@@ -346,7 +372,8 @@ pub fn attach_marker_unpinned_failing_after(
 /// Attaches the socket-marking program to one cgroup for every hook and pins each
 /// resulting link under an empty staging directory.
 ///
-/// A failed hook removes every earlier pin, so no partial attachment survives.
+/// A failed hook removes every earlier pin,
+///  so no partial attachment survives.
 pub fn attach_marker(cgroup_fd: i32, mark: u32, pin_dir: &str) -> io::Result<Vec<String>> {
     let map_fd = create_mark_map(mark)?;
     let mut pinned = Vec::with_capacity(HOOKS.len());

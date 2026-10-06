@@ -1,5 +1,7 @@
-//! What: Boundary controls for the key-naming JSONC value readers.
-//! Why: Each reader must accept exactly its type and name the rejected key.
+//! What:
+//!  Boundary controls for the key-naming JSONC value readers.
+//! Why:
+//!  Each reader must accept exactly its type and name the rejected key.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,8 +15,10 @@ use super::{
 };
 use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};
 
-/// Parse one JSONC value fixture; a fixture that does not parse is a broken test.
-/// The parser accepts only an object or array as a document, so scalars ride inside an array.
+/// Parse one JSONC value fixture;
+///  a fixture that does not parse is a broken test.
+/// The parser accepts only an object or array as a document,
+///  so scalars ride inside an array.
 fn value(source: &str) -> JsoncValue {
     let document: JsoncValue =
         parse_jsonc(format!("[{source}]").as_str()).expect("fixture is valid JSONC");
@@ -49,7 +53,9 @@ fn kind_names_cover_every_json_type() {
     }
 }
 
-/// Null is explained with its remedy; other kinds name what was found; the top level is described.
+/// Null is explained with its remedy;
+///  other kinds name what was found;
+///  the top level is described.
 #[test]
 fn wrong_kind_messages_name_key_found_kind_and_expectation() {
     assert_eq!(
@@ -105,7 +111,8 @@ fn member_keys_reject_duplicates_after_decoding() {
     }
 }
 
-/// A lone surrogate key is rejected, naming its container instead of printing invalid text.
+/// A lone surrogate key is rejected,
+///  naming its container instead of printing invalid text.
 #[test]
 fn member_keys_reject_unpaired_surrogates() {
     let document = value(r#"{ "\ud800": 1 }"#);
@@ -143,7 +150,8 @@ fn boolean_accepts_only_json_booleans() {
     }
 }
 
-/// Strings decode escapes; other kinds and lone surrogates are rejected by key.
+/// Strings decode escapes;
+///  other kinds and lone surrogates are rejected by key.
 #[test]
 fn text_accepts_only_valid_unicode_strings() {
     assert_eq!(text(&value(r#""ab\n""#), "k"), Ok(String::from("ab\n")));
@@ -193,7 +201,8 @@ fn strings_require_an_array_of_strings() {
     );
 }
 
-/// Exact integers are accepted in every spelling, including both bounds.
+/// Exact integers are accepted in every spelling,
+///  including both bounds.
 #[test]
 fn safe_integer_accepts_exact_whole_numbers_within_bounds() {
     for (source, minimum, expected) in [
@@ -218,7 +227,9 @@ fn safe_integer_accepts_exact_whole_numbers_within_bounds() {
     }
 }
 
-/// Fractions, negatives, out-of-range and non-number values are rejected with the bound in the message.
+/// Fractions,
+///  negatives,
+///  out-of-range and non-number values are rejected with the bound in the message.
 #[test]
 fn safe_integer_rejects_inexact_or_out_of_range_values() {
     for (source, minimum) in [

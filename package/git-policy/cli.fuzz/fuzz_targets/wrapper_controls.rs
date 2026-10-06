@@ -1,8 +1,15 @@
-//! What: Raw, generated and separated argument vectors through the invariants of wrapper
+//! What:
+//!  Raw,
+//!  generated and separated argument vectors through the invariants of wrapper
 //!       control removal and of the refusal frontier.
-//! Why: Raw bytes cover arbitrary argument content; generated tokens place controls,
-//!      hatches, values and separators in every order; the separated view pins what
-//!      survives after `--`; the frontier view drives the whole wrapped-command lifecycle.
+//! Why:
+//!  Raw bytes cover arbitrary argument content;
+//!  generated tokens place controls,
+//!      hatches,
+//!  values and separators in every order;
+//!  the separated view pins what
+//!      survives after `--`;
+//!  the frontier view drives the whole wrapped-command lifecycle.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

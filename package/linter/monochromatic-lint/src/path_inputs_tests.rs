@@ -1,5 +1,8 @@
-//! What: Native literal/path-glob selection controls.
-//! Why: Existing filenames win over glob punctuation, and unmatched patterns retain their requested failure policy.
+//! What:
+//!  Native literal/path-glob selection controls.
+//! Why:
+//!  Existing filenames win over glob punctuation,
+//!  and unmatched patterns retain their requested failure policy.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -68,8 +71,12 @@ fn glob_punctuation_does_not_reinterpret_existing_files() {
     );
 }
 
-/// A literal or glob input below a regular file names nothing, like a missing path: the operating system answers
-/// "not a directory" for it, and that answer is an unmatched input, not an inspection failure.
+/// A literal or glob input below a regular file names nothing,
+///  like a missing path:
+///  the operating system answers
+/// "not a directory" for it,
+///  and that answer is an unmatched input,
+///  not an inspection failure.
 #[test]
 fn inputs_below_a_regular_file_are_unmatched_not_unreadable() {
     let fixture: Fixture = Fixture::new();

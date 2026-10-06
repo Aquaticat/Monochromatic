@@ -2,20 +2,24 @@
 
 /// Native source state and tree presentation share one event-loop thread.
 use super::{AppWindow, Navigation, State, line, present};
-/// A language target names a file and a place in it; the caret goes there once the file is shown.
+/// A language target names a file and a place in it;
+///  the caret goes there once the file is shown.
 use crate::native::language::{Jump, place};
-/// Reuse the same revision-aware classification application as external reloads; `rows` maps the new text.
+/// Reuse the same revision-aware classification application as external reloads;
+///  `rows` maps the new text.
 use crate::native::{reload::apply_syntax, render, rows};
 /// Identity exhaustion reports an error rather than reusing an obsolete file generation.
 use anyhow::{Context, Result};
 /// New source documents arrive only after successful project-boundary resolution and reading.
 use ide_app::{file_open::OpenedFile, source_style::SourceStyles};
-/// File context remains a display-only native-path label; `ComponentHandle` reaches the window's display scale.
+/// File context remains a display-only native-path label;
+///  `ComponentHandle` reaches the window's display scale.
 use slint::{ComponentHandle, SharedString};
 /// Shared source state never crosses the background-reader thread.
 use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
-/// Focus the source after an open, unless the find input is being typed into.
+/// Focus the source after an open,
+///  unless the find input is being typed into.
 /// A recent-file shortcut pressed in the find bar then keeps stepping through matches of the new file.
 fn focus_source(window: &AppWindow) {
     if window.get_find_has_focus() {
@@ -35,7 +39,8 @@ pub(super) fn request(
     return request_at(window, source, navigation, path, None);
 }
 
-/// A content result's line stays attached to the newest request, including contained canonical aliases.
+/// A content result's line stays attached to the newest request,
+///  including contained canonical aliases.
 pub(super) fn request_at(
     window: &AppWindow,
     source: &Rc<RefCell<State>>,
@@ -68,11 +73,20 @@ pub(super) fn request_at(
     return Ok(());
 }
 
-/// What: Open the file of a language target and put the caret at the target once it is shown.
-///       `Jump` names the canonical path, whether it lies outside the project, and the place.
-/// Why: Project files go through the ordinary open (history, tree reveal, badges); a file outside
-///      the project is read without project resolution and gets neither history nor reveal. The
-///      displayed file itself is not reopened: the caret moves at once.
+/// What:
+///  Open the file of a language target and put the caret at the target once it is shown.
+///       `Jump` names the canonical path,
+///  whether it lies outside the project,
+///  and the place.
+/// Why:
+///  Project files go through the ordinary open (history,
+///  tree reveal,
+///  badges);
+///  a file outside
+///      the project is read without project resolution and gets neither history nor reveal.
+///  The
+///      displayed file itself is not reopened:
+///  the caret moves at once.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,7 +132,8 @@ pub(super) fn failed(window: &AppWindow, source: &Rc<RefCell<State>>, message: S
     render(window, source);
 }
 
-/// Install a successful different file, invalidating all source-specific frame and accessibility caches.
+/// Install a successful different file,
+///  invalidating all source-specific frame and accessibility caches.
 pub(super) fn apply(
     window: &AppWindow,
     source: &Rc<RefCell<State>>,

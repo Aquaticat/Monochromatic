@@ -1,5 +1,7 @@
-//! What: Coverage-guided semantic explicit-type policy checks.
-//! Why: Generated valid programs and arbitrary source overlays exercise the same production session.
+//! What:
+//!  Coverage-guided semantic explicit-type policy checks.
+//! Why:
+//!  Generated valid programs and arbitrary source overlays exercise the same production session.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

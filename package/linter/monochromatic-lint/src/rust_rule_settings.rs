@@ -1,5 +1,8 @@
-//! What: Typed execution settings for the shipped Rust rules.
-//! Why: File matching yields validated JSONC, but rule dispatch should not reinterpret loose option objects repeatedly.
+//! What:
+//!  Typed execution settings for the shipped Rust rules.
+//! Why:
+//!  File matching yields validated JSONC,
+//!  but rule dispatch should not reinterpret loose option objects repeatedly.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,7 +13,8 @@
 use crate::config_data::{key_text, text, validate_data};
 use crate::config_error::ConfigError;
 use crate::configuration_rules::{line_limit, validate_rules};
-/// Import the diagnostic severity, which intentionally has no Off variant.
+/// Import the diagnostic severity,
+///  which intentionally has no Off variant.
 use crate::diagnostic::Severity;
 /// Import the exact JSONC representation.
 use monochromatic_jsonc_edit::JsoncValue;
@@ -24,16 +28,19 @@ pub struct LineBudget {
     pub max: usize,
 }
 
-/// Immutable rule selection; absence and explicit off both leave the rule disabled.
+/// Immutable rule selection;
+///  absence and explicit off both leave the rule disabled.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct RustRuleSettings {
     /// Optional code-line budget.
     pub max_lines: Option<LineBudget>,
-    /// Documentation requirement, including private declarations.
+    /// Documentation requirement,
+    ///  including private declarations.
     pub rustdoc: Option<Severity>,
     /// Ban parsed anonymous functions.
     pub no_anonymous_functions: Option<Severity>,
-    /// Full semantic annotation policy, which requires a workspace context.
+    /// Full semantic annotation policy,
+    ///  which requires a workspace context.
     pub explicit_types: Option<Severity>,
 }
 

@@ -1,5 +1,9 @@
-//! What:     Tests for the comment-as-data surface: reading and replacing value and key comments.
-//! Why:      A key's comment and its value's comment are separate data, and both must survive emission
+//! What:
+//!      Tests for the comment-as-data surface:
+//!  reading and replacing value and key comments.
+//! Why:
+//!       A key's comment and its value's comment are separate data,
+//!  and both must survive emission
 //!           and reparsing on the same owner.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,32 +11,41 @@
 //! describe('jsonc comment api', () => { /* get, set, clear, ownership */ });
 //! ```
 
-/// What:     Import the failure enum so tests can name the expected variant.
-/// Why:      A key-comment address can fail as missing or as wrong-shaped, and the two differ.
+/// What:
+///      Import the failure enum so tests can name the expected variant.
+/// Why:
+///       A key-comment address can fail as missing or as wrong-shaped,
+///  and the two differ.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncEditError } from './error';
 /// ```
 use crate::error::JsoncEditError;
-/// What:     Import the canonical emitter.
-/// Why:      Comment ownership is only meaningful if it survives writing the document out.
+/// What:
+///      Import the canonical emitter.
+/// Why:
+///       Comment ownership is only meaningful if it survives writing the document out.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { emitJsoncValue } from './emit';
 /// ```
 use crate::emit::emit_jsonc_value;
-/// What:     Import the comment types a test builds and compares.
-/// Why:      Setting a comment takes the same type a query returns.
+/// What:
+///      Import the comment types a test builds and compares.
+/// Why:
+///       Setting a comment takes the same type a query returns.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncComment, JsoncCommentKind } from './value';
 /// ```
 use crate::value::{JsoncComment, JsoncCommentKind};
-/// What:     Import the address helper and the comment surface under test.
-/// Why:      These tests use the same public functions a consumer uses.
+/// What:
+///      Import the address helper and the comment surface under test.
+/// Why:
+///       These tests use the same public functions a consumer uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,8 +57,11 @@ use crate::{
 };
 use crate::path::{jsonc_key_path, JsoncPathSegment};
 
-/// What:     Build one block comment with the given body.
-/// Why:      Tests set comments often, and the style is part of what emission preserves.
+/// What:
+///      Build one block comment with the given body.
+/// Why:
+///       Tests set comments often,
+///  and the style is part of what emission preserves.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -180,8 +196,10 @@ fn replaced_comments_survive_round_trip() {
     assert_eq!(jsonc_comment(&reparsed.root, &element).expect("element comment").map(|comment| return comment.text.as_str()), Some(" item "));
 }
 
-/// A caller may attach a line-style comment whose body carries a bare CR. Emission must not render
-/// it as a `//` line, because that comment would end at the CR and leave the rest as code.
+/// A caller may attach a line-style comment whose body carries a bare CR.
+///  Emission must not render
+/// it as a `//` line,
+///  because that comment would end at the CR and leave the rest as code.
 #[test]
 fn line_kind_body_with_cr_round_trips() {
     let state = parse_jsonc_edit("{\"a\":1}").expect("document parses");

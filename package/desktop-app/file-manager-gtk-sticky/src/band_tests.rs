@@ -20,7 +20,12 @@ fn place(id: u64, column: usize, row: usize, parent: Option<u64>) -> Placement {
     }
 }
 
-/// The grown tree: root(0) -> a(1), b(2), c(3); b -> x(4), y(5).
+/// The grown tree:
+///  root(0) -> a(1),
+///  b(2),
+///  c(3);
+///  b -> x(4),
+///  y(5).
 fn grown_tree() -> Vec<Placement> {
     return vec![
         place(0, 0, 0, None),

@@ -1,6 +1,10 @@
-//! What: Disposable-repository controls for what a staged version is compared with and which index it reads.
-//! Why: A repository without commits, a SHA-256 repository and a private index file each
-//!      change the listing command's inputs, and each must still list exactly what is staged.
+//! What:
+//!  Disposable-repository controls for what a staged version is compared with and which index it reads.
+//! Why:
+//!  A repository without commits,
+//!  a SHA-256 repository and a private index file each
+//!      change the listing command's inputs,
+//!  and each must still list exactly what is staged.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,7 +12,8 @@
 //! ```
 #![cfg(unix)]
 
-/// Import the store under test, its sibling fixtures and shared fixtures.
+/// Import the store under test,
+///  its sibling fixtures and shared fixtures.
 use super::CandidateStore;
 use super::tests::{at, paths, store, write};
 use crate::candidate_record::CandidateChange;
@@ -18,7 +23,8 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-/// Without any commit every index entry is an addition, listed against the empty tree.
+/// Without any commit every index entry is an addition,
+///  listed against the empty tree.
 #[test]
 fn unborn_head_lists_every_index_entry_as_added() {
     let root: PathBuf = fixture("store-unborn");
@@ -49,7 +55,9 @@ fn unborn_head_lists_every_index_entry_as_added() {
     remove(root.as_path());
 }
 
-/// A SHA-256 repository works the same way: 64-digit names, and its own empty tree when unborn.
+/// A SHA-256 repository works the same way:
+///  64-digit names,
+///  and its own empty tree when unborn.
 #[test]
 fn sha256_repository_is_listed_and_read() {
     let root: PathBuf = fixture("store-sha256");
@@ -82,7 +90,8 @@ fn sha256_repository_is_listed_and_read() {
     remove(root.as_path());
 }
 
-/// The environment overlay reaches the listing: a private index file is the one that is listed.
+/// The environment overlay reaches the listing:
+///  a private index file is the one that is listed.
 #[test]
 fn overlay_selects_a_private_index() {
     let root: PathBuf = fixture("store-private-index");
@@ -138,7 +147,8 @@ fn overlay_selects_a_private_index() {
     remove(root.as_path());
 }
 
-/// An intent-to-add entry is listed as an addition of the empty blob, which Git stored when the intent was recorded.
+/// An intent-to-add entry is listed as an addition of the empty blob,
+///  which Git stored when the intent was recorded.
 #[test]
 fn intent_to_add_entry_is_an_empty_addition() {
     let root: PathBuf = fixture("store-intent");

@@ -1,21 +1,29 @@
-//! An ignored measurement: how often a save that begins when the safety sweep comes due is read
-//! unfinished, because the sweep read is not asked for by the save's notification.
+//! An ignored measurement:
+//!  how often a save that begins when the safety sweep comes due is read
+//! unfinished,
+//!  because the sweep read is not asked for by the save's notification.
 
 /// Shipped window setup shared with the watch tests.
 use super::watch_tests::open;
 /// The slow-writer helpers and texts of the asserting write-wait tests.
 use super::write_wait_tests::{NEW, OLD, PAUSE, baseline, until_text, watch_texts};
-/// The bounded wait for startup state, and the renderer that shows a new selection.
+/// The bounded wait for startup state,
+///  and the renderer that shows a new selection.
 use super::{navigation_tests::wait_until, render};
-/// Reading positions, and the shipped intervals named in the measurement output.
+/// Reading positions,
+///  and the shipped intervals named in the measurement output.
 use ide_app::{
     document::ReadingPosition,
     refresh_policy::{SAFETY_SWEEP, WRITE_QUIET},
 };
 /// `ComponentHandle` provides `hide` on the generated window.
 use slint::ComponentHandle;
-/// What: `OpenOptions` opens a file with chosen flags; `Write` provides `write_all`; `Duration` is a time span.
-/// Why: The measurement plays a slow writer whose save begins at a chosen time.
+/// What:
+///  `OpenOptions` opens a file with chosen flags;
+///  `Write` provides `write_all`;
+///  `Duration` is a time span.
+/// Why:
+///  The measurement plays a slow writer whose save begins at a chosen time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,10 +35,15 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Each trial starts an in-place save, unfinished for `PAUSE`, at a pseudo-random time within the
-/// 400 ms that contain the next sweep read. The write wait cannot hold that read back until the
-/// save's notification has reached the schedule. The share of trials that showed the truncated file,
-/// times 400 ms, is the time before each sweep read in which a beginning save is read unfinished.
+/// Each trial starts an in-place save,
+///  unfinished for `PAUSE`,
+///  at a pseudo-random time within the
+/// 400 ms that contain the next sweep read.
+///  The write wait cannot hold that read back until the
+/// save's notification has reached the schedule.
+///  The share of trials that showed the truncated file,
+/// times 400 ms,
+///  is the time before each sweep read in which a beginning save is read unfinished.
 #[test]
 #[ignore = "measurement; run through inspect:refresh-latency with the filter write_wait_timer"]
 fn write_wait_timer_coincidence() {

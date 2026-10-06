@@ -5,7 +5,8 @@ use super::{MAX_DIAGNOSTIC_BYTES, diagnostic, record};
 /// Shared limit defines the exact accepted and rejected record boundary.
 use crate::search::MAX_SEARCH_RECORD;
 
-/// Tokio supplies a test-local runtime; borrowed byte slices implement its async read interfaces.
+/// Tokio supplies a test-local runtime;
+///  borrowed byte slices implement its async read interfaces.
 #[tokio::test]
 async fn delimiters_and_unterminated_final_records_preserve_bytes() {
     let mut bytes: &[u8] = b"first\0line\nbreak\0last";
@@ -29,7 +30,8 @@ async fn delimiters_and_unterminated_final_records_preserve_bytes() {
     );
 }
 
-/// One delimiter beyond the payload limit is valid; one additional payload byte is not.
+/// One delimiter beyond the payload limit is valid;
+///  one additional payload byte is not.
 #[tokio::test]
 async fn exact_record_limit_has_an_observed_boundary() {
     let mut exact = vec![b'x'; MAX_SEARCH_RECORD];

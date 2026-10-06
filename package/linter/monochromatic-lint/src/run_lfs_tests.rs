@@ -1,5 +1,8 @@
-//! What: Controls for per-run LFS repository sharing and the order of exclusion and discovery.
-//! Why: An excluded file must be unaffected by an unusable endpoint, and one repository must be
+//! What:
+//!  Controls for per-run LFS repository sharing and the order of exclusion and discovery.
+//! Why:
+//!  An excluded file must be unaffected by an unusable endpoint,
+//!  and one repository must be
 //! discovered once however many files it holds.
 //!
 //! In TS you'd write (pseudocode):
@@ -43,7 +46,9 @@ fn document() -> MarkdownSource {
     .expect("fixture parses");
 }
 
-/// Without a `.lfsconfig` ancestor, or with one that declares no endpoint, the rule is inert.
+/// Without a `.lfsconfig` ancestor,
+///  or with one that declares no endpoint,
+///  the rule is inert.
 #[test]
 fn files_without_a_declared_endpoint_have_no_context() {
     let fixture: Fixture = Fixture::new();
@@ -64,7 +69,8 @@ fn files_without_a_declared_endpoint_have_no_context() {
     );
 }
 
-/// A tracked image resolves through the shared repository, and later files reuse its resolved targets.
+/// A tracked image resolves through the shared repository,
+///  and later files reuse its resolved targets.
 #[test]
 fn one_repository_serves_every_file_below_its_root() {
     let fixture: Fixture = Fixture::new();
@@ -113,7 +119,8 @@ fn one_repository_serves_every_file_below_its_root() {
     );
 }
 
-/// Exclusion is decided before the endpoint is read; an unusable endpoint fails only files that are not excluded.
+/// Exclusion is decided before the endpoint is read;
+///  an unusable endpoint fails only files that are not excluded.
 #[test]
 fn excluded_files_are_unaffected_by_an_unusable_endpoint() {
     let fixture: Fixture = Fixture::new();

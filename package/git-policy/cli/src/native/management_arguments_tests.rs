@@ -1,6 +1,10 @@
-//! What: Grammar controls for `git cli-git` arguments.
-//! Why: A malformed invocation must be refused with the right remedy, a pathspec must
-//!      never be mistaken for an option or the reverse, and retired commands must
+//! What:
+//!  Grammar controls for `git cli-git` arguments.
+//! Why:
+//!  A malformed invocation must be refused with the right remedy,
+//!  a pathspec must
+//!      never be mistaken for an option or the reverse,
+//!  and retired commands must
 //!      still parse.
 //!
 //! In TS you'd write (pseudocode):
@@ -104,7 +108,8 @@ fn retired_commands_accept_their_former_forms() {
     }
 }
 
-/// Unknown commands, options and stray arguments are usage refusals.
+/// Unknown commands,
+///  options and stray arguments are usage refusals.
 #[test]
 fn unknown_forms_are_usage_refusals() {
     for arguments in [
@@ -146,7 +151,8 @@ fn unknown_forms_are_usage_refusals() {
     }
 }
 
-/// `check` and `fix` take exactly one scope, with `--policy` values in first-occurrence order.
+/// `check` and `fix` take exactly one scope,
+///  with `--policy` values in first-occurrence order.
 #[test]
 fn direct_commands_parse_scope_and_policies() {
     assert_eq!(
@@ -237,7 +243,8 @@ fn scope_mistakes_have_specific_refusals() {
     }
 }
 
-/// Pathspecs keep their exact bytes; a policy ID that is not UTF-8 is refused.
+/// Pathspecs keep their exact bytes;
+///  a policy ID that is not UTF-8 is refused.
 #[cfg(unix)]
 #[test]
 fn native_bytes_are_kept_for_pathspecs_and_refused_for_policy_ids() {

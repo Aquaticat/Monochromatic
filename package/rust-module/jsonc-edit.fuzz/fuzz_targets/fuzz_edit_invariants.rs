@@ -1,29 +1,48 @@
-//! What:     Edit target: every edit must be immutable, addressable and canonical afterwards.
-//! Why:      The crate promises that edits return new documents and leave the previous one usable,
-//!           that comments stay owned by the address they were attached to, and that emission stays
-//!           a fixed point after any edit. Those promises are exactly what a fuzzer should attack
+//! What:
+//!      Edit target:
+//!  every edit must be immutable,
+//!  addressable and canonical afterwards.
+//! Why:
+//!       The crate promises that edits return new documents and leave the previous one usable,
+//!           that comments stay owned by the address they were attached to,
+//!  and that emission stays
+//!           a fixed point after any edit.
+//!  Those promises are exactly what a fuzzer should attack
 //!           with random addresses and random replacement values.
 
 #![no_main]
 
-/// What:     Import the harness macro.
-/// Why:      Every target in this sidecar is a libFuzzer entry point.
+/// What:
+///      Import the harness macro.
+/// Why:
+///       Every target in this sidecar is a libFuzzer entry point.
 use libfuzzer_sys::fuzz_target;
-/// What:     Import the byte-budget reader.
-/// Why:      Address selection and the action choice both come from fuzzer bytes.
+/// What:
+///      Import the byte-budget reader.
+/// Why:
+///       Address selection and the action choice both come from fuzzer bytes.
 use arbitrary::Unstructured;
-/// What:     Import the replacement-value generator.
-/// Why:      Edits must write the same difficult scalars the document generator produces.
+/// What:
+///      Import the replacement-value generator.
+/// Why:
+///       Edits must write the same difficult scalars the document generator produces.
 use jsonc_edit_fuzz::generators::replacement_value;
-/// What:     Import the shared invariants and address selection.
-/// Why:      Edits are only meaningful at addresses that resolve, and only checkable against the
+/// What:
+///      Import the shared invariants and address selection.
+/// Why:
+///       Edits are only meaningful at addresses that resolve,
+///  and only checkable against the
 ///           same properties the other targets assert.
 use jsonc_edit_fuzz::{
     assert_canonical_stability, assert_comments_preserved, assert_depth_bound, assert_trees_equal, random_path,
     GeneratedDocument,
 };
-/// What:     Import the crate's edit, query and emission surface.
-/// Why:      The target exercises the API a consumer uses, not internals.
+/// What:
+///      Import the crate's edit,
+///  query and emission surface.
+/// Why:
+///       The target exercises the API a consumer uses,
+///  not internals.
 use monochromatic_jsonc_edit::{
     emit_jsonc_value, jsonc_comment, jsonc_delete, jsonc_has, jsonc_key_comment, jsonc_lookup, jsonc_set,
     jsonc_set_comment, jsonc_set_key_comment, parse_jsonc, parse_jsonc_edit, JsoncComment, JsoncCommentKind,

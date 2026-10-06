@@ -1,14 +1,27 @@
-//! The 60fps frame recorder: a steady, drift-free capture timer decoupled from the app.
+//! The 60fps frame recorder:
+//!  a steady,
+//!  drift-free capture timer decoupled from the app.
 //!
 //! On each tick (on the render thread) it reads the current framebuffer back into a pooled
-//! buffer and hands it to the encoder pool, then sends frame callbacks so an animating app
-//! keeps drawing. It never calls `submit`, so the parent compositor's vsync cannot throttle
-//! the capture cadence, and it composites whatever the app LAST committed, so a laggy app
-//! merely yields repeated frames rather than stalling the sequence. The schedule is
-//! absolute (start + n*period) with resync, so it does not drift.
+//! buffer and hands it to the encoder pool,
+//!  then sends frame callbacks so an animating app
+//! keeps drawing.
+//!  It never calls `submit`,
+//!  so the parent compositor's vsync cannot throttle
+//! the capture cadence,
+//!  and it composites whatever the app LAST committed,
+//!  so a laggy app
+//! merely yields repeated frames rather than stalling the sequence.
+//!  The schedule is
+//! absolute (start + n*period) with resync,
+//!  so it does not drift.
 
-/// What:     Grouped `use` of paths, the free-standing directory creator, and time types.
-/// Why:      The recorder creates the output directory and schedules absolute deadlines.
+/// What:
+///      Grouped `use` of paths,
+///  the free-standing directory creator,
+///  and time types.
+/// Why:
+///       The recorder creates the output directory and schedules absolute deadlines.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,25 +33,45 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// What:     Grouped `use` of the calloop timer, timeout action, and registration token.
-/// Why:      The recorder registers a rescheduling timer source and removes it on stop.
+/// What:
+///      Grouped `use` of the calloop timer,
+///  timeout action,
+///  and registration token.
+/// Why:
+///       The recorder registers a rescheduling timer source and removes it on stop.
 use smithay::reexports::calloop::{
     timer::{TimeoutAction, Timer},
     RegistrationToken,
 };
 
-/// What:     `use anyhow::{Context, Result};`. Error helpers.
-/// Why:      `start` returns `Result` and annotates directory / timer failures.
+/// What:
+///      `use anyhow::{Context, Result};`.
+///  Error helpers.
+/// Why:
+///       `start` returns `Result` and annotates directory / timer failures.
 use anyhow::{Context, Result};
 
-/// What:     `use tracing::{info, warn};`. Log macros.
-/// Why:      Report recording start/stop and per-frame readback failures.
+/// What:
+///      `use tracing::{info, warn};`.
+///  Log macros.
+/// Why:
+///       Report recording start/stop and per-frame readback failures.
 use tracing::{info, warn};
 
-/// What:     `use crate::{encoder::{EncoderPool, Format, Frame}, render, screenshot,
-///           state::Compositor};`. The encode pool, the format, the frame carrier, the
-///           frame-callback helper, the readback, and the state.
-/// Why:      A tick reads a frame, submits it to the pool, and sends frame callbacks.
+/// What:
+///      `use crate::{encoder::{EncoderPool, Format, Frame}, render, screenshot,
+///           state::Compositor};`.
+///  The encode pool,
+///  the format,
+///  the frame carrier,
+///  the
+///           frame-callback helper,
+///  the readback,
+///  and the state.
+/// Why:
+///       A tick reads a frame,
+///  submits it to the pool,
+///  and sends frame callbacks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,27 +85,46 @@ use crate::{
 
 /// Fewest encoder workers to spawn.
 ///
-/// What:     `const MIN_WORKERS: usize = 2;`. Floor on the pool size.
-/// Why:      Even on a small machine, at least two encoders keep PNG throughput up.
+/// What:
+///      `const MIN_WORKERS: usize = 2;`.
+///  Floor on the pool size.
+/// Why:
+///       Even on a small machine,
+///  at least two encoders keep PNG throughput up.
 const MIN_WORKERS: usize = 2;
 
-/// Cores left free for the app, render thread, and OS when sizing the encoder pool.
+/// Cores left free for the app,
+///  render thread,
+///  and OS when sizing the encoder pool.
 ///
-/// What:     `const RESERVED_CORES: usize = 2;`. Subtracted from the core count.
-/// Why:      Do not spawn so many encoders that the render thread and app are starved.
+/// What:
+///      `const RESERVED_CORES: usize = 2;`.
+///  Subtracted from the core count.
+/// Why:
+///       Do not spawn so many encoders that the render thread and app are starved.
 const RESERVED_CORES: usize = 2;
 
 /// In-flight buffers per worker (bounds memory and provides queue slack).
 ///
-/// What:     `const BUFFERS_PER_WORKER: usize = 3;`. Multiplier for the buffer pool.
-/// Why:      Enough slack to absorb short encode stalls without dropping, but bounded.
+/// What:
+///      `const BUFFERS_PER_WORKER: usize = 3;`.
+///  Multiplier for the buffer pool.
+/// Why:
+///       Enough slack to absorb short encode stalls without dropping,
+///  but bounded.
 const BUFFERS_PER_WORKER: usize = 3;
 
 /// Summary statistics returned when recording stops.
 ///
-/// What:     `pub struct RecordStats { ... }`. Captured/dropped/failed frame counts, the
-///           elapsed seconds, and the achieved average fps.
-/// Why:      Make the 60fps claim measurable: the caller (and tests) read these back.
+/// What:
+///      `pub struct RecordStats { ... }`.
+///  Captured/dropped/failed frame counts,
+///  the
+///           elapsed seconds,
+///  and the achieved average fps.
+/// Why:
+///       Make the 60fps claim measurable:
+///  the caller (and tests) read these back.
 pub struct RecordStats {
     /// Frames successfully handed to the encoder pool.
     pub captured: u64,
@@ -86,18 +138,26 @@ pub struct RecordStats {
     pub fps: f64,
 }
 
-/// The running recorder: the capture schedule, the encoder pool, and counters.
+/// The running recorder:
+///  the capture schedule,
+///  the encoder pool,
+///  and counters.
 ///
-/// What:     `pub struct Recorder { ... }`. Held in `Compositor::recorder` while recording.
-/// Why:      Carries everything a tick needs and everything `stop` must tear down.
+/// What:
+///      `pub struct Recorder { ... }`.
+///  Held in `Compositor::recorder` while recording.
+/// Why:
+///       Carries everything a tick needs and everything `stop` must tear down.
 pub struct Recorder {
     /// Interval between captures (1 / fps).
     period: Duration,
     /// Absolute deadline of the next capture (drift-free schedule).
     next_tick: Instant,
-    /// When recording started, for the duration report.
+    /// When recording started,
+    ///  for the duration report.
     started: Instant,
-    /// The capture timer's registration token, removed on stop.
+    /// The capture timer's registration token,
+    ///  removed on stop.
     token: RegistrationToken,
     /// The parallel encoder worker pool.
     pool: EncoderPool,
@@ -111,10 +171,15 @@ pub struct Recorder {
 
 /// Start recording to `dir` at `fps` frames per second in `format`.
 ///
-/// What:     `pub fn start(state: &mut Compositor, dir: PathBuf, fps: f64, format: Format)
-///           -> Result<()>`. Creates the directory, sizes and spawns the encoder pool,
-///           registers the capture timer, and stores the `Recorder` in the state.
-/// Why:      The `record` control command's implementation.
+/// What:
+///      `pub fn start(state: &mut Compositor, dir: PathBuf, fps: f64, format: Format)
+///           -> Result<()>`.
+///  Creates the directory,
+///  sizes and spawns the encoder pool,
+///           registers the capture timer,
+///  and stores the `Recorder` in the state.
+/// Why:
+///       The `record` control command's implementation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -193,11 +258,17 @@ pub fn start(state: &mut Compositor, dir: PathBuf, fps: f64, format: Format) -> 
     return Ok(())
 }
 
-/// Stop recording: remove the timer, drain and join the encoder pool, and report stats.
+/// Stop recording:
+///  remove the timer,
+///  drain and join the encoder pool,
+///  and report stats.
 ///
-/// What:     `pub fn stop(state: &mut Compositor) -> Option<RecordStats>`. `None` when not
+/// What:
+///      `pub fn stop(state: &mut Compositor) -> Option<RecordStats>`.
+///  `None` when not
 ///           recording.
-/// Why:      The `record stop` command's implementation.
+/// Why:
+///       The `record stop` command's implementation.
 pub fn stop(state: &mut Compositor) -> Option<RecordStats> {
     // What:     `let recorder = state.recorder.take()?;`. Move the recorder out; `?` returns
     //           `None` if not recording.
@@ -237,11 +308,19 @@ pub fn stop(state: &mut Compositor) -> Option<RecordStats> {
     })
 }
 
-/// One capture tick: read the frame, submit it, keep the app animating, and reschedule.
+/// One capture tick:
+///  read the frame,
+///  submit it,
+///  keep the app animating,
+///  and reschedule.
 ///
-/// What:     `fn tick(state: &mut Compositor) -> TimeoutAction`. Runs on each timer fire.
-/// Why:      Moves the recorder out of the state so the readback can borrow the rest of the
-///           state, then puts it back and returns the next deadline.
+/// What:
+///      `fn tick(state: &mut Compositor) -> TimeoutAction`.
+///  Runs on each timer fire.
+/// Why:
+///       Moves the recorder out of the state so the readback can borrow the rest of the
+///           state,
+///  then puts it back and returns the next deadline.
 fn tick(state: &mut Compositor) -> TimeoutAction {
     // What:     `let Some(mut recorder) = state.recorder.take() else { return
     //           TimeoutAction::Drop; };`. Take ownership of the recorder; if it is gone
@@ -266,16 +345,25 @@ fn tick(state: &mut Compositor) -> TimeoutAction {
 
 /// Per-tick capture logic for the recorder.
 ///
-/// What:     `impl Recorder { ... }`. The capture-and-reschedule step and the single-frame
+/// What:
+///      `impl Recorder { ... }`.
+///  The capture-and-reschedule step and the single-frame
 ///           readback+submit.
-/// Why:      Group the tick behaviour on the recorder value moved out of the state.
+/// Why:
+///       Group the tick behaviour on the recorder value moved out of the state.
 impl Recorder {
-    /// Capture one frame (if a buffer is free), send frame callbacks, and reschedule.
+    /// Capture one frame (if a buffer is free),
+    ///  send frame callbacks,
+    ///  and reschedule.
     ///
-    /// What:     `fn capture_and_reschedule(&mut self, state: &mut Compositor) ->
-    ///           TimeoutAction`. `self` (the recorder) and `state` are now disjoint owned
-    ///           values, so the readback can borrow `state` mutably.
-    /// Why:      The body of a tick.
+    /// What:
+    ///      `fn capture_and_reschedule(&mut self, state: &mut Compositor) ->
+    ///           TimeoutAction`.
+    ///  `self` (the recorder) and `state` are now disjoint owned
+    ///           values,
+    ///  so the readback can borrow `state` mutably.
+    /// Why:
+    ///       The body of a tick.
     fn capture_and_reschedule(&mut self, state: &mut Compositor) -> TimeoutAction {
         // What:     `match self.pool.take_buffer() { Some(buffer) => ..., None => ... }`.
         //           Take a free buffer; `None` means every buffer is in flight (encoders are
@@ -318,10 +406,13 @@ impl Recorder {
 
     /// Read one frame into `buffer` and submit it to the encoder pool.
     ///
-    /// What:     `fn capture_into(&mut self, state: &mut Compositor, buffer: &mut Vec<u8>)`.
-    ///           On success builds a `Frame` and submits it; on any failure returns the
+    /// What:
+    ///      `fn capture_into(&mut self, state: &mut Compositor, buffer: &mut Vec<u8>)`.
+    ///           On success builds a `Frame` and submits it;
+    ///  on any failure returns the
     ///           buffer to the pool and counts a drop.
-    /// Why:      Keep the buffer accounting in one place.
+    /// Why:
+    ///       Keep the buffer accounting in one place.
     fn capture_into(&mut self, state: &mut Compositor, buffer: &mut Vec<u8>) {
         // What:     `match screenshot::read_frame(state, buffer) { Ok((w, h)) => ..., Err(err)
         //           => ... }`. Render + read back into the pooled buffer.
@@ -370,9 +461,12 @@ impl Recorder {
 
 /// Choose the encoder worker count for this machine.
 ///
-/// What:     `fn worker_count() -> usize`. Available parallelism minus reserved cores,
+/// What:
+///      `fn worker_count() -> usize`.
+///  Available parallelism minus reserved cores,
 ///           floored at `MIN_WORKERS`.
-/// Why:      Scale encoding to the host without starving the render thread and app.
+/// Why:
+///       Scale encoding to the host without starving the render thread and app.
 fn worker_count() -> usize {
     // What:     `let cores = std::thread::available_parallelism().map(|n| n.get())
     //           .unwrap_or(MIN_WORKERS);`. Core count, or the floor if it cannot be queried.

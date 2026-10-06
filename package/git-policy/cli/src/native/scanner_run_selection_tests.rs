@@ -1,5 +1,8 @@
-//! What: Controls for which candidates a scan pass skips and how a pass ends on failure.
-//! Why: Skipping the wrong candidate leaves a file unchecked, and a pass that continued
+//! What:
+//!  Controls for which candidates a scan pass skips and how a pass ends on failure.
+//! Why:
+//!  Skipping the wrong candidate leaves a file unchecked,
+//!  and a pass that continued
 //!      past a failure would return a partial result that reads as clean.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +11,8 @@
 //! ```
 #![cfg(unix)]
 
-/// Import the run under test, its sibling fixtures and shared fixtures.
+/// Import the run under test,
+///  its sibling fixtures and shared fixtures.
 use super::tests::{findings_at, loaded, store, was_scanned};
 use super::{ScanRunError, scan_version};
 use crate::candidate_error::CandidateFailure;
@@ -23,7 +27,10 @@ use forbidden_strings::{CandidateScan, ScanFinding};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-/// Body: deletions, the rule-source files and the tracked rules file are skipped; the exclusion is shown to matter.
+/// Body:
+///  deletions,
+///  the rule-source files and the tracked rules file are skipped;
+///  the exclusion is shown to matter.
 fn ineligible_candidates_are_not_scanned_body(directory: &Path) {
     let token: String = needle();
     let leak: String = format!("{token}\n");
@@ -98,7 +105,10 @@ fn ineligible_candidates_are_not_scanned() {
     );
 }
 
-/// Body: a candidate that cannot be read, or cannot be named, ends the pass with its own typed failure.
+/// Body:
+///  a candidate that cannot be read,
+///  or cannot be named,
+///  ends the pass with its own typed failure.
 fn failures_end_the_pass_body(directory: &Path) {
     let scanner: CandidateScanner = loaded(rules_file(directory).as_path());
     let repo: PathBuf = repository(directory, "repo");

@@ -1,22 +1,48 @@
-//! The gutter's severity letters: the worst severity of the diagnostics starting on a line, as `E`, `W`, `I`, or
-//! `H` in that severity's ink, 4 px before that line's own number. Room for a letter exists on every line, so text
-//! and line numbers keep their x when diagnostics arrive; the number column is as wide as the file's widest line
-//! number with at least three digits, so text moves only when the line count gains a digit past 999.
+//! The gutter's severity letters:
+//!  the worst severity of the diagnostics starting on a line,
+//!  as `E`,
+//!  `W`,
+//!  `I`,
+//!  or
+//! `H` in that severity's ink,
+//!  4 px before that line's own number.
+//!  Room for a letter exists on every line,
+//!  so text
+//! and line numbers keep their x when diagnostics arrive;
+//!  the number column is as wide as the file's widest line
+//! number with at least three digits,
+//!  so text moves only when the line count gains a digit past 999.
 
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
-/// Rendered frames, scheme switching, pixel reading, contrast, and readers over disposable files.
+/// Rendered frames,
+///  scheme switching,
+///  pixel reading,
+///  contrast,
+///  and readers over disposable files.
 use super::annotation_paint_tests::{contrast, fixture_reader, frame, near, pixel, switch};
-/// The shared fixture, its snapshots, the text origin, a click, and the diagnostic builder.
+/// The shared fixture,
+///  its snapshots,
+///  the text origin,
+///  a click,
+///  and the diagnostic builder.
 use super::annotation_tests::{FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, click, problem};
 /// Width of the whole gutter for files of fewer than 1000 lines.
 use super::sidebar_tests::GUTTER;
 /// Snapshot records.
 use ide_app::language::diagnostics::{DiagnosticsSnapshot, Severity, SourceGroup};
-/// The toolkit's scheme values, reached through its unstable re-export module as the paint tests do.
+/// The toolkit's scheme values,
+///  reached through its unstable re-export module as the paint tests do.
 use slint::private_unstable_api::re_exports::ColorScheme;
-/// What: `Model` gives the window's list its `iter`; the rest reads frames, toolkit colors, and window points.
-/// Why: The tests check what native code hands over, what the window draws, and where a click lands.
+/// What:
+///  `Model` gives the window's list its `iter`;
+///  the rest reads frames,
+///  toolkit colors,
+///  and window points.
+/// Why:
+///  The tests check what native code hands over,
+///  what the window draws,
+///  and where a click lands.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -41,9 +67,13 @@ fn number_left(line: usize) -> f32 {
     return TEXT_LEFT - NUMBER_GAP - DIGIT * digits as f32;
 }
 
-/// What: Pixels left of line `line`'s number in its code row starting at `code_top` (the letter's place) that match
-///       `ink`, and the strongest contrast any of them reaches against `background`.
-/// Why: A letter is drawn when its ink appears before the number; its legibility is measured on the same pixels.
+/// What:
+///  Pixels left of line `line`'s number in its code row starting at `code_top` (the letter's place) that match
+///       `ink`,
+///  and the strongest contrast any of them reaches against `background`.
+/// Why:
+///  A letter is drawn when its ink appears before the number;
+///  its legibility is measured on the same pixels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -70,9 +100,14 @@ fn letter_cell(
     return (matching, strongest);
 }
 
-/// What: The leftmost window column at or right of `from` with ink different from `background` in the code row
-///       starting at window y `top`, or nothing.
-/// Why: The first ink right of the letter is the line number, and right of the gutter the text; comparing them
+/// What:
+///  The leftmost window column at or right of `from` with ink different from `background` in the code row
+///       starting at window y `top`,
+///  or nothing.
+/// Why:
+///  The first ink right of the letter is the line number,
+///  and right of the gutter the text;
+///  comparing them
 ///      before and after letters appear shows that nothing moved sideways.
 ///
 /// In TS you'd write (pseudocode):
@@ -96,9 +131,15 @@ fn first_ink(
     return None;
 }
 
-/// What: The runs of window columns with any ink, antialiased edges included, from the gutter's left edge to the
-///       text in the code row starting at window y `top`; each run is its first and last column.
-/// Why: The blank columns between the letter's run and the number's first run are the gap the user sees, and the
+/// What:
+///  The runs of window columns with any ink,
+///  antialiased edges included,
+///  from the gutter's left edge to the
+///       text in the code row starting at window y `top`;
+///  each run is its first and last column.
+/// Why:
+///  The blank columns between the letter's run and the number's first run are the gap the user sees,
+///  and the
 ///      blank columns between two digits of a number are what that gap is compared with.
 ///
 /// In TS you'd write (pseudocode):
@@ -128,7 +169,8 @@ fn ink_runs(
     return runs;
 }
 
-/// `count` numbered lines, `line NNNN: value`.
+/// `count` numbered lines,
+///  `line NNNN: value`.
 fn numbered(count: usize) -> String {
     let mut text = String::new();
     for index in 0..count {
@@ -137,14 +179,17 @@ fn numbered(count: usize) -> String {
     return text;
 }
 
-/// Logical x of the caret before character `position` of the first line, measured from where text starts.
+/// Logical x of the caret before character `position` of the first line,
+///  measured from where text starts.
 fn first_row_caret_x(reader: &super::find_tests::Reader, position: usize) -> f32 {
     let reading = reader.source.borrow();
     let view = reading.shaped.as_ref().expect("shaped source");
     return view.rows[0].caret_x(position, view.viewport.scale);
 }
 
-/// An error diagnostic on `value`, columns 11 to 16, of each of `lines` of a [`numbered`] file.
+/// An error diagnostic on `value`,
+///  columns 11 to 16,
+///  of each of `lines` of a [`numbered`] file.
 fn errors_on(reader: &super::find_tests::Reader, lines: &[usize]) {
     let stamp = displayed(&reader.source.borrow());
     let mut items = Vec::new();
@@ -176,10 +221,16 @@ fn errors_on(reader: &super::find_tests::Reader, lines: &[usize]) {
     update_timers_and_animations();
 }
 
-/// In both schemes the gutter shows `E` beside a line with an error and a milder problem, `W` beside a line whose
-/// worst problem is a warning (also when a warning range continues onto the next line, which shows nothing for
-/// it), `I` beside a line with information, nothing beside a clean line, and `H` once a hint is the only problem;
-/// each letter is in its severity's ink at least 4.5:1 against the background. Line numbers and text keep their x.
+/// In both schemes the gutter shows `E` beside a line with an error and a milder problem,
+///  `W` beside a line whose
+/// worst problem is a warning (also when a warning range continues onto the next line,
+///  which shows nothing for
+/// it),
+///  `I` beside a line with information,
+///  nothing beside a clean line,
+///  and `H` once a hint is the only problem;
+/// each letter is in its severity's ink at least 4.5:1 against the background.
+///  Line numbers and text keep their x.
 #[test]
 fn gutter_letters_show_the_worst_severity_in_front_of_the_line_number() {
     for scheme in [ColorScheme::Light, ColorScheme::Dark] {
@@ -275,7 +326,10 @@ fn gutter_letters_show_the_worst_severity_in_front_of_the_line_number() {
     }
 }
 
-/// The letter stands the same distance before the numbers 1, 10, and 100, and a line's number and text keep every
+/// The letter stands the same distance before the numbers 1,
+///  10,
+///  and 100,
+///  and a line's number and text keep every
 /// pixel when its letter appears.
 #[test]
 fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
@@ -357,9 +411,13 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
     );
 }
 
-/// A file of 1000 lines has one digit more than the three every smaller file gets, so its text starts one digit
-/// further right; a click there still lands on the character under the pointer. Both files end without a line
-/// terminator: after a final terminator the empty line that follows gets a number of its own.
+/// A file of 1000 lines has one digit more than the three every smaller file gets,
+///  so its text starts one digit
+/// further right;
+///  a click there still lands on the character under the pointer.
+///  Both files end without a line
+/// terminator:
+///  after a final terminator the empty line that follows gets a number of its own.
 #[test]
 fn the_gutter_gains_a_digit_past_999_lines_and_the_pointer_follows() {
     // `trim_end_matches` drops the final terminator.

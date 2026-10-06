@@ -1,7 +1,11 @@
-//! What: The token tables the control generators draw from, and the words the frontier
+//! What:
+//!  The token tables the control generators draw from,
+//!  and the words the frontier
 //!       check treats as possible aliases.
-//! Why: Keeping the spellings apart from the logic lets each list be reviewed on its own.
-//!      Control spellings are restated here instead of imported, so a spelling dropped
+//! Why:
+//!  Keeping the spellings apart from the logic lets each list be reviewed on its own.
+//!      Control spellings are restated here instead of imported,
+//!  so a spelling dropped
 //!      from the subject's table shows up as a control that is no longer removed.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,10 +13,13 @@
 //! // export const CONTROL_TOKENS = ['commit', '--cli-git-keep-going', '--', ...];
 //! ```
 
-/// What: Every wrapper control and hatch as the installed wrapper spells it.
+/// What:
+///  Every wrapper control and hatch as the installed wrapper spells it.
 ///       `&[&[u8]]` is a borrowed list of byte strings baked into the program.
 ///       `#[cfg(test)]` compiles the list only for the generator controls.
-/// Why:  The generator controls compare this list with what the subject recognizes; the
+/// Why:
+///   The generator controls compare this list with what the subject recognizes;
+///  the
 ///       fuzz targets need only the generator table.
 ///
 /// In TS you'd write (pseudocode):
@@ -38,10 +45,19 @@ pub(crate) const WRAPPER_SPELLINGS: &[&[u8]] = &[
     b"--no-enforce-only",
 ];
 
-/// What: Commands, Git options, separators, values and every wrapper spelling, plus
+/// What:
+///  Commands,
+///  Git options,
+///  separators,
+///  values and every wrapper spelling,
+///  plus
 ///       near-misses of the spellings and bytes that are not UTF-8.
-/// Why:  One byte of fuzz input selects one token, so short inputs already place a
-///       control before a command, after a value option, or behind a separator.
+/// Why:
+///   One byte of fuzz input selects one token,
+///  so short inputs already place a
+///       control before a command,
+///  after a value option,
+///  or behind a separator.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -145,8 +161,10 @@ pub(crate) const CONTROL_TOKENS: &[&[u8]] = &[
     b"-\xff",
 ];
 
-/// What: The commands whose options the subject reads with Git's own table.
-/// Why:  The separated generator starts every list with one of them.
+/// What:
+///  The commands whose options the subject reads with Git's own table.
+/// Why:
+///   The separated generator starts every list with one of them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -165,9 +183,14 @@ pub(crate) const TABLE_COMMANDS: &[&[u8]] = &[
     b"switch",
 ];
 
-/// What: Tokens that never take the following token as their value in any table command:
-///       wrapper controls, a few flags, and options Git refuses.
-/// Why:  With only these before it, a `--` is certainly Git's separator.
+/// What:
+///  Tokens that never take the following token as their value in any table command:
+///       wrapper controls,
+///  a few flags,
+///  and options Git refuses.
+/// Why:
+///   With only these before it,
+///  a `--` is certainly Git's separator.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -190,8 +213,10 @@ pub(crate) const VALUELESS_TOKENS: &[&[u8]] = &[
     b"--no-such-option",
 ];
 
-/// What: Command words in `CONTROL_TOKENS` that Git does not build in.
-/// Why:  From a linked worktree each may be an alias for a worktree creation.
+/// What:
+///  Command words in `CONTROL_TOKENS` that Git does not build in.
+/// Why:
+///   From a linked worktree each may be an alias for a worktree creation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

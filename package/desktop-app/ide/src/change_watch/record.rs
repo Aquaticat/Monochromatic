@@ -1,9 +1,16 @@
-//! Turn notify events into pending invalidations; this runs on notify's own event-loop thread.
+//! Turn notify events into pending invalidations;
+//!  this runs on notify's own event-loop thread.
 
 /// Shared invalidation state and its poison-tolerant lock.
 use super::shared::{Shared, SourceChange, lock};
-/// What: notify's event types: `Event` holds a kind plus affected paths; the `*Kind` enums classify it.
-/// Why: Classification decides whether a directory listing, the displayed file, or nothing is stale.
+/// What:
+///  notify's event types:
+///  `Event` holds a kind plus affected paths;
+///  the `*Kind` enums classify it.
+/// Why:
+///  Classification decides whether a directory listing,
+///  the displayed file,
+///  or nothing is stale.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,8 +20,12 @@ use notify::{
     Event, EventKind,
     event::{AccessKind, AccessMode, ModifyKind},
 };
-/// What: `Mutex` guards the shared state; `SyncSender` is the sending half of a bounded channel.
-/// Why: The handler must never block notify's thread; it only locks briefly and sends a non-blocking wake.
+/// What:
+///  `Mutex` guards the shared state;
+///  `SyncSender` is the sending half of a bounded channel.
+/// Why:
+///  The handler must never block notify's thread;
+///  it only locks briefly and sends a non-blocking wake.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,27 +35,38 @@ use std::sync::{Mutex, mpsc::SyncSender, mpsc::TrySendError};
 
 /// What one event means for the window.
 ///
-/// What: an `enum` whose `Content` and `Entries` variants each carry a `SourceChange` payload,
+/// What:
+///  an `enum` whose `Content` and `Entries` variants each carry a `SourceChange` payload,
 ///       like a TS tagged union `{ kind: 'content', change } | { kind: 'entries', change } | { kind: 'ignore' }`.
-/// Why: Entry changes (create, remove, rename) also make the parent directory's listing stale;
+/// Why:
+///  Entry changes (create,
+///  remove,
+///  rename) also make the parent directory's listing stale;
 ///      content changes only matter when the path is the displayed file.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Reaction {
-    /// Opens and read-only closes, including the IDE's own reads; reacting would reread forever.
+    /// Opens and read-only closes,
+    ///  including the IDE's own reads;
+    ///  reacting would reread forever.
     Ignore,
-    /// File content or permissions changed; the parent listing is unaffected.
+    /// File content or permissions changed;
+    ///  the parent listing is unaffected.
     Content(
         /// How finished the change looks when the path is the displayed file.
         SourceChange,
     ),
-    /// A name appeared, disappeared, or moved; the parent listing is stale too.
+    /// A name appeared,
+    ///  disappeared,
+    ///  or moved;
+    ///  the parent listing is stale too.
     Entries(
         /// How finished the change looks when the path is the displayed file.
         SourceChange,
     ),
 }
 
-/// Classify one event kind; unknown kinds are treated as entry changes so nothing is missed.
+/// Classify one event kind;
+///  unknown kinds are treated as entry changes so nothing is missed.
 fn classify(kind: &EventKind) -> Reaction {
     // What: `match` compares `kind` against each pattern in order; `_` matches anything left.
     //       `EventKind::Access(AccessKind::Close(AccessMode::Write))` is a nested pattern, like checking
@@ -77,7 +99,8 @@ fn classify(kind: &EventKind) -> Reaction {
     }
 }
 
-/// Wake the watch thread without blocking; a full channel already holds a pending wake.
+/// Wake the watch thread without blocking;
+///  a full channel already holds a pending wake.
 pub(super) fn wake(sender: &SyncSender<()>) {
     // What: `if let Err(TrySendError::Disconnected(()))` matches only the "receiver is gone" failure;
     //       `TrySendError::Full` (a wake is already queued) needs nothing.
@@ -92,7 +115,10 @@ pub(super) fn wake(sender: &SyncSender<()>) {
     }
 }
 
-/// Record a notify error: log it, mark its paths' watches stale, and request a full reread.
+/// Record a notify error:
+///  log it,
+///  mark its paths' watches stale,
+///  and request a full reread.
 fn record_error(shared: &Mutex<Shared>, sender: &SyncSender<()>, error: &notify::Error) {
     tracing::warn!(%error, paths = ?error.paths, "file-change notification error; rereading everything shown");
     let mut guard = lock(shared);
@@ -111,7 +137,10 @@ fn record_error(shared: &Mutex<Shared>, sender: &SyncSender<()>, error: &notify:
     }
 }
 
-/// Record one event, or one error, from notify as invalidations; never touches the filesystem.
+/// Record one event,
+///  or one error,
+///  from notify as invalidations;
+///  never touches the filesystem.
 pub(super) fn record(
     shared: &Mutex<Shared>,
     sender: &SyncSender<()>,

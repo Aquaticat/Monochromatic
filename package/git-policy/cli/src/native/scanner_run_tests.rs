@@ -1,6 +1,11 @@
-//! What: Candidate-byte isolation controls: the scanner sees staged or committed bytes, never the live worktree.
-//! Why: A forbidden string that exists only in the worktree file must not block a commit
-//!      that does not contain it, and one that exists only in the staged blob must be
+//! What:
+//!  Candidate-byte isolation controls:
+//!  the scanner sees staged or committed bytes,
+//!  never the live worktree.
+//! Why:
+//!  A forbidden string that exists only in the worktree file must not block a commit
+//!      that does not contain it,
+//!  and one that exists only in the staged blob must be
 //!      reported even after the worktree copy was cleaned.
 //!
 //! In TS you'd write (pseudocode):
@@ -23,7 +28,8 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-/// Load the planted single-rule file explicitly, without the built-in baseline.
+/// Load the planted single-rule file explicitly,
+///  without the built-in baseline.
 pub(super) fn loaded(rules: &Path) -> CandidateScanner {
     let source: RulesSource = RulesSource {
         path: rules.to_path_buf(),
@@ -83,7 +89,8 @@ pub(super) fn was_scanned(
     return false;
 }
 
-/// Body: the same token is planted once only in the worktree and once only in the staged blob.
+/// Body:
+///  the same token is planted once only in the worktree and once only in the staged blob.
 fn staged_bytes_are_scanned_not_the_worktree_body(directory: &Path) {
     let scanner: CandidateScanner = loaded(rules_file(directory).as_path());
     let token: String = needle();
@@ -136,7 +143,8 @@ fn staged_bytes_are_scanned_not_the_worktree_body(directory: &Path) {
     assert!(!format!("{scans:?}").contains(token.as_str()));
 }
 
-/// A token only in the worktree is not reported; a token only in the staged blob is.
+/// A token only in the worktree is not reported;
+///  a token only in the staged blob is.
 #[test]
 fn staged_bytes_are_scanned_not_the_worktree() {
     run_isolated(
@@ -146,7 +154,9 @@ fn staged_bytes_are_scanned_not_the_worktree() {
     );
 }
 
-/// Body: a landed commit is scanned by what it recorded, after the worktree and index moved on.
+/// Body:
+///  a landed commit is scanned by what it recorded,
+///  after the worktree and index moved on.
 fn committed_bytes_are_scanned_not_the_worktree_body(directory: &Path) {
     let scanner: CandidateScanner = loaded(rules_file(directory).as_path());
     let token: String = needle();
@@ -197,7 +207,8 @@ fn committed_bytes_are_scanned_not_the_worktree_body(directory: &Path) {
     assert!(!format!("{scans:?}").contains(token.as_str()));
 }
 
-/// A committed version is scanned from the commit, not from the index or worktree that followed it.
+/// A committed version is scanned from the commit,
+///  not from the index or worktree that followed it.
 #[test]
 fn committed_bytes_are_scanned_not_the_worktree() {
     run_isolated(

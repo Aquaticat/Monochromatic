@@ -1,5 +1,7 @@
-//! What: Fresh in-memory workspace for fuzzing the real semantic session.
-//! Why: No arbitrary fuzz bytes enter rust-analyzer's fixture directive syntax or cause Cargo/subprocess execution.
+//! What:
+//!  Fresh in-memory workspace for fuzzing the real semantic session.
+//! Why:
+//!  No arbitrary fuzz bytes enter rust-analyzer's fixture directive syntax or cause Cargo/subprocess execution.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -15,7 +17,9 @@ use ra_ap_test_fixture::WithFixture;
 /// Import owned file identities and virtual paths.
 use ra_ap_vfs::{FileExcluded, FileId, Vfs, VfsPath};
 
-/// Build one fixed, dependency-free crate; the source supplied by the fuzzer is never fixture metadata.
+/// Build one fixed,
+///  dependency-free crate;
+///  the source supplied by the fuzzer is never fixture metadata.
 pub fn semantic_session() -> RustSemanticSession {
     let (database, editioned): (RootDatabase, EditionedFileId) =
         RootDatabase::with_single_file("//- /main.rs\nfn main() {}\n");

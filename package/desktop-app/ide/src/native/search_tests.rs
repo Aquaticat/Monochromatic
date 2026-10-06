@@ -1,8 +1,12 @@
-//! Search crosses real native key capture, debounce, subprocess, and source-open boundaries.
+//! Search crosses real native key capture,
+//!  debounce,
+//!  subprocess,
+//!  and source-open boundaries.
 
 /// Existing timer waits enforce a finite deadline for observable native state.
 use super::navigation_tests::{row, wait_until};
-/// Reuse the production window and source bindings, not a parallel test-only overlay.
+/// Reuse the production window and source bindings,
+///  not a parallel test-only overlay.
 use super::{AppWindow, State, bind_appearance, bind_keys, bind_viewport, navigation};
 /// Project boundary creation reads only disposable fixtures.
 use ide_app::workspace::Workspace;
@@ -22,9 +26,11 @@ use std::{
 
 /// The retained timer owns navigation until the test window is released.
 pub(super) struct Reader {
-    /// Native consumer window, including the actual imported search markup.
+    /// Native consumer window,
+    ///  including the actual imported search markup.
     pub(super) window: AppWindow,
-    /// Source state lets assertions inspect canonical character positions, not pixel guesses.
+    /// Source state lets assertions inspect canonical character positions,
+    ///  not pixel guesses.
     source: Rc<RefCell<State>>,
     /// Drop ends polling and releases the worker owners.
     _timer: Timer,
@@ -51,8 +57,11 @@ pub(super) fn reader(root: &Path) -> Reader {
     };
 }
 
-/// What: Key enum values convert to the toolkit's encoded key text, then press/release events are dispatched.
-/// Why: Calling the shortcut callback directly would not test whether the outer FocusScope receives input.
+/// What:
+///  Key enum values convert to the toolkit's encoded key text,
+///  then press/release events are dispatched.
+/// Why:
+///  Calling the shortcut callback directly would not test whether the outer FocusScope receives input.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,7 +91,8 @@ pub(super) fn open(window: &AppWindow) {
         .expect("opened overlay layout");
 }
 
-/// Search completion means accepted results or a visible diagnostic, not merely elapsed debounce time.
+/// Search completion means accepted results or a visible diagnostic,
+///  not merely elapsed debounce time.
 fn query(window: &AppWindow, raw: &str) {
     window.invoke_search_edited(SharedString::from(raw));
     assert!(window.get_search_busy());
@@ -94,7 +104,8 @@ fn query(window: &AppWindow, raw: &str) {
     wait_until(|| return !window.get_search_busy());
 }
 
-/// Filename results precede contents; content-only results can move inside the already displayed file.
+/// Filename results precede contents;
+///  content-only results can move inside the already displayed file.
 #[test]
 fn native_search_orders_results_filters_contents_and_reveals_source_lines() {
     let fixture = tempfile::tempdir().expect("disposable search project");
@@ -205,7 +216,8 @@ fn pending_file_open_does_not_steal_search_input_focus() {
     reader.window.hide().expect("close pending-open reader");
 }
 
-/// Tree-selected scope stays fixed during a query, and closing invalidates late result publication.
+/// Tree-selected scope stays fixed during a query,
+///  and closing invalidates late result publication.
 #[test]
 fn native_search_scopes_to_tree_directory_and_close_clears_pending_results() {
     let fixture = tempfile::tempdir().expect("disposable scoped project");

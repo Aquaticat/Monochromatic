@@ -1,5 +1,8 @@
-//! What: Reject written inference holes when the inferred type can be named.
-//! Why: 'let value: _' and 'parse::<_>()' do not meet the policy merely by containing annotation punctuation.
+//! What:
+//!  Reject written inference holes when the inferred type can be named.
+//! Why:
+//!  'let value:
+//!  _' and 'parse::<_>()' do not meet the policy merely by containing annotation punctuation.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -21,8 +24,11 @@ use ra_ap_hir_ty::db::HirDatabase;
 /// Import syntax kinds and typed inference nodes.
 use ra_ap_syntax::{AstNode, SyntaxKind, SyntaxNode, ast};
 
-/// What: Recognize unnameable leaf types while retaining explicit outer structures.
-/// Why: A reference/container around a function item should be written as '&_'/'Container<_>', not replaced wholesale by '_'.
+/// What:
+///  Recognize unnameable leaf types while retaining explicit outer structures.
+/// Why:
+///  A reference/container around a function item should be written as '&_'/'Container<_>',
+///  not replaced wholesale by '_'.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,7 +58,8 @@ fn is_unnameable_leaf(database: &dyn HirDatabase, ty: &Type<'_>) -> bool {
     return ty.as_impl_traits(database).is_some();
 }
 
-/// Distinguish constant inference from discard expressions, which have no annotation slot.
+/// Distinguish constant inference from discard expressions,
+///  which have no annotation slot.
 fn is_constant_placeholder(node: &SyntaxNode) -> bool {
     if node.kind() != SyntaxKind::UNDERSCORE_EXPR {
         return false;

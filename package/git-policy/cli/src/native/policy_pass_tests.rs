@@ -1,14 +1,21 @@
-//! What: The three stages of a pass in order, where each one can end the pass, and which
+//! What:
+//!  The three stages of a pass in order,
+//!  where each one can end the pass,
+//!  and which
 //!       arguments the pass hands back.
-//! Why: A transform applied before a built-in policy read the command, or an optional
-//!      policy run after a stopped stage, changes what a command is checked against.
+//! Why:
+//!  A transform applied before a built-in policy read the command,
+//!  or an optional
+//!      policy run after a stopped stage,
+//!  changes what a command is checked against.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect((await runPolicyPass(request, checks)).args).toEqual(['push', '--atomic']);
 //! ```
 
-/// The pass under test, the engine types it returns and the scripted facts.
+/// The pass under test,
+///  the engine types it returns and the scripted facts.
 use super::{PassResult, policies_of_kind, run_policy_pass};
 use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
@@ -35,7 +42,8 @@ fn request(trigger: Trigger, controls: Controls) -> StageRequest {
     };
 }
 
-/// The exit code of a pass that does not reach Git: 0 means the command may proceed.
+/// The exit code of a pass that does not reach Git:
+///  0 means the command may proceed.
 fn exit_code(result: &PassResult) -> i32 {
     return pass_exit_code(result.events.as_slice(), result.end);
 }
@@ -98,7 +106,8 @@ fn all_flag_rejected() -> PolicyEvent {
     };
 }
 
-/// The registry splits into the five built-in and the four optional policies, in order.
+/// The registry splits into the five built-in and the four optional policies,
+///  in order.
 #[test]
 fn the_registry_splits_into_two_stages() {
     assert_eq!(
@@ -158,7 +167,8 @@ fn a_clean_pass_hands_back_the_transformed_arguments() {
     }
 }
 
-/// A built-in error ends the pass before any transform; the input arguments come back.
+/// A built-in error ends the pass before any transform;
+///  the input arguments come back.
 #[test]
 fn a_built_in_error_ends_the_pass_before_the_transforms() {
     let stage: StageRequest = request(Trigger::PreForward, no_controls());
@@ -180,7 +190,8 @@ fn a_built_in_error_ends_the_pass_before_the_transforms() {
     assert_eq!(asked, vec![String::from("location")]);
 }
 
-/// With keep-going the transforms and optional policies still run, and the pass still blocks.
+/// With keep-going the transforms and optional policies still run,
+///  and the pass still blocks.
 #[test]
 fn keep_going_collects_every_stage_and_still_blocks() {
     let stage: StageRequest = request(Trigger::PreForward, keep_going());
@@ -212,7 +223,8 @@ fn keep_going_collects_every_stage_and_still_blocks() {
     assert_eq!(exit_code(&pushed), 1);
 }
 
-/// A transform rejection ends the pass unless keep-going; a transform failure always does.
+/// A transform rejection ends the pass unless keep-going;
+///  a transform failure always does.
 #[test]
 fn a_transform_rejection_or_failure_ends_the_pass() {
     let stopped: StageRequest = request(Trigger::PreForward, no_controls());
@@ -280,13 +292,15 @@ fn a_transform_rejection_or_failure_ends_the_pass() {
     );
 }
 
-/// The candidates of `git add file`, which these scripted facts cannot prepare.
+/// The candidates of `git add file`,
+///  which these scripted facts cannot prepare.
 fn add_candidates() -> LifecycleContent {
     return LifecycleContent::Requested(CandidateRequest::Add(os_arguments(&["file"])));
 }
 
 /// Candidates that cannot be prepared fail the pass at the first content policy that reads;
-/// an unported content policy refuses without reading; with none left the command proceeds.
+/// an unported content policy refuses without reading;
+///  with none left the command proceeds.
 #[test]
 fn content_policies_read_fail_or_refuse_in_registry_order() {
     let (built_in, built_in_asked) = pass(
@@ -380,7 +394,8 @@ fn a_direct_check_applies_no_transform() {
     assert_eq!(unchanged_asked, vec![String::from("location")]);
 }
 
-/// A trigger whose lifecycle is not ported is unavailable, never an empty clean pass.
+/// A trigger whose lifecycle is not ported is unavailable,
+///  never an empty clean pass.
 #[test]
 fn an_unported_lifecycle_is_unavailable() {
     for trigger in [Trigger::PostCommit, Trigger::ManualPush] {

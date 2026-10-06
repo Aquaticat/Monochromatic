@@ -1,5 +1,12 @@
-//! What:    The compiled deterministic automaton: byte classes, builder, table, and runner.
-//! Why:     This file is the Rust module that groups the dfa implementation, so the
+//! What:
+//!     The compiled deterministic automaton:
+//!  byte classes,
+//!  builder,
+//!  table,
+//!  and runner.
+//! Why:
+//!      This file is the Rust module that groups the dfa implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +14,10 @@
 //! // module dfa: see exported functions and types below.
 //! ```
 
-/// What:    Byte-class equivalence computation.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Byte-class equivalence computation.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +26,10 @@
 /// ```
 mod classes;
 
-/// What:    Eager determinization from a node into a `Dfa`.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Eager determinization from a node into a `Dfa`.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,8 +38,10 @@ mod classes;
 /// ```
 mod build;
 
-/// What:    Moore state minimization.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Moore state minimization.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -37,8 +50,10 @@ mod build;
 /// ```
 mod minimize;
 
-/// What:    The serializable `Dfa` table and its match loop.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The serializable `Dfa` table and its match loop.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -47,8 +62,12 @@ mod minimize;
 /// ```
 pub mod table;
 
-/// What:    Batched multi-line match kernels (scalar, interleaved, branchless tight).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Batched multi-line match kernels (scalar,
+///  interleaved,
+///  branchless tight).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -57,8 +76,10 @@ pub mod table;
 /// ```
 pub mod batch;
 
-/// What:    Sheng-style in-register transition kernel (`vpermb`/`vqtbl4q`).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Sheng-style in-register transition kernel (`vpermb`/`vqtbl4q`).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -67,8 +88,10 @@ pub mod batch;
 /// ```
 pub mod sheng;
 
-/// What:    Two-byte composed Sheng kernel (one permute per two input bytes).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Two-byte composed Sheng kernel (one permute per two input bytes).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -77,8 +100,10 @@ pub mod sheng;
 /// ```
 pub mod sheng2;
 
-/// What:    Re-exports the capped builder entry point.
-/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+/// What:
+///     Re-exports the capped builder entry point.
+/// Why:
+///      The surrounding function uses this step to keep the matcher behavior correct at
 ///          this point.
 ///
 /// In TS you'd write (pseudocode):
@@ -87,8 +112,10 @@ pub mod sheng2;
 /// ```
 pub use build::build_dfa_within;
 
-/// What:    Re-exports the minimizer.
-/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+/// What:
+///     Re-exports the minimizer.
+/// Why:
+///      The surrounding function uses this step to keep the matcher behavior correct at
 ///          this point.
 ///
 /// In TS you'd write (pseudocode):

@@ -1,4 +1,6 @@
-//! Native tree callbacks exercise real background reads, file installation, and recent-file reveal.
+//! Native tree callbacks exercise real background reads,
+//!  file installation,
+//!  and recent-file reveal.
 
 /// Use the same source and navigation bindings as the shipped window.
 use super::{
@@ -9,7 +11,8 @@ use super::{
 use ide_app::{document::ReadingPosition, workspace::Workspace};
 /// Headless snapshots use the real window and system-time timer processing.
 use slint::{ComponentHandle, Model, SharedString, platform::update_timers_and_animations};
-/// Fixtures and waits are bounded, while UI ownership remains single-threaded.
+/// Fixtures and waits are bounded,
+///  while UI ownership remains single-threaded.
 use std::{
     cell::RefCell,
     fs,
@@ -33,7 +36,8 @@ pub(super) fn wait_until(mut ready: impl FnMut() -> bool) {
     }
 }
 
-/// Find a visible fixture label; actions still use the model index backed by its native path.
+/// Find a visible fixture label;
+///  actions still use the model index backed by its native path.
 pub(super) fn row(window: &AppWindow, label: &str) -> Option<i32> {
     let model = window.get_tree_entries();
     for index in 0..model.row_count() {
@@ -47,7 +51,8 @@ pub(super) fn row(window: &AppWindow, label: &str) -> Option<i32> {
     return None;
 }
 
-/// Ctrl+0 reveals a collapsed ancestor without reloading; Ctrl+1 promotes and alternates successful opens.
+/// Ctrl+0 reveals a collapsed ancestor without reloading;
+///  Ctrl+1 promotes and alternates successful opens.
 #[test]
 fn native_tree_switches_files_and_preserves_current_file_reading_state() {
     let fixture = tempfile::tempdir().expect("disposable native project");
@@ -109,7 +114,8 @@ fn native_tree_switches_files_and_preserves_current_file_reading_state() {
     window.hide().expect("close project window");
 }
 
-/// Empty startup can open a file, and a later failed open retains it through successful source refreshes.
+/// Empty startup can open a file,
+///  and a later failed open retains it through successful source refreshes.
 #[test]
 fn native_failed_open_keeps_source_and_does_not_promote_history() {
     let fixture = tempfile::tempdir().expect("disposable native project");

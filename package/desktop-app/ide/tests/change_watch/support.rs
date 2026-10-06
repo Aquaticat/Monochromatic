@@ -1,20 +1,29 @@
 //! Shared waits and kernel-state probes for the change-watch integration tests.
 
-/// The watcher under test, its invalidation record, and the canonical project boundary.
+/// The watcher under test,
+///  its invalidation record,
+///  and the canonical project boundary.
 use ide_app::{
     change_watch::{ChangeWatcher, Changes},
     workspace::Workspace,
 };
-/// What: `MetadataExt::ino` reads a file's inode number, which `/proc/self/fdinfo` prints for each inotify watch.
-/// Why: A watch removed from the kernel is visible there even when the watcher filters its events anyway.
+/// What:
+///  `MetadataExt::ino` reads a file's inode number,
+///  which `/proc/self/fdinfo` prints for each inotify watch.
+/// Why:
+///  A watch removed from the kernel is visible there even when the watcher filters its events anyway.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const inode = statSync(path).ino;
 /// ```
 use std::os::unix::fs::MetadataExt;
-/// What: `Duration`/`Instant` bound each wait; `Path` borrows a fixture path and `PathBuf` owns one.
-/// Why: Notifications arrive on another thread, so tests poll with a deadline instead of sleeping blindly.
+/// What:
+///  `Duration`/`Instant` bound each wait;
+///  `Path` borrows a fixture path and `PathBuf` owns one.
+/// Why:
+///  Notifications arrive on another thread,
+///  so tests poll with a deadline instead of sleeping blindly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,7 +42,8 @@ const ARRIVAL: Duration = Duration::from_secs(5);
 /// How long silence is observed before concluding that nothing was reported.
 const SILENCE: Duration = Duration::from_millis(400);
 
-/// Fold one `take` result into an accumulated record; the latest source change and watched set win.
+/// Fold one `take` result into an accumulated record;
+///  the latest source change and watched set win.
 fn merge(into: &mut Changes, from: Changes) {
     into.directories.extend(from.directories);
     if from.source.is_some() {
@@ -45,7 +55,8 @@ fn merge(into: &mut Changes, from: Changes) {
     }
 }
 
-/// Accumulate changes until `done` accepts them or `limit` passes; the flag says whether `done` held.
+/// Accumulate changes until `done` accepts them or `limit` passes;
+///  the flag says whether `done` held.
 fn gather(
     watcher: &mut ChangeWatcher,
     limit: Duration,
@@ -65,7 +76,8 @@ fn gather(
     }
 }
 
-/// Accumulate until `done` holds and return the record; fail the test naming `what` after five seconds.
+/// Accumulate until `done` holds and return the record;
+///  fail the test naming `what` after five seconds.
 pub fn arrive(
     watcher: &mut ChangeWatcher,
     what: &str,
@@ -76,7 +88,8 @@ pub fn arrive(
     return record;
 }
 
-/// Everything reported during 400 ms; used to drain earlier notifications and to observe silence.
+/// Everything reported during 400 ms;
+///  used to drain earlier notifications and to observe silence.
 pub fn quiet(watcher: &mut ChangeWatcher) -> Changes {
     let (record, _reached) = gather(watcher, SILENCE, |_record| return false);
     return record;
@@ -98,7 +111,8 @@ pub fn not_watching(record: &Changes, path: &Path) -> bool {
         .is_some_and(|watched| return !watched.contains(path));
 }
 
-/// Wait until every one of `paths` has a live watch, then drain the follow-up invalidations.
+/// Wait until every one of `paths` has a live watch,
+///  then drain the follow-up invalidations.
 pub fn settle(watcher: &mut ChangeWatcher, paths: &[&Path]) {
     arrive(watcher, "the watches for the shown folders", |record| {
         return paths.iter().all(|path| return watching(record, path));
@@ -140,7 +154,8 @@ pub fn start(root: &Path) -> (ChangeWatcher, Workspace) {
     return (watcher, workspace);
 }
 
-/// Owned set of the given directories, as the native tree passes them.
+/// Owned set of the given directories,
+///  as the native tree passes them.
 pub fn set(paths: &[&Path]) -> BTreeSet<PathBuf> {
     let mut owned = BTreeSet::new();
     for path in paths {

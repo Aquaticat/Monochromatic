@@ -1,4 +1,7 @@
-//! A real worker thread: newest request wins, replies keep their tags, and shutdown joins cleanly.
+//! A real worker thread:
+//!  newest request wins,
+//!  replies keep their tags,
+//!  and shutdown joins cleanly.
 
 /// Reload correspondence supplies real content revisions for retagged requests.
 use ide_app::document::Document;
@@ -9,7 +12,8 @@ use ide_app::find_worker::{FindIdentity, FindReply, FindRequest, FindWorker};
 /// Waits are bounded so a lost reply fails the test instead of hanging it.
 use std::time::{Duration, Instant};
 
-/// Build an owned request; the rope clone shares the document's text chunks.
+/// Build an owned request;
+///  the rope clone shares the document's text chunks.
 fn request(document: &Document, file: u64, query_generation: u64, query: &str) -> FindRequest {
     // What: `clone` on a rope copies a small handle; `to_string` copies the query into owned storage.
     // Why: A request must own everything it carries to another thread.
@@ -29,7 +33,8 @@ fn request(document: &Document, file: u64, query_generation: u64, query: &str) -
     };
 }
 
-/// Poll until the wanted reply arrives; stale replies are consumed inside `poll`.
+/// Poll until the wanted reply arrives;
+///  stale replies are consumed inside `poll`.
 fn reply(worker: &mut FindWorker) -> FindReply {
     let start = Instant::now();
     loop {
@@ -51,7 +56,8 @@ fn reply(worker: &mut FindWorker) -> FindReply {
     }
 }
 
-/// Requests issued while a job runs replace each other; only the newest reply is ever returned.
+/// Requests issued while a job runs replace each other;
+///  only the newest reply is ever returned.
 #[test]
 fn newest_request_wins_over_running_and_waiting_requests() {
     let document = Document::new("alpha beta gamma beta");
@@ -87,7 +93,8 @@ fn newest_request_wins_over_running_and_waiting_requests() {
     assert!(!worker.is_pending());
 }
 
-/// An external reload changes the revision tag, and matches describe the new text only.
+/// An external reload changes the revision tag,
+///  and matches describe the new text only.
 #[test]
 fn reload_retags_requests_with_the_new_revision() {
     let mut document = Document::new("needle one");
@@ -132,7 +139,8 @@ fn navigation_retags_requests_with_the_new_file_generation() {
     assert_eq!(matches.ranges[0].start, 33);
 }
 
-/// A query the matcher refuses arrives as a tagged diagnostic; the worker keeps serving.
+/// A query the matcher refuses arrives as a tagged diagnostic;
+///  the worker keeps serving.
 #[test]
 fn refused_query_is_a_tagged_diagnostic_and_the_worker_recovers() {
     let document = Document::new("needle");
@@ -159,7 +167,10 @@ fn refused_query_is_a_tagged_diagnostic_and_the_worker_recovers() {
     );
 }
 
-/// Cancelling wants nothing; dropping joins the thread whether idle, running, or holding a reply.
+/// Cancelling wants nothing;
+///  dropping joins the thread whether idle,
+///  running,
+///  or holding a reply.
 #[test]
 fn cancel_discards_replies_and_drop_joins_the_thread() {
     let document = Document::new(&"needle ".repeat(1000));

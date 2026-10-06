@@ -1,4 +1,6 @@
-//! The launch seam's default policy, executable lookup, and private-directory containment.
+//! The launch seam's default policy,
+//!  executable lookup,
+//!  and private-directory containment.
 
 use super::{
     LaunchRequest, ServerLaunch, check_state_directory, launch_directly, prepare,
@@ -88,9 +90,12 @@ fn bare_name_is_searched_on_the_path_and_resolved_absolute() {
     );
 }
 
-/// The home folder opened as the project holds the private cache; the sandbox binds that state
-/// writable after the read-only project, so a state directory strictly inside the project is
-/// accepted, while the project itself as state would make all of it writable.
+/// The home folder opened as the project holds the private cache;
+///  the sandbox binds that state
+/// writable after the read-only project,
+///  so a state directory strictly inside the project is
+/// accepted,
+///  while the project itself as state would make all of it writable.
 #[test]
 fn state_directory_inside_the_project_is_accepted_but_the_project_itself_is_not() {
     let project = tempfile::tempdir().expect("project");

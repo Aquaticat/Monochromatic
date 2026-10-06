@@ -1,7 +1,10 @@
 //! Consumer-interface tests for external reloads and reading correspondence.
 
-/// What: Import the same interface consumed by the native application.
-/// Why: These tests must exercise the production mapping, not a duplicate.
+/// What:
+///  Import the same interface consumed by the native application.
+/// Why:
+///  These tests must exercise the production mapping,
+///  not a duplicate.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

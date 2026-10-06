@@ -1,10 +1,22 @@
-//! Inlay hints and diagnostics of the displayed file, reduced to what one frame paints.
+//! Inlay hints and diagnostics of the displayed file,
+//!  reduced to what one frame paints.
 //!
 //! Snapshots come from the Language module and name the file generation and revision they describe.
-//! A snapshot for any other generation or revision is never painted. Hints and diagnostic messages are drawn on
-//! virtual rows above the code row of their line, and underlines under the glyphs a diagnostic marks. None of it
-//! is source text: caret movement, selection, hit testing inside a code row, find rectangles, tab stops, and
-//! copying never see them. What they do change is where code rows are; the store's blocks feed the one vertical
+//! A snapshot for any other generation or revision is never painted.
+//!  Hints and diagnostic messages are drawn on
+//! virtual rows above the code row of their line,
+//!  and underlines under the glyphs a diagnostic marks.
+//!  None of it
+//! is source text:
+//!  caret movement,
+//!  selection,
+//!  hit testing inside a code row,
+//!  find rectangles,
+//!  tab stops,
+//!  and
+//! copying never see them.
+//!  What they do change is where code rows are;
+//!  the store's blocks feed the one vertical
 //! mapping in `crate::row_map`.
 
 /// The diagnostic records and their severities as the Language module reports them.
@@ -15,18 +27,29 @@ use crate::language::hints::HintsSnapshot;
 use crate::language::identity::DocumentStamp;
 /// The rows a line shows above its code row.
 use crate::virtual_row::{Block, HintPlace, MessageRow, message_rows};
-/// What: `Rope` is Helix's character-indexed text buffer.
-/// Why: Hints and diagnostics are grouped by the line their position lies on in the displayed text.
+/// What:
+///  `Rope` is Helix's character-indexed text buffer.
+/// Why:
+///  Hints and diagnostics are grouped by the line their position lies on in the displayed text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { type Rope } from 'helix-core';
 /// ```
 use helix_core::Rope;
-/// What: `BTreeMap` is a map kept in key order (sibling: unordered `HashMap`); `Arc` shares one immutable
-///       allocation between owners (siblings: single-thread `Rc`, owning `Box`); `Instant` is a point on a
+/// What:
+///  `BTreeMap` is a map kept in key order (sibling:
+///  unordered `HashMap`);
+///  `Arc` shares one immutable
+///       allocation between owners (siblings:
+///  single-thread `Rc`,
+///  owning `Box`);
+///  `Instant` is a point on a
 ///       clock that never goes backwards.
-/// Why: Blocks are needed in line order; the Language module hands snapshots out as shared values; held
+/// Why:
+///  Blocks are needed in line order;
+///  the Language module hands snapshots out as shared values;
+///  held
 ///      space ends at a point in time.
 ///
 /// In TS you'd write (pseudocode):
@@ -35,11 +58,19 @@ use helix_core::Rope;
 /// ```
 use std::{collections::BTreeMap, sync::Arc, time::Instant};
 
-/// Blocks of virtual rows per line: hint accumulation, held space after a reload, and assembly.
+/// Blocks of virtual rows per line:
+///  hint accumulation,
+///  held space after a reload,
+///  and assembly.
 mod blocks;
 
-/// What: Order of severity from worst to mildest; `u8` is an unsigned byte (siblings `u32`, `usize`).
-/// Why: Overlapping marks are drawn mildest first, and messages above a line are listed worst first.
+/// What:
+///  Order of severity from worst to mildest;
+///  `u8` is an unsigned byte (siblings `u32`,
+///  `usize`).
+/// Why:
+///  Overlapping marks are drawn mildest first,
+///  and messages above a line are listed worst first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -58,8 +89,12 @@ pub fn rank(severity: Severity) -> u8 {
     return 3;
 }
 
-/// What: The word a reader sees for a severity; `&'static str` is text baked into the binary (sibling `String`).
-/// Why: Every message row starts with its severity in words, so it does not depend on color.
+/// What:
+///  The word a reader sees for a severity;
+///  `&'static str` is text baked into the binary (sibling `String`).
+/// Why:
+///  Every message row starts with its severity in words,
+///  so it does not depend on color.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,9 +113,15 @@ pub fn severity_name(severity: Severity) -> &'static str {
     return "Hint";
 }
 
-/// What: One diagnostic as a frame underlines it; `usize` is the character index type Helix ropes use
-///       (siblings `u32`, `u64`). `Copy` lets the record be duplicated like a number.
-/// Why: Underlining needs the range and severity only; comparing these decides whether pixels change.
+/// What:
+///  One diagnostic as a frame underlines it;
+///  `usize` is the character index type Helix ropes use
+///       (siblings `u32`,
+///  `u64`).
+///  `Copy` lets the record be duplicated like a number.
+/// Why:
+///  Underlining needs the range and severity only;
+///  comparing these decides whether pixels change.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -90,14 +131,23 @@ pub fn severity_name(severity: Severity) -> &'static str {
 pub struct Mark {
     /// First marked character.
     pub start: usize,
-    /// Character after the marked range; equal to `start` for a point.
+    /// Character after the marked range;
+    ///  equal to `start` for a point.
     pub end: usize,
-    /// Severity, with an omitted severity shown as a warning, as Helix shows it.
+    /// Severity,
+    ///  with an omitted severity shown as a warning,
+    ///  as Helix shows it.
     pub severity: Severity,
 }
 
-/// What: One diagnostic with the text its message rows show; `Option<String>` is text or nothing.
-/// Why: The rows need the source, code, and message, which underlining does not.
+/// What:
+///  One diagnostic with the text its message rows show;
+///  `Option<String>` is text or nothing.
+/// Why:
+///  The rows need the source,
+///  code,
+///  and message,
+///  which underlining does not.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -107,15 +157,19 @@ pub struct Mark {
 pub struct Problem {
     /// Range and severity.
     pub mark: Mark,
-    /// The `source` the server named, for example `rustc`; empty when it named none.
+    /// The `source` the server named,
+    ///  for example `rustc`;
+    ///  empty when it named none.
     pub source: String,
     /// The server's rule or error code.
     pub code: Option<String>,
-    /// The server's message, possibly several lines.
+    /// The server's message,
+    ///  possibly several lines.
     pub message: String,
 }
 
-/// One hint label: the character it annotates and its trimmed text.
+/// One hint label:
+///  the character it annotates and its trimmed text.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Label {
     /// Character offset the server placed the hint before.
@@ -124,10 +178,19 @@ pub struct Label {
     pub text: String,
 }
 
-/// What: Everything one frame paints from the snapshots; `Vec<T>` is a growable list
-///       (siblings: fixed `[T; N]`, borrowed `&[T]`). `Default` builds the empty value.
-/// Why: Two frames with equal visible annotations have equal annotation pixels, so this is the frame-stamp key.
-///      Blocks are shared (`Arc`), so taking the visible part copies pointers, not labels and messages.
+/// What:
+///  Everything one frame paints from the snapshots;
+///  `Vec<T>` is a growable list
+///       (siblings:
+///  fixed `[T; N]`,
+///  borrowed `&[T]`).
+///  `Default` builds the empty value.
+/// Why:
+///  Two frames with equal visible annotations have equal annotation pixels,
+///  so this is the frame-stamp key.
+///      Blocks are shared (`Arc`),
+///  so taking the visible part copies pointers,
+///  not labels and messages.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,16 +198,24 @@ pub struct Label {
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Visible {
-    /// Blocks of virtual rows of the materialized lines, in line order.
+    /// Blocks of virtual rows of the materialized lines,
+    ///  in line order.
     pub blocks: Vec<Arc<Block>>,
-    /// Diagnostics touching the materialized rows, in start order.
+    /// Diagnostics touching the materialized rows,
+    ///  in start order.
     pub marks: Vec<Mark>,
 }
 
-/// What: Space held open above one line after an external change: the line and the heights of its former
-///       hint rows and message rows in logical pixels; `f32` is a 32-bit float (sibling `f64`).
-/// Why: Hints and messages of the old text are never painted for the new one, but their space stays until
-///      annotations of the new text arrive, so the text does not jump when they vanish and again when they return.
+/// What:
+///  Space held open above one line after an external change:
+///  the line and the heights of its former
+///       hint rows and message rows in logical pixels;
+///  `f32` is a 32-bit float (sibling `f64`).
+/// Why:
+///  Hints and messages of the old text are never painted for the new one,
+///  but their space stays until
+///      annotations of the new text arrive,
+///  so the text does not jump when they vanish and again when they return.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -160,9 +231,16 @@ pub struct Held {
     pub messages: f32,
 }
 
-/// What: The latest snapshots, a position index over every diagnostic, the hints and message rows grouped by
-///       line, and the space held after a reload; `Option<Arc<T>>` is a shared snapshot or nothing.
-/// Why: Groups arrive per source and hints per visible range, so both are organized once per snapshot instead
+/// What:
+///  The latest snapshots,
+///  a position index over every diagnostic,
+///  the hints and message rows grouped by
+///       line,
+///  and the space held after a reload;
+///  `Option<Arc<T>>` is a shared snapshot or nothing.
+/// Why:
+///  Groups arrive per source and hints per visible range,
+///  so both are organized once per snapshot instead
 ///      of on every frame.
 ///
 /// In TS you'd write (pseudocode):
@@ -172,33 +250,47 @@ pub struct Held {
 /// ```
 #[derive(Debug, Default)]
 pub struct Annotations {
-    /// Latest hints, painted only while their stamp names the displayed text.
+    /// Latest hints,
+    ///  painted only while their stamp names the displayed text.
     hints: Option<Arc<HintsSnapshot>>,
-    /// Latest diagnostics, painted only while their stamp names the displayed text.
+    /// Latest diagnostics,
+    ///  painted only while their stamp names the displayed text.
     diagnostics: Option<Arc<DiagnosticsSnapshot>>,
-    /// Every diagnostic of every group, ordered by start, then end.
+    /// Every diagnostic of every group,
+    ///  ordered by start,
+    ///  then end.
     problems: Vec<Problem>,
-    /// `reach[i]` is the largest end among `problems[0..=i]`, so a range starting above a window is found by search.
+    /// `reach[i]` is the largest end among `problems[0..=i]`,
+    ///  so a range starting above a window is found by search.
     reach: Vec<usize>,
     /// The text revision `labels` describes.
     labelled: Option<DocumentStamp>,
-    /// Hint labels per line, in position order, from every hint snapshot of the `labelled` revision.
+    /// Hint labels per line,
+    ///  in position order,
+    ///  from every hint snapshot of the `labelled` revision.
     labels: BTreeMap<usize, Vec<Label>>,
-    /// Packed hint rows per line, computed on demand at `placed_scale`.
+    /// Packed hint rows per line,
+    ///  computed on demand at `placed_scale`.
     placed: BTreeMap<usize, (usize, Vec<HintPlace>)>,
     /// Physical pixels per logical pixel the entries of `placed` were packed at.
     placed_scale: f32,
-    /// Message rows per line for the held diagnostics, worst first.
+    /// Message rows per line for the held diagnostics,
+    ///  worst first.
     messages: BTreeMap<usize, Vec<MessageRow>>,
     /// The text revision `held` belongs to.
     held_for: Option<DocumentStamp>,
-    /// Space held open after an external change, in line order.
+    /// Space held open after an external change,
+    ///  in line order.
     held: Vec<Held>,
     /// When the held space is given up.
     held_until: Option<Instant>,
-    /// What: A counter that grows with every change that can alter a block; `u64` is an unsigned 64-bit
-    ///       integer (sibling `u32`), wide enough never to wrap.
-    /// Why: The window rebuilds its vertical mapping only when this number changed.
+    /// What:
+    ///  A counter that grows with every change that can alter a block;
+    ///  `u64` is an unsigned 64-bit
+    ///       integer (sibling `u32`),
+    ///  wide enough never to wrap.
+    /// Why:
+    ///  The window rebuilds its vertical mapping only when this number changed.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -207,9 +299,14 @@ pub struct Annotations {
     version: u64,
 }
 
-/// What: Severity a diagnostic is drawn with; `Option<Severity>` is a severity or nothing.
-/// Why: The protocol leaves an omitted severity to the client; Helix shows it as a warning
-///      (`helix-term/src/ui/editor.rs`, `Some(Severity::Warning) | None => warning`).
+/// What:
+///  Severity a diagnostic is drawn with;
+///  `Option<Severity>` is a severity or nothing.
+/// Why:
+///  The protocol leaves an omitted severity to the client;
+///  Helix shows it as a warning
+///      (`helix-term/src/ui/editor.rs`,
+///  `Some(Severity::Warning) | None => warning`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -220,9 +317,16 @@ fn shown(severity: Option<Severity>) -> Severity {
     return severity.unwrap_or(Severity::Warning);
 }
 
-/// What: Flatten every group of `diagnostics` into one list ordered by start, then end, with the furthest end so
-///       far beside it; `Option<&DiagnosticsSnapshot>` lends a snapshot or nothing; the answer is a pair (tuple).
-/// Why: Groups arrive per source, so their union is sorted once per snapshot instead of on every frame.
+/// What:
+///  Flatten every group of `diagnostics` into one list ordered by start,
+///  then end,
+///  with the furthest end so
+///       far beside it;
+///  `Option<&DiagnosticsSnapshot>` lends a snapshot or nothing;
+///  the answer is a pair (tuple).
+/// Why:
+///  Groups arrive per source,
+///  so their union is sorted once per snapshot instead of on every frame.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -272,11 +376,19 @@ fn indexed(diagnostics: Option<&DiagnosticsSnapshot>) -> (Vec<Problem>, Vec<usiz
     return (problems, reach);
 }
 
-/// Build, query, and replace the annotation inputs of the displayed file.
+/// Build,
+///  query,
+///  and replace the annotation inputs of the displayed file.
 impl Annotations {
-    /// What: Drop everything held and store both snapshots as given; one that describes `displayed` is grouped
-    ///       by the lines of `text`. `Option<Arc<...>>` parameters are moved in; `&Rope` lends the displayed text.
-    /// Why: Tests and the inspection path install a complete set in one call. A snapshot for other text is
+    /// What:
+    ///  Drop everything held and store both snapshots as given;
+    ///  one that describes `displayed` is grouped
+    ///       by the lines of `text`.
+    ///  `Option<Arc<...>>` parameters are moved in;
+    ///  `&Rope` lends the displayed text.
+    /// Why:
+    ///  Tests and the inspection path install a complete set in one call.
+    ///  A snapshot for other text is
     ///      kept for identity checks but never grouped or painted.
     ///
     /// In TS you'd write (pseudocode):
@@ -307,12 +419,23 @@ impl Annotations {
         }
     }
 
-    /// What: Store hints that describe `displayed` and group them by the lines of `text`; a snapshot for any
-    ///       other text is refused, the held hints stay, and the answer is `false`. `Arc<HintsSnapshot>` is moved in.
-    /// Why: This is the Language poll's entry point: hints and diagnostics arrive independently, and only a
-    ///      snapshot of the displayed file generation and revision may replace what is shown. Hints are asked
-    ///      for around the visible lines only, so a snapshot replaces the hints of its own line range and keeps
-    ///      those of lines it did not ask about: rows seen once stay where they are when the view returns.
+    /// What:
+    ///  Store hints that describe `displayed` and group them by the lines of `text`;
+    ///  a snapshot for any
+    ///       other text is refused,
+    ///  the held hints stay,
+    ///  and the answer is `false`.
+    ///  `Arc<HintsSnapshot>` is moved in.
+    /// Why:
+    ///  This is the Language poll's entry point:
+    ///  hints and diagnostics arrive independently,
+    ///  and only a
+    ///      snapshot of the displayed file generation and revision may replace what is shown.
+    ///  Hints are asked
+    ///      for around the visible lines only,
+    ///  so a snapshot replaces the hints of its own line range and keeps
+    ///      those of lines it did not ask about:
+    ///  rows seen once stay where they are when the view returns.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -335,10 +458,18 @@ impl Annotations {
         return true;
     }
 
-    /// What: Store diagnostics that describe `displayed`, index them, and build the message rows of every
-    ///       line of `text` where one starts; a snapshot for any other text is refused, the held diagnostics
-    ///       stay, and the answer is `false`.
-    /// Why: The index and the rows are rebuilt once per accepted snapshot, never per frame.
+    /// What:
+    ///  Store diagnostics that describe `displayed`,
+    ///  index them,
+    ///  and build the message rows of every
+    ///       line of `text` where one starts;
+    ///  a snapshot for any other text is refused,
+    ///  the held diagnostics
+    ///       stay,
+    ///  and the answer is `false`.
+    /// Why:
+    ///  The index and the rows are rebuilt once per accepted snapshot,
+    ///  never per frame.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -362,8 +493,14 @@ impl Annotations {
         return true;
     }
 
-    /// What: Rebuild `messages`: the diagnostics starting on each line, worst first, as rows.
-    /// Why: The number of rows above a line must be known for every line of the file without shaping, so the
+    /// What:
+    ///  Rebuild `messages`:
+    ///  the diagnostics starting on each line,
+    ///  worst first,
+    ///  as rows.
+    /// Why:
+    ///  The number of rows above a line must be known for every line of the file without shaping,
+    ///  so the
     ///      vertical mapping is complete as soon as diagnostics are.
     ///
     /// In TS you'd write (pseudocode):
@@ -387,9 +524,15 @@ impl Annotations {
         self.messages = messages;
     }
 
-    /// What: The held hints while they describe `displayed`, otherwise nothing; `Option<&HintsSnapshot>` lends
+    /// What:
+    ///  The held hints while they describe `displayed`,
+    ///  otherwise nothing;
+    ///  `Option<&HintsSnapshot>` lends
     ///       the snapshot without copying it.
-    /// Why: Readers other than the renderer, such as logging, ask with the stamp of the displayed text.
+    /// Why:
+    ///  Readers other than the renderer,
+    ///  such as logging,
+    ///  ask with the stamp of the displayed text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -403,7 +546,8 @@ impl Annotations {
             .filter(|held| return held.stamp == displayed);
     }
 
-    /// The held diagnostics while they describe `displayed`, otherwise nothing.
+    /// The held diagnostics while they describe `displayed`,
+    ///  otherwise nothing.
     pub fn diagnostics(&self, displayed: DocumentStamp) -> Option<&DiagnosticsSnapshot> {
         return self
             .diagnostics
@@ -411,8 +555,12 @@ impl Annotations {
             .filter(|held| return held.stamp == displayed);
     }
 
-    /// What: Whether these exact snapshots are already held; `Arc::ptr_eq` compares identities, not contents.
-    /// Why: A poll that hands back the same snapshots must not rebuild the index.
+    /// What:
+    ///  Whether these exact snapshots are already held;
+    ///  `Arc::ptr_eq` compares identities,
+    ///  not contents.
+    /// Why:
+    ///  A poll that hands back the same snapshots must not rebuild the index.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -444,7 +592,8 @@ impl Annotations {
         return same_hints && same_diagnostics;
     }
 
-    /// The change counter: it differs whenever a block may have changed since the caller last looked.
+    /// The change counter:
+    ///  it differs whenever a block may have changed since the caller last looked.
     pub fn version(&self) -> u64 {
         return self.version;
     }
@@ -458,10 +607,16 @@ impl Annotations {
             .is_some_and(|snapshot| return snapshot.stamp == stamp);
     }
 
-    /// What: The diagnostics touching rows `first..last` of `text`, or nothing for a stale snapshot.
+    /// What:
+    ///  The diagnostics touching rows `first..last` of `text`,
+    ///  or nothing for a stale snapshot.
     ///       `&Rope` lends the displayed text.
-    /// Why: Underlining is bounded to the materialized rows; the search is binary, so the cost follows the
-    ///      number of visible diagnostics, not the file.
+    /// Why:
+    ///  Underlining is bounded to the materialized rows;
+    ///  the search is binary,
+    ///  so the cost follows the
+    ///      number of visible diagnostics,
+    ///  not the file.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -494,8 +649,13 @@ impl Annotations {
         return result;
     }
 
-    /// What: Diagnostics whose range contains caret boundary `position`, worst first; `Vec<&Problem>` lends them.
-    /// Why: The source view's accessible description names every problem at the caret; a range touches the
+    /// What:
+    ///  Diagnostics whose range contains caret boundary `position`,
+    ///  worst first;
+    ///  `Vec<&Problem>` lends them.
+    /// Why:
+    ///  The source view's accessible description names every problem at the caret;
+    ///  a range touches the
     ///      caret at both of its ends.
     ///
     /// In TS you'd write (pseudocode):
@@ -524,8 +684,13 @@ impl Annotations {
     }
 }
 
-/// What: The text of one problem, for example `Error E0308 (rustc): mismatched types`.
-/// Why: The severity is spelled out, so a message row does not rely on its ink; the code and source say who
+/// What:
+///  The text of one problem,
+///  for example `Error E0308 (rustc): mismatched types`.
+/// Why:
+///  The severity is spelled out,
+///  so a message row does not rely on its ink;
+///  the code and source say who
 ///      reported it.
 ///
 /// In TS you'd write (pseudocode):

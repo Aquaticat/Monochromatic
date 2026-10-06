@@ -1,5 +1,9 @@
-//! Project mounts: the canonical root always, other spellings only where the sandbox replaced the
-//! directory, all with one mount option, and all after the replacements.
+//! Project mounts:
+//!  the canonical root always,
+//!  other spellings only where the sandbox replaced the
+//! directory,
+//!  all with one mount option,
+//!  and all after the replacements.
 
 use super::{PROJECT_MOUNT, project_binds, replaced_location};
 use crate::language::confine::recipe::recipe;
@@ -118,8 +122,10 @@ fn replaced_locations_compare_whole_components() {
     assert_eq!(replaced_location(Path::new("/proc/1")), None);
 }
 
-/// The home folder opened as the project holds the private state below `~/.cache`; bubblewrap
-/// applies mounts in order and a later one covers an earlier one, so the writable state bind must
+/// The home folder opened as the project holds the private state below `~/.cache`;
+///  bubblewrap
+/// applies mounts in order and a later one covers an earlier one,
+///  so the writable state bind must
 /// come after the read-only project bind or the server could not write its own state.
 #[test]
 fn state_inside_the_project_is_bound_writable_after_the_read_only_project() {

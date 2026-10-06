@@ -1,10 +1,20 @@
-//! What: Install the corrections a converged `git cli-git fix` settled on into the
-//!       worktree, all of them or none, and never touch the index.
-//! Why: The installed wrapper's `direct-fix-install.ts` decides this protocol: every
-//!      corrected file must still hold the bytes the fix read, each replacement is written
-//!      beside its file and renamed over it, a copy of the old file is kept until the end,
-//!      and the real index must hold the same bytes afterwards. Any failure restores every
-//!      file already replaced. Failure messages name no file, because a pathname can hold
+//! What:
+//!  Install the corrections a converged `git cli-git fix` settled on into the
+//!       worktree,
+//!  all of them or none,
+//!  and never touch the index.
+//! Why:
+//!  The installed wrapper's `direct-fix-install.ts` decides this protocol:
+//!  every
+//!      corrected file must still hold the bytes the fix read,
+//!  each replacement is written
+//!      beside its file and renamed over it,
+//!  a copy of the old file is kept until the end,
+//!      and the real index must hold the same bytes afterwards.
+//!  Any failure restores every
+//!      file already replaced.
+//!  Failure messages name no file,
+//!  because a pathname can hold
 //!      the text a scan exists to keep out of output.
 //!
 //! In TS you'd write (pseudocode):
@@ -12,7 +22,8 @@
 //! // await installDirectFix({ scope, changedPaths, finalCandidates, originals });
 //! ```
 
-/// Import the candidate's mode, which decides the replacement's permissions.
+/// Import the candidate's mode,
+///  which decides the replacement's permissions.
 use super::candidate_object::CandidateMode;
 /// Import the unique name part shared with the private index directories.
 use super::candidate_private_index::unique_suffix;
@@ -20,7 +31,8 @@ use super::candidate_private_index::unique_suffix;
 use super::git_metadata::path_from_git_bytes;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
-/// `Rc<T>` is a shared, read-only handle.
+/// `Rc<T>` is a shared,
+///  read-only handle.
 use std::rc::Rc;
 
 /// The name prefix of the files a fix writes beside each corrected file.
@@ -29,9 +41,16 @@ pub const INSTALL_SIBLING_PREFIX: &str = ".cli-git-direct-fix-";
 /// The start of every installation failure message.
 const INSTALL_FAILED: &str = "cli-git fix could not install its corrections";
 
-/// What: One file to correct: its pathname, mode, the bytes the fix read and the bytes to
-///       write. `#[derive(...)]` generates cloning, debug printing and `==`.
-/// Why:  The read bytes prove nobody changed the file while the fix ran.
+/// What:
+///  One file to correct:
+///  its pathname,
+///  mode,
+///  the bytes the fix read and the bytes to
+///       write.
+///  `#[derive(...)]` generates cloning,
+///  debug printing and `==`.
+/// Why:
+///   The read bytes prove nobody changed the file while the fix ran.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,19 +58,29 @@ const INSTALL_FAILED: &str = "cli-git fix could not install its corrections";
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct InstallChange {
-    /// The pathname, relative to the repository's top level, as Git's raw bytes.
+    /// The pathname,
+    ///  relative to the repository's top level,
+    ///  as Git's raw bytes.
     pub path: Vec<u8>,
-    /// The file's mode; executable files stay executable.
+    /// The file's mode;
+    ///  executable files stay executable.
     pub mode: CandidateMode,
-    /// The bytes the fix read; the worktree file must still hold them.
+    /// The bytes the fix read;
+    ///  the worktree file must still hold them.
     pub original: Rc<[u8]>,
     /// The corrected bytes.
     pub replacement: Rc<[u8]>,
 }
 
-/// What: One prepared replacement: the file, the new bytes beside it, and a copy of the
+/// What:
+///  One prepared replacement:
+///  the file,
+///  the new bytes beside it,
+///  and a copy of the
 ///       old file beside it.
-/// Why:  Renaming the new file over the old one replaces it in one step, and the copy
+/// Why:
+///   Renaming the new file over the old one replaces it in one step,
+///  and the copy
 ///       restores it if a later step fails.
 ///
 /// In TS you'd write (pseudocode):
@@ -62,14 +91,20 @@ pub struct InstallChange {
 pub struct Replacement {
     /// The worktree file.
     destination: PathBuf,
-    /// The corrected bytes, written beside it.
+    /// The corrected bytes,
+    ///  written beside it.
     prepared: PathBuf,
-    /// A copy of the file as it was, beside it.
+    /// A copy of the file as it was,
+    ///  beside it.
     backup: PathBuf,
 }
 
-/// What: An installation failure message: the shared start, then what happened.
-/// Why:  Every failure reads the same way and names no file.
+/// What:
+///  An installation failure message:
+///  the shared start,
+///  then what happened.
+/// Why:
+///   Every failure reads the same way and names no file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -79,9 +114,15 @@ fn install_failure(detail: &str) -> String {
     return format!("{INSTALL_FAILED}: {detail}");
 }
 
-/// What: The real index's bytes, or nothing when it does not exist.
-///       `std::io::Result<Option<Vec<u8>>>` is "bytes, absent, or a read failure".
-/// Why:  A repository without an index file has an empty index, and must still have none
+/// What:
+///  The real index's bytes,
+///  or nothing when it does not exist.
+///       `std::io::Result<Option<Vec<u8>>>` is "bytes,
+///  absent,
+///  or a read failure".
+/// Why:
+///   A repository without an index file has an empty index,
+///  and must still have none
 ///       after the fix.
 ///
 /// In TS you'd write (pseudocode):
@@ -96,9 +137,13 @@ pub fn read_index(path: &Path) -> std::io::Result<Option<Vec<u8>>> {
     }
 }
 
-/// What: Remove the prepared and backup files of each replacement, ignoring files that
+/// What:
+///  Remove the prepared and backup files of each replacement,
+///  ignoring files that
 ///       were never written.
-/// Why:  Neither may stay behind after the fix ends, whichever way it ended.
+/// Why:
+///   Neither may stay behind after the fix ends,
+///  whichever way it ended.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,10 +163,15 @@ fn cleanup(replacements: &[Replacement]) {
     }
 }
 
-/// What: Rename each installed file's backup over it, last installed first.
+/// What:
+///  Rename each installed file's backup over it,
+///  last installed first.
 ///       `Result<(), String>` is success or the first restore that failed.
-/// Why:  The worktree returns to the bytes it held before the fix. A backup that cannot
-///       be restored is left in place, so its bytes are not lost.
+/// Why:
+///   The worktree returns to the bytes it held before the fix.
+///  A backup that cannot
+///       be restored is left in place,
+///  so its bytes are not lost.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -142,9 +192,15 @@ fn rollback(installed: &[Replacement]) -> Result<(), String> {
     return Ok(());
 }
 
-/// What: Write `bytes` to a new file at `path` with permissions for `mode`.
-/// Why:  The file must not exist yet, so no other file is overwritten; executable
-///       files get `0755` and others `0644`, before the umask, as the installed wrapper
+/// What:
+///  Write `bytes` to a new file at `path` with permissions for `mode`.
+/// Why:
+///   The file must not exist yet,
+///  so no other file is overwritten;
+///  executable
+///       files get `0755` and others `0644`,
+///  before the umask,
+///  as the installed wrapper
 ///       writes them.
 ///
 /// In TS you'd write (pseudocode):
@@ -158,7 +214,8 @@ fn write_new(path: &Path, bytes: &[u8], mode: CandidateMode) -> std::io::Result<
     options.write(true).create_new(true);
     #[cfg(unix)]
     {
-        /// `OpenOptionsExt` adds `mode`, the permissions a new file is created with.
+        /// `OpenOptionsExt` adds `mode`,
+        ///  the permissions a new file is created with.
         use std::os::unix::fs::OpenOptionsExt;
         let permissions: u32 = if mode == CandidateMode::Executable {
             0o755
@@ -175,9 +232,14 @@ fn write_new(path: &Path, bytes: &[u8], mode: CandidateMode) -> std::io::Result<
     return options.open(path)?.write_all(bytes);
 }
 
-/// What: Prepare every replacement: check the file still holds the bytes the fix read,
-///       copy it beside itself, and write the corrected bytes beside it.
-/// Why:  Nothing in the worktree changes until every file is prepared, so a file that
+/// What:
+///  Prepare every replacement:
+///  check the file still holds the bytes the fix read,
+///       copy it beside itself,
+///  and write the corrected bytes beside it.
+/// Why:
+///   Nothing in the worktree changes until every file is prepared,
+///  so a file that
 ///       changed under the fix stops it before any file is replaced.
 ///
 /// In TS you'd write (pseudocode):
@@ -246,9 +308,16 @@ pub fn prepare_replacements(
     return Ok(replacements);
 }
 
-/// What: Rename every prepared file over its destination, then prove the real index still
-///       holds `index_before`. `&Option<Vec<u8>>` borrows the bytes read before, or absence.
-/// Why:  The fix changes the worktree only. A rename that fails, an index that changed,
+/// What:
+///  Rename every prepared file over its destination,
+///  then prove the real index still
+///       holds `index_before`.
+///  `&Option<Vec<u8>>` borrows the bytes read before,
+///  or absence.
+/// Why:
+///   The fix changes the worktree only.
+///  A rename that fails,
+///  an index that changed,
 ///       or an index that cannot be read restores every file already replaced.
 ///
 /// In TS you'd write (pseudocode):
@@ -305,10 +374,19 @@ pub fn install_prepared(
     }
 }
 
-/// What: Install every change, or none: read the real index, prepare, then rename and
-///       verify. `Result<(), String>` is success or the failure message to report.
-/// Why:  The whole protocol of the installed wrapper's `installDirectFix`, apart from the
-///       landing lock, which the native wrapper does not take.
+/// What:
+///  Install every change,
+///  or none:
+///  read the real index,
+///  prepare,
+///  then rename and
+///       verify.
+///  `Result<(), String>` is success or the failure message to report.
+/// Why:
+///   The whole protocol of the installed wrapper's `installDirectFix`,
+///  apart from the
+///       landing lock,
+///  which the native wrapper does not take.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -331,7 +409,8 @@ pub fn install_corrections(
     return install_prepared(replacements.as_slice(), real_index, &index_before);
 }
 
-/// Installation, rollback and cleanup controls stay out of the release executable.
+/// Installation,
+///  rollback and cleanup controls stay out of the release executable.
 #[cfg(test)]
 #[path = "direct_fix_install_tests.rs"]
 mod tests;

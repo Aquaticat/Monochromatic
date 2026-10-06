@@ -1,12 +1,16 @@
 //! Pin the plain matcher's deliberate differences from captured Chrome find-in-page results.
 
-/// The production matching function, not a parallel reimplementation of its pattern construction.
+/// The production matching function,
+///  not a parallel reimplementation of its pattern construction.
 use ide_app::find::{MAX_FIND_MATCHES, find_matches};
 /// Typed fixture decoding keeps source strings and expected offsets separate from executable patterns.
 use serde::Deserialize;
 
-/// What: Serde derives a JSON decoder for this owned record; String owns text rather than borrowing &str.
-/// Why: The parsed corpus outlives the temporary parser call and records the exact tested browser build.
+/// What:
+///  Serde derives a JSON decoder for this owned record;
+///  String owns text rather than borrowing &str.
+/// Why:
+///  The parsed corpus outlives the temporary parser call and records the exact tested browser build.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,9 +19,12 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Corpus {
-    /// Full build read from the disposable browser profile, not the reduced user agent.
+    /// Full build read from the disposable browser profile,
+    ///  not the reduced user agent.
     browser_version: String,
-    /// Measured cases are finite, synthetic, and independent of project files.
+    /// Measured cases are finite,
+    ///  synthetic,
+    ///  and independent of project files.
     cases: Vec<Case>,
 }
 
@@ -29,9 +36,11 @@ struct Case {
     name: String,
     /// Synthetic source remains unchanged by the matcher.
     text: String,
-    /// Literal query, passed to the matcher exactly as the find input would hold it.
+    /// Literal query,
+    ///  passed to the matcher exactly as the find input would hold it.
     query: String,
-    /// False denotes no match, not an empty selected range.
+    /// False denotes no match,
+    ///  not an empty selected range.
     found: bool,
     /// Original source substring selected by the browser.
     selected: String,
@@ -41,9 +50,14 @@ struct Case {
     end_utf16: usize,
 }
 
-/// What: A fixed-size list of borrowed names; `&str` borrows text baked into the test binary.
-/// Why: The user decided on 2026-10-05 that Chrome's collation folding is not wanted, so exactly these
-/// captured cases differ; any other set means matching behavior changed by accident.
+/// What:
+///  A fixed-size list of borrowed names;
+///  `&str` borrows text baked into the test binary.
+/// Why:
+///  The user decided on 2026-10-05 that Chrome's collation folding is not wanted,
+///  so exactly these
+/// captured cases differ;
+///  any other set means matching behavior changed by accident.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

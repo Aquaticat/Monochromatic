@@ -1,6 +1,11 @@
-//! What: `git status` facts in every spelling Git 2.56.0 accepts, the `advice.statusHints`
-//!       override reading, and a real-Git control of the table.
-//! Why: A wrapper note appended to short or porcelain output would break its parsers, and
+//! What:
+//!  `git status` facts in every spelling Git 2.56.0 accepts,
+//!  the `advice.statusHints`
+//!       override reading,
+//!  and a real-Git control of the table.
+//! Why:
+//!  A wrapper note appended to short or porcelain output would break its parsers,
+//!  and
 //!      an unnoticed override would discard the caller's explicit choice.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +13,8 @@
 //! // expect(parseStatusPostRegion(['--porcelain=v2']).isMachineReadable).toBe(true);
 //! ```
 
-/// The functions under test, the oracles and the real-Git fixture helpers.
+/// The functions under test,
+///  the oracles and the real-Git fixture helpers.
 use super::{STATUS_TABLE, StatusRegion, has_status_hints_override, parse_status_region};
 use crate::command_options::OptionErrorKind;
 use crate::command_test_completion::{git_completion, render_completion};
@@ -27,7 +33,11 @@ fn machine_readable(values: &[&str]) -> bool {
         .machine_readable;
 }
 
-/// Incumbent spellings (`--porcelain`, `--porcelain=`, `-z`, `-s`, `--short`) and the
+/// Incumbent spellings (`--porcelain`,
+///  `--porcelain=`,
+///  `-z`,
+///  `-s`,
+///  `--short`) and the
 /// clusters and abbreviations Git also accepts.
 #[test]
 fn detects_machine_readable_formats() {
@@ -51,7 +61,8 @@ fn detects_machine_readable_formats() {
     }
 }
 
-/// Human-readable forms, including a later `--long` or negation (Git's last option wins).
+/// Human-readable forms,
+///  including a later `--long` or negation (Git's last option wins).
 #[test]
 fn detects_human_readable_formats() {
     for values in [
@@ -72,7 +83,8 @@ fn detects_human_readable_formats() {
     }
 }
 
-/// Optional-value options never take the next token, and Git's refusals are reported.
+/// Optional-value options never take the next token,
+///  and Git's refusals are reported.
 #[test]
 fn reads_optional_values_and_refusals() {
     assert!(machine_readable(&["--porcelain", "v2"]));
@@ -109,7 +121,9 @@ fn overridden(values: &[&str]) -> bool {
     return has_status_hints_override(os_arguments(values).as_slice());
 }
 
-/// `-c` in valued, bare and mixed-case forms; `--config-env` in both forms.
+/// `-c` in valued,
+///  bare and mixed-case forms;
+///  `--config-env` in both forms.
 #[test]
 fn detects_the_advice_key_in_global_options() {
     for values in [
@@ -136,7 +150,8 @@ fn detects_the_advice_key_in_global_options() {
     }
 }
 
-/// Other keys, and the key's spelling in a position that is not a configuration parameter.
+/// Other keys,
+///  and the key's spelling in a position that is not a configuration parameter.
 #[test]
 fn ignores_everything_that_does_not_set_the_advice_key() {
     for values in [
@@ -178,7 +193,8 @@ fn compares_keys_as_bytes() {
     assert!(!has_status_hints_override(other.as_slice()));
 }
 
-/// The copied table matches the binary, and Git reads `--config-env` as setting the key.
+/// The copied table matches the binary,
+///  and Git reads `--config-env` as setting the key.
 #[test]
 fn table_and_config_env_match_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("status-table");

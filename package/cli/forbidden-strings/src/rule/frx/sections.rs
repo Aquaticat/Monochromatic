@@ -1,14 +1,24 @@
 //! Parses the tail-format sectioned rule file into named engine-ready rules.
 //!
 //! A tail-format file is what `tail --verbose -n +1` over per-rule files would
-//! produce: `==> name <==` header lines open sections whose bodies are rules.
-//! Every section is exactly one rule, so every rule carries its own name. A body
+//! produce:
+//!  `==> name <==` header lines open sections whose bodies are rules.
+//! Every section is exactly one rule,
+//!  so every rule carries its own name.
+//!  A body
 //! with one significant line classifies by the incumbent two-form rule (bare
-//! literal or single-line `/PATTERN/FLAGS`); a body with more than one significant
-//! line is one verbatim pattern handed to the always-verbose engine, which ignores
-//! blank lines and first-column `#` comments itself. Arrow-leading near-headers,
-//! duplicate names, empty sections, and pre-header content each fail the load
-//! closed with a redacted, line-numbered error. Autodetection and the byte-for-byte
+//! literal or single-line `/PATTERN/FLAGS`);
+//!  a body with more than one significant
+//! line is one verbatim pattern handed to the always-verbose engine,
+//!  which ignores
+//! blank lines and first-column `#` comments itself.
+//!  Arrow-leading near-headers,
+//! duplicate names,
+//!  empty sections,
+//!  and pre-header content each fail the load
+//! closed with a redacted,
+//!  line-numbered error.
+//!  Autodetection and the byte-for-byte
 //! legacy path live in the sibling `format` module.
 
 /// Imports the redacted load-error type reported on every fail-closed condition.
@@ -20,29 +30,38 @@ use super::format::{is_significant, significant_line_rule};
 /// Imports the name-to-line map backing duplicate-name enforcement.
 use std::collections::HashMap;
 
-/// The exact prefix a section header line opens with, before the name.
+/// The exact prefix a section header line opens with,
+///  before the name.
 const HEADER_PREFIX: &str = "==> ";
 
-/// The exact suffix a section header line closes with, after the name.
+/// The exact suffix a section header line closes with,
+///  after the name.
 const HEADER_SUFFIX: &str = " <==";
 
 /// The bare arrow whose trimmed-leading presence makes a line header-adjacent:
 /// such a line must be exactly a strict header or the load fails closed.
 const NEAR_ARROW: &str = "==>";
 
-/// One parsed rule: its engine pattern plus its retained section name, if any.
+/// One parsed rule:
+///  its engine pattern plus its retained section name,
+///  if any.
 ///
 /// Tail-format rules carry `Some(name)` (the section identity that will drive the
-/// separate rule-identity UX decision); legacy line-based rules carry `None`. This
-/// issue keeps finding output unchanged, so the name is retained but not rendered;
+/// separate rule-identity UX decision);
+///  legacy line-based rules carry `None`.
+///  This
+/// issue keeps finding output unchanged,
+///  so the name is retained but not rendered;
 /// its first production consumer is duplicate-name enforcement.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct ParsedRule {
-    /// Retained section name for a tail-format rule, or `None` for a legacy rule.
+    /// Retained section name for a tail-format rule,
+    ///  or `None` for a legacy rule.
     pub(super) name: Option<String>,
     /// Engine-ready pattern the compiler validates and assembles into the set.
     pub(super) pattern: String,
-    /// Original exact literal bytes, absent for explicit or multiline regex rule.
+    /// Original exact literal bytes,
+    ///  absent for explicit or multiline regex rule.
     pub(super) literal: Option<Vec<u8>>,
 }
 
@@ -61,9 +80,11 @@ enum HeaderKind {
 
 /// A section header opened but whose body has not yet been closed and classified.
 struct OpenSection<'a> {
-    /// Validated section name, moved into the finished rule.
+    /// Validated section name,
+    ///  moved into the finished rule.
     name: String,
-    /// 1-based source line of the header, used for empty-section reporting.
+    /// 1-based source line of the header,
+    ///  used for empty-section reporting.
     name_line: usize,
     /// Raw body lines collected verbatim until the next header or end of file.
     body: Vec<&'a str>,
@@ -81,8 +102,10 @@ fn is_name_char(ch: char) -> bool {
 
 /// Extracts the validated section name from a line that is exactly a strict header.
 ///
-/// A strict header is an exact full untrimmed line `==> ` + name + ` <==`, the
-/// name drawn from `[a-z0-9.-]` and opening with `[a-z0-9]`; every other shape
+/// A strict header is an exact full untrimmed line `==> ` + name + ` <==`,
+///  the
+/// name drawn from `[a-z0-9.-]` and opening with `[a-z0-9]`;
+///  every other shape
 /// returns `None`.
 fn strict_name(line: &str) -> Option<String> {
     let middle = line.strip_prefix(HEADER_PREFIX)?.strip_suffix(HEADER_SUFFIX)?;
@@ -93,14 +116,22 @@ fn strict_name(line: &str) -> Option<String> {
     return Some(middle.to_string());
 }
 
-/// Classifies one line as a strict header, a near-header, or ordinary content.
+/// Classifies one line as a strict header,
+///  a near-header,
+///  or ordinary content.
 ///
 /// Every line whose trimmed form starts with `==>` must be exactly a strict header
 /// or it is a near-header failing the load closed (maintainer ruling 2026-07-20,
 /// replacing a draft where out-of-alphabet middles such as `X9` or `/etc/passwd`
-/// stayed content): case typos, indented would-be headers, missing-space arrows,
-/// and genuine arrow-leading content alike. Genuine content uses the `[=]=> `
-/// reshape, whose trimmed form starts with `[`, so nothing arrow-leading is ever
+/// stayed content):
+///  case typos,
+///  indented would-be headers,
+///  missing-space arrows,
+/// and genuine arrow-leading content alike.
+///  Genuine content uses the `[=]=> `
+/// reshape,
+///  whose trimmed form starts with `[`,
+///  so nothing arrow-leading is ever
 /// silently absorbed into a section body.
 fn classify_header(line: &str) -> HeaderKind {
     if !line.trim_start().starts_with(NEAR_ARROW) {
@@ -113,10 +144,13 @@ fn classify_header(line: &str) -> HeaderKind {
     };
 }
 
-/// Reports whether a line is a strict section header, for format autodetection.
+/// Reports whether a line is a strict section header,
+///  for format autodetection.
 ///
 /// The sibling `format` module's `parse_rules` calls this on the first
-/// significant line: a strict header there selects the tail-format path, any other
+/// significant line:
+///  a strict header there selects the tail-format path,
+///  any other
 /// shape selects the byte-for-byte legacy path.
 pub(super) fn detect_tail_format(text: &str) -> bool {
     return text
@@ -127,12 +161,18 @@ pub(super) fn detect_tail_format(text: &str) -> bool {
 
 /// Classifies one closed section's body into a single named engine rule.
 ///
-/// Trailing blank lines are the section-separator tail plus any the author left, so
+/// Trailing blank lines are the section-separator tail plus any the author left,
+///  so
 /// they are trimmed before significance is counted and before the verbatim body is
-/// formed. A body with no significant line fails closed as an empty section. One
+/// formed.
+///  A body with no significant line fails closed as an empty section.
+///  One
 /// significant line classifies by the incumbent two-form rule at `index` (a
-/// single-line regex there can still fail the flag policy). More than one keeps the
-/// trimmed body verbatim as one pattern, comments and interior blanks included, for
+/// single-line regex there can still fail the flag policy).
+///  More than one keeps the
+/// trimmed body verbatim as one pattern,
+///  comments and interior blanks included,
+///  for
 /// the always-verbose engine to consume.
 fn finish_section(section: OpenSection<'_>, index: usize) -> Result<ParsedRule, LoadError> {
     let end = section
@@ -163,8 +203,10 @@ fn finish_section(section: OpenSection<'_>, index: usize) -> Result<ParsedRule, 
 
 /// Closes one open section into the parallel rule and header-line lists.
 ///
-/// The rule's index in the compiled set is its push position, which the two-form
-/// classifier reports on a bad flag; the retained header line feeds duplicate-name
+/// The rule's index in the compiled set is its push position,
+///  which the two-form
+/// classifier reports on a bad flag;
+///  the retained header line feeds duplicate-name
 /// reporting after the walk.
 fn close_section(
     section: OpenSection<'_>,
@@ -178,13 +220,23 @@ fn close_section(
     return Ok(());
 }
 
-/// Parses BOM-stripped tail-format text into named, engine-ready rules in file order.
+/// Parses BOM-stripped tail-format text into named,
+///  engine-ready rules in file order.
 ///
-/// Walks lines once: a strict header closes any open section and opens the next; a
-/// near-header, or significant content before the first header, fails closed with
-/// its source line; anything else accumulates into the current body. After the
-/// walk, name uniqueness is enforced across the whole loaded input by reading each
-/// rule's retained name. Rule order is file order, giving deterministic indices.
+/// Walks lines once:
+///  a strict header closes any open section and opens the next;
+///  a
+/// near-header,
+///  or significant content before the first header,
+///  fails closed with
+/// its source line;
+///  anything else accumulates into the current body.
+///  After the
+/// walk,
+///  name uniqueness is enforced across the whole loaded input by reading each
+/// rule's retained name.
+///  Rule order is file order,
+///  giving deterministic indices.
 pub(super) fn parse_sections(text: &str) -> Result<Vec<ParsedRule>, LoadError> {
     let mut rules: Vec<ParsedRule> = Vec::new();
     let mut name_lines: Vec<usize> = Vec::new();
@@ -238,7 +290,10 @@ pub(super) fn parse_sections(text: &str) -> Result<Vec<ParsedRule>, LoadError> {
     return Ok(rules);
 }
 
-/// Registers the header-grammar, section-body, and fail-closed tests (sidecar, lint-exempt).
+/// Registers the header-grammar,
+///  section-body,
+///  and fail-closed tests (sidecar,
+///  lint-exempt).
 #[cfg(test)]
 #[path = "sections_tests.rs"]
 mod sections_tests;

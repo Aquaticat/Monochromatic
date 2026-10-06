@@ -1,8 +1,11 @@
 //! Parse the runtime `color-scheme` control verb independently of the compositor.
 
-/// What:     `use super::Command;` brings the parent module's command union into scope.
-///           `super` names the module that declared this file, here `protocol`.
-/// Why:      This parser returns the same typed command every other control verb produces.
+/// What:
+///      `use super::Command;` brings the parent module's command union into scope.
+///           `super` names the module that declared this file,
+///  here `protocol`.
+/// Why:
+///       This parser returns the same typed command every other control verb produces.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -10,10 +13,13 @@
 /// ```
 use super::Command;
 
-/// What:     Import the closed set of appearance values from the private-portal module.
+/// What:
+///      Import the closed set of appearance values from the private-portal module.
 ///           `crate` names this package's own root.
-/// Why:      Runtime switching accepts exactly the names the `--color-scheme` startup option
-///           accepts, through the same value parser.
+/// Why:
+///       Runtime switching accepts exactly the names the `--color-scheme` startup option
+///           accepts,
+///  through the same value parser.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,12 +29,16 @@ use crate::appearance_portal::ColorSchemePreference;
 
 /// Parse the tokens after `color-scheme` into the typed runtime appearance command.
 ///
-/// What:     `pub(super) fn parse(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`. `pub(super)` exposes the function to the parent module only. `&mut`
+/// What:
+///      `pub(super) fn parse(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
+///           String>`.
+///  `pub(super)` exposes the function to the parent module only.
+///  `&mut`
 ///           lends the token iterator so this function can consume the remaining tokens.
 ///           `Result<Command, String>` is success with a command or failure with a message,
 ///           because Rust has no exceptions.
-/// Why:      Exactly one value keeps the verb unambiguous and rejects a second command
+/// Why:
+///       Exactly one value keeps the verb unambiguous and rejects a second command
 ///           smuggled behind it.
 ///
 /// In TS you'd write (pseudocode):

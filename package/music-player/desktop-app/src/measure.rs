@@ -1,20 +1,36 @@
 //! Parallel background queue true-peak measurement.
 //!
 //! On every queue load the controller starts a background sweep over the queue's
-//! non-current tracks. The sweep fans out one worker per logical core; each worker
-//! claims tracks from a shared atomic cursor, skips the ones already cached, and
-//! decodes the rest to measure their true peak, storing each result through the
-//! `CacheHandle`. Workers run at idle OS scheduling priority, so they saturate every
+//! non-current tracks.
+//!  The sweep fans out one worker per logical core;
+//!  each worker
+//! claims tracks from a shared atomic cursor,
+//!  skips the ones already cached,
+//!  and
+//! decodes the rest to measure their true peak,
+//!  storing each result through the
+//! `CacheHandle`.
+//!  Workers run at idle OS scheduling priority,
+//!  so they saturate every
 //! core when the machine is otherwise free yet yield to the realtime audio thread
-//! and the UI. There is no inter-track sleep (the old throttle that fought "finish
-//! as fast as possible") and no flush bookkeeping: the cache actor commits each
-//! write durably. Sweeps are never cancelled: re-opening a directory finds most
-//! peaks already cached (via the one key-set snapshot) and returns quickly. The
-//! current track is handled by `peak_swap`, because playback may wait briefly for
+//! and the UI.
+//!  There is no inter-track sleep (the old throttle that fought "finish
+//! as fast as possible") and no flush bookkeeping:
+//!  the cache actor commits each
+//! write durably.
+//!  Sweeps are never cancelled:
+//!  re-opening a directory finds most
+//! peaks already cached (via the one key-set snapshot) and returns quickly.
+//!  The
+//! current track is handled by `peak_swap`,
+//!  because playback may wait briefly for
 //! that one visible result.
 
-/// What:     `use std::collections::HashSet;`. A set of `u64` fingerprints.
-/// Why:      The skip-check reads one snapshot of every already-exact fingerprint.
+/// What:
+///      `use std::collections::HashSet;`.
+///  A set of `u64` fingerprints.
+/// Why:
+///       The skip-check reads one snapshot of every already-exact fingerprint.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,8 +38,11 @@
 /// ```
 use std::collections::HashSet;
 
-/// What:     `use std::path::PathBuf;`. Owned filesystem path buffer.
-/// Why:      The detached workers need paths that outlive the caller.
+/// What:
+///      `use std::path::PathBuf;`.
+///  Owned filesystem path buffer.
+/// Why:
+///       The detached workers need paths that outlive the caller.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,8 +50,13 @@ use std::collections::HashSet;
 /// ```
 use std::path::PathBuf;
 
-/// What:     `use std::sync::Arc;`. Thread-safe shared owner (atomic refcount).
-/// Why:      Workers share the track list, the cursor, and the key-set snapshot.
+/// What:
+///      `use std::sync::Arc;`.
+///  Thread-safe shared owner (atomic refcount).
+/// Why:
+///       Workers share the track list,
+///  the cursor,
+///  and the key-set snapshot.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,9 +64,13 @@ use std::path::PathBuf;
 /// ```
 use std::sync::Arc;
 
-/// What:     `use std::sync::atomic::{AtomicUsize, Ordering};`. A shared integer with
-///           atomic operations, plus the memory-ordering selector.
-/// Why:      The cursor is a lock-free counter workers `fetch_add` to claim work.
+/// What:
+///      `use std::sync::atomic::{AtomicUsize, Ordering};`.
+///  A shared integer with
+///           atomic operations,
+///  plus the memory-ordering selector.
+/// Why:
+///       The cursor is a lock-free counter workers `fetch_add` to claim work.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,8 +78,11 @@ use std::sync::Arc;
 /// ```
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-/// What:     `use std::thread;`. Thread spawning and `available_parallelism`.
-/// Why:      The coordinator spawns one worker per logical core.
+/// What:
+///      `use std::thread;`.
+///  Thread spawning and `available_parallelism`.
+/// Why:
+///       The coordinator spawns one worker per logical core.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,9 +90,12 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 /// ```
 use std::thread;
 
-/// What:     `use crate::peakcache::{self, CacheHandle};`. The cache module (for
+/// What:
+///      `use crate::peakcache::{self, CacheHandle};`.
+///  The cache module (for
 ///           `peakcache::fingerprint`) and the synchronous handle type.
-/// Why:      Compute keys and store measured peaks.
+/// Why:
+///       Compute keys and store measured peaks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -70,8 +104,12 @@ use std::thread;
 /// ```
 use crate::peakcache::{self, CacheHandle};
 
-/// What:     `use crate::truepeak::resolve_full;`. The always-exact full-scan resolver.
-/// Why:      Warming workers upgrade uncached-or-probe tracks to an EXACT decision, which the
+/// What:
+///      `use crate::truepeak::resolve_full;`.
+///  The always-exact full-scan resolver.
+/// Why:
+///       Warming workers upgrade uncached-or-probe tracks to an EXACT decision,
+///  which the
 ///           cache's exact-over-probe precedence then keeps.
 ///
 /// In TS you'd write (pseudocode):
@@ -80,11 +118,16 @@ use crate::peakcache::{self, CacheHandle};
 /// ```
 use crate::truepeak::resolve_full;
 
-/// What:     `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: CacheHandle)`.
+/// What:
+///      `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: CacheHandle)`.
 ///           Start a detached coordinator that measures every uncached track in `tracks`
-///           in parallel, storing results through `cache`. Takes ownership of both
-///           arguments. `pub(crate)` for the controller.
-/// Why:      Pre-warm the cache for the whole queue so later track changes are instant.
+///           in parallel,
+///  storing results through `cache`.
+///  Takes ownership of both
+///           arguments.
+///  `pub(crate)` for the controller.
+/// Why:
+///       Pre-warm the cache for the whole queue so later track changes are instant.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -104,13 +147,23 @@ pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: CacheHandle) 
     thread::spawn(move || run_sweep(tracks, cache));
 }
 
-/// What:     `#[cfg(target_os = "linux")] fn lower_current_thread_to_idle()`. Move the
-///           CALLING thread into the Linux `SCHED_IDLE` scheduling class. The `#[cfg(...)]`
+/// What:
+///      `#[cfg(target_os = "linux")] fn lower_current_thread_to_idle()`.
+///  Move the
+///           CALLING thread into the Linux `SCHED_IDLE` scheduling class.
+///  The `#[cfg(...)]`
 ///           attribute compiles this version ONLY on Linux.
-/// Why:      The sweep decodes whole files back-to-back (CPU-bound). `SCHED_IDLE` threads
-///           run only when no normal-priority thread wants the CPU, on ANY core, so the
-///           sweep never competes with the realtime audio thread, the UI, or other
-///           applications. It still finishes when the machine is otherwise idle.
+/// Why:
+///       The sweep decodes whole files back-to-back (CPU-bound).
+///  `SCHED_IDLE` threads
+///           run only when no normal-priority thread wants the CPU,
+///  on ANY core,
+///  so the
+///           sweep never competes with the realtime audio thread,
+///  the UI,
+///  or other
+///           applications.
+///  It still finishes when the machine is otherwise idle.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -153,13 +206,25 @@ fn lower_current_thread_to_idle() {
     }
 }
 
-/// What:     `#[cfg(target_os = "macos")] fn lower_current_thread_to_idle()`. The macOS
-///           version: drop the CALLING thread into the BACKGROUND Quality of Service (QoS)
-///           class. `#[cfg(target_os = "macos")]` compiles it only on macOS.
-/// Why:      macOS schedules threads by QoS class, not the POSIX scheduling classes Linux
-///           uses, so the Linux SCHED_IDLE call does not exist here. `QOS_CLASS_BACKGROUND`
-///           is the lowest tier: the sweep's CPU-bound decoding yields to the realtime audio
-///           thread, the UI, and foreground apps, the same intent as the Linux path.
+/// What:
+///      `#[cfg(target_os = "macos")] fn lower_current_thread_to_idle()`.
+///  The macOS
+///           version:
+///  drop the CALLING thread into the BACKGROUND Quality of Service (QoS)
+///           class.
+///  `#[cfg(target_os = "macos")]` compiles it only on macOS.
+/// Why:
+///       macOS schedules threads by QoS class,
+///  not the POSIX scheduling classes Linux
+///           uses,
+///  so the Linux SCHED_IDLE call does not exist here.
+///  `QOS_CLASS_BACKGROUND`
+///           is the lowest tier:
+///  the sweep's CPU-bound decoding yields to the realtime audio
+///           thread,
+///  the UI,
+///  and foreground apps,
+///  the same intent as the Linux path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -195,12 +260,20 @@ fn lower_current_thread_to_idle() {
     }
 }
 
-/// What:     `#[cfg(windows)] fn lower_current_thread_to_idle()`. The Windows version: set
-///           the CALLING thread to the IDLE priority level. `#[cfg(windows)]` compiles it
+/// What:
+///      `#[cfg(windows)] fn lower_current_thread_to_idle()`.
+///  The Windows version:
+///  set
+///           the CALLING thread to the IDLE priority level.
+///  `#[cfg(windows)]` compiles it
 ///           only on Windows.
-/// Why:      Windows schedules by per-thread priority level, not POSIX classes or QoS.
-///           `THREAD_PRIORITY_IDLE` is the lowest level: the sweep runs only when no
-///           higher-priority thread wants the CPU, the same intent as Linux SCHED_IDLE and
+/// Why:
+///       Windows schedules by per-thread priority level,
+///  not POSIX classes or QoS.
+///           `THREAD_PRIORITY_IDLE` is the lowest level:
+///  the sweep runs only when no
+///           higher-priority thread wants the CPU,
+///  the same intent as Linux SCHED_IDLE and
 ///           macOS background QoS.
 ///
 /// In TS you'd write (pseudocode):
@@ -209,10 +282,13 @@ fn lower_current_thread_to_idle() {
 /// ```
 #[cfg(windows)]
 fn lower_current_thread_to_idle() {
-    /// What:     `use windows::Win32::System::Threading::{GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE};`.
-    ///           Import the Win32 thread-priority bindings. A function-local `use` keeps these
+    /// What:
+    ///      `use windows::Win32::System::Threading::{GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE};`.
+    ///           Import the Win32 thread-priority bindings.
+    ///  A function-local `use` keeps these
     ///           Windows-only names out of the module's top scope.
-    /// Why:      Name the three Win32 items the call below needs.
+    /// Why:
+    ///       Name the three Win32 items the call below needs.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -253,10 +329,14 @@ fn lower_current_thread_to_idle() {
     }
 }
 
-/// What:     `#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))] fn lower_current_thread_to_idle() {}`.
+/// What:
+///      `#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))] fn lower_current_thread_to_idle() {}`.
 ///           The no-op fallback compiled on every OTHER target (for example the BSDs) where
-///           no scheduling call is wired up. Empty body `{}`.
-/// Why:      Keep the workers portable: the call site stays the same and simply does nothing
+///           no scheduling call is wired up.
+///  Empty body `{}`.
+/// Why:
+///       Keep the workers portable:
+///  the call site stays the same and simply does nothing
 ///           where we have not implemented a scheduling tweak.
 ///
 /// In TS you'd write (pseudocode):
@@ -266,10 +346,17 @@ fn lower_current_thread_to_idle() {
 #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
 fn lower_current_thread_to_idle() {}
 
-/// What:     `fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle)`. The detached
-///           coordinator: take one key-set snapshot, fan out workers over a shared cursor,
-///           and join them. Takes ownership of both args. Module-private.
-/// Why:      One place owns the fan-out and the shared state the workers read.
+/// What:
+///      `fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle)`.
+///  The detached
+///           coordinator:
+///  take one key-set snapshot,
+///  fan out workers over a shared cursor,
+///           and join them.
+///  Takes ownership of both args.
+///  Module-private.
+/// Why:
+///       One place owns the fan-out and the shared state the workers read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -363,9 +450,15 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
     tracing::info!("warming sweep finished");
 }
 
-/// What:     `fn worker_count(track_count: usize) -> usize`. The number of decode workers to
-///           spawn: one per logical core, clamped to the track count, `0` for none.
-/// Why:      Saturate the CPU without spawning idle threads for a short queue.
+/// What:
+///      `fn worker_count(track_count: usize) -> usize`.
+///  The number of decode workers to
+///           spawn:
+///  one per logical core,
+///  clamped to the track count,
+///  `0` for none.
+/// Why:
+///       Saturate the CPU without spawning idle threads for a short queue.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -406,10 +499,16 @@ fn worker_count(track_count: usize) -> usize {
     return cores.min(track_count)
 }
 
-/// What:     `fn run_worker(tracks: Arc<[PathBuf]>, cursor: Arc<AtomicUsize>, cache: CacheHandle, known: Arc<HashSet<u64>>)`.
-///           One worker: drop to idle priority, then claim and full-scan tracks until the
-///           cursor passes the end. Module-private.
-/// Why:      The per-thread decode loop, shared by every spawned worker.
+/// What:
+///      `fn run_worker(tracks: Arc<[PathBuf]>, cursor: Arc<AtomicUsize>, cache: CacheHandle, known: Arc<HashSet<u64>>)`.
+///           One worker:
+///  drop to idle priority,
+///  then claim and full-scan tracks until the
+///           cursor passes the end.
+///  Module-private.
+/// Why:
+///       The per-thread decode loop,
+///  shared by every spawned worker.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -516,9 +615,12 @@ fn run_worker(
     }
 }
 
-/// What:     `#[cfg(test)] #[path = "measure_tests.rs"] mod tests;` declares a test-only
+/// What:
+///      `#[cfg(test)] #[path = "measure_tests.rs"] mod tests;` declares a test-only
 ///           submodule whose code lives in the sibling file `measure_tests.rs`.
-/// Why:      Keep `measure.rs` to production code; the tests live beside it without inflating
+/// Why:
+///       Keep `measure.rs` to production code;
+///  the tests live beside it without inflating
 ///           this file or its max-lines budget (sibling `*_tests.rs` files are exempt).
 ///
 /// In TS you'd write (pseudocode):

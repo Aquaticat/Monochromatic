@@ -1,15 +1,29 @@
-//! Winit backend initialisation: the nested window, its GLES renderer, the output,
+//! Winit backend initialisation:
+//!  the nested window,
+//!  its GLES renderer,
+//!  the output,
 //! and the dmabuf protocol state.
 //!
 //! This runs while the process's `WAYLAND_DISPLAY` still points at the PARENT
-//! compositor (the host session), so the winit window becomes a client of the host.
-//! It mirrors anvil's proven winit path: build the renderer, query the render node so
-//! we can advertise dmabuf v4 modifier feedback (falling back to v3), and bind the
+//! compositor (the host session),
+//!  so the winit window becomes a client of the host.
+//! It mirrors anvil's proven winit path:
+//!  build the renderer,
+//!  query the render node so
+//! we can advertise dmabuf v4 modifier feedback (falling back to v3),
+//!  and bind the
 //! EGL display for Mesa's legacy hardware-acceleration path.
 
-/// What:     Grouped `use` of the renderer traits, EGL device query, winit backend,
-///           output types, transform, dmabuf types, and the display handle.
-/// Why:      Everything `init_backend` references.
+/// What:
+///      Grouped `use` of the renderer traits,
+///  EGL device query,
+///  winit backend,
+///           output types,
+///  transform,
+///  dmabuf types,
+///  and the display handle.
+/// Why:
+///       Everything `init_backend` references.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,8 +44,11 @@ use smithay::{
     wayland::dmabuf::{DmabufFeedbackBuilder, DmabufState},
 };
 
-/// What:     `use anyhow::{Context, Result};`. Error helpers.
-/// Why:      `init_backend` returns `Result` and attaches context to winit failures.
+/// What:
+///      `use anyhow::{Context, Result};`.
+///  Error helpers.
+/// Why:
+///       `init_backend` returns `Result` and attaches context to winit failures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,13 +56,19 @@ use smithay::{
 /// ```
 use anyhow::{Context, Result};
 
-/// What:     `use tracing::{info, warn};`. Structured log macros.
-/// Why:      Report the chosen dmabuf version and hardware-acceleration status.
+/// What:
+///      `use tracing::{info, warn};`.
+///  Structured log macros.
+/// Why:
+///       Report the chosen dmabuf version and hardware-acceleration status.
 use tracing::{info, warn};
 
-/// What:     `use crate::{cli::Config, state::BackendPieces};`. Our config input and the
+/// What:
+///      `use crate::{cli::Config, state::BackendPieces};`.
+///  Our config input and the
 ///           carrier struct for the built pieces.
-/// Why:      `init_backend` reads the requested size from `Config` and returns
+/// Why:
+///       `init_backend` reads the requested size from `Config` and returns
 ///           `BackendPieces`.
 ///
 /// In TS you'd write (pseudocode):
@@ -57,9 +80,14 @@ use crate::{cli::Config, screen_geometry::ScreenGeometry, state::BackendPieces};
 
 /// Milli-hertz refresh rate reported for the nested output (60.000 Hz).
 ///
-/// What:     `const OUTPUT_REFRESH_MHZ: i32 = 60_000;`. Signed `i32`; Smithay reports
-///           refresh in millihertz, so 60 Hz is 60000.
-/// Why:      Named so the magic number is not repeated at the mode-construction site.
+/// What:
+///      `const OUTPUT_REFRESH_MHZ: i32 = 60_000;`.
+///  Signed `i32`;
+///  Smithay reports
+///           refresh in millihertz,
+///  so 60 Hz is 60000.
+/// Why:
+///       Named so the magic number is not repeated at the mode-construction site.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,12 +95,18 @@ use crate::{cli::Config, screen_geometry::ScreenGeometry, state::BackendPieces};
 /// ```
 pub const OUTPUT_REFRESH_MHZ: i32 = 60_000;
 
-/// Build the winit backend, the nested output, and the dmabuf state.
+/// Build the winit backend,
+///  the nested output,
+///  and the dmabuf state.
 ///
-/// What:     `pub fn init_backend(display_handle: &DisplayHandle, config: &Config) ->
-///           Result<(BackendPieces, WinitEventLoop)>`. Borrows the display handle and
-///           config, returns the built pieces plus the winit event source to register.
-/// Why:      Isolate all the winit/EGL/dmabuf construction from the state wiring.
+/// What:
+///      `pub fn init_backend(display_handle: &DisplayHandle, config: &Config) ->
+///           Result<(BackendPieces, WinitEventLoop)>`.
+///  Borrows the display handle and
+///           config,
+///  returns the built pieces plus the winit event source to register.
+/// Why:
+///       Isolate all the winit/EGL/dmabuf construction from the state wiring.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,19 +1,33 @@
 //! The read-only client's answer to every request a language server can send it.
 //!
-//! helix-lsp only delivers these requests. An unanswered one stalls the server, so each method
-//! gets a reply here: what a server needs to keep working is answered, every mutation is refused.
+//! helix-lsp only delivers these requests.
+//!  An unanswered one stalls the server,
+//!  so each method
+//! gets a reply here:
+//!  what a server needs to keep working is answered,
+//!  every mutation is refused.
 
-/// What: `MethodCall` is helix-lsp's parsed form of a server-to-client request; `jsonrpc` holds
-///       the wire-level request, parameter, and error types; `lsp` holds the protocol's data types.
-/// Why: The reply must be shaped exactly as the protocol defines for each method.
+/// What:
+///  `MethodCall` is helix-lsp's parsed form of a server-to-client request;
+///  `jsonrpc` holds
+///       the wire-level request,
+///  parameter,
+///  and error types;
+///  `lsp` holds the protocol's data types.
+/// Why:
+///  The reply must be shaped exactly as the protocol defines for each method.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { MethodCall, jsonrpc, lsp } from 'helix-lsp';
 /// ```
 use helix_lsp::{MethodCall, jsonrpc, lsp};
-/// What: `Value` is any JSON value; `json!` is a macro that builds one from literal syntax.
-/// Why: Replies travel as JSON, and a few of them are fixed literals.
+/// What:
+///  `Value` is any JSON value;
+///  `json!` is a macro that builds one from literal syntax.
+/// Why:
+///  Replies travel as JSON,
+///  and a few of them are fixed literals.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,8 +38,11 @@ use serde_json::{Value, json};
 /// The exact sentence sent with every refused workspace edit.
 pub const EDIT_REFUSAL: &str = "read-only client: workspace edits are not applied";
 
-/// What: What the worker must do besides sending the reply. An `enum` with data is a tagged union.
-/// Why: Deciding is kept free of side effects so every reply can be tested without a server.
+/// What:
+///  What the worker must do besides sending the reply.
+///  An `enum` with data is a tagged union.
+/// Why:
+///  Deciding is kept free of side effects so every reply can be tested without a server.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,7 +57,8 @@ pub enum Effect {
     None,
     /// Pull diagnostics again for the displayed file.
     RefreshDiagnostics,
-    /// Hand these file-watcher registrations to helix-lsp's file-event handler. The tuple pairs
+    /// Hand these file-watcher registrations to helix-lsp's file-event handler.
+    ///  The tuple pairs
     /// a registration identifier with its options.
     RegisterWatchers(
         /// Registration identifier and options of each watcher.
@@ -53,10 +71,14 @@ pub enum Effect {
     ),
 }
 
-/// What: The reply plus its side effect and a short policy word for the log. `Result<Value,
+/// What:
+///  The reply plus its side effect and a short policy word for the log.
+///  `Result<Value,
 ///       jsonrpc::Error>` is either a JSON result (`Ok`) or a protocol error (`Err`);
-///       `&'static str` is a string literal that lives for the whole program (sibling: owned `String`).
-/// Why: The three parts are produced together and consumed together by the worker.
+///       `&'static str` is a string literal that lives for the whole program (sibling:
+///  owned `String`).
+/// Why:
+///  The three parts are produced together and consumed together by the worker.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -68,7 +90,11 @@ pub struct Decision {
     pub reply: Result<Value, jsonrpc::Error>,
     /// What else the worker must do.
     pub effect: Effect,
-    /// One of `answered`, `acknowledged`, `refused`, `method-not-found`, `malformed`.
+    /// One of `answered`,
+    ///  `acknowledged`,
+    ///  `refused`,
+    ///  `method-not-found`,
+    ///  `malformed`.
     pub policy: &'static str,
 }
 
@@ -79,22 +105,31 @@ pub struct Decision {
 /// type ClientView = { settings?: unknown; folders: WorkspaceFolder[] };
 /// ```
 pub struct ClientView<'a> {
-    /// What: `Option<&'a Value>` is "a borrowed JSON value, or nothing". The `'a` is a lifetime
-    ///       name: it states that the borrow cannot outlive the client it was taken from.
-    /// Why: The server's configured settings answer `workspace/configuration` without a copy.
+    /// What:
+    ///  `Option<&'a Value>` is "a borrowed JSON value,
+    ///  or nothing".
+    ///  The `'a` is a lifetime
+    ///       name:
+    ///  it states that the borrow cannot outlive the client it was taken from.
+    /// Why:
+    ///  The server's configured settings answer `workspace/configuration` without a copy.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// settings?: Readonly<unknown>;
     /// ```
     pub settings: Option<&'a Value>,
-    /// Workspace folders helix-lsp sent in `initialize`. `&'a [T]` is a borrowed list.
+    /// Workspace folders helix-lsp sent in `initialize`.
+    ///  `&'a [T]` is a borrowed list.
     pub folders: &'a [lsp::WorkspaceFolder],
 }
 
-/// What: Look up one dotted section such as `typescript.inlayHints` in the settings.
-/// Why: `workspace/configuration` asks for sections of the same object that was sent as
-///      `initializationOptions`; an absent section must become JSON `null`.
+/// What:
+///  Look up one dotted section such as `typescript.inlayHints` in the settings.
+/// Why:
+///  `workspace/configuration` asks for sections of the same object that was sent as
+///      `initializationOptions`;
+///  an absent section must become JSON `null`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -147,10 +182,16 @@ fn result(value: Value, effect: Effect, policy: &'static str) -> Decision {
     };
 }
 
-/// What: Decide the reply for one server-to-client request. `&str` borrows the method name;
+/// What:
+///  Decide the reply for one server-to-client request.
+///  `&str` borrows the method name;
 ///       `params` is moved in because parsing consumes it.
-/// Why: Every method helix-lsp can deliver, and every method it cannot parse, gets an explicit
-///      reviewed answer; none is left pending.
+/// Why:
+///  Every method helix-lsp can deliver,
+///  and every method it cannot parse,
+///  gets an explicit
+///      reviewed answer;
+///  none is left pending.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -257,7 +298,8 @@ pub fn decide(method: &str, params: jsonrpc::Params, client: &ClientView<'_>) ->
     };
 }
 
-/// Every method's exact reply is asserted as JSON, without a server.
+/// Every method's exact reply is asserted as JSON,
+///  without a server.
 #[cfg(test)]
 #[path = "incoming_tests.rs"]
 mod tests;

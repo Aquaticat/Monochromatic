@@ -1,4 +1,7 @@
-//! Stall-detection tests using injected times, with no display, sleeping, or host state.
+//! Stall-detection tests using injected times,
+//!  with no display,
+//!  sleeping,
+//!  or host state.
 
 use super::*;
 
@@ -10,14 +13,17 @@ fn presenting_parent_needs_no_fallback() {
     assert!(!parent_stalled(false, STALL_THRESHOLD - Duration::from_nanos(1)));
 }
 
-/// A locked or hidden parent stops presenting; the hosted client must still be paced.
+/// A locked or hidden parent stops presenting;
+///  the hosted client must still be paced.
 #[test]
 fn silent_parent_triggers_fallback_from_the_threshold_on() {
     assert!(parent_stalled(false, STALL_THRESHOLD));
     assert!(parent_stalled(false, Duration::from_secs(3600)));
 }
 
-/// While recording, the recorder's own timer defines the cadence, however long the parent is silent.
+/// While recording,
+///  the recorder's own timer defines the cadence,
+///  however long the parent is silent.
 #[test]
 fn recorder_keeps_ownership_of_the_frame_cadence() {
     assert!(!parent_stalled(true, STALL_THRESHOLD));
@@ -39,7 +45,8 @@ fn fallback_follows_parent_presentation() {
     assert!(pacing.fallback_due(false, resumed + STALL_THRESHOLD));
 }
 
-/// A time earlier than the last presentation is treated as no silence, never as a panic.
+/// A time earlier than the last presentation is treated as no silence,
+///  never as a panic.
 #[test]
 fn earlier_time_is_not_a_stall() {
     let start = Instant::now();

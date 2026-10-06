@@ -1,13 +1,18 @@
-//! What: Every `status-hints-off.unit.test.ts` case, the global forms that run no
-//!       subcommand, and a real-Git control of the injected pair.
-//! Why: The injection must silence Git's hints without overriding an explicit caller choice.
+//! What:
+//!  Every `status-hints-off.unit.test.ts` case,
+//!  the global forms that run no
+//!       subcommand,
+//!  and a real-Git control of the injected pair.
+//! Why:
+//!  The injection must silence Git's hints without overriding an explicit caller choice.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(statusHintsOff(['status'])).toEqual(['-c', 'advice.statusHints=false', 'status']);
 //! ```
 
-/// The functions under test, their result type and the real-Git fixture helpers.
+/// The functions under test,
+///  their result type and the real-Git fixture helpers.
 use super::{QUIET_INJECTION, has_explicit_status_hints_override, status_hints_off};
 use crate::command_test_support::{git_output, os_arguments, remove, repository_with_tracked_file};
 use crate::rule_argument_rewrite::ArgumentRewrite;
@@ -25,7 +30,8 @@ fn overridden(values: &[&str]) -> bool {
     return has_explicit_status_hints_override(os_arguments(values).as_slice());
 }
 
-/// Ported: the five `hasExplicitStatusHintsOverride` cases.
+/// Ported:
+///  the five `hasExplicitStatusHintsOverride` cases.
 #[test]
 fn detects_an_explicit_override_before_the_subcommand_only() {
     assert!(overridden(&["-c", "advice.statusHints=true", "status"]));
@@ -40,7 +46,8 @@ fn detects_an_explicit_override_before_the_subcommand_only() {
     assert!(!overridden(&[]));
 }
 
-/// Ported: "passes non-status commands through unchanged".
+/// Ported:
+///  "passes non-status commands through unchanged".
 #[test]
 fn passes_non_status_commands_through_unchanged() {
     for values in [
@@ -59,7 +66,8 @@ fn passes_non_status_commands_through_unchanged() {
     }
 }
 
-/// Ported: "injects advice override before status" and "preserves global options while
+/// Ported:
+///  "injects advice override before status" and "preserves global options while
 /// injecting before status".
 #[test]
 fn injects_the_advice_override_before_status() {
@@ -81,8 +89,10 @@ fn injects_the_advice_override_before_status() {
     assert_eq!(QUIET_INJECTION, &["-c", "advice.statusHints=false"]);
 }
 
-/// Ported: "skips injection when user set advice.statusHints" and "... bare ...";
-/// divergence: `--config-env` sets the same key.
+/// Ported:
+///  "skips injection when user set advice.statusHints" and "... bare ...";
+/// divergence:
+///  `--config-env` sets the same key.
 #[test]
 fn skips_injection_when_the_caller_set_the_key() {
     for values in [

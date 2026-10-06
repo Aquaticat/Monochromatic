@@ -1,10 +1,15 @@
 //! Measure how long an external write takes to reach the tree rows and the displayed source text.
-//! Ignored by default: `inspect:refresh-latency` runs it with output, so the polling build and the
+//! Ignored by default:
+//!  `inspect:refresh-latency` runs it with output,
+//!  so the polling build and the
 //! watching build can be compared on the same machine with the same fixture and trial gaps.
 
-/// Tree-row lookup by label, shared with the navigation tests.
+/// Tree-row lookup by label,
+///  shared with the navigation tests.
 use super::navigation_tests::row;
-/// The production window, source state, and the bindings the shipped application installs.
+/// The production window,
+///  source state,
+///  and the bindings the shipped application installs.
 use super::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, navigation, reload,
     render,
@@ -13,8 +18,11 @@ use super::{
 use ide_app::workspace::Workspace;
 /// Real headless timers drive the same refresh timers as the shipped event loop.
 use slint::{ComponentHandle, SharedString, platform::update_timers_and_animations};
-/// What: `Rc<RefCell<State>>` is the window's shared source state; `Duration` and `Instant` time trials.
-/// Why: Each trial measures wall-clock time from the write to the observed model change.
+/// What:
+///  `Rc<RefCell<State>>` is the window's shared source state;
+///  `Duration` and `Instant` time trials.
+/// Why:
+///  Each trial measures wall-clock time from the write to the observed model change.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,18 +35,27 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Trials per measured case; enough to see the spread of a 250 ms or multi-second polling period.
+/// Trials per measured case;
+///  enough to see the spread of a 250 ms or multi-second polling period.
 const TRIALS: usize = 16;
 
-/// The old tree polling read one directory every 500 ms, round robin over the root and expanded folders.
+/// The old tree polling read one directory every 500 ms,
+///  round robin over the root and expanded folders.
 const OLD_DIRECTORY_POLL_MS: u64 = 500;
 
-/// Deterministic pseudo-random numbers, identical in every build that runs this test.
+/// Deterministic pseudo-random numbers,
+///  identical in every build that runs this test.
 ///
-/// What: a 64-bit linear congruential generator; `u64` (siblings `u32`, `usize`) holds its state,
+/// What:
+///  a 64-bit linear congruential generator;
+///  `u64` (siblings `u32`,
+///  `usize`) holds its state,
 ///       and `wrapping_mul`/`wrapping_add` overflow modulo 2^64 instead of panicking.
-/// Why: Write times and target folders must not line up with a polling phase: when trial order followed
-///      the round-robin order, every write landed just before its folder's turn and polling looked fast.
+/// Why:
+///  Write times and target folders must not line up with a polling phase:
+///  when trial order followed
+///      the round-robin order,
+///  every write landed just before its folder's turn and polling looked fast.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,7 +78,8 @@ impl Sequence {
 /// A trial slower than this is reported as a failure rather than waited on forever.
 const TRIAL_LIMIT: Duration = Duration::from_secs(20);
 
-/// Keep the native timers running for `span`, like an idle event loop between external writes.
+/// Keep the native timers running for `span`,
+///  like an idle event loop between external writes.
 fn idle(span: Duration) {
     let start = Instant::now();
     while start.elapsed() < span {
@@ -70,7 +88,8 @@ fn idle(span: Duration) {
     }
 }
 
-/// Return the time until `ready` holds, polling the model about once per millisecond.
+/// Return the time until `ready` holds,
+///  polling the model about once per millisecond.
 fn elapsed_until(mut ready: impl FnMut() -> bool) -> Duration {
     let start = Instant::now();
     loop {
@@ -86,7 +105,11 @@ fn elapsed_until(mut ready: impl FnMut() -> bool) -> Duration {
     }
 }
 
-/// Print one JSON line: sorted samples plus minimum, median, 90th percentile, and maximum in milliseconds.
+/// Print one JSON line:
+///  sorted samples plus minimum,
+///  median,
+///  90th percentile,
+///  and maximum in milliseconds.
 fn report(case: &str, folders: usize, samples: &[Duration]) {
     // What: `Vec<f64>` is an owned growable list of 64-bit floats; `f32` would round sub-millisecond parts.
     // Why: Sorting a copy keeps the trial order of `samples` intact for nothing else to depend on.
@@ -115,7 +138,8 @@ fn report(case: &str, folders: usize, samples: &[Duration]) {
     );
 }
 
-/// Expand `folders` directories, then time file creation in them and rewrites of the displayed file.
+/// Expand `folders` directories,
+///  then time file creation in them and rewrites of the displayed file.
 fn measure(folders: usize) {
     let fixture = tempfile::tempdir().expect("disposable latency project");
     let displayed = fixture.path().join("view.txt");
@@ -172,14 +196,17 @@ fn measure(folders: usize) {
     window.hide().expect("close latency window");
 }
 
-/// One expanded folder: the tree's work list is the root and that folder.
+/// One expanded folder:
+///  the tree's work list is the root and that folder.
 #[test]
 #[ignore = "timing measurement; run through inspect:refresh-latency"]
 fn refresh_latency_with_one_expanded_folder() {
     measure(1);
 }
 
-/// Eight expanded folders: polling latency grows with the folder count, watching should not.
+/// Eight expanded folders:
+///  polling latency grows with the folder count,
+///  watching should not.
 #[test]
 #[ignore = "timing measurement; run through inspect:refresh-latency"]
 fn refresh_latency_with_eight_expanded_folders() {

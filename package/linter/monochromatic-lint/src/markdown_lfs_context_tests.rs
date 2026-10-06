@@ -1,7 +1,13 @@
-//! What: Repository discovery and per-file target resolution in disposable repositories.
-//! Why: Root discovery, exclusion and target kinds are frozen by
-//! `package/cli/markdown-lint/src/lfs-image-context.unit.test.ts`; the added cases cover traversal
-//! out of the repository, pointers, caching and unreadable inputs.
+//! What:
+//!  Repository discovery and per-file target resolution in disposable repositories.
+//! Why:
+//!  Root discovery,
+//!  exclusion and target kinds are frozen by
+//! `package/cli/markdown-lint/src/lfs-image-context.unit.test.ts`;
+//!  the added cases cover traversal
+//! out of the repository,
+//!  pointers,
+//!  caching and unreadable inputs.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -27,7 +33,10 @@ const IMAGE_OID: &str = "de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b
 /// Object base the fixture repository uses.
 const BASE: &str = "https://lfs.example";
 
-/// Write the incumbent fixture tree: tracked image, plain file, and a nested Markdown file.
+/// Write the incumbent fixture tree:
+///  tracked image,
+///  plain file,
+///  and a nested Markdown file.
 fn write_tree(root: &Path) {
     std::fs::write(
         root.join(".gitattributes"),
@@ -40,7 +49,8 @@ fn write_tree(root: &Path) {
     std::fs::write(root.join("pkg/README.md"), "![shot](asset/shot.png)\n").expect("document");
 }
 
-/// Build repository facts directly, independent of endpoint normalization.
+/// Build repository facts directly,
+///  independent of endpoint normalization.
 fn repository(root: &Path) -> LfsImageRepo {
     let text: String =
         std::fs::read_to_string(root.join(".gitattributes")).expect("fixture attributes");
@@ -59,7 +69,9 @@ fn document(source: &str) -> MarkdownSource {
         .expect("fixture parses");
 }
 
-/// The nearest `.lfsconfig` file wins; a directory with that name is skipped; absence finds nothing.
+/// The nearest `.lfsconfig` file wins;
+///  a directory with that name is skipped;
+///  absence finds nothing.
 #[test]
 fn the_nearest_regular_configuration_file_marks_the_root() {
     let fixture: Fixture = Fixture::new();
@@ -102,7 +114,9 @@ fn the_nearest_regular_configuration_file_marks_the_root() {
     );
 }
 
-/// Without a configuration, or with one that declares no endpoint, the rule has no repository.
+/// Without a configuration,
+///  or with one that declares no endpoint,
+///  the rule has no repository.
 #[test]
 fn a_repository_needs_a_declared_endpoint() {
     let fixture: Fixture = Fixture::new();
@@ -119,7 +133,8 @@ fn a_repository_needs_a_declared_endpoint() {
     );
 }
 
-/// Discovery from a nested directory finds the root, the credential-free base and the tracked patterns.
+/// Discovery from a nested directory finds the root,
+///  the credential-free base and the tracked patterns.
 #[test]
 fn discovery_reads_the_base_and_tracked_patterns_from_the_root() {
     let fixture: Fixture = Fixture::new();
@@ -194,7 +209,10 @@ fn exclusion_is_relative_to_the_repository_root() {
     assert!(!is_excluded(root, &root.join("pkg/README.md"), &none));
 }
 
-/// Tracked, plain, missing, directory and unreferenced paths resolve to their kinds.
+/// Tracked,
+///  plain,
+///  missing,
+///  directory and unreferenced paths resolve to their kinds.
 #[test]
 fn targets_resolve_to_lfs_plain_and_missing() {
     let fixture: Fixture = Fixture::new();
@@ -246,7 +264,9 @@ fn targets_resolve_to_lfs_plain_and_missing() {
     }
 }
 
-/// Relative destinations, object URLs and image definitions are all candidates; external images are not.
+/// Relative destinations,
+///  object URLs and image definitions are all candidates;
+///  external images are not.
 #[test]
 fn candidates_come_from_images_and_definitions() {
     let fixture: Fixture = Fixture::new();
@@ -274,7 +294,8 @@ fn candidates_come_from_images_and_definitions() {
     );
 }
 
-/// A checked-out pointer yields its declared id, and an object path leaving the repository is never read.
+/// A checked-out pointer yields its declared id,
+///  and an object path leaving the repository is never read.
 #[test]
 fn pointers_are_read_and_traversal_stays_inside_the_repository() {
     let fixture: Fixture = Fixture::new();

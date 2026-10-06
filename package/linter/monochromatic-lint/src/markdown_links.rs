@@ -1,5 +1,8 @@
-//! What: Existing bare-URL and shortcut-reference normalization.
-//! Why: Markdown and MDX require different safe link spellings, while reference identity stays unchanged.
+//! What:
+//!  Existing bare-URL and shortcut-reference normalization.
+//! Why:
+//!  Markdown and MDX require different safe link spellings,
+//!  while reference identity stays unchanged.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -25,8 +28,10 @@ fn escape(text: &str, reserved: &[char]) -> String {
     return output;
 }
 
-/// What: Select the target syntax and its explanation together.
-/// Why: Each branch returns a complete replacement instead of leaving late-initialized values.
+/// What:
+///  Select the target syntax and its explanation together.
+/// Why:
+///  Each branch returns a complete replacement instead of leaving late-initialized values.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

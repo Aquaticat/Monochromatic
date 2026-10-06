@@ -1,6 +1,10 @@
-//! What: Encoding and field-order controls for wrapper-made JSONL events.
-//! Why: Every event must be one valid JSON object on one line, whatever a path or
-//!      configuration key contains, with the field order existing consumers saw.
+//! What:
+//!  Encoding and field-order controls for wrapper-made JSONL events.
+//! Why:
+//!  Every event must be one valid JSON object on one line,
+//!  whatever a path or
+//!      configuration key contains,
+//!  with the field order existing consumers saw.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -92,7 +96,9 @@ fn engine_failure_is_one_compact_line() {
     assert!(hostile.ends_with("}\n"));
 }
 
-/// A configuration warning is one line carrying code, message and path, each encoded.
+/// A configuration warning is one line carrying code,
+///  message and path,
+///  each encoded.
 #[test]
 fn configuration_warning_is_one_compact_line() {
     assert_eq!(

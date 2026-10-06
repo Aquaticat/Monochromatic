@@ -1,5 +1,8 @@
-//! What: Disposable-repository controls for per-invocation configuration loading.
-//! Why: The worktree Git reports decides which file is read, and a rejected file must
+//! What:
+//!  Disposable-repository controls for per-invocation configuration loading.
+//! Why:
+//!  The worktree Git reports decides which file is read,
+//!  and a rejected file must
 //!      reach the caller as an error and an event naming it.
 //!
 //! In TS you'd write (pseudocode):
@@ -29,7 +32,8 @@ fn load(directory: &Path) -> Result<LoadedConfig, ConfigError> {
     return load_identity_config(&location.identity);
 }
 
-/// The selected worktree's own top-level file is read, from any directory inside it.
+/// The selected worktree's own top-level file is read,
+///  from any directory inside it.
 #[test]
 fn configuration_follows_global_repository_selection() {
     let root: PathBuf = fixture("invocation-selection");
@@ -70,7 +74,8 @@ fn configuration_follows_global_repository_selection() {
     remove(root.as_path());
 }
 
-/// A linked worktree reads the file at its own top level, not the main worktree's.
+/// A linked worktree reads the file at its own top level,
+///  not the main worktree's.
 #[test]
 fn linked_worktree_uses_its_own_top_level() {
     let root: PathBuf = fixture("invocation-linked");
@@ -110,7 +115,8 @@ fn linked_worktree_uses_its_own_top_level() {
     remove(root.as_path());
 }
 
-/// No repository, a bare repository and the inside of `.git` read no file and use the defaults.
+/// No repository,
+///  a bare repository and the inside of `.git` read no file and use the defaults.
 #[test]
 fn locations_without_a_worktree_use_the_defaults() {
     let root: PathBuf = fixture("invocation-none");
@@ -163,7 +169,10 @@ fn a_rejected_file_is_a_configuration_error() {
     remove(root.as_path());
 }
 
-/// Events: one `config-invalid` line per rejection; one numbered warning per legacy file, none without a source.
+/// Events:
+///  one `config-invalid` line per rejection;
+///  one numbered warning per legacy file,
+///  none without a source.
 #[test]
 fn events_render_configuration_failures_and_legacy_warnings() {
     assert_eq!(

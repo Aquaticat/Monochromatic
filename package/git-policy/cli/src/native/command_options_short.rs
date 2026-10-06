@@ -1,14 +1,21 @@
-//! What: Read one `-abc` token as Git 2.56.0 reads a cluster of short options.
-//! Why: `-am` is `-a -m`, `-mhello` is `-m hello`, and `-ua` is `-u` with the value `a`;
-//!      only the option table can tell these apart (`parse_short_opt`, parse-options.c:426-461).
+//! What:
+//!  Read one `-abc` token as Git 2.56.0 reads a cluster of short options.
+//! Why:
+//!  `-am` is `-a -m`,
+//!  `-mhello` is `-m hello`,
+//!  and `-ua` is `-u` with the value `a`;
+//!      only the option table can tell these apart (`parse_short_opt`,
+//!  parse-options.c:426-461).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // scanShortCluster({ args, index, table, mode, parsed }): number  // tokens consumed
 //! ```
 
-/// What: Bring the tokenizer types and the shared value decision into this file.
-/// Why:  A cluster appends to the same result the long-option scan appends to.
+/// What:
+///  Bring the tokenizer types and the shared value decision into this file.
+/// Why:
+///   A cluster appends to the same result the long-option scan appends to.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,9 +29,16 @@ use super::command_options_value::{Spelling, take_value};
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: Find the table row whose short letter is `letter`. `u8` is one byte (siblings:
-///       `char`, a Unicode scalar; `u16`). `Option<OptionSpec>` is "a row or nothing".
-/// Why:  Git compares option letters as single bytes, so a byte is the exact unit.
+/// What:
+///  Find the table row whose short letter is `letter`.
+///  `u8` is one byte (siblings:
+///       `char`,
+///  a Unicode scalar;
+///  `u16`).
+///  `Option<OptionSpec>` is "a row or nothing".
+/// Why:
+///   Git compares option letters as single bytes,
+///  so a byte is the exact unit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -41,9 +55,12 @@ fn find_short(table: &[OptionSpec], letter: u8) -> Option<OptionSpec> {
     return None;
 }
 
-/// What: Report whether the letters after one dash spell the start of a long option
-///       (`check_typos`, parse-options.c:622-640).
-/// Why:  Git refuses `-amend` and asks about two dashes instead of reading `-a -m end`.
+/// What:
+///  Report whether the letters after one dash spell the start of a long option
+///       (`check_typos`,
+///  parse-options.c:622-640).
+/// Why:
+///   Git refuses `-amend` and asks about two dashes instead of reading `-a -m end`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -68,9 +85,16 @@ fn spells_long_option(table: &[OptionSpec], cluster: &[u8]) -> bool {
     return false;
 }
 
-/// What: Handle a letter no row declares. `&mut ParsedOptions` lends the result for writing.
-/// Why:  Git tries the typo check, then `-h`, then either keeps or refuses the token
-///       (parse-options.c:1067-1072, 1088-1099, 1149-1167).
+/// What:
+///  Handle a letter no row declares.
+///  `&mut ParsedOptions` lends the result for writing.
+/// Why:
+///   Git tries the typo check,
+///  then `-h`,
+///  then either keeps or refuses the token
+///       (parse-options.c:1067-1072,
+///  1088-1099,
+///  1149-1167).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -109,9 +133,15 @@ fn unknown_letter(
     });
 }
 
-/// What: Read the cluster at `index` and say whether it took the next token as a value.
-/// Why:  A value-taking letter ends the cluster: the rest of the token, or else the next
-///       token, is its value. Only the second case makes the caller pass over a token.
+/// What:
+///  Read the cluster at `index` and say whether it took the next token as a value.
+/// Why:
+///   A value-taking letter ends the cluster:
+///  the rest of the token,
+///  or else the next
+///       token,
+///  is its value.
+///  Only the second case makes the caller pass over a token.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -169,7 +199,8 @@ pub(crate) fn scan_short_cluster(
     return Ok(false);
 }
 
-/// Cluster arity, typo-check and help cases.
+/// Cluster arity,
+///  typo-check and help cases.
 #[cfg(test)]
 #[path = "command_options_short_tests.rs"]
 mod tests;

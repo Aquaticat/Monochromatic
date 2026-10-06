@@ -2,8 +2,11 @@
 
 /// The function under test.
 use super::describe;
-/// What: notify's error type and its kinds; `MaxFilesWatch` is what `ENOSPC` from `inotify_add_watch` maps to.
-/// Why: The watch limit is reported without exhausting `fs.inotify.max_user_watches` on the test host.
+/// What:
+///  notify's error type and its kinds;
+///  `MaxFilesWatch` is what `ENOSPC` from `inotify_add_watch` maps to.
+/// Why:
+///  The watch limit is reported without exhausting `fs.inotify.max_user_watches` on the test host.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

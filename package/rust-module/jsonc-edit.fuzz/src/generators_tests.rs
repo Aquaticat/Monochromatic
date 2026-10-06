@@ -1,11 +1,20 @@
-//! What:     Unit tests for the structured generators.
-//! Why:      A fuzz campaign is only as trustworthy as its generator: if the generator emits
-//!           documents the contract rejects, every campaign measures the wrong thing. These tests
-//!           pin the generator's guarantees, including that its own depth bookkeeping agrees with the
+//! What:
+//!      Unit tests for the structured generators.
+//! Why:
+//!       A fuzz campaign is only as trustworthy as its generator:
+//!  if the generator emits
+//!           documents the contract rejects,
+//!  every campaign measures the wrong thing.
+//!  These tests
+//!           pin the generator's guarantees,
+//!  including that its own depth bookkeeping agrees with the
 //!           independent measurement in `invariants`.
 
-/// What:     Import the `Arbitrary` trait and the unstructured-input type.
-/// Why:      Tests drive generators from explicit byte buffers instead of a fuzzer, and the trait
+/// What:
+///      Import the `Arbitrary` trait and the unstructured-input type.
+/// Why:
+///       Tests drive generators from explicit byte buffers instead of a fuzzer,
+///  and the trait
 ///           supplies the constructor.
 ///
 /// In TS you'd write (pseudocode):
@@ -14,8 +23,10 @@
 /// ```
 use arbitrary::{Arbitrary, Unstructured};
 
-/// What:     Import the generators under test.
-/// Why:      Each has a guarantee the campaigns depend on.
+/// What:
+///      Import the generators under test.
+/// Why:
+///       Each has a guarantee the campaigns depend on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,8 +34,10 @@ use arbitrary::{Arbitrary, Unstructured};
 /// ```
 use crate::generators::{mutated, nested_document, replacement_value, GeneratedDocument};
 
-/// What:     Import the independent depth measurement.
-/// Why:      The generator's own counter is only trustworthy if it agrees with a second
+/// What:
+///      Import the independent depth measurement.
+/// Why:
+///       The generator's own counter is only trustworthy if it agrees with a second
 ///           implementation.
 ///
 /// In TS you'd write (pseudocode):
@@ -33,8 +46,11 @@ use crate::generators::{mutated, nested_document, replacement_value, GeneratedDo
 /// ```
 use crate::invariants::depth_of;
 
-/// What:     Import the crate's parse entry point and payload enum.
-/// Why:      Parseability is the generator's central promise, and kind coverage is asserted by name.
+/// What:
+///      Import the crate's parse entry point and payload enum.
+/// Why:
+///       Parseability is the generator's central promise,
+///  and kind coverage is asserted by name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -42,14 +58,18 @@ use crate::invariants::depth_of;
 /// ```
 use monochromatic_jsonc_edit::{parse_jsonc, JsoncKind};
 
-/// What:     Draw one document from a deterministic byte buffer.
-/// Why:      Tests must be reproducible, so the buffer is the seed rather than random bytes.
+/// What:
+///      Draw one document from a deterministic byte buffer.
+/// Why:
+///       Tests must be reproducible,
+///  so the buffer is the seed rather than random bytes.
 fn generated(seed: &[u8]) -> GeneratedDocument {
     let mut unstructured = Unstructured::new(seed);
     return GeneratedDocument::arbitrary(&mut unstructured).expect("generator draws a document");
 }
 
-/// Every generated document must parse, and the generator's depth must match the measured depth.
+/// Every generated document must parse,
+///  and the generator's depth must match the measured depth.
 #[test]
 fn generated_documents_parse_at_the_depth_they_claim() {
     let mut documents = 0;

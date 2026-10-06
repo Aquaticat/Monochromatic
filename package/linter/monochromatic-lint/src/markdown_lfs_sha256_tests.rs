@@ -1,5 +1,7 @@
-//! What: Fixed-vector controls for the handwritten SHA-256.
-//! Why: Expected digests were measured independently with Node's `createHash('sha256')`,
+//! What:
+//!  Fixed-vector controls for the handwritten SHA-256.
+//! Why:
+//!  Expected digests were measured independently with Node's `createHash('sha256')`,
 //! and the first three are also the published FIPS 180-4 examples.
 //!
 //! In TS you'd write (pseudocode):
@@ -23,7 +25,10 @@ fn choose_and_majority_match_their_fips_definitions() {
     assert_eq!(majority(x, y, z), 0xe8e8_e8e8);
 }
 
-/// Published examples: the empty message, `abc`, and the 448-bit two-block message.
+/// Published examples:
+///  the empty message,
+///  `abc`,
+///  and the 448-bit two-block message.
 #[test]
 fn published_examples_match() {
     assert_eq!(
@@ -40,7 +45,10 @@ fn published_examples_match() {
     );
 }
 
-/// Every padding branch: remainder below, at and above the 56-byte limit, and exact block multiples.
+/// Every padding branch:
+///  remainder below,
+///  at and above the 56-byte limit,
+///  and exact block multiples.
 #[test]
 fn padding_boundaries_match_measured_digests() {
     let cases: [(usize, &str); 10] = [
@@ -91,7 +99,8 @@ fn padding_boundaries_match_measured_digests() {
     }
 }
 
-/// Every byte value participates, and the million-byte published vector crosses many blocks.
+/// Every byte value participates,
+///  and the million-byte published vector crosses many blocks.
 #[test]
 fn every_byte_value_and_a_long_message_match() {
     let mut all: Vec<u8> = Vec::<u8>::new();

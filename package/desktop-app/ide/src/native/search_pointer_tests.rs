@@ -19,7 +19,8 @@ fn model(label: &str) -> ModelRc<SearchEntry> {
     }])));
 }
 
-/// Press belongs to the old model; release cannot acquire a newly bound row at the same index.
+/// Press belongs to the old model;
+///  release cannot acquire a newly bound row at the same index.
 #[test]
 fn replacement_query_cancels_a_held_result_click() {
     let window = AppWindow::new().expect("native search pointer window");

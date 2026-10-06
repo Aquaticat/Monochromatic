@@ -1,6 +1,11 @@
-//! What: Trigger spellings, each shipped policy's trigger set, and the ported lifecycles.
-//! Why: A trigger missing from a policy's set silently skips that policy at one lifecycle
-//!      point, and an unported lifecycle read as ported would run nothing and look clean.
+//! What:
+//!  Trigger spellings,
+//!  each shipped policy's trigger set,
+//!  and the ported lifecycles.
+//! Why:
+//!  A trigger missing from a policy's set silently skips that policy at one lifecycle
+//!      point,
+//!  and an unported lifecycle read as ported would run nothing and look clean.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

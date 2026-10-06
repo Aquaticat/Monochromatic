@@ -1,7 +1,11 @@
-//! What: The complete `git clean` option table of Git 2.56.0 and the deletion facts read
+//! What:
+//!  The complete `git clean` option table of Git 2.56.0 and the deletion facts read
 //!       from it.
-//! Why: The linked-worktree policy guards a clean that can delete files. Git's last
-//!      `--dry-run`/`--no-dry-run` wins, in clusters (`-ndX`) and abbreviations (`--dry`).
+//! Why:
+//!  The linked-worktree policy guards a clean that can delete files.
+//!  Git's last
+//!      `--dry-run`/`--no-dry-run` wins,
+//!  in clusters (`-ndX`) and abbreviations (`--dry`).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,9 +16,13 @@ use super::command_options::{
     Arity, DEFAULT_MODE, OptionError, OptionSpec, ParsedOptions, UNREAD, parse_options, row,
 };
 use super::command_options_query::{WrapperFlags, is_enabled, split_wrapper_flags};
-/// What: Bring the shared hatch spelling, the tokenizer, its table builder and its
+/// What:
+///  Bring the shared hatch spelling,
+///  the tokenizer,
+///  its table builder and its
 ///       questions into this file.
-/// Why:  This module only declares Git's table and interprets what the tokenizer found.
+/// Why:
+///   This module only declares Git's table and interprets what the tokenizer found.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,15 +32,23 @@ use super::escape_hatch::WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// `-n`, `--dry-run`.
+/// `-n`,
+///  `--dry-run`.
 pub const DRY_RUN: u16 = 1;
-/// `-i`, `--interactive`.
+/// `-i`,
+///  `--interactive`.
 pub const INTERACTIVE: u16 = 2;
 
-/// What: Rows of `options[]` in `cmd_clean` (builtin/clean.c:936-948), in source order.
-///       `&[OptionSpec]` is a borrowed table baked into the program; `None` in the long
+/// What:
+///  Rows of `options[]` in `cmd_clean` (builtin/clean.c:936-948),
+///  in source order.
+///       `&[OptionSpec]` is a borrowed table baked into the program;
+///  `None` in the long
 ///       position means the option has only a letter.
-/// Why:  `-e`/`--exclude` takes a value and is `PARSE_OPT_NONEG`; `-d`, `-x` and `-X` have
+/// Why:
+///   `-e`/`--exclude` takes a value and is `PARSE_OPT_NONEG`;
+///  `-d`,
+///  `-x` and `-X` have
 ///       no long spelling.
 ///
 /// In TS you'd write (pseudocode):
@@ -56,8 +72,12 @@ pub const CLEAN_TABLE: &[OptionSpec] = &[
     row(UNREAD, Some(b'X'), None, Arity::None, true),
 ];
 
-/// What: Final-state facts of one `git clean` region. `bool` is true or false.
-/// Why:  The policy decides from the final dry-run state; `interactive` is reported for
+/// What:
+///  Final-state facts of one `git clean` region.
+///  `bool` is true or false.
+/// Why:
+///   The policy decides from the final dry-run state;
+///  `interactive` is reported for
 ///       its diagnostics.
 ///
 /// In TS you'd write (pseudocode):
@@ -70,12 +90,17 @@ pub struct CleanRegion {
     pub dry_run: bool,
     /// `-i`/`--interactive` is on after every option was applied.
     pub interactive: bool,
-    /// Wrapper-only flags in option position; `escape` is `--no-enforce-worktree`.
+    /// Wrapper-only flags in option position;
+    ///  `escape` is `--no-enforce-worktree`.
     pub wrapper: WrapperFlags,
 }
 
-/// What: Parse the region after `clean`. `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  A region Git itself would refuse yields the refusal; Git then deletes nothing.
+/// What:
+///  Parse the region after `clean`.
+///  `Result<A, B>` is "either success `A` or failure `B`".
+/// Why:
+///   A region Git itself would refuse yields the refusal;
+///  Git then deletes nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -102,12 +127,21 @@ pub fn parse_clean_region(
     });
 }
 
-/// What: Whether the clean can delete files. `&CleanRegion` borrows the facts.
-/// Why:  Every `unlink` and `rmdir` in Git's clean is skipped under dry run, also after
-///       the interactive menu chose what to delete (builtin/clean.c:191, 223, 267,
+/// What:
+///  Whether the clean can delete files.
+///  `&CleanRegion` borrows the facts.
+/// Why:
+///   Every `unlink` and `rmdir` in Git's clean is skipped under dry run,
+///  also after
+///       the interactive menu chose what to delete (builtin/clean.c:191,
+///  223,
+///  267,
 ///       1050-1078).
-/// Gotcha: Divergence from the incumbent, which treated every interactive clean as
-///         deleting: `git clean -i -n` deletes nothing in Git 2.56.0.
+/// Gotcha:
+///  Divergence from the incumbent,
+///  which treated every interactive clean as
+///         deleting:
+///  `git clean -i -n` deletes nothing in Git 2.56.0.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,7 +151,8 @@ pub fn clean_changes_worktree(region: &CleanRegion) -> bool {
     return !region.dry_run;
 }
 
-/// Facts in every accepted spelling, and real-Git controls of the table and of dry runs.
+/// Facts in every accepted spelling,
+///  and real-Git controls of the table and of dry runs.
 #[cfg(test)]
 #[path = "command_clean_tests.rs"]
 mod tests;

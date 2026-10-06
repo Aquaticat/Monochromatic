@@ -1,11 +1,19 @@
-//! Pure playback helpers with no audio device or threading: the per-sample
-//! output stage (volume, headroom, clamp) and the path-to-file expansion the
-//! queue needs. Kept apart from `engine`/`controller` so these can be unit
+//! Pure playback helpers with no audio device or threading:
+//!  the per-sample
+//! output stage (volume,
+//!  headroom,
+//!  clamp) and the path-to-file expansion the
+//! queue needs.
+//!  Kept apart from `engine`/`controller` so these can be unit
 //! -tested directly and so each file stays within the line budget.
 
-/// What:     `use std::path::{Path, PathBuf};`. `Path` is a borrowed path view;
-///           `PathBuf` is the owned, growable version (like `&str` vs `String`).
-/// Why:      The helpers take borrowed paths and return owned ones.
+/// What:
+///      `use std::path::{Path, PathBuf};`.
+///  `Path` is a borrowed path view;
+///           `PathBuf` is the owned,
+///  growable version (like `&str` vs `String`).
+/// Why:
+///       The helpers take borrowed paths and return owned ones.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,15 +21,32 @@
 /// ```
 use std::path::{Path, PathBuf};
 
-/// What:     `const AUDIO_EXTENSIONS: &[&str] = &[ ... ];`. `&[&str]` is a BORROWED
-///           slice (sibling: the owned `Vec<&str>`) of borrowed string slices, each
-///           pointing at text baked into the binary. The file extensions (lowercased,
-///           no leading dot) this player treats as playable, matching the documented
-///           codec set: FLAC, WAV/PCM, MP3, Vorbis (Ogg), Opus, AAC-LC/ALAC (MP4),
+/// What:
+///      `const AUDIO_EXTENSIONS: &[&str] = &[ ... ];`.
+///  `&[&str]` is a BORROWED
+///           slice (sibling:
+///  the owned `Vec<&str>`) of borrowed string slices,
+///  each
+///           pointing at text baked into the binary.
+///  The file extensions (lowercased,
+///           no leading dot) this player treats as playable,
+///  matching the documented
+///           codec set:
+///  FLAC,
+///  WAV/PCM,
+///  MP3,
+///  Vorbis (Ogg),
+///  Opus,
+///  AAC-LC/ALAC (MP4),
 ///           and AIFF.
-/// Why:      A folder holds more than music (cover art, playlists, and system files
-///           like `.DS_Store` / `.nomedia` / `.database_uuid`); this allowlist is the
-///           single rule deciding what a scan enqueues, so junk never reaches the queue.
+/// Why:
+///       A folder holds more than music (cover art,
+///  playlists,
+///  and system files
+///           like `.DS_Store` / `.nomedia` / `.database_uuid`);
+///  this allowlist is the
+///           single rule deciding what a scan enqueues,
+///  so junk never reaches the queue.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,11 +58,15 @@ const AUDIO_EXTENSIONS: &[&str] = &[
     "aifc",
 ];
 
-/// What:     `const APPLE_DOUBLE_PREFIX: &str = "._"`. `&str` is a borrowed string
-///           slice (sibling: owned `String`) pointing at text baked into the binary.
+/// What:
+///      `const APPLE_DOUBLE_PREFIX: &str = "._"`.
+///  `&str` is a borrowed string
+///           slice (sibling:
+///  owned `String`) pointing at text baked into the binary.
 ///           It holds the two-character prefix Apple uses for AppleDouble resource-fork
 ///           sidecar files.
-/// Why:      Naming the marker once keeps desktop scanning aligned with the Android sources.
+/// Why:
+///       Naming the marker once keeps desktop scanning aligned with the Android sources.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,10 +74,17 @@ const AUDIO_EXTENSIONS: &[&str] = &[
 /// ```
 const APPLE_DOUBLE_PREFIX: &str = "._";
 
-/// What:     `fn is_apple_double_sidecar(path: &Path) -> bool`. Private predicate that
-///           checks the final filename for Apple's `._` sidecar prefix. `&Path` is a
-///           borrowed filesystem path; `bool` is Rust's true/false type, like TS `boolean`.
-/// Why:      AppleDouble files often copy the real track's extension, so extension filtering
+/// What:
+///      `fn is_apple_double_sidecar(path: &Path) -> bool`.
+///  Private predicate that
+///           checks the final filename for Apple's `._` sidecar prefix.
+///  `&Path` is a
+///           borrowed filesystem path;
+///  `bool` is Rust's true/false type,
+///  like TS `boolean`.
+/// Why:
+///       AppleDouble files often copy the real track's extension,
+///  so extension filtering
 ///           alone would enqueue `._song.mp3` as if it were a real track.
 ///
 /// In TS you'd write (pseudocode):
@@ -90,12 +126,19 @@ fn is_apple_double_sidecar(path: &Path) -> bool {
     }
 }
 
-/// What:     `pub(crate) fn is_audio_file(path: &Path) -> bool`. True when the path's
+/// What:
+///      `pub(crate) fn is_audio_file(path: &Path) -> bool`.
+///  True when the path's
 ///           filename is not an AppleDouble sidecar and its extension is in
-///           `AUDIO_EXTENSIONS`, compared case-insensitively. `&Path` is a borrowed path
-///           (read-only). `pub(crate)` so the session pruner reuses the same rule (visible
+///           `AUDIO_EXTENSIONS`,
+///  compared case-insensitively.
+///  `&Path` is a borrowed path
+///           (read-only).
+///  `pub(crate)` so the session pruner reuses the same rule (visible
 ///           inside this crate but not outside it).
-/// Why:      One predicate decides "does this belong in a music queue", shared by the
+/// Why:
+///       One predicate decides "does this belong in a music queue",
+///  shared by the
 ///           folder scan and the session restore so they cannot disagree.
 ///
 /// In TS you'd write (pseudocode):
@@ -153,15 +196,24 @@ pub(crate) fn is_audio_file(path: &Path) -> bool {
     }
 }
 
-/// What:     `pub(crate) fn process_sample(sample: f32, gain: f32) -> f32`. The
-///           per-sample output stage: apply the combined gain (user volume times the
-///           track's normalization gain), then hard-clamp into the valid PCM range.
+/// What:
+///      `pub(crate) fn process_sample(sample: f32, gain: f32) -> f32`.
+///  The
+///           per-sample output stage:
+///  apply the combined gain (user volume times the
+///           track's normalization gain),
+///  then hard-clamp into the valid PCM range.
 ///           `pub(crate)` makes it visible to the controller module but not outside the
-///           crate. A plain free function (not a method) so it is unit-testable.
-/// Why:      One spot defines exactly what reaches the ring buffer, so the clamp guard
-///           cannot be skipped and its behaviour can be tested directly. Headroom now
+///           crate.
+///  A plain free function (not a method) so it is unit-testable.
+/// Why:
+///       One spot defines exactly what reaches the ring buffer,
+///  so the clamp guard
+///           cannot be skipped and its behaviour can be tested directly.
+///  Headroom now
 ///           comes from per-track true-peak normalization folded into `gain` (see the
-///           `truepeak` and `measure` modules), not a fixed factor here.
+///           `truepeak` and `measure` modules),
+///  not a fixed factor here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -188,11 +240,18 @@ pub(crate) fn process_sample(sample: f32, gain: f32) -> f32 {
     return (sample * gain).clamp(-1.0, 1.0)
 }
 
-/// What:     `pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64`. Convert a
-///           frame count to seconds at a given sample rate, returning `0.0` when the
-///           rate is unknown (`0`). `f64` (sibling: `f32`) is the seconds-as-f64 time
-///           contract shared across threads; `u64`/`u32` are unsigned counts.
-/// Why:      Both the session snapshot and the position throttle need frames -> secs;
+/// What:
+///      `pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64`.
+///  Convert a
+///           frame count to seconds at a given sample rate,
+///  returning `0.0` when the
+///           rate is unknown (`0`).
+///  `f64` (sibling:
+///  `f32`) is the seconds-as-f64 time
+///           contract shared across threads;
+///  `u64`/`u32` are unsigned counts.
+/// Why:
+///       Both the session snapshot and the position throttle need frames -> secs;
 ///           one helper keeps the divide-by-zero guard in a single place.
 ///
 /// In TS you'd write (pseudocode):
@@ -224,12 +283,21 @@ pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64 {
     return frames as f64 / rate as f64
 }
 
-/// What:     `pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf>`. Turn
-///           the opened paths into a flat file list: a directory expands to every file
-///           under it, RECURSIVELY (subfolders included); a plain path passes through
-///           unchanged. Takes the vector BY VALUE (owned) so it can move each path out.
+/// What:
+///      `pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf>`.
+///  Turn
+///           the opened paths into a flat file list:
+///  a directory expands to every file
+///           under it,
+///  RECURSIVELY (subfolders included);
+///  a plain path passes through
+///           unchanged.
+///  Takes the vector BY VALUE (owned) so it can move each path out.
 ///           `pub(crate)` so the controller can call it.
-/// Why:      The queue holds files, but the UI opens a folder, which should enqueue all
+/// Why:
+///       The queue holds files,
+///  but the UI opens a folder,
+///  which should enqueue all
 ///           of its tracks.
 ///
 /// In TS you'd write (pseudocode):
@@ -316,11 +384,20 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     return out
 }
 
-/// What:     `fn collect_dir_files(root: &Path) -> Vec<PathBuf>`. Walk a directory tree
-///           and return every file under it, sorted within each folder, with a folder's
-///           own files listed before its subfolders' files. `&Path` is a borrowed path
-///           (we only read it). Private: only `expand_paths` calls it.
-/// Why:      Opening a folder should enqueue all its tracks, including nested ones.
+/// What:
+///      `fn collect_dir_files(root: &Path) -> Vec<PathBuf>`.
+///  Walk a directory tree
+///           and return every file under it,
+///  sorted within each folder,
+///  with a folder's
+///           own files listed before its subfolders' files.
+///  `&Path` is a borrowed path
+///           (we only read it).
+///  Private:
+///  only `expand_paths` calls it.
+/// Why:
+///       Opening a folder should enqueue all its tracks,
+///  including nested ones.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -537,10 +614,15 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
     return out
 }
 
-/// What:     `pub(crate) fn file_name_of(path: &Path) -> String`. The display filename
-///           of a path (final component), or the whole path if it has none. `pub(crate)`
+/// What:
+///      `pub(crate) fn file_name_of(path: &Path) -> String`.
+///  The display filename
+///           of a path (final component),
+///  or the whole path if it has none.
+///  `pub(crate)`
 ///           so the controller can call it.
-/// Why:      Filename-only metadata policy for the UI.
+/// Why:
+///       Filename-only metadata policy for the UI.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -578,14 +660,20 @@ pub(crate) fn file_name_of(path: &Path) -> String {
     }
 }
 
-/// What:     `#[cfg(test)] #[path = "playback_tests.rs"] mod tests;` declares a
+/// What:
+///      `#[cfg(test)] #[path = "playback_tests.rs"] mod tests;` declares a
 ///           test-only submodule whose code lives in the sibling file
-///           `playback_tests.rs`. `#[cfg(test)]` gates it to test builds only;
+///           `playback_tests.rs`.
+///  `#[cfg(test)]` gates it to test builds only;
 ///           `#[path = "..."]` aims the module at a flat sibling file instead of the
-///           default `playback/tests.rs` subdirectory lookup. The file stays the
-///           `tests` CHILD of playback, so its `use super::*` reaches the module items
+///           default `playback/tests.rs` subdirectory lookup.
+///  The file stays the
+///           `tests` CHILD of playback,
+///  so its `use super::*` reaches the module items
 ///           (including private ones) unchanged.
-/// Why:      Keep `playback.rs` to production code; the tests live beside it without
+/// Why:
+///       Keep `playback.rs` to production code;
+///  the tests live beside it without
 ///           inflating this file or its max-lines budget (sibling `*_tests.rs` files
 ///           are exempt from the linter).
 ///

@@ -1,17 +1,33 @@
 //! The native true-peak service handle and its JNI entry points.
 //!
-//! Kotlin holds one opaque `jlong` handle to a `TruePeakService`. The service owns a dedicated
+//! Kotlin holds one opaque `jlong` handle to a `TruePeakService`.
+//!  The service owns a dedicated
 //! thread running a current-thread Tokio runtime and the shared `truepeak_core::DecisionCache`
-//! (a Turso-backed `decisions.db` in the app-private dir). Because a Turso connection cannot be
-//! assumed `Send`, the connection never leaves that thread: the handle is only two channel
-//! senders (both `Send + Sync`), so a `&TruePeakService` shared across the foreground and
-//! warming JNI threads is sound. Cache reads and writes cross the channels; the BLOCKING decode
-//! and shared-resolver call happen on the JNI calling thread (never the cache thread), so a
-//! slow full scan never stalls a cache lookup. This module also holds the JNI functions Kotlin
-//! calls: create, release, resolve (foreground), and warm (background upgrade).
+//! (a Turso-backed `decisions.db` in the app-private dir).
+//!  Because a Turso connection cannot be
+//! assumed `Send`,
+//!  the connection never leaves that thread:
+//!  the handle is only two channel
+//! senders (both `Send + Sync`),
+//!  so a `&TruePeakService` shared across the foreground and
+//! warming JNI threads is sound.
+//!  Cache reads and writes cross the channels;
+//!  the BLOCKING decode
+//! and shared-resolver call happen on the JNI calling thread (never the cache thread),
+//!  so a
+//! slow full scan never stalls a cache lookup.
+//!  This module also holds the JNI functions Kotlin
+//! calls:
+//!  create,
+//!  release,
+//!  resolve (foreground),
+//!  and warm (background upgrade).
 
-/// What:     `use std::os::fd::RawFd;`. The Unix raw-file-descriptor alias (an `i32`).
-/// Why:      The resolve/warm JNI entries hand a `content://` fd to the decoder.
+/// What:
+///      `use std::os::fd::RawFd;`.
+///  The Unix raw-file-descriptor alias (an `i32`).
+/// Why:
+///       The resolve/warm JNI entries hand a `content://` fd to the decoder.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,8 +35,11 @@
 /// ```
 use std::os::fd::RawFd;
 
-/// What:     `use std::thread;`. OS-thread spawning.
-/// Why:      The cache actor runs on its own thread so decode never blocks it.
+/// What:
+///      `use std::thread;`.
+///  OS-thread spawning.
+/// Why:
+///       The cache actor runs on its own thread so decode never blocks it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,9 +47,12 @@ use std::os::fd::RawFd;
 /// ```
 use std::thread;
 
-/// What:     `use jni::objects::{JClass, JString};`. The calling class handle and a borrowed
+/// What:
+///      `use jni::objects::{JClass, JString};`.
+///  The calling class handle and a borrowed
 ///           Java string argument.
-/// Why:      The create entry reads the database path as a `JString`.
+/// Why:
+///       The create entry reads the database path as a `JString`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,9 +60,15 @@ use std::thread;
 /// ```
 use jni::objects::{JClass, JString};
 
-/// What:     `use jni::sys::{jfloat, jint, jlong};`. The JNI 32-bit float (Kotlin `Float`),
-///           32-bit int (`Int`), and 64-bit int (`Long`).
-/// Why:      Handles and fingerprints are `jlong`, the fd is `jint`, and gains are `jfloat`.
+/// What:
+///      `use jni::sys::{jfloat, jint, jlong};`.
+///  The JNI 32-bit float (Kotlin `Float`),
+///           32-bit int (`Int`),
+///  and 64-bit int (`Long`).
+/// Why:
+///       Handles and fingerprints are `jlong`,
+///  the fd is `jint`,
+///  and gains are `jfloat`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,8 +76,11 @@ use jni::objects::{JClass, JString};
 /// ```
 use jni::sys::{jfloat, jint, jlong};
 
-/// What:     `use jni::JNIEnv;`. The per-call JVM gateway.
-/// Why:      The create entry reads its `JString` through it.
+/// What:
+///      `use jni::JNIEnv;`.
+///  The per-call JVM gateway.
+/// Why:
+///       The create entry reads its `JString` through it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,9 +88,13 @@ use jni::sys::{jfloat, jint, jlong};
 /// ```
 use jni::JNIEnv;
 
-/// What:     `use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};`. Unbounded
+/// What:
+///      `use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};`.
+///  Unbounded
 ///           request channels with synchronous `send`.
-/// Why:      Sync JNI callers enqueue without an `await`; the actor `recv().await`s.
+/// Why:
+///       Sync JNI callers enqueue without an `await`;
+///  the actor `recv().await`s.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,8 +102,12 @@ use jni::JNIEnv;
 /// ```
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
-/// What:     `use tokio::sync::oneshot;`. A single-value reply channel.
-/// Why:      A read request carries a `oneshot::Sender` the actor answers on; the caller
+/// What:
+///      `use tokio::sync::oneshot;`.
+///  A single-value reply channel.
+/// Why:
+///       A read request carries a `oneshot::Sender` the actor answers on;
+///  the caller
 ///           blocks on the matching receiver.
 ///
 /// In TS you'd write (pseudocode):
@@ -77,10 +116,19 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 /// ```
 use tokio::sync::oneshot;
 
-/// What:     `use truepeak_core::{CEILING, CacheIdentity, Decision, DecisionCache, DecisionKind,
-///           default_policy, stack_id};`. The ceiling gain, the identity tuple, the cached value
-///           and its tag, the Turso cache, the shipped policy, and the shared stack-id hash.
-/// Why:      The actor opens a cache and keys on the identity; the JNI falls back to the ceiling
+/// What:
+///      `use truepeak_core::{CEILING, CacheIdentity, Decision, DecisionCache, DecisionKind,
+///           default_policy, stack_id};`.
+///  The ceiling gain,
+///  the identity tuple,
+///  the cached value
+///           and its tag,
+///  the Turso cache,
+///  the shipped policy,
+///  and the shared stack-id hash.
+/// Why:
+///       The actor opens a cache and keys on the identity;
+///  the JNI falls back to the ceiling
 ///           gain and skips already-exact tracks during warming.
 ///
 /// In TS you'd write (pseudocode):
@@ -91,9 +139,12 @@ use truepeak_core::{
     CEILING, CacheIdentity, Decision, DecisionCache, DecisionKind, default_policy, stack_id,
 };
 
-/// What:     `use crate::{decode, truepeak};`. The Android decoder opener and the shared-source
+/// What:
+///      `use crate::{decode, truepeak};`.
+///  The Android decoder opener and the shared-source
 ///           resolvers.
-/// Why:      A cache miss opens the fd and drives it through `resolve_current`/`resolve_full`.
+/// Why:
+///       A cache miss opens the fd and drives it through `resolve_current`/`resolve_full`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,10 +152,15 @@ use truepeak_core::{
 /// ```
 use crate::{decode, truepeak};
 
-/// What:     `const DECODER_STACK_DESCRIPTION: &str = "...";`. A stable text description of the
+/// What:
+///      `const DECODER_STACK_DESCRIPTION: &str = "...";`.
+///  A stable text description of the
 ///           Android decode stack that produces the PCM the meter reads.
-/// Why:      Its hash is the `decoder_stack_id`; editing it when the decoder stack changes
-///           re-keys the cache, so decisions from a different decoder are never reused.
+/// Why:
+///       Its hash is the `decoder_stack_id`;
+///  editing it when the decoder stack changes
+///           re-keys the cache,
+///  so decisions from a different decoder are never reused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -112,9 +168,14 @@ use crate::{decode, truepeak};
 /// ```
 const DECODER_STACK_DESCRIPTION: &str = "android:symphonia-0.6+opus-rev-5598766+f32le";
 
-/// What:     `fn decoder_stack_id() -> u64`. Hash the decoder-stack description with the
+/// What:
+///      `fn decoder_stack_id() -> u64`.
+///  Hash the decoder-stack description with the
 ///           shared crate's `stack_id`.
-/// Why:      The platform owns its description; the shared crate owns the derivation, the
+/// Why:
+///       The platform owns its description;
+///  the shared crate owns the derivation,
+///  the
 ///           same FNV every other identity id uses.
 ///
 /// In TS you'd write (pseudocode):
@@ -132,25 +193,35 @@ fn decoder_stack_id() -> u64 {
     return stack_id(DECODER_STACK_DESCRIPTION)
 }
 
-/// What:     `struct Read { fingerprint: u64, reply: oneshot::Sender<Option<Decision>> }`. One
+/// What:
+///      `struct Read { fingerprint: u64, reply: oneshot::Sender<Option<Decision>> }`.
+///  One
 ///           point-read request carrying its reply channel.
-/// Why:      A read blocks on the reply; writes are a separate fire-and-forget channel.
+/// Why:
+///       A read blocks on the reply;
+///  writes are a separate fire-and-forget channel.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Read = { fingerprint: bigint; reply: Resolve<Decision | null> };
 /// ```
 struct Read {
-    /// What:     `fingerprint: u64`. The cache key to look up.
-    /// Why:      Bound into the shared `get`.
+    /// What:
+    ///      `fingerprint: u64`.
+    ///  The cache key to look up.
+    /// Why:
+    ///       Bound into the shared `get`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// fingerprint: bigint;
     /// ```
     fingerprint: u64,
-    /// What:     `reply: oneshot::Sender<Option<Decision>>`. Where the decision (or a miss) goes.
-    /// Why:      The blocking caller awaits exactly one answer.
+    /// What:
+    ///      `reply: oneshot::Sender<Option<Decision>>`.
+    ///  Where the decision (or a miss) goes.
+    /// Why:
+    ///       The blocking caller awaits exactly one answer.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -159,24 +230,35 @@ struct Read {
     reply: oneshot::Sender<Option<Decision>>,
 }
 
-/// What:     `struct Write { fingerprint: u64, decision: Decision }`. One fire-and-forget upsert.
-/// Why:      Writes never block the JNI thread; the cache's precedence keeps an exact row.
+/// What:
+///      `struct Write { fingerprint: u64, decision: Decision }`.
+///  One fire-and-forget upsert.
+/// Why:
+///       Writes never block the JNI thread;
+///  the cache's precedence keeps an exact row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Write = { fingerprint: bigint; decision: Decision };
 /// ```
 struct Write {
-    /// What:     `fingerprint: u64`. The cache key.
-    /// Why:      Part of the row's primary key.
+    /// What:
+    ///      `fingerprint: u64`.
+    ///  The cache key.
+    /// Why:
+    ///       Part of the row's primary key.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// fingerprint: bigint;
     /// ```
     fingerprint: u64,
-    /// What:     `decision: Decision`. The decision to store (`Copy`, cheap over the channel).
-    /// Why:      The cached value.
+    /// What:
+    ///      `decision: Decision`.
+    ///  The decision to store (`Copy`,
+    ///  cheap over the channel).
+    /// Why:
+    ///       The cached value.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -185,26 +267,38 @@ struct Write {
     decision: Decision,
 }
 
-/// What:     `pub struct TruePeakService { read_tx, write_tx }`. The handle Kotlin holds as a
-///           `jlong`: only the two channel senders (both `Send + Sync`), so a shared
+/// What:
+///      `pub struct TruePeakService { read_tx, write_tx }`.
+///  The handle Kotlin holds as a
+///           `jlong`:
+///  only the two channel senders (both `Send + Sync`),
+///  so a shared
 ///           `&TruePeakService` is sound across JNI threads.
-/// Why:      The Turso connection stays on the actor thread; callers reach it by message.
+/// Why:
+///       The Turso connection stays on the actor thread;
+///  callers reach it by message.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class TruePeakService { readTx: Sender<Read>; writeTx: Sender<Write>; }
 /// ```
 pub struct TruePeakService {
-    /// What:     `read_tx: UnboundedSender<Read>`. The read-request sender.
-    /// Why:      Carries `Get`s to the actor.
+    /// What:
+    ///      `read_tx: UnboundedSender<Read>`.
+    ///  The read-request sender.
+    /// Why:
+    ///       Carries `Get`s to the actor.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// readTx: Sender<Read>;
     /// ```
     read_tx: UnboundedSender<Read>,
-    /// What:     `write_tx: UnboundedSender<Write>`. The write-request sender.
-    /// Why:      Carries fire-and-forget upserts to the actor.
+    /// What:
+    ///      `write_tx: UnboundedSender<Write>`.
+    ///  The write-request sender.
+    /// Why:
+    ///       Carries fire-and-forget upserts to the actor.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -213,17 +307,25 @@ pub struct TruePeakService {
     write_tx: UnboundedSender<Write>,
 }
 
-/// What:     `impl TruePeakService { ... }`. Open the actor and the sync get/put surface.
-/// Why:      The JNI orchestrates decode around these fast cache ops.
+/// What:
+///      `impl TruePeakService { ... }`.
+///  Open the actor and the sync get/put surface.
+/// Why:
+///       The JNI orchestrates decode around these fast cache ops.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class TruePeakService { static open() {} get() {} put() {} }
 /// ```
 impl TruePeakService {
-    /// What:     `fn open(db_path: String) -> TruePeakService`. Spawn the actor thread for the
+    /// What:
+    ///      `fn open(db_path: String) -> TruePeakService`.
+    ///  Spawn the actor thread for the
     ///           database at `db_path` and return a handle.
-    /// Why:      One actor owns the runtime, the connection, and the identity.
+    /// Why:
+    ///       One actor owns the runtime,
+    ///  the connection,
+    ///  and the identity.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -264,9 +366,13 @@ impl TruePeakService {
         return TruePeakService { read_tx, write_tx }
     }
 
-    /// What:     `fn get(&self, fingerprint: u64) -> Option<Decision>`. Block briefly for one
-    ///           cached decision, or `None` on miss/closed actor.
-    /// Why:      Both resolve and warm check the cache before decoding.
+    /// What:
+    ///      `fn get(&self, fingerprint: u64) -> Option<Decision>`.
+    ///  Block briefly for one
+    ///           cached decision,
+    ///  or `None` on miss/closed actor.
+    /// Why:
+    ///       Both resolve and warm check the cache before decoding.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -301,9 +407,13 @@ impl TruePeakService {
         return reply_rx.blocking_recv().ok().flatten()
     }
 
-    /// What:     `fn put(&self, fingerprint: u64, decision: Decision)`. Fire-and-forget a
+    /// What:
+    ///      `fn put(&self, fingerprint: u64, decision: Decision)`.
+    ///  Fire-and-forget a
     ///           decision to the actor.
-    /// Why:      Persist without blocking the JNI thread; precedence keeps an exact row.
+    /// Why:
+    ///       Persist without blocking the JNI thread;
+    ///  precedence keeps an exact row.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -321,9 +431,16 @@ impl TruePeakService {
     }
 }
 
-/// What:     `async fn run(db_path, mut read_rx, mut write_rx)`. The actor body: open the cache,
-///           compute the identity, then serve until both channels close.
-/// Why:      One place owns the cache, the identity, and the read-biased loop.
+/// What:
+///      `async fn run(db_path, mut read_rx, mut write_rx)`.
+///  The actor body:
+///  open the cache,
+///           compute the identity,
+///  then serve until both channels close.
+/// Why:
+///       One place owns the cache,
+///  the identity,
+///  and the read-biased loop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -372,9 +489,14 @@ async fn run(db_path: String, mut read_rx: UnboundedReceiver<Read>, mut write_rx
     tracing::info!("truepeak service actor stopped");
 }
 
-/// What:     `async fn open_cache(db_path: &str) -> Option<DecisionCache>`. Open the shared
-///           decision cache, or `None` on failure (degraded).
-/// Why:      A bad cache file must not crash the actor; it degrades to a no-op cache.
+/// What:
+///      `async fn open_cache(db_path: &str) -> Option<DecisionCache>`.
+///  Open the shared
+///           decision cache,
+///  or `None` on failure (degraded).
+/// Why:
+///       A bad cache file must not crash the actor;
+///  it degrades to a no-op cache.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -398,9 +520,14 @@ async fn open_cache(db_path: &str) -> Option<DecisionCache> {
     }
 }
 
-/// What:     `async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint:
-///           u64) -> Option<Decision>`. Point-read a decision, or `None` on miss/degraded/error.
-/// Why:      A read failure is a cache miss, never a crash.
+/// What:
+///      `async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint:
+///           u64) -> Option<Decision>`.
+///  Point-read a decision,
+///  or `None` on miss/degraded/error.
+/// Why:
+///       A read failure is a cache miss,
+///  never a crash.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -426,9 +553,14 @@ async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint
     return cache.get(fingerprint, identity).await.ok().flatten()
 }
 
-/// What:     `async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request:
-///           Write)`. Store one decision; no-op when degraded.
-/// Why:      Serves a write; the cache's precedence keeps an exact row from downgrading.
+/// What:
+///      `async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request:
+///           Write)`.
+///  Store one decision;
+///  no-op when degraded.
+/// Why:
+///       Serves a write;
+///  the cache's precedence keeps an exact row from downgrading.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -457,12 +589,20 @@ async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Wr
     }
 }
 
-/// What:     `fn service_ref<'a>(handle: jlong) -> Option<&'a TruePeakService>`. Rebuild a
-///           shared reference from the opaque handle, or `None` for the `0` sentinel.
-/// Why:      Every JNI method turns the `jlong` back into a `&TruePeakService`; sharing (not
+/// What:
+///      `fn service_ref<'a>(handle: jlong) -> Option<&'a TruePeakService>`.
+///  Rebuild a
+///           shared reference from the opaque handle,
+///  or `None` for the `0` sentinel.
+/// Why:
+///       Every JNI method turns the `jlong` back into a `&TruePeakService`;
+///  sharing (not
 ///           `&mut`) is sound because the handle is `Send + Sync` (only channel senders).
-/// Gotcha:   `unsafe` is a PROMISE the handle is valid and not released; Kotlin owns that
-///           contract (one live handle, released once).
+/// Gotcha:
+///    `unsafe` is a PROMISE the handle is valid and not released;
+///  Kotlin owns that
+///           contract (one live handle,
+///  released once).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -490,11 +630,21 @@ fn service_ref<'a>(handle: jlong) -> Option<&'a TruePeakService> {
     return Some(unsafe { &*(handle as *const TruePeakService) })
 }
 
-/// What:     `fn resolve_and_cache(service, fd, fingerprint, full) -> f32`. The shared body of
-///           both JNI resolve entries: cache hit -> its gain; miss -> open the fd, resolve
-///           (probe-or-full when `full` is false, always-exact when true), cache, and return
-///           the gain; any failure -> the ceiling fallback.
-/// Why:      One place holds the get/decode/put orchestration for foreground and warming.
+/// What:
+///      `fn resolve_and_cache(service, fd, fingerprint, full) -> f32`.
+///  The shared body of
+///           both JNI resolve entries:
+///  cache hit -> its gain;
+///  miss -> open the fd,
+///  resolve
+///           (probe-or-full when `full` is false,
+///  always-exact when true),
+///  cache,
+///  and return
+///           the gain;
+///  any failure -> the ceiling fallback.
+/// Why:
+///       One place holds the get/decode/put orchestration for foreground and warming.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -587,11 +737,18 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
     return decision.gain
 }
 
-/// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeTruePeakServiceCreate(...)
-///           -> jlong`. Open a service for the given database path and return its handle, or
+/// What:
+///      `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeTruePeakServiceCreate(...)
+///           -> jlong`.
+///  Open a service for the given database path and return its handle,
+///  or
 ///           `0` on failure.
-/// Why:      Kotlin creates one service at startup with its app-private `decisions.db` path.
-/// Gotcha:   `extern "system"`: no panic may cross this boundary; string read failure returns
+/// Why:
+///       Kotlin creates one service at startup with its app-private `decisions.db` path.
+/// Gotcha:
+///    `extern "system"`:
+///  no panic may cross this boundary;
+///  string read failure returns
 ///           `0`.
 ///
 /// In TS you'd write (pseudocode):
@@ -636,10 +793,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     return handle
 }
 
-/// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeTruePeakServiceRelease(...)`.
-///           Reclaim the boxed service, closing its channels so the actor thread exits.
-/// Why:      Kotlin releases the one service on shutdown.
-/// Gotcha:   Releasing twice is a use-after-free; Kotlin must release exactly once.
+/// What:
+///      `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeTruePeakServiceRelease(...)`.
+///           Reclaim the boxed service,
+///  closing its channels so the actor thread exits.
+/// Why:
+///       Kotlin releases the one service on shutdown.
+/// Gotcha:
+///    Releasing twice is a use-after-free;
+///  Kotlin must release exactly once.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -676,10 +838,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     }
 }
 
-/// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeResolveGain(...) -> jfloat`.
-///           Foreground: return the normalization gain for the current track, resolving and
+/// What:
+///      `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeResolveGain(...) -> jfloat`.
+///           Foreground:
+///  return the normalization gain for the current track,
+///  resolving and
 ///           caching a probe-or-full decision on a miss.
-/// Why:      Kotlin calls this on track load, then applies the gain to the engine.
+/// Why:
+///       Kotlin calls this on track load,
+///  then applies the gain to the engine.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -716,10 +883,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeRes
     return resolve_and_cache(service, fd, fingerprint as u64, false)
 }
 
-/// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeWarmTrack(...) -> jfloat`.
-///           Background warming: full-scan a track to an EXACT decision and cache it, skipping
+/// What:
+///      `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeWarmTrack(...) -> jfloat`.
+///           Background warming:
+///  full-scan a track to an EXACT decision and cache it,
+///  skipping
 ///           tracks that are already exact.
-/// Why:      Kotlin's sweep calls this per track to upgrade probe estimates over idle time.
+/// Why:
+///       Kotlin's sweep calls this per track to upgrade probe estimates over idle time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,15 +1,22 @@
-//! What: Internal native cli-git implementation, not yet the production executable.
-//! Why: The Rust rewrite preserves Git's own argument, repository and transaction semantics.
+//! What:
+//!  Internal native cli-git implementation,
+//!  not yet the production executable.
+//! Why:
+//!  The Rust rewrite preserves Git's own argument,
+//!  repository and transaction semantics.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Internal modules used by the forthcoming native entry point and consumer verification.
 //! ```
 
-/// The decision one invocation ends in: become Git, or print and exit.
+/// The decision one invocation ends in:
+///  become Git,
+///  or print and exit.
 pub mod action;
 
-/// Variables added to every real-Git child: lock PID injection and the forward-target marker.
+/// Variables added to every real-Git child:
+///  lock PID injection and the forward-target marker.
 pub mod child_environment;
 
 /// The one failure type for rejected configuration content or files.
@@ -27,7 +34,8 @@ pub mod config_parse;
 /// Validation of the `policies` section and per-policy options.
 mod config_policies;
 
-/// The `rulesFile` option: a repository-relative name that stays inside the repository.
+/// The `rulesFile` option:
+///  a repository-relative name that stays inside the repository.
 pub mod config_rules_file;
 
 /// Typed settings and their defaults.
@@ -48,7 +56,8 @@ pub mod entry;
 /// Spellings of the wrapper-only escape hatches shared by several modules.
 pub mod escape_hatch;
 
-/// Starting real Git with unchanged arguments, streams and exit status.
+/// Starting real Git with unchanged arguments,
+///  streams and exit status.
 pub mod forwarding;
 
 /// Captured read-only real-Git queries over raw bytes.
@@ -60,7 +69,10 @@ pub mod global_arguments;
 /// Configuration of the repository one invocation selects.
 pub mod invocation_config;
 
-/// The `git cli-git` decision: help, retired commands, and direct `check`/`fix`.
+/// The `git cli-git` decision:
+///  help,
+///  retired commands,
+///  and direct `check`/`fix`.
 pub mod management;
 
 /// The `git cli-git` argument grammar.
@@ -75,7 +87,8 @@ pub mod real_git;
 /// Wrapper self-exclusion for one PATH candidate.
 pub mod real_git_candidate;
 
-/// Disposable fixtures shared by unit tests; never part of the release executable.
+/// Disposable fixtures shared by unit tests;
+///  never part of the release executable.
 #[cfg(test)]
 mod test_support;
 
@@ -85,7 +98,9 @@ pub mod worktree_identity;
 /// Git 2.56.0 `parse-options` tokenization of one command's argument region.
 pub mod command_options;
 
-/// Long-option matching: exact names, unique abbreviations and `no-` negation.
+/// Long-option matching:
+///  exact names,
+///  unique abbreviations and `no-` negation.
 mod command_options_long;
 
 /// Final-state and position questions over a tokenized region.
@@ -97,15 +112,18 @@ mod command_options_short;
 /// The shared decision of which bytes are an option's value.
 mod command_options_value;
 
-/// Real-Git fixtures and table oracles for command tests; never in the release build.
+/// Real-Git fixtures and table oracles for command tests;
+///  never in the release build.
 #[cfg(test)]
 mod command_test_support;
 
-/// Differential harness over `git rev-parse --parseopt`; never in the release build.
+/// Differential harness over `git rev-parse --parseopt`;
+///  never in the release build.
 #[cfg(test)]
 mod command_test_parseopt;
 
-/// Table oracle over `--git-completion-helper-all`; never in the release build.
+/// Table oracle over `--git-completion-helper-all`;
+///  never in the release build.
 #[cfg(test)]
 mod command_test_completion;
 
@@ -127,13 +145,15 @@ pub mod rule_commit_only;
 /// User-facing diagnostics of the commit-only transform.
 pub mod rule_commit_only_message;
 
-/// Pure core of the merge, cherry-pick and revert conclusion check.
+/// Pure core of the merge,
+///  cherry-pick and revert conclusion check.
 pub mod rule_commit_sequencer;
 
 /// The Git 2.56.0 option table of `git push` and its facts.
 pub mod command_push;
 
-/// The Git 2.56.0 option table of `git status`, its facts and the advice-key reading.
+/// The Git 2.56.0 option table of `git status`,
+///  its facts and the advice-key reading.
 pub mod command_status;
 
 /// Pure decision of the atomic-push transform.
@@ -157,7 +177,8 @@ pub mod command_stash;
 /// The Git 2.56.0 option tables of every `git stash` subcommand.
 pub mod command_stash_table;
 
-/// Branch-creation facts of `git branch`, `git checkout` and `git switch`.
+/// Branch-creation facts of `git branch`,
+///  `git checkout` and `git switch`.
 pub mod command_branch_create;
 
 /// Which action a tokenized `git branch` region selects.
@@ -184,10 +205,13 @@ pub mod rule_require_root;
 /// Whether a `git worktree` invocation creates or moves a worktree.
 pub mod command_worktree;
 
-/// Wrapper-only control spellings, their meanings, and removal before the subcommand.
+/// Wrapper-only control spellings,
+///  their meanings,
+///  and removal before the subcommand.
 pub mod wrapper_controls;
 
-/// Removal of every wrapper control from one invocation, by position.
+/// Removal of every wrapper control from one invocation,
+///  by position.
 pub mod wrapper_invocation;
 
 /// Lifecycle triggers and the trigger set of every shipped policy.
@@ -202,10 +226,12 @@ pub mod policy_engine;
 /// The bounded loop that repeats a pass after corrections changed candidate content.
 pub mod policy_convergence;
 
-/// The one query for repository identity, top level and the path below it.
+/// The one query for repository identity,
+///  top level and the path below it.
 pub mod repository_location;
 
-/// Lazily fetched repository facts behind one interface, with the real-Git provider.
+/// Lazily fetched repository facts behind one interface,
+///  with the real-Git provider.
 pub mod repository_facts;
 
 /// Pure decision of the linked-worktree-only policy.
@@ -220,49 +246,70 @@ pub mod rule_add_explicit;
 /// The shipped policies as checks over rule cores and repository facts.
 pub mod policy_checks;
 
-/// What a lifecycle offers content policies, and its candidates once prepared.
+/// What a lifecycle offers content policies,
+///  and its candidates once prepared.
 pub mod policy_content;
 
-/// The built-in final-newline policy: canonical final LF, preserved paths, findings.
+/// The built-in final-newline policy:
+///  canonical final LF,
+///  preserved paths,
+///  findings.
 pub mod policy_final_newline;
 
-/// The optional root-context policy: no top-level `CONTEXT.md` enters the index.
+/// The optional root-context policy:
+///  no top-level `CONTEXT.md` enters the index.
 pub mod policy_root_context;
 
-/// The optional forbidden-strings policy over the linked scanner, with redacted findings.
+/// The optional forbidden-strings policy over the linked scanner,
+///  with redacted findings.
 pub mod policy_forbidden_strings;
 
-/// The executable's panic hook: where an internal error happened, never its message.
+/// The executable's panic hook:
+///  where an internal error happened,
+///  never its message.
 pub mod panic_notice;
 
-/// Installing a direct fix's corrections into the worktree, all or none.
+/// Installing a direct fix's corrections into the worktree,
+///  all or none.
 pub mod direct_fix_install;
 
-/// The direct fix: converge corrections in memory, then install them.
+/// The direct fix:
+///  converge corrections in memory,
+///  then install them.
 pub mod direct_fix;
 
-/// The fixed argument transforms of a forwarded command, in order.
+/// The fixed argument transforms of a forwarded command,
+///  in order.
 pub mod policy_transforms;
 
-/// One complete pass: built-in policies, fixed transforms, optional policies.
+/// One complete pass:
+///  built-in policies,
+///  fixed transforms,
+///  optional policies.
 pub mod policy_pass;
 
 /// The names of the commands built into Git 2.56.0.
 pub mod git_builtins;
 
-/// The work of the installed cli-git that is not ported, and the refusal notice.
+/// The work of the installed cli-git that is not ported,
+///  and the refusal notice.
 pub mod unported;
 
 /// Durable commit-transaction and worktree-copy state left in a repository.
 pub mod pending_state;
 
-/// Which commands need unported work: commits, worktree copies, aliases and leases.
+/// Which commands need unported work:
+///  commits,
+///  worktree copies,
+///  aliases and leases.
 pub mod refusal_frontier;
 
-/// The lifecycle of one wrapped Git command, from refusals to forwarding.
+/// The lifecycle of one wrapped Git command,
+///  from refusals to forwarding.
 pub mod wrapped_command;
 
-/// A scripted repository-facts provider for unit tests; never in the release build.
+/// A scripted repository-facts provider for unit tests;
+///  never in the release build.
 #[cfg(test)]
 mod policy_test_support;
 
@@ -281,22 +328,32 @@ pub mod candidate_record;
 /// The long-lived object reader that answers every blob read of an invocation.
 pub mod candidate_reader;
 
-/// Immutable candidate versions: identity, pathname, mode, change and object per path.
+/// Immutable candidate versions:
+///  identity,
+///  pathname,
+///  mode,
+///  change and object per path.
 pub mod candidate_version;
 
-/// Per-invocation listing, lazy bytes and invalidation of candidate versions.
+/// Per-invocation listing,
+///  lazy bytes and invalidation of candidate versions.
 pub mod candidate_store;
 
 /// Pure parsing of `git ls-files --stage` records and the delta between two index states.
 pub mod candidate_stage;
 
-/// A private, timestamp-preserving copy of the real index, removed when dropped.
+/// A private,
+///  timestamp-preserving copy of the real index,
+///  removed when dropped.
 pub mod candidate_private_index;
 
-/// What `git add` would stage, and the worktree files a direct command selects.
+/// What `git add` would stage,
+///  and the worktree files a direct command selects.
 pub mod candidate_prediction;
 
-/// The linked forbidden-strings scanner: one load per invocation, typed redacted findings.
+/// The linked forbidden-strings scanner:
+///  one load per invocation,
+///  typed redacted findings.
 pub mod scanner_adapter;
 
 /// Rules-file precedence and which candidates the scanner is given.
@@ -308,6 +365,7 @@ pub mod scanner_run;
 /// Which engine failure code each candidate and scanner failure carries.
 pub mod scanner_failure_code;
 
-/// Process isolation and rule fixtures for scanner controls; never in the release build.
+/// Process isolation and rule fixtures for scanner controls;
+///  never in the release build.
 #[cfg(test)]
 mod scanner_test_support;

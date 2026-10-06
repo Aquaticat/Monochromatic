@@ -1,6 +1,8 @@
 //! Caret and selection input never edit source.
 
-/// Borrow the parent's state, its single rendering boundary, and the caret-following scroll.
+/// Borrow the parent's state,
+///  its single rendering boundary,
+///  and the caret-following scroll.
 use super::{AppWindow, State, render, viewport::follow};
 /// Geometry-free caret movement over source characters.
 use ide_app::caret_motion::{Motion, moved};
@@ -12,9 +14,13 @@ use ide_app::pointer_selection::{ClickCounter, Granularity, extended, unit};
 use ide_app::vertical_motion::{PreferredColumn, vertical};
 /// Toolkit key representations and weak window handles.
 use slint::{ComponentHandle, SharedString, platform::Key};
-/// What: `Rc` shares one owner on this thread, `RefCell` checks mutable borrows at run time,
+/// What:
+///  `Rc` shares one owner on this thread,
+///  `RefCell` checks mutable borrows at run time,
 /// and `Instant` is a point on a clock that never goes backwards.
-/// Why: Press and drag callbacks change the same pointer state, and multi-clicks are defined by elapsed time.
+/// Why:
+///  Press and drag callbacks change the same pointer state,
+///  and multi-clicks are defined by elapsed time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,8 +28,12 @@ use slint::{ComponentHandle, SharedString, platform::Key};
 /// ```
 use std::{cell::RefCell, rc::Rc, time::Instant};
 
-/// What: The unit selected by the latest press; `(usize, usize)` is a pair of character positions.
-/// Why: A drag extends from the pressed unit, so a double-click drag keeps whole words.
+/// What:
+///  The unit selected by the latest press;
+///  `(usize, usize)` is a pair of character positions.
+/// Why:
+///  A drag extends from the pressed unit,
+///  so a double-click drag keeps whole words.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,13 +44,21 @@ struct Drag {
     clicks: ClickCounter,
     /// Start and end of the unit selected by the press.
     origin: (usize, usize),
-    /// Character, word, or line, as chosen by the click count.
+    /// Character,
+    ///  word,
+    ///  or line,
+    ///  as chosen by the click count.
     granularity: Granularity,
 }
 
-/// What: `&mut State` lends the source state mutably; `usize` is an address-sized index (siblings `u32`, `u64`);
+/// What:
+///  `&mut State` lends the source state mutably;
+///  `usize` is an address-sized index (siblings `u32`,
+///  `u64`);
 /// `f32` is a 32-bit float (sibling `f64`).
-/// Why: A drag can leave the materialized rows; such a line is shaped on demand
+/// Why:
+///  A drag can leave the materialized rows;
+///  such a line is shaped on demand
 /// so the pointer still resolves by glyph geometry instead of falling back to the line start.
 ///
 /// In TS you'd write (pseudocode):
@@ -188,9 +206,13 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     });
 }
 
-/// What: `Option<Motion>` is a movement or nothing (TypeScript's `Motion | undefined`);
+/// What:
+///  `Option<Motion>` is a movement or nothing (TypeScript's `Motion | undefined`);
 /// `&SharedString` borrows the toolkit's encoded key text.
-/// Why: Slint represents special keys as encoded strings, not enum values, and most keys are not movements.
+/// Why:
+///  Slint represents special keys as encoded strings,
+///  not enum values,
+///  and most keys are not movements.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -218,7 +240,11 @@ fn horizontal(key: &SharedString, control: bool) -> Option<Motion> {
     return plain;
 }
 
-/// Signed line count for Up, Down, PageUp, and PageDown, and whether the view pages along with the caret.
+/// Signed line count for Up,
+///  Down,
+///  PageUp,
+///  and PageDown,
+///  and whether the view pages along with the caret.
 /// `pages` pairs the whole lines one page holds above the top line with those from the top line down.
 ///
 /// In TS you'd write (pseudocode):

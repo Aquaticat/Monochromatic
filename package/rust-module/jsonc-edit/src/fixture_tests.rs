@@ -1,15 +1,23 @@
-//! What:     The shared supported-behavior fixtures, read from the same JSON file the TypeScript
+//! What:
+//!      The shared supported-behavior fixtures,
+//!  read from the same JSON file the TypeScript
 //!           conformance suite uses.
-//! Why:      One corpus keeps both maintained implementations honest: a case added on either side is a
-//!           case both must satisfy, and the file is compared byte-for-byte by a task in each package.
+//! Why:
+//!       One corpus keeps both maintained implementations honest:
+//!  a case added on either side is a
+//!           case both must satisfy,
+//!  and the file is compared byte-for-byte by a task in each package.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! import fixtures from '../fixtures/jsonc-conformance.json' with { type: 'json' };
 //! ```
 
-/// What:     Embed the shared fixture document at compile time.
-/// Why:      A published crate must carry its own copy, and embedding removes any runtime file path.
+/// What:
+///      Embed the shared fixture document at compile time.
+/// Why:
+///       A published crate must carry its own copy,
+///  and embedding removes any runtime file path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,32 +25,42 @@
 /// ```
 const FIXTURE: &str = include_str!("../fixtures/jsonc-conformance.json");
 
-/// What:     Import the number identity so fixture equality cases can be checked directly.
-/// Why:      Mathematical equality is a fixture contract, not an implementation detail.
+/// What:
+///      Import the number identity so fixture equality cases can be checked directly.
+/// Why:
+///       Mathematical equality is a fixture contract,
+///  not an implementation detail.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { JsoncNumberIdentity } from './number';
 /// ```
 use crate::number::JsoncNumberIdentity;
-/// What:     Import the address segments used to walk fixture expectations.
-/// Why:      A fixture path entry is either an object key or an array index.
+/// What:
+///      Import the address segments used to walk fixture expectations.
+/// Why:
+///       A fixture path entry is either an object key or an array index.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { JsoncPathSegment } from './path';
 /// ```
 use crate::path::JsoncPathSegment;
-/// What:     Import the quoted-text conversion.
-/// Why:      Fixture text is stored as decoded code units and compared as Rust strings.
+/// What:
+///      Import the quoted-text conversion.
+/// Why:
+///       Fixture text is stored as decoded code units and compared as Rust strings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { unitsToString } from './textUnits';
 /// ```
 use crate::text_units::units_to_string;
-/// What:     Import the document model plus the public parse, emit and comment surface.
-/// Why:      The fixture tests exercise the same API a consumer uses.
+/// What:
+///      Import the document model plus the public parse,
+///  emit and comment surface.
+/// Why:
+///       The fixture tests exercise the same API a consumer uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -51,8 +69,11 @@ use crate::text_units::units_to_string;
 use crate::value::{JsoncEntry, JsoncKind, JsoncValue};
 use crate::{emit_jsonc_value, jsonc_comment, jsonc_key_comment, jsonc_set, parse_jsonc};
 
-/// What:     Parse the embedded fixture document once per test.
-/// Why:      The fixture is ordinary JSON, so this crate's own parser reads it without a second JSON
+/// What:
+///      Parse the embedded fixture document once per test.
+/// Why:
+///       The fixture is ordinary JSON,
+///  so this crate's own parser reads it without a second JSON
 ///           dependency.
 ///
 /// In TS you'd write (pseudocode):
@@ -63,8 +84,12 @@ fn fixture() -> JsoncValue {
     return parse_jsonc(FIXTURE).expect("shared fixture document parses");
 }
 
-/// What:     Read one member of a record by key, taking the last match.
-/// Why:      Fixture sections are addressed by name, and duplicate names would be a fixture bug.
+/// What:
+///      Read one member of a record by key,
+///  taking the last match.
+/// Why:
+///       Fixture sections are addressed by name,
+///  and duplicate names would be a fixture bug.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -81,8 +106,10 @@ fn member<'a>(value: &'a JsoncValue, key: &str) -> &'a JsoncValue {
     panic!("fixture has no member {key}");
 }
 
-/// What:     Read a record member's text.
-/// Why:      Fixture names and sources are stored as JSON strings.
+/// What:
+///      Read a record member's text.
+/// Why:
+///       Fixture names and sources are stored as JSON strings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -94,8 +121,10 @@ fn text(value: &JsoncValue, key: &str) -> String {
     return units_to_string(units).expect("fixture text is valid UTF-16");
 }
 
-/// What:     Read a record member that holds text or null.
-/// Why:      Fixture comment expectations use null to mean "no comment here".
+/// What:
+///      Read a record member that holds text or null.
+/// Why:
+///       Fixture comment expectations use null to mean "no comment here".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,8 +139,11 @@ fn optional_text(value: &JsoncValue, key: &str) -> Option<String> {
     return Some(units_to_string(units).expect("fixture text is valid UTF-16"));
 }
 
-/// What:     Read one array element by position.
-/// Why:      Fixture cases are lists, and a missing position is a fixture bug worth naming.
+/// What:
+///      Read one array element by position.
+/// Why:
+///       Fixture cases are lists,
+///  and a missing position is a fixture bug worth naming.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -122,8 +154,11 @@ fn element(value: &JsoncValue, index: usize) -> &JsoncValue {
     return elements.get(index).unwrap_or_else(|| panic!("fixture array has no element {index}"));
 }
 
-/// What:     Convert one fixture path entry list into address segments.
-/// Why:      Fixture paths mix object keys and array positions, exactly like a caller's address.
+/// What:
+///      Convert one fixture path entry list into address segments.
+/// Why:
+///       Fixture paths mix object keys and array positions,
+///  exactly like a caller's address.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -146,7 +181,8 @@ fn to_path(entries: &[JsoncValue]) -> Vec<JsoncPathSegment> {
     return path;
 }
 
-/// Check every fixture source that must parse, including its root shape and member count.
+/// Check every fixture source that must parse,
+///  including its root shape and member count.
 #[test]
 fn valid_sources_parse_with_the_expected_shape() {
     let document = fixture();
@@ -182,7 +218,8 @@ fn invalid_sources_are_rejected() {
     }
 }
 
-/// Check comment ownership for every fixture case, on the root and at each address.
+/// Check comment ownership for every fixture case,
+///  on the root and at each address.
 #[test]
 fn comment_ownership_matches_the_fixture() {
     let document = fixture();
@@ -282,8 +319,12 @@ fn fixture_document_has_every_section() {
     }
 }
 
-/// What:     Collect every comment body in a tree, from the node itself, its keys and its values.
-/// Why:      The round-trip contract is stated as bodies that must still be attached afterwards,
+/// What:
+///      Collect every comment body in a tree,
+///  from the node itself,
+///  its keys and its values.
+/// Why:
+///       The round-trip contract is stated as bodies that must still be attached afterwards,
 ///           which needs one walk rather than a query per address.
 ///
 /// In TS you'd write (pseudocode):
@@ -314,8 +355,11 @@ fn comment_bodies(value: &JsoncValue) -> Vec<String> {
     return bodies;
 }
 
-/// What:     Build one replacement value for a fixture `valueKind` name.
-/// Why:      The root-shape contract is about the replacement's shape, so the fixture names a kind
+/// What:
+///      Build one replacement value for a fixture `valueKind` name.
+/// Why:
+///       The root-shape contract is about the replacement's shape,
+///  so the fixture names a kind
 ///           rather than spelling a literal both suites would have to agree on.
 ///
 /// In TS you'd write (pseudocode):
@@ -342,7 +386,8 @@ fn value_for_kind(kind: &str) -> JsoncValue {
     return JsoncValue { kind: payload, comment: None };
 }
 
-/// Emission must reparse, and every comment body the fixture names must still be attached.
+/// Emission must reparse,
+///  and every comment body the fixture names must still be attached.
 #[test]
 fn round_trip_cases_keep_their_comment_bodies() {
     let document = fixture();
@@ -367,7 +412,8 @@ fn round_trip_cases_keep_their_comment_bodies() {
     }
 }
 
-/// A root replacement that is not a container must be refused, and every other case accepted.
+/// A root replacement that is not a container must be refused,
+///  and every other case accepted.
 #[test]
 fn root_shape_cases_match_the_fixture() {
     let document = fixture();
@@ -386,7 +432,8 @@ fn root_shape_cases_match_the_fixture() {
     }
 }
 
-/// Canonical emission must equal the recorded text exactly, byte for byte.
+/// Canonical emission must equal the recorded text exactly,
+///  byte for byte.
 #[test]
 fn canonical_layout_matches_the_fixture() {
     let document = fixture();

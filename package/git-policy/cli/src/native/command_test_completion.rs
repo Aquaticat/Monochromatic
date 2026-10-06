@@ -1,6 +1,10 @@
-//! What: A table oracle built on `git <command> --git-completion-helper-all`.
-//! Why: That request makes the real Git 2.56.0 print every long option of a command, an `=`
-//!      after each required value and every accepted `--no-` form, so a copied table is
+//! What:
+//!  A table oracle built on `git <command> --git-completion-helper-all`.
+//! Why:
+//!  That request makes the real Git 2.56.0 print every long option of a command,
+//!  an `=`
+//!      after each required value and every accepted `--no-` form,
+//!  so a copied table is
 //!      compared with the binary instead of with a second reading of the C source.
 //!
 //! In TS you'd write (pseudocode):
@@ -14,8 +18,12 @@ use super::command_test_support::git;
 use std::path::Path;
 use std::process::Output;
 
-/// Render a table the way Git's `show_gitcomp` prints it (parse-options.c:795-892): every
-/// long option, `=` after a required value, then the positive form of each `no-` row, then
+/// Render a table the way Git's `show_gitcomp` prints it (parse-options.c:795-892):
+///  every
+/// long option,
+///  `=` after a required value,
+///  then the positive form of each `no-` row,
+///  then
 /// the `--no-` form of every other negatable row.
 pub(crate) fn render_completion(table: &[OptionSpec]) -> String {
     let mut words: Vec<String> = Vec::<String>::new();

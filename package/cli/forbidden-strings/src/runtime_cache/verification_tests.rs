@@ -1,12 +1,16 @@
-//! What: Source revalidation and feature-export controls against disposable authoritative bytes.
-//! Why: A stale or unreadable source cannot authorize publication, and fuzz-only exports need executed tests.
+//! What:
+//!  Source revalidation and feature-export controls against disposable authoritative bytes.
+//! Why:
+//!  A stale or unreadable source cannot authorize publication,
+//!  and fuzz-only exports need executed tests.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Compare a stored digest with matching, changed and removed source files; execute both codec verdicts.
 //! ```
 
-/// Import the real source revalidation gate and content digest, not a test substitute.
+/// Import the real source revalidation gate and content digest,
+///  not a test substitute.
 use super::{source_path_still_matches, path::source_digest};
 
 /// Changed and missing source files fail the publication revalidation gate.

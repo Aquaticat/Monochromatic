@@ -1,20 +1,32 @@
-//! What: Whether a tokenized `git branch` region creates a branch in Git 2.56.0.
-//! Why: `git branch` picks one action from its options and treats positional names as new
-//!      branches only when no other action applies (builtin/branch.c:1083-1097, 1134-1311).
-//!      Presentation options such as `-v`, `--color` and `--format` do not select listing,
+//! What:
+//!  Whether a tokenized `git branch` region creates a branch in Git 2.56.0.
+//! Why:
+//!  `git branch` picks one action from its options and treats positional names as new
+//!      branches only when no other action applies (builtin/branch.c:1083-1097,
+//!  1134-1311).
+//!      Presentation options such as `-v`,
+//!  `--color` and `--format` do not select listing,
 //!      so `git branch -v topic` creates `topic`.
-//! Gotcha: The answer reads option names and argument counts only. A command Git refuses
-//!         for an option value (`--track=bogus`, `--column` with `-v`), for configuration
+//! Gotcha:
+//!  The answer reads option names and argument counts only.
+//!  A command Git refuses
+//!         for an option value (`--track=bogus`,
+//!  `--column` with `-v`),
+//!  for configuration
 //!         (`--recurse-submodules` without `submodule.propagateBranches`) or for repository
-//!         state (an existing name, a missing copy source) still answers "creates".
+//!         state (an existing name,
+//!  a missing copy source) still answers "creates".
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // branchCreates(parsed, positionalCount): boolean
 //! ```
 
-/// What: Bring the branch option identifiers and the tokenizer questions into this file.
-/// Why:  The decision reads final option states, never spellings.
+/// What:
+///  Bring the branch option identifiers and the tokenizer questions into this file.
+/// Why:
+///   The decision reads final option states,
+///  never spellings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,9 +40,13 @@ use super::command_branch_table::{
 use super::command_options::ParsedOptions;
 use super::command_options_query::{is_enabled, is_stated};
 
-/// What: Whether the tracking mode ends as the one `--set-upstream` writes.
-/// Why:  Git refuses to create a branch in that mode (branch.c:1298-1299). `--track`,
-///       `--no-track` and `--no-set-upstream` write the same variable, so the last counts.
+/// What:
+///  Whether the tracking mode ends as the one `--set-upstream` writes.
+/// Why:
+///   Git refuses to create a branch in that mode (branch.c:1298-1299).
+///  `--track`,
+///       `--no-track` and `--no-set-upstream` write the same variable,
+///  so the last counts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,9 +66,13 @@ fn track_is_override(parsed: &ParsedOptions) -> bool {
     return is_override;
 }
 
-/// What: Count the `true` entries of a list. `&[bool]` borrows the list; `usize` is the
+/// What:
+///  Count the `true` entries of a list.
+///  `&[bool]` borrows the list;
+///  `usize` is the
 ///       count type every list length uses.
-/// Why:  Git adds up the selected actions and refuses more than one (branch.c:1093-1097).
+/// Why:
+///   Git adds up the selected actions and refuses more than one (branch.c:1093-1097).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,10 +89,16 @@ fn count_true(flags: &[bool]) -> usize {
     return count;
 }
 
-/// What: Decide whether the region creates a branch. `positional_count` is the number of
+/// What:
+///  Decide whether the region creates a branch.
+///  `positional_count` is the number of
 ///       non-option arguments.
-/// Why:  A copy creates its target; otherwise a branch is created only when no action was
-///       selected, one or two names are given, and no option makes Git refuse.
+/// Why:
+///   A copy creates its target;
+///  otherwise a branch is created only when no action was
+///       selected,
+///  one or two names are given,
+///  and no option makes Git refuse.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,6 +1,12 @@
-//! What: Whole-invocation controls for discovery, configuration, output routing and exit status.
-//! Why: Each piece has its own tests; these prove the pieces are connected the way the command
-//! line promises, by running complete invocations over disposable directory trees.
+//! What:
+//!  Whole-invocation controls for discovery,
+//!  configuration,
+//!  output routing and exit status.
+//! Why:
+//!  Each piece has its own tests;
+//!  these prove the pieces are connected the way the command
+//! line promises,
+//!  by running complete invocations over disposable directory trees.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +19,8 @@ use crate::run_test_support::{ALL_RULES, CONFIG, codes, read, records, run, writ
 use crate::test_fs::Fixture;
 use std::path::Path;
 
-/// The `filename` of every record, in output order.
+/// The `filename` of every record,
+///  in output order.
 fn filenames(text: &str) -> Vec<String> {
     let mut found: Vec<String> = Vec::<String>::new();
     for record in records(text) {
@@ -24,7 +31,8 @@ fn filenames(text: &str) -> Vec<String> {
     return found;
 }
 
-/// A clean run prints nothing on either stream and exits 0, with or without `--fix`.
+/// A clean run prints nothing on either stream and exits 0,
+///  with or without `--fix`.
 #[test]
 fn a_clean_run_prints_nothing() {
     let fixture: Fixture = Fixture::new();
@@ -44,7 +52,8 @@ fn a_clean_run_prints_nothing() {
     }
 }
 
-/// Findings are JSONL on standard output in the established record shape, ordered by file then position.
+/// Findings are JSONL on standard output in the established record shape,
+///  ordered by file then position.
 #[test]
 fn findings_are_jsonl_in_the_established_shape() {
     let fixture: Fixture = Fixture::new();
@@ -81,7 +90,9 @@ fn findings_are_jsonl_in_the_established_shape() {
     assert!(record.get("processing_failure").is_none());
 }
 
-/// Warnings alone do not fail the run; the warning limit, quiet and silent act on accounting and display only.
+/// Warnings alone do not fail the run;
+///  the warning limit,
+///  quiet and silent act on accounting and display only.
 #[test]
 fn warnings_limits_quiet_and_silent_are_independent_of_linting() {
     let fixture: Fixture = Fixture::new();
@@ -118,7 +129,9 @@ fn warnings_limits_quiet_and_silent_are_independent_of_linting() {
     assert_eq!(silent.exit_code, 1);
 }
 
-/// Setup failures print one prefixed line on standard error, nothing on standard output, and exit 2.
+/// Setup failures print one prefixed line on standard error,
+///  nothing on standard output,
+///  and exit 2.
 #[test]
 fn setup_failures_exit_two_with_a_prefixed_explanation() {
     let fixture: Fixture = Fixture::new();
@@ -177,7 +190,8 @@ fn setup_failures_exit_two_with_a_prefixed_explanation() {
     assert_eq!(relative.exit_code, 2);
 }
 
-/// A directory with no supported files is clean; partial configuration coverage lints what is configured.
+/// A directory with no supported files is clean;
+///  partial configuration coverage lints what is configured.
 #[test]
 fn empty_and_partly_configured_trees_are_not_errors() {
     let fixture: Fixture = Fixture::new();
@@ -199,7 +213,9 @@ fn empty_and_partly_configured_trees_are_not_errors() {
     assert_eq!(filenames(partial.stdout.as_str()), ["inside/a.md"]);
 }
 
-/// The walker honours ignore files, the built-in exclusions, hidden directories and the ignore flags.
+/// The walker honours ignore files,
+///  the built-in exclusions,
+///  hidden directories and the ignore flags.
 #[test]
 fn discovery_honours_ignore_sources_and_flags() {
     let fixture: Fixture = Fixture::new();

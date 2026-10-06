@@ -1,6 +1,10 @@
-//! What: `git push` region facts in every spelling Git 2.56.0 accepts, with real-Git
+//! What:
+//!  `git push` region facts in every spelling Git 2.56.0 accepts,
+//!  with real-Git
 //!       controls for the table and for the readings the incumbent got wrong.
-//! Why: `isDryRun` gates the manual-push policy checks; reading a push option's value `-n`
+//! Why:
+//!  `isDryRun` gates the manual-push policy checks;
+//!  reading a push option's value `-n`
 //!      as a dry run would skip them for a real push.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +12,9 @@
 //! // expect(parsePushRegion(['-nf', 'origin']).isDryRun).toBe(true);
 //! ```
 
-/// The parser, its table, the oracles and the real-Git fixture helpers.
+/// The parser,
+///  its table,
+///  the oracles and the real-Git fixture helpers.
 use super::{PUSH_TABLE, PushRegion, parse_push_region};
 use crate::command_options::{OptionErrorKind, WrapperOccurrence};
 use crate::command_test_completion::{git_completion, render_completion};
@@ -19,7 +25,8 @@ use crate::command_test_support::{
 use std::path::{Path, PathBuf};
 use std::process::Output;
 
-/// Parse a region Git accepts, with no wrapper flags.
+/// Parse a region Git accepts,
+///  with no wrapper flags.
 fn region(values: &[&str]) -> PushRegion {
     return parse_push_region(os_arguments(values).as_slice(), &[]).expect("valid region");
 }
@@ -49,7 +56,8 @@ fn detects_an_atomicity_choice() {
     }
 }
 
-/// The last dry-run choice wins, in clusters and abbreviations too.
+/// The last dry-run choice wins,
+///  in clusters and abbreviations too.
 #[test]
 fn reports_the_final_dry_run_state() {
     for values in [
@@ -79,7 +87,8 @@ fn reports_the_final_dry_run_state() {
     }
 }
 
-/// Wrapper flags are reported by position; a region Git refuses is reported as refused.
+/// Wrapper flags are reported by position;
+///  a region Git refuses is reported as refused.
 #[test]
 fn reports_wrapper_flags_and_refusals() {
     let parsed: PushRegion = parse_push_region(
@@ -109,7 +118,8 @@ fn reports_wrapper_flags_and_refusals() {
     }
 }
 
-/// The copied table lists exactly the long options, required values and negations the
+/// The copied table lists exactly the long options,
+///  required values and negations the
 /// binary reports.
 #[test]
 fn table_matches_git_push_completion_helper() {
@@ -127,8 +137,11 @@ fn remote_refs(remote: &Path) -> String {
     return output_text(&git(remote, &["for-each-ref", "--format=%(refname)"]));
 }
 
-/// Real Git accepts `--at`, sends nothing for `-nf`, and reads `-n` after `-o` as a push
-/// option value, so that push is real.
+/// Real Git accepts `--at`,
+///  sends nothing for `-nf`,
+///  and reads `-n` after `-o` as a push
+/// option value,
+///  so that push is real.
 #[test]
 fn abbreviation_cluster_and_value_readings_match_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("push-readings");

@@ -1,7 +1,14 @@
-//! Server processes: on-demand start, the start deadline, readiness, exit, and removal.
+//! Server processes:
+//!  on-demand start,
+//!  the start deadline,
+//!  readiness,
+//!  exit,
+//!  and removal.
 
-/// What: `use` brings names from other modules into this file under their short names.
-/// Why: Results of an ended server are removed by its identity.
+/// What:
+///  `use` brings names from other modules into this file under their short names.
+/// Why:
+///  Results of an ended server are removed by its identity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,17 +24,27 @@ use super::worker::Worker;
 /// helix-lsp's key for one server process.
 use helix_lsp::LanguageServerId;
 
-/// On-demand start of a language's servers, after the program, the root, and the launch were checked.
+/// On-demand start of a language's servers,
+///  after the program,
+///  the root,
+///  and the launch were checked.
 mod start;
 
-/// Records of a server that ended unexpectedly or did not finish starting, with its last
+/// Records of a server that ended unexpectedly or did not finish starting,
+///  with its last
 /// standard-error lines.
 mod report;
 
-/// What: Remove one server process from helix-lsp's registry and record why. `usize` is the
-///       record's index in the session; `stop` says whether the process may still be running.
-/// Why: helix-lsp never removes a client by itself. `remove_by_id` plus `force_shutdown` is used
-///      instead of `Registry::stop`, because `stop` leaves a marker that prevents every later
+/// What:
+///  Remove one server process from helix-lsp's registry and record why.
+///  `usize` is the
+///       record's index in the session;
+///  `stop` says whether the process may still be running.
+/// Why:
+///  helix-lsp never removes a client by itself.
+///  `remove_by_id` plus `force_shutdown` is used
+///      instead of `Registry::stop`,
+///  because `stop` leaves a marker that prevents every later
 ///      start of that server name.
 ///
 /// In TS you'd write (pseudocode):
@@ -62,9 +79,13 @@ fn forget_results(worker: &mut Worker, identity: &ServerIdentity) {
         .retain(|(server, _)| return server != identity);
 }
 
-/// What: Attach already running servers to a document outside the project; nothing is started.
-/// Why: A dependency or standard-library file opened from a definition belongs to no project
-///      root of its own; only the servers the project already runs are asked about it.
+/// What:
+///  Attach already running servers to a document outside the project;
+///  nothing is started.
+/// Why:
+///  A dependency or standard-library file opened from a definition belongs to no project
+///      root of its own;
+///  only the servers the project already runs are asked about it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -81,8 +102,11 @@ fn attach_running(worker: &mut Worker, names: &[String]) {
     }
 }
 
-/// What: Resolve the displayed document's language and attach its servers.
-/// Why: This is the single path by which a server comes to serve a document, used when a file
+/// What:
+///  Resolve the displayed document's language and attach its servers.
+/// Why:
+///  This is the single path by which a server comes to serve a document,
+///  used when a file
 ///      is displayed and when an exited server is started again.
 ///
 /// In TS you'd write (pseudocode):
@@ -148,8 +172,11 @@ pub(super) async fn attach(worker: &mut Worker) {
     }
 }
 
-/// What: Start exited servers of the displayed document again; returns true when anything was tried.
-/// Why: A server that ended is started again only by an explicit open or position request,
+/// What:
+///  Start exited servers of the displayed document again;
+///  returns true when anything was tried.
+/// Why:
+///  A server that ended is started again only by an explicit open or position request,
 ///      never in a loop.
 ///
 /// In TS you'd write (pseudocode):
@@ -174,8 +201,14 @@ pub(super) async fn revive(worker: &mut Worker) -> bool {
     return true;
 }
 
-/// What: A server finished `initialize`: send its settings, mark it ready, and open the document.
-/// Why: helix-lsp injects a synthetic `initialized` notification for exactly this; Helix's
+/// What:
+///  A server finished `initialize`:
+///  send its settings,
+///  mark it ready,
+///  and open the document.
+/// Why:
+///  helix-lsp injects a synthetic `initialized` notification for exactly this;
+///  Helix's
 ///      editor sends `workspace/didChangeConfiguration` at the same point.
 ///
 /// In TS you'd write (pseudocode):
@@ -198,8 +231,12 @@ pub(super) fn initialized(worker: &mut Worker, server: LanguageServerId) {
     send_did_open(worker, index);
 }
 
-/// What: A server process ended: remove it from helix-lsp's registry and from the session.
-/// Why: Without removal the registry would hand the dead client out again, and a kept client
+/// What:
+///  A server process ended:
+///  remove it from helix-lsp's registry and from the session.
+/// Why:
+///  Without removal the registry would hand the dead client out again,
+///  and a kept client
 ///      would leave the ended process unreaped.
 ///
 /// In TS you'd write (pseudocode):
@@ -230,8 +267,13 @@ pub(super) fn exited(worker: &mut Worker, server: LanguageServerId) {
     }
 }
 
-/// What: A starting server's deadline passed: if it still has not initialized, stop it.
-/// Why: helix-lsp reports neither an error answer to `initialize` nor a missing answer; time is
+/// What:
+///  A starting server's deadline passed:
+///  if it still has not initialized,
+///  stop it.
+/// Why:
+///  helix-lsp reports neither an error answer to `initialize` nor a missing answer;
+///  time is
 ///      the only signal that the start failed.
 ///
 /// In TS you'd write (pseudocode):
