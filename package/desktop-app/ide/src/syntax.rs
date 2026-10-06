@@ -1,15 +1,20 @@
 //! Helix language recognition and tree-house highlighting, independent of native widgets.
+//!
+//! Language files come only from the application's own runtime ([`crate::runtime`]) through
+//! [`crate::syntax_loader::OwnLoader`]; Helix's runtime directory search is never consulted.
 
 /// Source paint spans remain unrelated to native pixel coordinates.
 use crate::source_style::{SourceStyles, StyleSpan};
 /// The upstream error enum needs explicit conversion and operation-specific remedies.
 use crate::syntax_error::parser_failure;
+/// Reuse Helix's built-in language table for recognition; grammars and queries come from the own loader.
+use crate::{runtime, syntax_loader::OwnLoader};
 /// Errors distinguish unavailable parsers/rules from a successful plain-text language.
-use anyhow::{Context, Result, bail};
-/// Reuse Helix's built-in registry, grammar/query loader, and bounded parser.
+use anyhow::{Context, Result, anyhow, bail};
+/// Helix's built-in language table and rope text type.
 use helix_core::{
     Language, Rope,
-    syntax::{Loader, Syntax, config::Configuration},
+    syntax::{Loader, config::Configuration},
 };
 /// Decode the bundled manifest into a typed record instead of probing untyped JSON.
 use serde::Deserialize;
@@ -23,7 +28,19 @@ use serde::Deserialize;
 /// import { readFileSync } from 'node:fs';
 /// import { type Path, Rope, LanguageLoader, Syntax } from './helix';
 /// ```
-use std::{collections::HashSet, fs, path::Path};
+use std::{collections::HashSet, fs, path::Path, time::Duration};
+/// The parser library Helix builds on, driven here with the application's own loader.
+use tree_house::{Syntax, highlighter::Highlighter};
+
+/// What: How long one parse may take; `Duration` is a span of time (sibling: `Instant`, a moment).
+/// Why: The same half-second limit as Helix's `PARSE_TIMEOUT` in `helix-core/src/syntax.rs`, which
+///      the engine used before it drove the parser library directly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const PARSE_TIMEOUT_MS = 500;
+/// ```
+const PARSE_TIMEOUT: Duration = Duration::from_millis(500);
 
 /// Ordered palette roles; role zero stays ordinary source and 64 stays selection ink.
 const SCOPES: &[&str] = &[
@@ -65,22 +82,22 @@ struct Manifest {
     grammars: Vec<String>,
 }
 
-/// What: `fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>>` takes a borrowed
-///       path (`&Path`: the caller keeps ownership) and returns either a set of owned grammar
-///       ids or an error. Siblings of `HashSet<String>`: `Vec<String>` (ordered, linear lookup)
-///       and `HashSet<&str>` (borrowed names that could not outlive the decoded file).
-/// Why:  The manifest names exactly the grammars this build ships. A language outside it is
-///       unsupported and stays plain text; a listed grammar that then fails to load is a
-///       broken installation and stays a visible failure.
+/// What: `fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>>` reads a manifest file
+///       from a prepared runtime directory and returns the grammar ids it lists, or an error.
+///       `&Path` borrows the path (the caller keeps ownership). Siblings of `HashSet<String>`:
+///       `Vec<String>` (ordered, linear lookup) and `HashSet<&str>` (borrowed names that could not
+///       outlive the decoded file).
+/// Why:  Tests and development tools check a runtime directory directly; the application reads its
+///       embedded manifest through [`provisioned_grammars_from`] instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function provisionedGrammars(manifest: string): Set<string> {
-///   const { grammars } = JSON.parse(readFileSync(manifest, 'utf8')) as Manifest;
-///   return new Set(grammars.map(file => file.slice(0, -'.so'.length)));
+///   return provisionedGrammarsFrom(readFileSync(manifest, 'utf8'), manifest, DIRECTORY_REMEDY);
 /// }
 /// ```
 pub fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>> {
+    let remedy = runtime::DIRECTORY_REMEDY;
     // What: `fs::read_to_string` returns `Result<String, io::Error>`; `.with_context(|| ...)`
     //       attaches a message built by the closure `|| ...` (a zero-argument arrow function)
     //       only when reading failed; the trailing `?` returns that error to the caller early.
@@ -95,16 +112,35 @@ pub fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>> {
     // ```
     let encoded = fs::read_to_string(manifest).with_context(|| {
         return format!(
-            "Cannot read the bundled language manifest {}. Prepare language assets with the package runtime task and restart the application.",
+            "Cannot read the language manifest {}. {remedy}",
             manifest.display()
         );
     })?;
-    // `&encoded` lends the text to the decoder; a wrong shape returns early like the read above.
-    let decoded: Manifest = serde_json::from_str(&encoded).with_context(|| {
-        return format!(
-            "Cannot decode the bundled language manifest {}. Prepare language assets with the package runtime task and restart the application.",
-            manifest.display()
-        );
+    // `&encoded` lends the text; the location names the file in later messages.
+    return provisioned_grammars_from(&encoded, &manifest.display().to_string(), remedy);
+}
+
+/// What: Decode manifest text into the set of grammar ids it lists. `location` names where the text
+///       came from and `remedy` what the reader should do, both only for error messages.
+/// Why:  The manifest names exactly the grammars this build ships. A language outside it is
+///       unsupported and stays plain text; a listed grammar that then fails to load is a
+///       broken installation and stays a visible failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function provisionedGrammarsFrom(encoded: string, location: string, remedy: string): Set<string> {
+///   const { grammars } = JSON.parse(encoded) as Manifest;
+///   return new Set(grammars.map(file => file.slice(0, -'.so'.length)));
+/// }
+/// ```
+pub fn provisioned_grammars_from(
+    encoded: &str,
+    location: &str,
+    remedy: &str,
+) -> Result<HashSet<String>> {
+    // A wrong shape returns early with the location and the remedy.
+    let decoded: Manifest = serde_json::from_str(encoded).with_context(|| {
+        return format!("Cannot decode the language manifest {location}. {remedy}");
     })?;
     // What: `HashSet::new()` creates an empty set; `mut` allows the loop to insert into it.
     // Why:  Later lookups ask only "is this grammar bundled?".
@@ -128,8 +164,7 @@ pub fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>> {
         // ```
         let Some(name) = file.strip_suffix(".so") else {
             bail!(
-                "Cannot use the bundled language manifest {}: entry {file} is not a grammar shared object. Prepare language assets with the package runtime task and restart the application.",
-                manifest.display()
+                "Cannot use the language manifest {location}: entry {file} is not a grammar shared object. {remedy}"
             );
         };
         // `to_string` copies the borrowed slice into an owned value the set can keep.
@@ -155,21 +190,23 @@ fn append_span(spans: &mut Vec<StyleSpan>, incoming: StyleSpan) {
 
 /// Own the language registry and its lazy grammar/query caches on the source worker.
 pub struct SyntaxEngine {
-    /// Built-in configuration only; project-local executable configuration is not loaded.
-    loader: Loader,
-    /// Grammar ids the bundled manifest lists; every other recognized language is plain text.
-    provisioned: HashSet<String>,
+    /// Built-in recognition rules plus languages compiled from the application's own runtime only;
+    /// project-local and user Helix configuration is never loaded.
+    loader: OwnLoader,
 }
 
 /// Translate pinned language recognition and highlighting into source-character paint ranges.
 impl SyntaxEngine {
-    /// Initialize language recognition from the bundled manifest without starting servers
-    /// or downloading assets.
+    /// Initialize language recognition from the manifest of the process's language runtime
+    /// (embedded in the application binary; a directory for tests and tools) without starting
+    /// servers or downloading assets.
     pub fn new() -> Result<Self> {
-        // `runtime_file` searches Helix's runtime directories in priority order.
-        let manifest = helix_loader::runtime_file("manifest.json");
-        // Lend the path; a missing or malformed manifest returns its diagnostic early.
-        let provisioned = provisioned_grammars(&manifest)?;
+        // The trailing `?` returns the "no runtime" error when this program has none.
+        let source = runtime::current()?;
+        let (encoded, location) = source.manifest()?;
+        // Lend the text; a malformed manifest returns its diagnostic early.
+        let provisioned = provisioned_grammars_from(&encoded, &location, source.remedy())?;
+        tracing::debug!(source = %source.describe(), grammars = provisioned.len(), "language runtime manifest read");
         return Self::with_provisioned(provisioned);
     }
 
@@ -186,17 +223,42 @@ impl SyntaxEngine {
         let config: Configuration = helix_loader::config::default_lang_config()
             .try_into()
             .context("Cannot decode the bundled language configuration")?;
-        let loader =
+        // Helix numbers languages in table order; the own loader keeps one cell per number.
+        let count = config.language.len();
+        let helix =
             Loader::new(config).context("Cannot prepare bundled filename language rules")?;
-        let scopes = SCOPES
-            .iter()
-            .map(|scope| return (*scope).to_string())
-            .collect();
-        loader.set_scopes(scopes);
         return Ok(Self {
-            loader,
-            provisioned,
+            loader: OwnLoader::new(helix, count, provisioned, SCOPES),
         });
+    }
+
+    /// What: Say whether the built-in language rules name a language for this file, by filename or
+    ///       shebang, without reading the bundled manifest or any grammar. `Result<bool>` is the answer
+    ///       or the error of decoding the compiled-in rules.
+    /// Why: When highlighting cannot start, a file no language applies to loses nothing, so that is
+    ///      not a failure worth a warning; a file some language applies to loses its highlighting.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static namesALanguage(path: string, text: Rope): boolean
+    /// ```
+    pub fn names_a_language(path: &Path, text: &Rope) -> Result<bool> {
+        // An empty grammar set: only the compiled-in filename and shebang rules are consulted.
+        let rules = Self::with_provisioned(HashSet::new())?;
+        // What: `or_else` tries the shebang only when the filename named nothing; `is_some` asks
+        //       whether either found a language.
+        // Why: The same order `recognize` uses, without its check for a bundled grammar.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return (byFilename(path) ?? byShebang(text)) !== undefined;
+        // ```
+        let found = rules
+            .loader
+            .helix
+            .language_for_filename(path)
+            .or_else(|| return rules.loader.helix.language_for_shebang(text.slice(..)));
+        return Ok(found.is_some());
     }
 
     /// Recognize a bundled language by filename, then by shebang.
@@ -213,9 +275,10 @@ impl SyntaxEngine {
         // ```
         let language = self
             .loader
+            .helix
             .language_for_filename(path)
-            .or_else(|| return self.loader.language_for_shebang(text.slice(..)))?;
-        let config = self.loader.language(language).config();
+            .or_else(|| return self.loader.helix.language_for_shebang(text.slice(..)))?;
+        let config = self.loader.helix.language(language).config();
         // What: `as_deref()` views `Option<String>` as `Option<&str>` without copying;
         //       `unwrap_or(&config.language_id)` falls back to the language's own id.
         // Why:  Helix loads the parser named by `grammar` when present (`qml` uses `qmljs`,
@@ -226,7 +289,7 @@ impl SyntaxEngine {
         // const grammar = config.grammar ?? config.languageId;
         // ```
         let grammar = config.grammar.as_deref().unwrap_or(&config.language_id);
-        if !self.provisioned.contains(grammar) {
+        if !self.loader.provisioned.contains(grammar) {
             tracing::debug!(
                 path = %path.display(),
                 language = %config.language_id,
@@ -252,20 +315,67 @@ impl SyntaxEngine {
         // ```ts
         // return loader.language(language).config.languageId;
         // ```
-        return Some(self.loader.language(language).config().language_id.clone());
+        return Some(
+            self.loader
+                .helix
+                .language(language)
+                .config()
+                .language_id
+                .clone(),
+        );
+    }
+
+    /// Load the grammar and compile the highlighting rules of one registry language by id,
+    /// reporting why it fails. Ok(false) means the id is unknown or its grammar is not bundled.
+    /// Checks of a runtime use this to prove every bundled language compiles.
+    pub fn compile_language(&self, language_id: &str) -> Result<bool> {
+        // What: `language_for_name(language_id.to_string())` looks the id up in Helix's table.
+        // Why: The table compares owned names.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const language = helix.languageForName(languageId); if (!language) return false;
+        // ```
+        let Some(language) = self.loader.helix.language_for_name(language_id.to_string()) else {
+            return Ok(false);
+        };
+        let config = self.loader.helix.language(language).config();
+        let grammar = config.grammar.as_deref().unwrap_or(&config.language_id);
+        if !self.loader.provisioned.contains(grammar) {
+            return Ok(false);
+        }
+        // What: `map_err(|reason| anyhow!(...))` turns the stored message into an error value.
+        // Why: The caller collects every failing language with its reason.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // loader.prepared(language); // throws `${languageId}: ${reason}`
+        // ```
+        self.loader
+            .prepared(language)
+            .map_err(|reason| return anyhow!("{language_id}: {reason}"))?;
+        return Ok(true);
     }
 
     /// Return None when the registry does not recognize the filename or shebang,
     /// or when this build does not ship the recognized language's grammar.
-    /// Bundled languages with missing or incompatible assets return a visible failure instead.
+    /// Bundled languages with missing, damaged, or incompatible assets return a visible failure.
     /// Returned intervals are sorted, non-overlapping, and merge adjacent identical paint roles.
     pub fn highlight(&self, path: &Path, text: &Rope) -> Result<Option<SourceStyles>> {
         let Some(language) = self.recognize(path, text) else {
             return Ok(None);
         };
-        let name = &self.loader.language(language).config().language_id;
+        let name = &self.loader.helix.language(language).config().language_id;
         tracing::debug!(path = %path.display(), language = %name, "preparing source syntax");
-        let syntax = Syntax::new(text.slice(..), language, &self.loader)
+        // Compile first so a missing or damaged runtime file is reported with its own reason.
+        if let Err(reason) = self.loader.prepared(language) {
+            tracing::warn!(path = %path.display(), language = %name, %reason, "bundled language could not be prepared");
+            bail!(
+                "Cannot highlight {} as {name}. The bundled parser or highlighting rules could not be loaded: {reason}",
+                path.display()
+            );
+        }
+        let syntax = Syntax::new(text.slice(..), language, PARSE_TIMEOUT, &self.loader)
             .map_err(|error| return parser_failure(path, name, error))?;
         let length = u32::try_from(text.len_bytes()).with_context(|| {
             return format!(
@@ -273,7 +383,7 @@ impl SyntaxEngine {
                 path.display()
             );
         })?;
-        let mut highlighter = syntax.highlighter(text.slice(..), &self.loader, ..);
+        let mut highlighter = Highlighter::new(&syntax, text.slice(..), &self.loader, ..);
         let mut spans = Vec::new();
         let mut start = 0;
         while start < length {

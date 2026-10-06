@@ -22,6 +22,8 @@ const guards = {
   'without-withdrawn-text': `capture.texts.some(text => typeof text !== 'string' || text.includes(withdrawn))`,
   'without-cohort': `if (!first) throw new Error('First-run review requires every authored state under every condition: ' + base);`,
   'without-drag-outcome': `typeof moved !== 'boolean' || moved !== (end !== undefined)`,
+  'without-declined-actions': `declinedActions.some(label => !capture.texts.includes(label))`,
+  'without-visit-count': '!html.includes(`${visits} visits contributed views`)',
 };
 const removed = process.argv[2];
 if (removed !== undefined) {
@@ -46,7 +48,7 @@ function reject({ change, diagnostic }) {
   rejected += 1;
 }
 // An analysis state and a no-audio state whose first views did not move, for the cases that need one of each.
-const explained = manifest.witnesses.findIndex(item => item.position === 'initial' && item.scene === 'not-opened' && item.dragTest.movedAppPixels === false);
+const explained = manifest.witnesses.findIndex(item => item.position === 'initial' && item.scene === 'declined' && item.dragTest.movedAppPixels === false);
 const silent = manifest.witnesses.findIndex(item => item.position === 'initial' && item.scene === 'system-no-audio');
 if (explained < 0 || silent < 0) throw new Error('Required positive fixtures absent.');
 function endOf(first) {
@@ -71,6 +73,9 @@ try {
   reject({ change: input => { input.witnesses[explained].scrollableContainerReported = true; }, diagnostic: 'drag outcome and the hierarchy disagree about scrolling' });
   reject({ change: input => { input.witnesses[explained].texts = input.witnesses[explained].texts.filter(text => text !== input.analysisText); },
     diagnostic: 'analysis explanation is in neither kept view' });
+  // The declined state shows the open library as unreadable with both ways on (D100).
+  reject({ change: input => { input.witnesses[explained].texts = input.witnesses[explained].texts.filter(text => text !== 'Allow access'); },
+    diagnostic: 'does not draw both ways on and Settings' });
   // A synthetic end view: accepted with a displaced body, refused without one, refused when its first view did not move.
   const accepted = structuredClone(manifest);
   accepted.witnesses[explained].dragTest.movedAppPixels = true;
@@ -97,12 +102,27 @@ try {
   if (invoke('build').status !== 0) throw new Error('Withdrawn-sentence fixture build failed.');
   const stale = invoke('validate');
   if (stale.status === 0 || !stale.stderr.includes('still states the withdrawn analysis choice')) throw new Error('Withdrawn sentence in the page was not rejected.');
+  // Pages that keep an earlier cohort's story, show a state that is not authored, omit one, or drop the version for approval.
+  let refusedPages = 0;
+  function refusedPage({ change, diagnostic }) {
+    const changed = change(template);
+    if (changed === template) throw new Error('Template mutation changed nothing: ' + diagnostic);
+    writeFileSync(templatePath, changed);
+    if (invoke('build').status !== 0) throw new Error('Mutated template did not build: ' + diagnostic);
+    const run = invoke('validate');
+    if (run.status === 0 || !run.stderr.includes(diagnostic)) throw new Error('Mutated page was not rejected: ' + diagnostic);
+    refusedPages += 1;
+  }
+  refusedPage({ change: page => page.replace(/\d+ visits contributed views/u, '99 visits contributed views'), diagnostic: 'does not name its' });
+  refusedPage({ change: page => page.replace('<div class="gallery">', '<div class="gallery"><figure data-scene="not-opened"></figure>'), diagnostic: 'which is not an authored state' });
+  refusedPage({ change: page => page.replace('<figure data-scene="declined">', '<figure data-scene="declined" data-position="scrolled">'), diagnostic: 'shows no figure for declined' });
+  refusedPage({ change: page => page.replace('The declined state, as approved', 'Also built'), diagnostic: 'is missing The declined state, as approved' });
   writeFileSync(templatePath, template);
   if (invoke('build').status !== 0 || invoke('validate').status !== 0) throw new Error('Restored template did not validate.');
   const output = join(fixture, 'questions', 'first-run-access.html');
   writeFileSync(output, readFileSync(output, 'utf8').replace('Design evidence only.', 'Changed output.'));
   if (invoke('validate').status === 0) throw new Error('Changed committed artifact was not rejected.');
-  console.log(`First-run review consumer: positive, ${rejected} rejected manifests, a synthetic end view, ballot, withdrawn-sentence and changed-output checks passed.`);
+  console.log(`First-run review consumer: positive, ${rejected} rejected manifests, a synthetic end view, ballot, withdrawn-sentence, ${refusedPages} rejected pages and changed-output checks passed.`);
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }

@@ -144,12 +144,37 @@ The capture needed many visits while other work loaded the host;
 within a bound,
 for the five-minute load average to fall under 48 before each round of visits.
 
+Answered through the question tool on 2026-10-06:
+the editor is accepted as shown (D98),
+the two templates are approved as built (D99),
+the first-run study keeps access declined and drops no source opened (D100),
+and `AGENTS.md`'s APQ now says never to block pushes in this repository's linked worktrees,
+which share its `.git/config`.
+The review page shows the two templates as decided.
+
+Built and published:
+the first-run study rebuilt for D100,
+proposed in `doc/planning/music-player-first-run-access.md` under `Rebuild for D100`.
+The prototype is at `7a2ea6888cce59c9db23d556a520f4c60f8824c6`
+(250 unit tests pass,
+12 of them the first-run fixture's).
+`questions/first-run-access.html` shows 28 inspected views from 4 visits;
+`verify:first-run:access` and `test:first-run:access` pass,
+all five guard removals fail the test,
+and the offline browser check passed in four contexts.
+`evidence/first-run-access-boundaries.md` describes it.
+While it was captured,
+`systemd-oomd` repeatedly killed the shared command cgroup that other sessions' builds had filled,
+so long runs now go in their own user unit:
+`systemd-run --user --unit=<name> --collect --wait --property=MemoryMax=2G <command>`,
+with `wait-for-unit.ts <unit> <pattern>` to wait for it.
+
+The human approved the declined state as built (D101) and added the rule on long runs to the `CLAUDE.md` preamble in `file-enforcer.config.ts`.
+The first-run page shows the declined state as approved.
+
 Next:
-ask the human,
-through the question tool,
-to approve the D97 version,
-whether D95 removes the first-run study's states without an opened source,
-and whether a rule should keep agents from blocking pushes in this repository's linked worktrees.
+the remaining open questions in `open-questions.md`;
+nothing from this round waits on the human.
 
 To capture again,
 from `~/temp/agent`:

@@ -63,10 +63,14 @@ dialog h2 { margin-block-start: 0; }
 <header>
 <p class="summary-text">Design evidence only. Existing requirements, no cosmetic-policy ballot.</p>
 <h1>Getting to music without a working system source</h1>
-<p>Purpose: inspect the first-run access and no-audio states under D10/D27. An available system music library
-opens automatically; when no source is open or device-wide access was declined, the primary route remains
-<strong>Open a folder</strong>, with in-app Settings available. True-peak analysis is automatic and not optional (D84), so these
-states offer no choice about analysis; where a state explains analysis, it only says that it happens.</p>
+<p>Purpose: inspect the first-run access and no-audio states under D10, D27, D95 and D100. A library is always open:
+the system music library opens automatically (D95). When device-wide music access was declined, that library is open
+but unreadable, and the state offers <strong>Allow access</strong> or <strong>Open a folder</strong>,
+with in-app Settings available (D100); its wording and layout were approved as built (D101). There is no state without a
+source. True-peak analysis is automatic and not optional (D84), so these states offer no choice about analysis; where a
+state explains analysis, it only says that it happens.</p>
+<p>What to look at: the three states on both panels, at 100% and 200% text, and the section <strong>The declined
+state, as approved</strong>. How to respond: anything you would change goes in the last field.</p>
 <p class="note">Every state is authored debug input, not real discovery or permission evaluation. The two no-audio
 states assume an explicitly complete read of their named scope. A partial, failed or unread source cannot justify
 those claims. Zero eligible audio in a source does not mean the device or folder has no files.</p>
@@ -91,8 +95,7 @@ bottom navigation remains. Logical dp uses the measured 390dpi density, not your
 <p>These are state witnesses, not alternatives to select. The complete-empty premises are authored inputs;
 the existing production list API does not supply equivalent complete/partial/failure status.</p>
 <div class="gallery">
-<figure data-scene="declined"><h3>Device-wide access declined</h3><button type="button" class="preview-button"><img alt="Authored native first-run state with device-wide music access not granted and Open a folder plus Settings"><span>Open native device-wide access declined</span></button><figcaption></figcaption></figure>
-<figure data-scene="not-opened"><h3>No source opened</h3><button type="button" class="preview-button"><img alt="Authored native first-run state with no source open and an explanation of the folder browser and automatic analysis"><span>Open native no source opened</span></button><figcaption></figcaption></figure>
+<figure data-scene="declined"><h3>Device-wide access declined: the open library cannot be read</h3><button type="button" class="preview-button"><img alt="Authored native first-run state: the device music library is open but cannot be read, with Allow access, Open a folder and Settings"><span>Open native device-wide access declined</span></button><figcaption></figcaption></figure>
 <figure data-scene="system-no-audio"><h3>Complete system scope with no eligible audio</h3><button type="button" class="preview-button"><img alt="Authored complete device music library enumeration with no eligible audio, not proof that no music exists on the device"><span>Open native complete system scope with no eligible audio</span></button><figcaption></figcaption></figure>
 <figure data-scene="folder-no-audio"><h3>Complete chosen-folder scope with no eligible audio</h3><button type="button" class="preview-button"><img alt="Authored complete chosen-folder enumeration without supported audio, with another folder explicitly changing source"><span>Open native complete chosen-folder scope with no eligible audio</span></button><figcaption></figcaption></figure>
 </div>
@@ -105,10 +108,24 @@ was delivered or that the state cannot scroll. These views do not establish Talk
 scrolling in general.</p>
 <p id="scroll-status" role="status"></p><div class="gallery">
 <figure data-scene="declined" data-position="scrolled"><h3>Device-wide access declined: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored declined-access state at rest after the content was dragged up"><span>Open native device-wide access declined at rest after dragging</span></button><figcaption></figcaption></figure>
-<figure data-scene="not-opened" data-position="scrolled"><h3>No source opened: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored no-source state at rest after the content was dragged up"><span>Open native no source opened at rest after dragging</span></button><figcaption></figcaption></figure>
 <figure data-scene="system-no-audio" data-position="scrolled"><h3>Complete system scope: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored complete system-scope state at rest after the content was dragged up"><span>Open native complete system scope at rest after dragging</span></button><figcaption></figcaption></figure>
 <figure data-scene="folder-no-audio" data-position="scrolled"><h3>Complete chosen-folder scope: at rest after dragging</h3><button type="button" class="preview-button"><img alt="Authored complete chosen-folder state at rest after the content was dragged up"><span>Open native complete chosen-folder scope at rest after dragging</span></button><figcaption></figcaption></figure>
 </div></details>
+<section aria-labelledby="declined-title"><h2 id="declined-title">The declined state, as approved</h2>
+<p>Built as the agent's one version under D100 and approved as built (D101).</p>
+<ul>
+<li>Title: <q>The device music library can't be read</q>, naming the open library the way the no-audio state names it.</li>
+<li>Body: <q>It is open as your library, but access to music on this device was not granted. Allow access, or open a
+folder instead.</q> It names only the assessed source and does not claim the device has no music.</li>
+<li>Buttons, in this order: <strong>Allow access</strong> filled, then <strong>Open a folder</strong> and
+<strong>Settings</strong> outlined. Allow access asks Android for music access; once Android stops showing its prompt
+after repeated refusals, the same button can only open the app's page in Android's settings. In the study the button
+emits a debug event and opens neither.</li>
+<li>The true-peak explanation stays under the buttons, as D10 asks.</li>
+<li>The inner panel's left half stays blank, as in the no-audio states: the open library has nothing readable to list,
+so a folder browser there would be a header and an index over no rows.</li>
+</ul>
+</section>
 <details><summary>Read source and implementation boundaries</summary>
 <p>The host extends ComponentActivity, not MainActivity. The merged debug manifest disables the production
 launcher, playback and sweep services and removes automatic WorkManager initialization. No real library is loaded.</p>
@@ -120,6 +137,7 @@ findings. This review does not pick a recovery owner, widen a chosen folder, ado
 <p>Static fit and source inspection establish neither real picker/Settings completion nor accessibility focus,
 speech, action-bound or contrast acceptance. All raw status-bearing images, hierarchies and logs remain private.
 The inspected published app-area crops retain exact RGB, opacity, dimensions and only essential PNG chunks.
+4 visits contributed views; each view's record names its visit.
 No digest of an image is recorded, and nothing is compared with a digest (D88).</p>
 </details>
 <fieldset><legend>Optional evidence observations</legend><label for="final-notes">Observed wrapping, clipping or missing evidence</label>
@@ -175,7 +193,8 @@ function render() {
   }
   document.getElementById('scroll-status').textContent = moved === 0 ?
     'Under the selected panel, text size and theme no state moved when dragged, so no second view exists.' :
-    'Under the selected panel, text size and theme ' + moved + ' of 4 states moved when dragged.';
+    'Under the selected panel, text size and theme ' + moved + ' of ' +
+    document.querySelectorAll('figure[data-scene]:not([data-position])').length + ' states moved when dragged.';
 }
 function resizePreview() {
   if (!state.preview) throw new Error('No native witness is open.');

@@ -558,6 +558,9 @@ new IME work and native accessibility acceptance.
   `evidence/first-run-access-boundaries.md` records the scoped authored
   native study and `questions/first-run-access.html` is verified evidence,
   not a new preference ballot.
+  Since D95 and D100 (2026-10-06) only the declined state remains,
+  shown as an open but unreadable library;
+  its wording and layout were approved as built (D101).
   Production source-status/recovery binding and native accessibility
   acceptance remain separate.
 - **DEVELOPER-OWNED: desktop window default size (11c, D49).**
@@ -565,7 +568,9 @@ new IME work and native accessibility acceptance.
   implementation window frame around the Fold-derived treatments;
   do not use it as
   a separate visual design target.
-- **OPEN: custom display templating round (11e).**
+- Custom display templating (11e) is settled:
+  the editor (D89 to D96,
+  D98) and the two lines that get a template (D99).
 - **DEVELOPER-OWNED: MD3-on-Slint feasibility (A4).**
   The user assigned feasibility and
  porting studies to developers on 2026-09-17;
@@ -1210,11 +1215,10 @@ and that the agent should build one version of which other rows get templates
 and ask for approval (D97).
 That version (two templates,
 `Track rows` and `Playing track`)
-is proposed in the planning note and built into the review page;
-row-type coverage stays open until the human approves it.
-Still open in this round:
-how the field list is reached while the keyboard is open,
-then row-type coverage and titles.
+was built into the review page,
+and the human accepted the editor (D98) and approved that version as built (D99).
+The design round for templates is closed;
+no production implementation is authorized.
 
 ## 12. Existing-screen refinement, 3B settled and accepted
 

@@ -167,27 +167,48 @@ the items after it are the record of 2026-10-05 and older.
 - The API session limit cut four agents off again at about 15:10 on 2026-10-06;
   each worktree was clean and pushed,
   and each agent was resumed from its transcript with its measured state.
-- Agents at work,
-  each in its own worktree on a branch not yet merged:
-  - `feat/ide-single-file` (`.claude/worktrees/ide-single-file`):
-    one executable carrying its runtime (done, gated on `13ac7c9a7`),
-    plus the user's follow-up answers:
-    no special handling for a loose file in the home folder,
-    removal of other builds' grammar folders after 30 days unused,
-    and `--licenses`.
-  - `fix/ide-watch-save` (`.claude/worktrees/ide-watch-save`):
-    quiet reads, the watch-limit back-off, `--network=none`, and outside-project files (done, gated on `1a95d6a55`),
-    plus an IDE-owned project watcher that reports changes to the language servers
-    (rust-analyzer switches to client-side watching)
-    and no warning for plain text files.
-  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`):
-    the timing failures seen in the gates,
-    an older hint answer replacing a newer window's,
-    and an unversioned diagnostics push dropped during the hold after a reload.
-  - `feat/ide-accessibility-tests` (`.claude/worktrees/ide-a11y`):
-    rerunnable accessibility tests with Slint's testing crate,
-    and comparison frames for UI batch 2's open choices and the watch-limit message
-    (prototype branch `prototype/ide-batch-2-choices`).
+- Landed on `main` as merge `21f2c625d`:
+  the single executable carrying its runtime, the home folder as the default project,
+  install, the launcher entry, `--licenses`, and removal of other builds' grammar folders after 30 days unused
+  (`feat/ide-single-file` through `4b8b03663`).
+  Gate at `a70b0bead` (IDE tree `93cf8e20158fd4c11d0143d28a33224496c3b567`):
+  lint, lint:release, test, test:cli, test:native 114 of 114, bundle, inspect:bundle 9 of 9.
+  The integration worktree needs its own release build of `//package/cli/nested-wayland-session`
+  before `inspect:bundle`; without it six checks fail naming the missing compositor.
+- Landed on `main` as merge `7940aef9c`:
+  the IDE watching the project's source folders for the language servers,
+  quiet reads, the watch-limit back-off, offline containers,
+  and no warning for plain text (`fix/ide-watch-save` through `bcd30ef32`),
+  plus `f3f0a6092`, which routes the plain-text check through `OwnLoader::helix`.
+  Gate on IDE tree `9bf8ee9c59037bae008d7e9e980d644d68179dc5`:
+  lint, lint:release, test, test:cli, test:native 116 of 116, bundle, inspect:bundle 9 of 9,
+  and inspect:server-watches.
+- systemd-oomd killed the shared `claude-code-bash` cgroup at 17:11:23 and 17:14:48 on 2026-10-06,
+  taking every background shell of this session and its agents;
+  long runs now go through `systemd-run --user` as described in
+  `doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md`.
+- Landed on `main` as merge `4ee4171b5`:
+  element-handle accessibility tests with the batch 3b and accessibility answers applied
+  (`feat/ide-accessibility-tests` through `5335dddce`)
+  and cargo-about collecting every Rust crate's license text into the executable and `--licenses`
+  (`feat/ide-crate-notices` through `72e34e0ae`).
+  Gate at `6a4095f99` (IDE tree `65e7fed6f689088b645411ec5e7bfb0da817d46b`), run as a user unit:
+  lint, lint:release, test, test:cli, test:native 124 of 124, bundle,
+  inspect:bundle 10 of 10, inspect:bundle-guards 8 of 8.
+  The batch 3b page gave the whole-cell plate a wrong cost (covering the focus line);
+  the user was shown the correction with the applied frames and kept the plate.
+  The shared image `localhost/monochromatic/ide` now contains cargo-about 0.9.2.
+- Agents at work:
+  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`), the last feature branch outstanding:
+    merging `main`, the remaining native external-reload flakes, lazy server lookup, and five gate rounds.
+  - `fix/ide-guard-anchors` (new worktree from `main`):
+    the stale `frame-stamp` guard anchor, a static check of every guard script's anchors,
+    and the three files `:format:rust` rewrites on `main`.
+- Still owed after those:
+  rerun every `inspect:*-guards` script on final `main`,
+  repeated gate runs,
+  a consumer check of the installed single file,
+  and removing finished worktrees whose branches are pushed.
 - Inotify:
   on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
   about 462000 of them by `git fsmonitor--daemon` processes

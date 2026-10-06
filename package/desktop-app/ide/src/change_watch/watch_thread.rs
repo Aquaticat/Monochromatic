@@ -1,120 +1,81 @@
-//! The thread that owns the inotify watcher and applies the UI's desired directory set.
-//! Adding a watch blocks until notify's loop replies, so it must never run on the UI thread.
+//! The thread that owns the inotify watcher and applies the UI's desired directory set, then the language
+//! servers' folders. Adding a watch blocks until notify's loop replies, so it must never run on the UI thread.
 
-/// Classified invalidations and the non-blocking wake shared with the event handler.
+/// The wake's decisions, classified invalidations, the shared state, the servers' part, and the kernel calls.
 use super::{
+    reconcile::{Kernel, Request, Watches, reconcile},
     record::record,
+    server_wake::{Servers, prepare, start_scan},
+    server_watch::{ServerRequest, TreeFirst, reconcile_servers},
     shared::{Shared, SourceChange, lock},
+    watch_ops::{WatchFailure, add, remove},
 };
 /// Containment uses the same canonical check as every project read.
 use crate::workspace::Workspace;
-/// Failures name the directory and, for the watch limit, the sysctl to raise.
-use anyhow::{Result, bail};
-/// What: notify's inotify backend, its configuration, the non-recursive mode, and the `Watcher` trait
-///       whose methods (`new`, `watch`, `unwatch`) the backend implements.
+/// What: notify's inotify backend, its configuration, and the `Watcher` trait that provides `new`.
 /// Why: Naming `INotifyWatcher` (not `RecommendedWatcher`) keeps a polling backend from ever being chosen.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { INotifyWatcher, Config, RecursiveMode } from 'notify';
+/// import { INotifyWatcher, Config } from 'notify';
 /// ```
-use notify::{Config, ErrorKind, INotifyWatcher, RecursiveMode, Watcher};
-/// What: `Arc` shares the state across threads; `Receiver`/`SyncSender` are the bounded wake channel's ends.
-/// Why: The handler and the UI wake this thread; it sleeps in `recv` otherwise.
+use notify::{Config, INotifyWatcher, Watcher};
+/// What: `Arc` shares the state across threads; `Receiver`/`SyncSender` are the bounded wake channel's ends;
+///       `RecvTimeoutError` says why a timed wait ended; `Duration` and `Instant` are a time span and a
+///       monotonic time point for the watch-limit backoff.
+/// Why: The handler and the UI wake this thread; it sleeps in `recv` otherwise, or until a backoff ends.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { Shared, Receiver, BoundedSender } from 'threads';
 /// ```
 use std::{
-    collections::{BTreeMap, BTreeSet},
-    path::{Path, PathBuf},
+    path::Path,
     sync::{
         Arc, Mutex,
-        mpsc::{Receiver, SyncSender},
+        mpsc::{Receiver, RecvTimeoutError, SyncSender},
     },
+    time::{Duration, Instant},
 };
 
-/// Watch one directory non-recursively after checking that it is its own canonical path inside the root.
-fn add(watcher: &mut INotifyWatcher, workspace: &Workspace, path: &Path) -> Result<()> {
-    // What: `?` returns the resolve error to the caller; `resolve` canonicalizes and rejects escapes.
-    // Why: inotify follows symbolic links, so a symlinked alias could otherwise watch outside the project.
-    // Gotcha: A swap between this check and the watch is not prevented; reads have the same window.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const resolved = workspace.resolve(path); // throws on escape
-    // ```
-    let resolved = workspace.resolve(path)?;
-    if resolved != path {
-        bail!(
-            "Not watching {}: it resolves to {} through a symbolic link",
-            path.display(),
-            resolved.display()
-        );
-    }
-    // What: `if let Err(error) = ...` runs the block only when `watch` failed.
-    // Why: The failure is described with its directory and, for the watch limit, its remedy.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // try { watcher.watch(path, 'non-recursive'); } catch (error) { throw new Error(describe(error, path)); }
-    // ```
-    if let Err(error) = watcher.watch(path, RecursiveMode::NonRecursive) {
-        bail!("{}", describe(&error, path));
-    }
-    return Ok(());
-}
+/// Shortest sleep while waiting for the servers' backoff, so a wait that just ended does not spin.
+const SHORTEST_BACKOFF_SLEEP: Duration = Duration::from_millis(50);
 
-/// Name the directory; the watch limit (`ENOSPC` from `inotify_add_watch`) gets the sysctl to raise.
-pub(super) fn describe(error: &notify::Error, path: &Path) -> String {
-    if let ErrorKind::MaxFilesWatch = error.kind {
-        return format!(
-            "Cannot watch {}: the inotify watch limit is reached; raise fs.inotify.max_user_watches",
-            path.display()
-        );
-    }
-    return format!("Cannot watch {}: {error}", path.display());
-}
-
-/// The watch-limit message cannot be provoked without exhausting the host's inotify watches.
-#[cfg(test)]
-#[path = "watch_thread_tests.rs"]
-mod tests;
-
-/// Remove one watch; a watch the kernel already dropped (removed directory) is expected and only logged.
-fn remove(watcher: &mut INotifyWatcher, path: &Path) {
-    if let Err(error) = watcher.unwatch(path) {
-        tracing::debug!(path = %path.display(), %error, "watch was already gone");
-    }
-}
-
-/// Mutable bookkeeping owned by the watch thread alone.
-struct Watches {
-    /// Directories with a live watch.
-    active: BTreeSet<PathBuf>,
-    /// What: `BTreeMap<PathBuf, String>` maps each directory whose last watch attempt failed to that
-    ///       failure's text (`BTreeSet`, the sibling, would hold the directories without their text).
-    /// Why: Failed directories are retried only on request, and a retry that fails with the same text
-    ///      is neither logged nor reported again, so a retry every sweep does not repeat itself.
+/// The real kernel calls: one borrowed watcher and the project boundary its watches must stay inside.
+struct Inotify<'a> {
+    /// What: `&'a mut INotifyWatcher` lends the watcher for as long as `'a`, the life of this value.
+    /// Why: The watch thread keeps owning the watcher; a wake only borrows it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// const failed = new Map<string, string>();
+    /// watcher: INotifyWatcher;
     /// ```
-    failed: BTreeMap<PathBuf, String>,
-    /// The UI's latest desired set.
-    desired: BTreeSet<PathBuf>,
-    /// The displayed file as of the previous wake, to notice a switch to another file.
-    file: Option<PathBuf>,
+    watcher: &'a mut INotifyWatcher,
+    /// Canonical project boundary.
+    workspace: &'a Workspace,
+}
+
+/// Pass each call to notify, after the containment check for adds.
+impl Kernel for Inotify<'_> {
+    /// Add one non-recursive watch inside the root.
+    fn add(&mut self, path: &Path) -> Result<(), WatchFailure> {
+        return add(self.watcher, self.workspace, path);
+    }
+
+    /// Remove one watch; one the kernel already dropped is only logged.
+    fn remove(&mut self, path: &Path) {
+        remove(self.watcher, path);
+    }
 }
 
 /// Apply one wake's worth of requests; returns false when the UI handle is closing.
 fn apply(
     watcher: &mut INotifyWatcher,
     workspace: &Workspace,
-    shared: &Mutex<Shared>,
+    shared: &Arc<Mutex<Shared>>,
+    waker: &SyncSender<()>,
     watches: &mut Watches,
+    servers: &mut Servers,
 ) -> bool {
     let mut guard = lock(shared);
     if guard.closing {
@@ -125,100 +86,71 @@ fn apply(
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const desired = shared.desired; shared.desired = undefined;
+    // const request = { desired: shared.desired, retry: shared.retry, ... }; shared.desired = undefined;
     // ```
-    let desired = guard.desired.take();
-    let retry = std::mem::take(&mut guard.retry);
-    let stale = std::mem::take(&mut guard.stale);
-    let file = guard.file.clone();
+    let request = Request {
+        desired: guard.desired.take(),
+        retry: std::mem::take(&mut guard.retry),
+        user_retry: std::mem::take(&mut guard.user_retry),
+        stale: std::mem::take(&mut guard.stale),
+        file: guard.file.clone(),
+    };
+    let requests = std::mem::take(&mut guard.server.requests);
+    let feed = guard.server.feed.clone();
     drop(guard);
-    if let Some(next) = desired {
-        watches.desired = next;
-    }
-    // The handler reports only the file named in the shared state, so a change made to a newly
-    // displayed file before the switch reached that state went unrecorded.
-    let switched = file.is_some() && file != watches.file;
-    watches.file = file.clone();
-    for path in &stale {
-        if watches.active.remove(path) {
-            remove(watcher, path);
-        }
-    }
-    // Collect first: the set cannot change while it is being iterated.
-    let mut hidden = Vec::new();
-    for path in watches.active.difference(&watches.desired) {
-        hidden.push(path.clone());
-    }
-    for path in &hidden {
-        watches.active.remove(path);
-        remove(watcher, path);
-        tracing::debug!(path = %path.display(), "stopped watching a directory that is no longer shown");
-    }
-    // What: `retain` keeps only the entries for which the closure `|path, _message| ...` returns true.
-    // Why: A directory that is no longer shown must not be retried later, and its failure is forgotten.
+    let desired_changed = prepare(servers, requests, feed.as_ref(), workspace.root());
+    let now = Instant::now();
+    let mut kernel = Inotify { watcher, workspace };
+    // What: `TreeFirst { ... }` wraps the real kernel so the tree shares folders with the servers and
+    //       takes one of their watches when the limit refuses it; the block ends that borrow.
+    // Why: The decisions stay testable with fake calls; only here do they reach the kernel.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // for (const path of failed.keys()) if (!desired.has(path)) failed.delete(path);
+    // const outcome = reconcile(watches, request, now, new TreeFirst(kernel, servers));
     // ```
-    watches
-        .failed
-        .retain(|path, _message| return watches.desired.contains(path));
-    let mut established = BTreeSet::new();
-    let mut lost = false;
-    for path in &watches.desired {
-        if watches.active.contains(path) {
-            continue;
-        }
-        // A directory that already failed is tried again only when the UI asks for a retry.
-        if !retry && watches.failed.contains_key(path) {
-            continue;
-        }
-        match add(watcher, workspace, path) {
-            Ok(()) => {
-                // What: `remove` returns `Some(message)` when the directory had failed before.
-                // Why: A watch that works again after a failure is a state change worth one log line.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // if (failed.delete(path)) log.info('restored'); else log.debug('watching');
-                // ```
-                if watches.failed.remove(path).is_some() {
-                    tracing::info!(path = %path.display(), "directory watch restored after an earlier failure");
-                } else {
-                    tracing::debug!(path = %path.display(), "watching directory");
-                }
-                watches.active.insert(path.clone());
-                established.insert(path.clone());
-            }
-            Err(error) => {
-                let message = format!("{error:#}");
-                // The same failure as last time is neither logged nor reported again.
-                if watches.failed.get(path) == Some(&message) {
-                    continue;
-                }
-                tracing::warn!(%message, "directory watch failed; rereading it on a timer and rereading everything shown");
-                watches.failed.insert(path.clone(), message);
-                lost = true;
-            }
-        }
-    }
+    let outcome = {
+        let mut first = TreeFirst {
+            inner: &mut kernel,
+            servers: &mut servers.watches,
+            tree_held: watches.active.clone(),
+        };
+        reconcile(watches, request, now, &mut first)
+    };
+    let server_request = ServerRequest {
+        desired_changed,
+        tree_limited: !watches.limited.is_empty(),
+    };
+    reconcile_servers(
+        &mut servers.watches,
+        &watches.active,
+        server_request,
+        now,
+        &mut kernel,
+    );
+    start_scan(servers, workspace.root(), shared, waker);
     let mut published = lock(shared);
     // Retries that change nothing must not make the UI copy the set again.
     if published.watched != watches.active {
         published.watched = watches.active.clone();
         published.watched_changed = true;
     }
-    if lost {
+    published.server.watched = servers.watches.active.clone();
+    published.server.provisional = servers.watches.provisional.clone();
+    if outcome.everything {
         published.pending.everything = true;
     }
     // A new watch can miss changes made before it existed, so its directory is read once more.
     // The same holds for a newly displayed file in a directory that was already watched.
-    let parent = file.as_deref().and_then(Path::parent);
-    if switched || parent.is_some_and(|directory| return established.contains(directory)) {
-        published.pending.source = Some(SourceChange::Settled);
+    // No write was seen, so a write event recorded in the meantime keeps its own classification.
+    let parent = watches.file.as_deref().and_then(Path::parent);
+    if (outcome.switched
+        || parent.is_some_and(|directory| return outcome.established.contains(directory)))
+        && published.pending.source.is_none()
+    {
+        published.pending.source = Some(SourceChange::Reread);
     }
-    published.pending.directories.extend(established);
+    published.pending.directories.extend(outcome.established);
     return true;
 }
 
@@ -230,16 +162,17 @@ pub(super) fn run(
     waker: SyncSender<()>,
 ) {
     let handler_shared = Arc::clone(&shared);
-    // What: `move |event| ...` is a closure that takes ownership of `handler_shared` and `waker`.
+    let handler_waker = waker.clone();
+    // What: `move |event| ...` is a closure that takes ownership of `handler_shared` and `handler_waker`.
     // Why: notify calls it on its own thread for every event, so it must own what it uses.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const handler = (event) => record(handlerShared, waker, event);
+    // const handler = (event) => record(handlerShared, handlerWaker, event);
     // ```
     let created = INotifyWatcher::new(
         move |event| {
-            record(&handler_shared, &waker, event);
+            record(&handler_shared, &handler_waker, event);
         },
         Config::default().with_follow_symlinks(false),
     );
@@ -251,21 +184,47 @@ pub(super) fn run(
         }
     };
     tracing::info!(root = %workspace.root().display(), "started inotify file-change watching");
-    let mut watches = Watches {
-        active: BTreeSet::new(),
-        failed: BTreeMap::new(),
-        desired: BTreeSet::new(),
-        file: None,
-    };
+    // `default()` starts with nothing watched, failed, or desired, and the limit not reached.
+    let mut watches = Watches::default();
+    let mut servers = Servers::default();
     loop {
-        if let Err(error) = wakes.recv() {
+        // While the servers wait on the limit, the thread also wakes when their backoff ends.
+        let backoff = servers.watches.limit.map(|limit| {
+            return limit
+                .until_retry(Instant::now())
+                .max(SHORTEST_BACKOFF_SLEEP);
+        });
+        // What: `recv_timeout` waits for a wake or the end of the backoff; `Timeout` is the latter.
+        // Why: The servers' retries need no UI tick, so they also work in the headless inspection tool.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const woke = backoff === undefined ? await wakes.next() : await Promise.race([wakes.next(), sleep(backoff)]);
+        // ```
+        let received: Result<(), String> = match backoff {
+            Some(wait) => match wakes.recv_timeout(wait) {
+                Ok(()) | Err(RecvTimeoutError::Timeout) => Ok(()),
+                Err(error) => Err(error.to_string()),
+            },
+            None => wakes.recv().map_err(|error| return error.to_string()),
+        };
+        if let Err(error) = received {
             tracing::debug!(%error, "change-watch wake channel closed");
             break;
         }
-        if !apply(&mut watcher, &workspace, &shared, &mut watches) {
+        if !apply(
+            &mut watcher,
+            &workspace,
+            &shared,
+            &waker,
+            &mut watches,
+            &mut servers,
+        ) {
             break;
         }
     }
+    // A scan still running ends on its own once ripgrep finishes; it is joined so no thread outlives this one.
+    servers.finish();
     // Dropping the watcher asks notify's loop to remove every watch and close the inotify descriptor.
     drop(watcher);
     tracing::debug!("stopped inotify file-change watching");

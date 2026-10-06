@@ -53,6 +53,15 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc, sync::Arc, time::Instant};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
+/// The find and search boxes and their clear controls through Slint's element handles, as assistive tools see them.
+#[cfg(test)]
+mod accessible_box_tests;
+/// The sidebar divider through Slint's element handles: slider role, value, bounds, step, actions, and keys.
+#[cfg(test)]
+mod accessible_divider_tests;
+/// Tree rows, search results, and the location list through element handles: roles and selected states.
+#[cfg(test)]
+mod accessible_list_tests;
 /// Inlay hints and diagnostics: the snapshot setter, the visible subset, and the problems at the caret.
 mod annotate;
 /// The gutter's severity letters in front of line numbers, in both schemes, with measured contrast.
@@ -111,6 +120,9 @@ mod query_input_paint_tests;
 /// The find box keeps the toolkit box's editing keys, context menu, and scrolling of long text.
 #[cfg(test)]
 mod query_input_tests;
+/// Reads no write notification asked for do not show a save in progress.
+#[cfg(test)]
+mod quiet_read_tests;
 /// External-write-to-window timings for the tree and the displayed source; ignored by default.
 #[cfg(test)]
 mod refresh_latency_tests;
@@ -164,6 +176,9 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.
+#[cfg(test)]
+mod watch_scope_tests;
 /// External changes reach the tree and source through inotify notifications, faster than polling could.
 #[cfg(test)]
 mod watch_tests;
@@ -414,6 +429,23 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     } else {
         (String::new(), String::new())
     };
+    // What: `RuntimeSource::Embedded(&...)` lends the table compiled into this executable to the
+    //       process-wide language runtime; `&` borrows it, and it lives as long as the program.
+    // Why: Highlighting reads only these files, never Helix's runtime directories, and it must be
+    //      chosen before the reload worker (bound below) prepares the first file. Both calls come
+    //      after logging starts so their records are kept.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // runtime.install({ kind: 'embedded', runtime: EMBEDDED_RUNTIME });
+    // ```
+    ide_app::runtime::install(ide_app::runtime::RuntimeSource::Embedded(
+        &crate::embedded_runtime::EMBEDDED_RUNTIME,
+    ));
+    // Renew this build's parser cache folder, then remove other builds' folders unused for 30 days.
+    ide_app::runtime::tidy_cache(&crate::embedded_runtime::EMBEDDED_RUNTIME);
+    // The app id must be stamped by the backend before the window below exists.
+    crate::launcher::install_backend()?;
     let window = AppWindow::new()?;
     window.set_source_available(file_path.is_some());
     let state = Rc::new(RefCell::new(State::new(&source, file_path)));

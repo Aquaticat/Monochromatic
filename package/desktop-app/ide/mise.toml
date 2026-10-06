@@ -1,6 +1,8 @@
 # Extend the established Fedora native build environment with Helix's C++ driver.
 # Cargo jobs are contained at 2 GiB, 2 CPUs, 512 processes, and 4096 descriptors.
 # No home directory or credentials are mounted into the build container.
+# Containers run with --network=none, so podman starts no pasta network helper (which takes inotify watches
+# and warns when the limit is reached); only the tasks that download (fetch, runtime) pass network: true.
 [vars]
 cargo = """
 const { execFileSync } = await import('node:child_process')
@@ -9,8 +11,8 @@ const imageCheck = (await import('node:child_process')).spawnSync('podman', ['im
 if (imageCheck.status !== 0) {
   execFileSync('podman', ['build', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', image, '--file', 'Containerfile', '.'], { stdio: 'inherit' })
 }
-const runBounded = (args, options = {}) => execFileSync('podman', [
-  'run', '--rm', '--memory=2g', '--cpus=2', '--pids-limit=512',
+const runBounded = (args, { network = false, ...options } = {}) => execFileSync('podman', [
+  'run', '--rm', ...(network ? [] : ['--network=none']), '--memory=2g', '--cpus=2', '--pids-limit=512',
   '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
   '--volume', process.cwd() + ':/work', '--volume', 'ide-cargo:/cargo',
   '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2',
@@ -30,7 +32,7 @@ description = "Fetch the selected Rust dependencies in the bounded build contain
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['fetch'])
+runCargo(['fetch'], { network: true })
 """
 
 [tasks.runtime]
@@ -52,13 +54,13 @@ const reuseHeaders = (sourceRoot, name) => {
   if (!lines.some(line => line.includes('Copyright')) || !declared.length || !covered) throw new Error('Missing grammar license notices for ' + name)
   return lines.join(String.fromCharCode(10)) + String.fromCharCode(10)
 }
-const metadata = JSON.parse(runCargo(['metadata', '--format-version', '1'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 }))
+const metadata = JSON.parse(runCargo(['metadata', '--format-version', '1'], { network: true, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 }))
 const loader = metadata.packages.find(item => item.name === 'helix-loader')
 if (!loader?.source?.endsWith('#' + revision)) throw new Error('Cargo did not resolve the pinned helix-loader revision')
 const source = join(dirname(dirname(loader.manifest_path)), 'runtime')
 runCargo(['build', '--no-default-features', '--bin', 'ide-runtime'])
 const privateEnvironment = ['env', '--unset=CARGO_MANIFEST_DIR', 'XDG_CONFIG_HOME=/work/target/runtime-config', 'XDG_CACHE_HOME=/work/target/runtime-cache', 'XDG_DATA_HOME=/work/target/runtime-data']
-runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'fetch', source])
+runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'fetch', source], { network: true })
 runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'build', source])
 const built = 'target/runtime-config/helix/runtime'
 const grammars = readdirSync(join(built, 'grammars'), { withFileTypes: true }).filter(entry => entry.isFile() && entry.name.endsWith('.so'))
@@ -91,18 +93,73 @@ for (const profile of ['debug', 'release']) {
 }
 """
 
-[tasks.build]
-depends = ["runtime"]
-description = "Build the native IDE in the bounded container"
+[tasks.notices]
+# The crate sources must be present: cargo-about runs with --frozen and without network.
+depends = ["fetch"]
+description = "Collect the license text of every Rust crate the executable is built from with cargo-about into target/crate-licenses.json"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const { createHash } = await import('node:crypto')
+const { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } = await import('node:fs')
+const output = 'target/crate-licenses.json'
+const stamp = 'target/crate-licenses.inputs'
+// cargo-about is installed in the build image (Containerfile); an image built before 2026-10-06 lacks it.
+let version = ''
+try {
+  version = runBounded(['cargo-about', '--version'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+} catch (error) {
+  version = 'none (' + String(error.message).split(String.fromCharCode(10))[0] + ')'
+}
+if (version !== 'cargo-about 0.9.2') {
+  throw new Error('The build image has no cargo-about 0.9.2 (found: ' + version + '). Rebuild the image with mise run //package/desktop-app/ide:image, which installs it, then run this task again.')
+}
+// The list depends only on these inputs, and one run takes about a minute, so an unchanged list is kept.
+const inputs = createHash('sha256')
+for (const file of ['Cargo.lock', 'Cargo.toml', 'about.toml', 'about.json.hbs']) inputs.update(file + String.fromCharCode(0)).update(readFileSync(file)).update(String.fromCharCode(0))
+inputs.update(version)
+const digest = inputs.digest('hex')
+if (existsSync(output) && existsSync(stamp) && readFileSync(stamp, 'utf8').trim() === digest) {
+  console.log(output + ' is current for these inputs')
+} else {
+  mkdirSync('target', { recursive: true })
+  rmSync(output + '.new', { force: true })
+  // --frozen: the locked graph, crate sources from the ide-cargo volume (the fetch task fills it), and no network.
+  // --fail: a crate whose license cannot be determined or is not accepted by about.toml stops the task.
+  runBounded(['cargo-about', '--color', 'never', 'generate', '--frozen', '--fail', '--config', 'about.toml', '--output-file', output + '.new', 'about.json.hbs'])
+  const list = JSON.parse(readFileSync(output + '.new', 'utf8'))
+  if (!Array.isArray(list.licenses) || list.licenses.length === 0) throw new Error('cargo-about wrote no license text to ' + output + '.new')
+  renameSync(output + '.new', output)
+  writeFileSync(stamp, digest + String.fromCharCode(10))
+  console.log('Wrote ' + output + ': ' + list.licenses.length + ' license texts for ' + new Set(list.licenses.flatMap(item => item.crates.map(used => used.name + ' ' + used.version))).size + ' crates')
+}
+"""
+
+[tasks."linked-crates"]
+description = "List the crates linked into the application binary (no procedural-macro or build edges) in target/linked-crates.txt for the bundle checks"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const { writeFileSync } = await import('node:fs')
+// cargo tree --edges normal,no-proc-macro follows what is compiled into the binary for its one target.
+const tree = runCargo(['tree', '--frozen', '--edges', 'normal,no-proc-macro', '--target', 'x86_64-unknown-linux-gnu', '--prefix', 'none', '--format', '{p}'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 })
+const crates = [...new Set(tree.split(String.fromCharCode(10)).filter(Boolean).map(line => line.replace(/ [(][*][)]$/, '').replace(/ [(].*[)]$/, '').replace(' v', ' ')))].sort()
+writeFileSync('target/linked-crates.txt', crates.join(String.fromCharCode(10)) + String.fromCharCode(10))
+console.log('Wrote target/linked-crates.txt: ' + crates.length + ' crates, the package itself included')
+"""
+
+[tasks."build:debug"]
+depends = ["runtime", "notices"]
+description = "Build the debug IDE and its helper binaries in the bounded container"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['build'])
 """
 
-[tasks."build:release"]
-depends = ["runtime"]
-description = "Build the optimized application binary in the bounded container"
+[tasks.build]
+depends = ["runtime", "notices"]
+description = "Build the optimized application binary in the bounded container, as sibling applications name their release build"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
@@ -114,60 +171,55 @@ runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release
 """
 
 [tasks.bundle]
-depends = ["build:release"]
-description = "Assemble dist/monochromatic-ide from the release binary, its language runtime, and license texts"
+depends = ["build"]
+description = "Copy the release binary to dist/monochromatic-ide: one executable that carries its language runtime and license texts"
 shell = "node --input-type=module-typescript -e"
 run = """
-const { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync } = await import('node:fs')
-const { join } = await import('node:path')
+const { chmodSync, copyFileSync, existsSync, mkdirSync, renameSync, rmSync, statSync } = await import('node:fs')
 const binary = 'target/release/monochromatic-ide'
-const runtime = 'target/release/runtime'
-if (!existsSync(binary)) throw new Error('Missing ' + binary + '; run the build:release task')
-const manifest = JSON.parse(readFileSync(join(runtime, 'manifest.json'), 'utf8'))
-// Assemble beside the destination and swap, so a failed copy never leaves a half-filled directory in place.
+if (!existsSync(binary)) throw new Error('Missing ' + binary + '; run the build task')
+// The build script embedded target/release/runtime and the license texts into the binary; nothing goes beside it.
+// It is copied unstripped, so its symbol names stay in backtraces and profiles.
+mkdirSync('dist', { recursive: true })
 const destination = 'dist/monochromatic-ide'
 const staging = destination + '.new'
 rmSync(staging, { recursive: true, force: true })
-mkdirSync(join(staging, 'runtime', 'grammars'), { recursive: true })
-copyFileSync(binary, join(staging, 'monochromatic-ide'))
-chmodSync(join(staging, 'monochromatic-ide'), 0o755)
-// Helix looks for a `runtime` directory beside the resolved executable, after its other locations.
-// Only what the manifest lists is copied: the build directory may still hold libraries of an earlier selection.
-for (const name of ['manifest.json', 'Helix-LICENSE']) copyFileSync(join(runtime, name), join(staging, 'runtime', name))
-cpSync(join(runtime, 'queries'), join(staging, 'runtime', 'queries'), { recursive: true })
-for (const library of manifest.grammars) {
-  copyFileSync(join(runtime, 'grammars', library), join(staging, 'runtime', 'grammars', library))
-  const name = library.slice(0, -3)
-  cpSync(join(runtime, 'licenses', name), join(staging, 'runtime', 'licenses', name), { recursive: true })
-}
-// The application's own license texts, and the notices of the two font families compiled into the binary.
-cpSync('LICENSES', join(staging, 'LICENSES'), { recursive: true })
-mkdirSync(join(staging, 'LICENSES', 'font'))
-for (const notice of ['Inter-LICENSE.txt', 'JetBrainsMono-OFL.txt']) copyFileSync(join('asset', 'font', notice), join(staging, 'LICENSES', 'font', notice))
+copyFileSync(binary, staging)
+chmodSync(staging, 0o755)
+// Until 2026-10-06 the bundle was a directory of this name; the file replaces it.
 rmSync(destination, { recursive: true, force: true })
 renameSync(staging, destination)
-console.log('Assembled ' + destination + ' with ' + manifest.grammars.length + ' grammars')
+console.log('Copied ' + destination + ' (' + statSync(destination).size + ' bytes)')
 """
 
+[tasks.install]
+depends = ["bundle"]
+description = "Install dist/monochromatic-ide as ~/.local/bin/monochromatic-ide and its launcher entry in ~/.local/share/applications"
+run = "node bin/install.mjs"
+
 [tasks."inspect:bundle"]
-description = "Check an assembled application directory: inventory, license texts, every bundled grammar through the syntax tests, and startup from a copy outside the source tree with and without its language runtime"
+depends = ["linked-crates"]
+description = "Check a single application executable: every runtime file, notice, and Rust crate license embedded byte for byte, every linked crate covered, and lone copies that highlight, reuse and repair their cache, ignore a user Helix runtime, start concurrently, and report a damaged embedded part"
 usage = '''
-arg "[directory]" default="dist/monochromatic-ide" help="Assembled directory to check"
+arg "[file]" default="dist/monochromatic-ide" help="Single executable to check"
+arg "[runtime]" default="target/release/runtime" help="Runtime directory the executable was built from"
 arg "[only]" help="Comma-separated check names to run; default is every check"
 '''
 run = "node bin/inspect-bundle.mjs"
 
 [tasks."inspect:bundle-guards"]
-description = "Damage copies of an assembled application directory and observe each bundle check fail on its damage"
+depends = ["linked-crates"]
+description = "Damage copies of a single application executable and observe each bundle check fail on its damage"
 usage = '''
-arg "[directory]" default="dist/monochromatic-ide" help="Assembled directory to copy and damage"
+arg "[file]" default="dist/monochromatic-ide" help="Single executable to copy and damage"
+arg "[runtime]" default="target/release/runtime" help="Runtime directory the executable was built from"
 arg "[only]" help="Comma-separated case names to run; default is every case"
 '''
 run = "node bin/inspect-bundle-guards.mjs"
 
 [tasks."run:bundle"]
-description = "Run the assembled application against a local root supplied as an argument"
-run = "./dist/monochromatic-ide/monochromatic-ide"
+description = "Run the single application executable; without a folder argument it opens the home folder"
+run = "./dist/monochromatic-ide"
 
 [tasks.test]
 depends = ["runtime"]
@@ -179,7 +231,7 @@ runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
 [tasks."test:native"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Exercise native window events and fonts in process-isolated headless tests"
 usage = 'arg "[filter]" help="Optional nextest filter expression, for example test(/sidebar/); default is every native test"'
 shell = "node --input-type=module-typescript -e"
@@ -226,6 +278,7 @@ runCargo(['test', '--no-default-features', '--test', 'file_open'])
 """
 
 [tasks."test:cli"]
+depends = ["runtime", "notices"]
 description = "Verify native-path argument grammar and executable help without display startup"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -250,11 +303,23 @@ runCargo(['test', '--no-default-features', '--test', 'raster_reuse', '--', '--no
 """
 
 [tasks."lint:clippy"]
+# The application binary embeds target/debug/runtime and target/crate-licenses.json, so its build needs both.
+depends = ["runtime", "notices"]
 description = "Check all IDE targets with warnings denied"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['clippy', '--all-targets', '--', '--deny', 'warnings'])
+"""
+
+[tasks."lint:release"]
+depends = ["runtime", "notices"]
+description = "Check the application binary under the release profile with warnings denied, as the build task compiles it"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+// Code behind cfg(debug_assertions) is absent from release builds, so unused items there show only in this profile.
+runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'clippy', '--release', '--bin', 'monochromatic-ide', '--', '--deny', 'warnings'])
 """
 
 [tasks."lint:rust"]
@@ -338,7 +403,7 @@ runCargo(['test', '--no-default-features', '--test', 'row_map', '--test', 'virtu
 """
 
 [tasks."test:annotations-native"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Exercise injected inlay hints and diagnostics through native window events in process-isolated headless tests"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -444,6 +509,36 @@ arg "[seconds]" default="60" help="Length of each measured interval; at least th
 arg "[runs]" default="3" help="Runs per build and folder count, for run-to-run spread"
 '''
 run = "node bin/inspect-idle-cost.mjs"
+
+[tasks."inspect:watch-limit"]
+description = "Run the IDE in a disposable user namespace with a lowered inotify watch limit and check one warning, few failing watch calls, refresh through timers, and one line when watches return"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[folders]" default="12" help="Expanded sibling folders"
+arg "[limit]" default="4" help="Watch limit of the namespace; below the number of shown directories"
+arg "[seconds]" default="60" help="Length of the observed interval under the limit"
+'''
+run = "node bin/inspect-watch-limit.mjs"
+
+[tasks."inspect:watch-scope"]
+description = "Compare watching every expanded folder with watching only the tree viewport: kernel watches with 60 expanded folders and staleness when a changed folder is scrolled into view"
+usage = '''
+arg "<cache>" help="Disposable Cargo target directory below the private agent scratch root, for the shipped scope"
+arg "<viewport_cache>" help="A second disposable Cargo target directory, for the viewport-scope copy"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[runs]" default="3" help="Alternating runs per scope, for run-to-run spread"
+'''
+run = "node bin/inspect-watch-scope.mjs"
+
+[tasks."inspect:server-watches"]
+description = "Count the inotify watches of confined language servers on large disposable Rust and TypeScript projects"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
+execFileSync('node', ['bin/inspect-server-watches.mjs'], { stdio: 'inherit' })
+"""
 
 [tasks."inspect:search-accessibility"]
 description = "Verify accepted search landmarks and rejected dialog role declarations in disposable markup"
@@ -574,7 +669,7 @@ arg "[only]" help="Comma-separated guard names to run; default is every guard"
 run = "node bin/inspect-language-navigation-guards.mjs"
 
 [tasks.mcp]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Build and run the source-view gate with native headless UI inspection"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -598,7 +693,7 @@ execFileSync('./target/debug/monochromatic-ide', [scratch], { stdio: 'inherit', 
 """
 
 [tasks."inspect:native"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Run the IDE in the repo compositor with isolated theme and font configuration"
 usage = '''
 arg "[scheme]" default="dark" help="Private system appearance: dark or light"
@@ -761,5 +856,5 @@ execFileSync(compositor, ['--socket', socket, '--size', size, '--scale', scale, 
 """
 
 [tasks.run]
-description = "Run the built IDE against a local root supplied as an argument"
+description = "Run the debug IDE from the build:debug task against a local root supplied as an argument"
 run = "./target/debug/monochromatic-ide"

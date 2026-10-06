@@ -1,7 +1,7 @@
 {
   "schema": 2,
-  "scope": "Consumer verification of the template editor review with the D97 version for approval and the D95 empty library. It verifies this page and its checks, not production behaviour, a parser, or native accessibility.",
-  "supersedes": "The record of the 64-view review of the decided editor (D89 to D94), published earlier on 2026-10-06. Its consumer-test line said six rejected pages while the test ran five; the test now counts them as they run.",
+  "scope": "Consumer verification of the template editor review as decided: the editor (D89 to D96, D98) and the two lines that get a template (D99). It verifies this page and its checks, not production behaviour, a parser, or native accessibility.",
+  "supersedes": "The record of the same 72 views shown with the D97 version for approval, before the human approved it (D99), and before that the 64-view record, whose consumer line said six rejected pages while the test ran five.",
   "verified": "2026-10-06",
   "noDigests": "This record holds no digest of the page, template, builder, test, manifest or any report. Nothing is locked by hash (D88); later edits to those files are allowed and are not covered by this record.",
   "build": {
@@ -123,7 +123,7 @@
       "No production implementation is authorized",
       "What is decided",
       "$tf(mi(len), m:ss)$ $mi(peak)$",
-      "For approval: which lines get a template",
+      "Which lines get a template",
       "$mi(track)$ of $mi(total)$ $mi(peak)$",
       "No digest of an image is recorded, and nothing is compared with a digest (D88)"
     ],

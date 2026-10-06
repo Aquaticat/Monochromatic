@@ -269,9 +269,9 @@ fn inline_comment_after_comma_stays_on_value() {
     assert_eq!(entries[0].value.comment.as_ref().expect("first value comment").text, " inline");
     assert!(entries[1].key.comment.is_none());
     let again = parse_jsonc(&emit_jsonc_value(&parsed)).expect("canonical record reparses");
-    let JsoncKind::Record { entries } = &again.kind else { panic!("expected record"); };
-    assert_eq!(entries[0].value.comment.as_ref().expect("retained value comment").text, " inline");
-    assert!(entries[1].key.comment.is_none());
+    let JsoncKind::Record { entries: reparsed_entries } = &again.kind else { panic!("expected record"); };
+    assert_eq!(reparsed_entries[0].value.comment.as_ref().expect("retained value comment").text, " inline");
+    assert!(reparsed_entries[1].key.comment.is_none());
 }
 
 /// Check a raw-token adapter can reuse strict UTF-16 decoding and comment merging.
@@ -347,9 +347,9 @@ fn comment_text_cannot_break_jsonc_syntax() {
             }
             let once = emit_jsonc_value(&state);
             let again = parse_jsonc(&once).expect("edited comment remains parseable");
-            let JsoncKind::Record { entries } = &again.kind else { panic!("expected record"); };
-            let retained = if on_key { entries[0].key.comment.as_ref() }
-                else { entries[0].value.comment.as_ref() };
+            let JsoncKind::Record { entries: reparsed_entries } = &again.kind else { panic!("expected record"); };
+            let retained = if on_key { reparsed_entries[0].key.comment.as_ref() }
+                else { reparsed_entries[0].value.comment.as_ref() };
             assert_eq!(retained.expect("comment owner survives").text, body, "{once}");
             let twice = emit_jsonc_value(&again);
             let thrice = emit_jsonc_value(&parse_jsonc(&twice).expect("canonical output reparses"));

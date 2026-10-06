@@ -111,8 +111,8 @@ try {
   refusedPage({ change: page => page.replace('<li>A mistake is named under the field', '<li><code>$if(mi(peak), a)$</code></li><li>A mistake is named under the field'), diagnostic: 'quotes a conditional' });
   refusedPage({ change: page => page.replace('What is decided', 'Background'), diagnostic: 'is missing What is decided' });
   refusedPage({ change: page => page.replace('</form>', '</form><form></form>'), diagnostic: 'must be one self-contained form' });
-  // The version awaiting approval (D97) must stay on the page, and every captured scene must have its figure.
-  refusedPage({ change: page => page.replace('For approval: which lines get a template', 'Also built'), diagnostic: 'is missing For approval: which lines get a template' });
+  // Which lines get a template (D99) must stay on the page, and every captured scene must have its figure.
+  refusedPage({ change: page => page.replace('Which lines get a template', 'Also built'), diagnostic: 'is missing Which lines get a template' });
   refusedPage({ change: page => page.replace('<figure data-scene="playing">', '<figure data-scene="playing-old">'), diagnostic: 'shows no figure for playing' });
   // A page still telling an earlier cohort's capture story names a visit count its views do not have.
   refusedPage({ change: page => page.replace(/\d+ visits contributed views/u, '3 visits contributed views'), diagnostic: 'does not name its' });

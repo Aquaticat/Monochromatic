@@ -29,13 +29,16 @@ Read these files in order:
 The first-run/no-library study is in
 [`evidence/first-run-access-boundaries.md`](evidence/first-run-access-boundaries.md).
 Its [verified offline review](questions/first-run-access.html) presents
-32 first views,
+24 first views and 4 end views,
 not a policy ballot.
 The study was rebuilt on 2026-10-05 after D84 made true-peak analysis
-automatic:
-its explanation no longer ends with a choice to analyse,
-and with the shorter text nothing scrolls,
-so it has no second views.
+automatic,
+and again on 2026-10-06 for D100:
+a library is always open,
+so the declined state shows the device music library as open but unreadable,
+with `Allow access` and `Open a folder`,
+and the state with no source opened is gone.
+That state's wording and layout were approved as built (D101).
 The source states are authored inputs,
 not production permission/discovery evaluation or recovery acceptance.
 The owned native runtime was stopped after restoring its recorded fields.
@@ -126,8 +129,9 @@ native accessibility and Firefox acceptance are not claimed;
 full Android lint still has inherited failures.
 D81's template editor is a separate design problem with its own built study:
 [`evidence/template-editor-boundaries.md`](evidence/template-editor-boundaries.md) describes it,
-and its [verified offline review](questions/template-editor.html) shows the editor as decided in D89 to D94.
-Reaching the field list while the keyboard is open is the round's next concern.
+and its [verified offline review](questions/template-editor.html) shows the editor as decided (D89 to D96, D98)
+and the two lines that get a template (D99).
+The design round for templates is closed (D96 keeps the field list where it is).
 No light surface from the original queue is left undrawn.
 No production implementation is authorized by this continuation.
 

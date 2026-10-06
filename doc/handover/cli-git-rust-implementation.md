@@ -199,6 +199,19 @@ Running at the last update of this document (2026-10-06, relaunched at 08:10):
   (linked worktree `.claude/worktrees/cli-git-dependent-version`,
   branch `feat/cli-git-native-dependent-version`),
   evidence `doc/handover/cli-git-native-dependent-version.md` on that branch.
+- Linter publication and cutover (linked worktree `.claude/worktrees/linter-cutover`, branch `feat/linter-cutover`):
+  `monochromatic-jsonc-edit` 0.1.1 and `monochromatic-lint` 0.1.0 through `cargo-publish.yml` after CI dry runs,
+  then step 7 of `doc/planning/unified-linter.md` as one change.
+  The delegate lands the version bump that triggers publication;
+  the main session lands the cutover.
+  Evidence: `doc/handover/unified-linter-cutover.md` on that branch.
+- The commit path (linked worktree `.claude/worktrees/cli-git-transactions`, branch `feat/cli-git-native-transactions`):
+  locks and journals with incumbent interoperability, registry and recovery, hook dispatch,
+  the commit transaction, signals, auto-push and worktree copy, in gated slices.
+  Evidence: `doc/handover/cli-git-native-transactions.md` on that branch.
+- `markdown/autofix` through the native linter, and the `pathBytes` event field
+  (linked worktree `.claude/worktrees/cli-git-markdown-autofix`, branch `feat/cli-git-native-markdown-autofix`).
+  Evidence: `doc/handover/cli-git-native-markdown-autofix.md` on that branch.
 
 The content-policy delegate and the linter gaps delegate have reported;
 see `Content policies over candidates` and `Linter mutation close`.
@@ -943,6 +956,36 @@ Evidence in `doc/handover/cli-git-native-content-policies.md`.
   the brief now has an `Outcome` section saying where the answers are.
 - The fuzz seeds of `final-newline` were given a final newline by the installed wrapper when committed;
   the target's generated input still reaches both cases.
+
+#### Dependent-version planner
+
+The planning core of `mono/dependent-version-bump` is in Rust on branch `feat/cli-git-native-dependent-version`
+(gated at `fee63c86e`; evidence `doc/handover/cli-git-native-dependent-version.md` on the branch).
+It is pure with respect to the repository and not yet wired into the engine.
+
+- Gate: 605 unit tests (82 of them the planner's), 37 binary-level tests, Clippy.
+- Differential against the TypeScript planner, seed `20261006`:
+  61 unit-test scenarios, 17 real-repository cases and 2,000 generated workspaces identical;
+  152 of 175 targeted probes differ, every one as predicted and recorded as intentional with its reason
+  (for example a byte order mark is kept, duplicate and unpaired-surrogate names are refused,
+  nesting is capped, and an empty name terminates where the TypeScript scan hangs).
+  Three planted defects were each reported by the harness.
+- Mutation: 206 mutants, 0 missed;
+  one timeout was caught when its file was rerun once on the same image.
+- Fuzz: a new `dependent_version` target, planted controls noticed, smoke run exit 0.
+  Its dictionary first used escapes libFuzzer rejects;
+  `doc/troubleshooting/libfuzzer-dictionary-escapes.md` records why.
+- The delegate's long runs started from its shell died several times without an identified cause;
+  it ran the last sequence as a `systemd-run --user` unit.
+  No such unit was left afterwards.
+
+Sent back to the same delegate:
+merge `main` again (it now holds the content policies),
+wire the planner into `ShippedChecks` for direct `check` and `fix`,
+prove that `git cli-git fix --all --policy mono/dependent-version-bump` gives the same bumps
+as the standalone release task on the release workflow's input,
+and gate, fuzz and mutate the merged, wired tree.
+The commit trigger waits for the commit path.
 
 #### Native policy engine
 

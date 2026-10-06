@@ -282,6 +282,54 @@ holds the scope and limits.
 Everything this plan says about 34 published frames and two scroll
 witnesses describes the first publication.
 
+## Rebuild for D100 (2026-10-06)
+
+D95 says a library is always open;
+when no session is stored the app opens the system's default library.
+D100 keeps the state where Android's music permission is refused,
+shown as that library open but unreadable,
+offering to grant access or to open a folder,
+and drops the state with no source opened.
+D10's empty state,
+which D27 had narrowed to no system library or a declined one,
+therefore remains only for the declined case.
+
+### The agent's version, approved as built (D101)
+
+The human approved building one version and asking afterwards for D97;
+the same was done here,
+and the human approved this version as built (D101).
+
+- Title:
+  `The device music library can't be read`,
+  naming the open library as the no-audio state names it
+  (`No audio found in the device music library`).
+- Body:
+  `It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.`
+  It names only the assessed source and does not claim the device has no music.
+- Buttons,
+  in this order:
+  `Allow access` as the filled primary,
+  `Open a folder` outlined,
+  and `Settings` outlined as before.
+  `Allow access` asks Android for music access;
+  once Android stops showing its prompt after repeated refusals,
+  the same button can only open the app's page in Android's settings.
+  The study's button emits a debug event and opens neither.
+- The true-peak explanation stays under the buttons,
+  as D10 asks.
+- The inner panel's left half stays blank,
+  as in the other states.
+  The open library has nothing readable to list,
+  so a folder browser there would be a header and an index over no rows;
+  the title names the open library instead.
+  The no-audio states,
+  which also have an open library,
+  keep their blank half for the same reason.
+
+The `not-opened` scene is removed from the fixture,
+the capture and the review page.
+
 ## Continuation correction
 
 Completing the filename correction should have advanced the authorized
