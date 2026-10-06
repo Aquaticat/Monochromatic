@@ -638,7 +638,8 @@ The second build
 (prototype commit `82d2692b7471fcde27c86c9bb321a4d35557bbca`)
 was captured in full on 2026-10-05 and published on 2026-10-06
 (its images were removed from `questions/evidence/` later that day,
-when D91 rejected the pinned layouts; the measurements in this section stay as the record):
+when D91 rejected the pinned layouts;
+the measurements in this section stay as the record):
 128 views,
 every scene on both panels,
 in light and dark,
