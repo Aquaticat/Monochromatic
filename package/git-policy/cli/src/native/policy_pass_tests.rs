@@ -14,7 +14,7 @@ use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
-use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+use crate::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, ShippedChecks, shipped_checks};
 use crate::policy_content::LifecycleContent;
 use crate::policy_engine::{StageEnd, StageRequest, Unavailable, pass_exit_code};
 use crate::policy_events::{FindingEvent, PolicyEvent};
@@ -317,7 +317,7 @@ fn content_policies_read_fail_or_refuse_in_registry_order() {
     // With the built-in content policy escaped, a listed unported policy refuses without reading.
     let config: PolicyConfig = with_severity(
         &PolicyConfig::defaults(),
-        PolicyId::MarkdownAutofix,
+        PolicyId::DependentVersionBump,
         Severity::Error,
     );
     let mut controls: Controls = no_controls();
@@ -337,8 +337,8 @@ fn content_policies_read_fail_or_refuse_in_registry_order() {
     assert_eq!(
         listed.end,
         StageEnd::Unavailable(Unavailable::Policy {
-            policy: PolicyId::MarkdownAutofix,
-            needs: MARKDOWN_AUTOFIX_NEEDS,
+            policy: PolicyId::DependentVersionBump,
+            needs: DEPENDENT_VERSION_BUMP_NEEDS,
         })
     );
     assert_eq!(listed_asked, vec![String::from("location")]);

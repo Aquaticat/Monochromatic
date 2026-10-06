@@ -222,8 +222,9 @@ fn prepare_guarded_command<F: RepositoryFacts>(
     if let Some(what) = command_frontier(stripped, &location.identity) {
         return Err(refused(String::new(), &what, command));
     }
-    // `.clone()` copies the scanner options the configuration chose.
+    // `.clone()` copies the scanner and Markdown options the configuration chose.
     checks.scanner_settings.options = policies.forbidden_strings.clone();
+    checks.markdown.options = policies.markdown_autofix.clone();
     // Only `git add` inside a worktree has content for a policy to read before Git runs:
     // what it would stage, predicted when a content policy first reads it.
     if command_word(stripped) == b"add" && worktree_root(&location.identity).is_some() {

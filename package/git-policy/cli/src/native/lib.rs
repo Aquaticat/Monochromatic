@@ -235,6 +235,27 @@ pub mod policy_root_context;
 /// The optional forbidden-strings policy over the linked scanner, with redacted findings.
 pub mod policy_forbidden_strings;
 
+/// One child program run with a time bound and output caps, through files instead of pipes.
+pub mod bounded_child;
+
+/// Where the `markdown/autofix` policy finds `monochromatic-lint`: absolute PATH entries only.
+pub mod markdown_linter_lookup;
+
+/// What one linter run printed: the fixed source and the findings left, or why it is unusable.
+pub mod markdown_linter_output;
+
+/// The one-rule linter configuration and the private temporary file it is written to.
+pub mod markdown_linter_config;
+
+/// The gitignore-syntax `exclude` patterns of `markdown/autofix`, matched as the linter matches them.
+pub mod markdown_exclude;
+
+/// The `markdown/autofix` policy over candidates, behind its linter interface.
+pub mod policy_markdown;
+
+/// The executable's linter for that policy: `monochromatic-lint` on PATH, bounded, once per candidate.
+pub mod markdown_linter;
+
 /// The executable's panic hook: where an internal error happened, never its message.
 pub mod panic_notice;
 

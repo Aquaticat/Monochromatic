@@ -37,6 +37,10 @@ mod frontier;
 #[path = "binary_builtin_tests.rs"]
 mod builtin;
 
+/// `markdown/autofix` with the linter built from this repository, a missing one and a failing one.
+#[path = "binary_markdown_tests.rs"]
+mod markdown;
+
 /// `pathBytes` and `changedPathBytes` for a file whose name is not UTF-8.
 #[path = "binary_event_path_tests.rs"]
 mod event_path;

@@ -16,7 +16,7 @@ use super::support::{
     Fixture, Observed, fixture, git, observe, porcelain, remove, repository, run_direct,
     run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
 };
-use git_policy_cli::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS};
+use git_policy_cli::policy_checks::DEPENDENT_VERSION_BUMP_NEEDS;
 use git_policy_cli::policy_registry::PolicyId;
 use git_policy_cli::policy_trigger::Trigger;
 use git_policy_cli::refusal_frontier::LEASE_VARIABLES;
@@ -130,8 +130,8 @@ const FILE_WARNING: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"findi
 /// The forbidden-root-context error of `git add` about the top-level `CONTEXT.md`.
 const CONTEXT_ERROR: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n";
 
-/// `git add` runs the ported content policies over what it would stage, and is refused
-/// while an unported content policy is on.
+/// `git add` runs the ported content policies over what it would stage, `markdown/autofix`
+/// among them, and is refused while the unported content policy is on.
 #[test]
 fn add_runs_ported_content_policies_and_refuses_unported_ones() {
     let fixture: Fixture = fixture("frontier-add");
@@ -167,35 +167,40 @@ fn add_runs_ported_content_policies_and_refuses_unported_ones() {
             stderr: CONTEXT_ERROR.as_bytes().to_vec(),
         }
     );
-    // Each unported content policy refuses under its own name, and nothing is staged.
-    for (name, policy, needs) in [
-        (
-            "markdown/autofix",
-            PolicyId::MarkdownAutofix,
-            MARKDOWN_AUTOFIX_NEEDS,
-        ),
-        (
-            "mono/dependent-version-bump",
-            PolicyId::DependentVersionBump,
-            DEPENDENT_VERSION_BUMP_NEEDS,
-        ),
-    ] {
-        std::fs::write(
-            &configuration,
-            format!("{{ \"policies\": {{ \"{name}\": \"error\" }} }}\n"),
+    // The unported content policy refuses under its own name, and nothing is staged.
+    let refusing: &str = "{ \"policies\": { \"mono/dependent-version-bump\": \"error\" } }\n";
+    std::fs::write(&configuration, refusing).expect("configuration");
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["add", "--", "second.txt"]),
+        stopped_with(
+            unported_notice(
+                &Unported::PolicyNeeds {
+                    policy: PolicyId::DependentVersionBump,
+                    needs: DEPENDENT_VERSION_BUMP_NEEDS,
+                },
+                "add"
+            )
+            .as_str()
         )
-        .expect("configuration");
-        assert_eq!(
-            run_wrapped(&fixture, repo.as_path(), &["add", "--", "second.txt"]),
-            stopped_with(unported_notice(&Unported::PolicyNeeds { policy, needs }, "add").as_str()),
-            "{name}"
-        );
-    }
+    );
     assert_eq!(
         porcelain(&fixture, repo.as_path()),
         "A  file.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n?? second.txt\n"
     );
-    // Positive control: with the unported policy escaped, the same command stages the file.
+    // `markdown/autofix` is ported: listed at error, it refuses nothing, and an add with no
+    // Markdown file needs no linter at all.
+    std::fs::write(
+        &configuration,
+        "{ \"policies\": { \"markdown/autofix\": \"error\" } }\n",
+    )
+    .expect("configuration");
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["add", "--", "second.txt"]),
+        silent_success()
+    );
+    // Positive control: with the unported policy escaped, a command it refused stages the file.
+    std::fs::write(&configuration, refusing).expect("configuration");
+    std::fs::write(repo.join("third.txt"), b"third\n").expect("third file");
     assert_eq!(
         run_wrapped(
             &fixture,
@@ -204,14 +209,14 @@ fn add_runs_ported_content_policies_and_refuses_unported_ones() {
                 "add",
                 "--no-enforce-mono/dependent-version-bump",
                 "--",
-                "second.txt"
+                "third.txt"
             ]
         ),
         silent_success()
     );
     assert_eq!(
         porcelain(&fixture, repo.as_path()),
-        "A  file.txt\nA  second.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n"
+        "A  file.txt\nA  second.txt\nA  third.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n"
     );
     remove(&fixture);
 }

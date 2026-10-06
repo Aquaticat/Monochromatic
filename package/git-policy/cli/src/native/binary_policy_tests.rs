@@ -474,7 +474,7 @@ fn direct_fix_corrects_only_worktree_files() {
     // An unported policy listed for the fix refuses it, and nothing changes.
     std::fs::write(
         repo.join(CONFIG_FILE_NAME),
-        "{ \"policies\": { \"markdown/autofix\": \"warn\" } }\n",
+        "{ \"policies\": { \"mono/dependent-version-bump\": \"warn\" } }\n",
     )
     .expect("configuration");
     let refused: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]);

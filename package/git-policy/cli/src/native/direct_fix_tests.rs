@@ -22,7 +22,7 @@ use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
 /// The event form of a pathname.
 use crate::event_path::EventPath;
-use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+use crate::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, ShippedChecks, shipped_checks};
 use crate::policy_content::{Correction, LifecycleContent};
 use crate::policy_convergence::{
     Convergence, FIX_PASS_LIMIT_MESSAGE, FixPasses, PassResult as ConvergencePass,
@@ -215,7 +215,7 @@ fn a_fix_whose_last_pass_refuses_installs_nothing() {
     // The unported policy refuses in the second pass: blocked, nothing installed.
     let refused: StageRequest = fix_request(with_severity(
         &PolicyConfig::defaults(),
-        PolicyId::MarkdownAutofix,
+        PolicyId::DependentVersionBump,
         Severity::Warn,
     ));
     let mut refusing: ShippedChecks<ScriptedFacts> = fix_checks(repo.as_path());
@@ -224,8 +224,8 @@ fn a_fix_whose_last_pass_refuses_installs_nothing() {
         pass_with(
             Vec::new(),
             StageEnd::Unavailable(Unavailable::Policy {
-                policy: PolicyId::MarkdownAutofix,
-                needs: MARKDOWN_AUTOFIX_NEEDS,
+                policy: PolicyId::DependentVersionBump,
+                needs: DEPENDENT_VERSION_BUMP_NEEDS,
             })
         )
     );

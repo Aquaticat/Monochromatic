@@ -17,6 +17,8 @@ use super::effective_target::default_allowed_worktree_dirs;
 use super::forwarding::replace_process_with_real_git;
 use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
 use super::management::plan_management;
+/// The linter the executable gives the Markdown policy.
+use super::markdown_linter::executable_linter;
 /// The shipped checks and their constructor.
 use super::policy_checks::{ShippedChecks, shipped_checks};
 /// A forwarded command starts with no candidate content.
@@ -166,6 +168,8 @@ pub fn plan_invocation(
     );
     // The forbidden-strings rules variable is read from this invocation's environment.
     checks.scanner_settings.rules_variable = environment_value(environment, RULES_VARIABLE);
+    // The Markdown linter is found on, and runs with, this invocation's environment.
+    checks.markdown.linter = Box::new(executable_linter(environment));
     // `match` picks by variant and binds the fields each ending carries.
     match run_wrapped_command(&stripped, environment, &mut checks) {
         // `arguments: forwarded` binds the field under a new name.

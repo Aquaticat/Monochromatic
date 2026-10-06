@@ -24,6 +24,8 @@ use super::management_arguments::{
     MANAGEMENT_HELP, MANAGEMENT_USAGE, ManagementAction, ManagementRefusal, RetiredCommand,
     parse_management_arguments,
 };
+/// The linter the executable gives the Markdown policy.
+use super::markdown_linter::executable_linter;
 use super::pending_state::pending_state;
 /// The shipped checks and their constructor.
 use super::policy_checks::{ShippedChecks, shipped_checks};
@@ -247,8 +249,9 @@ fn run_direct_command(
     // Each event is one line, so the lines written so far are the next event number.
     // `.matches('\n').count()` counts them; `as u64` widens the count to the number type.
     let first_sequence: u64 = stdout.matches('\n').count() as u64;
-    // `.clone()` copies the scanner options the configuration chose.
+    // `.clone()` copies the scanner and Markdown options the configuration chose.
     checks.scanner_settings.options = loaded.config.policies.forbidden_strings.clone();
+    checks.markdown.options = loaded.config.policies.markdown_autofix.clone();
     let trigger: Trigger = if fix {
         Trigger::DirectFix
     } else {
@@ -395,6 +398,8 @@ pub fn plan_management(
     );
     // The forbidden-strings rules variable is read from this invocation's environment.
     checks.scanner_settings.rules_variable = environment_value(environment, RULES_VARIABLE);
+    // The Markdown linter is found on, and runs with, this invocation's environment.
+    checks.markdown.linter = Box::new(executable_linter(environment));
     let location: RepositoryLocation = match checks.facts.location() {
         Ok(found) => found,
         Err(message) => return failure(message.as_str()),

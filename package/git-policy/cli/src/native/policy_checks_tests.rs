@@ -9,7 +9,7 @@
 //! ```
 
 /// The adapter under test, the engine types it returns and the scripted facts.
-use super::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+use super::{DEPENDENT_VERSION_BUMP_NEEDS, ShippedChecks, shipped_checks};
 use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::diagnostics::EngineFailureCode;
@@ -370,7 +370,7 @@ fn unprepared() -> PolicyOutcome {
 }
 
 /// Content policies report nothing without candidates; with candidates the ported ones
-/// read them and the unported ones refuse without reading.
+/// read them and the unported one refuses without reading.
 #[test]
 fn content_policies_follow_the_lifecycle_content() {
     for policy in [
@@ -390,10 +390,8 @@ fn content_policies_follow_the_lifecycle_content() {
             assert_eq!(without.facts.asked, Vec::<String>::new());
         }
     }
-    let unported: [(PolicyId, &str); 2] = [
-        (PolicyId::MarkdownAutofix, MARKDOWN_AUTOFIX_NEEDS),
-        (PolicyId::DependentVersionBump, DEPENDENT_VERSION_BUMP_NEEDS),
-    ];
+    let unported: [(PolicyId, &str); 1] =
+        [(PolicyId::DependentVersionBump, DEPENDENT_VERSION_BUMP_NEEDS)];
     for (policy, needs) in unported {
         let mut with: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
         with.candidates = add_candidates();
@@ -406,6 +404,7 @@ fn content_policies_follow_the_lifecycle_content() {
     }
     for policy in [
         PolicyId::FinalNewline,
+        PolicyId::MarkdownAutofix,
         PolicyId::ForbiddenRootContext,
         PolicyId::ForbiddenStrings,
     ] {

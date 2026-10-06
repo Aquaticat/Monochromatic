@@ -16,7 +16,7 @@ use crate::config_file::CONFIG_FILE_NAME;
 use crate::diagnostics::EngineFailureCode;
 /// The event form of a pathname.
 use crate::event_path::EventPath;
-use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+use crate::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, ShippedChecks, shipped_checks};
 use crate::policy_content::LifecycleContent;
 use crate::policy_events::{FindingEvent, PolicyEvent, render_policy_events};
 use crate::policy_registry::{PolicyId, Severity};
@@ -442,14 +442,44 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
     );
     std::fs::write(
         root.join(CONFIG_FILE_NAME),
+        r#"{ "policies": { "final-newline": "off", "mono/dependent-version-bump": "error" } }"#,
+    )
+    .expect("configuration");
+    assert_eq!(
+        run(&["add", "file"], at_root(root.as_path()), &[]),
+        (
+            content_refused(PolicyId::DependentVersionBump, DEPENDENT_VERSION_BUMP_NEEDS),
+            location_only()
+        )
+    );
+    // That policy has no manual-push trigger, so a push is not gated by it.
+    assert_eq!(
+        run(&["push", "origin"], at_root(root.as_path()), &[]),
+        (forwards(&["push", "--atomic", "origin"]), location_only())
+    );
+    // A listed Markdown policy reads what the add stages, and gates a push.
+    std::fs::write(
+        root.join(CONFIG_FILE_NAME),
         r#"{ "policies": { "final-newline": "off", "markdown/autofix": "error" } }"#,
     )
     .expect("configuration");
     assert_eq!(
         run(&["add", "file"], at_root(root.as_path()), &[]),
         (
-            content_refused(PolicyId::MarkdownAutofix, MARKDOWN_AUTOFIX_NEEDS),
-            location_only()
+            WrappedOutcome::Exit {
+                code: 2,
+                stderr: render_policy_events(
+                    0,
+                    &[PolicyEvent::EngineFailure {
+                        code: EngineFailureCode::ContentUnavailable,
+                        message: String::from("the scripted facts prepare no candidates"),
+                        trigger: Some(Trigger::PreForward),
+                        policy: Some(PolicyId::MarkdownAutofix),
+                        path: None,
+                    }]
+                ),
+            },
+            location_and_candidates()
         )
     );
     assert_eq!(
