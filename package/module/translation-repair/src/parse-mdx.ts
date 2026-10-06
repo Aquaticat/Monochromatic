@@ -5,6 +5,10 @@ import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified, } from 'unified';
 
+import {
+  isJsonArray,
+  isJsonRecord,
+} from './json-guard.ts';
 import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 
 //region MDX parsing
@@ -165,7 +169,7 @@ function refusalPlace(
 
  @example
  ```ts
- throw new MdxParseError({ cause: error, },);
+ throw new MdxParseError({ cause: error, droppedColumns: 0, },);
  ```
  */
 export class MdxParseError extends Error {
@@ -195,12 +199,24 @@ export class MdxParseError extends Error {
 
    @param cause - underlying micromark/remark error, read for position and rule
 
+   @param droppedColumns - characters the parser dropped from the start of the
+   body without counting them, added to the column of a first-line stop so it
+   indexes the body as written
+
    @example
    ```ts
-   new MdxParseError({ cause: error, },);
+   new MdxParseError({ cause: error, droppedColumns: 0, },);
    ```
    */
-  public constructor({ cause, }: { readonly cause: unknown; },) {
+  public constructor(
+    {
+      cause,
+      droppedColumns,
+    }: {
+      readonly cause: unknown;
+      readonly droppedColumns: number;
+    },
+  ) {
     super(
       `MDX body refused to parse ${mdxRefusalSite({ cause, },)}; corpus documents`
         + ' compile as MDX upstream, so failure signals corruption or an'
@@ -214,16 +230,296 @@ export class MdxParseError extends Error {
     if (place.line !== undefined)
       this.line = place.line;
     if (place.column !== undefined)
-      this.column = place.column;
+      this.column = (place.line === 1)
+        ? place.column + droppedColumns
+        : place.column;
   }
 }
+
+//region Leading byte order mark
+// THE PARSER DROPS A LEADING BYTE ORDER MARK WITHOUT COUNTING IT. `micromark`
+// skips a U+FEFF opening its input and starts its offsets and first-line
+// columns from the character after (`micromark@4.0.3` `lib/preprocess.js`, the
+// `start` branch), so every position the parser reports for such a body sits
+// one character short of the body as written. A paragraph preceded by the mark
+// read as text beginning with the mark and ending one character before its
+// end. Every reader of a position inherits that: block nodes, container spans,
+// the footnote graph, and the offset a refusal names. The shift is undone
+// here, once, where the positions are made, so no reader carries a mark-sized
+// allowance of its own.
+//
+// The `estree` an expression node carries in its `data` keeps the parser's own
+// coordinates: nothing in this package reads it.
+
+/**
+ The byte order mark the parser drops from the start of its input.
+ */
+const BYTE_ORDER_MARK = '\uFEFF';
+
+/**
+ How many characters the parser drops from the start of a body without
+ counting them.
+
+ @param body - body about to be parsed
+
+ @returns One when the body opens with a byte order mark, otherwise zero
+
+ @example
+ ```ts
+ const dropped = droppedWidth({ body: '\uFEFFThe cat naps.', },);
+ ```
+ */
+function droppedWidth({ body, }: { readonly body: string; },): number {
+  return body.startsWith(BYTE_ORDER_MARK,)
+    ? BYTE_ORDER_MARK.length
+    : 0;
+}
+
+/**
+ A point of a parsed position, which the parser makes fresh for every node.
+ */
+type ParsedPoint = {
+  /**
+   One-based line.
+   */
+  line: number;
+
+  /**
+   One-based column.
+   */
+  column: number;
+
+  /**
+   Zero-based offset.
+   */
+  offset: number;
+};
+
+/**
+ Whether a parsed value is a point.
+
+ @param value - parsed value of unknown shape
+
+ @returns True for an object carrying a numeric line, column and offset
+
+ @example
+ ```ts
+ const isPoint = isParsedPoint(node.position?.start,);
+ ```
+ */
+function isParsedPoint(value: unknown,): value is ParsedPoint {
+  return isJsonRecord(value,)
+    && ((typeof value.line) === 'number')
+    && ((typeof value.column) === 'number')
+    && ((typeof value.offset) === 'number');
+}
+
+/**
+ Moves one parsed point on by the characters the parser dropped.
+
+ @param point - start or end of a position, moved in place; a first-line
+ point moves its column too
+
+ @param width - characters the parser dropped from the start of the body
+
+ @throws {@link Error} when the point lacks the numeric line, column and
+ offset the parser sets on every point it makes
+
+ @example
+ ```ts
+ movePastDropped({ point: node.position.start, width: 1, },);
+ ```
+ */
+function movePastDropped(
+  {
+    point,
+    width,
+  }: {
+    readonly point: unknown;
+    readonly width: number;
+  },
+): void {
+  if (!isParsedPoint(point,))
+    throw new Error(
+      'unreachable: a parsed point lacks a numeric line, column or offset, though the parser sets all three on every '
+        + 'point it makes',
+    );
+  point.offset += width;
+  if (point.line === 1)
+    point.column += width;
+}
+
+/**
+ Moves both ends of a parsed position on by the characters the parser
+ dropped.
+
+ @param position - the `position` of a node, moved in place
+
+ @param width - characters the parser dropped from the start of the body
+
+ @throws {@link Error} when it is no position, which the parser sets on every
+ node it builds
+
+ @example
+ ```ts
+ movePositionPastDropped({ position: node.position, width: 1, },);
+ ```
+ */
+function movePositionPastDropped(
+  {
+    position,
+    width,
+  }: {
+    readonly position: unknown;
+    readonly width: number;
+  },
+): void {
+  if (!isJsonRecord(position,))
+    throw new Error(
+      'unreachable: a parsed node carries a position that is no object, though the parser sets one on every '
+        + 'position it makes',
+    );
+  movePastDropped({
+    point: position.start,
+    width,
+  },);
+  movePastDropped({
+    point: position.end,
+    width,
+  },);
+}
+
+/**
+ The position a parsed value carries, when it carries one.
+
+ @param node - parsed value of unknown shape
+
+ @returns Its `position`, absent where it has none
+
+ @example
+ ```ts
+ const position = positionOfNode({ node: root.children[0], },);
+ ```
+ */
+function positionOfNode({ node, }: { readonly node: unknown; },): unknown {
+  if (!isJsonRecord(node,))
+    return undefined;
+  return node.position;
+}
+
+/**
+ What a tree walk follows from one node: its children, its attributes and its
+ value, wherever they are objects, never its `data`, which holds the
+ expression syntax trees that carry their own coordinates.
+
+ @param node - parsed node of unknown shape
+
+ @returns Members of the node still to visit
+
+ @example
+ ```ts
+ const next = membersOf({ node: root.children[0], },);
+ ```
+ */
+function membersOf({ node, }: { readonly node: unknown; },): readonly unknown[] {
+  if (!isJsonRecord(node,))
+    return [];
+  /**
+   Members found so far.
+   */
+  const members: unknown[] = [];
+  /**
+   Lists of nodes this node holds.
+   */
+  const lists = [
+    node.children,
+    node.attributes,
+  ];
+  for (const list of lists) {
+    if (isJsonArray(list,))
+      for (const member of list)
+        members.push(member,);
+  }
+  /**
+   An attribute's value, which is an object where it is an expression.
+   */
+  const { value, } = node;
+  if (isJsonRecord(value,))
+    members.push(value,);
+  return members;
+}
+
+/**
+ Counts the characters the parser dropped from the start of a body into
+ every position of the tree it built.
+
+ The root keeps its start, since it spans the body as written, dropped
+ characters included; every other node, and every attribute, starts after
+ them or later.
+
+ @param root - tree the parser has just built, moved in place; nothing else
+ holds it yet
+
+ @param body - body the tree was parsed from
+
+ @throws {@link Error} when a node of the tree carries no position, which the
+ parser sets on every node it builds
+
+ @example
+ ```ts
+ countDropped({ root: unified().use(remarkParse,).parse(body,), body, },);
+ ```
+ */
+function countDropped(
+  {
+    root,
+    body,
+  }: {
+    readonly root: Root;
+    readonly body: string;
+  },
+): void {
+  /**
+   Characters the parser dropped.
+   */
+  const width = droppedWidth({ body, },);
+  if (width === 0)
+    return;
+  if (root.position === undefined)
+    throw new Error('unreachable: the parsed root carries no position, though the parser sets one on every node',);
+  movePastDropped({
+    point: root.position
+      .end,
+    width,
+  },);
+  /**
+   Nodes still to visit, so a deep tree is walked without recursion.
+   */
+  const pending: unknown[] = [...root.children,];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    /**
+     The node's position, absent on a value that is no node.
+     */
+    const position = positionOfNode({ node, },);
+    if (position !== undefined)
+      movePositionPastDropped({
+        position,
+        width,
+      },);
+    for (const member of membersOf({ node, },))
+      pending.push(member,);
+  }
+}
+
+//endregion Leading byte order mark
 
 /**
  Parses MDX body text into an mdast tree with positions on every node.
 
  @param body - MDX source with front matter already split away
 
- @returns mdast root whose node positions are body-relative character offsets
+ @returns mdast root whose node positions are body-relative character offsets in the body as written, a leading
+ byte order mark counted
 
  @throws {@link MdxParseError} when source refuses to parse as MDX, and for
  any other failure inside the grammar too, a stack overflow on deep nesting
@@ -235,17 +531,30 @@ export class MdxParseError extends Error {
  ```
  */
 export function parseMdxBody({ body, }: { readonly body: string; },): Root {
-  try {
-    return unified()
-      .use(remarkParse,)
-      .use(remarkMdx,)
-      .use(remarkGfm,)
-      .use(remarkMath,)
-      .parse(body,);
-  }
-  catch (error) {
-    throw new MdxParseError({ cause: error, },);
-  }
+  /**
+   Tree the grammar built, positions still short of a leading byte order mark.
+   */
+  const root = (function parseStrict(): Root {
+    try {
+      return unified()
+        .use(remarkParse,)
+        .use(remarkMdx,)
+        .use(remarkGfm,)
+        .use(remarkMath,)
+        .parse(body,);
+    }
+    catch (error) {
+      throw new MdxParseError({
+        cause: error,
+        droppedColumns: droppedWidth({ body, },),
+      },);
+    }
+  })();
+  countDropped({
+    root,
+    body,
+  },);
+  return root;
 }
 
 /**
@@ -290,7 +599,8 @@ export function requireMdxRefusal({ error, }: { readonly error: unknown; },): Md
 
  @param body - markdown source with front matter already split away
 
- @returns mdast root whose node positions are body-relative character offsets
+ @returns mdast root whose node positions are body-relative character offsets in the body as written, a leading
+ byte order mark counted
 
  @throws {@link RangeError} when nesting exhausts the parser's stack
 
@@ -300,10 +610,18 @@ export function requireMdxRefusal({ error, }: { readonly error: unknown; },): Md
  ```
  */
 export function parseMarkdownBody({ body, }: { readonly body: string; },): Root {
-  return unified()
+  /**
+   Tree the grammar built, positions still short of a leading byte order mark.
+   */
+  const root = unified()
     .use(remarkParse,)
     .use(remarkGfm,)
     .parse(body,);
+  countDropped({
+    root,
+    body,
+  },);
+  return root;
 }
 
 /**

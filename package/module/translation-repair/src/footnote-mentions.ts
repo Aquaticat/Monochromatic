@@ -4,8 +4,9 @@ import {
 } from './footnote-graph.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import {
+  type DefinitionReading,
+  fragmentReadingOf,
   insideParsedSpan,
-  parsedSpansOf,
 } from './footnote-parsed-spans.ts';
 
 //region Footnote mentions
@@ -23,6 +24,10 @@ import {
 // `footnote-parsed-spans.ts`, which parses the fragment under both grammars
 // with no front matter split and its comments masked as the page masks them,
 // and leaves every marker it cannot place counted.
+//
+// The role is read the same way where the line alone cannot settle it: a label
+// indented four spaces or more is a definition only where the grammar the page
+// is parsed under has no indented code.
 //
 // The role is not decoration: a slice that turns `[^1]: the note` into prose
 // saying `see[^1]` mentions the identifier exactly as often as before, and
@@ -168,6 +173,37 @@ function opensDefinition(
 }
 
 /**
+ Whether the parse opens a footnote definition at an offset, as far as the
+ parse settles it.
+
+ @param definitions - where the parse of the text opens its definitions
+
+ @param offset - offset of the marker's `[`
+
+ @returns True where both grammars open one there, and where the parse
+ settles nothing about the text
+
+ @example
+ ```ts
+ const opens = parseOpensDefinition({ definitions: reading.definitions, offset: 4, },);
+ ```
+ */
+function parseOpensDefinition(
+  {
+    definitions,
+    offset,
+  }: {
+    readonly definitions: DefinitionReading;
+    readonly offset: number;
+  },
+): boolean {
+  if (!definitions.settled)
+    return true;
+  return definitions.starts
+    .has(offset,);
+}
+
+/**
  One footnote mention a text makes.
 
  FIELDS, NOT A KEY STRING (ledger B35): readers that wanted the identifier or
@@ -205,6 +241,15 @@ export type FootnoteMention = {
  as the graph counts it, and so does a shape in a code block or a raw HTML
  node, which a fragment cannot settle for the page.
 
+ A GFM marker is a definition only where it opens its line before its
+ separator AND the parse opens a definition at it, the way the footnote graph
+ reads a page: strict MDX where it accepts the text, plain markdown where it
+ does not. A label indented four spaces or more is a definition to the first
+ (it has no indented code) and a code block or a line of the paragraph to the
+ second, and a label in a list item or inside another definition is none to
+ the graph. Where plain markdown cannot read the text for its nesting, the
+ line alone decides.
+
  Role matters for attribution: a slice that turns `[^1]: the note` into prose
  saying `see[^1]` mentions the identifier exactly as often as before, and only
  the role says it changed. Every mention is listed, including a definition's
@@ -232,9 +277,13 @@ export function footnoteMentions(
    */
   const mentions: FootnoteMention[] = [];
   /**
-   Where the parse of the text reads no GFM reference.
+   Where the parse of the text reads no GFM reference, and where it opens a
+   definition.
    */
-  const unreadSpans = parsedSpansOf({ text, },);
+  const {
+    spans: unreadSpans,
+    definitions,
+  } = fragmentReadingOf({ text, },);
   for (const [convention, hits, separator, markerLength,] of [
     [
       'gfm',
@@ -262,12 +311,18 @@ export function footnoteMentions(
       },);
     for (const hit of hits) {
       mentions.push({
-        role: opensDefinition({
+        role: (opensDefinition({
           text,
           offset: hit.localOffset,
           markerLength: markerLength + identifierLength({ hit, },),
           separator,
         },)
+          // The full-width convention is no Markdown construct, so the parse
+          // says nothing of it.
+          && ((convention === 'fullwidth-bracket') || parseOpensDefinition({
+            definitions,
+            offset: hit.localOffset,
+          },)))
           ? 'definition'
           : 'reference',
         convention,

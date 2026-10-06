@@ -1,7 +1,6 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { PhrasingContent, } from 'mdast';
 
-import { codePointCount, } from './code-points.ts';
 import { contributorDeclarationLines, } from './contributor-name-authority.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import { parseMarkdownBody, } from './parse-mdx.ts';
@@ -35,12 +34,37 @@ const EDITORIAL_PREFIXES: readonly string[] = [
 ];
 
 /**
+ Characters of a text that show a reader something, by code point.
+
+ @param text - text read
+
+ @returns Code points that are not whitespace, default-ignorable or control
+
+ @example
+ ```ts
+ shownCodePointCount({ text: '猫\u{200B}在', },); // 2
+ ```
+ */
+function shownCodePointCount({ text, }: { readonly text: string; },): number {
+  /**
+   Code points seen so far.
+   */
+  let shown = 0;
+  for (const character of text) {
+    if (!rendersAsNothing({ text: character, },))
+      shown += 1;
+  }
+  return shown;
+}
+
+/**
  Checks exact source support is substantive and inside expected aligned section.
 
  READ THROUGH THE EVIDENCE FOLD (`normalizePunctuation`, ledger B24): a
  reviewer quoting the original writes its 「」 as English quotes as often as
  not, and the words are what the anchor asks about. The minimum is counted in
- characters, not UTF-16 units, as it says.
+ characters a reader sees, not UTF-16 units, as it says: a zero-width space, a
+ filler and a space anchor nothing.
 
  @param sourceContext - expected source section
 
@@ -74,7 +98,7 @@ export function isArchiveSourceQuoteAnchored(
    Quote as the evidence fold reads it.
    */
   const foldedQuote = normalizePunctuation({ text: normalizedQuote, },);
-  return (codePointCount({ text: normalizedQuote, },) >= MINIMUM_SOURCE_QUOTE_CHARACTERS)
+  return (shownCodePointCount({ text: normalizedQuote, },) >= MINIMUM_SOURCE_QUOTE_CHARACTERS)
     && foldedContext.includes(foldedQuote,);
 }
 

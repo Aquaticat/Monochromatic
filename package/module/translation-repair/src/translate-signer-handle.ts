@@ -8,6 +8,7 @@ import {
 import { isAsciiLetter, } from './ascii-letters.ts';
 import { carriesHan, } from './han-only-text.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Signer handle floor
 // LEDGER A17. The house rule (owner, 2026-09-22) romanizes a handle the
@@ -96,8 +97,8 @@ const PLACEHOLDER_MEANINGS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- Finding for one signer a candidate left in Han, wrote with no meaning, or
- glossed with a placeholder, or nothing.
+ Finding for one signer a candidate left in Han, signed with nothing a
+ reader sees, wrote with no meaning, or glossed with a placeholder, or nothing.
 
  @param name - signer as the original signs it
 
@@ -134,6 +135,12 @@ function signerFinding(
    */
   const instruction = `Write ${reading}, followed by what ${name} means in English in parentheses, as the house `
     + 'rule writes Jinxin (Brocade Heart); the page keeps the meaning at its first appearance and drops it after that.';
+  // WHAT SHOWS A READER NOTHING SIGNS NO ONE (ledger B40): a name of one
+  // zero-width space or Hangul filler has no Latin letters to compare with the
+  // reading, so it fell through to the reading-letters test, which passes a
+  // signer that is not the handle's reading.
+  if (rendersAsNothing({ text: rendered, },))
+    return [`The signature names ${name} and your translation signs it with nothing a reader can see. ${instruction}`,];
   if (carriesHan({ text: bare, },))
     return [`The signature names ${name} and your translation leaves it in Han. ${instruction}`,];
   if (readingLetters({ rendering: bare, },) !== readingLetters({ rendering: reading, },))
@@ -208,7 +215,10 @@ export function signerHandleFindings(
      page signs as often as the original does, so it has one at this place.
      */
     const pageName = pageAligned ? nonNullishOrThrow(pageNames[at],) : '';
-    if ((pageName !== '') && (!carriesHan({ text: pageName, },)))
+    // A PAGE SIGNER THAT SHOWS NOTHING RENDERS NO ONE, so it governs nothing.
+    if ((pageName !== '')
+      && (!carriesHan({ text: pageName, },))
+      && (!rendersAsNothing({ text: pageName, },)))
       return [];
     if (declared.some(function declares({ source, },): boolean {
       return source === name;

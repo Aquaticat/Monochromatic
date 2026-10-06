@@ -297,7 +297,7 @@ export function screenEvidence(
 
  @param issues - accepted issues of the chunk
 
- @returns Target-side quotes as the screen compares text, blank ones dropped
+ @returns Target-side quotes as the screen compares text, those that show a reader nothing dropped
 
  @example
  ```ts
@@ -332,7 +332,7 @@ function collectPriorQuotes(
         },);
     },)
     .filter(function isUsable(quote,) {
-      return quote !== '';
+      return !rendersAsNothing({ text: quote, },);
     },);
 }
 

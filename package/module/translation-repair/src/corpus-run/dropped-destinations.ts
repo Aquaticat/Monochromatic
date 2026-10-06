@@ -117,8 +117,12 @@ const RUN_STOPPERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- Trailing characters a run sheds, since sentence punctuation follows a link
- more often than it belongs to one.
+ Trailing characters a run sheds, since sentence punctuation and the marks
+ emphasis closes with follow a link more often than they belong to one: the
+ marks the parse's trail rule reads as no part of an address
+ (`micromark-extension-gfm-autolink-literal` 2.1.0, `tokenizeTrail`), less
+ the quotation marks, which end a run as stoppers, and the character
+ reference and bracket forms it also reads.
  */
 const RUN_TRAILERS: ReadonlySet<string> = new Set([
   '.',
@@ -127,6 +131,9 @@ const RUN_TRAILERS: ReadonlySet<string> = new Set([
   ':',
   '!',
   '?',
+  '*',
+  '_',
+  '~',
 ],);
 
 /**
@@ -218,10 +225,13 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
       from: start,
     },);
 
-    runs.push(trimDestination({ url: text.slice(
-      start,
-      end,
-    ), },),);
+    runs.push(trimDestination({
+      url: text.slice(
+        start,
+        end,
+      ),
+      cut: end - start,
+    },),);
     // The run always consumes at least its scheme, so the scan advances to
     // its end. LOUD IF IT EVER DOES NOT: a scheme opening on a stopper would
     // leave the cursor where it stood and this loop running for ever (ledger
@@ -362,6 +372,10 @@ function addressEnd(
 
  @param url - address as the scan or an autolink literal produced it
 
+ @param cut - where the address ends in it: the whole of a scanned run, which
+ `addressEnd` already cut in the page's text where the characters after it
+ could be read, and the first stopper of an autolink literal's address
+
  @returns Address ending where a reader's address ends
 
  @throws Error when the cut and the shed would leave nothing, which no
@@ -369,17 +383,22 @@ function addressEnd(
 
  @example
  ```ts
- const clean = trimDestination({ url: 'https://example.org/a\uff0c', },);
+ const clean = trimDestination({ url: 'https://example.org/a\uff0c', cut: 21, },);
  ```
  */
-function trimDestination({ url, }: { readonly url: string; },): string {
-  // ONE CUT: step back from the first stopper over the trailing sentence
+function trimDestination(
+  {
+    url,
+    cut: cutAt,
+  }: {
+    readonly url: string;
+    readonly cut: number;
+  },
+): string {
+  // ONE CUT: step back from where the address ends over the trailing sentence
   // punctuation, then slice once, rather than copying the address once per
   // mark shed (ledger B70).
-  for (let cut = addressEnd({
-    text: url,
-    from: 0,
-  },); cut > 0; cut -= 1) {
+  for (let cut = cutAt; cut > 0; cut -= 1) {
     if (!RUN_TRAILERS.has(url.charAt(cut - 1,),)) {
       return url.slice(
         0,
@@ -463,7 +482,13 @@ export function markdownDestinations(
        written with no destination.
        */
       const destination = ((node.type === 'link') && isAutolinkLiteral(node,))
-        ? trimDestination({ url: node.url, },)
+        ? trimDestination({
+          url: node.url,
+          cut: addressEnd({
+            text: node.url,
+            from: 0,
+          },),
+        },)
         : node.url;
       // AN EMPTY DESTINATION IS NOT READ: it names nowhere a reader could
       // follow, so no page owes it.

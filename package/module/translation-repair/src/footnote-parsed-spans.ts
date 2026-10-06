@@ -1,5 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import type { Root, } from 'mdast';
 
+import { definitionStartsOf, } from './footnote-definition-starts.ts';
 import {
   isAngleAutolink,
   isAutolinkLiteral,
@@ -348,6 +350,72 @@ function spansOfTree(
 }
 
 /**
+ What one grammar's parse of a fragment settles: where it reads no footnote
+ reference, and where it opens a footnote definition.
+
+ @example
+ ```ts
+ const reading: GrammarReading = { spans: [], definitionStarts: new Set([0,],), };
+ ```
+ */
+type GrammarReading = {
+  /**
+   Disjoint spans in source order where the parse reads no reference.
+   */
+  readonly spans: readonly ParsedSpan[];
+
+  /**
+   Offsets of the `[` of every footnote definition the parse reads as a
+   top-level block, containers dissolved, which is where the footnote graph
+   reads a definition.
+   */
+  readonly definitionStarts: ReadonlySet<number>;
+};
+
+/**
+ Reads what one parse of the masked text settles.
+
+ @param root - tree one grammar read the masked text into
+
+ @param masked - the text the parser read
+
+ @param comments - spans of the comments masked out of it
+
+ @returns The spans and the definition starts
+
+ @throws FootnoteRewriteError of the `position` kind when an unpositioned run
+ cannot be placed in the raw text, a tree shape no input is known to build
+
+ @throws {@link Error} when a parsed footnote definition carries no offset,
+ though the parser sets one on every node it builds
+
+ @example
+ ```ts
+ const reading = readTree({ root: parseMarkdownBody({ body: masked, },), masked, comments: [], },);
+ ```
+ */
+function readTree(
+  {
+    root,
+    masked,
+    comments,
+  }: {
+    readonly root: Root;
+    readonly masked: string;
+    readonly comments: readonly ParsedSpan[];
+  },
+): GrammarReading {
+  return {
+    spans: spansOfTree({
+      root,
+      masked,
+      comments,
+    },),
+    definitionStarts: definitionStartsOf({ root, },),
+  };
+}
+
+/**
  Plain markdown could not read the text, distinct from a text it reads with no
  span in it.
 
@@ -359,23 +427,23 @@ function spansOfTree(
 const NO_PLAIN_READING: unique symbol = Symbol('plain markdown refused the text for its nesting',);
 
 /**
- Reads the spans plain markdown gives.
+ Reads what plain markdown settles.
 
  @param masked - the text the parser reads
 
  @param comments - spans of the comments masked out of it
 
- @returns The spans, or {@link NO_PLAIN_READING} when the parser's stack is exhausted
+ @returns The reading, or {@link NO_PLAIN_READING} when the parser's stack is exhausted
 
  @throws FootnoteRewriteError of the `position` kind when an unpositioned run
  cannot be placed in the raw text, a tree shape no input is known to build
 
  @example
  ```ts
- const plain = plainSpans({ masked: 'A `nap [^6]`.', comments: [], },);
+ const plain = plainReading({ masked: 'A `nap [^6]`.', comments: [], },);
  ```
  */
-function plainSpans(
+function plainReading(
   {
     masked,
     comments,
@@ -383,9 +451,9 @@ function plainSpans(
     readonly masked: string;
     readonly comments: readonly ParsedSpan[];
   },
-): readonly ParsedSpan[] | typeof NO_PLAIN_READING {
+): GrammarReading | typeof NO_PLAIN_READING {
   try {
-    return spansOfTree({
+    return readTree({
       root: parseMarkdownBody({ body: masked, },),
       masked,
       comments,
@@ -465,8 +533,59 @@ function intersectSpans(
 }
 
 /**
- Reads the spans of a fragment in which the parse finds no footnote
- reference, in source order and disjoint.
+ Where a fragment's footnote definitions open, as far as the parse settles it.
+
+ @example
+ ```ts
+ const definitions: DefinitionReading = { settled: true, starts: new Set([0,],), };
+ ```
+ */
+export type DefinitionReading =
+  | {
+    /**
+     Plain markdown could not read the fragment, so no offset is known.
+     */
+    readonly settled: false;
+  }
+  | {
+    /**
+     The parse of the fragment settled where definitions open.
+     */
+    readonly settled: true;
+
+    /**
+     Offsets of the `[` of each footnote definition the page's own grammar
+     reads as a top-level block: the strict grammar's where it accepts the
+     fragment, plain markdown's where it does not.
+     */
+    readonly starts: ReadonlySet<number>;
+  };
+
+/**
+ What the parse of a fragment settles: where it finds no footnote reference,
+ and where it opens a footnote definition.
+
+ @example
+ ```ts
+ const reading: FragmentReading = { spans: [], definitions: { settled: true, starts: new Set(), }, };
+ ```
+ */
+export type FragmentReading = {
+  /**
+   Disjoint spans in source order where the parse finds no reference.
+   */
+  readonly spans: readonly ParsedSpan[];
+
+  /**
+   Where the parse opens a definition.
+   */
+  readonly definitions: DefinitionReading;
+};
+
+/**
+ Reads a fragment under both grammars: the spans in which the parse finds no
+ footnote reference, in source order and disjoint, and the offsets at which
+ it opens a footnote definition.
 
  THE PAGE MAY BE READ UNDER EITHER GRAMMAR (strict MDX where it accepts the
  page, plain markdown where it does not), and a fragment cannot know which.
@@ -475,25 +594,42 @@ function intersectSpans(
  grammars read it, which can only leave a marker counted. Where the strict
  grammar refuses the fragment, plain markdown alone decides.
 
+ A DEFINITION IS ONE THE PAGE'S OWN GRAMMAR OPENS, read the way `parseDocument`
+ chooses it: strict MDX where it accepts the fragment, plain markdown where it
+ does not. A label four spaces in or more is a definition to the strict
+ grammar, which has no indented code, and a code block or a line of the
+ paragraph to plain markdown, and the footnote graph reads whichever grammar
+ the page was parsed under. Skipping a region needs both grammars because a
+ dropped reference is the costly error; no role is the safe side, so the role
+ follows the grammar the page most likely has, which is the strict one for
+ a corpus that compiles as MDX upstream.
+
  @param text - fragment to read, whose front matter is not split and whose
  comments are masked here
 
  @returns Spans of URLs, inline code spans, images, link reference
  definitions, the markup around link and reference labels, and masked
  comments; none when the fragment holds no marker shape, or when the plain
- parser refuses it for its nesting, so that every marker there stays counted
+ parser refuses it for its nesting, so that every marker there stays counted.
+ The definition offsets, unsettled in that same refusal.
 
  @throws FootnoteRewriteError of the `position` kind when an unpositioned run
  cannot be placed in the raw text, a tree shape no input is known to build
 
  @example
  ```ts
- const spans = parsedSpansOf({ text: 'See https://cat.example/[^9]x [^1].', },);
+ const { spans, definitions, } = fragmentReadingOf({ text: 'See https://cat.example/[^9]x [^1].', },);
  ```
  */
-export function parsedSpansOf({ text, }: { readonly text: string; },): readonly ParsedSpan[] {
+export function fragmentReadingOf({ text, }: { readonly text: string; },): FragmentReading {
   if (!text.includes('[^',))
-    return [];
+    return {
+      spans: [],
+      definitions: {
+        settled: true,
+        starts: new Set(),
+      },
+    };
   /**
    The text as the page's parse reads it: no invisible-only line, no comment.
    */
@@ -515,30 +651,49 @@ export function parsedSpansOf({ text, }: { readonly text: string; },): readonly 
     };
   },);
   /**
-   Spans plain markdown gives, absent where its parser refuses the nesting.
+   What plain markdown settles, absent where its parser refuses the nesting.
    */
-  const plain = plainSpans({
+  const plain = plainReading({
     masked,
     comments,
   },);
   if (plain === NO_PLAIN_READING)
-    return [];
+    return {
+      spans: [],
+      definitions: { settled: false, },
+    };
   try {
-    return intersectSpans({
-      left: plain,
-      right: spansOfTree({
-        root: parseMdxBody({ body: masked, },),
-        masked,
-        comments,
-      },),
+    /**
+     What the strict grammar settles.
+     */
+    const strict = readTree({
+      root: parseMdxBody({ body: masked, },),
+      masked,
+      comments,
     },);
+    return {
+      spans: intersectSpans({
+        left: plain.spans,
+        right: strict.spans,
+      },),
+      definitions: {
+        settled: true,
+        starts: strict.definitionStarts,
+      },
+    };
   }
   catch (error) {
     // The strict grammar refused the fragment, so only plain markdown reads
     // it; anything but its refusal is an unexpected state that must keep
     // propagating.
     requireMdxRefusal({ error, },);
-    return plain;
+    return {
+      spans: plain.spans,
+      definitions: {
+        settled: true,
+        starts: plain.definitionStarts,
+      },
+    };
   }
 }
 
@@ -554,7 +709,7 @@ export function parsedSpansOf({ text, }: { readonly text: string; },): readonly 
 
  @example
  ```ts
- const inside = insideParsedSpan({ spans: parsedSpansOf({ text, },), offset: 20, },);
+ const inside = insideParsedSpan({ spans: fragmentReadingOf({ text, },).spans, offset: 20, },);
  ```
  */
 export function insideParsedSpan(

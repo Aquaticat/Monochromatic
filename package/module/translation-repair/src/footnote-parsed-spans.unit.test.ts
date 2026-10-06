@@ -16,9 +16,26 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  fragmentReadingOf,
   insideParsedSpan,
-  parsedSpansOf,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Spans of a fragment in which the parse finds no footnote reference.
+
+ @param text - fragment to read
+
+ @returns The spans, disjoint and in source order
+
+ @example
+ ```ts
+ const spans = spansOf({ text: 'A `nap [^6]`.', },);
+ ```
+ */
+function spansOf({ text, }: { readonly text: string; },): readonly { readonly start: number; readonly end: number; }[] {
+  return fragmentReadingOf({ text, },)
+    .spans;
+}
 
 /**
  The span of one stretch of a text, found by its spelling.
@@ -49,14 +66,14 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: parsedSpansOf.name,
+      name: fragmentReadingOf.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
           name: 'SPANS THE MARKUP AROUND AN INLINE LINK\'S LABEL and its destination, and none of the label\'s own text',
           fn: async () => {
             const text = 'A [paws [^1] nap](https://cat.example/[^9]x "t [^8]") then [^2].';
-            expect(parsedSpansOf({ text, },),).toEqual([
+            expect(spansOf({ text, },),).toEqual([
               { start: 2, end: 3, },
               spanOf({ text, stretch: '](https://cat.example/[^9]x "t [^8]")', },),
             ],);
@@ -67,7 +84,7 @@ await describe({
             + 'label\'s brackets is no reference',
           fn: async () => {
             const text = '[^9][cat] naps.\n\n[cat]: https://cat.example/[^4] "t"';
-            expect(parsedSpansOf({ text, },),).toEqual([
+            expect(spansOf({ text, },),).toEqual([
               { start: 0, end: 1, },
               { start: 3, end: 9, },
               spanOf({ text, stretch: '[cat]: https://cat.example/[^4] "t"', },),
@@ -81,7 +98,7 @@ await describe({
             const literal = 'www.cat.example/[^7]x';
             const afterHan = 'https://cat.example/[^6]x';
             const text = `A ${angle} nap ${literal} 猫见${afterHan} 睡 [^1].`;
-            expect(parsedSpansOf({ text, },),).toEqual([
+            expect(spansOf({ text, },),).toEqual([
               spanOf({ text, stretch: angle, },),
               spanOf({ text, stretch: literal, },),
               spanOf({ text, stretch: afterHan, },),
@@ -92,8 +109,8 @@ await describe({
           name: 'SPANS ONLY THE MARKER SHAPE of a literal the autolink transform built, which stands in text no '
             + 'position was kept for',
           fn: async () => {
-            expect(parsedSpansOf({ text: 'A cat：www.c.example/[^9]x [^3]', },),).toEqual([{ start: 20, end: 24, },],);
-            expect(parsedSpansOf({ text: '猫.www.c.example/[^7]y 睡 [^3]', },),).toEqual([{ start: 16, end: 20, },],);
+            expect(spansOf({ text: 'A cat：www.c.example/[^9]x [^3]', },),).toEqual([{ start: 20, end: 24, },],);
+            expect(spansOf({ text: '猫.www.c.example/[^7]y 睡 [^3]', },),).toEqual([{ start: 16, end: 20, },],);
           },
         },),
         it({
@@ -103,7 +120,7 @@ await describe({
             const image = '![cat [^5]](u)';
             const comment = '<!-- note [^3] -->';
             const text = `A ${code} ${image} ${comment} nap [^1]. B \`nap <!-- [^2] -->\` [^4].`;
-            expect(parsedSpansOf({ text, },),).toEqual([
+            expect(spansOf({ text, },),).toEqual([
               spanOf({ text, stretch: code, },),
               spanOf({ text, stretch: image, },),
               spanOf({ text, stretch: comment, },),
@@ -115,34 +132,56 @@ await describe({
           name: 'SPANS NOTHING where only references stand, and in a code block, which a fragment cannot settle for '
             + 'its page',
           fn: async () => {
-            expect(parsedSpansOf({ text: 'A cat naps [^1].', },),).toEqual([],);
-            expect(parsedSpansOf({ text: '```\n[^2]\n```\n[^1]', },),).toEqual([],);
+            expect(spansOf({ text: 'A cat naps [^1].', },),).toEqual([],);
+            expect(spansOf({ text: '```\n[^2]\n```\n[^1]', },),).toEqual([],);
           },
         },),
         it({
           name: 'SPANS AN UNCLOSED COMMENT to the text\'s end, as the page masks it',
           fn: async () => {
-            expect(parsedSpansOf({ text: 'A [^1] <!-- [^2]', },),).toEqual([{ start: 7, end: 16, },],);
+            expect(spansOf({ text: 'A [^1] <!-- [^2]', },),).toEqual([{ start: 7, end: 16, },],);
           },
         },),
         it({
           name: 'SPANS A REGION ONLY WHERE STRICT MDX AND PLAIN MARKDOWN BOTH READ IT: a fence indented four spaces '
             + 'closes the paragraph for one and pairs the backticks into a code span for the other',
           fn: async () => {
-            expect(parsedSpansOf({ text: 'A ```[^8] cat\n    ``` [^3]', },),).toEqual([],);
-            expect(parsedSpansOf({ text: 'A `nap [^6]` cat\n    ``` [^3]', },),).toEqual([{ start: 2, end: 12, },],);
+            expect(spansOf({ text: 'A ```[^8] cat\n    ``` [^3]', },),).toEqual([],);
+            expect(spansOf({ text: 'A `nap [^6]` cat\n    ``` [^3]', },),).toEqual([{ start: 2, end: 12, },],);
           },
         },),
         it({
           name: 'SPANS NOTHING for a text with no marker shape',
           fn: async () => {
-            expect(parsedSpansOf({ text: 'A cat naps at https://cat.example/ `here`.', },),).toEqual([],);
+            expect(spansOf({ text: 'A cat naps at https://cat.example/ `here`.', },),).toEqual([],);
           },
         },),
         it({
           name: 'SPANS NOTHING for a text the parser refuses for its nesting, so every marker there stays counted',
           fn: async () => {
-            expect(parsedSpansOf({ text: `${'>'.repeat(16_000,)} https://cat.example/[^9]x [^1]`, },),).toEqual([],);
+            expect(spansOf({ text: `${'>'.repeat(16_000,)} https://cat.example/[^9]x [^1]`, },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'READS THE DEFINITIONS OF THE PAGE\'S OWN GRAMMAR: the strict grammar\'s where it accepts the text, '
+            + 'plain markdown\'s where it refuses it, none where the text holds no marker shape, and none settled '
+            + 'where plain markdown cannot read the text',
+          fn: async () => {
+            expect(fragmentReadingOf({ text: '    [^1]: note\n', },).definitions,).toEqual({
+              settled: true,
+              starts: new Set([4,],),
+            },);
+            expect(fragmentReadingOf({ text: '    [^1]: note\n\nA <br> here.\n', },).definitions,).toEqual({
+              settled: true,
+              starts: new Set(),
+            },);
+            expect(fragmentReadingOf({ text: 'A cat naps.', },).definitions,).toEqual({
+              settled: true,
+              starts: new Set(),
+            },);
+            expect(fragmentReadingOf({ text: `${'>'.repeat(16_000,)} cat\n\n[^1]: note\n`, },).definitions,).toEqual({
+              settled: false,
+            },);
           },
         },),
       ],

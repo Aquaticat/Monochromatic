@@ -1,4 +1,8 @@
-import { inlineContainerTags, } from './inline-container-tags.ts';
+import {
+  inlineContainerTags,
+  isTagWhitespace,
+  tagEnd,
+} from './inline-container-tags.ts';
 import { isAsciiLetter, } from './ascii-letters.ts';
 
 //region Lone container tag masking
@@ -89,29 +93,13 @@ type PairingTag = Readonly<{
 }>;
 
 /**
- Whether a character is a space or a tab, the whitespace a tag line holds
- between its name and what follows.
-
- @param character - one character of a tag line
-
- @returns True for a space or a tab
-
- @example
- ```ts
- isSpaceOrTab('\t',); // true
- ```
- */
-function isSpaceOrTab(character: string,): boolean {
-  return (character === ' ') || (character === '\t');
-}
-
-/**
  Offset where an element name ends in the text after a tag's bracket and
  slash.
 
  @param body - text after the opening bracket, and after the slash of a closer
 
- @returns Offset of the first space or tab, or the length when there is none
+ @returns Offset of the first whitespace the strict grammar steps over, or the
+ length when there is none
 
  @example
  ```ts
@@ -120,7 +108,7 @@ function isSpaceOrTab(character: string,): boolean {
  */
 function nameEndOf({ body, }: { readonly body: string; },): number {
   for (let at = 0; at < body.length; at += 1) {
-    if (isSpaceOrTab(body.charAt(at,),))
+    if (isTagWhitespace({ character: body.charAt(at,), },))
       return at;
   }
   return body.length;
@@ -194,9 +182,8 @@ function tagOnLine(
     return [];
 
   /**
-   Where the name ends: at the first space or tab, which the strict grammar
-   steps over between a name and an attribute or the closing bracket, or the
-   end.
+   Where the name ends: at the first whitespace the strict grammar steps over
+   between a name and an attribute or the closing bracket, or the end.
    */
   const nameEnd = nameEndOf({ body, },);
 
@@ -212,10 +199,12 @@ function tagOnLine(
   // the strict grammar reads as closing the element; anything else past the
   // name names no element.
   /**
-   Whether only spaces and tabs follow the name.
+   Whether only whitespace follows the name.
    */
   const bareAfterName = Array.from(body.slice(nameEnd,),)
-    .every(isSpaceOrTab,);
+    .every(function isWhitespace(character,): boolean {
+      return isTagWhitespace({ character, },);
+    },);
   if (closes && (!bareAfterName))
     return [];
 
@@ -226,6 +215,106 @@ function tagOnLine(
     startOffset: lineStart,
     endOffset: lineStart + trimmed.length,
   },];
+}
+
+/**
+ Whether a text holds nothing but whitespace the strict grammar steps over.
+
+ @param text - text to read
+
+ @returns True for a text of whitespace alone, the empty text included
+
+ @example
+ ```ts
+ isWhitespaceOnly({ text: ' \t', },); // true
+ ```
+ */
+function isWhitespaceOnly({ text, }: { readonly text: string; },): boolean {
+  return Array.from(text,)
+    .every(function isWhitespace(character,): boolean {
+      return isTagWhitespace({ character, },);
+    },);
+}
+
+/**
+ Where a tag that crosses a line break ends, when the line it opens on is the
+ head of one: a `<` and a letter or a slash and a letter, with no bracket
+ ending the tag on that line.
+
+ THE STRICT GRAMMAR STEPS OVER A LINE BREAK between a name and an attribute or
+ the closing bracket as it does over a space, so `<details` then `  open>` on
+ the next line is one tag. The tag must end before any blank line and leave
+ nothing but whitespace after its bracket on its last line, or the line is
+ prose that opens with a bracket and is read as before.
+
+ @param text - slice to scan
+
+ @param lineStart - offset of the line's first character
+
+ @param lineEnd - exclusive end of that line's content
+
+ @returns Offset just past the tag's bracket, -1 when the line heads no such tag
+
+ @example
+ ```ts
+ const end = multiLineTagEnd({ text: '<details\n  open>\n', lineStart: 0, lineEnd: 8, },);
+ ```
+ */
+function multiLineTagEnd(
+  {
+    text,
+    lineStart,
+    lineEnd,
+  }: {
+    readonly text: string;
+    readonly lineStart: number;
+    readonly lineEnd: number;
+  },
+): number {
+  if (text.charAt(lineStart,) !== '<')
+    return -1;
+  /**
+   Offset of the character after the bracket, and the slash of a closer.
+   */
+  const nameAt = lineStart + (text.charAt(lineStart + 1,) === '/' ? 2 : 1);
+  if (!isAsciiLetter({ character: text.charAt(nameAt,), },))
+    return -1;
+  /**
+   Offset of the bracket ending the tag, which must stand past this line.
+   */
+  const close = tagEnd({
+    text,
+    from: nameAt,
+  },);
+  if (close < lineEnd)
+    return -1;
+  /**
+   The tag as written, line breaks included.
+   */
+  const span = text.slice(
+    lineStart,
+    close + 1,
+  );
+  if (span.split('\n',)
+    .some(function isBlank(line,): boolean {
+      return isWhitespaceOnly({ text: line, },);
+    },))
+    return -1;
+  /**
+   Offset of the line break ending the tag's last line, the text's end when none.
+   */
+  const lastLineEnd = text.indexOf(
+    '\n',
+    close,
+  );
+  if (!isWhitespaceOnly({
+    text: text.slice(
+      close + 1,
+      (lastLineEnd === (-1)) ? text.length : lastLineEnd,
+    ),
+  },))
+    return -1;
+  return close + 1;
 }
 
 /**
@@ -258,6 +347,42 @@ function tagLinesOf({ text, }: { readonly text: string; },): readonly TagLine[] 
      Exclusive end of this line's content.
      */
     const lineEnd = (newlineAt === (-1)) ? text.length : newlineAt;
+
+    /**
+     Where a tag opening on this line ends past it, -1 when none does.
+     */
+    const spanEnd = multiLineTagEnd({
+      text,
+      lineStart,
+      lineEnd,
+    },);
+    /**
+     The tag crossing line breaks, read as a line of its own, empty when the
+     lines hold none.
+     */
+    const crossing = (spanEnd === (-1))
+      ? []
+      : tagOnLine({
+        line: text.slice(
+          lineStart,
+          spanEnd,
+        ),
+        lineStart,
+      },);
+    if (crossing.length > 0) {
+      found.push(...crossing,);
+      /**
+       Offset of the line break ending the tag's last line.
+       */
+      const lastNewline = text.indexOf(
+        '\n',
+        spanEnd,
+      );
+      if (lastNewline === (-1))
+        break;
+      lineStart = lastNewline + 1;
+      continue;
+    }
 
     found.push(...tagOnLine({
       line: text.slice(
@@ -428,7 +553,13 @@ export function maskLoneContainerTags(
           cursor,
           tag.startOffset,
         ),
-        ' '.repeat(tag.endOffset - tag.startOffset,),
+        // The line breaks inside a tag stay, so every line is where it stood.
+        tag.text
+          .split('\n',)
+          .map(function blanked(line,): string {
+            return ' '.repeat(line.length,);
+          },)
+          .join('\n',),
       );
       cursor = tag.endOffset;
     }

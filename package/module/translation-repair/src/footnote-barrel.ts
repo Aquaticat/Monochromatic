@@ -62,9 +62,10 @@ export {
   FootnoteOverflowError,
   MAX_SLICE_IDENTIFIERS,
 } from './footnote-mentions.ts';
+export { definitionStartsOf, } from './footnote-definition-starts.ts';
 export {
+  fragmentReadingOf,
   insideParsedSpan,
-  parsedSpansOf,
 } from './footnote-parsed-spans.ts';
 export type {
   FootnoteConvention,

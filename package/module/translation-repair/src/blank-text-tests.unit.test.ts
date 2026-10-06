@@ -1756,12 +1756,6 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: ASSEMBLED,
   },
-  'introduced-defect-screen.ts#isUsable': {
-    tests: 1,
-    why: 'KNOWN GAP, in a file this scan\'s change could not edit: a prior quote is dropped only when the '
-      + 'screen\'s fold leaves it empty, so one of a single invisible character, read from a stored issue, '
-      + 'is kept; the question is `rendersAsNothing`, and fixing it removes this entry',
-  },
   'introduced-defect-screen.ts#restatesPriorIssue': {
     tests: 1,
     why: 'a claim\'s quote as the screen folded it, thrown on when empty since an empty quote sits inside '

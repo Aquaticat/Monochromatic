@@ -133,7 +133,11 @@ export function nameAuthorities(
         at,
         count: signed.length,
       },);
-      if (archive !== undefined) {
+      // WHAT SHOWS A READER NOTHING RENDERS NO ONE here either: the archive's
+      // signature is parsed text and so was left (ledger B194), but a name of
+      // one zero-width space written there would be restored over the heading
+      // naming the signer.
+      if ((archive !== undefined) && (!rendersAsNothing({ text: archive.name, },))) {
         authorities.set(
           name,
           {
