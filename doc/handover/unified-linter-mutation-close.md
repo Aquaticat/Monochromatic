@@ -989,6 +989,20 @@ The exclusion patterns were added to all of them and checked only by listing,
 except the inline `mutation:processors` task,
 whose command array was evaluated and inspected but not run.
 
+### Fuzz sidecar
+
+`package/linter/monochromatic-lint.fuzz` was not edited.
+It calls none of the functions whose signatures changed
+(`has_ancestor`,
+`text_content`,
+`text_nodes`,
+`paragraph_for` and `delimiter_tail`),
+and its `lint:types` task
+(`cargo check --lib` and Clippy with warnings denied, on the host toolchain)
+passes against the final library.
+Its AddressSanitizer build,
+its unit controls and its smoke run were not rerun.
+
 ### What the panic hook and the worker stack leave open
 
 - `parse_and_run` calls `std::panic::set_hook` when `silences_panics` returns true.
