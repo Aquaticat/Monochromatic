@@ -100,7 +100,9 @@ Each state is marked by more than color:
   the cursor and three columns in full ink;
 - with keyboard focus,
   three columns in the accent color
-  and a 5 px by 48 px handle in the same color in the middle of the line.
+  and a 5 px by 96 px handle in the same color in the middle of the line,
+  never taller than the divider
+  (the user chose the 96 px handle on 2026-10-06).
 
 ### Divider hit area
 
@@ -209,6 +211,7 @@ and the rendered columns of every state.
 each edge of the zone,
 and each keyboard-focus mark in a disposable copy
 and checks that its named test fails.
+The divider's accessible slider is tested under [Accessibility checks](#accessibility-checks).
 
 ## Combined search
 
@@ -436,6 +439,14 @@ a cell 16 px wide whose width cannot be set from outside
 `widgets/common/lineedit-base.slint` lines 189 to 196).
 The user decided on 2026-10-05 to keep the control and give it a click target of at least 48 px by 48 px.
 
+The box also differs in the ink of selected text.
+The toolkit box draws the palette's accent ink,
+which is black in the dark scheme and white in the light one.
+Both boxes here take the ink of every other selection,
+which native code chooses from the selection fill
+(the user's choice of 2026-10-06);
+see [Selected text ink](#selected-text-ink).
+
 ### Clear control
 
 The x at the trailing end of the box empties the text.
@@ -470,6 +481,24 @@ Each pointer state has two marks:
 - pressed,
   a stronger fill and a 2 px boundary.
 
+The plate covers the whole 48 px cell,
+so it shows the click target's real extent
+(the user's choice of 2026-10-06).
+Its fill and boundary are the foreground ink at reduced opacity:
+the fill at 10 percent under the pointer and 24 percent pressed,
+the boundary at 50 percent and 80 percent.
+On the cell's top,
+right,
+and bottom edges the boundary lies on the box's border.
+The border is composited under it but shifts its color by only 2 to 8 gray levels,
+so while the plate shows,
+the boundary takes the border's place there.
+The focus line is drawn after the plate,
+so it keeps its color in every state;
+its contrast against the plate's fill is at least 3.5:1 in both schemes.
+The measured colors are in `design/README.md`,
+under "Applied frames of the 2026-10-06 UI batch 3b".
+
 Accessibility tools see a `button` named `Clear find text` or `Clear search query`
 whose default action clears.
 The toolkit's control is not exposed to them at all.
@@ -479,10 +508,9 @@ The toolkit's control is not exposed to them at all.
 Read from `widgets/common/lineedit-base.slint` and `widgets/fluent/lineedit.slint` of Slint 1.18.1:
 
 - The placeholder shows while the text and any input-method composition are both empty.
-- Selected text has the palette's selection fill and the palette's accent ink,
-  which is black in the dark scheme and white in the light one.
-  The source view and selected rows choose their ink from the fill instead;
-  see [Selected text ink](#selected-text-ink).
+- Selected text has the palette's selection fill;
+  its ink is not the toolkit's,
+  as described under [Find and search text box](#find-and-search-text-box).
 - A text wider than the box scrolls with the caret:
   while the caret moves through the text it stays 24 px inside the text area,
   and the end of the text reaches the area's edge.
@@ -538,12 +566,124 @@ its whole-cell click target,
 its edit report,
 and each half of its shown rule in a disposable copy
 and check that the named tests fail.
+They also put the toolkit's accent ink back on selected text
+(`box-selected-ink`)
+or drop it where the window and the panels pass the chosen ink on
+(`find-box-ink-passed`,
+`find-bar-ink-passed`,
+`search-box-ink-passed`),
+shrink the plate to 32 px
+(`plate-whole-cell`),
+and make its boundary opaque
+(`plate-translucent`).
 Input-method composition was not exercised:
 the toolkit's public window events carry no composition event,
 and the nested compositor provides no input method.
-Accessible properties were read from the running application
-through the toolkit's inspection server during the native frame captures;
-see `design/README.md`.
+The role,
+label,
+value,
+placeholder,
+and actions of both boxes and both clear controls are tested under [Accessibility checks](#accessibility-checks).
+
+## Accessibility checks
+
+`test:native` reads what assistive tools are given through Slint's element handles
+(`ElementHandle` of the test-only dependency `i-slint-backend-testing`),
+the same accessible properties and actions the toolkit hands to the platform accessibility bridge.
+The user allowed the dependency on 2026-10-06.
+It is internal to Slint and has no semver guarantee,
+so `Cargo.toml` requires exactly `=1.18.1`,
+the resolved `slint` version;
+both must be raised together.
+It was already in `Cargo.lock` through `slint`,
+so adding it added no package.
+
+An element is found by its accessible label,
+and exactly one element may carry it.
+A row is found by its role and label inside its own list,
+because the tree and the search results can list the same file name.
+The texts inside tree,
+search,
+and location rows,
+and the location list's title,
+are not accessibility elements
+(the user's choice of 2026-10-06):
+the row or the list carries the name,
+so a screen reader reads it once.
+A tree row's slot badge is one of those texts,
+so the row's description names its shortcut,
+as in `Source file, Ctrl+3`.
+A handle does not keep its element alive,
+so a row is looked up again after the list changes.
+
+- `src/native/accessible_box_tests.rs`:
+  the find box and the search box are `text-input` elements with their label,
+  placeholder,
+  and value,
+  and the find box's description is the match count (`Match 1 of 2`);
+  setting the value runs find or search as typing does.
+  The search box's description counts the results in the same words:
+  empty without a query,
+  `Searching` while a search runs,
+  `Result 1 of 2` for the selected row,
+  `No results` when nothing matches,
+  the error text when the search failed,
+  and `2 results, none selected` while no row is selected.
+  Each clear control is a `button` of at least 48 px by 48 px that is offered only while the box has text,
+  and its default action empties the box,
+  removes the count or the results,
+  and keeps keyboard focus in the box.
+- `src/native/accessible_divider_tests.rs`:
+  the divider is a horizontal `slider` named `Sidebar width`
+  that reports the width,
+  160 px and the widest width as its bounds,
+  and a 16 px step.
+  The increment,
+  decrement,
+  and set-value actions,
+  and Left,
+  Right,
+  Home,
+  and End with keyboard focus,
+  change the value it reports;
+  a set value above the widest width reports the widest.
+- `src/native/accessible_list_tests.rs`:
+  the tree,
+  the search results,
+  and the location list report their role,
+  name,
+  and row count.
+  Every row is a selectable `list-item` with its name and position.
+  In the tree the open file's row is the selected one,
+  and opening another file through its row's default action moves the selection;
+  a directory row is expandable,
+  and its expand action expands it.
+  In the search results and the location list the selected row follows Down and Up,
+  and a location row's default action chooses it.
+  In every list exactly one element carries a row's name,
+  and only the location list carries its title;
+  a tree row's description is `Directory`,
+  or `Source file` followed by the shortcut of its slot badge.
+
+Each test has a guard-removal control,
+run in a disposable copy,
+that was observed to fail with its guard removed:
+`a11y-set-value-edits` and `a11y-clear-role` in `inspect:find-guards`,
+`a11y-clear-default-action` and `a11y-result-selected` in `inspect:search-guards`,
+`a11y-divider-increment` and `a11y-tree-row-selected` in `inspect:sidebar-guards`,
+and `a11y-location-selected` in `inspect:language-navigation-guards`.
+The hidden texts and the search count have their own:
+`a11y-result-text-hidden` and `a11y-search-count` in `inspect:search-guards`,
+`a11y-tree-row-text-hidden` and `a11y-tree-badge-shortcut` in `inspect:sidebar-guards`,
+and `a11y-location-text-hidden` and `a11y-location-title-hidden` in `inspect:language-navigation-guards`.
+
+What these checks do not cover:
+
+- The platform bridge itself (AT-SPI on Linux) and a screen reader's speech:
+  element handles read the toolkit's side of the bridge.
+- Whether a screen reader announces the search box's new description as results arrive:
+  element handles read the property,
+  not the change events the bridge sends.
 
 ## Language module
 
@@ -1562,6 +1702,9 @@ The last line needs no terminator.
 
 Selected text is drawn in white while white reaches a contrast ratio of 3:1 against the selection fill,
 and in black on a lighter fill.
+The same ink is used in the source view,
+on selected rows,
+and for selected text in the find and search boxes.
 The toolkit's fluent palette keeps the fill `#0078D4` in both color schemes
 but pairs it with black ink in the dark scheme.
 Black on that fill has a WCAG 2 ratio of 4.64 and white of 4.53,

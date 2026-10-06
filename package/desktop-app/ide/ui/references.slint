@@ -86,6 +86,8 @@ export component ReferenceList inherits Rectangle {
             font-weight: 600;
             vertical-alignment: center;
             overflow: elide;
+            // The list carries the title as its name; the text is not read a second time.
+            accessible-role: none;
         }
         rows := ScrollView {
             x: 4px;
@@ -124,6 +126,8 @@ export component ReferenceList inherits Rectangle {
                         font-weight: item.selected ? 600 : 400;
                         vertical-alignment: center;
                         overflow: elide;
+                        // The row carries its label and detail as name and description; its texts are not read again.
+                        accessible-role: none;
                     }
                     if entry.detail != "": Text {
                         horizontal-stretch: 0;
@@ -131,6 +135,7 @@ export component ReferenceList inherits Rectangle {
                         color: item.selected ? root.selected-ink : Palette.foreground;
                         font-weight: 600;
                         vertical-alignment: center;
+                        accessible-role: none;
                     }
                 }
                 TouchArea {
