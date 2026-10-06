@@ -353,3 +353,36 @@ pub mod transaction_journal_encode;
 
 /// Strict parsers of every journal record.
 pub mod transaction_journal_parse;
+
+/// UTC timestamps in the exact form of JavaScript's `toISOString`.
+pub mod iso_time;
+
+/// The filesystem identity recorded with every real `index.lock` a transaction creates.
+pub mod filesystem_identity;
+
+/// Running real Git for transaction, recovery and landing work.
+pub mod transaction_git;
+
+/// The preparation and landing leases nested wrapper invocations inherit.
+pub mod transaction_lease;
+
+/// No-follow file operations recovery and landing share.
+pub mod recovery_files;
+
+/// Durable evidence a dead transaction left: attempt records, owned locks and Git's PID file.
+pub mod recovery_evidence;
+
+/// The reflog search that proves which commit an interrupted transaction landed.
+pub mod recovery_reflog;
+
+/// Deciding whether a landing landed, and installing its recorded post-index.
+pub mod recovery_completion;
+
+/// The `.keep` files protecting a landing's migrated pack.
+pub mod pack_keep;
+
+/// Git commands run against a transaction's shadow repository.
+pub mod shadow_git;
+
+/// Native conclusion cleanup reproduced in the owning worktree.
+pub mod conclusion_cleanup;

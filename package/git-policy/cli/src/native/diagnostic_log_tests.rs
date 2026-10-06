@@ -6,12 +6,12 @@ use super::*;
 #[test]
 fn a_diagnostic_is_one_line() {
     assert_eq!(
-        diagnostic_line("debug", "recovery", "owner 7 alive"),
-        "cli-git debug [recovery] owner 7 alive\n"
+        diagnostic_line("debug", "2026-10-06T21:40:39.524Z", "recovery", "owner 7 alive"),
+        "[debug] [2026-10-06T21:40:39.524Z] [cli-git] [recovery] owner 7 alive\n"
     );
     assert_eq!(
-        diagnostic_line("warn", "capture", "a\nb\r\nc"),
-        "cli-git warn [capture] a b  c\n"
+        diagnostic_line("warn", "t", "capture", "a\nb\r\nc\u{1b}[31m"),
+        "[warn] [t] [cli-git] [capture] a b  c [31m\n"
     );
 }
 

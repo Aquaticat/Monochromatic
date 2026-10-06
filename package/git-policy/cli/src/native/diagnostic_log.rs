@@ -10,6 +10,8 @@
 //! const l = tagged({ tag: 'cli-git' }); l.debug(message); l.warn(message);
 //! ```
 
+/// The current time in `toISOString` form.
+use super::iso_time::now_iso;
 /// The trait that gives output streams `.write_all(..)`.
 use std::io::Write;
 
@@ -58,17 +60,27 @@ fn is_false(value: std::ffi::OsString) -> bool {
     return value == "false";
 }
 
-/// What: One diagnostic line: `cli-git <level> [<tag>] <message>`, with every line break in
+/// What: One diagnostic line in the incumbent's console format,
+///       `[<level>] [<ISO time>] [cli-git] [<tag>] <message>`, with every control character of
 ///       the message replaced by a space.
-/// Why:  One line per record keeps stderr parseable beside JSONL events.
+/// Why:  The incumbent's tagged loggers print `[warn] [2026-10-06T21:40:39.524Z] [cli-git] ...`;
+///       one line per record keeps standard error parseable beside JSONL events.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// `cli-git ${level} [${tag}] ${message.replaceAll(/[\r\n]/g, ' ')}\n`
+/// `[${level}] [${new Date().toISOString()}] [cli-git] [${tag}] ${neutralize(message)}\n`
 /// ```
-pub fn diagnostic_line(level: &str, tag: &str, message: &str) -> String {
-    let single: String = message.replace(['\r', '\n'], " ");
-    return format!("cli-git {level} [{tag}] {single}\n");
+pub fn diagnostic_line(level: &str, time: &str, tag: &str, message: &str) -> String {
+    // `mut` allows building the neutralized message one character at a time.
+    let mut single: String = String::with_capacity(message.len());
+    for character in message.chars() {
+        if character.is_control() {
+            single.push(' ');
+        } else {
+            single.push(character);
+        }
+    }
+    return format!("[{level}] [{time}] [cli-git] [{tag}] {single}\n");
 }
 
 /// What: Write one complete line to standard error, ignoring a closed stream.
@@ -93,7 +105,7 @@ fn write_line(line: &str) {
 /// ```
 pub fn debug(tag: &str, message: &str) {
     if verbose_enabled() {
-        write_line(diagnostic_line("debug", tag, message).as_str());
+        write_line(diagnostic_line("debug", now_iso().as_str(), tag, message).as_str());
     }
 }
 
@@ -107,7 +119,7 @@ pub fn debug(tag: &str, message: &str) {
 /// ```
 pub fn warn(tag: &str, message: &str) {
     if !warnings_suppressed() {
-        write_line(diagnostic_line("warn", tag, message).as_str());
+        write_line(diagnostic_line("warn", now_iso().as_str(), tag, message).as_str());
     }
 }
 
