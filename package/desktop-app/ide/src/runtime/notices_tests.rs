@@ -176,8 +176,14 @@ fn every_text_is_printed_in_full_under_a_heading_naming_its_component_and_path()
     let crate_block = format!(
         "\n{rule}\nRust crates under MIT License (MIT): 1 crate\nUsed by: anyhow 1.0.104\nText from the crate file anyhow-1.0.104/LICENSE-MIT\n{rule}\n\nCopyright (c) The anyhow authors\n"
     );
-    assert!(text.contains(&crate_block), "missing the crate block:\n{text}");
-    assert!(!text.contains("Embedded as LICENSES/crates.json"), "the raw list was printed");
+    assert!(
+        text.contains(&crate_block),
+        "missing the crate block:\n{text}"
+    );
+    assert!(
+        !text.contains("Embedded as LICENSES/crates.json"),
+        "the raw list was printed"
+    );
     assert!(!text.contains("Taken from a repository"));
     assert!(!text.contains("parser"));
 }

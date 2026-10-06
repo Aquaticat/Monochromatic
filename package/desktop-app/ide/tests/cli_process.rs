@@ -296,10 +296,16 @@ fn licenses_prints_every_embedded_text_without_a_display_or_home() {
         );
         assert!(text.contains(&heading), "missing {heading}");
         let body = format!("{rule}\n\n{}", license["text"].as_str().expect("text"));
-        assert!(text.contains(&body), "a text of {heading} is not printed in full");
+        assert!(
+            text.contains(&body),
+            "a text of {heading} is not printed in full"
+        );
     }
     // Every crate of the list is named by name and version under some heading.
-    for used in crates.iter().flat_map(|license| return license["crates"].as_array().expect("crates").iter()) {
+    for used in crates
+        .iter()
+        .flat_map(|license| return license["crates"].as_array().expect("crates").iter())
+    {
         let named = format!(
             "{} {}",
             used["name"].as_str().expect("crate name"),

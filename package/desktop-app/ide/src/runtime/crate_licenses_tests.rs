@@ -13,7 +13,10 @@ fn every_entry_gets_its_heading_crates_and_source() {
     let list = parse(LIST).expect("well-formed list");
     assert_eq!(list.licenses.len(), 2);
     let shared = &list.licenses[0];
-    assert_eq!(shared.heading(), "Rust crates under MIT License (MIT): 2 crates");
+    assert_eq!(
+        shared.heading(),
+        "Rust crates under MIT License (MIT): 2 crates"
+    );
     assert_eq!(
         shared.origin(),
         vec![
@@ -38,26 +41,42 @@ fn every_entry_gets_its_heading_crates_and_source() {
 
 #[test]
 fn long_crate_lists_wrap_under_the_prefix_and_keep_long_names_whole() {
-    let items: Vec<String> = (0..30).map(|index| return format!("crate-{index} 1.0.0,")).collect();
+    let items: Vec<String> = (0..30)
+        .map(|index| return format!("crate-{index} 1.0.0,"))
+        .collect();
     let lines = wrap("Used by: ", &items);
     assert!(lines.len() > 1, "{lines:?}");
     for line in &lines {
         assert!(line.len() <= 78, "{line}");
     }
     assert!(lines[1].starts_with("         crate-"), "{lines:?}");
-    assert_eq!(lines.join(" ").split_whitespace().filter(|word| return word.starts_with("crate-")).count(), 30);
+    assert_eq!(
+        lines
+            .join(" ")
+            .split_whitespace()
+            .filter(|word| return word.starts_with("crate-"))
+            .count(),
+        30
+    );
     let long = vec!["x".repeat(100)];
-    assert_eq!(wrap("Used by: ", &long), vec![format!("Used by: {}", "x".repeat(100))]);
+    assert_eq!(
+        wrap("Used by: ", &long),
+        vec![format!("Used by: {}", "x".repeat(100))]
+    );
 }
 
 #[test]
 fn registry_and_git_sources_are_shown_from_the_crate_folder_on() {
     assert_eq!(
-        crate_relative("/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sonic-number-0.1.3/licenses/LICENSE-sonic_cpp"),
+        crate_relative(
+            "/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sonic-number-0.1.3/licenses/LICENSE-sonic_cpp"
+        ),
         "sonic-number-0.1.3/licenses/LICENSE-sonic_cpp"
     );
     assert_eq!(
-        crate_relative("/cargo/git/checkouts/helix-b99af130ded19729/ba40e54/helix-lsp-types/LICENSE"),
+        crate_relative(
+            "/cargo/git/checkouts/helix-b99af130ded19729/ba40e54/helix-lsp-types/LICENSE"
+        ),
         "helix-lsp-types/LICENSE"
     );
     assert_eq!(crate_relative("/elsewhere/LICENSE"), "/elsewhere/LICENSE");

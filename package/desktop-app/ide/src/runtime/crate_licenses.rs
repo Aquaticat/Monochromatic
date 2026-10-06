@@ -117,7 +117,9 @@ fn crate_relative(source: &str) -> &str {
     // const rest = source.split('/registry/src/')[1]; if (rest) return rest.split('/').slice(1).join('/');
     // ```
     if let Some((_, rest)) = source.split_once("/registry/src/") {
-        return rest.split_once('/').map_or(rest, |(_, crate_part)| return crate_part);
+        return rest
+            .split_once('/')
+            .map_or(rest, |(_, crate_part)| return crate_part);
     }
     if let Some((_, rest)) = source.split_once("/git/checkouts/") {
         let after_repository = rest.split_once('/').map_or(rest, |(_, part)| return part);
@@ -212,7 +214,9 @@ impl CrateLicense {
         let mut lines = wrap("Used by: ", &items);
         lines.push(match &self.source {
             Some(source) => format!("Text from the crate file {}", crate_relative(source)),
-            None => "Text: the standard text of this license (no crate file was recognized)".to_string(),
+            None => {
+                "Text: the standard text of this license (no crate file was recognized)".to_string()
+            }
         });
         return lines;
     }
