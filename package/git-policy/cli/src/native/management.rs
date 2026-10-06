@@ -12,7 +12,7 @@
 use super::action::{Action, ENGINE_FAILURE_EXIT_CODE, failure};
 /// A direct command asks for the worktree files its scope selects.
 use super::candidate_prediction::CandidateRequest;
-use super::child_environment::child_environment_overlay;
+use super::child_environment::{child_environment_overlay, environment_value};
 use super::config_error::ConfigError;
 use super::config_file::LoadedConfig;
 /// A scope that cannot be projected is a `transaction-failed` engine failure.
@@ -36,6 +36,8 @@ use super::policy_trigger::Trigger;
 use super::real_git::{ResolutionInputs, resolve_real_git};
 use super::repository_facts::{GitFacts, RepositoryFacts, git_facts};
 use super::repository_location::RepositoryLocation;
+/// The variable that names the forbidden-strings rules file.
+use super::scanner_selection::RULES_VARIABLE;
 use super::unported::{unported_from_unavailable, unported_notice};
 use super::wrapper_controls::Controls;
 /// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
@@ -240,6 +242,8 @@ fn run_direct_command(
     // Each event is one line, so the lines written so far are the next event number.
     // `.matches('\n').count()` counts them; `as u64` widens the count to the number type.
     let first_sequence: u64 = stdout.matches('\n').count() as u64;
+    // `.clone()` copies the scanner options the configuration chose.
+    checks.scanner_settings.options = loaded.config.policies.forbidden_strings.clone();
     let trigger: Trigger = if fix {
         Trigger::DirectFix
     } else {
@@ -379,6 +383,8 @@ pub fn plan_management(
         // `Vec::new()` is an empty owned list: no direct-command policy reads the tool caches.
         Vec::<PathBuf>::new(),
     );
+    // The forbidden-strings rules variable is read from this invocation's environment.
+    checks.scanner_settings.rules_variable = environment_value(environment, RULES_VARIABLE);
     let location: RepositoryLocation = match checks.facts.location() {
         Ok(found) => found,
         Err(message) => return failure(message.as_str()),

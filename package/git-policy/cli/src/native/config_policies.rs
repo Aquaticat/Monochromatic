@@ -16,6 +16,8 @@
 /// import { ConfigError } from './config-error.ts';
 /// ```
 use super::config_error::ConfigError;
+/// The check of a `rulesFile` value and the words of each refusal.
+use super::config_rules_file::{check_rules_file, rules_file_refusal_reason};
 use super::config_schema::{
     ForbiddenStringsOptions, MarkdownAutofixOptions, MarkdownRule, PolicyConfig,
     markdown_rule_from_name,
@@ -129,6 +131,21 @@ fn forbidden_strings_options(
         let member: &JsoncValue = &entries[index].value;
         if key == "builtinRules" {
             options.builtin_rules = boolean(member, key_path.as_str())?;
+        } else if key == "rulesFile" {
+            let name: String = text(member, key_path.as_str())?;
+            // `if let Err(refusal) = ...` runs only when the name was refused.
+            if let Err(refusal) = check_rules_file(name.as_str()) {
+                return Err(ConfigError::new(
+                    format!(
+                        "Configuration key {key_path} must name a file relative to the \
+                         repository's top level that stays inside it, but the value {}.",
+                        rules_file_refusal_reason(refusal)
+                    )
+                    .as_str(),
+                ));
+            }
+            // `Some(...)` is the "present" variant.
+            options.rules_file = Some(name);
         } else if key == "executable" {
             return Err(ConfigError::new(
                 format!(
@@ -141,7 +158,7 @@ fn forbidden_strings_options(
         } else {
             return Err(ConfigError::new(
                 format!(
-                    "Unknown configuration key: {key_path}. The only accepted option is builtinRules."
+                    "Unknown configuration key: {key_path}. Accepted options: builtinRules, rulesFile."
                 )
                 .as_str(),
             ));

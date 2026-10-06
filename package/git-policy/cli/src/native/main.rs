@@ -25,6 +25,9 @@ use std::ffi::OsString;
 /// function main(): never { process.exit(runProcess(argv, env)); }
 /// ```
 fn main() {
+    // The linked scanner's catch boundaries run after the panic hook, so a hook that never
+    // prints a panic's message is installed before anything can scan.
+    git_policy_cli::panic_notice::install_payload_free_panic_hook();
     // What: `.skip(1)` drops the program name; `.collect()` gathers the rest into an
     //       owned list. `Vec<OsString>` is that list type.
     // Why:  Git receives only the caller's arguments, in order.

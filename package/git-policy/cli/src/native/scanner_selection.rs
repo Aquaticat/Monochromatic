@@ -57,18 +57,33 @@ pub const SCANNER_SELF_MATCH_PATHS: &[&[u8]] = &[
     b"package/cli/forbidden-strings/src/port-betterleaks-relaxations.ts",
 ];
 
-/// What: Select the rules file from the variable's value, if set, and the repository root.
-///       `Option<&OsStr>` is "the borrowed value or nothing".
-/// Why:  The spawned scanner ran with the repository root as its working directory,
-///       so a relative setting meant "relative to the root". In-process there is no
-///       such directory change, so the root is joined explicitly; `.join(..)` keeps
-///       an absolute setting as it is. A set variable makes a missing file an error.
+/// What: Select the rules file: the configured `rulesFile`, else the variable's value, else
+///       the default file, each relative to the repository root. `Option<&str>` is "the
+///       configured name or nothing"; `Option<&OsStr>` is "the variable's value or nothing".
+/// Why:  The user decided on 2026-10-05 that configuration names the file first and the
+///       variable second. The spawned scanner ran with the repository root as its working
+///       directory, so a relative setting meant "relative to the root". In-process there
+///       is no such directory change, so the root is joined explicitly; `.join(..)` keeps
+///       an absolute variable value as it is, and a configured name is relative by
+///       construction (`config_rules_file.rs`). A configured name or a set variable makes
+///       a missing file an error; only the default file may be missing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function rulesSource(configured: string | undefined, repositoryRoot: string): RulesSource;
+/// function rulesSource(rulesFile: string | undefined, variable: string | undefined, repositoryRoot: string): RulesSource;
 /// ```
-pub fn rules_source(configured: Option<&OsStr>, repository_root: &Path) -> RulesSource {
+pub fn rules_source(
+    rules_file: Option<&str>,
+    configured: Option<&OsStr>,
+    repository_root: &Path,
+) -> RulesSource {
+    // `if let Some(name) = rules_file` runs only when the configuration names a file.
+    if let Some(name) = rules_file {
+        return RulesSource {
+            path: repository_root.join(name),
+            explicit: true,
+        };
+    }
     // `match` on the optional value: `Some(value)` is "present", `None` is "absent".
     match configured {
         Some(value) => {

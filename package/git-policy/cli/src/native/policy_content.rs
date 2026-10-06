@@ -21,8 +21,14 @@ use super::candidate_version::{Candidate, CandidateVersion};
 use super::policy_engine::PolicyOutcome;
 /// Import the facts interface that prepares candidates.
 use super::repository_facts::RepositoryFacts;
+/// Import the scanner adapter.
+use super::scanner_adapter::CandidateScanner;
 /// Import the code of each candidate failure.
 use super::scanner_failure_code::candidate_failure_code;
+/// Import the scan pass and its failure.
+use super::scanner_run::{ScanRunError, scan_version};
+/// The scanner library's per-candidate result.
+use forbidden_strings::CandidateScan;
 /// `Rc<T>` is a shared, read-only handle; versions and bytes are shared, not copied.
 use std::rc::Rc;
 
@@ -164,6 +170,38 @@ impl ContentState {
                 Err(error) => return Err(candidate_failure(&error)),
             },
             Some(Err(_)) | None => return Err(candidate_failure(&not_prepared_error())),
+        }
+    }
+}
+
+/// What: `impl ContentState { ... }` continued: the scan of every scannable candidate.
+/// Why:  The scan pass reads bytes through the store the candidates were prepared in.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class ContentState { scan(scanner, rulesPath) {} }
+/// ```
+impl ContentState {
+    /// What: Scan the prepared version through `scanner`. `Option<&[u8]>` is the rules
+    ///       file's own pathname, which is not scanned, or nothing.
+    /// Why:  `scan_version` is the candidate layer's one scan pass; this lends it the store
+    ///       and the version together.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async scan(scanner: CandidateScanner, rulesPath?: Buffer): Promise<CandidateScan[]>;
+    /// ```
+    pub fn scan(
+        &mut self,
+        scanner: &CandidateScanner,
+        rules_path: Option<&[u8]>,
+    ) -> Result<Vec<CandidateScan>, ScanRunError> {
+        match &mut self.prepared {
+            // The store is lent for writing and the version for reading: two separate fields.
+            Some(Ok(prepared)) => {
+                return scan_version(scanner, &mut prepared.store, &prepared.version, rules_path);
+            }
+            Some(Err(_)) | None => return Err(ScanRunError::Candidate(not_prepared_error())),
         }
     }
 }

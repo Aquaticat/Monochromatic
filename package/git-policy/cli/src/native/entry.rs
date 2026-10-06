@@ -24,6 +24,8 @@ use super::policy_content::LifecycleContent;
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
 use super::real_git_candidate::same_file;
 use super::repository_facts::{GitFacts, git_facts};
+/// The variable that names the forbidden-strings rules file.
+use super::scanner_selection::RULES_VARIABLE;
 use super::wrapped_command::{WrappedOutcome, run_wrapped_command};
 use super::wrapper_controls::{Controls, no_controls, strip_global_controls};
 use super::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
@@ -162,6 +164,8 @@ pub fn plan_invocation(
             home_directory(environment).as_deref(),
         ),
     );
+    // The forbidden-strings rules variable is read from this invocation's environment.
+    checks.scanner_settings.rules_variable = environment_value(environment, RULES_VARIABLE);
     // `match` picks by variant and binds the fields each ending carries.
     match run_wrapped_command(&stripped, environment, &mut checks) {
         // `arguments: forwarded` binds the field under a new name.

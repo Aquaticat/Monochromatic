@@ -27,6 +27,11 @@ use super::policy_content::{ContentState, LifecycleContent};
 use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 /// The built-in final-newline check over candidates.
 use super::policy_final_newline::check_final_newline;
+/// The forbidden-strings check, its settings and its scanner.
+use super::policy_forbidden_strings::{
+    ScannerSettings, ScannerState, check_forbidden_strings, default_scanner_settings,
+    unloaded_scanner,
+};
 use super::policy_registry::PolicyId;
 /// The optional root-context check over candidates.
 use super::policy_root_context::check_root_context;
@@ -64,9 +69,6 @@ pub const MARKDOWN_AUTOFIX_NEEDS: &str = "the native Markdown linter";
 /// What the dependent-version policy needs that is not ported.
 pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps";
 
-/// What the forbidden-strings policy needs that is not ported yet.
-pub const FORBIDDEN_STRINGS_NEEDS: &str = "scanning candidates for forbidden strings";
-
 /// What a correction of `git cli-git fix` needs that is not ported yet.
 pub const DIRECT_FIX_NEEDS: &str = "applying policy corrections to the worktree";
 
@@ -92,6 +94,10 @@ pub struct ShippedChecks<F: RepositoryFacts> {
     pub allowed_worktree_dirs: Vec<PathBuf>,
     /// The candidates once a content policy prepared them, shared by every later one.
     pub content: ContentState,
+    /// Where the forbidden-strings rules come from: options and environment.
+    pub scanner_settings: ScannerSettings,
+    /// The forbidden-strings scanner once loaded, shared by every later scan.
+    pub scanner: ScannerState,
 }
 
 /// What: The shipped checks for one invocation, with no candidates yet prepared.
@@ -115,6 +121,8 @@ pub fn shipped_checks<F: RepositoryFacts>(
         candidates,
         allowed_worktree_dirs,
         content: ContentState::new(),
+        scanner_settings: default_scanner_settings(),
+        scanner: unloaded_scanner(),
     };
 }
 
@@ -343,7 +351,13 @@ impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
                 return unported_content(&self.candidates, DEPENDENT_VERSION_BUMP_NEEDS);
             }
             PolicyId::ForbiddenStrings => {
-                return unported_content(&self.candidates, FORBIDDEN_STRINGS_NEEDS);
+                return check_forbidden_strings(
+                    &mut self.content,
+                    &self.candidates,
+                    &mut self.facts,
+                    &self.scanner_settings,
+                    &mut self.scanner,
+                );
             }
         }
     }

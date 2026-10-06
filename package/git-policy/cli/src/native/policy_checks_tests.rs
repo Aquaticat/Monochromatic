@@ -10,8 +10,8 @@
 
 /// The adapter under test, the engine types it returns and the scripted facts.
 use super::{
-    DEPENDENT_VERSION_BUMP_NEEDS, DIRECT_FIX_NEEDS, FORBIDDEN_STRINGS_NEEDS,
-    MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks,
+    DEPENDENT_VERSION_BUMP_NEEDS, DIRECT_FIX_NEEDS, MARKDOWN_AUTOFIX_NEEDS, ShippedChecks,
+    shipped_checks,
 };
 use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
@@ -389,10 +389,9 @@ fn content_policies_follow_the_lifecycle_content() {
             assert_eq!(without.facts.asked, Vec::<String>::new());
         }
     }
-    let unported: [(PolicyId, &str); 3] = [
+    let unported: [(PolicyId, &str); 2] = [
         (PolicyId::MarkdownAutofix, MARKDOWN_AUTOFIX_NEEDS),
         (PolicyId::DependentVersionBump, DEPENDENT_VERSION_BUMP_NEEDS),
-        (PolicyId::ForbiddenStrings, FORBIDDEN_STRINGS_NEEDS),
     ];
     for (policy, needs) in unported {
         let mut with: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
@@ -404,7 +403,11 @@ fn content_policies_follow_the_lifecycle_content() {
         );
         assert_eq!(with.facts.asked, Vec::<String>::new(), "{policy:?}");
     }
-    for policy in [PolicyId::FinalNewline, PolicyId::ForbiddenRootContext] {
+    for policy in [
+        PolicyId::FinalNewline,
+        PolicyId::ForbiddenRootContext,
+        PolicyId::ForbiddenStrings,
+    ] {
         for trigger in [Trigger::PreForward, Trigger::DirectCheck] {
             let mut read: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
             read.candidates = add_candidates();

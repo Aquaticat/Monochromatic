@@ -27,6 +27,9 @@ pub mod config_parse;
 /// Validation of the `policies` section and per-policy options.
 mod config_policies;
 
+/// The `rulesFile` option: a repository-relative name that stays inside the repository.
+pub mod config_rules_file;
+
 /// Typed settings and their defaults.
 pub mod config_schema;
 
@@ -225,6 +228,12 @@ pub mod policy_final_newline;
 
 /// The optional root-context policy: no top-level `CONTEXT.md` enters the index.
 pub mod policy_root_context;
+
+/// The optional forbidden-strings policy over the linked scanner, with redacted findings.
+pub mod policy_forbidden_strings;
+
+/// The executable's panic hook: where an internal error happened, never its message.
+pub mod panic_notice;
 
 /// The fixed argument transforms of a forwarded command, in order.
 pub mod policy_transforms;

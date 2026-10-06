@@ -338,3 +338,112 @@ fn legacy_file_beside_jsonc_is_reported_by_check_only() {
     }
     remove(&fixture);
 }
+
+/// The line a forbidden-strings content match prints, as event number `sequence`.
+fn forbidden_match(trigger: &str, sequence: u64, path: &str, line: u64) -> String {
+    return format!(
+        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"{trigger}\",\"policyId\":\"security/forbidden-strings\",\"severity\":\"error\",\"code\":\"security/forbidden-strings/forbidden-string\",\"message\":\"Forbidden string matched at line {line} (rule 0).\",\"path\":\"{path}\",\"fix\":\"none\"}}\n"
+    );
+}
+
+/// The forbidden-strings policy scans what `git add` would stage and what a direct check
+/// selects, with rules from the configuration or `FORBIDDEN_STRINGS_RULES`, and never
+/// prints the matched text; a named rules file that is missing stops the add.
+#[test]
+fn forbidden_strings_scan_candidates_from_each_rules_source() {
+    let fixture: Fixture = fixture("forbidden-strings");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    let needle: String = ["PLANTED", "BINARY", "NEEDLE"].join("_");
+    std::fs::write(repo.join("a.txt"), format!("first\n{needle}\n")).expect("needle");
+    std::fs::write(repo.join("clean.txt"), b"clean\n").expect("clean");
+    std::fs::create_dir(repo.join("rules")).expect("rules directory");
+    std::fs::write(repo.join("rules/private.txt"), format!("{needle}\n")).expect("rules");
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"security/forbidden-strings\": [\"error\", { \"builtinRules\": false, \"rulesFile\": \"rules/private.txt\" }] } }\n",
+    )
+    .expect("configuration");
+    // The configured rules file: the add stops, names the line and rule, and stages nothing.
+    let stopped: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "--", "a.txt"]);
+    assert_eq!(
+        stopped,
+        Observed {
+            code: Some(1),
+            stdout: Vec::<u8>::new(),
+            stderr: forbidden_match("pre-forward", 0, "a.txt", 2).into_bytes(),
+        }
+    );
+    // A clean file is staged.
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["add", "--", "clean.txt"]),
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    // A direct check reads the worktree and reports on standard output.
+    assert_eq!(
+        run_wrapped(
+            &fixture,
+            repo.as_path(),
+            &["cli-git", "check", "--", "a.txt"]
+        ),
+        Observed {
+            code: Some(1),
+            stdout: forbidden_match("direct-check", 0, "a.txt", 2).into_bytes(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    // The variable, when the configuration names no file; relative to the top level.
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"security/forbidden-strings\": [\"error\", { \"builtinRules\": false }] } }\n",
+    )
+    .expect("configuration without a file");
+    let from_variable: Observed = observe(
+        wrapped(&fixture)
+            .env("FORBIDDEN_STRINGS_RULES", "rules/private.txt")
+            .current_dir(&repo)
+            .args(["add", "--", "a.txt"]),
+        b"",
+    );
+    assert_eq!(
+        from_variable.stderr,
+        forbidden_match("pre-forward", 0, "a.txt", 2).into_bytes()
+    );
+    assert_eq!(from_variable.code, Some(1));
+    // Neither, and no default file: the rules cannot load, so the add stops as incomplete.
+    let missing: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "--", "a.txt"]);
+    assert_eq!(missing.code, Some(2));
+    let missing_text: String = String::from_utf8_lossy(&missing.stderr).into_owned();
+    assert!(
+        missing_text.contains("\"type\":\"engine-failure\",\"code\":\"policy-incomplete\""),
+        "{missing_text}"
+    );
+    // No output of any run holds the matched text.
+    for observed in [&stopped, &from_variable, &missing] {
+        assert!(!String::from_utf8_lossy(&observed.stdout).contains(needle.as_str()));
+        assert!(!String::from_utf8_lossy(&observed.stderr).contains(needle.as_str()));
+    }
+    // A configured name that leaves the repository is a configuration error before Git runs.
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"security/forbidden-strings\": [\"error\", { \"rulesFile\": \"../outside.txt\" }] } }\n",
+    )
+    .expect("escaping configuration");
+    let escaping: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "--", "a.txt"]);
+    assert_eq!(escaping.code, Some(2));
+    assert!(
+        String::from_utf8_lossy(&escaping.stderr)
+            .contains("rulesFile must name a file relative to the repository's top level that stays inside it, but the value has a . or .. component."),
+        "{}",
+        String::from_utf8_lossy(&escaping.stderr)
+    );
+    // Only the clean file was ever staged.
+    assert_eq!(
+        String::from_utf8_lossy(&status(&fixture, repo.as_path())),
+        "A  clean.txt\n?? a.txt\n?? cli-git.config.jsonc\n?? rules/private.txt\n"
+    );
+    remove(&fixture);
+}

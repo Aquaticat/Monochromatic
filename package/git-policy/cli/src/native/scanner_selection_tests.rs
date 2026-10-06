@@ -51,19 +51,19 @@ fn names_match_the_standalone_scanner() {
     );
 }
 
-/// Unset selects the default file in the root, tolerated when missing; a set value is explicit and resolved against the root.
+/// The configured file first, then the variable, then the default file in the root, which alone is tolerated when missing; every name is resolved against the root.
 #[test]
 fn rules_file_precedence_matches_the_standalone_scanner() {
     let root: &Path = Path::new("/repo/root");
     assert_eq!(
-        rules_source(None, root),
+        rules_source(None, None, root),
         RulesSource {
             path: PathBuf::from("/repo/root/forbidden-strings.local.txt"),
             explicit: false,
         }
     );
     assert_eq!(
-        rules_source(Some(OsStr::new("rules/own.txt")), root),
+        rules_source(None, Some(OsStr::new("rules/own.txt")), root),
         RulesSource {
             path: PathBuf::from("/repo/root/rules/own.txt"),
             explicit: true,
@@ -71,7 +71,7 @@ fn rules_file_precedence_matches_the_standalone_scanner() {
     );
     // An absolute setting is used as it is.
     assert_eq!(
-        rules_source(Some(OsStr::new("/elsewhere/rules.txt")), root),
+        rules_source(None, Some(OsStr::new("/elsewhere/rules.txt")), root),
         RulesSource {
             path: PathBuf::from("/elsewhere/rules.txt"),
             explicit: true,
@@ -80,13 +80,32 @@ fn rules_file_precedence_matches_the_standalone_scanner() {
     // A setting that is not UTF-8 is still a path, and an empty one is still explicit.
     let bytes: OsString = OsString::from_vec(b"r\xffules.txt".to_vec());
     assert_eq!(
-        rules_source(Some(bytes.as_os_str()), root)
+        rules_source(None, Some(bytes.as_os_str()), root)
             .path
             .as_os_str()
             .as_bytes(),
         b"/repo/root/r\xffules.txt"
     );
-    assert!(rules_source(Some(OsStr::new("")), root).explicit);
+    assert!(rules_source(None, Some(OsStr::new("")), root).explicit);
+    // A configured file wins over the variable and is explicit; it is joined to the root.
+    assert_eq!(
+        rules_source(
+            Some(".cache/rules.txt"),
+            Some(OsStr::new("/elsewhere/rules.txt")),
+            root
+        ),
+        RulesSource {
+            path: PathBuf::from("/repo/root/.cache/rules.txt"),
+            explicit: true,
+        }
+    );
+    assert_eq!(
+        rules_source(Some("configured.txt"), None, root),
+        RulesSource {
+            path: PathBuf::from("/repo/root/configured.txt"),
+            explicit: true,
+        }
+    );
 }
 
 /// A rules file inside the repository has a candidate pathname; one outside, or the root itself, has none.
