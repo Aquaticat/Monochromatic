@@ -536,15 +536,28 @@ it refuses those inputs instead of rewriting them.
 
 ### Container gate
 
-`GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli:native:test:container`
-on commit `b8afd3d74`:
-524 unit tests passed
-(442 before this branch, 82 added),
-1 ignored
-(`corpus_from_environment`, which only the driver runs),
-37 binary-level tests passed,
-and Clippy with warnings denied passed.
-Evidence `package/git-policy/cli/target/verification/native-bva1QD`.
+`GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli:native:test:container`:
+
+- On commit `b8afd3d74`,
+  before the merge of `main`:
+  524 unit tests passed
+  (442 before this branch, 82 added),
+  1 ignored
+  (`corpus_from_environment`, which only the driver runs),
+  37 binary-level tests passed,
+  and Clippy with warnings denied passed.
+  Image `7b08f389846d`,
+  evidence `package/git-policy/cli/target/verification/native-bva1QD`.
+  The mutation campaigns ran against this image.
+- On the merge commit `343a2696c`:
+  605 unit tests passed,
+  including the 82 planner tests,
+  1 ignored,
+  37 binary-level tests passed,
+  and Clippy with warnings denied passed
+  (`passed.json`: tests and Clippy true).
+  Image `d0189d1c2c33`,
+  evidence `native-dJWeV6`.
 
 ### Package lint
 
