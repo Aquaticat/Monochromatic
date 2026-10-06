@@ -7,6 +7,14 @@ import { Palette } from "std-widgets.slint";
 // Each reaches at least 5:1 against the scheme's background, so message rows and underlines in them stay legible.
 // Ink is never the only sign of a severity: a message row starts with the severity's word, and each severity
 // has its own underline style.
+// Prototype variant: one severity marker after a line's text.
+export struct SourceMarker {
+    x: float,
+    y: float,
+    // 0 error, 1 warning, 2 information, 3 hint.
+    severity: int,
+}
+
 export global AnnotationInk {
     out property <bool> dark: Palette.color-scheme == ColorScheme.dark;
     out property <color> error: self.dark ? #FF99A4 : #C42B1C;
@@ -15,4 +23,37 @@ export global AnnotationInk {
     out property <color> suggestion: self.dark ? #B4B4B4 : #616161;
     // Hint rows: the source ink at 70 percent. Hints also differ from source text by typeface, size, and row.
     out property <brush> hint: Palette.foreground.with-alpha(0.7);
+    public pure function severity(level: int) -> color {
+        if level == 0 { return self.error; }
+        if level == 1 { return self.warning; }
+        if level == 2 { return self.information; }
+        return self.suggestion;
+    }
+    public pure function letter(level: int) -> string {
+        if level == 0 { return "E"; }
+        if level == 1 { return "W"; }
+        if level == 2 { return "I"; }
+        return "H";
+    }
+}
+
+// Prototype variant: the marker's letter, not only its color, names the severity.
+export component SeverityMarker inherits Rectangle {
+    in property <int> severity;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: AnnotationInk.severity(root.severity);
+    accessible-role: none;
+    Text {
+        width: parent.width;
+        height: parent.height;
+        text: AnnotationInk.letter(root.severity);
+        color: Palette.background;
+        font-size: 12px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        accessible-role: none;
+    }
 }

@@ -6,7 +6,9 @@ import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
 import { ReferenceList, ReferenceEntry } from "references.slint";
-import { AnnotationInk } from "annotation.slint";
+import { AnnotationInk, SeverityMarker, SourceMarker } from "annotation.slint";
+// Prototype variant: the marker record is handed to native code, so the window exports it.
+export { SourceMarker }
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -163,6 +165,8 @@ export component AppWindow inherits Window {
     // The problems at the caret as one text, worst first and in full; empty when the caret touches no diagnostic.
     // It is not drawn: every message stands above its line. It starts the accessible description.
     in property <string> caret-problems;
+    // Prototype variant: severity markers after line ends, positioned from the shaped rows.
+    in property <[SourceMarker]> source-markers;
     in property <string> source-text;
     in property <string> selected-text;
     in property <string> file-label: "Source-view verification";
@@ -420,6 +424,13 @@ export component AppWindow inherits Window {
                         opacity: 0.6;
                         font-family: "JetBrains Mono";
                         font-size: root.font-size;
+                    }
+
+                    // Prototype variant: one marker after the text of each line with messages, the worst severity.
+                    for marker in root.source-markers: SeverityMarker {
+                        x: root.gutter-width + marker.x * 1px;
+                        y: marker.y * 1px + (root.code-row - self.height) / 2;
+                        severity: marker.severity;
                     }
 
                     Rectangle {
