@@ -205,7 +205,7 @@ export {
   summarizeBench,
   writeBenchReport,
 } from './corpus-run/bench-report.ts';
-export type { BenchRow, } from './corpus-run/roster-bench.ts';
+export type { BenchRow, } from './corpus-run/roster-bench-row.ts';
 export {
   type BenchSlice,
   sampleBenchSlices,

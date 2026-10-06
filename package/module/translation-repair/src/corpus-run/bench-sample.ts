@@ -6,9 +6,11 @@ import {
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
+import { wordForCount, } from '../count-word.ts';
 import { isLineStructured, } from '../line-structure.ts';
 import { parseDocument, } from '../parse-document.ts';
 import { subdivideChunkPair, } from '../slice-pair.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { pickSpreadSample, } from './bench-draw.ts';
 
 //region Bench sample
@@ -158,9 +160,9 @@ async function sliceEntry(
 
  @returns Sample ordered by source size, smallest first
 
- @throws Error when the pinned corpus yields no slice at all, since a bench
- drawn over nothing would report widths as indistinguishable while having
- compared them on no work
+ @throws {@link StatedRefusalError} when the pinned corpus yields no slice at
+ all, since a bench drawn over nothing would report widths as
+ indistinguishable while having compared them on no work
 
  @example
  ```ts
@@ -224,8 +226,22 @@ export async function sampleBenchSlices(
    Every slice of every readable entry.
    */
   const all = sliced.flat();
-  if (all.length === 0)
-    throw new Error('bench sample found no slices in the pinned corpus',);
+  // A STATED REFUSAL, since the remedy is the operator's: the clone or the
+  // commit the run reads is not the corpus they meant. As a plain error both
+  // commands that draw here printed it as a fault in themselves, at exit 5
+  // under frames.
+  if (all.length === 0) {
+    throw new StatedRefusalError({
+      says: `the corpus at the pin yields no slice to sample: ${String(entryIds.length,)} ${
+        wordForCount({
+          count: entryIds.length,
+          one: 'entry is',
+          many: 'entries are',
+        },)
+      } listed there and none could be sliced, so a bench drawn over it would compare on no work; check the `
+        + 'clone and the commit this run reads',
+    },);
+  }
 
   return pickSpreadSample({
     slices: all,

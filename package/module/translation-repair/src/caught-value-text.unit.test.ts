@@ -135,6 +135,8 @@ const HELD: Readonly<Record<string, string>> = {
     'an access check of one fixed system path, which fails with a filesystem code and that path',
   'corpus-run/pass-eligibility.ts#readSide':
     'reads the message of a CorpusReadError that isMissingCorpusObject narrowed, a marked class',
+  'corpus-run/producer-calibrate-run.ts#refuseUnjudgeableRoster':
+    'reads the message of a ProducerRosterError, the only class its catch lets through, which declares it safe',
   'corpus-run/publish-defects.ts#defectOf':
     'reads the message of the refusal class a check names, which the step type holds to a class declaring '
     + 'messageNamesOnly',

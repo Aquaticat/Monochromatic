@@ -1,446 +1,51 @@
-import { mkdir, } from 'node:fs/promises';
-import { join, } from 'node:path';
-
-import { wordForCount, } from '../count-word.ts';
-import {
-  isMissingCorpusObject,
-  listCorpusPeople,
-  readCorpusFile,
-} from '../corpus-source.ts';
-import { deriveOmissionSeeds, } from '../derive-seeds.ts';
-import { splitFrontMatter, } from '../front-matter.ts';
-import type { BenchmarkEntry, } from '../prepare-entry.ts';
-import { runRepairBenchmark, } from '../repair-benchmark.ts';
-import { bandOf, } from './band-order.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
+import { nowAsIso, } from './probe-run-clock.ts';
+import { runRecallBenchmark, } from './recall-benchmark-run.ts';
 import {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
-  RUN_CALL_CONFIG,
-  RECALL_JUDGE_MODEL_IDS,
   RUN_CORPUS_PIN,
-  RUN_MODELS,
-  RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
-import { reportingRefusals, } from './cli-refusal.ts';
-import type { CommandLineOf, } from './command-lines.ts';
-import { persistRecallScorecard, } from './recall-scorecard-store.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Recall benchmark
-// Measures what precision cannot see: of the defects that ARE present, how many
-// does the pipeline find, and how many does it actually repair.
-//
-// Precision is measured on the pipeline's own output, so a pipeline that
-// accepts almost nothing scores beautifully and repairs nothing. This runner
-// plants known omissions into a clean translation, runs the whole repair loop
-// on the seeded pair, and grades restoration against the deletions it made, so
-// the denominator is defects that certainly exist rather than defects the
-// pipeline chose to report.
+// The recall benchmark, as a command: the wiring only. How entries are chosen
+// and seeded is in `recall-benchmark-choose.ts` and `recall-benchmark-entry.ts`,
+// what is printed in `recall-benchmark-report.ts`, and the run itself in
+// `recall-benchmark-run.ts`. This file names what only a real process has: the
+// runs directory, the pinned corpus, the repository's head, the run client
+// and the clock.
 //
 // Run with `mise run //package/module/translation-repair:recall-benchmark`
 // (append `-- --plan` for a zero-quota setup check).
 
 /**
- Entries drawn from each size band. Nine entries keeps a run inside a few
- hours at the measured per-entry cost while still covering every band.
- */
-const ENTRIES_PER_BAND = 3;
-
-/**
- Seeds planted per entry. Each is a whole deleted sentence, so a handful per
- document gives a usable denominator without turning the translation into
- something no reviewer would call a translation.
- */
-const SEEDS_PER_ENTRY = 3;
-
-/**
- Milliseconds in one second.
- */
-const MS_PER_SECOND = 1_000;
-
-/**
- Seconds in one minute.
- */
-const SECONDS_PER_MINUTE = 60;
-
-/**
- Minutes in one hour.
- */
-const MINUTES_PER_HOUR = 60;
-
-/**
- Hours the whole benchmark may run.
-
- Raised from 4 on run 001's own timing: it settled seven of nine entries in
- 252 minutes and recorded the other two as skipped, coverage 0.778. Detection
- has to be re-measured anyway after the slice-index fix, and the rerun also
- carries the ensemble and the naturalness lane, both of which only add wall
- time, so a four-hour budget would lose more than two entries next time.
- Coverage is the thing this protects; the plan is flat rate, so a longer run
- costs nothing but waiting.
- */
-const BUDGET_HOURS = 12;
-
-/**
- Wall budget for the whole benchmark; entries the budget cannot fit record as
- skipped and the scorecard reports the resulting coverage honestly.
- */
-const RUN_BUDGET_MS = BUDGET_HOURS
-  * MINUTES_PER_HOUR
-  * SECONDS_PER_MINUTE
-  * MS_PER_SECOND;
-
-/**
- Decimal places rates are reported to.
- */
-const RATE_DECIMALS = 3;
-
-/**
- Bands in report order.
- */
-const BANDS = [
-  'small',
-  'medium',
-  'large',
-] as const;
-
-/**
- Outcome of trying to seed one corpus id. A discriminated result rather than
- a nullish return, because "this entry cannot be seeded" is an ordinary,
- expected answer that the caller must branch on, not an absence.
- */
-type SeedOutcome =
-  | {
-    readonly kind: 'seeded';
-    readonly entry: BenchmarkEntry;
-    readonly band: ReturnType<typeof bandOf>;
-  }
-  | {
-    readonly kind: 'skipped';
-    readonly reason: string;
-  };
-
-/**
- Builds the seeded benchmark entry for one corpus id, reporting why when it
- cannot be seeded.
-
- @param id - corpus person id
-
- @param sizer - shared encoder measuring source bytes for banding
-
- @returns Seeded entry with its band, or the reason it was skipped
-
- @example
- ```ts
- const outcome = await buildEntry({ id: 'Whiskers', sizer, },);
- ```
- */
-async function buildEntry(
-  {
-    id,
-    sizer,
-  }: {
-    readonly id: string;
-    readonly sizer: TextEncoder;
-  },
-): Promise<SeedOutcome> {
-  try {
-    /**
-     Original zh page, front matter included: the repair loop reads it whole.
-     */
-    const sourceText = await readCorpusFile({
-      pin: RUN_CORPUS_PIN,
-      relPath: `people/${id}/page.md`,
-    },);
-
-    /**
-     Clean en translation, the text seeds are planted into.
-     */
-    const targetText = await readCorpusFile({
-      pin: RUN_CORPUS_PIN,
-      relPath: `people/${id}/page.en.md`,
-    },);
-
-    /**
-     Body only. Seeds must come from prose, never from front matter, whose
-     deletion would break identity rather than plant an omission.
-     */
-    const { body, } = splitFrontMatter({ text: targetText, },);
-
-    /**
-     Deletions to plant, longest sentences first.
-     */
-    const seeds = deriveOmissionSeeds({
-      text: body,
-      maxSeeds: SEEDS_PER_ENTRY,
-    },);
-    if (seeds.length === 0) {
-      return {
-        kind: 'skipped',
-        reason: 'no seedable sentence',
-      };
-    }
-
-    return {
-      kind: 'seeded',
-      band: bandOf({
-        sourceBytes: sizer.encode(sourceText,)
-          .length,
-      },),
-      entry: {
-        entryId: id,
-        sourceText,
-        targetText,
-        seeds,
-      },
-    };
-  }
-  catch (error) {
-    // A missing side is an expected non-pair; anything else is a real fault,
-    // and since 2026-08-26 the error says which it was.
-    if (!isMissingCorpusObject(error,))
-      throw error;
-    return {
-      kind: 'skipped',
-      reason: 'incomplete pair',
-    };
-  }
-}
-
-/**
- Runs the recall benchmark over a band-stratified corpus sample and writes its
- scorecard beside the other run artifacts.
+ Hands the real process's places and client to the benchmark.
 
  @param line - the benchmark's command line, read whole by `reportingRefusals`
 
- @throws {@link Error} when the API key env var is unset
-
  @example
  ```ts
- await runRecallBenchmark({ line, },);
+ await main({ line, },);
  ```
  */
-async function runRecallBenchmark({ line, }: { readonly line: CommandLineOf<'recall-benchmark'>; },): Promise<void> {
-  /**
-   When this run began, which names its scorecard file.
-   */
-  const startedAt = new Date().toISOString();
-
-  /**
-   Durable, gitignored output root.
-   */
-  const runsDir = await resolveRunsDir();
-  await mkdir(
-    runsDir,
-    { recursive: true, },
-  );
-
-  /**
-   Pipeline tip recorded into the scorecard.
-   */
-  const tip = await readHeadSha();
-
-  /**
-   Every person id at the pinned commit.
-   */
-  const people = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
-
-  /**
-   Encoder measuring page-source bytes for banding.
-   */
-  const sizer = new TextEncoder();
-
-  /**
-   Seeded entries chosen per band, filled in corpus order so the selection is
-   deterministic for a given pin.
-   */
-  const chosen: BenchmarkEntry[] = [];
-
-  /**
-   How many entries each band has contributed so far, keyed by the band names
-   the type holds, so every band has its count (ledger B77).
-   */
-  const perBand: Record<ReturnType<typeof bandOf>, number> = {
-    small: 0,
-    medium: 0,
-    large: 0,
-  };
-  for (const id of people) {
-    if (chosen.length >= (ENTRIES_PER_BAND * BANDS.length))
-      break;
-
-    /* oxlint-disable no-await-in-loop -- corpus reads are sequential git shows and this selection runs once at setup */
-    /**
-     This id's seeding outcome, carrying its band when it is usable.
-     */
-    const outcome = await buildEntry({
-      id,
-      sizer,
-    },);
-    /* oxlint-enable no-await-in-loop */
-    if (outcome.kind === 'skipped')
-      continue;
-    if (perBand[outcome.band] >= ENTRIES_PER_BAND)
-      continue;
-    chosen.push(outcome.entry,);
-    perBand[outcome.band] += 1;
-  }
-
-  /**
-   Total seeds this run will plant, the detection denominator.
-   */
-  const plannedSeeds = chosen.reduce(
-    function addSeeds(
-      sum,
-      entry,
-    ) {
-      return sum
-        + entry.seeds
-        .length;
-    },
-    0,
-  );
-  console.log(
-    `START tip=${tip} entries=${String(chosen.length,)} seeds=${String(plannedSeeds,)} `
-    + `perBand=${JSON.stringify(perBand,)} budget=${String(RUN_BUDGET_MS,)}ms`,
-  );
-
-  /**
-   Shared client using measured production provider concurrency.
-   */
-  const client = createRunClient();
-
-  if (line.switched('plan',)) {
-    console.log(
-      `PLAN ok tip=${tip} client=constructed entries=${
-        chosen
-          .map(function toId(entry,) {
-            return entry.entryId;
-          },)
-          .join(',',)
-      }`,
-    );
-    return;
-  }
-
-  /**
-   Graded attempts and the aggregate scorecard.
-   */
-  const {
-    records,
-    scorecard,
-  } = await runRepairBenchmark({
-    client,
-    entries: chosen,
-    models: RUN_MODELS,
-    judgeModelIds: RECALL_JUDGE_MODEL_IDS,
-    signal: new AbortController().signal,
-    perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-    runBudgetMs: RUN_BUDGET_MS,
+async function main({ line, }: { readonly line: CommandLineOf<'recall-benchmark'>; },): Promise<void> {
+  return runRecallBenchmark({
+    line,
+    runsDir: await resolveRunsDir(),
+    readTip: readHeadSha,
+    pin: RUN_CORPUS_PIN,
+    newClient: createRunClient,
+    now: nowAsIso,
   },);
-
-  /**
-   Where the scorecard was kept: a stamped name of its own, written
-   atomically, so a rerun sits beside the run it is compared against rather
-   than over it.
-   */
-  const keptAt = await persistRecallScorecard({
-    runsDir,
-    record: {
-      startedAt,
-      finishedAt: new Date().toISOString(),
-      tip,
-      corpusSha: RUN_CORPUS_PIN.commitSha,
-      callConfig: RUN_CALL_CONFIG,
-      entriesPerBand: ENTRIES_PER_BAND,
-      seedsPerEntry: SEEDS_PER_ENTRY,
-      scorecard,
-      records,
-    },
-  },);
-
-  // A ZERO DENOMINATOR IS NOT A ZERO RATE. The scorecard prints 0 for a
-  // recall over no seeds and a coverage over no attempts, which reads like a
-  // measured zero to anyone who does not check the counts first; the record is
-  // already kept and the run refuses here rather than print such a line.
-  if ((scorecard.dispatchedEntries === 0) || (scorecard.plantedSeeds === 0))
-    throw new StatedRefusalError({
-      says: `the bench dispatched ${String(scorecard.dispatchedEntries,)} ${
-        wordForCount({
-          count: scorecard.dispatchedEntries,
-          one: 'entry',
-          many: 'entries',
-        },)
-      } and planted ${
-        String(scorecard.plantedSeeds,)
-      } ${
-        wordForCount({
-          count: scorecard.plantedSeeds,
-          one: 'seed',
-          many: 'seeds',
-        },)
-      }, so none of its rates measures anything; the scorecard is kept at ${keptAt}`,
-    },);
-
-  console.log(
-    `SCORECARD dispatched=${String(scorecard.dispatchedEntries,)} coverage=${
-      scorecard.coverage
-        .toFixed(RATE_DECIMALS,)
-    } planted=${String(scorecard.plantedSeeds,)} detected=${
-      String(scorecard.detectedSeeds,)
-    } detectionRate=${
-      scorecard.seedDetectionRate
-        .toFixed(RATE_DECIMALS,)
-    } policyDeclined=${String(scorecard.policyDeclinedSeeds,)} detectionRateExcludingPolicy=${
-      scorecard.seedDetectionRateExcludingPolicy
-        .toFixed(RATE_DECIMALS,)
-    }`,
-  );
-  console.log(`SCORECARD kept at ${keptAt}`,);
-  // Printed beside the raw rate rather than left in the JSON. Attributing a
-  // miss to the house policy instead of to the critics is the whole reason
-  // both numbers are computed, and a driver that prints only the raw one hands
-  // the reader a recall figure with no way to see whether the pipeline failed
-  // to detect a seed or correctly refused to treat it as a defect.
-  if (scorecard.policyDeclinedSeeds > 0)
-    console.log(
-      'NOTE policyDeclined counts seeds the panel ruled a source defect at the '
-        + 'seed region rather than a translation error. Those are the policy '
-        + 'working, not recall failing, which is why the excluding-policy rate '
-        + 'sits beside the raw one instead of replacing it.',
-    );
-
-  // The same reasoning one step further out, and printed ALWAYS rather than
-  // only when nonzero. A zero here is a real reading: it says the probe ran and
-  // found every deleted sentence recoverable from the Chinese. Printing it only
-  // when nonzero would make "the probe never ran" and "nothing was unfair" look
-  // identical, which is the failure this whole run keeps rediscovering.
-  console.log(
-    `DERIVABILITY nonDerivable=${String(scorecard.nonDerivableSeeds,)} `
-    + `detectionExcludingUnfair=${
-      scorecard.seedDetectionRateExcludingUnfair
-        .toFixed(RATE_DECIMALS,)
-    }`,
-  );
-  console.log(
-    `REPAIR judged=${String(scorecard.judgedSeeds,)} restored=${
-      String(scorecard.restoredSeeds,)
-    } partial=${String(scorecard.partialSeeds,)} strict=${
-      scorecard.seededRepairRate
-        .toFixed(RATE_DECIMALS,)
-    } lenient=${
-      scorecard.seededRepairRateLenient
-        .toFixed(RATE_DECIMALS,)
-    }`,
-  );
 }
 
 if (import.meta.main)
   await reportingRefusals({
     what: 'recall-benchmark',
     argv: process.argv,
-    run: runRecallBenchmark,
+    run: main,
   },);
 
 //endregion Recall benchmark

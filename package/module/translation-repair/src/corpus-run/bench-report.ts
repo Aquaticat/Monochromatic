@@ -15,7 +15,7 @@ import {
   type SelectionRound,
   selfPreference,
 } from '../self-preference.ts';
-import type { BenchRow, } from './roster-bench.ts';
+import type { BenchRow, } from './roster-bench-row.ts';
 
 //region Bench report
 // What the roster bench writes down, and what it prints.

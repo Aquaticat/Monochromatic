@@ -841,6 +841,13 @@ const FORWARDING_SITES: readonly (Forwarding & {
     names: 'a slice index and fault and outcome kinds',
   },
   {
+    file: 'corpus-run/producer-calibrate-run.ts',
+    className: 'StatedRefusalError',
+    narrowedTo: ['ProducerRosterError',],
+    kind: 'forwards',
+    names: 'roster roles, model ids and counts',
+  },
+  {
     file: 'run-json-read.ts',
     className: 'RunJsonUnreadableError',
     narrowedTo: [],
