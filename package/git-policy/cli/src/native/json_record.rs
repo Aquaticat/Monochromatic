@@ -115,7 +115,7 @@ pub fn safe_integer(value: &Value) -> Option<i64> {
 /// Math.abs(whole) <= Number.MAX_SAFE_INTEGER ? whole : undefined
 /// ```
 fn in_safe_range(whole: i64) -> Option<i64> {
-    if whole > MAX_SAFE_INTEGER || whole < -MAX_SAFE_INTEGER {
+    if !(-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&whole) {
         return None;
     }
     return Some(whole);
