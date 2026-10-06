@@ -167,27 +167,38 @@ the items after it are the record of 2026-10-05 and older.
 - The API session limit cut four agents off again at about 15:10 on 2026-10-06;
   each worktree was clean and pushed,
   and each agent was resumed from its transcript with its measured state.
+- Landed on `main` as merge `21f2c625d`:
+  the single executable carrying its runtime, the home folder as the default project,
+  install, the launcher entry, `--licenses`, and removal of other builds' grammar folders after 30 days unused
+  (`feat/ide-single-file` through `4b8b03663`).
+  Gate at `a70b0bead` (IDE tree `93cf8e20158fd4c11d0143d28a33224496c3b567`):
+  lint, lint:release, test, test:cli, test:native 114 of 114, bundle, inspect:bundle 9 of 9.
+  The integration worktree needs its own release build of `//package/cli/nested-wayland-session`
+  before `inspect:bundle`; without it six checks fail naming the missing compositor.
+- Landed on `main` as merge `7940aef9c`:
+  the IDE watching the project's source folders for the language servers,
+  quiet reads, the watch-limit back-off, offline containers,
+  and no warning for plain text (`fix/ide-watch-save` through `bcd30ef32`),
+  plus `f3f0a6092`, which routes the plain-text check through `OwnLoader::helix`.
+  Gate on IDE tree `9bf8ee9c59037bae008d7e9e980d644d68179dc5`:
+  lint, lint:release, test, test:cli, test:native 116 of 116, bundle, inspect:bundle 9 of 9,
+  and inspect:server-watches.
+- systemd-oomd killed the shared `claude-code-bash` cgroup at 17:11:23 and 17:14:48 on 2026-10-06,
+  taking every background shell of this session and its agents;
+  long runs now go through `systemd-run --user` as described in
+  `doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md`.
 - Agents at work,
   each in its own worktree on a branch not yet merged:
-  - `feat/ide-single-file` (`.claude/worktrees/ide-single-file`):
-    one executable carrying its runtime (done, gated on `13ac7c9a7`),
-    plus the user's follow-up answers:
-    no special handling for a loose file in the home folder,
-    removal of other builds' grammar folders after 30 days unused,
-    and `--licenses`.
-  - `fix/ide-watch-save` (`.claude/worktrees/ide-watch-save`):
-    quiet reads, the watch-limit back-off, `--network=none`, and outside-project files (done, gated on `1a95d6a55`),
-    plus an IDE-owned project watcher that reports changes to the language servers
-    (rust-analyzer switches to client-side watching)
-    and no warning for plain text files.
-  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`):
-    the timing failures seen in the gates,
-    an older hint answer replacing a newer window's,
-    and an unversioned diagnostics push dropped during the hold after a reload.
-  - `feat/ide-accessibility-tests` (`.claude/worktrees/ide-a11y`):
-    rerunnable accessibility tests with Slint's testing crate,
-    and comparison frames for UI batch 2's open choices and the watch-limit message
-    (prototype branch `prototype/ide-batch-2-choices`).
+  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`, head `f861a936c` before this round):
+    the user's 60 s start allowance, both Language defects, fixtures off btrfs,
+    merging `main`, the remaining native external-reload flakes, lazy server lookup, and five gate rounds.
+  - `feat/ide-accessibility-tests` (`.claude/worktrees/ide-a11y`, head `1cf8447bc` before this round):
+    element-handle accessibility tests, the batch 3b frames and page,
+    and now the batch 3b and accessibility answers
+    (white selected ink in the boxes, a 96 px divider focus handle, a translucent whole-cell clear plate,
+    row names exposed once, the search box's result count).
+  - `feat/ide-crate-notices` (new worktree from `main`):
+    cargo-about collecting the Rust crate notices into the executable and `--licenses`.
 - Inotify:
   on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
   about 462000 of them by `git fsmonitor--daemon` processes
