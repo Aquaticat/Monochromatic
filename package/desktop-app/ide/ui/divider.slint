@@ -65,9 +65,9 @@ export component SidebarDividerGrip inherits Rectangle {
     // Columns on each side of the line that belong to the divider. With the line that is a 5px zone,
     // the grab area Qt gives a 1px splitter handle (`QSplitterHandle::resizeEvent`).
     // Three columns would still clear the tree scrollbar's thumb and buttons; four would not.
-    // Prototype zone-width b: 7px, 3 columns on the tree side and 3 on the source side.
-    out property <length> reach: 3px;
-    out property <length> reach-after: 3px;
+    // Prototype zone-width c: 4px, 1 columns on the tree side and 2 on the source side.
+    out property <length> reach: 1px;
+    out property <length> reach-after: 2px;
     callback resize(length);
     private property <bool> emphasized: grip.has-hover || grip.pressed || root.keyboard-focus;
     width: root.reach + 1px + root.reach-after;
