@@ -337,6 +337,33 @@ a `rulesFile` value with `..` accepted,
 extra final line feeds kept);
 evidence `package/git-policy/cli.fuzz/target/verification/planted-2Ml8kS`.
 
+## Final gate
+
+On `e4725f72c`,
+the tree every later section measures,
+`GIT_POLICY_NATIVE_IMAGE_TAG=content-policies mise run //package/git-policy/cli:native:test:container`:
+578 unit tests,
+39 binary-level tests,
+1 public-interface consumer test,
+Clippy with warnings denied,
+exit status 0.
+Test image `30a8e6112b2a3723be78c4b379dfd130b44baa960df6525eb8b7c2d9b05589f7`,
+base `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`,
+real Git 2.56.0 in the image,
+evidence `package/git-policy/cli/target/verification/native-qNO9Nv`
+(`passed.json` has tests and Clippy both true).
+`main` changed nothing under `package/git-policy/` since the branch point `8ee6cbb39`,
+so no merge was needed.
+`native:clippy:windows` also passed on that tree.
+
+On the host,
+whose Git is 2.55.0,
+the same suites leave 10 unit and 4 binary-level tests failing.
+Each compares with Git 2.56.0's option tables or version string,
+and every one lives in a file this branch did not change
+(`git diff main` over those test files and their subjects is empty);
+they were not run on `main` here.
+
 ## Refusal frontier
 
 ### Before, on `main` at `8ee6cbb39`
