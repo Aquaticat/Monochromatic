@@ -839,6 +839,12 @@ so the main session inventoried what each had left and launched fresh delegates 
 - Linter gaps and dependent-version port:
   nothing written.
 
+The three delegates still running (content policies, dependent-version port, linter gaps)
+stopped again on the API session limit in the afternoon of 2026-10-06
+and were resumed from their transcripts at 16:01,
+each told to judge its interrupted run from its evidence directory.
+No container was running then.
+
 #### Linter mutation close
 
 Evidence in `doc/handover/unified-linter-mutation-close.md` (`a5033325b`), section `Result`.
