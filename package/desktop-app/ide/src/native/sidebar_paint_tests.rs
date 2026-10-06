@@ -23,9 +23,14 @@ use std::rc::Rc;
 
 /// Pixel row used for divider state checks, inside the tree rows and the source lines,
 /// above the handle that keyboard focus draws in the middle of the line.
-const ROW: usize = 300;
-/// Pixel row through the middle of that handle, which is 48px tall and centered in the 660px window.
+const ROW: usize = 260;
+/// Pixel row through the middle of that handle, which is 96px tall and centered in the 660px window,
+/// so it spans rows 282 to 377.
 const HANDLE_ROW: usize = 330;
+/// Rows 3px inside the handle's ends, clear of its rounded corners.
+const HANDLE_ENDS: [usize; 2] = [285, 374];
+/// Rows 3px outside the handle's ends, where the focused line is three columns again.
+const BEYOND_HANDLE: [usize; 2] = [279, 380];
 
 /// What: `&SharedPixelBuffer<Rgba8Pixel>` lends the frame; the four `usize` bounds are whole pixels
 /// (`usize` is the index type, siblings `u32` and `i32`); the answer is `true` when any pixel inside
@@ -115,7 +120,7 @@ pub(super) fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
 }
 
 /// Idle is one faint column; hover and drag are three columns in stronger ink; keyboard focus is three
-/// columns in another color with a five-column handle in the middle of the line.
+/// columns in another color with a five-column, 96px handle in the middle of the line.
 #[test]
 fn divider_states_change_line_weight_and_ink() {
     let shared = fixture(6);
@@ -197,6 +202,27 @@ fn divider_states_change_line_weight_and_ink() {
         focus_ink,
         "the keyboard-focus handle does not use the focus color"
     );
+    // What: `for row in HANDLE_ENDS` walks the fixed array of two row numbers.
+    // Why: The handle reaches both ends of its 96px and no further.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const row of HANDLE_ENDS) { ... }
+    // ```
+    for row in HANDLE_ENDS {
+        assert_eq!(
+            columns(&focused, row, background),
+            [254, 255, 256, 257, 258],
+            "the keyboard-focus handle does not reach row {row}, so it is shorter than 96px"
+        );
+    }
+    for row in BEYOND_HANDLE {
+        assert_eq!(
+            columns(&focused, row, background),
+            [255, 256, 257],
+            "the keyboard-focus handle reaches row {row}, so it is longer than 96px"
+        );
+    }
     key(window, Key::Tab);
     assert_eq!(
         columns(&frame(window), HANDLE_ROW, background),

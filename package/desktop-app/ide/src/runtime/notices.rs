@@ -2,37 +2,43 @@
 //! prints them.
 //!
 //! What: [`is_notice`] decides which embedded files are license or notice texts, [`collect`] checks
-//!       their digests, and [`write`] prints each one in full under a heading.
+//!       their digests and adds one entry per Rust crate license text, and [`write`] prints each
+//!       one in full under a heading.
 //! Why: The user chose on 2026-10-06 that the executable shows the texts it carries through a
 //!      `--licenses` flag; the files sit inside the executable, so nothing else can show them.
 
+/// The Rust crate license list and the lines printed above each of its texts.
+use super::crate_licenses;
 /// Each text is digest-checked before anything is printed.
 use super::embedded::EmbeddedRuntime;
-/// Damage is an error with the file and the remedy.
-use anyhow::Result;
-/// Printing goes to any writer: standard output in the executable, a buffer in tests.
-use std::io::Write;
+/// Damage and a missing crate list are errors with the file and the remedy.
+use anyhow::{Result, bail};
+/// Texts are borrowed from the executable or owned after decoding; printing goes to any writer.
+use std::{borrow::Cow, io::Write};
 
-/// What: One license or notice text: its path in the embedded table and its checked bytes.
-///       `&'static` borrows data stored in the executable for the whole program.
-/// Why: The heading names the path, so a reader can find the same file in the source tree.
+/// What: One license or notice text and the lines printed above it. `Cow<'static, [u8]>` is either
+///       bytes borrowed from the executable or bytes owned by this value (a crate text decoded from
+///       the embedded list).
+/// Why: Files print as they are; crate texts come out of one embedded list, so they are owned.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Notice = { path: string; text: Uint8Array };
+/// type Notice = { heading: string; origin: string[]; text: Uint8Array };
 /// ```
 #[derive(Debug)]
 pub struct Notice {
-    /// Path in the embedded table, for example `runtime/licenses/rust/LICENSE`.
-    pub path: &'static str,
+    /// The heading line, for example `Language grammar rust: LICENSE`.
+    pub heading: String,
+    /// The lines between the heading and the text: the embedded path, or the crates and source.
+    pub origin: Vec<String>,
     /// The text exactly as it was when the executable was built.
-    pub text: &'static [u8],
+    pub text: Cow<'static, [u8]>,
 }
 
-/// What: Whether an embedded path is a license or notice text: everything below `LICENSES/` and
-///       `runtime/licenses/`, and any other file whose name (ignoring case) contains `LICENSE` or
-///       `LICENCE` or starts with `COPYING` or `NOTICE`. `rsplit('/')` walks the path's parts from
-///       the end, so its first item is the file name.
+/// What: Whether an embedded path is a license or notice text printed as one file: everything below
+///       `LICENSES/` and `runtime/licenses/` except the Rust crate list, and any other file whose
+///       name (ignoring case) contains `LICENSE` or `LICENCE` or starts with `COPYING` or `NOTICE`.
+///       `rsplit('/')` walks the path's parts from the end, so its first item is the file name.
 /// Why: Most texts sit in those two folders, but Helix also ships a license beside some query files
 ///      (`runtime/queries/snakemake/LICENSE`). Query read-me files are documentation or a source
 ///      link, not license terms, so they are left out.
@@ -42,6 +48,10 @@ pub struct Notice {
 /// function isNotice(path: string): boolean
 /// ```
 pub fn is_notice(path: &str) -> bool {
+    // The crate list is printed entry by entry by `collect`, never as one raw file.
+    if path == crate_licenses::PATH {
+        return false;
+    }
     if path.starts_with("LICENSES/") || path.starts_with("runtime/licenses/") {
         return true;
     }
@@ -52,9 +62,11 @@ pub fn is_notice(path: &str) -> bool {
         || name.starts_with("NOTICE");
 }
 
-/// What: Every license and notice text of `runtime`, in path order, each digest-checked.
-///       `Result<Vec<Notice>>` is the list or the first damage found.
+/// What: Every license and notice text of `runtime`: the files in path order, then one entry per
+///       Rust crate license text in the list's order, each digest-checked. `Result<Vec<Notice>>` is
+///       the list or the first problem found.
 /// Why: All texts are checked before any is printed, so a damaged executable prints no partial list.
+///      The application's build always embeds the crate list, so its absence is an error too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -77,8 +89,29 @@ pub fn collect(runtime: &EmbeddedRuntime) -> Result<Vec<Notice>> {
         // `required` checks the digest; the file is in the table, so only damage can fail here.
         let text = runtime.required(file.path)?;
         notices.push(Notice {
-            path: file.path,
-            text,
+            heading: heading(file.path),
+            origin: vec![format!("Embedded as {}", file.path)],
+            text: Cow::Borrowed(text),
+        });
+    }
+    // What: `let Some(list) = ... else { bail!(...) }` unpacks the checked bytes or fails.
+    // Why: An executable without the crate list would silently omit every crate's terms.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const list = runtime.verified(PATH); if (!list) throw new Error('...');
+    // ```
+    let Some(list) = runtime.verified(crate_licenses::PATH)? else {
+        bail!(
+            "The executable carries no Rust crate license list ({}), so it was not built by this package's build tasks. Replace it with a fresh copy of the application, or build it again from source.",
+            crate_licenses::PATH
+        );
+    };
+    for license in crate_licenses::parse(list)?.licenses {
+        notices.push(Notice {
+            heading: license.heading(),
+            origin: license.origin(),
+            text: Cow::Owned(license.text.into_bytes()),
         });
     }
     return Ok(notices);
@@ -116,7 +149,7 @@ fn heading(path: &str) -> String {
 }
 
 /// What: Print an introduction, then every text in full under a framed heading that names its
-///       component and its embedded path. `&mut impl Write` lends any writer for writing.
+///       component and where the text comes from. `&mut impl Write` lends any writer for writing.
 /// Why: One plain-text stream that a pager, a file, or a terminal can hold.
 ///
 /// In TS you'd write (pseudocode):
@@ -132,16 +165,22 @@ pub fn write(notices: &[Notice], version: &str, out: &mut impl Write) -> std::io
     )?;
     writeln!(
         out,
-        "The notices of the Rust crates compiled into the executable are not collected here yet."
+        "The Rust crate texts were collected by cargo-about from every crate the executable is built from,"
+    )?;
+    writeln!(
+        out,
+        "procedural-macro crates that run only while compiling included; each names the crates it covers."
     )?;
     for notice in notices {
         writeln!(out)?;
         writeln!(out, "{rule}")?;
-        writeln!(out, "{}", heading(notice.path))?;
-        writeln!(out, "Embedded as {}", notice.path)?;
+        writeln!(out, "{}", notice.heading)?;
+        for line in &notice.origin {
+            writeln!(out, "{line}")?;
+        }
         writeln!(out, "{rule}")?;
         writeln!(out)?;
-        out.write_all(notice.text)?;
+        out.write_all(&notice.text)?;
         // A text without a final line break still ends its line before the next heading.
         if !notice.text.ends_with(b"\n") {
             writeln!(out)?;

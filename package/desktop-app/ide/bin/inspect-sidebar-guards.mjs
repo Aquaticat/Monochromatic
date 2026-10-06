@@ -46,6 +46,14 @@ const cases = [
   // Keyboard focus on the 1px line is marked by a color of its own and by a handle.
   { name: 'focus-color', file: 'ui/divider.slint', before: 'background: root.keyboard-focus ? Palette.accent-background : Palette.foreground;', after: 'background: Palette.foreground;', test: states, failure: 'keyboard focus does not have a line color of its own' },
   { name: 'focus-handle', file: 'ui/divider.slint', before: '        visible: root.keyboard-focus;\n', after: '        visible: false;\n', test: states, failure: 'keyboard focus did not draw its handle' },
+  // Through element handles: the divider slider's increment action, and tree rows reporting the open file.
+  { name: 'a11y-divider-increment', file: 'ui/divider.slint', before: 'accessible-action-increment => { root.resize(root.value + root.step); }', after: 'accessible-action-increment => { }', test: 'divider_is_a_slider_with_value_bounds_step_actions_and_keys', failure: 'the increment action did not set the sidebar width' },
+  { name: 'a11y-tree-row-selected', file: 'ui/tree.slint', before: 'accessible-item-selected: entry.selected;', after: 'accessible-item-selected: false;', test: 'tree_rows_report_role_name_position_and_the_open_file_as_selected', failure: 'does not report selected = true' },
+  // Answer of 2026-10-06: the keyboard-focus handle is 96px tall.
+  { name: 'focus-handle-96', file: 'ui/divider.slint', before: 'height: min(96px, parent.height);', after: 'height: min(48px, parent.height);', test: 'divider_states_change_line_weight_and_ink', failure: 'so it is shorter than 96px' },
+  // Tree rows carry their names once; the hidden slot badge's shortcut moves into the row description.
+  { name: 'a11y-tree-row-text-hidden', file: 'ui/tree.slint', before: '                    // The row carries the name; its text is not read a second time.\n                    accessible-role: none;\n', after: '', test: 'tree_rows_report_role_name_position_and_the_open_file_as_selected', failure: 'is named by 2 elements in its list' },
+  { name: 'a11y-tree-badge-shortcut', file: 'ui/tree.slint', before: ': (entry.recency == "" ? "Source file" : "Source file, Ctrl+" + entry.recency);', after: ': "Source file";', test: 'tree_rows_report_role_name_position_and_the_open_file_as_selected', failure: 'does not name its shortcut' },
   // Without a project the pointer half takes no input over the source.
   { name: 'hidden-grip', file: 'ui/app.slint', before: '        visible: root.project-visible;\n        x: project-tree.width - self.reach;', after: '        x: project-tree.width - self.reach;', test: 'hidden_project_has_no_divider', failure: 'the first window pixel is not source without a project' },
   // Without a project there is no divider to focus.
