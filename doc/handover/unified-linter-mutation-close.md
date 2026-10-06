@@ -50,6 +50,13 @@ No mutant exposed a defect on unmutated input;
 `Defects found` says what the campaigns did expose.
 `Remaining` lists what no campaign here covers.
 
+A second round on 2026-10-06 is closing the items that were under `Remaining`:
+every production module now belongs to a scope,
+and the executable lints every invocation on a thread with an explicit stack.
+`Gaps round` records its changes and evidence;
+its campaigns are still running,
+so the counts in this section describe the first round only.
+
 ## Excluded mutation kinds
 
 ### Decision
@@ -924,6 +931,196 @@ and no campaign had to be repeated because of an interruption.
 Two campaigns were stopped on purpose by removing their containers,
 `mutation-AuPwZ7` and `mutation-dy0x0l`,
 for the reasons given where they are named.
+
+## Gaps round
+
+A delegate of the main session closed the items of `Remaining` on 2026-10-06,
+with `MONOCHROMATIC_LINT_IMAGE_TAG=mutation-gaps`
+and the same container bounds as the first round.
+Evidence is in `package/linter/monochromatic-lint/target/verification/`.
+
+### Scopes for every production module
+
+Every scope is now one entry of a table in `bin/mutate-container.mjs`:
+the arguments that decide which mutants exist,
+the arguments that decide how each mutant is built and tested,
+and a per-mutant limit where it differs from 180 seconds.
+The campaign,
+`--list <scope>` and `--coverage` all read that table,
+so a listing can no longer drift from the campaign it describes,
+and the `mutation:list:*` tasks call `--list`.
+
+- The executable scope also mutates `file_discovery.rs`,
+  `path_inputs.rs` and `fix_loop.rs`,
+  the input expansion and fix loop it drives:
+  233 mutants instead of 184.
+- The new core scope (`mutation:core`) mutates configuration parsing,
+  lookup,
+  matching,
+  merging and rule-option validation,
+  findings,
+  grouped edits,
+  resolved rule settings,
+  and the syntax-only Rust rules with their shared parse:
+  202 mutants.
+  None of these loads a Cargo workspace,
+  so it uses the executable scope's test selection.
+- The new semantic scope (`mutation:semantic`) mutates `rust_file_engine.rs`,
+  `rust_toolchain.rs`,
+  `rust_workspace.rs`,
+  the `rust_explicit_*` modules,
+  `rust_generic_arguments.rs`,
+  `rust_semantic_*` and `rust_type_diagnostic.rs`:
+  96 mutants.
+  It runs the whole suite,
+  because the Cargo-workspace suites are its tests
+  and the rest of the suite costs little next to them.
+
+The four processor tasks that start containers,
+and the inline `mutation:processors` task,
+now honour `MONOCHROMATIC_LINT_IMAGE_TAG` like the other container tasks;
+they used the shared `development` tags before.
+
+### Coverage by listing
+
+`mutation:coverage` lists every scope and the unscoped crate
+with `cargo mutants --list --no-config` and both exclusion patterns,
+writes each listing to a `coverage-*` evidence directory,
+and fails unless the union of the scope listings equals the unscoped listing name by name.
+On the committed runner (`ed7c3080d`, linter source tree `ceb495865521beda0f988a536435ffd69cc1d100`)
+it reports 1,643 unscoped mutants and a union of 1,643,
+with none outside every scope and none unknown (`coverage-WgJPEx`):
+rust-style 3,
+Markdown 742,
+parent lookup 4,
+processors 355,
+constant slots 12,
+executable 233,
+core 202 and semantic 96.
+The parent-lookup scope is a subset of the Markdown scope,
+and the inline `mutation:processors` task a subset of the processor scope.
+The positive control is a copy of the runner without the core scope:
+it fails with 202 mutants outside every scope (`coverage-99OU43`).
+The comparison is repeated on the final tree once the round's campaigns are done.
+
+Before this round the union was 347 mutants short,
+not only the 72 of the six files named under `Remaining`:
+configuration,
+findings,
+edits,
+resolved rules,
+the syntax-only Rust rules
+and the explicit-type modules had been mutated by the full-scope campaign `mutation-1vJeuS` on an older snapshot,
+but no current scope held them.
+
+### Workspace tests in the fast scopes
+
+The executable and core scopes skip the five tests that load or prepare a Cargo workspace by their full names,
+instead of five module names:
+`rust_explicit_types_tests::semantic_conformance_and_source_overlay_controls`,
+`rust_file_engine::tests::selected_semantics_reuses_the_manifest_session`,
+`rust_inferred_constants::tests::holes_resolve_against_the_parameter_in_their_own_slot`,
+`rust_workspace_tests::cargo_discovery_keeps_its_owner_boundary`
+and `rust_workspace_tests::generated_definitions_and_build_failures_are_distinct`.
+`no_semantic_selection_avoids_workspace_initialization`
+and the three `rust_semantic_session` tests now run in both scopes.
+Each of the five ran for over 60 seconds in gate 6.
+They run in `test:container` and in the semantic scope,
+and the constant-slot scope's two filters select two of them.
+
+### Invocation thread
+
+`run_process` now parses the command line,
+installs the panic hook,
+and runs the whole invocation on a scoped thread built by `lint_thread` in `run_workers.rs`,
+the same builder and 8 MiB stack the workers use.
+One file,
+`--concurrency 1`,
+`--stdin` and the semantic plans are therefore linted on a thread whose stack size is explicit.
+If the operating system refuses that thread,
+the invocation runs on the calling thread as before.
+
+The platform figure behind the change is from Microsoft's documentation,
+not recalled:
+the MSVC [`/STACK` reference](https://learn.microsoft.com/en-us/cpp/build/reference/stack-stack-allocations)
+says "For ARM64, x86, and x64 machines, the default stack size is 1 MB",
+and [Thread Stack Size](https://learn.microsoft.com/en-us/windows/win32/procthread/thread-stack-size)
+says "The default stack reservation size used by the linker is 1 MB"
+and that the main thread's size comes from the executable header.
+A GitHub code search of `rust-lang/rust` for `STACK` in `linker.rs` found only `-z noexecstack`,
+which suggests that rustc passes no `/STACK` reserve;
+that is a search result,
+not a Windows build,
+and no Windows or release build was run.
+
+The reproduction lints `fn main` with 1,200 nested parentheses,
+the input of the worker nesting control,
+with the debug executable in the bounded container,
+lowering the main thread's stack with `ulimit -s` in `sh -c` before `exec`.
+`stack-repro-before.log` is the unchanged tree,
+image `5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`
+(the container's default soft limit is 16,384 KiB):
+
+- One file at the default limit:
+  exit 0.
+- One file at 1,024 KiB:
+  exit 134,
+  `thread 'main' (4230) has overflowed its stack`.
+- Two files with `--concurrency 1` at 1,024 KiB:
+  exit 134,
+  the same overflow on `main`.
+- Two files with `--concurrency 2` at 1,024 KiB:
+  exit 0,
+  because both files run on 8 MiB workers.
+- `--stdin` at 1,024 KiB:
+  exit 134,
+  the same overflow on `main`.
+
+`a_small_main_thread_stack_does_not_limit_nesting` in `src/binary_tests.rs` runs the one-file,
+`--concurrency 1` and `--stdin` cases under a 1,024 KiB main stack
+and requires exit 0 with both streams empty.
+With the invocation thread replaced by a direct call on the calling thread,
+that test failed on the host:
+`the executable was killed by a signal: thread 'main' (532099) has overflowed its stack`
+(`hand-mutations-stack-hook.log`).
+
+### Panic hook and stack size controls
+
+The hook installation moved from `parse_and_run` into `run_process_with`,
+which takes the parsed options and the runner,
+so a test can run one real invocation whose runner panics.
+`only_debug_invocations_print_the_default_panic_message` starts its own test binary again
+with only the ignored `panic_hook_child` selected,
+once plain and once with `--debug`.
+The plain child must write exactly the program's internal-error line on standard error and exit 2;
+the debug child must write the default hook's message,
+naming the `monochromatic-lint` thread and the panic location,
+before that line.
+Because the hook is process-wide,
+the child test is ignored unless selected,
+and does nothing unless its environment variable names a mode.
+
+`lint_threads_hold_the_documented_eight_mebibyte_stack` starts a thread from `lint_thread`,
+recurses in frames of at least 4 KiB until the frames span 7.5 MiB measured from frame addresses,
+and then requires `WORKER_STACK_BYTES` to equal 8 MiB.
+The nesting controls alone pass with a 4 MiB stack;
+the probe does not.
+
+Hand mutations on the host,
+each written back and checked with `git diff --quiet` (`hand-mutations-stack-hook.log`):
+
+- The `set_hook` call deleted:
+  the hook control failed,
+  because the plain child's standard error began with `thread 'monochromatic-lint' (529092) panicked at`.
+- A 7 MiB and a 4 MiB stack:
+  the probe thread overflowed and the test binary aborted with signal 6.
+- A 4 MiB stack with only the two nesting controls selected:
+  both passed,
+  which is the gap the probe closes.
+- A 16 MiB stack:
+  the equality failed (`left: 16777216`, `right: 8388608`).
+  A larger stack is not a defect,
+  so only the equality distinguishes it.
 
 ## Remaining
 
