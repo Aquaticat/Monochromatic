@@ -39,6 +39,8 @@ use std::{
 
 /// UI-owned handle: say what is shown, then poll invalidations without blocking.
 pub struct ChangeWatcher {
+    /// Canonical project root; a displayed file's folder is watched only inside it.
+    root: PathBuf,
     /// Shared with the watch thread and notify's event handler.
     shared: Arc<Mutex<Shared>>,
     /// One-slot wake channel into the watch thread.
@@ -68,7 +70,8 @@ impl ChangeWatcher {
     /// Start the watch thread; inotify setup failures leave every shown item on its timer instead.
     pub fn new(workspace: Workspace) -> Result<Self> {
         // `to_path_buf` copies the canonical root into the shared state the handler filters with.
-        let shared = Arc::new(Mutex::new(Shared::new(workspace.root().to_path_buf())));
+        let root = workspace.root().to_path_buf();
+        let shared = Arc::new(Mutex::new(Shared::new(root.clone())));
         let (sender, receiver) = sync_channel(1);
         let thread_shared = Arc::clone(&shared);
         let thread_waker = sender.clone();
@@ -79,6 +82,7 @@ impl ChangeWatcher {
             })
             .context("Cannot start the file-change watch thread")?;
         return Ok(Self {
+            root,
             shared,
             wake: sender,
             thread: Some(thread),
@@ -98,7 +102,12 @@ impl ChangeWatcher {
         // if (file !== undefined) wanted.add(dirname(file));
         // ```
         if let Some(parent) = file.and_then(Path::parent) {
-            wanted.insert(parent.to_path_buf());
+            // A file outside the project (opened from a language target) is reread on the safety sweep.
+            // Its folder is never watched: asking would be refused, and a refusal rereads everything shown.
+            // Both paths are canonical, so comparing their components needs no filesystem call.
+            if parent.starts_with(&self.root) {
+                wanted.insert(parent.to_path_buf());
+            }
         }
         let owned_file = file.map(Path::to_path_buf);
         if self

@@ -81,9 +81,11 @@ pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     // ```
     let parent = current.file_path.as_deref().and_then(Path::parent);
     let watched = parent.is_some_and(|directory| return navigation.watched.contains(directory));
-    // A displayed file needs its folder watched; no displayed file needs nothing.
-    let file_covered = watched || parent.is_none();
+    let outside = current.outside_project;
+    // A displayed file needs its folder watched; no displayed file, or one outside the project, needs nothing.
+    let file_covered = watched || parent.is_none() || outside;
     current.refresh.set_watched(watched);
+    current.refresh.set_outside_project(outside);
     drop(current);
     if navigation
         .directories

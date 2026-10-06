@@ -18,6 +18,9 @@ use std::time::Instant;
 pub struct SourceRefresh {
     /// The displayed file's directory has a live watch, so timers fall back to the safety sweep.
     watched: bool,
+    /// The displayed file lies outside the project: its folder is deliberately not watched, and the
+    /// safety sweep, not the 250 ms timer for a failed watch, rereads it.
+    outside_project: bool,
     /// What: `Option<Instant>` is a time or nothing (`number | undefined`).
     /// Why: When the first unread notification arrived; bounds the wait for an unfinished write.
     ///
@@ -40,6 +43,14 @@ impl SourceRefresh {
             tracing::debug!(watched, "displayed-file refresh mode changed");
         }
         self.watched = watched;
+    }
+
+    /// Record whether the displayed file lies outside the project, where nothing is watched on purpose.
+    pub fn set_outside_project(&mut self, outside: bool) {
+        if self.outside_project != outside {
+            tracing::debug!(outside, "displayed file moved across the project boundary");
+        }
+        self.outside_project = outside;
     }
 
     /// Report whether the displayed file's directory currently has a live watch.
@@ -117,7 +128,8 @@ impl SourceRefresh {
         if highlight_missing && rested {
             return true;
         }
-        let interval = if self.watched {
+        // A file outside the project is not watched on purpose; it is not a failed watch to poll often.
+        let interval = if self.watched || self.outside_project {
             SAFETY_SWEEP
         } else {
             UNWATCHED_SOURCE_POLL
