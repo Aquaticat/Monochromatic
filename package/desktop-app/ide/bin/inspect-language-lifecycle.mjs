@@ -2,8 +2,11 @@
 // Lifecycle check of the headless Language module against real servers on disposable projects:
 // open, one request, close, and the worker's shutdown, with every record the application logged
 // captured. helix-lsp forwards each line a server writes to standard error into that log, so the
-// capture holds the servers' standard error too.
-// Part 1 (quiet shutdown): no ERROR-level record, no bare shutdown error text, no process left.
+// capture holds the servers' standard error too. The log goes through the application's pipeline,
+// which re-labels helix-lsp's records for healthy servers (src/logging/relabel.rs); every helix-lsp
+// record is made visible here, so the re-labelled ones are checked for, not only their absence at ERROR.
+// Part 1 (quiet shutdown): no ERROR-level record, no shutdown error text at WARN or ERROR or outside a
+// record, helix-lsp's healthy-server records kept whole below WARN, no process left.
 // Part 2 (abrupt end): SIGKILL of the application process leaves no server and no sandbox process.
 // Servers run with the production launch policy, confined by bubblewrap.
 // No server is ever pointed at this repository; it is read only to copy the TypeScript 7 packages.
@@ -93,13 +96,22 @@ const marked = marker => readdirSync('/proc').filter(name => /^\d+$/.test(name))
 // One record of the application log per line; ANSI color sequences removed.
 const logRecords = text => text.replaceAll(/\u001b\[[0-9;]*m/g, '').split('\n').filter(Boolean);
 const levelOf = line => /^\S+\s+(TRACE|DEBUG|INFO|WARN|ERROR)\s/.exec(line)?.[1];
-// Text a process prints when it reports its own shutdown as a failure.
+// Text a process prints when it reports its own shutdown as a failure. It is a bare shutdown error
+// when it reaches the log at WARN or ERROR, or outside any record; below WARN it is labelled for what it is.
 const bareShutdownError = /context canceled|StreamClosed|broken pipe/i;
+const bareLevels = new Set(['WARN', 'ERROR', undefined]);
+// The three helix-lsp record shapes for a healthy server, worded as helix-lsp words them.
+const helixShapes = [
+  ['server standard error line', /helix_lsp::transport: \S+ err <- ".*"$/],
+  ['end of server standard error', /helix_lsp::transport: \S+ err: <- StreamClosed$/],
+  ['moot error answer', /helix_lsp::transport: \S+ <- ServerError\(-3280[01]\): /],
+];
 const tomlTable = variables => '{ ' + Object.entries(variables).map(([name, value]) => name + ' = ' + JSON.stringify(value)).join(', ') + ' }';
 // endregion
 
 // The application's private state, which holds each server's cargo and cache redirects, goes below the fixture.
-const environment = { ...process.env, XDG_CACHE_HOME: join(base, 'app-cache') };
+// RUST_LOG adds every helix-lsp record, protocol messages included, to the worker's debug records.
+const environment = { ...process.env, XDG_CACHE_HOME: join(base, 'app-cache'), RUST_LOG: 'ide_app=debug,helix_lsp=debug' };
 delete environment.CARGO_TARGET_DIR;
 delete environment.CARGO_BUILD_BUILD_DIR;
 const cases = [
@@ -139,7 +151,11 @@ for (const item of cases) {
   const hoverText = events.filter(event => event.reply).map(event => event.reply.outcome.text ?? '').join('\n');
   const lines = logRecords(run.stderr ?? '');
   const errors = lines.filter(line => levelOf(line) === 'ERROR');
-  const bare = lines.filter(line => bareShutdownError.test(line));
+  const bare = lines.filter(line => bareShutdownError.test(line) && bareLevels.has(levelOf(line)));
+  // Each re-labelled record with its level; one at WARN or ERROR fails, as any ERROR record does.
+  const relabelled = lines.flatMap(line => helixShapes.filter(([, pattern]) => pattern.test(line)).map(([shape]) => ({ shape, level: levelOf(line), line })));
+  const loud = relabelled.filter(entry => !['INFO', 'DEBUG'].includes(entry.level));
+  const shapes = Object.fromEntries(helixShapes.map(([shape]) => [shape, relabelled.filter(entry => entry.shape === shape).map(entry => entry.level)]));
   const state = join(base, 'app-cache', 'monochromatic-ide', 'language');
   const confined = existsSync(state) && readdirSync(state, { recursive: true }).some(path => path.endsWith(item.server));
   const left = marked(marker);
@@ -150,9 +166,11 @@ for (const item of cases) {
     ['the server ran with private sandbox state', confined],
     ['the log has no ERROR-level record (' + errors.length + ' found)', errors.length === 0],
     ['the log has no bare shutdown error (' + bare.length + ' found)', bare.length === 0],
+    ['helix-lsp\'s healthy-server records are in the log below WARN (' + relabelled.length + ' found, ' + loud.length + ' at WARN or above)', relabelled.length > 0 && loud.length === 0],
     ['no server or sandbox process is left', left.length === 0],
-  ], { errors, bare, warnings: lines.filter(line => levelOf(line) === 'WARN'), left, records: lines.length });
-  for (const line of new Set([...errors, ...bare])) console.log('     ' + line.slice(0, 300));
+  ], { errors, bare, warnings: lines.filter(line => levelOf(line) === 'WARN'), left, records: lines.length, shapes, relabelled: relabelled.map(entry => entry.line.slice(0, 300)) });
+  for (const line of new Set([...errors, ...bare, ...loud.map(entry => entry.line)])) console.log('     ' + line.slice(0, 300));
+  console.log('     helix-lsp healthy-server records by shape, with their levels: ' + JSON.stringify(shapes));
 }
 // endregion
 

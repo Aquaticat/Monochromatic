@@ -83,12 +83,12 @@ depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --inferred-constants"
 
 [tasks."mutation:executable"]
-description = "Mutate the executable's orchestration, entry point, Rust rule selection, input expansion and fix loop against every test except the five Cargo-workspace tests, after full container tests and Clippy"
+description = "Mutate the executable's orchestration, entry point, Rust rule selection, input expansion and fix loop against every test except the four Cargo-workspace tests, after full container tests and Clippy"
 depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --executable"
 
 [tasks."mutation:core"]
-description = "Mutate configuration, findings, grouped edits and the syntax-only Rust rules against every test except the five Cargo-workspace tests, after full container tests and Clippy"
+description = "Mutate configuration, findings, grouped edits and the syntax-only Rust rules against every test except the four Cargo-workspace tests, after full container tests and Clippy"
 depends = ["lint:container"]
 run = "node bin/mutate-container.mjs --core"
 

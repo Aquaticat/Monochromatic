@@ -636,7 +636,10 @@ It now reads `formula: the $ at character 1 has no closing $`.
 
 The second build
 (prototype commit `82d2692b7471fcde27c86c9bb321a4d35557bbca`)
-was captured in full on 2026-10-05 and published on 2026-10-06:
+was captured in full on 2026-10-05 and published on 2026-10-06
+(its images were removed from `questions/evidence/` later that day,
+when D91 rejected the pinned layouts;
+the measurements in this section stay as the record):
 128 views,
 every scene on both panels,
 in light and dark,
@@ -697,4 +700,105 @@ no scroll of the study's own while typing,
 the new default template,
 and a changed-template scene whose second row ends with the separator an empty peak leaves.
 Its review page shows the decided design and asks nothing.
-The next concern of the round is reaching the field list while the keyboard is open.
+
+Shown that page,
+the human answered that a library is always open (D95),
+that scrolling suffices to reach the field list (D96),
+and that the agent builds one version of which other rows get templates for approval (D97).
+That version is the next section.
+The human then accepted the editor as shown (D98),
+approved the version as built (D99),
+and decided what D95 means for the first-run study (D100).
+
+## Which rows get templates: the agent's version (2026-10-06)
+
+D97 asks for one built version,
+the agent's own design,
+and the human's approval.
+The human approved it as built (D99).
+
+### Where supporting text appears
+
+From the design decisions
+(production source read on 2026-10-06 draws no deck subtitle;
+the deck's `1 of 16 · −1.2 dBTP` is the prototype's authored deck):
+
+- Track rows in the folder's track list:
+  a title and a supporting line
+  (C2,
+  D35).
+  This is the template the editor already studies.
+- The playing track in the deck:
+  a title and a subtitle that counts the track's place in its folder,
+  as in `6 of 10` (D5),
+  and adds the true peak once it is measured (D27).
+- Search results:
+  a title and the parent folder as supporting text,
+  which D77 requires so that equal names stay apart.
+- Folder cells of the picker:
+  one name each,
+  with no supporting line (D3).
+
+### The version
+
+- Two templates,
+  listed under `Templates` in Settings:
+  `Track rows` and `Playing track`.
+- `Track rows` is the template studied so far,
+  default `$tf(mi(len), m:ss)$ $mi(peak)$`.
+- `Playing track` is the deck's subtitle,
+  default `$mi(track)$ of $mi(total)$ $mi(peak)$`,
+  which reads `1 of 16 −1.2 dBTP`,
+  and `1 of 16` before analysis.
+  Its fields are the seven track fields and two more:
+  `track`,
+  the track's place in its folder,
+  and `total`,
+  how many tracks the folder holds.
+  `mi(track)` follows KWGT,
+  whose documentation gives it as the current track in the playlist;
+  `total` is the player's own word.
+  `pos` is not used for the place,
+  because KWGT gives `mi(pos)` as the playback position in seconds.
+- Its preview draws the same two files as the track rows' preview,
+  as rows of a title and the line.
+  A deck is one playing track,
+  so two decks would be a shape the app never shows,
+  and one deck alone would hide the line before analysis.
+  Rows keep both editors alike;
+  the deck itself shows the line in the left pane on the inner panel.
+- Search results are not templated:
+  their supporting line is the parent folder D77 requires,
+  and a template could remove it.
+- Folder cells and every title stay as they are,
+  as D81 implies no title customization.
+
+Why two and not one:
+a single template for both would either lose the deck's place in the folder
+or put it on every track row.
+foobar2000,
+the music player most known for templates,
+also keeps the now-playing surfaces apart from the playlist:
+its Default User Interface preferences set
+"how to display information about the currently played track in various places:
+main window title,
+status bar,
+tooltip of the notification area icon"
+([Hydrogenaudio knowledgebase](https://wiki.hydrogenaudio.org/index.php?title=Foobar2000:Preferences:Default_User_Interface)).
+
+What this costs:
+a second entry in Settings and two more fields to learn.
+The deck's default drops the middle dot,
+as the track rows' default does under D93.
+
+### Built
+
+The editor study gains the `Playing track` editor,
+the Settings page lists both templates,
+each editor is titled with its template's name
+(so the track rows' editor,
+titled `Supporting line` until now,
+becomes `Track rows`),
+the left pane's deck on the inner panel shows the new default,
+and the state previously called `no-library` becomes `empty-library` under D95.
+The field list is unchanged (D96).

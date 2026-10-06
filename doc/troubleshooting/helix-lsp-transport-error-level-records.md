@@ -177,6 +177,9 @@ mise run //package/desktop-app/ide:test:language quiet::
 `tests/language/quiet.rs` installs the application's log setup with an in-memory writer,
 runs open, one hover, close, and shutdown,
 and collects the ERROR-level records.
+Since 2026-10-06 the scripted server also writes `context canceled` to standard error at shutdown
+and answers the first hover with `-32801`, so all three record shapes occur in that lifetime,
+and the test runs with the bridge described in "Verified workarounds".
 
 Host, real servers confined by bubblewrap, disposable projects:
 
@@ -211,13 +214,53 @@ rust-analyzer `1.100.0-nightly (1303417 2026-09-21)`, open, one hover, close, qu
 
 ## Verified workarounds
 
-None is applied in the application.
-Which handling to adopt is an open decision for the repository owner.
+### Re-labelling in the application (adopted)
+
+The repository owner chose this handling on 2026-10-06 ("Re-label in the IDE").
+`package/desktop-app/ide/src/logging/relabel.rs` installs the `log` crate's logger for the process.
+It lowers exactly the three shapes, when they come from the `helix_lsp::transport` target at ERROR,
+and passes everything else, at every level, through `tracing_log::format_trace` unchanged:
+
+- a standard-error line, `{name} err <- "{line}"`, to INFO,
+  the level at which `helix-lsp` logs every other message it reads from a server
+  (`helix-lsp/src/transport.rs:147`);
+- the end of standard error, `{name} err: <- StreamClosed`, to DEBUG;
+- an error answer with code `-32801` (content modified) or `-32800` (request cancelled), to DEBUG,
+  because the worker asks again for these and shows nothing (`src/language/request/answer.rs`).
+
+Text, target, module, file, and line stay as `helix-lsp` wrote them.
+An error answer with any other code, a failure to read or write a server's streams,
+and every record from another `helix-lsp` module keep ERROR.
+The application's default level is WARN and keeps `helix_lsp` at warnings unless `RUST_LOG` names it,
+so `RUST_LOG=helix_lsp=debug` shows the re-labelled records together with the protocol messages.
+
+Verification:
+the strict test `quiet::clean_lifetime_logs_no_error_level_record` is enforced and asserts each shape at its new level;
+`quiet::unknown_helix_error_records_keep_their_level` asserts that a refused `initialize` still logs two ERROR records;
+`inspect:language-lifecycle-guards` removes each re-labelling, and widens it to every transport ERROR,
+and observes the named test fail each time and pass when restored
+(`~/temp/agent/ide-language-lifecycle-guard-Z50y1S/results.json`, 2026-10-06, 20 runs as expected).
+
+Tradeoffs:
+
+- It matches `helix-lsp`'s message text at the pinned revision.
+  A changed format string on a `helix-lsp` update makes that record ERROR again, which the enforced test reports;
+  it cannot hide a record, because an unrecognized record keeps its level.
+- A server's standard error is no longer visible at the default level.
+  Since 2026-10-06 the bridge keeps each server's last 8 lines anyway (`src/logging/stderr_tail.rs`):
+  a server that crashes, or ends during its start, leaves the worker's warning `language server process ended`
+  with them in its `stderr_tail` field,
+  and a server stopped for not answering `initialize` in time leaves them in a warning after the start-deadline error.
+  Every line a server writes appears with `RUST_LOG=helix_lsp=info`.
+- The upstream fix for the end-of-stream record ("Upstream filing decision") remains worth filing;
+  the bridge does not depend on it.
+
+### Prototype of the upstream fix
 
 One change is verified as a prototype:
 building against a `helix-lsp` whose standard-error reader stays silent at the end of the stream
 (the diff is in "Upstream filing decision").
-With it the strict test `quiet::clean_lifetime_logs_no_error_level_record` passes.
+With it the strict test `quiet::clean_lifetime_logs_no_error_level_record` passed before the bridge existed.
 Tradeoffs:
 it needs a patched copy of a pinned dependency (a `[patch]` section or a fork) until upstream changes,
 and it removes only the end-of-stream record;
@@ -302,6 +345,11 @@ Verification command, with a disposable target directory, Cargo home copy, and t
 # package/desktop-app/ide
 mise run //package/desktop-app/ide:inspect:language-lifecycle-guards "$CACHE" "$CARGO" "$HELIX" helix
 ```
+
+Note, 2026-10-06: this `helix` part was removed from `inspect:language-lifecycle-guards`
+when the application started re-labelling the record, because the strict test now passes with or without the change.
+The command runs as written on `main` at commit `45db45d02`;
+to reproduce the prototype result, check out `package/desktop-app/ide` at that commit.
 
 Result on 2026-10-05 (`~/temp/agent/ide-language-lifecycle-guard-8DAtvs/results.json`):
 built against the unmodified clone, the strict test fails with `scripted-ls err: <- StreamClosed`;

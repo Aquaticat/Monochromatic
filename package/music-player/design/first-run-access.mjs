@@ -8,7 +8,10 @@ const evidence = join(question, 'evidence');
 const manifest = JSON.parse(readFileSync(join(evidence, 'first-run-access-witnesses.json'), 'utf8'));
 const panels = { inner: [2076, 2152], cover: [1080, 2424] };
 // Whether the authored state carries the analysis explanation (D84: automatic, no choice offered).
-const scenes = { declined: true, 'not-opened': true, 'system-no-audio': false, 'folder-no-audio': false };
+// A library is always open (D95), so there is no state without a source; access declined stays (D100).
+const scenes = { declined: true, 'system-no-audio': false, 'folder-no-audio': false };
+// The declined state shows the open library as unreadable and offers both ways on (D100).
+const declinedActions = ['Allow access', 'Open a folder', 'Settings'];
 const withdrawn = 'choose whether to analyse';
 if (manifest.schema !== 2 || typeof manifest.analysisText !== 'string' || manifest.analysisText.length === 0 ||
     manifest.analysisText.includes(withdrawn) || !Array.isArray(manifest.witnesses)) {
@@ -48,6 +51,9 @@ for (const capture of manifest.witnesses) {
   }
   if (!scenes[capture.scene] && capture.texts.includes(manifest.analysisText)) {
     throw new Error(`${file}: first-run drawn text explains analysis in a state that has none.`);
+  }
+  if (capture.scene === 'declined' && capture.position === 'initial' && declinedActions.some(label => !capture.texts.includes(label))) {
+    throw new Error(`${file}: the declined state does not draw both ways on and Settings.`);
   }
   const key = `comparison/${capture.panel}/${capture.scene}/${capture.scheme}/${capture.fontScale}/${capture.position}`;
   if (images[key]) throw new Error('Duplicate first-run review capture.');
@@ -97,10 +103,17 @@ if (process.argv[2] === 'build') {
     'Every state is authored debug input', 'not real discovery or permission evaluation',
     'No production implementation is authorized', 'Open a folder', 'in-app Settings',
     'automatic and not optional', 'no choice about analysis',
-    'automatic WorkManager initialization', 'id="final-notes"', 'id="reply"', 'Native pixels', 'Reset 100% dp']) {
+    'automatic WorkManager initialization', 'Allow access', 'For approval: the declined state', 'id="final-notes"', 'id="reply"', 'Native pixels', 'Reset 100% dp']) {
     if (!html.includes(marker)) throw new Error(`First-run review is missing ${marker}.`);
   }
   if (html.includes(withdrawn)) throw new Error('First-run review still states the withdrawn analysis choice.');
+  // The page tells its own cohort's capture story: it names how many visits contributed views, read from the records.
+  const visits = new Set(manifest.witnesses.map(capture => capture.visit)).size;
+  if (!html.includes(`${visits} visits contributed views`)) throw new Error(`First-run review does not name its ${visits} visits.`);
+  // Every figure belongs to an authored state, and every authored state has its first-view figure.
+  const figured = [...template.matchAll(/<figure data-scene="([a-z-]+)"/gu)].map(match => match[1]);
+  for (const scene of figured) if (!(scene in scenes)) throw new Error(`First-run review shows a figure for ${scene}, which is not an authored state.`);
+  for (const scene of Object.keys(scenes)) if (!template.includes(`<figure data-scene="${scene}">`)) throw new Error(`First-run review shows no figure for ${scene}.`);
   if ((html.match(/<form\b/g) ?? []).length !== 1 ||
       /__FIRST_RUN_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
       /<input\b[^>]*\btype="radio"|name="placement"|name="visibility"|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {

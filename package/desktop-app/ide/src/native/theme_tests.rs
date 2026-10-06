@@ -43,7 +43,7 @@ const HEADER: usize = 32;
 /// Width of the divider's layout cell, which is its line: the pixel column right after the sidebar.
 const DIVIDER: usize = 1;
 /// Width of the line-number gutter at the left edge of the source column.
-const GUTTER: usize = 56;
+const GUTTER: usize = super::sidebar_tests::GUTTER as usize;
 /// Height of the open find bar's single row at the bottom of the source column.
 const FIND_BAR: usize = 56;
 

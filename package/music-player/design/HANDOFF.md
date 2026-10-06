@@ -94,79 +94,71 @@ with 96 passing cases (`test:template-reference`).
 It is design evidence for the editor study,
 not the player's parser.
 
-### Answered, and the study is being rebuilt
+### Rebuilt for the decisions of 2026-10-06
 
-On 2026-10-06 the human answered through the question tool:
+The human answered through the question tool:
 the preview scrolls with the page (D91),
 the language has no conditional (D92),
 an empty field is plain substitution with the unit inside the peak field (D93),
 and the page rests where Android puts a focused field (D94).
 `decisions.md` records each with the human's words.
-The layout study's 128 views stay published until the rebuild replaces them;
-its page and builder already describe the decided design,
-so `build:`,
-`lint:`,
-`verify:` and `test:template-editor` fail until then (the commits say so).
 
-The rebuild,
-in order:
+The study is rebuilt and republished:
 
-- Reference and scenes:
-  done,
-  committed,
-  `test:template-reference` passes.
-  Eight scenes,
-  one layout,
-  default template `$tf(mi(len), m:ss)$ $mi(peak)$`,
-  and a changed template whose second row ends with the separator an empty peak leaves.
-- Kotlin study on the prototype branch:
-  layout option and authored scroll rule removed,
-  fixture values from the reference.
-  Then the unit task and the APK build (`build-template-editor-study.ts`).
-- Capture with `run-template-editor-until-complete.ts decided a`.
-  Check the first condition's views at once with `prepare-template-editor-crops.ts`:
-  the second preview row's line ends with a space,
-  and the hierarchy must keep it.
-- Inspect every sheet,
-  publish (the dry run must list all 128 layout-study images as superseded),
-  build,
-  test,
-  prove the guards,
-  browser check,
-  review record (`publish-template-editor-review.ts` holds result strings to refresh from the real outputs first),
-  boundary document,
-  then hand over through the question tool.
-- The private capture scripts no longer compare the APK's digest;
-  the next visit is their first run without it.
+- Prototype branch at `4df8e785cc7f5dff97c4d463c8c9358f5787bbff`,
+  22 passing fixture unit tests,
+  APK kept in `settings-pane-native-private/build-4df8e785cc7f5dff97c4d463c8c9358f5787bbff`.
+- 64 views in `settings-pane-native-private/template-editor-cohort-4df8e785c`,
+  published under `questions/evidence/`;
+  the 64 views of the rejected pinned layouts were removed.
+- `questions/template-editor.html` shows the decided editor and asks nothing.
+  `verify:template-editor`,
+  `test:template-editor` (with all four guard-removal proofs) and `test:template-reference` pass,
+  and the offline browser check passed in four contexts.
+  `questions/evidence/template-editor-review-verification.json` records it,
+  with no digest.
+- `evidence/template-editor-boundaries.md` describes the study and what it keeps in view.
 
-- The page lists what the study assumes
-  (one template,
-  KWGT's spelling,
-  the fields,
-  the default template,
-  the D90 picks).
-  These were also put to the human in chat on 2026-10-05,
-  with no answer when this was written.
-  Silence is not an acceptance.
-- Answered by the human on 2026-10-06 through the question tool:
-  D88 covers the private capture scripts too,
-  so the scripts that run a visit no longer compare the APK's digest
-  (builds are told apart by commit name,
-  the study's package is replaced by its application id;
-  checked for syntax only,
-  no visit has run with them yet);
-  the rule to search `doc/troubleshooting/` before working around a tool failure is in `AGENTS.md`;
-  a repository-wide rule against locking by hash was declined,
-  because locking by hash is rarely but legitimately wanted.
-- The human also said the transcript does not reliably show them things:
-  anything they must see or answer goes through the question tool
-  (`review-notes.md`,
-  standing standard 17).
-  The handoff of the review page was therefore repeated through that tool.
+Shown that page on 2026-10-06,
+the human answered that a library is always open (D95),
+that scrolling suffices to reach the field list (D96),
+and that the agent builds one version of which other rows get templates
+and asks for approval (D97).
+
+Built and published:
+the D97 version,
+proposed in `doc/planning/music-player-template-editor.md` under
+`Which rows get templates: the agent's version`.
+The prototype is at `66566ee3aa0bbd08b2fb087342f43b546cc88210`
+(250 unit tests pass,
+24 of them the fixture's;
+APK kept in `settings-pane-native-private/build-66566ee3aa0bbd08b2fb087342f43b546cc88210`).
+`questions/template-editor.html` shows 72 inspected views;
+`verify:template-editor`,
+`test:template-editor` (with all four guard-removal proofs) and `test:template-reference` pass,
+and the offline browser check passed in four contexts.
+`questions/evidence/template-editor-review-verification.json` records it,
+quoting the tasks' own result lines.
+The capture needed many visits while other work loaded the host;
+`run-template-editor-when-quiet.ts` waits,
+within a bound,
+for the five-minute load average to fall under 48 before each round of visits.
+
+Answered through the question tool on 2026-10-06:
+the editor is accepted as shown (D98),
+the two templates are approved as built (D99),
+the first-run study keeps access declined and drops no source opened (D100),
+and `AGENTS.md`'s APQ now says never to block pushes in this repository's linked worktrees,
+which share its `.git/config`.
+The review page shows the two templates as decided.
+
+Next:
+rebuild the first-run study for D100
+(`evidence/first-run-access-boundaries.md` describes the current one).
 
 To capture again,
 from `~/temp/agent`:
-`run-template-editor-until-complete.ts <prefix> <letter>` repeats bounded visits until the cohort of the current build is complete,
+`run-template-editor-until-complete.ts <prefix> <letter>` repeats bounded visits until the current build's cohort is complete,
 then `prepare-template-editor-crops.ts`,
 `make-template-editor-inspection.ts`,
 a look at every sheet,
@@ -179,6 +171,22 @@ Do not run the browser check while the emulator captures.
 Production has a duration only for the current track
 (`PlaybackSnapshot.durationMs`) and draws no supporting line,
 so the study previews a line the app cannot fill for every row yet.
+
+Also answered on 2026-10-06 through the question tool:
+
+- D88 covers the private capture scripts too,
+  so they no longer compare the APK's digest:
+  builds are told apart by commit name,
+  and the study's package is replaced by its application id.
+  The cohort of `4df8e785c` was the first captured that way.
+- The rule to search `doc/troubleshooting/` before working around a tool failure is in `AGENTS.md`,
+  and so is the rule to put what the human must see or answer in the question tool.
+  A repository-wide rule against locking by hash was declined,
+  because locking by hash is rarely but legitimately wanted.
+- The human said the transcript does not reliably show them things;
+  `review-notes.md`,
+  standing standard 17,
+  records it for this package.
 
 ### For the next emulator visit
 

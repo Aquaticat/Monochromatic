@@ -94,6 +94,8 @@ try {
   if (invoke('build').status !== 0) throw new Error('Restored evidence build failed.');
   // The page shows the decided design and asks nothing; it must keep its decided list and quote no conditional.
   const template = readFileSync(templatePath, 'utf8');
+  // Counted as they run, so the printed number cannot drift from the cases.
+  let refusedPages = 0;
   function refusedPage({ change, diagnostic }) {
     const changed = change(template);
     if (changed === template) throw new Error('Template mutation changed nothing: ' + diagnostic);
@@ -102,17 +104,23 @@ try {
     const run = invoke('validate');
     if (run.status === 0 || !run.stderr.includes(diagnostic)) throw new Error('Mutated page was not rejected: ' + diagnostic);
     writeFileSync(templatePath, template);
+    refusedPages += 1;
   }
   refusedPage({ change: page => page.replace('</form>', '<input type="radio" name="layout" value="flow"></form>'), diagnostic: 'asks a question; the decided design is evidence only' });
   refusedPage({ change: page => page.replace('<textarea id="final-notes"', '<textarea required id="final-notes"'), diagnostic: 'asks a question; the decided design is evidence only' });
   refusedPage({ change: page => page.replace('<li>A mistake is named under the field', '<li><code>$if(mi(peak), a)$</code></li><li>A mistake is named under the field'), diagnostic: 'quotes a conditional' });
   refusedPage({ change: page => page.replace('What is decided', 'Background'), diagnostic: 'is missing What is decided' });
   refusedPage({ change: page => page.replace('</form>', '</form><form></form>'), diagnostic: 'must be one self-contained form' });
+  // Which lines get a template (D99) must stay on the page, and every captured scene must have its figure.
+  refusedPage({ change: page => page.replace('Which lines get a template', 'Also built'), diagnostic: 'is missing Which lines get a template' });
+  refusedPage({ change: page => page.replace('<figure data-scene="playing">', '<figure data-scene="playing-old">'), diagnostic: 'shows no figure for playing' });
+  // A page still telling an earlier cohort's capture story names a visit count its views do not have.
+  refusedPage({ change: page => page.replace(/\d+ visits contributed views/u, '3 visits contributed views'), diagnostic: 'does not name its' });
   if (invoke('build').status !== 0 || invoke('validate').status !== 0) throw new Error('Restored template did not validate.');
   const output = join(fixture, 'questions', 'template-editor.html');
   writeFileSync(output, readFileSync(output, 'utf8').replace('Every state is authored', 'Changed output'));
   if (invoke('validate').status === 0) throw new Error('Changed committed artifact was not rejected.');
-  console.log(`Template editor review consumer: positive, ${rejected} rejected manifests, six rejected pages and a changed-output check passed.`);
+  console.log(`Template editor review consumer: positive, ${rejected} rejected manifests, ${refusedPages} rejected pages and a changed-output check passed.`);
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }

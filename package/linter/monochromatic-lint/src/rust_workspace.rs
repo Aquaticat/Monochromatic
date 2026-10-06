@@ -71,6 +71,28 @@ pub fn discover_manifest(input: &Path) -> Result<PathBuf, SemanticError> {
     return Err(SemanticError::new(format!("No Cargo.toml owns Rust input {}. Provide a Cargo workspace context or configure this semantic rule off for an intentional standalone snippet.", input.display()).as_str()));
 }
 
+/// What: The backend's Cargo settings for one validated toolchain.
+/// Why: Each field is a policy the backend would otherwise decide by itself. `sysroot_src` names the
+/// standard-library source `discover_toolchain` checked; without it the backend reads `RUST_SRC_PATH`
+/// first. `--offline --locked` goes to `cargo metadata` and to the build-script `cargo check`: Cargo
+/// fetches nothing, and a stale or missing lockfile is reported instead of resolved again. The
+/// backend's own build output stays in a subdirectory of the target directory.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function cargoConfig(toolchain: RustToolchain): CargoConfig;
+/// ```
+pub(crate) fn cargo_config(toolchain: RustToolchain) -> CargoConfig {
+    return CargoConfig {
+        sysroot: Some(RustLibSource::Path(toolchain.sysroot)),
+        sysroot_src: Some(toolchain.library),
+        metadata_extra_args: vec![String::from("--offline"), String::from("--locked")],
+        extra_args: vec![String::from("--offline"), String::from("--locked")],
+        target_dir_config: TargetDirectoryConfig::UseSubdirectory,
+        ..CargoConfig::default()
+    };
+}
+
 /// Load one explicit manifest using named progress handling and no tool-installation/config-command fallback.
 pub fn load_cargo_workspace(
     manifest_path: &Path,
@@ -84,15 +106,7 @@ pub fn load_cargo_workspace(
     let Some(directory): Option<&Path> = manifest_path.parent() else {
         return Err(SemanticError::new("Cargo.toml has no parent directory."));
     };
-    let toolchain: RustToolchain = discover_toolchain(directory)?;
-    let config: CargoConfig = CargoConfig {
-        sysroot: Some(RustLibSource::Path(toolchain.sysroot)),
-        sysroot_src: Some(toolchain.library),
-        metadata_extra_args: vec![String::from("--offline"), String::from("--locked")],
-        extra_args: vec![String::from("--offline"), String::from("--locked")],
-        target_dir_config: TargetDirectoryConfig::UseSubdirectory,
-        ..CargoConfig::default()
-    };
+    let config: CargoConfig = cargo_config(discover_toolchain(directory)?);
     let manifest: ProjectManifest = match ProjectManifest::from_manifest_file(absolute) {
         Ok(value) => value,
         Err(error) => {

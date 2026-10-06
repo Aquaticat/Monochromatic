@@ -16,6 +16,13 @@ export const fields = [
   { mode: 'peak', label: 'True peak', description: 'The true peak with its unit, such as \u22121.2 dBTP, or nothing before the file is analysed.' },
 ];
 
+/** The playing track's fields: a track's own, and where it sits in its folder (the agent's version under D97). */
+export const playingFields = [
+  ...fields,
+  { mode: 'track', label: 'Place in folder', description: 'Where the track is in its folder, counting from 1.' },
+  { mode: 'total', label: 'Tracks in folder', description: 'How many tracks the folder holds.' },
+];
+
 /** Functions with the signature and argument help the editor shows while the caret is inside a call. */
 export const functions = {
   mi: { signature: 'mi(field)', minimum: 1, maximum: 1, parameters: [
@@ -31,6 +38,12 @@ export const functions = {
 
 /** The default supporting line (D93): the duration, a space, then the true peak, which is empty before analysis. */
 export const defaultTemplate = '$tf(mi(len), m:ss)$ $mi(peak)$';
+
+/** Each template Settings lists, with its default and the fields it may use (D97 version, for approval). */
+export const templates = {
+  track: { label: 'Track rows', defaultTemplate, fields },
+  playing: { label: 'Playing track', defaultTemplate: '$mi(track)$ of $mi(total)$ $mi(peak)$', fields: playingFields },
+};
 //endregion
 
 //region Formula text to tokens, one pass
@@ -174,9 +187,9 @@ function formatSeconds({ seconds, format }) {
   }
   return output;
 }
-function evaluate({ node, track, errors }) {
+function evaluate({ node, track, errors, allowed }) {
   if (node.kind === 'text' || node.kind === 'word') return node.value;
-  if (node.kind === 'join') return asText(evaluate({ node: node.left, track, errors })) + asText(evaluate({ node: node.right, track, errors }));
+  if (node.kind === 'join') return asText(evaluate({ node: node.left, track, errors, allowed })) + asText(evaluate({ node: node.right, track, errors, allowed }));
   const definition = Object.hasOwn(functions, node.name) ? functions[node.name] : undefined;
   if (!definition) { errors.push({ subject: node.name, message: 'unknown function', at: node.start }); return absent; }
   if (node.parameters.length < definition.minimum || node.parameters.length > definition.maximum) {
@@ -185,10 +198,11 @@ function evaluate({ node, track, errors }) {
     return absent;
   }
   // Every argument is evaluated before the call, so a mistake in any of them is reported.
-  const values = node.parameters.map(parameter => evaluate({ node: parameter, track, errors }));
+  const values = node.parameters.map(parameter => evaluate({ node: parameter, track, errors, allowed }));
   if (node.name === 'mi') {
     const mode = asText(values[0]);
-    if (!fields.some(field => field.mode === mode)) { errors.push({ subject: 'mi', message: 'unknown field ' + mode, at: node.start }); return absent; }
+    // Which fields exist depends on the template: the playing track has two the track rows do not.
+    if (!allowed.some(field => field.mode === mode)) { errors.push({ subject: 'mi', message: 'unknown field ' + mode, at: node.start }); return absent; }
     const value = track[mode];
     return value === undefined || value === null ? absent : value;
   }
@@ -215,12 +229,12 @@ function evaluate({ node, track, errors }) {
   throw new Error('A function is defined but not evaluated: ' + node.name);
 }
 
-/** What a template shows for one track, or the mistakes that keep it from applying. */
-export function evaluateTemplate({ text, track }) {
+/** What a template shows for one track, or the mistakes that keep it from applying; `fields` are those its template may use. */
+export function evaluateTemplate({ text, track, fields: allowed = fields }) {
   const { parts, errors } = parseTemplate(text);
   // A template that does not parse is not evaluated: what its pieces would yield only adds mistakes that follow from the first.
   if (errors.length > 0) return { valid: false, text: undefined, errors };
-  const output = parts.map(part => part.kind === 'literal' ? part.value : asText(evaluate({ node: part.tree, track, errors }))).join('');
+  const output = parts.map(part => part.kind === 'literal' ? part.value : asText(evaluate({ node: part.tree, track, errors, allowed }))).join('');
   return errors.length === 0 ? { valid: true, text: output, errors: [] } : { valid: false, text: undefined, errors };
 }
 
@@ -232,7 +246,7 @@ export function errorLines(errors) {
 
 //region Help for the call the caret is inside
 /** The innermost call around the caret and which of its arguments the caret is in, or nothing outside a call. */
-export function helpAt({ text, caret }) {
+export function helpAt({ text, caret, fields: allowed = fields }) {
   const { parts } = parseTemplate(text);
   let found;
   // A work stack walks the tree; depth is bounded by `deepest`, breadth by the template's own length.
@@ -248,6 +262,8 @@ export function helpAt({ text, caret }) {
   if (!found || !Object.hasOwn(functions, found.name)) return undefined;
   const definition = functions[found.name];
   const index = Math.min(found.separators.filter(separator => separator < caret).length, definition.parameters.length - 1);
-  return { name: found.name, signature: definition.signature, parameter: definition.parameters[index].name, description: definition.parameters[index].description };
+  // The field list in the help names the fields of this template.
+  const description = found.name === 'mi' ? 'Field: one of ' + allowed.map(field => field.mode).join(', ') + '.' : definition.parameters[index].description;
+  return { name: found.name, signature: definition.signature, parameter: definition.parameters[index].name, description };
 }
 //endregion

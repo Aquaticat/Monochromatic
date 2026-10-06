@@ -22,12 +22,13 @@ and confirmed on native Windows on 2026-10-05.
 `Windows baseline follow-up` records the confirmation,
 the triage of every Windows baseline failure,
 and the pathname-only mutation campaign.
-At the last Windows run the suite was not green:
+At the Windows run of 2026-10-05 the suite was not green:
 two tests that block the cache root with a regular file failed there.
 The decision on those came on 2026-10-05 and the tests now assert each platform's reason
 (`Follow-up decisions applied`).
-The changed Windows assertions have not yet run on Windows,
-so the Windows suite has not been observed green.
+On 2026-10-06 the changed tests ran on Windows and the whole suite passed there,
+beside a failing positive control on the same guest
+(`Windows run with mvm alone`).
 
 ## Requirements preserved
 
@@ -873,14 +874,14 @@ Outcome:
 - Every test target compiles on Windows and the whole suite runs there with no filter.
 - Five of the six recorded baseline failures were tests assuming Unix paths and are fixed in the tests;
   no production defect was found in them.
-- The Windows suite was not green at its last run.
+- The Windows suite was not green at this follow-up's run.
   The sixth recorded failure and one integration test that had never compiled failed for one cause,
   which needed the human's decision
   (`Reason reported for a cache root blocked by a regular file`).
   The decision,
   option A,
   is applied in `Follow-up decisions applied`;
-  its Windows assertions await their first Windows run.
+  its Windows assertions passed on their first Windows run (`Windows run with mvm alone`).
 - The prefix fix is confirmed on native Windows,
   with failing positive controls on the same guest.
 - The pathname mutation scope leaves two survivors on Linux,
@@ -1642,7 +1643,8 @@ the same source's `sys/io/error/windows.rs` maps `ERROR_PATH_NOT_FOUND`,
 the measured OS error `3`,
 to `NotFound`.
 
-The Windows assertions have not themselves run on Windows.
+When this decision was applied,
+the Windows assertions had not themselves run on Windows.
 What `s2` measured there:
 
 - The embedding consumer's first warning reason was `missing`.
@@ -1660,10 +1662,14 @@ because each test stopped at its first failing assertion:
   The probe's `create_dir_all` under the blocker failing with `AlreadyExists` supports `write-failed`,
   as an inference from `prepare_directories` in `src/runtime_cache/publish.rs`.
 
-So the next Windows run must include both tests,
+So the next Windows run had to include both tests,
 unfiltered,
-and only then can the Windows suite be called green.
-Its mutation campaign should also drop the two Windows-only `--skip` filters for these tests.
+before the Windows suite could be called green,
+and its mutation campaign had to drop the two Windows-only `--skip` filters for these tests.
+The run of 2026-10-06 did both:
+both tests passed on Windows,
+so every assertion in that list held there,
+and the suite exited `0` (`Windows run with mvm alone`).
 
 On Linux,
 with the Unix value planted as `missing` in a scratch copy,
@@ -1717,13 +1723,23 @@ The other scopes were not listed.
 
 ### Repeating the Windows run
 
-At the last Windows run the baseline was not green.
+At the Windows run of 2026-10-05 the baseline was not green.
 The steps reproduce that run;
-step 7 states what it measured and what the tree after `aaf4c08e7` should show instead.
+step 7 states what it measured and what the tree after `aaf4c08e7` showed instead.
 Every step was executed as written on 2026-10-05.
 The scratch drivers that implement them are retained in the evidence directory named in
 `Evidence of the Windows baseline follow-up`;
 they name this run's domain and need that name changed.
+
+On 2026-10-06 the same steps ran with the `mvm` command-line program alone,
+which replaces the shims and daemon of step 1,
+the domain edit of step 2,
+the hand-written guest agent client of step 3,
+the loopback file server of step 6,
+and the manual commands of step 9.
+`Windows run with mvm alone` records that run.
+Its retained `drive.ts` implements it;
+the VM name is a constant there that a repeat changes.
 
 1.  Put the `virsh` and `qemu-img` Flatpak shims of
     `doc/troubleshooting/mvm-libvirt-flatpak-only-host.md` first on `PATH`.
@@ -1782,7 +1798,7 @@ they name this run's domain and need that name changed.
     Measured at `fe805727c`:
     exit `101` with 232 of 234 tests passing and only the two blocked-cache-root tests failing.
     Expected from `aaf4c08e7` on,
-    not yet observed:
+    and observed on 2026-10-06 with the inputs of `aaf4c08e7`:
     exit `0` with all 234 passing.
 8.  Run the positive control:
     replace the body of `prefix_parts` in `src/path_name_bytes.rs` with `1`,
@@ -1834,12 +1850,10 @@ Both happened in this run and neither reached the recorded results.
 This is a proposal,
 not a workflow;
 none was added.
-No Windows run has exited `0` yet:
-the blocked-root decision is applied,
-but its Windows assertions have not run.
+One Windows run of the suite has exited `0`,
+on 2026-10-06 with the inputs of `aaf4c08e7`,
+beside its failing positive control (`Windows run with mvm alone`).
 
-- One Windows run of the suite that exits `0` at `aaf4c08e7` or later,
-  with its positive control.
 - A Windows runner with the scanner's Rust toolchain,
   Git on `PATH` for `all_mode_skips_configured_rules_file`,
   and network access for `cargo fetch --locked`.
@@ -1937,6 +1951,400 @@ Those counts are as of `c925e8187`;
 Only compiled inputs were sent to the guest,
 the same file set as in `Evidence and provenance`;
 no home-directory content or credential was served.
+
+## Windows run with mvm alone
+
+### Purpose and outcome of the run with mvm alone
+
+This run on 2026-10-06 closes the Windows item that `Follow-up decisions applied` left open:
+the whole suite on native Windows with the tests as `aaf4c08e7` left them,
+its positive control,
+and the pathname mutation scope with the runner's two excluded operator kinds.
+It is also the first consumer run of `mvm` after the changes recorded in `doc/handover/mvm-flatpak-libvirt.md`.
+The built command-line program `package/cli/mvm/dist/final/node/cli.mjs` did every step,
+with no shim on `PATH`,
+no session daemon started by hand,
+no hand-edited domain,
+no hand-written guest agent client,
+and no MCP tool.
+
+Outcome:
+
+- The Windows suite is green:
+  exit `0`,
+  234 of 234 tests passed,
+  both blocked-cache-root tests among them,
+  and nothing was ignored or filtered out.
+- The positive control failed on the same guest with the same command:
+  exit `101` with exactly the 14 failures the control of `Positive controls and prefix mutants on Windows` produced.
+  The restored tree passed again with the same passing tests.
+- The pathname mutation scope tested the expected 54 mutants:
+  49 caught,
+  none missed,
+  4 unviable,
+  and 1 timeout.
+  The expectation of no timeouts was not met;
+  `Pathname mutation scope with the exclusions` gives the evidence
+  that the timeout is not tied to the mutant.
+- Every `mvm` command behaved as its handover says.
+
+### What changed since the 2026-10-05 Windows run
+
+That run tested snapshot `s2` at `fe805727c`
+(`Whole Windows suite after the test fixes`).
+Since then:
+
+- `aaf4c08e7` changed the two blocked-cache-root tests to assert the platform's reason
+  and added `tests/support/blocked_root.rs`,
+  which both test files include as a module and which holds no test.
+  It is the 129th file of this snapshot;
+  `s2` had 128.
+- `703a1c21d` made the mutation runner pass `--exclude-re` for `replace \+= with \*=` and `replace -= with /=`,
+  so the pathname scope lists 54 mutants instead of 57.
+- `40fb4cdef` and `047c60c40` changed only the README,
+  which is not a compiled input and was not sent.
+- `mvm` gained Flatpak tool detection,
+  the guest agent file route,
+  and the guest command fixes,
+  `f0d86a092` through `95d283d0e`.
+
+No test was added or removed:
+every per-target count equals that of `s2`.
+
+### Snapshot
+
+The file set of step 6 of `Repeating the Windows run`,
+taken with `git archive` at `fb64be854` on `main`.
+The scanner and engine compiled inputs last changed in `aaf4c08e7`,
+and every sent file equals the working tree's.
+
+- 129 files,
+  source hash `23e9b4b2a2ec2a7618ae7607e8b6d43a1834aa4cfb94a734a00fdb38deceaf31`.
+- Archive SHA-256 `e55f59bae41dd43f56b853db793f8953be3b17e8372de9d7b332c37c2021e3fa`,
+  1648640 bytes,
+  sent with `mvm push`.
+  The guest's `Get-FileHash` printed the same value before extraction,
+  and every extracted file's hash,
+  pulled back as a listing,
+  equals the manifest's.
+- `src/path_name_bytes.rs` hashes to `698a556f083c93d735207ab6de70b992de3cadc488d1160c158b79dba2887012`,
+  as in `s2`.
+
+### Virtual machine and guest
+
+- `mvm --verbose --backend libvirt create --image windows wgreen-20261006` exited `0` in 16.3 seconds.
+  It logged that it runs `virsh` and `qemu-img` through the virt-manager Flatpak.
+  The domain has 4 virtual CPUs,
+  8192 MiB of memory,
+  user-mode networking,
+  a qcow2 overlay over `template-windows.qcow2`,
+  and neither a `filesystem` nor a `memoryBacking` element;
+  `meta.json` records `"fileTransfer": "guest-agent"`.
+- Host:
+  16 processors,
+  shared with other sessions.
+  The 1-minute load average was 1.5 before the run,
+  11.8 at create,
+  63 to 74 during the mutation campaign,
+  and up to 167 during the single-mutant reruns.
+- Guest:
+  Windows Server 2025 Standard Evaluation `10.0.26100`,
+  build 26100,
+  update revision 1742,
+  64-bit,
+  PowerShell `5.1.26100.1591`.
+  Commands ran as `nt authority\system`,
+  and the temporary directory was `C:\WINDOWS\SystemTemp\`.
+  Defender real-time protection is on,
+  with no exclusion path.
+- License:
+  `Notification` with reason `0xC004FC07`.
+  `slmgr.vbs /rearm` and `shutdown.exe /r /t 10` ran on the overlay;
+  afterwards it reported `Licensed`,
+  with time-based activation until 2027-04-04.
+- Toolchain,
+  the versions of the 2026-10-05 run:
+  `rustc 1.97.0 (2d8144b78 2026-07-07)` with host `x86_64-pc-windows-gnu` and LLVM `22.1.6`,
+  `cargo 1.97.0 (c980f4866 2026-06-30)`,
+  Git `2.56.0.windows.1`,
+  and WinLibs MinGW-w64 with GCC `16.2.0` and binutils `2.47`.
+  The guest downloaded each archive from its upstream URL over user-mode networking;
+  no host file server ran.
+  `rustup-init.exe` hashed to `6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8`,
+  equal to its published `.sha256` file and to the 2026-10-05 value,
+  and the MinGit and WinLibs archives to the hashes in step 5 of `Repeating the Windows run`.
+
+### Whole Windows suite with the platform reasons
+
+Step 7 of `Repeating the Windows run`:
+`cargo test --locked --all-features --all-targets --no-fail-fast -- --test-threads=1`
+with `CARGO_PROFILE_DEV_DEBUG=0` and `CARGO_INCREMENTAL=0`
+and no `--skip` filter.
+It ran from a pushed `.cmd` file whose hash the guest checked,
+with its output in a guest log that `mvm pull` fetched and both sides hashed.
+The guest command ended with `exit $code`,
+and in every run `mvm exec` exited with the native status.
+
+It exited `0`:
+
+- Library:
+  178 passed.
+- `src/main.rs`:
+  4 passed.
+- `tests/embedding.rs`:
+  2 passed.
+- `tests/embedding_warnings.rs`:
+  2 passed.
+- `tests/integration.rs`:
+  40 passed.
+- `tests/path_names.rs`:
+  8 passed.
+
+234 passed,
+and none failed,
+was ignored,
+measured,
+or filtered out.
+Both blocked-cache-root tests,
+`public_warning_paths_preserve_scan_results_without_emitting_terminal_json`
+and `cache_write_failure_keeps_scan_correct`,
+report `ok`,
+so the assertions that `Option A for the blocked cache root` lists as not measured on Windows held there.
+The total equals the 234 of `s2`:
+the same tests,
+now all passing.
+The build took 2 minutes 9 seconds and the library target 311 seconds.
+
+### Positive control with mvm push
+
+Step 8 of `Repeating the Windows run`.
+`mvm push` placed the variant whose `prefix_parts` returns `1`
+(SHA-256 `acc586e6924a67638e20d84fb2fa1f869372a0a32cbdb286c00e54038dad75d6`,
+the text of the `s2` control),
+and the guest checked its hash.
+The same command exited `101`.
+14 tests failed:
+8 library,
+1 embedding,
+and 5 pathname binary tests,
+exactly the 14 names that the `s2` control failed beyond the two blocked-cache-root tests.
+The blocked-cache-root tests passed.
+
+`mvm push` then restored the original,
+the guest hashed it to `698a556f…`,
+and the same command exited `0` with the same 234 passing test names as the first run.
+
+### Pathname mutation scope with the exclusions
+
+`cargo-mutants 27.1.0` was built in the guest with `cargo install --locked`,
+as in `Pathname mutation scope on Windows`.
+The command is the runner's pathname scope at `703a1c21d`,
+with a guest report directory:
+`cargo mutants --in-place --all-features --baseline run --no-config --no-shuffle --colors=never`
+with `--build-timeout 300 --timeout 120`,
+`--cargo-arg=--offline --cargo-arg=--locked`,
+harness argument `--test-threads=1`,
+the two shipped-corpus `--skip` filters,
+`--exclude-re "replace \+= with \*="`,
+`--exclude-re "replace -= with /="`,
+and `--file src/path_scan.rs --file src/path_name_bytes.rs`.
+The two Windows-only `--skip` filters for the blocked-cache-root tests are gone.
+
+- With `--list` it printed 54 names,
+  identical to the Linux listing `pathname-mutation-list-kVfzW5`.
+- The campaign exited `3`:
+  54 mutants tested in 28 minutes,
+  49 caught,
+  none missed,
+  4 unviable,
+  the compiler rejections named in `Pathname mutation scope on Linux`,
+  and 1 timeout,
+  `src/path_name_bytes.rs:56:35: replace == with != in count_prefix_parts`,
+  after 12 seconds of build and 120 seconds of test.
+  The unmutated baseline passed,
+  its tests in 21.7 seconds.
+  Afterwards `src/path_scan.rs` and `src/path_name_bytes.rs` had the snapshot's hashes.
+
+Evidence on the timeout:
+
+- Its log shows 9 library tests reporting `FAILED`,
+  among them `windows_volume_prefix_is_not_name_segment`,
+  so the mutant was detected.
+  Then `walk::tests::list_files_excludes_submodule_gitlink_entries` printed no verdict before the limit.
+  That test runs `git` and `list_files`;
+  `src/walk.rs` has no reference to `path_name_bytes` or `path_scan`.
+- In the `s2` campaign the same mutant's library binary ran to completion in 2.47 seconds,
+  that test passing,
+  and the mutant was caught.
+- The same command with `--re "src/path_name_bytes.rs:56:35: "` ran twice more on this guest.
+  The first rerun caught the mutant;
+  its unmutated baseline took 83.9 seconds of test.
+  In the second,
+  the unmutated baseline timed out at 120 seconds,
+  with no verdict printed for `public_warning_paths_preserve_scan_results_without_emitting_terminal_json`,
+  and no mutant ran.
+  That test passed in all three suite runs and in the campaign's baseline on this guest.
+  Both mutated files had the snapshot's hashes afterwards.
+- So the unmutated baseline's tests took 21.7 seconds,
+  83.9 seconds,
+  and more than 120 seconds on the same guest,
+  while the host's 1-minute load rose from about 63 to 167.
+
+Inference,
+not measured:
+the stalls come from the environment,
+the host's load or the guest's real-time scanning,
+not from the mutant.
+Which of the two causes them was not separated.
+No timeout or exclusion was changed,
+because the runner's limits are the human's decision.
+A rerun of the scope on a less loaded host is open.
+
+### mvm against its handover
+
+Each step of `Running the scanner's Windows suite with mvm alone` in `doc/handover/mvm-flatpak-libvirt.md`
+behaved as that section says.
+Measured in this run:
+
+- Exit status:
+  `cmd.exe /c exit 101` alone gave `1`,
+  a `.cmd` file exiting `101` followed by `exit $code` gave `101`,
+  and a PowerShell `throw` gave `1` with its message on standard error.
+- Reboot,
+  which that handover lists as not tried on Windows:
+  a probe sent 10 seconds after `shutdown.exe /r /t 10` was started by the old system.
+  Its status requests got 19 answers `QEMU guest agent is not connected`,
+  then `PID ... does not exist`,
+  and `mvm exec` exited `1` with `GuestExecAttributionError` after 42.8 seconds.
+  The next probe succeeded 76 seconds after the reboot request
+  and reported a later boot time.
+- A PowerShell text that did not parse,
+  an escaped quote passed on literally,
+  ended as documented:
+  the error showed the discarded result with the parser's `Missing ')' in method call.`
+- Status requests:
+  the 28-minute campaign made 1343,
+  none unanswered,
+  at a host load of 63 to 74.
+  No guest command of the run had an unanswered status request except across the reboot.
+- Output size:
+  every long command wrote to a guest log that `mvm pull` fetched,
+  so no command's own output approached the limit;
+  the largest pulled file had 366311 bytes.
+- Transfer:
+  the 1648640-byte archive took 6.7 seconds to push,
+  about 0.23 MiB per second.
+  At higher load small transfers took longer:
+  pulling a 5371-byte log took 41.7 seconds at a load of 73.
+
+### Wall times
+
+- Create:
+  16 seconds.
+- License check,
+  rearm,
+  and reboot:
+  102 seconds.
+- Toolchain:
+  rustup 70 seconds,
+  MinGit 12 seconds,
+  and WinLibs 63 seconds.
+- Sources and `cargo fetch --locked`:
+  69 seconds.
+- Suite runs,
+  in order:
+  449,
+  365,
+  and 402 seconds.
+- `cargo-mutants`:
+  build 489 seconds,
+  listing 12 seconds,
+  and campaign 1752 seconds.
+- Single-mutant reruns:
+  225 and 197 seconds.
+- Destroy:
+  79 seconds.
+
+From the start of create to the end of destroy,
+82 minutes.
+
+### Teardown of the run with mvm alone
+
+- `mvm --verbose --backend libvirt destroy wgreen-20261006` exited `0`.
+  It ran `virsh destroy` and `virsh undefine --remove-all-storage`,
+  and removed `~/.local/share/mvm/vms/wgreen-20261006`.
+- Afterwards `mvm list` reported no VMs,
+  and `virsh list --all` listed only the six domains that existed before,
+  all shut off.
+- Nothing was started by hand.
+  The `virtqemud`,
+  `virtlogd`,
+  and `virtstoraged` that `virsh` started on demand were still running 38 seconds after destroy;
+  at 13:35:02 UTC none of them,
+  no `qemu-system` process,
+  and no virt-manager Flatpak instance remained.
+- `template-windows.qcow2` has SHA-256 `0ff984dc6b93c3b4577d0836bae5cf76b1b905e4a7ceecce16ee066e23c40cb9`
+  and modification time 2026-03-27 21:40:45 before and after the run.
+
+### Evidence of the run with mvm alone
+
+Evidence is `package/cli/forbidden-strings/target/verification/windows-mvm-h9iPQn`.
+
+- `manifest.json` lists the 129 sent files with their hashes,
+  the archive hash,
+  the variants,
+  the VM,
+  target,
+  toolchain,
+  exact commands,
+  skipped tests,
+  and teardown facts.
+- `control.json` holds the expected beside the observed results,
+  and `logs/summary-baseline-before.json` the per-target counts and test names of the three suite runs.
+- `logs/calls.jsonl` records every `mvm` call with its arguments,
+  exit status,
+  duration,
+  and host load;
+  `logs/mvm/` holds each call's complete output,
+  and `logs/drive.log` the driver's log.
+- `pulled/` holds every guest log as pulled,
+  `scripts/` every `.cmd` file run in the guest,
+  and `reports/` the `cargo-mutants` reports of the campaign and both reruns.
+- `s3-snapshot.tar` is the archive sent,
+  and the `.diff` files show the control variant.
+- The scratch drivers are `prepare.ts`,
+  `drive.ts`,
+  `collect.ts`,
+  `durations.ts`,
+  `wait.ts`,
+  and `retain.ts`.
+
+### What to inspect and how to respond
+
+- The suite and control results in `Whole Windows suite with the platform reasons`
+  and `Positive control with mvm push`.
+  They close the Windows item of `Follow-up decisions applied`;
+  no response is needed.
+- The timeout in `Pathname mutation scope with the exclusions`.
+  Either accept the campaign as it stands,
+  with none missed and the timeout attributed to host load by inference,
+  or ask for a rerun of the scope on Windows when the host is less loaded.
+  Silence leaves the rerun open and changes nothing.
+- The remaining verification gaps in `Still unverified after the run with mvm alone`.
+
+### Still unverified after the run with mvm alone
+
+- The `x86_64-pc-windows-msvc` target,
+  which the published binaries use,
+  was not exercised;
+  this run used `x86_64-pc-windows-gnu`.
+- No `aarch64` Windows target was run.
+- The cause of the test stalls during the mutation campaign and the reruns.
+- A pathname mutation campaign on Windows that ends without a timeout,
+  with the two exclusions.
+- This is one manual run,
+  not a recurring job;
+  `What a recurring Windows job would need` is still a proposal.
 
 ## Matcher-state audit
 
@@ -2100,6 +2508,8 @@ Major scoped commits:
   `f7362e0d7`,
   and later `docs(handover)` commits:
   this document's `Windows baseline follow-up`.
+- A `docs(handover)` commit of 2026-10-06:
+  this document's `Windows run with mvm alone`.
 
 Both READMEs and this evidence document are rendered through the installed CommonMark HTML-tree pipeline.
 Trees and readable rendered text remain in `target/verification/docs`.
@@ -2108,12 +2518,16 @@ That check exposed and corrected README bold spans split across line endings.
 The main agent should inspect the terminal results,
 retained mutant classifications,
 source inventories,
-and the findings in `Windows-native follow-up` and `Windows baseline follow-up` before any production cutover.
+and the findings in `Windows-native follow-up`,
+`Windows baseline follow-up`,
+and `Windows run with mvm alone` before any production cutover.
 The scoped Linux queue needed no human response.
 The Windows baseline needed one,
 `Reason reported for a cache root blocked by a regular file`,
 which was decided as option A on 2026-10-05 and applied.
-What remains is a Windows run:
-the two changed tests have not run there,
-so the Windows suite has not been observed green.
+The Windows run that remained ran on 2026-10-06:
+the two changed tests and the whole suite passed there,
+beside a failing positive control.
+Its pathname mutation campaign ended with none missed and one timeout,
+which `What to inspect and how to respond` asks about.
 `Decisions left after the Windows baseline follow-up` lists two further choices that block nothing.

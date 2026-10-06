@@ -18,6 +18,10 @@ const targets = [
   { name: 'config_loading', dictionary: 'arguments.dict' },
   { name: 'config_schema', dictionary: 'config_schema.dict' },
   { name: 'wrapper_controls', dictionary: 'controls.dict' },
+  { name: 'batch_reply', dictionary: 'batch_reply.dict' },
+  { name: 'stage_listing', dictionary: 'stage_listing.dict' },
+  { name: 'rules_file', dictionary: 'rules_file.dict' },
+  { name: 'final_newline', dictionary: 'final_newline.dict' },
 ];
 const secondsPerTarget = 30;
 const maxInputBytes = 4096;
@@ -66,6 +70,13 @@ async function copyInputs({ source, context }) {
   const jsonc = join(context, 'package/rust-module/jsonc-edit');
   for (const name of ['Cargo.toml', 'Cargo.lock', 'src', 'fixtures'])
     await cp(resolve(source, '../../rust-module/jsonc-edit', name), join(jsonc, name), { recursive: true });
+  // The subject links the scanner; `build.rs` and `data` hold the embedded baseline its library compiles in.
+  const scanner = join(context, 'package/cli/forbidden-strings');
+  for (const name of ['Cargo.toml', 'Cargo.lock', 'build.rs', 'src', 'data'])
+    await cp(resolve(source, '../../cli/forbidden-strings', name), join(scanner, name), { recursive: true });
+  const engine = join(context, 'package/rust-module/forbidden-regex');
+  for (const name of ['Cargo.toml', 'Cargo.lock', 'src'])
+    await cp(resolve(source, '../../rust-module/forbidden-regex', name), join(engine, name), { recursive: true });
 }
 
 /** Build and run within explicit container limits and retain discoveries before cleanup. */

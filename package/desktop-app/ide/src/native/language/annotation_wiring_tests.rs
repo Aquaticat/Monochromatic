@@ -1,20 +1,22 @@
 //! The language poll and the annotation renderer working together through real window events:
-//! hints and diagnostics from the server are painted by the poll that stored them,
-//! and the caret's problem card yields to the language popup.
+//! hints and diagnostics from the server are painted by the poll that stored them, the language popup
+//! covers neither its line nor that line's virtual rows, and resting or Ctrl+clicking on a virtual row
+//! asks the server nothing.
 
-/// Fixtures, the scripted server, and real key events.
+/// Fixtures, the scripted server, and real key and pointer events.
 use super::test_support::{
-    caret, definitions, escape, eventually, hover, popup, project, reader, ready,
+    TEXT_TOP, above, address, caret, caret_x, control_click, definitions, eventually, hover, idle,
+    location, move_to, point, popup, project, reader, ready, rows,
 };
-/// What: `Model` is the trait that gives a Slint list its `row_count`; in Rust a trait must be
-///       imported before its methods can be called on a value.
-/// Why: The tests count painted severity markers and hint boxes.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// // No import: a TS array already has `.length`.
-/// ```
-use slint::Model;
+/// The stamp of the displayed text and the production repaint.
+use crate::native::{annotate::displayed, render};
+/// One hint record and its snapshot, exactly as the Language module builds them.
+use ide_app::language::{
+    hints::{HintKind, HintsSnapshot, InlayHint},
+    identity::ServerIdentity,
+};
+/// Snapshots arrive behind shared pointers.
+use std::sync::Arc;
 
 /// Two lines. The scripted server warns about the first character of the first line
 /// and returns one hint after `alpha`.
@@ -26,19 +28,22 @@ const TEXT: &str = "alpha beta\ngamma delta\n";
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const PUSHED: [string, string][] = [['PUSH', '1']];
-/// ```
-const PUSHED: &[(&str, &str)] = &[("PUSH", "1")];
-
-/// What: The pushed warning, from a server that starts answering only three seconds after it was started.
-/// Why: The source refresh repaints once, when the file's first highlighting answer arrives. A server that
-///      answers after that leaves the language poll as the only thing that can paint its hints and warning.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
 /// const LATE: [string, string][] = [['PUSH', '1'], ['INIT_DELAY_MS', '3000']];
 /// ```
+///
+/// The pushed warning comes from a server that starts answering only three seconds after it was started.
+/// The source refresh repaints once, when the file's first highlighting answer arrives. A server that
+/// answers after that leaves the language poll as the only thing that can paint its hints and warning.
 const LATE: &[(&str, &str)] = &[("PUSH", "1"), ("INIT_DELAY_MS", "3000")];
+
+/// Forty lines of two words each, so a line near the bottom of the view exists.
+fn tall() -> String {
+    let mut text = String::new();
+    for index in 0..40 {
+        text.push_str(&format!("alpha{index:02} beta\n"));
+    }
+    return text;
+}
 
 /// The server's hints and diagnostics appear with no key, pointer, scroll, reload, or highlighting
 /// answer after them: the poll that stores a snapshot also repaints the source.
@@ -61,52 +66,130 @@ fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
     });
     // The order this test depends on: nothing from the delayed server was painted by that repaint.
     assert!(
-        reader.window.get_source_markers().row_count() == 0
-            && reader.window.get_hint_boxes().row_count() == 0,
+        rows(&reader) == (0, 0),
         "the delayed server answered before highlighting settled; the repaints cannot be told apart"
     );
     ready(&reader);
     eventually(
         "accepted hints and diagnostics were stored but never painted",
         || {
-            return reader.window.get_source_markers().row_count() > 0
-                && reader.window.get_hint_boxes().row_count() > 0;
+            let (hints, messages) = rows(&reader);
+            return hints > 0 && messages > 0;
         },
     );
+    // Both stand above the first line, which therefore starts lower than a line without rows would.
+    assert!(reader.source.borrow().row_map.code_top(0) > 0.0);
 }
 
-/// The caret's problem card hides while the hover popup is shown beside the same line and
-/// returns when the popup is dismissed; the problems stay in the accessible description.
+/// A popup placed above its line ends above that line's virtual rows too: the hints and messages of the
+/// line the popup is about stay readable beside it.
 #[test]
-fn caret_problem_card_yields_to_the_hover_popup() {
-    let fixture = project(&[("main.scripted", TEXT)]);
-    let reader = reader(&fixture, "main.scripted", definitions(PUSHED, None));
+fn hover_popup_above_a_line_does_not_cover_its_virtual_rows() {
+    let fixture = project(&[("main.scripted", &tall())]);
+    let reader = reader(&fixture, "main.scripted", definitions(&[], None));
     ready(&reader);
-    eventually("the server's diagnostic was not painted", || {
-        return reader.window.get_source_markers().row_count() > 0;
+    eventually("the server's hint was not painted", || {
+        return rows(&reader).0 > 0;
     });
-    // The scripted warning covers the first character of the first line.
-    caret(&reader, 0);
-    eventually("the caret's problem card did not appear", || {
-        return reader.window.get_problem_card_visible();
+    // A hint for line 22, near the bottom of the view, through the poll's own entry point.
+    let line = 22;
+    let position = line * 13 + 7;
+    let snapshot = Arc::new(HintsSnapshot {
+        stamp: displayed(&reader.source.borrow()),
+        first_line: line,
+        last_line: line + 1,
+        hints: vec![InlayHint {
+            position,
+            label: ": injected".to_string(),
+            // `Some(...)` is a present kind.
+            kind: Some(HintKind::Type),
+            padding_left: false,
+            padding_right: false,
+            server: ServerIdentity {
+                name: "test".to_string(),
+                instance: 1,
+            },
+        }],
     });
+    let accepted = {
+        let mut source = reader.source.borrow_mut();
+        let text = source.document.text().clone();
+        let stamp = displayed(&source);
+        source.annotations.accept_hints(stamp, &text, snapshot)
+    };
+    assert!(accepted);
+    render(&reader.window, &reader.source);
+    let (block_top, code_top) = {
+        let source = reader.source.borrow();
+        (
+            source.row_map.block_top(line),
+            source.row_map.code_top(line),
+        )
+    };
+    assert!(
+        code_top > block_top,
+        "line {line} has no virtual rows (positive control)"
+    );
+    caret(&reader, position);
     hover(&reader);
-    eventually("the hover popup did not appear", || {
+    eventually("the hover did not appear", || {
         return !popup(&reader).is_empty();
     });
     assert!(
-        !reader.window.get_problem_card_visible(),
-        "the problem card stayed under the hover popup"
+        !reader.window.get_language_popup_below(),
+        "the popup fits below line {line}; the test needs a line near the bottom of the view"
     );
+    let bottom = reader.window.get_language_popup_y() + reader.window.get_language_popup_height();
+    let rows_top = TEXT_TOP + block_top + reader.window.get_scroll_y();
     assert!(
-        reader.window.get_caret_problems().contains("TEXT:"),
-        "the problems left the description while the popup was shown"
+        bottom <= rows_top,
+        "the hover covers the virtual rows of its line: it ends at {bottom}, the rows start at {rows_top}"
     );
-    escape(&reader);
+}
+
+/// A hint or message row is over no source character: a pointer resting on it asks for no hover, and
+/// Ctrl+click on it asks for no definition, while the code row beneath it answers both.
+#[test]
+fn resting_and_control_click_on_virtual_rows_ask_nothing() {
+    let other_text = "first\n  second line\n";
+    let fixture = project(&[
+        ("main.scripted", TEXT),
+        ("nested/other.scripted", other_text),
+    ]);
+    let other = address(&fixture.root.join("nested/other.scripted"));
+    let answer = format!("[{}]", location(&other, 1, 2, 8));
+    let reader = reader(
+        &fixture,
+        "main.scripted",
+        definitions(&[("DEFINITION", &answer)], None),
+    );
+    ready(&reader);
+    eventually("the server's hint was not painted", || {
+        return rows(&reader).0 > 0;
+    });
+    // Eight pixels above the first code row is inside the hint row; x is over `b` of `beta`.
+    let x = caret_x(&reader, 6) + 2.0;
+    move_to(&reader.window, above(&reader, 0, x, 8.0));
+    idle(600);
+    assert_eq!(popup(&reader), "", "resting on a hint row asked for hover");
+    control_click(&reader.window, above(&reader, 0, x, 8.0));
+    idle(600);
+    assert_eq!(
+        reader.window.get_source_text(),
+        TEXT,
+        "Ctrl+click on a hint row asked for a definition"
+    );
+    assert_eq!(popup(&reader), "");
+    // Positive controls on the code row beneath: the same x answers both.
+    move_to(&reader.window, point(&reader, 0, x));
+    eventually("the pointer hover on the code row did not appear", || {
+        return !popup(&reader).is_empty();
+    });
+    control_click(&reader.window, point(&reader, 0, x));
     eventually(
-        "the problem card did not return after the popup was dismissed",
+        "Ctrl+click on the code row did not open the definition",
         || {
-            return popup(&reader).is_empty() && reader.window.get_problem_card_visible();
+            return reader.window.get_source_text() == other_text;
         },
     );
 }

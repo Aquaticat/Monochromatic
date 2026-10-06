@@ -1195,27 +1195,25 @@ exact spelling of the grammar,
 and the editor's layout on the Fold.
 D90 records the agent's picks for the entries D89 left open,
 which the human delegated.
-That study is built and its review page was published on 2026-10-06:
+That study was built and its layout question answered on 2026-10-06:
+the preview scrolls with the page (D91),
+the language has no conditional (D92),
+an empty field is plain substitution with the unit inside the peak field (D93),
+and the page rests where Android puts a focused field (D94).
+The study is rebuilt for those decisions;
 `evidence/template-editor-boundaries.md` describes it,
-and `questions/template-editor.html` puts one question to the human.
-The question is where the preview sits,
-because at 200% text the baseline loses the preview while typing inside a call:
-at the top of the scrolling page,
-as two rows fixed under the header,
-or as two result lines fixed under the header.
-The agent ranks the result lines first and the baseline last,
-with the measured reasons on the page.
-It is open until the human answers.
-The page also lists what the study assumes
-(one template,
-KWGT's spelling,
-the fields,
-the default template,
-the D90 picks);
-each is open to objection and none is decided by being shown.
-After the answer:
-how the field list is reached while the keyboard is open,
-then row-type coverage and titles.
+and `questions/template-editor.html` shows the decided editor and asks nothing.
+Shown that page,
+the human answered on 2026-10-06 that a library is always open (D95),
+that scrolling suffices to reach the field list (D96),
+and that the agent should build one version of which other rows get templates
+and ask for approval (D97).
+That version (two templates,
+`Track rows` and `Playing track`)
+was built into the review page,
+and the human accepted the editor (D98) and approved that version as built (D99).
+The design round for templates is closed;
+no production implementation is authorized.
 
 ## 12. Existing-screen refinement, 3B settled and accepted
 

@@ -7,6 +7,8 @@
 use crate::annotation_layout::AnnotationFrame;
 /// Severities as the Language module names them.
 use crate::language::diagnostics::Severity;
+/// The frame's vertical mapping says where each underlined code row starts.
+use crate::row_map::RowMap;
 /// Selection coverage and ink blending, shared with selected glyphs.
 use crate::selection_paint;
 /// Selection rectangles in logical source coordinates.
@@ -43,6 +45,26 @@ pub struct Tile<'a> {
     pub width: u32,
     /// Physical height.
     pub height: u32,
+}
+
+/// What: Where the tile lies in the text and how logical pixels become physical ones; `Copy` lets the small
+///       record be passed by value like a number.
+/// Why: Every painter of a tile needs the same four numbers; one record keeps them together.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type TilePlace = { top: number; left: number; scale: number; baseline: number };
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct TilePlace {
+    /// Logical y of the tile's top edge, from the top of the text.
+    pub top: f32,
+    /// Logical x of the tile's left edge, from the start of the text.
+    pub left: f32,
+    /// Physical pixels per logical pixel.
+    pub scale: f32,
+    /// Common physical baseline of every code row, from the row's top.
+    pub baseline: f32,
 }
 
 /// What: Composite a straight RGBA color with extra coverage into one premultiplied pixel at byte `offset`.
@@ -177,35 +199,40 @@ fn underline(
     }
 }
 
-/// What: Draw every underline run of `frame` into `tile`. `origin` pairs the first materialized line with the
-///       tile's logical left edge; `baseline` is the rows' common physical baseline, `scale` physical per logical;
-///       `selections` are the frame's logical selection rectangles and `selected` the selected-text ink.
+/// What: Draw every underline run of `frame` into `tile`. `place` says where the tile lies and how it is
+///       scaled, and `map` (lent, `&RowMap`) places each run's code row; `selections` are the frame's logical
+///       selection rectangles and `selected` the selected-text ink.
 /// Why: The frame's runs are already ordered mildest first, so the worst style ends on top of an overlap.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function paintUnderlines(frame: AnnotationFrame, tile: Tile, origin: [first: number, horizontal: number],
-///   baseline: number, scale: number, selections: ReadingRect[], selected: Rgba): void;
+/// function paintUnderlines(frame: AnnotationFrame, tile: Tile, place: TilePlace, map: RowMap,
+///   selections: ReadingRect[], selected: Rgba): void;
 /// ```
 pub fn paint_underlines(
     frame: &AnnotationFrame,
     tile: &mut Tile,
-    origin: (usize, f32),
-    baseline: f32,
-    scale: f32,
+    place: TilePlace,
+    map: &RowMap,
     selections: &[ReadingRect],
     selected: [u8; 4],
 ) {
-    let (first, horizontal) = origin;
+    let TilePlace {
+        top,
+        left: horizontal,
+        scale,
+        baseline,
+    } = place;
     for run in &frame.underlines {
-        // `saturating_sub` stops at zero; a run above the tile cannot exist, because runs come from its rows.
-        let row_y = run.row.saturating_sub(first) as f32 * 24.0 * scale;
+        // The run lies on a materialized code row; the same mapping placed that row's selection rectangles.
+        let code_top = map.code_top(run.row);
+        let row_y = (code_top - top) * scale;
         let line = row_y + baseline + DROP * scale;
         let left = (run.x - horizontal) * scale;
         let right = (run.x + run.width - horizontal) * scale;
         let mut intervals = Vec::new();
         for rectangle in selections {
-            if rectangle.y == run.row as f32 * 24.0 {
+            if rectangle.y == code_top {
                 intervals.push((
                     (rectangle.x - horizontal) * scale,
                     (rectangle.x + rectangle.width - horizontal) * scale,

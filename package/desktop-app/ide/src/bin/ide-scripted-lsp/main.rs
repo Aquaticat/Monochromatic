@@ -30,6 +30,17 @@ mod server;
 /// ```
 fn main() {
     let script = script::Script::from_environment();
+    // What: `if let Ok(line) = ...` runs the block only when `IDE_SCRIPTED_STDERR_AT_START` is set.
+    // Why: A server often reports its start on standard error; a test of the client's log needs a
+    //      line that arrives before `initialize` is answered or refused.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const line = env.IDE_SCRIPTED_STDERR_AT_START; if (line !== undefined) console.error(line);
+    // ```
+    if let Ok(line) = std::env::var("IDE_SCRIPTED_STDERR_AT_START") {
+        eprintln!("{line}");
+    }
     // What: `if let Err(error) = ...` runs the block only when the call failed.
     // Why: A broken pipe or malformed message must end the process visibly, not silently.
     //

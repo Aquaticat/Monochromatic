@@ -926,8 +926,25 @@ Unverified:
   until the sessions are restarted.
 - The retry through agent silence on a real guest;
   only tests show it.
-- The scanner's Windows suite itself with `mvm` alone.
-- A reboot of a Windows guest followed by `mvm exec`.
+  The scanner's Windows run on 2026-10-06 made 1,343 status requests during its mutation campaign
+  and none went unanswered,
+  so it did not exercise the retry either.
+
+Observed since,
+by the scanner's Windows run on 2026-10-06
+(`doc/handover/scanner-native-verification.md`, section `Windows run with mvm alone`):
+
+- The scanner's Windows suite ran with the built `mvm` command-line program alone:
+  no PATH shims,
+  no daemon started by hand,
+  no MCP tools.
+  No `mvm` command behaved differently from this document.
+- A reboot of a Windows guest followed by `mvm exec`:
+  a command sent 10 seconds after `shutdown /r` exited 1 with `GuestExecAttributionError` after 42.8 seconds,
+  and the next one succeeded 76 seconds after the reboot request.
+  As on Alpine,
+  a caller repeats a cheap command until it succeeds;
+  `mvm` has no wait command.
 - The missing-`ssh` messages of the Hetzner backend,
   which no test or run exercises.
 - The `claude mcp add` example in the package README,

@@ -355,6 +355,17 @@ The stale locks it left were moved the same way and the next visit booted.
 It is counted here because it interrupts a capture exactly as the crash does,
 and must not be reported as one.
 
+### After a reboot of the host
+
+On 2026-10-06,
+after the host had been restarted,
+the first visit of a new capture ended with `Segmentation fault (core dumped)` after 25 views.
+The host's load average read about 35 to 60 during that hour,
+from other work on the machine.
+The next visit lost no view to a crash but ended when one guest command exceeded its 60 second bound,
+and the third completed the cohort and shut down cleanly.
+A fresh boot of the host therefore did not stop the crash.
+
 ## Verified workarounds
 
 Use `-gpu host` for this Linux host.

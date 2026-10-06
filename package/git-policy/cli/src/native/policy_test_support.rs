@@ -9,15 +9,22 @@
 //! ```
 
 /// The facts interface and the fact types the script answers with.
+use super::candidate_error::{CandidateError, CandidateFailure};
+/// Real preparation, for scripted facts given a repository.
+use super::candidate_prediction::{CandidateRequest, PreparedCandidates, prepare_candidates};
 use super::config_schema::PolicyConfig;
 use super::policy_registry::{PolicyId, Severity};
 use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 use super::rule_commit_index::IndexVsHead;
 use super::rule_commit_sequencer::SequencerState;
+/// The image's real Git, which prepares candidates for scripted facts.
+use super::test_support::REAL_GIT;
 use super::worktree_identity::WorktreeIdentity;
-use std::ffi::OsStr;
-use std::path::PathBuf;
+/// Branch names and global options are operating-system text.
+use std::ffi::{OsStr, OsString};
+/// Locations and repositories are paths.
+use std::path::{Path, PathBuf};
 
 /// A provider that answers from fields and logs every fact it was asked for.
 #[derive(Clone, Debug)]
@@ -33,6 +40,8 @@ pub(crate) struct ScriptedFacts {
     /// Every fact asked for, in call order; the location is logged once, and a remote
     /// guess with its target.
     pub(crate) asked: Vec<String>,
+    /// The repository real Git prepares candidates in; none makes preparation fail.
+    pub(crate) candidates_repository: Option<PathBuf>,
 }
 
 impl RepositoryFacts for ScriptedFacts {
@@ -60,6 +69,31 @@ impl RepositoryFacts for ScriptedFacts {
         self.asked
             .push(format!("remote-guess:{}", target.to_string_lossy()));
         return self.remote_guess.clone();
+    }
+
+    /// Log the question, then prepare with real Git in the scripted repository, or fail.
+    fn candidates(
+        &mut self,
+        request: &CandidateRequest,
+    ) -> Result<PreparedCandidates, CandidateError> {
+        self.asked.push(String::from("candidates"));
+        // `match` on the scripted repository: real Git prepares there, or nothing can be prepared.
+        match &self.candidates_repository {
+            Some(directory) => {
+                return prepare_candidates(
+                    Path::new(REAL_GIT),
+                    &[OsString::from("-C"), directory.as_os_str().to_os_string()],
+                    &[],
+                    request,
+                );
+            }
+            None => {
+                return Err(CandidateError::new(
+                    CandidateFailure::GitNotStarted,
+                    "the scripted facts prepare no candidates",
+                ));
+            }
+        }
     }
 }
 
@@ -103,6 +137,7 @@ pub(crate) fn scripted_facts() -> ScriptedFacts {
         sequencer: Ok(SequencerState::NotInProgress),
         remote_guess: Ok(false),
         asked: Vec::<String>::new(),
+        candidates_repository: None,
     };
 }
 

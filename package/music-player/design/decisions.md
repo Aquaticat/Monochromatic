@@ -2606,6 +2606,10 @@ each open to the human's veto:
   not stand-in values,
   so the user sees their own names and the rows where a field has no value.
   Stand-in values are used only when no library is open.
+  (D95,
+  2026-10-06:
+  a library is always open,
+  so stand-ins are used only while the open library holds no track.)
 - No list of ready-made examples.
   The default template is the example,
   and the field list inserts at the caret.
@@ -2718,7 +2722,7 @@ So:
 - The default template is `$tf(mi(len), m:ss)$ $mi(peak)$`.
   An analysed file reads `4:35 −1.2 dBTP`;
   one not analysed yet reads `5:12`.
-  D35's middle dot between duration and peak is gone from the default line.
+  The middle dot between duration and peak that C2 describes is gone from the default line.
   Analysis is automatic (D84),
   so the missing peak is temporary.
 
@@ -2741,6 +2745,120 @@ the last line under the field can end flush against the keyboard,
 and the field's label can slide under the header when the field and its help are taller than the visible page.
 This supersedes the last paragraph of D91,
 which left the rule undecided.
+
+No production implementation is authorized by this record.
+
+### D95. A library is always open (2026-10-06)
+
+Shown the rebuilt editor study,
+whose last state previewed sample values under the note that no library is open,
+the human wrote:
+"What do you mean 'No library open'?
+The app should always have a library open,
+even if the opened library is empty.
+It auto opens OS default library if no sessions are in the store."
+
+So no screen of the player has a state without a library.
+When no session is stored,
+the app opens the operating system's default library (D27),
+and that library may hold no track.
+The editor's preview uses sample values only while the open library holds no track,
+and says so.
+This corrects the reading of D90 that spoke of no library being open.
+
+Whether this also removes the first-run study's state without an opened source
+(`evidence/first-run-access-boundaries.md`)
+is put to the human,
+not assumed.
+
+No production implementation is authorized by this record.
+
+### D96. Scrolling suffices to reach the field list (2026-10-06)
+
+With the keyboard open the list of insertable fields sits under the template field and is mostly out of view.
+Asked through the question tool whether that is worth designing for under D91's standard,
+the human answered that scrolling suffices.
+The field list stays where it is.
+
+No production implementation is authorized by this record.
+
+### D97. Which rows get templates: one built version, for approval (2026-10-06)
+
+Asked what comes next in the template round,
+the human wrote:
+"Field list and other rows are pretty inconsequential and you only need to build one version
+(according to the best of your design skills)
+and ask for me to approve.
+Do both."
+
+The field list needs nothing more (D96).
+For the other rows the agent builds one version,
+its own design,
+and asks for approval;
+`doc/planning/music-player-template-editor.md` holds the proposal.
+Nothing in that proposal is decided until the human approves it.
+
+No production implementation is authorized by this record.
+
+### D98. The template editor is accepted as shown (2026-10-06)
+
+Shown the rebuilt review page with the empty library in place of no library (D95),
+and asked through the question tool whether the editor under `What is decided` was right as shown,
+the human answered "Right as shown".
+The question also stated the agent's reading that the field list stays where it is (D96)
+and invited a correction;
+none was given.
+D89 to D96 stand as the editor's design,
+evidenced by `evidence/template-editor-boundaries.md`.
+Typing is not connected in that study,
+so real typing remains untried.
+
+No production implementation is authorized by this record.
+
+### D99. Two lines get templates: track rows and the playing track (2026-10-06)
+
+The human approved the D97 version as built.
+Settings lists two templates under `Templates`:
+
+- `Track rows`,
+  the supporting line of a track row,
+  with the default `$tf(mi(len), m:ss)$ $mi(peak)$` (D93).
+- `Playing track`,
+  the line under the playing track's title in the deck,
+  with the default `$mi(track)$ of $mi(total)$ $mi(peak)$`,
+  which reads `1 of 16 −1.2 dBTP`,
+  or `1 of 16` before analysis.
+  Its fields are the track fields and two more:
+  `track`,
+  the file's place in its folder,
+  and `total`,
+  how many tracks the folder holds.
+
+Each editor is titled with its template's name,
+so the track rows' editor is `Track rows`,
+not `Supporting line`.
+The playing track's preview shows two files as rows.
+The deck's line loses its middle dot.
+Search results are not templated:
+their second line stays the parent folder D77 requires.
+Folder names and every title stay as they are.
+This closes the row-type coverage D81 left open.
+
+No production implementation is authorized by this record.
+
+### D100. First run: access declined stays, no source opened goes (2026-10-06)
+
+Asked which of the first-run study's states survive D95,
+the human chose to keep the state where Android's music permission is refused
+and to drop the state with no source opened.
+Under D95 the system library is open even when its tracks cannot be read,
+so the kept state shows that library as open but unreadable,
+offering to grant access or to open a folder.
+D10's empty state,
+which D27 had narrowed to no system library or a declined one,
+now applies only to this declined state.
+The first-run study (`evidence/first-run-access-boundaries.md`) is to be rebuilt for this;
+the agent's version of its copy is proposed in `doc/planning/music-player-first-run-access.md`.
 
 No production implementation is authorized by this record.
 

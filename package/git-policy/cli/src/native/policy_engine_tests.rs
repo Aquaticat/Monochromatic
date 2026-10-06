@@ -452,49 +452,58 @@ fn finding_details_reach_the_event() {
     );
 }
 
-/// A fact that could not be read ends the pass with one engine failure naming trigger and policy.
+/// A policy that could not finish ends the pass with one engine failure naming trigger,
+/// policy and the outcome's own cause, for either cause.
 #[test]
 fn failed_check_ends_the_pass_with_an_engine_failure() {
     let mut keep_going: Controls = no_controls();
     keep_going.keep_going = true;
-    let (result, called) = run(
-        Trigger::PreForward,
-        &PolicyConfig::defaults(),
-        &keep_going,
-        &[],
-        vec![
-            (PolicyId::RequireRoot, found("not-at-root")),
-            (
-                PolicyId::LinkedWorktreeOnly,
-                PolicyOutcome::Failed(String::from("git could not be asked")),
-            ),
-        ],
-    );
-    assert_eq!(result.end, StageEnd::Failed);
-    assert_eq!(
-        called,
-        [PolicyId::RequireRoot, PolicyId::LinkedWorktreeOnly]
-    );
-    assert_eq!(
-        result.events,
-        [
-            event(
-                Trigger::PreForward,
-                PolicyId::RequireRoot,
-                Severity::Error,
-                "not-at-root"
-            ),
-            PolicyEvent::EngineFailure {
-                code: EngineFailureCode::ContentUnavailable,
-                message: String::from("git could not be asked"),
-                trigger: Some(Trigger::PreForward),
-                policy: Some(PolicyId::LinkedWorktreeOnly),
-                path: None,
-            },
-        ]
-    );
-    // The failure decides the exit code even though an error finding precedes it.
-    assert_eq!(pass_exit_code(result.events.as_slice(), result.end), 2);
+    for code in [
+        EngineFailureCode::ContentUnavailable,
+        EngineFailureCode::PolicyIncomplete,
+    ] {
+        let (result, called) = run(
+            Trigger::PreForward,
+            &PolicyConfig::defaults(),
+            &keep_going,
+            &[],
+            vec![
+                (PolicyId::RequireRoot, found("not-at-root")),
+                (
+                    PolicyId::LinkedWorktreeOnly,
+                    PolicyOutcome::Failed {
+                        code,
+                        message: String::from("git could not be asked"),
+                    },
+                ),
+            ],
+        );
+        assert_eq!(result.end, StageEnd::Failed);
+        assert_eq!(
+            called,
+            [PolicyId::RequireRoot, PolicyId::LinkedWorktreeOnly]
+        );
+        assert_eq!(
+            result.events,
+            [
+                event(
+                    Trigger::PreForward,
+                    PolicyId::RequireRoot,
+                    Severity::Error,
+                    "not-at-root"
+                ),
+                PolicyEvent::EngineFailure {
+                    code,
+                    message: String::from("git could not be asked"),
+                    trigger: Some(Trigger::PreForward),
+                    policy: Some(PolicyId::LinkedWorktreeOnly),
+                    path: None,
+                },
+            ]
+        );
+        // The failure decides the exit code even though an error finding precedes it.
+        assert_eq!(pass_exit_code(result.events.as_slice(), result.end), 2);
+    }
 }
 
 /// A policy that cannot be evaluated ends the pass as unavailable, keeping earlier events and inventing none.
@@ -650,4 +659,71 @@ fn exit_code_follows_ending_then_events() {
         ),
         2
     );
+    // A pending correction blocks even when every event is a warning.
+    assert_eq!(pass_exit_code(&[warning_event()], StageEnd::Proposed), 1);
+    assert_eq!(pass_exit_code(&[], StageEnd::Proposed), 1);
+}
+
+/// The finding `finding(code)` offering a fix.
+fn fixable(code: &'static str) -> PolicyFinding {
+    let mut offered: PolicyFinding = finding(code);
+    offered.fix_available = true;
+    return offered;
+}
+
+/// A policy that proposes a correction ends the stage after its own findings, whatever
+/// its severity and even under keep-going; a finding without a fix does not.
+#[test]
+fn a_proposed_correction_ends_the_stage() {
+    let mut keep_going: Controls = no_controls();
+    keep_going.keep_going = true;
+    for (severity, controls) in [
+        (Severity::Warn, no_controls()),
+        (Severity::Error, keep_going.clone()),
+    ] {
+        let config: PolicyConfig = with_severity(&all_listed(), PolicyId::FinalNewline, severity);
+        let (result, called) = run(
+            Trigger::DirectFix,
+            &config,
+            &controls,
+            &[],
+            vec![(
+                PolicyId::FinalNewline,
+                PolicyOutcome::Findings(vec![finding("plain"), fixable("fixed")]),
+            )],
+        );
+        assert_eq!(called, vec![PolicyId::FinalNewline], "{severity:?}");
+        assert_eq!(result.end, StageEnd::Proposed, "{severity:?}");
+        let mut expected_fixed: PolicyEvent = event(
+            Trigger::DirectFix,
+            PolicyId::FinalNewline,
+            severity,
+            "fixed",
+        );
+        if let PolicyEvent::Finding(offered) = &mut expected_fixed {
+            offered.fix_available = true;
+        }
+        assert_eq!(
+            result.events,
+            vec![
+                event(
+                    Trigger::DirectFix,
+                    PolicyId::FinalNewline,
+                    severity,
+                    "plain"
+                ),
+                expected_fixed,
+            ]
+        );
+    }
+    // Without a fix the stage goes on to the next policy.
+    let (plain, called) = run(
+        Trigger::DirectFix,
+        &all_listed(),
+        &no_controls(),
+        &[],
+        vec![(PolicyId::FinalNewline, found("plain"))],
+    );
+    assert_eq!(plain.end, StageEnd::Completed);
+    assert!(called.len() > 1, "{called:?}");
 }

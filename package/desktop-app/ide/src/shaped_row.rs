@@ -1,5 +1,7 @@
 //! One shaped source line and its reading geometry: caret position, pointer hit, and range rectangles.
 
+/// Range rectangles are as tall as one code row.
+use crate::row_map::CODE_ROW;
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::Projection;
 /// What: Import the shaping engine's paragraph, caret, and selection types.
@@ -36,12 +38,15 @@ pub struct ReadingRect {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type ShapedRow = { row: number; sourceStart: number; projection: Projection; layout: Layout;
+/// type ShapedRow = { row: number; top: number; sourceStart: number; projection: Projection; layout: Layout;
 ///   baseline: number; baselineShift: number };
 /// ```
 pub struct ShapedRow {
     /// Global logical source line.
     pub row: usize,
+    /// Top of the line's code row in logical pixels from the top of the text, taken from the frame's
+    /// [`crate::row_map::RowMap`]; zero for a row shaped outside a frame, which has no vertical position.
+    pub top: f32,
     /// Global source character start.
     pub source_start: usize,
     /// Source/display mappings.
@@ -180,9 +185,9 @@ impl ShapedRow {
         for (rect, _) in selection.geometry(&self.layout) {
             result.push(ReadingRect {
                 x: rect.x0 as f32 / scale,
-                y: self.row as f32 * 24.0,
+                y: self.top,
                 width: (rect.x1 - rect.x0) as f32 / scale,
-                height: 24.0,
+                height: CODE_ROW,
             });
         }
         return result;

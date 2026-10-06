@@ -10,7 +10,7 @@
 mod ui {
     // Use the toolkit's supported re-export syntax rather than editing generated Rust.
     slint::slint! {
-        export { AppWindow, SourceMarker, SourceSelection } from "../ui/app.slint";
+        export { AppWindow, SourceSelection } from "../ui/app.slint";
     }
 }
 
@@ -20,24 +20,28 @@ use anyhow::{Context, bail};
 use ide_app::annotation::Annotations;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
-/// The Language module's handle, its startup rule, its log directive, and the reload record.
-use ide_app::language::{
-    HELIX_LOG_DIRECTIVE, LanguageWorker, enter_project_directory, sync::DocumentReload,
-};
+/// The Language module's handle, its startup rule, and the reload record.
+use ide_app::language::{LanguageWorker, enter_project_directory, sync::DocumentReload};
+/// The log filter, the subscriber with the helix-lsp bridge, and the writer thread.
+use ide_app::logging::{self, background};
 /// The displayed file is reread on change notifications, or on the old timer while unwatched.
 use ide_app::refresh_policy::SourceRefresh;
+/// The one vertical mapping between pixels and source lines.
+use ide_app::row_map::RowMap;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
 use ide_app::source_frame::FrameStamp;
 /// Raster output retains the exact glyph positions used by selection.
 use ide_app::text_raster::TextRaster;
+/// One line's block of virtual rows.
+use ide_app::virtual_row::Block;
 /// Explicit startup paths retain one canonical project boundary.
 use ide_app::{cli::Options, workspace::Workspace};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.
-use slint::{ComponentHandle, SharedString};
+use slint::{ComponentHandle, SharedString, VecModel};
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
 /// Why: Callbacks need the same document without cross-thread Arc/Mutex overhead.
 ///
@@ -45,15 +49,21 @@ use slint::{ComponentHandle, SharedString};
 /// ```ts
 /// const shared = { current: state };
 /// ```
-use std::{cell::RefCell, path::PathBuf, rc::Rc};
+use std::{cell::RefCell, path::PathBuf, rc::Rc, sync::Arc, time::Instant};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
-/// Inlay hints and diagnostics: the snapshot setter, visible subset, marker rows, and caret card.
+/// Inlay hints and diagnostics: the snapshot setter, the visible subset, and the problems at the caret.
 mod annotate;
-/// Rendered annotation pixels in both schemes, untouched source pixels, and visible-only repaints.
+/// The gutter's severity letters in front of line numbers, in both schemes, with measured contrast.
+#[cfg(test)]
+mod annotation_gutter_tests;
+/// Rendered annotation pixels in both schemes, visible-only repaints, the scroll range, and display scale.
 #[cfg(test)]
 mod annotation_paint_tests;
+/// Which rendered pixels may move when virtual rows arrive, change, or vanish, and which may not.
+#[cfg(test)]
+mod annotation_stability_tests;
 /// Injected hint and diagnostic snapshots through real key and pointer events.
 #[cfg(test)]
 mod annotation_tests;
@@ -108,6 +118,8 @@ mod refresh_latency_tests;
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
+/// The window's side of the vertical mapping between pixels and source lines.
+mod rows;
 /// The search box's 48px clear cell empties the query and the results and keeps focus.
 #[cfg(test)]
 mod search_clear_tests;
@@ -206,6 +218,55 @@ struct State {
     presented_revision: Option<u64>,
     /// Last materialized image inputs; reset when changing the displayed file.
     frame_stamp: Option<FrameStamp>,
+    /// Where every line of the displayed text is vertically; kept current by `rows::refresh`.
+    row_map: RowMap,
+    /// What: The blocks of virtual rows of every annotated line, in line order; `Arc` shares each block
+    ///       with the frames that paint it (siblings: single-thread `Rc`, owning `Box`).
+    /// Why: The map takes its block heights from these, and a frame takes the blocks of its lines.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// blocks: Readonly<Block>[];
+    /// ```
+    blocks: Vec<Arc<Block>>,
+    /// What: What `blocks` and `row_map` were built from: the displayed text's stamp, the annotation store's
+    ///       change counter, and the display scale as exact bits; `Option<...>` is nothing before the first build.
+    /// Why: Blocks are assembled again only when one of the three changed.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rowKey?: [stamp: DocumentStamp, version: number, scale: number];
+    /// ```
+    row_key: Option<rows::RowKey>,
+    /// Vertical scroll offset the materialized lines were last chosen for.
+    offset: f32,
+    /// What: When the reader last scrolled vertically; `Option<Instant>` is that moment or nothing.
+    /// Why: A change of rows that would move the scroll offset waits until the toolkit's scroll animation,
+    ///      which runs through a binding on that offset, has had time to finish.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// scrolledAt?: number;
+    /// ```
+    scrolled_at: Option<Instant>,
+    /// What: `Rc<VecModel<f32>>` is a shared, growable toolkit list of floats.
+    /// Why: The window draws one line number per entry at that vertical position; the list is updated in
+    ///      place while scrolling.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// lineTops: ArrayModel<number>;
+    /// ```
+    line_tops: Rc<VecModel<f32>>,
+    /// What: `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers (sibling `f32` for the tops).
+    /// Why: Per materialized line, the gutter's severity letter: 0 for none, otherwise one more than the rank of
+    ///      the worst diagnostic starting on the line. Updated in place like the line tops.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// lineMarks: ArrayModel<number>;
+    /// ```
+    line_marks: Rc<VecModel<i32>>,
     /// Accepted in-file matches; painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
     /// The latest accepted external reload the Language module has not been told about yet.
@@ -225,8 +286,11 @@ struct State {
 impl State {
     /// Retain source ownership and initialize viewport resources without changing the filesystem.
     fn new(source: &str, file_path: Option<PathBuf>) -> Self {
+        let document = Document::new(source);
+        // A new text has no virtual rows yet: every line starts at its number times one code row.
+        let row_map = RowMap::plain(document.text().len_lines());
         return Self {
-            document: Document::new(source),
+            document,
             file_path,
             file_generation: 1,
             file_error: None,
@@ -244,6 +308,13 @@ impl State {
             shaped: None,
             presented_revision: None,
             frame_stamp: None,
+            row_map,
+            blocks: Vec::new(),
+            row_key: None,
+            offset: 0.0,
+            scrolled_at: None,
+            line_tops: rows::line_model(),
+            line_marks: rows::mark_model(),
             find: None,
             language_reload: None,
             annotations: Annotations::default(),
@@ -254,14 +325,45 @@ impl State {
     }
 }
 
+/// What: Success when this window may start language servers, otherwise the reason it starts none.
+///       `anyhow::Result<()>` is success without a value, or an error.
+/// Why: A debug build started with `IDE_INSPECT_ANNOTATIONS` shows that file's hints and diagnostics. A worker
+///      without servers still publishes "no problems" for the displayed text, which would replace the file's
+///      diagnostics, so such a window runs without the worker; asking for a language feature explains why.
+///      Release builds do not read the variable.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function serversWanted(): void { if (DEBUG && process.env.IDE_INSPECT_ANNOTATIONS) throw new Error('...'); }
+/// ```
+fn servers_wanted() -> anyhow::Result<()> {
+    // `var_os` reads the variable without requiring UTF-8; `is_some` asks whether it is set.
+    #[cfg(debug_assertions)]
+    if std::env::var_os("IDE_INSPECT_ANNOTATIONS").is_some() {
+        bail!(
+            "this window shows the annotations of IDE_INSPECT_ANNOTATIONS and starts no language server"
+        );
+    }
+    // `Ok(())` reports success without a payload.
+    return Ok(());
+}
+
 /// Run one project window after display-independent argument parsing has completed.
 pub fn run(options: Options) -> anyhow::Result<()> {
-    // helix-lsp logs every protocol message in full at `info`; its directive keeps it at warnings.
-    tracing_subscriber::fmt()
-        .with_env_filter(format!(
-            "ide_app=debug,monochromatic_ide=debug,{HELIX_LOG_DIRECTIVE}"
-        ))
-        .init();
+    // What: The writer thread owns standard output, where the log has always gone. `_log_flush` is
+    //       bound first, so it is dropped last, after every other value of this function, and waits
+    //       briefly for the queued records.
+    // Why: The window must never wait for a slow reader of its log, and the shutdown records written
+    //      after the window closed must still reach the output (`src/logging/background.rs`).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // using logFlush = startLogWriter(process.stdout); installLog(filterFromEnv(''), logFlush.writer);
+    // ```
+    let (log_writer, _log_flush) =
+        background::background(std::io::stdout()).context("Cannot start the log writer thread")?;
+    // Warnings and errors unless `RUST_LOG` asks for more; helix-lsp's healthy-server records are re-labelled.
+    logging::install(logging::filter(""), log_writer, None)?;
     let workspace = Workspace::new(&options.project)?;
     // Helix roots every server at the working directory it reads first, so the project root
     // becomes the working directory before any thread starts or any Helix call is made.
@@ -274,6 +376,7 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     // try { process.chdir(root); worker = new LanguageWorker(root); } catch (error) { worker = error; }
     // ```
     let language_worker = enter_project_directory(workspace.root())
+        .and_then(|()| return servers_wanted())
         .and_then(|()| return LanguageWorker::new(workspace.root()));
     let project_root = workspace.root().to_path_buf();
     // Resolve initial-file paths relative to the explicit root, never the caller's ambient cwd.
@@ -334,8 +437,9 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     );
     render(&window, &state);
     // Debug builds started with `IDE_INSPECT_ANNOTATIONS` show that file's hints and diagnostics; see `inspect`.
+    // The timer of delayed arrivals, when the file asks for any, lives until the window closes.
     #[cfg(debug_assertions)]
-    inspect::inject(&window, &state)?;
+    let _inspection = inspect::inject(&window, &state)?;
     if state.borrow().file_path.is_none() {
         window.invoke_focus_tree();
     }

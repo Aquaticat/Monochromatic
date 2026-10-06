@@ -11,7 +11,7 @@ description = "Run generator and invariant controls"
 run = "cargo test --lib"
 
 [tasks."test:planted"]
-description = "Plant five defects in a disposable copy of the subject and require the generator controls to fail"
+description = "Plant each listed defect in a disposable copy of the subject and require the generator controls to fail"
 run = "node bin/planted-controls.mjs"
 
 [tasks."lint:types"]
@@ -29,3 +29,7 @@ run = "node bin/container.mjs --build-only"
 [tasks.smoke]
 description = "Run generator controls, Clippy, then ASAN targets for 30s each in mount-free bounded containers"
 run = "node bin/container.mjs"
+
+[tasks."lock:subject"]
+description = "Seed the fuzz lockfile from the subject's lockfile, then let Cargo add only this sidecar's own packages, so both lock the same registry versions"
+run = ["cp ../cli/Cargo.lock Cargo.lock", "cargo update --workspace --offline"]

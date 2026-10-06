@@ -147,6 +147,10 @@ impl Session {
         let modified = self.script.hover == Hover::Modified
             || (self.script.hover == Hover::ModifiedOnce && self.hovers == 1);
         if self.script.hover == Hover::Crash {
+            // The configured line comes right before the end, as a crashing server's last words.
+            if let Some(line) = &self.script.stderr_at_shutdown {
+                eprintln!("{line}");
+            }
             std::process::exit(7);
         }
         if self.script.hover == Hover::Silent {
@@ -232,6 +236,10 @@ impl Session {
                 }
             }
         } else if method == "shutdown" {
+            // `if let Some` writes the configured line only when one was given.
+            if let Some(line) = &self.script.stderr_at_shutdown {
+                eprintln!("{line}");
+            }
             self.send(json!({ "id": id, "result": null }));
         } else if method == "textDocument/hover" {
             self.hover(id, params);

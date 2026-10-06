@@ -190,7 +190,19 @@ fn invalid_policy_options_are_rejected_by_key() {
         ),
         (
             r#"{ "policies": { "security/forbidden-strings": ["error", { "rules": [] }] } }"#,
-            "Unknown configuration key: policies.security/forbidden-strings[1].rules. The only accepted option is builtinRules.",
+            "Unknown configuration key: policies.security/forbidden-strings[1].rules. Accepted options: builtinRules, rulesFile.",
+        ),
+        (
+            r#"{ "policies": { "security/forbidden-strings": ["error", { "rulesFile": 1 }] } }"#,
+            "Configuration key policies.security/forbidden-strings[1].rulesFile must be a string, found a number.",
+        ),
+        (
+            r#"{ "policies": { "security/forbidden-strings": ["error", { "rulesFile": "../outside.txt" }] } }"#,
+            "Configuration key policies.security/forbidden-strings[1].rulesFile must name a file relative to the repository's top level that stays inside it, but the value has a . or .. component.",
+        ),
+        (
+            r#"{ "policies": { "security/forbidden-strings": { "rulesFile": "/etc/rules.txt" } } }"#,
+            "Configuration key policies.security/forbidden-strings.rulesFile must name a file relative to the repository's top level that stays inside it, but the value starts with /.",
         ),
         (
             r#"{ "policies": { "security/forbidden-strings": ["error", { "builtinRules": "yes" }] } }"#,

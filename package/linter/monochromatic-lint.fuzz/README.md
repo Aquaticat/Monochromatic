@@ -51,11 +51,28 @@ Generator unit tests verify that successful validation,
 merging,
 and real closure checks are actually reached.
 
+`mise run //package/linter/monochromatic-lint.fuzz:test:planted` proves the invariants can fail.
+It copies the linter,
+this package and their JSONC dependencies to this package's ignored `target/planted` directory,
+plants one defect per fuzz target
+(a rejected `warn` severity,
+arrays replaced instead of concatenated by the merge,
+only the first closure reported,
+an initialized binding exempt from type annotations,
+a trailing colon no longer heading punctuation,
+and an unlabeled rustdoc fence no longer a doc test),
+and requires a generator control to fail for each.
+A plant that does not build counts as not noticed.
+Results are retained under `target/verification/planted-*`.
+
 The `fuzz_target!` input looks like a closure signature but is macro input grammar.
 In libfuzzer-sys 0.4.13,
 `src/lib.rs:247-295` expands the byte-input form into the named `__libfuzzer_sys_run` function.
 
 Run campaigns through the bounded container tasks.
+They tag their images with `MONOCHROMATIC_LINT_IMAGE_TAG`,
+`development` by default,
+so concurrent sessions can keep separate images.
 Retain and replay minimized failures.
 A clean campaign does not cover the file walker,
 configuration lookup on disk,
