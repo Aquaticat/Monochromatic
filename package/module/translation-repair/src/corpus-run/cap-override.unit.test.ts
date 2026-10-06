@@ -13,7 +13,9 @@
  intention.
 
  The override text is injected rather than the environment mutated, so no case
- here can leak into another.
+ here can leak into another. The one exception is the case that reads the
+ environment itself, which sets and restores the variable in a suite run one
+ case at a time.
 
  @module
  */
@@ -39,13 +41,63 @@ import {
  */
 const FALLBACK = 420;
 
+/**
+ Removes the hard-cap variable from the environment.
+
+ @example
+ ```ts
+ clearHardCap();
+ ```
+ */
+function clearHardCap(): void {
+  Reflect.deleteProperty(
+    process.env,
+    HARD_CAP_VAR,
+  );
+}
+
+/**
+ Sets or clears the hard-cap variable for one case, restoring it after.
+
+ @param says - value to set, or nothing to clear the variable
+
+ @returns Disposable that puts the variable back as it stood
+
+ @example
+ ```ts
+ using exported = hardCapSaying({ says: '15', },);
+ ```
+ */
+function hardCapSaying({ says, }: { readonly says?: string; },): Disposable {
+  /**
+   Value before the case, restored on dispose.
+   */
+  const before = process.env[HARD_CAP_VAR];
+
+  if (says === undefined)
+    clearHardCap();
+  else
+    process.env[HARD_CAP_VAR] = says;
+
+  return {
+    [Symbol.dispose]: function restore(): void {
+      if (before === undefined)
+        clearHardCap();
+      else
+        process.env[HARD_CAP_VAR] = before;
+    },
+  };
+}
+
 await describe({
   name: '',
   concurrency: 1,
   children: [
     describe({
       name: resolveHardCapMinutes.name,
-      concurrency: DEFAULT_CONCURRENCY,
+      // One case at a time: the case reading the environment writes a process
+      // variable.
+      concurrency: 1,
       children: [
         it({
           name: 'SPELLS the variable the way the documentation does. Earlier in '
@@ -180,6 +232,20 @@ await describe({
             },),).toBe(7.5,);
           },
         },),
+        it({
+          name: 'READS THE ENVIRONMENT when the caller names no raw text, and the fallback where the variable '
+            + 'is unset',
+          fn: async () => {
+            {
+              using exported = hardCapSaying({ says: '15', },);
+              expect(resolveHardCapMinutes({ fallback: FALLBACK, },),).toBe(15,);
+            }
+            {
+              using unset = hardCapSaying({},);
+              expect(resolveHardCapMinutes({ fallback: FALLBACK, },),).toBe(FALLBACK,);
+            }
+          },
+        },),
       ],
     },),
 
@@ -255,19 +321,6 @@ await describe({
 
             expect(note.includes('no slice caches',),).toBe(true,);
             expect(note.includes('stalled',),).toBe(true,);
-          },
-        },),
-        it({
-          name: 'READS THE ENVIRONMENT when the caller names no raw text, and falls to the fallback where '
-            + 'the variable is unset',
-          fn: async () => {
-            // No env writes here: the variable is unset in a test
-            // environment, so the default's own fallback is what runs, and a
-            // runner that exported one is honored by the same read.
-            expect(resolveHardCapMinutes({ fallback: FALLBACK, },),).toBe(resolveHardCapMinutes({
-              fallback: FALLBACK,
-              raw: process.env[HARD_CAP_VAR] ?? '',
-            },),);
           },
         },),
       ],

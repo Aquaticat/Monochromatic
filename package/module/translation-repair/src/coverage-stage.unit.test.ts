@@ -264,11 +264,11 @@ await describe({
          */
         const script = {
           'hf:cat/Cat-A': {
-            coverage: 'all',
+            coverage: 'full',
             quote: 'the windowsill',
           },
           'hf:cat/Cat-B': {
-            coverage: 'all',
+            coverage: 'full',
             quote: 'the windowsill',
           },
         };
@@ -334,11 +334,11 @@ await describe({
           client: scriptedClient({
             script: {
               'hf:cat/Cat-A': {
-                coverage: 'all',
+                coverage: 'full',
                 quote: 'the windowsill',
               },
               'hf:cat/Cat-B': {
-                coverage: 'all',
+                coverage: 'full',
                 quote: 'the windowsill',
               },
             },
@@ -362,11 +362,11 @@ await describe({
           client: scriptedClient({
             script: {
               'hf:cat/Cat-A': {
-                coverage: 'all',
+                coverage: 'full',
                 quote: 'the windowsill',
               },
               'hf:cat/Cat-B': {
-                coverage: 'all',
+                coverage: 'full',
                 quote: 'the windowsill',
               },
             },
@@ -421,8 +421,19 @@ await describe({
           exchangeTimeoutMs: 5_000,
           l,
         },);
-        expect(answer.verdict
-          .misattributedQuotes,).toContain(FOREIGN_SENTENCE,);
+        expect(answer.verdict,).toEqual({
+          kind: 'split',
+          anchoredFull: 0,
+          anchoredPartial: 0,
+          absent: 0,
+          unanchored: 0,
+          misattributed: 2,
+          heard: 2,
+          asked: 4,
+          evidence: [],
+          unanchoredQuotes: [],
+          misattributedQuotes: [FOREIGN_SENTENCE, FOREIGN_SENTENCE,],
+        },);
       },
     },),
   ],

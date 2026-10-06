@@ -84,7 +84,6 @@ const MARKUP_MARKERS = [
  */
 export type IneligibleReason =
   | 'not-a-paragraph'
-  | 'not-body-zone'
   | 'hard-break'
   | 'carries-markup'
   | 'too-short'
@@ -216,6 +215,8 @@ function carriesHardBreak({ text, }: { readonly text: string; },): boolean {
 
  @returns Verdict carrying the excluding rule when there is one
 
+ @throws Error when a paragraph node stands outside the body zone, which no parse emits
+
  @example
  ```ts
  const verdict = judgeParagraph({ node, degraded: false, minimumChars, },);
@@ -237,11 +238,12 @@ function judgeParagraph(
       node,
       reason: 'not-a-paragraph',
     },);
+
+  // `parseDocument` gives a node the zone `footnote-definition` exactly when
+  // its kind is `footnoteDefinition`, and the kind test refuses that kind
+  // first, so a paragraph outside the body zone is a node no parse emits.
   if (node.zone !== 'body')
-    return skipped({
-      node,
-      reason: 'not-body-zone',
-    },);
+    throw new Error('unreachable: a paragraph node stands outside the body zone, and the parse gives that zone to footnote definitions alone',);
 
   // A degraded parse means the mdast this filter reasons about is not a
   // faithful account of the bytes, so no block in the slice is eligible.

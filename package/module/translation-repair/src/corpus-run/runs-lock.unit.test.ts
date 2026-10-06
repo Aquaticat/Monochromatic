@@ -172,6 +172,36 @@ function requireEpermOnPidOne(): void {
   throw new Error('this case needs pid 1 to answer EPERM, and signalling it succeeded instead',);
 }
 
+/**
+ Whole message a refusal over the fixture directory renders when the race
+ judged the holder, around the line that says what the lock records.
+
+ @param holderLine - line naming the holder, or saying the lock records nothing
+
+ @returns Message the error carries
+
+ @example
+ ```ts
+ const message = busyMessage({ holderLine: '  its lock file records nothing readable', },);
+ ```
+ */
+function busyMessage({ holderLine, }: { readonly holderLine: string; },): string {
+  return [
+    'Another pass is running in /mittens/runs.',
+    holderLine,
+    '',
+    'Two passes sharing one runs directory do not conflict loudly. They',
+    'overwrite each other\'s attempt counts, delete each other\'s cached',
+    'slices whenever their pipelines differ, and the later write of any',
+    'entry simply replaces the earlier one. Every one of those looks like',
+    'ordinary output.',
+    '',
+    'Point this run at another directory with TRANSLATION_REPAIR_RUNS_DIR,',
+    'or stop the other pass. A lock whose process is gone is taken over',
+    'automatically. Another pass took it over at the same moment as this one.',
+  ].join('\n',);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -878,40 +908,28 @@ console.log('LOCK_INTERLEAVE ' + JSON.stringify({ interleaved: state.interleaved
             + 'race loss leaves once the winner\'s own lock could not be read back',
           fn: async () => {
             /**
-             Exact message the error renders with no holder, built the same
-             way the race-loss branch in `lockRunsDir` builds it when the
-             winner's lock could not be read.
-             */
-            const expectedMessage = [
-              'Another pass is running in /mittens/runs.',
-              '  its lock file records nothing readable',
-              '',
-              'Two passes sharing one runs directory do not conflict loudly. They',
-              'overwrite each other\'s attempt counts, delete each other\'s cached',
-              'slices whenever their pipelines differ, and the later write of any',
-              'entry simply replaces the earlier one. Every one of those looks like',
-              'ordinary output.',
-              '',
-              'Point this run at another directory with TRANSLATION_REPAIR_RUNS_DIR,',
-              'or stop the other pass. A lock whose process is gone is taken over',
-              'automatically. Another pass took it over at the same moment as this one.',
-            ].join('\n',);
-
-            /**
-             Constructed directly, as the race-loss branch does, with no
-             `holder` field at all.
+             Constructed directly, as the race-loss branch does when the
+             winner's lock could not be read, with no `holder` field at all.
              */
             const error = new RunsDirectoryBusyError({
               runsDir: '/mittens/runs',
               judgedBy: 'race',
             },);
 
-            expect(error.message,).toBe(expectedMessage,);
+            expect(error.message,).toBe(busyMessage({
+              holderLine: '  its lock file records nothing readable',
+            },),);
+          },
+        },),
+        it({
+          name: 'NAMES THE HOLDER\'S PROCESS AND START TIME when constructed with the holder the lock records, '
+            + 'and does not say the lock file records nothing',
+          fn: async () => {
             /**
-             Constructed directly, as the race-loss branch does, with a
-             holder it read back.
+             Constructed with the holder a race loser reads back from the
+             winner's lock.
              */
-            const withHolder = new RunsDirectoryBusyError({
+            const error = new RunsDirectoryBusyError({
               runsDir: '/mittens/runs',
               holder: {
                 pid: 1,
@@ -921,25 +939,31 @@ console.log('LOCK_INTERLEAVE ' + JSON.stringify({ interleaved: state.interleaved
               },
               judgedBy: 'race',
             },);
-            expect(withHolder.message,).toContain('Another pass is running in /mittens/runs.',);
-            expect(withHolder.message,).not.toContain('records nothing readable',);
+
+            expect(error.message,).toBe(busyMessage({
+              holderLine: '  process 1, since 2026-09-28T10:00:00.000Z',
+            },),);
           },
         },),
+      ],
+    },),
+
+    describe({
+      name: lockFileText.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
         it({
           name: 'WRITES the lock line as the named fields alone where the identity is unrecorded, so a '
             + 'host with no identity to read still locks',
           fn: async () => {
-            const text = lockFileText({
+            expect(lockFileText({
               holder: {
                 pid: 1,
                 startedAt: '2026-09-28T10:00:00.000Z',
                 token: 't',
                 identity: { kind: 'unrecorded', },
               },
-            },);
-            expect(text.endsWith('\n',),).toBe(true,);
-            expect(text.includes('"pid":1',),).toBe(true,);
-            expect(text.includes('identity',),).toBe(false,);
+            },),).toBe('{"pid":1,"startedAt":"2026-09-28T10:00:00.000Z","token":"t"}\n',);
           },
         },),
       ],

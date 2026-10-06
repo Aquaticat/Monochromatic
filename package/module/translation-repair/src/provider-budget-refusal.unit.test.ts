@@ -55,56 +55,119 @@ const ACCOUNT_LIMIT_BODY = '{"error":{"message":"Rate limit exceeded: free-model
  */
 const PAYMENT_BODY = '{"error":{"message":"This request requires more credits","code":402}}';
 
+/**
+ Body a provider answers with when its daily limit names the wait, here two
+ hours, twenty-five minutes and eighteen seconds.
+ */
+const DAILY_LIMIT_BODY = '{"error":{"message":"You\'ve hit your daily rate limit. Please try again in 2h25m18s"}}';
+
 await describe({
-  name: 'a 429 passed on from one model\'s upstream endpoint (class sixty-two, XingZ612)',
+  name: '',
   children: [
-    it({
-      name: 'READS the upstream pool limit as the model\'s refusal, not the provider\'s budget',
-      fn: async () => {
-        const error = new SyntheticHttpError({
-          status: HTTP_TOO_MANY_REQUESTS,
-          bodyText: UPSTREAM_POOL_BODY,
-        },);
-        expect(isUpstreamModelRefusal({ error, },),).toBe(true,);
-        expect(isBudgetRefusal({ error, },),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'KEEPS an account rate limit a budget refusal',
-      fn: async () => {
-        const error = new SyntheticHttpError({
-          status: HTTP_TOO_MANY_REQUESTS,
-          bodyText: ACCOUNT_LIMIT_BODY,
-        },);
-        expect(isUpstreamModelRefusal({ error, },),).toBe(false,);
-        expect(isBudgetRefusal({ error, },),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'KEEPS a payment refusal a budget refusal whatever its body says',
-      fn: async () => {
-        const error = new SyntheticHttpError({
-          status: HTTP_PAYMENT_REQUIRED,
-          bodyText: PAYMENT_BODY,
-        },);
-        expect(isUpstreamModelRefusal({ error, },),).toBe(false,);
-        expect(isBudgetRefusal({ error, },),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'READS nothing into a failure that is not a provider reply',
-      fn: async () => {
-        expect(isUpstreamModelRefusal({ error: new Error('the cat unplugged the router',), },),).toBe(false,);
-      },
+    describe({
+      name: 'a 429 passed on from one model\'s upstream endpoint (class sixty-two, XingZ612)',
+      children: [
+        it({
+          name: 'READS the upstream pool limit as the model\'s refusal, not the provider\'s budget',
+          fn: async () => {
+            const error = new SyntheticHttpError({
+              status: HTTP_TOO_MANY_REQUESTS,
+              bodyText: UPSTREAM_POOL_BODY,
+            },);
+            expect(isUpstreamModelRefusal({ error, },),).toBe(true,);
+            expect(isBudgetRefusal({ error, },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'KEEPS an account rate limit a budget refusal',
+          fn: async () => {
+            const error = new SyntheticHttpError({
+              status: HTTP_TOO_MANY_REQUESTS,
+              bodyText: ACCOUNT_LIMIT_BODY,
+            },);
+            expect(isUpstreamModelRefusal({ error, },),).toBe(false,);
+            expect(isBudgetRefusal({ error, },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'KEEPS a payment refusal a budget refusal whatever its body says',
+          fn: async () => {
+            const error = new SyntheticHttpError({
+              status: HTTP_PAYMENT_REQUIRED,
+              bodyText: PAYMENT_BODY,
+            },);
+            expect(isUpstreamModelRefusal({ error, },),).toBe(false,);
+            expect(isBudgetRefusal({ error, },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'READS nothing into a failure that is not a provider reply',
+          fn: async () => {
+            expect(isUpstreamModelRefusal({ error: new Error('the cat unplugged the router',), },),).toBe(false,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'READS NO PAYMENT REFUSAL and NO STATED WAIT where the failure is not a provider reply, so a '
-        + 'local fault marks nothing refused',
-      fn: async () => {
-        expect(isPaymentRefusal({ error: new Error('the cat unplugged the router',), },),).toBe(false,);
-        expect(statedWaitMsOf({ error: new Error('the cat unplugged the router',), },),).toBe(0,);
-      },
+    describe({
+      name: isPaymentRefusal.name,
+      children: [
+        it({
+          name: 'READS a payment-required reply as the balance refusing and a rate limit as not, so only an '
+            + 'empty balance holds the provider out until its meter moves',
+          fn: async () => {
+            expect(isPaymentRefusal({
+              error: new SyntheticHttpError({
+                status: HTTP_PAYMENT_REQUIRED,
+                bodyText: PAYMENT_BODY,
+              },),
+            },),).toBe(true,);
+            expect(isPaymentRefusal({
+              error: new SyntheticHttpError({
+                status: HTTP_TOO_MANY_REQUESTS,
+                bodyText: ACCOUNT_LIMIT_BODY,
+              },),
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'READS NO PAYMENT REFUSAL where the failure is not a provider reply, so a local fault marks '
+            + 'nothing refused',
+          fn: async () => {
+            expect(isPaymentRefusal({ error: new Error('the cat unplugged the router',), },),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: statedWaitMsOf.name,
+      children: [
+        it({
+          name: 'READS the wait a refusal names as milliseconds, and none where the refusal names none',
+          fn: async () => {
+            expect(statedWaitMsOf({
+              error: new SyntheticHttpError({
+                status: HTTP_TOO_MANY_REQUESTS,
+                bodyText: DAILY_LIMIT_BODY,
+              },),
+            },),).toBe(8_718_000,);
+            expect(statedWaitMsOf({
+              error: new SyntheticHttpError({
+                status: HTTP_TOO_MANY_REQUESTS,
+                bodyText: ACCOUNT_LIMIT_BODY,
+              },),
+            },),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'READS NO STATED WAIT where the failure is not a provider reply, so a local fault holds '
+            + 'nothing out',
+          fn: async () => {
+            expect(statedWaitMsOf({ error: new Error('the cat unplugged the router',), },),).toBe(0,);
+          },
+        },),
+      ],
     },),
   ],
 },);

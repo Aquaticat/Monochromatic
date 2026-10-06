@@ -36,8 +36,14 @@ import {
   TRIAL_ARMS,
   trialKey,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
+
+/**
+ Words the judges' sheet carries when the slice has no existing translation.
+ */
+const NOTHING_STANDS = 'there is no existing translation of this passage';
 
 /**
  Logger the arms write to.
@@ -527,29 +533,34 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         const rig = driftingClient();
         /**
-         Attempt on a slice index off the prepared list.
+         What a run on a slice index off the prepared list threw.
          */
-        const attempt = runSliceArms({
-          client: rig.client,
-          slices: SLICES,
-          sliceIndex: 99,
-          sliceClass: 'relocation',
-          entryId: 'Mittens',
-          protocol: 'protocol-one',
-          ledgerPath: freshLedger({ dir: scratch.path, },),
-          done: new Set<string>(),
-          models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
-          l,
+        const refusal = await rejectionOf(async function runsOffTheList(): Promise<unknown> {
+          return await runSliceArms({
+            client: rig.client,
+            slices: SLICES,
+            sliceIndex: 99,
+            sliceClass: 'relocation',
+            entryId: 'Mittens',
+            protocol: 'protocol-one',
+            ledgerPath: freshLedger({ dir: scratch.path, },),
+            done: new Set<string>(),
+            models: MODELS,
+            signal: AbortSignal.timeout(30_000,),
+            perCallTimeoutMs: 5_000,
+            l,
+          },);
         },);
-        await expect(attempt,).rejects
-          .toThrow('the draw and the preparation disagree',);
+        expect(refusal,).toBeInstanceOf(RangeError,);
+        expect(String(refusal,),).toBe(
+          'RangeError: Mittens has no slice 99; the draw and the preparation disagree, which means they were '
+            + 'made from different text',
+        );
       },
     },),
     it({
-      name: 'BUYS AN ABSENT INCUMBENT for a slice whose target is an insertion, where the same source '
-        + 'with a rendering buys the one it has',
+      name: 'TELLS THE JUDGES NOTHING STANDS BEHIND A DECLINE for a slice whose target is an insertion, '
+        + 'where the same source with a rendering keeps its fallback',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         /**
@@ -613,9 +624,14 @@ await describe({
         expect(present.translateSheets
           .join('\n',)
           .includes(incumbent,),).toBe(true,);
-        expect(absent.translateSheets
-          .join('\n',)
-          .includes(incumbent,),).toBe(false,);
+        expect(absent.judgeSheets
+          .every(function saysNothingStands(sheet,): boolean {
+            return sheet.includes(NOTHING_STANDS,);
+          },),).toBe(true,);
+        expect(present.judgeSheets
+          .some(function saysNothingStands(sheet,): boolean {
+            return sheet.includes(NOTHING_STANDS,);
+          },),).toBe(false,);
       },
     },),
   ],

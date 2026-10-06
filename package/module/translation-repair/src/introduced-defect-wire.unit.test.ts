@@ -61,6 +61,26 @@ const REGION: RepairRegion = {
   editorAfter: 'The cat sleeps.',
 };
 
+/**
+ Cuts the nearby-blocks part of a probe sheet, from the first heading to the
+ fence that opens the rule naming those blocks as context.
+
+ @param sheet - user half of a probe sheet
+
+ @returns Text of both nearby blocks with their headings
+
+ @example
+ ```ts
+ const block = nearbyBlockOf({ sheet, },);
+ ```
+ */
+function nearbyBlockOf({ sheet, }: { readonly sheet: string; },): string {
+  return sheet.slice(
+    sheet.indexOf('NEARBY ORIGINAL',),
+    sheet.indexOf('THE TWO NEARBY BLOCKS',),
+  );
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -117,7 +137,10 @@ await describe({
             },).messages[1]
               ?.content
               ?? '';
-            expect(sourceOnly.includes('邻猫在窗台上。',),).toBe(true,);
+            expect(nearbyBlockOf({ sheet: sourceOnly, },),).toBe(
+              'NEARBY ORIGINAL, CONTEXT ONLY =====\n邻猫在窗台上。\n===== '
+                + 'NEARBY EXISTING TRANSLATION, CONTEXT ONLY =====\n\n===== ',
+            );
             /**
              Sheet asking with the neighbouring translation alone.
              */
@@ -130,7 +153,10 @@ await describe({
             },).messages[1]
               ?.content
               ?? '';
-            expect(incumbentOnly.includes('The neighbouring cat is on the sill.',),).toBe(true,);
+            expect(nearbyBlockOf({ sheet: incumbentOnly, },),).toBe(
+              'NEARBY ORIGINAL, CONTEXT ONLY =====\n\n===== '
+                + 'NEARBY EXISTING TRANSLATION, CONTEXT ONLY =====\nThe neighbouring cat is on the sill.\n===== ',
+            );
           },
         },),
 

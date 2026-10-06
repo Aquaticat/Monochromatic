@@ -227,7 +227,7 @@ await describe({
         expect(titleText({ bracketed: '[猫猫摇篮曲)', },),).toBe('[猫猫摇篮曲)',);
         expect(bracketedTitles({
           text: '《猫\n猫》,《猫猫》,《猫猫》',
-          form: 'han-only',
+          form: 'carrying-han',
         },),).toEqual(['猫猫',],);
       },
     },),

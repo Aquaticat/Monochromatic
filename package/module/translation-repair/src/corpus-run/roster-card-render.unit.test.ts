@@ -498,7 +498,7 @@ await describe({
     },),
 
     it({
-      name: 'READS THE BODY ITSELF where it is the row array, and READS NO IMAGE INPUT where the '
+      name: 'READS THE BODY ITSELF where it is the row array, and LEAVES THE IMAGE INPUT NOT_LISTED where the '
         + 'modalities field is no array',
       fn: async () => {
         /**
@@ -509,7 +509,7 @@ await describe({
           body: [{ id: 'm', },],
           servedId: 'm',
         },);
-        expect(row,).not.toBe(undefined,);
+        expect(row,).toEqual({ id: 'm', },);
         expect(cardFieldsFrom({
           provider: 'openrouter',
           row: {
@@ -552,8 +552,13 @@ await describe({
             context_length: 200_000,
           },
         },);
-        expect(bedrock.readsImages,).toBe(NOT_LISTED,);
-        expect(bedrock.maxOutputLength,).toBe(64_000,);
+        expect(bedrock,).toEqual({
+          readsImages: NOT_LISTED,
+          maxOutputLength: 64_000,
+          contextLength: 200_000,
+          promptPrice: NOT_LISTED,
+          completionPrice: NOT_LISTED,
+        },);
       },
     },),
   ],

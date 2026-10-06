@@ -227,6 +227,8 @@ async function contest(
 
  @returns Seat that won, or none when no candidate did
 
+ @throws Error when the stage shipped a composite whose text is neither seat's
+
  @example
  ```ts
  const winner = seatThatWon({ shippedProducer, shipped, first, second, },);
@@ -268,7 +270,10 @@ export function seatThatWon(
   if (shipped === secondText)
     return 'second';
 
-  return 'none';
+  // Each seat is a composite carrying its own patch as the candidate's value,
+  // and a stage that reports a composite ships one candidate's value, so text
+  // matching neither seat means the slate held something else.
+  throw new Error('unreachable: the stage shipped a composite whose text is neither seat\'s, and the two seats are the only composites on the slate',);
 }
 
 /**

@@ -73,11 +73,17 @@ await describe({
       ],
     },),
 
-    it({
-      name: 'STRIPS NOTHING from a fence line with no line end after it, since the whole text is the opening line',
-      fn: async () => {
-        expect(stripCodeFence({ text: '```ts one line', },),).toBe('```ts one line',);
-      },
+    describe({
+      name: stripCodeFence.name,
+      children: [
+        it({
+          name: 'STRIPS NOTHING from a fence line with no line end after it, since the whole text is the opening '
+            + 'line',
+          fn: async () => {
+            expect(stripCodeFence({ text: '```ts one line', },),).toBe('```ts one line',);
+          },
+        },),
+      ],
     },),
   ],
 },);

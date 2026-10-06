@@ -105,6 +105,7 @@ await describe({
               'export const NAP_CACHE_VERSION: number = 3;',
               'export const NAP_CACHE_VERSION = 3',
               'export const NAP_CACHE_VERSION = 0x3;',
+              'export const NAP_CACHE_VERSION',
             ]) {
               expect(function read(): void {
                 cacheVersionsIn({
@@ -136,6 +137,15 @@ await describe({
             expect((refusal as Error).message,).toBe(`src/nap-key.ts declares a cache version the audit cannot read: "${
           line
         }". Write it as NAME = digits; so every constant is checked.`,);
+          },
+        },),
+        it({
+          name: 'SKIPS A NAME RUNNING TO ITS LINE END that does not end in the marker, since it is no cache version',
+          fn: async () => {
+            expect(cacheVersionsIn({
+              path: 'src/nap-key.ts',
+              text: 'export const NAP_CACHE_VERSION_x',
+            },),).toEqual([],);
           },
         },),
       ],
@@ -214,17 +224,6 @@ await describe({
           },
         },),
       ],
-    },),
-
-    it({
-      name: 'READS A NAME RUNNING TO ITS LINE END and drops it when the name does not end in the marker, '
-        + 'since the suffix read finds no boundary',
-      fn: async () => {
-        expect(cacheVersionsIn({
-          path: 'src/nap-key.ts',
-          text: 'export const NAP_CACHE_VERSION_x',
-        },),).toEqual([],);
-      },
     },),
   ],
 },);

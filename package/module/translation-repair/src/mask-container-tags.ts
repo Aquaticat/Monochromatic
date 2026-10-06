@@ -89,6 +89,44 @@ type PairingTag = Readonly<{
 }>;
 
 /**
+ Whether a character is a space or a tab, the whitespace a tag line holds
+ between its name and what follows.
+
+ @param character - one character of a tag line
+
+ @returns True for a space or a tab
+
+ @example
+ ```ts
+ isSpaceOrTab('\t',); // true
+ ```
+ */
+function isSpaceOrTab(character: string,): boolean {
+  return (character === ' ') || (character === '\t');
+}
+
+/**
+ Offset where an element name ends in the text after a tag's bracket and
+ slash.
+
+ @param body - text after the opening bracket, and after the slash of a closer
+
+ @returns Offset of the first space or tab, or the length when there is none
+
+ @example
+ ```ts
+ nameEndOf({ body: 'details open', },); // 7
+ ```
+ */
+function nameEndOf({ body, }: { readonly body: string; },): number {
+  for (let at = 0; at < body.length; at += 1) {
+    if (isSpaceOrTab(body.charAt(at,),))
+      return at;
+  }
+  return body.length;
+}
+
+/**
  Reads one line as a container tag when the line is nothing but one tag.
 
  A line holding an opening tag with attributes counts; a self-closing tag,
@@ -156,9 +194,11 @@ function tagOnLine(
     return [];
 
   /**
-   Where the name ends: at the first space, or the end.
+   Where the name ends: at the first space or tab, which the strict grammar
+   steps over between a name and an attribute or the closing bracket, or the
+   end.
    */
-  const nameEnd = body.includes(' ',) ? body.indexOf(' ',) : body.length;
+  const nameEnd = nameEndOf({ body, },);
 
   /**
    Element name as written.
@@ -167,7 +207,16 @@ function tagOnLine(
     0,
     nameEnd,
   );
-  if (closes && (name !== body))
+
+  // A closer may carry whitespace before its bracket (`</details >`), which
+  // the strict grammar reads as closing the element; anything else past the
+  // name names no element.
+  /**
+   Whether only spaces and tabs follow the name.
+   */
+  const bareAfterName = Array.from(body.slice(nameEnd,),)
+    .every(isSpaceOrTab,);
+  if (closes && (!bareAfterName))
     return [];
 
   return [{

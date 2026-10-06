@@ -6,6 +6,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -172,6 +173,39 @@ await describe({
               caughtAmbiguous = error;
             }
             expect(caughtAmbiguous instanceof SeedApplicationError,).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A NEEDLE THE TEXT LACKS with the whole message naming the seed, and a needle that '
+            + 'occurs twice with its own, so a seed is never left half applied',
+          fn: async () => {
+            /**
+             What a needle absent from the text threw.
+             */
+            const absent = caught(function seedsAbsentNeedle(): unknown {
+              return applySeededErrors({
+                text: CLEAN,
+                specs: [{ ...DELETE_BUTTERFLIES, needle: 'the mouse', },],
+              },);
+            },);
+            expect(absent,).toBeInstanceOf(SeedApplicationError,);
+            expect(String(absent,),).toBe(
+              'SeedApplicationError: seed seed/omission-0 cannot apply: needle absent from current text.',
+            );
+            /**
+             What a needle occurring twice threw.
+             */
+            const ambiguous = caught(function seedsAmbiguousNeedle(): unknown {
+              return applySeededErrors({
+                text: CLEAN,
+                specs: [{ ...DELETE_BUTTERFLIES, needle: 'The cat', },],
+              },);
+            },);
+            expect(ambiguous,).toBeInstanceOf(SeedApplicationError,);
+            expect(String(ambiguous,),).toBe(
+              'SeedApplicationError: seed seed/omission-0 cannot apply: needle occurs more than once.',
+            );
           },
         },),
       ],
