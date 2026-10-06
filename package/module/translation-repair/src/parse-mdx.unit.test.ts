@@ -17,6 +17,7 @@
  @module
  */
 
+import type { Nodes, } from 'mdast';
 import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
@@ -116,6 +117,36 @@ function mdxRefusal(): Error {
   throw new Error('the fixture parsed, so it no longer exercises a refusal',);
 }
 
+/**
+ Body opening with a byte order mark, then two paragraphs.
+ */
+const MARKED_BODY = '\uFEFFThe cat naps.\n\nSecond cat.\n';
+
+/**
+ Body opening with a byte order mark, then a tag with an attribute around a paragraph.
+ */
+const MARKED_TAG_BODY = '\uFEFF<Box tone="warm">\n\nThe cat naps.\n\n</Box>\n';
+
+/**
+ Position of a parsed node, read for the whole value.
+
+ @param node - parsed node
+
+ @returns Position the parser set
+
+ @throws {@link Error} when the node carries no position
+
+ @example
+ ```ts
+ const where = positionOf(root.children[0],);
+ ```
+ */
+function positionOf(node: Readonly<Nodes>,): Required<Nodes>['position'] {
+  if (node.position === undefined)
+    throw new Error('the parsed node carries no position, though the parser sets one on every node',);
+  return node.position;
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -176,6 +207,147 @@ await describe({
             const refusal = mdxRefusal();
 
             expect(namesWithoutQuoting(refusal,),).toBe(true,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'A leading byte order mark',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEEPS every strict-grammar offset in the body as written, the mark counted, so the first paragraph '
+            + 'starts after it',
+          fn: async () => {
+            /**
+             Root the strict grammar builds for a body opening with the mark.
+             */
+            const root = parseMdxBody({ body: MARKED_BODY, },);
+
+            expect(root.position,).toEqual({
+              start: { line: 1, column: 1, offset: 0, },
+              end: { line: 4, column: 1, offset: MARKED_BODY.length, },
+            },);
+            expect(root.children.map(positionOf,),).toEqual([
+              {
+                start: { line: 1, column: 2, offset: 1, },
+                end: { line: 1, column: 15, offset: 14, },
+              },
+              {
+                start: { line: 3, column: 1, offset: 16, },
+                end: { line: 3, column: 12, offset: 27, },
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'KEEPS every plain-markdown offset in the body as written, the mark counted, so the first paragraph '
+            + 'starts after it',
+          fn: async () => {
+            /**
+             Root the plain grammar builds for a body opening with the mark.
+             */
+            const root = parseMarkdownBody({ body: MARKED_BODY, },);
+
+            expect(root.position,).toEqual({
+              start: { line: 1, column: 1, offset: 0, },
+              end: { line: 4, column: 1, offset: MARKED_BODY.length, },
+            },);
+            expect(root.children.map(positionOf,),).toEqual([
+              {
+                start: { line: 1, column: 2, offset: 1, },
+                end: { line: 1, column: 15, offset: 14, },
+              },
+              {
+                start: { line: 3, column: 1, offset: 16, },
+                end: { line: 3, column: 12, offset: 27, },
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'KEEPS the offsets of a tag, its attribute and the nodes nested in it, all in the body as written',
+          fn: async () => {
+            /**
+             Root the strict grammar builds for a marked body holding a tag with an attribute.
+             */
+            const root = parseMdxBody({ body: MARKED_TAG_BODY, },);
+            expect(root.children,).toEqual([
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Box',
+                attributes: [{
+                  type: 'mdxJsxAttribute',
+                  name: 'tone',
+                  value: 'warm',
+                  position: {
+                    start: { line: 1, column: 7, offset: 6, },
+                    end: { line: 1, column: 18, offset: 17, },
+                  },
+                },],
+                children: [{
+                  type: 'paragraph',
+                  children: [{
+                    type: 'text',
+                    value: 'The cat naps.',
+                    position: {
+                      start: { line: 3, column: 1, offset: 20, },
+                      end: { line: 3, column: 14, offset: 33, },
+                    },
+                  },],
+                  position: {
+                    start: { line: 3, column: 1, offset: 20, },
+                    end: { line: 3, column: 14, offset: 33, },
+                  },
+                },],
+                position: {
+                  start: { line: 1, column: 2, offset: 1, },
+                  end: { line: 5, column: 7, offset: 41, },
+                },
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES a mark that is not the first character where the parser counted it',
+          fn: async () => {
+            /**
+             Root of a body whose second paragraph opens with the mark.
+             */
+            const root = parseMdxBody({ body: 'The cat naps.\n\n\uFEFFSecond cat.\n', },);
+
+            expect(root.children.map(positionOf,),).toEqual([
+              {
+                start: { line: 1, column: 1, offset: 0, },
+                end: { line: 1, column: 14, offset: 13, },
+              },
+              {
+                start: { line: 3, column: 1, offset: 15, },
+                end: { line: 3, column: 13, offset: 27, },
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES the column of a first-line refusal in the body as written, the mark counted',
+          fn: async () => {
+            /**
+             Refusal for a stray closing tag after the mark.
+             */
+            const marked = caught(function parseMarked(): void {
+              parseMdxBody({ body: '\uFEFFThe cat naps </b> here\n', },);
+            },);
+            /**
+             Refusal for the same line without the mark.
+             */
+            const bare = caught(function parseBare(): void {
+              parseMdxBody({ body: 'The cat naps </b> here\n', },);
+            },);
+
+            if ((!(marked instanceof MdxParseError)) || (!(bare instanceof MdxParseError)))
+              throw new Error('both bodies are refused by the strict grammar',);
+            expect([marked.line, marked.column,],).toEqual([bare.line, (bare.column ?? 0) + 1,],);
           },
         },),
       ],

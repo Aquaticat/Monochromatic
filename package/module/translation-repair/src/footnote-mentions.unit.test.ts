@@ -51,6 +51,23 @@ function identifiersOf({ text, }: { readonly text: string; },): readonly string[
 }
 
 /**
+ Roles of the GFM mentions a text makes, in the scan's order.
+
+ @param text - text to scan
+
+ @returns One role per GFM mention
+ */
+function gfmRolesOf({ text, }: { readonly text: string; },): readonly string[] {
+  return footnoteMentions({ text, },)
+    .filter(function isGfm(mention,): boolean {
+      return mention.convention === 'gfm';
+    },)
+    .map(function roleOf(mention,): string {
+      return mention.role;
+    },);
+}
+
+/**
  A passage citing one note twice in GFM, once with a capital, and once in
  the full-width convention, then defining both; a GFM marker followed by its
  separator in the middle of a line stays a reference.
@@ -199,6 +216,70 @@ await describe({
                 identifier: '1',
               },
             ],);
+          },
+        },),
+        it({
+          name: 'READS A MARKER INDENTED FOUR SPACES OR A TAB AS A DEFINITION WHERE THE STRICT GRAMMAR ACCEPTS THE TEXT, '
+            + 'which has no indented code and is how the page is read when it accepts the page',
+          fn: async () => {
+            expect(gfmRolesOf({ text: 'The cat naps[^1].\n\n    [^1]: note\n', },),).toEqual(['reference', 'definition',],);
+            expect(gfmRolesOf({ text: 'The cat naps[^1].\n\n\t[^1]: note\n', },),).toEqual(['reference', 'definition',],);
+            expect(gfmRolesOf({ text: '    [^1]: note\n', },),).toEqual(['definition',],);
+          },
+        },),
+        it({
+          name: 'READS A MARKER INDENTED FOUR SPACES OR A TAB AS A REFERENCE WHERE THE STRICT GRAMMAR REFUSES THE TEXT, '
+            + 'plain markdown reading a code block or a line of the paragraph there, as the footnote graph reads a '
+            + 'page parsed as plain markdown',
+          fn: async () => {
+            expect(gfmRolesOf({ text: 'The cat naps[^1].\n\n    [^1]: note\n\nA <br> here.\n', },),).toEqual([
+              'reference',
+              'reference',
+            ],);
+            expect(gfmRolesOf({ text: 'The cat naps[^1].\n\n\t[^1]: note\n\nA <br> here.\n', },),).toEqual([
+              'reference',
+              'reference',
+            ],);
+            expect(gfmRolesOf({ text: 'The cat naps[^1].\n    [^1]: note\n\nA <br> here.\n', },),).toEqual([
+              'reference',
+              'reference',
+            ],);
+            expect(gfmRolesOf({ text: '    [^1]: note\n\nA <br> here.\n', },),).toEqual(['reference',],);
+          },
+        },),
+        it({
+          name: 'READS A MARKER INDENTED THREE SPACES AS A DEFINITION under either grammar',
+          fn: async () => {
+            expect(gfmRolesOf({ text: 'The cat naps[^1].\n\n   [^1]: note\n', },),).toEqual(['reference', 'definition',],);
+            expect(gfmRolesOf({ text: 'The cat naps[^1].\n\n   [^1]: note\n\nA <br> here.\n', },),).toEqual([
+              'reference',
+              'definition',
+            ],);
+          },
+        },),
+        it({
+          name: 'READS A MARKER IN A CONTAINER TAG AS A DEFINITION, the container dissolved as the footnote graph '
+            + 'dissolves it',
+          fn: async () => {
+            expect(gfmRolesOf({ text: '<Box>\n\n[^1]: note\n\n</Box>\n\nThe cat naps[^1].\n', },),).toEqual([
+              'definition',
+              'reference',
+            ],);
+          },
+        },),
+        it({
+          name: 'READS A MARKER IN A LIST ITEM OR IN ANOTHER DEFINITION AS A REFERENCE, which the footnote graph does '
+            + 'not read as a definition under either grammar',
+          fn: async () => {
+            expect(gfmRolesOf({ text: '- a cat\n\n      [^1]: note\n', },),).toEqual(['reference',],);
+            expect(gfmRolesOf({ text: '[^2]: first\n\n    [^1]: note\n', },),).toEqual(['definition', 'reference',],);
+          },
+        },),
+        it({
+          name: 'READS THE LINE ALONE WHERE PLAIN MARKDOWN REFUSES THE TEXT for its nesting, a marker opening its line '
+            + 'before its separator being a definition',
+          fn: async () => {
+            expect(gfmRolesOf({ text: `${'>'.repeat(16_000,)} cat\n\n[^1]: note\n`, },),).toEqual(['definition',],);
           },
         },),
         it({

@@ -128,6 +128,31 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES A SIGNER THAT SHOWS A READER NOTHING, a zero-width space or a Hangul filler among spaces '
+        + 'or alone, and asks for the reading with its meaning as it does of a signer left in Han',
+      fn: async () => {
+        for (const rendering of [
+          '\u{200B}',
+          '\u{3164}',
+          ' \u{200B}\u{3164} ',
+        ]) {
+          expect(findingsFor({
+            candidateText: `The cat sleeps on the windowsill.\n\n——${rendering}, 2021`,
+          },),).toEqual([`The signature names 橘猫 and your translation signs it with nothing a reader can see. ${INSTRUCTION}`,],);
+        }
+      },
+    },),
+    it({
+      name: 'TAKES NO PAGE SIGNER THAT SHOWS A READER NOTHING for a rendering that governs the signer, so a bare '
+        + 'reading is still refused beside it',
+      fn: async () => {
+        expect(findingsFor({
+          candidateText: 'The cat sleeps on the windowsill.\n\n—— Jumao, 2021',
+          pageText: 'The cat sleeps on the windowsill.\n\n——\u{200B}, 2021',
+        },),).toEqual([unglossedFinding({ bare: 'Jumao', },),],);
+      },
+    },),
+    it({
       name: 'PASSES THE READING WITH ITS MEANING in parentheses',
       fn: async () => {
         expect(findingsFor({

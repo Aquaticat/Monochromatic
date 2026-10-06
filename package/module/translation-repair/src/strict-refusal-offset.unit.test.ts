@@ -97,5 +97,26 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'NAMES THE OFFSET IN THE TEXT AS WRITTEN for a refusal on the first line of a document opening with a byte '
+        + 'order mark, the mark counted',
+      fn: async () => {
+        expect(strictRefusalOffset({ text: 'The cat naps </b> here\n', },),).toEqual({ refused: true, offset: 15, },);
+        expect(strictRefusalOffset({ text: '\uFEFFThe cat naps </b> here\n', },),).toEqual({
+          refused: true,
+          offset: 16,
+        },);
+      },
+    },),
+    it({
+      name: 'NAMES THE OFFSET IN THE TEXT AS WRITTEN for a refusal after the first line of a document opening with a '
+        + 'byte order mark, the mark counted',
+      fn: async () => {
+        expect(strictRefusalOffset({ text: `\uFEFF${OPEN_IN_PARAGRAPH}`, },),).toEqual({
+          refused: true,
+          offset: OPEN_IN_PARAGRAPH.indexOf('\n',) + 1,
+        },);
+      },
+    },),
   ],
 },);

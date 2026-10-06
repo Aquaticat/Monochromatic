@@ -549,7 +549,6 @@ const ALLOWLIST: readonly string[] = [
   'src/active-footnote-markers.ts',
   'src/align-blocks-walk.ts',
   'src/apply-patch-markup.ts',
-  'src/archive-block-evidence.ts',
   'src/archive-block-naturalness.ts',
   'src/archive-block-selection-evidence.ts',
   'src/archive-replacement-candidates.ts',

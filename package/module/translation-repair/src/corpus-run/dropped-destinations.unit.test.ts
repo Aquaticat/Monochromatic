@@ -219,6 +219,39 @@ await describe({
         },),
 
         it({
+          name: 'SHEDS the emphasis marks and the tilde that the parse\'s trail rule reads as trailing, before a '
+            + 'closing parenthesis, before a space and before sentence punctuation',
+          fn: async () => {
+            expect(scanUrlRuns({
+              text: 'see https://cat.example/a_(b_) and https://cat.example/c* and https://cat.example/d~) and '
+                + 'https://cat.example/e_.) too',
+            },),).toStrictEqual([
+              'https://cat.example/a_(b',
+              'https://cat.example/c',
+              'https://cat.example/d',
+              'https://cat.example/e',
+            ],);
+            expect(scanUrlRuns({
+              text: 'see https://cat.example/nap_ then https://cat.example/loaf*. and https://cat.example/paw~, then',
+            },),).toStrictEqual([
+              'https://cat.example/nap',
+              'https://cat.example/loaf',
+              'https://cat.example/paw',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'CUTS a run once, where the characters after it can be read: a trailing mark before a closing '
+            + 'parenthesis that the run goes on past stays in the run, as the tree reader keeps it',
+          fn: async () => {
+            expect(scanUrlRuns({ text: 'see https://cat.example/(nap)b(?))c#) now', },),).toStrictEqual([
+              'https://cat.example/(nap)b(?)',
+            ],);
+          },
+        },),
+
+        it({
           name: 'SHEDS the sentence punctuation before the stopper that ends a run',
           fn: async () => {
             expect(scanUrlRuns({
@@ -347,6 +380,26 @@ await describe({
                 ],
                 findings: [],
               },);
+          },
+        },),
+
+        it({
+          name: 'SHEDS the emphasis marks and the tilde before a closing parenthesis from an autolink literal, as the '
+            + 'scanner reads the same run',
+          fn: async () => {
+            expect(markdownDestinations({
+              text: 'see https://cat.example/a_(b_) and https://cat.example/c* and https://cat.example/d~) and '
+                + 'https://cat.example/e_.) too and https://cat.example/(nap)b(?))c#) now',
+            },),).toStrictEqual({
+              urls: [
+                'https://cat.example/a_(b',
+                'https://cat.example/c',
+                'https://cat.example/d',
+                'https://cat.example/e',
+                'https://cat.example/(nap)b(?)',
+              ],
+              findings: [],
+            },);
           },
         },),
 

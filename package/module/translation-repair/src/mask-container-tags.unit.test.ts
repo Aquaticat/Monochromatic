@@ -10,6 +10,7 @@
  @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -18,9 +19,187 @@ import {
 
 import {
   maskLoneContainerTags,
+  parseMdxBody,
+  requireMdxRefusal,
 } from '../dist/final/node/index.mjs';
 
 //region Mask container tags tests
+
+/**
+ Whitespace the strict grammar steps over between a tag's name and the rest of
+ the tag (`unicodeWhitespace` of `micromark-util-character`, which is the
+ ECMAScript `\s`), less the line feed, which a one-line read cannot hold.
+ */
+const STEPPED_OVER: readonly string[] = [
+  '\t',
+  '\u{000B}',
+  '\u{000C}',
+  '\r',
+  ' ',
+  '\u{00A0}',
+  '\u{1680}',
+  '\u{2000}',
+  '\u{2001}',
+  '\u{2002}',
+  '\u{2003}',
+  '\u{2004}',
+  '\u{2005}',
+  '\u{2006}',
+  '\u{2007}',
+  '\u{2008}',
+  '\u{2009}',
+  '\u{200A}',
+  '\u{2028}',
+  '\u{2029}',
+  '\u{202F}',
+  '\u{205F}',
+  '\u{3000}',
+  '\u{FEFF}',
+];
+
+/**
+ Characters the strict grammar refuses there, which look like whitespace or
+ like nothing: a zero-width space, a next line mark, a Mongolian vowel
+ separator, a word joiner, the zero-width joiners, a soft hyphen, a Hangul
+ filler, a combining grapheme joiner and a letter.
+ */
+const REFUSED: readonly string[] = [
+  '\u{200B}',
+  '\u{0085}',
+  '\u{180E}',
+  '\u{2060}',
+  '\u{200C}',
+  '\u{200D}',
+  '\u{00AD}',
+  '\u{3164}',
+  '\u{034F}',
+  'x',
+];
+
+/**
+ One place a separator may stand in a tag, as the document the strict grammar
+ is asked and the slice the masker is handed.
+
+ @example
+ ```ts
+ const form: SeparatorForm = { form: 'closer', grammar: '</b >', slice: '</b >', };
+ ```
+ */
+type SeparatorForm = {
+  /**
+   Where in a tag the separator stands.
+   */
+  readonly form: string;
+
+  /**
+   Document the grammar reads whole when the separator is whitespace to it.
+   */
+  readonly grammar: string;
+
+  /**
+   Slice the masker finds every tag of paired when the separator is whitespace to it.
+   */
+  readonly slice: string;
+};
+
+/**
+ The places a separator may stand in a tag: before an opener's bracket,
+ before an opener's attribute, before a closer's bracket, and before the
+ bracket of a tag that shares its line with content. A tag sharing its line
+ cannot be half of a whole element to the grammar, which pairs a block tag with
+ a block tag, so the grammar is asked of the same tag inside one line of text
+ and the masker of it beside a tag line.
+
+ @param separator - what stands between the name and the rest of the tag
+
+ @returns The forms, in a fixed order
+
+ @example
+ ```ts
+ const forms = separatorForms({ separator: '\u{00A0}', },);
+ ```
+ */
+function separatorForms({ separator, }: { readonly separator: string; },): readonly SeparatorForm[] {
+  /**
+   The forms whose tag stands inside a line of text, which a carriage return
+   cannot be asked of: Markdown reads it there as a line ending, and the
+   grammar refuses the tag that crosses one.
+   */
+  const sharing: readonly SeparatorForm[] = (separator === '\r')
+    ? []
+    : [
+      {
+        form: 'opener sharing its line with content',
+        grammar: `A <blockquote${separator}>cat</blockquote> naps.\n`,
+        slice: `A <blockquote${separator}>cat naps.\n\n</blockquote>\n`,
+      },
+      {
+        form: 'closer sharing its line with content',
+        grammar: `A <blockquote>cat</blockquote${separator}> naps.\n`,
+        slice: `<blockquote>\n\nA cat naps.</blockquote${separator}>\n`,
+      },
+    ];
+  return [
+    {
+      form: 'opener before its bracket',
+      grammar: `<details${separator}>\n\nA cat naps.\n\n</details>\n`,
+      slice: `<details${separator}>\n\nA cat naps.\n\n</details>\n`,
+    },
+    {
+      form: 'opener before its attribute',
+      grammar: `<details${separator}open>\n\nA cat naps.\n\n</details>\n`,
+      slice: `<details${separator}open>\n\nA cat naps.\n\n</details>\n`,
+    },
+    {
+      form: 'closer before its bracket',
+      grammar: `<details>\n\nA cat naps.\n\n</details${separator}>\n`,
+      slice: `<details>\n\nA cat naps.\n\n</details${separator}>\n`,
+    },
+    ...sharing,
+  ];
+}
+
+/**
+ Whether the strict grammar reads a document whole.
+
+ @param document - document under the grammar
+
+ @returns True when the grammar accepts it
+
+ @example
+ ```ts
+ const accepted = grammarAccepts({ document: '<details>\n\nA cat naps.\n\n</details>\n', },);
+ ```
+ */
+function grammarAccepts({ document, }: { readonly document: string; },): boolean {
+  try {
+    parseMdxBody({ body: document, },);
+    return true;
+  }
+  catch (error) {
+    // Only the grammar's own refusal reads as a document it does not accept.
+    requireMdxRefusal({ error, },);
+    return false;
+  }
+}
+
+/**
+ Whether the masker finds every tag of a document paired, masking none.
+
+ @param document - document under the masker
+
+ @returns True when no tag is reported lone
+
+ @example
+ ```ts
+ const paired = maskerPairs({ document: '<details>\n\nA cat naps.\n\n</details>\n', },);
+ ```
+ */
+function maskerPairs({ document, }: { readonly document: string; },): boolean {
+  return maskLoneContainerTags({ text: document, },)
+    .tags
+    .length === 0;
+}
 
 await describe({
   name: maskLoneContainerTags.name,
@@ -96,6 +275,107 @@ await describe({
           masked: '<details>\n\nA cat naps.\n\n</details\t>\n',
           tags: [],
         },);
+      },
+    },),
+    it({
+      name: 'READS AS WHITESPACE EVERY SEPARATOR THE STRICT GRAMMAR STEPS OVER inside a tag, before its bracket or its '
+        + 'attribute, a tag sharing its line with content included, and no spelling the grammar refuses',
+      fn: async () => {
+        /**
+         Every form of every separator with the grammar's verdict and the masker's.
+         */
+        const verdicts = [
+          ...STEPPED_OVER,
+          ...REFUSED,
+        ].flatMap(function formsOf(separator,) {
+          return separatorForms({ separator, },)
+            .map(function verdictOf({
+              form,
+              grammar,
+              slice,
+            },) {
+              return {
+                spelling: `${form} with U+${
+                  nonNullishOrThrow(separator.codePointAt(0,),)
+                    .toString(16,)
+                    .toUpperCase()
+                    .padStart(
+                      4,
+                      '0',
+                    )
+                }`,
+                grammar: grammarAccepts({ document: grammar, },),
+                masker: maskerPairs({ document: slice, },),
+              };
+            },);
+        },);
+        expect(verdicts.filter(function refused({ grammar, },): boolean {
+          return !grammar;
+        },).length,).toBe(5 * REFUSED.length,);
+        expect(verdicts.filter(function accepted({ grammar, },): boolean {
+          return grammar;
+        },).length,).toBe((5 * STEPPED_OVER.length) - 2,);
+        expect(verdicts.filter(function disagrees({
+          grammar,
+          masker,
+        },): boolean {
+          return grammar !== masker;
+        },).map(function spellingOf({ spelling, },): string {
+          return spelling;
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'MASKS A LONE OPENER WHOSE TAG CROSSES A LINE BREAK, which the strict grammar steps over as whitespace, '
+        + 'keeping the line breaks so every line is where it stood',
+      fn: async () => {
+        expect(maskLoneContainerTags({ text: '<details\n  open>\n\nA cat naps.\n', },),).toEqual({
+          masked: `${' '.repeat(8,)}\n${' '.repeat(7,)}\n\nA cat naps.\n`,
+          tags: [{
+            kind: 'open',
+            name: 'details',
+            text: '<details\n  open>',
+            startOffset: 0,
+            endOffset: 16,
+          },],
+        },);
+      },
+    },),
+
+    it({
+      name: 'MASKS A LONE CLOSER WHOSE BRACKET STANDS ON THE NEXT LINE, and pairs an opener across lines with its closer',
+      fn: async () => {
+        expect(maskLoneContainerTags({ text: 'A cat naps.\n\n</details\n>\n', },),).toEqual({
+          masked: `A cat naps.\n\n${' '.repeat(9,)}\n${' '.repeat(1,)}\n`,
+          tags: [{
+            kind: 'close',
+            name: 'details',
+            text: '</details\n>',
+            startOffset: 13,
+            endOffset: 24,
+          },],
+        },);
+        expect(maskLoneContainerTags({ text: '<details\n  open>\n\nA cat naps.\n\n</details>\n', },),).toEqual({
+          masked: '<details\n  open>\n\nA cat naps.\n\n</details>\n',
+          tags: [],
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS NO TAG in a line opening like one that no bracket ends before a blank line or that text follows '
+        + 'the bracket of, which is prose',
+      fn: async () => {
+        for (const text of [
+          '<b a cat naps\n\nand a bracket > much later\n',
+          '<b\n> and a cat naps\n',
+          '<b a cat naps\n',
+        ]) {
+          expect(maskLoneContainerTags({ text, },),).toEqual({
+            masked: text,
+            tags: [],
+          },);
+        }
       },
     },),
   ],

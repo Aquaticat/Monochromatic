@@ -323,5 +323,76 @@ await describe({
         },),
       ],
     },),
+    describe({
+      name: 'A leading byte order mark',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ANCHORS every block at the characters it is made of, the mark left outside the first one',
+          fn: async () => {
+            /**
+             Document opening with the mark, then two paragraphs.
+             */
+            const doc = parseDocument({ text: '\uFEFFThe cat naps.\n\nSecond cat.\n', },);
+
+            expect(doc.nodes.map(function offsetsAndText(node,) {
+              return [node.startOffset, node.endOffset, node.text,];
+            },),).toEqual([
+              [1, 14, 'The cat naps.',],
+              [16, 27, 'Second cat.',],
+            ],);
+          },
+        },),
+        it({
+          name: 'ANCHORS every block after front matter at the characters it is made of, a mark opening the body '
+            + 'left outside the first one',
+          fn: async () => {
+            /**
+             Document whose body, not the document, opens with the mark.
+             */
+            const doc = parseDocument({ text: '---\nname: cat\n---\n\uFEFFThe cat naps.\n', },);
+
+            expect(doc.nodes.map(function offsetsAndText(node,) {
+              return [node.startOffset, node.endOffset, node.text,];
+            },),).toEqual([[19, 32, 'The cat naps.',],],);
+          },
+        },),
+        it({
+          name: 'PLACES both tags of a container and the block between them at the characters they are made of',
+          fn: async () => {
+            /**
+             Document opening with the mark, then a container around one paragraph.
+             */
+            const doc = parseDocument({ text: '\uFEFF<Box>\n\nA cat.\n\n</Box>\n', },);
+
+            expect(doc.containers,).toEqual([{
+              name: 'Box',
+              openerStartOffset: 1,
+              openerEndOffset: 8,
+              closerStartOffset: 14,
+              closerEndOffset: 22,
+            },],);
+            expect(doc.nodes.map(function offsetsAndText(node,) {
+              return [node.startOffset, node.endOffset, node.text,];
+            },),).toEqual([[1, 22, '<Box>\n\nA cat.\n\n</Box>',],],);
+          },
+        },),
+        it({
+          name: 'PLACES a footnote reference at the character it is written at',
+          fn: async () => {
+            /**
+             Document opening with the mark, then a paragraph with a reference and its definition.
+             */
+            const doc = parseDocument({ text: '\uFEFFThe cat[^1] naps.\n\n[^1]: note.\n', },);
+
+            expect(doc.footnoteGraph,).toEqual({
+              references: [{ convention: 'gfm', identifier: '1', nodeId: 'block/0', offset: 8, },],
+              definitions: [{ convention: 'gfm', identifier: '1', nodeId: 'block/1', },],
+              findings: [],
+            },);
+          },
+        },),
+      ],
+    },),
   ],
 },);

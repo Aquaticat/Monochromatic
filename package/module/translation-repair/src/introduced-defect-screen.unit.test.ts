@@ -542,6 +542,45 @@ await describe({
         },),
 
         it({
+          name: 'KEEPS A CLAIM CORROBORATED where the only prior quote of the accepted issue is one invisible '
+            + 'character the claim\'s wording happens to carry, which shows a reader nothing to restate '
+            + '(ledgers B40 and B195)',
+          fn: async () => {
+            /**
+             Region whose replacement carries a zero-width space and a Hangul filler inside the claimed wording.
+             */
+            const spaced: RepairRegion = {
+              envelopeId: 'envelope/spaced',
+              issueIds: ['adjudicated/nap',],
+              before: 'The cat is doing the sleeping.',
+              editorAfter: 'The cat\u{200B} sleeps\u{3164}.',
+            };
+            /**
+             Tallies under each invisible prior quote.
+             */
+            const tallies = [
+              '\u{200B}',
+              '\u{3164}',
+            ].map(function screened(invisible,) {
+              const [tally,] = screenIntroducedDefects({
+                regions: [spaced,],
+                ballots: {
+                  'hf:cat/one': [catCheck({
+                    verdict: 'introduced-defect',
+                    evidence: 'cat\u{200B} sleeps\u{3164}',
+                  },),],
+                },
+                issues: [catIssue({ quotedText: invisible, },),],
+              },);
+              return [tally?.corroborated, tally?.preExisting,];
+            },);
+            expect(tallies,).toEqual([
+              [1, 0,],
+              [1, 0,],
+            ],);
+          },
+        },),
+        it({
           name: 'drops a check whose verdict is outside the vocabulary instead of '
             + 'folding it into uncertain, so schema noise never reads as doubt',
           fn: async () => {
