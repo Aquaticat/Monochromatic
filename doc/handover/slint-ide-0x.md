@@ -134,39 +134,45 @@ the items after it are the record of 2026-10-05 and older.
   lint;
   96 passing library and integration result lines;
   102 of 102 native tests with 4 ignored measurements skipped.
+- Landed on `main` as merge `906ee5aed`:
+  the logging rework (`feat/ide-logging` through `2572405cc`)
+  and hint and diagnostic rows above the code line with gutter severity letters
+  (`feat/ide-hint-rows` through `b05776ede`).
+  Gate at the integration commit `93f9f4891`
+  (IDE tree `53fd6b369da8be4ea65c447cb2a4f2a6dd219897`, load 75 to 98):
+  lint;
+  99 passing library and integration result lines;
+  112 of 112 native tests with 4 ignored measurements skipped.
+  The merge resolved nine conflicted files by keeping both sides;
+  the three tests with a hard-coded `TEXT_LEFT` of 313 now take `sidebar_tests::TEXT_LEFT`
+  (256 + 1 + 58 = 315).
+  An earlier gate of the logging merge alone failed on two known timing tests,
+  which `fix/ide-test-flakes` owns.
+  UI batch 3 was asked with the page `package/desktop-app/ide/design/questions/2026-10-06-ui-batch-3.html`;
+  every answer matches what the build ships.
 - Agents at work,
-  each in its own worktree from `main` at `45db45d02` unless noted:
-  - `feat/ide-hint-rows` (`.claude/worktrees/ide-hint-rows`, from `930d69fbb`):
-    hints and diagnostic messages on virtual rows above the code line,
-    grouped with it by spacing,
-    severity letters in the gutter;
-    then comparison frames for UI batch 3 on `prototype/ide-hint-row-variants`.
-    Brief: `~/temp/agent/ide-gate-logs-20261005/agent-w-hint-rows-brief.md` plus the severity-letter decision.
-    Expect conflicts with `main` in the row-height uses and `TEXT_LEFT` (360 on that branch's base, 313 on `main`).
-  - `feat/ide-logging` (`.claude/worktrees/ide-logging`):
-    re-labelling helix-lsp's healthy-server ERROR records,
-    warnings by default with `RUST_LOG`,
-    and log writing off the interface thread.
+  each in its own worktree on a branch not yet merged:
   - `feat/ide-single-file` (`.claude/worktrees/ide-single-file`):
-    one executable carrying its runtime,
-    never reading the user's Helix runtime directory,
-    the home folder as the default project,
-    a Wayland app id,
-    an `install` task,
-    and the sibling task names.
+    one executable carrying its runtime (done, gated on `13ac7c9a7`),
+    plus the user's follow-up answers:
+    no special handling for a loose file in the home folder,
+    removal of other builds' grammar folders after 30 days unused,
+    and `--licenses`.
   - `fix/ide-watch-save` (`.claude/worktrees/ide-watch-save`):
-    a sweep read never shows a file mid-save,
-    fewer inotify watches with quiet back-off at the limit,
-    `--network=none` for the package's offline podman tasks,
-    and no warning or full reread for a displayed file outside the project.
+    quiet reads, the watch-limit back-off, `--network=none`, and outside-project files (done, gated on `1a95d6a55`),
+    plus an IDE-owned project watcher that reports changes to the language servers
+    (rust-analyzer switches to client-side watching)
+    and no warning for plain text files.
   - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`):
     the timing failures seen in the gates,
     an older hint answer replacing a newer window's,
     and an unversioned diagnostics push dropped during the hold after a reload.
-- Waiting for an agent slot
-  (the harness runs at most five agents):
-  rerunnable accessibility tests with Slint's testing crate (user-approved),
-  and comparison frames for UI batch 2's open choices and the watch-limit message.
+  - `feat/ide-logging` (same worktree, on top of the landed commits):
+    each server's last output lines in the warning when it stops unexpectedly.
+  - `feat/ide-accessibility-tests` (`.claude/worktrees/ide-a11y`):
+    rerunnable accessibility tests with Slint's testing crate,
+    and comparison frames for UI batch 2's open choices and the watch-limit message
+    (prototype branch `prototype/ide-batch-2-choices`).
 - Inotify:
   on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
   about 462000 of them by `git fsmonitor--daemon` processes
