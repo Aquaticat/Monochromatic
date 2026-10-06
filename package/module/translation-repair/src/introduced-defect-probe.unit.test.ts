@@ -62,6 +62,8 @@ const REGION: RepairRegion = {
 
  @param silentModelIds - probers whose voice is always lost
 
+ @param twiceModelIds - probers that answer the region twice
+
  @param prompts - shared log of every user sheet the stage sent
 
  @returns Client the stage calls
@@ -76,11 +78,13 @@ function catClient(
     verdict = 'no-introduced-defect-found',
     evidence = '',
     silentModelIds = [],
+    twiceModelIds = [],
     prompts = [],
   }: {
     readonly verdict?: string;
     readonly evidence?: string;
     readonly silentModelIds?: readonly string[];
+    readonly twiceModelIds?: readonly string[];
     readonly prompts?: string[];
   },
 ): SyntheticClient {
@@ -107,19 +111,20 @@ function catClient(
       /**
        One check for the single fixture region.
        */
-      const scripted: unknown = {
-        checks: [
-          {
-            region: 1,
-            verdict,
-            category: '',
-            severity: '',
-            evidence,
-            omittedText: '',
-            reason: '',
-          },
-        ],
+      const check = {
+        region: 1,
+        verdict,
+        category: '',
+        severity: '',
+        evidence,
+        omittedText: '',
+        reason: '',
       };
+
+      /**
+       The reply, with the check cast twice by a prober that answers twice.
+       */
+      const scripted: unknown = { checks: twiceModelIds.includes(request.modelId,) ? [check, check,] : [check,], };
       if (!request.validate(scripted,))
         throw new Error('scripted payload failed the guard',);
       return {
@@ -183,6 +188,28 @@ await describe({
         expect(report.regions,).toHaveLength(1,);
         expect(report.regions[0]
           ?.noneFound,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'REPORTS A PROBER THAT ANSWERS ONE REGION TWICE as a duplicate-check finding under its model id, '
+        + 'and counts its first check once',
+      fn: async () => {
+        const report = await runIntroducedDefectProbe({
+          client: catClient({ twiceModelIds: [SEAT_HYPER_OPENROUTER_UNMEASURED,], },),
+          proberModelIds: PROBERS,
+          sourceText: '猫在睡觉。',
+          baselineText: REGION.before,
+          regions: [REGION,],
+          issues: [],
+          identityContext: '',
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect(report.findings,).toEqual([`${SEAT_HYPER_OPENROUTER_UNMEASURED}: duplicate-check (1)`,],);
+        expect(report.regions[0]
+          ?.noneFound,).toBe(PROBERS.length,);
       },
     },),
 

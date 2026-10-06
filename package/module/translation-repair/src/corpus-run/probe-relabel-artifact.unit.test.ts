@@ -622,6 +622,34 @@ await describe({
         await expect(refusal,).rejects.toThrow('introducedDefects.region.envelopeId',);
       },
     },),
+    it({
+      name: 'REFUSES A SECOND PROBED REGION UNDER ONE ENVELOPE ID, naming the position of the second and '
+        + 'quoting no stored value',
+      fn: async () => {
+        /**
+         Reading of a lane whose probe block tallies one envelope twice, with different counts.
+         */
+        const refusal = recordsOf({
+          artifact: settledArtifact({
+            issues: [{
+              ...(issueRecord({ withRegions: true, },) as Record<string, unknown>),
+              introducedDefects: {
+                regions: [
+                  { envelopeId: ENVELOPE_ID, corroborated: 2, },
+                  { envelopeId: 'envelope/mew', corroborated: 1, },
+                  { envelopeId: ENVELOPE_ID, noneFound: 3, },
+                ],
+              },
+            },],
+          },),
+        },);
+        await expect(refusal,).rejects.toBeInstanceOf(ArtifactParseError,);
+        await expect(refusal,).rejects.toThrow(
+          'artifact parse failed at introducedDefects.regions[2].envelopeId: expected '
+            + 'an envelope id no earlier region of this record carries.',
+        );
+      },
+    },),
   ],
   concurrency: 1,
 },);

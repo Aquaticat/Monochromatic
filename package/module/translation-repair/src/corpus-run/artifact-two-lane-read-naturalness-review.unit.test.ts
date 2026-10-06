@@ -9,6 +9,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -274,6 +275,29 @@ const CONFIRMED_CHAINED_REVIEW = {
 };
 
 /**
+ Schema-nine chain whose second correction returns to the text the first
+ round reviewed, so one candidate stands in two decisive rounds, with the
+ acceptance confirmation of that candidate.
+ */
+const REVISITING_REVIEW = {
+  ...CHAINED_REVIEW,
+  corrections: [
+    CHAINED_REVIEW.corrections[0],
+    {
+      inputDigest: hashContent({ content: FIRST_CORRECTION_TEXT, },),
+      findingsDigest: hashContent({ content: JSON.stringify(SECOND_FINDINGS,), },),
+      gatedTextDigest: hashContent({ content: INITIAL_TEXT, },),
+    },
+  ],
+  rounds: [
+    CHAINED_REVIEW.rounds[0],
+    CHAINED_REVIEW.rounds[1],
+    acceptableRound({ text: INITIAL_TEXT, },),
+  ],
+  confirmations: [acceptableRound({ text: INITIAL_TEXT, },),],
+};
+
+/**
  Reads a review expecting the refusal of one check, named by the path and
  reason its message carries.
 
@@ -481,6 +505,31 @@ await describe({
             correctionChainRequired: true,
           },);
         }
+      },
+    },),
+
+    it({
+      name: 'REFUSES A CONFIRMATION THAT FITS TWO DECISIVE ROUNDS, since a chain that returns to a reviewed '
+        + 'candidate leaves the confirmation naming neither round',
+      fn: async () => {
+        /**
+         The read of the revisiting chain.
+         */
+        function readRevisiting(): unknown {
+          return parseNaturalnessReview({
+            value: REVISITING_REVIEW,
+            path: REVIEW_PATH,
+            finalText: INITIAL_TEXT,
+            correctionChainRequired: true,
+          },);
+        }
+        /** What the read threw. */
+        const refusal = caught(readRevisiting,);
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect(String(refusal,),).toBe(
+          `ArtifactParseError: artifact parse failed at ${REVIEW_PATH}.confirmations[0]: expected `
+            + 'a confirmation that fits one decisive review round, not several.',
+        );
       },
     },),
 

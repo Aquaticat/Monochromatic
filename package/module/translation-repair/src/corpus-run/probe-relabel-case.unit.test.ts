@@ -29,6 +29,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -126,6 +127,16 @@ const FIRST_SOURCE = '## 第一节\n\n猫坐在垫子上。';
  Source of the section holding {@link SECOND_WORDING}.
  */
 const SECOND_SOURCE = '## 第二节\n\n小猫在楼梯上看着。';
+
+/**
+ Source page whose two sections carry one wording.
+ */
+const REPEATED_SOURCE_TEXT = '## 第一节\n\n猫坐在垫子上。\n\n## 第二节\n\n猫坐在垫子上。\n';
+
+/**
+ Translation of that page, both sections carrying {@link FIRST_WORDING}.
+ */
+const REPEATED_TARGET_TEXT = `## Section One\n\n${FIRST_WORDING}\n\n## Section Two\n\n${FIRST_WORDING}\n`;
 
 /**
  Wording no slice carries, standing in for a re-carve that drifted.
@@ -243,6 +254,29 @@ await describe({
       name: 'SAYS what a missing slice means, so the refusal is actionable',
       fn: async () => {
         expect(refuseMissingSlice,).toThrow('slicing no longer reproduces the run',);
+      },
+    },),
+    it({
+      name: 'REFUSES when more than one slice carries the replaced text, since the prompt would be rebuilt '
+        + 'from whichever came first',
+      fn: async () => {
+        /**
+         What the lookup raised over two sections that both carry the wording.
+         */
+        const refusal = caught(function locatesAmbiguously(): unknown {
+          return locateSlice({
+            sourceText: REPEATED_SOURCE_TEXT,
+            targetText: REPEATED_TARGET_TEXT,
+            before: FIRST_WORDING,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect(String(refusal,),).toBe(
+          `ArtifactParseError: artifact parse failed at slice holding the replaced text of ${
+            String(FIRST_WORDING.length,)
+          } characters: expected present in one slice; more than one slice carries it, so which of them `
+            + 'production sent cannot be read.',
+        );
       },
     },),
     //region Relabel case gathering cases

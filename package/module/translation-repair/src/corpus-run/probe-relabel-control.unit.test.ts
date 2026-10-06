@@ -28,11 +28,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ArtifactParseError,
   buildSampleManifest,
   gatherControlCases,
   type RelabelCase,
 } from '../../dist/final/node/index.mjs';
 import { namingFixtureGit, } from '../archive-naming.test-fixture.ts';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
@@ -79,6 +81,16 @@ const SOURCE_TEXT = '猫坐在垫子上。\n';
  Translation of that page.
  */
 const TARGET_TEXT = 'The cat sits on the mat.\n';
+
+/**
+ Source page of the entry whose two sections carry one wording.
+ */
+const REPEATED_SOURCE_TEXT = '## 第一节\n\n猫坐在垫子上。\n\n## 第二节\n\n猫坐在垫子上。\n';
+
+/**
+ Translation of that page, both sections carrying the wording of {@link TARGET_TEXT}.
+ */
+const REPEATED_TARGET_TEXT = '## Section One\n\nThe cat sits on the mat.\n\n## Section Two\n\nThe cat sits on the mat.\n';
 
 /**
  Wording the entries' translations carry, so a control region naming it has a
@@ -148,6 +160,9 @@ async function fixturePin(
   await mkdir(join(cloneDir, 'people', 'Tabby',), { recursive: true, },);
   await writeFile(join(cloneDir, 'people', 'Tabby', 'page.md',), SOURCE_TEXT, 'utf8',);
   await writeFile(join(cloneDir, 'people', 'Tabby', 'page.en.md',), TARGET_TEXT, 'utf8',);
+  await mkdir(join(cloneDir, 'people', 'Calico',), { recursive: true, },);
+  await writeFile(join(cloneDir, 'people', 'Calico', 'page.md',), REPEATED_SOURCE_TEXT, 'utf8',);
+  await writeFile(join(cloneDir, 'people', 'Calico', 'page.en.md',), REPEATED_TARGET_TEXT, 'utf8',);
   await namingFixtureGit({ cloneDir, args: ['init', '--quiet',], },);
   await namingFixtureGit({ cloneDir, args: ['add', 'people',], },);
   await namingFixtureGit({
@@ -336,6 +351,34 @@ await describe({
           },],
         },);
         expect(controls,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A REGION whose replaced text more than one slice of the entry carries, since the control '
+        + 'would compare against whichever slice came first',
+      fn: async () => {
+        /**
+         What the gather raised over an entry with two sections carrying the wording.
+         */
+        const refusal = await rejectionOf(async function gathersAmbiguousControl(): Promise<unknown> {
+          return controlsFor({
+            entryId: 'Calico',
+            repairRegions: [{
+              envelopeId: 'env-three',
+              issueIds: ['adjudicated/naps',],
+              before: HELD_BEFORE,
+              editorAfter: 'The cat sat on the mat.',
+            },],
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect(String(refusal,),).toBe(
+          `ArtifactParseError: artifact parse failed at slice holding the replaced text of ${
+            String(HELD_BEFORE.length,)
+          } characters: expected present in one slice; more than one slice carries it, so which of them `
+            + 'production sent cannot be read.',
+        );
       },
     },),
 

@@ -31,6 +31,7 @@ import {
   type SettledAuditRow,
   textIdentityOf,
 } from '../../dist/final/node/index.mjs';
+import { statedRefusalMessage, } from '../stated-refusal-message.test-fixture.ts';
 
 /**
  Builds one audited slice carrying a stated number of anchored claims.
@@ -535,6 +536,155 @@ await describe({
                 texts: SAME_TEXTS,
               },),],
             },).paired.length,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A LATER RUN THAT NAMES ONE SUBJECT ON TWO ROWS, naming the rows by position and no '
+            + 'entry, since the later row would replace the first in the lookup the pairing reads',
+          fn: async () => {
+            expect(statedRefusalMessage({
+              read: function readsRepeatedLater(): unknown {
+                return auditRepeatsAcross({
+                  first: [rowFor({
+                    runSet: 'first',
+                    entryId: 'mittens',
+                    sliceIndex: 0,
+                    claims: 1,
+                    texts: SAME_TEXTS,
+                  },),],
+                  second: [
+                    rowFor({
+                      runSet: 'first',
+                      entryId: 'mittens',
+                      sliceIndex: 0,
+                      claims: 2,
+                      texts: SAME_TEXTS,
+                    },),
+                    rowFor({
+                      runSet: 'first',
+                      entryId: 'whiskers',
+                      sliceIndex: 0,
+                      claims: 3,
+                      texts: SAME_TEXTS,
+                    },),
+                    rowFor({
+                      runSet: 'first',
+                      entryId: 'mittens',
+                      sliceIndex: 0,
+                      claims: 4,
+                      texts: SAME_TEXTS,
+                    },),
+                  ],
+                },);
+              },
+            },),).toBe(
+              'the later run names one subject on two rows, row 0 and row 2, so which of them the pairing '
+                + 'should read cannot be told',
+            );
+          },
+        },),
+
+        it({
+          name: 'REFUSES AN EARLIER RUN THAT NAMES ONE SUBJECT ON TWO ROWS, since it would pair the later '
+            + 'row with both and count one audit twice in the band',
+          fn: async () => {
+            expect(statedRefusalMessage({
+              read: function readsRepeatedEarlier(): unknown {
+                return auditRepeatsAcross({
+                  first: [
+                    rowFor({
+                      runSet: 'first',
+                      entryId: 'mittens',
+                      sliceIndex: 0,
+                      claims: 1,
+                      texts: SAME_TEXTS,
+                    },),
+                    rowFor({
+                      runSet: 'first',
+                      entryId: 'mittens',
+                      sliceIndex: 0,
+                      claims: 2,
+                      texts: SAME_TEXTS,
+                    },),
+                  ],
+                  second: [rowFor({
+                    runSet: 'first',
+                    entryId: 'mittens',
+                    sliceIndex: 0,
+                    claims: 3,
+                    texts: SAME_TEXTS,
+                  },),],
+                },);
+              },
+            },),).toBe(
+              'the earlier run names one subject on two rows, row 0 and row 1, so which of them the pairing '
+                + 'should read cannot be told',
+            );
+          },
+        },),
+
+        it({
+          name: 'PAIRS A RUN WRITTEN BEFORE THE RENAME OF `chunkIndex` TO `sliceIndex` with a run of this '
+            + 'generation by that value, since the rename changed the field\'s name and not what it holds',
+          fn: async () => {
+            /**
+             Row as the earlier generation wrote it: its slice index under the old name.
+             */
+            const { sliceIndex: renamed, ...withoutSliceIndex } = rowFor({
+              runSet: 'first',
+              entryId: 'mittens',
+              sliceIndex: 4,
+              claims: 1,
+              texts: SAME_TEXTS,
+            },);
+            const old = [{ ...withoutSliceIndex, chunkIndex: renamed, },] as unknown as readonly SettledAuditRow[];
+            const { paired, } = auditRepeatsAcross({
+              first: old,
+              second: [rowFor({
+                runSet: 'first',
+                entryId: 'mittens',
+                sliceIndex: 4,
+                claims: 5,
+                texts: SAME_TEXTS,
+              },),],
+            },);
+            expect(paired.map(function sliceOf(pair,): number {
+              return pair.sliceIndex;
+            },),).toEqual([4,],);
+            expect(paired[0]?.left.claimed,).toBe(1,);
+            expect(paired[0]?.right.claimed,).toBe(5,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A ROW OF A RUN FILE WITH NO NAMEABLE SUBJECT, since a key built from a missing '
+            + 'entry or a non-numeric slice would join rows that name nothing',
+          fn: async () => {
+            /**
+             Rows as a run file parses to them: one with its entry id written as a number.
+             */
+            const parsed = [{
+              ...rowFor({
+                runSet: 'first',
+                entryId: 'mittens',
+                sliceIndex: 0,
+                claims: 1,
+                texts: SAME_TEXTS,
+              },),
+              entryId: 7,
+            },] as unknown as readonly SettledAuditRow[];
+            expect(statedRefusalMessage({
+              read: function readsUnnameable(): unknown {
+                return auditRepeatsAcross({
+                  first: [],
+                  second: parsed,
+                },);
+              },
+            },),).toBe(
+              'row 0 of the later run does not name its subject by a text run set, a text entry id and a '
+                + 'numeric slice index',
+            );
           },
         },),
       ],
