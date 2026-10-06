@@ -6,9 +6,7 @@ import { ProjectSearch, SearchEntry } from "search.slint";
 import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
 import { ReferenceList, ReferenceEntry } from "references.slint";
-import { AnnotationInk, SeverityMarker, SourceMarker } from "annotation.slint";
-// Prototype variant: the marker record is handed to native code, so the window exports it.
-export { SourceMarker }
+import { AnnotationInk, ProblemCard } from "annotation.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -165,8 +163,9 @@ export component AppWindow inherits Window {
     // The problems at the caret as one text, worst first and in full; empty when the caret touches no diagnostic.
     // It is not drawn: every message stands above its line. It starts the accessible description.
     in property <string> caret-problems;
-    // Prototype variant: severity markers after line ends, positioned from the shaped rows.
-    in property <[SourceMarker]> source-markers;
+    // Prototype variant: the caret card, hidden while a language surface is open.
+    in property <int> caret-problem-severity;
+    out property <bool> problem-card-visible: code-focus.has-focus && !root.language-surface-open && root.caret-problems != "";
     in property <string> source-text;
     in property <string> selected-text;
     in property <string> file-label: "Source-view verification";
@@ -426,13 +425,6 @@ export component AppWindow inherits Window {
                         font-size: root.font-size;
                     }
 
-                    // Prototype variant: one marker after the text of each line with messages, the worst severity.
-                    for marker in root.source-markers: SeverityMarker {
-                        x: root.gutter-width + marker.x * 1px;
-                        y: marker.y * 1px + (root.code-row - self.height) / 2;
-                        severity: marker.severity;
-                    }
-
                     Rectangle {
                         visible: code-focus.has-focus && root.selection-anchor == root.selection-head;
                         x: root.gutter-width + root.caret-x * 1px;
@@ -440,6 +432,23 @@ export component AppWindow inherits Window {
                         width: 2px;
                         height: root.code-row - 4px;
                         background: Palette.foreground;
+                    }
+
+                    // Prototype variant: the problems at the caret, under the caret's line, or over it when the view
+                    // ends first.
+                    problem-card := ProblemCard {
+                        visible: root.problem-card-visible;
+                        text: root.caret-problems;
+                        severity: root.caret-problem-severity;
+                        widest: max(48px, scroll.width - root.gutter-width - 16px);
+                        private property <length> line-top: root.caret-y * 1px - 2px;
+                        private property <length> below: self.line-top + root.code-row + 2px;
+                        private property <length> view-top: -scroll.content-y;
+                        private property <length> view-left: -scroll.content-x;
+                        y: self.below + self.height <= self.view-top + scroll.height ? self.below
+                            : max(self.view-top, self.line-top - self.height - 2px);
+                        x: max(self.view-left + root.gutter-width,
+                            min(root.gutter-width + root.caret-x * 1px, self.view-left + scroll.width - self.width - 8px));
                     }
 
                     pointer := TouchArea {

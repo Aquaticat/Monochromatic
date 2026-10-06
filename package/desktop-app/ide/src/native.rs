@@ -10,7 +10,7 @@
 mod ui {
     // Use the toolkit's supported re-export syntax rather than editing generated Rust.
     slint::slint! {
-        export { AppWindow, SourceMarker, SourceSelection } from "../ui/app.slint";
+        export { AppWindow, SourceSelection } from "../ui/app.slint";
     }
 }
 

@@ -185,30 +185,6 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     }
     // The stamp is set only after a corresponding view and image were successfully prepared.
     let view = current.shaped.as_ref().expect("painted source view");
-    // Prototype variant: a marker 12 px after the text of each materialized line with message rows.
-    let mut markers = Vec::new();
-    if let Some(frame) = &view.annotations {
-        for row in &view.rows {
-            let mut worst: Option<u8> = None;
-            for text in &frame.texts {
-                if text.line == row.row
-                    && let Some(severity) = text.severity
-                {
-                    let level = ide_app::annotation::rank(severity);
-                    if worst.is_none_or(|known| return level < known) {
-                        worst = Some(level);
-                    }
-                }
-            }
-            if let Some(level) = worst {
-                markers.push(super::ui::SourceMarker {
-                    x: row.layout.full_width() / factor + 12.0,
-                    y: row.top,
-                    severity: i32::from(level),
-                });
-            }
-        }
-    }
     let document = &current.document;
     let caret = view.caret(document);
     let selections = model_rows(&view.selections);
@@ -226,6 +202,12 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     document_width = document_width.max(annotate::extent(view.annotations.as_ref()) + CARET_ROOM);
     current.document_width = document_width;
     let problems = annotate::problems(&current);
+    // Prototype variant: the worst severity at the caret colors the card's stripe.
+    let worst = current
+        .annotations
+        .at(annotate::displayed(&current), current.document.position().head)
+        .first()
+        .map_or(0, |problem| return i32::from(ide_app::annotation::rank(problem.mark.severity)));
     let updated_source = if current.presented_revision != Some(revision) {
         current.presented_revision = Some(revision);
         Some(current.document.text().to_string())
@@ -272,7 +254,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         window.set_source_matches(ModelRc::from(Rc::new(VecModel::from(marks))));
     }
     annotate::present_problems(window, problems);
-    window.set_source_markers(ModelRc::from(Rc::new(VecModel::from(markers))));
+    window.set_caret_problem_severity(worst);
     if let Some(status) = found.status {
         window.set_find_status(SharedString::from(status.label));
         window.set_find_status_detail(SharedString::from(status.detail));
