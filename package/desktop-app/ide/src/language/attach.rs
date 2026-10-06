@@ -20,6 +20,10 @@ use helix_lsp::LanguageServerId;
 /// On-demand start of a language's servers, after the program, the root, and the launch were checked.
 mod start;
 
+/// Records of a server that ended unexpectedly or did not finish starting, with its last
+/// standard-error lines.
+mod report;
+
 /// What: Remove one server process from helix-lsp's registry and record why. `usize` is the
 ///       record's index in the session; `stop` says whether the process may still be running.
 /// Why: helix-lsp never removes a client by itself. `remove_by_id` plus `force_shutdown` is used
@@ -215,7 +219,11 @@ pub(super) fn exited(worker: &mut Worker, server: LanguageServerId) {
             reason: "the server process ended before it finished starting".to_string(),
         }
     };
-    tracing::warn!(server = %worker.session.servers[index].identity.name, was_ready, "language server process ended");
+    // The record waits briefly for the server's last standard-error lines; the state does not.
+    report::ended_unexpectedly(
+        worker.session.servers[index].identity.name.clone(),
+        was_ready,
+    );
     retire(worker, index, state, false);
     if !worker.session.servers[index].attached {
         worker.session.servers.remove(index);
@@ -241,6 +249,7 @@ pub(super) fn start_deadline(worker: &mut Worker, server: LanguageServerId) {
     let seconds = worker.languages.timeout(&name);
     tracing::error!(server = %name, seconds, "language server did not answer initialize in time and is stopped");
     let reason = format!("{name} did not answer initialize within {seconds} seconds");
+    report::stopped_during_start(&name);
     retire(worker, index, ServerState::FailedToStart { reason }, true);
     if !worker.session.servers[index].attached {
         worker.session.servers.remove(index);

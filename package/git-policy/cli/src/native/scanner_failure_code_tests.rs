@@ -18,8 +18,9 @@ use crate::scanner_adapter::{ScannerError, ScannerFailure};
 use crate::scanner_run::ScanRunError;
 use forbidden_strings::ScanFinding;
 
-/// Every candidate-layer cause that means "Git could not list or hand over content".
-const UNREADABLE: [CandidateFailure; 12] = [
+/// Every candidate-layer cause that means "Git could not list or hand over content",
+/// including a private index that could not be prepared for a prediction.
+const UNREADABLE: [CandidateFailure; 13] = [
     CandidateFailure::GitNotStarted,
     CandidateFailure::GitFailed,
     CandidateFailure::ListingMalformed,
@@ -32,6 +33,7 @@ const UNREADABLE: [CandidateFailure; 12] = [
     CandidateFailure::ReplyMismatched,
     CandidateFailure::ObjectMissing,
     CandidateFailure::ObjectKindUnexpected,
+    CandidateFailure::PrivateIndexUnavailable,
 ];
 
 /// The two codes print as the names the decision uses.

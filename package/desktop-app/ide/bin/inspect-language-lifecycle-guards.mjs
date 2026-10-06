@@ -4,7 +4,9 @@
 // - each re-labelled helix-lsp record shape: without its re-labelling the clean-lifetime test sees it at ERROR;
 // - re-labelling every transport ERROR record: the test of unknown records sees a real failure lowered;
 // - a full log queue that waits for room: the stalled-output test sees the logging thread delayed;
-// - the worker's shutdown request, its wait for servers to end, and its reaping of a killed server.
+// - the worker's shutdown request, its wait for servers to end, and its reaping of a killed server;
+// - a server's last standard-error lines: kept and reported when it crashes, waited for when they arrive just
+//   after the end, and never reported on a clean shutdown.
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -41,11 +43,13 @@ const strict = 'quiet::clean_lifetime_logs_no_error_level_record';
 const unknown = 'quiet::unknown_helix_error_records_keep_their_level';
 const killed = 'lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns';
 const stalled = 'logging::background::tests::a_blocked_output_never_delays_the_logging_thread';
+const crashed = 'quiet::a_crashed_server_is_logged_with_its_last_stderr_lines';
+const settled = 'language::attach::report::tests::an_end_waits_for_lines_that_arrive_after_it';
 const results = [];
 // Run one test in the bounded container and compare the outcome with `expect`: 'pass', or the texts a failure must contain.
 // Tests of the library's own modules run with `--lib`; the others are in the `language` integration test.
 const run = (name, test, expect) => {
-  const target = test.startsWith('logging::') ? ['--lib'] : ['--test', 'language'];
+  const target = test.startsWith('logging::') || test.startsWith('language::') ? ['--lib'] : ['--test', 'language'];
   const command = ['cargo', 'test', '--offline', '--no-default-features', ...target, test, '--', '--exact', '--nocapture', '--include-ignored'];
   const result = spawnSync('podman', [
     'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
@@ -77,13 +81,13 @@ const mutated = (path, before, after, body) => {
 const relabel = 'src/logging/relabel.rs';
 const cases = [
   // A server's standard-error line, as TypeScript 7's server writes `context canceled`, reaches ERROR again.
-  { name: 'relabel-server-stderr-line', test: strict, file: relabel, before: 'return Some(Shape::ServerStderrLine);', after: 'return None;', failure: ['a clean lifetime logged at ERROR', 'scripted-ls err <- \\"context canceled'] },
+  { name: 'relabel-server-stderr-line', test: strict, file: relabel, before: '        return Some(Matched {\n            shape: Shape::ServerStderrLine,\n            server: name,\n            line,\n        });\n', after: '        let _mutant_drops = line;\n        return None;\n', failure: ['a clean lifetime logged at ERROR', 'scripted-ls err <- \\"context canceled'] },
   // The end of a server's standard error, at every server exit, reaches ERROR again.
-  { name: 'relabel-end-of-server-stderr', test: strict, file: relabel, before: 'return Some(Shape::EndOfServerStderr);', after: 'return None;', failure: ['a clean lifetime logged at ERROR', 'scripted-ls err: <- StreamClosed'] },
+  { name: 'relabel-end-of-server-stderr', test: strict, file: relabel, before: '        return Some(Matched {\n            shape: Shape::EndOfServerStderr,\n            server: name,\n            line: "",\n        });\n', after: '        return None;\n', failure: ['a clean lifetime logged at ERROR', 'scripted-ls err: <- StreamClosed'] },
   // A `-32801` answer that the worker asks again for reaches ERROR again.
-  { name: 'relabel-moot-answer', test: strict, file: relabel, before: 'return Some(Shape::MootAnswer);', after: 'return None;', failure: ['a clean lifetime logged at ERROR', 'ServerError(-32801): content modified'] },
+  { name: 'relabel-moot-answer', test: strict, file: relabel, before: '            return Some(Matched {\n                shape: Shape::MootAnswer,\n                server: name,\n                line: "",\n            });\n', after: '            return None;\n', failure: ['a clean lifetime logged at ERROR', 'ServerError(-32801): content modified'] },
   // Every transport ERROR record is lowered, so a real request failure no longer shows as an error.
-  { name: 'relabel-every-transport-error', test: unknown, file: relabel, before: '    if level != log::Level::Error || target != TRANSPORT_TARGET {\n        return None;\n    }', after: '    if level == log::Level::Error {\n        return Some(Shape::MootAnswer);\n    }', failure: ['no ERROR record ending with', 'InternalError: scripted initialize failure'] },
+  { name: 'relabel-every-transport-error', test: unknown, file: relabel, before: '    if level != log::Level::Error || target != TRANSPORT_TARGET {\n        return None;\n    }', after: '    if level == log::Level::Error {\n        return Some(Matched { shape: Shape::MootAnswer, server: "", line: "" });\n    }', failure: ['no ERROR record ending with', 'InternalError: scripted initialize failure'] },
   // A full log queue waits for room instead of dropping, so a stalled output stalls the logging thread.
   { name: 'log-queue-waits-when-full', test: stalled, file: 'src/logging/background.rs',
     before: '            self.shared.queued.fetch_sub(size, Ordering::SeqCst);\n            self.shared.lose(Loss {\n                records: 1,\n                bytes: size as u64,\n            });\n            return;\n',
@@ -95,6 +99,12 @@ const cases = [
   { name: 'no-wait-for-exit', test: strict, file: 'src/language/worker.rs', before: 'while running > 0 {', after: 'while false {', failure: ['the server was not asked to shut down'] },
   // The worker thread ends right after its runtime, without reaping the server it had to kill. The child is usually
   // a zombie by the time the test looks; on a busy host it can still be running (state R), killed but not yet ended.
+  // The log bridge no longer keeps a server's standard-error lines, so the crash record has none.
+  { name: 'stderr-tail-not-kept', test: crashed, file: 'src/logging/stderr_tail.rs', before: '    tail.lines.push_back(line);\n', after: '    let _mutant_drops = line;\n', failure: ['the ended-server record lacks the server\'s last lines', 'was_ready=true\n'] },
+  // The crash record is written at once instead of waiting for the end of the server's standard error.
+  { name: 'stderr-tail-no-settle', test: settled, file: 'src/language/attach/report.rs', before: 'while !stderr_tail::is_closed(&record.server) && started.elapsed() < SETTLE {', after: 'while false && started.elapsed() < SETTLE {', failure: ['the record did not wait for the last line'] },
+  // A clean shutdown reports each server's kept lines as if it had crashed.
+  { name: 'stderr-tail-on-clean-shutdown', test: strict, file: 'src/language/worker.rs', before: '            crate::logging::stderr_tail::forget(client.name());\n', after: '            tracing::warn!(server = client.name(), stderr_tail = ?crate::logging::stderr_tail::take(client.name()), "language server process ended");\n', failure: ['a clean shutdown logged the server\'s last lines', 'scripted server starting'] },
   { name: 'no-reap-after-kill', test: killed, file: 'src/language/worker.rs', before: 'reap::finish(REAP_GRACE);', after: '', failure: ['a child process was left when the drop returned', 'ide-scripted-ls'] },
 ];
 for (const name of only ?? []) if (!cases.some(item => item.name === name)) throw new Error('Unknown case: ' + name);

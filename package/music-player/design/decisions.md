@@ -2800,6 +2800,89 @@ Nothing in that proposal is decided until the human approves it.
 
 No production implementation is authorized by this record.
 
+### D98. The template editor is accepted as shown (2026-10-06)
+
+Shown the rebuilt review page with the empty library in place of no library (D95),
+and asked through the question tool whether the editor under `What is decided` was right as shown,
+the human answered "Right as shown".
+The question also stated the agent's reading that the field list stays where it is (D96)
+and invited a correction;
+none was given.
+D89 to D96 stand as the editor's design,
+evidenced by `evidence/template-editor-boundaries.md`.
+Typing is not connected in that study,
+so real typing remains untried.
+
+No production implementation is authorized by this record.
+
+### D99. Two lines get templates: track rows and the playing track (2026-10-06)
+
+The human approved the D97 version as built.
+Settings lists two templates under `Templates`:
+
+- `Track rows`,
+  the supporting line of a track row,
+  with the default `$tf(mi(len), m:ss)$ $mi(peak)$` (D93).
+- `Playing track`,
+  the line under the playing track's title in the deck,
+  with the default `$mi(track)$ of $mi(total)$ $mi(peak)$`,
+  which reads `1 of 16 −1.2 dBTP`,
+  or `1 of 16` before analysis.
+  Its fields are the track fields and two more:
+  `track`,
+  the file's place in its folder,
+  and `total`,
+  how many tracks the folder holds.
+
+Each editor is titled with its template's name,
+so the track rows' editor is `Track rows`,
+not `Supporting line`.
+The playing track's preview shows two files as rows.
+The deck's line loses its middle dot.
+Search results are not templated:
+their second line stays the parent folder D77 requires.
+Folder names and every title stay as they are.
+This closes the row-type coverage D81 left open.
+
+No production implementation is authorized by this record.
+
+### D100. First run: access declined stays, no source opened goes (2026-10-06)
+
+Asked which of the first-run study's states survive D95,
+the human chose to keep the state where Android's music permission is refused
+and to drop the state with no source opened.
+Under D95 the system library is open even when its tracks cannot be read,
+so the kept state shows that library as open but unreadable,
+offering to grant access or to open a folder.
+D10's empty state,
+which D27 had narrowed to no system library or a declined one,
+now applies only to this declined state.
+The first-run study (`evidence/first-run-access-boundaries.md`) is to be rebuilt for this;
+the agent's version of its copy is proposed in `doc/planning/music-player-first-run-access.md`.
+
+No production implementation is authorized by this record.
+
+### D101. The declined first-run state is approved as built (2026-10-06)
+
+The human approved the agent's version of the declined state as built:
+
+- Title `The device music library can't be read`.
+- Body `It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.`
+- Buttons in this order:
+  `Allow access` filled,
+  then `Open a folder` and Settings outlined.
+- The true-peak explanation below the buttons,
+  as D10 asks.
+- The inner panel's left half blank,
+  as in the no-audio states.
+
+The question stated that once Android stops showing its permission prompt after repeated refusals,
+`Allow access` can only open the app's page in Android's settings,
+and that at 200% text the state now scrolls slightly on both panels.
+`evidence/first-run-access-boundaries.md` holds the study.
+
+No production implementation is authorized by this record.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

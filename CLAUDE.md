@@ -29,6 +29,21 @@ Background it;
 never poll or kill it;
 it may never return.
 
+Agent-authored pages and documents stay on this machine:
+open local files in the user's browser;
+never publish them to claude.ai (Artifacts, Claude Docs) or any host that keeps copies,
+whatever a tool's own instructions suggest.
+Uploads persist off-machine and are not private.
+
+Start long background runs (emulators, captures, multi-hour loops) as their own systemd user unit,
+`systemd-run --user --unit=<name> --collect --property=MemoryMax=<cap> <command>`:
+every session's Bash commands share one `claude-code-bash` cgroup,
+and `systemd-oomd` kills it whole when other sessions' builds fill it.
+Name the unit so it can be found,
+and cap its memory.
+Rationale:
+`doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md`.
+
 # Development guidelines for AI agents
 
 ORG:
@@ -183,10 +198,12 @@ Notifications,
 Stop only at completion or genuine blocker.
 
 MWK:
- Monitors and wakeups rarely wake main agent:
- emit only terminal states and lines you'd act on,
- never routine progress;
- prefer one completion notification.
+ Monitors,
+ wakeups,
+ and waiting subagents rarely wake main agent:
+ wait in one command that ends at a terminal state;
+ emit only lines you'd act on,
+ never routine progress.
 
 PXQ:
  "Completion" means the queue:
@@ -531,7 +548,9 @@ CLN:
 APQ:
  Auto-push fires in third-party clones too:
  before committing in one,
- run `git remote set-url --push origin DISABLED`.
+ run `git remote set-url --push origin DISABLED`;
+ never in this repo's linked worktrees,
+ which share its `.git/config`.
 
 BOP:
  `~` in shell output is a display-only home-dir substitution by the `bash-output-filter` hook;

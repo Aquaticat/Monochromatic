@@ -20,6 +20,8 @@
 /// import { runPolicyPass } from './policy_pass.ts';
 /// ```
 use super::action::ENGINE_FAILURE_EXIT_CODE;
+/// `git add` asks for what it would stage.
+use super::candidate_prediction::CandidateRequest;
 use super::command_options::OptionError;
 use super::command_push::{PushRegion, parse_push_region};
 use super::config_loading::{ConfigLoading, classify_config_loading};
@@ -27,7 +29,9 @@ use super::config_schema::PolicyConfig;
 use super::global_arguments::GlobalOutcome;
 use super::invocation_config::{config_invalid_event, load_identity_config};
 use super::pending_state::pending_state;
-use super::policy_checks::{CandidateSource, ShippedChecks};
+use super::policy_checks::ShippedChecks;
+/// What the command offers its content policies.
+use super::policy_content::LifecycleContent;
 use super::policy_engine::{
     StageEnd, StageRequest, StageResult, any_policy_applies, pass_exit_code, run_policy_stage,
 };
@@ -50,17 +54,6 @@ use super::wrapper_invocation::{StrippedInvocation, command_region, command_word
 /// // string, but byte-preserving.
 /// ```
 use std::ffi::OsString;
-
-/// What: What `git add` candidates need that is not ported. `&str` is text baked into the
-///       program.
-/// Why:  The installed wrapper predicts what `git add` would stage and checks that content;
-///       a content policy asked about `git add` reports this as what it is missing.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const ADD_CANDIDATES_NEED = 'predicting what git add would stage';
-/// ```
-pub const ADD_CANDIDATES_NEED: &str = "predicting what git add would stage";
 
 /// What: How the lifecycle of one wrapped command ended. An `enum` is a closed set of named
 ///       alternatives; each carries the values its ending needs. `#[derive(...)]` asks the
@@ -177,7 +170,7 @@ fn every_policy() -> Vec<PolicyId> {
 }
 
 /// What: Prepare a command that loads configuration: refuse unported work, read the
-///       configuration of the worktree Git reports, and say what a content policy can
+///       configuration of the worktree Git reports, and say what a content policy may
 ///       read. Returns the effective policy settings, or the ending that stops the command.
 ///       `Result<PolicyConfig, WrappedOutcome>` is "settings, or an ending".
 /// Why:  The order is the installed wrapper's: leases and leftover state come before
@@ -229,9 +222,15 @@ fn prepare_guarded_command<F: RepositoryFacts>(
     if let Some(what) = command_frontier(stripped, &location.identity) {
         return Err(refused(String::new(), &what, command));
     }
-    // Only `git add` inside a worktree has content for a policy to read before Git runs.
+    // `.clone()` copies the scanner options the configuration chose.
+    checks.scanner_settings.options = policies.forbidden_strings.clone();
+    // Only `git add` inside a worktree has content for a policy to read before Git runs:
+    // what it would stage, predicted when a content policy first reads it.
     if command_word(stripped) == b"add" && worktree_root(&location.identity).is_some() {
-        checks.candidates = CandidateSource::NotPorted(ADD_CANDIDATES_NEED);
+        checks.candidates = LifecycleContent::Requested(CandidateRequest::Add(
+            // `.to_vec()` copies the arguments after `add` for the prediction.
+            command_region(stripped).to_vec(),
+        ));
     }
     // `Ok(x)` is the success case.
     return Ok(policies);

@@ -26,5 +26,8 @@ pub mod controls;
 /// Generated `git cat-file --batch` replies and the reply-reading invariants.
 pub mod batch;
 
+/// Index listings, staged deltas, `rulesFile` values and final-newline bytes, with their invariants.
+pub mod content;
+
 /// Generated manifests and raw text through the dependent-version rewrite and specifier scan.
 pub mod dependent_version;

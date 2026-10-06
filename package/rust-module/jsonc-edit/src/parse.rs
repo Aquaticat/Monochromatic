@@ -468,8 +468,8 @@ pub fn parse_jsonc(source: &str) -> Result<JsoncValue, JsoncParseError> {
             continue;
         }
         if let Some(Frame::Array { .. }) = frames.last() {
-            let Some(top) = frames.last_mut() else { unreachable!("array frame disappeared"); };
-            top.set_phase(Phase::AwaitingChild);
+            let Some(array_frame) = frames.last_mut() else { unreachable!("array frame disappeared"); };
+            array_frame.set_phase(Phase::AwaitingChild);
             begin_value(&mut scanner, before, &mut frames, &mut delivered)?;
             continue;
         }
@@ -483,11 +483,11 @@ pub fn parse_jsonc(source: &str) -> Result<JsoncValue, JsoncParseError> {
         }
         let before_value = scanner.trivia()?;
         let key = JsoncKey { units, raw, comment: attach(attach(None, before), before_colon) };
-        let Some(Frame::Record { pending_key, phase, .. }) = frames.last_mut() else {
+        let Some(Frame::Record { pending_key, phase: record_phase, .. }) = frames.last_mut() else {
             unreachable!("record frame disappeared");
         };
         *pending_key = Some(key);
-        *phase = Phase::AwaitingChild;
+        *record_phase = Phase::AwaitingChild;
         begin_value(&mut scanner, before_value, &mut frames, &mut delivered)?;
     };
     let trailing = scanner.trivia()?;

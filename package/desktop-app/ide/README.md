@@ -40,7 +40,18 @@ Run `monochromatic-ide PROJECT` for one explicit local root,
 or `monochromatic-ide PROJECT --file FILE` to initially display a file inside it.
 Relative `FILE` paths start at `PROJECT`,
 not the shell's working directory.
+Without `PROJECT` the application opens the home folder that `HOME` names
+(decided on 2026-10-06 for a launcher entry started without a folder);
+without a usable `HOME` it reports a usage error with status 2.
+[Home folder as the project](#home-folder-as-the-project) describes what changes then.
 `--help` and `--version` exit before filesystem or native-display startup.
+`--licenses` prints every license and notice text the executable carries,
+each under a heading,
+and exits with status 0 without a project,
+a home folder,
+or a display
+(see [What the executable carries](#what-the-executable-carries));
+beside `PROJECT` or `--file` it is a usage error.
 The executable no longer substitutes example source when no file is selected.
 
 Native tree and file switching pass callback tests and real nested Wayland input checks.
@@ -557,6 +568,7 @@ A command method returns `false` when the queue is full;
 `enter_project_directory` must run once at startup,
  before any thread or Helix call,
 because Helix roots every server at the process working directory.
+A server root outside the project is refused before anything starts.
 
 Inlay hints and pull diagnostics are requests the worker makes on its own:
 when a file is displayed,
@@ -592,17 +604,24 @@ which also holds its private `/tmp`,
  caches,
  and cargo output.
 The state root is resolved through symbolic links first
-and must lie neither inside the project nor above it.
+and must not contain the project.
+It may lie inside the project,
+as it does when the home folder is the project (`~/.cache` is below it).
 After the sandbox replaces `/tmp`,
  `/run`,
  and `/dev`,
 the project is bound again read-only at its own path
 and at Helix's working-directory spelling when that lies below one of them,
 so projects below `/tmp` or `/run/media/<user>` work.
+The writable state bind comes last,
+after the read-only project bind,
+because bubblewrap applies mounts in order and a later one covers an earlier one;
+`state_inside_the_project_is_bound_writable_after_the_read_only_project` in
+`src/language/confine/project_tests.rs` holds that order.
 `PROJECT_MOUNT` in `src/language/confine/project.rs` is the one switch a later write mode changes.
 Without bubblewrap or user namespaces,
 for a project or state root below `/proc`,
-or for state inside or above the project,
+or for state that contains the project,
 the server shows the launch-refused state with the cause and remedy;
 nothing falls back to an unconfined launch.
 `LanguageSetup::unconfined()` exists only for tests and guard controls on disposable projects.
@@ -1604,12 +1623,18 @@ The concrete caret and replacement-selection cases in the accepted scope pass th
 
 The tree and the displayed file follow external changes through Linux inotify,
 using the `notify` crate 8.2.0 (`INotifyWatcher` by name, default features off, no polling backend).
+The same inotify instance also watches the project's source folders for the language servers;
+see [Watching for the language servers](#watching-for-the-language-servers).
 Only what is shown is watched,
 each directory non-recursively:
 the project root,
 every visible expanded folder,
 and the displayed file's folder,
 even when the tree does not show that folder.
+A displayed file outside the project,
+opened from a language target such as a standard-library source,
+is not watched and is not a watch failure:
+the safety sweep rereads it.
 Collapsing a folder removes its watch;
 folders inside a collapsed folder stay expanded in the tree but are not watched.
 A folder is watched only at its own canonical path inside the project root,
@@ -1652,8 +1677,24 @@ The latest notification decides,
 so a save that deletes and rewrites the file waits for the rewrite.
 A writer that leaves the file unfinished for longer than the quiet period is read mid-write,
 and read again when it closes the file.
-A sweep read can also meet a save that began within the last timer tick;
+
+A read that no write notification asked for accepts the file only when it has been quiet:
+the safety sweep,
+the timer of an unwatched file,
+a highlighting retry,
+the first read,
+and the reread after a new watch,
+a newly displayed file,
+or lost events.
+The reader asks the open file for its modification time after reading;
+when that time lies less than 50 ms before the read began,
+or during the read,
+or after the current time,
+the bytes are dropped and the file waits like an unfinished write.
+The check depends on the file alone,
+so no order of timers and notifications lets such a read show a save in progress;
 see [Measured write wait](#measured-write-wait).
+A file system that keeps modification times in whole seconds can let a save through this check.
 
 ### Recovery and timers
 
@@ -1662,9 +1703,9 @@ an inotify queue overflow (`IN_Q_OVERFLOW`),
 an error from the notification stream,
 a watched folder that is removed or renamed,
 a watch that cannot be added,
-including at the `fs.inotify.max_user_watches` limit,
+reaching the `fs.inotify.max_user_watches` limit,
 and a watcher that cannot start or stops.
-Each is logged.
+Each is logged once.
 A renamed folder's watch is removed,
 because inotify keeps following the moved directory under its old name.
 
@@ -1676,6 +1717,25 @@ while anything shown lacks a watch.
 A failure is logged and followed by the full reread once,
 and again only when its error text changes;
 a watch that works again is logged once.
+
+The watch limit counts the watches of every program the user runs,
+so reaching it is one state rather than one failure per folder.
+The first refused watch logs one warning that names the sysctl,
+rereads everything shown once,
+and stops adding watches in that pass.
+The safety sweep then retries after 2 s,
+doubling the wait after each refused retry up to 64 s.
+Expanding,
+collapsing,
+switching files,
+and scrolling the tree (at most once a second) retry at once
+without lengthening the wait.
+The displayed file's folder is tried first.
+When every shown folder has a watch again,
+one line says so.
+Folders without a watch keep the timers and the sweep meanwhile.
+See [Watch counts and the watch limit](#watch-counts-and-the-watch-limit).
+Folders watched for the language servers come after these and have their own limit state.
 
 Every second,
 every shown folder and the displayed file are reread anyway,
@@ -1705,6 +1765,169 @@ and the sweep's 1 s from four
 (`tests/refresh_intervals.rs` prints these from the shipped schedule).
 The 250 ms timer for an unwatched displayed file stays four times as frequent as the sweep.
 Both timers are kept.
+
+### Watch counts and the watch limit
+
+The IDE holds one watch per shown folder:
+2 with one expanded folder,
+13 with 12,
+and 101 with 100,
+counted from its inotify descriptors in `/proc` (`inspect:idle-cost`).
+Watching only the folders in the tree's viewport was measured as the alternative
+(`inspect:watch-scope`, 60 expanded folders, three runs each):
+it held 5 watches instead of 61,
+but in 48 of 60 trials a folder changed while out of view showed its old listing
+for a median of 61 to 85 ms per run,
+at most 148 ms,
+after it scrolled into view;
+watching every expanded folder showed the change at once in 59 of 60 trials,
+1 ms late in the other.
+The IDE keeps watching every expanded folder.
+
+The language servers count against the same limit;
+see [Watching for the language servers](#watching-for-the-language-servers).
+
+The IDE's own podman tasks run their containers with `--network=none`,
+except `fetch` and `runtime`, which download;
+podman's default network starts a pasta helper per container,
+which holds an inotify watch and warns when the limit is reached.
+
+A positive control runs the IDE in a disposable user namespace whose own watch limit is 4
+(`inspect:watch-limit`, 12 expanded folders, the host limit untouched):
+in each of two runs,
+one warning,
+no per-folder warning,
+4 and 3 refused watch calls in 60 s with 59 and 60 sweeps,
+a file created in an unwatched folder listed after 629 and 751 ms,
+and one line 63.8 and 61.3 s after the namespace limit was raised,
+the backoff's longest wait.
+In the second run,
+Home in the tree scrolled it and retried the watches 43 ms later,
+with no watch call in the 1.5 s before.
+
+### Watching for the language servers
+
+Language servers learn about changes made outside the editor through `workspace/didChangeWatchedFiles`.
+Helix watches no files for its servers,
+so its built-in rust-analyzer definition sets `files.watcher = "server"`,
+and rust-analyzer then asks notify for a recursive watch of each workspace package's folder (`vfs-notify`),
+which watches every folder below it,
+`node_modules` included,
+whatever `files.excludeDirs` says.
+The TypeScript 7 server watches nothing itself:
+Helix declares client-side watching,
+which TypeScript 7.0.2 then relies on (`internal/lsp/server.go`),
+and before this change nothing told it about other files,
+so the displayed file's diagnostics did not follow a change of a file it imports.
+
+The IDE watches for the servers.
+While some server has registered file watchers (`client/registerCapability`),
+the change watcher watches every source folder of the project,
+each non-recursively,
+on its one inotify instance,
+and sends every change in them to the language worker,
+without passing through the interface thread.
+When no server has watchers any more,
+those watches are released.
+Source folders are the folders ripgrep lists files from with the search's settings (`src/search_process.rs`),
+so the search and the servers agree on `.gitignore`,
+`.ignore`,
+`.rgignore`,
+and hidden names;
+hidden folders such as `.cargo` are skipped as the search skips them.
+`node_modules`,
+`target`,
+and `.git` are never watched,
+even where no ignore file names them.
+ripgrep lists a folder named on its command line even when an ignore rule names it,
+but applies the ignore files of its parents below it (ripgrep 15.2.0),
+so a new folder is classified by scanning its parent again.
+An empty folder cannot be classified by a list of files:
+it is watched until its first change,
+which is held back until its parent has been scanned again;
+the files that scan lists in it are then sent as created,
+and a new ignored folder,
+such as a build's `dist`,
+never reaches a server.
+Scans run on their own thread.
+
+The language worker keeps each server's registrations itself.
+helix-lsp's own handler (`helix-lsp/src/file_event.rs` at the pinned revision) keeps only string patterns,
+ignores the kinds a watcher asks for,
+and always sends "changed",
+while both rust-analyzer and the TypeScript 7 server register relative patterns.
+Glob patterns follow the protocol:
+`*` and `?` stay inside one path segment,
+`**` spans segments,
+and `{}` and `[]` group.
+A watcher's kind decides which of created,
+changed,
+and deleted it hears,
+and a server that registered nothing gets nothing.
+Changes are gathered per path with the kind of its final state on disk
+(a deletion after a creation stays a deletion),
+and a burst is sent once it pauses for 50 ms,
+or 500 ms after it began,
+as one notification per server.
+Each server that heard about changes is then asked for the displayed file's diagnostics again,
+since another file may have changed them.
+A reload of the displayed file reaches the servers the same way.
+rust-analyzer is given `files.watcher = "client"`,
+set in code after the definitions are merged,
+because a merged `files` table replaces the whole table;
+it then registers watchers and takes no watches of its own.
+
+The tree and the displayed file come first under the watch limit.
+A folder both want keeps one watch,
+and collapsing it in the tree keeps the servers' watch.
+When the limit refuses a watch the tree wants,
+a watch held only for the servers is given up for it,
+and while the tree waits on the limit,
+the servers add nothing.
+The servers' limit is its own state:
+one warning naming `fs.inotify.max_user_watches`,
+one line when every source folder is watched again,
+and retries after the same growing wait (2 s doubling to 64 s),
+which the watch thread schedules itself.
+
+`inspect:server-watches` measured both on disposable projects,
+with the servers confined as in production,
+on a quiet host,
+two runs of each case in one session
+(`~/temp/agent/ide-server-watches-5jAwxc`).
+The Rust workspace has 40 crates,
+1080 source folders,
+a `target` of 6000 folders,
+a `.git` of 257,
+and a `node_modules` of 2001 folders inside its first crate,
+9345 folders in all.
+The displayed file calls a function another file defines,
+and the other file is changed outside the IDE to give it a parameter,
+which rust-analyzer's own analysis reports;
+`cargo check` is turned off (`checkOnSave = false`) so it cannot report the change instead.
+The TypeScript project has 1000 source files,
+3000 dependency packages,
+12328 folders in all,
+and its displayed file imports a constant whose export is removed outside the IDE.
+
+#### Before: the build at `45db45d02`
+
+- rust-analyzer watched by itself: 3081 watches in both runs, 1080 for sources and 2001 for `node_modules`.
+- TypeScript: no watches at all.
+
+#### After: the IDE watches for the servers
+
+- Rust: 1082 watches in both runs, all held by the IDE and all on source folders; rust-analyzer held none.
+  The displayed file's diagnostic appeared 2008 and 745 ms after the write.
+- TypeScript: 42 watches in both runs, all held by the IDE; the diagnostic appeared after 102 and 60 ms.
+
+#### Positive control: the same build without forwarding
+
+- Rust and TypeScript: no watches, and the diagnostics stayed unchanged for 60 s in both runs of each.
+
+On this repository,
+ripgrep lists files in 1549 folders,
+the count the IDE would watch for a server with the repository as its project.
 
 ### Threading and shutdown
 
@@ -1779,15 +2002,18 @@ whose save began about 200 ms after a read had restarted the sweep clock.
 The filter `write_wait_timer` starts the same save,
 unfinished for 40 ms,
 at a pseudo-random time within the 400 ms that contain the next sweep read,
-120 trials per run.
-5 to 8 of 120 trials showed the truncated file across four runs,
-which is 17 to 27 ms before each sweep read.
-The sweep read is not asked for by the save's notification,
-so the write wait holds it back only once that notification has reached the schedule.
-The source timer is bound before the timer that receives notifications (`src/native.rs`),
-which fits a window of about one 20 ms tick.
-For a save that stays unfinished that long this is about 2 to 3 in 100 saves at the 1 s sweep;
-a save that is finished within a millisecond is exposed for that millisecond.
+until 120 trials have counted.
+A trial counts only when the file stayed truncated for less than the quiet period in real time;
+on a loaded host the test thread itself can stall mid-save,
+which makes the save a long one that any read may show by design.
+Before the quiet check (`45db45d02`) 4,
+6,
+and 8 of 120 trials showed the truncated file in three runs.
+With it,
+none of 120 did in any of three runs,
+alternating with the earlier build in one session at a load average of 63 to 99 on 16 processors.
+Of the trials the stalls stretched past the quiet period,
+6 of 30 showed the truncated file before the check and 1 of 41 with it.
 
 ### Measured idle cost
 
@@ -1905,8 +2131,47 @@ and the unwatched timer never makes a folder staler than the sweep alone.
 `native::watch_tests` checks the shipped tree and source in the headless window.
 `native::write_wait_tests` plays a slow writer against that window:
 an in-place save and a delete-then-rewrite are shown only when finished.
+`native::quiet_read_tests` does the same for a file outside the project,
+whose reads no write notification ever asks for.
+`tests/quiet_read.rs` checks the reader's quiet requirement with chosen modification times
+and the reread classification.
+The library tests in `change_watch/reconcile_tests.rs` drive the watch limit with a fake kernel:
+one state,
+no further adds,
+the backoff and its cap,
+immediate retries,
+and the displayed file's folder first.
+`change_watch/server_watch_tests.rs` drives the servers' watches with a fake kernel:
+one watch for a folder both want,
+a server watch given up for the tree,
+the servers waiting while the tree waits,
+and their own limit state.
+`change_watch/server_scan_tests.rs` checks the scan's ignore rules,
+pruned and empty folders,
+and new folders classified by their parent.
+`language/watched_files_tests.rs` checks the merge rule,
+glob patterns per the protocol,
+kinds,
+bursts,
+and servers that stopped.
+`tests/language/watched.rs` drives the worker and a change watcher with the scripted server,
+which registers watchers from `IDE_SCRIPTED_WATCHERS`:
+changes by glob and kind,
+the diagnostics pull after them,
+ignored,
+dependency,
+and unmatched files left out,
+a burst of 500 changes in a few notifications,
+new folders followed,
+a new ignored folder never sent,
+and nothing for a server without watchers.
+`native::language::watched_tests` checks the same through the shipped window's language tick.
 `inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
-`inspect:idle-cost` and `inspect:refresh-latency` produce the measurements in this section.
+`inspect:idle-cost`,
+`inspect:refresh-latency`,
+`inspect:watch-scope`,
+`inspect:server-watches`,
+and `inspect:watch-limit` produce the measurements in this section.
 In the nested compositor,
 dark and light,
 external create,
@@ -1940,6 +2205,24 @@ Every other `helix-lsp` record keeps its level,
 including error answers with any other code and failures to read or write a server's streams.
 `RUST_LOG=helix_lsp=debug` shows the re-labelled records together with the protocol messages.
 
+Each server's last standard-error lines are kept whatever the log shows (`src/logging/stderr_tail.rs`):
+the newest 8 lines per server, each cut to 512 bytes at a character boundary and then marked ` [cut]`.
+`helix-lsp` passes every line on as an ERROR record, so they are kept unless the log is off entirely.
+When a server process ends without being asked to, during its start or after it,
+the worker's warning `language server process ended` lists them in its `stderr_tail` field, oldest first.
+That warning waits up to 1 s for the end of the server's standard error,
+because `helix-lsp` can report the end of the process before its last lines;
+the session state does not wait, and a warning still waiting when the worker stops is written then.
+When the worker stops a server that did not answer `initialize` in time,
+the start-deadline error is followed by the warning
+`language server wrote this to standard error before it was stopped`
+with the lines so far, and only when there are some.
+A clean shutdown, and a server the worker stops for any other reason, log nothing more.
+The lines appear only in the log, never in a note in the window.
+`helix-lsp` names a line's server by its configured name only, so two processes of one name share a tail;
+lines a process writes after its lines were reported, or after the worker stopped it,
+are dropped until its standard error ends, so they are never reported as a later process's words.
+
 Records go through a queue to one writer thread (`src/logging/background.rs`),
 so no thread of the application, the interface thread included, waits for the output.
 A reader that stops reading, or a disk that holds an append for seconds, blocks only that writer thread.
@@ -1959,6 +2242,13 @@ Checks:
 among them `logging::background::tests::a_blocked_output_never_delays_the_logging_thread`,
 which logs 5000 records through the real subscriber while the output stalls for 4 s;
 `inspect:language-lifecycle-guards` makes the full queue wait for room and observes that test fail.
+The kept lines have unit tests in `src/logging/stderr_tail_tests.rs` and `src/language/attach/report_tests.rs`,
+and scripted-server tests in `tests/language/quiet.rs`:
+a server that writes a line at its start and one right before it exits with status 7,
+one that exits with status 3 when `initialize` arrives, one that never answers `initialize`,
+and the clean lifetime, which must log neither the field nor an ended-server record.
+The guard tool stops keeping lines, stops waiting for the end of the stream,
+and reports the lines on a clean shutdown, and observes the named test fail each time.
 `mise run //package/desktop-app/ide:inspect:log-stall <cache> [cargo] [seconds] [port]`
 runs the IDE in the nested compositor with every application record on
 and its standard output on a FIFO that is never read,
@@ -2002,6 +2292,10 @@ and language-server presence on this host.
 The published `manifest.json` lists the bundled grammars:
 a file whose recognized language is not listed stays plain text,
 while a listed grammar that fails to load is reported as a broken installation.
+The application binary embeds `target/<profile>/runtime` when it is compiled
+(see [What the executable carries](#what-the-executable-carries)),
+so every task that builds it with the default `gui` feature runs `runtime` first,
+and a build without a prepared runtime stops with a message naming that task.
 
 [runtime-languages]: ../../../doc/planning/slint-ide-runtime-languages.md
 
@@ -2009,74 +2303,170 @@ Helix crates share a pinned upstream revision.
 Helix code and runtime assets retain their own license obligations;
 the application does not inherit Helix's modal commands or editing features.
 
-## Release build and application directory
+## Release build and single executable
 
-`mise run //package/desktop-app/ide:build:release` builds the optimized `monochromatic-ide` binary
+`mise run //package/desktop-app/ide:build` builds the optimized `monochromatic-ide` binary
 in the bounded container described under [Build boundary](#build-boundary).
-`mise run //package/desktop-app/ide:bundle` runs that build and assembles `dist/monochromatic-ide`,
-a directory that runs from any location,
-without the source tree and without `HELIX_RUNTIME` in the environment:
-
-```txt
-# package/desktop-app/ide/dist/monochromatic-ide
-monochromatic-ide             release binary; Inter and JetBrains Mono are compiled in
-runtime/manifest.json         pinned Helix revision and the bundled grammar libraries
-runtime/grammars/             one shared object per bundled grammar
-runtime/queries/              Helix query files at the pinned revision
-runtime/licenses/<grammar>/   license notice of each bundled grammar
-runtime/Helix-LICENSE         MPL-2.0 text for the Helix query files and the Helix crates in the binary
-LICENSES/                     LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
-LICENSES/font/                SIL Open Font License notices of Inter and JetBrains Mono
-```
-
-Run it as `dist/monochromatic-ide/monochromatic-ide PROJECT`,
-with `--file FILE` as under [Project startup](#project-startup).
-`mise run //package/desktop-app/ide:run:bundle PROJECT` does the same from the package directory.
+`mise run //package/desktop-app/ide:bundle` runs that build and copies the binary,
+unstripped,
+to `dist/monochromatic-ide`:
+one executable that carries its language runtime and its license texts
+(decided on 2026-10-06: "Ship as single file").
+It runs from any location,
+alone,
+without the source tree and without `HELIX_RUNTIME` in the environment.
 `dist/` is ignored by Git.
-The existing `build` and `run` tasks stay the debug build that tests and inspection use;
-sibling applications name their release build `build`,
-and renaming here is left until the other tasks and documents that call `build` can change with it.
 
+Run it as `dist/monochromatic-ide [PROJECT]`,
+with `--file FILE` as under [Project startup](#project-startup);
+without `PROJECT` it opens the home folder.
+`mise run //package/desktop-app/ide:run:bundle [PROJECT]` does the same from the package directory.
+As in the sibling applications,
+`build` is the release build and `build:debug` the debug build;
+`run` starts the debug binary that `build:debug`,
+the tests,
+and the inspection tasks use.
+`mise run //package/desktop-app/ide:lint:release` checks the application binary under the release profile,
+where code behind `cfg(debug_assertions)` is absent and unused items show only there.
 The release build unsets `SLINT_EMIT_DEBUG_INFO`,
 which the debug tasks set so inspection can address interface elements by name,
 and builds only the application binary,
 not the runtime,
 inspection,
 and scripted-server helpers.
-The directory holds no desktop entry,
-icon,
-or installer,
-and no collected license notices of the Rust crates compiled into the binary;
-those are open decisions.
 
-### Where the binary finds its language runtime
+### What the executable carries
 
-The pinned Helix loader (`prioritize_runtime_dirs` in `helix-loader/src/lib.rs`)
-looks for each runtime file in these directories,
-in this order,
-and takes the first that has the file:
+`build.rs` embeds these files of `target/<profile>/runtime` and of the package,
+for every build with the `gui` feature,
+the debug binary included,
+and records each one's path,
+bytes,
+and FNV-1a digest (`src/content_digest.rs`) in a table sorted by path:
 
-- `runtime` beside the directory `CARGO_MANIFEST_DIR` names,
-  only when that variable is set while the application runs;
-- `runtime` in Helix's configuration directory,
-  `$XDG_CONFIG_HOME/helix/runtime` or `~/.config/helix/runtime`;
-- the directory `HELIX_RUNTIME` names,
-  when it is set;
-- a directory fixed at build time through `HELIX_DEFAULT_RUNTIME`,
-  which no task of this package sets;
-- `runtime` beside the executable,
-  after symbolic links to the executable are resolved.
+```txt
+# Paths inside the embedded table of monochromatic-ide, built from target/release/runtime
+runtime/manifest.json            pinned Helix revision and the bundled grammar libraries
+runtime/grammars/<name>.so       one parser library per bundled grammar, only those the manifest lists
+runtime/queries/<language>/      Helix query files of every language at the pinned revision
+runtime/licenses/<grammar>/      license notice of each bundled grammar
+runtime/Helix-LICENSE            MPL-2.0 text for the Helix query files and the Helix crates in the binary
+LICENSES/                        LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
+LICENSES/font/                   SIL Open Font License notices of Inter and JetBrains Mono
+```
 
-So the assembled directory works wherever it is copied or moved as a whole,
-and a symbolic link to its executable works from any directory.
-A copy of the executable alone finds no runtime:
-it shows source as plain text,
-with a message that names the manifest it looked for.
-A file in the user's Helix configuration directory or under `HELIX_RUNTIME`
-replaces the bundled file of the same relative path,
-one file at a time.
-With an empty `queries/sql/highlights.scm` in a scratch configuration directory,
-the packaged application drew a SQL file without colors and reported nothing.
+On 2026-10-06 that was 1,254 files and 34,659,293 bytes:
+27 parser libraries (33,463,328 bytes, from 11,098,288 for `sql.so` down to 20,464 for `json.so`),
+1,193 query files of 341 languages (1,087,532 bytes),
+28 grammar notices (39,593 bytes),
+Helix's license,
+the two application license texts,
+the two font notices,
+and the manifest.
+Inter and JetBrains Mono themselves are compiled in through Slint, as before.
+`monochromatic-ide --licenses` prints the embedded license and notice texts
+(decided on 2026-10-06: "--licenses flag"; `src/runtime/notices.rs`):
+every file below `LICENSES/` and `runtime/licenses/`,
+and every other file whose name contains `LICENSE` or `LICENCE` or starts with `COPYING` or `NOTICE`,
+which adds `runtime/Helix-LICENSE` and `runtime/queries/snakemake/LICENSE`;
+34 texts and 117,354 bytes of output on 2026-10-06.
+The two read-me files among the queries (`ecma/README.md`, a description of query inheritance,
+and `ripple/readme.md`, a source link) are not license terms and are left out.
+Each text comes in full under a framed heading that names its component and its embedded path,
+for example `Language grammar rust: LICENSE` above `Embedded as runtime/licenses/rust/LICENSE`.
+Every text is digest-checked before anything is printed,
+so a damaged executable prints the damage message and exits with status 1 instead of a partial list;
+a reader that closes the pipe early (`| head`) ends the listing with status 0.
+The executable still holds no collected license notices of the Rust crates compiled into it,
+which the listing's second line says;
+that remains an open question for the user.
+The table's key (`c47e913b79bf6a42` for that runtime) is a digest of every path and file digest.
+
+### Where language files come from
+
+Highlighting reads only the application's own runtime,
+whatever Helix's loader would choose.
+That loader (`prioritize_runtime_dirs` in `helix-loader/src/lib.rs`) searches,
+for each file,
+`runtime` beside `CARGO_MANIFEST_DIR`,
+then `$XDG_CONFIG_HOME/helix/runtime`,
+then `HELIX_RUNTIME`,
+then a build-time directory,
+then `runtime` beside the executable,
+and takes the first that has it;
+a file in the user's Helix configuration replaced a bundled query
+(on 2026-10-05 an empty `queries/sql/highlights.scm` there drew SQL with 0 colored spans instead of 16).
+So the application no longer uses Helix's `Loader` to compile languages:
+`src/syntax_loader.rs` implements tree-house's `LanguageLoader` itself,
+keeps Helix's built-in language table only for recognition,
+and reads grammars and queries through `src/runtime.rs`:
+
+- The application binary installs its embedded table at startup.
+  Queries are read straight from it.
+- A parser library must be a file for the dynamic loader,
+  so the first time a language is needed its library is unpacked into
+  `$XDG_CACHE_HOME/monochromatic-ide/runtime/<key>/grammars/<name>.so`
+  (`~/.cache` when the variable is unset),
+  directories mode 0700,
+  files mode 0600.
+  Only the languages of displayed files (and of their injections) are unpacked.
+- Every load first checks the embedded bytes against their build-time digest,
+  then compares the cached file with them byte for byte.
+  A missing, shortened, or altered cached file is written again and logged as a warning;
+  a damaged embedded part is reported under the source
+  ("The file runtime/grammars/sql.so embedded in … is damaged …"),
+  the file stays readable as plain text,
+  and nothing is unpacked for it.
+- When the highlighting engine cannot start at all,
+  a file no language applies to, such as a `.txt` file,
+  is plain text without a message or a warning;
+  whether a language applies is decided by the compiled-in filename and shebang rules,
+  which need no runtime.
+- A write goes to a private file named after the process and a counter,
+  then is renamed over the final name.
+  The rename replaces the directory entry in one step,
+  so concurrent first starts both write identical bytes,
+  a reader sees either complete file,
+  and a process that already loaded the old file keeps it.
+- Folders of other builds go once they have been unused for 30 days
+  (decided on 2026-10-06: "Remove after N days unused", with 30 days;
+  `src/runtime/retention.rs`).
+  At start,
+  before any window,
+  the application writes a fresh `<key>/last-used` into its own folder,
+  then removes every other `<key>` folder whose last use lies more than 30 days back.
+  Last use is the modification time of that marker,
+  which a copy renews at every start and every parser load,
+  so an older copy that keeps running keeps its folder;
+  a folder without a marker,
+  as builds before this rule left,
+  is aged by its own modification time.
+  A copy built before this rule renews nothing,
+  so its folder can go while it runs:
+  the libraries it already loaded stay mapped,
+  and its next load unpacks the library again into a new folder.
+  Only real folders named by 16 lowercase hexadecimal digits directly below `runtime/` are candidates;
+  the current key,
+  files,
+  symbolic links,
+  and other names stay,
+  nothing is removed when `runtime/` itself is a symbolic link,
+  and `remove_dir_all` removes links inside a folder without following them
+  (its documentation in the Rust standard library).
+  A folder is renamed to `.<key>.removing-<process>-<n>` before it is removed,
+  so a removal cut short leaves only that name,
+  which the next start removes.
+  Failures are logged and skipped.
+
+Test and development programs have no embedded table;
+they read the directory `HELIX_RUNTIME` names,
+which the package `runtime` task prepares,
+again through `src/runtime.rs` and never through Helix's search.
+Their messages name that task;
+the executable's messages say to replace it with a fresh copy or build it again from source.
+A build with the `gui` feature stops with a message naming the `runtime` task
+when the prepared runtime lacks its manifest or a grammar library the manifest lists
+(both observed in a disposable copy on 2026-10-06).
 
 ### What the host provides
 
@@ -2092,6 +2482,9 @@ the packaged application drew a SQL file without colors and reported nothing.
   and `libEGL`,
   which the binary opens when it starts.
   Only Wayland was checked.
+- A writable private cache directory for the unpacked parser libraries,
+  on a file system that allows running code (a `noexec` mount refuses them,
+  and the message names `XDG_CACHE_HOME` as the way out).
 - `rg` (ripgrep) on `PATH` for [Combined search](#combined-search).
 - For language features:
   `/usr/bin/bwrap` with unprivileged user namespaces,
@@ -2106,99 +2499,262 @@ the packaged application drew a SQL file without colors and reported nothing.
   with the system copies of both families hidden,
   the packaged binary drew the interface and the source in its own faces.
 
-The application writes language-server state below `$XDG_CACHE_HOME/monochromatic-ide`
+The application writes language-server state and unpacked parser libraries below
+`$XDG_CACHE_HOME/monochromatic-ide`,
 and nothing below the configuration or data directories.
 It logs to standard output,
 warnings and errors by default and more with `RUST_LOG` (see "Log").
 
+### Install and launcher entry
+
+`mise run //package/desktop-app/ide:install` runs `bundle`,
+then `bin/install.mjs`,
+which copies `dist/monochromatic-ide` to `~/.local/bin/monochromatic-ide` (mode 0755)
+and `share/applications/monochromatic.ide.desktop` to `${XDG_DATA_HOME:-~/.local/share}/applications`,
+each through a private file renamed into place,
+then refreshes that folder's `mimeinfo.cache` with `update-desktop-database` when it is installed.
+It was verified only with disposable `HOME` folders,
+never against the real home.
+
+The entry follows the sibling entries in `package/desktop-app/terminal/share/applications/`
+and `package/music-player/desktop-app/share/applications/`:
+
+- `Exec=monochromatic-ide %f`.
+  The Desktop Entry Specification's `%f` is "a single file name (including the path)",
+  and "if the application should not open any file the %f, %u, %F and %U field codes must be removed
+  from the command line and ignored",
+  so an application menu starts it with no argument (the home folder)
+  and "open with" on a folder passes that folder's path.
+  `%u` could pass a `file:` URL,
+  which the command line does not accept.
+- `MimeType=inode/directory;` offers it for folders.
+  With the entry installed in a disposable home and `~/.local/bin` on `PATH`,
+  `gio mime inode/directory` listed it among the registered and recommended applications
+  while the default stayed `org.kde.dolphin.desktop` from the system `kde-mimeapps.list`.
+  GLib lists the entry only when the command is found on `PATH`;
+  this host's systemd user session `PATH` includes `~/.local/bin`.
+- `StartupWMClass=monochromatic.ide`,
+  the Wayland app id that `src/launcher.rs` stamps on the window
+  through Slint's winit backend hook,
+  as the sibling `launcher.rs` files do.
+  Runs with `SLINT_MCP_PORT` (debug inspection) or a non-winit `SLINT_BACKEND` keep Slint's own backend
+  and get no app id.
+- `Icon=accessories-text-editor`,
+  a stock name of the Icon Naming Specification present in this host's breeze,
+  breeze-dark,
+  and AdwaitaLegacy themes (Adwaita has only its symbolic variant);
+  the application's own icon is still the user's decision.
+- `desktop-file-validate` from desktop-file-utils 0.28 accepts the entry.
+
+In the nested compositor with a disposable home,
+opening a folder through GLib (`gio launch` with the entry and the folder)
+and through KIO (`kioclient exec` with the folder URL and `inode/directory`,
+the IDE made the default for folders in that home only)
+both started the installed copy with the folder as its only argument and on that folder;
+`gio launch` with the entry alone started it with no argument on the home folder.
+The Wayland protocol log of the window showed `set_app_id("monochromatic.ide")`
+and `set_title("Monochromatic IDE")`.
+
+### Home folder as the project
+
+Starting without a folder opens `HOME`.
+The tree's header names the folder (the last path component),
+the window title stays `Monochromatic IDE`,
+and the source column is empty until a file is chosen.
+What changes:
+
+- Language-server state lies inside the project,
+  below `~/.cache/monochromatic-ide/language`,
+  which the confinement now allows,
+  binding it writable after the read-only project
+  (see [Language module](#language-module)).
+  A real bubblewrap probe in a disposable home wrote into the state folder and was refused beside it;
+  with the former order the state write was refused too.
+- A loose file directly in the home folder,
+  opened without a project folder argument,
+  is a user error that gets no special handling (decided on 2026-10-06):
+  like any file with no root marker of its language between itself and the project root,
+  its server gets the project root,
+  here the whole home folder,
+  as workspace.
+  With `scratch.rs` directly in the disposable home of 283,450 files,
+  `rust-analyzer` started confined with that workspace,
+  its state below the home folder's `.cache`,
+  logged that it found no project there,
+  held 47,092 KiB of resident memory 20 s later,
+  and answered a hover request with "No hover information at this position.";
+  the window closed cleanly with nothing left running.
+- The tree reads only the folders shown,
+  the change watcher watches only those (one inotify watch at start),
+  and search runs `rg` over the home folder,
+  which skips hidden folders and,
+  inside git repositories,
+  ignored ones.
+
 ### Bundle checks
 
-`mise run //package/desktop-app/ide:inspect:bundle [directory] [only]` checks an assembled directory,
+`mise run //package/desktop-app/ide:inspect:bundle [file] [runtime] [only]` checks a single executable,
 `dist/monochromatic-ide` by default,
-without changing it:
+against the runtime directory it was built from,
+`target/release/runtime` by default,
+without changing either:
 
 - `inventory`:
-  the executable,
-  the manifest,
-  and exactly the grammar libraries the manifest lists.
+  a regular ELF executable that contains every file `build.rs` embeds,
+  byte for byte.
 - `license-texts`:
   the application's license texts,
   both font notices,
   Helix's license,
-  and a notice with a copyright line for every bundled grammar.
-- `grammars-load`:
-  the package's four syntax test binaries,
-  run in the bounded container with `HELIX_RUNTIME` naming the checked directory's `runtime`,
-  mounted read-only.
-  They load every listed library,
-  compile the highlighting rules of every language that uses one,
-  and highlight a sample of each bundled language.
-- `starts-outside-source-tree`:
-  a copy below the private scratch root reports its version with an empty environment,
-  then runs in the nested compositor with no runtime variable
-  and an empty configuration directory,
-  and must highlight a SQL file from its own `runtime`.
-- `missing-runtime-reported`:
-  a copy without `runtime` must still open the file
-  and report the manifest it could not read.
-  The check reads the report from the application's log;
-  the window shows the same sentence under the source.
+  and a notice with a copyright line for every bundled grammar,
+  each embedded byte for byte;
+  and `--licenses`,
+  run with an empty environment,
+  exits with status 0,
+  writes nothing to standard error,
+  and prints exactly the files its selection rule names,
+  each in full under its heading.
+- `lone-copy-highlights`:
+  a copy alone in its own folder reports its version with an empty environment,
+  then highlights a SQL file in the nested compositor with empty XDG homes,
+  unpacking exactly the runtime's `sql.so` and no partial file.
+- `later-start-reuses-cache`:
+  a second start on the same cache compares the cached parser and leaves the file untouched.
+- `damaged-cache-rebuilt`:
+  a cached parser with one changed byte is reported,
+  written again,
+  and highlighting works.
+- `shadowing-query-ignored`:
+  an empty `helix/runtime/queries/sql/highlights.scm` in the configuration home changes no span.
+- `concurrent-first-starts`:
+  two copies started at the same moment on one empty cache both highlight
+  and leave one intact parser.
+- `damaged-embedded-part-reported`:
+  a copy with one changed byte inside its embedded `sql.so` keeps the source readable,
+  names the damaged part,
+  the executable,
+  and the remedy,
+  and unpacks nothing.
+- `old-cache-folders-removed`:
+  a start on a cache seeded with a key folder last used 31 days ago,
+  one used a day ago,
+  and the rest of a cut-short removal
+  removes the first and the third,
+  keeps the second,
+  and renews its own folder's marker,
+  before its display connection fails on purpose.
 
-The release binary has no headless backend
-(`SLINT_BACKEND=headless` without a display ends with "No backends configured"),
-so both startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`.
+The other startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`;
 SQL is the sample because it has a bundled grammar and no configured language server.
-Both also require a clean end:
+Each requires a clean end:
 the application exits with status 0 within the compositor's 2 s after the close request,
 and the session leaves no application process,
 no private bus daemon,
 and no bus directory behind.
-A session that fails is ended through the compositor's `quit` first,
-because a compositor ended by a signal leaves its `dbus-daemon`,
-that daemon's directory below the temporary directory,
-and its hosted application running;
-whatever is left is stopped and removed.
+A frame is taken only once the window shows more than eight colors.
+`RUST_LOG` is given to the application alone,
+because the compositor reads it too.
 
-`mise run //package/desktop-app/ide:inspect:bundle-guards [directory] [only]` damages one copy per case
-and requires the matching check to fail on it while the unrelated checks still pass:
-a removed grammar library,
-an unlisted library,
+`mise run //package/desktop-app/ide:inspect:bundle-guards [file] [runtime] [only]` damages one copy per case
+and requires the matching checks to fail on it while the unrelated ones still pass:
 a cleared executable bit,
-removed query rules,
-a removed grammar notice,
-removed REUSE header lines,
-a removed font notice,
-a removed application license,
-a removed Helix license,
-a removed runtime,
-and an executable that still finds a runtime elsewhere.
+and one changed byte inside the embedded SQL highlighting rules,
+the SQL parser,
+a grammar notice,
+a font notice,
+an application license,
+and Helix's license.
+`license-texts` fails on every one of these but the SQL cases:
+a copy without its executable bit cannot run `--licenses`,
+and a copy with a damaged text exits with status 1 and the damage message naming that text.
 
-### Measured on 2026-10-05
+Behavior cannot be removed from a finished file,
+so the run-time checks were also run on an altered debug build (on 2026-10-06):
+with the cache compared by length only,
+`damaged-cache-rebuilt` failed ("the damaged cached parser was not reported and written again");
+with a query file below `$XDG_CONFIG_HOME/helix/runtime` read first,
+`shadowing-query-ignored` failed (0 spans with the user query);
+with the digest check skipped,
+`damaged-embedded-part-reported` failed ("the damaged copy reported nothing").
+`lone-copy-highlights` passed on the same build.
+The unit and integration tests behind these rules were observed failing in a copy with each guard removed:
+`tests/syntax_shadowing.rs`,
+the cache tests in `src/runtime/cache_tests.rs`
+(`a_rewrite_replaces_the_file_instead_of_writing_into_it` fails with writes into the file in place,
+which `concurrent_first_uses_all_get_the_complete_library` did not always detect),
+the digest test in `src/runtime/embedded_tests.rs`,
+the bind-order test,
+the state-directory test,
+and the home default in `tests/cli_args.rs`.
+The cache cleanup's guards were removed the same way:
+with the current key no longer skipped,
+`the_current_key_is_never_removed_however_long_unused` failed (the current folder was removed);
+with the age no longer compared,
+`a_folder_used_within_30_days_is_kept` failed (all four recent folders removed),
+and so did `a_start_removes_cache_folders_of_other_builds_unused_for_30_days` in `tests/cli_process.rs`
+("the folder used a day ago was removed");
+with the parser load no longer renewing the marker,
+`a_marker_renewed_by_a_running_copy_keeps_its_folder` failed.
+
+### Measured on 2026-10-06
 
 - Size:
-  81,516,093 bytes in 1,255 files.
-  The binary is 46,856,800 bytes with its symbol table
-  (35,666,600 after `strip --strip-all`, which the task does not run);
-  `runtime/grammars` is 33,463,328 bytes in 27 files,
-  `runtime/queries` 1,087,532 bytes in 1,193 files,
-  and the license texts and notices 107,898 bytes in 33 files.
-  Size is not a constraint for this package.
+  the executable is 81,743,984 bytes,
+  34,887,184 more than the former directory's binary,
+  close to the 34,659,293 embedded bytes.
 - Build:
-  2 GiB and 2 CPUs are enough.
-  Two release builds from an empty release directory finished in 18 min 40 s and 15 min 22 s of Cargo time,
-  on a host whose load average was between 54 and 97 each time it was read during them,
-  so the second container averaged 1.04 of its 2 CPUs.
-  In the second,
-  sampled four times a second from the container's control group,
-  anonymous memory peaked at 1,116 MiB;
+  one release build from an empty release directory took 12 min 45 s of Cargo time
+  at host load averages between 45 and 78 when read during it;
+  anonymous memory peaked at 938 MiB (sampled from the container's control group),
   the group reached its 2,048 MiB limit only through reclaimable file cache,
-  used at most 19 MiB of swap,
+  used at most 45 MiB of swap,
   and recorded no out-of-memory kill.
-  Both builds produced the same binary, byte for byte.
-- The release build prints one warning the debug build does not:
-  `set_annotations` in `src/native/annotate.rs` is unused,
-  because its only caller outside tests is the debug-only inspection path.
-  `lint:clippy` checks the debug profile and does not see it.
+- First start and later start,
+  five runs each at host load averages of 90 to 99,
+  for the 11,098,288-byte `sql.so`:
+  unpacking took 7 to 586 ms (median 71 ms),
+  the byte comparison of a later start 8 to 34 ms (median 10 ms);
+  preparing the language as a whole (digest check, unpack or comparison, loading, and compiling its rules)
+  took 218 to 776 ms on a first start (median 449 ms) and 130 to 204 ms on a later one (median 162 ms).
+- Home folder:
+  a disposable home of 283,450 files and 359,585,884 bytes
+  (hidden caches and toolchains, documents, three 64 MiB binary downloads,
+  ten git projects with ignored `node_modules` and `target`, one project without git)
+  showed its tree 519 to 2,641 ms after the compositor started (three starts),
+  with one inotify watch.
+  Of its files,
+  `rg --files` with the application's arguments lists 15,429.
+  In the application,
+  a query that matches nothing finished its file-name search in 266 ms
+  and its content search in 4,618 ms;
+  a common word reached the 30-result cap in 33 ms.
+  Run directly with the same arguments,
+  the content search for a query that matches nothing took 456 ms to 11,383 ms (three runs, cold page cache first).
+- After the 30-day cleanup and `--licenses` (commit `0fe1d7ed8`):
+  the executable is 81,766,496 bytes,
+  22,512 more,
+  with the same embedded table (1,254 files, key `c47e913b79bf6a42`);
+  `--licenses` printed 34 texts in 117,354 bytes;
+  the start-time sweep of the runtime cache folder took 36 to 116 µs in the ten bundle-check sessions
+  that had nothing to remove,
+  and 438 µs in `old-cache-folders-removed`,
+  which removed a key folder and the rest of a cut-short removal
+  (host load average 69.5 when the checks started).
+
+### Measured on 2026-10-05 (former directory bundle)
+
+Before the single executable,
+`bundle` assembled a directory with the binary,
+`runtime/`,
+and `LICENSES/`:
+81,516,093 bytes in 1,255 files,
+the binary 46,856,800 bytes with its symbol table
+(35,666,600 after `strip --strip-all`).
+Two release builds from an empty release directory finished in 18 min 40 s and 15 min 22 s of Cargo time
+at load averages between 54 and 97;
+anonymous memory peaked at 1,116 MiB,
+and both builds produced the same binary,
+byte for byte.
 
 [handover]: ../../../doc/handover/slint-ide-0x.md
 [scope]: ../../../doc/decision/slint-ide-0x-scope.md

@@ -27,10 +27,10 @@ pub(crate) fn parser_failure(
             "The file exceeds the parser's size limit. Source remains readable without coloring; use a smaller source file for highlighting."
         }
         HighlighterError::NoRootConfig => {
-            "The bundled parser or highlighting rules could not be loaded. Rebuild matching language assets and restart the application."
+            "The bundled parser or highlighting rules could not be loaded. Replace the executable with a fresh copy of the application, or build it again from source, then restart the application."
         }
         HighlighterError::IncompatibleGrammar(_, _) => {
-            "The bundled parser data is incompatible with this application. Rebuild matching language assets and restart the application."
+            "The bundled parser data is incompatible with this application. Replace the executable with a fresh copy of the application, or build it again from source, then restart the application."
         }
         HighlighterError::InvalidRanges => {
             "The parser rejected source ranges. Source remains readable without coloring; reopen the file or restart to retry, and report a reproducible input if it persists."

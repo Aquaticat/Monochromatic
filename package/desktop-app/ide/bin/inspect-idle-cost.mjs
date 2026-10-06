@@ -5,7 +5,7 @@
 // The IDE runs in the repository's nested compositor, so a host Wayland session is required.
 import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
-import { closeSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, realpathSync, rmSync, statfsSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statfsSync, statSync, writeFileSync } from 'node:fs';
 import { createConnection } from 'node:net';
 import { homedir } from 'node:os';
 import { join, relative, resolve, sep } from 'node:path';
@@ -106,6 +106,10 @@ const cpuTicks = pid => {
   const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ');
   return Number(fields[11]) + Number(fields[12]);
 };
+// The IDE's inotify watches: one `inotify wd:` line per watch in each inotify descriptor's fdinfo.
+const inotifyWatches = pid => readdirSync('/proc/' + pid + '/fd').filter(fd => {
+  try { return readlinkSync('/proc/' + pid + '/fd/' + fd) === 'anon_inode:inotify'; } catch { return false; }
+}).reduce((total, fd) => total + (readFileSync('/proc/' + pid + '/fdinfo/' + fd, 'utf8').match(/^inotify wd:/gm) ?? []).length, 0);
 const io = pid => Object.fromEntries(readFileSync('/proc/' + pid + '/io', 'utf8').trim().split('\n').map(line => line.split(': ')).map(([key, value]) => [key, Number(value)]));
 const ticksPerSecond = Number(spawnSync('getconf', ['CLK_TCK'], { encoding: 'utf8' }).stdout.trim());
 // Share of recent time in which some task (`some`) or every task (`full`) waited for the resource.
@@ -212,6 +216,7 @@ const sample = sweep => async (pid, logPath) => {
   const gaps = sweeps.slice(1).map((stamp, index) => stamp - sweeps[index]).sort((left, right) => left - right);
   const listed = own.filter(line => line.includes('read directory snapshot'));
   return {
+    inotify_watches: inotifyWatches(pid),
     cpu_ms_per_s: round(((after.ticks - before.ticks) * 1000 / ticksPerSecond) / elapsed, 2),
     read_calls_per_s: round((after.io.syscr - before.io.syscr) / elapsed, 1),
     read_bytes_per_s: Math.round((after.io.rchar - before.io.rchar) / elapsed),
@@ -289,7 +294,7 @@ for (const count of folderCounts) {
     const all = results.filter(row => row.folders === count && row.sweep_s === variant.sweep && row.run !== 'strace');
     const kept = all.filter(row => !row.rejected);
     console.log(['SUMMARY', 'folders=' + count, 'sweep=' + variant.sweep + 's', 'accepted=' + kept.length, 'rejected=' + (all.length - kept.length),
-      ...['cpu_ms_per_s', 'read_calls_per_s', 'listings_per_s', 'log_lines_per_s'].map(name => name + '=' + spread(kept.map(row => row[name])))].join(' '));
+      ...['inotify_watches', 'cpu_ms_per_s', 'read_calls_per_s', 'listings_per_s', 'log_lines_per_s'].map(name => name + '=' + spread(kept.map(row => row[name])))].join(' '));
   }
 }
 console.log('Idle cost results: ' + join(artifact, 'results.json'));

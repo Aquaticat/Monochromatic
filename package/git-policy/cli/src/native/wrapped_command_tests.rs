@@ -10,11 +10,12 @@
 #![cfg(unix)]
 
 /// The lifecycle under test, its inputs and the scripted facts.
-use super::{ADD_CANDIDATES_NEED, WrappedOutcome, run_wrapped_command};
+use super::{WrappedOutcome, run_wrapped_command};
 use crate::command_test_support::os_arguments;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::diagnostics::EngineFailureCode;
-use crate::policy_checks::{CandidateSource, ShippedChecks};
+use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+use crate::policy_content::LifecycleContent;
 use crate::policy_events::{FindingEvent, PolicyEvent, render_policy_events};
 use crate::policy_registry::{PolicyId, Severity};
 use crate::policy_test_support::{
@@ -23,7 +24,7 @@ use crate::policy_test_support::{
 use crate::policy_trigger::Trigger;
 use crate::repository_location::RepositoryLocation;
 use crate::rule_add_explicit::decide_add_explicit;
-use crate::test_support::{fixture, remove};
+use crate::test_support::{fixture, remove, repository};
 use crate::unported::{Unported, unported_notice};
 use crate::worktree_identity::WorktreeIdentity;
 use crate::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
@@ -41,12 +42,12 @@ fn run(
     for (name, value) in variables {
         environment.push((OsString::from(name), OsString::from(value)));
     }
-    let mut checks: ShippedChecks<ScriptedFacts> = ShippedChecks {
+    let mut checks: ShippedChecks<ScriptedFacts> = shipped_checks(
         facts,
-        arguments: stripped.arguments.clone(),
-        candidates: CandidateSource::None,
-        allowed_worktree_dirs: Vec::<PathBuf>::new(),
-    };
+        stripped.arguments.clone(),
+        LifecycleContent::None,
+        Vec::<PathBuf>::new(),
+    );
     let outcome: WrappedOutcome =
         run_wrapped_command(&stripped, environment.as_slice(), &mut checks);
     return (outcome, checks.facts.asked);
@@ -111,15 +112,25 @@ fn manual_push_refused() -> WrappedOutcome {
     return refuses(&Unported::Lifecycle(Trigger::ManualPush), "push");
 }
 
-/// The refusal of a content policy that cannot read what `git add` would stage.
-fn add_candidates_refused(policy: PolicyId) -> WrappedOutcome {
-    return refuses(
-        &Unported::PolicyNeeds {
-            policy,
-            needs: ADD_CANDIDATES_NEED,
-        },
-        "add",
-    );
+/// The refusal of an unported content policy asked about what `git add` would stage.
+fn content_refused(policy: PolicyId, needs: &'static str) -> WrappedOutcome {
+    return refuses(&Unported::PolicyNeeds { policy, needs }, "add");
+}
+
+/// The failure of `final-newline` reading candidates the scripted facts cannot prepare.
+fn unprepared_final_newline() -> PolicyEvent {
+    return PolicyEvent::EngineFailure {
+        code: EngineFailureCode::ContentUnavailable,
+        message: String::from("the scripted facts prepare no candidates"),
+        trigger: Some(Trigger::PreForward),
+        policy: Some(PolicyId::FinalNewline),
+        path: None,
+    };
+}
+
+/// The location question, then the candidates of `git add`.
+fn location_and_candidates() -> Vec<String> {
+    return vec![String::from("location"), String::from("candidates")];
 }
 
 /// A fixture directory used as a worktree top level, with this configuration text.
@@ -348,17 +359,21 @@ fn a_dry_run_commit_is_checked_and_forwarded() {
     );
 }
 
-/// `git add` is stopped by add-explicit first, then by the first content policy that is on.
+/// `git add` is checked by add-explicit first, then its candidates are read by the first
+/// content policy that is on; candidates that cannot be prepared stop it with exit 2.
 #[test]
-fn add_is_refused_while_a_content_policy_is_on() {
+fn add_reads_its_candidates_after_add_explicit() {
     assert_eq!(
         run(&["add", "file"], scripted_facts(), &[]),
         (
-            add_candidates_refused(PolicyId::FinalNewline),
-            location_only()
+            WrappedOutcome::Exit {
+                code: 2,
+                stderr: render_policy_events(0, &[unprepared_final_newline()]),
+            },
+            location_and_candidates()
         )
     );
-    // A bulk add is rejected by add-explicit before any content policy is asked.
+    // A bulk add is rejected by add-explicit before any content policy reads.
     let bulk: String = decide_add_explicit(os_arguments(&["add", "."]).as_slice())
         .expect("a bulk add is rejected");
     let bulk_event: PolicyEvent = PolicyEvent::Finding(FindingEvent {
@@ -381,29 +396,18 @@ fn add_is_refused_while_a_content_policy_is_on() {
             location_only()
         )
     );
-    // With keep-going the finding is reported and the content policy still refuses.
-    let mut after_finding: String = render_policy_events(0, std::slice::from_ref(&bulk_event));
-    after_finding.push_str(
-        unported_notice(
-            &Unported::PolicyNeeds {
-                policy: PolicyId::FinalNewline,
-                needs: ADD_CANDIDATES_NEED,
-            },
-            "add",
-        )
-        .as_str(),
-    );
+    // With keep-going the finding is reported and the content policy still reads.
     assert_eq!(
         run(&["--cli-git-keep-going", "add", "."], scripted_facts(), &[]),
         (
             WrappedOutcome::Exit {
                 code: 2,
-                stderr: after_finding,
+                stderr: render_policy_events(0, &[bulk_event, unprepared_final_newline()]),
             },
-            location_only()
+            location_and_candidates()
         )
     );
-    // Escaping the only content policy that is on lets the command through, without the control.
+    // Escaping the only content policy that is on prepares nothing and lets the command through.
     assert_eq!(
         run(
             &["add", "--no-enforce-final-newline", "file"],
@@ -436,13 +440,13 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
     );
     std::fs::write(
         root.join(CONFIG_FILE_NAME),
-        r#"{ "policies": { "final-newline": "off", "security/forbidden-strings": "error" } }"#,
+        r#"{ "policies": { "final-newline": "off", "markdown/autofix": "error" } }"#,
     )
     .expect("configuration");
     assert_eq!(
         run(&["add", "file"], at_root(root.as_path()), &[]),
         (
-            add_candidates_refused(PolicyId::ForbiddenStrings),
+            content_refused(PolicyId::MarkdownAutofix, MARKDOWN_AUTOFIX_NEEDS),
             location_only()
         )
     );
@@ -635,4 +639,77 @@ fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
             location_only()
         )
     );
+}
+
+/// Findings of `git add` come from what it would stage: a warning lets it through, an
+/// error stops it, and the real index is left for Git to change.
+#[test]
+fn add_findings_come_from_what_the_add_would_stage() {
+    let root: PathBuf = fixture("wrapped-add-content");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"mono/forbidden-root-context\": \"error\" } }\n",
+    )
+    .expect("configuration");
+    std::fs::write(repo.join("a.txt"), b"no final newline").expect("file");
+    std::fs::write(repo.join("CONTEXT.md"), b"context\n").expect("context");
+    std::fs::create_dir(repo.join("nested")).expect("nested");
+    std::fs::write(repo.join("nested/CONTEXT.md"), b"nested\n").expect("nested context");
+    let index_before: Vec<u8> = std::fs::read(repo.join(".git/index")).expect("index");
+    let mut facts: ScriptedFacts = at_root(repo.as_path());
+    facts.candidates_repository = Some(repo.clone());
+    let warning: PolicyEvent = PolicyEvent::Finding(FindingEvent {
+        trigger: Trigger::PreForward,
+        policy: PolicyId::FinalNewline,
+        severity: Severity::Warn,
+        code: "noncanonical-final-newline",
+        message: String::from("Non-empty text file must end with exactly one LF byte."),
+        path: Some(String::from("a.txt")),
+        location: None,
+        fix_available: false,
+    });
+    assert_eq!(
+        run(&["add", "a.txt"], facts.clone(), &[]),
+        (
+            WrappedOutcome::Forward {
+                arguments: os_arguments(&["add", "a.txt"]),
+                stderr: render_policy_events(0, &[warning]),
+            },
+            location_and_candidates()
+        )
+    );
+    let forbidden: PolicyEvent = PolicyEvent::Finding(FindingEvent {
+        trigger: Trigger::PreForward,
+        policy: PolicyId::ForbiddenRootContext,
+        severity: Severity::Error,
+        code: "root-context-forbidden",
+        message: String::from("Root CONTEXT.md is forbidden; read source code directly."),
+        path: Some(String::from("CONTEXT.md")),
+        location: None,
+        fix_available: false,
+    });
+    assert_eq!(
+        run(&["add", "--", "CONTEXT.md"], facts.clone(), &[]),
+        (
+            WrappedOutcome::Exit {
+                code: 1,
+                stderr: render_policy_events(0, &[forbidden]),
+            },
+            location_and_candidates()
+        )
+    );
+    assert_eq!(
+        run(&["add", "nested/CONTEXT.md"], facts, &[]),
+        (
+            forwards(&["add", "nested/CONTEXT.md"]),
+            location_and_candidates()
+        )
+    );
+    assert_eq!(
+        std::fs::read(repo.join(".git/index")).expect("index"),
+        index_before,
+        "only Git, after the lifecycle, may change the index"
+    );
+    remove(root.as_path());
 }

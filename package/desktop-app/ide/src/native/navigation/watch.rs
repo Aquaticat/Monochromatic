@@ -2,9 +2,10 @@
 //! Notifications never carry listings or text: the existing readers reread and fence their replies.
 
 /// Navigation owns the watcher and the directory schedule; the source state owns its own schedule.
-use super::{Navigation, State};
-/// A full reread treats the displayed file as changed and finished.
-use ide_app::change_watch::SourceChange;
+use super::{AppWindow, Navigation, State};
+/// A full reread asks for a reread of the displayed file once it has been quiet; the servers' changes go to
+/// the language worker.
+use ide_app::change_watch::{ServerChange, SourceChange};
 /// What: `Rc<RefCell<State>>` is the UI-thread shared source state; `BTreeSet` is an ordered set.
 /// Why: The watcher compares whole sets, so an unchanged tree sends nothing to the watch thread.
 ///
@@ -17,8 +18,66 @@ use std::{
     collections::BTreeSet,
     path::{Path, PathBuf},
     rc::Rc,
-    time::Instant,
+    time::{Duration, Instant},
 };
+/// What: `UnboundedSender` is the sending end of the language worker's queue without a size limit.
+/// Why: The change watcher sends from notify's thread and never waits.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Feed = Queue<ServerChange>;
+/// ```
+use tokio::sync::mpsc::UnboundedSender;
+
+/// What: Watch the project's source folders for the language servers and send their changes to `feed`, or,
+///       with `None`, release those watches. `UnboundedSender<ServerChange>` is the language worker's queue.
+/// Why: The language worker says whether some server registered file watchers; the watcher lives here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function feedServers(navigation: Navigation, feed: Queue<ServerChange> | undefined): void
+/// ```
+pub(in crate::native) fn feed_servers(
+    navigation: &mut Navigation,
+    feed: Option<UnboundedSender<ServerChange>>,
+) {
+    navigation.watcher.feed_servers(feed);
+}
+
+/// Shortest time between two watch retries asked for by scrolling.
+const SCROLL_RETRY_GAP: Duration = Duration::from_secs(1);
+
+/// The user scrolling the tree is a moment to retry watches that wait on the inotify limit, without the
+/// backoff; while every shown folder is watched, scrolling asks for nothing.
+pub(super) fn scrolled(window: &AppWindow, navigation: &mut Navigation, now: Instant) {
+    let offset = window.get_tree_scroll_y();
+    // What: `f32` comparison of the toolkit's scroll offset with the previous tick's.
+    // Why: Any change is a scroll by the user or by a reveal; both mean the tree is in use.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (offset === navigation.treeScroll) return;
+    // ```
+    if (offset - navigation.tree_scroll).abs() < f32::EPSILON {
+        return;
+    }
+    navigation.tree_scroll = offset;
+    let unwatched = navigation
+        .shown
+        .iter()
+        .any(|path| return !navigation.watched.contains(path));
+    let rested = navigation
+        .scroll_retry
+        .is_none_or(|at| return now.saturating_duration_since(at) >= SCROLL_RETRY_GAP);
+    if unwatched && rested {
+        tracing::debug!(
+            offset,
+            "the tree scrolled while shown folders lack a watch; retrying their watches now"
+        );
+        navigation.scroll_retry = Some(now);
+        navigation.watcher.retry_now();
+    }
+}
 
 /// Recompute the shown directories from the visible rows and send them with the displayed file.
 /// Collapsed folders drop out, so their watches are removed; descendants of collapsed folders are not shown.
@@ -68,8 +127,10 @@ pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     }
     let mut current = source.borrow_mut();
     if changes.everything {
-        current.refresh.changed(SourceChange::Settled, now);
-    } else if let Some(change) = changes.source {
+        // Events may have been lost, so nothing says whether a write is in progress: reread once quiet.
+        current.refresh.changed(SourceChange::Reread, now);
+    }
+    if let Some(change) = changes.source {
         current.refresh.changed(change, now);
     }
     // What: `as_deref` borrows the optional owned path as `Option<&Path>`; `and_then(Path::parent)` takes its directory.
@@ -81,9 +142,11 @@ pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     // ```
     let parent = current.file_path.as_deref().and_then(Path::parent);
     let watched = parent.is_some_and(|directory| return navigation.watched.contains(directory));
-    // A displayed file needs its folder watched; no displayed file needs nothing.
-    let file_covered = watched || parent.is_none();
+    let outside = current.outside_project;
+    // A displayed file needs its folder watched; no displayed file, or one outside the project, needs nothing.
+    let file_covered = watched || parent.is_none() || outside;
     current.refresh.set_watched(watched);
+    current.refresh.set_outside_project(outside);
     drop(current);
     if navigation
         .directories

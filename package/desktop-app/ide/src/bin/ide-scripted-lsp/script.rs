@@ -136,8 +136,11 @@ pub struct Script {
     /// kill ends the process.
     pub linger: bool,
     /// One line written to standard error when `shutdown` arrives, as a real server reports its
-    /// own shutdown there; nothing when absent.
+    /// own shutdown there, and right before the hover crash ends the process, as a crashing
+    /// server's last words; nothing when absent.
     pub stderr_at_shutdown: Option<String>,
+    /// File watchers registered with the client after `initialized`, as the protocol's JSON array.
+    pub watchers: Option<Value>,
 }
 
 /// What: Decode the JSON text of one variable. `Option<Value>` is nothing when the variable is
@@ -249,6 +252,7 @@ impl Script {
             linger: read("LINGER", "0") == "1",
             // `.ok()` turns an unset or unreadable variable into "nothing".
             stderr_at_shutdown: env::var("IDE_SCRIPTED_STDERR").ok(),
+            watchers: json("WATCHERS"),
         };
     }
 

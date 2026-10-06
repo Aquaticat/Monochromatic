@@ -2511,9 +2511,11 @@ dependencies = [
  "base64",
  "clap",
  "futures-util",
+ "globset",
  "helix-core",
  "helix-loader",
  "helix-lsp",
+ "i-slint-backend-winit",
  "notify",
  "parley",
  "serde",
@@ -2527,6 +2529,7 @@ dependencies = [
  "tracing",
  "tracing-log",
  "tracing-subscriber",
+ "tree-house",
 ]
 
 [[package]]

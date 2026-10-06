@@ -89,12 +89,7 @@ fn assert_repository_settings(config: &CliGitConfig, dependent_bump: (Severity, 
             exclude: vec![String::from("package/ssg/")],
         }
     );
-    assert_eq!(
-        config.policies.forbidden_strings,
-        ForbiddenStringsOptions {
-            builtin_rules: true
-        }
-    );
+    assert!(config.policies.forbidden_strings.builtin_rules);
     assert_eq!(config.concurrency, CliGitConfig::defaults().concurrency);
 }
 
@@ -110,12 +105,20 @@ fn repository_translation_names_all_four_optional_policies() {
             "mono/forbidden-root-context": "error",
             // The incumbent ran this one without the root configuration naming it.
             "mono/dependent-version-bump": "error",
-            "security/forbidden-strings": ["error", { "builtinRules": true }],
+            // The rules file the root `mise.toml` names in `FORBIDDEN_STRINGS_RULES` today.
+            "security/forbidden-strings": ["error", { "builtinRules": true, "rulesFile": ".cache/forbidden-strings.rules.txt" }],
           },
         }"#,
     )
     .expect("translated repository configuration");
     assert_repository_settings(&config, (Severity::Error, true));
+    assert_eq!(
+        config.policies.forbidden_strings,
+        ForbiddenStringsOptions {
+            builtin_rules: true,
+            rules_file: Some(String::from(".cache/forbidden-strings.rules.txt")),
+        }
+    );
 }
 
 /// A word-for-word translation of the TypeScript `policies` map names only three of them:
@@ -133,6 +136,13 @@ fn literal_translation_silently_stops_the_unlisted_policy() {
     )
     .expect("literal translation");
     assert_repository_settings(&config, (Severity::Off, false));
+    assert_eq!(
+        config.policies.forbidden_strings,
+        ForbiddenStringsOptions {
+            builtin_rules: true,
+            rules_file: None,
+        }
+    );
 }
 
 /// Each optional policy is off until the file names it, and naming one turns on only that one.
@@ -372,7 +382,7 @@ fn options_alone_list_a_policy_at_its_default_severity() {
         ),
         (
             r#"{ "policies": { "security/forbidden-strings": { "rules": [] } } }"#,
-            "Unknown configuration key: policies.security/forbidden-strings.rules. The only accepted option is builtinRules.",
+            "Unknown configuration key: policies.security/forbidden-strings.rules. Accepted options: builtinRules, rulesFile.",
         ),
         // A policy without options cannot be listed by an object.
         (

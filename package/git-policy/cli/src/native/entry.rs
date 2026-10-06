@@ -17,10 +17,15 @@ use super::effective_target::default_allowed_worktree_dirs;
 use super::forwarding::replace_process_with_real_git;
 use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
 use super::management::plan_management;
-use super::policy_checks::{CandidateSource, ShippedChecks};
+/// The shipped checks and their constructor.
+use super::policy_checks::{ShippedChecks, shipped_checks};
+/// A forwarded command starts with no candidate content.
+use super::policy_content::LifecycleContent;
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
 use super::real_git_candidate::same_file;
 use super::repository_facts::{GitFacts, git_facts};
+/// The variable that names the forbidden-strings rules file.
+use super::scanner_selection::RULES_VARIABLE;
 use super::wrapped_command::{WrappedOutcome, run_wrapped_command};
 use super::wrapper_controls::{Controls, no_controls, strip_global_controls};
 use super::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
@@ -148,17 +153,19 @@ pub fn plan_invocation(
         overlay.as_slice(),
     );
     // `mut` lets the lifecycle cache facts and state what content policies can read.
-    let mut checks: ShippedChecks<GitFacts> = ShippedChecks {
+    let mut checks: ShippedChecks<GitFacts> = shipped_checks(
         facts,
         // `.clone()` copies the stripped arguments for the rule cores.
-        arguments: stripped.arguments.clone(),
-        candidates: CandidateSource::None,
-        allowed_worktree_dirs: default_allowed_worktree_dirs(
+        stripped.arguments.clone(),
+        LifecycleContent::None,
+        default_allowed_worktree_dirs(
             environment,
             // `.as_deref()` lends the optional owned path as an optional borrowed one.
             home_directory(environment).as_deref(),
         ),
-    };
+    );
+    // The forbidden-strings rules variable is read from this invocation's environment.
+    checks.scanner_settings.rules_variable = environment_value(environment, RULES_VARIABLE);
     // `match` picks by variant and binds the fields each ending carries.
     match run_wrapped_command(&stripped, environment, &mut checks) {
         // `arguments: forwarded` binds the field under a new name.

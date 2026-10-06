@@ -90,7 +90,7 @@ fn policy_pass(directory: &Path) {
     std::fs::write(repo.join("worktree-leak.txt"), format!("{token}\n")).expect("worktree edit");
     std::fs::write(repo.join("staged-leak.txt"), "clean\n").expect("worktree edit");
     // The rules file is selected the way the standalone scanner selects it, relative to the root.
-    let rules: RulesSource = rules_source(Some(OsStr::new("rules.txt")), repo.as_path());
+    let rules: RulesSource = rules_source(None, Some(OsStr::new("rules.txt")), repo.as_path());
     assert!(rules.explicit);
     let scanner: CandidateScanner = match CandidateScanner::load(&rules, false) {
         Ok(loaded) => loaded,

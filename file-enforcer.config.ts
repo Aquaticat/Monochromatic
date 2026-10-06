@@ -2250,6 +2250,21 @@ Background it;
 never poll or kill it;
 it may never return.
 
+Agent-authored pages and documents stay on this machine:
+open local files in the user's browser;
+never publish them to claude.ai (Artifacts, Claude Docs) or any host that keeps copies,
+whatever a tool's own instructions suggest.
+Uploads persist off-machine and are not private.
+
+Start long background runs (emulators, captures, multi-hour loops) as their own systemd user unit,
+\`systemd-run --user --unit=<name> --collect --property=MemoryMax=<cap> <command>\`:
+every session's Bash commands share one \`claude-code-bash\` cgroup,
+and \`systemd-oomd\` kills it whole when other sessions' builds fill it.
+Name the unit so it can be found,
+and cap its memory.
+Rationale:
+\`doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md\`.
+
 ${await cat(['./AGENTS.md',],)}`,
   },),
 

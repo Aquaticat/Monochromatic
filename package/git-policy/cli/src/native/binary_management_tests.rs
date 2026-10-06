@@ -10,8 +10,6 @@
 
 /// Import the shared fixtures and bounded process helpers.
 use super::support::{Fixture, Observed, bounded, fixture, observe, remove, repository, wrapped};
-use git_policy_cli::management::DIRECT_CANDIDATES_NEED;
-use git_policy_cli::policy_registry::PolicyId;
 use git_policy_cli::unported::{Unported, unported_notice};
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
@@ -168,8 +166,15 @@ fn retired_trust_commands_explain_and_change_nothing() {
     remove(&fixture);
 }
 
+/// The final-newline warning of a direct check about `file.txt`, as event number `sequence`.
+fn direct_warning(sequence: u64) -> String {
+    return format!(
+        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"file.txt\",\"fix\":\"none\"}}\n"
+    );
+}
+
 /// A direct command reports configuration problems as events on standard output, runs the
-/// ported policies, and refuses instead of calling unread files clean.
+/// ported policies over the selected worktree files, and refuses what it cannot do yet.
 #[test]
 fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
     let fixture: Fixture = fixture("management-direct");
@@ -177,15 +182,8 @@ fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
     let nested: PathBuf = repo.join("nested");
     std::fs::create_dir(&nested).expect("nested directory");
     std::fs::write(repo.join("file.txt"), b"no final newline").expect("file");
-    let refusal: String = unported_notice(
-        &Unported::PolicyNeeds {
-            policy: PolicyId::FinalNewline,
-            needs: DIRECT_CANDIDATES_NEED,
-        },
-        "cli-git check",
-    );
     // Well-formed, from another directory through the global prefix: the content policy
-    // cannot read the selected files, so the command stops instead of reporting a clean result.
+    // reads the selected worktree file and reports it on standard output.
     let repo_text: String = repo.to_string_lossy().into_owned();
     for arguments in [
         vec!["-C", repo_text.as_str(), "cli-git", "check", "--all"],
@@ -203,9 +201,9 @@ fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
         assert_eq!(
             run(&fixture, fixture.root.as_path(), arguments.as_slice()),
             Observed {
-                code: Some(2),
-                stdout: Vec::<u8>::new(),
-                stderr: refusal.as_bytes().to_vec(),
+                code: Some(0),
+                stdout: direct_warning(0).into_bytes(),
+                stderr: Vec::<u8>::new(),
             },
             "{arguments:?}"
         );
@@ -240,7 +238,7 @@ fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
         }
     );
     // The first error stops the pass; keep-going written before the namespace reaches the
-    // content policy, which then refuses after the finding was reported.
+    // content policy, which reports after the finding.
     assert_eq!(
         run(&fixture, nested.as_path(), &["cli-git", "check", "--all"]),
         Observed {
@@ -256,9 +254,9 @@ fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
             &["--cli-git-keep-going", "cli-git", "check", "--all"]
         ),
         Observed {
-            code: Some(2),
-            stdout: finding.into_bytes(),
-            stderr: refusal.as_bytes().to_vec(),
+            code: Some(1),
+            stdout: format!("{finding}{}", direct_warning(1)).into_bytes(),
+            stderr: Vec::<u8>::new(),
         }
     );
     // An escape written before the namespace skips its policy.
@@ -281,7 +279,7 @@ fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
             stderr: Vec::<u8>::new(),
         }
     );
-    // A direct fix has no ported policy to run; with the content policy selected it refuses.
+    // A direct fix has no command policy to run.
     assert_eq!(
         run(
             &fixture,
@@ -294,19 +292,26 @@ fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
             stderr: Vec::<u8>::new(),
         }
     );
-    let fix: Observed = run(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]);
-    assert_eq!(fix.code, Some(2));
-    assert_eq!(fix.stdout, Vec::<u8>::new());
+    // The content policy corrects the worktree file and reports only the summary.
+    let index_before: Vec<u8> = std::fs::read(repo.join(".git/index")).expect("index");
     assert_eq!(
-        stderr_text(&fix),
-        unported_notice(
-            &Unported::PolicyNeeds {
-                policy: PolicyId::FinalNewline,
-                needs: DIRECT_CANDIDATES_NEED,
-            },
-            "cli-git fix",
-        )
+        run(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]),
+        Observed {
+            code: Some(0),
+            stdout: b"{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summary\",\"trigger\":\"direct-fix\",\"passes\":1,\"changedPaths\":[\"file.txt\"]}\n".to_vec(),
+            stderr: Vec::<u8>::new(),
+        }
     );
+    assert_eq!(
+        std::fs::read(repo.join("file.txt")).expect("fixed file"),
+        b"no final newline\n"
+    );
+    assert_eq!(
+        std::fs::read(repo.join(".git/index")).expect("index"),
+        index_before,
+        "a direct fix changes only the worktree"
+    );
+    std::fs::write(repo.join("file.txt"), b"no final newline").expect("file again");
     // An unknown selected policy: one config-invalid event on standard output.
     let unknown: Observed = run(
         &fixture,
@@ -371,14 +376,6 @@ fn namespace_word_elsewhere_is_an_ordinary_argument() {
     let fixture: Fixture = fixture("management-word");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     std::fs::write(repo.join("cli-git"), b"a file named like the namespace\n").expect("file");
-    // `git add cli-git` is an `add`, stopped as every repository-changing command is.
-    let add: Observed = run(&fixture, repo.as_path(), &["add", "cli-git"]);
-    assert_eq!(add.code, Some(2));
-    assert!(
-        stderr_text(&add).contains("so git add was not run"),
-        "{}",
-        stderr_text(&add)
-    );
     // An inspection command naming the file is forwarded to Git unchanged.
     let listed: Observed = run(
         &fixture,
@@ -393,5 +390,17 @@ fn namespace_word_elsewhere_is_an_ordinary_argument() {
             stderr: Vec::<u8>::new(),
         }
     );
+    // `git add cli-git` is an `add`: its content is checked and Git stages the file.
+    let add: Observed = run(&fixture, repo.as_path(), &["add", "cli-git"]);
+    assert_eq!(
+        add,
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    let staged: Observed = run(&fixture, repo.as_path(), &["ls-files", "--", "cli-git"]);
+    assert_eq!(staged.stdout, b"cli-git\n".to_vec());
     remove(&fixture);
 }

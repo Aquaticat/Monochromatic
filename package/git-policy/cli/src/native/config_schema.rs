@@ -81,18 +81,23 @@ pub struct MarkdownAutofixOptions {
     pub exclude: Vec<String>,
 }
 
-/// What: Validated options of `security/forbidden-strings`.
-/// Why:  The scanner is linked into cli-git, so the only remaining choice is whether
-///       its embedded baseline rules run. There is deliberately no executable path.
+/// What: Validated options of `security/forbidden-strings`. `Option<String>` is "a
+///       configured file name or nothing".
+/// Why:  The scanner is linked into cli-git, so the remaining choices are whether its
+///       embedded baseline rules run and which repository file holds the private rules.
+///       There is deliberately no executable path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type ForbiddenStringsOptions = { builtinRules: boolean };
+/// type ForbiddenStringsOptions = { builtinRules: boolean; rulesFile?: string };
 /// ```
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ForbiddenStringsOptions {
     /// Whether the scanner's embedded baseline rules are loaded; default `true`.
     pub builtin_rules: bool,
+    /// The private rules file, relative to the repository's top level, already checked to
+    /// stay inside it; when absent, `FORBIDDEN_STRINGS_RULES` and then the default file apply.
+    pub rules_file: Option<String>,
 }
 
 /// What: Every policy's severity plus the option records of option-bearing policies.
@@ -265,6 +270,8 @@ impl PolicyConfig {
             settings,
             forbidden_strings: ForbiddenStringsOptions {
                 builtin_rules: true,
+                // `None` is the "absent" variant: no file is configured.
+                rules_file: None,
             },
             markdown_autofix: MarkdownAutofixOptions {
                 // `vec![...]` is a macro building an owned list from literal items.

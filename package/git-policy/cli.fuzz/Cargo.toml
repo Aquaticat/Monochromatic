@@ -65,6 +65,27 @@ doc = false
 bench = false
 
 [[bin]]
+name = "stage_listing"
+path = "fuzz_targets/stage_listing.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "rules_file"
+path = "fuzz_targets/rules_file.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "final_newline"
+path = "fuzz_targets/final_newline.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "dependent_version"
 path = "fuzz_targets/dependent_version.rs"
 test = false

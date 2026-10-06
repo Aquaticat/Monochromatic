@@ -12,6 +12,10 @@ pub mod background;
 /// The `log` logger that re-labels helix-lsp's records for healthy servers.
 pub mod relabel;
 
+/// Each language server's last standard-error lines, for the language worker's records of a
+/// server that ended unexpectedly or failed to start; never for a user-facing note.
+pub mod stderr_tail;
+
 /// What: `EnvFilter` decides which records are written from directives such as `ide_app=debug`;
 ///       `MakeWriter` is how the subscriber obtains an output for each record.
 /// Why: The filter and the output are what callers choose; everything else is fixed here.

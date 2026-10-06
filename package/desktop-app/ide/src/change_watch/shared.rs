@@ -1,5 +1,7 @@
 //! State shared by the UI handle, the watch thread, and notify's event-handler thread.
 
+/// A finished scan of folders for the language servers.
+use super::server_scan::Scan;
 /// What: `BTreeSet` is an ordered set of owned paths; `PathBuf` owns a path, `Path` borrows one.
 /// Why: Pending invalidations collapse repeated events for one directory into a single entry.
 ///
@@ -12,16 +14,87 @@ use std::{
     path::PathBuf,
     sync::{Mutex, MutexGuard},
 };
-
-/// How finished an observed change to the displayed file looks.
-///
-/// What: an `enum` with two payload-free variants, like a TS string-literal union.
-/// Why: A closed write can be read now; a write still in progress waits briefly,
-///      so a truncated or half-written file never replaces the displayed text.
+/// What: `UnboundedSender` is the sending end of tokio's queue without a size limit; sending never waits.
+/// Why: Changes go from notify's thread to the language worker's async loop, and neither may block.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type SourceChange = 'settled' | 'unsettled';
+/// const feed = new Queue<ServerChange>();
+/// ```
+use tokio::sync::mpsc::UnboundedSender;
+
+/// What happened to a path inside a folder watched for the language servers.
+///
+/// What: an `enum` with three payload-free variants, like a TS string-literal union.
+/// Why: The protocol tells servers whether a file was created, changed, or deleted.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ServerChangeKind = 'created' | 'changed' | 'deleted';
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ServerChangeKind {
+    /// The path appeared: created, or moved or renamed into place.
+    Created,
+    /// The path's content or attributes changed.
+    Changed,
+    /// The path disappeared: deleted, or moved or renamed away.
+    Deleted,
+}
+
+/// One change for the language servers: an absolute path inside the project and what happened to it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ServerChange {
+    /// The changed file or folder.
+    pub path: PathBuf,
+    /// What happened to it.
+    pub kind: ServerChangeKind,
+}
+
+/// What arrived for the language servers since the watch thread last looked; taken as one value.
+#[derive(Debug, Default)]
+pub(super) struct ServerRequests {
+    /// The feed was set or cleared.
+    pub(super) feed_changed: bool,
+    /// Paths that may be new folders inside a watched folder; the scan thread checks which are.
+    pub(super) candidates: BTreeSet<PathBuf>,
+    /// Folders whose contents must be scanned again.
+    pub(super) rescans: BTreeSet<PathBuf>,
+    /// Watched folders that were removed or moved away; their watches and everything below them go.
+    pub(super) gone: BTreeSet<PathBuf>,
+    /// Finished scans.
+    pub(super) scanned: Vec<Scan>,
+}
+
+/// The language servers' part of the shared state: where changes go and which folders are watched for them.
+#[derive(Debug, Default)]
+pub(super) struct ServerShared {
+    /// What: `Option<UnboundedSender<ServerChange>>` is the queue into the language worker, or `None`.
+    /// Why: Folders are watched for the servers only while some server registered file watchers.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// feed?: Queue<ServerChange>;
+    /// ```
+    pub(super) feed: Option<UnboundedSender<ServerChange>>,
+    /// Folders with a live watch for the servers, as last published by the watch thread.
+    pub(super) watched: BTreeSet<PathBuf>,
+    /// Watched folders that held no entries when scanned; their first change asks to classify them.
+    pub(super) provisional: BTreeSet<PathBuf>,
+    /// What arrived for the watch thread since it last looked.
+    pub(super) requests: ServerRequests,
+}
+
+/// How finished an observed change to the displayed file looks.
+///
+/// What: an `enum` with three payload-free variants, like a TS string-literal union.
+/// Why: A closed write can be read now; a write still in progress waits briefly,
+///      so a truncated or half-written file never replaces the displayed text; a reread with no
+///      write behind it is read promptly, but only once the file has been quiet.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type SourceChange = 'settled' | 'unsettled' | 'reread';
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SourceChange {
@@ -29,6 +102,9 @@ pub enum SourceChange {
     Settled,
     /// Created or written but not yet closed: read after the writer goes quiet.
     Unsettled,
+    /// No write was seen: a new watch, a newly displayed file, or a full reread after lost events.
+    /// Read promptly, but like a timer read: only bytes that have been quiet for the write-quiet period.
+    Reread,
 }
 
 /// Invalidations accumulated since the last `ChangeWatcher::take`; events carry no file data.
@@ -61,6 +137,8 @@ pub(super) struct Shared {
     pub(super) file: Option<PathBuf>,
     /// Retry watches that failed earlier, for example after a directory was recreated.
     pub(super) retry: bool,
+    /// The user acted on the tree (scrolled), so watches waiting on the limit are tried without the backoff.
+    pub(super) user_retry: bool,
     /// Set once by the UI handle's Drop; the watch thread exits at its next wake.
     pub(super) closing: bool,
     /// Live watches whose directory was removed or renamed; the watch thread drops and re-adds them.
@@ -71,6 +149,8 @@ pub(super) struct Shared {
     pub(super) watched: BTreeSet<PathBuf>,
     /// The watched set changed since the UI last took it.
     pub(super) watched_changed: bool,
+    /// Folders watched for the language servers and the changes sent to them.
+    pub(super) server: ServerShared,
 }
 
 /// Construct the empty shared state for one project root.
@@ -89,11 +169,13 @@ impl Shared {
             desired: None,
             file: None,
             retry: false,
+            user_retry: false,
             closing: false,
             stale: BTreeSet::new(),
             pending: Changes::default(),
             watched: BTreeSet::new(),
             watched_changed: false,
+            server: ServerShared::default(),
         };
     }
 }

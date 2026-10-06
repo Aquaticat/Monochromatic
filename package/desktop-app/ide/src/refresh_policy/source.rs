@@ -18,6 +18,9 @@ use std::time::Instant;
 pub struct SourceRefresh {
     /// The displayed file's directory has a live watch, so timers fall back to the safety sweep.
     watched: bool,
+    /// The displayed file lies outside the project: its folder is deliberately not watched, and the
+    /// safety sweep, not the 250 ms timer for a failed watch, rereads it.
+    outside_project: bool,
     /// What: `Option<Instant>` is a time or nothing (`number | undefined`).
     /// Why: When the first unread notification arrived; bounds the wait for an unfinished write.
     ///
@@ -28,6 +31,8 @@ pub struct SourceRefresh {
     pending_since: Option<Instant>,
     /// Time of the latest notification when it was an unfinished write; `None` when it was settled.
     unsettled_at: Option<Instant>,
+    /// The pending change includes a real write notification; a pending reread alone does not.
+    notified: bool,
     /// When the last read was admitted by the reader; `None` before the first read.
     last_request: Option<Instant>,
 }
@@ -42,29 +47,55 @@ impl SourceRefresh {
         self.watched = watched;
     }
 
+    /// Record whether the displayed file lies outside the project, where nothing is watched on purpose.
+    pub fn set_outside_project(&mut self, outside: bool) {
+        if self.outside_project != outside {
+            tracing::debug!(outside, "displayed file moved across the project boundary");
+        }
+        self.outside_project = outside;
+    }
+
     /// Report whether the displayed file's directory currently has a live watch.
     pub fn is_watched(&self) -> bool {
         return self.watched;
     }
 
-    /// Record a notification; the latest classification wins, so delete then rewrite waits for the write.
+    /// True while a notification is unread: the next read is the one it asked for, which waited for the
+    /// writer. Every other read (the timer, the sweep, a highlighting retry, the first read) is not.
+    pub fn has_unread_change(&self) -> bool {
+        return self.pending_since.is_some() && self.notified;
+    }
+
+    /// Record a notification; the latest write classification wins, so delete then rewrite waits for the write.
+    /// A reread keeps whatever write is already pending: an unfinished write still waits.
     pub fn changed(&mut self, change: SourceChange, now: Instant) {
-        if self.pending_since.is_none() {
+        let first = self.pending_since.is_none();
+        if first {
             self.pending_since = Some(now);
         }
-        // What: `match` on the two-variant enum chooses which timestamp to keep.
-        // Why: A later close-write settles an earlier unfinished write; a later write unsettles a delete.
+        // What: `match` on the three-variant enum chooses which timestamp to keep.
+        // Why: A later close-write settles an earlier unfinished write; a later write unsettles a delete;
+        //      a reread with no write behind it changes nothing that a real notification already set.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.unsettledAt = change === 'settled' ? undefined : now;
+        // if (change === 'settled') { this.unsettledAt = undefined; this.notified = true; }
+        // else if (change === 'unsettled') { this.unsettledAt = now; this.notified = true; }
+        // else if (first) this.notified = false;
         // ```
         match change {
             SourceChange::Settled => {
                 self.unsettled_at = None;
+                self.notified = true;
             }
             SourceChange::Unsettled => {
                 self.unsettled_at = Some(now);
+                self.notified = true;
+            }
+            SourceChange::Reread => {
+                if first {
+                    self.notified = false;
+                }
             }
         }
     }
@@ -111,7 +142,8 @@ impl SourceRefresh {
         if highlight_missing && rested {
             return true;
         }
-        let interval = if self.watched {
+        // A file outside the project is not watched on purpose; it is not a failed watch to poll often.
+        let interval = if self.watched || self.outside_project {
             SAFETY_SWEEP
         } else {
             UNWATCHED_SOURCE_POLL
@@ -124,5 +156,6 @@ impl SourceRefresh {
         self.last_request = Some(now);
         self.pending_since = None;
         self.unsettled_at = None;
+        self.notified = false;
     }
 }

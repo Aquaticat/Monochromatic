@@ -10,10 +10,12 @@
 
 /// The pass under test, the engine types it returns and the scripted facts.
 use super::{PassResult, policies_of_kind, run_policy_pass};
+use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
-use crate::policy_checks::{CandidateSource, ShippedChecks};
+use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+use crate::policy_content::LifecycleContent;
 use crate::policy_engine::{StageEnd, StageRequest, Unavailable, pass_exit_code};
 use crate::policy_events::{FindingEvent, PolicyEvent};
 use crate::policy_registry::{PolicyId, Severity};
@@ -50,14 +52,14 @@ fn pass(
     stage: &StageRequest,
     values: &[&str],
     facts: ScriptedFacts,
-    candidates: CandidateSource,
+    candidates: LifecycleContent,
 ) -> (PassResult, Vec<String>) {
-    let mut checks: ShippedChecks<ScriptedFacts> = ShippedChecks {
+    let mut checks: ShippedChecks<ScriptedFacts> = shipped_checks(
         facts,
-        arguments: os_arguments(values),
+        os_arguments(values),
         candidates,
-        allowed_worktree_dirs: Vec::<PathBuf>::new(),
-    };
+        Vec::<PathBuf>::new(),
+    );
     let result: PassResult = run_policy_pass(stage, &mut checks);
     // The pass never changes the arguments the checks read.
     assert_eq!(checks.arguments, os_arguments(values));
@@ -140,7 +142,7 @@ fn a_clean_pass_hands_back_the_transformed_arguments() {
             &stage,
             values.as_slice(),
             scripted_facts(),
-            CandidateSource::None,
+            LifecycleContent::None,
         );
         assert_eq!(
             result,
@@ -164,7 +166,7 @@ fn a_built_in_error_ends_the_pass_before_the_transforms() {
         &stage,
         &["commit", "-a", "-m", "x"],
         below_root(),
-        CandidateSource::None,
+        LifecycleContent::None,
     );
     assert_eq!(
         result,
@@ -186,7 +188,7 @@ fn keep_going_collects_every_stage_and_still_blocks() {
         &stage,
         &["commit", "-a", "-m", "x"],
         below_root(),
-        CandidateSource::None,
+        LifecycleContent::None,
     );
     assert_eq!(
         rejected,
@@ -198,7 +200,7 @@ fn keep_going_collects_every_stage_and_still_blocks() {
     );
     assert_eq!(exit_code(&rejected), 1);
     // The transform of a command the built-in stage rejected is still applied.
-    let (pushed, _pushed_asked) = pass(&stage, &["push"], below_root(), CandidateSource::None);
+    let (pushed, _pushed_asked) = pass(&stage, &["push"], below_root(), LifecycleContent::None);
     assert_eq!(
         pushed,
         PassResult {
@@ -218,7 +220,7 @@ fn a_transform_rejection_or_failure_ends_the_pass() {
         &stopped,
         &["commit", "-a", "-m", "x"],
         scripted_facts(),
-        CandidateSource::None,
+        LifecycleContent::None,
     );
     assert_eq!(
         rejected,
@@ -233,7 +235,12 @@ fn a_transform_rejection_or_failure_ends_the_pass() {
         let mut facts: ScriptedFacts = scripted_facts();
         facts.sequencer = Err(String::from("no sequencer answer"));
         let stage: StageRequest = request(Trigger::PreForward, controls);
-        let (failed, asked) = pass(&stage, &["commit", "-m", "x"], facts, CandidateSource::None);
+        let (failed, asked) = pass(
+            &stage,
+            &["commit", "-m", "x"],
+            facts,
+            LifecycleContent::None,
+        );
         assert_eq!(
             failed,
             PassResult {
@@ -261,7 +268,7 @@ fn a_transform_rejection_or_failure_ends_the_pass() {
         &request(Trigger::PreForward, escaped),
         &["commit", "-a", "-m", "x"],
         scripted_facts(),
-        CandidateSource::None,
+        LifecycleContent::None,
     );
     assert_eq!(
         forwarded,
@@ -273,32 +280,44 @@ fn a_transform_rejection_or_failure_ends_the_pass() {
     );
 }
 
-/// Unreadable candidates end the pass as unavailable at the first enabled content policy.
+/// The candidates of `git add file`, which these scripted facts cannot prepare.
+fn add_candidates() -> LifecycleContent {
+    return LifecycleContent::Requested(CandidateRequest::Add(os_arguments(&["file"])));
+}
+
+/// Candidates that cannot be prepared fail the pass at the first content policy that reads;
+/// an unported content policy refuses without reading; with none left the command proceeds.
 #[test]
-fn unreadable_candidates_end_the_pass_as_unavailable() {
-    let needs: &'static str = "predicting what git add would stage";
-    let (built_in, _asked) = pass(
+fn content_policies_read_fail_or_refuse_in_registry_order() {
+    let (built_in, built_in_asked) = pass(
         &request(Trigger::PreForward, no_controls()),
         &["add", "file"],
         scripted_facts(),
-        CandidateSource::NotPorted(needs),
+        add_candidates(),
     );
     assert_eq!(
         built_in,
         PassResult {
             arguments: os_arguments(&["add", "file"]),
-            events: Vec::<PolicyEvent>::new(),
-            end: StageEnd::Unavailable(Unavailable::Policy {
-                policy: PolicyId::FinalNewline,
-                needs,
-            }),
+            events: vec![PolicyEvent::EngineFailure {
+                code: EngineFailureCode::ContentUnavailable,
+                message: String::from("the scripted facts prepare no candidates"),
+                trigger: Some(Trigger::PreForward),
+                policy: Some(PolicyId::FinalNewline),
+                path: None,
+            }],
+            end: StageEnd::Failed,
         }
     );
+    assert_eq!(
+        built_in_asked,
+        vec![String::from("location"), String::from("candidates")]
+    );
     assert_eq!(exit_code(&built_in), 2);
-    // With the built-in content policy escaped, the first listed optional policy answers.
+    // With the built-in content policy escaped, a listed unported policy refuses without reading.
     let config: PolicyConfig = with_severity(
         &PolicyConfig::defaults(),
-        PolicyId::ForbiddenStrings,
+        PolicyId::MarkdownAutofix,
         Severity::Error,
     );
     let mut controls: Controls = no_controls();
@@ -309,35 +328,37 @@ fn unreadable_candidates_end_the_pass_as_unavailable() {
         controls: controls.clone(),
         selected: Vec::<PolicyId>::new(),
     };
-    let (listed, _listed_asked) = pass(
+    let (listed, listed_asked) = pass(
         &optional,
         &["add", "file"],
         scripted_facts(),
-        CandidateSource::NotPorted(needs),
+        add_candidates(),
     );
     assert_eq!(
         listed.end,
         StageEnd::Unavailable(Unavailable::Policy {
-            policy: PolicyId::ForbiddenStrings,
-            needs,
+            policy: PolicyId::MarkdownAutofix,
+            needs: MARKDOWN_AUTOFIX_NEEDS,
         })
     );
-    // With no content policy left, the same command may proceed.
-    let (unlisted, _unlisted_asked) = pass(
+    assert_eq!(listed_asked, vec![String::from("location")]);
+    // With no content policy left, the same command may proceed and nothing is prepared.
+    let (unlisted, unlisted_asked) = pass(
         &request(Trigger::PreForward, controls),
         &["add", "file"],
         scripted_facts(),
-        CandidateSource::NotPorted(needs),
+        add_candidates(),
     );
     assert_eq!(unlisted.end, StageEnd::Completed);
     assert_eq!(exit_code(&unlisted), 0);
+    assert_eq!(unlisted_asked, vec![String::from("location")]);
 }
 
 /// A direct check runs both stages and no transform.
 #[test]
 fn a_direct_check_applies_no_transform() {
     let stage: StageRequest = request(Trigger::DirectCheck, no_controls());
-    let (clean, asked) = pass(&stage, &["push"], scripted_facts(), CandidateSource::None);
+    let (clean, asked) = pass(&stage, &["push"], scripted_facts(), LifecycleContent::None);
     assert_eq!(
         clean,
         PassResult {
@@ -352,7 +373,7 @@ fn a_direct_check_applies_no_transform() {
         &stage,
         &["commit", "-a"],
         scripted_facts(),
-        CandidateSource::None,
+        LifecycleContent::None,
     );
     assert_eq!(unchanged.events, Vec::<PolicyEvent>::new());
     assert_eq!(unchanged.arguments, os_arguments(&["commit", "-a"]));
@@ -367,7 +388,7 @@ fn an_unported_lifecycle_is_unavailable() {
             &request(trigger, no_controls()),
             &["push"],
             scripted_facts(),
-            CandidateSource::None,
+            LifecycleContent::None,
         );
         assert_eq!(
             result,

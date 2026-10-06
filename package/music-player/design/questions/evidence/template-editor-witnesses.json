@@ -1,18 +1,24 @@
 {
   "schema": 3,
   "scope": "Authored debug-native states of the supporting-line template editor as decided in D89 to D94. Typing is not connected, no template is stored and no player row changes. Not production behaviour, parsing or native accessibility acceptance.",
-  "prototypeCommit": "4df8e785cc7f5dff97c4d463c8c9358f5787bbff",
-  "apkSha256": "2d80972ab4fa19a459da8fe8a404ab4f424861253e1c369896ad2de81aa9e340",
+  "prototypeCommit": "66566ee3aa0bbd08b2fb087342f43b546cc88210",
+  "apkSha256": "c7c8576cac9bf5dddea7697da4d0b5183eef7cbb61edbaf54f7401a96d44e627",
   "provenanceNote": "The commit and APK digest say what produced the captures. Nothing is checked against them (D88).",
   "privacy": "Only inspected crops; status strips removed, navigation area and system keyboard retained. Raw hierarchies, logs and screenshots stay private.",
   "capture": {
     "visits": [
-      "runtime-decided-a",
-      "runtime-decided-b",
-      "runtime-decided-c"
+      "runtime-again-b",
+      "runtime-again-c",
+      "runtime-later-a",
+      "runtime-later-c",
+      "runtime-later-d",
+      "runtime-later-e",
+      "runtime-quiet-b"
     ],
     "visitsEndedByEmulatorCrash": [
-      "runtime-decided-a"
+      "runtime-again-b",
+      "runtime-later-a",
+      "runtime-later-d"
     ],
     "renderer": "Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))",
     "containerImageId": "4b8805002ee369c81b7826b941afc52c0c9678a0d0e427a0fefd1684b78b5f94",
@@ -78,15 +84,15 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289530879-ac4c52c2e3407.xml",
+          "remotePath": "/sdcard/settings-pane-1791300774311-5ea44a8a8e5108.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289530879-ac4c52c2e3407.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791300774311-5ea44a8a8e5108.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-again-b",
       "drawn": [
         {
           "role": "page-title",
@@ -115,20 +121,20 @@
           "inView": true
         },
         {
-          "role": "entry-title",
-          "text": "Track row supporting line",
+          "role": "entry-title-0",
+          "text": "Track rows",
           "bounds": [
             [
               1132,
               456,
-              1600,
+              1333,
               515
             ]
           ],
           "inView": true
         },
         {
-          "role": "entry-supporting",
+          "role": "entry-supporting-0",
           "text": "4:35 −1.2 dBTP",
           "bounds": [
             [
@@ -136,6 +142,32 @@
               515,
               1367,
               564
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-title-1",
+          "text": "Playing track",
+          "bounds": [
+            [
+              1132,
+              634,
+              1370,
+              693
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-supporting-1",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              1132,
+              693,
+              1408,
+              742
             ]
           ],
           "inView": true
@@ -176,19 +208,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289553600-278f773b992ef.xml",
+          "remotePath": "/sdcard/settings-pane-1791300791859-085328fc2d8b08.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289553600-278f773b992ef.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791300791859-085328fc2d8b08.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-again-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -612,19 +644,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289577187-2cd91b1b148de8.xml",
+          "remotePath": "/sdcard/settings-pane-1791300819026-5e13665748bd5.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289577187-2cd91b1b148de8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791300819026-5e13665748bd5.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-again-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -962,19 +994,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289603021-c565987f582998.xml",
+          "remotePath": "/sdcard/settings-pane-1791300852101-e7e890e3b0fef8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289603021-c565987f582998.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791300852101-e7e890e3b0fef8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-again-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -1319,19 +1351,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289626177-ff42344c6bb7b8.xml",
+          "remotePath": "/sdcard/settings-pane-1791300876686-3dc28d78a74ff8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289626177-ff42344c6bb7b8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791300876686-3dc28d78a74ff8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-again-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -1675,19 +1707,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289651646-80e0f98de80418.xml",
+          "remotePath": "/sdcard/settings-pane-1791301312533-f25d15870efa28.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289651646-80e0f98de80418.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791301312533-f25d15870efa28.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-again-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -2113,19 +2145,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289677533-9c3ee1c93fcf7.xml",
+          "remotePath": "/sdcard/settings-pane-1791301341411-edf138c1a156e8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289677533-9c3ee1c93fcf7.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791301341411-edf138c1a156e8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-again-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -2502,10 +2534,10 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
-      "file": "template-editor-inner-no-library-light-s100.png",
+      "file": "template-editor-inner-empty-library-light-s100.png",
       "panel": "inner",
-      "scene": "no-library",
-      "state": "no-library",
+      "scene": "empty-library",
+      "state": "empty-library",
       "position": "top",
       "scheme": "light",
       "fontScale": 1,
@@ -2533,19 +2565,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289698770-233c48013cdbe.xml",
+          "remotePath": "/sdcard/settings-pane-1791301407982-ec3189dec2b168.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289698770-233c48013cdbe.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791301407982-ec3189dec2b168.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-again-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -2623,12 +2655,12 @@
         },
         {
           "role": "preview-note",
-          "text": "No library is open. These are sample values.",
+          "text": "Your library has no tracks yet. These are sample values.",
           "bounds": [
             [
               1132,
               712,
-              1739,
+              1897,
               751
             ]
           ],
@@ -2937,6 +2969,470 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
+      "file": "template-editor-inner-playing-light-s100.png",
+      "panel": "inner",
+      "scene": "playing",
+      "state": "playing",
+      "position": "top",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "keyboardShown": false,
+      "viewTop": 314,
+      "viewBottom": 2074,
+      "caretDrawn": null,
+      "scrollMax": 632,
+      "scrollRule": null,
+      "freshHierarchyValidated": true,
+      "productionServicesObserved": false,
+      "exactRetainedRgb": true,
+      "opaque": true,
+      "essentialPngChunksOnly": true,
+      "hierarchyDumpAttempts": [
+        {
+          "remotePath": "/sdcard/settings-pane-1791304063005-369928ff967758.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791304063005-369928ff967758.xml\n",
+          "stderr": ""
+        }
+      ],
+      "launchAttempts": 1,
+      "sceneAttempt": 1,
+      "visit": "runtime-later-a",
+      "drawn": [
+        {
+          "role": "page-title",
+          "text": "Playing track",
+          "bounds": [
+            [
+              1269,
+              190,
+              2037,
+              259
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-preview",
+          "text": "Preview",
+          "bounds": [
+            [
+              1132,
+              353,
+              1255,
+              402
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-0",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              432,
+              1437,
+              491
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-0",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              1132,
+              491,
+              1378,
+              530
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-1",
+          "text": "Burning Aquamarine",
+          "bounds": [
+            [
+              1132,
+              572,
+              1508,
+              631
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-1",
+          "text": "2 of 16 ",
+          "bounds": [
+            [
+              1132,
+              631,
+              1236,
+              670
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-note",
+          "text": "From your library. The second file is not analysed yet.",
+          "bounds": [
+            [
+              1132,
+              712,
+              1865,
+              751
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-label",
+          "text": "Template",
+          "bounds": [
+            [
+              1171,
+              791,
+              1298,
+              830
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "template",
+          "text": "$mi(track)$ of $mi(total)$ $mi(peak)$",
+          "bounds": [
+            [
+              1132,
+              790,
+              2037,
+              1006
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-fields",
+          "text": "Fields",
+          "bounds": [
+            [
+              1132,
+              1045,
+              1227,
+              1094
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(title)",
+          "text": "Title",
+          "bounds": [
+            [
+              1132,
+              1138,
+              1213,
+              1197
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(title)",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              1197,
+              1390,
+              1246
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(title)",
+          "text": "mi(title)",
+          "bounds": [
+            [
+              1854,
+              1168,
+              2037,
+              1217
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(file)",
+          "text": "File name",
+          "bounds": [
+            [
+              1132,
+              1316,
+              1312,
+              1375
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(file)",
+          "text": "かめりあ(Camellia) - Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              1375,
+              1716,
+              1424
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(file)",
+          "text": "mi(file)",
+          "bounds": [
+            [
+              1874,
+              1346,
+              2037,
+              1395
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(ext)",
+          "text": "Extension",
+          "bounds": [
+            [
+              1132,
+              1494,
+              1313,
+              1553
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(ext)",
+          "text": "flac",
+          "bounds": [
+            [
+              1132,
+              1553,
+              1190,
+              1602
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(ext)",
+          "text": "mi(ext)",
+          "bounds": [
+            [
+              1894,
+              1524,
+              2037,
+              1573
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(folder)",
+          "text": "Folder",
+          "bounds": [
+            [
+              1132,
+              1672,
+              1248,
+              1731
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(folder)",
+          "text": "Camellia",
+          "bounds": [
+            [
+              1132,
+              1731,
+              1269,
+              1780
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(folder)",
+          "text": "mi(folder)",
+          "bounds": [
+            [
+              1833,
+              1702,
+              2037,
+              1751
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(path)",
+          "text": "Path",
+          "bounds": [
+            [
+              1132,
+              1850,
+              1217,
+              1909
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(path)",
+          "text": "Camellia/かめりあ(Camellia) - Another Xronixle.flac",
+          "bounds": [
+            [
+              1132,
+              1909,
+              1835,
+              1958
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(path)",
+          "text": "mi(path)",
+          "bounds": [
+            [
+              1874,
+              1880,
+              2037,
+              1929
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(len)",
+          "text": "Duration",
+          "bounds": [
+            [
+              1132,
+              2028,
+              1289,
+              2087
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(len)",
+          "text": "275",
+          "bounds": [
+            [
+              1132,
+              2087,
+              1191,
+              2136
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(len)",
+          "text": "mi(len)",
+          "bounds": [
+            [
+              1894,
+              2058,
+              2037,
+              2107
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(peak)",
+          "text": "True peak",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(peak)",
+          "text": "−1.2 dBTP",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(peak)",
+          "text": "mi(peak)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(track)",
+          "text": "Place in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(track)",
+          "text": "1",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(track)",
+          "text": "mi(track)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(total)",
+          "text": "Tracks in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(total)",
+          "text": "16",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(total)",
+          "text": "mi(total)",
+          "bounds": [],
+          "inView": false
+        }
+      ],
+      "uncalledPageTexts": [],
+      "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
+    },
+    {
       "file": "template-editor-inner-list-dark-s100.png",
       "panel": "inner",
       "scene": "list",
@@ -2968,15 +3464,15 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289748452-4f844b6ee2a34.xml",
+          "remotePath": "/sdcard/settings-pane-1791304127122-8c106f0f8089c8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289748452-4f844b6ee2a34.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791304127122-8c106f0f8089c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-a",
       "drawn": [
         {
           "role": "page-title",
@@ -3005,20 +3501,20 @@
           "inView": true
         },
         {
-          "role": "entry-title",
-          "text": "Track row supporting line",
+          "role": "entry-title-0",
+          "text": "Track rows",
           "bounds": [
             [
               1132,
               456,
-              1600,
+              1333,
               515
             ]
           ],
           "inView": true
         },
         {
-          "role": "entry-supporting",
+          "role": "entry-supporting-0",
           "text": "4:35 −1.2 dBTP",
           "bounds": [
             [
@@ -3026,6 +3522,32 @@
               515,
               1367,
               564
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-title-1",
+          "text": "Playing track",
+          "bounds": [
+            [
+              1132,
+              634,
+              1370,
+              693
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-supporting-1",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              1132,
+              693,
+              1408,
+              742
             ]
           ],
           "inView": true
@@ -3066,19 +3588,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289769685-1f53d625d878d8.xml",
+          "remotePath": "/sdcard/settings-pane-1791304157960-6bad31f3d3d9a.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289769685-1f53d625d878d8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791304157960-6bad31f3d3d9a.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-a",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -3502,19 +4024,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289798418-c782a5ef699068.xml",
+          "remotePath": "/sdcard/settings-pane-1791305119036-3a91a0151f5b.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289798418-c782a5ef699068.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305119036-3a91a0151f5b.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -3852,19 +4374,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289823429-00fc9252523a8.xml",
+          "remotePath": "/sdcard/settings-pane-1791305151354-033b748bd986c8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289823429-00fc9252523a8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305151354-033b748bd986c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -4209,19 +4731,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289866293-ed8e7497c8ade8.xml",
+          "remotePath": "/sdcard/settings-pane-1791305207810-29c82541d496b8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289866293-ed8e7497c8ade8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305207810-29c82541d496b8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -4565,19 +5087,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289898978-75a3692d9b1d98.xml",
+          "remotePath": "/sdcard/settings-pane-1791305237099-95f29c9ad4706.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289898978-75a3692d9b1d98.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305237099-95f29c9ad4706.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -5003,19 +5525,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289920146-81e7de03c98b6.xml",
+          "remotePath": "/sdcard/settings-pane-1791305268016-092b50a5b2deb.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289920146-81e7de03c98b6.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305268016-092b50a5b2deb.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -5392,10 +5914,10 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
-      "file": "template-editor-inner-no-library-dark-s100.png",
+      "file": "template-editor-inner-empty-library-dark-s100.png",
       "panel": "inner",
-      "scene": "no-library",
-      "state": "no-library",
+      "scene": "empty-library",
+      "state": "empty-library",
       "position": "top",
       "scheme": "dark",
       "fontScale": 1,
@@ -5423,19 +5945,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289938552-12f3c012e05e4.xml",
+          "remotePath": "/sdcard/settings-pane-1791305298085-7c6eda0a65237.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289938552-12f3c012e05e4.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305298085-7c6eda0a65237.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -5513,12 +6035,12 @@
         },
         {
           "role": "preview-note",
-          "text": "No library is open. These are sample values.",
+          "text": "Your library has no tracks yet. These are sample values.",
           "bounds": [
             [
               1132,
               712,
-              1739,
+              1897,
               751
             ]
           ],
@@ -5827,6 +6349,470 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
+      "file": "template-editor-inner-playing-dark-s100.png",
+      "panel": "inner",
+      "scene": "playing",
+      "state": "playing",
+      "position": "top",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "keyboardShown": false,
+      "viewTop": 314,
+      "viewBottom": 2074,
+      "caretDrawn": null,
+      "scrollMax": 632,
+      "scrollRule": null,
+      "freshHierarchyValidated": true,
+      "productionServicesObserved": false,
+      "exactRetainedRgb": true,
+      "opaque": true,
+      "essentialPngChunksOnly": true,
+      "hierarchyDumpAttempts": [
+        {
+          "remotePath": "/sdcard/settings-pane-1791305325915-d291cf4326e8e8.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305325915-d291cf4326e8e8.xml\n",
+          "stderr": ""
+        }
+      ],
+      "launchAttempts": 1,
+      "sceneAttempt": 1,
+      "visit": "runtime-later-c",
+      "drawn": [
+        {
+          "role": "page-title",
+          "text": "Playing track",
+          "bounds": [
+            [
+              1269,
+              190,
+              2037,
+              259
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-preview",
+          "text": "Preview",
+          "bounds": [
+            [
+              1132,
+              353,
+              1255,
+              402
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-0",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              432,
+              1437,
+              491
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-0",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              1132,
+              491,
+              1378,
+              530
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-1",
+          "text": "Burning Aquamarine",
+          "bounds": [
+            [
+              1132,
+              572,
+              1508,
+              631
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-1",
+          "text": "2 of 16 ",
+          "bounds": [
+            [
+              1132,
+              631,
+              1236,
+              670
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-note",
+          "text": "From your library. The second file is not analysed yet.",
+          "bounds": [
+            [
+              1132,
+              712,
+              1865,
+              751
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-label",
+          "text": "Template",
+          "bounds": [
+            [
+              1171,
+              791,
+              1298,
+              830
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "template",
+          "text": "$mi(track)$ of $mi(total)$ $mi(peak)$",
+          "bounds": [
+            [
+              1132,
+              790,
+              2037,
+              1006
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-fields",
+          "text": "Fields",
+          "bounds": [
+            [
+              1132,
+              1045,
+              1227,
+              1094
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(title)",
+          "text": "Title",
+          "bounds": [
+            [
+              1132,
+              1138,
+              1213,
+              1197
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(title)",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              1197,
+              1390,
+              1246
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(title)",
+          "text": "mi(title)",
+          "bounds": [
+            [
+              1854,
+              1168,
+              2037,
+              1217
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(file)",
+          "text": "File name",
+          "bounds": [
+            [
+              1132,
+              1316,
+              1312,
+              1375
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(file)",
+          "text": "かめりあ(Camellia) - Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              1375,
+              1716,
+              1424
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(file)",
+          "text": "mi(file)",
+          "bounds": [
+            [
+              1874,
+              1346,
+              2037,
+              1395
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(ext)",
+          "text": "Extension",
+          "bounds": [
+            [
+              1132,
+              1494,
+              1313,
+              1553
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(ext)",
+          "text": "flac",
+          "bounds": [
+            [
+              1132,
+              1553,
+              1190,
+              1602
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(ext)",
+          "text": "mi(ext)",
+          "bounds": [
+            [
+              1894,
+              1524,
+              2037,
+              1573
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(folder)",
+          "text": "Folder",
+          "bounds": [
+            [
+              1132,
+              1672,
+              1248,
+              1731
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(folder)",
+          "text": "Camellia",
+          "bounds": [
+            [
+              1132,
+              1731,
+              1269,
+              1780
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(folder)",
+          "text": "mi(folder)",
+          "bounds": [
+            [
+              1833,
+              1702,
+              2037,
+              1751
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(path)",
+          "text": "Path",
+          "bounds": [
+            [
+              1132,
+              1850,
+              1217,
+              1909
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(path)",
+          "text": "Camellia/かめりあ(Camellia) - Another Xronixle.flac",
+          "bounds": [
+            [
+              1132,
+              1909,
+              1835,
+              1958
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(path)",
+          "text": "mi(path)",
+          "bounds": [
+            [
+              1874,
+              1880,
+              2037,
+              1929
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(len)",
+          "text": "Duration",
+          "bounds": [
+            [
+              1132,
+              2028,
+              1289,
+              2087
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(len)",
+          "text": "275",
+          "bounds": [
+            [
+              1132,
+              2087,
+              1191,
+              2136
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(len)",
+          "text": "mi(len)",
+          "bounds": [
+            [
+              1894,
+              2058,
+              2037,
+              2107
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(peak)",
+          "text": "True peak",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(peak)",
+          "text": "−1.2 dBTP",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(peak)",
+          "text": "mi(peak)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(track)",
+          "text": "Place in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(track)",
+          "text": "1",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(track)",
+          "text": "mi(track)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(total)",
+          "text": "Tracks in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(total)",
+          "text": "16",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(total)",
+          "text": "mi(total)",
+          "bounds": [],
+          "inView": false
+        }
+      ],
+      "uncalledPageTexts": [],
+      "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
+    },
+    {
       "file": "template-editor-inner-list-light-s200.png",
       "panel": "inner",
       "scene": "list",
@@ -5858,15 +6844,15 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791289984493-145959495523b.xml",
+          "remotePath": "/sdcard/settings-pane-1791305399298-6ee88e0daccbc8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791289984493-145959495523b.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305399298-6ee88e0daccbc8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
@@ -5895,20 +6881,20 @@
           "inView": true
         },
         {
-          "role": "entry-title",
-          "text": "Track row supporting line",
+          "role": "entry-title-0",
+          "text": "Track rows",
           "bounds": [
             [
               1132,
               484,
-              1957,
+              1487,
               587
             ]
           ],
           "inView": true
         },
         {
-          "role": "entry-supporting",
+          "role": "entry-supporting-0",
           "text": "4:35 −1.2 dBTP",
           "bounds": [
             [
@@ -5916,6 +6902,32 @@
               587,
               1573,
               678
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-title-1",
+          "text": "Playing track",
+          "bounds": [
+            [
+              1132,
+              719,
+              1552,
+              822
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-supporting-1",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              1132,
+              822,
+              1651,
+              913
             ]
           ],
           "inView": true
@@ -5956,19 +6968,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290005183-2d0fa798a424f.xml",
+          "remotePath": "/sdcard/settings-pane-1791305428659-75816401c5d8c8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290005183-2d0fa798a424f.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305428659-75816401c5d8c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -6315,19 +7327,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290027658-eb0bc348d270a.xml",
+          "remotePath": "/sdcard/settings-pane-1791305465973-5825751ed4d09.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290027658-eb0bc348d270a.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305465973-5825751ed4d09.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -6602,19 +7614,25 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290081644-5737ecca97dfc.xml",
+          "remotePath": "/sdcard/settings-pane-1791305578789-f720d036e46.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290081644-5737ecca97dfc.xml\n",
+          "stdout": "",
+          "stderr": "ERROR: null root node returned by UiTestAutomationBridge.\n"
+        },
+        {
+          "remotePath": "/sdcard/settings-pane-1791305584454-7eb4f6410c28c8.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305584454-7eb4f6410c28c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -6910,19 +7928,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290116242-8719966a26a178.xml",
+          "remotePath": "/sdcard/settings-pane-1791305663200-56689e5d8b78.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290116242-8719966a26a178.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305663200-56689e5d8b78.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -7217,19 +8235,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290140109-d5c65eac11027.xml",
+          "remotePath": "/sdcard/settings-pane-1791305732478-413753d2f9818.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290140109-d5c65eac11027.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305732478-413753d2f9818.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -7571,19 +8589,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290162886-0e670c7f72e73.xml",
+          "remotePath": "/sdcard/settings-pane-1791305771057-cd769a41d0267.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290162886-0e670c7f72e73.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305771057-cd769a41d0267.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -7939,10 +8957,10 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
-      "file": "template-editor-inner-no-library-light-s200.png",
+      "file": "template-editor-inner-empty-library-light-s200.png",
       "panel": "inner",
-      "scene": "no-library",
-      "state": "no-library",
+      "scene": "empty-library",
+      "state": "empty-library",
       "position": "top",
       "scheme": "light",
       "fontScale": 2,
@@ -7970,19 +8988,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290182033-8b9a22a1f2538.xml",
+          "remotePath": "/sdcard/settings-pane-1791305814208-a193b8ab38908.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290182033-8b9a22a1f2538.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305814208-a193b8ab38908.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -8060,7 +9078,7 @@
         },
         {
           "role": "preview-note",
-          "text": "No library is open. These are sample values.",
+          "text": "Your library has no tracks yet. These are sample values.",
           "bounds": [
             [
               1132,
@@ -8297,6 +9315,386 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
+      "file": "template-editor-inner-playing-light-s200.png",
+      "panel": "inner",
+      "scene": "playing",
+      "state": "playing",
+      "position": "top",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "keyboardShown": false,
+      "viewTop": 314,
+      "viewBottom": 2074,
+      "caretDrawn": null,
+      "scrollMax": 1717,
+      "scrollRule": null,
+      "freshHierarchyValidated": true,
+      "productionServicesObserved": false,
+      "exactRetainedRgb": true,
+      "opaque": true,
+      "essentialPngChunksOnly": true,
+      "hierarchyDumpAttempts": [
+        {
+          "remotePath": "/sdcard/settings-pane-1791305851647-0406ac1fdabdd8.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305851647-0406ac1fdabdd8.xml\n",
+          "stderr": ""
+        }
+      ],
+      "launchAttempts": 1,
+      "sceneAttempt": 1,
+      "visit": "runtime-later-c",
+      "drawn": [
+        {
+          "role": "page-title",
+          "text": "Playing track",
+          "bounds": [
+            [
+              1269,
+              170,
+              2037,
+              279
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-preview",
+          "text": "Preview",
+          "bounds": [
+            [
+              1132,
+              353,
+              1359,
+              444
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-0",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              474,
+              1672,
+              577
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-0",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              1132,
+              577,
+              1627,
+              655
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-1",
+          "text": "Burning Aquamarine",
+          "bounds": [
+            [
+              1132,
+              697,
+              1793,
+              800
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-1",
+          "text": "2 of 16 ",
+          "bounds": [
+            [
+              1132,
+              800,
+              1341,
+              878
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-note",
+          "text": "From your library. The second file is not analysed yet.",
+          "bounds": [
+            [
+              1132,
+              920,
+              2037,
+              1076
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-label",
+          "text": "Template",
+          "bounds": [
+            [
+              1171,
+              1110,
+              1429,
+              1188
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "template",
+          "text": "$mi(track)$ of $mi(total)$ $mi(peak)$",
+          "bounds": [
+            [
+              1132,
+              1115,
+              2037,
+              1536
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-fields",
+          "text": "Fields",
+          "bounds": [
+            [
+              1132,
+              1575,
+              1305,
+              1666
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(title)",
+          "text": "Title",
+          "bounds": [
+            [
+              1132,
+              1696,
+              1276,
+              1799
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(title)",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              1799,
+              1611,
+              1890
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(title)",
+          "text": "mi(title)",
+          "bounds": [
+            [
+              1690,
+              1747,
+              2037,
+              1838
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(file)",
+          "text": "File name",
+          "bounds": [
+            [
+              1132,
+              1931,
+              1449,
+              2034
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(file)",
+          "text": "かめりあ(Camellia) - Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              2034,
+              1689,
+              2125
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(file)",
+          "text": "mi(file)",
+          "bounds": [
+            [
+              1728,
+              1982,
+              2037,
+              2073
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(ext)",
+          "text": "Extension",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(ext)",
+          "text": "flac",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(ext)",
+          "text": "mi(ext)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(folder)",
+          "text": "Folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(folder)",
+          "text": "Camellia",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(folder)",
+          "text": "mi(folder)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(path)",
+          "text": "Path",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(path)",
+          "text": "Camellia/かめりあ(Camellia) - Another Xronixle.flac",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(path)",
+          "text": "mi(path)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(len)",
+          "text": "Duration",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(len)",
+          "text": "275",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(len)",
+          "text": "mi(len)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(peak)",
+          "text": "True peak",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(peak)",
+          "text": "−1.2 dBTP",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(peak)",
+          "text": "mi(peak)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(track)",
+          "text": "Place in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(track)",
+          "text": "1",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(track)",
+          "text": "mi(track)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(total)",
+          "text": "Tracks in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(total)",
+          "text": "16",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(total)",
+          "text": "mi(total)",
+          "bounds": [],
+          "inView": false
+        }
+      ],
+      "uncalledPageTexts": [],
+      "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
+    },
+    {
       "file": "template-editor-inner-list-dark-s200.png",
       "panel": "inner",
       "scene": "list",
@@ -8328,15 +9726,15 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290226817-97d3805b47328.xml",
+          "remotePath": "/sdcard/settings-pane-1791305976088-38af862389272.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290226817-97d3805b47328.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791305976088-38af862389272.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-a",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
@@ -8365,20 +9763,20 @@
           "inView": true
         },
         {
-          "role": "entry-title",
-          "text": "Track row supporting line",
+          "role": "entry-title-0",
+          "text": "Track rows",
           "bounds": [
             [
               1132,
               484,
-              1957,
+              1487,
               587
             ]
           ],
           "inView": true
         },
         {
-          "role": "entry-supporting",
+          "role": "entry-supporting-0",
           "text": "4:35 −1.2 dBTP",
           "bounds": [
             [
@@ -8386,6 +9784,32 @@
               587,
               1573,
               678
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-title-1",
+          "text": "Playing track",
+          "bounds": [
+            [
+              1132,
+              719,
+              1552,
+              822
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-supporting-1",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              1132,
+              822,
+              1651,
+              913
             ]
           ],
           "inView": true
@@ -8426,19 +9850,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290818341-e2f8146172725.xml",
+          "remotePath": "/sdcard/settings-pane-1791306001900-53abb2c1f97cc8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290818341-e2f8146172725.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791306001900-53abb2c1f97cc8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -8785,19 +10209,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290851323-59118a319ac2f8.xml",
+          "remotePath": "/sdcard/settings-pane-1791306030868-0beaf4e2e0e388.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290851323-59118a319ac2f8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791306030868-0beaf4e2e0e388.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -9072,19 +10496,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290935052-dae704c95a3058.xml",
+          "remotePath": "/sdcard/settings-pane-1791306058138-999d6a3ebb6748.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290935052-dae704c95a3058.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791306058138-999d6a3ebb6748.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-later-c",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -9380,19 +10804,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290962838-d0394f72d51bd.xml",
+          "remotePath": "/sdcard/settings-pane-1791306560840-a1da255c7ea608.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290962838-d0394f72d51bd.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791306560840-a1da255c7ea608.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-later-d",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -9687,19 +11111,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791290986236-b088c48a6b16a8.xml",
+          "remotePath": "/sdcard/settings-pane-1791306610562-d39659a9ccdee8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791290986236-b088c48a6b16a8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791306610562-d39659a9ccdee8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-later-d",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -10041,19 +11465,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291012632-29d7052f0effa8.xml",
+          "remotePath": "/sdcard/settings-pane-1791307190474-d425eec4430bb8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291012632-29d7052f0effa8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791307190474-d425eec4430bb8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-later-e",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -10409,10 +11833,10 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
-      "file": "template-editor-inner-no-library-dark-s200.png",
+      "file": "template-editor-inner-empty-library-dark-s200.png",
       "panel": "inner",
-      "scene": "no-library",
-      "state": "no-library",
+      "scene": "empty-library",
+      "state": "empty-library",
       "position": "top",
       "scheme": "dark",
       "fontScale": 2,
@@ -10440,19 +11864,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291048329-723589d20e4bd.xml",
+          "remotePath": "/sdcard/settings-pane-1791307213684-cf5b7bba491768.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291048329-723589d20e4bd.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791307213684-cf5b7bba491768.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-later-e",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               1269,
@@ -10530,7 +11954,7 @@
         },
         {
           "role": "preview-note",
-          "text": "No library is open. These are sample values.",
+          "text": "Your library has no tracks yet. These are sample values.",
           "bounds": [
             [
               1132,
@@ -10767,6 +12191,386 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
+      "file": "template-editor-inner-playing-dark-s200.png",
+      "panel": "inner",
+      "scene": "playing",
+      "state": "playing",
+      "position": "top",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "keyboardShown": false,
+      "viewTop": 314,
+      "viewBottom": 2074,
+      "caretDrawn": null,
+      "scrollMax": 1717,
+      "scrollRule": null,
+      "freshHierarchyValidated": true,
+      "productionServicesObserved": false,
+      "exactRetainedRgb": true,
+      "opaque": true,
+      "essentialPngChunksOnly": true,
+      "hierarchyDumpAttempts": [
+        {
+          "remotePath": "/sdcard/settings-pane-1791311263883-ab1c758b93a1e.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311263883-ab1c758b93a1e.xml\n",
+          "stderr": ""
+        }
+      ],
+      "launchAttempts": 1,
+      "sceneAttempt": 1,
+      "visit": "runtime-quiet-b",
+      "drawn": [
+        {
+          "role": "page-title",
+          "text": "Playing track",
+          "bounds": [
+            [
+              1269,
+              170,
+              2037,
+              279
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-preview",
+          "text": "Preview",
+          "bounds": [
+            [
+              1132,
+              353,
+              1359,
+              444
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-0",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              474,
+              1672,
+              577
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-0",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              1132,
+              577,
+              1627,
+              655
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-1",
+          "text": "Burning Aquamarine",
+          "bounds": [
+            [
+              1132,
+              697,
+              1793,
+              800
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-1",
+          "text": "2 of 16 ",
+          "bounds": [
+            [
+              1132,
+              800,
+              1341,
+              878
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-note",
+          "text": "From your library. The second file is not analysed yet.",
+          "bounds": [
+            [
+              1132,
+              920,
+              2037,
+              1076
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-label",
+          "text": "Template",
+          "bounds": [
+            [
+              1171,
+              1110,
+              1429,
+              1188
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "template",
+          "text": "$mi(track)$ of $mi(total)$ $mi(peak)$",
+          "bounds": [
+            [
+              1132,
+              1115,
+              2037,
+              1536
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-fields",
+          "text": "Fields",
+          "bounds": [
+            [
+              1132,
+              1575,
+              1305,
+              1666
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(title)",
+          "text": "Title",
+          "bounds": [
+            [
+              1132,
+              1696,
+              1276,
+              1799
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(title)",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              1799,
+              1611,
+              1890
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(title)",
+          "text": "mi(title)",
+          "bounds": [
+            [
+              1690,
+              1747,
+              2037,
+              1838
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(file)",
+          "text": "File name",
+          "bounds": [
+            [
+              1132,
+              1931,
+              1449,
+              2034
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(file)",
+          "text": "かめりあ(Camellia) - Another Xronixle",
+          "bounds": [
+            [
+              1132,
+              2034,
+              1689,
+              2125
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(file)",
+          "text": "mi(file)",
+          "bounds": [
+            [
+              1728,
+              1982,
+              2037,
+              2073
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(ext)",
+          "text": "Extension",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(ext)",
+          "text": "flac",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(ext)",
+          "text": "mi(ext)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(folder)",
+          "text": "Folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(folder)",
+          "text": "Camellia",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(folder)",
+          "text": "mi(folder)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(path)",
+          "text": "Path",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(path)",
+          "text": "Camellia/かめりあ(Camellia) - Another Xronixle.flac",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(path)",
+          "text": "mi(path)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(len)",
+          "text": "Duration",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(len)",
+          "text": "275",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(len)",
+          "text": "mi(len)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(peak)",
+          "text": "True peak",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(peak)",
+          "text": "−1.2 dBTP",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(peak)",
+          "text": "mi(peak)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(track)",
+          "text": "Place in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(track)",
+          "text": "1",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(track)",
+          "text": "mi(track)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(total)",
+          "text": "Tracks in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(total)",
+          "text": "16",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(total)",
+          "text": "mi(total)",
+          "bounds": [],
+          "inView": false
+        }
+      ],
+      "uncalledPageTexts": [],
+      "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
+    },
+    {
       "file": "template-editor-cover-list-light-s100.png",
       "panel": "cover",
       "scene": "list",
@@ -10798,15 +12602,15 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291132271-b79f18e280ef58.xml",
+          "remotePath": "/sdcard/settings-pane-1791311304149-77f1f8a40312d8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291132271-b79f18e280ef58.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311304149-77f1f8a40312d8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
@@ -10835,20 +12639,20 @@
           "inView": true
         },
         {
-          "role": "entry-title",
-          "text": "Track row supporting line",
+          "role": "entry-title-0",
+          "text": "Track rows",
           "bounds": [
             [
               39,
               472,
-              507,
+              240,
               531
             ]
           ],
           "inView": true
         },
         {
-          "role": "entry-supporting",
+          "role": "entry-supporting-0",
           "text": "4:35 −1.2 dBTP",
           "bounds": [
             [
@@ -10856,6 +12660,32 @@
               531,
               274,
               580
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-title-1",
+          "text": "Playing track",
+          "bounds": [
+            [
+              39,
+              650,
+              277,
+              709
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-supporting-1",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              709,
+              315,
+              758
             ]
           ],
           "inView": true
@@ -10896,19 +12726,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291174251-0572ef7fed7768.xml",
+          "remotePath": "/sdcard/settings-pane-1791311322340-386b10cb4d2e48.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291174251-0572ef7fed7768.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311322340-386b10cb4d2e48.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -11346,19 +13176,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291207810-5e10f7df828358.xml",
+          "remotePath": "/sdcard/settings-pane-1791311339692-ad1f12c74342d.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291207810-5e10f7df828358.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311339692-ad1f12c74342d.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -11717,19 +13547,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291253621-86802c5c4490c8.xml",
+          "remotePath": "/sdcard/settings-pane-1791311358988-7ee70dd41524d8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291253621-86802c5c4490c8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311358988-7ee70dd41524d8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -12102,19 +13932,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291280967-69edbd830376c8.xml",
+          "remotePath": "/sdcard/settings-pane-1791311391491-270fe952500a4.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291280967-69edbd830376c8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311391491-270fe952500a4.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-b",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -12486,19 +14316,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291893913-9f751d89c82d48.xml",
+          "remotePath": "/sdcard/settings-pane-1791311409211-ce308233f1ad98.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291893913-9f751d89c82d48.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311409211-ce308233f1ad98.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -12952,19 +14782,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291924123-2c2436320d9d08.xml",
+          "remotePath": "/sdcard/settings-pane-1791311425842-f075fa9491e7d8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291924123-2c2436320d9d08.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311425842-f075fa9491e7d8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -13369,10 +15199,10 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
-      "file": "template-editor-cover-no-library-light-s100.png",
+      "file": "template-editor-cover-empty-library-light-s100.png",
       "panel": "cover",
-      "scene": "no-library",
-      "state": "no-library",
+      "scene": "empty-library",
+      "state": "empty-library",
       "position": "top",
       "scheme": "light",
       "fontScale": 1,
@@ -13400,19 +15230,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291945822-c3515ed24ce91.xml",
+          "remotePath": "/sdcard/settings-pane-1791311444014-2353adfe2897.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291945822-c3515ed24ce91.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311444014-2353adfe2897.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -13490,12 +15320,12 @@
         },
         {
           "role": "preview-note",
-          "text": "No library is open. These are sample values.",
+          "text": "Your library has no tracks yet. These are sample values.",
           "bounds": [
             [
               39,
               728,
-              646,
+              804,
               767
             ]
           ],
@@ -13818,6 +15648,512 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
+      "file": "template-editor-cover-playing-light-s100.png",
+      "panel": "cover",
+      "scene": "playing",
+      "state": "playing",
+      "position": "top",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 152,
+        "width": 1080,
+        "height": 2272
+      },
+      "densityDpi": 390,
+      "keyboardShown": false,
+      "viewTop": 330,
+      "viewBottom": 2365,
+      "caretDrawn": null,
+      "scrollMax": 298,
+      "scrollRule": null,
+      "freshHierarchyValidated": true,
+      "productionServicesObserved": false,
+      "exactRetainedRgb": true,
+      "opaque": true,
+      "essentialPngChunksOnly": true,
+      "hierarchyDumpAttempts": [
+        {
+          "remotePath": "/sdcard/settings-pane-1791311461524-ef384878b8e6a8.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311461524-ef384878b8e6a8.xml\n",
+          "stderr": ""
+        }
+      ],
+      "launchAttempts": 1,
+      "sceneAttempt": 1,
+      "visit": "runtime-quiet-b",
+      "drawn": [
+        {
+          "role": "page-title",
+          "text": "Playing track",
+          "bounds": [
+            [
+              176,
+              206,
+              1041,
+              275
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-preview",
+          "text": "Preview",
+          "bounds": [
+            [
+              39,
+              369,
+              162,
+              418
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-0",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              39,
+              448,
+              344,
+              507
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-0",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              507,
+              285,
+              546
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-1",
+          "text": "Burning Aquamarine",
+          "bounds": [
+            [
+              39,
+              588,
+              415,
+              647
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-1",
+          "text": "2 of 16 ",
+          "bounds": [
+            [
+              39,
+              647,
+              143,
+              686
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-note",
+          "text": "From your library. The second file is not analysed yet.",
+          "bounds": [
+            [
+              39,
+              728,
+              772,
+              767
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-label",
+          "text": "Template",
+          "bounds": [
+            [
+              78,
+              807,
+              205,
+              846
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "template",
+          "text": "$mi(track)$ of $mi(total)$ $mi(peak)$",
+          "bounds": [
+            [
+              39,
+              806,
+              1041,
+              963
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-fields",
+          "text": "Fields",
+          "bounds": [
+            [
+              39,
+              1002,
+              134,
+              1051
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(title)",
+          "text": "Title",
+          "bounds": [
+            [
+              39,
+              1095,
+              120,
+              1154
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(title)",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              39,
+              1154,
+              297,
+              1203
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(title)",
+          "text": "mi(title)",
+          "bounds": [
+            [
+              858,
+              1125,
+              1041,
+              1174
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(file)",
+          "text": "File name",
+          "bounds": [
+            [
+              39,
+              1273,
+              219,
+              1332
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(file)",
+          "text": "かめりあ(Camellia) - Another Xronixle",
+          "bounds": [
+            [
+              39,
+              1332,
+              623,
+              1381
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(file)",
+          "text": "mi(file)",
+          "bounds": [
+            [
+              878,
+              1303,
+              1041,
+              1352
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(ext)",
+          "text": "Extension",
+          "bounds": [
+            [
+              39,
+              1451,
+              220,
+              1510
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(ext)",
+          "text": "flac",
+          "bounds": [
+            [
+              39,
+              1510,
+              97,
+              1559
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(ext)",
+          "text": "mi(ext)",
+          "bounds": [
+            [
+              898,
+              1481,
+              1041,
+              1530
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(folder)",
+          "text": "Folder",
+          "bounds": [
+            [
+              39,
+              1629,
+              155,
+              1688
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(folder)",
+          "text": "Camellia",
+          "bounds": [
+            [
+              39,
+              1688,
+              176,
+              1737
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(folder)",
+          "text": "mi(folder)",
+          "bounds": [
+            [
+              837,
+              1659,
+              1041,
+              1708
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(path)",
+          "text": "Path",
+          "bounds": [
+            [
+              39,
+              1807,
+              124,
+              1866
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(path)",
+          "text": "Camellia/かめりあ(Camellia) - Another Xronixle.flac",
+          "bounds": [
+            [
+              39,
+              1866,
+              839,
+              1915
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(path)",
+          "text": "mi(path)",
+          "bounds": [
+            [
+              878,
+              1837,
+              1041,
+              1886
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(len)",
+          "text": "Duration",
+          "bounds": [
+            [
+              39,
+              1985,
+              196,
+              2044
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(len)",
+          "text": "275",
+          "bounds": [
+            [
+              39,
+              2044,
+              98,
+              2093
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(len)",
+          "text": "mi(len)",
+          "bounds": [
+            [
+              898,
+              2015,
+              1041,
+              2064
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(peak)",
+          "text": "True peak",
+          "bounds": [
+            [
+              39,
+              2163,
+              222,
+              2222
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(peak)",
+          "text": "−1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              2222,
+              199,
+              2271
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(peak)",
+          "text": "mi(peak)",
+          "bounds": [
+            [
+              878,
+              2193,
+              1041,
+              2242
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(track)",
+          "text": "Place in folder",
+          "bounds": [
+            [
+              39,
+              2341,
+              306,
+              2400
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(track)",
+          "text": "1",
+          "bounds": [
+            [
+              39,
+              2400,
+              59,
+              2424
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(track)",
+          "text": "mi(track)",
+          "bounds": [
+            [
+              858,
+              2371,
+              1041,
+              2420
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(total)",
+          "text": "Tracks in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(total)",
+          "text": "16",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(total)",
+          "text": "mi(total)",
+          "bounds": [],
+          "inView": false
+        }
+      ],
+      "uncalledPageTexts": [],
+      "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
+    },
+    {
       "file": "template-editor-cover-list-dark-s100.png",
       "panel": "cover",
       "scene": "list",
@@ -13849,15 +16185,15 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791291990193-e0439b51ac6b78.xml",
+          "remotePath": "/sdcard/settings-pane-1791311504512-408a135251c1b8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791291990193-e0439b51ac6b78.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311504512-408a135251c1b8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
@@ -13886,20 +16222,20 @@
           "inView": true
         },
         {
-          "role": "entry-title",
-          "text": "Track row supporting line",
+          "role": "entry-title-0",
+          "text": "Track rows",
           "bounds": [
             [
               39,
               472,
-              507,
+              240,
               531
             ]
           ],
           "inView": true
         },
         {
-          "role": "entry-supporting",
+          "role": "entry-supporting-0",
           "text": "4:35 −1.2 dBTP",
           "bounds": [
             [
@@ -13907,6 +16243,32 @@
               531,
               274,
               580
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-title-1",
+          "text": "Playing track",
+          "bounds": [
+            [
+              39,
+              650,
+              277,
+              709
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-supporting-1",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              709,
+              315,
+              758
             ]
           ],
           "inView": true
@@ -13947,19 +16309,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292009968-fdf17abdfeb048.xml",
+          "remotePath": "/sdcard/settings-pane-1791311521259-a8c8ae4f29603.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292009968-fdf17abdfeb048.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311521259-a8c8ae4f29603.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -14397,19 +16759,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292031866-5d6b77807b35b8.xml",
+          "remotePath": "/sdcard/settings-pane-1791311552752-010d5c3361aab8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292031866-5d6b77807b35b8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311552752-010d5c3361aab8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -14768,19 +17130,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292055368-01e75b4331e48.xml",
+          "remotePath": "/sdcard/settings-pane-1791311574627-d2dbb7168e638.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292055368-01e75b4331e48.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311574627-d2dbb7168e638.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -15153,19 +17515,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292082696-a279060c00e888.xml",
+          "remotePath": "/sdcard/settings-pane-1791311596825-9211957f793b2.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292082696-a279060c00e888.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311596825-9211957f793b2.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -15537,19 +17899,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292108817-31871565e9cc58.xml",
+          "remotePath": "/sdcard/settings-pane-1791311617573-6bf32cdd849fb8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292108817-31871565e9cc58.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311617573-6bf32cdd849fb8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -16003,19 +18365,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292134361-de3b24a1c28b1.xml",
+          "remotePath": "/sdcard/settings-pane-1791311635134-0dead067f28fb.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292134361-de3b24a1c28b1.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311635134-0dead067f28fb.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -16420,10 +18782,10 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
-      "file": "template-editor-cover-no-library-dark-s100.png",
+      "file": "template-editor-cover-empty-library-dark-s100.png",
       "panel": "cover",
-      "scene": "no-library",
-      "state": "no-library",
+      "scene": "empty-library",
+      "state": "empty-library",
       "position": "top",
       "scheme": "dark",
       "fontScale": 1,
@@ -16451,19 +18813,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292168892-77bd05ee0a8be8.xml",
+          "remotePath": "/sdcard/settings-pane-1791311654147-4fe69aec0d884.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292168892-77bd05ee0a8be8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311654147-4fe69aec0d884.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -16541,12 +18903,12 @@
         },
         {
           "role": "preview-note",
-          "text": "No library is open. These are sample values.",
+          "text": "Your library has no tracks yet. These are sample values.",
           "bounds": [
             [
               39,
               728,
-              646,
+              804,
               767
             ]
           ],
@@ -16869,6 +19231,512 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
+      "file": "template-editor-cover-playing-dark-s100.png",
+      "panel": "cover",
+      "scene": "playing",
+      "state": "playing",
+      "position": "top",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 152,
+        "width": 1080,
+        "height": 2272
+      },
+      "densityDpi": 390,
+      "keyboardShown": false,
+      "viewTop": 330,
+      "viewBottom": 2365,
+      "caretDrawn": null,
+      "scrollMax": 298,
+      "scrollRule": null,
+      "freshHierarchyValidated": true,
+      "productionServicesObserved": false,
+      "exactRetainedRgb": true,
+      "opaque": true,
+      "essentialPngChunksOnly": true,
+      "hierarchyDumpAttempts": [
+        {
+          "remotePath": "/sdcard/settings-pane-1791311671475-7927d2d2978ef.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311671475-7927d2d2978ef.xml\n",
+          "stderr": ""
+        }
+      ],
+      "launchAttempts": 1,
+      "sceneAttempt": 1,
+      "visit": "runtime-quiet-b",
+      "drawn": [
+        {
+          "role": "page-title",
+          "text": "Playing track",
+          "bounds": [
+            [
+              176,
+              206,
+              1041,
+              275
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-preview",
+          "text": "Preview",
+          "bounds": [
+            [
+              39,
+              369,
+              162,
+              418
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-0",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              39,
+              448,
+              344,
+              507
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-0",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              507,
+              285,
+              546
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-1",
+          "text": "Burning Aquamarine",
+          "bounds": [
+            [
+              39,
+              588,
+              415,
+              647
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-1",
+          "text": "2 of 16 ",
+          "bounds": [
+            [
+              39,
+              647,
+              143,
+              686
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-note",
+          "text": "From your library. The second file is not analysed yet.",
+          "bounds": [
+            [
+              39,
+              728,
+              772,
+              767
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-label",
+          "text": "Template",
+          "bounds": [
+            [
+              78,
+              807,
+              205,
+              846
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "template",
+          "text": "$mi(track)$ of $mi(total)$ $mi(peak)$",
+          "bounds": [
+            [
+              39,
+              806,
+              1041,
+              963
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-fields",
+          "text": "Fields",
+          "bounds": [
+            [
+              39,
+              1002,
+              134,
+              1051
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(title)",
+          "text": "Title",
+          "bounds": [
+            [
+              39,
+              1095,
+              120,
+              1154
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(title)",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              39,
+              1154,
+              297,
+              1203
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(title)",
+          "text": "mi(title)",
+          "bounds": [
+            [
+              858,
+              1125,
+              1041,
+              1174
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(file)",
+          "text": "File name",
+          "bounds": [
+            [
+              39,
+              1273,
+              219,
+              1332
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(file)",
+          "text": "かめりあ(Camellia) - Another Xronixle",
+          "bounds": [
+            [
+              39,
+              1332,
+              623,
+              1381
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(file)",
+          "text": "mi(file)",
+          "bounds": [
+            [
+              878,
+              1303,
+              1041,
+              1352
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(ext)",
+          "text": "Extension",
+          "bounds": [
+            [
+              39,
+              1451,
+              220,
+              1510
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(ext)",
+          "text": "flac",
+          "bounds": [
+            [
+              39,
+              1510,
+              97,
+              1559
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(ext)",
+          "text": "mi(ext)",
+          "bounds": [
+            [
+              898,
+              1481,
+              1041,
+              1530
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(folder)",
+          "text": "Folder",
+          "bounds": [
+            [
+              39,
+              1629,
+              155,
+              1688
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(folder)",
+          "text": "Camellia",
+          "bounds": [
+            [
+              39,
+              1688,
+              176,
+              1737
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(folder)",
+          "text": "mi(folder)",
+          "bounds": [
+            [
+              837,
+              1659,
+              1041,
+              1708
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(path)",
+          "text": "Path",
+          "bounds": [
+            [
+              39,
+              1807,
+              124,
+              1866
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(path)",
+          "text": "Camellia/かめりあ(Camellia) - Another Xronixle.flac",
+          "bounds": [
+            [
+              39,
+              1866,
+              839,
+              1915
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(path)",
+          "text": "mi(path)",
+          "bounds": [
+            [
+              878,
+              1837,
+              1041,
+              1886
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(len)",
+          "text": "Duration",
+          "bounds": [
+            [
+              39,
+              1985,
+              196,
+              2044
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(len)",
+          "text": "275",
+          "bounds": [
+            [
+              39,
+              2044,
+              98,
+              2093
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(len)",
+          "text": "mi(len)",
+          "bounds": [
+            [
+              898,
+              2015,
+              1041,
+              2064
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(peak)",
+          "text": "True peak",
+          "bounds": [
+            [
+              39,
+              2163,
+              222,
+              2222
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(peak)",
+          "text": "−1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              2222,
+              199,
+              2271
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(peak)",
+          "text": "mi(peak)",
+          "bounds": [
+            [
+              878,
+              2193,
+              1041,
+              2242
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(track)",
+          "text": "Place in folder",
+          "bounds": [
+            [
+              39,
+              2341,
+              306,
+              2400
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(track)",
+          "text": "1",
+          "bounds": [
+            [
+              39,
+              2400,
+              59,
+              2424
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(track)",
+          "text": "mi(track)",
+          "bounds": [
+            [
+              858,
+              2371,
+              1041,
+              2420
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(total)",
+          "text": "Tracks in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(total)",
+          "text": "16",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(total)",
+          "text": "mi(total)",
+          "bounds": [],
+          "inView": false
+        }
+      ],
+      "uncalledPageTexts": [],
+      "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
+    },
+    {
       "file": "template-editor-cover-list-light-s200.png",
       "panel": "cover",
       "scene": "list",
@@ -16900,15 +19768,15 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292214928-a8dccbe1364448.xml",
+          "remotePath": "/sdcard/settings-pane-1791311710640-010dfab185d1f8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292214928-a8dccbe1364448.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311710640-010dfab185d1f8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
@@ -16937,20 +19805,20 @@
           "inView": true
         },
         {
-          "role": "entry-title",
-          "text": "Track row supporting line",
+          "role": "entry-title-0",
+          "text": "Track rows",
           "bounds": [
             [
               39,
               500,
-              864,
+              394,
               603
             ]
           ],
           "inView": true
         },
         {
-          "role": "entry-supporting",
+          "role": "entry-supporting-0",
           "text": "4:35 −1.2 dBTP",
           "bounds": [
             [
@@ -16958,6 +19826,32 @@
               603,
               480,
               694
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-title-1",
+          "text": "Playing track",
+          "bounds": [
+            [
+              39,
+              735,
+              459,
+              838
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-supporting-1",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              838,
+              558,
+              929
             ]
           ],
           "inView": true
@@ -16998,19 +19892,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292245404-085b553176aeb.xml",
+          "remotePath": "/sdcard/settings-pane-1791311727428-fb4f3918edc518.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292245404-085b553176aeb.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311727428-fb4f3918edc518.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -17385,19 +20279,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292277040-9e0597850e049.xml",
+          "remotePath": "/sdcard/settings-pane-1791311746266-3f76018588aa3.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292277040-9e0597850e049.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311746266-3f76018588aa3.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -17693,19 +20587,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292314233-ece9a1c97db488.xml",
+          "remotePath": "/sdcard/settings-pane-1791311769224-e7eecfb690393.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292314233-ece9a1c97db488.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311769224-e7eecfb690393.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -18015,19 +20909,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292346989-7d417e50b9d53.xml",
+          "remotePath": "/sdcard/settings-pane-1791311810332-1259cb6bc23178.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292346989-7d417e50b9d53.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311810332-1259cb6bc23178.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -18343,19 +21237,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292372004-317594b9bc1e98.xml",
+          "remotePath": "/sdcard/settings-pane-1791311830345-8ff9accd212788.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292372004-317594b9bc1e98.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311830345-8ff9accd212788.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -18725,19 +21619,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292406414-198eb47544986.xml",
+          "remotePath": "/sdcard/settings-pane-1791311846991-ad59df61743dc8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292406414-198eb47544986.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311846991-ad59df61743dc8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -19107,10 +22001,10 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
-      "file": "template-editor-cover-no-library-light-s200.png",
+      "file": "template-editor-cover-empty-library-light-s200.png",
       "panel": "cover",
-      "scene": "no-library",
-      "state": "no-library",
+      "scene": "empty-library",
+      "state": "empty-library",
       "position": "top",
       "scheme": "light",
       "fontScale": 2,
@@ -19138,19 +22032,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292422108-c7fb11bff46a6.xml",
+          "remotePath": "/sdcard/settings-pane-1791311864488-7d4ef6c04aa29.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292422108-c7fb11bff46a6.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311864488-7d4ef6c04aa29.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -19228,7 +22122,7 @@
         },
         {
           "role": "preview-note",
-          "text": "No library is open. These are sample values.",
+          "text": "Your library has no tracks yet. These are sample values.",
           "bounds": [
             [
               39,
@@ -19493,6 +22387,414 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
+      "file": "template-editor-cover-playing-light-s200.png",
+      "panel": "cover",
+      "scene": "playing",
+      "state": "playing",
+      "position": "top",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 152,
+        "width": 1080,
+        "height": 2272
+      },
+      "densityDpi": 390,
+      "keyboardShown": false,
+      "viewTop": 330,
+      "viewBottom": 2365,
+      "caretDrawn": null,
+      "scrollMax": 1442,
+      "scrollRule": null,
+      "freshHierarchyValidated": true,
+      "productionServicesObserved": false,
+      "exactRetainedRgb": true,
+      "opaque": true,
+      "essentialPngChunksOnly": true,
+      "hierarchyDumpAttempts": [
+        {
+          "remotePath": "/sdcard/settings-pane-1791311895128-711ec2c2d45758.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311895128-711ec2c2d45758.xml\n",
+          "stderr": ""
+        }
+      ],
+      "launchAttempts": 1,
+      "sceneAttempt": 1,
+      "visit": "runtime-quiet-b",
+      "drawn": [
+        {
+          "role": "page-title",
+          "text": "Playing track",
+          "bounds": [
+            [
+              176,
+              186,
+              1041,
+              295
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-preview",
+          "text": "Preview",
+          "bounds": [
+            [
+              39,
+              369,
+              266,
+              460
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-0",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              39,
+              490,
+              579,
+              593
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-0",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              593,
+              534,
+              671
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-1",
+          "text": "Burning Aquamarine",
+          "bounds": [
+            [
+              39,
+              713,
+              700,
+              816
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-1",
+          "text": "2 of 16 ",
+          "bounds": [
+            [
+              39,
+              816,
+              248,
+              894
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-note",
+          "text": "From your library. The second file is not analysed yet.",
+          "bounds": [
+            [
+              39,
+              936,
+              1041,
+              1092
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-label",
+          "text": "Template",
+          "bounds": [
+            [
+              78,
+              1126,
+              336,
+              1204
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "template",
+          "text": "$mi(track)$ of $mi(total)$ $mi(peak)$",
+          "bounds": [
+            [
+              39,
+              1131,
+              1041,
+              1552
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-fields",
+          "text": "Fields",
+          "bounds": [
+            [
+              39,
+              1591,
+              212,
+              1682
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(title)",
+          "text": "Title",
+          "bounds": [
+            [
+              39,
+              1712,
+              183,
+              1815
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(title)",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              39,
+              1815,
+              518,
+              1906
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(title)",
+          "text": "mi(title)",
+          "bounds": [
+            [
+              694,
+              1763,
+              1041,
+              1854
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(file)",
+          "text": "File name",
+          "bounds": [
+            [
+              39,
+              1947,
+              356,
+              2050
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(file)",
+          "text": "かめりあ(Camellia) - Another Xronixle",
+          "bounds": [
+            [
+              39,
+              2050,
+              693,
+              2141
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(file)",
+          "text": "mi(file)",
+          "bounds": [
+            [
+              732,
+              1998,
+              1041,
+              2089
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(ext)",
+          "text": "Extension",
+          "bounds": [
+            [
+              39,
+              2182,
+              358,
+              2285
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(ext)",
+          "text": "flac",
+          "bounds": [
+            [
+              39,
+              2285,
+              145,
+              2376
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(ext)",
+          "text": "mi(ext)",
+          "bounds": [
+            [
+              771,
+              2233,
+              1041,
+              2324
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(folder)",
+          "text": "Folder",
+          "bounds": [
+            [
+              39,
+              2417,
+              243,
+              2424
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(folder)",
+          "text": "Camellia",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(folder)",
+          "text": "mi(folder)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(path)",
+          "text": "Path",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(path)",
+          "text": "Camellia/かめりあ(Camellia) - Another Xronixle.flac",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(path)",
+          "text": "mi(path)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(len)",
+          "text": "Duration",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(len)",
+          "text": "275",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(len)",
+          "text": "mi(len)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(peak)",
+          "text": "True peak",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(peak)",
+          "text": "−1.2 dBTP",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(peak)",
+          "text": "mi(peak)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(track)",
+          "text": "Place in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(track)",
+          "text": "1",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(track)",
+          "text": "mi(track)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(total)",
+          "text": "Tracks in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(total)",
+          "text": "16",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(total)",
+          "text": "mi(total)",
+          "bounds": [],
+          "inView": false
+        }
+      ],
+      "uncalledPageTexts": [],
+      "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
+    },
+    {
       "file": "template-editor-cover-list-dark-s200.png",
       "panel": "cover",
       "scene": "list",
@@ -19524,15 +22826,15 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292461627-8b56eb2636b1e.xml",
+          "remotePath": "/sdcard/settings-pane-1791311933133-cfb10c07c284c8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292461627-8b56eb2636b1e.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311933133-cfb10c07c284c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
@@ -19561,20 +22863,20 @@
           "inView": true
         },
         {
-          "role": "entry-title",
-          "text": "Track row supporting line",
+          "role": "entry-title-0",
+          "text": "Track rows",
           "bounds": [
             [
               39,
               500,
-              864,
+              394,
               603
             ]
           ],
           "inView": true
         },
         {
-          "role": "entry-supporting",
+          "role": "entry-supporting-0",
           "text": "4:35 −1.2 dBTP",
           "bounds": [
             [
@@ -19582,6 +22884,32 @@
               603,
               480,
               694
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-title-1",
+          "text": "Playing track",
+          "bounds": [
+            [
+              39,
+              735,
+              459,
+              838
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "entry-supporting-1",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              838,
+              558,
+              929
             ]
           ],
           "inView": true
@@ -19622,19 +22950,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292503153-c15e45f4157a58.xml",
+          "remotePath": "/sdcard/settings-pane-1791311957109-b85a0e8b714f48.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292503153-c15e45f4157a58.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311957109-b85a0e8b714f48.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -20009,19 +23337,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292534687-879cc6545692a8.xml",
+          "remotePath": "/sdcard/settings-pane-1791311974844-826d4eab888128.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292534687-879cc6545692a8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791311974844-826d4eab888128.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -20317,19 +23645,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292565053-03647166b39578.xml",
+          "remotePath": "/sdcard/settings-pane-1791312010574-4763f1069f77f.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292565053-03647166b39578.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791312010574-4763f1069f77f.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -20639,19 +23967,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292599219-ee315f1d5d249.xml",
+          "remotePath": "/sdcard/settings-pane-1791312031387-6008cfb5cbdff8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292599219-ee315f1d5d249.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791312031387-6008cfb5cbdff8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -20967,19 +24295,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292625189-d0cfbc4c02ac6.xml",
+          "remotePath": "/sdcard/settings-pane-1791312051820-2ae23fdb85e41.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292625189-d0cfbc4c02ac6.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791312051820-2ae23fdb85e41.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -21349,19 +24677,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292646211-db6df80d1f2508.xml",
+          "remotePath": "/sdcard/settings-pane-1791312069824-785caf3909e93.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292646211-db6df80d1f2508.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791312069824-785caf3909e93.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -21731,10 +25059,10 @@
       "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
     },
     {
-      "file": "template-editor-cover-no-library-dark-s200.png",
+      "file": "template-editor-cover-empty-library-dark-s200.png",
       "panel": "cover",
-      "scene": "no-library",
-      "state": "no-library",
+      "scene": "empty-library",
+      "state": "empty-library",
       "position": "top",
       "scheme": "dark",
       "fontScale": 2,
@@ -21762,19 +25090,19 @@
       "essentialPngChunksOnly": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791292676056-7d55731b7281f.xml",
+          "remotePath": "/sdcard/settings-pane-1791312087439-d6e7f12aaa8ff.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791292676056-7d55731b7281f.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791312087439-d6e7f12aaa8ff.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-decided-c",
+      "visit": "runtime-quiet-b",
       "drawn": [
         {
           "role": "page-title",
-          "text": "Supporting line",
+          "text": "Track rows",
           "bounds": [
             [
               176,
@@ -21852,7 +25180,7 @@
         },
         {
           "role": "preview-note",
-          "text": "No library is open. These are sample values.",
+          "text": "Your library has no tracks yet. These are sample values.",
           "bounds": [
             [
               39,
@@ -22109,6 +25437,414 @@
         {
           "role": "field-insert-mi(peak)",
           "text": "mi(peak)",
+          "bounds": [],
+          "inView": false
+        }
+      ],
+      "uncalledPageTexts": [],
+      "inspection": "Complete published region seen on a sheet of its panel, text size and theme."
+    },
+    {
+      "file": "template-editor-cover-playing-dark-s200.png",
+      "panel": "cover",
+      "scene": "playing",
+      "state": "playing",
+      "position": "top",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 152,
+        "width": 1080,
+        "height": 2272
+      },
+      "densityDpi": 390,
+      "keyboardShown": false,
+      "viewTop": 330,
+      "viewBottom": 2365,
+      "caretDrawn": null,
+      "scrollMax": 1442,
+      "scrollRule": null,
+      "freshHierarchyValidated": true,
+      "productionServicesObserved": false,
+      "exactRetainedRgb": true,
+      "opaque": true,
+      "essentialPngChunksOnly": true,
+      "hierarchyDumpAttempts": [
+        {
+          "remotePath": "/sdcard/settings-pane-1791312107747-63e40018cf29a8.xml",
+          "status": 0,
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791312107747-63e40018cf29a8.xml\n",
+          "stderr": ""
+        }
+      ],
+      "launchAttempts": 1,
+      "sceneAttempt": 1,
+      "visit": "runtime-quiet-b",
+      "drawn": [
+        {
+          "role": "page-title",
+          "text": "Playing track",
+          "bounds": [
+            [
+              176,
+              186,
+              1041,
+              295
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-preview",
+          "text": "Preview",
+          "bounds": [
+            [
+              39,
+              369,
+              266,
+              460
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-0",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              39,
+              490,
+              579,
+              593
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-0",
+          "text": "1 of 16 −1.2 dBTP",
+          "bounds": [
+            [
+              39,
+              593,
+              534,
+              671
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-title-1",
+          "text": "Burning Aquamarine",
+          "bounds": [
+            [
+              39,
+              713,
+              700,
+              816
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-supporting-1",
+          "text": "2 of 16 ",
+          "bounds": [
+            [
+              39,
+              816,
+              248,
+              894
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "preview-note",
+          "text": "From your library. The second file is not analysed yet.",
+          "bounds": [
+            [
+              39,
+              936,
+              1041,
+              1092
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-label",
+          "text": "Template",
+          "bounds": [
+            [
+              78,
+              1126,
+              336,
+              1204
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "template",
+          "text": "$mi(track)$ of $mi(total)$ $mi(peak)$",
+          "bounds": [
+            [
+              39,
+              1131,
+              1041,
+              1552
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "section-fields",
+          "text": "Fields",
+          "bounds": [
+            [
+              39,
+              1591,
+              212,
+              1682
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(title)",
+          "text": "Title",
+          "bounds": [
+            [
+              39,
+              1712,
+              183,
+              1815
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(title)",
+          "text": "Another Xronixle",
+          "bounds": [
+            [
+              39,
+              1815,
+              518,
+              1906
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(title)",
+          "text": "mi(title)",
+          "bounds": [
+            [
+              694,
+              1763,
+              1041,
+              1854
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(file)",
+          "text": "File name",
+          "bounds": [
+            [
+              39,
+              1947,
+              356,
+              2050
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(file)",
+          "text": "かめりあ(Camellia) - Another Xronixle",
+          "bounds": [
+            [
+              39,
+              2050,
+              693,
+              2141
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-insert-mi(file)",
+          "text": "mi(file)",
+          "bounds": [
+            [
+              732,
+              1998,
+              1041,
+              2089
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(ext)",
+          "text": "Extension",
+          "bounds": [
+            [
+              39,
+              2182,
+              358,
+              2285
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-value-mi(ext)",
+          "text": "flac",
+          "bounds": [
+            [
+              39,
+              2285,
+              145,
+              2376
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(ext)",
+          "text": "mi(ext)",
+          "bounds": [
+            [
+              771,
+              2233,
+              1041,
+              2324
+            ]
+          ],
+          "inView": true
+        },
+        {
+          "role": "field-name-mi(folder)",
+          "text": "Folder",
+          "bounds": [
+            [
+              39,
+              2417,
+              243,
+              2424
+            ]
+          ],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(folder)",
+          "text": "Camellia",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(folder)",
+          "text": "mi(folder)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(path)",
+          "text": "Path",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(path)",
+          "text": "Camellia/かめりあ(Camellia) - Another Xronixle.flac",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(path)",
+          "text": "mi(path)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(len)",
+          "text": "Duration",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(len)",
+          "text": "275",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(len)",
+          "text": "mi(len)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(peak)",
+          "text": "True peak",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(peak)",
+          "text": "−1.2 dBTP",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(peak)",
+          "text": "mi(peak)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(track)",
+          "text": "Place in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(track)",
+          "text": "1",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(track)",
+          "text": "mi(track)",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-name-mi(total)",
+          "text": "Tracks in folder",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-value-mi(total)",
+          "text": "16",
+          "bounds": [],
+          "inView": false
+        },
+        {
+          "role": "field-insert-mi(total)",
+          "text": "mi(total)",
           "bounds": [],
           "inView": false
         }

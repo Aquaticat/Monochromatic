@@ -125,28 +125,59 @@ that scrolling suffices to reach the field list (D96),
 and that the agent builds one version of which other rows get templates
 and asks for approval (D97).
 
-In progress:
+Built and published:
 the D97 version,
 proposed in `doc/planning/music-player-template-editor.md` under
 `Which rows get templates: the agent's version`.
-The reference and scenes are committed
-(94 reference cases,
-9 scenes);
-the prototype fixture gains the `Playing track` editor and the `empty-library` state
-at `66566ee3aa0bbd08b2fb087342f43b546cc88210`
+The prototype is at `66566ee3aa0bbd08b2fb087342f43b546cc88210`
 (250 unit tests pass,
 24 of them the fixture's;
-APK kept in `settings-pane-native-private/build-66566ee3aa0bbd08b2fb087342f43b546cc88210`);
-then a 72-view cohort
-(capturing with the visit prefix `rows`),
-publication,
-and the approval question through the question tool.
-Until that cohort is published,
-`verify:template-editor` and `test:template-editor` fail against the 64 published views,
-which have the old scenes.
-D95 may also remove the first-run study's state without an opened source;
-that is to be asked,
-not assumed.
+APK kept in `settings-pane-native-private/build-66566ee3aa0bbd08b2fb087342f43b546cc88210`).
+`questions/template-editor.html` shows 72 inspected views;
+`verify:template-editor`,
+`test:template-editor` (with all four guard-removal proofs) and `test:template-reference` pass,
+and the offline browser check passed in four contexts.
+`questions/evidence/template-editor-review-verification.json` records it,
+quoting the tasks' own result lines.
+The capture needed many visits while other work loaded the host;
+`run-template-editor-when-quiet.ts` waits,
+within a bound,
+for the five-minute load average to fall under 48 before each round of visits.
+
+Answered through the question tool on 2026-10-06:
+the editor is accepted as shown (D98),
+the two templates are approved as built (D99),
+the first-run study keeps access declined and drops no source opened (D100),
+and `AGENTS.md`'s APQ now says never to block pushes in this repository's linked worktrees,
+which share its `.git/config`.
+The review page shows the two templates as decided.
+
+Built and published:
+the first-run study rebuilt for D100,
+proposed in `doc/planning/music-player-first-run-access.md` under `Rebuild for D100`.
+The prototype is at `7a2ea6888cce59c9db23d556a520f4c60f8824c6`
+(250 unit tests pass,
+12 of them the first-run fixture's).
+`questions/first-run-access.html` shows 28 inspected views from 4 visits;
+`verify:first-run:access` and `test:first-run:access` pass,
+all five guard removals fail the test,
+and the offline browser check passed in four contexts.
+`evidence/first-run-access-boundaries.md` describes it.
+While it was captured,
+`systemd-oomd` repeatedly killed the shared command cgroup that other sessions' builds had filled,
+so long runs now go in their own user unit:
+`systemd-run --user --unit=<name> --collect --wait --property=MemoryMax=2G <command>`,
+with `wait-for-unit.ts <unit> <pattern>` to wait for it.
+
+Next:
+ask the human,
+through the question tool,
+to approve the declined state's version
+(title,
+body,
+button order,
+blank left half,
+and that `Allow access` can only open Android's settings once Android stops showing its prompt).
 
 To capture again,
 from `~/temp/agent`:

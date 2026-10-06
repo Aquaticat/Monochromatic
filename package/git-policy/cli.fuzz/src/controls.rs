@@ -19,8 +19,11 @@
 /// import { stripWrapperControls } from 'git-policy-cli';
 /// ```
 use crate::control_tables::{CONTROL_TOKENS, POSSIBLE_ALIASES, TABLE_COMMANDS, VALUELESS_TOKENS};
+use git_policy_cli::candidate_error::{CandidateError, CandidateFailure};
+use git_policy_cli::candidate_prediction::{CandidateRequest, PreparedCandidates};
 use git_policy_cli::global_arguments::{GlobalOutcome, global_layout};
-use git_policy_cli::policy_checks::{CandidateSource, ShippedChecks};
+use git_policy_cli::policy_checks::{ShippedChecks, shipped_checks};
+use git_policy_cli::policy_content::LifecycleContent;
 use git_policy_cli::policy_registry::{POLICY_REGISTRY, PolicyId};
 use git_policy_cli::repository_facts::RepositoryFacts;
 use git_policy_cli::repository_location::RepositoryLocation;
@@ -378,6 +381,24 @@ impl RepositoryFacts for FixedFacts {
     fn remote_guess_creates_branch(&mut self, _target: &OsStr) -> Result<bool, String> {
         return Ok(self.remote_guess);
     }
+
+    /// What: Refuse to prepare candidates, as Git that cannot start would.
+    /// Why:  The fuzz lifecycle starts no Git, so a content policy can never read a
+    ///       candidate here, and must then stop the command rather than pass it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// candidates(request) { throw new CandidateError('git-not-started', '...'); }
+    /// ```
+    fn candidates(
+        &mut self,
+        _request: &CandidateRequest,
+    ) -> Result<PreparedCandidates, CandidateError> {
+        return Err(CandidateError::new(
+            CandidateFailure::GitNotStarted,
+            "the fuzz facts start no Git, so no candidate can be prepared",
+        ));
+    }
 }
 
 /// What: Whether `mode` selects the linked worktree. `bool` is true or false.
@@ -509,12 +530,12 @@ pub enum FrontierSeen {
 pub fn check_frontier(arguments: &[OsString], mode: u8) -> FrontierSeen {
     let stripped: StrippedInvocation = strip_wrapper_controls(arguments);
     // `mut` lets the lifecycle state what content policies can read.
-    let mut checks: ShippedChecks<FixedFacts> = ShippedChecks {
-        facts: fixed_facts(mode),
-        arguments: stripped.arguments.clone(),
-        candidates: CandidateSource::None,
-        allowed_worktree_dirs: Vec::<PathBuf>::new(),
-    };
+    let mut checks: ShippedChecks<FixedFacts> = shipped_checks(
+        fixed_facts(mode),
+        stripped.arguments.clone(),
+        LifecycleContent::None,
+        Vec::<PathBuf>::new(),
+    );
     // `&[]` is an empty environment: no lease is inherited.
     let outcome: WrappedOutcome = run_wrapped_command(&stripped, &[], &mut checks);
     // `match` picks by variant and binds the fields each ending carries.

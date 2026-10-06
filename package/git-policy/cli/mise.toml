@@ -22,6 +22,10 @@ run = "cargo generate-lockfile --offline"
 description = "Format native wrapper Rust source without changing TypeScript"
 run = "cargo fmt"
 
+[tasks."native:build"]
+description = "Build the native wrapper executable on the host, for differential runs that start it by path"
+run = "cargo build --locked --offline --bin cli-git-native"
+
 [tasks."native:check"]
 description = "Type-check the native wrapper library, executable and test targets without running them"
 run = "cargo check --locked --offline --all-targets"

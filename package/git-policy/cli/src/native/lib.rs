@@ -27,6 +27,9 @@ pub mod config_parse;
 /// Validation of the `policies` section and per-policy options.
 mod config_policies;
 
+/// The `rulesFile` option: a repository-relative name that stays inside the repository.
+pub mod config_rules_file;
+
 /// Typed settings and their defaults.
 pub mod config_schema;
 
@@ -273,6 +276,27 @@ mod dependent_version_differential_tests;
 /// The shipped policies as checks over rule cores and repository facts.
 pub mod policy_checks;
 
+/// What a lifecycle offers content policies, and its candidates once prepared.
+pub mod policy_content;
+
+/// The built-in final-newline policy: canonical final LF, preserved paths, findings.
+pub mod policy_final_newline;
+
+/// The optional root-context policy: no top-level `CONTEXT.md` enters the index.
+pub mod policy_root_context;
+
+/// The optional forbidden-strings policy over the linked scanner, with redacted findings.
+pub mod policy_forbidden_strings;
+
+/// The executable's panic hook: where an internal error happened, never its message.
+pub mod panic_notice;
+
+/// Installing a direct fix's corrections into the worktree, all or none.
+pub mod direct_fix_install;
+
+/// The direct fix: converge corrections in memory, then install them.
+pub mod direct_fix;
+
 /// The fixed argument transforms of a forwarded command, in order.
 pub mod policy_transforms;
 
@@ -318,6 +342,15 @@ pub mod candidate_version;
 
 /// Per-invocation listing, lazy bytes and invalidation of candidate versions.
 pub mod candidate_store;
+
+/// Pure parsing of `git ls-files --stage` records and the delta between two index states.
+pub mod candidate_stage;
+
+/// A private, timestamp-preserving copy of the real index, removed when dropped.
+pub mod candidate_private_index;
+
+/// What `git add` would stage, and the worktree files a direct command selects.
+pub mod candidate_prediction;
 
 /// The linked forbidden-strings scanner: one load per invocation, typed redacted findings.
 pub mod scanner_adapter;

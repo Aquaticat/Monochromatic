@@ -44,6 +44,8 @@ pub enum CandidateFailure {
     ObjectKindUnexpected,
     /// A candidate belongs to a version that was invalidated.
     StaleCandidate,
+    /// The private index copy a prediction stages into could not be created or copied.
+    PrivateIndexUnavailable,
 }
 
 /// What: One candidate failure: its cause and a complete explanation.

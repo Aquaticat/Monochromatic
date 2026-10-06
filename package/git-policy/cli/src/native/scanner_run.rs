@@ -12,7 +12,7 @@
 /// Import the candidate layer's failure, store and version.
 use super::candidate_error::CandidateError;
 use super::candidate_store::CandidateStore;
-use super::candidate_version::CandidateVersion;
+use super::candidate_version::{Candidate, CandidateVersion};
 /// Import the loaded scanner and its failure.
 use super::scanner_adapter::{CandidateScanner, ScannerError};
 /// Import the eligibility decision.
@@ -60,8 +60,46 @@ impl std::fmt::Display for ScanRunError {
 /// An empty `impl` marks the type as a standard error value.
 impl std::error::Error for ScanRunError {}
 
+/// What: Where a scan pass reads candidate bytes. A `trait` is an interface.
+/// Why:  The candidate store reads the version's objects; a direct fix reads the same
+///       objects with its in-memory corrections laid over them, and its later passes
+///       must scan the corrected bytes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// interface CandidateBytes { bytes(candidate: Candidate): Promise<Uint8Array> }
+/// ```
+pub trait CandidateBytes {
+    /// What: The bytes the candidate holds for this reader. Why: the scan's only input.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// bytes(candidate: Candidate): Promise<Uint8Array>; // throws CandidateError
+    /// ```
+    fn candidate_bytes(&mut self, candidate: &Candidate) -> Result<Rc<[u8]>, CandidateError>;
+}
+
+/// What: `impl CandidateBytes for CandidateStore` reads through the store itself.
+/// Why:  Without corrections the store's objects are the bytes to scan.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class CandidateStore implements CandidateBytes {}
+/// ```
+impl CandidateBytes for CandidateStore {
+    /// What: The store's bytes for the candidate. Why: `CandidateStore::bytes` is the read.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// bytes(candidate) { return this.read(candidate); }
+    /// ```
+    fn candidate_bytes(&mut self, candidate: &Candidate) -> Result<Rc<[u8]>, CandidateError> {
+        return self.bytes(candidate);
+    }
+}
+
 /// What: Scan each eligible candidate and return the scanner's result for every one scanned.
-///       `&mut CandidateStore` lends the store for changing (it may read objects);
+///       `&mut dyn CandidateBytes` lends any byte reader for changing (it may read objects);
 ///       `Option<&[u8]>` is "the rules file's candidate pathname or nothing";
 ///       `Result<T, E>` is "a value or a failure".
 /// Why:  Results are returned for clean candidates too, so the caller can tell
@@ -74,7 +112,7 @@ impl std::error::Error for ScanRunError {}
 /// ```
 pub fn scan_version(
     scanner: &CandidateScanner,
-    store: &mut CandidateStore,
+    store: &mut dyn CandidateBytes,
     version: &CandidateVersion,
     rules_path: Option<&[u8]>,
 ) -> Result<Vec<CandidateScan>, ScanRunError> {
@@ -85,7 +123,7 @@ pub fn scan_version(
             continue;
         }
         // `match` on the read's `Result`: `Ok(read)` unwraps the bytes, `Err(error)` ends the pass.
-        let bytes: Rc<[u8]> = match store.bytes(candidate) {
+        let bytes: Rc<[u8]> = match store.candidate_bytes(candidate) {
             Ok(read) => read,
             // `Err(...)` is the failure variant.
             Err(error) => return Err(ScanRunError::Candidate(error)),

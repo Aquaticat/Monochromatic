@@ -11,7 +11,7 @@ description = "Run generator and invariant controls"
 run = "cargo test --lib"
 
 [tasks."test:planted"]
-description = "Plant five defects in a disposable copy of the subject and require the generator controls to fail"
+description = "Plant each listed defect in a disposable copy of the subject and require the generator controls to fail"
 run = "node bin/planted-controls.mjs"
 
 [tasks."lint:types"]

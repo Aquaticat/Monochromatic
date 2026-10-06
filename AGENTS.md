@@ -152,10 +152,12 @@ Notifications,
 Stop only at completion or genuine blocker.
 
 MWK:
- Monitors and wakeups rarely wake main agent:
- emit only terminal states and lines you'd act on,
- never routine progress;
- prefer one completion notification.
+ Monitors,
+ wakeups,
+ and waiting subagents rarely wake main agent:
+ wait in one command that ends at a terminal state;
+ emit only lines you'd act on,
+ never routine progress.
 
 PXQ:
  "Completion" means the queue:
@@ -500,7 +502,9 @@ CLN:
 APQ:
  Auto-push fires in third-party clones too:
  before committing in one,
- run `git remote set-url --push origin DISABLED`.
+ run `git remote set-url --push origin DISABLED`;
+ never in this repo's linked worktrees,
+ which share its `.git/config`.
 
 BOP:
  `~` in shell output is a display-only home-dir substitution by the `bash-output-filter` hook;

@@ -1,24 +1,48 @@
 //! The bundled manifest decides which recognized languages are supported, plain text, or broken.
 
 /// What: `use helix_core::{...}` brings several names from the Helix core library into this file.
-///       `Rope` is the application's text container; `Loader` is Helix's language registry;
-///       `LanguageData` compiles one language's highlighting rules; `Configuration` is the
-///       decoded registry file.
+///       `Rope` is the application's text container; `Configuration` is the decoded registry file.
 /// Why:  The last test checks every registry language that uses a bundled grammar, which the
 ///       application engine only does lazily, one opened file at a time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { Rope, Loader, LanguageData, type Configuration } from 'helix-core';
+/// import { Rope, type Configuration } from 'helix-core';
 /// ```
-use helix_core::{
-    Rope,
-    syntax::{LanguageData, Loader, config::Configuration},
+use helix_core::{Rope, syntax::config::Configuration};
+/// The application-owned engine, its manifest reader, and the runtime directory it reads.
+use ide_app::{
+    runtime::{self, RuntimeSource},
+    syntax::{SyntaxEngine, provisioned_grammars},
 };
-/// The application-owned engine and its manifest reader are the subjects under test.
-use ide_app::syntax::{SyntaxEngine, provisioned_grammars};
 /// Sets hold grammar ids; paths name sample files and manifest fixtures.
-use std::{collections::HashSet, fs, path::Path};
+use std::{
+    collections::HashSet,
+    fs,
+    path::{Path, PathBuf},
+};
+
+/// What: The runtime directory these tests read: the one `HELIX_RUNTIME` names, as the
+///       application's own runtime module reads it, never through Helix's directory search.
+/// Why:  The checks must look at the same files the engine highlights with.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runtimeDirectory(): string
+/// ```
+fn runtime_directory() -> PathBuf {
+    // What: `let RuntimeSource::Directory(path) = ... else { panic!(...) }` unpacks the directory variant.
+    // Why:  A test program has no embedded table, so anything else is a wiring mistake.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const source = runtime.current(); if (source.kind !== 'directory') throw new Error(...);
+    // ```
+    let RuntimeSource::Directory(path) = runtime::current().expect("language runtime") else {
+        panic!("a test program reads a runtime directory");
+    };
+    return path.clone();
+}
 
 /// What: `fn write_manifest(content: &str) -> tempfile::TempDir` takes borrowed text (`&str`:
 ///       the caller keeps ownership; sibling `String` would take it) and returns a handle that
@@ -149,11 +173,16 @@ fn missing_manifest_names_the_file_and_the_remedy() {
     let error = provisioned_grammars(&manifest).expect_err("missing manifest");
     let message = format!("{error:#}");
     assert!(
-        message.contains("Cannot read the bundled language manifest"),
+        message.contains("Cannot read the language manifest"),
         "{message}"
     );
     assert!(message.contains("manifest.json"), "{message}");
+    // A runtime directory is read only by tests and development tools, whose users can run the task.
     assert!(message.contains("runtime task"), "{message}");
+    assert!(
+        message.contains("only tests and development tools"),
+        "{message}"
+    );
 }
 
 /// A manifest of the wrong shape is rejected instead of being read as an empty selection.
@@ -164,7 +193,7 @@ fn malformed_manifest_is_rejected() {
         .expect_err("wrong manifest shape");
     let message = format!("{error:#}");
     assert!(
-        message.contains("Cannot decode the bundled language manifest"),
+        message.contains("Cannot decode the language manifest"),
         "{message}"
     );
 }
@@ -185,12 +214,9 @@ fn manifest_entry_that_is_not_a_library_is_rejected() {
 /// Every grammar the bundled manifest lists ships its library and at least one license notice.
 #[test]
 fn bundled_manifest_matches_shipped_libraries_and_notices() {
-    let manifest = helix_loader::runtime_file("manifest.json");
-    let names = provisioned_grammars(&manifest).expect("bundled manifest");
+    let runtime = runtime_directory();
+    let names = provisioned_grammars(&runtime.join("manifest.json")).expect("bundled manifest");
     assert!(!names.is_empty(), "the bundled manifest lists no grammar");
-    let runtime = manifest
-        .parent()
-        .expect("manifest lives in the runtime directory");
     for name in &names {
         let library = runtime.join("grammars").join(format!("{name}.so"));
         assert!(
@@ -214,8 +240,9 @@ fn bundled_manifest_matches_shipped_libraries_and_notices() {
 /// including languages that only reuse a grammar (`jsonc`, `miseconfig`, `markdown-rustdoc`).
 #[test]
 fn every_language_on_a_bundled_grammar_compiles_its_highlighting_rules() {
-    let names = provisioned_grammars(&helix_loader::runtime_file("manifest.json"))
-        .expect("bundled manifest");
+    let names =
+        provisioned_grammars(&runtime_directory().join("manifest.json")).expect("bundled manifest");
+    let engine = SyntaxEngine::new().expect("bundled manifest");
     // What: `try_into()` converts the registry's TOML value into Helix's typed configuration,
     //       returning a `Result`; the `: Configuration` annotation names the target type.
     // Why:  This is the same registry construction the application engine performs.
@@ -227,7 +254,6 @@ fn every_language_on_a_bundled_grammar_compiles_its_highlighting_rules() {
     let config: Configuration = helix_loader::config::default_lang_config()
         .try_into()
         .expect("bundled language configuration");
-    let loader = Loader::new(config).expect("filename language rules");
     // What: `Vec::new()` creates an empty growable list; `mut` allows pushing into it.
     // Why:  Reporting every failing language at once avoids one rebuild per failure.
     //
@@ -238,26 +264,27 @@ fn every_language_on_a_bundled_grammar_compiles_its_highlighting_rules() {
     let mut checked = Vec::new();
     let mut failures = Vec::new();
     let mut covered = HashSet::new();
-    for language in loader.language_configs() {
+    for language in &config.language {
         // `as_deref().unwrap_or(...)`: the explicit grammar name, or else the language's own id.
         let grammar = language.grammar.as_deref().unwrap_or(&language.language_id);
         if !names.contains(grammar) {
             continue;
         }
         covered.insert(grammar.to_string());
-        // What: `match` inspects the returned `Result<Option<...>>` and runs the first arm whose
-        //       shape fits: success with rules, success without a library, or an error.
-        // Why:  The three outcomes need different messages, and none may be ignored.
+        // What: `match` inspects the returned `Result<bool>` and runs the first arm whose shape
+        //       fits: compiled, skipped (unknown or not bundled), or an error with its reason.
+        // Why:  The engine compiles through the application's own loader, so this checks the same
+        //       path highlighting uses; none of the outcomes may be ignored.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // try { rules === undefined ? failures.push('library missing') : checked.push(id); }
+        // try { engine.compileLanguage(id) ? checked.push(id) : failures.push('not compiled'); }
         // catch (error) { failures.push(String(error)); }
         // ```
-        match LanguageData::compile_syntax_config(language, &loader) {
-            Ok(Some(_)) => checked.push(language.language_id.clone()),
-            Ok(None) => failures.push(format!("{}: grammar library missing", language.language_id)),
-            Err(error) => failures.push(format!("{}: {error:#}", language.language_id)),
+        match engine.compile_language(&language.language_id) {
+            Ok(true) => checked.push(language.language_id.clone()),
+            Ok(false) => failures.push(format!("{}: not compiled", language.language_id)),
+            Err(error) => failures.push(format!("{error:#}")),
         }
     }
     println!(

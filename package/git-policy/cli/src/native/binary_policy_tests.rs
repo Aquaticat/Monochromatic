@@ -268,16 +268,21 @@ fn legacy_file_beside_jsonc_is_reported_by_check_only() {
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     std::fs::write(
         repo.join(CONFIG_FILE_NAME),
-        r#"{ "policies": { "mono/dependent-version-bump": "off" } }"#,
+        "{ \"policies\": { \"mono/dependent-version-bump\": \"off\" } }\n",
     )
     .expect("valid configuration");
     std::fs::write(repo.join("cli-git.config.ts"), "export default {};\n").expect("legacy");
     std::fs::write(repo.join("cli-git.config.mjs"), "export default {};\n").expect("legacy");
-    // Positive control: the configuration really is loaded by this ordinary command.
+    // Positive control: the configuration really is loaded by this ordinary command, whose
+    // content policy then cannot predict an add of a file that does not exist.
     let ordinary: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "anything"]);
     assert_eq!(ordinary.code, Some(2));
     assert_eq!(ordinary.stdout, Vec::<u8>::new());
     let ordinary_stderr: String = String::from_utf8_lossy(&ordinary.stderr).into_owned();
+    assert!(
+        ordinary_stderr.contains("\"code\":\"content-unavailable\""),
+        "{ordinary_stderr}"
+    );
     assert!(!ordinary_stderr.contains("egacy"), "{ordinary_stderr}");
     assert!(
         !ordinary_stderr.contains("cli-git.config.ts"),
@@ -287,8 +292,9 @@ fn legacy_file_beside_jsonc_is_reported_by_check_only() {
         !ordinary_stderr.contains("configuration-warning"),
         "{ordinary_stderr}"
     );
+    // Fix stays silent about the legacy files, and finds nothing to correct.
     let fix: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]);
-    assert_eq!(fix.code, Some(2));
+    assert_eq!(fix.code, Some(0));
     assert_eq!(fix.stdout, Vec::<u8>::new());
     assert!(
         !String::from_utf8_lossy(&fix.stderr).contains("egacy"),
@@ -296,7 +302,7 @@ fn legacy_file_beside_jsonc_is_reported_by_check_only() {
         String::from_utf8_lossy(&fix.stderr)
     );
     let check: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "check", "--all"]);
-    assert_eq!(check.code, Some(2));
+    assert_eq!(check.code, Some(0));
     assert_eq!(
         String::from_utf8_lossy(&check.stdout),
         format!(
@@ -331,5 +337,205 @@ fn legacy_file_beside_jsonc_is_reported_by_check_only() {
             "{arguments:?}: {text}"
         );
     }
+    remove(&fixture);
+}
+
+/// The line a forbidden-strings content match prints, as event number `sequence`.
+fn forbidden_match(trigger: &str, sequence: u64, path: &str, line: u64) -> String {
+    return format!(
+        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"{trigger}\",\"policyId\":\"security/forbidden-strings\",\"severity\":\"error\",\"code\":\"security/forbidden-strings/forbidden-string\",\"message\":\"Forbidden string matched at line {line} (rule 0).\",\"path\":\"{path}\",\"fix\":\"none\"}}\n"
+    );
+}
+
+/// The forbidden-strings policy scans what `git add` would stage and what a direct check
+/// selects, with rules from the configuration or `FORBIDDEN_STRINGS_RULES`, and never
+/// prints the matched text; a named rules file that is missing stops the add.
+#[test]
+fn forbidden_strings_scan_candidates_from_each_rules_source() {
+    let fixture: Fixture = fixture("forbidden-strings");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    let needle: String = ["PLANTED", "BINARY", "NEEDLE"].join("_");
+    std::fs::write(repo.join("a.txt"), format!("first\n{needle}\n")).expect("needle");
+    std::fs::write(repo.join("clean.txt"), b"clean\n").expect("clean");
+    std::fs::create_dir(repo.join("rules")).expect("rules directory");
+    std::fs::write(repo.join("rules/private.txt"), format!("{needle}\n")).expect("rules");
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"security/forbidden-strings\": [\"error\", { \"builtinRules\": false, \"rulesFile\": \"rules/private.txt\" }] } }\n",
+    )
+    .expect("configuration");
+    // The configured rules file: the add stops, names the line and rule, and stages nothing.
+    let stopped: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "--", "a.txt"]);
+    assert_eq!(
+        stopped,
+        Observed {
+            code: Some(1),
+            stdout: Vec::<u8>::new(),
+            stderr: forbidden_match("pre-forward", 0, "a.txt", 2).into_bytes(),
+        }
+    );
+    // A clean file is staged.
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["add", "--", "clean.txt"]),
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    // A direct check reads the worktree and reports on standard output.
+    assert_eq!(
+        run_wrapped(
+            &fixture,
+            repo.as_path(),
+            &["cli-git", "check", "--", "a.txt"]
+        ),
+        Observed {
+            code: Some(1),
+            stdout: forbidden_match("direct-check", 0, "a.txt", 2).into_bytes(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    // The variable, when the configuration names no file; relative to the top level.
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"security/forbidden-strings\": [\"error\", { \"builtinRules\": false }] } }\n",
+    )
+    .expect("configuration without a file");
+    let from_variable: Observed = observe(
+        wrapped(&fixture)
+            .env("FORBIDDEN_STRINGS_RULES", "rules/private.txt")
+            .current_dir(&repo)
+            .args(["add", "--", "a.txt"]),
+        b"",
+    );
+    assert_eq!(
+        from_variable.stderr,
+        forbidden_match("pre-forward", 0, "a.txt", 2).into_bytes()
+    );
+    assert_eq!(from_variable.code, Some(1));
+    // Neither, and no default file: the rules cannot load, so the add stops as incomplete.
+    let missing: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "--", "a.txt"]);
+    assert_eq!(missing.code, Some(2));
+    let missing_text: String = String::from_utf8_lossy(&missing.stderr).into_owned();
+    assert!(
+        missing_text.contains("\"type\":\"engine-failure\",\"code\":\"policy-incomplete\""),
+        "{missing_text}"
+    );
+    // No output of any run holds the matched text.
+    for observed in [&stopped, &from_variable, &missing] {
+        assert!(!String::from_utf8_lossy(&observed.stdout).contains(needle.as_str()));
+        assert!(!String::from_utf8_lossy(&observed.stderr).contains(needle.as_str()));
+    }
+    // A configured name that leaves the repository is a configuration error before Git runs.
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"security/forbidden-strings\": [\"error\", { \"rulesFile\": \"../outside.txt\" }] } }\n",
+    )
+    .expect("escaping configuration");
+    let escaping: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "--", "a.txt"]);
+    assert_eq!(escaping.code, Some(2));
+    assert!(
+        String::from_utf8_lossy(&escaping.stderr)
+            .contains("rulesFile must name a file relative to the repository's top level that stays inside it, but the value has a . or .. component."),
+        "{}",
+        String::from_utf8_lossy(&escaping.stderr)
+    );
+    // Only the clean file was ever staged.
+    assert_eq!(
+        String::from_utf8_lossy(&status(&fixture, repo.as_path())),
+        "A  clean.txt\n?? a.txt\n?? cli-git.config.jsonc\n?? rules/private.txt\n"
+    );
+    remove(&fixture);
+}
+
+/// A direct fix corrects the selected worktree files, executable ones included, reads
+/// the worktree rather than the index, reports only its summary, and never changes the
+/// index; an unported policy listed for the fix refuses it before any file changes.
+#[test]
+fn direct_fix_corrects_only_worktree_files() {
+    let fixture: Fixture = fixture("direct-fix");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    std::fs::write(repo.join("t.txt"), b"t\n").expect("tracked");
+    git(&fixture, repo.as_path(), &["add", "t.txt"]);
+    git(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "--message=tracked"],
+    );
+    std::fs::write(repo.join("t.txt"), b"t\n\n").expect("modified");
+    std::fs::write(repo.join("u.txt"), b"u").expect("untracked");
+    executable(repo.join("run.sh").as_path(), b"#!/bin/sh");
+    // Staged without a final newline, canonical in the worktree: nothing to correct.
+    std::fs::write(repo.join("s.txt"), b"s").expect("staged");
+    git(&fixture, repo.as_path(), &["add", "s.txt"]);
+    std::fs::write(repo.join("s.txt"), b"s\n").expect("worktree");
+    let index_before: Vec<u8> = std::fs::read(repo.join(".git/index")).expect("index");
+    // An unported policy listed for the fix refuses it, and nothing changes.
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"markdown/autofix\": \"warn\" } }\n",
+    )
+    .expect("configuration");
+    let refused: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]);
+    assert_eq!(refused.code, Some(2));
+    assert_eq!(refused.stdout, Vec::<u8>::new());
+    assert_eq!(std::fs::read(repo.join("u.txt")).expect("u"), b"u");
+    std::fs::remove_file(repo.join(CONFIG_FILE_NAME)).expect("no configuration");
+    // The fix itself.
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]),
+        Observed {
+            code: Some(0),
+            stdout: b"{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summary\",\"trigger\":\"direct-fix\",\"passes\":1,\"changedPaths\":[\"run.sh\",\"t.txt\",\"u.txt\"]}\n".to_vec(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    assert_eq!(
+        std::fs::read(repo.join(".git/index")).expect("index"),
+        index_before,
+        "a direct fix never changes the index"
+    );
+    assert_eq!(std::fs::read(repo.join("t.txt")).expect("t"), b"t\n");
+    assert_eq!(std::fs::read(repo.join("u.txt")).expect("u"), b"u\n");
+    assert_eq!(std::fs::read(repo.join("s.txt")).expect("s"), b"s\n");
+    assert_eq!(
+        std::fs::read(repo.join("run.sh")).expect("run"),
+        b"#!/bin/sh\n"
+    );
+    let mode: u32 = {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::metadata(repo.join("run.sh"))
+            .expect("run")
+            .permissions()
+            .mode()
+    };
+    assert_eq!(mode & 0o100, 0o100, "{mode:o}");
+    // Nothing is left beside the corrected files, and Git sees only the worktree change.
+    let mut leftovers: Vec<String> = Vec::new();
+    for entry in std::fs::read_dir(&repo).expect("worktree") {
+        let name: String = entry
+            .expect("entry")
+            .file_name()
+            .to_string_lossy()
+            .into_owned();
+        if name.starts_with(".cli-git-") {
+            leftovers.push(name);
+        }
+    }
+    assert_eq!(leftovers, Vec::<String>::new());
+    assert_eq!(
+        String::from_utf8_lossy(&status(&fixture, repo.as_path())),
+        "AM s.txt\n?? run.sh\n?? u.txt\n"
+    );
+    // A second fix finds nothing to do.
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]),
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
     remove(&fixture);
 }
