@@ -711,7 +711,9 @@ Nothing here is decided until then.
 
 ### Where supporting text appears
 
-From the design decisions:
+From the design decisions
+(production source read on 2026-10-06 draws no deck subtitle;
+the deck's `1 of 16 · −1.2 dBTP` is the prototype's authored deck):
 
 - Track rows in the folder's track list:
   a title and a supporting line
@@ -750,9 +752,13 @@ From the design decisions:
   `total` is the player's own word.
   `pos` is not used for the place,
   because KWGT gives `mi(pos)` as the playback position in seconds.
-- Its preview draws the deck's title and subtitle,
-  centred as the deck draws them,
-  for the same two files as the track rows' preview.
+- Its preview draws the same two files as the track rows' preview,
+  as rows of a title and the line.
+  A deck is one playing track,
+  so two decks would be a shape the app never shows,
+  and one deck alone would hide the line before analysis.
+  Rows keep both editors alike;
+  the deck itself shows the line in the left pane on the inner panel.
 - Search results are not templated:
   their supporting line is the parent folder D77 requires,
   and a template could remove it.
@@ -781,5 +787,10 @@ as the track rows' default does under D93.
 
 The editor study gains the `Playing track` editor,
 the Settings page lists both templates,
-the left pane's deck shows the new default,
+each editor is titled with its template's name
+(so the track rows' editor,
+titled `Supporting line` until now,
+becomes `Track rows`),
+the left pane's deck on the inner panel shows the new default,
 and the state previously called `no-library` becomes `empty-library` under D95.
+The field list is unchanged (D96).

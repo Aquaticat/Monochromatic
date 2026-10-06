@@ -119,11 +119,29 @@ The study is rebuilt and republished:
   with no digest.
 - `evidence/template-editor-boundaries.md` describes the study and what it keeps in view.
 
-Next in this round:
-reaching the field list while the keyboard is open,
-then which other rows get a template.
-Ask before building,
-through the question tool.
+Shown that page on 2026-10-06,
+the human answered that a library is always open (D95),
+that scrolling suffices to reach the field list (D96),
+and that the agent builds one version of which other rows get templates
+and asks for approval (D97).
+
+In progress:
+the D97 version,
+proposed in `doc/planning/music-player-template-editor.md` under
+`Which rows get templates: the agent's version`.
+The reference and scenes are committed
+(94 reference cases,
+9 scenes);
+the prototype fixture gains the `Playing track` editor and the `empty-library` state;
+then a 72-view cohort,
+publication,
+and the approval question through the question tool.
+Until that cohort is published,
+`verify:template-editor` and `test:template-editor` fail against the 64 published views,
+which have the old scenes.
+D95 may also remove the first-run study's state without an opened source;
+that is to be asked,
+not assumed.
 
 To capture again,
 from `~/temp/agent`:
