@@ -1524,6 +1524,15 @@ one core shard's baseline took 139.8 seconds and its longest mutant 136.2.
 So the 180 second limit holds about 1.2 times the slowest caught mutant on a host loaded like that one,
 and a busier host would record timeouts that are only load;
 `Final round` has the rerun that disposed of the one it did record.
+An inference from the source,
+not measured:
+under the five `has_glob` mutants that make it true for ordinary text,
+`walk_root` stops at the first component,
+so the absolute glob in `relative_absolute_and_literal_inputs_share_one_native_result_set` walks from `/`
+until the walker meets its first error,
+and how long that takes depends on the container's file tree;
+that is why `src/path_inputs.rs` is the file most likely to time out again on a slow host,
+although the measured cause of this timeout was load.
 A timeout in these scopes should be read against the baseline of its own run
 and the tests named as still running in the mutant's log
 before it is treated as a stall,
