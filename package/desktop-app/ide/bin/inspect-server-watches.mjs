@@ -30,6 +30,8 @@ console.log('SERVER_WATCHES_ARTIFACT=' + base);
 // pause, so it only has to cover the scan and the watches; an older build's rust-analyzer adds its own
 // watches only after loading and building compile-time dependencies, which took up to 60 s on a loaded host.
 const sampleSeconds = Number(process.env.SERVER_WATCH_SECONDS ?? '20');
+// An older build's cases only open, wait, and close; its rust-analyzer needs the long wait to add its watches.
+const beforeSeconds = Number(process.env.SERVER_WATCH_BEFORE_SECONDS ?? '150');
 
 const write = (root, relative, text) => {
   const target = join(root, relative);
@@ -157,14 +159,20 @@ delete env.CARGO_TARGET_DIR;
 delete env.CARGO_BUILD_BUILD_DIR;
 const selected = process.env.SERVER_WATCH_CASES ? new Set(process.env.SERVER_WATCH_CASES.split(',')) : undefined;
 // Each change replaces the imported file's content; the next case writes the original back first.
-const rustChange = { file: 'crates/c000/src/m00/mod.rs', original: 'pub fn value() -> u32 { 0 }\n', changed: 'pub fn renamed() -> u32 { 0 }\n' };
+// rust-analyzer's own analysis reports a call with the wrong number of arguments (mismatched-arg-count);
+// `cargo check` runs only on save, so it is turned off here and cannot report the change by coincidence.
+const rustChange = { file: 'crates/c000/src/m00/mod.rs', original: 'pub fn value() -> u32 { 0 }\n', changed: 'pub fn value(extra: u32) -> u32 { extra }\n' };
+const rustNativeOnly = '[language-server.rust-analyzer.config]\ncheckOnSave = false\n';
 const tsChange = { file: 'src/g00/dep.ts', original: 'export const local: number = 1;\n', changed: 'export const other: number = 1;\n' };
 const allCases = [
-  { name: 'rust-production', project: rust, file: 'crates/c000/src/lib.rs', change: rustChange, forward: true },
-  { name: 'rust-no-forwarding', project: rust, file: 'crates/c000/src/lib.rs', change: rustChange, forward: false },
+  { name: 'rust-production', project: rust, file: 'crates/c000/src/lib.rs', change: rustChange, forward: true, extra_languages: rustNativeOnly },
+  { name: 'rust-no-forwarding', project: rust, file: 'crates/c000/src/lib.rs', change: rustChange, forward: false, extra_languages: rustNativeOnly },
   { name: 'typescript-production', project: ts, file: 'src/g00/f00.ts', change: tsChange, forward: true },
   { name: 'typescript-no-forwarding', project: ts, file: 'src/g00/f00.ts', change: tsChange, forward: false },
-  ...(process.env.SERVER_WATCH_BEFORE_BINARY ? [{ name: 'rust-before', project: rust, file: 'crates/c000/src/lib.rs', binary: process.env.SERVER_WATCH_BEFORE_BINARY }] : []),
+  ...(process.env.SERVER_WATCH_BEFORE_BINARY ? [
+    { name: 'rust-before', project: rust, file: 'crates/c000/src/lib.rs', binary: process.env.SERVER_WATCH_BEFORE_BINARY },
+    { name: 'typescript-before', project: ts, file: 'src/g00/f00.ts', binary: process.env.SERVER_WATCH_BEFORE_BINARY },
+  ] : []),
 ];
 // SERVER_WATCH_ROUNDS repeats the selected cases in order, so two cases alternate and runs of one case can be compared.
 const rounds = Number(process.env.SERVER_WATCH_ROUNDS ?? '1');
@@ -226,10 +234,10 @@ for (const item of cases) {
     : [
       { label: 'open', do: 'open', file: item.file },
       { label: 'ready', do: 'ready', seconds: 120 },
-      { label: 'load', do: 'sleep', milliseconds: sampleSeconds * 1000 },
+      { label: 'load', do: 'sleep', milliseconds: beforeSeconds * 1000 },
       { label: 'close', do: 'close' },
     ];
-  const plan = { project: item.project, ...(item.change ? { forward_file_changes: item.forward } : {}), steps };
+  const plan = { project: item.project, ...(item.extra_languages ? { extra_languages: item.extra_languages } : {}), ...(item.change ? { forward_file_changes: item.forward } : {}), steps };
   const planPath = join(results, item.name + '.plan.json');
   writeFileSync(planPath, JSON.stringify(plan, null, 2));
   const run = spawn(item.binary ?? binary, [planPath], { env, stdio: ['ignore', 'pipe', 'pipe'] });
