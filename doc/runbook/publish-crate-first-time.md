@@ -287,3 +287,60 @@ TODO
    `package/rust-module/jsonc-edit/target` and in the disposable consumer directory under
    `~/temp/agent`.
    Both are untracked and safe to delete.
+
+## monochromatic-lint 0.1.0
+
+Status:
+TODO,
+owner action needed since 2026-10-06
+([`doc/handover/unified-linter-cutover.md`](../handover/unified-linter-cutover.md), `Blocker`).
+
+Run `Setup`,
+`Steps`,
+and `Restore` with these substitutions:
+
+- Crate name:
+   `monochromatic-lint`
+- Version:
+   `0.1.0`
+- Path:
+   `package/linter/monochromatic-lint`
+- Workflow jobs:
+   `ml-detect`,
+   `ml-publish-crate`,
+   `ml-build-binary`,
+   and `ml-create-release`
+- Token name in step 3:
+   `monochromatic-lint-bootstrap`
+- Step 10:
+   `cd package/linter/monochromatic-lint && cargo publish --dry-run --no-verify`,
+   run from a checkout of the commit `doc/handover/unified-linter-cutover.md` names as the commit to publish.
+   Expected outcome:
+   `Uploading monochromatic-lint v0.1.0`,
+   then `warning: aborting upload due to dry run`,
+   and no `403`.
+- Step 12:
+   <https://crates.io/crates/monochromatic-lint/settings>
+
+Unlike `monochromatic-jsonc-edit`,
+this crate ships release binaries.
+After the Trusted Publishing form is saved,
+the agent dispatches the workflow with dry-run off on a ref whose
+`package/linter/monochromatic-lint` and `package/rust-module/jsonc-edit` directories are byte-identical to the published commit:
+
+```bash
+gh workflow run cargo-publish.yml --ref main -f crate=monochromatic-lint -f dry-run=false
+```
+
+That run authenticates,
+logs `monochromatic-lint 0.1.0 already on crates.io; skipping publish.`,
+builds the eight targets,
+attests each archive,
+and creates the release `monochromatic-lint-v0.1.0`.
+The repository has immutable releases,
+so the release is created once with every archive;
+a target that fails leaves no release at all.
+`What to check` then adds two items:
+`gh release view monochromatic-lint-v0.1.0` lists the archives,
+and `cargo binstall monochromatic-lint` in a disposable container installs the prebuilt binary,
+which lints a small Markdown and Rust fixture.
