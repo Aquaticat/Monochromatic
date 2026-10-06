@@ -1,167 +1,236 @@
 /**
  The real repository as differential input: every tracked path at `HEAD`, with bytes for every workspace manifest,
- the registry configuration and every file under a package's `src/`, and cases that raise one or several versions.
+ the registry configuration and every file under a package's `src/`.
 
  Git is read through `/usr/bin/git` with read-only commands (`ls-tree`, `cat-file`), bypassing the wrapper,
  as the incumbent's worktree unit test does for its fixture repository.
- Samples are chosen from the actual dependency graph: leaf packages, the most depended-on packages,
- private packages, and packages reached only through bundled development imports.
  */
 // The bin scripts sit outside the package tsconfig's include list; this reference loads the Node types.
 /// <reference types="node" />
-import { execFileSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 
-import { HarnessError, toHex } from './dependent-version-incumbent.mjs';
-import { seeded } from './dependent-version-generator.mjs';
-import { importsPackage, isNonTestSourcePath, readPublishableNames } from '@monochromatic-dev/git-policy-repository/ts';
+import {
+  HarnessError,
+  toHex,
+} from './dependent-version-incumbent-reader.mjs';
+
+/** @typedef {import('./dependent-version-types.mjs').FixtureFile} FixtureFile */
+/** @typedef {{ path: string, mode: string, oid: string }} TreeEntry */
+/** @typedef {{ entries: TreeEntry[], bytes: Map<string, Buffer>, revision: string }} Snapshot */
 
 /** Real Git, bypassing the policy wrapper on `PATH`. */
 const realGit = '/usr/bin/git';
 /** Git modes and the fixture mode names. */
-const modes = new Map([['100644', 'regular'], ['100755', 'executable'], ['120000', 'symlink'], ['160000', 'submodule']]);
-/** Runtime dependency fields. */
-const runtimeFields = ['dependencies', 'peerDependencies', 'optionalDependencies'];
-/** Samples per category. */
-const perCategory = 4;
+const modes = new Map([
+  [
+    '100644',
+    'regular'
+  ],
+  [
+    '100755',
+    'executable'
+  ],
+  [
+    '120000',
+    'symlink'
+  ],
+  [
+    '160000',
+    'submodule'
+  ],
+]);
+/** The registry configuration path. */
+export const configPath = 'package/config/pnpr/config.yaml';
+/** Segments of a workspace manifest path. */
+const manifestSegments = 4;
+
+/**
+ Whether a path is `package/<category>/<name>/package.json`.
+
+ @param {string} path - repository path
+ @returns {boolean} whether it is a workspace manifest
+ */
+export function isManifestPath(path) {
+  const segments = path.split('/');
+  return (segments.length === manifestSegments) && (segments[0] === 'package')
+    && (segments[manifestSegments - 1] === 'package.json');
+}
+
+/**
+ Whether the planner can read a path: a manifest, the configuration, or a file under a package's `src/`.
+
+ @param {string} path - repository path
+ @returns {boolean} whether its bytes are provided
+ */
+function isReadable(path) {
+  const segments = path.split('/');
+  return isManifestPath(path) || (path === configPath)
+    || ((segments.length > manifestSegments) && (segments[0] === 'package')
+      && (segments[manifestSegments - 1] === 'src'));
+}
+
+/**
+ One `ls-tree` line as an entry.
+
+ @param {string} line - `<mode> <type> <oid>\t<path>`
+ @returns {TreeEntry} entry
+ */
+function treeEntry(line) {
+  const tab = line.indexOf('\t');
+  const [mode = '', , oid = ''] = line.slice(
+    0,
+    tab
+  )
+    .split(' ');
+  return {
+    path: line.slice(tab + 1),
+    mode: modes.get(mode) ?? 'regular',
+    oid,
+  };
+}
+
+/**
+ The standard output of a read-only Git command, with optional standard input.
+
+ @param {{ root: string, args: readonly string[], input: string }} request - worktree root, arguments and input
+ @returns {Promise<Buffer>} standard output
+ */
+async function gitOutput({
+  root,
+  args,
+  input
+}) {
+  const child = spawn(
+    realGit,
+    args,
+    {
+      cwd: root,
+      stdio: [
+        'pipe',
+        'pipe',
+        'inherit',
+      ],
+    },
+  );
+  /** @type {Buffer[]} */
+  const chunks = [];
+  child.stdout
+    .on(
+    'data',
+    function collect(/** @type {Buffer} */ chunk) {
+      chunks.push(chunk);
+    },
+  );
+  child.stdin
+    .end(input);
+  const [code] = await once(
+    child,
+    'close',
+  );
+  if (code !== 0)
+    throw new HarnessError(`git ${args.join(' ')} exited ${String(code)}`);
+  return Buffer.concat(chunks);
+}
 
 /**
  Tracked entries at `HEAD` and the bytes of those the planner can read.
 
  @param {string} root - worktree root
- @returns {{ entries: { path: string, mode: string, oid: string }[], bytes: Map<string, Buffer>, revision: string }} snapshot
+ @returns {Promise<Snapshot>} snapshot
  */
-export function repositorySnapshot(root) {
-  const revision = execFileSync(realGit, ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
-  const listing = execFileSync(realGit, ['ls-tree', '-r', '-z', '--full-tree', revision], { cwd: root, maxBuffer: 256 * 1024 * 1024 });
-  const entries = listing.toString('utf8').split('\0').filter(line => line !== '').map(line => {
-    const [meta, path] = line.split('\t');
-    const [mode, , oid] = meta.split(' ');
-    return { path, mode: modes.get(mode) ?? 'regular', oid };
+export async function repositorySnapshot(root) {
+  const revision = (await gitOutput({
+    root,
+    args: [
+      'rev-parse',
+      'HEAD',
+    ],
+    input: '',
+  }))
+    .toString('utf8')
+    .trim();
+  const entries = (await gitOutput({
+    root,
+    args: [
+      'ls-tree',
+      '-r',
+      '-z',
+      '--full-tree',
+      revision,
+    ],
+    input: '',
+  }))
+    .toString('utf8')
+    .split('\0')
+    .filter(function nonEmpty(line) {
+      return line !== '';
+    })
+    .map(treeEntry);
+  const needed = entries.filter(function isNeeded(entry) {
+    return (entry.mode !== 'submodule') && isReadable(entry.path);
   });
-  const needed = entries.filter(entry => entry.mode !== 'submodule' && (/^package\/[^/]+\/[^/]+\/(package\.json|src\/.+)$/u.test(entry.path) || entry.path === 'package/config/pnpr/config.yaml'));
-  const batch = execFileSync(realGit, ['cat-file', '--batch'], { cwd: root, input: `${needed.map(entry => entry.oid).join('\n')}\n`, maxBuffer: 1024 * 1024 * 1024 });
+  const batch = await gitOutput({
+    root,
+    args: [
+      'cat-file',
+      '--batch',
+    ],
+    input: `${needed.map(function oidOf(entry) {
+      return entry.oid;
+    })
+      .join('\n')}\n`,
+  });
   /** @type {Map<string, Buffer>} */
   const bytes = new Map();
-  let cursor = 0;
+  const cursor = { offset: 0 };
   for (const entry of needed) {
-    const headerEnd = batch.indexOf(0x0A, cursor);
-    const [oid, , size] = batch.subarray(cursor, headerEnd).toString('utf8').split(' ');
+    const headerEnd = batch.indexOf(
+      '\n',
+      cursor.offset,
+    );
+    const [oid, , size] = batch.subarray(
+      cursor.offset,
+      headerEnd,
+    )
+      .toString('utf8')
+      .split(' ');
     if (oid !== entry.oid)
-      throw new HarnessError(`cat-file answered ${oid} for ${entry.oid}`);
-    bytes.set(entry.path, Buffer.from(batch.subarray(headerEnd + 1, headerEnd + 1 + Number(size))));
-    cursor = headerEnd + 1 + Number(size) + 1;
+      throw new HarnessError(`cat-file answered ${oid ?? 'nothing'} for ${entry.oid}`);
+    const end = headerEnd + 1
+      + Number(size);
+    bytes.set(
+      entry.path,
+      Buffer.from(batch.subarray(
+        headerEnd + 1,
+        end,
+      )),
+    );
+    cursor.offset = end + 1;
   }
-  return { entries, bytes, revision };
+  return {
+    entries,
+    bytes,
+    revision,
+  };
 }
 
 /**
  The shared workspace file: every tracked path, bytes where the planner can read them.
 
- @param {ReturnType<typeof repositorySnapshot>} snapshot - repository snapshot
- @returns {object[]} fixture files
+ @param {Snapshot} snapshot - repository snapshot
+ @returns {FixtureFile[]} fixture files
  */
 export function sharedWorkspace(snapshot) {
-  return snapshot.entries.map(entry => {
-    const bytes = snapshot.bytes.get(entry.path);
-    return { path: toHex(entry.path), mode: entry.mode, current: bytes === undefined ? null : toHex(bytes), base: bytes === undefined ? null : true };
-  });
-}
-
-/**
- Facts of every workspace manifest at `HEAD`.
-
- @param {ReturnType<typeof repositorySnapshot>} snapshot - repository snapshot
- @returns {{ path: string, directory: string, text: string, manifest: any }[]} manifests
- */
-function manifests(snapshot) {
   return snapshot.entries
-    .filter(entry => /^package\/[^/]+\/[^/]+\/package\.json$/u.test(entry.path))
-    .map(entry => {
-      const text = snapshot.bytes.get(entry.path)?.toString('utf8') ?? '';
-      return { path: entry.path, directory: entry.path.slice(0, -'/package.json'.length), text, manifest: JSON.parse(text) };
-    });
-}
-
-/**
- Sample packages by category from the actual graph.
-
- @param {ReturnType<typeof repositorySnapshot>} snapshot - repository snapshot
- @param {number} seed - sample seed
- @returns {{ category: string, names: string[] }[]} samples
- */
-export function repositorySamples(snapshot, seed) {
-  const all = manifests(snapshot).filter(entry => typeof entry.manifest.version === 'string');
-  const keysOf = (/** @type {any} */ manifest, /** @type {string[]} */ fieldNames) => fieldNames.flatMap(field => Object.keys(manifest[field] ?? {}));
-  const runtimeCount = (/** @type {string} */ name) => all.filter(entry => keysOf(entry.manifest, runtimeFields).includes(name)).length;
-  const anyCount = (/** @type {string} */ name) => all.filter(entry => keysOf(entry.manifest, [...runtimeFields, 'devDependencies']).includes(name)).length;
-  const sources = (/** @type {string} */ directory) => [...snapshot.bytes].filter(([path]) => isNonTestSourcePath({ directory, path })).map(([, bytes]) => bytes.toString('utf8'));
-  const publishable = new Set(readPublishableNames(snapshot.bytes.get('package/config/pnpr/config.yaml')?.toString('utf8') ?? ''));
-  // A sample whose dependents are all unpublished would plan nothing; these prefer samples that reach a published one.
-  const importOnly = all.filter(candidate => runtimeCount(candidate.manifest.name) === 0
-    && all.some(user => publishable.has(user.manifest.name) && keysOf(user.manifest, ['devDependencies']).includes(candidate.manifest.name)
-      && sources(user.directory).some(sourceText => importsPackage({ sourceText, packageName: candidate.manifest.name }))));
-  const dependedPrivate = all.filter(entry => entry.manifest.private === true && anyCount(entry.manifest.name) > 0);
-  const random = seeded(seed);
-  const sample = (/** @type {typeof all} */ list) => list
-    .map(entry => ({ entry, order: random() }))
-    .toSorted((left, right) => left.order - right.order)
-    .slice(0, perCategory)
-    .map(({ entry }) => /** @type {string} */ (entry.manifest.name));
-  const byName = (/** @type {typeof all} */ list) => list.toSorted((left, right) => (left.manifest.name < right.manifest.name ? -1 : 1));
-  return [
-    { category: 'leaf', names: sample(byName(all.filter(entry => anyCount(entry.manifest.name) === 0))) },
-    { category: 'most-depended-on', names: all.toSorted((left, right) => runtimeCount(right.manifest.name) - runtimeCount(left.manifest.name) || (left.manifest.name < right.manifest.name ? -1 : 1)).slice(0, perCategory).map(entry => entry.manifest.name) },
-    { category: 'private', names: sample(byName(dependedPrivate)) },
-    { category: 'source-import-only', names: sample(byName(importOnly)) },
-  ];
-}
-
-/**
- The manifest text with its version raised by one minor step.
-
- @param {{ path: string, text: string, manifest: any }} entry - manifest
- @returns {string} raised text
- */
-function raisedText(entry) {
-  const [major, minor] = entry.manifest.version.split('.');
-  const raised = `${major}.${Number(minor) + 1}.0`;
-  const text = entry.text.replace(`"version": ${JSON.stringify(entry.manifest.version)}`, `"version": ${JSON.stringify(raised)}`);
-  if (JSON.parse(text).version !== raised)
-    throw new HarnessError(`could not raise ${entry.path}`);
-  return text;
-}
-
-/**
- Cases raising sampled packages: one per sample, one raising one of each category, and that raise as the release
- workflow's direct fix.
-
- @param {ReturnType<typeof repositorySnapshot>} snapshot - repository snapshot
- @param {ReturnType<typeof repositorySamples>} samples - sampled names by category
- @param {string} workspaceFile - shared workspace file name
- @returns {{ name: string, kind: string, input: object, features: string[] }[]} cases
- */
-export function repositoryCases(snapshot, samples, workspaceFile) {
-  const byName = new Map(manifests(snapshot).map(entry => [entry.manifest.name, entry]));
-  const raiseCase = (/** @type {string} */ name, /** @type {string[]} */ names, /** @type {string} */ trigger) => {
-    const raised = names.map(raisedName => /** @type {NonNullable<ReturnType<typeof byName.get>>} */ (byName.get(raisedName)));
+    .map(function toFile(entry) {
+    const bytes = snapshot.bytes
+      .get(entry.path);
     return {
-      name,
-      kind: 'workspace',
-      features: [],
-      input: {
-        workspace: workspaceFile,
-        files: raised.map(entry => ({ path: toHex(entry.path), mode: 'regular', current: toHex(raisedText(entry)), base: toHex(entry.text) })),
-        trigger,
-        forwardsCommit: trigger === 'pre-forward',
-        candidates: raised.map(entry => ({ path: toHex(entry.path), change: 'modified' })),
-      },
+      path: toHex(entry.path),
+      mode: entry.mode,
+      current: bytes === undefined ? null : toHex(bytes),
+      base: bytes === undefined ? null : true,
     };
-  };
-  const single = samples.flatMap(({ category, names }) => names.map(name => raiseCase(`repository ${category} ${name}`, [name], 'pre-forward')));
-  const mixed = samples.map(({ names }) => names[0]).filter(name => name !== undefined);
-  return [
-    ...single,
-    raiseCase(`repository mixed ${mixed.join(' ')}`, mixed, 'pre-forward'),
-    raiseCase(`repository release-shaped direct fix ${mixed.join(' ')}`, mixed, 'direct-fix'),
-  ];
+  });
 }

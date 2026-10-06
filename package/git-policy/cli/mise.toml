@@ -45,6 +45,10 @@ run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml --"
 description = "Run native unit tests matching `-- <filter>...` on the host while iterating; tests that start Git need the gate's Git 2.56.0"
 run = "cargo test --locked --offline --lib --"
 
+[tasks."native:differential:dependent-version"]
+description = "Compare the incumbent TypeScript dependent-version planner with the native one: `-- record`, `-- check`, or `-- corpus [--seed n] [--count n] [--probes n] [--plant name]`"
+run = "node bin/dependent-version-differential.mjs"
+
 [tasks."test:git-image"]
 description = "Build the audited Git 2.56.0 release in the bounded Rust test image"
 run = "node bin/build-git-test-image.mjs"
