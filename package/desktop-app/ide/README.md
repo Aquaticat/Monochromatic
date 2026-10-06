@@ -850,10 +850,11 @@ so the rules for what may move are part of the placement.
   they take no space.
 - After an external change the rows of the replaced text are not painted,
   but their space is held over every line the change left in place (`rows::hold`).
-  Hint space is given up when hints for those lines arrive,
-  message space when diagnostics arrive,
-  and all of it after 1 s (`rows::ROW_HOLD`).
-  A server that answers within that time moves no line.
+  Hint space is given up when hints for those lines arrive.
+  Message space is kept for 1 s (`rows::ROW_HOLD`) whatever arrives,
+  because diagnostics can come in several answers,
+  and then all held space is given up.
+  A server that gives the same hints and messages within that time moves no line.
 - A first open has nothing to hold:
   hints and diagnostics each move lines once when they arrive.
 - The vertical scroll range is the sum of the code rows and the blocks known so far.
