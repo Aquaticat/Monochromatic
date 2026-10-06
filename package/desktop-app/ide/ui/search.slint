@@ -82,7 +82,6 @@ export component ProjectSearch inherits Rectangle {
                 text <=> root.query;
                 placeholder-text: "Files and contents · % for contents only";
                 clear-label: "Clear search query";
-                selected-ink: root.selected-ink;
                 accessible-label: "Search query";
                 edited(text) => { root.edited(text); }
             }

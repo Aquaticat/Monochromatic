@@ -9,7 +9,6 @@ export component FindBar inherits Rectangle {
     in property <bool> no-match;
     in property <string> error-message;
     in-out property <string> query;
-    in property <brush> selected-ink: Palette.accent-foreground;
     out property <bool> query-has-focus: input.has-focus;
     // The clear control of the find text: whether it is shown, and its layout cell in window coordinates.
     out property <bool> clear-shown: input.clear-shown;
@@ -74,7 +73,6 @@ export component FindBar inherits Rectangle {
                 text <=> root.query;
                 placeholder-text: "Find in file";
                 clear-label: "Clear find text";
-                selected-ink: root.selected-ink;
                 accessible-label: "Find text";
                 accessible-description: root.status-detail;
                 edited(text) => { root.edited(text); }

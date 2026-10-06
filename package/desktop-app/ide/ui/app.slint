@@ -529,7 +529,6 @@ export component AppWindow inherits Window {
                 status-detail: root.find-status-detail;
                 no-match: root.find-no-match;
                 error-message: root.find-error;
-                selected-ink: root.selected-row-ink;
                 edited(text) => { root.find-edited(text); }
                 navigate(delta) => { root.find-navigate(delta); }
                 shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }
