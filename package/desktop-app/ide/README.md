@@ -777,7 +777,7 @@ There is no pointer or keyboard way to read the rest on screen yet.
 - Selection fills cover code rows only,
   and copying yields the source text alone.
 - Find matches source text only and paints its rectangles on code rows.
-- Line numbers stand beside code rows.
+- Line numbers and gutter letters stand beside code rows.
 - A press on a virtual row acts on the code line under it at the same x:
   the click,
   double click,
@@ -909,14 +909,37 @@ so tabs,
 CJK,
 combining marks,
 and ligature halves are covered exactly.
-Severity has two visible channels besides color:
+Severity has three visible channels besides color:
 the underline style,
-and the severity word that starts each message row.
+the severity word that starts each message row,
+and a letter in the gutter.
 
-- Error: a wavy line.
-- Warning: a dashed line.
-- Information: a dotted line.
-- Hint: sparse dots.
+- Error: a wavy line and `E`.
+- Warning: a dashed line and `W`.
+- Information: a dotted line and `I`.
+- Hint: sparse dots and `H`.
+
+#### Gutter letters
+
+The user decided on 2026-10-06 that severity is a plain letter in front of the line number,
+not an icon or a boxed marker.
+A line where diagnostics start shows the letter of the worst of them in that severity's ink:
+JetBrains Mono at the line numbers' 15 px,
+bold,
+centered in a 16 px column at the left edge of the gutter.
+The line numbers follow in the gutter's other 56 px,
+right-aligned 12 px before the text,
+so the gutter is 72 px wide at scale 1;
+like every logical length it is multiplied by the display scale.
+The letter column is there on every line,
+so neither the text nor a line number moves when diagnostics arrive or go.
+A range over several lines shows its letter on its first line only,
+where its message rows stand.
+The letter belongs to the diagnostics of the displayed text:
+after an external change it goes with the message rows and returns with the new diagnostics.
+`I` and `H` extend the user's `E` and `W` by the same rule; that extension is open to the user's veto.
+Native code hands the window one number per materialized line (`State::line_marks`, set in `rows::present`),
+taken from the first message row of the line's block, which names the worst severity.
 
 A diagnostic without a severity is shown as a warning, as Helix shows it.
 A range over several lines underlines each of its rows and marks a crossed line end like a selected terminator,
@@ -947,6 +970,13 @@ against the dark background 8.78:1,
 12.91:1,
 9.47:1,
 and 8.22:1.
+Gutter letters, measured the same way (`gutter_letters_show_the_worst_severity_in_front_of_the_line_number`),
+reach 5.42:1 (`E`),
+5.10:1 (`W`),
+and 6.05:1 (`I`) against the light background,
+and 8.39:1,
+12.91:1,
+and 9.47:1 against the dark one.
 
 ### Cost and invalidation
 
@@ -965,6 +995,8 @@ and rows that appear before the view only move the cached frame (`ShapedView::re
 A repaint shapes one layout per visible hint and message row
 and checks each visible diagnostic against each materialized row.
 Rows that end past the widest line extend the horizontal scroll range.
+Gutter letters are read from the blocks of the materialized lines on every render,
+and the window's list of them is changed only where a letter changed.
 
 ### Inspection
 
@@ -1022,7 +1054,8 @@ Deliberate differences:
   and shows severity by color alone.
   Here each message has its own severity's ink and word,
   hints keep the hint ink,
-  and underline styles differ.
+  underline styles differ,
+  and the gutter shows the worst severity's letter in front of the line number.
 - Order and caps: editord lists messages in the server's order and wraps them to the editor's width without a cap.
   Here they are listed worst first,
   wrap at 80 characters,
