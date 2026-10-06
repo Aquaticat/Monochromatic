@@ -1,15 +1,17 @@
-import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
 import {
   isTagWhitespace,
+  readAttributeName,
   readTagName,
 } from '../mdx-tag-name.ts';
 
 //region Tag attributes
 // A JSX OR HTML TAG READ FOR ITS QUOTED ATTRIBUTES, by index scan: the name
-// after `<` as the grammar reads one (`mdx-tag-name.ts`), then attribute names
-// with their quoted values up to `>` or `/>`. A tag whose attribute is not a
-// quoted string (an expression in braces, a bare word) is not read at all, so
-// nothing is restored inside it.
+// after `<` as the grammar reads one, then attribute names as the grammar reads
+// them (both through `mdx-tag-name.ts`) with their quoted values up to `>` or
+// `/>`. A tag whose attribute is not a quoted string (an expression in braces,
+// a bare word) is not read at all, so nothing is restored inside it, and
+// neither is a tag whose attribute name the grammar refuses, which fails the
+// page's compile.
 
 /**
  Opening of a tag.
@@ -37,15 +39,6 @@ const EQUALS = '=';
 const QUOTES: ReadonlySet<string> = new Set([
   '"',
   '\'',
-],);
-
-/**
- Marks a name may carry past its first letter.
- */
-const NAME_MARKS: ReadonlySet<string> = new Set([
-  '-',
-  '.',
-  ':',
 ],);
 
 /**
@@ -79,7 +72,8 @@ type QuotedValue = {
  */
 export type AttributeReading = QuotedValue & {
   /**
-   Attribute name.
+   Attribute name as the grammar reads it, a prefixed one without the
+   whitespace the grammar allows around its colon.
    */
   readonly name: string;
 };
@@ -116,22 +110,6 @@ export type TagReading = {
 };
 
 /**
- Whether a character may continue an attribute name.
-
- @param character - one character
-
- @returns True for a letter, a digit, a hyphen, a dot or a colon
-
- @example
- ```ts
- isNamePart({ character: '3', },); // true
- ```
- */
-function isNamePart({ character, }: { readonly character: string; },): boolean {
-  return isAsciiAlphanumeric({ character, },) || NAME_MARKS.has(character,);
-}
-
-/**
  Offset of the first character past the whitespace from an offset on.
 
  @param text - text under the scan
@@ -156,36 +134,6 @@ function pastWhitespace(
 ): number {
   for (let at = from; at < text.length; at += 1) {
     if (!isTagWhitespace({ character: text.charAt(at,), },))
-      return at;
-  }
-  return text.length;
-}
-
-/**
- Offset just past a name that starts at an offset.
-
- @param text - text under the scan
-
- @param from - offset of the name's first character
-
- @returns Offset of the first character that is no name part
-
- @example
- ```ts
- pastName({ text: 'n="5"', from: 0, },); // 1
- ```
- */
-function pastName(
-  {
-    text,
-    from,
-  }: {
-    readonly text: string;
-    readonly from: number;
-  },
-): number {
-  for (let at = from; at < text.length; at += 1) {
-    if (!isNamePart({ character: text.charAt(at,), },))
       return at;
   }
   return text.length;
@@ -326,20 +274,21 @@ function readTagAt(
       continue;
     }
     /**
-     Offset just past the attribute name.
+     The attribute name the strict grammar reads at the cursor, none where it
+     refuses one there.
      */
-    const attributeEnd = pastName({
+    const [attributeName,] = readAttributeName({
       text,
-      from: cursor,
+      at: cursor,
     },);
-    if (attributeEnd === cursor)
+    if (attributeName === undefined)
       return NO_TAG;
     /**
      Offset of the character after the name and any whitespace.
      */
     const afterName = pastWhitespace({
       text,
-      from: attributeEnd,
+      from: attributeName.end,
     },);
     if (text.charAt(afterName,) !== EQUALS) {
       cursor = afterName;
@@ -358,10 +307,7 @@ function readTagAt(
     if (quoted.valueEnd === NO_READING)
       return NO_TAG;
     attributes.push({
-      name: text.slice(
-        cursor,
-        attributeEnd,
-      ),
+      name: attributeName.name,
       ...quoted,
     },);
     cursor = pastWhitespace({

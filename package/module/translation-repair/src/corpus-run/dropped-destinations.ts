@@ -6,6 +6,7 @@ import { isAutolinkLiteral, } from '../footnote-unpositioned-runs.ts';
 import { splitFrontMatter, } from '../front-matter.ts';
 import { maskHtmlComments, } from '../mask-html-comments.ts';
 import { maskInvisibleLines, } from '../mask-invisible-lines.ts';
+import { isTagWhitespace, } from '../mdx-tag-name.ts';
 import { parseBodyTolerant, } from '../parse-document.ts';
 import type { DeepReadonlyData, } from '../readonly-data.ts';
 import { isAsciiLetter, } from '../ascii-letters.ts';
@@ -86,18 +87,15 @@ type ReadonlyMdastRoot = DeepReadonlyData<Root>;
 type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
 /**
- Characters that end a bare run: whitespace, Markdown and HTML delimiters, and
- the full-width punctuation Chinese prose sets a link off with. A closing
- parenthesis ends a run only where it balances no opening one of the run
- (`addressEnd`). A closing square bracket is no stopper: the parse keeps one
- inside an address and ends the address at it only as its trail rule reads one
- (`readTrail`).
+ Characters other than whitespace that end a bare run: Markdown and HTML
+ delimiters, and the full-width punctuation Chinese prose sets a link off
+ with. Whitespace ends one too, every character the parse reads as whitespace
+ (`endsRun`). A closing parenthesis ends a run only where it balances no
+ opening one of the run (`addressEnd`). A closing square bracket is no
+ stopper: the parse keeps one inside an address and ends the address at it
+ only as its trail rule reads one (`readTrail`).
  */
 const RUN_STOPPERS: ReadonlySet<string> = new Set([
-  ' ',
-  '\t',
-  '\n',
-  '\r',
   ')',
   '>',
   '<',
@@ -141,16 +139,38 @@ const RUN_TRAILERS: ReadonlySet<string> = new Set([
 
 /**
  What after a closing square bracket ends the parse's trail there, as the
- text's end does: an opening parenthesis or bracket, or whitespace.
+ text's end and whitespace do: an opening parenthesis or bracket.
  */
 const BRACKET_ENDERS: ReadonlySet<string> = new Set([
   '(',
   '[',
-  ' ',
-  '\t',
-  '\n',
-  '\r',
 ],);
+
+/**
+ Whether a character ends a bare run: whitespace as the parse reads it, or
+ one of `RUN_STOPPERS`.
+
+ WHITESPACE IS THE PARSE'S. The autolink literal's path and trail
+ (`micromark-extension-gfm-autolink-literal` 2.1.0, `tokenizePath` and
+ `tokenizeTrail`) end at `markdownLineEndingOrSpace` or `unicodeWhitespace`,
+ the ECMAScript `\s` over one UTF-16 unit, which is the whitespace the strict
+ grammar steps over inside a tag, so one predicate answers both
+ (`isTagWhitespace`). The scan once ended a run at the four ASCII ones alone,
+ so an address before a no-break or an ideographic space ran on into the
+ words after it, where the parse ends it.
+
+ @param character - one UTF-16 unit, empty past the text's end
+
+ @returns True where a run stops
+
+ @example
+ ```ts
+ endsRun({ character: '<', },); // true
+ ```
+ */
+function endsRun({ character, }: { readonly character: string; },): boolean {
+  return isTagWhitespace({ character, },) || RUN_STOPPERS.has(character,);
+}
 
 /**
  Characters a trail may begin at, which the scan reads the trail of before it
@@ -262,7 +282,7 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
     if (end === start)
       throw new Error(
         'unreachable: a web address run that consumed nothing, though nextSchemeStart answers only where a '
-          + 'scheme starts and no scheme opens on a character in RUN_STOPPERS',
+          + 'scheme starts and no scheme opens on a character that ends a run',
       );
     at = end;
   }
@@ -356,7 +376,9 @@ function readTrail(
        bracket ends the trail or is one more item of it.
        */
       const after = at + 1;
-      if ((after >= text.length) || BRACKET_ENDERS.has(text.charAt(after,),)) {
+      if ((after >= text.length)
+        || BRACKET_ENDERS.has(text.charAt(after,),)
+        || isTagWhitespace({ character: text.charAt(after,), },)) {
         return {
           ends: true,
           stop: after,
@@ -366,7 +388,7 @@ function readTrail(
       continue;
     }
     return {
-      ends: RUN_STOPPERS.has(character,),
+      ends: endsRun({ character, },),
       stop: at,
     };
   }
@@ -440,7 +462,7 @@ function addressEnd(
         return at;
       noTrailBefore = trail.stop;
     }
-    if (RUN_STOPPERS.has(character,))
+    if (endsRun({ character, },))
       return at;
     at += 1;
   }

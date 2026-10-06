@@ -26,7 +26,12 @@
 // whose name held a character the grammar refuses was therefore masked as an
 // element of that odd name, where the grammar would have refused the slice,
 // and a tag named in any other script than ASCII was never read as a tag at
-// all.
+// all. Two more kept names of their own after that: the nesting count
+// (`nesting-inline-count.ts`) opened a tag at `<` and an ASCII letter, and the
+// attribute restorer read an attribute's name as ASCII letters, digits, `-`,
+// `.` and `:`. Both read through this module now: a tag's name through
+// `readTagName`, an attribute's through `readAttributeName`, which takes the
+// characters a tag name's parts take, one `:` and its local name, and no `.`.
 
 /* oxlint-disable no-restricted-syntax/no-regex -- the input is one UTF-16 unit, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode ID_Start has no string API */
 /**
@@ -98,6 +103,12 @@ const LEAVES_TEXT: ReadonlySet<string> = new Set([
  Whether a character is whitespace to the strict grammar inside a tag: the one
  test every container tag reader shares, so none steps over fewer or more
  than the grammar does.
+
+ THE SAME WHITESPACE ENDS A BARE ADDRESS. The autolink literal's path and
+ trail (`micromark-extension-gfm-autolink-literal` 2.1.0) end at the same pair
+ of `micromark-util-character` tests, so the destination scan
+ (`corpus-run/dropped-destinations.ts`) ends a run where this answers true
+ rather than keeping a set of its own.
 
  @param character - one UTF-16 unit of a tag
 
@@ -483,6 +494,153 @@ export function readTagName(
       closes,
       name: reading.name,
       end: reading.end,
+    },]
+    : [];
+}
+
+/**
+ One attribute name read where an attribute starts inside a tag.
+
+ @example
+ ```ts
+ const reading: AttributeNameReading = { name: 'xml:lang', end: 13, }; // read in '<Cat xml:lang="en"/>' at 5
+ ```
+ */
+export type AttributeNameReading = {
+  /**
+   Attribute name without the whitespace the grammar allows around its colon,
+   so two spellings of one name compare equal.
+   */
+  readonly name: string;
+
+  /**
+   Offset just past the name's last character, before any whitespace.
+   */
+  readonly end: number;
+};
+
+/**
+ Reads the attribute name that starts at an offset inside a tag, as the MDX
+ compiler reads it (`micromark-extension-mdx-jsx` 3.0.2, `factory-tag.js`, the
+ states `attributeBefore` to `attributeLocalNameAfter`), or reads none where
+ the compiler refuses the tag there.
+
+ An attribute's name is a primary name, then optionally `:` and one local
+ name, whitespace allowed around the colon; its parts take the characters a
+ tag name's parts take, and no `.` member follows. What follows the name, past
+ whitespace, must be `=`, `/`, `>`, `{` or the first character of the next
+ attribute's name.
+
+ @param text - text being read
+
+ @param at - offset of the name's first character
+
+ @returns The name as a one-element list, empty where the grammar reads no
+ attribute name starting there
+
+ @example
+ ```ts
+ const [reading,] = readAttributeName({ text: '<Cat xml : lang="en"/>', at: 5, },); // name 'xml:lang', end 15
+ ```
+ */
+export function readAttributeName(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): readonly AttributeNameReading[] {
+  if (!startsTagName({ character: text.charAt(at,), },))
+    return [];
+
+  /**
+   Offset past the primary name.
+   */
+  const primaryEnd = pastNamePart({
+    text,
+    from: at,
+  },);
+  if (!endsNamePart({
+    character: text.charAt(primaryEnd,),
+    separators: [
+      ':',
+      '=',
+    ],
+  },))
+    return [];
+
+  /**
+   Offset of the first character past the primary name and the whitespace
+   after it.
+   */
+  const afterPrimary = pastTagWhitespace({
+    text,
+    from: primaryEnd,
+  },);
+  if (text.charAt(afterPrimary,) !== ':') {
+    return ((text.charAt(afterPrimary,) === '=') || namedTagGoesOn({
+        text,
+        at: afterPrimary,
+      },))
+      ? [{
+        name: text.slice(
+          at,
+          primaryEnd,
+        ),
+        end: primaryEnd,
+      },]
+      : [];
+  }
+
+  /**
+   Offset the local name's first character stands at.
+   */
+  const localStart = pastTagWhitespace({
+    text,
+    from: afterPrimary + 1,
+  },);
+  if (!startsTagName({ character: text.charAt(localStart,), },))
+    return [];
+
+  /**
+   Offset past the local name.
+   */
+  const localEnd = pastNamePart({
+    text,
+    from: localStart,
+  },);
+  if (!endsNamePart({
+    character: text.charAt(localEnd,),
+    separators: ['=',],
+  },))
+    return [];
+
+  /**
+   Offset of the first character past the local name and the whitespace after it.
+   */
+  const afterLocal = pastTagWhitespace({
+    text,
+    from: localEnd,
+  },);
+  return ((text.charAt(afterLocal,) === '=') || namedTagGoesOn({
+      text,
+      at: afterLocal,
+    },))
+    ? [{
+      name: `${
+        text.slice(
+          at,
+          primaryEnd,
+        )
+      }:${
+        text.slice(
+          localStart,
+          localEnd,
+        )
+      }`,
+      end: localEnd,
     },]
     : [];
 }

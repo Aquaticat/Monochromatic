@@ -481,10 +481,24 @@ function decodeView(
       cursor.read,
       stop,
     ),);
-    for (let at = cursor.read; at < stop; at += 1) {
-      starts[cursor.write + (at - cursor.read)] = nonNullishOrThrow(view.starts[at],);
-      ends[cursor.write + (at - cursor.read)] = nonNullishOrThrow(view.ends[at],);
-    }
+    // The plain run's origins, copied in one move each: a typed array's own
+    // copy from an offset, where the write never runs past the read.
+    starts.set(
+      view.starts
+        .subarray(
+          cursor.read,
+          stop,
+        ),
+      cursor.write,
+    );
+    ends.set(
+      view.ends
+        .subarray(
+          cursor.read,
+          stop,
+        ),
+      cursor.write,
+    );
     cursor.write += stop - cursor.read;
     cursor.read = stop;
     if (found === (-1))

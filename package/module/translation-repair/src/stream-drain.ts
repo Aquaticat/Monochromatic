@@ -44,24 +44,36 @@ const l = contextRoot({ tag: 'translation-repair', },);
  rather than allowed to replace the reason the stream is being abandoned,
  which is the more useful of the two errors.
 
+ THE ADDRESS IS MASKED LIKE ANY OTHER PROVIDER TEXT. After a redirect,
+ `response.url` is the address the redirect named, its path and query as the
+ provider wrote them (measured with node's `fetch` against a local server:
+ a `302` to `/landing?key=<key>` leaves that address whole), so it can repeat
+ the credential the request sent, and the line is masked as the opening line
+ is.
+
  @param reader - reader to release
 
  @param url - stream being abandoned, for the log line
+
+ @param credentials - secrets the request carried, which the logged address
+ must not repeat
 
  @mutates reader - cancels it, so the body cannot be read further
 
  @example
  ```ts
- await stopReading({ reader, url: response.url, },);
+ await stopReading({ reader, url: response.url, credentials, },);
  ```
  */
 async function stopReading(
   {
     reader,
     url,
+    credentials,
   }: {
     readonly reader: ForeignBorrowed<ReadableStreamDefaultReader<Uint8Array>>;
     readonly url: string;
+    readonly credentials: readonly string[];
   },
 ): Promise<void> {
   try {
@@ -75,7 +87,12 @@ async function stopReading(
       tag: drainBody.name,
       l,
     },);
-    cl.warn(`could not cancel ${url}: ${refusalText({ error, },)}`,);
+    cl.warn(`could not cancel ${
+      maskCredentials({
+        text: url,
+        credentials,
+      },)
+    }: ${refusalText({ error, },)}`,);
   }
 }
 
@@ -257,10 +274,10 @@ function reportMaskedProgress(
  @param maxAnswerChars - bound for this one call, when the caller knows its
  own input size; the module default polices every call that names none
 
- @param credentials - secrets the request carried, which the log line's
- excerpt of generated text and its upstream name must not repeat; an empty
- list where the request carried none, which every caller states so that none
- forgets the mask
+ @param credentials - secrets the request carried, which the progress line's
+ excerpt of generated text and its upstream name, and the address a failed
+ cancel names, must not repeat; an empty list where the request carried none,
+ which every caller states so that none forgets the mask
 
  @example
  ```ts
@@ -374,13 +391,14 @@ export async function drainBody(
         await stopReading({
           reader,
           url: response.url,
+          credentials,
         },);
         // The MODEL'S label, not `response.url`: every chat-completions call
         // shares one endpoint across the whole roster, so attributing a
         // runaway to the endpoint makes a per-model latency figure unreadable.
-        // `stopReading` still logs `response.url`, because releasing the
-        // right socket is a URL question and naming the runaway is a model
-        // question.
+        // `stopReading` still logs `response.url`, masked, because releasing
+        // the right socket is a URL question and naming the runaway is a
+        // model question.
         throw runawayError({
           label,
           verdict: runaway,

@@ -1,9 +1,7 @@
+import { readTagName, } from './mdx-tag-name.ts';
 import type { FenceRun, } from './nesting-fence.ts';
 import type { HtmlBlock, } from './nesting-html-block.ts';
-import {
-  isOneOf,
-  characterRunEnd,
-} from './nesting-line-lexing.ts';
+import { isOneOf, } from './nesting-line-lexing.ts';
 import {
   DELIMITER_BOUND,
   NESTING_BOUND,
@@ -16,16 +14,23 @@ import {
 // COUNTS WHAT A LINE OPENS AND CLOSES: brackets, emphasis delimiters, and under the
 // strict grammar open tags and open braces, each carried from line to line in one
 // mutable state the scan owns, and read against its bound as it grows.
+//
+// A TAG OPENS WHERE THE STRICT GRAMMAR READS ITS NAME, through the package's one
+// reader of a tag name (`mdx-tag-name.ts`). This count once read a name as ASCII
+// letters and digits, so a tag named in another script or opening with `$` or `_`,
+// which the grammar nests, opened nothing here, and a name holding a character the
+// grammar refuses opened one.
 
 /**
- ASCII letters, the characters a tag name begins with.
+ What the scan reads past a line's end when a tag's name or the whitespace after
+ it reaches that end: a line ending, which the strict grammar steps over inside a
+ tag as it steps over a space, then a name's letter and the tag's bracket. The
+ next line is out of the scan's sight, and the grammar reads `<Paw`, `<Paw.` and
+ `</` at a line's end as a tag the next line goes on with; where the next line
+ does not go on with it, the page fails its compile, so a tag counted for it is
+ one the bound can afford.
  */
-const ASCII_LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-/**
- Characters a tag's name is made of.
- */
-const TAG_NAME_CHARACTERS = `${ASCII_LETTERS}0123456789`;
+const LINE_GOES_ON = '\nb>';
 
 /**
  HTML elements that never hold content, so an open tag of one nests nothing.
@@ -247,6 +252,9 @@ function opened(
 
  @param line - one line without its newline
 
+ @param lineGoingOn - the same line with `LINE_GOES_ON` after it, which a tag's
+ name is read in
+
  @param index - index of the character, an angle bracket
 
  @param lineNumber - one-based number of the line
@@ -257,17 +265,19 @@ function opened(
 
  @example
  ```ts
- const reading = readAngle({ line: '<div>', index: 0, lineNumber: 1, state, },);
+ const reading = readAngle({ line: '<div>', lineGoingOn: `<div>${LINE_GOES_ON}`, index: 0, lineNumber: 1, state, },);
  ```
  */
 function readAngle(
   {
     line,
+    lineGoingOn,
     index,
     lineNumber,
     state,
   }: {
     readonly line: string;
+    readonly lineGoingOn: string;
     readonly index: number;
     readonly lineNumber: number;
     readonly state: ScanState;
@@ -275,32 +285,24 @@ function readAngle(
 ): NestingReading {
   if (line[index] === '<') {
     /**
-     Index after the name a tag opening here begins with, absent for none.
+     The tag the strict grammar reads at this bracket, none where it reads the
+     bracket as text or refuses the name after it.
      */
-    const nameEnd = characterRunEnd({
-      line,
-      from: index + 1,
-      set: TAG_NAME_CHARACTERS,
+    const [reading,] = readTagName({
+      text: lineGoingOn,
+      at: index,
     },);
+    if (reading === undefined)
+      return { kind: 'within', };
     /**
      Name the tag opens with, lowercased as elements are compared.
      */
-    const name = line
-      .slice(
-        index + 1,
-        nameEnd,
-      )
+    const name = reading.name
       .toLowerCase();
-    if (isOneOf({
-      character: line[index + 1] ?? '',
-      set: ASCII_LETTERS,
-    },))
-      state.pendingTag = VOID_ELEMENTS.has(name,) ? 'none' : 'opening';
-    else if ((line[index + 1] === '/') && isOneOf({
-      character: line[index + 2] ?? '',
-      set: ASCII_LETTERS,
-    },))
+    if (reading.closes)
       state.pendingTag = 'closing';
+    else
+      state.pendingTag = VOID_ELEMENTS.has(name,) ? 'none' : 'opening';
     return { kind: 'within', };
   }
   /**
@@ -328,6 +330,9 @@ function readAngle(
 
  @param line - one line without its newline
 
+ @param lineGoingOn - the same line with `LINE_GOES_ON` after it, which a tag's
+ name is read in
+
  @param index - index of the character
 
  @param lineNumber - one-based number of the line
@@ -342,12 +347,13 @@ function readAngle(
 
  @example
  ```ts
- const reading = readCharacter({ line: '[a]', index: 0, lineNumber: 1, grammar: 'markdown', state, skipDelimiters: false, },);
+ const reading = readCharacter({ line: '[a]', lineGoingOn: `[a]${LINE_GOES_ON}`, index: 0, lineNumber: 1, grammar: 'markdown', state, skipDelimiters: false, },);
  ```
  */
 function readCharacter(
   {
     line,
+    lineGoingOn,
     index,
     lineNumber,
     grammar,
@@ -355,6 +361,7 @@ function readCharacter(
     skipDelimiters,
   }: {
     readonly line: string;
+    readonly lineGoingOn: string;
     readonly index: number;
     readonly lineNumber: number;
     readonly grammar: NestingGrammar;
@@ -400,6 +407,7 @@ function readCharacter(
   if ((grammar === 'mdx') && ((character === '<') || (character === '>')))
     return readAngle({
       line,
+      lineGoingOn,
       index,
       lineNumber,
       state,
@@ -446,6 +454,11 @@ export function scanInline(
     readonly skipDelimiters: boolean;
   },
 ): NestingReading {
+  /**
+   The line as a tag's name is read in, joined once so each bracket reads it
+   without building it again.
+   */
+  const lineGoingOn = `${line}${LINE_GOES_ON}`;
   for (let index = start; index < line.length; index++) {
     if (line[index] === '\\') {
       // An escaped character opens and closes nothing.
@@ -457,6 +470,7 @@ export function scanInline(
      */
     const reading = readCharacter({
       line,
+      lineGoingOn,
       index,
       lineNumber,
       grammar,

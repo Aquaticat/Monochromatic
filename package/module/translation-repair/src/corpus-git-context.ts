@@ -79,9 +79,20 @@ function routesRepository({ name, }: { readonly name: string; },): boolean {
  from the parent and `GIT_DIR` reached the child of its listing, while node's
  `execFile` read the same object as replacing the environment.
 
+ GIT SPEAKS THE C LOCALE. A failed corpus read is classified by the English
+ words git prints (`corpus-source.ts`), and git translates its messages into
+ the caller's language: measured with git 2.55 on a throwaway repository, a
+ path absent at a held commit printed `Schwerwiegend: Pfad ... existiert nicht
+ in ...` under `LANGUAGE=de` with an English `LANG`, and under `LANG` or
+ `LC_MESSAGES` set to German, which the reader classed as another failure.
+ `LC_ALL=C` overrides all three, so git prints its own English whatever the
+ caller's locale says; the caller's other locale variables are kept as they
+ are.
+
  @param environment - inherited process context, injectable for verification
 
- @returns Owned environment with intrinsic-object and no-fetch semantics
+ @returns Owned environment with intrinsic-object, no-fetch and C-locale
+ semantics
 
  @example
  ```ts
@@ -104,6 +115,7 @@ export function corpusGitEnvironment({ environment = process.env, }: {
     GIT_GRAFT_FILE: devNull,
     GIT_NO_REPLACE_OBJECTS: '1',
     GIT_NO_LAZY_FETCH: '1',
+    LC_ALL: 'C',
   };
 }
 
