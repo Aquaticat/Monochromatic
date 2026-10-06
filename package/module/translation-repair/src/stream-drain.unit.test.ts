@@ -982,6 +982,37 @@ await describe({
     },),
 
     it({
+      name: 'LOGS A CUT STREAM\'S OPENING WITH A BASE64 SPELLING OF THE KEY MASKED, every character its bits '
+        + 'touch going with it and no other',
+      fn: async () => {
+        /**
+         Text echoing the key in base64 after a prefix of unknown alignment.
+         */
+        const said = `cat:${WHISKER_KEY} purrs`;
+        /**
+         Frame whose text echoes the key as part of a base64 run.
+         */
+        const frame = namedFrame({
+          text: `The cat says ${Buffer.from(said,)
+            .toString('base64',)} twice`,
+        },);
+        expect(await progressLineOf({
+          response: piecesThen({
+            pieces: [frame,],
+            ending: 'torn down',
+          },),
+          credentials: [WHISKER_KEY,],
+        },),).toBe(cutLine({
+          rawChars: frame.length,
+          contentChars: `The cat says ${Buffer.from(said,)
+            .toString('base64',)} twice`.length,
+          opening: `The cat says Y2F0O${CREDENTIAL_MARKER}gcHVycnM= twice`,
+          served: '',
+        },),);
+      },
+    },),
+
+    it({
       name: 'LOGS THE OPENING MASKED WHEN THE KEY ARRIVES IN TWO CHUNKS cut inside the key, and when it arrives '
         + 'in two frames of generated text cut inside the key',
       fn: async () => {

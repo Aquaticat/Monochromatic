@@ -24,6 +24,10 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
 import {
+  refusedClient,
+  statusFailureLogText,
+} from '../provider-status-failure.test-fixture.ts';
+import {
   modelReplyScriptedClient,
   type ScriptedModelReply,
 } from './model-reply-scripted-client.test-fixture.ts';
@@ -97,6 +101,7 @@ async function walkWith(
 
 await describe({
   name: reportModelHealth.name,
+  concurrency: 1,
   children: [
     it({
       name: 'COUNTS every model answered and returns zero when each one could be asked, in the plural',
@@ -213,6 +218,34 @@ await describe({
           'warn [reportModelHealth] hf:openai/gpt-oss-120b: UNREACHABLE: refused by SyntheticHttpError with HTTP 402 '
           + '(the provider said: "no treats left")',
           'info [reportModelHealth] ROSTER 0 of 1 model answered; unreachable: hf:openai/gpt-oss-120b',
+        ],);
+      },
+    },),
+    it({
+      name: 'WARNS WITH THE STATUS AND THE PROVIDER\'S WORDS, the key its refusal echoed masked, for a model '
+        + 'asked over the real client and transport',
+      fn: async ctx => {
+        /**
+         Lines logged with their levels while the roster was walked.
+         */
+        const lines: string[] = [];
+        /**
+         Exit code of the walk over one model whose provider refuses the key.
+         */
+        const exitCode = await reportModelHealth({
+          client: refusedClient({
+            sinon: ctx.sinon,
+            status: 401,
+          },),
+          roster: [TABBY,],
+          timeoutMs: TIMEOUT_MS,
+          l: levelCapturingLogger({ lines, },),
+        },);
+
+        expect(exitCode,).toBe(1,);
+        expect(lines,).toEqual([
+          `warn [reportModelHealth] ${TABBY}: UNREACHABLE: ${statusFailureLogText({ status: 401, },)}`,
+          `info [reportModelHealth] ROSTER 0 of 1 model answered; unreachable: ${TABBY}`,
         ],);
       },
     },),

@@ -27,6 +27,12 @@ import {
   type SyntheticClient,
   type TranslateModels,
 } from '../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
+import {
+  statusFailureLogText,
+  statusFailureOf,
+} from './provider-status-failure.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
@@ -201,6 +207,7 @@ async function attemptSilently(
 
 await describe({
   name: attemptTranslateSlice.name,
+  concurrency: 1,
   children: [
     it({
       name: 'PAUSES an insertion when no translator is available rather than settling empty text',
@@ -254,6 +261,70 @@ await describe({
           expect(attempt.record.changed,).toBe(false,);
           expect(attempt.record.outputText,).toBe(content.target.text,);
         }
+      },
+    },),
+
+    it({
+      name: 'WARNS OF A PROVIDER REFUSAL THE CALLER\'S ABORT ENDED by the slice, the status and the provider\'s words, '
+        + 'the key its refusal echoed masked, and raises the abort\'s own reason',
+      fn: async ctx => {
+        /**
+         Refusal the real client raised over the real transport.
+         */
+        const failure = await statusFailureOf({
+          sinon: ctx.sinon,
+          status: 401,
+        },);
+        /**
+         Stop the caller gives while the provider is refusing.
+         */
+        const stop = new AbortController();
+        /**
+         Content slice of the fixture pair.
+         */
+        const prepared = await pairWithInsertion();
+        const slice = prepared.slices.find(function isContent(candidate,): boolean {
+          return !isInsertionChunk(candidate.target,);
+        },);
+        if (slice === undefined)
+          throw new Error('the fixture pair carries no content slice',);
+
+        const lines: string[] = [];
+        const refusal = await rejectionOf(async function attemptUnderStop() {
+          return attemptTranslateSlice({
+            client: {
+              chatText: async () => {
+                throw new Error('chatText unused by the translate lane',);
+              },
+              quotas: async () => {
+                throw new Error('quotas unused by the translate lane',);
+              },
+              chatJson: async () => {
+                stop.abort();
+                throw failure;
+              },
+            },
+            slice,
+            prepared,
+            models: MODELS,
+            neighbouringIncumbentText: '',
+            neighbouringSourceText: '',
+            pictureContext: '',
+            pictureFindings: [],
+            signal: stop.signal,
+            perCallTimeoutMs: 1_000,
+            l: levelCapturingLogger({ lines, },),
+          },);
+        },);
+
+        expect(refusal,).toBe(stop.signal.reason,);
+        expect(lines.filter(function abandoned(line,): boolean {
+          return line.includes('abandoned by the caller',);
+        },),).toEqual([
+          `warn slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort (${
+            statusFailureLogText({ status: 401, },)
+          })`,
+        ],);
       },
     },),
   ],

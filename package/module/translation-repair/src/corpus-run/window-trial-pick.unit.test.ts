@@ -31,6 +31,10 @@ import {
   trialKey,
 } from '../../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from '../capturing-logger.test-fixture.ts';
+import {
+  statusFailureLogText,
+  statusFailureOf,
+} from '../provider-status-failure.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
 
@@ -114,6 +118,7 @@ function freshLedger({ dir, }: { readonly dir: string; },): string {
 
 await describe({
   name: runPick.name,
+  concurrency: 1,
   children: [
     it({
       name: 'REPORTS A REFUSAL RATHER THAN RAISING IT, so one unwidenable slice cannot wedge the '
@@ -169,6 +174,71 @@ await describe({
         expect(warnings,).toEqual([
           'Mittens/0 (relocation): refused, Mittens/0 has no neighbouring section carrying text, so its wide arm '
           + 'would be its narrow arm and the pair would report a false null',
+        ],);
+      },
+    },),
+    it({
+      name: 'WARNS OF A PROVIDER REFUSAL THAT ENDED THE ARMS by the slice, the status and the provider\'s words, '
+        + 'the key its refusal echoed masked, where the run was stopped while the provider refused',
+      fn: async ctx => {
+        await using scratch = await scratchDir({ prefix: 'window-pick-', },);
+        /**
+         Refusal the real client raised over the real transport.
+         */
+        const failure = await statusFailureOf({
+          sinon: ctx.sinon,
+          status: 401,
+        },);
+        /**
+         Stop the caller gives while the provider is refusing.
+         */
+        const stop = new AbortController();
+        const warnings: string[] = [];
+        const outcome = await runPick({
+          client: {
+            chatText: async () => {
+              throw new Error('chatText unused',);
+            },
+            quotas: async () => {
+              throw new Error('quotas unused',);
+            },
+            chatJson: async <ValueT,>(
+              _request: ChatJsonRequest<ValueT>,
+            ): Promise<ChatJsonOutcome<ValueT>> => {
+              stop.abort();
+              throw failure;
+            },
+          },
+          slices: [
+            slicePairOf({
+              sliceIndex: 0,
+              source: '猫猫在窗台上打盹。',
+              target: 'The cat naps on the windowsill.',
+            },),
+            slicePairOf({
+              sliceIndex: 1,
+              source: '窗台上有一只鸟。',
+              target: 'On the windowsill there is a bird.',
+            },),
+          ],
+          pick: {
+            entryId: 'Mittens',
+            sliceIndex: 0,
+            sliceClass: 'relocation',
+          },
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: freshLedger({ dir: scratch.path, },),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: stop.signal,
+          perCallTimeoutMs: 5_000,
+          l: warningRecordingLogger({ base: l, warnings, },),
+        },);
+
+        expect(outcome.kind,).toBe('refused',);
+        expect(warnings,).toEqual([
+          `Mittens/0 (relocation): refused, ${statusFailureLogText({ status: 401, },)}`,
         ],);
       },
     },),

@@ -238,6 +238,39 @@ await describe({
       },
     },),
     it({
+      name: 'MASKS A CREDENTIAL THE PROVIDER ECHOES IN OTHER SPELLINGS in a failure reply: JSON unicode escapes, '
+        + 'percent escapes and base64',
+      fn: async ctx => {
+        ctx.sinon
+          .stub(
+            globalThis,
+            'fetch',
+          )
+          .resolves(new Response(
+            `{"error":"rejected whisker\\u002dkey\\u002d7421, whisker%2Dkey%2D7421, ${
+              Buffer.from(`kit:${WHISKER_KEY}`,)
+                .toString('base64url',)
+            }"}`,
+            { status: 401, },
+          ),);
+
+        const reply = await fetchTransport({
+          url: 'https://example.org/cat-chat',
+          label: 'hf:whiskers',
+          method: 'POST',
+          headers: { Authorization: `Bearer ${WHISKER_KEY}`, },
+          bodyJson: '{}',
+          signal: new AbortController().signal,
+        },);
+
+        expect(reply,).toEqual({
+          status: 401,
+          // The base64 run's first characters hold bits of the four bytes before the key.
+          bodyText: `{"error":"rejected ${CREDENTIAL_MARKER}, ${CREDENTIAL_MARKER}, a2l0O${CREDENTIAL_MARKER}"}`,
+        },);
+      },
+    },),
+    it({
       name: 'MASKS A CREDENTIAL IN A SUCCESSFUL STREAM, one an error event echoes and one split across two chunks',
       fn: async ctx => {
         ctx.sinon

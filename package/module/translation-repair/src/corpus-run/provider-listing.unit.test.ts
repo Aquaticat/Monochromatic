@@ -127,6 +127,22 @@ await describe({
       },
     },),
     it({
+      name: 'MASKS the key a success body repeats in another spelling before it is parsed, a JSON unicode escape '
+        + 'and base64',
+      fn: async () => {
+        const { body, } = await readReplying({
+          status: 200,
+          bodyText: `{"data":[{"id":"whisker\\u002dkey\\u002d7421"},{"id":"${
+            Buffer.from(`kit:${KEY}`,)
+              .toString('base64url',)
+          }"}]}`,
+        },);
+
+        // The base64 run's first characters hold bits of the four bytes before the key.
+        expect(body,).toEqual({ data: [{ id: CREDENTIAL_MARKER, }, { id: `a2l0O${CREDENTIAL_MARKER}`, },], },);
+      },
+    },),
+    it({
       name: 'READS the lowest and the highest success status as a listing',
       fn: async () => {
         const low = await readReplying({

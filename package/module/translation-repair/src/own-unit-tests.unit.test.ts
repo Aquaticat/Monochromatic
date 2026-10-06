@@ -767,7 +767,6 @@ const ALLOWLIST: readonly string[] = [
   'src/repair-entry.ts',
   'src/repair-replacements.ts',
   'src/repair-scorecard.ts',
-  'src/repair-slice-buy.ts',
   'src/repair-slice-settle.ts',
   'src/repair-stage-findings.ts',
   'src/resolution-authorship.ts',

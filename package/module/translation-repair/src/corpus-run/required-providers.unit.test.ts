@@ -28,12 +28,19 @@ import {
   BEDROCK_CREDIT_USD_VAR,
   BEDROCK_LEDGER_PATH_VAR,
   HYPER_CREDITS_URL,
+  fetchTransport,
   type ModelTransport,
   OPENROUTER_CREDITS_URL,
   readRequiredProviders,
   RequiredProviderError,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { warnLinesDuring, } from '../console-warn-lines.test-fixture.ts';
+import {
+  answerEveryFetchWithRefusal,
+  ECHOED_KEY,
+  statusFailureLogText,
+} from '../provider-status-failure.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 
@@ -178,7 +185,7 @@ await describe({
 
     describe({
       name: assertRequiredProvidersReady.name,
-      concurrency: DEFAULT_CONCURRENCY,
+      concurrency: 1,
       children: [
         it({
           name: 'ASKS NO METER when nothing is required (ledger T8)',
@@ -318,6 +325,34 @@ await describe({
             },);
             expect(refusal,).toBeInstanceOf(RequiredProviderError,);
             expect((refusal as Error).message,).toContain('hyper is not ready: meter unavailable',);
+          },
+        },),
+        it({
+          name: 'WARNS WHICH METER COULD NOT BE READ, with the provider\'s status and its words and never the key '
+            + 'its refusal echoed, when the meter answers over the real transport',
+          fn: async ctx => {
+            answerEveryFetchWithRefusal({
+              sinon: ctx.sinon,
+              status: 401,
+            },);
+
+            const { result, warned, } = await warnLinesDuring({
+              run: async function gateOverRefusingMeter(): Promise<unknown> {
+                return gateOutcome(async function gateRefused() {
+                  await assertRequiredProvidersReady({
+                    required: ['hyper',],
+                    env: { [KEY_NAMES.hyper]: ECHOED_KEY, },
+                    transport: fetchTransport,
+                    signal: AbortSignal.timeout(5_000,),
+                  },);
+                },);
+              },
+            },);
+
+            expect(result,).toBeInstanceOf(RequiredProviderError,);
+            expect(warned,).toEqual([
+              `[gateProvider] hyper meter could not be read: ${statusFailureLogText({ status: 401, },)}`,
+            ],);
           },
         },),
         it({

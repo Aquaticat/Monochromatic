@@ -25,6 +25,10 @@ import {
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
+import {
+  statusFailureLogText,
+  statusFailureOf,
+} from '../provider-status-failure.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_NO_OPENROUTER, } from '../roster-seats.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
@@ -332,6 +336,7 @@ async function runOver(
 
 await describe({
   name: runCoverageProbe.name,
+  concurrency: 1,
   children: [
     it({
       name: 'ASKS about every passage of an entry, keeps a row for each answer and for the call that failed, and prints the rows',
@@ -449,6 +454,60 @@ await describe({
           'info Tabby pair 0 block 2: carried (full 2, partial 0, absent 0, unanchored 1, heard 3 of 3)',
           'info kept 1 row at <kept file>',
         ],);
+      },
+    },),
+    it({
+      name: 'NAMES A PASSAGE THE PROVIDER REFUSED by the status and the provider\'s words on the progress line, '
+        + 'the key its refusal echoed masked, and keeps the status alone in the row',
+      fn: async (ctx) => {
+        /**
+         Refusal the real client raised over the real transport.
+         */
+        const failure = await statusFailureOf({
+          sinon: ctx.sinon,
+          status: 401,
+        },);
+        const ran = await runOver({
+          files: {
+            'people/Tabby/page.md': TWO_BLOCKS,
+            'people/Tabby/page.en.md': ONE_SECTION,
+          },
+          typed: [],
+          stageFor: function refused(): CoverageAnswer {
+            throw failure;
+          },
+          sinon: ctx.sinon,
+        },);
+
+        expect(ran.logged,).toEqual([
+          'info Tabby: 1 unpaired passage',
+          `info Tabby pair 0 block 2: FAILED ${statusFailureLogText({ status: 401, },)}`,
+          'info kept 1 row at <kept file>',
+        ],);
+        expect(ran.printed,).toEqual([JSON.stringify(
+          {
+            rows: [
+              {
+                entryId: 'Tabby',
+                scale: 'block',
+                where: 'pair 0 block 2',
+                sourceChars: 3,
+                kind: 'failed',
+                anchoredFull: 0,
+                anchoredPartial: 0,
+                absent: 0,
+                unanchored: 0,
+                heard: 0,
+                asked: 2,
+                evidence: [],
+                unanchoredQuotes: [],
+                findings: ['refused by SyntheticHttpError with HTTP 401',],
+              },
+            ],
+          },
+          undefined,
+          2,
+        ),],);
       },
     },),
     it({

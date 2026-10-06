@@ -41,6 +41,10 @@ import {
 } from '../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
+  refusedClient,
+  statusFailureLogText,
+} from './provider-status-failure.test-fixture.ts';
+import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
@@ -687,6 +691,42 @@ await describe({
                 return entry.includes('reader-failed',);
               },).length,).toBe(2,);
             expect(paired.transient,).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'NAMES EACH READER THE PROVIDER REFUSED by the picture, the model, the status and the provider\'s '
+            + 'words with the key its refusal echoed masked, for readers asked over the real client and transport',
+          fn: async ctx => {
+            /**
+             Lines the pair logged while both readers were refused.
+             */
+            const lines: string[] = [];
+
+            /**
+             What the roster made of a picture whose readers the provider refused.
+             */
+            const paired = await readImagePair({
+              client: refusedClient({
+                sinon: ctx.sinon,
+                status: 401,
+              },),
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l: levelCapturingLogger({ lines, },),
+            },);
+
+            expect(paired.kind,).toBe('unavailable',);
+            expect(lines.filter(function failedOutright(line,): boolean {
+              return line.includes('failed outright',);
+            },),).toEqual(READERS.map(function lineOf(modelId,): string {
+              return `warn [readImagePair] noticeboard.webp: ${modelId} failed outright, so it contributes no reading `
+                + `(${statusFailureLogText({ status: 401, },)})`;
+            },),);
           },
         },),
 

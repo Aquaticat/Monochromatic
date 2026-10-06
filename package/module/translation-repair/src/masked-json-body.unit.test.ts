@@ -55,6 +55,26 @@ await describe({
       },
     },),
     it({
+      name: 'MASKS a key the endpoint echoes in another spelling: a JSON unicode escape, a percent escape and base64',
+      fn: async () => {
+        expect(
+          await readMaskedJsonBody({
+            response: new Response(
+              `{"a":"whisker\\u002dkey\\u002d7421","b":"x?k=whisker%2Dkey%2D7421","c":"${
+                Buffer.from(WHISKER_KEY,)
+                  .toString('base64',)
+              }"}`,
+            ),
+            headers: { 'x-api-key': WHISKER_KEY, },
+          },),
+        ).toEqual({
+          a: CREDENTIAL_MARKER,
+          b: `x?k=${CREDENTIAL_MARKER}`,
+          c: CREDENTIAL_MARKER,
+        },);
+      },
+    },),
+    it({
       name: 'READS a body that repeats no credential as it was sent, and one whose request carried no credential '
         + 'header at all',
       fn: async () => {
