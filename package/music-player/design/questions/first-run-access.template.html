@@ -194,7 +194,8 @@ function render() {
   }
   document.getElementById('scroll-status').textContent = moved === 0 ?
     'Under the selected panel, text size and theme no state moved when dragged, so no second view exists.' :
-    'Under the selected panel, text size and theme ' + moved + ' of 4 states moved when dragged.';
+    'Under the selected panel, text size and theme ' + moved + ' of ' +
+    document.querySelectorAll('figure[data-scene]:not([data-position])').length + ' states moved when dragged.';
 }
 function resizePreview() {
   if (!state.preview) throw new Error('No native witness is open.');
