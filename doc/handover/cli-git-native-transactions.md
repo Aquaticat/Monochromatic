@@ -44,7 +44,7 @@ and by vetoing any item under `Choices open to veto`.
 
 ## Status
 
-Slice plan written; no slice implemented yet.
+Slices 0 and 1 are done; slice 2 is in progress.
 
 ## Slice plan
 
@@ -363,7 +363,66 @@ each recorded under its own section.
 
 ## Progress
 
-None yet.
+### Slice 0
+
+Commit `bb08b1cf7` (the harness) after the plan in `8a30e90c0`.
+`bin/interop-native-container.mjs` builds `localhost/git-policy-native-interop:<tag>`
+from the gate's Git 2.56.0 base image,
+copies `/usr/local/bin/node` from `docker.io/library/node:24-trixie-slim` (Node 24.21.0),
+copies `/opt/cli-git` (the packed incumbent and its installed dependencies)
+from `localhost/cli-git-concurrent-e2e:latest`,
+replaces its `dist/final/node/index.mjs` with the main checkout's build
+(SHA-256 `a418ca48f202850cbda6943efe8eaaad02488c16aad5d9e7321ea10af22894cd`,
+the bytes the installed `git` runs),
+and builds the native executable and the library's release test binary from the snapshot.
+The native executable is `git` only through `/opt/native/bin` inside the image.
+Drivers are `.mjs` files under `native-interop/`,
+run as `mise run //package/git-policy/cli:native:interop -- <driver>`,
+under `--rm --init --network=none --memory=2g --cpus=2`.
+
+The smoke driver passed:
+real Git is 2.56.0,
+Node is 24.21.0,
+the incumbent landed a commit,
+and the native wrapper forwarded `--version`.
+
+### Slice 1
+
+Commits `9e5337ce3` and `133ca67b2` (a Clippy fix).
+Modules:
+`private_storage.rs`,
+`json_record.rs`,
+`random_id.rs`,
+`js_text.rs`,
+`process_identity.rs`,
+`owner_lock_record.rs`,
+`owner_lock.rs`.
+
+Gate:
+every test passed (637 unit tests, 39 binary-level tests, the candidate consumer),
+then Clippy failed on `manual_range_contains` in `json_record.rs`;
+the fix is committed and the next gate covers it.
+
+Interoperability (`native-interop/owner-locks.mjs`, evidence `target/verification/interop-c2oSt5`):
+
+- An incumbent paused at `capture-locked` holds its capture lock;
+  the native identity of its PID is `linux:4248886`,
+  the string the incumbent wrote into both the lock record and the transaction owner record.
+- The native acquirer found that live lock busy and left it untouched;
+  the released incumbent commit landed.
+- An incumbent killed at `landing-locked` left its landing lock;
+  the native acquirer retired it and took the lock.
+- A native probe holding the hook lock made the incumbent's hook dispatcher wait;
+  after the release the incumbent ran its hook once and landed.
+- A native probe killed while holding the hook lock left a record with its PID and a `linux:` identity;
+  the incumbent retired it and landed.
+
+Measured facts recorded for later slices:
+
+- The Bash tool's processes share one 8 GB cgroup (`claude-code-bash`) with other sessions' commands;
+  a host `cargo check` of this crate died there with no diagnostic at the default parallelism
+  and passed with `CARGO_BUILD_JOBS=4` (52.8 s).
+- The incumbent prints warnings as `[warn] [<ISO time>] [cli-git] <message>`.
 
 ## Choices open to veto
 
