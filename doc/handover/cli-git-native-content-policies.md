@@ -27,7 +27,7 @@ the coded failure outcome,
 three fuzz targets,
 and the differential runs.
 The final gate,
-the fuzz smoke campaign and the mutation campaigns are recorded in their own sections below as they finish.
+the fuzz smoke campaign and the mutation campaigns are recorded in their own sections below.
 
 ## Differential harness
 
@@ -338,7 +338,8 @@ extra final line feeds kept);
 evidence `package/git-policy/cli.fuzz/target/verification/planted-2Ml8kS`.
 
 Smoke campaign,
-`GIT_POLICY_NATIVE_IMAGE_TAG=content-policies mise run //package/git-policy/cli.fuzz:smoke` on `e37dad30a`'s fuzz package
+`GIT_POLICY_NATIVE_IMAGE_TAG=content-policies mise run //package/git-policy/cli.fuzz:smoke`
+on `e37dad30a`'s fuzz package
 and `ed3f10514`'s subject
 (the later `e4725f72c` changes only the private index directory builder, which no target calls):
 the controls and Clippy passed in the container,
@@ -380,6 +381,127 @@ Each compares with Git 2.56.0's option tables or version string,
 and every one lives in a file this branch did not change
 (`git diff main` over those test files and their subjects is empty);
 they were not run on `main` here.
+
+## Mutation testing
+
+### Campaigns
+
+All campaigns ran `mise run //package/git-policy/cli:native:mutation:scoped` against the final gate image
+`30a8e6112b2a3723be78c4b379dfd130b44baa960df6525eb8b7c2d9b05589f7`
+(each `manifest.json` records it as `baseImage`),
+with cargo-mutants 27.1.0,
+its 300-second build bound and 90-second test bound,
+and only the two exclusions the runner already has
+(`+=` to `*=` and `-=` to `/=`).
+Each noticed all five planted guard removals before mutating.
+The tags `content-policies-b`,
+`-c` and `-d` are further names of the same gate image made with `podman tag`,
+because the runner names its campaign image by the tag;
+the candidates branch did the same.
+No source or test changed between the final gate and the campaigns.
+
+Every changed source file was mutated
+except `src/native/lib.rs`,
+for which cargo-mutants lists no mutant,
+and `src/native/policy_test_support.rs`,
+which is compiled for tests only.
+
+### Results
+
+Across the four scopes cargo-mutants generated 411 mutants:
+275 caught on the first run,
+13 timed out and were caught on the rerun,
+123 did not compile,
+and none was missed.
+
+- Candidate sources
+  (`candidate_stage.rs`,
+  `candidate_prediction.rs`,
+  `candidate_private_index.rs`,
+  `candidate_store.rs`,
+  `candidate_error.rs`),
+  evidence `package/git-policy/cli/target/verification/native-mutation-vipZW3`:
+  107 mutants,
+  64 caught,
+  30 did not compile,
+  13 timed out,
+  none missed;
+  cargo-mutants exited 3 for the timeouts.
+  The unmutated baseline took 79 seconds to test against the 90-second bound;
+  the timeouts took 90 to 101 seconds,
+  while the host's load average was between 66 and 96 from other sessions' containers.
+  An earlier attempt,
+  `native-mutation-UbDlh4`,
+  stopped when the unmutated baseline itself reached 90 seconds.
+- Timeout rerun,
+  once,
+  of the three files that had them
+  (`candidate_error.rs`,
+  `candidate_store.rs`,
+  `candidate_stage.rs`),
+  evidence `native-mutation-XBlW6j`:
+  81 mutants,
+  61 caught,
+  20 did not compile,
+  no timeout,
+  none missed;
+  unmutated baseline 10 seconds.
+  All 13 earlier timeouts are among the caught,
+  matched line by line against the first run's `timeout.txt`.
+  Before the rerun,
+  one of them,
+  `run_listing` replaced with `Ok(vec![])`,
+  was planted by hand in a throwaway worktree:
+  pinned to two host CPUs its unit tests failed 58 tests in 7.86 seconds,
+  against 10.02 seconds for the unmutated tests on the same CPUs,
+  so it was slow under contention,
+  not hanging.
+- Policies and scanner
+  (`policy_final_newline.rs`,
+  `policy_content.rs`,
+  `policy_root_context.rs`,
+  `policy_forbidden_strings.rs`,
+  `scanner_failure_code.rs`,
+  `scanner_run.rs`,
+  `scanner_selection.rs`),
+  evidence `native-mutation-kymPWy`:
+  110 mutants,
+  70 caught,
+  40 did not compile.
+  Its first attempt,
+  `native-mutation-X1HSTd`,
+  stopped on Podman's `database is locked` in the first planted control
+  and was retried once after two minutes.
+- Engine,
+  direct fix and option check
+  (`policy_engine.rs`,
+  `policy_checks.rs`,
+  `direct_fix.rs`,
+  `direct_fix_install.rs`,
+  `panic_notice.rs`,
+  `main.rs`,
+  `config_rules_file.rs`),
+  evidence `native-mutation-oQyd93`:
+  95 mutants,
+  74 caught,
+  21 did not compile.
+- Lifecycles and configuration
+  (`config_policies.rs`,
+  `config_schema.rs`,
+  `entry.rs`,
+  `management.rs`,
+  `wrapped_command.rs`,
+  `repository_facts.rs`),
+  evidence `native-mutation-caNqhs`:
+  99 mutants,
+  67 caught,
+  32 did not compile.
+
+The mutants that did not compile replace a function body with a value the return type cannot take:
+`Default::default()` or a list or `Ok` of it for types without a default,
+and `Rc<[u8]>` built from a leaked `Vec`,
+which does not convert;
+`unviable.txt` in each evidence directory lists them.
 
 ## Refusal frontier
 
