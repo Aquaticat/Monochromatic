@@ -45,6 +45,13 @@ Without `PROJECT` the application opens the home folder that `HOME` names
 without a usable `HOME` it reports a usage error with status 2.
 [Home folder as the project](#home-folder-as-the-project) describes what changes then.
 `--help` and `--version` exit before filesystem or native-display startup.
+`--licenses` prints every license and notice text the executable carries,
+each under a heading,
+and exits with status 0 without a project,
+a home folder,
+or a display
+(see [What the executable carries](#what-the-executable-carries));
+beside `PROJECT` or `--file` it is a usage error.
 The executable no longer substitutes example source when no file is selected.
 
 Native tree and file switching pass callback tests and real nested Wayland input checks.
@@ -1721,9 +1728,22 @@ the two application license texts,
 the two font notices,
 and the manifest.
 Inter and JetBrains Mono themselves are compiled in through Slint, as before.
-The executable holds no collected license notices of the Rust crates compiled into it,
-and offers no way yet to show the embedded texts;
-both are open questions for the user.
+`monochromatic-ide --licenses` prints the embedded license and notice texts
+(decided on 2026-10-06: "--licenses flag"; `src/runtime/notices.rs`):
+every file below `LICENSES/` and `runtime/licenses/`,
+and every other file whose name contains `LICENSE` or `LICENCE` or starts with `COPYING` or `NOTICE`,
+which adds `runtime/Helix-LICENSE` and `runtime/queries/snakemake/LICENSE`;
+34 texts and 117,354 bytes of output on 2026-10-06.
+The two read-me files among the queries (`ecma/README.md`, a description of query inheritance,
+and `ripple/readme.md`, a source link) are not license terms and are left out.
+Each text comes in full under a framed heading that names its component and its embedded path,
+for example `Language grammar rust: LICENSE` above `Embedded as runtime/licenses/rust/LICENSE`.
+Every text is digest-checked before anything is printed,
+so a damaged executable prints the damage message and exits with status 1 instead of a partial list;
+a reader that closes the pipe early (`| head`) ends the listing with status 0.
+The executable still holds no collected license notices of the Rust crates compiled into it,
+which the listing's second line says;
+that remains an open question for the user.
 The table's key (`c47e913b79bf6a42` for that runtime) is a digest of every path and file digest.
 
 ### Where language files come from
@@ -1767,7 +1787,35 @@ and reads grammars and queries through `src/runtime.rs`:
   so concurrent first starts both write identical bytes,
   a reader sees either complete file,
   and a process that already loaded the old file keeps it.
-- Older `<key>` folders of earlier builds are not removed.
+- Folders of other builds go once they have been unused for 30 days
+  (decided on 2026-10-06: "Remove after N days unused", with 30 days;
+  `src/runtime/retention.rs`).
+  At start,
+  before any window,
+  the application writes a fresh `<key>/last-used` into its own folder,
+  then removes every other `<key>` folder whose last use lies more than 30 days back.
+  Last use is the modification time of that marker,
+  which a copy renews at every start and every parser load,
+  so an older copy that keeps running keeps its folder;
+  a folder without a marker,
+  as builds before this rule left,
+  is aged by its own modification time.
+  A copy built before this rule renews nothing,
+  so its folder can go while it runs:
+  the libraries it already loaded stay mapped,
+  and its next load unpacks the library again into a new folder.
+  Only real folders named by 16 lowercase hexadecimal digits directly below `runtime/` are candidates;
+  the current key,
+  files,
+  symbolic links,
+  and other names stay,
+  nothing is removed when `runtime/` itself is a symbolic link,
+  and `remove_dir_all` removes links inside a folder without following them
+  (its documentation in the Rust standard library).
+  A folder is renamed to `.<key>.removing-<process>-<n>` before it is removed,
+  so a removal cut short leaves only that name,
+  which the next start removes.
+  Failures are logged and skipped.
 
 Test and development programs have no embedded table;
 they read the directory `HELIX_RUNTIME` names,
@@ -1909,7 +1957,13 @@ without changing either:
   both font notices,
   Helix's license,
   and a notice with a copyright line for every bundled grammar,
-  each embedded byte for byte.
+  each embedded byte for byte;
+  and `--licenses`,
+  run with an empty environment,
+  exits with status 0,
+  writes nothing to standard error,
+  and prints exactly the files its selection rule names,
+  each in full under its heading.
 - `lone-copy-highlights`:
   a copy alone in its own folder reports its version with an empty environment,
   then highlights a SQL file in the nested compositor with empty XDG homes,
@@ -1931,8 +1985,16 @@ without changing either:
   the executable,
   and the remedy,
   and unpacks nothing.
+- `old-cache-folders-removed`:
+  a start on a cache seeded with a key folder last used 31 days ago,
+  one used a day ago,
+  and the rest of a cut-short removal
+  removes the first and the third,
+  keeps the second,
+  and renews its own folder's marker,
+  before its display connection fails on purpose.
 
-The startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`;
+The other startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`;
 SQL is the sample because it has a bundled grammar and no configured language server.
 Each requires a clean end:
 the application exits with status 0 within the compositor's 2 s after the close request,
@@ -1952,6 +2014,9 @@ a grammar notice,
 a font notice,
 an application license,
 and Helix's license.
+`license-texts` fails on every one of these but the SQL cases:
+a copy without its executable bit cannot run `--licenses`,
+and a copy with a damaged text exits with status 1 and the damage message naming that text.
 
 Behavior cannot be removed from a finished file,
 so the run-time checks were also run on an altered debug build (on 2026-10-06):

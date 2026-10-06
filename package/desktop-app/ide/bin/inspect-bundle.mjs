@@ -5,14 +5,14 @@
 // nested compositor, on a one-file project whose language configures no server.
 import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
-import { chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { createConnection } from 'node:net';
 import { inflateSync } from 'node:zlib';
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
 
-const names = ['inventory', 'license-texts', 'lone-copy-highlights', 'later-start-reuses-cache', 'damaged-cache-rebuilt', 'shadowing-query-ignored', 'concurrent-first-starts', 'damaged-embedded-part-reported'];
+const names = ['inventory', 'license-texts', 'lone-copy-highlights', 'later-start-reuses-cache', 'damaged-cache-rebuilt', 'shadowing-query-ignored', 'concurrent-first-starts', 'damaged-embedded-part-reported', 'old-cache-folders-removed'];
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
 for (const name of only ?? []) if (!names.includes(name)) throw new Error('Unknown check name ' + name + '; the checks are ' + names.join(', '));
 const executable = realpathSync(resolve(process.env.usage_file || 'dist/monochromatic-ide'));
@@ -111,9 +111,26 @@ const checks = {
       }
       notices.push(...texts.map(file => 'runtime/licenses/' + name + '/' + file));
     }
+    // `--licenses` with an empty environment (no display, no home) prints every license and notice text in full:
+    // the files below LICENSES/ and runtime/licenses/, and every other embedded file named like a license.
+    const licenseNamed = relative => {
+      const name = relative.split('/').at(-1).toUpperCase();
+      return name.includes('LICENSE') || name.includes('LICENCE') || name.startsWith('COPYING') || name.startsWith('NOTICE');
+    };
+    const listed = expectedFiles().filter(([relative]) => relative.startsWith('LICENSES/') || relative.startsWith('runtime/licenses/') || licenseNamed(relative));
+    const listing = spawnSync(executable, ['--licenses'], { env: {}, cwd: artifact, maxBuffer: 64 * 1024 * 1024, timeout: 60_000 });
+    demand(!listing.error, 'could not run ' + executable + ' --licenses: ' + listing.error?.message);
+    demand(listing.status === 0, executable + ' --licenses exited with status ' + listing.status + ': ' + listing.stderr.toString('utf8').slice(0, 600));
+    demand(listing.stderr.length === 0, executable + ' --licenses wrote to standard error: ' + listing.stderr.toString('utf8').slice(0, 600));
+    const printed = listing.stdout.toString('utf8');
+    const headings = printed.split('\n').filter(line => line.startsWith('Embedded as ')).length;
+    demand(headings === listed.length, '--licenses printed ' + headings + ' texts, expected ' + listed.length);
+    const rule = '='.repeat(78);
+    const unprinted = listed.filter(([relative, file]) => !printed.includes('\nEmbedded as ' + relative + '\n' + rule + '\n\n' + readFileSync(file, 'utf8')));
+    demand(unprinted.length === 0, '--licenses does not print in full: ' + unprinted.map(([relative]) => relative).join(', '));
     const missing = notEmbedded([...expected.map(([relative]) => relative), ...notices]);
     demand(missing.length === 0, 'license texts not embedded byte for byte: ' + missing.join(', '));
-    return { texts: expected.length, grammarNotices: notices.length };
+    return { texts: expected.length, grammarNotices: notices.length, listedByLicensesFlag: headings, listingBytes: listing.stdout.length };
   },
 };
 
@@ -383,6 +400,44 @@ checks['damaged-embedded-part-reported'] = async () => {
   demand(unpacked.length === 0, 'files were unpacked although the embedded part is damaged: ' + unpacked.join(', '));
   demand(ending === undefined, ending);
   return { report: report.slice(report.indexOf(unavailable)).slice(0, 400), frame };
+};
+
+// A start removes the cache folders of other builds unused for more than 30 days and the rest of a removal cut
+// short, keeps a folder used a day ago, and renews its own folder's marker, all before any window: the display
+// connection of this start fails on purpose, so no compositor is needed.
+checks['old-cache-folders-removed'] = async () => {
+  const base = mkdtempSync(join(artifact, 'old-cache-'));
+  const project = join(base, 'project');
+  mkdirSync(project);
+  writeFileSync(join(project, 'fixture.sql'), 'select 1;\n');
+  const runtimeCache = join(base, 'cache', 'monochromatic-ide', 'runtime');
+  const now = Date.now();
+  const seed = (name, daysAgo) => {
+    mkdirSync(join(runtimeCache, name, 'grammars'), { recursive: true, mode: 0o700 });
+    writeFileSync(join(runtimeCache, name, 'grammars', 'sql.so'), 'an older build');
+    writeFileSync(join(runtimeCache, name, 'last-used'), '');
+    const time = new Date(now - daysAgo * 86_400_000);
+    utimesSync(join(runtimeCache, name, 'last-used'), time, time);
+  };
+  seed('0000000000000031', 31);
+  seed('0000000000000001', 1);
+  mkdirSync(join(runtimeCache, '.00000000000000aa.removing-1-0', 'grammars'), { recursive: true });
+  const started = spawnSync(executable, [project], {
+    cwd: base, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: 60_000,
+    env: { PATH: '/usr/bin', HOME: join(base, 'home'), XDG_CACHE_HOME: join(base, 'cache'), XDG_CONFIG_HOME: join(base, 'config'), XDG_DATA_HOME: join(base, 'data'), XDG_RUNTIME_DIR: base, WAYLAND_DISPLAY: join(base, 'absent-wayland.socket'), SLINT_BACKEND: 'winit', RUST_LOG: 'ide_app=debug,monochromatic_ide=debug' },
+  });
+  const output = plain((started.stdout ?? '') + (started.stderr ?? ''));
+  writeFileSync(join(base, 'start.log'), output);
+  demand(!started.error, 'could not start ' + executable + ': ' + started.error?.message);
+  const left = readdirSync(runtimeCache).sort();
+  demand(!left.includes('0000000000000031'), 'the folder unused for 31 days remains: ' + JSON.stringify(left));
+  demand(!left.some(name => name.startsWith('.')), 'the rest of a cut-short removal remains: ' + JSON.stringify(left));
+  demand(isFile(join(runtimeCache, '0000000000000001', 'grammars', 'sql.so')), 'the folder used a day ago was removed: ' + JSON.stringify(left));
+  const own = left.filter(name => name !== '0000000000000001');
+  demand(own.length === 1 && /^[0-9a-f]{16}$/.test(own[0]), 'expected this build\'s key folder besides the kept one: ' + JSON.stringify(left));
+  const renewed = lstatSync(join(runtimeCache, own[0], 'last-used')).mtimeMs;
+  demand(renewed >= now - 1000, 'this build\'s marker was not renewed at start');
+  return { left, status: started.status, tidyElapsedUs: elapsed(output, 'runtime cache tidied') };
 };
 
 const results = [];

@@ -30,7 +30,7 @@ const flipInside = sourceFile => copy => {
 // Checks named in `checks` but not in `fails` must still pass, which shows a failure is specific to its damage.
 const cases = [
   { name: 'executable-bit-cleared', damage: copy => chmodSync(copy, 0o644), checks: ['inventory', 'license-texts'],
-    fails: { inventory: 'is not executable' } },
+    fails: { inventory: 'is not executable', 'license-texts': 'could not run' } },
   { name: 'embedded-query-damaged', damage: flipInside(join(runtime, 'queries/sql/highlights.scm')), checks: ['inventory', 'license-texts', 'lone-copy-highlights'],
     fails: { inventory: 'runtime/queries/sql/highlights.scm', 'lone-copy-highlights': 'runtime/queries/sql/highlights.scm embedded in' } },
   { name: 'embedded-grammar-damaged', damage: flipInside(join(runtime, 'grammars/sql.so')), checks: ['inventory', 'license-texts', 'lone-copy-highlights'],
