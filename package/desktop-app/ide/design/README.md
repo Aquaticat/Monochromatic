@@ -101,6 +101,16 @@ Questions on the page, with the slug used in file names:
   the search results,
   and the references list.
 
+### 2026-10-05 packaged application check
+
+- Screenshots: `screenshots/2026-10-05-packaged-check/`
+- Status: evidence of a check, not a question; it has no page.
+
+The frames show the assembled application directory of the package's `bundle` task
+running from a copy outside the repository.
+[Its production section](#how-the-2026-10-05-packaged-check-screenshots-were-produced)
+gives the build, the sessions, and what each frame shows.
+
 ## How the 2026-10-05 UI batch 2 screenshots were produced
 
 ### File names
@@ -332,3 +342,117 @@ with `-2x` for the scale 2 frames.
   The column-resize cursor over the divider is therefore not in any frame.
 - Input-method composition:
   the nested compositor provides no input method.
+
+## How the 2026-10-05 packaged-check screenshots were produced
+
+### Build and copy
+
+`mise run //package/desktop-app/ide:bundle` assembled `dist/monochromatic-ide`
+from the application sources of `aab809c54`.
+The binary's SHA-256 starts with `522415c723cc2156`.
+It was built with a 10 s safety sweep,
+a 150 ms quiet time for an open write,
+and a 250 ms limit on that wait
+(`SAFETY_SWEEP`, `WRITE_QUIET`, and `WRITE_WAIT_LIMIT` in `src/refresh_policy.rs`).
+The directory was copied to a scratch directory below `~/temp/agent`,
+outside the repository,
+and every session ran that copy.
+The frames record that commit:
+inlay hints sit in boxes after the end of their line.
+A later decision moves hints to a line of their own over the code line,
+so newer builds look different there.
+
+### Sessions
+
+One session per language and scheme:
+a TypeScript 7 project and a Rust project,
+each in dark and in light,
+built the way `bin/inspect-language.mjs` builds its fixtures and placed beside the copy.
+Each session hosted the copy in the release build of `package/cli/nested-wayland-session`
+at 1100 by 660 and scale factor 1,
+with `--color-scheme dark` or `--color-scheme light`,
+started as `monochromatic-ide PROJECT --file src/main.ts` or `src/main.rs`.
+The environment held no `HELIX_RUNTIME` and no Cargo variable,
+and the configuration, cache, and data directories were empty scratch directories.
+The TypeScript sessions also hid the system copies of Inter and JetBrains Mono,
+as the `inspect:native` task does;
+the Rust sessions used the host's own font configuration.
+Language servers ran confined by `/usr/bin/bwrap`:
+the project's own TypeScript 7 server and the host's `rust-analyzer`.
+
+### Input and capture
+
+- The release binary has no inspection server,
+  so every key, click, and pointer move is seat input through the compositor control socket,
+  and nothing is read from inside the application.
+- What the application did is read from three places:
+  its own log lines,
+  the nested clipboard through `wl-paste` on the nested display only,
+  and these frames.
+- A frame is the compositor's `screenshot`,
+  saved once three screenshots 250 ms apart are byte-identical.
+  The first frame of a session also waits until the window shows more than one flat color.
+  With the find or search input focused its caret blinks,
+  so `ts-dark-find-next`,
+  `ts-light-find-next`,
+  and `ts-light-search-file-name` are the last of twenty screenshots instead.
+- The stored files are re-encoded losslessly with ImageMagick and stripped of metadata;
+  each was compared with its original and differs in no pixel.
+
+### File names
+
+`<language>-<scheme>-<step>.png`,
+with `ts` or `rust`,
+`dark` or `light`,
+and a step from this list,
+in the order of the check:
+
+- `open-highlighted`:
+  the first file, highlighted from the copy's own `runtime`.
+- `select-line`:
+  one line selected with Shift+End;
+  the nested clipboard then held exactly that line.
+- `find-next`:
+  the find bar after typing a name and pressing Enter.
+- `search-file-name`:
+  the search overlay with a file-name result before the content results.
+- `hover`:
+  hover information from Ctrl+Q at a call.
+- `hints-and-diagnostic-card`:
+  inlay hints at the line ends,
+  the error mark,
+  and the caret's problem card.
+- `references`:
+  the other file,
+  reached with Ctrl+B at the call,
+  and the list from Ctrl+B at the definition there.
+- `outside-project`:
+  Rust only,
+  the standard library file that defines `String::new`,
+  with its `Outside project` label.
+- `tree-new-file`:
+  the first file after another process appended a line to it,
+  and the tree row of a file another process created.
+
+The steps from `open-highlighted` through `search-file-name` do not depend on the language,
+so the Rust sessions store only `open-highlighted` of them.
+Every session ran every step,
+including the ones without a stored frame:
+a content-only search,
+opening files from the tree,
+choosing a reference,
+and a resting-pointer hover.
+
+### What the frames do not show
+
+- The mouse cursor:
+  the screenshot holds the application surface only.
+- The quit:
+  each session ended through the compositor's `quit`,
+  which asks the window to close.
+- The emoji in the first file's string under the host's own font configuration:
+  in the Rust frames its place is blank,
+  while the TypeScript frames,
+  taken with the restricted font configuration,
+  show it as an outline glyph.
+  The same TypeScript file opened under the host's configuration also shows a blank.

@@ -1644,6 +1644,198 @@ Helix crates share a pinned upstream revision.
 Helix code and runtime assets retain their own license obligations;
 the application does not inherit Helix's modal commands or editing features.
 
+## Release build and application directory
+
+`mise run //package/desktop-app/ide:build:release` builds the optimized `monochromatic-ide` binary
+in the bounded container described under [Build boundary](#build-boundary).
+`mise run //package/desktop-app/ide:bundle` runs that build and assembles `dist/monochromatic-ide`,
+a directory that runs from any location,
+without the source tree and without `HELIX_RUNTIME` in the environment:
+
+```txt
+# package/desktop-app/ide/dist/monochromatic-ide
+monochromatic-ide             release binary; Inter and JetBrains Mono are compiled in
+runtime/manifest.json         pinned Helix revision and the bundled grammar libraries
+runtime/grammars/             one shared object per bundled grammar
+runtime/queries/              Helix query files at the pinned revision
+runtime/licenses/<grammar>/   license notice of each bundled grammar
+runtime/Helix-LICENSE         MPL-2.0 text for the Helix query files and the Helix crates in the binary
+LICENSES/                     LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
+LICENSES/font/                SIL Open Font License notices of Inter and JetBrains Mono
+```
+
+Run it as `dist/monochromatic-ide/monochromatic-ide PROJECT`,
+with `--file FILE` as under [Project startup](#project-startup).
+`mise run //package/desktop-app/ide:run:bundle PROJECT` does the same from the package directory.
+`dist/` is ignored by Git.
+The existing `build` and `run` tasks stay the debug build that tests and inspection use;
+sibling applications name their release build `build`,
+and renaming here is left until the other tasks and documents that call `build` can change with it.
+
+The release build unsets `SLINT_EMIT_DEBUG_INFO`,
+which the debug tasks set so inspection can address interface elements by name,
+and builds only the application binary,
+not the runtime,
+inspection,
+and scripted-server helpers.
+The directory holds no desktop entry,
+icon,
+or installer,
+and no collected license notices of the Rust crates compiled into the binary;
+those are open decisions.
+
+### Where the binary finds its language runtime
+
+The pinned Helix loader (`prioritize_runtime_dirs` in `helix-loader/src/lib.rs`)
+looks for each runtime file in these directories,
+in this order,
+and takes the first that has the file:
+
+- `runtime` beside the directory `CARGO_MANIFEST_DIR` names,
+  only when that variable is set while the application runs;
+- `runtime` in Helix's configuration directory,
+  `$XDG_CONFIG_HOME/helix/runtime` or `~/.config/helix/runtime`;
+- the directory `HELIX_RUNTIME` names,
+  when it is set;
+- a directory fixed at build time through `HELIX_DEFAULT_RUNTIME`,
+  which no task of this package sets;
+- `runtime` beside the executable,
+  after symbolic links to the executable are resolved.
+
+So the assembled directory works wherever it is copied or moved as a whole,
+and a symbolic link to its executable works from any directory.
+A copy of the executable alone finds no runtime:
+it shows source as plain text,
+with a message that names the manifest it looked for.
+A file in the user's Helix configuration directory or under `HELIX_RUNTIME`
+replaces the bundled file of the same relative path,
+one file at a time.
+With an empty `queries/sql/highlights.scm` in a scratch configuration directory,
+the packaged application drew a SQL file without colors and reported nothing.
+
+### What the host provides
+
+- Linux on x86_64 with glibc 2.39 or later,
+  `libstdc++`,
+  `libgcc_s`,
+  and `libfontconfig`.
+  The build container is Fedora 41.
+- A Wayland session,
+  with `libwayland-client`,
+  `libwayland-egl`,
+  `libxkbcommon`,
+  and `libEGL`,
+  which the binary opens when it starts.
+  Only Wayland was checked.
+- `rg` (ripgrep) on `PATH` for [Combined search](#combined-search).
+- For language features:
+  `/usr/bin/bwrap` with unprivileged user namespaces,
+  and each language's server on `PATH`,
+  such as `rust-analyzer`.
+  TypeScript uses the project's own `node_modules/typescript` at version 7 or later,
+  started through `node`.
+  Without one of these the reader still works,
+  and a language action explains what is missing;
+  see [Language module](#language-module).
+- No fonts:
+  with the system copies of both families hidden,
+  the packaged binary drew the interface and the source in its own faces.
+
+The application writes language-server state below `$XDG_CACHE_HOME/monochromatic-ide`
+and nothing below the configuration or data directories.
+It logs to standard output at debug level,
+including language-server logs,
+with no setting to lower that yet.
+
+### Bundle checks
+
+`mise run //package/desktop-app/ide:inspect:bundle [directory] [only]` checks an assembled directory,
+`dist/monochromatic-ide` by default,
+without changing it:
+
+- `inventory`:
+  the executable,
+  the manifest,
+  and exactly the grammar libraries the manifest lists.
+- `license-texts`:
+  the application's license texts,
+  both font notices,
+  Helix's license,
+  and a notice with a copyright line for every bundled grammar.
+- `grammars-load`:
+  the package's four syntax test binaries,
+  run in the bounded container with `HELIX_RUNTIME` naming the checked directory's `runtime`,
+  mounted read-only.
+  They load every listed library,
+  compile the highlighting rules of every language that uses one,
+  and highlight a sample of each bundled language.
+- `starts-outside-source-tree`:
+  a copy below the private scratch root reports its version with an empty environment,
+  then runs in the nested compositor with no runtime variable
+  and an empty configuration directory,
+  and must highlight a SQL file from its own `runtime`.
+- `missing-runtime-reported`:
+  a copy without `runtime` must still open the file
+  and report the manifest it could not read.
+  The check reads the report from the application's log;
+  the window shows the same sentence under the source.
+
+The release binary has no headless backend
+(`SLINT_BACKEND=headless` without a display ends with "No backends configured"),
+so both startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`.
+SQL is the sample because it has a bundled grammar and no configured language server.
+Both also require a clean end:
+the application exits with status 0 within the compositor's 2 s after the close request,
+and the session leaves no application process,
+no private bus daemon,
+and no bus directory behind.
+A session that fails is ended through the compositor's `quit` first,
+because a compositor ended by a signal leaves its `dbus-daemon`,
+that daemon's directory below the temporary directory,
+and its hosted application running;
+whatever is left is stopped and removed.
+
+`mise run //package/desktop-app/ide:inspect:bundle-guards [directory] [only]` damages one copy per case
+and requires the matching check to fail on it while the unrelated checks still pass:
+a removed grammar library,
+an unlisted library,
+a cleared executable bit,
+removed query rules,
+a removed grammar notice,
+removed REUSE header lines,
+a removed font notice,
+a removed application license,
+a removed Helix license,
+a removed runtime,
+and an executable that still finds a runtime elsewhere.
+
+### Measured on 2026-10-05
+
+- Size:
+  81,516,093 bytes in 1,255 files.
+  The binary is 46,856,800 bytes with its symbol table
+  (35,666,600 after `strip --strip-all`, which the task does not run);
+  `runtime/grammars` is 33,463,328 bytes in 27 files,
+  `runtime/queries` 1,087,532 bytes in 1,193 files,
+  and the license texts and notices 107,898 bytes in 33 files.
+  Size is not a constraint for this package.
+- Build:
+  2 GiB and 2 CPUs are enough.
+  Two release builds from an empty release directory finished in 18 min 40 s and 15 min 22 s of Cargo time,
+  on a host whose load average was between 54 and 97 each time it was read during them,
+  so the second container averaged 1.04 of its 2 CPUs.
+  In the second,
+  sampled four times a second from the container's control group,
+  anonymous memory peaked at 1,116 MiB;
+  the group reached its 2,048 MiB limit only through reclaimable file cache,
+  used at most 19 MiB of swap,
+  and recorded no out-of-memory kill.
+  Both builds produced the same binary, byte for byte.
+- The release build prints one warning the debug build does not:
+  `set_annotations` in `src/native/annotate.rs` is unused,
+  because its only caller outside tests is the debug-only inspection path.
+  `lint:clippy` checks the debug profile and does not see it.
+
 [handover]: ../../../doc/handover/slint-ide-0x.md
 [scope]: ../../../doc/decision/slint-ide-0x-scope.md
 [plan]: ../../../doc/planning/slint-ide-implementation.md

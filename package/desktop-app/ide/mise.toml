@@ -100,6 +100,75 @@ run = """
 runCargo(['build'])
 """
 
+[tasks."build:release"]
+depends = ["runtime"]
+description = "Build the optimized application binary in the bounded container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+// Only the application binary: the runtime, inspection, and scripted-server helpers are build and test tools.
+// SLINT_EMIT_DEBUG_INFO keeps element ids for the debug inspection builds; sibling release builds do not set it.
+// The shared 2 GiB and 2 CPU bound is enough: measured on 2026-10-05, a build from an empty release directory
+// peaked at 1,116 MiB of anonymous memory with no out-of-memory kill and took 15 to 19 minutes on a loaded host.
+runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release', '--bin', 'monochromatic-ide'])
+"""
+
+[tasks.bundle]
+depends = ["build:release"]
+description = "Assemble dist/monochromatic-ide from the release binary, its language runtime, and license texts"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync } = await import('node:fs')
+const { join } = await import('node:path')
+const binary = 'target/release/monochromatic-ide'
+const runtime = 'target/release/runtime'
+if (!existsSync(binary)) throw new Error('Missing ' + binary + '; run the build:release task')
+const manifest = JSON.parse(readFileSync(join(runtime, 'manifest.json'), 'utf8'))
+// Assemble beside the destination and swap, so a failed copy never leaves a half-filled directory in place.
+const destination = 'dist/monochromatic-ide'
+const staging = destination + '.new'
+rmSync(staging, { recursive: true, force: true })
+mkdirSync(join(staging, 'runtime', 'grammars'), { recursive: true })
+copyFileSync(binary, join(staging, 'monochromatic-ide'))
+chmodSync(join(staging, 'monochromatic-ide'), 0o755)
+// Helix looks for a `runtime` directory beside the resolved executable, after its other locations.
+// Only what the manifest lists is copied: the build directory may still hold libraries of an earlier selection.
+for (const name of ['manifest.json', 'Helix-LICENSE']) copyFileSync(join(runtime, name), join(staging, 'runtime', name))
+cpSync(join(runtime, 'queries'), join(staging, 'runtime', 'queries'), { recursive: true })
+for (const library of manifest.grammars) {
+  copyFileSync(join(runtime, 'grammars', library), join(staging, 'runtime', 'grammars', library))
+  const name = library.slice(0, -3)
+  cpSync(join(runtime, 'licenses', name), join(staging, 'runtime', 'licenses', name), { recursive: true })
+}
+// The application's own license texts, and the notices of the two font families compiled into the binary.
+cpSync('LICENSES', join(staging, 'LICENSES'), { recursive: true })
+mkdirSync(join(staging, 'LICENSES', 'font'))
+for (const notice of ['Inter-LICENSE.txt', 'JetBrainsMono-OFL.txt']) copyFileSync(join('asset', 'font', notice), join(staging, 'LICENSES', 'font', notice))
+rmSync(destination, { recursive: true, force: true })
+renameSync(staging, destination)
+console.log('Assembled ' + destination + ' with ' + manifest.grammars.length + ' grammars')
+"""
+
+[tasks."inspect:bundle"]
+description = "Check an assembled application directory: inventory, license texts, every bundled grammar through the syntax tests, and startup from a copy outside the source tree with and without its language runtime"
+usage = '''
+arg "[directory]" default="dist/monochromatic-ide" help="Assembled directory to check"
+arg "[only]" help="Comma-separated check names to run; default is every check"
+'''
+run = "node bin/inspect-bundle.mjs"
+
+[tasks."inspect:bundle-guards"]
+description = "Damage copies of an assembled application directory and observe each bundle check fail on its damage"
+usage = '''
+arg "[directory]" default="dist/monochromatic-ide" help="Assembled directory to copy and damage"
+arg "[only]" help="Comma-separated case names to run; default is every case"
+'''
+run = "node bin/inspect-bundle-guards.mjs"
+
+[tasks."run:bundle"]
+description = "Run the assembled application against a local root supplied as an argument"
+run = "./dist/monochromatic-ide/monochromatic-ide"
+
 [tasks.test]
 depends = ["runtime"]
 description = "Run library and integration tests in the bounded container"
