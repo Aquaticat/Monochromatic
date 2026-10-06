@@ -33,13 +33,6 @@ fn fixture() -> tempfile::TempDir {
     return tempfile::tempdir().expect("disposable fixture");
 }
 
-/// Longest wait for one reply: a hang detector, not a latency budget, and the same bound the
-/// Language integration tests use for any expected state (`PATIENCE` in `tests/language/support.rs`).
-/// The worker builds the syntax engine before its first reply. On a loaded machine with two
-/// processors, the stall probe saw that thread wait up to 6 s for a processor while it ran for
-/// 0.2 s, past the 3 s bound this replaces. No product bound exists for a reload.
-const REPLY_PATIENCE: Duration = Duration::from_secs(20);
-
 /// Wait for a single test reply while retaining an explicit failure deadline.
 fn reply(worker: &mut ReloadWorker) -> ReloadReply {
     let start = Instant::now();
@@ -55,8 +48,8 @@ fn reply(worker: &mut ReloadWorker) -> ReloadReply {
             return response;
         }
         assert!(
-            start.elapsed() < REPLY_PATIENCE,
-            "source worker did not reply within {REPLY_PATIENCE:?}"
+            start.elapsed() < Duration::from_secs(3),
+            "source worker did not reply"
         );
         std::thread::sleep(Duration::from_millis(2));
     }
