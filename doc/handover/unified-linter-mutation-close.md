@@ -1015,17 +1015,37 @@ but no current scope held them.
 
 ### Workspace tests in the fast scopes
 
-The executable and core scopes skip the five tests that load or prepare a Cargo workspace by their full names,
-instead of five module names:
-`rust_explicit_types_tests::semantic_conformance_and_source_overlay_controls`,
-`rust_file_engine::tests::selected_semantics_reuses_the_manifest_session`,
-`rust_inferred_constants::tests::holes_resolve_against_the_parameter_in_their_own_slot`,
-`rust_workspace_tests::cargo_discovery_keeps_its_owner_boundary`
-and `rust_workspace_tests::generated_definitions_and_build_failures_are_distinct`.
+The executable and core scopes skip the tests that load a Cargo workspace by their full names,
+instead of five module names.
 `no_semantic_selection_avoids_workspace_initialization`
-and the three `rust_semantic_session` tests now run in both scopes.
-Each of the five ran for over 60 seconds in gate 6.
-They run in `test:container` and in the semantic scope,
+and the three `rust_semantic_session` tests now run in both scopes,
+and so does `rust_workspace_tests::cargo_discovery_keeps_its_owner_boundary`:
+it rejects a project descriptor before anything is loaded,
+and took 0.16 seconds alone,
+so only four of the nine tests the scope used to skip load a workspace.
+
+`workspace-tests-cost-1.log` timed each test alone,
+on one test thread,
+in a bounded container of gate image `1afd09647c5615f9a60e51dd29a3f340c820c0a7e86a1059c416a1f26dc7ac89`
+at a host load average of about 85 on 16 cores:
+
+- `rust_workspace_tests::generated_definitions_and_build_failures_are_distinct`:
+  139.1 seconds.
+- `rust_file_engine::tests::selected_semantics_reuses_the_manifest_session`:
+  86.9 seconds.
+- `rust_explicit_types_tests::semantic_conformance_and_source_overlay_controls`:
+  65.7 seconds.
+- `rust_inferred_constants::tests::holes_resolve_against_the_parameter_in_their_own_slot`:
+  43.4 seconds.
+- `rust_workspace_tests::cargo_discovery_keeps_its_owner_boundary`:
+  0.16 seconds.
+- The rest of the library suite on two threads:
+  14.5 seconds;
+  the whole library suite on two threads:
+  250.7 seconds.
+
+These four run in `test:container`,
+in the semantic scope,
 and the constant-slot scope's two filters select two of them.
 
 ### Invocation thread
@@ -1121,6 +1141,122 @@ each written back and checked with `git diff --quiet` (`hand-mutations-stack-hoo
   the equality failed (`left: 16777216`, `right: 8388608`).
   A larger stack is not a defect,
   so only the equality distinguishes it.
+
+### Discovery campaigns
+
+Gate `gate-mutation-gaps-1.log`,
+at repository head `f430ab536`,
+linter source tree `b4f8c609dc6dbc35bdcf99481b1e9cf89529e05d`:
+386 library tests passed and one was ignored (the panic-hook child) in 244.71 seconds,
+13 `binary` tests passed in 96.00 seconds,
+and Clippy with `-D warnings` finished with no finding.
+Test image `1afd09647c5615f9a60e51dd29a3f340c820c0a7e86a1059c416a1f26dc7ac89`.
+The host load average reached 176 on 16 cores while it ran,
+which is why the binary tests took 96 seconds instead of 3.5.
+Every discovery campaign mutated this image.
+
+- Executable scope,
+  `mutation-t7RNjW` (`campaign-executable-gaps-1.log`):
+  239 mutants,
+  177 caught,
+  2 missed,
+  60 unviable,
+  0 timeouts,
+  exit status 2.
+  The baseline built in 145 seconds and tested in 7 seconds;
+  the longest test phase of any mutant was 94.0 seconds.
+  The scope grew from 233 to 239 mutants because the invocation thread added functions to `run_process.rs`.
+- Semantic scope,
+  three shards of a 1,200 second limit:
+  `mutation-AoaiDq` (shard 0/3,
+  32 mutants,
+  24 caught,
+  8 unviable,
+  exit status 0,
+  2 hours),
+  `mutation-cV2Ad8` (shard 2/3,
+  32 mutants,
+  16 caught,
+  6 missed,
+  10 unviable,
+  exit status 2,
+  67 minutes),
+  and `mutation-6G2hzn` (shard 1/3,
+  still running when this was written).
+  The shard baselines tested in 224,
+  218 and 188 seconds.
+
+Two campaigns were stopped on purpose by removing their containers.
+`mutation-VFaIKp` was the unsharded semantic campaign:
+its baseline tested in 251 seconds,
+which made 96 mutants a run of about seven hours and set the 1,200 second limit,
+and it was stopped after the baseline in favour of three shards.
+`mutation-7j4HXK` was the first shard 1/3:
+its container ran shard 0/3's command,
+because two `podman build` runs started together,
+whose Containerfiles differed only in `CMD`,
+committed the same image with shard 0's `CMD`,
+although the second build printed its own.
+The runner now passes each campaign's command to `podman create`
+and refuses a container whose configured command differs from it.
+
+### Survivors of the discovery campaigns
+
+Locations are `line:column` on tree `b4f8c609dc6dbc35bdcf99481b1e9cf89529e05d`.
+Every disposition below is a kill;
+host hand mutations (`hand-mutations-survivors-1.log` and `hand-mutations-survivors-2.log`)
+and the bounded-container runs in `workspace-controls-container-2.log` show each new control failing,
+and the final round is the proof by cargo-mutants.
+
+- `src/path_inputs.rs:78:68: replace == with != in expand_glob`
+  and `src/path_inputs.rs:137:72: replace != with == in collect_inputs`.
+  Not equivalent:
+  a literal or glob input below a regular file would be refused as unreadable,
+  and other inspection errors would be skipped silently.
+  `inputs_below_a_regular_file_are_unmatched_not_unreadable` requires `a.md/x.md` and `a.md/sub/*.md`,
+  where `a.md` is a regular file,
+  to be unmatched inputs:
+  empty with `--no-error-on-unmatched-pattern`,
+  and the exact unmatched-input message without it.
+- `src/rust_workspace.rs:59:72: replace != with == in discover_manifest`.
+  Not equivalent,
+  the same "not a directory" answer for a manifest below a regular file.
+  `manifest_discovery_walks_past_a_regular_file_on_the_path` starts at `blocker/deeper/lib.rs`,
+  where `blocker` is a regular file,
+  and requires the manifest above it.
+- `src/rust_workspace.rs:90:9`,
+  `91:9`,
+  `92:9` and `93:9`:
+  `delete field` `sysroot_src`,
+  `metadata_extra_args`,
+  `extra_args` and `target_dir_config` from the backend's `CargoConfig`.
+  Not equivalent,
+  but invisible in the container.
+  In `ra_ap_project_model` 0.0.336,
+  a sysroot without `sysroot_src` goes through `discover_rust_lib_src_dir` (`sysroot.rs`),
+  which reads `RUST_SRC_PATH` before the toolchain's own source;
+  `metadata_extra_args` is appended to every `cargo metadata` (`cargo_workspace.rs`),
+  and without `--locked` a stale or missing lockfile is resolved again into a temporary copy;
+  `extra_args` reaches the build-script `cargo check` (`build_dependencies.rs`).
+  The image sets no `RUST_SRC_PATH`,
+  sets `CARGO_NET_OFFLINE=true`,
+  and every Cargo fixture runs `cargo generate-lockfile --offline` first,
+  so no workspace test can see a difference.
+  The settings moved into the named `cargo_config`,
+  and `cargo_settings_name_the_checked_library_and_keep_cargo_offline_and_locked`
+  compares the whole `CargoConfig` it builds with the expected one;
+  each hand-deleted field failed it.
+- `src/rust_workspace.rs:130:62: replace == with != in load_cargo_workspace`,
+  the proc-macro server choice.
+  Not equivalent:
+  the generated preparation would load no proc-macro server,
+  and source-only preparation would start one.
+  No fixture had a procedural macro.
+  `generated_definitions_and_build_failures_are_distinct` now has a workspace member with a function-like
+  procedural macro that defines `macro_generated`,
+  called from the checked file.
+  Under the mutant the generated preparation reported 2 findings instead of 1 in the container,
+  because the unexpanded macro left the call unresolved.
 
 ## Remaining
 
