@@ -193,20 +193,23 @@ which unions `src/native/lib.rs` and reruns both package gates on the integrated
 
 Every delegate in that list has reported;
 `Delegate results` has each outcome.
-Running at the last update of this document (2026-10-06):
+Running at the last update of this document (2026-10-06, relaunched at 08:10):
 
-- Linter mutation close (main checkout):
-  the orchestration campaign and the Markdown and processor reruns to 0 missed and 0 timeouts.
-  Evidence: `doc/handover/unified-linter-mutation-close.md`.
 - Candidate content layer
   (linked worktree `.claude/worktrees/cli-git-candidates`, branch `feat/cli-git-native-candidates`):
-  merging `main` into the branch,
-  gating the merged tree,
-  and applying the failure-code mapping.
+  review and commit the inherited failure-code mapping,
+  merge current `main` again,
+  gate the merged tree with fuzz and mutation.
   The main session fast-forwards `main` to the gated merge.
 - Scanner Windows suite through the `mvm` command-line program (no repository code changes):
   the run that would show the Windows suite green,
   recorded in `doc/handover/scanner-native-verification.md`.
+- Linter mutation and fuzz gaps (main checkout):
+  the six items listed under `Linter mutation close`.
+- Dependent-version planning in Rust with a differential proof against the TypeScript planner
+  (linked worktree `.claude/worktrees/cli-git-dependent-version`,
+  branch `feat/cli-git-native-dependent-version`),
+  evidence `doc/handover/cli-git-native-dependent-version.md` on that branch.
 
 Reported and recorded under `Delegate results`:
 the scanner Windows follow-up,
@@ -817,6 +820,24 @@ The open-decision brief existed only as an untracked file.
 The linter mutation delegate stopped once more on 2026-10-06,
 on an API authentication error (HTTP 403) during its second round,
 and was resumed again.
+
+#### Weekly limit
+
+All four running delegates stopped on the account's weekly limit at about 04:19 on 2026-10-06,
+and that Claude Code session ended with them.
+The user continued in a new session at 08:00,
+where the earlier delegates no longer exist,
+so the main session inventoried what each had left and launched fresh delegates with that state in their briefs:
+
+- Candidate layer:
+  merge commit `27af8f580` (main as of `817fb1daa`) existed,
+  with an unreviewed, uncommitted failure-code mapping module and its tests;
+  `main` had moved 12 commits since.
+- Scanner Windows suite:
+  two scratch drivers in `~/temp/agent/scanner-windows-mvm-20261006/`,
+  no virtual machine created.
+- Linter gaps and dependent-version port:
+  nothing written.
 
 #### Linter mutation close
 
