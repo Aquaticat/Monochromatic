@@ -255,8 +255,9 @@ impl SyntaxEngine {
         // ```
         let found = rules
             .loader
+            .helix
             .language_for_filename(path)
-            .or_else(|| return rules.loader.language_for_shebang(text.slice(..)));
+            .or_else(|| return rules.loader.helix.language_for_shebang(text.slice(..)));
         return Ok(found.is_some());
     }
 
