@@ -100,7 +100,7 @@ fn autofix(sequence: u64, trigger: &str, severity: &str, path: &str, fix: &str) 
     return format!(
         "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"{trigger}\",\
          \"policyId\":\"markdown/autofix\",\"severity\":\"{severity}\",\"code\":\"markdown/autofix/markdown-autofix\",\
-         \"message\":\"monochromatic-lint --fix (lfs-image-url) rewrites {path}.\",\"path\":\"{path}\",\"fix\":\"{fix}\"}}\n"
+         \"message\":\"markdown-lint --fix (lfs-image-url) rewrites {path}.\",\"path\":\"{path}\",\"fix\":\"{fix}\"}}\n"
     );
 }
 
@@ -220,12 +220,12 @@ fn unchecked(trigger: &str, path: &str, reason: &str) -> String {
 }
 
 /// Without a linter on PATH a Markdown add stops with exit status 2 and stages nothing,
-/// while an add with no Markdown file needs no linter; escaping the policy lets the
-/// Markdown add through.
+/// while an add with no Markdown file, or with excluded ones only, needs no linter;
+/// escaping the policy lets the Markdown add through.
 #[test]
 fn a_missing_linter_stops_only_markdown_work() {
     let fixture: Fixture = fixture("markdown-missing");
-    let repo: PathBuf = lfs_repository(&fixture, "\"warn\"");
+    let repo: PathBuf = lfs_repository(&fixture, "[\"warn\", { \"exclude\": [\"skip/\"] }]");
     let mut path: OsString = fixture.root.join("bin").into_os_string();
     path.push(":/usr/bin:/bin");
     std::fs::write(repo.join("a.md"), RELATIVE).expect("markdown");
@@ -259,6 +259,10 @@ fn a_missing_linter_stops_only_markdown_work() {
     );
     let text: Observed = run_with(&fixture, &path, &repo, &["add", "--", "b.txt"]);
     assert_eq!((text.code, text.stderr), (Some(0), Vec::new()));
+    std::fs::create_dir(repo.join("skip")).expect("excluded directory");
+    std::fs::write(repo.join("skip/c.md"), RELATIVE).expect("excluded markdown");
+    let excluded: Observed = run_with(&fixture, &path, &repo, &["add", "--", "skip/c.md"]);
+    assert_eq!((excluded.code, excluded.stderr), (Some(0), Vec::new()));
     let escaped: Observed = run_with(
         &fixture,
         &path,
@@ -266,7 +270,10 @@ fn a_missing_linter_stops_only_markdown_work() {
         &["add", "--no-enforce-markdown/autofix", "--", "a.md"],
     );
     assert_eq!((escaped.code, escaped.stderr), (Some(0), Vec::new()));
-    assert_eq!(porcelain(&fixture, repo.as_path()), "A  a.md\nA  b.txt\n");
+    assert_eq!(
+        porcelain(&fixture, repo.as_path()),
+        "A  a.md\nA  b.txt\nA  skip/c.md\n"
+    );
     remove(&fixture);
 }
 

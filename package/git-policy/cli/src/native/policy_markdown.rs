@@ -6,9 +6,11 @@
 //!      decides the behaviour: deleted files, symbolic links and submodules are skipped,
 //!      and so are excluded paths before any linter starts and contents that are not UTF-8;
 //!      candidates are linted one at a time, in candidate order; the codes and words of
-//!      both findings are kept. Two things differ by design: the extension test is the
+//!      both findings are kept. One thing differs by design: the extension test is the
 //!      linter's own (`.md` and `.mdx`, exact case), so no file is sent that the linter
-//!      refuses, and the autofix finding names the program that now runs.
+//!      refuses. The autofix finding keeps the installed wrapper's words, which name its
+//!      former linter, so both wrappers report the same file the same way while both are
+//!      in use.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -308,7 +310,7 @@ fn candidate_findings(
         findings.push(PolicyFinding {
             code: MARKDOWN_AUTOFIX_CODE,
             message: format!(
-                "monochromatic-lint --fix ({}) rewrites {}.",
+                "markdown-lint --fix ({}) rewrites {}.",
                 rule_list(options),
                 path.text()
             ),

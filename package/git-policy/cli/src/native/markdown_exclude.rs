@@ -87,9 +87,6 @@ impl ExcludeMatcher {
         let segments: Vec<&[u8]> = path.split(is_slash).collect();
         let mut prefix: Vec<u8> = Vec::new();
         for (index, segment) in segments.iter().enumerate() {
-            if index > 0 {
-                prefix.push(b'/');
-            }
             prefix.extend_from_slice(segment);
             let Some(spelled) = path_from_git_bytes(prefix.as_slice()) else {
                 return false;
@@ -103,6 +100,8 @@ impl ExcludeMatcher {
             if is_file || excluded {
                 return excluded;
             }
+            // The separator before the next segment.
+            prefix.push(b'/');
         }
         return false;
     }

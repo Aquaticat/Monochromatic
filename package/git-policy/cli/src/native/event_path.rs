@@ -157,8 +157,7 @@ fn sextet(value: u32) -> char {
 /// function base64(bytes: Uint8Array): string { return Buffer.from(bytes).toString('base64'); }
 /// ```
 pub fn base64_standard(bytes: &[u8]) -> String {
-    // `.div_ceil(3) * 4` is the encoded length, known before encoding.
-    let mut encoded: String = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    let mut encoded: String = String::new();
     // `.chunks(3)` lends the input three bytes at a time; the last group may be shorter.
     for group in bytes.chunks(3) {
         // `u32::from` widens each byte; `<<` shifts it into its place in the 24-bit group.
