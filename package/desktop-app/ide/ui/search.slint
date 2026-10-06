@@ -36,6 +36,15 @@ export component ProjectSearch inherits Rectangle {
     out property <length> clear-width: input.clear-width;
     out property <length> clear-height: input.clear-height;
     private property <length> row-height: 64px;
+    // The query box's description for assistive tools, worded like the find box's match count: empty without a
+    // query, "Searching" while results are pending, the error when there is one, "No results", "Result 2 of 5"
+    // for the selected row, and "5 results, none selected" without one.
+    private property <string> result-detail: root.query == "" ? ""
+        : root.busy ? "Searching"
+        : root.error-message != "" ? root.error-message
+        : root.entries.length == 0 ? "No results"
+        : root.selected-row >= 0 && root.selected-row < root.entries.length ? "Result \{root.selected-row + 1} of \{root.entries.length}"
+        : root.entries.length == 1 ? "1 result, none selected" : "\{root.entries.length} results, none selected";
 
     function move-selection(delta: int) {
         if root.entries.length == 0 { return; }
@@ -82,6 +91,8 @@ export component ProjectSearch inherits Rectangle {
                 text <=> root.query;
                 placeholder-text: "Files and contents · % for contents only";
                 clear-label: "Clear search query";
+                selected-ink: root.selected-ink;
+                accessible-description: root.result-detail;
                 accessible-label: "Search query";
                 edited(text) => { root.edited(text); }
             }
@@ -133,6 +144,8 @@ export component ProjectSearch inherits Rectangle {
                         color: parent.selected ? root.selected-ink : Palette.foreground;
                         font-weight: parent.selected ? 600 : 400;
                         overflow: elide;
+                        // The row carries its path and detail as name and description; its texts are not read again.
+                        accessible-role: none;
                     }
                     Text {
                         x: 8px;
@@ -142,6 +155,7 @@ export component ProjectSearch inherits Rectangle {
                         text: entry.detail + (entry.preview == "" ? "" : " · " + entry.preview);
                         color: parent.selected ? root.selected-ink : Palette.foreground;
                         overflow: elide;
+                        accessible-role: none;
                     }
                     TouchArea {
                         width: parent.width;

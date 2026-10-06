@@ -166,8 +166,9 @@ export component AppWindow inherits Window {
     // Native code picks the selected-text ink from this fill, because the palette's ink follows the scheme instead.
     out property <brush> selection-fill: Palette.selection-background;
     out property <bool> dark-scheme: Palette.color-scheme == ColorScheme.dark;
-    // Ink for selected rows of the tree, the search results, and the location list. Native code sets it to
-    // the ink it chooses from the selection fill, the same one selected source text is drawn in.
+    // Ink for selected rows of the tree, the search results, and the location list, and for selected text in the
+    // find and search boxes. Native code sets it to the ink it chooses from the selection fill, the same one
+    // selected source text is drawn in.
     in property <brush> selected-row-ink: Palette.selection-foreground;
     // Tint of a hovered or focused selected tree row. Native code sets it to the opposite of that ink,
     // so the tint never moves the fill toward the text.
@@ -529,6 +530,7 @@ export component AppWindow inherits Window {
                 status-detail: root.find-status-detail;
                 no-match: root.find-no-match;
                 error-message: root.find-error;
+                selected-ink: root.selected-row-ink;
                 edited(text) => { root.find-edited(text); }
                 navigate(delta) => { root.find-navigate(delta); }
                 shortcut(key, control, shift, alt) => { root.tree-shortcut(key, control, shift, alt); }

@@ -80,12 +80,13 @@ export component SidebarDividerGrip inherits Rectangle {
         opacity: grip.pressed || root.keyboard-focus ? 1 : (grip.has-hover ? 0.6 : 0.2);
     }
     // Keyboard focus also shows a handle in the middle of the line, so focus differs from a drag by color
-    // and by shape, and from the resting line by weight, color, and shape.
+    // and by shape, and from the resting line by weight, color, and shape. The user chose a 96px handle on
+    // 2026-10-06; it stays inside the divider's height and centered on it.
     Rectangle {
         visible: root.keyboard-focus;
         y: (parent.height - self.height) / 2;
         width: parent.width;
-        height: 48px;
+        height: min(96px, parent.height);
         border-radius: self.width / 2;
         background: Palette.accent-background;
     }
