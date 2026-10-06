@@ -53,11 +53,15 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // the warning that the question exists.
 
 /**
- Declines worth buying a second judging for.
+ Declines worth buying a second judging for: a DELIBERATE SUBSET of
+ `TranslateAbsenceReason`.
 
  `no-candidate` is deliberately absent: it means nothing usable was ever
  proposed, so a second judging would be handed the same empty slate and cost a
- full panel to reach the same answer.
+ full panel to reach the same answer. `no-voice-heard` and `unfloored` are
+ absent because no panel was asked, and `no-candidate-backed` because it is
+ the reason recorded once the retry is spent. A reason the stage gains is
+ therefore not retried until it is added here.
  */
 const RETRIED_DECLINES: readonly TranslateAbsenceReason[] = [
   'declined-indecision',

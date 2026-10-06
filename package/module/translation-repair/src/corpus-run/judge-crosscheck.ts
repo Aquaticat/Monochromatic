@@ -1,3 +1,4 @@
+import type { AdjudicationStatus, } from '../adjudicate-model.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { AttributionEntry, } from './attribution-report.ts';
 import { seatJudges, } from './judge-independence.ts';
@@ -147,33 +148,24 @@ export type CrosscheckCensus = {
 };
 
 /**
- Adjudication statuses that carry a verdict a judge can be asked to confirm.
+ The arm each adjudication status sits in.
 
- A table rather than a chain, so adding a status is a data edit and an
- UNKNOWN status is visibly absent rather than silently swept into a default.
+ A table rather than a chain, so adding a status is a data edit. BUILT FROM A
+ RECORD KEYED BY `AdjudicationStatus`, so a status the panel gains cannot be
+ left without an arm: the compiler refuses the record until it has one. A
+ status a stored artifact carries that is not one of these is not in the map,
+ which `armOf` answers as `undecided`.
  A map rather than a plain object, since the status is the artifact's text:
  a plain object answered a status spelled `constructor` or `__proto__` with
  what every object inherits, and filed the claim under that as an arm
  (ledger B77).
  */
-const ARM_OF_STATUS: ReadonlyMap<string, CrosscheckArm> = new Map([
-  [
-    'accepted',
-    'accepted',
-  ],
-  [
-    'rejected',
-    'control',
-  ],
-  [
-    'source-defect',
-    'control',
-  ],
-  [
-    'needs-human',
-    'undecided',
-  ],
-],);
+const ARM_OF_STATUS: ReadonlyMap<string, CrosscheckArm> = new Map(Object.entries({
+  accepted: 'accepted',
+  rejected: 'control',
+  'source-defect': 'control',
+  'needs-human': 'undecided',
+} satisfies Readonly<Record<AdjudicationStatus, CrosscheckArm>>,),);
 
 /**
  Places one claim in an arm by the verdict its issue carries.

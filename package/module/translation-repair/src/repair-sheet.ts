@@ -1,6 +1,9 @@
 import { fenceForMarkdown, } from './markdown-fence.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
-import { SHIPPED_DISPOSITION, } from './repair-record.ts';
+import {
+  type RepairDisposition,
+  SHIPPED_DISPOSITION,
+} from './repair-record.ts';
 import type {
   GradableRepair,
   GradableRepairRegion,
@@ -37,25 +40,18 @@ import { flattenSpace, } from './sheet-line-text.ts';
  disposition is the artifact's text: a plain object answered one spelled
  `constructor` with the inherited function and printed it as the note
  (ledger B77).
+
+ BUILT FROM A RECORD KEYED BY `RepairDisposition`, so a disposition the
+ pipeline gains cannot reach a sheet unexplained: the compiler refuses the
+ record until the new disposition has its note. The map keeps the lookup by
+ the artifact's own text, which the record would answer for `constructor`.
  */
-const DISPOSITION_NOTES: ReadonlyMap<string, string> = new Map([
-  [
-    'shipped',
-    'a targeted repair reached the returned translation',
-  ],
-  [
-    'not-selected',
-    'a repair was written but the unchanged text won its slice, so nothing reached the reader',
-  ],
-  [
-    'withdrawn',
-    'a repair was written but the whole page was blocked as non-translation, so the original was returned',
-  ],
-  [
-    'no-region',
-    'no targeted repair exists: the issue anchored no editable region, or no proposed edit survived the apply gate',
-  ],
-],);
+const DISPOSITION_NOTES: ReadonlyMap<string, string> = new Map(Object.entries({
+  shipped: 'a targeted repair reached the returned translation',
+  'not-selected': 'a repair was written but the unchanged text won its slice, so nothing reached the reader',
+  withdrawn: 'a repair was written but the whole page was blocked as non-translation, so the original was returned',
+  'no-region': 'no targeted repair exists: the issue anchored no editable region, or no proposed edit survived the apply gate',
+} satisfies Readonly<Record<RepairDisposition, string>>,),);
 
 /**
  Renders one replaced region, disclosing when the same edit serves other

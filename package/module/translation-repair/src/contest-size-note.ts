@@ -61,6 +61,11 @@ import {
  either direction: it is a runaway, and it is exactly what this note exists
  to put in front of a judge.
 
+ A DELIBERATE SUBSET of `RatioImplausibility`, which is `target-far-shorter`
+ and `target-far-longer`: this names the first, and `target-far-longer` is
+ the direction left out. A ratio reason the measurement gains is therefore not
+ floored until it is added here.
+
  @example
  ```ts
  FLOORED_REASONS.has('target-far-shorter',);

@@ -63,18 +63,27 @@ export const DEFAULT_PRECISION_BAR = 0.9;
 export const DEFAULT_SAMPLE_SEED = 'milestone-three-precision-round-three';
 
 /**
- One of the three page-size bands the corpus stratifies into.
- */
-export type SizeBand = 'small' | 'medium' | 'large';
-
-/**
  Bands in presentation order, smallest first.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a band cannot be added to the type
+ without being listed here, and the draw and the sheet that walk this list
+ cannot skip it.
  */
-export const SIZE_BANDS: readonly SizeBand[] = [
+export const SIZE_BANDS = [
   'small',
   'medium',
   'large',
-];
+] as const;
+
+/**
+ One of the page-size bands the corpus stratifies into.
+
+ @example
+ ```ts
+ const band: SizeBand = 'medium';
+ ```
+ */
+export type SizeBand = typeof SIZE_BANDS[number];
 
 /**
  A per-band count: candidates available, or slots allocated.

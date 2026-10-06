@@ -26,6 +26,7 @@ import {
   requireArtifactJsonRecord,
   requireArtifactJsonValue,
   requireExactKeys,
+  requireKeyOf,
   requireOneOf,
   requireOpenRecord,
 } from '../dist/final/node/index.mjs';
@@ -277,6 +278,88 @@ await describe({
 
             expect(refusalOfNotAWord,).toBeInstanceOf(ArtifactParseError,);
             expect((refusalOfNotAWord as Error).message,).toContain('outcome.kind',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: requireKeyOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'RETURNS the key it found, so a caller reads a word narrowed by the record that holds the '
+            + 'vocabulary, which the compiler keeps complete over the type the record is keyed by',
+          fn: async () => {
+            expect(requireKeyOf({
+              value: 'unfilled',
+              record: {
+                decided: true,
+                unfilled: true,
+              },
+              path: 'outcome.kind',
+            },),).toBe('unfilled',);
+          },
+        },),
+        it({
+          name:
+            'REFUSES a word outside the record, a name every object inherits, and a value that is not a '
+            + 'word at all, naming the keys in the order the record spells them',
+          fn: async () => {
+            /**
+             The vocabulary the refusals are read against.
+             */
+            const record = {
+              decided: true,
+              unfilled: true,
+            } as const;
+
+            /**
+             What unknownWord raised, read for its class as well as its wording.
+             */
+            const refusalOfUnknownWord = caught(function unknownWord() {
+              requireKeyOf({
+                value: 'napped',
+                record,
+                path: 'outcome.kind',
+              },);
+            },);
+
+            /**
+             What inheritedName raised, read for its class as well as its wording.
+             */
+            const refusalOfInheritedName = caught(function inheritedName() {
+              requireKeyOf({
+                value: 'constructor',
+                record,
+                path: 'outcome.kind',
+              },);
+            },);
+
+            /**
+             What notAWord raised, read for its class as well as its wording.
+             */
+            const refusalOfNotAWord = caught(function notAWord() {
+              requireKeyOf({
+                value: 2,
+                record,
+                path: 'outcome.kind',
+              },);
+            },);
+
+            expect(refusalOfUnknownWord,).toBeInstanceOf(ArtifactParseError,);
+            expect(String(refusalOfUnknownWord,),).toBe(
+              'ArtifactParseError: artifact parse failed at outcome.kind: expected one of decided, unfilled.',
+            );
+            expect(refusalOfInheritedName,).toBeInstanceOf(ArtifactParseError,);
+            expect(String(refusalOfInheritedName,),).toBe(
+              'ArtifactParseError: artifact parse failed at outcome.kind: expected one of decided, unfilled.',
+            );
+            expect(refusalOfNotAWord,).toBeInstanceOf(ArtifactParseError,);
+            expect(String(refusalOfNotAWord,),).toBe(
+              'ArtifactParseError: artifact parse failed at outcome.kind: expected a string.',
+            );
           },
         },),
       ],

@@ -5,6 +5,7 @@ import {
   requireRecord,
   requireString,
 } from './artifact-guard.ts';
+import { requireKeyOf, } from './artifact-exact-guard.ts';
 import type { ClaimAdmissibility, } from './introduced-defect-screen.ts';
 import type {
   ProbeClaimAttribution,
@@ -25,14 +26,18 @@ import type {
 
 /**
  Every admissibility the screen can record.
+
+ KEYED BY `ClaimAdmissibility` rather than listed, so the compiler refuses a
+ value the screen gains that this lacks: every artifact carrying it would
+ otherwise be refused whole. The order is the order a refusal names them in.
  */
-const ADMISSIBILITY_VALUES: readonly ClaimAdmissibility[] = [
-  'corroborated',
-  'removal-corroborated',
-  'contradicted',
-  'unanchored',
-  'pre-existing',
-];
+const ADMISSIBILITY_VALUES: Readonly<Record<ClaimAdmissibility, true>> = {
+  corroborated: true,
+  'removal-corroborated': true,
+  contradicted: true,
+  unanchored: true,
+  'pre-existing': true,
+};
 
 /**
  Reads a claim's admissibility, refusing a value the screen cannot have
@@ -65,25 +70,11 @@ function requireAdmissibility(
     readonly path: string;
   },
 ): ClaimAdmissibility {
-  /**
-   Candidate as a string, which it must be before it can be one of the set.
-   */
-  const text = requireString({
+  return requireKeyOf({
     value,
+    record: ADMISSIBILITY_VALUES,
     path,
   },);
-  /**
-   Matching admissibility, absent when the writer emitted something else.
-   */
-  const found = ADMISSIBILITY_VALUES.find(function matches(candidate,) {
-    return candidate === text;
-  },);
-  if (found === undefined)
-    throw new ArtifactParseError({
-      path,
-      reason: `one of ${ADMISSIBILITY_VALUES.join(', ',)}`,
-    },);
-  return found;
 }
 
 /**

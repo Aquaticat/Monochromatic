@@ -30,18 +30,36 @@ import { foldSoftBreaks, } from './soft-break-fold.ts';
 //region Consolidation polish gate wire
 
 /**
- Choice one naturalness judge may make.
- */
-export type PolishChoice = 'polished' | 'base' | typeof CONTEST_REFUSAL;
-
-/**
  Names accepted in polish ballot.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a name cannot be added to the type
+ without being listed here, and the reply guard and the ballot reader cannot
+ fall behind it.
+ The tuple type is written out beside the value because without it
+ `lint:types` reports TS9039 (type containing private name
+ `CONTEST_REFUSAL`) and the build reports TS9013 (expression type cannot be
+ inferred), both under `--isolatedDeclarations`, since the exported type is
+ derived from this list. The compiler refuses either side without the other.
  */
-const POLISH_NAMES: readonly PolishChoice[] = [
+export const POLISH_NAMES: readonly [
+  'polished',
+  'base',
+  typeof CONTEST_REFUSAL,
+] = [
   'polished',
   'base',
   CONTEST_REFUSAL,
 ];
+
+/**
+ Choice one naturalness judge may make.
+
+ @example
+ ```ts
+ const choice: PolishChoice = 'polished';
+ ```
+ */
+export type PolishChoice = typeof POLISH_NAMES[number];
 
 /**
  Fidelity-first policy when approved base remains available, with the

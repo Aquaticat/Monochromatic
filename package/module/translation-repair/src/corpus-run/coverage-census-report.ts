@@ -16,6 +16,25 @@ import type { MappedStretch, } from './coverage-pieces.ts';
 // counts it, and `coverage-census-invariant.ts` lists it.
 
 /**
+ Every kind, in the order the report names them.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a kind cannot be added to the type
+ without being placed in the order, and the report that walks this list
+ cannot skip it.
+
+ @example
+ ```ts
+ const [first,] = SOURCE_KINDS; // 'library source'
+ ```
+ */
+export const SOURCE_KINDS = [
+  'library source',
+  'entry file',
+  'other package',
+  'unmapped',
+] as const;
+
+/**
  Where a source sits for the census.
 
  @example
@@ -23,22 +42,7 @@ import type { MappedStretch, } from './coverage-pieces.ts';
  const kind: SourceKind = 'library source';
  ```
  */
-export type SourceKind = 'entry file' | 'library source' | 'other package' | 'unmapped';
-
-/**
- Every kind, in the order the report names them.
-
- @example
- ```ts
- const [first,] = SOURCE_KINDS; // 'library source'
- ```
- */
-export const SOURCE_KINDS: readonly SourceKind[] = [
-  'library source',
-  'entry file',
-  'other package',
-  'unmapped',
-];
+export type SourceKind = typeof SOURCE_KINDS[number];
 
 /**
  A cold stretch as the census records it: bundle offsets and the source lines

@@ -14,6 +14,7 @@ import type { ChunkRepairOutcome, } from '../repair-contract.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import {
   TRANSLATE_SLICE_CACHE_VERSION,
+  type TranslateDisposition,
   type TranslateSliceRecord,
 } from '../translate-document-contract.ts';
 import { presentNamesOfKind, } from './directory-listing.ts';
@@ -70,6 +71,40 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
 }
 
 /**
+ Dispositions a stored translate record may carry.
+
+ KEYED BY `TranslateDisposition` rather than listed, so the compiler refuses a
+ disposition the lane gains that this lacks: every record carrying it would
+ otherwise be read as absent and the slice bought again.
+ */
+const TRANSLATE_DISPOSITIONS: Readonly<Record<TranslateDisposition, true>> = {
+  'stage-result': true,
+  'refused-alignment': true,
+  'refused-quote-loss': true,
+  'refused-declared-name': true,
+};
+
+/**
+ Whether a stored value names a disposition a translate record may carry.
+
+ @param value - disposition as the cache file carries it
+
+ @returns Whether it is one of the dispositions `TRANSLATE_DISPOSITIONS` holds
+
+ @example
+ ```ts
+ const known = isTranslateDisposition('stage-result',);
+ ```
+ */
+function isTranslateDisposition(value: unknown,): value is TranslateDisposition {
+  return ((typeof value) === 'string')
+    && Object.hasOwn(
+      TRANSLATE_DISPOSITIONS,
+      value,
+    );
+}
+
+/**
  Whether a parsed cache file is a usable translate record.
 
  Checks the LANE and the SCHEMA before anything else. A repair outcome carries
@@ -101,10 +136,7 @@ function isTranslateSliceRecord(
     && ((typeof value.sliceIndex) === 'number')
     && ((typeof value.outputText) === 'string')
     && ((typeof value.changed) === 'boolean')
-    && ((value.disposition === 'stage-result')
-      || (value.disposition === 'refused-alignment')
-      || (value.disposition === 'refused-quote-loss')
-      || (value.disposition === 'refused-declared-name'))
+    && isTranslateDisposition(value.disposition,)
     && ((value.disposition !== 'refused-declared-name') || Array.isArray(value.droppedDeclaredNames,))
     && ((value.disposition !== 'refused-quote-loss') || isQuotedPassages(value.quotedPassages,))
     && isJsonRecord(value.stageResult,)

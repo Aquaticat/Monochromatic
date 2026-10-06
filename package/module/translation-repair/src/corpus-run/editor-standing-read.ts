@@ -196,6 +196,19 @@ async function artifactPaths(
 type ArtifactOutcome = ArtifactReading | 'off-roster' | 'earlier-schema' | 'refused';
 
 /**
+ The named absences an artifact outcome can be, which are not readings.
+
+ A RECORD OVER EVERY OUTCOME THAT IS NOT A READING, so an absence added to
+ `ArtifactOutcome` fails to compile here until it is listed, and the filter
+ that separates readings from absences cannot take it for a reading.
+ */
+const ARTIFACT_ABSENCES: Readonly<Record<Exclude<ArtifactOutcome, ArtifactReading>, true>> = {
+  'off-roster': true,
+  'earlier-schema': true,
+  refused: true,
+};
+
+/**
  Reads one artifact into the rounds each of its seats produced.
 
  @param path - artifact file to read
@@ -414,12 +427,14 @@ async function reportStandings({ line, }: { readonly line: CommandLineOf<'editor
   },),);
 
   /**
-   Every artifact that parsed under the current roster.
+   Every artifact that parsed under the current roster: the outcomes that are
+   not one of the named absences `ARTIFACT_ABSENCES` holds.
    */
   const readings = outcomes.filter(function parsed(outcome,): outcome is ArtifactReading {
-    return (outcome !== 'refused')
-      && (outcome !== 'off-roster')
-      && (outcome !== 'earlier-schema');
+    return !(((typeof outcome) === 'string') && Object.hasOwn(
+      ARTIFACT_ABSENCES,
+      outcome,
+    ));
   },);
 
   /**

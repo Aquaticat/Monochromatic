@@ -5,6 +5,10 @@ import {
   readSliceCosts,
   type SliceCostRow,
 } from '../slice-cost-read.ts';
+import {
+  SLICE_COST_LANES,
+  type SliceCostLane,
+} from '../slice-cost-log.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
@@ -112,13 +116,28 @@ const TOTAL_WIDTH = 8;
 const LANE_WIDTH = 13;
 
 /**
- Lanes a pass reports, in the order it runs them.
+ Where each lane stands in the order a pass runs them.
+
+ A RECORD OVER EVERY LANE, so a lane the cost log gains cannot be left out of
+ the report by a list that was never told about it: the compiler refuses the
+ record until the new lane has a place in the order.
  */
-const LANES = [
-  'repair',
-  'translate',
-  'consolidation',
-] as const;
+const LANE_RUN_ORDER: Readonly<Record<SliceCostLane, number>> = {
+  repair: 0,
+  translate: 1,
+  consolidation: 2,
+};
+
+/**
+ Lanes a pass reports, in the order it runs them: every lane the cost log
+ names, sorted by `LANE_RUN_ORDER`.
+ */
+const LANES: readonly SliceCostLane[] = [...SLICE_COST_LANES,].toSorted(function byRunOrder(
+  left,
+  right,
+): number {
+  return LANE_RUN_ORDER[left] - LANE_RUN_ORDER[right];
+},);
 
 /**
  What one size bucket amounts to.

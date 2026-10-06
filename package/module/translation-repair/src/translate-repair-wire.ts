@@ -20,6 +20,19 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // the candidate would have destroyed the only report of it.
 
 /**
+ Every answer a model may give when handed its own candidate's findings, for
+ the schema and the guard to share one list.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so an answer cannot be added to the type
+ without being listed here, and the schema and the guard cannot fall behind it.
+ */
+const REPAIR_RESOLUTIONS = [
+  'revised',
+  'unable',
+  'as-intended',
+] as const;
+
+/**
  Answers a model may give when handed its own candidate's findings.
 
  @example
@@ -27,19 +40,7 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
  const resolution: RepairResolution = 'as-intended';
  ```
  */
-export type RepairResolution =
-  | 'revised'
-  | 'unable'
-  | 'as-intended';
-
-/**
- Every answer, for the schema and the guard to share one list.
- */
-const REPAIR_RESOLUTIONS: readonly RepairResolution[] = [
-  'revised',
-  'unable',
-  'as-intended',
-];
+export type RepairResolution = typeof REPAIR_RESOLUTIONS[number];
 
 /**
  One repair reply on the wire.

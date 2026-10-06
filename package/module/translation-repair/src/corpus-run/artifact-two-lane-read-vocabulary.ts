@@ -6,10 +6,12 @@ import {
 } from '../artifact-guard.ts';
 import {
   requireExactKeys,
-  requireOneOf,
+  requireKeyOf,
 } from '../artifact-exact-guard.ts';
 import type {
   ArtifactDecisionComparison,
+  ArtifactDeliveryRow,
+  ArtifactLaneRelation,
   ArtifactSliceDelivery,
   ArtifactSliceOutcome,
 } from './artifact-two-lane-vocabulary.ts';
@@ -60,6 +62,86 @@ const OUTCOME_KEYS: Readonly<Record<ArtifactSliceOutcome['kind'], readonly strin
   unfilled: ['kind',],
   'incumbent-fallback': ['kind',],
   'not-applicable': ['kind',],
+};
+
+/**
+ Whether the archive holds any wording at a slice, as version 2 records it.
+
+ KEYED BY THE FROZEN `ArtifactDeliveryRow` field rather than listed, so the
+ compiler refuses a member the vocabulary file gains that this reader lacks.
+ */
+export const INCUMBENT_KINDS: Readonly<Record<ArtifactDeliveryRow['incumbentKind'], true>> = {
+  present: true,
+  absent: true,
+};
+
+/**
+ How the two documents relate at one slice, as version 2 records it, keyed by
+ the frozen `ArtifactLaneRelation` for the reason `INCUMBENT_KINDS` gives.
+ */
+export const LANE_RELATIONS: Readonly<Record<ArtifactLaneRelation, true>> = {
+  'archive-stands': true,
+  'repair-only': true,
+  'translate-only': true,
+  'both-agree': true,
+  'both-differ': true,
+  'gap-remains': true,
+};
+
+/**
+ Members a delivery may name, keyed by the frozen `ArtifactSliceDelivery`
+ for the reason `INCUMBENT_KINDS` gives.
+ */
+const DELIVERY_KINDS: Readonly<Record<ArtifactSliceDelivery['kind'], true>> = {
+  'replacement-shipped': true,
+  'replacement-withdrawn': true,
+  'incumbent-retained': true,
+  'gap-remains': true,
+};
+
+/**
+ Mechanisms that can take a replacement back, keyed by the frozen
+ `ArtifactSliceDelivery` for the reason `INCUMBENT_KINDS` gives.
+ */
+const WITHDRAWAL_REASONS: Readonly<Record<
+  Extract<ArtifactSliceDelivery, { readonly kind: 'replacement-withdrawn'; }>['reason'],
+  true
+>> = {
+  'assembly-integrity': true,
+  'blocked-non-translation': true,
+};
+
+/**
+ Members a decision comparison may name, keyed by the frozen
+ `ArtifactDecisionComparison` for the reason `INCUMBENT_KINDS` gives.
+ */
+const COMPARISON_KINDS: Readonly<Record<ArtifactDecisionComparison['kind'], true>> = {
+  comparable: true,
+  'not-comparable': true,
+};
+
+/**
+ Verdicts a comparable pair may carry, keyed by the frozen
+ `ArtifactDecisionComparison` for the reason `INCUMBENT_KINDS` gives.
+ */
+const COMPARISON_VERDICTS: Readonly<Record<
+  Extract<ArtifactDecisionComparison, { readonly kind: 'comparable'; }>['verdict'],
+  true
+>> = {
+  same: true,
+  different: true,
+};
+
+/**
+ Lanes an undecided pair may name, keyed by the frozen
+ `ArtifactDecisionComparison` for the reason `INCUMBENT_KINDS` gives.
+ */
+const UNDECIDED_LANE_NAMES: Readonly<Record<
+  Extract<ArtifactDecisionComparison, { readonly kind: 'not-comparable'; }>['undecidedLanes'][number],
+  true
+>> = {
+  repair: true,
+  translate: true,
 };
 
 /**
@@ -116,15 +198,9 @@ export function parseSliceOutcome(
   /**
    Member it names.
    */
-  const kind = requireOneOf({
+  const kind = requireKeyOf({
     value: record.kind,
-    allowed: [
-      'decided',
-      'not-evaluated',
-      'unfilled',
-      'incumbent-fallback',
-      'not-applicable',
-    ],
+    record: OUTCOME_KEYS,
     path: `${path}.kind`,
   },);
 
@@ -202,14 +278,9 @@ export function parseSliceDelivery(
   /**
    Member it names.
    */
-  const kind = requireOneOf({
+  const kind = requireKeyOf({
     value: record.kind,
-    allowed: [
-      'replacement-shipped',
-      'replacement-withdrawn',
-      'incumbent-retained',
-      'gap-remains',
-    ],
+    record: DELIVERY_KINDS,
     path: `${path}.kind`,
   },);
   if (kind === 'replacement-withdrawn') {
@@ -223,12 +294,9 @@ export function parseSliceDelivery(
     },);
     return {
       kind,
-      reason: requireOneOf({
+      reason: requireKeyOf({
         value: record.reason,
-        allowed: [
-          'assembly-integrity',
-          'blocked-non-translation',
-        ],
+        record: WITHDRAWAL_REASONS,
         path: `${path}.reason`,
       },),
     };
@@ -279,12 +347,9 @@ export function parseDecisionComparison(
   /**
    Member it names.
    */
-  const kind = requireOneOf({
+  const kind = requireKeyOf({
     value: record.kind,
-    allowed: [
-      'comparable',
-      'not-comparable',
-    ],
+    record: COMPARISON_KINDS,
     path: `${path}.kind`,
   },);
   if (kind === 'comparable') {
@@ -298,12 +363,9 @@ export function parseDecisionComparison(
     },);
     return {
       kind,
-      verdict: requireOneOf({
+      verdict: requireKeyOf({
         value: record.verdict,
-        allowed: [
-          'same',
-          'different',
-        ],
+        record: COMPARISON_VERDICTS,
         path: `${path}.verdict`,
       },),
     };
@@ -326,12 +388,9 @@ export function parseDecisionComparison(
         lane,
         position,
       ) {
-        return requireOneOf({
+        return requireKeyOf({
           value: lane,
-          allowed: [
-            'repair',
-            'translate',
-          ],
+          record: UNDECIDED_LANE_NAMES,
           path: `${path}.undecidedLanes[${String(position,)}]`,
         },);
       },),

@@ -36,18 +36,36 @@ import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 // that a reader who knows this archive should not see it churn.
 
 /**
- Which rendering a judge would publish, or that it cannot choose.
- */
-export type GateChoice = 'consolidated' | 'standing' | typeof CONTEST_REFUSAL;
-
-/**
  Names a judge may use, which are the two renderings plus the refusal.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a name cannot be added to the type
+ without being listed here, and the reply guard and the ballot reader cannot
+ fall behind it.
+ The tuple type is written out beside the value because without it
+ `lint:types` reports TS9039 (type containing private name
+ `CONTEST_REFUSAL`) and the build reports TS9013 (expression type cannot be
+ inferred), both under `--isolatedDeclarations`, since the exported type is
+ derived from this list. The compiler refuses either side without the other.
  */
-const GATE_NAMES: readonly GateChoice[] = [
+const GATE_NAMES: readonly [
+  'consolidated',
+  'standing',
+  typeof CONTEST_REFUSAL,
+] = [
   'consolidated',
   'standing',
   CONTEST_REFUSAL,
 ];
+
+/**
+ Which rendering a judge would publish, or that it cannot choose.
+
+ @example
+ ```ts
+ const choice: GateChoice = 'standing';
+ ```
+ */
+export type GateChoice = typeof GATE_NAMES[number];
 
 /**
  Whether a value is one of the names a judge may use.

@@ -1,4 +1,5 @@
 import { wordForCount, } from './count-word.ts';
+import { refuseUnhandledMember, } from './unhandled-member.ts';
 
 //region Lane comparison faults
 // Why two lane ledgers cannot be compared, as a union the class words itself.
@@ -137,6 +138,8 @@ export type LaneComparisonFault = {
 
  @returns Sentence written here
 
+ @throws Error when a member of `LaneComparisonFault` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const sentence = comparisonSentence({ fault: { kind: 'different-slicings', }, },);
@@ -183,9 +186,15 @@ export function comparisonSentence({ fault, }: { readonly fault: LaneComparisonF
     return `slice ${
       String(fault.sliceIndex,)
     } carries a different incumbent in each lane, so the two results describe different preparations`;
-  return `the archive's wording at slice ${String(fault.sliceIndex,)} is ${fault.repair} in the repair lane and ${
-    fault.translate
-  } in the translate lane, so the two disagree about whether the archive translates it`;
+  if (fault.kind === 'incumbent-kind-differs') {
+    return `the archive's wording at slice ${String(fault.sliceIndex,)} is ${fault.repair} in the repair lane and ${
+      fault.translate
+    } in the translate lane, so the two disagree about whether the archive translates it`;
+  }
+  return refuseUnhandledMember({
+    what: 'lane comparison fault',
+    member: fault,
+  },);
 }
 
 //endregion Lane comparison faults

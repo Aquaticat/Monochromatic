@@ -34,15 +34,10 @@ import {
 // nothing else in the way. Refusing it costs one re-asked slice.
 
 /**
- One way a settlement can leave the stage, beside what the stage writes for a
- gate on that way out.
+ What the stage writes beside a settlement's terminal on its way out of the
+ stage.
  */
-type WrittenTerminal = {
-  /**
-   Way out, as the settlement's terminal names it.
-   */
-  readonly terminal: ConsolidationTerminal;
-
+type WrittenWay = {
   /**
    Rendering the settlement's gate ships, or `not-asked` where the stage
    leaves before the gate and the settlement carries none.
@@ -64,11 +59,15 @@ type WrittenTerminal = {
 
 /**
  Ways a settlement can leave the stage, as the terminal names them, each with
- the gate the stage writes beside it.
+ what the stage writes beside it.
 
  SPELLED OUT RATHER THAN INFERRED, because this is a stored value: a union
  gaining a member should make an older cache file readable, not silently
  widen what this accepts to whatever the current source happens to say.
+ KEYED BY `ConsolidationTerminal` all the same, so the compiler refuses a
+ terminal the stage gains until a person has decided here what gate and wrap
+ flags its settlement is written with, which is the decision that widens what
+ this accepts.
 
  THE GATE COLUMN IS READ OFF THE STAGE. `settleConsolidation` leaves with no
  gate on five terminals: no standing text, a slate with nothing valid on it,
@@ -78,56 +77,68 @@ type WrittenTerminal = {
  and where it ships the consolidation, `consolidated` or, once the wrap finds
  the two alike, `wrap-erased-difference`.
  */
-const SETTLEMENT_TERMINALS: readonly WrittenTerminal[] = [
-  {
-    terminal: 'incumbent-only',
+const SETTLEMENT_WAYS: Readonly<Record<ConsolidationTerminal, WrittenWay>> = {
+  'incumbent-only': {
     gate: 'not-asked',
     demoted: false,
     mayRewrap: false,
   },
-  {
-    terminal: 'no-standing-text',
+  'no-standing-text': {
     gate: 'not-asked',
     demoted: false,
     mayRewrap: false,
   },
-  {
-    terminal: 'slate-endorsed-standing',
+  'slate-endorsed-standing': {
     gate: 'not-asked',
     demoted: false,
     mayRewrap: false,
   },
-  {
-    terminal: 'slate-unjudged-standing',
+  'slate-unjudged-standing': {
     gate: 'not-asked',
     demoted: false,
     mayRewrap: false,
   },
-  {
-    terminal: 'slate-declined-standing',
+  'slate-declined-standing': {
     gate: 'not-asked',
     demoted: false,
     mayRewrap: false,
   },
-  {
-    terminal: 'gate-kept-standing',
+  'gate-kept-standing': {
     gate: 'standing',
     demoted: false,
     mayRewrap: false,
   },
-  {
-    terminal: 'wrap-erased-difference',
+  'wrap-erased-difference': {
     gate: 'consolidated',
     demoted: true,
     mayRewrap: true,
   },
-  {
-    terminal: 'consolidated',
+  consolidated: {
     gate: 'consolidated',
     demoted: false,
     mayRewrap: true,
   },
-];
+};
+
+/**
+ Whether a stored value names a way a settlement can leave the stage.
+
+ @param value - terminal as the cache file carries it
+
+ @returns Whether it is one of the terminals `SETTLEMENT_WAYS` holds
+
+ @example
+ ```ts
+ const known = isSettlementTerminal('consolidated',);
+ ```
+ */
+function isSettlementTerminal(value: unknown,): value is ConsolidationTerminal {
+  return ((typeof value) === 'string')
+    && Object.hasOwn(
+      SETTLEMENT_WAYS,
+      value,
+    );
+}
 
 /**
  Whether a value is one judge`s gate ballot as this schema writes it.
@@ -283,7 +294,7 @@ function gateFitsTerminal(
     written,
   }: {
     readonly gate: unknown;
-    readonly written: WrittenTerminal['gate'];
+    readonly written: WrittenWay['gate'];
   },
 ): boolean {
   if (written === 'not-asked')
@@ -319,7 +330,7 @@ function wrapFlagsFitTerminal(
     rewrapped,
     demoted,
   }: {
-    readonly written: WrittenTerminal;
+    readonly written: WrittenWay;
     readonly rewrapped: unknown;
     readonly demoted: unknown;
   },
@@ -373,15 +384,14 @@ function isConsolidationSettlement(value: unknown,): value is ConsolidationSettl
    */
   const { findings, } = value;
 
-  /**
-   That terminal as this schema writes it, with the gate the stage records
-   beside it; absent where the terminal is no way this stage can leave.
-   */
-  const named = SETTLEMENT_TERMINALS.find(function matches(known,): boolean {
-    return known.terminal === terminal;
-  },);
-  if (named === undefined)
+  // A terminal that is no way this stage can leave is no settlement.
+  if (!isSettlementTerminal(terminal,))
     return false;
+
+  /**
+   What the stage writes beside that terminal.
+   */
+  const named = SETTLEMENT_WAYS[terminal];
   return ((typeof value.text) === 'string')
     && isSlateFloor(value.floor,)
     && Array.isArray(verdicts,)

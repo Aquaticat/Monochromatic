@@ -33,24 +33,20 @@ import type { MeterSample, } from './meter-sample-read.ts';
 // form in `doc/research/optionality-enforcement.md`.
 
 /**
- How many readings fell in each state.
+ How many readings fell in each state: `wet` where the meter reported budget
+ left, `dry` where it reported nothing left, and `unreadable` where it could
+ not be reached at all.
+
+ A RECORD OVER EVERY `MeterState`, so a state the meters gain cannot be left
+ uncounted by a count that was never told about it: the compiler refuses the
+ counting until the new state has a count.
+
+ @example
+ ```ts
+ const counts: StateCounts = { wet: 4, dry: 1, unreadable: 0, };
+ ```
  */
-export type StateCounts = {
-  /**
-   Readings where the meter reported budget left.
-   */
-  readonly wet: number;
-
-  /**
-   Readings where the meter reported nothing left.
-   */
-  readonly dry: number;
-
-  /**
-   Readings where the meter could not be reached at all.
-   */
-  readonly unreadable: number;
-};
+export type StateCounts = Readonly<Record<MeterState, number>>;
 
 /**
  One stretch a provider is known to have been out for.

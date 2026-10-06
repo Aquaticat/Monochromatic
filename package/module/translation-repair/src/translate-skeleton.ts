@@ -58,6 +58,12 @@ import type {
  Every one of them is a machine-readable identity rather than prose: a URL, a
  reference label, a footnote marker, or code the author fenced precisely so it
  would not be rewritten.
+
+ A DELIBERATE SUBSET of `AtomKind`. LEFT OUT are `number` and `foreign-run`,
+ the prose atoms: across a translation 三只猫 becomes "three cats" and no digit
+ survives on either side, so wording is judged by the judges rather than
+ protected. An atom kind gained later is therefore not carried through a
+ translation until it is added here.
  */
 const TRANSLATABLE_ATOM_KINDS: ReadonlySet<AtomKind> = new Set<AtomKind>([
   'link-url',

@@ -79,6 +79,7 @@ export {
 } from './quote-line.ts';
 export { rendersAsNothing, } from './renders-as-nothing.ts';
 export { nextSchemeStart, } from './scheme-start-scan.ts';
+export { refuseUnhandledMember, } from './unhandled-member.ts';
 export {
   carriesWord,
   tokenStarts,

@@ -1,5 +1,6 @@
 import type { MissingWording, } from './published-page-check.ts';
 import { wordForCount, } from '../count-word.ts';
+import { refuseUnhandledMember, } from '../unhandled-member.ts';
 
 //region Published page disagreement
 // The refusal a page earns when it does not carry what its artifact says would
@@ -61,6 +62,8 @@ export type PageDisagreement = {
 
  @returns Sentence naming it without quoting any text
 
+ @throws Error when a member of `PageDisagreement` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const said = disagreementSentence({ disagreement, },);
@@ -91,23 +94,29 @@ function disagreementSentence(
       }`;
   }
 
-  /**
-   Note that a filled anchor makes the expectation a floor, said only where it
-   applies so an ordinary refusal does not carry an irrelevant caveat.
-   */
-  const caveat = disagreement.exact
-    ? ''
-    : ', which a filled anchor makes a floor rather than an equality';
+  if (disagreement.kind === 'weight-off') {
+    /**
+     Note that a filled anchor makes the expectation a floor, said only where it
+     applies so an ordinary refusal does not carry an irrelevant caveat.
+     */
+    const caveat = disagreement.exact
+      ? ''
+      : ', which a filled anchor makes a floor rather than an equality';
 
-  return `page is ${String(disagreement.actual - disagreement.expected,)} ${
-    wordForCount({
-      count: disagreement.actual - disagreement.expected,
-      one: 'character',
-      many: 'characters',
-    },)
-  } off the `
-    + `${String(disagreement.expected,)} the archive plus every slice change comes to${caveat}`
-    + '. Text no slice decided on was lost or added';
+    return `page is ${String(disagreement.actual - disagreement.expected,)} ${
+      wordForCount({
+        count: disagreement.actual - disagreement.expected,
+        one: 'character',
+        many: 'characters',
+      },)
+    } off the `
+      + `${String(disagreement.expected,)} the archive plus every slice change comes to${caveat}`
+      + '. Text no slice decided on was lost or added';
+  }
+  return refuseUnhandledMember({
+    what: 'published page disagreement',
+    member: disagreement,
+  },);
 }
 
 /**

@@ -14,6 +14,42 @@ import { parsePolishGate, } from './artifact-two-lane-read-polish-gate.ts';
 //region Artifact consolidation polish read
 
 /**
+ Reasons a polish that did not run may record, keyed by the frozen
+ `ArtifactConsolidationPolish` rather than listed, so the compiler refuses a
+ reason the polish record gains that this reader lacks. The order is the order
+ a refusal names them in.
+ */
+const NOT_RUN_REASONS: Readonly<
+  Record<Extract<ArtifactConsolidationPolish, { readonly kind: 'not-run'; }>['reason'], true>
+> = {
+  'front-matter': true,
+  'not-configured': true,
+  'unsafe-baseline': true,
+};
+
+/**
+ Whether a recorded value names a reason a polish may not have run.
+
+ @param value - reason as the artifact carries it
+
+ @returns Whether it is one of the reasons `NOT_RUN_REASONS` holds
+
+ @example
+ ```ts
+ const known = isNotRunReason('front-matter',);
+ ```
+ */
+function isNotRunReason(
+  value: unknown,
+): value is Extract<ArtifactConsolidationPolish, { readonly kind: 'not-run'; }>['reason'] {
+  return ((typeof value) === 'string')
+    && Object.hasOwn(
+      NOT_RUN_REASONS,
+      value,
+    );
+}
+
+/**
  Reads generation-six post-consolidation polish record.
 
  @param value - unknown polish field
@@ -69,17 +105,22 @@ export function parseConsolidationPolish(
       ],
       path,
     },);
-    if ((record.reason !== 'front-matter')
-      && (record.reason !== 'not-configured')
-      && (record.reason !== 'unsafe-baseline')) {
+    /**
+     Reason the record names, before it is known to be one a polish may carry.
+     */
+    const { reason, } = record;
+    if (!isNotRunReason(reason,)) {
       throw new ArtifactParseError({
         path: `${path}.reason`,
-        reason: 'one of front-matter, not-configured, unsafe-baseline',
+        reason: `one of ${
+          Object.keys(NOT_RUN_REASONS,)
+            .join(', ',)
+        }`,
       },);
     }
     return {
       kind: 'not-run',
-      reason: record.reason,
+      reason,
     };
   }
   if (record.kind !== 'settled') {

@@ -5,10 +5,12 @@ import {
 } from '../artifact-guard.ts';
 import {
   requireExactKeys,
-  requireOneOf,
+  requireKeyOf,
 } from '../artifact-exact-guard.ts';
 import type { ArtifactEvidenceRow, } from './artifact-two-lane-read-contract.ts';
 import {
+  INCUMBENT_KINDS,
+  LANE_RELATIONS,
   parseDecisionComparison,
   parseSliceDelivery,
   parseSliceOutcome,
@@ -89,12 +91,9 @@ export function parseDeliveryRow(
       value: record.sourceText,
       path: `${path}.sourceText`,
     },),
-    incumbentKind: requireOneOf({
+    incumbentKind: requireKeyOf({
       value: record.incumbentKind,
-      allowed: [
-        'present',
-        'absent',
-      ],
+      record: INCUMBENT_KINDS,
       path: `${path}.incumbentKind`,
     },),
     incumbentText: requireString({
@@ -192,12 +191,9 @@ export function parseComparisonRow(
       value: record[keys.sliceIndex],
       path: `${path}.${keys.sliceIndex}`,
     },),
-    incumbentKind: requireOneOf({
+    incumbentKind: requireKeyOf({
       value: record.incumbentKind,
-      allowed: [
-        'present',
-        'absent',
-      ],
+      record: INCUMBENT_KINDS,
       path: `${path}.incumbentKind`,
     },),
     incumbentText: requireString({
@@ -212,16 +208,9 @@ export function parseComparisonRow(
       value: record.translateText,
       path: `${path}.translateText`,
     },),
-    laneRelation: requireOneOf({
+    laneRelation: requireKeyOf({
       value: record[relationKey],
-      allowed: [
-        'archive-stands',
-        'repair-only',
-        'translate-only',
-        'both-agree',
-        'both-differ',
-        'gap-remains',
-      ],
+      record: LANE_RELATIONS,
       path: `${path}.${relationKey}`,
     },),
     repairOutcome: parseSliceOutcome({
@@ -298,12 +287,9 @@ export function parseEvidenceRow(
       value: record[keys.sliceIndex],
       path: `${path}.${keys.sliceIndex}`,
     },),
-    incumbentKind: requireOneOf({
+    incumbentKind: requireKeyOf({
       value: record.incumbentKind,
-      allowed: [
-        'present',
-        'absent',
-      ],
+      record: INCUMBENT_KINDS,
       path: `${path}.incumbentKind`,
     },),
     incumbentText: requireString({

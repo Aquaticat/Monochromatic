@@ -1,4 +1,5 @@
 import { wordForCount, } from './count-word.ts';
+import { refuseUnhandledMember, } from './unhandled-member.ts';
 
 //region Slice delivery faults
 // What a lane's slice reports say that cannot both be true, as a union the
@@ -223,6 +224,8 @@ export type SliceDeliveryFault = {
 
  @returns Sentence written here
 
+ @throws Error when a member of `SliceDeliveryFault` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const sentence = deliverySentence({ fault: { kind: 'wording-count', wordings: 2, slices: 3, }, },);
@@ -312,9 +315,15 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
       String(fault.sliceIndex,)
     } carries archive wording its own lane record disagrees with, so the two were built from different `
       + 'preparations';
-  return `slice ${String(fault.sliceIndex,)}'s lane record says archive wording is ${
-    fault.recorded
-  } there, and its prepared chunk says the opposite`;
+  if (fault.kind === 'incumbent-kind-differs') {
+    return `slice ${String(fault.sliceIndex,)}'s lane record says archive wording is ${
+      fault.recorded
+    } there, and its prepared chunk says the opposite`;
+  }
+  return refuseUnhandledMember({
+    what: 'slice delivery fault',
+    member: fault,
+  },);
 }
 
 /**

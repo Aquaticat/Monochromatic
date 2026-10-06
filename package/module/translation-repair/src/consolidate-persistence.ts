@@ -14,7 +14,15 @@ import type { TranslateDecision, } from './translate-stage-result.ts';
 // baseline had prior approval.
 
 /**
- Judge decisions second panel might change.
+ Judge decisions second panel might change: a DELIBERATE SUBSET of
+ `TranslateDecision`.
+
+ A slate settles as `slate-declined-standing`, the one terminal this list is
+ read for, on `declined-indecision`, `declined-rejection` or
+ `no-candidate-backed`. LEFT OUT is `no-candidate-backed`, the reason
+ recorded once the retry is spent, so the slate has already had its second
+ panel and a third would not change what it settled. The other decisions are
+ not listed because no slate settles as `slate-declined-standing` on them.
  */
 const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
   'declined-indecision',
@@ -22,7 +30,14 @@ const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
 ];
 
 /**
- Terminals settled enough to keep without reading judged round.
+ Terminals settled enough to keep without reading judged round: a DELIBERATE
+ SUBSET of `ConsolidationTerminal`.
+
+ LEFT OUT are `gate-kept-standing`, `wrap-erased-difference` and
+ `consolidated`, which always carry a gate and are decided on its quorum
+ before this list is read, and `slate-declined-standing`, which is decided by
+ what its judges settled on. A terminal the stage gains is therefore not kept
+ across runs until it is added here.
  */
 const SETTLED_WITHOUT_A_GATE: readonly ConsolidationTerminal[] = [
   'incumbent-only',

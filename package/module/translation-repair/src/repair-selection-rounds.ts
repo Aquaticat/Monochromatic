@@ -1,8 +1,9 @@
 import type { CandidateProducer, } from './candidate-select-model.ts';
 import { wordForCount, } from './count-word.ts';
-import type {
-  RepairJudgedRound,
-  RepairRoundStage,
+import {
+  REPAIR_ROUND_STAGES,
+  type RepairJudgedRound,
+  type RepairRoundStage,
 } from './repair-round-record.ts';
 import type { SelectionRound, } from './self-preference.ts';
 
@@ -35,17 +36,47 @@ import type { SelectionRound, } from './self-preference.ts';
 // file exists to make impossible.
 
 /**
- Stages whose rounds an editor produced.
+ Which seat produces the rounds of each stage.
+
+ A RECORD OVER EVERY STAGE, so a stage the repair lane gains cannot be left
+ out of both `EDITOR_ROUND_STAGES` and `REFINER_ROUND_STAGES`: the compiler
+ refuses it here until a seat is named.
  */
-export const EDITOR_ROUND_STAGES: readonly RepairRoundStage[] = [
-  'envelope',
-  'chunk-patch',
-];
+const ROUND_STAGE_SEATS: Readonly<Record<RepairRoundStage, 'editor' | 'refiner'>> = {
+  envelope: 'editor',
+  'chunk-patch': 'editor',
+  refine: 'refiner',
+};
 
 /**
- Stages whose rounds a refiner produced.
+ Stages whose rounds an editor produced: every stage `ROUND_STAGE_SEATS`
+ gives to an editor, which today are `envelope` and `chunk-patch`. Together
+ with {@link REFINER_ROUND_STAGES} it names every stage, once.
+
+ @example
+ ```ts
+ const editorStages = EDITOR_ROUND_STAGES; // ['envelope', 'chunk-patch']
+ ```
  */
-export const REFINER_ROUND_STAGES: readonly RepairRoundStage[] = ['refine',];
+export const EDITOR_ROUND_STAGES: readonly RepairRoundStage[] = REPAIR_ROUND_STAGES
+  .filter(function isEditors(stage,): boolean {
+    return ROUND_STAGE_SEATS[stage] === 'editor';
+  },);
+
+/**
+ Stages whose rounds a refiner produced: every stage `ROUND_STAGE_SEATS` gives
+ to a refiner, which today is `refine`. Together with
+ {@link EDITOR_ROUND_STAGES} it names every stage, once.
+
+ @example
+ ```ts
+ const refinerStages = REFINER_ROUND_STAGES; // ['refine']
+ ```
+ */
+export const REFINER_ROUND_STAGES: readonly RepairRoundStage[] = REPAIR_ROUND_STAGES
+  .filter(function isRefiners(stage,): boolean {
+    return ROUND_STAGE_SEATS[stage] === 'refiner';
+  },);
 
 /**
  Raised when a recorded slate's positions are not the positions judges were

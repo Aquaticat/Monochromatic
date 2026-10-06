@@ -6,16 +6,21 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
-import { requireOneOf, } from '../artifact-exact-guard.ts';
+import {
+  requireKeyOf,
+  requireOneOf,
+} from '../artifact-exact-guard.ts';
 import type {
   CandidateWeight,
   SelectionBallot,
+  SelectionDisposition,
 } from '../candidate-select-model.ts';
-import type {
-  RepairJudgedRound,
-  RepairRoundStage,
-  RepairSlateEntry,
+import {
+  REPAIR_ROUND_STAGES,
+  type RepairJudgedRound,
+  type RepairSlateEntry,
 } from '../repair-round-record.ts';
+import { refuseUnhandledMember, } from '../unhandled-member.ts';
 import { requireProducer, } from './artifact-producer-read.ts';
 import {
   requireBallot,
@@ -48,30 +53,25 @@ import {
 // understate how much evidence a reader could hope to find.
 
 /**
- Stages a recorded round can name.
+ Outcomes a recorded round can name, keyed by the kind of
+ `RepairJudgedRound` rather than listed, so the compiler refuses an outcome
+ the lane gains that this reader lacks. The order is the order a refusal names
+ them in.
  */
-const ROUND_STAGES: readonly RepairRoundStage[] = [
-  'envelope',
-  'chunk-patch',
-  'refine',
-];
+const ROUND_KINDS: Readonly<Record<RepairJudgedRound['kind'], true>> = {
+  selected: true,
+  declined: true,
+  adopted: true,
+};
 
 /**
- Outcomes a recorded round can name.
+ Reasons a round can decide nothing, keyed by `SelectionDisposition` for the
+ reason `ROUND_KINDS` gives.
  */
-const ROUND_KINDS = [
-  'selected',
-  'declined',
-  'adopted',
-] as const;
-
-/**
- Reasons a round can decide nothing.
- */
-const ROUND_DISPOSITIONS = [
-  'indecision',
-  'rejection',
-] as const;
+const ROUND_DISPOSITIONS: Readonly<Record<SelectionDisposition, true>> = {
+  indecision: true,
+  rejection: true,
+};
 
 /**
  Reads one slate position.
@@ -137,6 +137,8 @@ function requireSlateEntry(
 
  @throws {@link OffRosterModelError} when it names a departed model
 
+ @throws Error when a member of `RepairJudgedRound` kinds has no branch here, which the compiler rules out, after the kind has been read
+
  @example
  ```ts
  const round = requireJudgedRound({ value, path, },);
@@ -165,17 +167,17 @@ function requireJudgedRound(
   const stage = requireOneOf({
     value: record.stage,
     path: `${path}.stage`,
-    allowed: ROUND_STAGES,
+    allowed: REPAIR_ROUND_STAGES,
   },);
 
   /**
    Which of the three outcomes this round recorded, read before the vote
    fields because an adopted round has none.
    */
-  const kind = requireOneOf({
+  const kind = requireKeyOf({
     value: record.kind,
     path: `${path}.kind`,
-    allowed: ROUND_KINDS,
+    record: ROUND_KINDS,
   },);
 
   /**
@@ -297,25 +299,31 @@ function requireJudgedRound(
         value: record.reason,
         path: `${path}.reason`,
       },),
-      disposition: requireOneOf({
+      disposition: requireKeyOf({
         value: record.disposition,
         path: `${path}.disposition`,
-        allowed: ROUND_DISPOSITIONS,
+        record: ROUND_DISPOSITIONS,
       },),
     };
 
-  return {
-    kind: 'selected',
-    ...common,
-    selectedIndex: requireCount({
-      value: record.selectedIndex,
-      path: `${path}.selectedIndex`,
-    },),
-    voteWeight: requireFinite({
-      value: record.voteWeight,
-      path: `${path}.voteWeight`,
-    },),
-  };
+  if (kind === 'selected') {
+    return {
+      kind: 'selected',
+      ...common,
+      selectedIndex: requireCount({
+        value: record.selectedIndex,
+        path: `${path}.selectedIndex`,
+      },),
+      voteWeight: requireFinite({
+        value: record.voteWeight,
+        path: `${path}.voteWeight`,
+      },),
+    };
+  }
+  return refuseUnhandledMember({
+    what: 'recorded round outcome',
+    member: kind,
+  },);
 }
 
 /**

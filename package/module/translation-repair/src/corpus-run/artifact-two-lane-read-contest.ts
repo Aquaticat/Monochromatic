@@ -1,6 +1,6 @@
 import {
   requireExactKeys,
-  requireOneOf,
+  requireKeyOf,
 } from '../artifact-exact-guard.ts';
 import {
   ArtifactParseError,
@@ -39,6 +39,17 @@ import {
 // and refuses a stored verdict that says something else. This is the treatment
 // the recorded lane comparison already gets, for the same reason: a derived
 // field nobody re-derives is a field that can quietly become a lie.
+
+/**
+ Kinds a recorded selection may carry, keyed by the frozen
+ `ArtifactLaneSelection` rather than listed, so the compiler refuses a kind
+ the contest record gains that this reader lacks. The order is the order a
+ refusal names them in.
+ */
+const SELECTION_KINDS: Readonly<Record<ArtifactLaneSelection['kind'], true>> = {
+  'pending-human-decision': true,
+  contested: true,
+};
 
 /**
  Reads one contested slice and re-derives its verdict from its own ballots.
@@ -301,12 +312,9 @@ export function parseLaneSelection(
   /**
    Kind it claims, which decides what else it may carry.
    */
-  const kind = requireOneOf({
+  const kind = requireKeyOf({
     value: selection.kind,
-    allowed: [
-      'pending-human-decision',
-      'contested',
-    ],
+    record: SELECTION_KINDS,
     path: `${path}.kind`,
   },);
   if (kind === 'pending-human-decision') {

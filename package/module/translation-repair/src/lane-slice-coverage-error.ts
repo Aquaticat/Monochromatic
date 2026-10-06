@@ -2,6 +2,7 @@ import {
   howOften,
   wordForCount,
 } from './count-word.ts';
+import { refuseUnhandledMember, } from './unhandled-member.ts';
 
 //region Lane slice coverage error
 // The failure both halves of the wording builder raise, in its own file so they
@@ -210,6 +211,8 @@ export type LaneSliceCoverageFault = {
 
  @returns Sentence written here
 
+ @throws Error when a member of `LaneSliceCoverageFault` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const sentence = laneCoverageSentence({ fault: { kind: 'left-undecided', sliceIndex: 4, }, },);
@@ -276,9 +279,15 @@ export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCove
     }`;
   if (fault.kind === 'decided-unproduced')
     return `lane decided slice ${String(fault.sliceIndex,)}, which this preparation never produced`;
-  return `lane reports reaching slice ${
-    String(fault.sliceIndex,)
-  } after leaving an earlier one unexamined, which no early stop produces`;
+  if (fault.kind === 'reached-after-stop') {
+    return `lane reports reaching slice ${
+      String(fault.sliceIndex,)
+    } after leaving an earlier one unexamined, which no early stop produces`;
+  }
+  return refuseUnhandledMember({
+    what: 'lane slice coverage fault',
+    member: fault,
+  },);
 }
 
 /**

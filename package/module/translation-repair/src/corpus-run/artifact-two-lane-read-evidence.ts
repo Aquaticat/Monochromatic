@@ -3,7 +3,7 @@ import {
   requireCount,
 } from '../artifact-guard.ts';
 import {
-  requireOneOf,
+  requireKeyOf,
   requireOpenRecord,
 } from '../artifact-exact-guard.ts';
 import type {
@@ -29,6 +29,28 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 // already written. What each parser reads is exactly what a relation later
 // checks: the ledger against the evidence, the counts against their own lists,
 // and the blocked status against what the deliveries say.
+
+/**
+ How a repair run may end, as version 2 froze it.
+
+ KEYED BY THE FROZEN `ArtifactRepairEvidence` field rather than listed, so the
+ compiler refuses a status the contract gains that this reader lacks.
+ */
+const REPAIR_STATUSES: Readonly<Record<ArtifactRepairEvidence['status'], true>> = {
+  repaired: true,
+  unchanged: true,
+  'blocked-non-translation': true,
+};
+
+/**
+ Whether a translate run produced a whole translation, as version 2 froze it,
+ keyed by the frozen `ArtifactTranslateEvidence` field for the reason
+ `REPAIR_STATUSES` gives.
+ */
+const TRANSLATE_STATUSES: Readonly<Record<ArtifactTranslateEvidence['status'], true>> = {
+  complete: true,
+  unfilled: true,
+};
 
 /**
  Reads a list of slice indices.
@@ -160,13 +182,9 @@ export function parseRepairEvidence(
     path,
   },);
   return {
-    status: requireOneOf({
+    status: requireKeyOf({
       value: record.status,
-      allowed: [
-        'repaired',
-        'unchanged',
-        'blocked-non-translation',
-      ],
+      record: REPAIR_STATUSES,
       path: `${path}.status`,
     },),
     sliceCount: requireCount({
@@ -229,12 +247,9 @@ export function parseTranslateEvidence(
     path,
   },);
   return {
-    status: requireOneOf({
+    status: requireKeyOf({
       value: record.status,
-      allowed: [
-        'complete',
-        'unfilled',
-      ],
+      record: TRANSLATE_STATUSES,
       path: `${path}.status`,
     },),
     sliceCount: requireCount({

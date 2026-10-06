@@ -26,6 +26,38 @@ import type {
 // 2026-09-28, audit area six).
 
 /**
+ Statuses a recorded seat may carry, keyed by the frozen
+ `ArtifactNaturalnessReviewSeat` rather than listed, so the compiler refuses
+ a status the seat record gains that this reader lacks. The order is the order
+ a refusal names them in.
+ */
+const SEAT_STATUSES: Readonly<Record<ArtifactNaturalnessReviewSeat['status'], true>> = {
+  acceptable: true,
+  unacceptable: true,
+  unusable: true,
+};
+
+/**
+ Whether a recorded value names a status a seat may carry.
+
+ @param value - status as the artifact carries it
+
+ @returns Whether it is one of the statuses `SEAT_STATUSES` holds
+
+ @example
+ ```ts
+ const known = isSeatStatus('acceptable',);
+ ```
+ */
+function isSeatStatus(value: unknown,): value is ArtifactNaturalnessReviewSeat['status'] {
+  return ((typeof value) === 'string')
+    && Object.hasOwn(
+      SEAT_STATUSES,
+      value,
+    );
+}
+
+/**
  Reads paragraph-located finding.
 
  @param value - unknown finding
@@ -173,12 +205,17 @@ export function parseNaturalnessReviewSeat(
     ],
     path,
   },);
-  if ((record.status !== 'acceptable')
-    && (record.status !== 'unacceptable')
-    && (record.status !== 'unusable')) {
+  /**
+   Status the seat names, before it is known to be one a seat may carry.
+   */
+  const { status, } = record;
+  if (!isSeatStatus(status,)) {
     throw new ArtifactParseError({
       path: `${path}.status`,
-      reason: 'one of acceptable, unacceptable, unusable',
+      reason: `one of ${
+        Object.keys(SEAT_STATUSES,)
+          .join(', ',)
+      }`,
     },);
   }
   /**
@@ -195,19 +232,19 @@ export function parseNaturalnessReviewSeat(
     value: record.reason,
     path: `${path}.reason`,
   },);
-  if ((record.status === 'acceptable') && (findings.length > 0)) {
+  if ((status === 'acceptable') && (findings.length > 0)) {
     throw new ArtifactParseError({
       path: `${path}.findings`,
       reason: 'empty findings for acceptable seat',
     },);
   }
-  if ((record.status === 'unacceptable') && (findings.length === 0)) {
+  if ((status === 'unacceptable') && (findings.length === 0)) {
     throw new ArtifactParseError({
       path: `${path}.findings`,
       reason: 'at least one finding for unacceptable seat',
     },);
   }
-  if ((record.status === 'unusable') && ((findings.length > 0) || (reason !== ''))) {
+  if ((status === 'unusable') && ((findings.length > 0) || (reason !== ''))) {
     throw new ArtifactParseError({
       path,
       reason: 'unusable seat with empty findings and reason',
@@ -218,7 +255,7 @@ export function parseNaturalnessReviewSeat(
       value: record.modelId,
       path: `${path}.modelId`,
     },),
-    status: record.status,
+    status,
     findings,
     reason,
   };

@@ -143,6 +143,81 @@ export function requireOneOf<const TAllowed extends string,>(
 }
 
 /**
+ Reads a string the artifact carries as one of the keys of a record the
+ schema keys by its vocabulary.
+
+ THE SAME CHECK AS {@link requireOneOf}, with the vocabulary held as a record
+ keyed by the type it describes, so the compiler refuses a member of that type
+ the record lacks, where a list typed by the same union proves membership
+ only. The refusal names the keys in the order the record spells them.
+
+ @param value - value to check
+
+ @param record - every member this version describes here, as the keys
+
+ @param path - dotted path for error message
+
+ @returns Whichever key the value matched
+
+ @throws {@link ArtifactParseError} when the value is not a string, or is one
+ this version does not name
+
+ @example
+ ```ts
+ const kind = requireKeyOf({ value: row.incumbentKind, record: { present: true, absent: true, }, path, },);
+ ```
+ */
+export function requireKeyOf<KeyT extends string,>(
+  {
+    value,
+    record,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly record: Readonly<Record<KeyT, unknown>>;
+    readonly path: string;
+  },
+): KeyT {
+  /**
+   String the artifact carries, before it is known to be one of these.
+   */
+  const held = requireString({
+    value,
+    path,
+  },);
+
+  /**
+   Whether the string is a key the record holds, by own key so an inherited
+   property never answers for a name the artifact carries.
+
+   @param candidate - string read
+
+   @returns Whether the record holds it
+
+   @example
+   ```ts
+   const known = isKey('present',);
+   ```
+   */
+  function isKey(candidate: string,): candidate is KeyT {
+    return Object.hasOwn(
+      record,
+      candidate,
+    );
+  }
+  if (!isKey(held,)) {
+    throw new ArtifactParseError({
+      path,
+      reason: `one of ${
+        Object.keys(record,)
+          .join(', ',)
+      }`,
+    },);
+  }
+  return held;
+}
+
+/**
  Reads a value the schema leaves OPEN but not arbitrary.
 
  `null` is refused at every depth. It is absence spelled as a value, which is

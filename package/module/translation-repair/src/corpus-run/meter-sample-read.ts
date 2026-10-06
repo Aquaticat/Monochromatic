@@ -44,12 +44,16 @@ const NOT_FOUND = -1;
 
 /**
  States a meter can be recorded in, as written on the line.
+
+ KEYED BY `MeterState` rather than listed, so the compiler refuses a state
+ the meters gain that this lacks: a line carrying it would otherwise read as
+ skipped, and the duty cycle would drop every reading taken in that state.
  */
-const METER_STATES = [
-  'wet',
-  'dry',
-  'unreadable',
-] as const;
+const METER_STATES: Readonly<Record<MeterState, true>> = {
+  wet: true,
+  dry: true,
+  unreadable: true,
+};
 
 /**
  One reading of both meters, at the moment it was taken.
@@ -142,7 +146,10 @@ export type MeterLogReading = {
  ```
  */
 function isMeterState(value: string,): value is MeterState {
-  return (METER_STATES as readonly string[]).includes(value,);
+  return Object.hasOwn(
+    METER_STATES,
+    value,
+  );
 }
 
 /**

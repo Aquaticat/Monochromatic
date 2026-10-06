@@ -16,6 +16,7 @@ import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { buildSliceSelections, } from './slice-selection.ts';
 import { alignmentRefusals, } from './translate-alignment-refusals.ts';
 import type {
+  TranslateDisposition,
   TranslateDocumentResult,
   TranslateSliceRecord,
   UnfilledSlice,
@@ -32,6 +33,21 @@ import { heardNobody, } from './translate-unheard.ts';
 // on the same seam that one uses. Everything here is derived from settled
 // records and the preparation: which slices moved, what the whole document
 // refuses, and what a reader is told about each. Nothing here buys anything.
+
+/**
+ Whether each disposition is a guard's refusal of a replacement the judges
+ chose, which `assembleTranslation` counts as refused.
+
+ A RECORD OVER EVERY DISPOSITION, so a disposition the lane gains cannot be
+ counted as taken or refused by whichever side a chain happened to end on: the
+ compiler refuses the record until the new one is classified.
+ */
+const REFUSES_A_REPLACEMENT: Readonly<Record<TranslateDisposition, boolean>> = {
+  'stage-result': false,
+  'refused-alignment': true,
+  'refused-quote-loss': true,
+  'refused-declared-name': true,
+};
 
 /**
  Assembles settled translate records into the document and its report.
@@ -102,9 +118,7 @@ export function assembleTranslation(
    Slices where the guard refused a replacement the judges chose.
    */
   const refused = settled.filter(function wasRefused(record,): boolean {
-    return (record.disposition === 'refused-alignment')
-      || (record.disposition === 'refused-quote-loss')
-      || (record.disposition === 'refused-declared-name');
+    return REFUSES_A_REPLACEMENT[record.disposition];
   },);
 
   /**

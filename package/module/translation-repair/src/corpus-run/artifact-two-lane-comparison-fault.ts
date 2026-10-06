@@ -1,5 +1,6 @@
 import type { ComparisonRowField, } from './artifact-two-lane-row-equality.ts';
 import { wordForCount, } from '../count-word.ts';
+import { refuseUnhandledMember, } from '../unhandled-member.ts';
 
 //region Artifact version 2 comparison refusals
 // Why two version 2 ledgers, or two derivations of one comparison, cannot be
@@ -144,6 +145,8 @@ export type ArtifactComparisonFault =
  @returns Sentence naming the slice or position and what disagreed there,
  composed from numbers, lane names, kinds and field names alone
 
+ @throws Error when a member of the version 2 comparison fault union has no branch here, which the compiler rules out
+
  @example
  ```ts
  const sentence = comparisonFaultSentence({ fault: { kind: 'different-originals', sliceIndex: 3, }, },);
@@ -186,10 +189,16 @@ function comparisonFaultSentence(
     } where the pipeline derives ${
       String(fault.liveRows,)
     }, so the two no longer describe one comparison`;
-  return `version 2 and the pipeline disagree about slice ${String(fault.sliceIndex,)} on ${
-    fault.fields
-      .join(', ',)
-  }; one of them changed, and which artifacts mean what depends on which`;
+  if (fault.kind === 'derivations-differ') {
+    return `version 2 and the pipeline disagree about slice ${String(fault.sliceIndex,)} on ${
+      fault.fields
+        .join(', ',)
+    }; one of them changed, and which artifacts mean what depends on which`;
+  }
+  return refuseUnhandledMember({
+    what: 'version 2 comparison fault',
+    member: fault,
+  },);
 }
 
 /**

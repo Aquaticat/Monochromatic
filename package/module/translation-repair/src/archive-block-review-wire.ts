@@ -18,9 +18,27 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 //region Archive block review wire
 
 /**
- Review disposition for target wording no source block claims.
+ Allowed wire decisions.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a decision cannot be added to the type
+ without being listed here, and the reply guard and the response schema cannot
+ fall behind it.
  */
-export type ArchiveBlockDisposition = 'editorial-context' | 'revise' | 'source-supported';
+const DISPOSITIONS = [
+  'editorial-context',
+  'revise',
+  'source-supported',
+] as const;
+
+/**
+ Review disposition for target wording no source block claims.
+
+ @example
+ ```ts
+ const disposition: ArchiveBlockDisposition = 'revise';
+ ```
+ */
+export type ArchiveBlockDisposition = typeof DISPOSITIONS[number];
 
 /**
  One archive-block review reply.
@@ -51,15 +69,6 @@ export type ArchiveBlockReviewWire = {
    */
   readonly finding: string;
 };
-
-/**
- Allowed wire decisions.
- */
-const DISPOSITIONS: readonly string[] = [
-  'editorial-context',
-  'revise',
-  'source-supported',
-];
 
 /**
  What the reviewer does with a name the DECLARED NAMES block makes correct,
@@ -196,7 +205,15 @@ Reply with JSON only: {"disposition":"source-supported"|"editorial-context"|"rev
 export function isArchiveBlockReviewWire(value: unknown,): value is ArchiveBlockReviewWire {
   if (!isJsonRecord(value,))
     return false;
-  if (((typeof value.disposition) !== 'string') || (!DISPOSITIONS.includes(value.disposition,)))
+  /**
+   Decision the reply names, before it is known to be one of the allowed ones.
+   */
+  const { disposition, } = value;
+  if ((typeof disposition) !== 'string')
+    return false;
+  if (!DISPOSITIONS.some(function matches(allowed,): boolean {
+    return allowed === disposition;
+  },))
     return false;
   if (((typeof value.sourceQuote) !== 'string') || ((typeof value.replacementText) !== 'string'))
     return false;

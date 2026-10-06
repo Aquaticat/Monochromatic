@@ -45,6 +45,19 @@ import {
 // `rendered` is the prompt.
 
 /**
+ The three lists, in the order each region is run.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a list cannot be added to the type
+ without being run, and `DISCLOSURE_OF_LIST` cannot leave it without a
+ disclosure.
+ */
+const PRIOR_ISSUE_LISTS = [
+  'none',
+  'withheld',
+  'rendered',
+] as const;
+
+/**
  What the prober was told about the prior issue, printed as `list=`.
 
  @example
@@ -52,7 +65,7 @@ import {
  const list: PriorIssueList = 'withheld';
  ```
  */
-export type PriorIssueList = 'none' | 'withheld' | 'rendered';
+export type PriorIssueList = typeof PRIOR_ISSUE_LISTS[number];
 
 /**
  Which accepted issue the arm carries, printed as `issue=`.
@@ -133,17 +146,21 @@ type ProbedRegion = {
 };
 
 /**
- The three lists, in the order each region is run.
+ Disclosure each list value sends; `none` has nothing to disclose and sends
+ production's, so the prompt is production's prompt with an empty list.
+
+ A RECORD OVER EVERY LIST, so a list added to `PriorIssueList` cannot send
+ production's disclosure by default: the compiler refuses it here until the
+ disclosure it sends is named.
  */
-const LISTS: readonly PriorIssueList[] = [
-  'none',
-  'withheld',
-  'rendered',
-];
+const DISCLOSURE_OF_LIST: Readonly<Record<PriorIssueList, PriorIssueDisclosure>> = {
+  none: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
+  withheld: 'withheld',
+  rendered: 'rendered',
+};
 
 /**
- Disclosure a list value sends; `none` has nothing to disclose and sends
- production's, so the prompt is production's prompt with an empty list.
+ Disclosure a list value sends.
 
  @param list - list the arm is labelled with
 
@@ -155,11 +172,7 @@ const LISTS: readonly PriorIssueList[] = [
  ```
  */
 function disclosureFor(list: PriorIssueList,): PriorIssueDisclosure {
-  if (list === 'rendered')
-    return 'rendered';
-  if (list === 'withheld')
-    return 'withheld';
-  return PRODUCTION_PRIOR_ISSUE_DISCLOSURE;
+  return DISCLOSURE_OF_LIST[list];
 }
 
 /**
@@ -196,7 +209,7 @@ function accuracyArms(): readonly SensitivityArm[] {
       expectation,
     },
   ): readonly SensitivityArm[] {
-    return LISTS.map(function toArm(list,): SensitivityArm {
+    return PRIOR_ISSUE_LISTS.map(function toArm(list,): SensitivityArm {
       return {
         region,
         expectation,
@@ -307,7 +320,8 @@ function labellingArms(): readonly SensitivityArm[] {
     },
   ];
   /**
-   Lists that carry an issue at all.
+   Lists that carry an issue at all: every list but `none`, which carries
+   none by its own definition.
    */
   const carrying: readonly PriorIssueList[] = [
     'withheld',

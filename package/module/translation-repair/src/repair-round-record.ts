@@ -35,6 +35,19 @@ import { hashContent, } from './document-node.ts';
 // so a reader never has to assume it.
 
 /**
+ Every judged stage of the repair lane, in the order a pass runs them.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a stage cannot be added to the type
+ without being listed here, and the artifact reader and the standing readers
+ that import this list cannot fall behind it.
+ */
+export const REPAIR_ROUND_STAGES = [
+  'envelope',
+  'chunk-patch',
+  'refine',
+] as const;
+
+/**
  Which of the repair lane's judged stages a round belongs to.
 
  `envelope` and `chunk-patch` are the editor ensemble's two rounds: one per
@@ -47,10 +60,7 @@ import { hashContent, } from './document-node.ts';
  const stage: RepairRoundStage = 'envelope';
  ```
  */
-export type RepairRoundStage =
-  | 'envelope'
-  | 'chunk-patch'
-  | 'refine';
+export type RepairRoundStage = typeof REPAIR_ROUND_STAGES[number];
 
 /**
  Envelope identifier standing for "this round decided the whole chunk".

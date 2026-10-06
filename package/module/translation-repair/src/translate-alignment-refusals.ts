@@ -2,6 +2,7 @@ import { declaredNameRefusalFinding, } from './declared-name-survival.ts';
 import { quoteLossRefusalFinding, } from './quote-preservation.ts';
 import { alignmentRefusalFinding, } from './translate-alignment.ts';
 import type { TranslateSliceRecord, } from './translate-document-contract.ts';
+import { refuseUnhandledMember, } from './unhandled-member.ts';
 
 //region Translate alignment refusals
 // The sentence a reader gets for every slice whose replacement the alignment
@@ -23,6 +24,8 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
  @param records - settled slice records
 
  @returns Refusal findings in the order the slices appear
+
+ @throws Error when a member of `TranslateDisposition` has no branch here, which the compiler rules out, since a record that is neither a refusal nor a stage result has no finding
 
  @example
  ```ts
@@ -63,7 +66,16 @@ export function alignmentRefusals(
           dropped: record.droppedDeclaredNames,
         },),];
       }
-      return [];
+      // A STAGE RESULT TAKEN AS IT STANDS refused nothing, so it has no
+      // finding. It is named rather than left to the end of the chain, so a
+      // disposition added without a finding fails to compile here instead of
+      // passing as one that refused nothing.
+      if (record.disposition === 'stage-result')
+        return [];
+      return refuseUnhandledMember({
+        what: 'translate slice disposition',
+        member: record.disposition,
+      },);
     },);
 }
 

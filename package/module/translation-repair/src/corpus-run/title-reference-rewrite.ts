@@ -1,6 +1,7 @@
 import { isSmallLetter, } from '../cased-letters.ts';
 import { codePointAt, } from '../code-points.ts';
 import { straightenQuotes, } from '../quote-normalize.ts';
+import { refuseUnhandledMember, } from '../unhandled-member.ts';
 import { wordStarts, } from '../word-bounds.ts';
 import type { LocatedTitle, } from './title-reference-scope.ts';
 
@@ -347,6 +348,8 @@ function withRewrites(
 
  @returns Text after the rewrites, and the findings
 
+ @throws Error when a member of the rewrite outcome union has no branch here, which the compiler rules out, raised from the findings callback
+
  @example
  ```ts
  const rewrite = rewriteRenderings({ text, renderings, heading, sliceIndex: 3, whose, },);
@@ -393,7 +396,12 @@ export function rewriteRenderings(
         return [];
       if (outcome.kind === 'ambiguous')
         return [`title-reference-ambiguous (slice ${String(sliceIndex,)}: ${whose}, but ${outcome.reason})`,];
-      return [`title-reference-unified (slice ${String(sliceIndex,)}: "${outcome.before}" to "${outcome.after}"; ${whose})`,];
+      if (outcome.kind === 'rewritten')
+        return [`title-reference-unified (slice ${String(sliceIndex,)}: "${outcome.before}" to "${outcome.after}"; ${whose})`,];
+      return refuseUnhandledMember({
+        what: 'title reference rewrite outcome',
+        member: outcome,
+      },);
     },),
   };
 }

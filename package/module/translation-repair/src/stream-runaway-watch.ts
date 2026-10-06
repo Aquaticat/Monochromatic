@@ -1,7 +1,8 @@
 import { wordForCount, } from './count-word.ts';
-import type {
-  ChannelDelta,
-  StreamChannel,
+import {
+  type ChannelDelta,
+  STREAM_CHANNELS,
+  type StreamChannel,
 } from './stream-delta-scan.ts';
 import {
   DEFAULT_WIRE_FORMAT,
@@ -82,17 +83,6 @@ const OPENING_TEXT_CAP = 200;
  the number rests on.
  */
 const CONTENT_OVERRUN_CAP = 32_000;
-
-/**
- Channels watched, in the order a verdict is reported for them.
-
- REASONING FIRST, because a runaway there is the case that produces no answer
- at all, so when both have gone wrong it is the more informative one to name.
- */
-const WATCHED_CHANNELS: readonly StreamChannel[] = [
-  'reasoning',
-  'content',
-];
 
 /**
  What the watch makes of a stream so far.
@@ -281,9 +271,9 @@ export function watchRunaway(
    */
   function readChannels(): RunawayVerdict {
     /**
-     Channels reporting degeneration, in the reported order.
+     Channels reporting degeneration, in the order `STREAM_CHANNELS` gives.
      */
-    const failing = WATCHED_CHANNELS.flatMap(function judge(channel,): readonly RunawayVerdict[] {
+    const failing = STREAM_CHANNELS.flatMap(function judge(channel,): readonly RunawayVerdict[] {
       /**
        What this channel's ratio detector currently says.
        */

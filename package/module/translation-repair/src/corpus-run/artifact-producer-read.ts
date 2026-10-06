@@ -3,10 +3,11 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
-import { requireOneOf, } from '../artifact-exact-guard.ts';
+import { requireKeyOf, } from '../artifact-exact-guard.ts';
 import type { CandidateProducer, } from '../candidate-select-model.ts';
 import type { RosterModelId, } from '../roster-id.ts';
 import { ROSTER_MODEL_IDS, } from '../roster-reach.ts';
+import { refuseUnhandledMember, } from '../unhandled-member.ts';
 
 //region Artifact producer read
 // WHO WROTE A RECORDED CANDIDATE, read back out of an artifact and checked
@@ -22,21 +23,27 @@ import { ROSTER_MODEL_IDS, } from '../roster-reach.ts';
 
 /**
  Provenance kinds a recorded candidate can name.
+
+ KEYED BY THE KIND OF `CandidateProducer` rather than listed, so the compiler
+ refuses a kind the live union gains that this reader lacks: every artifact
+ carrying it would otherwise be refused whole. The order is the order a
+ refusal names them in.
  */
-const PRODUCER_KINDS = [
-  'model',
-  'composite',
-  'incumbent',
-  'lane',
-] as const;
+const PRODUCER_KINDS: Readonly<Record<CandidateProducer['kind'], true>> = {
+  model: true,
+  composite: true,
+  incumbent: true,
+  lane: true,
+};
 
 /**
- Lanes a lane candidate can name (class forty, 2026-09-17).
+ Lanes a lane candidate can name (class forty, 2026-09-17), keyed by the lane
+ of `CandidateProducer` for the reason `PRODUCER_KINDS` gives.
  */
-const LANE_NAMES = [
-  'repair',
-  'translate',
-] as const;
+const LANE_NAMES: Readonly<Record<Extract<CandidateProducer, { readonly kind: 'lane'; }>['lane'], true>> = {
+  repair: true,
+  translate: true,
+};
 
 /**
  Signals a recorded model that no longer holds a place in the roster.
@@ -181,6 +188,10 @@ function requireRosterModelIds(
 
  @returns Provenance in its three-way shape
 
+ @throws {@link ArtifactParseError} when the kind or lane is not one `CandidateProducer` names, through `requireKeyOf`, or a field is malformed
+
+ @throws Error when a member of `CandidateProducer` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const producer = requireProducer({ value, path, },);
@@ -208,10 +219,10 @@ export function requireProducer(
   /**
    Which of the three shapes it claims.
    */
-  const kind = requireOneOf({
+  const kind = requireKeyOf({
     value: record.kind,
     path: `${path}.kind`,
-    allowed: PRODUCER_KINDS,
+    record: PRODUCER_KINDS,
   },);
 
   if (kind === 'model')
@@ -235,10 +246,10 @@ export function requireProducer(
   if (kind === 'lane')
     return {
       kind,
-      lane: requireOneOf({
+      lane: requireKeyOf({
         value: record.lane,
         path: `${path}.lane`,
-        allowed: LANE_NAMES,
+        record: LANE_NAMES,
       },),
       matched: requireRosterModelIds({
         value: record.matched,
@@ -246,13 +257,19 @@ export function requireProducer(
       },),
     };
 
-  return {
-    kind,
-    matched: requireRosterModelIds({
-      value: record.matched,
-      path: `${path}.matched`,
-    },),
-  };
+  if (kind === 'incumbent') {
+    return {
+      kind,
+      matched: requireRosterModelIds({
+        value: record.matched,
+        path: `${path}.matched`,
+      },),
+    };
+  }
+  return refuseUnhandledMember({
+    what: 'recorded candidate producer',
+    member: kind,
+  },);
 }
 
 //endregion Artifact producer read

@@ -1,4 +1,9 @@
-import type { FidelityDamageKind, } from '../fidelity-damage.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
+import {
+  FIDELITY_DAMAGE_KINDS,
+  type FidelityDamageKind,
+} from '../fidelity-damage.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
   idListFlag,
@@ -20,16 +25,15 @@ import type { CommandLineOf, } from './command-lines.ts';
 export const DEFAULT_TRIAL_CAP = 16;
 
 /**
- Defects built for every pair when the caller names none.
+ Defects built for every pair when the caller names none: every defect
+ `FIDELITY_DAMAGE_KINDS` lists, in its order.
 
- DELETION FIRST, since it is the reading already recorded and the one an
- insertion result is compared against.
+ @example
+ ```ts
+ const [first,] = DAMAGE_KINDS; // 'deletion'
+ ```
  */
-export const DAMAGE_KINDS: readonly FidelityDamageKind[] = [
-  'deletion',
-  'insertion',
-  'alteration',
-];
+export const DAMAGE_KINDS: readonly FidelityDamageKind[] = FIDELITY_DAMAGE_KINDS;
 
 /**
  Defects each `--damage` spelling asks for; every defect when the flag is
@@ -45,21 +49,40 @@ export const DAMAGE_KINDS: readonly FidelityDamageKind[] = [
  A MAP RATHER THAN A PLAIN OBJECT, since the key is typed text: looked up on
  an object, `--damage constructor` found `Object.prototype.constructor` and
  handed a function on as the defects to build (ledger B75).
+
+ BUILT FROM `DAMAGE_KINDS`, each defect asking for itself alone, so a defect
+ the probe gains is a `--damage` spelling the moment it is listed.
  */
-const DAMAGE_BY_NAME: ReadonlyMap<string, readonly FidelityDamageKind[]> = new Map([
-  [
-    'deletion',
-    ['deletion',],
-  ],
-  [
-    'insertion',
-    ['insertion',],
-  ],
-  [
-    'alteration',
-    ['alteration',],
-  ],
-],);
+const DAMAGE_BY_NAME: ReadonlyMap<string, readonly FidelityDamageKind[]> = new Map(
+  DAMAGE_KINDS.map(function entryOf(kind,): readonly [
+    string,
+    readonly FidelityDamageKind[],
+  ] {
+    return [
+      kind,
+      [kind,],
+    ];
+  },),
+);
+
+/**
+ Spells the defects `--damage` takes the way its refusal names them, from the
+ same list the map is built from.
+
+ @returns The defects in list order, the last one joined by "or"
+
+ @example
+ ```ts
+ const spelled = damageSpellings(); // 'deletion, insertion or alteration'
+ ```
+ */
+function damageSpellings(): string {
+  return `${DAMAGE_KINDS.slice(
+    0,
+    -1,
+  )
+    .join(', ',)} or ${nonNullishOrThrow(DAMAGE_KINDS.at(-1,),)}`;
+}
 
 /**
  Reads which defects `--damage` asks for.
@@ -85,7 +108,7 @@ function damageKindsOf({ damage, }: { readonly damage: FlagValue; },): readonly 
   const named = DAMAGE_BY_NAME.get(damage.value,);
   if (named === undefined)
     throw new StatedRefusalError({
-      says: `--damage takes deletion, insertion or alteration, not ${JSON.stringify(damage.value,)}`,
+      says: `--damage takes ${damageSpellings()}, not ${JSON.stringify(damage.value,)}`,
     },);
   return named;
 }

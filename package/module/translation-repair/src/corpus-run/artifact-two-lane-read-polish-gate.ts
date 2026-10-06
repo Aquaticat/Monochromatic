@@ -9,21 +9,13 @@ import {
 } from '../artifact-guard.ts';
 import { wordForCount, } from '../count-word.ts';
 import type { ConsolidationPolishGateOutcome, } from '../consolidation-polish-gate-stage.ts';
-import type {
-  ConsolidationPolishBallot,
-  PolishChoice,
+import {
+  type ConsolidationPolishBallot,
+  POLISH_NAMES,
+  type PolishChoice,
 } from '../consolidation-polish-gate-wire.ts';
 
 //region Artifact consolidation polish gate read
-
-/**
- Polish ballot candidate names.
- */
-const POLISH_CHOICES: readonly PolishChoice[] = [
-  'polished',
-  'base',
-  'neither',
-];
 
 /**
  Reads polish candidate choice.
@@ -51,14 +43,14 @@ function parsePolishChoice(
   /**
    Known choice matching stored value.
    */
-  const choice = POLISH_CHOICES.find(function matches(name,): boolean {
+  const choice = POLISH_NAMES.find(function matches(name,): boolean {
     return name === value;
   },);
   if (choice !== undefined)
     return choice;
   throw new ArtifactParseError({
     path,
-    reason: `one of ${POLISH_CHOICES.join(', ',)}`,
+    reason: `one of ${POLISH_NAMES.join(', ',)}`,
   },);
 }
 

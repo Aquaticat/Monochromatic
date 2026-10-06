@@ -25,7 +25,13 @@ import {
 // pair a slate needs, the same number the readers are held to.
 
 /**
- Benches that write text rather than judge it, which the floor applies to.
+ Benches that write text rather than judge it, which the floor applies to: a
+ DELIBERATE SUBSET of `BenchName`.
+
+ LEFT OUT are `wide`, `select` and `slate`, which judge, and `readers`, which
+ transcribe pictures and are held to a pair by their own quorum in
+ `run-seats-wait.ts`. A bench gained later is therefore not a writing bench
+ until it is added here.
  */
 export const WRITING_BENCHES: ReadonlySet<BenchName> = new Set<BenchName>([
   'editors',

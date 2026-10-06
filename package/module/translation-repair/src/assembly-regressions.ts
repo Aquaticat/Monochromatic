@@ -1,5 +1,8 @@
 import type { FootnoteGraphFinding, } from './footnote-model.ts';
-import { parseDocument, } from './parse-document.ts';
+import {
+  parseDocument,
+  type ParseFinding,
+} from './parse-document.ts';
 
 //region Assembly regressions
 // Whole-document differences shared by ordinary assembly and counterfactual withdrawal.
@@ -107,8 +110,14 @@ export function introducedFootnoteFindings(
  Both are whole-document effects that a per-slice check cannot see: masking
  runs over the whole body before parsing, so one slice's stray `<!--` hides
  markers in slices nobody touched.
+
+ A DELIBERATE SUBSET of the parser's finding kinds, typed by them so a
+ misspelt member fails to compile. LEFT OUT are `html-comment-skipped` (the
+ masked comment) and `invisible-line-masked` (the blanked line), the two
+ ordinary cases. A finding kind the parser gains is therefore not
+ a regression until it is added here.
  */
-const STRUCTURAL_REGRESSION_KINDS: readonly string[] = [
+const STRUCTURAL_REGRESSION_KINDS: readonly ParseFinding['kind'][] = [
   'unterminated-html-comment',
   'mdx-downgraded',
 ];

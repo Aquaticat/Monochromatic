@@ -105,14 +105,35 @@ const REASONING_KEYS = [
 const SERVED_BY_KEY = 'provider';
 
 /**
+ Every channel a piece of generated text can arrive on, in the order a
+ verdict is reported for them.
+
+ REASONING FIRST, because a runaway there is the case that produces no answer
+ at all, so when both have gone wrong it is the more informative one to name.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a channel cannot be added to the type
+ without being placed in the order, and the watch that walks this list cannot
+ leave it unwatched.
+ */
+export const STREAM_CHANNELS = [
+  'reasoning',
+  'content',
+] as const;
+
+/**
  Which channel a piece of generated text arrived on.
 
  KEPT APART rather than merged into one string, so a degeneration verdict can
  name the channel it happened in. "The model repeated itself while thinking"
  and "the model repeated itself in its answer" are different failures to
  diagnose, and the first is invisible in the answer.
+
+ @example
+ ```ts
+ const channel: StreamChannel = 'reasoning';
+ ```
  */
-export type StreamChannel = 'content' | 'reasoning';
+export type StreamChannel = typeof STREAM_CHANNELS[number];
 
 /**
  One piece of generated text, and where it came from.

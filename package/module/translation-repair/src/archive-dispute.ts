@@ -3,7 +3,10 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 // Claim category that disputes the archive rendering at any severity.
-import { ADDITION_CATEGORY, } from './issue-taxonomy.ts';
+import {
+  ADDITION_CATEGORY,
+  type IssueSeverity,
+} from './issue-taxonomy.ts';
 import {
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
@@ -59,9 +62,16 @@ import {
 const ACCURACY_FAMILY = 'accuracy/';
 
 /**
- Severities at which a non-addition accuracy claim disputes the archive.
+ Severities at which a non-addition accuracy claim disputes the archive: a
+ DELIBERATE SUBSET of `IssueSeverity`, typed by it so a misspelt member fails
+ to compile.
+
+ LEFT OUT are `neutral`, the severity asserting no defect, and `minor`,
+ which the owner's rule does not count against the archive (additions dispute
+ at any severity, by `ADDITION_CATEGORY`). A severity the taxonomy gains is
+ therefore not disputing until it is added here.
  */
-const DISPUTING_SEVERITIES: ReadonlySet<string> = new Set([
+const DISPUTING_SEVERITIES: ReadonlySet<IssueSeverity> = new Set<IssueSeverity>([
   'major',
   'critical',
 ],);
@@ -240,7 +250,7 @@ function disputesArchive(
     severity,
   }: {
     readonly category: string;
-    readonly severity: string;
+    readonly severity: IssueSeverity;
   },
 ): boolean {
   if (category === ADDITION_CATEGORY)

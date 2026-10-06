@@ -4,7 +4,10 @@ import { wordForCount, } from '../count-word.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { writeSheetPair, } from './sheet-write.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
-import type { ScreenedDefectClaim, } from '../introduced-defect-screen.ts';
+import {
+  type ScreenedDefectClaim,
+  UPHELD_ADMISSIBILITY,
+} from '../introduced-defect-screen.ts';
 import {
   gatherRelabelCases,
   type RelabelCase,
@@ -59,8 +62,7 @@ function keepAdmissible(
 ): readonly ScreenedDefectClaim[] {
   return claims
     .filter(function isAdmissible(claim,) {
-      return (claim.admissibility === 'corroborated')
-        || (claim.admissibility === 'removal-corroborated');
+      return UPHELD_ADMISSIBILITY.has(claim.admissibility,);
     },);
 }
 

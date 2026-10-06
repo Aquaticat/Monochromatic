@@ -1,5 +1,10 @@
+import { namesOneOf, } from '../contest-ballot-wire.ts';
 import type { LaneContestOutcome, } from '../lane-contest-stage.ts';
-import type { LaneContestBallot, } from '../lane-contest-wire.ts';
+import {
+  ARCHIVE_VERDICTS,
+  CANDIDATE_NAMES,
+  type LaneContestBallot,
+} from '../lane-contest-wire.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import {
@@ -21,7 +26,9 @@ import {
 // reader will take. Refusing it here costs one re-asked slice.
 
 /**
- Whether a value is a candidate name a judge may use.
+ Whether a value is a candidate name a judge may use, read from the list the
+ wire module derives `LaneChoice` from, so a name the judges gain is a name
+ this store reads.
 
  @param value - name from a cache file
 
@@ -33,9 +40,10 @@ import {
  ```
  */
 function isLaneChoiceName(value: unknown,): boolean {
-  return (value === 'repair')
-    || (value === 'translate')
-    || (value === 'neither');
+  return namesOneOf({
+    value,
+    names: CANDIDATE_NAMES,
+  },);
 }
 
 /**
@@ -57,8 +65,10 @@ function isLaneChoiceName(value: unknown,): boolean {
  */
 function isArchiveName(value: unknown,): boolean {
   return (value === undefined)
-    || (value === 'publishable')
-    || (value === 'flawed');
+    || namesOneOf({
+      value,
+      names: ARCHIVE_VERDICTS,
+    },);
 }
 
 /**

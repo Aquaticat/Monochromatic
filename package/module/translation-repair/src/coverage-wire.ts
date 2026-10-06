@@ -249,9 +249,27 @@ ${fence} END ${fence}`,
 }
 
 /**
- How much of a passage a translation carries.
+ Coverage degrees a reply may claim.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a degree cannot be added to the type
+ without being listed here, and the reply guard and the response schema cannot
+ fall behind it.
  */
-export type CoverageDegree = 'full' | 'partial' | 'none';
+const COVERAGE_DEGREES = [
+  'full',
+  'partial',
+  'none',
+] as const;
+
+/**
+ How much of a passage a translation carries.
+
+ @example
+ ```ts
+ const degree: CoverageDegree = 'partial';
+ ```
+ */
+export type CoverageDegree = typeof COVERAGE_DEGREES[number];
 
 /**
  One coverage reply on the wire.
@@ -277,15 +295,6 @@ export type CoverageReportWire = {
    */
   readonly reason: string;
 };
-
-/**
- Coverage degrees a reply may claim.
- */
-const COVERAGE_DEGREES: readonly string[] = [
-  'full',
-  'partial',
-  'none',
-];
 
 /**
  Guards a coverage reply.
@@ -315,9 +324,15 @@ export function isCoverageReportWire(value: unknown,): value is CoverageReportWi
     return false;
   if ((typeof value.reason) !== 'string')
     return false;
-  if ((typeof value.coverage) !== 'string')
+  /**
+   Degree the reply names, before it is known to be one of the allowed ones.
+   */
+  const { coverage, } = value;
+  if ((typeof coverage) !== 'string')
     return false;
-  if (!COVERAGE_DEGREES.includes(value.coverage,))
+  if (!COVERAGE_DEGREES.some(function matches(allowed,): boolean {
+    return allowed === coverage;
+  },))
     return false;
 
   /**

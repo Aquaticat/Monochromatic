@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import { refuseUnhandledMember, } from './unhandled-member.ts';
 
 //region Slice indexing
 // The one property every splice, every lane result and every cross-lane
@@ -65,6 +66,8 @@ export type SliceIndexingFault = {
 
  @returns Sentence composed from the fault's numbers alone
 
+ @throws Error when a member of `SliceIndexingFault` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const sentence = indexingSentence({ fault: { kind: 'index-off-position', position: 4, targetIndex: 3, }, },);
@@ -75,9 +78,15 @@ export function indexingSentence({ fault, }: { readonly fault: SliceIndexingFaul
     return `carries source index ${String(fault.sourceIndex,)} against target index ${
       String(fault.targetIndex,)
     }, so which one names it depends on who is asking`;
-  return `is indexed ${
-    String(fault.targetIndex,)
-  }, and every splice, lane result and comparison reads that index as the position`;
+  if (fault.kind === 'index-off-position') {
+    return `is indexed ${
+      String(fault.targetIndex,)
+    }, and every splice, lane result and comparison reads that index as the position`;
+  }
+  return refuseUnhandledMember({
+    what: 'slice indexing fault',
+    member: fault,
+  },);
 }
 
 /**

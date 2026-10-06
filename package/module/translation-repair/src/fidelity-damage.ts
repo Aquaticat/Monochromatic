@@ -39,6 +39,22 @@ import { applySeededErrors, } from './seeded-error.ts';
 // is wrong about redundancy rather than about coverage.
 
 /**
+ Every constructed defect a trial can carry, deletion first.
+
+ DELETION FIRST, since it is the reading already recorded and the one an
+ insertion result is compared against.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a defect cannot be added to the type
+ without being listed here, and the probe's default set and its `--damage`
+ spellings, which are built from this list, cannot fall behind it.
+ */
+export const FIDELITY_DAMAGE_KINDS = [
+  'deletion',
+  'insertion',
+  'alteration',
+] as const;
+
+/**
  Which constructed defect a trial carries.
 
  @example
@@ -46,7 +62,7 @@ import { applySeededErrors, } from './seeded-error.ts';
  const damageKind: FidelityDamageKind = 'insertion';
  ```
  */
-export type FidelityDamageKind = 'deletion' | 'insertion' | 'alteration';
+export type FidelityDamageKind = typeof FIDELITY_DAMAGE_KINDS[number];
 
 /**
  One damaged twin, or the fact that this slice admits none.

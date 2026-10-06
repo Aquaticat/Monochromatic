@@ -36,6 +36,27 @@ export type ClaimAdmissibility =
   | 'pre-existing';
 
 /**
+ Admissibility values that uphold a claim that the edit caused damage: a
+ DELIBERATE SUBSET of `ClaimAdmissibility`, typed by it so a misspelt member
+ fails to compile.
+
+ LEFT OUT are `contradicted` (the differential refuted the claim),
+ `unanchored` (it carried no usable anchor) and `pre-existing` (the claim
+ re-reports a defect the region was cut for), none of which says the edit
+ caused anything. A member `ClaimAdmissibility` gains is therefore not upheld
+ until it is added here.
+
+ @example
+ ```ts
+ const upheld = UPHELD_ADMISSIBILITY.has('corroborated',);
+ ```
+ */
+export const UPHELD_ADMISSIBILITY: ReadonlySet<ClaimAdmissibility> = new Set<ClaimAdmissibility>([
+  'corroborated',
+  'removal-corroborated',
+],);
+
+/**
  One prober claim of introduced damage, after screening.
 
  @example
@@ -336,7 +357,7 @@ function collectPriorQuotes(
 function countsAsDamage(
   { anchored, }: { readonly anchored: ClaimAdmissibility; },
 ): boolean {
-  return (anchored === 'corroborated') || (anchored === 'removal-corroborated');
+  return UPHELD_ADMISSIBILITY.has(anchored,);
 }
 
 /**

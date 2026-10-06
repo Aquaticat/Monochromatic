@@ -1,6 +1,7 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import { wordForCount, } from './count-word.ts';
+import { refuseUnhandledMember, } from './unhandled-member.ts';
 
 //region Placement layout
 // Whether a preparation's target spans can be written back into the document
@@ -155,6 +156,8 @@ export type PlacementFault = {
 
  @returns Sentence completing "slice at position N ..."
 
+ @throws Error when a member of `PlacementFault` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const said = placementSentence({ fault, },);
@@ -201,8 +204,14 @@ function placementSentence({ fault, }: { readonly fault: PlacementFault; },): st
     return `is content covering nothing at ${String(fault.startOffset,)}; an empty span is an insertion, and `
       + 'saying so is what tells assembly to write INTO it';
   }
-  return `starts at ${String(fault.startOffset,)} while the slice before it runs to ${String(fault.boundary,)}, `
-    + 'so writing one would move or overwrite the other';
+  if (fault.kind === 'overlaps-previous') {
+    return `starts at ${String(fault.startOffset,)} while the slice before it runs to ${String(fault.boundary,)}, `
+      + 'so writing one would move or overwrite the other';
+  }
+  return refuseUnhandledMember({
+    what: 'placement fault',
+    member: fault,
+  },);
 }
 
 /**

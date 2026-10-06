@@ -21,66 +21,57 @@ import type { RepairRegion, } from './repair-region.ts';
 // prevents.
 
 /**
- What became of the repair for one accepted issue in the returned document.
+ Every disposition the pipeline writes, as data, each with what it says.
 
- @example
- ```ts
- const disposition: RepairDisposition = 'shipped';
- ```
- */
-export type RepairDisposition =
-  /**
-   A replaced region served this issue and the returned document carries it.
-   */
-  | 'shipped'
-  /**
-   A replaced region served this issue, but the unchanged text won its
-   slice's selection, so that repair reached no reader.
-
-   Says nothing about the returned TEXT: the naturalness lane runs after the
-   accuracy stage regardless of what that stage's selection decided, so a
-   slice can still have been rewritten. {@link RepairIssueRecord.refined} is
-   what answers that, and the repair sheet discloses it here too.
-   */
-  | 'not-selected'
-  /**
-   A replaced region served this issue and its slice was repaired, and the
-   document took that repair back: either it was blocked for non-translation
-   and returned its input, which withdraws every slice at once, or the
-   assembly guard withdrew this slice to keep a footnote relation whole.
-
-   Either way the repair reached no reader, which is what a measurement over
-   these records has to see.
-   */
-  | 'withdrawn'
-  /**
-   No replaced region served this issue at all: either no envelope could be
-   cut from its evidence, or its envelope received no operation that survived
-   the apply gate. The two are merged because both mean the same thing to a
-   measurement, that no targeted repair exists to grade.
-
-   Also says nothing about the returned text, for the reason given on
-   {@link RepairDisposition} `not-selected`.
-   */
-  | 'no-region';
-
-/**
- Every disposition the pipeline writes, as data.
-
- Kept beside the union so a reader can check a value against it without
- restating the list, which is how the two drift apart.
+ THE TYPE IS DERIVED FROM THIS LIST, so a disposition cannot be added to the
+ type without being listed here, and the reader that checks a recorded value
+ against this list cannot fall behind it.
 
  @example
  ```ts
  const known = REPAIR_DISPOSITIONS.includes('shipped',);
  ```
  */
-export const REPAIR_DISPOSITIONS: readonly RepairDisposition[] = [
+export const REPAIR_DISPOSITIONS = [
+  // A replaced region served this issue and the returned document carries it.
   'shipped',
+  // A replaced region served this issue, but the unchanged text won its
+  // slice's selection, so that repair reached no reader.
+  //
+  // Says nothing about the returned TEXT: the naturalness lane runs after the
+  // accuracy stage regardless of what that stage's selection decided, so a
+  // slice can still have been rewritten. `RepairIssueRecord.refined` is what
+  // answers that, and the repair sheet discloses it here too.
   'not-selected',
+  // A replaced region served this issue and its slice was repaired, and the
+  // document took that repair back: either it was blocked for non-translation
+  // and returned its input, which withdraws every slice at once, or the
+  // assembly guard withdrew this slice to keep a footnote relation whole.
+  //
+  // Either way the repair reached no reader, which is what a measurement over
+  // these records has to see.
   'withdrawn',
+  // No replaced region served this issue at all: either no envelope could be
+  // cut from its evidence, or its envelope received no operation that survived
+  // the apply gate. The two are merged because both mean the same thing to a
+  // measurement, that no targeted repair exists to grade.
+  //
+  // Also says nothing about the returned text, for the reason given on
+  // `not-selected`.
   'no-region',
-];
+] as const;
+
+/**
+ What became of the repair for one accepted issue in the returned document.
+
+ Each member's meaning is written beside it in {@link REPAIR_DISPOSITIONS}.
+
+ @example
+ ```ts
+ const disposition: RepairDisposition = 'shipped';
+ ```
+ */
+export type RepairDisposition = typeof REPAIR_DISPOSITIONS[number];
 
 /**
  Disposition of a repair the returned document carries.

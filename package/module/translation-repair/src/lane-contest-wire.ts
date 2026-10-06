@@ -46,13 +46,42 @@ import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 // than stripped, which is the one place a candidate may exceed the original.
 
 /**
+ Candidate names a judge may use, which are the lanes plus the refusal.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a name cannot be added to the type
+ without being listed here, and the reply guard, the ballot reader and the
+ artifact reader that import this list cannot fall behind it.
+ */
+export const CANDIDATE_NAMES = [
+  'repair',
+  'translate',
+  'neither',
+] as const;
+
+/**
  Which candidate a judge chose, or that it could not choose.
 
  DECLINING IS A VERDICT, not a failure to answer. Two candidates that differ
  only in wording have no better one, and a judge forced to pick would be
  inventing a preference the evidence does not carry.
+
+ @example
+ ```ts
+ const choice: LaneChoice = 'neither';
+ ```
  */
-export type LaneChoice = 'repair' | 'translate' | 'neither';
+export type LaneChoice = typeof CANDIDATE_NAMES[number];
+
+/**
+ Verdicts a judge may give the archive rendering.
+
+ THE TYPE IS DERIVED FROM THIS LIST, for the reason {@link CANDIDATE_NAMES}
+ gives.
+ */
+export const ARCHIVE_VERDICTS = [
+  'publishable',
+  'flawed',
+] as const;
 
 /**
  What a judge thinks of the archive rendering shown beside the candidates.
@@ -65,8 +94,13 @@ export type LaneChoice = 'repair' | 'translate' | 'neither';
  TWO VALUES, matching the two questions the candidates are judged on. A judge
  that cannot tell omits the field rather than answering a third way, and the
  settling rule reads that absence as a voice that did not speak.
+
+ @example
+ ```ts
+ const verdict: ArchiveVerdict = 'flawed';
+ ```
  */
-export type ArchiveVerdict = 'publishable' | 'flawed';
+export type ArchiveVerdict = typeof ARCHIVE_VERDICTS[number];
 
 /**
  One judge's reading of one contested slice.
@@ -166,15 +200,6 @@ export type LaneContestWire = {
 };
 
 /**
- Candidate names a judge may use, which are the lanes plus the refusal.
- */
-const CANDIDATE_NAMES: readonly LaneChoice[] = [
-  'repair',
-  'translate',
-  'neither',
-];
-
-/**
  Whether a value is one of the names a judge may use.
 
  @param value - candidate name from a reply
@@ -192,14 +217,6 @@ function isLaneChoice(value: unknown,): value is LaneChoice {
     names: CANDIDATE_NAMES,
   },);
 }
-
-/**
- Verdicts a judge may give the archive rendering.
- */
-const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
-  'publishable',
-  'flawed',
-];
 
 /**
  Whether a value is one of the archive verdicts.

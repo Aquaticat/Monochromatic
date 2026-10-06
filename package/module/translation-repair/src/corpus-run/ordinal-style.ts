@@ -62,6 +62,17 @@ const ORDINALS: readonly string[] = [
 ];
 
 /**
+ The word table each form that writes words reads from.
+
+ A RECORD OVER EVERY WORD FORM, so a form that writes words and has no table
+ fails to compile here instead of reading the ordinal table by default.
+ */
+const WORD_TABLE_OF_FORM: Readonly<Record<Exclude<OrdinalStyle['form'], 'none' | 'roman' | 'arabic'>, readonly string[]>> = {
+  cardinal: CARDINALS,
+  ordinal: ORDINALS,
+};
+
+/**
  Roman numeral steps, largest first.
  */
 const ROMAN: readonly {
@@ -403,7 +414,7 @@ function renderForm(
   /**
    Word table for the form.
    */
-  const table = (form === 'cardinal') ? CARDINALS : ORDINALS;
+  const table = WORD_TABLE_OF_FORM[form];
   /**
    Word for this value, absent past the table.
    */

@@ -23,18 +23,43 @@ import { parseConsolidationPolish, } from './artifact-two-lane-read-polish.ts';
 
 /**
  Ways settlement can leave stage, including retired artifact spelling.
+
+ KEYED BY `ArtifactConsolidationTerminal` rather than listed, so the compiler
+ refuses a terminal the stage gains that this reader lacks, which would
+ otherwise leave every artifact carrying it refused whole. The order is the
+ order a refusal names them in.
  */
-const TERMINAL_NAMES: readonly ArtifactConsolidationTerminal[] = [
-  'incumbent-only',
-  'no-standing-text',
-  'slate-endorsed-standing',
-  'slate-unjudged-standing',
-  'slate-declined-standing',
-  'slate-kept-standing',
-  'gate-kept-standing',
-  'wrap-erased-difference',
-  'consolidated',
-];
+const TERMINAL_NAMES: Readonly<Record<ArtifactConsolidationTerminal, true>> = {
+  'incumbent-only': true,
+  'no-standing-text': true,
+  'slate-endorsed-standing': true,
+  'slate-unjudged-standing': true,
+  'slate-declined-standing': true,
+  'slate-kept-standing': true,
+  'gate-kept-standing': true,
+  'wrap-erased-difference': true,
+  consolidated: true,
+};
+
+/**
+ Whether a stored value names a way settlement can leave stage.
+
+ @param value - terminal as the artifact carries it
+
+ @returns Whether it is one of the names `TERMINAL_NAMES` holds
+
+ @example
+ ```ts
+ const known = isTerminalName('consolidated',);
+ ```
+ */
+function isTerminalName(value: unknown,): value is ArtifactConsolidationTerminal {
+  return ((typeof value) === 'string')
+    && Object.hasOwn(
+      TERMINAL_NAMES,
+      value,
+    );
+}
 
 /**
  Reads what fidelity gate settled or that it was never asked.
@@ -204,15 +229,17 @@ export function parseConsolidateSlice(
     path,
   },);
   /**
-   Known terminal name.
+   Terminal the artifact names, before it is known to be a name this reader
+   holds.
    */
-  const terminal = TERMINAL_NAMES.find(function matches(known,): boolean {
-    return known === record.terminal;
-  },);
-  if (terminal === undefined) {
+  const { terminal, } = record;
+  if (!isTerminalName(terminal,)) {
     throw new ArtifactParseError({
       path: `${path}.terminal`,
-      reason: `one of ${TERMINAL_NAMES.join(', ',)}`,
+      reason: `one of ${
+        Object.keys(TERMINAL_NAMES,)
+          .join(', ',)
+      }`,
     },);
   }
   /**

@@ -1,6 +1,10 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
+  isProviderName,
+  type ProviderName,
+} from '../provider-name.ts';
+import {
   isSpendReckoning,
   SPEND_MARKER,
   type SpendReckoning,
@@ -48,17 +52,6 @@ const UNREPORTED = 'unreported';
 const FIRST_FIELD = 'provider=';
 
 /**
- Providers a record may name, which is also the check that its first field
- reads.
- */
-const PROVIDERS = [
-  'synthetic',
-  'hyper',
-  'bedrock',
-  'openrouter',
-] as const;
-
-/**
  One call's token counts, or the named absence standing for a provider that
  reported none.
  */
@@ -90,7 +83,7 @@ export type SpendRecord = {
   /**
    Meter this call drew on.
    */
-  readonly provider: typeof PROVIDERS[number];
+  readonly provider: ProviderName;
 
   /**
    Model as the serving provider names it.
@@ -371,11 +364,18 @@ export function readSpendLine(
     return 'unreadable';
 
   /**
-   Provider named, checked against the ones a record may carry.
+   Provider the record names, before it is known to be one a record may carry.
    */
-  const provider = PROVIDERS.find(function names(candidate,): boolean {
-    return candidate === named.get('provider',);
-  },);
+  const namedProvider = named.get('provider',);
+
+  /**
+   Provider named, checked against `PROVIDER_ORDER` through
+   `isProviderName`, so a provider the pipeline gains is a provider a record
+   may carry.
+   */
+  const provider = ((namedProvider !== undefined) && isProviderName(namedProvider,))
+    ? namedProvider
+    : undefined;
 
   /**
    Model named, absent on a record truncated before it.

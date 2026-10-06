@@ -28,6 +28,24 @@
 // money answered nothing.
 
 /**
+ Every provider, in the order the owner prefers to spend on them.
+
+ THE TYPE IS DERIVED FROM THIS LIST, so a provider cannot be added to the type
+ without being placed in the order, and every walk down the order reaches it.
+
+ @example
+ ```ts
+ const [preferred,] = PROVIDER_ORDER;
+ ```
+ */
+export const PROVIDER_ORDER = [
+  'synthetic',
+  'bedrock',
+  'hyper',
+  'openrouter',
+] as const;
+
+/**
  One of the providers this pipeline can buy a call from.
 
  @example
@@ -35,22 +53,7 @@
  const provider: ProviderName = 'openrouter';
  ```
  */
-export type ProviderName = 'synthetic' | 'hyper' | 'bedrock' | 'openrouter';
-
-/**
- Every provider, in the order the owner prefers to spend on them.
-
- @example
- ```ts
- const [preferred,] = PROVIDER_ORDER;
- ```
- */
-export const PROVIDER_ORDER: readonly ProviderName[] = [
-  'synthetic',
-  'bedrock',
-  'hyper',
-  'openrouter',
-];
+export type ProviderName = typeof PROVIDER_ORDER[number];
 
 /**
  One value per provider, keyed by name.

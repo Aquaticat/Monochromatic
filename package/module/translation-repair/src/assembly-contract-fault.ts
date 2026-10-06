@@ -1,4 +1,5 @@
 import { wordForCount, } from './count-word.ts';
+import { refuseUnhandledMember, } from './unhandled-member.ts';
 
 //region Assembly contract faults
 // What an assembly's change sets or returned document contradict, as a union
@@ -127,6 +128,8 @@ export type AssemblyContractFault = {
 
  @returns Sentence written here
 
+ @throws Error when a member of `AssemblyContractFault` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const sentence = assemblySentence({ fault: { kind: 'reassembly-differs', survivors: 0, }, },);
@@ -168,15 +171,21 @@ export function assemblySentence({ fault, }: { readonly fault: AssemblyContractF
     } to`;
   }
 
-  /**
-   Slices named as changed.
-   */
-  const { indices, } = fault;
-  return `returned document equals the archive while slices ${
-    indices.join(', ',)
-  } are named as changed: a set that reassembles to the archive is a net-zero assembly, which `
-    + '`guardFootnoteAssembly` canonicalizes to no survivors, so pass what the guard let stand rather than '
-    + 'what a lane proposed';
+  if (fault.kind === 'unchanged-with-claims') {
+    /**
+     Slices named as changed.
+     */
+    const { indices, } = fault;
+    return `returned document equals the archive while slices ${
+      indices.join(', ',)
+    } are named as changed: a set that reassembles to the archive is a net-zero assembly, which `
+      + '`guardFootnoteAssembly` canonicalizes to no survivors, so pass what the guard let stand rather than '
+      + 'what a lane proposed';
+  }
+  return refuseUnhandledMember({
+    what: 'assembly contract fault',
+    member: fault,
+  },);
 }
 
 //endregion Assembly contract faults

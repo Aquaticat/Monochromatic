@@ -1,4 +1,5 @@
 import { textsInCodePointOrder, } from './code-points.ts';
+import { UPHELD_ADMISSIBILITY, } from './introduced-defect-screen.ts';
 import type {
   TelemetryProbeReading,
   TelemetryRegionTally,
@@ -119,14 +120,6 @@ export type ProbeTelemetrySummary = {
    */
   readonly degradedRosterRegions: number;
 };
-
-/**
- Admissibility values that uphold a claim that the edit caused damage.
- */
-const UPHELD_ADMISSIBILITY: ReadonlySet<string> = new Set([
-  'corroborated',
-  'removal-corroborated',
-],);
 
 /**
  Counts the distinct PROBERS with at least one upheld claim on a region.

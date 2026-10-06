@@ -1,5 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { wordForCount, } from './count-word.ts';
+import { refuseUnhandledMember, } from './unhandled-member.ts';
 import type { DocumentNode, } from './document-node.ts';
 
 //region Slice coverage
@@ -217,6 +218,8 @@ export function blockPlacementSentence(
 
  @returns Sentence composed from a side name, counts and block ids
 
+ @throws Error when a member of `SliceCoverageFault` has no branch here, which the compiler rules out
+
  @example
  ```ts
  const sentence = coverageSentence({ fault, },);
@@ -249,7 +252,12 @@ export function coverageSentence({ fault, }: { readonly fault: SliceCoverageFaul
       },)
     } reached a slice: ${contradicted.join(', ',)}`;
   }
-  return `${fault.side} ${blockPlacementSentence({ placement: fault.placement, },)}`;
+  if (fault.kind === 'placement')
+    return `${fault.side} ${blockPlacementSentence({ placement: fault.placement, },)}`;
+  return refuseUnhandledMember({
+    what: 'slice coverage fault',
+    member: fault,
+  },);
 }
 
 /**

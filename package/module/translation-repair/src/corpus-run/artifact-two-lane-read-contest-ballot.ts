@@ -8,10 +8,11 @@ import {
   requireString,
   requireStringList,
 } from '../artifact-guard.ts';
-import type {
-  ArchiveVerdict,
-  LaneChoice,
-  LaneContestBallot,
+import {
+  ARCHIVE_VERDICTS,
+  CANDIDATE_NAMES,
+  type LaneChoice,
+  type LaneContestBallot,
 } from '../lane-contest-wire.ts';
 
 //region Lane contest ballot reading
@@ -20,23 +21,6 @@ import type {
 // SPLIT FROM THE SLICE READER on the line budget, along the seam the wire
 // module already draws: a ballot is a shape a judge produced, and a slice is
 // what the roster made of a set of them.
-
-/**
- Candidate names a ballot may carry.
- */
-const LANE_CHOICES: readonly LaneChoice[] = [
-  'repair',
-  'translate',
-  'neither',
-];
-
-/**
- Archive verdicts a ballot may carry.
- */
-const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
-  'publishable',
-  'flawed',
-];
 
 /**
  Reads one list of candidate names a judge wrote.
@@ -73,7 +57,7 @@ function parseChoiceList(
     ): LaneChoice {
       return requireOneOf({
         value: one,
-        allowed: LANE_CHOICES,
+        allowed: CANDIDATE_NAMES,
         path: `${path}[${String(position,)}]`,
       },);
     },);
@@ -163,7 +147,7 @@ export function parseContestBallot(
     ...seat,
     choice: requireOneOf({
       value: ballot.choice,
-      allowed: LANE_CHOICES,
+      allowed: CANDIDATE_NAMES,
       path: `${path}.choice`,
     },),
     unsupported: parseChoiceList({

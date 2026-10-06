@@ -68,6 +68,10 @@ export const MARKUP_ATOM_SHEET_NAMES: Readonly<Record<MarkupAtomKind, string>> =
  so does the editor sheet, so the two cannot disagree on which kinds these
  are.
 
+ A DELIBERATE SUBSET of `MarkupAtomKind`. LEFT OUT are `mdx-expression`,
+ `inline-code` and `tag`, which are neither labels nor addresses. A kind gained
+ later is therefore not an identifier until it is added here.
+
  @example
  ```ts
  const isIdentifier = MARKUP_IDENTIFIER_KINDS.has('footnote-reference',);
