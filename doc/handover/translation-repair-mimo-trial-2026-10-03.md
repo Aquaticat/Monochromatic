@@ -740,6 +740,16 @@ the rendering audit's screen and corroboration,
 `stage-fanout-window.ts` and the export surface;
 and the reviewers' findings on test files no fix had yet touched.
 
+By 2026-10-06 (UTC) that reading was complete.
+The modules on that list are read in ledger `B176` to `B179`,
+with the trial's production edits fixed in `6d60ce1a2`
+and its cases on the audit and the OpenRouter client in `96ef8323e`.
+The reviewers' findings on the trial's added cases were cross-checked one by one:
+of 173,
+155 had been applied by earlier fixes,
+12 were ruled out with reasons,
+and the last 6 were fixed in `e1c84094e` (ledger `B331` to `B335`).
+
 ### Choices the trial made that the owner may veto
 
 - The `gitOutput` catch in `corpus-source.ts` wrapped every throwable as `CorpusReadError`
