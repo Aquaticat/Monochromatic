@@ -75,7 +75,10 @@ and ran a stale file of the same name (M51).
 A transcript census found 9,324 of 22,058 calls breaking the rule after it took its current wording,
 and the rule itself misread as three `&&` rather than three steps (M1).
 The slip recurred after every record of it,
-four times and then three more on 2026-10-05 (UTC) alone (ledger M107,
+four times,
+then three more,
+then once more after M116 was written,
+on 2026-10-05 (UTC) alone (ledger M107,
 M116).
 
 The rule:
@@ -96,6 +99,8 @@ A permission refusal names an outcome,
 so no other command reaching it is tried:
 writing an older version over a tracked file was refused once
 and attempted again through `git show` (M73);
+an agent's read of the corpus clone was refused inside the agent,
+and the count it then asked the lead to run stayed untaken and went to the owner (M118);
 a before-and-after measurement of one module renders both versions from scratch copies
 whose relative imports point at the worktree's sources.
 
@@ -323,7 +328,8 @@ A generated list's line count is printed before anything consumes it.
 A probe's output goes outside the tree it searches.
 Corpus page text may be printed since 2026-10-05 (UTC),
 when the owner ruled,
-"I've allowed you to handle PII. The corpus is public."
+"I've allowed you to handle PII.
+The corpus is public."
 Until then a probe printed ids,
 indices,
 counts,
@@ -1262,6 +1268,13 @@ counting its one ballot against no quorum (ledger B161).
 A per-issue threshold on a gather's ballots takes the quorum the gather closed on,
 and positive evidence is read before silence wherever a rollback carries no report.
 
+The recheck then took that quorum by rebuilding the gather's short-bench finding
+for every count of refused seats and matching its wording,
+since nothing else carried the number (ledger B214).
+A gather returns the quorum it closed on,
+and a reader takes that field,
+never a number read back out of a finding or sized a second time.
+
 The rule:
 when a rule changes what a quorum counts,
 census every threshold derived from a gather,
@@ -1297,6 +1310,9 @@ the select minimum and the naturalness review each hold a refused seat
 `coverage-stage-reachable.unit.test.ts`,
 `candidate-select.unit.test.ts`,
 `absolute-naturalness-review-stage.unit.test.ts`).
+`stage-quorum.unit.test.ts` also holds the quorum the gather returns,
+on a bench every seat of which answers and on the same bench with most seats refused,
+and `repair-edit-stages.unit.test.ts` the same number as the checker stage hands it on.
 
 ## Lint and edits
 
@@ -1771,6 +1787,19 @@ that names the provider's documented error type,
 from a closed list this package holds,
 and nothing of the event's body (ledger B202).
 
+A rejected request passed out of two lookups as the transport's own error,
+whose message can quote a header value,
+so it stayed unmarked and their log lines named its class alone (ledger B220);
+and a refusal a page can reach was first written as a plain `Error`,
+which the same log reader prints as `refused by Error` (ledger B219).
+A failure a log line must explain is caught where it is raised
+and rethrown as a marked class,
+with an authored account and the caught value as its cause.
+An authored account says only what holds for every cause it covers,
+and names the possibilities where it cannot tell them apart:
+the lookups' first wording said the network had failed,
+which is untrue of a request the transport will not send.
+
 The rule:
 a marked class writes its sentence itself,
 from counts,
@@ -1900,6 +1929,12 @@ so a slice contradicting a definition pair blamed a slice (T8's eighteenth batch
 `MalformedCompletionError` named the OpenAI-compatible contract for every body,
 though the Anthropic readers throw it too,
 so a failed Charm Hyper call read as a broken OpenAI-shaped body (ledger B90).
+A checker's skipped issue was written `missing-check (<n>)`,
+the issue numbered by its place on the sheet and no checker named,
+so two checkers skipping one issue left the same line twice,
+and an issue answered only with an unknown verdict read the same as one never mentioned (ledger B215).
+A finding one of several voices leaves names the voice,
+the item by its id and the cause.
 
 The rule:
 a message naming a label,
@@ -2004,6 +2039,18 @@ The slice census converted a recorded pairing itself
 and stopped on the refusal the rebuild answers as `moved` (ledger B196).
 A contract that says a failure is contained is read against every await inside it,
 and an instrument that walks every artifact answers a misfit as the operation it mirrors does.
+
+The refine stage applied each rewriter's operations and read only what the patch applied,
+so a rewrite the patch refused as unchanged left no finding (ledger B216),
+the third time this stage read one part of a result and not the part beside it (ledger B142,
+B162).
+And the grouping returned its runs without a translation block no run could take,
+saying nothing,
+so the page was refused a layer up as a block that reached no slice (ledger B219).
+A caller of a function that returns what it applied beside what it refused reads both,
+or throws on the refusals its construction rules out;
+and a step that cannot place something refuses it there,
+by name.
 
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
@@ -2233,6 +2280,16 @@ what a link label holds,
 whether whitespace may stand before a destination.
 A lexical stand-in for a parse is checked against the parse over a table of shapes before it is trusted,
 and where the two can still differ it errs toward the side its guard can afford.
+The stand-in was then replaced:
+the mention scan asks a parse of its fragment where a marker shape is no reference,
+under both grammars the page may be read by (ledger B212),
+since correcting the lexical reader rule by rule was writing the parser again by hand.
+A fragment is parsed without the steps only a whole document can take,
+the front matter split among them,
+and a region is skipped only where every grammar the page may be read under skips it.
+The destination scan ended an address at its first closing parenthesis,
+where the parse keeps one that balances an opening one (ledger B213).
+A cut that stands for the parser's is written from the parser's own rule for it.
 
 A contributor form shaped like a reference link read as its markup whether or not the text defined the reference,
 and the first fix found the label's end from the length the parser reports for the reference's own label,
@@ -2983,6 +3040,14 @@ And a refusal the provider states in a stream's error event was retried,
 where the same refusal as an HTTP status is returned at once (ledger B202):
 the ladder now reads both as one refusal.
 
+Seven refusals about a value the operator set or a file the operator named were authored,
+marked sentences,
+and the commands' boundary printed each as a fault of the command,
+with frames and the fault's exit code (ledger B221):
+the thrower read its refusal as the operator's mistake and the printer as a bug.
+A refusal's class says which of the two it is,
+and a case drives each such class through the printer.
+
 The rule:
 where one event is read by two layers,
 each layer's reading is stated beside the other's,
@@ -3010,6 +3075,9 @@ which runs the refusal through the real budget layer and the router;
 and `probe-verify-sheet.unit.test.ts` holds
 "NAMES a claim the screen corroborated on its evidence as added"
 and the refusal of a claim the screen did not corroborate.
+`corpus-run/cli-refusal.unit.test.ts` holds a case for each of the seven classes of ledger B221,
+asserting the printed line and the exit code;
+no scan finds an operator's mistake still thrown as a class the printer reads as a fault.
 
 ## One field carrying two kinds of text
 
@@ -3056,6 +3124,10 @@ The scan B98 added read a noun only directly after its count,
 so 75 sites printing a count before a modifier and then a fixed plural ("1 cached slices") passed it,
 and that fix's own verbs and pronouns ("has",
 "its") again stayed plural until a reviewer read them (ledger B109).
+A marked refusal still wrote `destination(s)` after its count
+and several slices under the singular `slice` (ledger B217),
+which the count-nouns scan had passed;
+why it passed was not looked into.
 
 The rule:
 a noun after a count that can be one is chosen by `wordForCount`,
@@ -3258,6 +3330,12 @@ so a record naming a block its section lacks ended the run with a missing-value 
 A record read back is read against what it is about to be used on,
 by the check a fresh answer goes through,
 and one that does not fit is a miss said on a warning.
+The check B171 added read a cached block pairing's indices alone,
+and a cached section pairing was still handed on unread,
+so a record that moves backwards,
+repeats a correspondence or pairs one section twice reached the aligner and the slicer (ledger B218).
+The check a fresh answer goes through is its whole reader,
+not that reader's first test.
 
 A command read a file its operator names with a bare read,
 so a path that is not there raised the read's own error (ledger B183).

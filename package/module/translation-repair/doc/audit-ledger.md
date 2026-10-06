@@ -22426,6 +22426,8 @@ Left open by the same fix.
 but read each issue's verdict from its tally whatever the number of ballots behind it.
 A checker heard on the round may skip an issue,
 leaving `missing-check (<n>)`.
+B215 has since made that finding name the issue by its id,
+the checker and the cause.
 On a bench of three that met its quorum of two,
 two checkers skipping the second of two open issues left one ballot on it,
 and the round returned `refine-recheck-passed (2 issues)` and kept the rewrite.
@@ -22442,6 +22444,9 @@ compared with the quorum the checker stage closed on:
 the bench quorum,
 or the quorum in the gather's `stage-short-bench` finding,
 matched by rebuilding that finding with `shortBenchStageFinding` and `reachableQuorum` (`checkerQuorumClosedOn`).
+B214 replaced that rebuild:
+the gather returns the quorum it closed on,
+and the recheck reads it.
 An issue short of it is named `refine-recheck-unheard (<issue>: <n> ballots, quorum <q>)`,
 whatever its ballots say,
 and is never read as regressed or worsened;
@@ -22916,7 +22921,8 @@ which this change moves by itself
 (the fixing agent's reading of `corpus-run/pipeline-digest.ts`,
 with the two builds' digests measured to differ).
 
-Open:
+Open when this entry was written,
+closed in B218:
 the warm path checks block indices only,
 not the order or the repeats `readBlockPairing` refuses;
 and a cached section pairing is handed on unchecked by `buySectionPairing`.
@@ -22957,7 +22963,9 @@ No carve changed:
 268 version 2 artifacts rebuild to the same carve identity on both builds
 (the fixing agent's measurement).
 
-Open:
+Open when this entry was written,
+closed in B219,
+which refuses such a block by name and reached the state through `prepareDocumentPair` with a seeded generator:
 `groupNodesSealed` called alone still drops a translation-only block behind a sealed run with no paired run after it;
 six shapes through `prepareDocumentPair` did not reach that state (the fixing agent's probes).
 
@@ -23012,7 +23020,8 @@ so a source writing an address with a closing parenthesis inside as an explicit 
 against a page writing the same address bare,
 now reports the explicit destination dropped.
 
-Open:
+Open when this entry was written,
+closed in B213:
 the literal test stands in two files,
 since `isAutolinkLiteral` is private to its module;
 and a closing parenthesis is a run stopper,
@@ -23051,7 +23060,8 @@ No real trace changed
 original against archive,
 and 5 over 249 pages rebuilt from settled artifacts read the same under both rules.
 
-Open:
+Open when this entry was written,
+closed in B217:
 `DroppedDestinationError` still words its count as `destination(s)` and several slices as `slice 4, 7`;
 the fix needs a line in the message inventory.
 
@@ -23280,7 +23290,8 @@ Open to the owner's veto:
 the thrown message no longer carries the query or the url,
 which only the lookups' own log lines now name.
 
-Open:
+Open when this entry was written,
+closed in B220:
 a `fetch` that rejects,
 for a name that does not resolve or a connection reset,
 still logs as `refused by TypeError`.
@@ -23356,7 +23367,8 @@ A marker in a link label or beside a URL still counts.
 The scan stays lexical because the module reads fragments and does not parse them;
 a marker in a code span or a reference definition's destination still counts and is not part of this finding.
 
-Open,
+Open when this entry was written,
+closed in B212,
 found by the lead's probes of the build of `ab11a69d6` against the footnote graph,
 28 invented texts of which 5 differ.
 The span reader begins a bare literal only after whitespace or one of four characters,
@@ -23398,7 +23410,8 @@ with the failure as `cause`;
 Cases read a missing path and a directory under a scratch folder;
 before the fix the same reads raised `ENOENT` and `EISDIR` (the fixing agent's red run).
 
-Open:
+Open when this entry was written,
+closed in B221:
 `reportingRefusals` (`corpus-run/cli-refusal.ts`) still prints a `CensusBaselineError`
 followed by the fault-in-the-command lines and a stack,
 as it did for the not-JSON refusal of B163,
@@ -23458,8 +23471,9 @@ and a module of its own would have needed a test file of its own.
 Open:
 the new warning logs the caught value with `String(error)`,
 as the reader's own failure line in the same file does,
-where the package's rule for a logged failure is `refusalText`;
-a census of such lines is owed.
+where the package's rule for a logged failure is `refusalText`.
+A census of every place a caught value is turned into text whole was launched on 2026-10-05 (UTC)
+and had not handed back when this was written.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -24310,8 +24324,16 @@ which fell out of the same loop.
 
 Open,
 described by the agent and left,
-each a first match on a key nothing makes unique;
-a follow-up is owed:
+each a first match on a key nothing makes unique.
+Two follow-ups were launched on 2026-10-05 (UTC).
+One took the title link,
+the pair bound and the revision's block,
+the sites a page pass or a floor reads:
+red in `51f6dd875`,
+fixed in `65bd3a645`,
+with no ledger entry for it when this was written.
+The other took the readers after them in this list
+and had not handed back:
 
 - `corpus-run/title-reference-link.ts`:
   a title linked twice in one slice has its second link's rendering never located,
@@ -24638,6 +24660,710 @@ and an older `provider-router` case asserts the class alone.
 Recurrence:
 `mistake-prevention.md`,
 "Guards that cannot fail".
+
+### B212: the footnote mention scan disagreed with the parse about where a marker shape is no reference
+
+Red in `9b872bbea`,
+fixed in `cf50117c5`.
+
+Found on 2026-10-05 (UTC)
+by the lead's probes of the lexical URL reader B182 added,
+as the item B182 left open.
+`footnoteMentions` (`footnote-mentions.ts`) counts GFM marker shapes by scanning a fragment's raw text,
+and asked that reader (`footnote-url-spans.ts`) which of them sit in a URL.
+The reader began a bare literal only after whitespace or one of four characters,
+where the parser begins one after any character that is no ASCII letter,
+and it knew nothing of code spans,
+images,
+link reference definitions,
+comments or the markup around a link's label.
+Four guards read the scan:
+`assembly-integrity.ts`,
+`translate-marker-drop.ts`,
+`translate-definition-leak.ts` and `corpus-run/insertion-referenced-definitions.ts`.
+A mention wrongly counted tells a candidate to keep a marker its page never had,
+so a good candidate is refused or withdrawn;
+a mention wrongly dropped leaves a real reference unguarded,
+which is the direction those guards cannot afford.
+
+Measured by the fixing agent on the build before the fix,
+as texts whose scanned references differ from the footnote graph's:
+90 of the 210 texts of the lead's URL table,
+6 of them lacking a reference the graph reads;
+5 of 28 edge texts,
+2 of them lacking one;
+and 1,603 of 3,000 texts from a seeded generator,
+166 of them lacking one.
+
+Three designs were weighed.
+Correcting the lexical reader rule by rule was rejected:
+it means writing code spans,
+link labels,
+rebuilt literals and the Han boundary by hand,
+which is the parser again.
+Taking the document parse of the fragment as the mentions was rejected:
+a fragment opening on a thematic break reads as front matter and loses its marker,
+one opening on a malformed front matter block throws `FrontMatterParseError`,
+and a fragment that opens a fence or a comment for the page loses the markers after it.
+Chosen:
+the lexical hits stay,
+which keeps the roles,
+the overflow refusal and the full-width markers as they were,
+and a hit is dropped where a parse of the fragment reads no reference.
+
+The fix:
+`footnote-parsed-spans.ts` (`parsedSpansOf`,
+`insideParsedSpan`) masks invisible lines and HTML comments as the document parse does,
+splits no front matter,
+parses the masked fragment under plain markdown and under strict MDX,
+and keeps only the regions both grammars read as no reference.
+Where strict MDX refuses the fragment,
+plain markdown decides alone;
+where the plain parser refuses it for its nesting,
+no region is reported and every shape counts,
+as `corpus-run/prose-ranges.ts` already answers that refusal.
+The regions are a tokenized or angle autolink,
+the marker shape of a literal the autolink transform builds,
+the markup around a link's or a reference link's label,
+an image,
+a link reference definition,
+an inline code span and a masked comment.
+A shape in a code block,
+a raw HTML node or a JSX attribute still counts,
+since a fragment cannot settle those for the page,
+and a full-width marker counts as the graph counts it.
+`footnote-url-spans.ts` and its test file are deleted,
+and the footnote barrel exports the new pair in their place.
+
+Both grammars are asked because they differ in block structure.
+A fence indented four spaces is a code block to strict MDX and a paragraph line to plain markdown,
+where the backticks before it pair into a code span;
+a parse under plain markdown alone dropped a marker the page,
+read as MDX,
+holds as a reference.
+Keeping a region only where both grammars read it removed every such text the agent's generator found.
+
+After the fix,
+by the fixing agent's runs:
+the lead's three probes agree with the graph,
+the 28 edge texts among them;
+seeded runs of 3,000 to 60,000 generated texts,
+eleven runs,
+found no text where the scan lacks a reference the graph reads,
+and none where it counts more than the graph outside a code block or a raw HTML node;
+over the 276 page files of the pinned corpus,
+68 of which hold a marker shape,
+the scan's GFM references equal the document parse's in every file,
+and no file and none of 8,188 blank-line chunks differs between the scan before and after,
+while the control texts do differ;
+and the scan costs about 200 to 270 ms over those 68 files,
+against 15 to 25 ms before,
+a text holding no marker shape taking a path that parses nothing.
+
+Cases:
+`footnote-mentions-agreement.unit.test.ts` runs the scan and the graph on every text of the lead's table,
+the edge texts and 3,000 seeded texts,
+storing no expectation for them,
+and names the two shapes where the scan counts more;
+`footnote-parsed-spans.unit.test.ts` holds each region,
+the unclosed comment,
+the region only one grammar reads and the nesting the plain parser refuses;
+and the edge case of `footnote-mentions.unit.test.ts`,
+two of whose thirteen expectations the parse does not give,
+is replaced by four.
+Three of those cases failed on the lead's red tree.
+The agent's own red run of them came after its fix,
+against the restored base sources.
+
+At the merge the lead removed the deleted file's two keys from the blankness scan's held list,
+and corrected the header comment and one TSDoc of `footnote-mentions.ts`,
+which still described one grammar and no masked comment.
+The whole suite ran on `cf50117c5` in a side checkout:
+1,607 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 36 source scans passing.
+
+Cache:
+no version moved.
+The cache account audit of 2026-10-05 (UTC) found the newest slice-cache record written 2026-09-27T04:26Z,
+with every cache version set since then,
+so no stored record exists under a current version.
+
+Not checked by the agent:
+whether every site that slices a page cuts at a top-level block's offset,
+which the module's reading of a fragment rests on and which was read from a comment in `parse-document.ts`.
+
+Open to the owner's veto:
+a marker shape in a masked comment is no longer a mention,
+where the scan counted it;
+a shape in a code block,
+in raw HTML or in a full-width marker stays counted;
+a nesting the plain parser refuses counts everything;
+and the exports `urlSpansOf` and `insideUrlSpan` are gone.
+
+Open:
+a footnote definition indented four or more spaces is a definition to the scan and a reference to the graph,
+for which a follow-up was launched and had not handed back when this was written;
+and a text nested thousands of block quotes deep costs the parser itself,
+3.2 s at 30,000 markers and 14.8 s at 60,000 by the agent's timing,
+with no check made of whether another stage parses such a candidate first.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a scan of a fragment asks a parse of the fragment where its shapes are something else,
+under every grammar the page may be read by.
+
+### B213: an address was cut at its first closing parenthesis
+
+Red in `9b872bbea`,
+fixed in `cf50117c5`.
+
+Found on 2026-10-05 (UTC),
+as the two items ledger B173 left open.
+`corpus-run/dropped-destinations.ts` ended an address at its first closing parenthesis (`firstStopper`),
+on the scanner and on a literal alike,
+so a bare `https://en.example/wiki/Cat_(animal)` read as the address without its last character,
+and a source linking that address explicitly against a page writing it bare reported the destination dropped
+(the fixing agent's probe on the build before the fix).
+The test for an autolink literal also stood twice,
+as the private `isProseAddress` beside the exported `isAutolinkLiteral` (`footnote-unpositioned-runs.ts`).
+
+The parse's rule,
+as the agent read it in the installed autolink-literal syntax (`tokenizePath` and `tokenizeTrail`):
+a closing parenthesis is part of the path while fewer have closed than opened,
+and a run of sentence punctuation and closing parentheses that reaches the end of the address
+is shed from where it starts.
+
+The fix:
+`addressEnd` and `trailRunEnd` replace `firstStopper`.
+An address keeps a closing parenthesis that balances an opening one,
+ends at one that balances none,
+and ends at sentence punctuation that only closing parentheses follow,
+as in `(cat.)`.
+The cut is one pass:
+a run that turns out to be no trail is not scanned again.
+`scanUrlRuns` and `trimDestination` both use it,
+and `isProseAddress` is gone in favour of `isAutolinkLiteral`,
+a change with no red case of its own.
+
+After the fix,
+by the fixing agent's runs:
+the explicit and the bare writing of one address report nothing dropped in either direction;
+none of the 276 page files of the pinned corpus reads differently through `collectDestinations`,
+while a control text does,
+and one page holds an address with an opening parenthesis;
+and the destination the tree reader gives equals the parse's address
+in 26,012 of 40,000 generated texts holding a link,
+against 15,757 before.
+
+Four cases in `corpus-run/dropped-destinations.unit.test.ts` hold the balanced parenthesis in a bare address,
+the trail that ends a run,
+the autolink literal with a `www` literal beside it,
+and the explicit and bare pair in both directions.
+All four failed on the lead's red tree;
+the agent's run has no red log for the trail case,
+which it wrote after its last change to the scanner.
+
+Open to the owner's veto:
+sentence punctuation standing before a closing parenthesis is shed where only closing parentheses follow it.
+
+Open:
+the scan does not shed a trailing underscore,
+asterisk or tilde before a closing parenthesis as the parse's trail rule does,
+which it did not before the fix either;
+about 450 of 40,000 generated texts show the difference,
+by the agent's count.
+A follow-up was launched and had not handed back when this was written.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse":
+a cut that stands for the parser's is written from the parser's own rule for it.
+
+### B214: the recheck rebuilt the checker round's quorum from the wording of a finding
+
+Fixed in `2b0bfad75`,
+with its cases,
+which read a field the fix adds;
+the fixing agent's red run read `undefined` where 2 and 3 were expected.
+
+Found on 2026-10-05 (UTC)
+by the agent closing what the refine-lane review left of B161.
+`retainsResolvedIssues` (`refine-recheck.ts`) needs the quorum the checker round closed on,
+and nothing carried that number but the wording of the gather's `stage-short-bench` finding.
+B161 had read it there:
+`checkerQuorumClosedOn` rebuilt the finding for every count of refused seats and looked for a match.
+
+The fix:
+`CheckerStageResult` gains `quorum`,
+the recheck reads it,
+and `checkerQuorumClosedOn` is deleted.
+The agent's patch sized the number in `runCheckerStage` (`repair-edit-stages.ts`),
+from the bench size and the seats the gather found unreachable,
+since the gather's file was outside the files it was given.
+The lead changed that at the merge:
+`gatherStageVoices` (`stage-quorum.ts`) returns `quorum`,
+the number its own `quorumMet` compared the heard voices with,
+and `runCheckerStage` hands it on,
+so the quorum is sized in one place.
+The same commit corrected the TSDoc of the gather's `findings`,
+which said the list is empty when quorum was met,
+though the gather names each lost voice on a met quorum too.
+
+Cases in `repair-edit-stages.unit.test.ts` hold the quorum of two for a bench of three,
+of three for a bench of five,
+of two for a bench of five whose last three seats no provider serves,
+beside the short-bench finding naming the same number,
+and of two for a bench of three with one seat refused.
+The lead's case in `stage-quorum.unit.test.ts` holds six for a bench of eleven every seat of which answers
+and two for the same bench with seven seats refused,
+with the nine findings that bench leaves.
+
+Cache:
+no version moved;
+a result gains a field,
+and no cached record holds it.
+
+Not checked by the agent:
+every writer of an artifact,
+for one that stores a checker stage's result whole;
+its search found no shape guard that would meet the new field,
+and the whole suite passed with it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Which seats a quorum counts":
+a reader of a gather's round takes the quorum the gather returns,
+never one read back out of a finding's wording or sized a second time.
+
+### B215: a missing check named no checker, no issue by id and no cause
+
+Red in `1e444543d`,
+fixed in `2b0bfad75`.
+
+Found on 2026-10-05 (UTC)
+by the refine-lane review,
+in the finding B161 quotes.
+`resolveResolutionChecks` (`tally-resolution.ts`) wrote one `missing-check (<n>)`
+for each issue a checker's report left without a verdict,
+numbering the issue by its place on the sheet.
+Two checkers skipping one issue wrote the same line twice,
+and an issue answered only with a verdict the tally does not know landed there too,
+with nothing to tell it from one never mentioned.
+
+The fix:
+the resolver takes the checker's id and writes `missing-check (<issueId>, <checkerModelId>, unanswered)`
+where the report held no check on the issue,
+and the same with `unknown-verdict` where every check it held on the issue carried an unknown verdict;
+`unknown-resolution-verdict (<verdict>)` still stands beside the second.
+`runCheckerStage` passes each voice's id.
+The findings for a repeated check and for a check numbered past the sheet are unchanged.
+No reader takes the finding's text:
+the recheck counts the reading's ballots,
+and the troubleshooting doc on unread signals lists the finding by name alone.
+
+Cases:
+`tally-resolution.unit.test.ts` holds an issue never mentioned,
+one answered only with an unknown verdict,
+and one answered with an unknown verdict and then a known one,
+which is answered;
+`repair-edit-stages.unit.test.ts` holds two checkers skipping one issue,
+whose two findings now differ,
+and the cause beside the unknown verdict itself.
+Five cases of `refine-recheck.unit.test.ts` carry the finding in their expectations and failed on the lead's red tree.
+Their helper now puts the findings of several checkers in code-point order,
+since the agent saw the order differ between two runs of one case.
+
+Cache:
+no version moved;
+a cached record holds the old wording,
+and nothing reads it.
+
+Open to the owner's veto:
+the issue is named by its id and the checker by its seat id,
+where the other way prefixes every ballot finding with the checker at the stage and changes more text.
+
+Recurrence:
+`mistake-prevention.md`,
+"Labels a message names":
+a finding one of several voices leaves names the voice,
+the item by its id and the cause,
+so two findings about one item can be told apart.
+
+### B216: a rewrite the patch refused as unchanged left no finding
+
+Red in `1e444543d`,
+fixed in `2b0bfad75`.
+
+Found on 2026-10-05 (UTC)
+by the refine-lane review,
+and left by the fix of B162.
+`runRefineStage` (`refine-stage.ts`) applied each rewriter's operations and read only the ones the patch applied.
+A rewrite that came out as the paragraph it replaces was refused by the patch as `unchanged-region` and dropped,
+and the stage reported its rewriter as heard and not proposing,
+which is what it reports for a rewriter that proposed nothing.
+
+The fix:
+each such refusal leaves `<model>: refine-unchanged-rewrite (paragraph <n>)` in the stage's findings,
+the paragraph numbered as the rewriter's sheet numbers it,
+in roster order,
+between the atom gate's findings and `refine-candidates`.
+The consolidation polish round calls the same stage and gains the same finding.
+Any other refusal by the patch throws `unreachable:`,
+naming the reason cut at its parenthetical so that no page text reaches the message:
+the lane binds its operations to its own envelopes,
+applies them to the text those envelopes came from,
+and skips preservation.
+The agent's probe ran 4,000 generated documents,
+3,807 envelopes,
+through the lane's own derivation and patch:
+the unchanged region was the only refusal reached,
+2,031 times,
+and 1,038 documents applied an operation,
+which shows the probe reached the patch.
+The steps that read one reply moved to `refine-stage-replies.ts` (`resolveReply`,
+`applyReply`,
+`inRosterOrder`),
+for the file-length cap,
+with no comment dropped.
+
+Cases:
+two in `refine-stage.unit.test.ts`,
+one of them an older case whose expectation changed,
+both failing on the lead's red tree;
+and seven in `refine-stage-replies.unit.test.ts`,
+two of which reach the throw through a reply built by hand with a wrong hash and an unknown envelope,
+input no run produces.
+One guard in the new module has no case:
+the refusal of an operation naming no paragraph of the sheet,
+which the patch refuses first under another reason.
+
+The same commit gives `refineProbeVerdict` a test file of its own,
+eleven cases,
+written green with no mutation run,
+and takes its line out of the list of modules without one.
+
+Cache:
+no version moved;
+findings are added only.
+
+Open to the owner's veto:
+the finding's form,
+where the other way is the editor lane's count of rejections by kind;
+and the throw for every other refusal.
+
+Open,
+seen by the agent and outside these three entries:
+a paragraph preceded by a byte order mark got an envelope whose text begins with the mark and ends one character short
+(`parse-document.ts`),
+and whether two runs of one input can order a checker round's findings differently was not settled.
+A follow-up was launched for each and had not handed back when this was written.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation":
+a caller of a function that returns what it applied beside what it refused reads both,
+or throws on the refusals its construction rules out.
+
+### B217: a dropped destination's refusal wrote its counts as `destination(s)` and `slice 4, 7`
+
+Fixed in `843bd6ce0`,
+with its four cases;
+the fixing agent's red run failed all four.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B174 left open.
+`DroppedDestinationError` (`corpus-run/destination-completeness.ts`),
+a marked class,
+wrote `destination(s)` after any count
+and named several slices under the singular `slice`.
+
+The fix:
+`wordForCount` chooses the noun for the destination count and for the slices in `whereCarried`,
+and the message inventory names both calls.
+The four cases,
+in `corpus-run/dropped-destination-error.unit.test.ts`,
+hold one destination in one slice,
+two in two,
+one in none and two in one shared slice,
+each by its whole sentence.
+The file is named for the class:
+one named for the module would have taken the module's line out of the list of modules without a test,
+which stands in a file the agent was not given.
+
+The count-nouns scan had passed the old wording;
+why it did was not looked into.
+
+Open:
+`corpus-run/destination-completeness.ts` still stands in that list,
+its cases under another file's name.
+
+Recurrence:
+`mistake-prevention.md`,
+"Counts in printed text".
+
+### B218: a cached pairing was used without the reader a fresh reply goes through
+
+Red in `63567b4f5`,
+fixed in `843bd6ce0`.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B171 left open.
+`prepareBlockPairing` checked a cached block pairing's indices alone,
+and `buySectionPairing` (`prepare-section-round.ts`) handed a cached section pairing on unread.
+The fixing agent's probes of damaged records:
+a section record naming a translation section the document lacks
+stopped the alignment with a missing-value error naming nothing;
+one naming an original section it lacks left the document with no slice,
+without a word;
+a repeated or reversed pair ended in `PlacementLayoutError` far from the cache;
+and one original paired with two translations aligned the wrong sections,
+without a word.
+A block record that moves backwards ended in `SliceCoverageError`,
+and one that repeats a correspondence or pairs a definition with a body block was sliced as stored.
+
+The fix:
+both warm paths read the record through the whole reader a fresh reply goes through,
+`readBlockPairing` with the question's own free order,
+so definitions whose labels cross still resume,
+and `readSectionPairing`.
+A record the reader refuses is a miss said on a warning in the refusal's words,
+and the round is bought again and stored under the same key.
+Three comments that leaned on the index check now name the reader
+(`corpus-run/slice-cache-store.ts`,
+`pair-media-adjacency.ts`,
+`pair-definition-order.ts`).
+
+Eight cases,
+three in `prepare-block-pairing.unit.test.ts` and five in `prepare-section-round.unit.test.ts`,
+each hold one kind of damage,
+the warning and the round bought again.
+All eight failed on the lead's red tree.
+
+A risk the agent names and probed on two shapes:
+a record the cold path stores after media widening could fail the stricter reader,
+had media claimed a definition into a body pair;
+neither shape stored such a record,
+and a false miss would cost one round bought twice,
+never a wrong page.
+
+Cache:
+no version moved;
+no record's shape changes,
+and a record the reader refuses is replaced.
+
+Recurrence:
+`mistake-prevention.md`,
+"Files a later run reads back":
+the check a fresh answer goes through is its whole reader,
+not that reader's first test.
+
+### B219: the grouping dropped a translation block ahead of a sealing note without a word
+
+Fixed in `843bd6ce0`,
+with its cases,
+which name a class the fix adds;
+the fixing agent's red run failed both.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B172 left open.
+A translation block that stands ahead of the archive's note,
+with no paired run before it,
+has no run to join:
+nothing folds into a sealed run,
+and every block after the note is sealed with it.
+`mergeOneSidedRuns` (`group-merge.ts`) returned its runs without the block and said nothing.
+B172 had six shapes that did not reach the state through `prepareDocumentPair`.
+The fixing agent's seeded generator did:
+of 3,000 sections reaching the merge,
+1,446 of them sealed,
+115 lost a block this way,
+77 under the scorer's walk and 38 under a supplied one,
+and two more seeds gave 182 of 4,462 and 176 of 4,493.
+`prepareDocumentPair` refused every such page,
+a layer up,
+as a block that reached no slice,
+so none shipped;
+a caller of `groupNodesSealed` alone was handed the runs.
+
+The fix:
+where a sealed run stands and translation blocks are still held,
+`mergeOneSidedRuns` throws `UnplacedTranslationBlocksError`,
+naming the blocks by their positional ids.
+The agent's first version threw a plain `Error`.
+The lead sent it back:
+a log line through `refusalText` would have read `refused by Error`,
+where the coverage refusal it pre-empts is marked and prints its sentence.
+The class is marked,
+its message a count word,
+the ids and sentences written in the module,
+and the message inventory names the class and its parts.
+`mergeOneSidedRuns`,
+`groupNodesSealed` and `prepareDocumentPair` each say so in a `@throws`.
+After the fix the first seed's 115 sections are refused in the merge and none is dropped,
+by the agent's run.
+
+Cases in `group-aligned.unit.test.ts` hold the refusal from the grouping and through `prepareDocumentPair`,
+each by its class,
+its whole text and the line `refusalText` gives,
+beside a control page whose greeting has an original of its own.
+
+Measured by the lead with the package's slice census on `cf50117c5`,
+before this fix:
+92 complete pairs and 1,259 slices over the pinned corpus,
+and no page refused.
+So no page of the corpus reaches the refusal under the deterministic aligner;
+a roster's pairing still can,
+as the supplied walks of the probe did.
+
+Open to the owner's veto,
+and open:
+the page is refused,
+where the other way carries the block with the archive's bytes untouched so that the entry proceeds.
+A follow-up was launched for that and had not handed back when this was written.
+Seen by the agent and not looked into:
+two generated inputs of the second seed ended in `PlacementLayoutError`,
+from supplied pairings that repeat a pair.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation":
+a step that cannot place something refuses it there,
+by name,
+in a class a log line may print.
+
+### B220: a request the transport rejected left the lookups as the transport's own error
+
+Red in `63567b4f5`,
+fixed in `843bd6ce0`.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B180 left open.
+`searchWorkTitle` (`work-title-search.ts`) and `fetchCitedReference` (`cited-reference-fetch.ts`) awaited `fetch` bare.
+A rejection passed on as the runtime's `TypeError`,
+which is unmarked,
+so the lookups' log lines read `refused by TypeError`,
+naming neither the endpoint nor what failed.
+
+The fixing agent's probe of the runtime,
+on local addresses and an invented header value:
+a name that does not resolve rejects with a cause carrying a system code;
+a refused connection rejects with a cause carrying none;
+and a header value holding a line break rejects with no cause and a message that quotes the value.
+So a system code cannot tell a network failure from a request the transport will not send,
+and the rejection's message cannot be repeated,
+since the header is the key.
+
+The fix:
+a rejection before any answer is rethrown as the lookup's own marked class,
+`WorkTitleLookupError` or `CitedReferenceFetchError`,
+with the rejection as its cause and never in its message.
+The detail names the endpoint and says the request failed before any answer came back:
+either the network could not be reached,
+or the transport refused to send the request,
+as it does for a key or header holding a line break;
+and it says to check the connection and the key.
+The agent's first wording said the network had failed,
+which is untrue of the second case,
+and the lead sent it back.
+A connection that fails while the body is read says the network was lost while the endpoint was answering.
+The caller's abort passes on as it came,
+and so does a body that is not JSON,
+whose parser message quotes the text it refused (ledger B166).
+
+Cases in `work-title-lookup.unit.test.ts` and `cited-reference-fetch.unit.test.ts`:
+the rejecting transport,
+the header value holding a line break,
+the body cut while it is read,
+and in the first file the log line.
+Seven of them failed on the lead's red tree,
+where the header case showed the transport's own text,
+the invented value in it,
+as the refusal.
+A fixture file holds the response whose body fails,
+which both test files share.
+One case name and two TSDoc summaries are the lead's rewording,
+to say what the final detail says.
+
+Open to the owner's veto:
+a body that is not JSON stays the parser's unmarked error,
+logged by class alone.
+
+Open:
+`work-title-search.ts` still stands in the list of modules without a test of their own,
+its cases in the lookup's test file.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries":
+an authored account says only what holds for every cause it covers,
+and names the possibilities where it cannot tell them apart.
+
+### B221: seven refusals of the operator's own mistake printed as faults of the command
+
+Red in `63567b4f5`,
+fixed in `843bd6ce0`.
+
+Found on 2026-10-05 (UTC),
+as the item ledger B183 left open and what the agent found beside it.
+`reportingRefusals` (`corpus-run/cli-refusal.ts`) prints a `StatedRefusalError` as the command declining,
+its sentence alone,
+and anything else as a fault,
+with the fault line,
+the frames and the fault's exit code.
+Seven classes carry an authored,
+marked sentence about something the operator named or set,
+and each printed as a fault:
+`CensusBaselineError` (`corpus-run/coverage-census-input.ts`),
+`SpendCeilingOverrideError` (`corpus-run/spend-ceiling.ts`),
+`BedrockCreditOverrideError` (`bedrock-ledger.ts`),
+`UnsafeSeedError` and `GradedSheetExistsError` (`corpus-run/sheet-path.ts`),
+and `EmptyPoolError` and `MixedGenerationError` (`corpus-run/artifact-pool-refusal.ts`).
+
+The fix:
+each extends `StatedRefusalError`,
+its message word for word as it was,
+so the command prints the sentence alone and exits with the stated-refusal code.
+`corpus-run/cli-refusal.unit.test.ts` holds one case for each class,
+asserting the printed line and the exit code,
+and `corpus-run/coverage-census-input.unit.test.ts` holds the baseline's class.
+All eight failed on the lead's red tree,
+the seven reading exit code 5 where 6 was expected.
+
+The lead's part:
+`StatedRefusalError` takes an optional `cause`,
+kept on the error and never repeated in its message,
+committed in `2b0bfad75` with a test file of its own;
+`CensusBaselineError` hands its cause to it,
+where the agent's patch set the property by hand after construction.
+
+Left as they were:
+`HardCapOverrideError` and `RunsDirectoryBusyError`,
+the same shape,
+in files another change held;
+`SheetBindingError`,
+whose message quotes values read off files and is unmarked,
+so it needs an authored message first;
+and `CoverageFileError`,
+`SourceMapFileError` and `CorpusReadError`,
+which the agent read as faults of the environment without running each command.
+A follow-up is prepared for these six and was not launched when this was written.
+`LedgerShapeError`,
+`BedrockLedgerShapeError` and `ArtifactParseError` are damaged data and stay faults,
+which an existing case pins.
+
+The whole suite ran on `843bd6ce0` in a side checkout,
+which holds the fixes of B214 to B221:
+1,615 `[PASS]` lines and no `[FAIL]` line,
+the lint finding nothing,
+and the 36 source scans passing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal":
+a refusal's class says whether it is the operator's mistake or the command's fault,
+and a case drives each such class through the printer.
 
 ## Process mistakes in this audit
 
@@ -26310,6 +27036,11 @@ as M1 says;
 one call holds one check,
 or at most three steps joined by `&&`,
 and two checks whose results are both wanted go in two calls of one parallel batch.
+After this entry was written the slip came once more the same day,
+a `git diff … | rg …` chained to a second `rg` with `;`,
+so the record did not stop it.
+What would is a check of the command's text before it runs,
+which no hook makes yet.
 `mistake-prevention.md`,
 "Shell commands".
 
@@ -26340,6 +27071,35 @@ by M93's form or by `cat --number <file> | sed --quiet 'A,Bp'`,
 never a count from the range's start.
 `mistake-prevention.md`,
 "Lint and edits".
+
+### M118: a count an agent's permission check refused, asked of the lead
+
+Status:
+happened 2026-10-05 (UTC);
+nothing was run on the agent's behalf.
+An agent fixing three first-match sites was to count over the pinned corpus
+how many slices link one title twice
+and how often a pair's wording stands on more than one line of a slice.
+Its first command that touched the corpus clone was refused by the permission classifier inside the agent,
+with no reason given.
+It tried no other form,
+handed back its fixes with their fixture cases,
+and its report asked the lead to run the counts or to clear the permission.
+The lead ran neither:
+doing for an agent what the agent's own permission check refused goes round that check,
+whoever holds the wider permission,
+and coaching the agent to another command that reaches the same read does too,
+which is M73's attempt made through a second pair of hands.
+The counts stand as untaken,
+for the owner to authorize,
+and the one decision that leaned on them is recorded as made without them:
+the pair bound says nothing where a wording stands a different number of times in the two texts.
+Prevention:
+a count an agent was refused is reported to the owner as untaken;
+the lead neither reruns it nor shows the agent a way round the refusal;
+and what was decided without the count says so where it is recorded.
+`mistake-prevention.md`,
+"Shell commands".
 
 ### M79: a coverage census measuring compressed code
 
@@ -27613,7 +28373,8 @@ for any text a page wrote.
 
 Superseded in part on 2026-10-05 (UTC),
 when the owner ruled:
-"I've allowed you to handle PII. The corpus is public."
+"I've allowed you to handle PII.
+The corpus is public."
 The lead's reading,
 open to the owner's veto:
 a probe need not mask corpus page text,
