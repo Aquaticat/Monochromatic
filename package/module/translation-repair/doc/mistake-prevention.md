@@ -94,6 +94,13 @@ Loops,
 a sleep,
 polls of a running log and a heredoc chained to a second command came again,
 from the lead and from agents (ledger M132).
+The lead's came once more on 2026-10-06 (UTC):
+calls chaining four steps with `&&`,
+a heredoc with a second command,
+a `git diff` run from a subdirectory,
+and a count expected to be zero leading an `&&` chain it then stopped;
+and agents chained three more reads or writes with `;` (ledger M116,
+M139).
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
@@ -255,6 +262,7 @@ Three guards no input can tell from their absence stood with nothing at their si
 one had a record saying every case passes without it,
 and the case that named it deleted (ledger B178);
 the other two were found by a review of the trial's cases (ledger B335).
+The bench-draw cases held three `toContain` assertions where each whole value was known (ledger B348).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -355,6 +363,9 @@ a census of number reads counted calls and missed readers handed on as values (`
 six reads in all (M90);
 a source scan read a `satisfies` as typing a table with string keys,
 and missed a parameter destructured from an object until moving code changed its count (M98);
+a scan of map writes read every two-argument `set` as one,
+a typed array's copy among them,
+and code was bent into a loop to pass it (ledger B342);
 and a search whose pattern `rg` refused printed its `|| echo` fallback,
 which read as finding nothing (M99).
 
@@ -403,6 +414,9 @@ destructured or defaulted),
 says for each whether it gives the shape,
 and holds one of each in its fixture;
 a count that moves when code moves without changing what it does marks a gap in the scan.
+A scan reading a method call tells the receiver's kind from the declaration the receiver's name resolves to,
+never from the method's name alone,
+and a finding that would bend correct code to pass it is read as a defect of the scan first.
 A null result counts only after a positive control shows the search can match,
 and a fallback report names the exit status (`|| echo "exit $?"`),
 since `rg` exits 1 for no match and 2 for a refused pattern or another error.
@@ -524,6 +538,12 @@ and a module comment named two of the three readers it served (ledger M137);
 a comment that states what code covers is read against the code.
 Four agents' reports were kept only in the session and had to be extracted from its transcript later (ledger M136);
 a report is written to a file when it arrives.
+A red commit's message was first drafted saying every failing case was a new one,
+where an existing case failed too,
+and a note tied a bound to another entry's list before checking which bound that entry meant (ledger M139);
+a message describing a run is written from the run's log line by line,
+and a link between two records is checked before it is written,
+or written as unverified.
 
 The rule:
 every number,
@@ -919,6 +939,10 @@ which the superuser reads anyway,
 so the case failed whenever the suite ran as root (ledger B334).
 Eight log lines that print a provider's failure had no case reaching them
 through the real client over the real transport (ledger B330).
+The corpus git children kept the caller's locale variables,
+and git translates the refusals the corpus reader tells apart by their English words:
+under a German `LANGUAGE`,
+`LANG` or `LC_MESSAGES` a path absent at a held commit printed its refusal in German (ledger B347).
 
 The rule:
 before a test drives a production entry point,
@@ -964,6 +988,11 @@ never one a mode forbids.
 A line that prints a provider's failure is reached by a case
 through the real client over the real transport with a stubbed `fetch`
 (`provider-status-failure.test-fixture.ts`).
+A reader of another program's words fixes the language that program speaks
+where the environment for its child is built
+(`LC_ALL=C` for the corpus git children),
+and a case runs the real program under another locale
+beside a control showing that the program translates there.
 
 What enforces it:
 the type checker:
@@ -1001,6 +1030,9 @@ ledger B314 and B315,
 which close the item ledger B291 left open);
 `src/production-children-environment.unit.test.ts` starts each site's real child
 and reads from the child's own side that no key or setting arrived.
+`src/corpus-git-context.unit.test.ts` asserts the corpus environment whole
+and reads real git's refusal in English under a German locale,
+beside a control that fails on a host whose git does not translate (ledger B347).
 `task-runner-guard.ts` refuses a built command started in a process that holds a key
 unless that process names the command (ledger B319),
 and `src/task-runner-guard-reach.unit.test.ts`,
@@ -1026,15 +1058,38 @@ which the round never waits for since it ends at the last answer,
 and each case fails at a window of 0,
 which shows the window is what keeps the late voice.
 
+The consolidation driver test bounded each call and each drive at 5,000 ms over milliseconds of scripted work,
+and its TSDoc said nothing bought a call where a case bought calls;
+on a loaded machine the case driving two slices serially and then two at once
+failed with a `TimeoutError` its name never states,
+twice,
+and passed in every other run of the whole suite (ledger B340).
+Its bound is 60,000 ms,
+documented as a stop for a hang that no case waits for.
+
 The rule:
 a real-clock case asserts only bounds that load can widen and not break;
 a case that needs a caller asleep uses a window no stall outlasts;
 a grace window a case relies on is one the round never reaches,
 and the case is shown failing at a window of 0;
 a new timing case counts as passing only once the whole suite has run it.
+A bound on scripted work is a stop for a hang,
+which no case waits for,
+documented as such where it is declared;
+never a few seconds over milliseconds of work,
+which a loaded machine outruns.
+A case that needs a run stopped brings its own controller,
+so the stop for a hang never doubles as the stop a case asserts.
 
 What enforces it:
 the whole unit suite run before a batch's work is called done.
+Open:
+the same shape stands at 604 sites in 138 test files (ledger B340),
+and a census of them is queued:
+each site is either a stop for a hang,
+moved to one documented bound,
+or a bound a case means to reach,
+kept and gated.
 
 ## Copies of shared code
 
@@ -2127,6 +2182,9 @@ as a form value,
 in base64,
 as JSON unicode escapes
 or as the decoded pair of a `Basic` header passed through (ledger B329).
+And the stream drain's cancel line logged `response.url` whole,
+which after a redirect is an address the provider chose,
+its query able to repeat the key the request sent (ledger B341).
 
 The rule:
 a marked class writes its sentence itself,
@@ -2151,6 +2209,9 @@ each throw site hands it a reason of its own.
 A credential is masked in every spelling a decoder of the reply's formats recovers,
 not only as the request sent it;
 a spelling the mask leaves out of reach is named as out of reach in its record.
+Whatever text a provider chose is reply text,
+an address a redirect named among it,
+and is masked before anything logs it.
 
 What enforces it:
 `message-names-only.unit.test.ts` fails on a marked class whose constructor interpolates a part the inventory does not name,
@@ -2170,9 +2231,10 @@ which `source-scans` runs,
 fails on a caught value turned into text whole outside the functions it holds with a reason each (ledger B237),
 and `body-excerpt-readers.unit.test.ts` holds the reply excerpt field to five named files (ledger B268).
 No scan finds a reader of a reply that the credential mask never reads;
-each of the three closed so far was found by reading (ledger B293,
+each of the four closed so far was found by reading (ledger B293,
 B295,
-B300).
+B300,
+B341).
 `credential-mask.unit.test.ts` holds each spelling the mask reads,
 and the case of each surface that prints a reply holds the other spellings masked there (ledger B329);
 a spelling no decoder named in that entry recovers,
@@ -2705,6 +2767,16 @@ held by a differential against the compiler over every class of character;
 two parses of one text apply the same masks in the same order;
 and a generator for a differential draws every form of the rule it tests.
 
+The readers ledger B326 and B327 left open were then brought to the definitions:
+the nesting count had missed 8 tags the grammar opens and opened 146 it refuses (ledger B344),
+the attribute restorer had dropped 61 of the 75 tags whose attribute the grammar reads (ledger B345),
+and the destination scan had run an address past a no-break or an ideographic space (ledger B346).
+A reader named open beside a definition it should share is brought to that definition,
+with the differential extended to its form;
+a scan that sees one line at a time reads a construct the grammar lets run on to the next
+as the grammar reads it,
+measured against the grammar on the split forms.
+
 The rule:
 a question about what a passage's blocks are
 (how many quotes,
@@ -2788,9 +2860,13 @@ and `hyper-client.unit.test.ts` a body cut inside its terminator frame.
 `nesting-fence-differential.unit.test.ts` holds the nesting scan to the grammar's own parser over a generated family;
 `mdx-tag-name.unit.test.ts` and the masker's,
 the inline reader's and the restorer's tests hold every reader of a tag name to the strict grammar
-over `tag-name-spellings.test-fixture.ts`;
+over `tag-name-spellings.test-fixture.ts`,
+and `nesting-inline-count.unit.test.ts` and `corpus-run/tag-attributes.unit.test.ts` hold the nesting count
+and the reader of attribute names to it over the same spellings (ledger B344,
+B345);
 and `corpus-run/dropped-destinations.unit.test.ts` holds the destination scan to the tree reader
-over `destination-address-texts.test-fixture.ts`.
+over `destination-address-texts.test-fixture.ts`,
+which draws whitespace past ASCII after a path and after a trail (ledger B346).
 
 ## What a catch charges
 
@@ -4018,7 +4094,8 @@ Every concurrent read set a census found reports the first failure in input orde
 fifteen of them with no case of their own (ledger B317).
 The verifier printed its entries' lines in the order its reads finished (ledger B310),
 and a test helper put the recheck's findings and ballots in order before comparing them,
-which hid a regression of the roster order the stage promises (ledger B328).
+which hid a regression of the roster order the stage promises (ledger B328);
+a second test file did the same through `readingsInSeatOrder` (ledger B343).
 
 The rule:
 what a command prints,
@@ -4042,6 +4119,8 @@ habit and review;
 each moved site with a parameter over what it reads has a case scripting the later member failing first,
 and no scan yet fails a bare `Promise.all`;
 `repair-edit-stages.unit.test.ts` holds the roster order whichever seats lost their first answer,
+`refine-recheck.unit.test.ts` and `refine-slice-settle.unit.test.ts`
+assert the recheck's order as the stage returns it,
 and `corpus-run/score-crosscheck-authors.unit.test.ts` holds the author table's ties under both arrival orders.
 No scan finds a result ordered by arrival.
 
@@ -4126,20 +4205,30 @@ and the test package neither sets that nor exports it (issue 610).
 The same display stood in ledger B70,
 quoting a failure of its guard,
 recorded and not acted on (ledger M138).
+A guard written for it then found 64 comparisons in 41 scans
+that compared what a walk over the package found through the library alone,
+where the lead's census had counted 31 scans (ledger B339).
 
 The rule:
 a check that fails over a list of findings fails listing them,
 each on a line of its own,
-before any comparison the library would cut;
-a scan over the package fails through `expectNoFindings` (`scan-findings.test-fixture.ts`).
+before any comparison the library would cut.
+A scan over the package compares what it found through the helper of its shape
+(`scan-findings.test-fixture.ts`):
+`expectNoFindings` for a list that should be empty,
+`expectFindingsAsListed` for a list against an inventory,
+and `expectRecordAsListed` for a record,
+each printing every difference whole and then making the scan's own comparison.
 A diagnostic seen to hide what it reports is fixed when it is first seen,
 or recorded as open with what it hides.
 
 What enforces it:
-habit and review;
-the two scans of ledger B336 and B337 fail through `expectNoFindings`.
-By the lead's census,
-31 of the 43 scans compare a whole list or record through the library,
-four of them as those two did before the fixture,
-so a failure of any of them can still print a count where what differs runs past 40 characters.
-Issue 610 holds the cause in the test package.
+`scan-direct-comparisons.unit.test.ts`,
+among the source scans,
+fails on a case of a listed scan that reads the package's files
+and compares through `toEqual` or `toStrictEqual` alone,
+and on a scan none of whose cases reads them;
+its header names what it cannot reach (ledger B339).
+`scan-findings.unit.test.ts` holds each helper's whole failure text.
+Issue 610 holds the cause in the test package,
+so a comparison outside a scan can still print a count where what differs runs past 40 characters.

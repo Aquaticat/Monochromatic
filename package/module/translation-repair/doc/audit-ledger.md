@@ -29912,6 +29912,10 @@ peak-concurrency instruments that wait 10 ms,
 meters that wait 20 ms,
 a bound of 5,000 ms over about 50 ms of work,
 and a lower bound only.
+A bound of that kind has since been shown to fail:
+the consolidation driver test's 5,000 ms hang bound,
+outrun on a loaded machine (B340);
+whether it is the bound listed here is not established.
 
 Open to the owner's veto:
 a window of 60,000 ms and no gate in the scripted clients.
@@ -30298,6 +30302,14 @@ Open:
 not brought to the definition and not measured;
 `tag-attributes.ts` still reads attribute names with its ASCII set,
 unmeasured.
+Both closed since:
+the nesting count by B344,
+the attribute names by B345.
+Corrected on 2026-10-06 (UTC):
+the spelling set this entry counts as 282 yields 283 spellings,
+277 of them distinct
+(the lead's count of `tagNameSpellings()`,
+unchanged since `75ea14bff`).
 
 Open to the owner's veto:
 `opensMdxTag` stays start-only,
@@ -30352,6 +30364,7 @@ Open:
 the scan still ends an address at ASCII whitespace only,
 where the parse ends at any Unicode whitespace,
 and the generator draws none.
+Closed since by B346.
 
 Open to the owner's veto:
 an address now runs past a `]` the rule does not end it at.
@@ -30384,6 +30397,7 @@ and its cases assert the roster order as the stage returns it.
 
 Open:
 `refine-slice-settle.unit.test.ts` wraps `readingsInSeatOrder` the same way.
+Closed since by B343.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -30509,6 +30523,9 @@ which after a redirect is an address the provider chose,
 unmasked;
 and the `blind-map-writes` scan reads a typed array's `set` as a Map write,
 so the patch wrote loops where `set` was the natural code.
+Both closed since:
+the address by B341,
+the scan by B342.
 
 Open to the owner's veto,
 the agent's:
@@ -30835,10 +30852,399 @@ four of them
 `temp-dirs-scratch` and `trailing-whitespace`)
 assert as the two new scans did,
 and the red commit says they move onto the fixture in a later commit.
+Closed since by B339:
+every scan's package-wide comparison goes through a helper that prints what differs,
+and a scan holds them there.
 
 Recurrence:
 `mistake-prevention.md`,
 "What a failing check prints".
+
+### B339: forty-one scans compared what they found through the library, which printed it cut to a count
+
+Red in `be46dce42`,
+fixed in `9b028204d`;
+issue 610.
+
+Found on 2026-10-06 (UTC),
+the item B338 left open.
+A guard written for it,
+`scan-direct-comparisons.unit.test.ts`,
+found 64 comparisons in 41 scans
+(62 `toEqual` and 2 `toStrictEqual`,
+by the lead's count of its findings on the red tree)
+that compared what a walk over the package found with an inventory or with nothing
+through the assertion library alone,
+which prints any value longer than 40 characters cut to its length.
+B338's census by the lead had counted 31 scans.
+
+The fix:
+`scan-findings.test-fixture.ts` holds a helper for each shape of comparison,
+each throwing with every difference whole on a line of its own
+before it makes the scan's own comparison,
+so a scan passes and fails on the inputs it did:
+`expectNoFindings` for a list that should be empty (46 sites),
+`expectFindingsAsListed` for a list against an inventory,
+counting copies and printing both lists where only their order differs (12),
+and `expectRecordAsListed` for a record,
+key by key,
+a list under a key diffed entry by entry (6).
+`scan-findings.unit.test.ts` asserts each helper's whole failure text;
+by the agent's measurement each of five mutants of the helpers fails the case meant for it,
+and a finding planted in a scratch file failed four migrated scans of different shapes with its own text.
+The guard,
+among the source scans,
+fails on a case of a scan the `source-scans` task names
+that reads the package's files and compares through `toEqual` or `toStrictEqual` on `expect(...)`,
+and on a scan none of whose cases reads them.
+
+Open:
+issue 610 stands,
+since the cut is the library's and the test package neither sets its threshold nor exports it;
+and the guard's header names what it cannot reach:
+a reader bound to a constant,
+a fixture reached through a namespace import,
+a comparison inside a function the case calls,
+`expect(...).not`
+and a case built by a helper.
+It reads names,
+not scopes,
+so a local name that shadows a reader errs toward a finding.
+
+Recurrence:
+`mistake-prevention.md`,
+"What a failing check prints"
+and "Searches and censuses that miss".
+
+### B340: the consolidation driver test's 5,000 ms hang bound outran on a loaded machine
+
+Fixed in `5086b6c6f`.
+
+Found on 2026-10-06 (UTC)
+when the gate on `9b028204d` failed one case of the whole suite.
+`consolidate-driver.unit.test.ts` bounded each call,
+and every drive passing no signal of its own,
+by `CALL_TIMEOUT_MS`,
+5,000 ms,
+and its TSDoc said the bound was never reached because nothing bought a call.
+The case "runs two consolidation slices at once at overlap 2,
+after a serial positive control ..."
+buys calls through `recordingClient`,
+and failed with a `TimeoutError` its name never states:
+in that run (6.0 s,
+the logger's own 5 s sink check timing out just before)
+and in another agent's suite run (13.9 s).
+The twin memo logged a buy abandoned,
+"refused by TimeoutError".
+The case passed in every other gate.
+
+The fix:
+the bound is 60,000 ms,
+as the grace windows of B318 are:
+a stop for a hang,
+which no case waits for,
+since every scripted client answers at once.
+The one case of the file that stops a run brings its own controller,
+and the TSDoc says what the bound covers and why it is that size.
+No run at a bound of 1 ms was made:
+the failure already shows the bound on the case's path.
+
+Open:
+the same shape,
+a real-clock bound of a few seconds over scripted work,
+stands at 604 sites in 138 test files
+(by the lead's search for `AbortSignal.timeout`,
+`perCallTimeoutMs`,
+a `TIMEOUT_MS =` declaration
+and `timeoutMs:` with a number),
+and a census of them waits for the merges in flight:
+each is either a stop for a hang,
+moved to one documented bound,
+or a bound a case means to reach,
+kept and gated.
+B318 left "a bound of 5,000 ms over about 50 ms of work" not shown to fail;
+whether that is this site is not established.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
+
+### B341: the stream drain's cancel line logged a redirected address unmasked
+
+Red in `de6ff17`,
+fixed in `a7eca7f`.
+
+Found on 2026-10-06 (UTC),
+the redirected address B329 left open.
+`stopReading` (`stream-drain.ts`) logged `response.url` when a cancel failed,
+and after a redirect that is the address the redirect named,
+its path and query as the provider wrote them.
+By the agent's probe with node's `fetch` against a local server,
+a `302` to `/landing?key=<key>` left that address whole in `response.url`,
+and the cancel line printed the key.
+`fetch` refuses a redirect to an address with userinfo,
+and no request the package sends carries a key in its address.
+
+The fix:
+`stopReading` takes the request's credentials
+and logs the address through `maskCredentials`.
+The case "MASKS THE CREDENTIAL A REDIRECT LEFT IN THE ADDRESS the failed cancel names"
+gives its response the address the probe measured `fetch` leaving.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries":
+an address a provider chose is reply text,
+masked before anything logs it.
+
+### B342: the map-write scan read a typed array's copy as a write over an unread key
+
+The scan changed in `de6ff17`,
+and the copy it had forced restored in `a7eca7f`.
+
+Found on 2026-10-06 (UTC),
+the scan's misreading B329 left open.
+`blind-map-writes.unit.test.ts` listed every two-argument `set` whose function never read the key,
+so a typed array's `set(source, offset)`,
+which copies a source into the array and writes no key,
+read as a map write,
+and `credential-views.ts#decodeView` copied its offsets one element at a time to pass the scan.
+
+The fix:
+the scan resolves a plainly named receiver through the scopes that hold the write,
+nearest first,
+and leaves out a write whose nearest declaration makes a typed array
+(a constructor,
+`from` or `of`)
+or annotates one;
+a member,
+a name a pattern binds without a type,
+or a name it cannot follow stays a possible map write.
+One fixture case holds each form of typed-array declaration.
+Another holds a Map named like a typed array in another function and in an outer scope;
+it passes on the old scan by design,
+and by the agent's measurement fails under a resolution by name across the whole file.
+`decodeView` copies with `set` over a `subarray` again,
+which throws where a copy runs past the array,
+where an index write past a typed array is dropped without a word.
+
+Open to the owner's veto:
+only a plainly named receiver is resolved,
+so a typed array reached through a member is still reported.
+
+Recurrence:
+`mistake-prevention.md`,
+"Searches and censuses that miss":
+a scan reading a method call tells the receiver's kind from its declaration,
+never from the method's name alone.
+
+### B343: a second test file sorted away the order the recheck guarantees
+
+Changed in `de6ff17`;
+its red is the agent's measurement,
+since the cases pass on the stage as it stands.
+
+Found on 2026-10-06 (UTC),
+the item B328 left open.
+`refine-slice-settle.unit.test.ts` compared each settled slice's recheck readings through `readingsInSeatOrder`,
+which sorted the ballots into seat order.
+By the agent's mutant,
+with the checker stage's roster ordering removed from `repair-edit-stages.ts`,
+every case of the file still passed while `refine-recheck.unit.test.ts` failed six;
+with the helper also removed,
+the two cases whose round heard three checkers failed.
+The third case hears no checker,
+so it has no ballots to order.
+
+The fix:
+the three cases assert the readings as the stage returns them,
+and `readingsInSeatOrder` is gone from `sunbathing-recheck.test-fixture.ts`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B344: the nesting count read tag names its own way
+
+Red in `de6ff17`,
+fixed in `a7eca7f`.
+
+Found on 2026-10-06 (UTC),
+the nesting count's own tag-name reader B326 left open.
+`nesting-inline-count.ts` opened a tag at `<` followed by an ASCII letter.
+By the agent's differential over the 283 spellings of the tag-name set,
+of the 106 the strict grammar opens a tag for it missed 8
+(names starting with `$`,
+`_` or a letter of another script),
+so a body nesting such tags past the bound passed the measure,
+and it opened 146 the grammar refuses.
+
+The fix:
+the count reads a tag through `readTagName`,
+in the line followed by `LINE_GOES_ON`
+(a line ending,
+a name letter and a bracket),
+since the grammar steps over a line ending inside a tag
+and the next line is out of the scan's sight.
+By the agent's probe the grammar reads a tag split after its name,
+after a member's dot or a colon,
+or after `</`,
+as one element.
+A closer begun with `</` at a line's end now closes on the next line,
+where the count kept the tag open.
+The count and the grammar agree on all 283.
+The opener half of the line-end case passed on the old count,
+and the agent showed it failing with `LINE_GOES_ON` empty.
+
+Open to the owner's veto:
+`LINE_GOES_ON` is an invented continuation,
+measured against the grammar,
+where the alternative hands the scan the rest of the body and changes `nesting-bound.ts`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
+
+### B345: the attribute restorer read attribute names its own way
+
+Red in `de6ff17`,
+fixed in `a7eca7f`.
+
+Found on 2026-10-06 (UTC),
+the attribute-name reader B326 left open.
+`corpus-run/tag-attributes.ts` read an attribute name as ASCII letters,
+digits,
+`-`,
+`.` and `:`.
+By the agent's differential,
+each of the 283 spellings written as an attribute's name (`<Cat NAME="1"/>`),
+the strict grammar reads one attribute on 75;
+the reader dropped 61 of those tags whole,
+read a name on 32 the grammar refuses,
+and read the prefixed `a : b` as `b`.
+
+The fix:
+`readAttributeName` in `mdx-tag-name.ts` reads a name as the grammar's states do
+(`micromark-extension-mdx-jsx` 3.0.2,
+`factory-tag.js`,
+`attributeBefore` to `attributeLocalNameAfter`):
+a primary name,
+then optionally `:` and one local name,
+with whitespace allowed around the colon,
+each part taking the characters a tag name's parts take,
+and no `.` member.
+The restorer reads through it,
+keeping a prefixed name without the whitespace around its colon,
+and the reader and the grammar agree on all 283.
+The lead probed a name starting with a letter past U+FFFF:
+the compiler refuses it as a tag name and as an attribute name,
+and `readTagName` reads none,
+as B326 found for tag names;
+the spelling set holds no such character.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
+
+### B346: the destination scan ended an address at ASCII whitespace only
+
+Red in `de6ff17`,
+fixed in `a7eca7f`.
+
+Found on 2026-10-06 (UTC),
+the item B327 left open.
+The autolink literal's path,
+its trail and a trail's closing bracket end at `markdownLineEndingOrSpace` or `unicodeWhitespace`
+(`micromark-extension-gfm-autolink-literal` 2.1.0;
+`micromark-util-character` 2.1.1 defines `unicodeWhitespace` as `\s` over one UTF-16 unit),
+but the scan ended a run only at a space,
+a tab and the two line endings.
+An address followed by a no-break or an ideographic space ran on into the words after it,
+so a page that kept the address and rewrote those words read as dropping a destination.
+With five whitespace suffixes added to the generator,
+the scan and the tree reader disagreed on 4,620 of 31,106 texts,
+each holding a space past ASCII.
+
+The fix:
+a run ends at every whitespace `isTagWhitespace` reads
+(the same 25 units,
+the predicate the tag readers step over),
+and so does a trail's closing bracket.
+The generator draws a no-break space and an ideographic space after a path,
+and whitespace past ASCII after a trail's period,
+its bracket and a character reference.
+The two readers agree on every text,
+and a case holds 18 texts to the parse's own address,
+a next-line mark and a zero-width space among them as controls that end no address.
+
+Open to the owner's veto:
+the scan imports `isTagWhitespace` from the tag readers' module,
+where the alternative is a neutral module both import.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
+
+### B347: the corpus git children spoke the caller's language
+
+Red in `de6ff17`,
+fixed in `a7eca7f`.
+
+Found on 2026-10-06 (UTC) by the agent writing the runner observations,
+whose change is not merged yet.
+`corpusGitEnvironment` kept the caller's locale variables,
+and git translates its messages,
+while the corpus reader tells a missing page from another failure by git's English words.
+By the agent's probe with git 2.55 over a throwaway repository,
+reading a path absent at a held commit,
+the refusal came in German under `LANGUAGE=de` with an English `LANG`
+and under `LANG` or `LC_MESSAGES` set to German,
+and in English once `LC_ALL=C` was added to any of them;
+that the reader then classes a missing page as another failure
+is the agent's inference from `classifyCorpusReadFailure`.
+
+The fix:
+the environment sets `LC_ALL` to `C` after inheritance.
+`corpus-git-context.unit.test.ts` asserts the environment whole,
+and runs real git under a German locale through `runKeyless`,
+reading the English refusal back,
+beside a control showing the same read translated without the hold;
+the lead's run of it on the red tree showed `LC_ALL: 'de_DE.UTF-8'` kept
+and the refusal printed as `Schwerwiegend: Pfad ... existiert nicht`.
+The corpus entry barrel exports `corpusGitEnvironment` for that case.
+
+Open to the owner's veto:
+the real-git case depends on the host's git translating;
+on a host without German messages its control fails,
+not the guard.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B348: the bench-draw cases asserted fragments where the whole value was known
+
+Changed in `de6ff17`,
+a commit of test files alone.
+
+Found on 2026-10-06 (UTC) by the agent writing the runner observations.
+`corpus-run/bench-draw.unit.test.ts` held three `toContain` assertions where the whole value was known:
+the empty-pool refusal,
+the middle-width case
+and the one-seat refusal.
+
+The fix:
+each asserts the whole value:
+`BenchDrawError: a bench sample cannot be drawn from no slices` as the refusal's `String`,
+`{ widths: [2, 3, 4, 5, 6], repeated: 4 }`,
+and `BenchReportError: a roster of 1 cannot be benched: nothing to vary`.
+The runner observations change rewrites `BenchReportError`;
+by that change's own report it prints the same text,
+and if it lands with another the one-seat refusal's expectation moves with it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
 
 ## Process mistakes in this audit
 
@@ -32550,6 +32956,13 @@ and `rg … | rg … ; rg --count …` over a named run on a fix tree.
 An eleventh came the same day in the docs fork of batch six:
 two `git diff --no-index` calls chained with `;`
 while it wrote the diffs of its edited copies for the lead.
+The twelfth to the fourteenth came the same day from agents,
+each disclosed in its own report:
+the agent of B339 twice,
+a search chained to a counted listing
+and a status read chained to the write of its hand-back patch,
+and the agent of B341 to B348 once,
+a search of a barrel chained to a print.
 `mistake-prevention.md`,
 "Shell commands".
 
@@ -33235,6 +33648,57 @@ or recorded as open with what it hides.
 `mistake-prevention.md`,
 "Claims without their evidence",
 "Guards that cannot fail" and "What a failing check prints".
+
+### M139: the lead's own slips in the work of B339 to B348
+
+Status:
+happened 2026-10-06 (UTC);
+each was caught before the commit it would have reached,
+or touched no commit.
+
+- A claim drafted ahead of the log it described:
+  the first draft of the message of `de6ff17` said every failing case in the red run was a new one;
+  a reread of the log showed the existing generator case of `dropped-destinations` failing too,
+  fed by the new whitespace suffixes,
+  and the message was corrected before the commit.
+- A link between two records drafted before it was checked:
+  for the clock fix,
+  the lead wrote that B318's "bound of 5,000 ms over about 50 ms of work" was the driver test's
+  before checking which file B318 meant;
+  the lead's notes now call it unverified,
+  and `5086b6c6f` says only that the new bound is "as for the grace windows of B318".
+- A heredoc appending to the batch's notes was followed by a `sed` in the same shell call,
+  which the shell rule forbids;
+  both wrote scratch notes only,
+  and both outputs were read.
+- Several shell calls chained four steps with `&&`
+  (a `cd` and three commands,
+  or three commands and a search),
+  where the rule allows three:
+  among them the reads of the check logs of docs batch six,
+  the scan findings and the leftovers,
+  and the setup of a worktree;
+  all were reads or setup.
+- A `git diff` ran after a `cd` into the package's `src` directory,
+  and cli-git refused it as outside the repository root;
+  it ran again with `git -C`.
+- An `rg --count-matches` over two patches,
+  expected to find nothing,
+  led an `&&` chain of status reads,
+  and its exit of 1 on no match stopped the chain;
+  the reads ran again as calls of their own.
+
+Prevention:
+a message's claim about a run is written after the run's log is read whole;
+a link between two records is checked before it is written,
+or written as unverified;
+and the shell rules stand as written:
+at most three steps,
+no heredoc with a second command,
+git from the root or with `-C`,
+and a count that may be zero in a call of its own.
+`mistake-prevention.md`,
+"Claims without their evidence" and "Shell commands".
 
 ### M79: a coverage census measuring compressed code
 
