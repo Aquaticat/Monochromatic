@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Template editor on the Fold</title>
+<style>
+:root { color-scheme: light dark; --color-surface: #fcf9ff; --color-card: #f0edf5; --color-text: #201e26;
+  --color-muted: #56515e; --color-line: #756e81; --color-focus: #554184; --color-selected: #e5dafa; }
+@media (prefers-color-scheme: dark) {
+  :root { --color-surface: #17151d; --color-card: #26222e; --color-text: #eee7f6;
+    --color-muted: #c2b9d0; --color-line: #a79bb8; --color-focus: #d9c0ff; --color-selected: #443452; }
+}
+* { box-sizing: border-box; }
+body { margin-block: 0; margin-inline: auto; padding-block: 2rem; padding-inline: 1rem;
+  max-inline-size: 88rem; color: var(--color-text); background-color: var(--color-surface);
+  font-family: system-ui,sans-serif; line-height: 1.55; }
+h1 { font-size: clamp(1.8rem,4vi,2.8rem); line-height: 1.2; }
+h2 { margin-block-start: 2.5rem; line-height: 1.3; }
+h3 { line-height: 1.3; }
+p,li { max-inline-size: 75ch; }
+a { color: var(--color-focus); }
+code,.digest { overflow-wrap: anywhere; }
+section,fieldset,details { margin-block: 1.5rem; min-inline-size: 0; }
+fieldset { border-width: 0.0625rem; border-style: solid; border-color: var(--color-line);
+  border-radius: 1rem; padding-block: 1.25rem; padding-inline: 1.25rem; }
+legend { font-size: 1.25rem; font-weight: 700; padding-inline: 0.4rem; }
+.note { border-inline-start-width: 0.3rem; border-inline-start-style: solid;
+  border-inline-start-color: var(--color-focus); padding-inline-start: 1rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; }
+.control { display: grid; gap: 0.3rem; }
+button,select,input,textarea { font: inherit; color: var(--color-text); background-color: var(--color-card);
+  border-width: 0.0625rem; border-style: solid; border-color: var(--color-line); border-radius: 0.5rem;
+  min-inline-size: 3rem; min-block-size: 3rem; }
+button,select { padding-block: 0.6rem; padding-inline: 1rem; }
+button { cursor: pointer; }
+:where(button,select,input,textarea,a,summary,.viewer):focus-visible {
+  outline-width: 0.2rem; outline-style: solid; outline-color: var(--color-focus); outline-offset: 0.2rem; }
+.summary-text { color: var(--color-muted); }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap: 1rem; }
+figure { margin-block: 0; margin-inline: 0; min-inline-size: 0; padding-block: 1rem; padding-inline: 1rem;
+  border-radius: 1rem; background-color: var(--color-card); }
+figure h3 { margin-block-start: 0; }
+.preview-button { display: grid; gap: 0.75rem; inline-size: 100%; padding-block: 0.5rem; padding-inline: 0.5rem; }
+.preview-button img { display: block; inline-size: 100%; block-size: auto; }
+figcaption { margin-block-start: 0.8rem; font-size: 0.9rem; overflow-wrap: anywhere; }
+textarea { display: block; inline-size: 100%; min-block-size: 8rem; padding-block: 0.75rem; padding-inline: 0.75rem; }
+summary { min-inline-size: 3rem; min-block-size: 3rem; cursor: pointer; padding-block: 0.7rem; padding-inline: 0.5rem;
+  font-weight: 700; }
+dialog { inline-size: min(80rem,calc(100vi - 2rem)); max-block-size: calc(100vb - 2rem);
+  color: var(--color-text); background-color: var(--color-surface); border-width: 0.125rem;
+  border-style: solid; border-color: var(--color-line); border-radius: 1rem;
+  padding-block: 1rem; padding-inline: 1rem; }
+dialog::backdrop { background-color: var(--color-surface); opacity: 0.85; }
+dialog h2 { margin-block-start: 0; }
+.viewer { overflow: auto; max-block-size: 65vb; min-inline-size: 3rem; min-block-size: 3rem; }
+.viewer img { display: block; max-inline-size: none; block-size: auto; }
+[hidden] { display: none; }
+</style>
+</head>
+<body>
+<header>
+<p class="summary-text">Design study. One built proposal for the supporting-line template editor.</p>
+<h1>Editing the track row's supporting line</h1>
+<p>Purpose: look at a built editor for the template that produces a track row's supporting line (D81). The language
+and the editor follow KWGT with the omissions you chose (D89) and the picks you left to the agent (D90). Nothing on
+this page is decided by being shown.</p>
+<p class="note">Every state is authored debug input. Typing is not connected: each view shows fixed template text,
+and the preview, error lines and help it draws are checked against a reference that computes what the grammar yields.
+The app has a duration only for the playing track today and draws no supporting line yet, so this previews a line the
+app cannot fill for every row.</p>
+<p>The buttons emit debug events only. No template is stored and no row of the player changes. No production
+implementation is authorized.</p>
+</header>
+<section aria-labelledby="environment-title">
+<h2 id="environment-title">Inspect the same native conditions</h2>
+<div class="controls">
+<label class="control" for="panel">Panel<select id="panel"><option value="inner">Inner</option><option value="cover">Cover</option></select></label>
+<label class="control" for="scale">Native font scale<select id="scale"><option value="1">100%</option><option value="2">200%</option></select></label>
+<label class="control" for="scheme">Native image theme<select id="scheme"><option value="system">Follow system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+<p id="environment" role="status"></p>
+<p>Thumbnails fit the review column. Open any image to inspect it at 100% logical dp or native pixels.
+These are sanitized app-area crops, not device mockups. Status strips were removed for privacy;
+bottom navigation remains. Logical dp uses the measured 390dpi density, not your monitor's physical size.</p>
+</section>
+<form id="review-form">
+<section aria-labelledby="state-title"><h2 id="state-title">The editor's states</h2>
+<p>Three states hold focus in the template field with the system keyboard open. Under each image, the page says what
+of that state is not in view.</p>
+<div class="gallery">
+<figure data-scene="list"><h3>Settings, with the template as its one entry</h3><button type="button" class="preview-button"><img alt="Settings page listing the track row supporting line template with the line it currently produces"><span>Open the Settings page</span></button><figcaption></figcaption></figure>
+<figure data-scene="default"><h3>Editor with the default template</h3><button type="button" class="preview-button"><img alt="Template editor showing two preview rows, the default template, the field list and reset"><span>Open the editor with the default template</span></button><figcaption></figcaption></figure>
+<figure data-scene="help"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and help for the format argument of tf under the field"><span>Open the editor while typing inside a call</span></button><figcaption></figcaption></figure>
+<figure data-scene="unknown-field"><h3>An unknown field</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and an error line naming mi and the unknown field"><span>Open the editor with an unknown field</span></button><figcaption></figcaption></figure>
+<figure data-scene="open-formula"><h3>A formula left open</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and an error line saying the formula is not closed"><span>Open the editor with a formula left open</span></button><figcaption></figcaption></figure>
+<figure data-scene="custom"><h3>A changed template</h3><button type="button" class="preview-button"><img alt="Template editor with a custom template, preview rows showing its result and reset offered"><span>Open the editor with a changed template</span></button><figcaption></figcaption></figure>
+<figure data-scene="no-library"><h3>No library open</h3><button type="button" class="preview-button"><img alt="Template editor with stand-in preview rows because no library is open"><span>Open the editor with no library open</span></button><figcaption></figcaption></figure>
+</div>
+</section>
+<details><summary>Read what was and was not checked</summary>
+<p>The host is a debug activity, not the player. The merged debug manifest disables the production launcher, playback
+and sweep services. Each view was captured with a fresh hierarchy, exactly one creation of the host since its launch,
+and the keyboard open only for the three states that hold focus.</p>
+<p>Whether a text is in view is read from its rectangle in the hierarchy and the keyboard's own frame; hierarchy
+rectangles are not ink bounds. TalkBack, focus order, speech and contrast were not exercised. Real typing, caret
+movement by touch and inserting a field were not exercised.</p>
+<p>The published crops keep exact RGB, opacity, dimensions and only essential PNG chunks. No digest of an image is
+recorded, and nothing is compared with a digest (D88).</p>
+</details>
+<fieldset><legend>Anything else</legend><label for="final-notes">What you would change, in your own words</label>
+<textarea id="final-notes" name="notes" placeholder="Optional."></textarea></fieldset>
+<button type="submit">Prepare reply</button>
+<section id="response" hidden aria-labelledby="response-title"><h2 id="response-title">Reply to copy</h2>
+<p id="response-status" role="status">Nothing has been sent or saved by this page.</p>
+<label for="reply">Prepared reply</label><textarea id="reply" readonly></textarea></section>
+</form>
+<dialog id="preview" aria-labelledby="preview-title">
+<h2 id="preview-title">Native witness</h2>
+<div class="controls"><button type="button" id="close-preview">Close image</button><button type="button" id="zoom-out">Smaller</button>
+<button type="button" id="zoom-in">Larger</button><button type="button" id="reset-preview">Reset 100% dp</button>
+<button type="button" id="native-preview">Native pixels</button></div>
+<p id="preview-scale" role="status"></p><p id="preview-metadata" class="digest"></p>
+<div class="viewer" tabindex="0" role="region" aria-label="Scrollable native witness"><img id="preview-image" alt=""></div>
+</dialog>
+<script>
+//region Native evidence viewer, only checked embedded images, their recorded facts and explicit view state
+const images = __TEMPLATE_EDITOR_IMAGES__;
+const facts = __TEMPLATE_EDITOR_FACTS__;
+const states = __TEMPLATE_EDITOR_STATES__;
+const nativeTheme = matchMedia('(prefers-color-scheme: dark)');
+const state = { panel: 'inner', fontScale: 1, theme: 'system', zoom: 1, preview: null };
+const controls = { panel: document.getElementById('panel'), scale: document.getElementById('scale'), scheme: document.getElementById('scheme') };
+const preview = document.getElementById('preview');
+function selectedScheme() { return state.theme === 'system' ? (nativeTheme.matches ? 'dark' : 'light') : state.theme; }
+function imageKey(figure) {
+  return [state.panel, figure.dataset.scene, selectedScheme(), state.fontScale].join('/');
+}
+// Plain words for what a view does not keep in view, from the roles the builder recorded.
+const roleWords = [[/^preview-(title|supporting)-/, 'the preview rows'], [/^preview-note$/, 'the note under the preview'],
+  [/^(field-label|template)$/, 'the template field'], [/^(error|help)-/, 'the lines under the field'],
+  [/^section-/, 'a section heading'], [/^field-(name|value|insert)-/, 'part of the field list'], [/^reset$/, 'Reset to default'],
+  [/^entry-/, 'the template entry'], [/^page-title$/, 'the page title']];
+function outOfView(fact) {
+  const words = [];
+  for (const role of fact.outOfView) {
+    const found = roleWords.find(entry => entry[0].test(role));
+    if (!found) throw new Error('Unknown role: ' + role);
+    if (!words.includes(found[1])) words.push(found[1]);
+  }
+  return words;
+}
+function metadata(image) {
+  return image.width + ' × ' + image.height + ' retained px · ' + (image.width / (image.density / 160)).toFixed(1) +
+    ' × ' + (image.height / (image.density / 160)).toFixed(1) + ' logical dp · source density ' + image.density +
+    'dpi · ' + image.file;
+}
+function render() {
+  document.getElementById('environment').textContent = state.panel + ' panel · ' + state.fontScale * 100 +
+    '% native text · ' + selectedScheme() + ' native images. Thumbnail size is not native font scale.';
+  for (const figure of document.querySelectorAll('figure[data-scene]')) {
+    const key = imageKey(figure);
+    const image = images[key];
+    const fact = facts[key];
+    if (!image || !fact) throw new Error('Required native view is absent: ' + key);
+    const element = figure.querySelector('img');
+    element.src = image.source;
+    element.width = image.width;
+    element.height = image.height;
+    const hidden = outOfView(fact);
+    figure.querySelector('figcaption').textContent = metadata(image) + ' · keyboard ' + (fact.keyboard ? 'open' : 'closed') +
+      (fact.keyboard ? (fact.caretDrawn ? ' · caret drawn' : ' · caret not drawn in this frame') : '') +
+      ' · ' + (hidden.length === 0 ? 'everything this state draws is in view' : 'not in view: ' + hidden.join(', ')) +
+      (fact.scrolls ? ' · the page scrolls' : ' · the page does not scroll');
+  }
+}
+function resizePreview() {
+  if (!state.preview) throw new Error('No native witness is open.');
+  const rootFont = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const logicalWidth = state.preview.width / (state.preview.density / 160);
+  document.getElementById('preview-image').style.inlineSize = logicalWidth * state.zoom / rootFont + 'rem';
+  document.getElementById('preview-scale').textContent = (state.zoom * 100).toFixed(1) +
+    '% logical dp · ' + Math.round(logicalWidth * state.zoom) + ' CSS px displayed width. Pan within the image region.';
+}
+function openPreview(figure) {
+  const image = images[imageKey(figure)];
+  if (!image) throw new Error('Selected native evidence is absent.');
+  state.preview = image;
+  state.zoom = 1;
+  document.getElementById('preview-title').textContent = figure.querySelector('h3').textContent;
+  document.getElementById('preview-metadata').textContent = metadata(image);
+  const element = document.getElementById('preview-image');
+  element.src = image.source;
+  element.alt = figure.querySelector('img').alt;
+  resizePreview();
+  preview.showModal();
+  document.querySelector('.viewer').scrollTo(0, 0);
+}
+for (const figure of document.querySelectorAll('figure[data-scene]')) {
+  figure.querySelector('button').addEventListener('click', () => openPreview(figure));
+}
+controls.panel.addEventListener('change', () => { state.panel = controls.panel.value; render(); });
+controls.scale.addEventListener('change', () => { state.fontScale = Number(controls.scale.value); render(); });
+controls.scheme.addEventListener('change', () => { state.theme = controls.scheme.value; render(); });
+nativeTheme.addEventListener('change', () => { if (state.theme === 'system') render(); });
+document.getElementById('close-preview').addEventListener('click', () => preview.close());
+document.getElementById('zoom-out').addEventListener('click', () => { state.zoom = Math.max(0.125, state.zoom / 1.25); resizePreview(); });
+document.getElementById('zoom-in').addEventListener('click', () => { state.zoom = Math.min(4, state.zoom * 1.25); resizePreview(); });
+document.getElementById('reset-preview').addEventListener('click', () => { state.zoom = 1; resizePreview(); });
+document.getElementById('native-preview').addEventListener('click', () => { state.zoom = state.preview.density / 160; resizePreview(); });
+render();
+//endregion
+
+//region Reply, prepared in the page and sent nowhere
+function prepareReply(event) {
+  event.preventDefault();
+  const form = document.getElementById('review-form');
+  if (!form.reportValidity()) return;
+  const data = new FormData(form);
+  const notes = String(data.get('notes')).trim();
+  document.getElementById('reply').value = 'Template editor study reply\n' + answers(data) +
+    'Anything else: ' + (notes || 'None.') + '\nNo production authorization.';
+  document.getElementById('response').hidden = false;
+  document.getElementById('reply').focus();
+}
+// Filled in once the questions exist; a page with no question prepares only the free text.
+function answers(data) { return ''; }
+function invalidateReply() {
+  document.getElementById('reply').value = '';
+  document.getElementById('response').hidden = true;
+}
+document.getElementById('review-form').addEventListener('input', invalidateReply);
+document.getElementById('review-form').addEventListener('change', invalidateReply);
+document.getElementById('review-form').addEventListener('submit', prepareReply);
+//endregion
+</script>
+</body>
+</html>
