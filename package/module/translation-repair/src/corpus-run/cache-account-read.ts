@@ -1,4 +1,5 @@
 import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { isWholeNumberText, } from '../whole-number-text.ts';
 
 //region Cache account read
@@ -100,19 +101,22 @@ export type CacheVersion = {
 /**
  A declaration line naming a cache version that does not read as
  `NAME = digits;`, which the check would otherwise skip without a word.
+ A STATED REFUSAL, since the message quotes one line of this package's own
+ source and says how to write it: the command reports it as declined, with no
+ frames, rather than as a fault of the command.
 
  @example
  ```ts
  throw new CacheAccountReadError({ path: 'src/a.ts', line: 'export const A_CACHE_VERSION: number = 1;', },);
  ```
  */
-export class CacheAccountReadError extends Error {
+export class CacheAccountReadError extends StatedRefusalError {
   /**
-   Declares this message safe to forward: it quotes one line of this
+   Declared here as well as inherited, so the source scan that keeps the
+   marked-class inventory sees it: the message quotes one line of this
    package's own source, never corpus text.
    */
-  readonly messageNamesOnly: true = true;
-
+  override readonly messageNamesOnly: true = true;
   /**
    Builds the refusal naming the file and the line.
 
@@ -132,7 +136,9 @@ export class CacheAccountReadError extends Error {
     readonly path: string;
     readonly line: string;
   },) {
-    super(`${path} declares a cache version the audit cannot read: "${line}". Write it as NAME = digits; so every constant is checked.`,);
+    super({
+      says: `${path} declares a cache version the audit cannot read: "${line}". Write it as NAME = digits; so every constant is checked.`,
+    },);
     this.name = 'CacheAccountReadError';
   }
 }

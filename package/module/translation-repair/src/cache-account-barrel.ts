@@ -1,8 +1,16 @@
 //region Cache account barrel
-// The pure readers behind the pre-launch cache version check (ledger M28),
-// exported so each is tested where it is defined; the entry that asks git is
-// `corpus-run/cache-account-audit.ts`.
+// The readers, the git questions, the printer and the run behind the
+// pre-launch cache version check (ledger M28), exported so each is tested
+// where it is defined; the command is `corpus-run/cache-account-audit.ts`.
 
+export {
+  cacheAccountCommitsOf,
+  cacheAccountGitOutput,
+} from './corpus-run/cache-account-git.ts';
+export { printCacheAudit, } from './corpus-run/cache-account-print.ts';
+export { auditCacheAccounts, } from './corpus-run/cache-account-run.ts';
+export { cacheVersionSetting, } from './corpus-run/cache-account-setting.ts';
+export { reportSliceCaches, } from './corpus-run/cache-account-slice-report.ts';
 export {
   CacheAccountLogError,
   type SettingCandidate,

@@ -140,7 +140,7 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
     reason: 'prose shorter than a window, a comparison',
   },
   {
-    path: 'src/corpus-run/slice-cost-report.ts',
+    path: 'src/corpus-run/slice-cost-bands.ts',
     holds: 'anything above is open-ended',
     reason: 'sizes past a band\'s bound, a comparison',
   },

@@ -13,6 +13,13 @@ export {
   type CapSample,
   readCapLog,
 } from './corpus-run/cap-census-read.ts';
+export { capCensusPassRunReading, } from './corpus-run/cap-census-pass-run.ts';
+export {
+  type CapCensusTally,
+  capCensusProviderLine,
+  printCapCensus,
+} from './corpus-run/cap-census-print.ts';
+export { reportCapCensus, } from './corpus-run/cap-census-report.ts';
 export {
   type CapCensus,
   capCensus,
@@ -21,5 +28,7 @@ export {
   capFlagsOf,
   type ProviderCapReading,
 } from './corpus-run/cap-census-rule.ts';
+
+export { capCensusLogsUnder, } from './corpus-run/cap-census-walk.ts';
 
 //endregion Cap census barrel

@@ -1223,15 +1223,15 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 8,
     why: SETTING,
   },
-  'corpus-run/cache-account-audit.ts#listed': {
-    tests: 1,
-    why: TOOL,
-  },
-  'corpus-run/cache-account-audit.ts#written': {
-    tests: 1,
-    why: TOOL,
-  },
   'corpus-run/cache-account-commits.ts#sourceCommitOf': {
+    tests: 1,
+    why: TOOL,
+  },
+  'corpus-run/cache-account-git.ts#written': {
+    tests: 1,
+    why: TOOL,
+  },
+  'corpus-run/cache-account-run.ts#listed': {
     tests: 1,
     why: TOOL,
   },
@@ -1516,7 +1516,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/slice-cost-report.ts#main': {
+  'corpus-run/slice-cost-report-run.ts#reportSliceCost': {
     tests: 1,
     why: SETTING,
   },

@@ -15,7 +15,6 @@ import {
   sliceCacheAccount,
   type UnlistedDir,
 } from './cache-account-slices.ts';
-import { resolveRunsDir, } from './run-config.ts';
 import { defaultRunsDirIn, } from './runs-layout.ts';
 
 //region Slice cache report
@@ -118,6 +117,9 @@ function printSliceCacheAccount(
  @param root - repository's top directory, whose dependency tree holds the
  default runs directory
 
+ @param runsDir - the runs directory a pass would use now, which
+ `TRANSLATION_REPAIR_RUNS_DIR` may set anywhere
+
  @param searched - directories named on the command line to search for runs
  directories beside the worktree's own
 
@@ -128,16 +130,18 @@ function printSliceCacheAccount(
 
  @example
  ```ts
- await reportSliceCaches({ root, searched: line.list('runs-under',), settings, },);
+ await reportSliceCaches({ root, runsDir, searched: line.list('runs-under',), settings, },);
  ```
  */
 export async function reportSliceCaches(
   {
     root,
+    runsDir,
     searched,
     settings,
   }: {
     readonly root: string;
+    readonly runsDir: string;
     readonly searched: readonly string[];
     readonly settings: readonly VersionSetting[];
   },
@@ -148,11 +152,6 @@ export async function reportSliceCaches(
    */
   const runsParent = dirname(defaultRunsDirIn({ worktreeRoot: root, },),);
   /**
-   The runs directory a pass would use now, which `TRANSLATION_REPAIR_RUNS_DIR`
-   may set anywhere.
-   */
-  const configured = await resolveRunsDir();
-  /**
    What the search found under each searched directory.
    */
   const searches = await Promise.all(searched.map(async function runsUnder(searchRoot,): Promise<RunsDirSearch> {
@@ -160,11 +159,11 @@ export async function reportSliceCaches(
   },),);
   /**
    Runs directories found under them, beside the worktree's own and the
-   configured one, each once.
+   one a pass would use now, each once.
    */
   const runsDirs = [...new Set([
     ...await runsDirsIn({ parent: runsParent, },),
-    configured,
+    runsDir,
     ...searches.flatMap(function foundIn({ found, },): readonly string[] {
       return found;
     },),
@@ -187,7 +186,7 @@ export async function reportSliceCaches(
     account,
     searched: [
       runsParent,
-      configured,
+      runsDir,
       ...searched,
     ],
     unlisted,

@@ -614,7 +614,6 @@ const ALLOWLIST: readonly string[] = [
   'src/corpus-run/attribution-line.ts',
   'src/corpus-run/bench-sample.ts',
   'src/corpus-run/blockquote-paragraphs.ts',
-  'src/corpus-run/cache-account-slice-report.ts',
   'src/corpus-run/canadian-date-parts.ts',
   'src/corpus-run/canadian-date-read-leading.ts',
   'src/corpus-run/canadian-date-read.ts',

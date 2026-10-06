@@ -117,8 +117,8 @@ const HELD: Readonly<Record<string, string>> = {
   'corpus-run/bench-sample.ts#sliceOne':
     'a corpus slicing failure on a command whose operator owns the run; the corpus is public by its '
     + 'owner\'s ruling of 2026-10-05 and no provider is called',
-  'corpus-run/cap-census.ts#visit':
-    'a directory listing failure printed to the terminal of the cap-census command; no provider is called',
+  'corpus-run/cap-census-walk.ts#reportCapCensusUnreadable':
+    'a directory listing or log read failure printed to the terminal of the cap-census command; no provider is called',
   'corpus-run/cli-refusal.ts#framesOf':
     'destructures the stack and the message, but the message is only searched for in the stack to find where its '
     + 'header ends, and only the lines after that end are printed',
