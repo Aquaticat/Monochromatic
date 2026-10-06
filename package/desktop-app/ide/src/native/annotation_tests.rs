@@ -548,7 +548,7 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
         .collect();
     let revision = reader.source.borrow().document.revision();
     // The change appends a line, so every annotated line keeps its number.
-    fs::write(&path, format!("{FIXTURE}// changed\n")).expect("external change");
+    super::find_tests::replace_file(&path, &format!("{FIXTURE}// changed\n"));
     eventually("the external change was not reloaded", || {
         return reader.source.borrow().document.revision() > revision;
     });
@@ -575,7 +575,7 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
     assert_eq!(returned, tops, "returning annotations moved a line");
     // A second change with no annotations for its text: the space is held, then given up.
     let second = reader.source.borrow().document.revision();
-    fs::write(&path, format!("{FIXTURE}// changed again\n")).expect("second external change");
+    super::find_tests::replace_file(&path, &format!("{FIXTURE}// changed again\n"));
     eventually("the second external change was not reloaded", || {
         return reader.source.borrow().document.revision() > second;
     });

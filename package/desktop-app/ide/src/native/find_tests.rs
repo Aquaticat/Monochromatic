@@ -63,6 +63,25 @@ pub(super) fn memory_project(prefix: &str) -> tempfile::TempDir {
     return tempfile::tempdir().expect("disposable project");
 }
 
+/// What: Replace the contents of `path` as an editor's atomic save does: write a hidden sibling
+///       file, then rename it over `path`. `&Path` and `&str` are lent read-only.
+/// Why: An in-place write truncates the file first and writes the text after. A test thread
+///      descheduled between the two for longer than the 50 ms write-quiet period is read
+///      mid-write by design (`WRITE_QUIET` in `src/refresh_policy.rs`), and the reload of the
+///      empty file loses the selection these tests follow. A rename shows the whole text at once.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function replaceFile(path: string, text: string): void { writeFileSync(sibling, text); renameSync(sibling, path); }
+/// ```
+pub(super) fn replace_file(path: &Path, text: &str) {
+    // `file_name` is the last path component; `to_string_lossy` reads it as text for the sibling's name.
+    let name = path.file_name().expect("file name").to_string_lossy();
+    let sibling = path.with_file_name(format!(".{name}.replacement"));
+    fs::write(&sibling, text).expect("replacement text");
+    fs::rename(&sibling, path).expect("replace the file");
+}
+
 /// Open `name` inside the disposable project with every production binding installed.
 pub(super) fn reader(root: &Path, name: &str) -> Reader {
     let path = root.join(name);
@@ -351,7 +370,7 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
     status_for(window, "am a", "1/1");
     assert_eq!(selection(&reader), (2, 6));
     let revision = reader.source.borrow().document.revision();
-    fs::write(&path, "A new first line\nI am a big cat\n").expect("prefix reload");
+    replace_file(&path, "A new first line\nI am a big cat\n");
     wait_until(|| return reader.source.borrow().document.revision() > revision);
     eventually(
         "matches were not recomputed for the reloaded revision",
@@ -366,11 +385,10 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
     );
     assert_eq!(window.get_selected_text(), "am a");
     let moved = reader.source.borrow().document.revision();
-    fs::write(
+    replace_file(
         &path,
         "A new first line\nI was a big cat, but now I am a human!\n",
-    )
-    .expect("replacement reload");
+    );
     wait_until(|| return reader.source.borrow().document.revision() > moved);
     eventually(
         "the selection must follow the replaced region, not jump to a later match",
