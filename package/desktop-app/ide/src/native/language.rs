@@ -87,6 +87,9 @@ mod state_tests;
 /// A complete reader with the scripted language server, shared by the window tests.
 #[cfg(test)]
 mod test_support;
+/// Waiting for timers and for the scripted server, shared by the window tests.
+#[cfg(test)]
+mod test_waits;
 
 /// What: The user action a request serves. A plain `enum` is a closed set of names.
 /// Why: The same reply leads to different results: Ctrl+B falls back to references, a
