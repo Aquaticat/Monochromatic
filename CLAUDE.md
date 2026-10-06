@@ -183,10 +183,12 @@ Notifications,
 Stop only at completion or genuine blocker.
 
 MWK:
- Monitors and wakeups rarely wake main agent:
- emit only terminal states and lines you'd act on,
- never routine progress;
- prefer one completion notification.
+ Monitors,
+ wakeups,
+ and waiting subagents rarely wake main agent:
+ wait in one command that ends at a terminal state;
+ emit only lines you'd act on,
+ never routine progress.
 
 PXQ:
  "Completion" means the queue:
@@ -515,10 +517,12 @@ RGP:
  always pass `.` or an absolute path.
 
 ATH:
- Before using `${HOME}/temp/agent` scratch:
- `mkdir --parents` it,
- then `chmod 700`;
- trust checks reject group/other permission bits.
+ Scratch goes in `${HOME}/temp/agent`,
+ never `/tmp` or the harness scratchpad
+ (reboots wipe them);
+ first `mkdir --parents` it,
+ then `chmod 700`
+ (trust checks reject group/other bits).
 
 CLN:
  Investigating package source:

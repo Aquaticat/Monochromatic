@@ -142,7 +142,7 @@ fn hover_is_dismissed_when_the_file_reloads() {
 fn resting_pointer_shows_hover_and_leaving_or_resting_on_nothing_hides_it() {
     let (_fixture, reader) = sample_reader();
     let x = caret_x(&reader, start(4) + 8) + 2.0;
-    move_to(&reader.window, point(&reader.window, 4, x));
+    move_to(&reader.window, point(&reader, 4, x));
     eventually("the pointer hover did not appear", || {
         return popup(&reader) == "line=alpha04 beta char=b";
     });
@@ -150,16 +150,16 @@ fn resting_pointer_shows_hover_and_leaving_or_resting_on_nothing_hides_it() {
     eventually("leaving the source did not hide the hover", || {
         return popup(&reader).is_empty();
     });
-    move_to(&reader.window, point(&reader.window, 4, x));
+    move_to(&reader.window, point(&reader, 4, x));
     eventually("the pointer hover did not appear again", || {
         return !popup(&reader).is_empty();
     });
-    move_to(&reader.window, point(&reader.window, 4, 600.0));
+    move_to(&reader.window, point(&reader, 4, 600.0));
     eventually("resting past the line's end did not hide the hover", || {
         return popup(&reader).is_empty();
     });
     // A blank line has no character: resting there asks nothing.
-    move_to(&reader.window, point(&reader.window, 5, 4.0));
+    move_to(&reader.window, point(&reader, 5, 4.0));
     idle(600);
     assert_eq!(popup(&reader), "");
 }
@@ -192,7 +192,7 @@ fn pointer_hover_answer_never_replaces_the_location_list() {
     let reader = reader(&fixture, "main.scripted", languages);
     ready(&reader);
     let x = caret_x(&reader, start(6) + 2) + 2.0;
-    move_to(&reader.window, point(&reader.window, 6, x));
+    move_to(&reader.window, point(&reader, 6, x));
     // The rest time passes and the delayed hover request is on its way.
     idle(450);
     super::test_support::definition(&reader);

@@ -61,18 +61,19 @@ dialog h2 { margin-block-start: 0; }
 </head>
 <body>
 <header>
-<p class="summary-text">Design study. The editor for the supporting-line template, as decided.</p>
-<h1>Editing the track row's supporting line</h1>
+<p class="summary-text">Design study. The template editor as decided, and which lines get a template, for approval.</p>
+<h1>Templates for the player's lines</h1>
 <p>Purpose: show the editor for the template that produces a track row's supporting line (D81) as you decided it
-(D89 to D94). It asks nothing; anything you would change goes in the last field.</p>
+(D89 to D96), and the agent's one version of which other lines get a template (D97), which awaits your approval.
+The page itself asks nothing; anything you would change goes in the last field.</p>
 <p class="note">Every state is authored debug input. Typing is not connected: each view shows fixed template text,
 and the preview, error lines and help it draws are checked against a reference that computes what the grammar yields.
 The app has a duration only for the playing track today and draws no supporting line yet, so this previews a line the
 app cannot fill for every row.</p>
 <p>The buttons emit debug events only. No template is stored and no row of the player changes.
 No production implementation is authorized.</p>
-<p>What to look at: the editor's states on both panels, at 100% and 200% text, most of all the three states with the
-keyboard open and the second preview row, whose true peak is not measured yet. How to respond: if anything should
+<p>What to look at: the Settings page and the playing-track editor, which are new; the editor's states on both
+panels, at 100% and 200% text; and the second preview row, whose true peak is not measured yet. How to respond: if anything should
 change, write it in the last field, press <strong>Prepare reply</strong> and paste the prepared text into the chat. This
 page sends and saves nothing.</p>
 </header>
@@ -94,19 +95,19 @@ bottom navigation remains. Logical dp uses the measured 390dpi density, not your
 system keyboard open, and the page rests where Android puts a focused field (D94). Under each image, the page says what
 of that state is not in view.</p>
 <div class="gallery">
-<figure data-scene="list"><h3>Settings, with the template as its one entry</h3><button type="button" class="preview-button"><img alt="Settings page listing the track row supporting line template with the line it currently produces"><span>Open the Settings page</span></button><figcaption></figcaption></figure>
+<figure data-scene="list"><h3>Settings, listing both templates</h3><button type="button" class="preview-button"><img alt="Settings page listing the Track rows and Playing track templates, each with the line it currently produces"><span>Open the Settings page</span></button><figcaption></figcaption></figure>
 <figure data-scene="default"><h3>Editor with the default template</h3><button type="button" class="preview-button"><img alt="Template editor showing two preview rows, the default template and the start of the field list"><span>Open the editor with the default template</span></button><figcaption></figcaption></figure>
 <figure data-scene="help"><h3>Typing inside a call</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and help for the format argument of tf under the field"><span>Open the editor while typing inside a call</span></button><figcaption></figcaption></figure>
 <figure data-scene="unknown-field"><h3>An unknown field</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and an error line naming mi and the unknown field"><span>Open the editor with an unknown field</span></button><figcaption></figcaption></figure>
 <figure data-scene="open-formula"><h3>A formula left open</h3><button type="button" class="preview-button"><img alt="Template editor with the keyboard open and an error line saying a dollar sign has no closing dollar sign"><span>Open the editor with a formula left open</span></button><figcaption></figcaption></figure>
 <figure data-scene="custom"><h3>A changed template</h3><button type="button" class="preview-button"><img alt="Template editor with a changed template; the second preview row ends with the separator, because its true peak is empty"><span>Open the editor with a changed template</span></button><figcaption></figcaption></figure>
 <figure data-scene="custom-end"><h3>A changed template, scrolled to the end</h3><button type="button" class="preview-button"><img alt="Template editor scrolled to its end, showing the rest of the field list and Reset to default"><span>Open the editor scrolled to its end</span></button><figcaption></figcaption></figure>
-<figure data-scene="no-library"><h3>No library open</h3><button type="button" class="preview-button"><img alt="Template editor with stand-in preview rows because no library is open"><span>Open the editor with no library open</span></button><figcaption></figcaption></figure>
+<figure data-scene="empty-library"><h3>An open library with no tracks</h3><button type="button" class="preview-button"><img alt="Template editor with stand-in preview rows because the open library holds no track"><span>Open the editor on an empty library</span></button><figcaption></figcaption></figure>
+<figure data-scene="playing"><h3>The playing track's template</h3><button type="button" class="preview-button"><img alt="Playing track template editor with its default template, preview rows counting each file's place in its folder, and the field list"><span>Open the playing track's editor</span></button><figcaption></figcaption></figure>
 </div>
 </section>
 <section aria-labelledby="decided-title"><h2 id="decided-title">What is decided</h2>
 <ul>
-<li>One template is studied: the supporting line of a track row. Titles and other rows are not templated here.</li>
 <li>Spelling follows KWGT: formulas between dollar signs, <code>mi(field)</code> for a field of the track,
 <code>tf(seconds, format)</code> for a duration, <code>tc(mode, text)</code> for case and cutting, and <code>+</code> to
 join text. There is no conditional and nothing to compare with (D92).</li>
@@ -116,19 +117,35 @@ join text. There is no conditional and nothing to compare with (D92).</li>
 own unit. The default template is <code>$tf(mi(len), m:ss)$ $mi(peak)$</code>: an analysed file reads
 <code>4:35 −1.2 dBTP</code>, one not analysed yet reads <code>5:12</code>. A separator you write next to an empty field
 stays in the line, as the changed template shows.</li>
-<li>The preview shows two files of the open library, one of them not analysed yet, and sample values when no library
-is open. It scrolls with the page (D91).</li>
+<li>The preview shows two files of the open library, one of them not analysed yet. A library is always open; when it
+holds no track, the preview shows sample values and says so (D95). The preview scrolls with the page (D91).</li>
 <li>An edit applies as typed while the template is valid. While it has a mistake, rows keep the last valid template.
 There is no Save step; <strong>Reset to default</strong> is drawn only when the template differs from the default.</li>
 <li>A mistake is named under the field in place of the typing help. A formula left open is a mistake.</li>
+<li>The field list stays under the field; with the keyboard open you scroll to it (D96).</li>
+</ul>
+</section>
+<section aria-labelledby="approval-title"><h2 id="approval-title">For approval: which lines get a template</h2>
+<p>The agent's one version (D97). Nothing in this section is decided until you approve it.</p>
+<ul>
+<li>Two templates, listed under Templates in Settings: <strong>Track rows</strong>, the supporting line studied so far,
+and <strong>Playing track</strong>, the line under the playing track's title in the deck. Each editor is titled with
+its template's name, so the track rows' editor is now titled Track rows.</li>
+<li>The playing track's default is <code>$mi(track)$ of $mi(total)$ $mi(peak)$</code>: <code>1 of 16 −1.2 dBTP</code>
+for an analysed file and <code>2 of 16</code> before analysis. On the inner panel the deck in the left pane shows that
+line. Its fields are the track fields and two more: <code>track</code>, the file's place in its folder, and
+<code>total</code>, how many tracks the folder holds. <code>mi(track)</code> follows KWGT's own field of that name.</li>
+<li>Search results are not templated: their second line is the parent folder, which D77 requires so equal names stay
+apart. Folder names and every title stay as they are.</li>
 </ul>
 </section>
 <details><summary>Read what was and was not checked</summary>
 <p>The host is a debug activity, not the player. The merged debug manifest disables the production launcher, playback
 and sweep services. Each view was captured with a fresh hierarchy, exactly one creation of the host since its launch,
-and the keyboard open only for the scenes whose state holds focus. The emulator stopped abnormally during two
-of the capturing visits, once with a segmentation fault and once killed for a reason that was not established; views
-finished before that were kept, and each view's record names its visit.</p>
+and the keyboard open only for the scenes whose state holds focus. The views were captured over three visits:
+the first ended in a segmentation fault of the emulator after 25 views, the second when one guest command exceeded its
+time bound, and the third completed the set and shut down cleanly. Views finished before an interruption were kept,
+and each view's record names its visit.</p>
 <p>Whether a text is in view is read from its rectangle in the hierarchy, the page's scrolling window and the keyboard's
 own frame; hierarchy rectangles are not ink bounds. A text whose rectangle touches an edge of the window is reported as
 at the edge, because the hierarchy cannot tell cut from flush. Where the page rests with the keyboard open is where

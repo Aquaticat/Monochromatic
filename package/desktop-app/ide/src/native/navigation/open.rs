@@ -4,14 +4,14 @@
 use super::{AppWindow, Navigation, State, line, present};
 /// A language target names a file and a place in it; the caret goes there once the file is shown.
 use crate::native::language::{Jump, place};
-/// Reuse the same revision-aware classification application as external reloads.
-use crate::native::{reload::apply_syntax, render};
+/// Reuse the same revision-aware classification application as external reloads; `rows` maps the new text.
+use crate::native::{reload::apply_syntax, render, rows};
 /// Identity exhaustion reports an error rather than reusing an obsolete file generation.
 use anyhow::{Context, Result};
 /// New source documents arrive only after successful project-boundary resolution and reading.
 use ide_app::{file_open::OpenedFile, source_style::SourceStyles};
-/// File context remains a display-only native-path label.
-use slint::SharedString;
+/// File context remains a display-only native-path label; `ComponentHandle` reaches the window's display scale.
+use slint::{ComponentHandle, SharedString};
 /// Shared source state never crosses the background-reader thread.
 use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
@@ -144,6 +144,8 @@ pub(super) fn apply(
         current.styles = SourceStyles::from([]);
         current.first = 0;
         current.horizontal = 0.0;
+        // A new file starts at its top; the window's next offset report is that reset, not scrolling.
+        current.offset = 0.0;
         current.document_width = 0.0;
         current.shaped = None;
         current.frame_stamp = None;
@@ -154,7 +156,9 @@ pub(super) fn apply(
     }
     current.navigation_error = None;
     current.outside_project = outside;
-    let lines = current.document.text().len_lines();
+    // The scroll extent of the text now displayed comes from its own vertical mapping.
+    rows::refresh(&mut current, window.window().scale_factor());
+    let extent = current.row_map.height();
     // `take` moves a waiting language target out; it applies only to the file it names.
     let jump = current.pending_jump.take();
     drop(current);
@@ -170,7 +174,7 @@ pub(super) fn apply(
     window.set_file_outside_project(outside);
     window.set_source_available(true);
     if changed {
-        window.set_total_lines(lines as i32);
+        window.set_content_extent(extent);
         window.invoke_reset_source_scroll();
     }
     if let Some(target) = navigation.pending_line.take() {

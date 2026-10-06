@@ -46,11 +46,12 @@ fn install_log() {
         return;
     }
     // helix-lsp logs every message it writes and reads at `info`, and dropped answers at `debug`.
-    // `try_init` fails only when an earlier probe of this process already installed the log.
-    let _already_installed = tracing_subscriber::fmt()
-        .with_env_filter("ide_app=debug,helix_lsp=debug")
-        .with_writer(std::io::stderr)
-        .try_init();
+    // The application's pipeline re-labels helix-lsp's records as in a real session. Installing
+    // fails only when an earlier probe of this process already installed the log.
+    let filter = tracing_subscriber::EnvFilter::builder().parse_lossy(
+        ide_app::logging::directives("ide_app=debug,helix_lsp=debug", None),
+    );
+    let _already_installed = ide_app::logging::install(filter, std::io::stderr, None);
 }
 
 /// Where the child process works: its project root, its working directory, and its `PWD`.

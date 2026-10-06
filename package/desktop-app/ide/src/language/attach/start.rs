@@ -103,6 +103,8 @@ async fn adopt(worker: &mut Worker, name: String, client: Arc<Client>, view: &Ro
             .is_ok_and(|path| return view.contains(&path));
         if !inside {
             tracing::error!(server = client.name(), folder = %folder.uri, "server was rooted outside the project and is stopped");
+            // The worker stops it itself: what it wrote to standard error is no report.
+            crate::logging::stderr_tail::forget(client.name());
             let root = folder.uri.to_file_path().unwrap_or_default();
             retire(
                 worker,

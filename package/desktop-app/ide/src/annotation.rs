@@ -1,9 +1,11 @@
 //! Inlay hints and diagnostics of the displayed file, reduced to what one frame paints.
 //!
 //! Snapshots come from the Language module and name the file generation and revision they describe.
-//! A snapshot for any other generation or revision is never painted. Nothing here changes source geometry:
-//! hints and severity markers are drawn after a line's text and underlines under its glyphs, so caret movement,
-//! selection, hit testing, find rectangles, tab stops, and copying never see them.
+//! A snapshot for any other generation or revision is never painted. Hints and diagnostic messages are drawn on
+//! virtual rows above the code row of their line, and underlines under the glyphs a diagnostic marks. None of it
+//! is source text: caret movement, selection, hit testing inside a code row, find rectangles, tab stops, and
+//! copying never see them. What they do change is where code rows are; the store's blocks feed the one vertical
+//! mapping in `crate::row_map`.
 
 /// The diagnostic records and their severities as the Language module reports them.
 use crate::language::diagnostics::{DiagnosticsSnapshot, Severity};
@@ -11,25 +13,33 @@ use crate::language::diagnostics::{DiagnosticsSnapshot, Severity};
 use crate::language::hints::HintsSnapshot;
 /// File generation and content revision of the text a snapshot describes.
 use crate::language::identity::DocumentStamp;
+/// The rows a line shows above its code row.
+use crate::virtual_row::{Block, HintPlace, MessageRow, message_rows};
 /// What: `Rope` is Helix's character-indexed text buffer.
-/// Why: The frame's character window is computed from the displayed text's line starts.
+/// Why: Hints and diagnostics are grouped by the line their position lies on in the displayed text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { type Rope } from 'helix-core';
 /// ```
 use helix_core::Rope;
-/// What: `Arc` shares one immutable allocation between owners (siblings: single-thread `Rc`, owning `Box`).
-/// Why: The Language module hands snapshots out as shared values; `Arc` matches its handle without copying.
+/// What: `BTreeMap` is a map kept in key order (sibling: unordered `HashMap`); `Arc` shares one immutable
+///       allocation between owners (siblings: single-thread `Rc`, owning `Box`); `Instant` is a point on a
+///       clock that never goes backwards.
+/// Why: Blocks are needed in line order; the Language module hands snapshots out as shared values; held
+///      space ends at a point in time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Shared<T> = Readonly<T>;
+/// type Shared<T> = Readonly<T>; // and a Map whose keys are iterated in ascending order
 /// ```
-use std::sync::Arc;
+use std::{collections::BTreeMap, sync::Arc, time::Instant};
+
+/// Blocks of virtual rows per line: hint accumulation, held space after a reload, and assembly.
+mod blocks;
 
 /// What: Order of severity from worst to mildest; `u8` is an unsigned byte (siblings `u32`, `usize`).
-/// Why: Overlapping marks are drawn mildest first, and the caret card lists the worst first.
+/// Why: Overlapping marks are drawn mildest first, and messages above a line are listed worst first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,7 +59,7 @@ pub fn rank(severity: Severity) -> u8 {
 }
 
 /// What: The word a reader sees for a severity; `&'static str` is text baked into the binary (sibling `String`).
-/// Why: The caret card names the severity in words, so it does not depend on color.
+/// Why: Every message row starts with its severity in words, so it does not depend on color.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -68,9 +78,9 @@ pub fn severity_name(severity: Severity) -> &'static str {
     return "Hint";
 }
 
-/// What: One diagnostic as a frame paints it; `usize` is the character index type Helix ropes use
+/// What: One diagnostic as a frame underlines it; `usize` is the character index type Helix ropes use
 ///       (siblings `u32`, `u64`). `Copy` lets the record be duplicated like a number.
-/// Why: Painting needs the range and severity only; comparing these decides whether pixels change.
+/// Why: Underlining needs the range and severity only; comparing these decides whether pixels change.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,8 +96,8 @@ pub struct Mark {
     pub severity: Severity,
 }
 
-/// What: One diagnostic with the text the caret card shows; `Option<String>` is text or nothing.
-/// Why: The card needs the source, code, and message, which painting does not.
+/// What: One diagnostic with the text its message rows show; `Option<String>` is text or nothing.
+/// Why: The rows need the source, code, and message, which underlining does not.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -105,7 +115,7 @@ pub struct Problem {
     pub message: String,
 }
 
-/// One hint label as a frame paints it: the character it annotates and its trimmed text.
+/// One hint label: the character it annotates and its trimmed text.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Label {
     /// Character offset the server placed the hint before.
@@ -117,27 +127,48 @@ pub struct Label {
 /// What: Everything one frame paints from the snapshots; `Vec<T>` is a growable list
 ///       (siblings: fixed `[T; N]`, borrowed `&[T]`). `Default` builds the empty value.
 /// Why: Two frames with equal visible annotations have equal annotation pixels, so this is the frame-stamp key.
+///      Blocks are shared (`Arc`), so taking the visible part copies pointers, not labels and messages.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Visible = { labels: Label[]; marks: Mark[] };
+/// type Visible = { blocks: Block[]; marks: Mark[] };
 /// ```
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Visible {
-    /// Hint labels of the materialized rows, in position order.
-    pub labels: Vec<Label>,
+    /// Blocks of virtual rows of the materialized lines, in line order.
+    pub blocks: Vec<Arc<Block>>,
     /// Diagnostics touching the materialized rows, in start order.
     pub marks: Vec<Mark>,
 }
 
-/// What: The latest snapshots plus a position index over every diagnostic; `Option<Arc<T>>` is a shared
-///       snapshot or nothing.
-/// Why: Groups arrive per source, so their union is sorted once here instead of on every frame.
+/// What: Space held open above one line after an external change: the line and the heights of its former
+///       hint rows and message rows in logical pixels; `f32` is a 32-bit float (sibling `f64`).
+/// Why: Hints and messages of the old text are never painted for the new one, but their space stays until
+///      annotations of the new text arrive, so the text does not jump when they vanish and again when they return.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Annotations = { hints?: HintsSnapshot; diagnostics?: DiagnosticsSnapshot;
-///                      problems: Problem[]; reach: number[] };
+/// type Held = { line: number; hints: number; messages: number };
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Held {
+    /// Zero-based line of the new text.
+    pub line: usize,
+    /// Height held for hint rows.
+    pub hints: f32,
+    /// Height held for message rows.
+    pub messages: f32,
+}
+
+/// What: The latest snapshots, a position index over every diagnostic, the hints and message rows grouped by
+///       line, and the space held after a reload; `Option<Arc<T>>` is a shared snapshot or nothing.
+/// Why: Groups arrive per source and hints per visible range, so both are organized once per snapshot instead
+///      of on every frame.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Annotations = { hints?: HintsSnapshot; diagnostics?: DiagnosticsSnapshot; problems: Problem[];
+///   reach: number[]; labels: Map<number, Label[]>; messages: Map<number, MessageRow[]>; held: Held[]; version: number };
 /// ```
 #[derive(Debug, Default)]
 pub struct Annotations {
@@ -149,6 +180,31 @@ pub struct Annotations {
     problems: Vec<Problem>,
     /// `reach[i]` is the largest end among `problems[0..=i]`, so a range starting above a window is found by search.
     reach: Vec<usize>,
+    /// The text revision `labels` describes.
+    labelled: Option<DocumentStamp>,
+    /// Hint labels per line, in position order, from every hint snapshot of the `labelled` revision.
+    labels: BTreeMap<usize, Vec<Label>>,
+    /// Packed hint rows per line, computed on demand at `placed_scale`.
+    placed: BTreeMap<usize, (usize, Vec<HintPlace>)>,
+    /// Physical pixels per logical pixel the entries of `placed` were packed at.
+    placed_scale: f32,
+    /// Message rows per line for the held diagnostics, worst first.
+    messages: BTreeMap<usize, Vec<MessageRow>>,
+    /// The text revision `held` belongs to.
+    held_for: Option<DocumentStamp>,
+    /// Space held open after an external change, in line order.
+    held: Vec<Held>,
+    /// When the held space is given up.
+    held_until: Option<Instant>,
+    /// What: A counter that grows with every change that can alter a block; `u64` is an unsigned 64-bit
+    ///       integer (sibling `u32`), wide enough never to wrap.
+    /// Why: The window rebuilds its vertical mapping only when this number changed.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// version: number;
+    /// ```
+    version: u64,
 }
 
 /// What: Severity a diagnostic is drawn with; `Option<Severity>` is a severity or nothing.
@@ -218,67 +274,117 @@ fn indexed(diagnostics: Option<&DiagnosticsSnapshot>) -> (Vec<Problem>, Vec<usiz
 
 /// Build, query, and replace the annotation inputs of the displayed file.
 impl Annotations {
-    /// What: Keep both snapshots and index every diagnostic once. `Option<Arc<...>>` parameters are moved in.
-    /// Why: The setter runs when a snapshot changes; frames only search the index.
+    /// What: Drop everything held and store both snapshots as given; one that describes `displayed` is grouped
+    ///       by the lines of `text`. `Option<Arc<...>>` parameters are moved in; `&Rope` lends the displayed text.
+    /// Why: Tests and the inspection path install a complete set in one call. A snapshot for other text is
+    ///      kept for identity checks but never grouped or painted.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// static from(hints?: HintsSnapshot, diagnostics?: DiagnosticsSnapshot): Annotations;
+    /// replace(displayed: DocumentStamp, text: Rope, hints?: HintsSnapshot, diagnostics?: DiagnosticsSnapshot): void;
     /// ```
-    pub fn new(
+    pub fn replace(
+        &mut self,
+        displayed: DocumentStamp,
+        text: &Rope,
         hints: Option<Arc<HintsSnapshot>>,
         diagnostics: Option<Arc<DiagnosticsSnapshot>>,
-    ) -> Self {
-        // `as_deref` lends the snapshot inside the shared pointer, or nothing.
-        let (problems, reach) = indexed(diagnostics.as_deref());
-        return Self {
-            hints,
-            diagnostics,
-            problems,
-            reach,
-        };
+    ) {
+        let version = self.version;
+        // `Self::default()` is the empty store; assigning through `*self` replaces every field at once.
+        *self = Self::default();
+        self.version = version + 1;
+        if let Some(snapshot) = hints {
+            // A refused snapshot is still held, so handing the same one back is recognized.
+            if !self.accept_hints(displayed, text, Arc::clone(&snapshot)) {
+                self.hints = Some(snapshot);
+            }
+        }
+        if let Some(snapshot) = diagnostics
+            && !self.accept_diagnostics(displayed, text, Arc::clone(&snapshot))
+        {
+            self.diagnostics = Some(snapshot);
+        }
     }
 
-    /// What: Store hints that describe `displayed`; a snapshot for any other text is refused, the held hints
-    ///       stay, and the answer is `false`. `Arc<HintsSnapshot>` is moved in.
+    /// What: Store hints that describe `displayed` and group them by the lines of `text`; a snapshot for any
+    ///       other text is refused, the held hints stay, and the answer is `false`. `Arc<HintsSnapshot>` is moved in.
     /// Why: This is the Language poll's entry point: hints and diagnostics arrive independently, and only a
-    ///      snapshot of the displayed file generation and revision may replace what is shown.
+    ///      snapshot of the displayed file generation and revision may replace what is shown. Hints are asked
+    ///      for around the visible lines only, so a snapshot replaces the hints of its own line range and keeps
+    ///      those of lines it did not ask about: rows seen once stay where they are when the view returns.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// acceptHints(displayed: DocumentStamp, snapshot: HintsSnapshot): boolean;
+    /// acceptHints(displayed: DocumentStamp, text: Rope, snapshot: HintsSnapshot): boolean;
     /// ```
-    pub fn accept_hints(&mut self, displayed: DocumentStamp, snapshot: Arc<HintsSnapshot>) -> bool {
+    pub fn accept_hints(
+        &mut self,
+        displayed: DocumentStamp,
+        text: &Rope,
+        snapshot: Arc<HintsSnapshot>,
+    ) -> bool {
         if snapshot.stamp != displayed {
             return false;
         }
+        // `&snapshot` lends the snapshot behind the shared pointer to the grouping pass.
+        self.merge_labels(text, &snapshot);
         // `Some(...)` stores the snapshot as the present value.
         self.hints = Some(snapshot);
+        self.version += 1;
         return true;
     }
 
-    /// What: Store diagnostics that describe `displayed` and index them; a snapshot for any other text is
-    ///       refused, the held diagnostics stay, and the answer is `false`.
-    /// Why: The index is rebuilt once per accepted snapshot, never per frame.
+    /// What: Store diagnostics that describe `displayed`, index them, and build the message rows of every
+    ///       line of `text` where one starts; a snapshot for any other text is refused, the held diagnostics
+    ///       stay, and the answer is `false`.
+    /// Why: The index and the rows are rebuilt once per accepted snapshot, never per frame.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// acceptDiagnostics(displayed: DocumentStamp, snapshot: DiagnosticsSnapshot): boolean;
+    /// acceptDiagnostics(displayed: DocumentStamp, text: Rope, snapshot: DiagnosticsSnapshot): boolean;
     /// ```
     pub fn accept_diagnostics(
         &mut self,
         displayed: DocumentStamp,
+        text: &Rope,
         snapshot: Arc<DiagnosticsSnapshot>,
     ) -> bool {
         if snapshot.stamp != displayed {
             return false;
         }
-        // `&snapshot` lends the snapshot behind the shared pointer to the indexing pass.
         let (problems, reach) = indexed(Some(&snapshot));
         self.problems = problems;
         self.reach = reach;
         self.diagnostics = Some(snapshot);
+        self.group_messages(text);
+        self.version += 1;
         return true;
+    }
+
+    /// What: Rebuild `messages`: the diagnostics starting on each line, worst first, as rows.
+    /// Why: The number of rows above a line must be known for every line of the file without shaping, so the
+    ///      vertical mapping is complete as soon as diagnostics are.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// groupMessages(text: Rope): void;
+    /// ```
+    fn group_messages(&mut self, text: &Rope) {
+        let mut grouped: BTreeMap<usize, Vec<&Problem>> = BTreeMap::new();
+        let length = text.len_chars();
+        for problem in &self.problems {
+            let line = text.char_to_line(problem.mark.start.min(length));
+            // `entry(...).or_default()` lends the line's list, creating an empty one first when absent.
+            grouped.entry(line).or_default().push(problem);
+        }
+        let mut messages = BTreeMap::new();
+        for (line, mut problems) in grouped {
+            // `sort_by_key` is stable, so equal severities keep their position order.
+            problems.sort_by_key(|problem| return rank(problem.mark.severity));
+            messages.insert(line, message_rows(&problems));
+        }
+        self.messages = messages;
     }
 
     /// What: The held hints while they describe `displayed`, otherwise nothing; `Option<&HintsSnapshot>` lends
@@ -338,6 +444,11 @@ impl Annotations {
         return same_hints && same_diagnostics;
     }
 
+    /// The change counter: it differs whenever a block may have changed since the caller last looked.
+    pub fn version(&self) -> u64 {
+        return self.version;
+    }
+
     /// Whether the held diagnostics describe exactly the displayed text.
     fn diagnostics_current(&self, stamp: DocumentStamp) -> bool {
         // `is_some_and` answers false for no snapshot and otherwise asks the closure.
@@ -347,19 +458,19 @@ impl Annotations {
             .is_some_and(|snapshot| return snapshot.stamp == stamp);
     }
 
-    /// What: The labels and marks of rows `first..last` of `text`, or nothing for a stale snapshot.
+    /// What: The diagnostics touching rows `first..last` of `text`, or nothing for a stale snapshot.
     ///       `&Rope` lends the displayed text.
-    /// Why: Painting is bounded to the materialized rows; both searches are binary, so the cost follows the
-    ///      number of visible annotations, not the file.
+    /// Why: Underlining is bounded to the materialized rows; the search is binary, so the cost follows the
+    ///      number of visible diagnostics, not the file.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// visible(stamp: DocumentStamp, text: Rope, first: number, last: number): Visible;
+    /// marks(stamp: DocumentStamp, text: Rope, first: number, last: number): Mark[];
     /// ```
-    pub fn visible(&self, stamp: DocumentStamp, text: &Rope, first: usize, last: usize) -> Visible {
-        let mut result = Visible::default();
+    pub fn marks(&self, stamp: DocumentStamp, text: &Rope, first: usize, last: usize) -> Vec<Mark> {
+        let mut result = Vec::new();
         let lines = text.len_lines();
-        if first >= lines {
+        if first >= lines || !self.diagnostics_current(stamp) {
             return result;
         }
         let start = text.line_to_char(first);
@@ -368,45 +479,24 @@ impl Annotations {
         if last < lines {
             end = text.line_to_char(last);
         }
-        if let Some(snapshot) = &self.hints
-            && snapshot.stamp == stamp
-        {
-            let from = snapshot
-                .hints
-                .partition_point(|hint| return hint.position < start);
-            for hint in &snapshot.hints[from..] {
-                if hint.position >= end {
-                    break;
-                }
-                let trimmed = hint.label.trim();
-                if !trimmed.is_empty() {
-                    result.labels.push(Label {
-                        position: hint.position,
-                        // `to_string` copies the borrowed trimmed text into an owned `String`.
-                        text: trimmed.to_string(),
-                    });
-                }
+        // The first diagnostic whose range, or an earlier one's, reaches the window.
+        let from = self
+            .reach
+            .partition_point(|furthest| return *furthest < start);
+        for problem in &self.problems[from..] {
+            if problem.mark.start >= end {
+                break;
             }
-        }
-        if self.diagnostics_current(stamp) {
-            // The first diagnostic whose range, or an earlier one's, reaches the window.
-            let from = self
-                .reach
-                .partition_point(|furthest| return *furthest < start);
-            for problem in &self.problems[from..] {
-                if problem.mark.start >= end {
-                    break;
-                }
-                if problem.mark.end >= start {
-                    result.marks.push(problem.mark);
-                }
+            if problem.mark.end >= start {
+                result.push(problem.mark);
             }
         }
         return result;
     }
 
     /// What: Diagnostics whose range contains caret boundary `position`, worst first; `Vec<&Problem>` lends them.
-    /// Why: The caret card shows every problem at the caret; a range touches the caret at both of its ends.
+    /// Why: The source view's accessible description names every problem at the caret; a range touches the
+    ///      caret at both of its ends.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -428,20 +518,15 @@ impl Annotations {
                 result.push(problem);
             }
         }
-        // What: `sort_by_key` is stable, so equal severities keep their position order.
-        // Why: The worst problem is read first.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // result.sort((a, b) => rank(a.mark.severity) - rank(b.mark.severity));
-        // ```
+        // The worst problem is read first; the stable sort keeps position order among equals.
         result.sort_by_key(|problem| return rank(problem.mark.severity));
         return result;
     }
 }
 
-/// What: The card text for one problem, for example `Error E0308 (rustc): mismatched types`.
-/// Why: The severity is spelled out, so the card does not rely on its color; the code and source say who reported it.
+/// What: The text of one problem, for example `Error E0308 (rustc): mismatched types`.
+/// Why: The severity is spelled out, so a message row does not rely on its ink; the code and source say who
+///      reported it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

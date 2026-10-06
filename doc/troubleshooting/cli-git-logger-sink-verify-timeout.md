@@ -60,6 +60,13 @@ The same emitter fires outside the cli-git hook surface:
  (`free -m` showed 39 GiB used and 30 GiB swap used),
  and the line vanished once the host load dropped.
 
+On 2026-10-06 one `git commit` printed the line once,
+in a session where other work had held the host's load average at about 35 to 60 an hour before
+(it was not measured at the moment of the commit,
+and read 66 shortly after);
+the commit landed,
+and the next commits did not print it.
+
 This transient,
 load-correlated observation remains separate from issue #573 until their process and trigger boundaries match.
 An identical timeout diagnostic proves a shared reporting path,

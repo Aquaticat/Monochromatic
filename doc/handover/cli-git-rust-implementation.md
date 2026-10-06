@@ -195,15 +195,13 @@ Every delegate in that list has reported;
 `Delegate results` has each outcome.
 Running at the last update of this document (2026-10-06, relaunched at 08:10):
 
-- Candidate content layer
-  (linked worktree `.claude/worktrees/cli-git-candidates`, branch `feat/cli-git-native-candidates`):
-  review and commit the inherited failure-code mapping,
-  merge current `main` again,
-  gate the merged tree with fuzz and mutation.
-  The main session fast-forwards `main` to the gated merge.
-- Scanner Windows suite through the `mvm` command-line program (no repository code changes):
-  the run that would show the Windows suite green,
-  recorded in `doc/handover/scanner-native-verification.md`.
+- Content policies over candidates
+  (linked worktree `.claude/worktrees/cli-git-content-policies`, branch `feat/cli-git-native-content-policies`):
+  the `git add` and worktree candidate sources,
+  the failure code carried to the event,
+  `final-newline`, `security/forbidden-strings` with `rulesFile`, and `mono/forbidden-root-context`,
+  with a differential test against the incumbent.
+  Evidence: `doc/handover/cli-git-native-content-policies.md` on that branch.
 - Linter mutation and fuzz gaps (main checkout):
   the six items listed under `Linter mutation close`.
 - Dependent-version planning in Rust with a differential proof against the TypeScript planner
@@ -211,6 +209,8 @@ Running at the last update of this document (2026-10-06, relaunched at 08:10):
   branch `feat/cli-git-native-dependent-version`),
   evidence `doc/handover/cli-git-native-dependent-version.md` on that branch.
 
+The scanner's Windows suite through `mvm` alone has reported;
+its result is in the work queue item `Scanner on Windows`.
 Reported and recorded under `Delegate results`:
 the scanner Windows follow-up,
 the open-decision brief,
@@ -839,6 +839,12 @@ so the main session inventoried what each had left and launched fresh delegates 
 - Linter gaps and dependent-version port:
   nothing written.
 
+The three delegates still running (content policies, dependent-version port, linter gaps)
+stopped again on the API session limit in the afternoon of 2026-10-06
+and were resumed from their transcripts at 16:01,
+each told to judge its interrupted run from its evidence directory.
+No container was running then.
+
 #### Linter mutation close
 
 Evidence in `doc/handover/unified-linter-mutation-close.md` (`a5033325b`), section `Result`.
@@ -936,10 +942,19 @@ evidence in `doc/handover/cli-git-native-candidates.md` on that branch.
   tracked non-candidate files,
   multi-commit listings for manual push,
   and worktree bytes for direct `check`.
-- Merging into `main` conflicts in six files where both sides added entries at one place.
-  The delegate is merging `main` into its branch,
-  gating the merged tree and applying the failure-code mapping;
-  the main session fast-forwards `main` afterwards.
+- Landed on `main` on 2026-10-06 as `c6cab0800`, a fast-forward to a merge of `main` into the branch.
+  The merged tree was gated at `571fe1003`:
+  523 unit, 37 binary-level and 1 public-interface test, Clippy
+  (image `8ff0051a5b9a132ffa5ef1b01347039511d7ad3098a79831116d30ff0f1919e4`);
+  the failure-code mapping's campaign had 0 missed and 0 timeouts,
+  eight hand-planted mapping defects were all noticed,
+  and every fuzz target's smoke run exited 0.
+  Before the fast-forward the landing script proved that every path the gate image reads
+  (`package/git-policy`, `package/cli/forbidden-strings`, `package/rust-module`, `clippy.toml`)
+  was byte-identical to `571fe1003`.
+  The worktree, the local branch and the remote branch are removed.
+- The failure-code mapping (`scanner_failure_code.rs`) is pure and has no caller yet;
+  the branch's handover section `What the engine must add` lists what the content-policy phase wires.
 
 #### mvm on a Flatpak-only libvirt host
 
@@ -1299,12 +1314,21 @@ that is verification, not a decision for the user.
 - [x] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
 - [x] Forbidden-strings structured embedding interface and standalone parity.
   The two Windows-native survivors are caught on Windows (GNU ABI, differential against a red baseline).
-- [ ] Scanner on Windows: the prefix fail-open fix (`833483171`) is confirmed on Windows,
-  and the suite passed 232 of 234 tests at `fe805727c`.
-  The two remaining tests now assert the platform's reason (`aaf4c08e7`);
-  a Windows run that shows 234 of 234 beside a failing positive control is still owed
-  (a delegate is running it through `mvm`),
-  and MSVC is unexercised.
+- [x] Scanner on Windows: the prefix fail-open fix (`833483171`) is confirmed on Windows,
+  and on 2026-10-06 the whole suite passed 234 of 234 at `fb64be854`
+  beside a positive control that failed the expected 14 tests
+  (`doc/handover/scanner-native-verification.md`, section `Windows run with mvm alone`).
+  Not exercised: the MSVC and aarch64 Windows targets.
+- [ ] Scanner pathname mutation scope on Windows without a timeout.
+  The 2026-10-06 run missed nothing but recorded one timeout
+  after its mutant had already failed nine tests;
+  the stall was in an unrelated test,
+  and on two reruns of that mutant the unmutated baseline's test time went from 21.7 to 83.9 seconds and then past
+  the 120 second limit as host load rose to 167 on 16 processors.
+  The cause (host load or the guest's real-time malware scanning) was not separated.
+  Rerun when the host is quiet,
+  once with real-time scanning excluded for the build directory in the throwaway guest,
+  to tell the two apart.
 - [ ] Mutation gates exit 0 with the two excluded replacement kinds, 0 missed and 0 timeouts.
   Done for the wrapper on its final engine tree (`348d94cbe`) and for the candidate branch;
   the linter's scopes are still being rerun by their delegate,
@@ -1320,7 +1344,7 @@ that is verification, not a decision for the user.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).
-- [ ] Merge the candidate content layer into `main` after its merged-tree gate.
+- [x] Merge the candidate content layer into `main` (`c6cab0800`).
 - [ ] Content policies over candidates:
   the missing candidate sources (`git add` staged delta, worktree bytes for direct `check`, manual-push listings),
   the five built-in content policies,

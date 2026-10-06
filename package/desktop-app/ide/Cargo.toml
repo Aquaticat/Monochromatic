@@ -50,6 +50,10 @@ tokio = { version = "1.50", features = ["rt-multi-thread", "sync", "time", "proc
 # Match the compiler/runtime release family used by the sibling native apps.
 slint = { version = "1.17.0", features = [ "backend-winit", "renderer-femtovg", "renderer-software", ], }
 tracing = "0.1"
+# The `log` facade helix-lsp writes through and its conversion to `tracing` events, used to re-label
+# helix-lsp records (`src/logging/relabel.rs`). tracing-subscriber already builds this exact crate with
+# the same features; this line adds a direct edge only.
+tracing-log = { version = "0.2", default-features = false }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [dev-dependencies]

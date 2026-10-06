@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-// Controls for the quiet-lifetime regressions (tests/language/quiet.rs), run in a disposable package copy:
-// - the strict acceptance test fails on unmodified sources, with helix-lsp's end-of-stream record;
-// - the enforced test fails when a server writes one line to standard error, and when the worker no
-//   longer asks servers to shut down or no longer waits for them to end;
-// - the kill test fails when the worker thread ends without reaping the server it killed;
-// - optionally, with a disposable helix clone: the strict test passes once helix-lsp's standard-error
-//   reader treats the end of the stream as its response reader does, and fails again without that change.
+// Controls for the quiet-lifetime and logging regressions, run in a disposable package copy. Each case
+// removes one guard, expects its named test to fail with the named text, then restores it and expects a pass:
+// - each re-labelled helix-lsp record shape: without its re-labelling the clean-lifetime test sees it at ERROR;
+// - re-labelling every transport ERROR record: the test of unknown records sees a real failure lowered;
+// - a full log queue that waits for room: the stalled-output test sees the logging thread delayed;
+// - the worker's shutdown request, its wait for servers to end, and its reaping of a killed server;
+// - a server's last standard-error lines: kept and reported when it crashes, waited for when they arrive just
+//   after the end, and never reported on a clean shutdown.
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 
@@ -23,12 +24,8 @@ if (!process.env.usage_cache) throw new Error('Provide the disposable Cargo targ
 const cache = disposable(process.env.usage_cache, 'Target cache');
 // A private Cargo home copy keeps disposable builds off the shared volume's package-cache lock.
 const cargoHome = process.env.usage_cargo ? disposable(process.env.usage_cargo, 'Cargo home copy') : 'ide-cargo';
-// A fresh clone of Helix at the pinned revision; the prototype change is applied to it and reverted.
-const helix = process.env.usage_helix ? disposable(process.env.usage_helix, 'Helix clone') : undefined;
-// An optional part name reruns only that part: 'sources' (the package's own controls) or 'helix' (the prototype).
-const only = process.env.usage_only || undefined;
-if (only && !['sources', 'helix'].includes(only)) throw new Error('Unknown part: ' + only);
-if (only === 'helix' && !helix) throw new Error('The helix part needs the Helix clone argument');
+// An optional comma-separated list reruns only the named cases (their baselines always run).
+const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
 const artifact = mkdtempSync(join(privateRoot, 'ide-language-lifecycle-guard-'));
 const source = join(artifact, 'package');
 const origin = process.cwd();
@@ -42,19 +39,22 @@ const replaceOne = (text, before, after) => {
   if (text.indexOf(before, start + before.length) >= 0) throw new Error('Mutation source anchor is ambiguous: ' + before);
   return text.slice(0, start) + after + text.slice(start + before.length);
 };
-const enforced = 'quiet::clean_lifetime_logs_no_error_besides_the_helix_end_of_stream_record';
 const strict = 'quiet::clean_lifetime_logs_no_error_level_record';
+const unknown = 'quiet::unknown_helix_error_records_keep_their_level';
 const killed = 'lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns';
-const endOfStream = 'helix_lsp::transport: scripted-ls err: <- StreamClosed';
+const stalled = 'logging::background::tests::a_blocked_output_never_delays_the_logging_thread';
+const crashed = 'quiet::a_crashed_server_is_logged_with_its_last_stderr_lines';
+const settled = 'language::attach::report::tests::an_end_waits_for_lines_that_arrive_after_it';
 const results = [];
 // Run one test in the bounded container and compare the outcome with `expect`: 'pass', or the texts a failure must contain.
+// Tests of the library's own modules run with `--lib`; the others are in the `language` integration test.
 const run = (name, test, expect) => {
-  const command = ['cargo', 'test', '--offline', '--no-default-features', '--test', 'language', test, '--', '--exact', '--nocapture', '--include-ignored'];
+  const target = test.startsWith('logging::') || test.startsWith('language::') ? ['--lib'] : ['--test', 'language'];
+  const command = ['cargo', 'test', '--offline', '--no-default-features', ...target, test, '--', '--exact', '--nocapture', '--include-ignored'];
   const result = spawnSync('podman', [
     'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
     '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
     '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
-    ...(helix ? ['--volume', helix + ':/helix'] : []),
     '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
     'localhost/monochromatic/ide', ...command,
   ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -78,50 +78,41 @@ const mutated = (path, before, after, body) => {
   } finally { writeFileSync(path, original); }
 };
 
-if (only !== 'helix') {
-  // Unmodified sources: the enforced test passes, and the strict test fails with exactly the helix-lsp record.
-  run('baseline-enforced', enforced, 'pass');
-  run('strict-without-a-fix', strict, ['a clean lifetime logged at ERROR', endOfStream]);
-  const cases = [
-    // The scripted server reports its own shutdown on standard error, as TypeScript 7's server does after `exit`.
-    { name: 'server-stderr-line', file: 'src/bin/ide-scripted-lsp/server.rs', before: '} else if method == "shutdown" {', after: '} else if method == "shutdown" { eprintln!("context canceled");', failure: ['a clean lifetime logged at ERROR', 'scripted-ls err <- \\"context canceled'] },
-    // The worker drops its servers without asking them to shut down.
-    { name: 'no-shutdown-request', file: 'src/language/worker.rs', before: 'client.force_shutdown();', after: '', failure: ['the server was not asked to shut down'] },
-    // The worker asks, then drops the registry without waiting for the processes to end.
-    { name: 'no-wait-for-exit', file: 'src/language/worker.rs', before: 'while running > 0 {', after: 'while false {', failure: ['the server was not asked to shut down'] },
-    // The worker thread ends right after its runtime, without reaping the server it had to kill.
-    { name: 'no-reap-after-kill', test: killed, file: 'src/language/worker.rs', before: 'reap::finish(REAP_GRACE);', after: '', failure: ['a child process was left when the drop returned', "'Z'"] },
-  ];
-  run('baseline-killed', killed, 'pass');
-  for (const item of cases) {
-    const test = item.test ?? enforced;
-    mutated(join(source, item.file), item.before, item.after, () => run(item.name + '-removed', test, item.failure));
-    run(item.name + '-restored', test, 'pass');
-  }
+const relabel = 'src/logging/relabel.rs';
+const cases = [
+  // A server's standard-error line, as TypeScript 7's server writes `context canceled`, reaches ERROR again.
+  { name: 'relabel-server-stderr-line', test: strict, file: relabel, before: '        return Some(Matched {\n            shape: Shape::ServerStderrLine,\n            server: name,\n            line,\n        });\n', after: '        let _mutant_drops = line;\n        return None;\n', failure: ['a clean lifetime logged at ERROR', 'scripted-ls err <- \\"context canceled'] },
+  // The end of a server's standard error, at every server exit, reaches ERROR again.
+  { name: 'relabel-end-of-server-stderr', test: strict, file: relabel, before: '        return Some(Matched {\n            shape: Shape::EndOfServerStderr,\n            server: name,\n            line: "",\n        });\n', after: '        return None;\n', failure: ['a clean lifetime logged at ERROR', 'scripted-ls err: <- StreamClosed'] },
+  // A `-32801` answer that the worker asks again for reaches ERROR again.
+  { name: 'relabel-moot-answer', test: strict, file: relabel, before: '            return Some(Matched {\n                shape: Shape::MootAnswer,\n                server: name,\n                line: "",\n            });\n', after: '            return None;\n', failure: ['a clean lifetime logged at ERROR', 'ServerError(-32801): content modified'] },
+  // Every transport ERROR record is lowered, so a real request failure no longer shows as an error.
+  { name: 'relabel-every-transport-error', test: unknown, file: relabel, before: '    if level != log::Level::Error || target != TRANSPORT_TARGET {\n        return None;\n    }', after: '    if level == log::Level::Error {\n        return Some(Matched { shape: Shape::MootAnswer, server: "", line: "" });\n    }', failure: ['no ERROR record ending with', 'InternalError: scripted initialize failure'] },
+  // A full log queue waits for room instead of dropping, so a stalled output stalls the logging thread.
+  { name: 'log-queue-waits-when-full', test: stalled, file: 'src/logging/background.rs',
+    before: '            self.shared.queued.fetch_sub(size, Ordering::SeqCst);\n            self.shared.lose(Loss {\n                records: 1,\n                bytes: size as u64,\n            });\n            return;\n',
+    after: '            self.shared.queued.fetch_sub(size, Ordering::SeqCst);\n            while self.shared.queued.load(Ordering::SeqCst).saturating_add(size) > self.shared.budget {\n                thread::sleep(Duration::from_millis(1));\n            }\n            self.shared.queued.fetch_add(size, Ordering::SeqCst);\n',
+    failure: ['logging waited for the stalled output'] },
+  // The worker drops its servers without asking them to shut down.
+  { name: 'no-shutdown-request', test: strict, file: 'src/language/worker.rs', before: 'client.force_shutdown();', after: '', failure: ['the server was not asked to shut down'] },
+  // The worker asks, then drops the registry without waiting for the processes to end.
+  { name: 'no-wait-for-exit', test: strict, file: 'src/language/worker.rs', before: 'while running > 0 {', after: 'while false {', failure: ['the server was not asked to shut down'] },
+  // The worker thread ends right after its runtime, without reaping the server it had to kill. The child is usually
+  // a zombie by the time the test looks; on a busy host it can still be running (state R), killed but not yet ended.
+  // The log bridge no longer keeps a server's standard-error lines, so the crash record has none.
+  { name: 'stderr-tail-not-kept', test: crashed, file: 'src/logging/stderr_tail.rs', before: '    tail.lines.push_back(line);\n', after: '    let _mutant_drops = line;\n', failure: ['the ended-server record lacks the server\'s last lines', 'was_ready=true\n'] },
+  // The crash record is written at once instead of waiting for the end of the server's standard error.
+  { name: 'stderr-tail-no-settle', test: settled, file: 'src/language/attach/report.rs', before: 'while !stderr_tail::is_closed(&record.server) && started.elapsed() < SETTLE {', after: 'while false && started.elapsed() < SETTLE {', failure: ['the record did not wait for the last line'] },
+  // A clean shutdown reports each server's kept lines as if it had crashed.
+  { name: 'stderr-tail-on-clean-shutdown', test: strict, file: 'src/language/worker.rs', before: '            crate::logging::stderr_tail::forget(client.name());\n', after: '            tracing::warn!(server = client.name(), stderr_tail = ?crate::logging::stderr_tail::take(client.name()), "language server process ended");\n', failure: ['a clean shutdown logged the server\'s last lines', 'scripted server starting'] },
+  { name: 'no-reap-after-kill', test: killed, file: 'src/language/worker.rs', before: 'reap::finish(REAP_GRACE);', after: '', failure: ['a child process was left when the drop returned', 'ide-scripted-ls'] },
+];
+for (const name of only ?? []) if (!cases.some(item => item.name === name)) throw new Error('Unknown case: ' + name);
+const selected = cases.filter(item => !only || only.has(item.name));
+// Unmodified sources: every test a selected case relies on passes.
+for (const test of new Set(selected.map(item => item.test))) run('baseline-' + test.split('::').at(-1), test, 'pass');
+for (const item of selected) {
+  mutated(join(source, item.file), item.before, item.after, () => run(item.name + '-removed', item.test, item.failure));
+  run(item.name + '-restored', item.test, 'pass');
 }
-
-if (helix && only !== 'sources') {
-  // Build against the clone instead of Cargo's checkout of the same revision.
-  // The checked-out revision is read from the clone's own files, so no git command runs against a third-party clone.
-  const head = readFileSync(join(helix, '.git', 'HEAD'), 'utf8').trim();
-  const reference = head.startsWith('ref: ') ? head.slice(5) : undefined;
-  const loose = reference ? join(helix, '.git', reference) : undefined;
-  const packed = () => readFileSync(join(helix, '.git', 'packed-refs'), 'utf8').split('\n').find(line => line.endsWith(' ' + reference))?.split(' ')[0] ?? '';
-  const revision = !reference ? head : (existsSync(loose) ? readFileSync(loose, 'utf8').trim() : packed());
-  const manifest = readFileSync(join(source, 'Cargo.toml'), 'utf8');
-  if (!manifest.includes('rev = "' + revision + '"')) throw new Error('The Helix clone is at ' + revision + ', not at the revision Cargo.toml pins');
-  const crates = ['helix-core', 'helix-loader', 'helix-lsp', 'helix-lsp-types', 'helix-parsec', 'helix-stdx'];
-  writeFileSync(join(source, 'Cargo.toml'), manifest + '\n[patch."https://github.com/helix-editor/helix"]\n' + crates.map(name => name + ' = { path = "/helix/' + name + '" }').join('\n') + '\n');
-  // Control: the same build path with the clone unmodified still fails, so the path override alone changes nothing.
-  run('helix-clone-unmodified', strict, ['a clean lifetime logged at ERROR', endOfStream]);
-  // The prototype: the standard-error reader stays silent about the end of the stream, as the response reader already is.
-  mutated(join(helix, 'helix-lsp/src/transport.rs'),
-    '                Err(err) => {\n                    error!("{} err: <- {err:?}", transport.name);\n                    break;\n                }\n            }\n        }\n    }\n\n    async fn send(',
-    '                Err(Error::StreamClosed) => break,\n                Err(err) => {\n                    error!("{} err: <- {err:?}", transport.name);\n                    break;\n                }\n            }\n        }\n    }\n\n    async fn send(',
-    () => {
-      run('helix-prototype-strict', strict, 'pass');
-      run('helix-prototype-enforced', enforced, 'pass');
-    });
-  run('helix-clone-restored', strict, ['a clean lifetime logged at ERROR', endOfStream]);
-}
-console.log('Language lifecycle guard controls passed: ' + artifact + ' (' + results.length + ' runs)');
+console.log('Language lifecycle and logging guard controls passed: ' + artifact + ' (' + results.length + ' runs)');

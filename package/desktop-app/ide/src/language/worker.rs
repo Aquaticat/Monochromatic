@@ -300,6 +300,8 @@ impl Worker {
         let mut running = clients.len();
         for client in &clients {
             self.registry.file_event_handler.remove_client(client.id());
+            // A server asked to stop says nothing worth a record; its last lines are dropped.
+            crate::logging::stderr_tail::forget(client.name());
             client.force_shutdown();
         }
         // The local clones must go, or a finished process would stay unreaped behind them.

@@ -19,16 +19,15 @@ const testImage = `localhost/monochromatic-lint-test:${imageTag}`;
 const mutationImage = `localhost/monochromatic-lint-mutation:${imageTag}`;
 
 /**
- * Full names of the tests that load or prepare a real Cargo workspace through the semantic engine.
- * They take most of the whole suite's time (the five ran for over 60 seconds each in gate 6 of the close handover),
- * so the fast scopes skip exactly these. Each name is a whole test-function name that no other test contains,
- * so the quick tests of the same modules still run. Record: doc/handover/unified-linter-mutation-close.md.
+ * Full names of the four tests that load a real Cargo workspace through the semantic engine.
+ * Alone in the bounded container they took 43 to 139 seconds each, and the rest of the library suite 14 seconds
+ * (workspace-tests-cost-1.log), so the fast scopes skip exactly these. Each name is a whole test path that no other
+ * test contains, so the quick tests of the same modules still run. Record: doc/handover/unified-linter-mutation-close.md.
  */
 const workspaceTests = [
   'rust_explicit_types_tests::semantic_conformance_and_source_overlay_controls',
   'rust_file_engine::tests::selected_semantics_reuses_the_manifest_session',
   'rust_inferred_constants::tests::holes_resolve_against_the_parameter_in_their_own_slot',
-  'rust_workspace_tests::cargo_discovery_keeps_its_owner_boundary',
   'rust_workspace_tests::generated_definitions_and_build_failures_are_distinct',
 ];
 
@@ -105,10 +104,10 @@ const scopes = new Map([
   // The executable's own modules: orchestration, the binary entry point, Rust rule selection, and the input
   // expansion and fix loop it drives. Its Markdown modules (`markdown_lfs_*`, dispatch and rule settings) are under
   // the Markdown scope's glob. `main.rs` and the real streams are reached only by the `binary` test target, whose
-  // test names share no substring, so this scope runs every test except the five that load Cargo workspaces;
+  // test names share no substring, so this scope runs every test except the four that load Cargo workspaces;
   // those take most of the whole suite's time, which exceeded the 180 second limit (183.94 s) at 04c663cb0.
   ['--executable', {
-    description: 'orchestration, the entry point, Rust rule selection, input expansion and the fix loop against every test except the five Cargo-workspace tests',
+    description: 'orchestration, the entry point, Rust rule selection, input expansion and the fix loop against every test except the four Cargo-workspace tests',
     select: [
       'src/run_*.rs', 'src/main.rs', 'src/rust_dispatch.rs', 'src/rust_rule_settings.rs',
       'src/file_discovery.rs', 'src/path_inputs.rs', 'src/fix_loop.rs',
@@ -118,7 +117,7 @@ const scopes = new Map([
   // Shared layers below every rule: configuration parsing, lookup, matching and merging, rule-option validation,
   // findings, grouped edits, and the syntax-only Rust rules with their shared parse. None loads a Cargo workspace.
   ['--core', {
-    description: 'configuration, findings, grouped edits and the syntax-only Rust rules against every test except the five Cargo-workspace tests',
+    description: 'configuration, findings, grouped edits and the syntax-only Rust rules against every test except the four Cargo-workspace tests',
     select: [
       'src/config_*.rs', 'src/configuration*.rs', 'src/diagnostic.rs', 'src/edits.rs', 'src/resolved_rules.rs',
       'src/rust_rules.rs', 'src/rust_source.rs',
@@ -127,7 +126,9 @@ const scopes = new Map([
   }],
   // The semantic engine: workspace discovery and loading, the compiler query, the per-invocation engine, the
   // session and the explicit-type rule. Its tests are the Cargo-workspace suites, so this scope runs the whole
-  // suite, and its limit is set against its own unmutated baseline (doc/handover/unified-linter-mutation-close.md).
+  // suite. Its first unmutated baseline tested in 251 seconds on a loaded host (mutation-VFaIKp), already over
+  // the 180 second default, so its limit is 1,200 seconds: 4.8 times that baseline, just under cargo-mutants'
+  // own automatic limit of five times the baseline. Record: doc/handover/unified-linter-mutation-close.md.
   ['--semantic', {
     description: 'the semantic engine and the explicit-type rule against the whole suite',
     select: [
@@ -135,7 +136,7 @@ const scopes = new Map([
       'src/rust_generic_arguments.rs', 'src/rust_semantic_*.rs', 'src/rust_type_diagnostic.rs',
     ].flatMap(fileArguments),
     run: [],
-    timeoutSeconds: 900,
+    timeoutSeconds: 1200,
   }],
 ]);
 
@@ -202,7 +203,10 @@ async function coverage() {
 }
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
-async function campaign(scope) {
+async function campaign({ scope, shard, examine }) {
+  // cargo-mutants keeps a mutant that matches any `--re`, so a second one would widen a scope that has its own.
+  if (examine !== undefined && scope.select.includes('--re'))
+    throw new VerificationError('This scope already selects mutants by name; --re would widen it.');
   const timeoutSeconds = scope.timeoutSeconds ?? defaultTimeoutSeconds;
   const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-mutation-'));
   const evidenceRoot = join(process.cwd(), 'target', 'verification');
@@ -227,7 +231,12 @@ async function campaign(scope) {
       '--no-config', '--no-shuffle', '--output', '/work/mutation-report',
       '--cargo-arg=--offline', '--cargo-arg=--locked',
       ...excludedMutantPatterns.flatMap(exclusionArguments),
+      // cargo-mutants numbers shards from 0; every shard runs the same arguments and its own baseline.
+      ...(shard === undefined ? [] : ['--shard', shard]),
       ...scope.select,
+      // A rerun of some of a scope's mutants, for example one file's after a timeout on a loaded host,
+      // keeps the scope's files and tests and adds a name filter.
+      ...(examine === undefined ? [] : ['--re', examine]),
       ...scope.run,
     ];
     await writeFile(join(context, 'Containerfile'), [
@@ -239,24 +248,38 @@ async function campaign(scope) {
       `CMD ${JSON.stringify(command)}`,
       '',
     ].join('\n'));
+    // The container starts from the ID this build wrote, not from the shared tag, and is given its command
+    // explicitly. Two builds started together for shards 0/3 and 1/3, whose Containerfiles differed only in
+    // `CMD`, both committed the same image, whose `CMD` was shard 0's (mutation-7j4HXK); so the image's
+    // own `CMD` never decides what a campaign runs.
+    const imageIdFile = join(context, 'image-id');
     podman({
       args: [
         'build', '--network=none', '--http-proxy=false', '--pull=never',
         '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000',
-        '--tag', mutationImage, context,
+        '--iidfile', imageIdFile, '--tag', mutationImage, context,
       ],
     });
+    const campaignImage = (await readFile(imageIdFile, 'utf8')).trim().replace(/^sha256:/u, '');
+    if (!/^[a-f0-9]{64}$/u.test(campaignImage))
+      throw new VerificationError('The campaign image build did not report a full content-addressed image ID.');
     container = podman({
       args: [
         'create', '--init', '--network=none', '--memory=2g', '--cpus=2',
-        '--pids-limit=128', mutationImage,
+        '--pids-limit=128', campaignImage, ...command,
       ],
       capture: true,
     }).stdout.trim();
     if (!/^[a-f0-9]{64}$/u.test(container))
       throw new VerificationError('Container creation did not return a complete container ID.');
+    const created = podman({ args: ['container', 'inspect', container, '--format', '{{json .Config.Cmd}}'], capture: true });
+    if (created.stdout.trim() !== JSON.stringify(command))
+      throw new VerificationError(`The created container would run ${created.stdout.trim()}, not this campaign's command.`);
     await writeFile(join(evidence, 'manifest.json'), JSON.stringify({
       baseImage: base,
+      campaignImage,
+      shard: shard ?? null,
+      examine: examine ?? null,
       toolSha256,
       container,
       command,
@@ -291,7 +314,11 @@ function scopeFor(option) {
   return scope;
 }
 
-/** Dispatch: a campaign by default, `--list [scope]` for one listing, `--coverage` for the scope-union proof. */
+/**
+ * Dispatch: a campaign by default, optionally one `--shard k/n` of it or only the mutants whose names match
+ * `--re <regex>`, `--list [scope]` for one listing,
+ * and `--coverage` for the scope-union proof.
+ */
 async function main() {
   const options = process.argv.slice(2);
   if (options[0] === '--coverage') {
@@ -306,9 +333,26 @@ async function main() {
     console.log(listMutants(scopeFor(options[1])).join('\n'));
     return;
   }
+  const shardAt = options.indexOf('--shard');
+  let shard;
+  if (shardAt !== -1) {
+    shard = options[shardAt + 1];
+    const parts = /^(\d+)\/(\d+)$/u.exec(shard ?? '');
+    if (parts === null || Number(parts[1]) >= Number(parts[2]))
+      throw new VerificationError(`--shard needs k/n with k from 0 to n - 1, not ${shard}.`);
+    options.splice(shardAt, 2);
+  }
+  const examineAt = options.indexOf('--re');
+  let examine;
+  if (examineAt !== -1) {
+    examine = options[examineAt + 1];
+    if (examine === undefined || examine.length === 0)
+      throw new VerificationError('--re needs a mutant-name regex.');
+    options.splice(examineAt, 2);
+  }
   if (options.length > 1)
     throw new VerificationError(`Only one of ${[...scopes.keys()].join(', ')} is accepted.`);
-  await campaign(scopeFor(options[0]));
+  await campaign({ scope: scopeFor(options[0]), shard, examine });
 }
 
 await main();

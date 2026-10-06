@@ -1203,6 +1203,15 @@ and the page rests where Android puts a focused field (D94).
 The study is rebuilt for those decisions;
 `evidence/template-editor-boundaries.md` describes it,
 and `questions/template-editor.html` shows the decided editor and asks nothing.
+Shown that page,
+the human answered on 2026-10-06 that a library is always open (D95),
+that scrolling suffices to reach the field list (D96),
+and that the agent should build one version of which other rows get templates
+and ask for approval (D97).
+That version (two templates,
+`Track rows` and `Playing track`)
+is proposed in the planning note and is being built;
+row-type coverage stays open until the human approves it.
 Still open in this round:
 how the field list is reached while the keyboard is open,
 then row-type coverage and titles.

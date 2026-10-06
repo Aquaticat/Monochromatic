@@ -201,7 +201,12 @@ Measured on 2026-10-05 on a disposable project with a committed `Cargo.lock`.
 
 ## Verified workarounds
 
-None is applied in the application.
+The server is unchanged, and so is its warning.
+Since 2026-10-06 the application logs the two lines at INFO instead of ERROR, with their text kept,
+as every line a server writes to standard error
+([`helix-lsp-transport-error-level-records.md`](helix-lsp-transport-error-level-records.md), "Verified workarounds");
+the repository owner kept server-side file watching.
+No other handling is applied:
 
 - **A configuration directory that contains the file.**
   Pointing the server's `XDG_CONFIG_HOME` at a private directory

@@ -107,9 +107,9 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // window.onPointerPress((row, x, extend) => { ... });
+    // window.onPointerPress((y, x, extend) => { ... });
     // ```
-    owner.on_pointer_press(move |row, x, extend| {
+    owner.on_pointer_press(move |y, x, extend| {
         // What: upgrade returns Some only while the window still exists; `let ... else` leaves otherwise.
         // Why: Closing the app must not keep a hidden window alive through callbacks.
         //
@@ -121,7 +121,8 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             return;
         };
         let mut current = press_state.borrow_mut();
-        let line = row.max(0) as usize;
+        // A press on a line's virtual rows acts on that line: the rows belong to the code row beneath them.
+        let line = current.row_map.line_at(y);
         let hit = pointer_position(&mut current, line, x, window.window().scale_factor());
         let mut position = current.document.position();
         let mut pressed = press_drag.borrow_mut();
@@ -161,12 +162,13 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     });
     let state = Rc::clone(shared);
     let weak = owner.as_weak();
-    owner.on_pointer_hit(move |row, x, _extend| {
+    owner.on_pointer_hit(move |y, x, _extend| {
         let Some(window) = weak.upgrade() else {
             return;
         };
         let mut current = state.borrow_mut();
-        let line = row.max(0) as usize;
+        // A drag over virtual rows extends to the line they belong to, like a press there.
+        let line = current.row_map.line_at(y);
         let hit = pointer_position(&mut current, line, x, window.window().scale_factor());
         let pressed = drag.borrow();
         let (anchor, head) = extended(
@@ -217,13 +219,14 @@ fn horizontal(key: &SharedString, control: bool) -> Option<Motion> {
 }
 
 /// Signed line count for Up, Down, PageUp, and PageDown, and whether the view pages along with the caret.
-/// `page` is the number of whole lines the viewport shows.
+/// `pages` pairs the whole lines one page holds above the top line with those from the top line down.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function vertical_rows(key: string, page: number): [rows: number, paging: boolean] | undefined;
+/// function vertical_rows(key: string, pages: [up: number, down: number]): [rows: number, paging: boolean] | undefined;
 /// ```
-fn vertical_rows(key: &SharedString, page: isize) -> Option<(isize, bool)> {
+fn vertical_rows(key: &SharedString, pages: (isize, isize)) -> Option<(isize, bool)> {
+    let (up, down) = pages;
     if *key == SharedString::from(Key::UpArrow) {
         return Some((-1, false));
     }
@@ -231,10 +234,10 @@ fn vertical_rows(key: &SharedString, page: isize) -> Option<(isize, bool)> {
         return Some((1, false));
     }
     if *key == SharedString::from(Key::PageUp) {
-        return Some((-page, true));
+        return Some((-up, true));
     }
     if *key == SharedString::from(Key::PageDown) {
-        return Some((page, true));
+        return Some((down, true));
     }
     return None;
 }
@@ -269,13 +272,16 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             return;
         };
         let height = window.get_viewport_height();
+        let offset = -window.get_scroll_y();
         let scale = window.window().scale_factor();
         let mut current = state.borrow_mut();
         let mut position = current.document.position();
         let start = position.anchor.min(position.head);
         let end = position.anchor.max(position.head);
-        // A page is the number of whole lines in view, and at least one line.
-        let page = ((height / 24.0).floor() as isize).max(1);
+        // A page is the whole lines that fit in the view, at least one, and the pixels exactly those lines take:
+        // counted from the top line down for PageDown and upwards from it for PageUp.
+        let (down, down_pixels) = current.row_map.page(offset, height, true);
+        let (up, up_pixels) = current.row_map.page(offset, height, false);
         let mut scrolled = 0.0;
         if let Some(motion) = horizontal(&key, control) {
             // A horizontal key names a new aim even when the caret cannot move, such as Home at a line start.
@@ -288,7 +294,7 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             } else {
                 position.head = moved(current.document.text().slice(..), position.head, motion);
             }
-        } else if let Some((rows, paging)) = vertical_rows(&key, page)
+        } else if let Some((rows, paging)) = vertical_rows(&key, (up as isize, down as isize))
             && !control
         {
             // Destructure the mutable borrow so the shaper can work while the document is lent read-only.
@@ -298,8 +304,10 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             let landed = vertical(shaper, document, scale, rows, column);
             column = Some(landed);
             position.head = landed.head;
-            if paging {
-                scrolled = rows as f32 * 24.0;
+            if paging && rows > 0 {
+                scrolled = down_pixels;
+            } else if paging {
+                scrolled = -up_pixels;
             }
         } else {
             return;
