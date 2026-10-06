@@ -39,6 +39,30 @@ pub(super) struct Reader {
     _timers: [Timer; 3],
 }
 
+/// Memory-backed directory for fixtures, when the system has one.
+const MEMORY_DIRECTORY: &str = "/dev/shm";
+
+/// What: A fresh disposable project directory, in `/dev/shm` when that exists and the usual
+///       temporary directory otherwise; dropping the `TempDir` removes it.
+/// Why: On btrfs the reload worker's first read of a freshly written file updates its access
+///      time inside a filesystem transaction, which waited for seconds while the machine flushed,
+///      so an external change looked like it was never reloaded. inotify reports changes on
+///      `/dev/shm` like on disk, so the watcher path stays the one exercised.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function memoryProject(prefix: string): TempDir
+/// ```
+pub(super) fn memory_project(prefix: &str) -> tempfile::TempDir {
+    let memory = Path::new(MEMORY_DIRECTORY);
+    if memory.is_dir()
+        && let Ok(directory) = tempfile::Builder::new().prefix(prefix).tempdir_in(memory)
+    {
+        return directory;
+    }
+    return tempfile::tempdir().expect("disposable project");
+}
+
 /// Open `name` inside the disposable project with every production binding installed.
 pub(super) fn reader(root: &Path, name: &str) -> Reader {
     let path = root.join(name);
@@ -315,11 +339,13 @@ fn native_find_opens_types_steps_wraps_reveals_and_closes() {
 /// A reload while the bar is open recomputes matches and keeps the active match by correspondence.
 #[test]
 fn native_find_recomputes_after_external_reload_and_follows_selection_correspondence() {
-    let fixture = tempfile::tempdir().expect("disposable reload project");
+    let fixture = memory_project("ide-find-reload-");
     let path = fixture.path().join("cat.txt");
     fs::write(&path, "I am a big cat\n").expect("reload fixture");
     let reader = reader(fixture.path(), "cat.txt");
     let window = &reader.window;
+    // The external changes below reach the reader through its live watch, not the sweep.
+    wait_until(|| return reader.source.borrow().refresh.is_watched());
     chord(window, Key::Control, "f");
     type_text(window, "am a");
     status_for(window, "am a", "1/1");

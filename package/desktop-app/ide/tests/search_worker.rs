@@ -1,5 +1,8 @@
 //! Real ripgrep subprocesses verify bounded results, independent errors, native paths, and latest-query ownership.
 
+/// Disposable fixture directories, in memory when the system has one.
+mod memory_fixture;
+
 /// Search replies preserve typed source locations and stream-specific errors.
 use ide_app::{
     search::{MAX_CONTENT_RESULTS, MAX_PATH_RESULTS, MAX_SEARCH_RECORD, SearchKind},
@@ -33,7 +36,7 @@ fn reply(worker: &mut SearchWorker) -> Arc<SearchReply> {
 /// Hidden/ignored files stay outside default ripgrep search, while path and content streams retain their own semantics.
 #[test]
 fn real_search_preserves_path_and_content_semantics() {
-    let fixture = tempfile::tempdir().expect("disposable project");
+    let fixture = memory_fixture::directory("ide-search-worker-");
     fs::write(
         fixture.path().join("Needle-path.txt"),
         "needle first\nneedle second\n",
@@ -80,7 +83,7 @@ fn real_search_preserves_path_and_content_semantics() {
 /// Each result cap is independent, and only the first matching line in each file enters content results.
 #[test]
 fn both_result_streams_stop_at_their_approved_caps() {
-    let fixture = tempfile::tempdir().expect("disposable project");
+    let fixture = memory_fixture::directory("ide-search-worker-");
     for index in 0..45 {
         fs::write(
             fixture.path().join(format!("needle-{index}.txt")),
@@ -108,7 +111,7 @@ fn both_result_streams_stop_at_their_approved_caps() {
 /// Invalid content regexes retain useful literal filename results instead of silently returning no matches.
 #[test]
 fn invalid_regex_and_argument_like_queries_remain_data() {
-    let fixture = tempfile::tempdir().expect("disposable project");
+    let fixture = memory_fixture::directory("ide-search-worker-");
     fs::write(fixture.path().join("literal[.txt"), "--hidden\n").expect("punctuation fixture");
     let mut worker =
         SearchWorker::new(Workspace::new(fixture.path()).expect("workspace")).expect("worker");
@@ -172,7 +175,7 @@ fn invalid_regex_and_argument_like_queries_remain_data() {
 /// Actual NUL filename output and base64 JSON preserve invalid UTF-8 and newline-containing names.
 #[test]
 fn subprocess_results_preserve_native_filename_bytes() {
-    let fixture = tempfile::tempdir().expect("disposable project");
+    let fixture = memory_fixture::directory("ide-search-worker-");
     let native = OsString::from_vec(b"needle-\xff.txt".to_vec());
     fs::write(fixture.path().join(&native), "needle native").expect("native byte fixture");
     fs::write(
@@ -203,7 +206,7 @@ fn subprocess_results_preserve_native_filename_bytes() {
 /// Replacing and clearing requests prevents obsolete replies from entering the result model.
 #[test]
 fn latest_generation_wins_and_clear_discards_unread_results() {
-    let fixture = tempfile::tempdir().expect("disposable project");
+    let fixture = memory_fixture::directory("ide-search-worker-");
     fs::write(fixture.path().join("first.txt"), "first value").expect("first fixture");
     fs::write(fixture.path().join("last.txt"), "last value").expect("last fixture");
     let mut worker =
@@ -240,7 +243,7 @@ fn latest_generation_wins_and_clear_discards_unread_results() {
 /// A huge matching JSON line fails only the content stream, without allocating an unbounded result or losing path hits.
 #[test]
 fn oversized_content_record_retains_filename_results() {
-    let fixture = tempfile::tempdir().expect("disposable project");
+    let fixture = memory_fixture::directory("ide-search-worker-");
     let mut line = vec![b'x'; MAX_SEARCH_RECORD + 100];
     line[..6].copy_from_slice(b"needle");
     fs::write(fixture.path().join("needle-long.txt"), line).expect("bounded oversized fixture");

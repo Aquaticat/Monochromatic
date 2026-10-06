@@ -528,12 +528,14 @@ fn caret_problems_follow_the_caret_and_are_spelled_out_in_full() {
 /// is given up when its time has passed without new annotations.
 #[test]
 fn stale_snapshots_disappear_after_reload_and_file_switch() {
-    let fixture = tempfile::tempdir().expect("disposable stale project");
+    let fixture = super::find_tests::memory_project("ide-stale-annotations-");
     let path = fixture.path().join("main.rs");
     fs::write(&path, FIXTURE).expect("stale fixture");
     fs::write(fixture.path().join("other.rs"), "fn other() {}\n").expect("second fixture");
     let reader = reader(fixture.path(), "main.rs");
     let window = &reader.window;
+    // The external changes below reach the reader through its live watch, not the sweep.
+    super::navigation_tests::wait_until(|| return reader.source.borrow().refresh.is_watched());
     annotate(&reader);
     for _ in 0..12 {
         key(window, Key::RightArrow);

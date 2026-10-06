@@ -1,5 +1,8 @@
 //! Source-opening requests resolve in private project fixtures and retain only the latest user intent.
 
+/// Disposable fixture directories, in memory when the system has one.
+mod memory_fixture;
+
 /// Current read errors propagate while stale failures disappear from the consumer boundary.
 use anyhow::Result;
 /// Consumer-facing opener produces a document only after successful read and revision validation.
@@ -11,30 +14,9 @@ use ide_app::{
 use std::{
     fs,
     os::unix::fs::symlink,
-    path::{Path, PathBuf},
+    path::PathBuf,
     time::{Duration, Instant},
 };
-
-/// Memory-backed directory for fixtures, when the system has one.
-const MEMORY_DIRECTORY: &str = "/dev/shm";
-
-/// A disposable fixture directory, in memory when possible.
-///
-/// The first read of a freshly written file updates its access time. On btrfs that update joins
-/// a filesystem transaction, and while the machine flushes, the opener's read waited in the
-/// kernel for 20 s and more, so the open looked hung. Memory-backed files never wait for the
-/// disk. Elsewhere the usual temporary directory is used.
-fn fixture() -> tempfile::TempDir {
-    let memory = Path::new(MEMORY_DIRECTORY);
-    if memory.is_dir()
-        && let Ok(directory) = tempfile::Builder::new()
-            .prefix("ide-file-open-")
-            .tempdir_in(memory)
-    {
-        return directory;
-    }
-    return tempfile::tempdir().expect("disposable fixture");
-}
 
 /// Longest wait for one open: a hang detector, not a latency budget, and the same bound the
 /// Language integration tests use for any expected state (`PATIENCE` in `tests/language/support.rs`).
@@ -65,7 +47,7 @@ fn finish(opener: &mut FileOpener) -> Result<Option<OpenedFile>> {
 /// Real source classification and an empty initial reading state accompany the resolved target.
 #[test]
 fn opening_source_starts_at_zero_with_matching_syntax() {
-    let fixture = fixture();
+    let fixture = memory_fixture::directory("ide-file-open-");
     fs::write(
         fixture.path().join("source.rs"),
         "fn main() { let 猫 = 1; }\n",
@@ -105,7 +87,7 @@ fn opening_source_starts_at_zero_with_matching_syntax() {
 /// Newer waiting targets replace intermediate choices while an earlier read is executing or unread.
 #[test]
 fn latest_open_wins_without_a_queue_of_intermediate_files() {
-    let fixture = fixture();
+    let fixture = memory_fixture::directory("ide-file-open-");
     for name in ["first.txt", "second.txt", "last.txt"] {
         fs::write(fixture.path().join(name), name).expect("source fixture");
     }
@@ -131,7 +113,7 @@ fn latest_open_wins_without_a_queue_of_intermediate_files() {
 /// Choosing the already displayed file can invalidate queued or running opens without installing their result.
 #[test]
 fn cancellation_discards_both_waiting_and_running_opens() {
-    let fixture = fixture();
+    let fixture = memory_fixture::directory("ide-file-open-");
     fs::write(fixture.path().join("source.txt"), "source").expect("source fixture");
     let workspace = Workspace::new(fixture.path()).expect("workspace");
     let mut opener = FileOpener::new(workspace).expect("file opener");
@@ -152,7 +134,7 @@ fn cancellation_discards_both_waiting_and_running_opens() {
 /// A superseded read failure cannot replace the result or diagnostic of the latest successful open.
 #[test]
 fn stale_failure_is_discarded_and_current_failure_can_be_retried() {
-    let fixture = fixture();
+    let fixture = memory_fixture::directory("ide-file-open-");
     fs::write(fixture.path().join("source.txt"), "source").expect("source fixture");
     let workspace = Workspace::new(fixture.path()).expect("workspace");
     let mut opener = FileOpener::new(workspace).expect("file opener");
@@ -186,7 +168,7 @@ fn stale_failure_is_discarded_and_current_failure_can_be_retried() {
 /// Empty sources and contained symlink aliases resolve to the same canonical file identity.
 #[test]
 fn empty_file_and_inside_alias_are_valid_targets() {
-    let fixture = fixture();
+    let fixture = memory_fixture::directory("ide-file-open-");
     fs::write(fixture.path().join("empty.txt"), "").expect("empty source");
     symlink(
         fixture.path().join("empty.txt"),
@@ -217,7 +199,7 @@ fn empty_file_and_inside_alias_are_valid_targets() {
 /// Project opens reject outside links, directories, and non-UTF-8 contents on the worker thread.
 #[test]
 fn project_boundary_and_source_kind_failures_do_not_produce_documents() {
-    let fixture = fixture();
+    let fixture = memory_fixture::directory("ide-file-open-");
     let project = fixture.path().join("project");
     fs::create_dir(&project).expect("project directory");
     fs::write(fixture.path().join("outside.txt"), "outside").expect("outside fixture");
@@ -244,7 +226,7 @@ fn project_boundary_and_source_kind_failures_do_not_produce_documents() {
 /// An outside-project language target opens read-only and is marked; a later project open replaces it.
 #[test]
 fn outside_target_opens_marked_and_a_later_project_open_wins() {
-    let fixture = fixture();
+    let fixture = memory_fixture::directory("ide-file-open-");
     let project = fixture.path().join("project");
     fs::create_dir(&project).expect("project directory");
     let outside = fixture.path().join("library.rs");
