@@ -106,7 +106,7 @@ function textLets({ program, }: { readonly program: TreeNode; },): ReadonlySet<s
 
 /**
  Whether an assignment grows its target from itself: `x += y`, or `x = x + y`,
- or `x = \`${x}...\``.
+ or `` x = `${x}...` ``.
 
  @param node - assignment expression
 

@@ -22,7 +22,7 @@ import {
  Builds the rejection a failed program raises: a message that quotes a path and
  the tool's output, and the code Node attaches.
 
- @param code - value of the \`code\` property, or nothing for none
+ @param code - value of the `code` property, or nothing for none
 
  @returns The rejection
 

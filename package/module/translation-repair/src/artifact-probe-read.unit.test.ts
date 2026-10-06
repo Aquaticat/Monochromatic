@@ -171,9 +171,9 @@ const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
  @returns One row, which is the whole ledger here
 
  @example
- \`\`\`ts
+ ```ts
  const rows = catLedger({ shippedText: ARCHIVE_NAP, delivery: 'incumbent-retained', },);
- \`\`\`
+ ```
  */
 function catLedger(
   {
@@ -204,13 +204,13 @@ function catLedger(
  One whole version 2 artifact carrying this case's issue records.
 
  WHY EVERY FIXTURE HERE IS A WHOLE ARTIFACT and not the bare
- \`{ id, issues }\` these cases used to pass: the records moved into the repair
- lane at version 2, and \`readArtifactProbe\` now reaches them through the
+ `{ id, issues }` these cases used to pass: the records moved into the repair
+ lane at version 2, and `readArtifactProbe` now reaches them through the
  version 2 parser rather than by naming a root key that no longer exists. That
  parser enforces exact top-level keys, so a fixture cannot be patched into
  shape one field at a time; it is a version 2 artifact or it is refused.
 
- The envelope around \`issues\` is inert for every case here. Version 2 fixes
+ The envelope around `issues` is inert for every case here. Version 2 fixes
  the shape of a lane, not the shape of a result, so the records inside
  participate in no cross-check and each case still varies only its own records.
 
@@ -223,9 +223,9 @@ function catLedger(
  @returns Artifact as JSON
 
  @example
- \`\`\`ts
+ ```ts
  const artifact = probeArtifact({ id: 'Kitten', issues: [], },);
- \`\`\`
+ ```
  */
 function probeArtifact(
   {

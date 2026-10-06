@@ -177,12 +177,12 @@ await describe({
           name: 'KEEPS a no-break space and a tab, which are the page\'s spacing and no line wrapping (ledger B72)',
           fn: async () => {
             expect([
-              oneLine({ text: 'Long Nap', },),
-              oneLine({ text: 'Long Nap', },),
+              oneLine({ text: 'Long\u00A0Nap', },),
+              oneLine({ text: 'Long\u202FNap', },),
               oneLine({ text: 'Long\tNap', },),
             ],).toEqual([
-              'Long Nap',
-              'Long Nap',
+              'Long\u00A0Nap',
+              'Long\u202FNap',
               'Long\tNap',
             ],);
           },

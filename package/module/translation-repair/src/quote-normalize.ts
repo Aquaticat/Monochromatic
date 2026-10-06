@@ -65,7 +65,7 @@ const PUNCTUATION_CANON: ReadonlyMap<string, string> = new Map([
     "'",
   ],
   [
-    ' ',
+    '\u00A0',
     ' ',
   ],
 ],);

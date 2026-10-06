@@ -126,7 +126,7 @@ await describe({
                 'export const den = `',
                 '  basket  ',
                 '`;',
-                '// nap　',
+                '// nap\u3000',
                 '',
               ].join('\n',),
               isTest: false,

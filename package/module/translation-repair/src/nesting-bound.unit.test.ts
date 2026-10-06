@@ -288,7 +288,7 @@ await describe({
         it({
           name: 'NAMES the column from the first character the parser reads, a leading byte order mark not counted',
           fn: async () => {
-            expect(firstNestingExcess({ body: `﻿${'>'.repeat(257,)} cat`, grammar: 'markdown', },),).toEqual({
+            expect(firstNestingExcess({ body: `\uFEFF${'>'.repeat(257,)} cat`, grammar: 'markdown', },),).toEqual({
               kind: 'beyond',
               measure: 'container markers',
               bound: 256,

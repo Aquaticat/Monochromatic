@@ -69,7 +69,7 @@ const CLAUSE_OPENERS: ReadonlySet<string> = new Set([
   '\t',
   '\n',
   '\r',
-  '　',
+  '\u3000',
   '。',
   '！',
   '？',

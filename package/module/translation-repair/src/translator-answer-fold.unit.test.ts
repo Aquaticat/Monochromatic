@@ -88,7 +88,7 @@ const PAGE_TEXT = 'The kitten basked on the windowsill. It yawned and fell aslee
  A rendering the page parser reads as one paragraph only because its middle
  line holds a no-break space, which the fold turns into a blank line.
  */
-const HIDDEN_BREAK = 'The kitten basked on the windowsill.\n \nIt yawned and fell asleep again.';
+const HIDDEN_BREAK = 'The kitten basked on the windowsill.\n\u00A0\nIt yawned and fell asleep again.';
 
 /**
  A rendering the publication rule accepts as it stands.
@@ -211,7 +211,7 @@ await describe({
           fn: async () => {
             expect(foldTranslation({
               modelId: CAT_A,
-              translation: 'A part‑time shop cat, non‑binary.',
+              translation: 'A part‑time\u00A0shop cat, non‑binary.',
             },),).toStrictEqual({
               translation: 'A part-time shop cat, non-binary.',
               findings: [
@@ -244,7 +244,7 @@ await describe({
             const spaced = {
               ...voiceOf({
                 modelId: CAT_B,
-                translation: 'The tabby dozed.',
+                translation: 'The tabby\u202Fdozed.',
               },),
               attempts: 2,
             };
@@ -314,7 +314,7 @@ await describe({
                   },),
                   voiceOf({
                     modelId: CAT_C,
-                    translation: 'soft­paw',
+                    translation: 'soft\u00ADpaw',
                   },),
                 ],
               },);

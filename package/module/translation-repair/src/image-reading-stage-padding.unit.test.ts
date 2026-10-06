@@ -42,7 +42,7 @@ const PADDING_WIDTH = 2_700;
 /**
  Reply carrying the reading, a line break, and a run of ideographic spaces.
  */
-const PADDED_REPLY = `${A_READING}\n${'　'.repeat(PADDING_WIDTH,)}`;
+const PADDED_REPLY = `${A_READING}\n${'\u3000'.repeat(PADDING_WIDTH,)}`;
 
 /**
  Client answering every reading with the padded reply.

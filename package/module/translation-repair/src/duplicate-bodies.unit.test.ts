@@ -645,11 +645,11 @@ await describe({
             },),
             fixture({
               path: 'cat-c.ts',
-              text: catPurr({ name: 'purrQuietly', purr: '﻿', quote: '`', },),
+              text: catPurr({ name: 'purrQuietly', purr: '\uFEFF', quote: '`', },),
             },),
             fixture({
               path: 'cat-d.ts',
-              text: catPurr({ name: 'purrSoftly', purr: '﻿ ', quote: '`', },),
+              text: catPurr({ name: 'purrSoftly', purr: '\uFEFF ', quote: '`', },),
             },),
           ],
         },),).toEqual([],);

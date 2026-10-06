@@ -192,7 +192,7 @@ WHERE AN ISSUE OR FINDING YOU WERE GIVEN ASKS FOR SUCH A DETAIL, THE ISSUE ITSEL
 
  @example
  ```ts
- const system = \`${task}\n\n${JUDGE_POLICY_BLOCK}\`;
+ const system = `${task}\n\n${JUDGE_POLICY_BLOCK}`;
  ```
  */
 export const JUDGE_POLICY_BLOCK: string = `${HOUSE_POLICY_BLOCK}
@@ -214,7 +214,7 @@ ${FORCED_DIFFERENCES} ${JUDGE_POLICY_TAIL}`;
 
  @example
  ```ts
- const system = \`${task}\n\n${MEASUREMENT_POLICY_BLOCK}\`;
+ const system = `${task}\n\n${MEASUREMENT_POLICY_BLOCK}`;
  ```
  */
 export const MEASUREMENT_POLICY_BLOCK: string = `${HOUSE_POLICY_BLOCK}

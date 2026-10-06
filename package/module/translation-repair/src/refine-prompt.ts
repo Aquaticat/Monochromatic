@@ -42,7 +42,7 @@ import {
 
  @example
  ```ts
- const rule = \`Every date survives, \${SURVIVAL_FORM}.\`;
+ const rule = `Every date survives, ${SURVIVAL_FORM}.`;
  ```
  */
 const SURVIVAL_FORM = 'in the form the house rules give it (a date month first, a work by its English title); '
