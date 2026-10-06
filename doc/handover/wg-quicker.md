@@ -46,6 +46,23 @@ both configs are now mode `0600` owned `root:root`,
 matching the `0700 root:root` directory that already blocked other users.
 See `doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
 
+On 2026-10-06 both configs stopped carrying a baked `AllowedIPs` value.
+Each `[Peer]` section's single `AllowedIPs` line,
+`90810` bytes holding `4082` networks generated on 2026-09-17,
+was replaced atomically with `AllowedIPsFromFiles = ~/allowed.txt ~/disallowed.txt`,
+so every `up` regenerates from the current input files.
+Both edits preserved mode `0600`,
+`root:root` ownership,
+single-link status,
+and the `unconfined_u:object_r:etc_t:s0` label.
+Pre-edit copies are `/root/wg-quicker-conf-backup-gb-lon-gb2.conf-20261006`
+and `/root/wg-quicker-conf-backup-mx-que-mx1.conf-20261006`,
+each mode `0600`.
+The directive expands through the runtime home directory,
+which the sudo launcher sets to the caller's home;
+a direct root invocation whose `HOME` is `/root` fails closed on the missing file
+instead of silently narrowing coverage.
+
 ## Completed tasks
 
 - Task `#1`:
@@ -80,7 +97,8 @@ See `doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
 - ChatGPT and Interpreter follow-up:
    discover both applications' executables and desktop services,
    verify live target enumeration against real desktop launches,
-   and extend `~/disallowed.txt` with their measured endpoints.
+   extend `~/disallowed.txt` with their measured endpoints,
+   and switch both live configs to `AllowedIPsFromFiles`.
 
 No tracked implementation task remains.
 
@@ -521,6 +539,22 @@ Adding the hostnames grew the generated value from `4022` to `6517` networks,
 because every removed host route splits the aggregate that contained it.
 The route integration assertion still expected the pre-netavark `8888` recommendation
 and now expects the reserved `100`.
+
+Loading both live configs through `loadConfig` as root with the caller's home
+expanded the directive to `/var/home/user/allowed.txt` and `/var/home/user/disallowed.txt`,
+reported `exemptMark` `100`,
+and generated `6602` networks for `mx-que-mx1`.
+Membership probes against that generated value placed every added ChatGPT and Interpreter hostname
+outside it,
+kept `example.com` inside as a positive control,
+and covered `4` of `12` then-current `huggingface.co` addresses,
+which is the CloudFront rotation the human accepted when choosing to keep that entry.
+The same run showed `sillylittleguy.orgi` in the disallowed input was a typo:
+the corrected `sillylittleguy.org` resolves inside Anthropic's `2607:6bc0::/48`
+and now generates as clearnet.
+The four permanently dead Steam and Valve domain names remain,
+as chosen,
+and warn on every generation.
 
 ## Verification evidence
 
