@@ -1,6 +1,8 @@
 # Extend the established Fedora native build environment with Helix's C++ driver.
 # Cargo jobs are contained at 2 GiB, 2 CPUs, 512 processes, and 4096 descriptors.
 # No home directory or credentials are mounted into the build container.
+# Containers run with --network=none, so podman starts no pasta network helper (which takes inotify watches
+# and warns when the limit is reached); only the tasks that download (fetch, runtime) pass network: true.
 [vars]
 cargo = """
 const { execFileSync } = await import('node:child_process')
@@ -9,8 +11,8 @@ const imageCheck = (await import('node:child_process')).spawnSync('podman', ['im
 if (imageCheck.status !== 0) {
   execFileSync('podman', ['build', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', image, '--file', 'Containerfile', '.'], { stdio: 'inherit' })
 }
-const runBounded = (args, options = {}) => execFileSync('podman', [
-  'run', '--rm', '--memory=2g', '--cpus=2', '--pids-limit=512',
+const runBounded = (args, { network = false, ...options } = {}) => execFileSync('podman', [
+  'run', '--rm', ...(network ? [] : ['--network=none']), '--memory=2g', '--cpus=2', '--pids-limit=512',
   '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
   '--volume', process.cwd() + ':/work', '--volume', 'ide-cargo:/cargo',
   '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2',
@@ -30,7 +32,7 @@ description = "Fetch the selected Rust dependencies in the bounded build contain
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['fetch'])
+runCargo(['fetch'], { network: true })
 """
 
 [tasks.runtime]
@@ -52,13 +54,13 @@ const reuseHeaders = (sourceRoot, name) => {
   if (!lines.some(line => line.includes('Copyright')) || !declared.length || !covered) throw new Error('Missing grammar license notices for ' + name)
   return lines.join(String.fromCharCode(10)) + String.fromCharCode(10)
 }
-const metadata = JSON.parse(runCargo(['metadata', '--format-version', '1'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 }))
+const metadata = JSON.parse(runCargo(['metadata', '--format-version', '1'], { network: true, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 }))
 const loader = metadata.packages.find(item => item.name === 'helix-loader')
 if (!loader?.source?.endsWith('#' + revision)) throw new Error('Cargo did not resolve the pinned helix-loader revision')
 const source = join(dirname(dirname(loader.manifest_path)), 'runtime')
 runCargo(['build', '--no-default-features', '--bin', 'ide-runtime'])
 const privateEnvironment = ['env', '--unset=CARGO_MANIFEST_DIR', 'XDG_CONFIG_HOME=/work/target/runtime-config', 'XDG_CACHE_HOME=/work/target/runtime-cache', 'XDG_DATA_HOME=/work/target/runtime-data']
-runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'fetch', source])
+runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'fetch', source], { network: true })
 runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'build', source])
 const built = 'target/runtime-config/helix/runtime'
 const grammars = readdirSync(join(built, 'grammars'), { withFileTypes: true }).filter(entry => entry.isFile() && entry.name.endsWith('.so'))
