@@ -1,4 +1,4 @@
-//! Verifies named application cgroups plus exact browser process-to-cgroup discovery.
+//! Verifies named application cgroups plus exact browser and agent process-to-cgroup discovery.
 
 /// Discovery functions and injectable roots.
 use crate::application_targets::{
@@ -212,6 +212,134 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         firefox_nightly_service,
         firefox_nightly_bin_scope,
         firefox_nightly_launcher_scope,
+    ];
+    expected.sort();
+    assert_eq!(targets, expected);
+    std::fs::remove_dir_all(&scratch)?;
+    return Ok(());
+}
+
+/// Discovers ChatGPT package-tree executables and the Interpreter executable family.
+#[test]
+fn scan_discovers_chatgpt_and_interpreter_cgroups() -> io::Result<()> {
+    let scratch = std::env::temp_dir().join(format!(
+        "wg-quicker-application-targets-agents-{}",
+        std::process::id()
+    ));
+    let cgroup_root = scratch.join("cgroup");
+    let app_slice = cgroup_root.join("users/app.slice");
+    let proc_root = scratch.join("proc");
+    std::fs::create_dir_all(&app_slice)?;
+    std::fs::create_dir(&proc_root)?;
+    let chatgpt_application = app_slice.join("app-chatgpt-54.scope");
+    let chatgpt_agent = app_slice.join("app-chatgpt-codex-55.scope");
+    let chatgpt_crashpad = app_slice.join("app-chatgpt-crashpad-56.scope");
+    let interpreter_runtime = app_slice.join("app-interpreter-runtime-58.scope");
+    let interpreter_application = app_slice.join("app-interpreter-59.scope");
+    let interpreter_agent = app_slice.join("app-interpreter-exec-60.scope");
+    let interpreter_cli = app_slice.join("app-interpreter-cli-61.scope");
+    let unrelated = app_slice.join("app-org.example.Other.scope");
+    for path in [
+        &chatgpt_application,
+        &chatgpt_agent,
+        &chatgpt_crashpad,
+        &interpreter_runtime,
+        &interpreter_application,
+        &interpreter_agent,
+        &interpreter_cli,
+        &unrelated,
+    ] {
+        std::fs::create_dir(path)?;
+    }
+    // ChatGPT's Electron image is the process the desktop launcher leaves behind.
+    create_process(
+        &proc_root,
+        "54",
+        "/usr/lib/chatgpt/ChatGPT",
+        "0::/users/app.slice/app-chatgpt-54.scope\n",
+    )?;
+    // A bundled ChatGPT agent keeps its exemption when the app moves it to its own cgroup.
+    create_process(
+        &proc_root,
+        "55",
+        "/usr/lib/chatgpt/resources/codex",
+        "0::/users/app.slice/app-chatgpt-codex-55.scope\n",
+    )?;
+    // ChatGPT's crash reporter carries a Chromium-generic name inside the same package tree.
+    create_process(
+        &proc_root,
+        "56",
+        "/usr/lib/chatgpt/browser_crashpad_handler",
+        "0::/users/app.slice/app-chatgpt-crashpad-56.scope\n",
+    )?;
+    // A sibling directory merely starting with the install name must stay tunnel-routed.
+    create_process(
+        &proc_root,
+        "57",
+        "/usr/lib/chatgpt-backup/ChatGPT",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    // Interpreter's AppImage runtime file is itself a live executable image.
+    create_process(
+        &proc_root,
+        "58",
+        "/home/user/AppImages/interpreter.appimage",
+        "0::/users/app.slice/app-interpreter-runtime-58.scope\n",
+    )?;
+    // The mounted Electron image and its renderer helpers share this exact name.
+    create_process(
+        &proc_root,
+        "59",
+        "/tmp/.mount_interpAb12Cd/interpreter",
+        "0::/users/app.slice/app-interpreter-59.scope\n",
+    )?;
+    // Interpreter's bundled agents extend the family prefix without a rename.
+    create_process(
+        &proc_root,
+        "60",
+        "/tmp/.mount_interpAb12Cd/resources/interpreter-exec",
+        "0::/users/app.slice/app-interpreter-exec-60.scope\n",
+    )?;
+    // The same vendor's terminal agent shares the installed executable name.
+    create_process(
+        &proc_root,
+        "61",
+        "/home/user/.local/share/mise/installs/github-openinterpreter-openinterpreter/rust-v0.0.55/bin/interpreter",
+        "0::/users/app.slice/app-interpreter-cli-61.scope\n",
+    )?;
+    // A shorter stem, a prefixed lookalike, and a capitalized name stay tunnel-routed,
+    // while the family prefix deliberately accepts suffixes such as `interpreter-exec`.
+    create_process(
+        &proc_root,
+        "62",
+        "/usr/bin/interpret",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    create_process(
+        &proc_root,
+        "63",
+        "/usr/bin/myinterpreter",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    create_process(
+        &proc_root,
+        "64",
+        "/usr/bin/Interpreter",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    let targets = scan_application_targets(&ScanRoots {
+        app_slice: &app_slice,
+        proc_root: &proc_root,
+        cgroup_root: &cgroup_root,
+    })?;
+    let mut expected = vec![
+        chatgpt_application,
+        chatgpt_agent,
+        chatgpt_crashpad,
+        interpreter_runtime,
+        interpreter_application,
+        interpreter_agent,
+        interpreter_cli,
     ];
     expected.sort();
     assert_eq!(targets, expected);

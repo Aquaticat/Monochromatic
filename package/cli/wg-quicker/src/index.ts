@@ -117,7 +117,7 @@ async function main(): Promise<void> {
   if (subcommand === 'up') {
     if (config.exemptMark === undefined) {
       l.warn(
-        `Config for ${target} has no ExemptMark; Ghostty, Steam, Helium, Pale Moon, and Firefox Nightly will use the tunnel. Add \`ExemptMark = ${String(RECOMMENDED_EXEMPT_MARK,)}\` under \`[Interface]\`, then bring this interface down and up again so application exemptions attach.`,
+        `Config for ${target} has no ExemptMark; Ghostty, Steam, Helium, Pale Moon, Firefox Nightly, ChatGPT, and Interpreter will use the tunnel. Add \`ExemptMark = ${String(RECOMMENDED_EXEMPT_MARK,)}\` under \`[Interface]\`, then bring this interface down and up again so application exemptions attach.`,
       );
     } else {
       /**

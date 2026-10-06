@@ -9,7 +9,9 @@ This loader applies that mark to sockets created in Ghostty,
  Steam,
  Helium,
  Pale Moon,
- and Firefox Nightly cgroups without enumerating their destination IPs.
+ Firefox Nightly,
+ ChatGPT,
+ and Interpreter cgroups without enumerating their destination IPs.
 
 ## How it works
 
@@ -46,7 +48,9 @@ List Ghostty,
  Steam,
  Helium,
  Pale Moon,
- and Firefox Nightly targets without attaching:
+ Firefox Nightly,
+ ChatGPT,
+ and Interpreter targets without attaching:
 
 ```sh
 wg-quicker-exempt list-targets <uid>
@@ -165,12 +169,20 @@ Release builds omit injection seam.
    and Firefox Nightly service enumeration plus future-cgroup inotify coverage.
    It periodically rescans Helium,
    Pale Moon,
-   and Firefox Nightly processes.
+   Firefox Nightly,
+   ChatGPT,
+   and Interpreter processes.
    Firefox Nightly matching accepts exact `firefox` and `firefox-bin` names only under a `firefox-nightly` directory.
+   ChatGPT matching accepts every executable inside the root-owned `/usr/lib/chatgpt` package tree,
+   which includes the subprocess agents that application spawns.
+   Interpreter matching accepts every executable whose name begins with `interpreter`,
+   which also includes the same vendor's terminal agent.
 - Process discovery attaches entire current cgroup.
    If Helium,
    Pale Moon,
-   or Firefox Nightly shares that cgroup with another process,
+   Firefox Nightly,
+   ChatGPT,
+   or Interpreter shares that cgroup with another process,
    every sibling's newly created sockets receive exemption until cgroup disappears or watcher stops.
 - A newly started process-discovered application can create sockets before next periodic rescan,
    whose interval is 250 milliseconds.
