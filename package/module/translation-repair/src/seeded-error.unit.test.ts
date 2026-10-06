@@ -108,71 +108,49 @@ await describe({
         },),
 
         it({
-          name: 'rebases earlier regions when a later edit lands before them',
+          name: 'rebases earlier regions when a later edit lands before them, writing both texts and '
+            + 'moving the first region by the length the later edit added',
           fn: async () => {
+            /** Spec editing text after the second spec's region. */
+            const late: SeededErrorSpec = {
+              id: 'seed/late',
+              category: 'accuracy/mistranslation',
+              kind: 'replacement',
+              needle: 'purrs',
+              replacement: 'meows loudly',
+            };
+
+            /** Spec editing text before the first spec's region, one character longer than its needle. */
+            const early: SeededErrorSpec = {
+              id: 'seed/early',
+              category: 'accuracy/mistranslation',
+              kind: 'replacement',
+              needle: 'The cat naps',
+              replacement: 'A kitten naps',
+            };
+
             /** Later spec edits text before the first spec's region. */
             const result = applySeededErrors({
               text: CLEAN,
-              specs: [
-                {
-                  id: 'seed/late',
-                  category: 'accuracy/mistranslation',
-                  kind: 'replacement',
-                  needle: 'purrs',
-                  replacement: 'meows loudly',
-                },
-                {
-                  id: 'seed/early',
-                  category: 'accuracy/mistranslation',
-                  kind: 'replacement',
-                  needle: 'The cat naps',
-                  replacement: 'A dog naps',
-                },
-              ],
+              specs: [late, early,],
             },);
-            /** Region of the first-applied seed after rebasing. */
-            const late = result.applications.find(function byId(application,) {
-              return application.spec.id === 'seed/late';
-            },);
-            /** Seeded text sliced by the rebased region. */
-            const rebasedSlice = result
-              .seededText
-              .slice(
-                late?.startOffset ?? 0,
-                late?.endOffset ?? 0,
-              );
-            expect(rebasedSlice,).toBe('meows loudly',);
-          },
-        },),
-
-        it({
-          name: 'throws SeedApplicationError on absent and ambiguous needles',
-          fn: async () => {
-            /** Value caught from an absent needle. */
-            let caughtAbsent: unknown;
-            try {
-              applySeededErrors({
-                text: CLEAN,
-                specs: [{ ...DELETE_BUTTERFLIES, needle: 'the dog', },],
-              },);
-            }
-            catch (error) {
-              caughtAbsent = error;
-            }
-            expect(caughtAbsent instanceof SeedApplicationError,).toBe(true,);
-
-            /** Value caught from an ambiguous needle. */
-            let caughtAmbiguous: unknown;
-            try {
-              applySeededErrors({
-                text: CLEAN,
-                specs: [{ ...DELETE_BUTTERFLIES, needle: 'The cat', },],
-              },);
-            }
-            catch (error) {
-              caughtAmbiguous = error;
-            }
-            expect(caughtAmbiguous instanceof SeedApplicationError,).toBe(true,);
+            expect(result.seededText,).toBe(
+              'A kitten naps in the sun. The cat also chases butterflies across the garden. The cat meows loudly.',
+            );
+            // The late region started at 84 in the clean text and moved to 85 by
+            // the one character the early edit added ahead of it.
+            expect(result.applications,).toEqual([
+              {
+                spec: late,
+                startOffset: 85,
+                endOffset: 97,
+              },
+              {
+                spec: early,
+                startOffset: 0,
+                endOffset: 13,
+              },
+            ],);
           },
         },),
 

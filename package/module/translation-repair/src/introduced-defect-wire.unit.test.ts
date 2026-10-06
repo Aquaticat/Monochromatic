@@ -495,20 +495,29 @@ await describe({
 
         it({
           name: 'refuses a report that is no record, a check that is none, and a check whose region '
-            + 'is no number',
+            + 'is the string "1" rather than a number, each refused where the report differing only in '
+            + 'that fault is accepted',
           fn: async () => {
+            /**
+             Check whose fields are all well formed, the baseline each refusal in this case departs from in one
+             property.
+             */
+            const wellFormed = {
+              region: 1,
+              verdict: 'uncertain',
+              category: 'accuracy',
+              severity: 'minor',
+              evidence: 'the cat hisses',
+              omittedText: '',
+              reason: 'fixture',
+            };
+
+            expect(isIntroducedDefectReportWire({ checks: [wellFormed,], },),).toBe(true,);
+            expect(isIntroducedDefectReportWire({ checks: [], },),).toBe(true,);
             expect(isIntroducedDefectReportWire([1, 2],),).toBe(false,);
             expect(isIntroducedDefectReportWire({ checks: [5,], },),).toBe(false,);
             expect(isIntroducedDefectReportWire({
-              checks: [{
-                region: 'one',
-                verdict: 'uncertain',
-                category: 'accuracy',
-                severity: 'minor',
-                evidence: 'the dog barks',
-                omittedText: '',
-                reason: 'fixture',
-              },],
+              checks: [{ ...wellFormed, region: '1', },],
             },),).toBe(false,);
           },
         },),

@@ -712,7 +712,17 @@ await describe({
         },);
 
         const outcome = await ask({ client, },);
-        expect(('thrown' in outcome) && (outcome.thrown instanceof EveryProviderDryError),).toBe(true,);
+        if (!('thrown' in outcome))
+          throw new Error('every provider reading dry must end the call with a refusal',);
+        expect(outcome.thrown,).toBeInstanceOf(EveryProviderDryError,);
+        expect(String(outcome.thrown,),).toBe(
+          'EveryProviderDryError: Every provider is out of budget at once: Synthetic has no five-hour or weekly '
+            + 'credit left, Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
+            + 'card, and OpenRouter has no credit left. Nothing further can be bought, so this run ends. Synthetic '
+            + 'regenerates on its own schedule; Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never '
+            + 'topped up. Measured at the decision: meters read synthetic dry, bedrock dry, hyper dry, openrouter '
+            + 'dry; holds synthetic 0ms, bedrock 0ms, hyper 0ms, openrouter 0ms.',
+        );
         expect(called,).toEqual([],);
         expect(holdReads.count,).toBe(1,);
       },
@@ -721,7 +731,10 @@ await describe({
     it({
       name: 'REFUSES to re-route a failure that is not about budget',
       fn: async () => {
-        const { callers, called, } = stubProviders({ status: { synthetic: 500, }, },);
+        const { callers, called, } = stubProviders({
+          status: { synthetic: 500, },
+          bodyText: { synthetic: 'synthetic napping', },
+        },);
         const { budgets, refused, } = stubBudgets({},);
         const client = createRoutingClient({
           callers,
@@ -731,7 +744,10 @@ await describe({
         const outcome = await ask({ client, },);
         // Spending another provider's budget on a fault that is not about
         // budget would hide the fault and pay for it twice.
-        expect(('thrown' in outcome) && (outcome.thrown instanceof SyntheticHttpError),).toBe(true,);
+        if (!('thrown' in outcome))
+          throw new Error('the failure must be thrown to the caller',);
+        expect(outcome.thrown,).toBeInstanceOf(SyntheticHttpError,);
+        expect(String(outcome.thrown,),).toBe('SyntheticHttpError: provider API returned HTTP 500: synthetic napping',);
         expect(called,).toEqual(['synthetic',],);
         expect(refused,).toEqual([],);
       },
@@ -759,7 +775,13 @@ await describe({
         },);
         // Synthetic does not serve this model, so the budgets of the two that
         // do ARE the model's.
-        expect(('thrown' in outcome) && (outcome.thrown instanceof NoProviderForModelError),).toBe(true,);
+        if (!('thrown' in outcome))
+          throw new Error('a model whose providers are all dry must be refused',);
+        expect(outcome.thrown,).toBeInstanceOf(NoProviderForModelError,);
+        expect(String(outcome.thrown,),).toBe(
+          'NoProviderForModelError: no provider can take deepseek-v4.1-flash: every provider serving this model '
+            + 'is out of budget',
+        );
         expect(called,).toEqual([],);
       },
     },),
@@ -1148,12 +1170,25 @@ await describe({
           callers,
           budgets,
         },);
-        await expect(client.chatText({
-          modelId: SEAT_HYPER_ONLY,
-          messages: MESSAGES,
-          signal: SIGNAL,
-          otherThan: 'hyper',
-        },),).rejects.toThrow(NoProviderForModelError,);
+        /**
+         What the hinted re-ask threw, taken as data.
+         */
+        let refusal: unknown;
+        try {
+          await client.chatText({
+            modelId: SEAT_HYPER_ONLY,
+            messages: MESSAGES,
+            signal: SIGNAL,
+            otherThan: 'hyper',
+          },);
+        }
+        catch (error) {
+          refusal = error;
+        }
+        expect(refusal,).toBeInstanceOf(NoProviderForModelError,);
+        expect(String(refusal,),).toBe(
+          'NoProviderForModelError: no provider can take glm-5.3: no provider other than hyper serves it with budget',
+        );
         expect(called,).toEqual([],);
       },
     },),

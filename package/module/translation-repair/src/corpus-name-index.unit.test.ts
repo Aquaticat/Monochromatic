@@ -116,9 +116,11 @@ await describe({
           names,
           ownId: 'own',
         },);
-        expect(lines[1],).toBe('- 猫糖 (entry gum): "Magic Cat Candy", "Cat Candy", "meow1219"',);
-        expect(lines[2],).toBe('- 单鱼 (entry slice): "Danyu"',);
-        expect(lines.length,).toBe(3,);
+        expect(lines,).toEqual([
+          HEADING,
+          '- 猫糖 (entry gum): "Magic Cat Candy", "Cat Candy", "meow1219"',
+          '- 单鱼 (entry slice): "Danyu"',
+        ],);
       },
     },),
     it({
@@ -156,10 +158,24 @@ await describe({
             },);
           },
         },);
-        expect(names.map(function sourceOf(name,) {
-          return name.source;
-        },),).toEqual(['奇妙的猫糖', '猫糖',],);
-        expect(asked,).toContain('people/missing/page.en.md',);
+        expect(names,).toEqual([
+          {
+            source: '奇妙的猫糖',
+            renderings: ['Magic Cat Candy', 'Cat Candy', 'meow1219',],
+            entryId: 'gum',
+          },
+          {
+            source: '猫糖',
+            renderings: ['Magic Cat Candy', 'Cat Candy', 'meow1219',],
+            entryId: 'gum',
+          },
+        ],);
+        expect(asked.toSorted(),).toEqual([
+          'people/gum/page.en.md',
+          'people/gum/page.md',
+          'people/missing/page.en.md',
+          'people/missing/page.md',
+        ],);
       },
     },),
 
@@ -176,11 +192,17 @@ await describe({
               targetText: '---\n---\n\nProse.\n',
             },
           ],
-        },).map(function sourceOf(name,) {
-          return name.source;
         },),).toEqual([
-          '奇妙的猫糖',
-          '猫糖',
+          {
+            source: '奇妙的猫糖',
+            renderings: ['Magic Cat Candy', 'Cat Candy', 'meow1219',],
+            entryId: 'gum',
+          },
+          {
+            source: '猫糖',
+            renderings: ['Magic Cat Candy', 'Cat Candy', 'meow1219',],
+            entryId: 'gum',
+          },
         ],);
       },
     },),

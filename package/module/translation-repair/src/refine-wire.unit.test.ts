@@ -322,7 +322,7 @@ await describe({
                 rewrites: [
                   {
                     paragraph: 3,
-                    newText: 'The dog barks.',
+                    newText: 'The kitten pounces.',
                   },
                   {
                     paragraph: 1,
@@ -334,8 +334,13 @@ await describe({
             },);
 
             expect(findings,).toStrictEqual(['refine-unknown-paragraph (3)',],);
-            expect(operations.length,).toBe(1,);
-            expect(operations[0]?.envelopeId,).toBe('envelope/0',);
+            expect(operations,).toStrictEqual([
+              {
+                envelopeId: 'envelope/0',
+                baseHash: 'hash/envelope/0',
+                newText: 'The cat sleeps.',
+              },
+            ],);
           },
         },),
 
@@ -381,7 +386,7 @@ await describe({
                 rewrites: [
                   {
                     paragraph: 9,
-                    newText: 'The dog barks.',
+                    newText: 'The kitten pounces.',
                   },
                   {
                     paragraph: 1,
@@ -389,7 +394,7 @@ await describe({
                   },
                   {
                     paragraph: 7,
-                    newText: 'The bird sings.',
+                    newText: 'The kitten purrs.',
                   },
                   {
                     paragraph: 1,
@@ -405,7 +410,13 @@ await describe({
               'refine-unknown-paragraph (7)',
               'refine-duplicate-paragraph (1)',
             ],);
-            expect(operations.length,).toBe(1,);
+            expect(operations,).toStrictEqual([
+              {
+                envelopeId: 'envelope/0',
+                baseHash: 'hash/envelope/0',
+                newText: 'The cat sleeps.',
+              },
+            ],);
           },
         },),
 

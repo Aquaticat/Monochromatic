@@ -205,6 +205,35 @@ await describe({
         },),
 
         it({
+          name: 'SAYS an original holding no content line has no line to repeat, where the finding read "no line '
+            + 'more than 0 times" for it, while an original repeating nothing still reads "once"',
+          fn: async () => {
+            /** Findings on a rendering repeating a line against an original that is one comment. */
+            const againstNoLine = compareLineCounts({
+              lineStructured: true,
+              sourceText: '<!-- 这里的猫是橘猫 -->',
+              candidateText: 'The cat naps.\nThe cat naps.',
+            },);
+            expect(againstNoLine,).toEqual([
+              'This slice is LINE-STRUCTURED and your rendering repeats the line `The cat naps.` 2 times where '
+              + 'the ORIGINAL has no line to repeat. A Chinese line and its own English beside it are one line to '
+              + 'render, not two. Drop the repeat, keeping the wording you chose.',
+            ],);
+            /** Findings on the same rendering against an original whose one line stands once. */
+            const againstOneLine = compareLineCounts({
+              lineStructured: true,
+              sourceText: '猫在睡觉。',
+              candidateText: 'The cat naps.\nThe cat naps.',
+            },);
+            expect(againstOneLine,).toEqual([
+              'This slice is LINE-STRUCTURED and your rendering repeats the line `The cat naps.` 2 times where '
+              + 'the ORIGINAL repeats no line more than once. A Chinese line and its own English beside it are one '
+              + 'line to render, not two. Drop the repeat, keeping the wording you chose.',
+            ],);
+          },
+        },),
+
+        it({
           name: 'READS A LINE WHOSE LETTERS ARE ALL ACCENTED as the original\'s own English beside its Han line, so a '
             + 'rendering owes the pair one line; ASCII letters alone saw no English in "Å" and refused the rendering '
             + 'for merging two lines (ledger B18)',

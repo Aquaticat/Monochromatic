@@ -33,6 +33,8 @@ import {
 import {
   evictStaleLock,
   hostIdentity,
+  isJsonArray,
+  isJsonRecord,
   lockFileText,
   lockRunsDir,
   releaseIfOwned,
@@ -178,6 +180,8 @@ function requireEpermOnPidOne(): void {
 
  @param holderLine - line naming the holder, or saying the lock records nothing
 
+ @param runsDir - directory the refusal names, the fixture one unless a case ran the lock over its own
+
  @returns Message the error carries
 
  @example
@@ -185,9 +189,17 @@ function requireEpermOnPidOne(): void {
  const message = busyMessage({ holderLine: '  its lock file records nothing readable', },);
  ```
  */
-function busyMessage({ holderLine, }: { readonly holderLine: string; },): string {
+function busyMessage(
+  {
+    holderLine,
+    runsDir = '/mittens/runs',
+  }: {
+    readonly holderLine: string;
+    readonly runsDir?: string;
+  },
+): string {
   return [
-    'Another pass is running in /mittens/runs.',
+    `Another pass is running in ${runsDir}.`,
     holderLine,
     '',
     'Two passes sharing one runs directory do not conflict loudly. They',
@@ -200,6 +212,169 @@ function busyMessage({ holderLine, }: { readonly holderLine: string; },): string
     'or stop the other pass. A lock whose process is gone is taken over',
     'automatically. Another pass took it over at the same moment as this one.',
   ].join('\n',);
+}
+
+/**
+ What a starter that lost a takeover reported, as the child process printed it.
+ */
+type LostTakeoverReport = {
+  /**
+   Directory the starter was pointed at.
+   */
+  readonly runsDir: string;
+
+  /**
+   Class name and whole message of what `lockRunsDir` threw, or `acquired`.
+   */
+  readonly outcome: string;
+
+  /**
+   Names the runs directory holds afterwards.
+   */
+  readonly left: readonly string[];
+
+  /**
+   What the lock file says afterwards.
+   */
+  readonly lockText: string;
+};
+
+/**
+ Whether a parsed child report has the fields of a lost-takeover report.
+
+ @param value - parsed JSON the child printed
+
+ @returns Whether it is a record of the four fields, typed as each is
+
+ @example
+ ```ts
+ if (isLostTakeoverReport(parsed,)) console.log(parsed.outcome,);
+ ```
+ */
+function isLostTakeoverReport(value: unknown,): value is LostTakeoverReport {
+  return isJsonRecord(value,)
+    && ((typeof value.runsDir) === 'string')
+    && ((typeof value.outcome) === 'string')
+    && ((typeof value.lockText) === 'string')
+    && isJsonArray(value.left,)
+    && value.left.every(function isName(name,): boolean {
+      return (typeof name) === 'string';
+    },);
+}
+
+/**
+ Runs a starter that finds a stale lock, evicts it, and then loses the claim
+ to a rival that writes its own lock in the instant between.
+
+ A CHILD PROCESS, because the instant is made by wrapping the one filesystem
+ call that evicts the lock (`rename` on the lock's own name) so the rival's
+ lock appears right after it, and that wrapper must not reach the cases of
+ this file. No seam of the module is used: the rival is the filesystem state a
+ concurrent starter leaves.
+
+ @param rivalText - exact text the rival's lock holds
+
+ @returns What the starter threw and what the directory held afterwards
+
+ @example
+ ```ts
+ const report = await losingTheTakeoverTo({ rivalText: '{"pid":4242,"startedAt":"2026-08-14T01:00:00.000Z"}\n', },);
+ ```
+ */
+async function losingTheTakeoverTo(
+  { rivalText, }: { readonly rivalText: string; },
+): Promise<LostTakeoverReport> {
+  await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+  /**
+   Directory the starter competes for, apart from the child's working directory.
+   */
+  const runsDir = join(
+    scratch.path,
+    'runs',
+  );
+  await mkdir(runsDir,);
+  await writeFile(
+    join(
+      runsDir,
+      'pass.lock',
+    ),
+    `${JSON.stringify({
+      pid: GONE_PID,
+      startedAt: '2026-08-14T00:00:00.000Z',
+    },)}\n`,
+  );
+  /**
+   Built package the child imports.
+   */
+  const apiUrl = pathToFileURL(join(
+    import.meta.dirname,
+    '..',
+    '..',
+    'dist',
+    'final',
+    'node',
+    'index.mjs',
+  ),).href;
+  /**
+   Child program: wraps the eviction's rename, then asks for the lock once.
+   */
+  const program = `
+import files from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
+const runsDir = ${JSON.stringify(runsDir,)};
+const lockPath = ${JSON.stringify(join(runsDir, 'pass.lock',),)};
+const api = await import(${JSON.stringify(apiUrl,)});
+const originalRename = files.rename;
+files.rename = async function renameThenRival(from, to) {
+  await originalRename(from, to);
+  if (from === lockPath) await files.writeFile(lockPath, ${JSON.stringify(rivalText,)});
+};
+syncBuiltinESMExports();
+let outcome = 'acquired';
+try {
+  await api.lockRunsDir({ runsDir });
+} catch (error) {
+  outcome = error.name + ': ' + error.message;
+}
+console.log('LOST_TAKEOVER ' + JSON.stringify({
+  runsDir,
+  outcome,
+  left: (await files.readdir(runsDir)).toSorted(),
+  lockText: await files.readFile(lockPath, 'utf8'),
+}));
+`;
+  /**
+   The child's run.
+   */
+  const done = spawnSync(
+    process.execPath,
+    ['--input-type=module', '--eval', program,],
+    {
+      cwd: scratch.path,
+      encoding: 'utf8',
+    },
+  );
+  /**
+   Marker the child's one report line starts with.
+   */
+  const marker = 'LOST_TAKEOVER ';
+  /**
+   That line, among whatever the package's logger printed.
+   */
+  const line = done.stdout
+    .split('\n',)
+    .find(function isReport(text,): boolean {
+      return text.startsWith(marker,);
+    },);
+  if (line === undefined)
+    throw new Error(`the child printed no report (status ${String(done.status,)}): ${done.stderr}`,);
+  /**
+   What the child reported, as parsed.
+   */
+  const reported: unknown = JSON.parse(line.slice(marker.length,),);
+  if (!isLostTakeoverReport(reported,))
+    throw new Error('the child reported a line that is no lost-takeover report',);
+  return reported;
 }
 
 await describe({
@@ -562,6 +737,58 @@ await describe({
             if (winners[0]?.status === 'fulfilled')
               await winners[0].value[Symbol.asyncDispose]();
             expect(await readdir(runsDir,),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'NAMES THE RIVAL\'S PROCESS AND START TIME when a starter evicts a stale lock and then loses the '
+            + 'claim to a rival whose lock reads back, leaving that lock in place',
+          fn: async () => {
+            /**
+             Exact text the rival's lock holds.
+             */
+            const rivalText = `${JSON.stringify({
+              pid: 4_242,
+              startedAt: '2026-08-14T01:00:00.000Z',
+              token: 'rival-pass',
+            },)}\n`;
+            /**
+             What the losing starter threw and the directory held afterwards.
+             */
+            const report = await losingTheTakeoverTo({ rivalText, },);
+            expect(report.outcome,).toBe(
+              `RunsDirectoryBusyError: ${
+                busyMessage({
+                  holderLine: '  process 4242, since 2026-08-14T01:00:00.000Z',
+                  runsDir: report.runsDir,
+                },)
+              }`,
+            );
+            expect(report.left,).toEqual(['pass.lock',],);
+            expect(report.lockText,).toBe(rivalText,);
+          },
+        },),
+        it({
+          name: 'SAYS the lock records nothing readable when a starter evicts a stale lock and then loses the '
+            + 'claim to a rival whose lock cannot be read back, leaving that lock in place',
+          fn: async () => {
+            /**
+             Exact text the rival's lock holds, which is no JSON.
+             */
+            const rivalText = 'a cat sits on the lock\n';
+            /**
+             What the losing starter threw and the directory held afterwards.
+             */
+            const report = await losingTheTakeoverTo({ rivalText, },);
+            expect(report.outcome,).toBe(
+              `RunsDirectoryBusyError: ${
+                busyMessage({
+                  holderLine: '  its lock file records nothing readable',
+                  runsDir: report.runsDir,
+                },)
+              }`,
+            );
+            expect(report.left,).toEqual(['pass.lock',],);
+            expect(report.lockText,).toBe(rivalText,);
           },
         },),
         it({
