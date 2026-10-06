@@ -846,6 +846,9 @@ so the rules for what may move are part of the placement.
   a change that would move the scroll offset waits until the offset has been still for 200 ms
   (`rows::SCROLL_QUIET`),
   so a wheel animation is never cut short.
+  A render that comes after a scroll step whose change handler has not run yet
+  (the window's offset differs from the one last placed) counts as scrolling too;
+  under host load a recording showed such a render moving the first visible line by 3 px before this rule.
   Underlines are drawn at once;
   they take no space.
 - After an external change the rows of the replaced text are not painted,
@@ -922,24 +925,67 @@ and a letter in the gutter.
 #### Gutter letters
 
 The user decided on 2026-10-06 that severity is a plain letter in front of the line number,
-not an icon or a boxed marker.
+not an icon or a boxed marker,
+and then that the letter stands close to the number, not a long space away.
 A line where diagnostics start shows the letter of the worst of them in that severity's ink:
 JetBrains Mono at the line numbers' 15 px,
 bold,
-centered in a 16 px column at the left edge of the gutter.
-The line numbers follow in the gutter's other 56 px,
-right-aligned 12 px before the text,
-so the gutter is 72 px wide at scale 1;
+in a cell one letter wide that ends 4 px before that line's own number,
+whatever the number's digit count.
+Measured on rendered frames
+(`the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers`),
+6 blank pixel columns lie between the letter's ink and the number's ink before `1`, `10`, and `100` alike
+(the 4 px gap plus the side bearings of the two glyphs, antialiased edges counted as ink),
+where 1 blank column lies between the digits of `10`:
+the letter reads as a mark before the number and not as one more digit,
+and stands closer to it than one digit advance.
+
+From its left edge the gutter holds 6 px,
+the 9 px letter cell,
+the 4 px gap,
+the number column,
+and the 12 px before the text, unchanged.
+The number column is as wide as the displayed file's widest line number, with at least three digits,
+which is Helix's default minimum
+(`min_width: 3` in `helix-view/src/editor.rs`, applied in `line_numbers_width` in `helix-view/src/gutter.rs`).
+Both widths are measured from the font (`letter-probe` and `number-probe` in `ui/app.slint`)
+and rounded to whole pixels:
+9 px per digit and per letter,
+so a file of fewer than 1000 lines gets a 58 px gutter at scale 1;
 like every logical length it is multiplied by the display scale.
-The letter column is there on every line,
+The letter's room is there on every line,
 so neither the text nor a line number moves when diagnostics arrive or go.
+Text moves right by one digit when the displayed file's line count gains a digit past 999,
+as in Helix
+(`the_gutter_gains_a_digit_past_999_lines_and_the_pointer_follows`).
+The empty line after a final terminator has a number of its own and counts.
+Every horizontal position in the source view,
+hit testing,
+find rectangles,
+the caret,
+selection,
+underlines,
+and the virtual rows,
+is measured from the one `gutter-width` property of `ui/app.slint`,
+so all of them follow the gutter;
+native code is told the width of the view right of the gutter and never the gutter's width itself.
+
 A range over several lines shows its letter on its first line only,
 where its message rows stand.
 The letter belongs to the diagnostics of the displayed text:
 after an external change it goes with the message rows and returns with the new diagnostics.
 `I` and `H` extend the user's `E` and `W` by the same rule; that extension is open to the user's veto.
 Native code hands the window one number per materialized line (`State::line_marks`, set in `rows::present`),
-taken from the first message row of the line's block, which names the worst severity.
+taken from the first message row of the line's block, which names the worst severity,
+and the line count that sizes the number column.
+
+Open to the user's veto:
+the 4 px between letter and number,
+the 6 px before the letter,
+and the three-digit minimum.
+Without the minimum,
+text in a file of fewer than 10 lines would start 18 px further left than in a file of 100 lines or more,
+and would move whenever the line count crosses 9 or 99.
 
 A diagnostic without a severity is shown as a warning, as Helix shows it.
 A range over several lines underlines each of its rows and marks a crossed line end like a selected terminator,
