@@ -1784,7 +1784,9 @@ which the package `runtime` task prepares,
 again through `src/runtime.rs` and never through Helix's search.
 Their messages name that task;
 the executable's messages say to replace it with a fresh copy or build it again from source.
-A build with the `gui` feature and no prepared runtime stops with a message naming the `runtime` task.
+A build with the `gui` feature stops with a message naming the `runtime` task
+when the prepared runtime lacks its manifest or a grammar library the manifest lists
+(both observed in a disposable copy on 2026-10-06).
 
 ### What the host provides
 

@@ -179,10 +179,16 @@ fn embedded_files(runtime: &Path, package: &Path) -> Vec<(String, PathBuf)> {
     }
     for library in listed_grammars(&text, &manifest) {
         let name = library.trim_end_matches(".so");
-        files.push((
-            format!("runtime/grammars/{library}"),
-            runtime.join("grammars").join(&library),
-        ));
+        let library_path = runtime.join("grammars").join(&library);
+        // A listed library that is absent would otherwise fail later as a bare read error without a remedy.
+        if !library_path.is_file() {
+            panic!(
+                "The language manifest {} lists {library}, but {} is missing, so the runtime is incomplete. Prepare it again with `mise run //package/desktop-app/ide:runtime`, then build again.",
+                manifest.display(),
+                library_path.display()
+            );
+        }
+        files.push((format!("runtime/grammars/{library}"), library_path));
         let notices = files_below(&runtime.join("licenses").join(name));
         if notices.is_empty() {
             panic!(
