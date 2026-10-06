@@ -9,11 +9,19 @@ and a campaign that exits nonzero is not a passing gate.
 This handover removes the timeouts that kept the Markdown and processor campaigns exiting 3,
 runs the first campaign over the executable's own modules,
 and reruns the Markdown and processor campaigns on the final snapshot.
+Its second round,
+`Gaps round`,
+gives every production module a scope,
+proves that from listings,
+lints every invocation on a thread with an explicit stack,
+and checks the fuzz sidecar against the final library.
 
 Inspect `Excluded mutation kinds` first,
 because it changes what every campaign measures.
 Then inspect `Timeouts removed`,
 because it changes production code and adds two error paths,
+then `Gaps round`,
+because it changes the executable's threads and the scopes every campaign runs,
 and read `Defects found` and `Remaining`.
 Respond with a veto of a named change or disposition,
 or with the next scope to mutate.
@@ -709,16 +717,24 @@ Both walks are now bounded and report a typed error;
 on a document built by `MarkdownSource::new` neither error can occur,
 because `traversal` validates the child graph first.
 
-One platform risk follows from the stack calibration and was not measured.
+One defect on unmutated input was found by reproduction rather than by a mutant,
+and is fixed under `Invocation thread`.
 With `--concurrency 1`,
-or with a single file,
-no worker starts and the file is linted on the main thread.
-On Linux that thread has the same 8 MiB as a worker.
-If a Windows build keeps the MSVC linker's default stack reserve of 1 MiB
-(recalled, not checked here against the linker documentation or the release build settings),
-a single file nested between 250 and 500 parentheses deep would abort there
-while the same file among others would be linted on an 8 MiB worker.
-Neither Windows nor a release build was run here.
+a single file or `--stdin`,
+no worker started and the file was linted on the main thread,
+whose stack the platform sets.
+Under a 1,024 KiB main-thread stack on Linux,
+the size of the MSVC linker's documented default reserve,
+the debug executable aborted with a stack overflow on 1,200 nested parentheses in all three modes,
+while two files at a limit of two completed on 8 MiB workers.
+The executable now lints every invocation on a thread with the 8 MiB lint stack.
+Neither Windows nor a release build was run.
+
+The gaps round's survivors were test gaps:
+inputs and manifests below a regular file,
+backend settings no fixture could observe,
+and a proc-macro server choice no fixture used.
+None of them changed released behavior.
 
 ## Final campaigns
 
@@ -1096,6 +1112,13 @@ image `5b241d8ac5eec41f866c91e433423507a918168bd076ed6c11dae46e1e19da44`
   exit 134,
   the same overflow on `main`.
 
+`stack-repro-after.log` is the same script on the final gate image
+`7526e26a714499174ff012c45175059ac39127333510cc8fa405264c902499f7`
+(linter source tree `c5f934d97d7579d9eca66741241ecc47291cc877`):
+all five runs exit 0 with empty output,
+including one file,
+`--concurrency 1` and `--stdin` at 1,024 KiB.
+
 `a_small_main_thread_stack_does_not_limit_nesting` in `src/binary_tests.rs` runs the one-file,
 `--concurrency 1` and `--stdin` cases under a 1,024 KiB main stack
 and requires exit 0 with both streams empty.
@@ -1274,6 +1297,59 @@ and the final round is the proof by cargo-mutants.
   called from the checked file.
   Under the mutant the generated preparation reported 2 findings instead of 1 in the container,
   because the unexpanded macro left the call unresolved.
+
+### Fuzz sidecar against the final library
+
+The sidecar had no planted-defect controls.
+`test:planted`,
+new in `bin/planted-controls.mjs` of the sidecar and shaped like the one in `package/git-policy/cli.fuzz`,
+copies the linter,
+the sidecar and their JSONC dependencies to the sidecar's ignored `target/planted` directory,
+plants one defect per fuzz target,
+and requires a generator control to fail for each;
+a plant that does not build counts as not noticed.
+The sidecar's container task now tags its images with `MONOCHROMATIC_LINT_IMAGE_TAG`.
+
+Every run below used linter source tree `c5f934d97d7579d9eca66741241ecc47291cc877`,
+the tree of the final gate.
+Logs are in `package/linter/monochromatic-lint.fuzz/target/verification/`.
+
+- `test` (`fuzz-test-gaps.log`):
+  9 generator controls passed on the host toolchain.
+- `test:planted` (`fuzz-planted-gaps.log`, evidence `planted-jmjt15`):
+  the 9 unplanted controls passed,
+  and each of the six plants failed at least one named control:
+  a rejected `warn` severity failed `generated_cases_reach_valid_settings` and four orchestration controls;
+  arrays replaced instead of concatenated failed `merge_invariant_controls_reach_mixed_and_array_shapes`;
+  only the first closure reported failed the Rust-style generator control;
+  an initialized binding exempt from annotations failed `explicit_type_generator_reaches_all_controls`;
+  a trailing colon no longer heading punctuation failed the Markdown generator control;
+  and an unlabeled rustdoc fence no longer a doc test failed `counted_cases_reach_every_processor_layer`
+  and `raw_hosts_are_processed_in_every_language`.
+  An earlier run on tree `b4f8c609dc6dbc35bdcf99481b1e9cf89529e05d` (`planted-XsM2Y0`) gave the same result.
+- `smoke` (`fuzz-smoke-gaps.log`, evidence `campaign-ljLFuJ`),
+  which runs the unit controls and Clippy in the build container and then the AddressSanitizer build:
+  9 controls passed,
+  Clippy finished with no finding,
+  the build took 44 minutes 51 seconds,
+  and every target exited 0 after 30 seconds with an empty artifact directory.
+  Executions:
+  `merge_values` 10,679,
+  `configuration` 5,519,
+  `rust_style` 149,
+  `rust_explicit_types` 81,
+  `markdown` 3,773
+  and `orchestration` 256.
+  Build image `c36669b86dc4dfb7195e60f3cc12527f6026288f8ed03cb974cce0867e6794af`,
+  run image `33a61e94c5ed1cab6128854faf359b643fb759e3e7de2d3181c846addb21037f`.
+  Every count is lower than in the 2026-10-05 smoke run,
+  between 0.10 times (`markdown`) and 0.64 times (`configuration`) its count there,
+  at a host load average of 70 to 80 with the mutation campaigns running beside it;
+  30 seconds per target is a smoke run,
+  not a campaign.
+
+The separate `build` task was not run;
+`smoke` performs the same AddressSanitizer build first.
 
 ## Remaining
 
