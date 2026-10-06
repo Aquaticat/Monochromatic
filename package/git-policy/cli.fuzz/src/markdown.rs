@@ -381,7 +381,7 @@ fn is_separator(byte: &u8) -> bool {
 /// ```
 pub fn decode_base64(text: &str) -> Option<Vec<u8>> {
     let bytes: &[u8] = text.as_bytes();
-    if bytes.len() % 4 != 0 {
+    if !bytes.len().is_multiple_of(4) {
         return None;
     }
     let mut decoded: Vec<u8> = Vec::new();

@@ -25,6 +25,7 @@ use std::ffi::OsString;
 /// import { open } from 'node:fs/promises';
 /// ```
 use std::fs::File;
+/// `Read`, `Seek` and `Write` are the traits that add reading, rewinding and writing to a file.
 use std::io::{Read, Seek, SeekFrom, Write};
 /// `Path` is a borrowed filesystem path.
 use std::path::Path;
@@ -384,7 +385,7 @@ fn child_exit(status: ExitStatus) -> ChildExit {
     }
     #[cfg(unix)]
     {
-        // The trait adds `.signal()`; `use` inside a block scopes it to this block.
+        /// The trait adds `.signal()`; `use` inside a block scopes it to this block.
         use std::os::unix::process::ExitStatusExt;
         if let Some(signal) = status.signal() {
             return ChildExit::Signal(signal);
