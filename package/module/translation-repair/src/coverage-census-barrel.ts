@@ -119,5 +119,15 @@ export {
   type FunctionSite,
   type UncalledFunction,
 } from './corpus-run/coverage-tally.ts';
+export {
+  type Baseline,
+  baselineReadingsOf,
+} from './corpus-run/coverage-census-baseline-lines.ts';
+export { requireCoverageBuild, } from './corpus-run/coverage-census-build.ts';
+export { reportCensus, } from './corpus-run/coverage-census-reading.ts';
+export {
+  type CoverageCensusSteps,
+  runCoverageCensus,
+} from './corpus-run/coverage-census-run.ts';
 
 //endregion Coverage census barrel

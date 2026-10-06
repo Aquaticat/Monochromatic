@@ -1440,7 +1440,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/rendering-audit-settled-report.ts#main': {
+  'corpus-run/rendering-audit-settled-report-run.ts#runSettledReport': {
     tests: 1,
     why: SETTING,
   },

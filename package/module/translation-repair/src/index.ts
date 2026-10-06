@@ -291,5 +291,9 @@ export * from './consolidation-barrel.ts';
 export * from './context-barrel.ts';
 export * from './editor-runner-barrel.ts';
 export * from './calibrate-bench-barrel.ts';
+export * from './window-trial-probe-barrel.ts';
+export * from './slice-census-barrel.ts';
+export * from './judge-fidelity-probe-barrel.ts';
+export * from './settled-audit-run-barrel.ts';
 
 //endregion Public barrel

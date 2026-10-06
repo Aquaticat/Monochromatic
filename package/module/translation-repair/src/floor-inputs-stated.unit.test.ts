@@ -643,7 +643,7 @@ const MEASUREMENT_FILES: Readonly<Record<string, string>> = {
   'corpus-run/producer-calibrate-round.ts': 'ranks producers on drawn bare slices, every seat filled',
   'corpus-run/roster-bench-round.ts': 'benches roster widths on drawn bare slices',
   'corpus-run/translate-probe-run.ts': 'prints the translate sheet for a drawn slice',
-  'corpus-run/window-trial-probe.ts': 'draws the entries the judging-window trial runs on',
+  'corpus-run/window-trial-probe-draw.ts': 'draws the entries the judging-window trial runs on',
   'corpus-run/window-trial-slice.ts': 'runs one slice of the judging-window trial in both arms',
 };
 

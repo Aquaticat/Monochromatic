@@ -217,7 +217,7 @@ const EXEMPT_COUNTS: ReadonlyMap<string, string> = new Map([
     'DIGEST_LENGTH, a constant above one',
   ],
   [
-    'corpus-run/slice-census.ts#main: target chars',
+    'corpus-run/slice-census-widest.ts#sliceCensusWidestLines: target chars',
     'PROBE_TIMEOUT_CHARS, a constant above one',
   ],
   [

@@ -62,7 +62,7 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'a tail compared unit for unit with the buffer it came from',
   ],
   [
-    'corpus-run/slice-census.ts#UNPAIRED_ENTRIES_LISTED',
+    'corpus-run/slice-census-unpaired.ts#UNPAIRED_ENTRIES_LISTED',
     'a list of entries',
   ],
   [
@@ -74,7 +74,7 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'a hex digest',
   ],
   [
-    'corpus-run/window-trial-probe.ts#PROTOCOL_LOG_CHARS',
+    'corpus-run/window-trial-probe-lines.ts#PROTOCOL_LOG_CHARS',
     'a hex digest',
   ],
   [

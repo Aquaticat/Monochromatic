@@ -69,6 +69,12 @@ export {
 } from './corpus-run/would-ship-text.ts';
 
 export {
+  type JudgedEntry,
+  judgePublishedEntry,
+} from './corpus-run/verify-published-entry.ts';
+export { verifyPublishedRun, } from './corpus-run/verify-published-run.ts';
+
+export {
   type ArtifactPageAssembly,
   NO_PAGE_ASSEMBLY,
   type PageAssemblyOverride,

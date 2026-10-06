@@ -5,6 +5,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
+import { isJsonRecord, } from '../json-guard.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { namesOfKind, } from './directory-listing.ts';
@@ -72,6 +73,18 @@ export async function readRunRows(
   const rows: unknown = run.rows;
   if (!Array.isArray(rows,))
     throw new StatedRefusalError({ says: `${path} carries no rows array`, },);
+
+  /**
+   Position of the first row that is not an object, which every later reading
+   would read fields off, absent when every row is one.
+   */
+  const notObjectAt = rows.findIndex(function isNotObject(row: unknown,): boolean {
+    return !isJsonRecord(row,);
+  },);
+  if (notObjectAt !== (-1))
+    throw new StatedRefusalError({
+      says: `${path} carries a row that is not an object, at position ${String(notObjectAt,)}`,
+    },);
 
   /**
    Roster the run asked, read tolerantly: the field was persisted from the

@@ -146,7 +146,7 @@ const HELD: Readonly<Record<string, string>> = {
     'a read failure of the built entry the run is executing, which quotes that path; no provider is called',
   'corpus-run/translate-probe-run.ts#probeTranslate':
     'printed to the terminal of a probe command whose operator owns the provider keys, not logged or stored',
-  'corpus-run/window-trial-probe.ts#readPairTexts':
+  'corpus-run/window-trial-probe-draw.ts#readPairTexts':
     'a missing-object corpus read narrowed by isMissingCorpusObject; the corpus is public',
   'refusal-text.ts#refusalText':
     'reads the message only of a class that declares messageNamesOnly, which is what this function exists to do',

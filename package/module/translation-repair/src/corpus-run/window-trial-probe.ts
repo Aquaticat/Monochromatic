@@ -1,17 +1,9 @@
-import { join, } from 'node:path';
-
-
 import { contextRoot, } from '../log-context.ts';
-import type { ChunkPair, } from '../chunk-document.ts';
 import {
-  isMissingCorpusObject,
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
-import { wordForCount, } from '../count-word.ts';
-import { classifyDisplacement, } from '../displacement-class.ts';
-import { sliceSizesOf, } from '../displacement-ratio.ts';
-import { prepareDocumentPair, } from '../document-preparation.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 import {
   createRunClient,
   readHeadSha,
@@ -20,70 +12,16 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
-import {
-  accountTrialLedger,
-  completedArms,
-  readTrialLedger,
-} from './window-trial-ledger.ts';
-import {
-  reportWindowTrial,
-  TRIAL_ARMS,
-  windowTrialReportLine,
-} from './window-trial-report.ts';
-import {
-  controlSlices,
-  flaggedSlices,
-  type TrialSlice,
-} from './window-trial-draw.ts';
 import { runPick, } from './window-trial-pick.ts';
-import {
-  protocolDigest,
-  streakAfter,
-} from './window-trial-protocol.ts';
-import {
-  assertWindowReachedJudges,
-  witnessSheets,
-} from './window-trial-witness.ts';
-import { reportingRefusals, } from './cli-refusal.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
+import { runWindowTrial, } from './window-trial-probe-run.ts';
 
 //region Window trial probe
-// The window trial, run end to end: does showing the judges the neighbouring original
-// change how often the archive's English is replaced?
-//
-// SPENDS QUOTA, roughly three judgings plus one slate per drawn slice. Point
-// `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
-//
-// EVERY PART OF THE READING IS TESTED WITHOUT QUOTA and lives elsewhere: the
-// ledger, the draw, the per-slice arms and the report each have their own file
-// and their own tests. What is here is composition, the corpus walk, and the two
-// checks that can only be made against a live run.
-
-/**
- Controls drawn per entry that contributes any flagged slice.
-
- Small on purpose. Controls exist to detect a general context-induced
- conservatism, which would show across many entries rather than within one, so
- breadth is worth more here than depth.
- */
-const CONTROLS_PER_ENTRY = 1;
-
-/**
- Refusals in a row that end the run.
-
- Small, because slices that genuinely cannot be tried do not cluster: the draw
- interleaves entries and classes, so several in a row is a provider or a
- roster, not a run of awkward slices.
- */
-const REFUSALS_BEFORE_STOPPING = 5;
-
-/**
- Digest characters printed in the run's opening line.
-
- Enough to tell two protocols apart at a glance in a log, and short enough that
- the line stays readable; the ledger carries the whole digest either way.
- */
-const PROTOCOL_LOG_CHARS = 12;
+// The window trial, run end to end: the wiring only. It asks models and writes
+// a trial ledger, so it SPENDS QUOTA: point `TRANSLATION_REPAIR_RUNS_DIR` at a
+// throwaway directory. What the walk does is in `window-trial-probe-run.ts`
+// with `window-trial-probe-draw.ts`, `window-trial-probe-tally.ts`,
+// `window-trial-probe-check.ts` and `window-trial-probe-lines.ts`; the ledger,
+// the draw, the per-slice arms and the report each have their own file and tests.
 
 /**
  Logger the run writes under.
@@ -91,150 +29,8 @@ const PROTOCOL_LOG_CHARS = 12;
 const l = contextRoot({ tag: 'window-trial', },);
 
 /**
- Both sides of one entry, or the fact that it carries only one.
-
- @example
- ```ts
- const texts: PairTexts = { kind: 'missing', };
- ```
- */
-type PairTexts = {
-  /**
-   Entry carries both sides.
-   */
-  readonly kind: 'read';
-
-  /**
-   Original page.
-   */
-  readonly source: string;
-
-  /**
-   Translated page.
-   */
-  readonly target: string;
-} | {
-  /**
-   Entry carries one side, which is an ordinary state of this corpus.
-   */
-  readonly kind: 'missing';
-};
-
-/**
- Slices one entry contributes, flagged plus its controls.
-
- @param entryId - entry to read
-
- @returns Slices to buy and the preparation they index into, empty when the
- entry cannot be read or the screen flagged nothing
-
- @example
- ```ts
- const drawn = await drawEntry({ entryId, },);
- ```
- */
-async function drawEntry(
-  { entryId, }: { readonly entryId: string; },
-): Promise<{
-  readonly picks: readonly TrialSlice[];
-  readonly slices: readonly ChunkPair[];
-}> {
-  /**
-   Both sides, absent when this entry carries only one.
-   */
-  const texts = await readPairTexts({ entryId, },);
-  if (texts.kind === 'missing') {
-    return {
-      picks: [],
-      slices: [],
-    };
-  }
-
-  /**
-   Slices exactly as the lanes would see them.
-   */
-  const prepared = prepareDocumentPair({
-    sourceText: texts.source,
-    targetText: texts.target,
-  },);
-
-  /**
-   What the screen makes of their sizes.
-   */
-  const displacement = classifyDisplacement({
-    slices: sliceSizesOf({ slices: prepared.slices, },),
-  },);
-
-  /**
-   Flagged slices, deduplicated across overlapping candidates.
-   */
-  const flagged = flaggedSlices({
-    entryId,
-    displacement,
-  },);
-  if (flagged.length === 0) {
-    return {
-      picks: [],
-      slices: prepared.slices,
-    };
-  }
-
-  return {
-    // CONTROLS ONLY FROM ENTRIES THAT CONTRIBUTE FLAGGED SLICES, so the two
-    // populations share their documents. A control drawn from an entry the
-    // screen never flagged would differ in whatever made that entry clean.
-    picks: [
-      ...flagged,
-      ...controlSlices({
-        entryId,
-        displacement,
-        wanted: CONTROLS_PER_ENTRY,
-      },),
-    ],
-    slices: prepared.slices,
-  };
-}
-
-/**
- Reads both sides of one entry.
-
- @param entryId - entry to read
-
- @returns Both texts, absent when either side is missing
-
- @throws Whatever the read threw, when it was not a corpus read failure
-
- @example
- ```ts
- const texts = await readPairTexts({ entryId, },);
- ```
- */
-async function readPairTexts(
-  { entryId, }: { readonly entryId: string; },
-): Promise<PairTexts> {
-  try {
-    return {
-      kind: 'read',
-      source: await readCorpusFile({
-        pin: RUN_CORPUS_PIN,
-        relPath: `people/${entryId}/page.md`,
-      },),
-      target: await readCorpusFile({
-        pin: RUN_CORPUS_PIN,
-        relPath: `people/${entryId}/page.en.md`,
-      },),
-    };
-  }
-  catch (error) {
-    if (!isMissingCorpusObject(error,))
-      throw error;
-    l.info(`${entryId}: skipped, ${String(error,)}`,);
-    return { kind: 'missing', };
-  }
-}
-
-/**
- Runs the trial over the pinned corpus.
+ Runs the trial over the pinned corpus, with the runs directory the
+ environment names and the head this checkout stands at.
 
  @example
  ```ts
@@ -243,224 +39,21 @@ async function readPairTexts(
  */
 async function main(): Promise<void> {
   /**
-   Where this run's ledger lives.
+   Run directory the ledger lives under.
    */
-  const ledgerPath = join(
-    await resolveRunsDir(),
-    'window-trial',
-    'arms.jsonl',
-  );
-
-  /**
-   Digest this run buys under.
-   */
-  const protocol = protocolDigest({ headSha: await readHeadSha(), },);
-
-  /**
-   Arms already bought under it.
-   */
-  const done = completedArms({
-    rows: await readTrialLedger({ path: ledgerPath, },),
-    protocol,
+  const runsDir = await resolveRunsDir();
+  return runWindowTrial({
+    runsDir,
+    headSha: await readHeadSha(),
+    makeClient: createRunClient,
+    pin: RUN_CORPUS_PIN,
+    listPeople: listCorpusPeople,
+    readPage: readCorpusFile,
+    pickSlice: runPick,
+    roster: RUN_ROSTER,
+    perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+    l,
   },);
-  l.info(
-    `protocol ${
-      protocol.slice(
-        0,
-        PROTOCOL_LOG_CHARS,
-      )
-    }; ${String(done.size,)} ${
-      wordForCount({
-        count: done.size,
-        one: 'arm',
-        many: 'arms',
-      },)
-    } already bought`,
-  );
-
-  /**
-   Client every call goes through.
-   */
-  const client = createRunClient();
-
-  /**
-   Nothing here aborts the run, so a kill is what stops it.
-   */
-  const { signal, } = new AbortController();
-
-  /**
-   Wrapper the run buys under until the window is seen on the wire.
-   */
-  const witness = witnessSheets({ client, },);
-
-  /**
-   Slices bought so far, which the first-slice check reads, and slices that
-   refused.
-
-   A REFUSAL IS COUNTED AND WALKED PAST, never fatal to the run. A slice can
-   refuse for reasons that are properties of the slice rather than of the
-   trial: no neighbouring section to widen to, or a slice with no incumbent
-   whose judges all declined. Aborting the walk on one of those would stop the
-   run at the same slice on every resumption, and since the refusal is never
-   recorded, no amount of restarting would ever get past it.
-   */
-  const bought = {
-    count: 0,
-    refused: 0,
-    refusedInARow: 0,
-  };
-
-  /**
-   State of the live window check: wide arms bought under the witness, and
-   whether the check has passed and the wrapper been dropped.
-   */
-  const witnessed = {
-    wideArms: 0,
-    passed: false,
-  };
-
-  for (const entryId of await listCorpusPeople({ pin: RUN_CORPUS_PIN, },)) {
-    /* oxlint-disable no-await-in-loop -- entries are walked in order so a kill leaves a prefix */
-    /**
-     Slices this entry contributes, with the preparation they index into.
-     */
-    const drawn = await drawEntry({ entryId, },);
-    /* oxlint-enable no-await-in-loop */
-    for (const pick of drawn.picks) {
-      /* oxlint-disable no-await-in-loop -- arms are bought one slice at a time and appended as they complete */
-      /**
-       What this slice yielded: arms it bought, empty when the ledger already
-       held them all, or a refusal the walk steps over.
-       */
-      const outcome = await runPick({
-        client: witnessed.passed ? client : witness.client,
-        slices: drawn.slices,
-        pick,
-        entryId,
-        protocol,
-        ledgerPath,
-        done,
-        models: {
-          translatorModelIds: RUN_ROSTER,
-          judgeModelIds: RUN_ROSTER,
-        },
-        signal,
-        perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-        l,
-      },);
-      /* oxlint-enable no-await-in-loop */
-      if (outcome.kind === 'refused') {
-        bought.refused += 1;
-        bought.refusedInARow = streakAfter({
-          refusedInARow: bought.refusedInARow,
-          yielded: 'refused',
-        },);
-        // A REFUSAL IS NOT FREE: the slate is produced before any arm is judged,
-        // so a fault that fails every judging still spends a roster of
-        // translator calls per slice and leaves an empty ledger. Slices that
-        // genuinely cannot be tried are scattered through the draw, so a run of
-        // them says the fault is the run's rather than the slices'.
-        if (bought.refusedInARow >= REFUSALS_BEFORE_STOPPING)
-          throw new StatedRefusalError({
-            says: `${String(bought.refusedInARow,)} ${
-              wordForCount({
-                count: bought.refusedInARow,
-                one: 'slice',
-                many: 'slices',
-              },)
-            } refused in a row, which is `
-              + `a fault in the run rather than in the slices; stopping before `
-              + `the rest of the draw is spent producing slates nobody judges`,
-          },);
-        continue;
-      }
-      /**
-       Arms this call bought.
-       */
-      const { rows, } = outcome;
-
-      // See `streakAfter`: a slice the ledger already held bought nothing and
-      // leaves the streak alone.
-      bought.refusedInARow = streakAfter({
-        refusedInARow: bought.refusedInARow,
-        yielded: (rows.length === 0) ? 'already-held' : 'bought',
-      },);
-      if (rows.length === 0)
-        continue;
-      bought.count += 1;
-      // THE ONE CHECK ONLY A LIVE RUN CAN MAKE, on the earliest slice that
-      // bought a wide arm. Resumption can leave that slice owing narrow arms
-      // only, so this waits for a wide arm rather than for the first purchase.
-      if (!witnessed.passed) {
-        witnessed.wideArms += rows
-          .filter(function isWide(row,) {
-            return row.arm === TRIAL_ARMS.wide;
-          },)
-          .length;
-        if (witnessed.wideArms > 0) {
-          assertWindowReachedJudges({
-            sheets: witness.sheets,
-            expected: witnessed.wideArms * RUN_ROSTER.length,
-          },);
-          witnessed.passed = true;
-          l.info('the window reached every judge of the first wide arm',);
-        }
-      }
-      l.info(
-        `${entryId}/${String(pick.sliceIndex,)} (${pick.sliceClass}): ${
-          rows.map(function toOutcome(row,) {
-            return `${row.arm}=${row.shipped ? 'replaced' : 'kept'}`;
-          },)
-            .join(' ',)
-        }`,
-      );
-    }
-  }
-
-  l.info(
-    `bought ${String(bought.count,)} ${
-      wordForCount({
-        count: bought.count,
-        one: 'slice',
-        many: 'slices',
-      },)
-    } this run; ${
-      String(bought.refused,)
-    } refused`,
-  );
-
-  /**
-   What the ledger holds now the walk is over, with what the read left out of
-   the rows every line of this report is counted from.
-   */
-  const {
-    rows: ledgerRows,
-    leftOut,
-    tornTail,
-  } = await accountTrialLedger({ path: ledgerPath, },);
-  l.info(
-    `ledger read for this report: ${String(ledgerRows.length,)} ${
-      wordForCount({
-        count: ledgerRows.length,
-        one: 'row',
-        many: 'rows',
-      },)
-    } under every protocol; ${String(leftOut,)} whole ${
-      wordForCount({
-        count: leftOut,
-        one: 'line',
-        many: 'lines',
-      },)
-    } left out as no trial row of this build; last line ${
-      tornTail ? 'cut short by a kill and not counted' : 'whole'
-    }`,
-  );
-  for (const report of reportWindowTrial({
-    rows: ledgerRows,
-    protocol,
-  },)) {
-    l.info(windowTrialReportLine({ report, },),);
-  }
 }
 
 if (import.meta.main)

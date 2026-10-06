@@ -134,7 +134,7 @@ function sliceIndexOf(
    */
   const written: unknown = row;
   if (!isJsonRecord(written,))
-    return row.sliceIndex;
+    throw new Error('unreachable: a row that is not an object reached its subject key, though the run reader refuses every such row',);
 
   /**
    The slice index under the earlier generation's name.
