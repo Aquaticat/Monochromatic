@@ -568,7 +568,9 @@ new IME work and native accessibility acceptance.
   implementation window frame around the Fold-derived treatments;
   do not use it as
   a separate visual design target.
-- **OPEN: custom display templating round (11e).**
+- Custom display templating (11e) is settled:
+  the editor (D89 to D96,
+  D98) and the two lines that get a template (D99).
 - **DEVELOPER-OWNED: MD3-on-Slint feasibility (A4).**
   The user assigned feasibility and
  porting studies to developers on 2026-09-17;
