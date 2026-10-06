@@ -36,6 +36,12 @@ struct Session {
     probed: bool,
     /// Number of hover requests seen.
     hovers: u64,
+    /// Number of inlay-hint requests seen.
+    inlay_hints: u64,
+    /// What: The answer to the first hint request while it is held back. `Option<Value>` is
+    ///       "a JSON answer, or nothing".
+    /// Why: It is written right after the answer to the second hint request.
+    held_hint: Option<Value>,
     /// Whether the scripted stall already happened.
     stalled: bool,
 }
@@ -252,17 +258,14 @@ impl Session {
         } else if method == "textDocument/references" {
             self.send(json!({ "id": id, "error": { "code": -32603, "message": "scripted internal failure" } }));
         } else if method == "textDocument/inlayHint" {
-            self.send(json!({ "id": id, "result": [
-                {
-                    "position": { "line": 0, "character": 5 },
-                    "label": [{ "value": "part-a" }, { "value": "-part-b", "command": { "title": "x", "command": "scripted.command" } }],
-                    "kind": 1,
-                    "paddingLeft": true,
-                    "textEdits": [{ "range": { "start": { "line": 0, "character": 5 }, "end": { "line": 0, "character": 5 } }, "newText": ": T" }],
-                    "data": { "resolveMe": true },
-                },
-                { "position": { "line": 99, "character": 0 }, "label": "past-end" },
-            ] }));
+            self.inlay_hints += 1;
+            crate::inlay::respond(
+                &self.wire,
+                id,
+                self.inlay_hints,
+                self.script.hint_hold_first,
+                &mut self.held_hint,
+            );
         } else if method == "textDocument/diagnostic" {
             let text = self
                 .documents
@@ -337,6 +340,8 @@ pub fn run(script: Script) -> io::Result<()> {
         documents: HashMap::new(),
         probed: false,
         hovers: 0,
+        inlay_hints: 0,
+        held_hint: None,
         stalled: false,
     };
     // `lock()` on standard input returns a buffered reader this thread owns.

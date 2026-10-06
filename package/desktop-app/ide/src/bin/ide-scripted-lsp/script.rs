@@ -105,6 +105,8 @@ pub struct Script {
     pub push_after_hover: bool,
     /// Milliseconds to wait before answering `initialize`.
     pub init_delay: u64,
+    /// Hold back the answer to the first inlay-hint request until the second one is answered.
+    pub hint_hold_first: bool,
     /// Milliseconds the read loop sleeps before it handles the first message of `stall_at`;
     /// everything the client sends meanwhile waits unread, as behind a server that stopped
     /// responding for a while.
@@ -234,6 +236,7 @@ impl Script {
             push_diagnostics: read("PUSH", "1") == "1",
             push_after_hover: read("PUSH_AFTER_HOVER", "0") == "1",
             init_delay: read("INIT_DELAY_MS", "0").parse().unwrap_or(0),
+            hint_hold_first: read("HINT_HOLD_FIRST", "0") == "1",
             stall: read("STALL_MS", "0").parse().unwrap_or(0),
             stall_at: read("STALL_AT", ""),
             pull_diagnostics: read("PULL", "0") == "1",

@@ -3,11 +3,17 @@
 
 use crate::support::{self, Probe, SERVER};
 use ide_app::language::{
-    diagnostics::Freshness,
+    diagnostics::{Freshness, HOLD_FALLBACK},
     hints::{HintKind, HintWindow},
     reply::{RequestFailure, RequestKind, RequestOutcome, Target},
     target::TargetRefusal,
 };
+use std::time::{Duration, Instant};
+
+/// Request timeout of the scripted server, in seconds, in tests whose assertions do not depend on
+/// it: Helix's default, which the product uses for every server without its own value
+/// (`helix-core/src/syntax/config.rs` `default_timeout`, and `Languages::timeout`).
+const PRODUCT_TIMEOUT: u64 = 20;
 
 /// Line 0 has an accented letter and an astral character before offset 14; line 2 starts with both.
 const SOURCE: &str = "caf\u{e9} \u{1F600} hello world\n\n\u{e9}\u{1F600}cdef tail\n";
@@ -491,18 +497,18 @@ fn versioned_diagnostics_follow_the_displayed_version() {
     });
 }
 
-/// Unversioned pushes are held after a reload until the server answers something for the new text.
+/// An unversioned set pushed right after a reload is kept back while the hold lasts and shown once
+/// the server answers a request for the new text, without any further push.
 #[test]
-fn unversioned_diagnostics_are_held_after_a_reload() {
+fn unversioned_set_pushed_during_the_hold_is_shown_once_the_server_answers() {
     let Some(root) = support::child_root() else {
         support::run_child(
-            "requests::unversioned_diagnostics_are_held_after_a_reload",
+            "requests::unversioned_set_pushed_during_the_hold_is_shown_once_the_server_answers",
             support::standard,
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("PUSH_AFTER_HOVER", "1")], 3);
-    let mut probe = Probe::new(&root, definitions);
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), "first\n");
     probe.until("diagnostics for the first text", |seen| {
         return seen.messages() == ["TEXT:first\n"];
@@ -512,9 +518,10 @@ fn unversioned_diagnostics_are_held_after_a_reload() {
         snapshot.groups[0].items[0].freshness,
         Freshness::Unversioned
     );
+    let reloaded = Instant::now();
     probe.reload("second\n");
     let stamp = probe.stamp();
-    // The server pushes at once for the change; that set arrives inside the hold and is discarded.
+    // The server pushes once, at once, for the change; that set arrives inside the hold.
     support::server_text_until(&root, "second\n");
     probe.until(
         "the previous revision's diagnostics to leave the display",
@@ -525,19 +532,66 @@ fn unversioned_diagnostics_are_held_after_a_reload() {
                 .is_some_and(|found| return found.stamp == stamp);
         },
     );
-    std::thread::sleep(std::time::Duration::from_millis(300));
+    std::thread::sleep(Duration::from_millis(300));
     probe.poll();
-    assert!(
-        probe.messages().is_empty(),
-        "an unversioned set that arrived during the hold was displayed: {:?}",
-        probe.messages()
-    );
-    // The hover answer ends the hold; the push that follows it is accepted.
+    // The hold ends by its fixed delay at the earliest `HOLD_FALLBACK` after the reload was sent,
+    // because nothing is asked of the server after the reload. Only an observation made before
+    // that can show that the set is kept back; a later one is skipped, never weakened.
+    if reloaded.elapsed() < HOLD_FALLBACK {
+        assert!(
+            probe.messages().is_empty(),
+            "an unversioned set that arrived during the hold was displayed before the hold ended: {:?}",
+            probe.messages()
+        );
+    } else {
+        eprintln!(
+            "the check inside the hold was skipped: {:?} passed since the reload",
+            reloaded.elapsed()
+        );
+    }
+    // The hover answer ends the hold; the kept set is shown, and the server pushes nothing more.
     let number = probe.request(RequestKind::Hover, 1);
     probe.answers(number);
-    probe.until("the unversioned set that followed the answer", |seen| {
-        return seen.messages() == ["TEXT:second\n"];
+    probe.until(
+        "the set pushed during the hold, shown once the server answered",
+        |seen| {
+            return seen.messages() == ["TEXT:second\n"]
+                && seen
+                    .diagnostics
+                    .as_ref()
+                    .is_some_and(|found| return found.stamp == stamp);
+        },
+    );
+}
+
+/// An unversioned set pushed right after a reload is shown when the hold's fixed delay passes,
+/// although nothing is asked of the server after the reload and it pushes nothing else.
+#[test]
+fn unversioned_set_pushed_during_the_hold_is_shown_when_the_hold_expires() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "requests::unversioned_set_pushed_during_the_hold_is_shown_when_the_hold_expires",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
+    probe.open(&root.join("main.scripted"), "first\n");
+    probe.until("diagnostics for the first text", |seen| {
+        return seen.messages() == ["TEXT:first\n"];
     });
+    probe.reload("second\n");
+    let stamp = probe.stamp();
+    probe.until(
+        "the set pushed during the hold, shown when its fixed delay passed",
+        |seen| {
+            return seen.messages() == ["TEXT:second\n"]
+                && seen
+                    .diagnostics
+                    .as_ref()
+                    .is_some_and(|found| return found.stamp == stamp);
+        },
+    );
 }
 
 /// Pull diagnostics are requested after open and after every reload, and fenced by stamp.
