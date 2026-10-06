@@ -16,6 +16,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import {
+  protocolDigest,
+  readHeadSha,
+} from '../../dist/final/node/index.mjs';
 import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
@@ -86,6 +90,61 @@ await describe({
         expect(run.code,).toBe(REFUSED_AS_STATED,);
         expect(run.stderr,).toContain('window-trial-probe: ',);
         expect(run.stderr,).toContain('_API_KEY is not set',);
+      },
+    },),
+    it({
+      name: 'REFUSES as stated at exit 6, whole, after the ledger read and before any call, with no key in the child',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-trial-probe-whole-', },);
+
+        /**
+         Digest the run buys under at this checkout's head, which the opening
+         line names the first twelve characters of.
+         */
+        const protocol = protocolDigest({ headSha: await readHeadSha(), },);
+
+        // The shared fixture removes every variable ending in `_API_KEY`.
+        const run = await runBuiltCommand({
+          command: 'window-trial-probe',
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
+        },);
+
+        expect(run.code,).toBe(REFUSED_AS_STATED,);
+        /**
+         Words of the opening line, the second of which is its time.
+         */
+        const words = run.stdout.split(' ',);
+        expect(words.with(
+          1,
+          '[TIME]',
+        ).join(' ',),).toBe(`[info] [TIME] [window-trial] protocol ${ protocol.slice(
+          0,
+          12,
+        ) }; 0 arms already bought\n`,);
+        expect(run.stderr,).toBe(
+          'window-trial-probe: TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
+          + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or TRANSLATION_REPAIR_OPENROUTER_API_KEY is not set; '
+          + 'run under mise so sops injects it\n',
+        );
+      },
+    },),
+    it({
+      name: 'REFUSES a flag the command does not declare, as stated, at exit 6 with nothing on stdout',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-trial-probe-flag-', },);
+
+        // The shared fixture removes every variable ending in `_API_KEY`.
+        const run = await runBuiltCommand({
+          command: 'window-trial-probe',
+          args: ['--bogus',],
+          env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
+        },);
+
+        expect(run,).toEqual({
+          code: 6,
+          stdout: '',
+          stderr: 'window-trial-probe: --bogus is not a flag this command reads. Usage: window-trial-probe\n',
+        },);
       },
     },),
   ],

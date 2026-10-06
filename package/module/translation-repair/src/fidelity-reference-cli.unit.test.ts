@@ -35,6 +35,11 @@ import { scratchDir, } from './scratch-dir.test-fixture.ts';
 const REQUEST_FAULT_STATUS = 5;
 
 /**
+ Exit status the command gives a refusal it states in its own words.
+ */
+const REFUSED_AS_STATED = 6;
+
+/**
  What a preflight run left behind.
  */
 type PreflightRun = {
@@ -177,6 +182,40 @@ function refusedLine({ referenceId, }: { readonly referenceId: string; },): stri
 }
 
 /**
+ Runs the built command with the arguments given, in an owned empty directory that is also the corpus clone.
+
+ @param args - every argument after the script path
+
+ @returns Exit status and both output streams, one entry per line
+
+ @example
+ ```ts
+ const run = await runAsBuilt({ args: ['--cap', 'kitten',], },);
+ ```
+ */
+async function runAsBuilt({ args, }: { readonly args: readonly string[]; },): Promise<PreflightRun> {
+  await using owned = await scratchDir({ prefix: 'reviewed-fidelity-as-built-', },);
+  /**
+   What the built command did, whatever its exit code; the fixture removes
+   every provider key from its environment, so this child carries none.
+   */
+  const run = await runBuiltCommand({
+    command: 'judge-fidelity-probe',
+    args,
+    cwd: owned.path,
+    env: {
+      TRANSLATION_REPAIR_RUNS_DIR: owned.path,
+      TRANSLATION_REPAIR_CORPUS_CLONE_DIR: owned.path,
+    },
+  },);
+  return {
+    code: run.code,
+    stdout: linesOf({ text: run.stdout, },),
+    stderr: linesOf({ text: run.stderr, },),
+  };
+}
+
+/**
  The two lines an accepted preflight prints.
 
  @param selected - reviewed references the request selects
@@ -193,7 +232,7 @@ function acceptedLines({ selected, }: { readonly selected: number; },): readonly
     `[info] [judge-fidelity-probe] judges: ${SEAT_HYPER_OPENROUTER_UNMEASURED}`,
     `[info] [judge-fidelity-probe] preflight only: ${
       String(selected,)
-    } reviewed reference specifications selected; no corpus or model calls`,
+    } reviewed reference ${(selected === 1) ? 'specification' : 'specifications'} selected; no corpus or model calls`,
   ];
 }
 
@@ -292,6 +331,55 @@ await describe({
             expect(run.code,).toBe(0,);
             expect(run.stderr,).toEqual([],);
             expect(run.stdout,).toEqual(acceptedLines({ selected: REVIEWED_FIDELITY_REFERENCES.length, },),);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'judge-fidelity-probe as built',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES A CAP THAT IS NOT A WHOLE NUMBER as a stated refusal with exit status six, naming what was '
+            + 'typed, and prints nothing on stdout',
+          fn: async () => {
+            const run = await runAsBuilt({
+              args: [
+                '--cap',
+                'kitten',
+              ],
+            },);
+            expect(run.code,).toBe(REFUSED_AS_STATED,);
+            expect(run.stdout,).toEqual([],);
+            expect(run.stderr,).toEqual([
+              'judge-fidelity-probe: --cap needs a whole number written in digits, at most 9007199254740991, '
+              + 'and "kitten" is not one',
+            ],);
+          },
+        },),
+        it({
+          name: 'STOPS AT AN EMPTY CLONE after naming its judge, with the reference it could not read and no row '
+            + 'written, since the pinned commit is nowhere in it',
+          fn: async () => {
+            const run = await runAsBuilt({
+              args: [
+                '--cap',
+                '1',
+                '--candidates',
+                SEAT_HYPER_OPENROUTER_UNMEASURED,
+                '--candidates-alone',
+              ],
+            },);
+            /**
+             First reviewed reference, the one the read starts with.
+             */
+            const first = nonNullishOrThrow(REVIEWED_FIDELITY_REFERENCES[0],);
+            expect(run.code,).toBe(REFUSED_AS_STATED,);
+            expect(run.stdout,).toEqual([`[info] [judge-fidelity-probe] judges: ${SEAT_HYPER_OPENROUTER_UNMEASURED}`,],);
+            expect(run.stderr,).toEqual([
+              `judge-fidelity-probe: corpus read failed for ${first.corpusSha}:people/${first.entryId}/page.md (other); `
+              + 'check that the clone exists and the pinned commit is present.',
+            ],);
           },
         },),
       ],

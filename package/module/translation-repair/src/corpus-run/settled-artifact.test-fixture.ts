@@ -107,26 +107,29 @@ function keptEverything(
 }
 
 /**
- Both lanes' results for rows that kept everything: every insertion filled,
- nothing withdrawn, trimmed or refused.
+ Both lanes' results for rows the caller states: nothing withdrawn, trimmed
+ or refused.
 
  @param prepared - preparation the lanes ran over
+
+ @param rows - rows both lanes report, which the builder's own checks must accept
 
  @returns Lane results the builder projects
 
  @example
  ```ts
- const lanes = keptLanes({ prepared, },);
+ const lanes = lanesOver({ prepared, rows: keptEverything({ prepared, },), },);
  ```
  */
-function keptLanes(
-  { prepared, }: { readonly prepared: PreparedDocumentPair; },
+function lanesOver(
+  {
+    prepared,
+    rows,
+  }: {
+    readonly prepared: PreparedDocumentPair;
+    readonly rows: readonly SliceDeliveryRecord[];
+  },
 ): DocumentLanesResult {
-  /**
-   Rows the lanes report.
-   */
-  const rows = keptEverything({ prepared, },);
-
   /**
    Identity both ledgers claim.
    */
@@ -245,7 +248,10 @@ export function settledArtifactOver(
     callConfig: { perCallTimeoutMs: 600_000, },
     durationMs: 1_234,
     prepared,
-    lanes: keptLanes({ prepared, },),
+    lanes: lanesOver({
+      prepared,
+      rows: keptEverything({ prepared, },),
+    },),
     laneSelection,
     consolidation,
   },);
@@ -284,4 +290,55 @@ export function settledArtifactText(
     consolidation: { kind: 'not-run', },
   },);
   return JSON.stringify(built,);
+}
+
+/**
+ A settled artifact over a preparation and the rows the caller states, as the
+ builder returns it, undecided and unconsolidated, pinned to the corpus commit
+ the caller names.
+
+ @param prepared - preparation the artifact records
+
+ @param entryId - entry the artifact settles
+
+ @param corpusSha - commit the artifact claims its pair was read at
+
+ @param rows - rows both lanes report
+
+ @returns The artifact object, unserialized
+
+ @example
+ ```ts
+ const artifact = settledArtifactOverRows({ prepared, entryId: 'CatEntry1', corpusSha, rows, },);
+ ```
+ */
+export function settledArtifactOverRows(
+  {
+    prepared,
+    entryId,
+    corpusSha,
+    rows,
+  }: {
+    readonly prepared: PreparedDocumentPair;
+    readonly entryId: string;
+    readonly corpusSha: string;
+    readonly rows: readonly SliceDeliveryRecord[];
+  },
+): SettledArtifact {
+  return buildSettledTwoLaneArtifact({
+    pageAssembly: NO_PAGE_ASSEMBLY,
+    entryId,
+    tip: 'a'.repeat(COMMIT_HEX_LENGTH,),
+    pipelineDigest: FIXTURE_DIGEST,
+    corpusSha,
+    callConfig: { perCallTimeoutMs: 600_000, },
+    durationMs: 1_234,
+    prepared,
+    lanes: lanesOver({
+      prepared,
+      rows,
+    },),
+    laneSelection: { kind: 'pending-human-decision', },
+    consolidation: { kind: 'not-run', },
+  },);
 }

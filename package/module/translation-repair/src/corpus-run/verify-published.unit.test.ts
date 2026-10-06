@@ -19,39 +19,28 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runKeyless, } from '../child-environment.test-fixture.ts';
 import {
-  prepareDocumentPair,
-  republishSettledPages,
-} from '../../dist/final/node/index.mjs';
+  runBuiltCommand,
+  runKeyless,
+} from '../child-environment.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+
 import {
-  scratchDir,
-  scratchDirWith,
-} from '../scratch-dir.test-fixture.ts';
-
-import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
-
-/**
- Original with two sections.
- */
-const SOURCE_DOC = '## 第一节\n\n猫猫在窗台上睡觉。\n\n## 第二节\n\n猫猫有自己的碗。\n';
-
-/**
- Archive English of the same shape.
- */
-const TARGET_DOC = '## Section one\n\nThe cat sleeps on the sill.\n\n## Section two\n\nThe cat has a bowl.\n';
-
-/**
- Entry every case settles.
- */
-const ENTRY = 'CatEntry1';
+  artifactPathOf,
+  artifactTextWithoutArchive,
+  builtPipelineDigest,
+  declineEntry,
+  ENTRY,
+  publishedRun,
+  SETTLED_BY,
+  strayPage,
+} from './published-run.test-fixture.ts';
 
 /**
  The built verifier.
@@ -65,85 +54,6 @@ const VERIFIER = join(
   'node',
   'verify-published.mjs',
 );
-
-/**
- A throwaway runs directory holding one settled artifact and the page a pass
- publishes from it.
-
- @returns The directory and the page path, removed when its `await using`
- scope ends
-
- @example
- ```ts
- await using published = await publishedRun();
- const { runsDir, pagePath, } = published;
- ```
- */
-async function publishedRun(): Promise<{
-  readonly runsDir: string;
-  readonly pagePath: string;
-} & AsyncDisposable> {
-  // The runs directory.
-  return await scratchDirWith({
-    prefix: 'verify-published-',
-    setup: async function seeded({ path: runsDir, },): Promise<{
-      readonly runsDir: string;
-      readonly pagePath: string;
-    }> {
-      /**
-       Where the artifact lives.
-       */
-      const artifactsDir = join(
-        runsDir,
-        'artifacts',
-      );
-      await mkdir(artifactsDir,);
-      await writeFile(
-        join(
-          artifactsDir,
-          `${ENTRY}.json`,
-        ),
-        settledArtifactText({
-          prepared: prepareDocumentPair({
-            sourceText: SOURCE_DOC,
-            targetText: TARGET_DOC,
-            includeFrontMatter: true,
-            sealArchiveOriginal: true,
-          },),
-          entryId: ENTRY,
-        },),
-      );
-      /**
-       Root of the mirrored tree.
-       */
-      const publishDir = join(
-        runsDir,
-        'fixed',
-      );
-      await republishSettledPages({
-        entryIds: [ENTRY,],
-        artifactsDir,
-        publishDir,
-        readPair: async function readPair() {
-          return {
-            sourceText: SOURCE_DOC,
-            targetText: TARGET_DOC,
-          };
-        },
-        l: tagged({ tag: 'verify-published-test', },),
-      },);
-      return {
-        runsDir,
-        pagePath: join(
-          publishDir,
-          'people',
-          ENTRY,
-          'page.en.md',
-        ),
-      };
-    },
-  },);
-}
 
 /**
  Exit code the shared fixture reports for a child a signal ended.
@@ -186,6 +96,42 @@ async function verify(
     status: done.code,
     stdout: done.stdout,
   };
+}
+
+/**
+ What the built verifier printed and how it ended, with the runs directory
+ the only setting the child is given (and no provider key: the shared fixture
+ removes every variable ending in `_API_KEY` before the child starts).
+
+ @param runsDir - directory to verify
+
+ @param args - command-line arguments, none where absent
+
+ @returns Exit code, then stdout and stderr whole
+
+ @example
+ ```ts
+ const run = await builtVerifier({ runsDir, },);
+ ```
+ */
+async function builtVerifier(
+  {
+    runsDir,
+    args = [],
+  }: {
+    readonly runsDir: string;
+    readonly args?: readonly string[];
+  },
+): Promise<{
+  readonly code: number;
+  readonly stdout: string;
+  readonly stderr: string;
+}> {
+  return await runBuiltCommand({
+    command: 'verify-published',
+    args,
+    env: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, },
+  },);
 }
 
 await describe({
@@ -261,6 +207,267 @@ await describe({
         const runsDir = scratch.path;
 
         expect((await verify({ runsDir, },)).status,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'PRINTS every line of an agreeing run whole and exits 0',
+      fn: async () => {
+        await using published = await publishedRun();
+        const { runsDir, } = published;
+
+        const run = await builtVerifier({ runsDir, },);
+        expect(run,).toEqual({
+          code: 0,
+          stdout: 'verify-published: matched=1 settledWithNoPage=0 pageWithNoArtifact=0 declined=0\n'
+            + 'CatEntry1: wordings=2 silent=0 chars=81=expected missing=0\n'
+            + 'verify-published: 1 of 1 page carries every wording its artifact promised; 1 of those at the length it implies, 0 '
+            + 'UNWEIGHED because the artifact predates the stored archive text\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'PRINTS the wrong length, the missing slice and the other build that read it, whole, and exits 0',
+      fn: async () => {
+        await using published = await publishedRun();
+        const {
+          runsDir,
+          pagePath,
+        } = published;
+        await writeFile(
+          pagePath,
+          (await readFile(
+            pagePath,
+            'utf8',
+          )).replace(
+            'The cat has a bowl.',
+            'The cat has.',
+          ),
+        );
+
+        const run = await builtVerifier({ runsDir, },);
+        expect(run,).toEqual({
+          code: 0,
+          stdout: 'verify-published: matched=1 settledWithNoPage=0 pageWithNoArtifact=0 declined=0\n'
+            + 'CatEntry1: wordings=2 silent=0 chars=74/expected 81 missing=1\n'
+            + '  WRONG LENGTH: page is -7 characters off what the archive plus every slice change comes to. '
+            + 'Text no slice decided on was lost or added\n'
+            + '  MISSING slice 1, 35 characters the page does not carry in order\n'
+            + `  READ BY ANOTHER BUILD: settled by ${ SETTLED_BY }, read by ${ await builtPipelineDigest() }; `
+            + 'a pass started here on this build rewrites the page to this reading\n'
+            + 'verify-published: 0 of 1 page carry every wording their artifacts promised; 0 of those at the length it implies, 0 '
+            + 'UNWEIGHED because the artifact predates the stored archive text\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'PRINTS an artifact with no page whole, and the closing line for no matched entry, and exits 0',
+      fn: async () => {
+        await using published = await publishedRun();
+        const {
+          runsDir,
+          pagePath,
+        } = published;
+        await rm(pagePath,);
+
+        const run = await builtVerifier({ runsDir, },);
+        expect(run,).toEqual({
+          code: 0,
+          stdout: 'verify-published: matched=0 settledWithNoPage=1 pageWithNoArtifact=0 declined=0\n'
+            + '  SETTLED AND NEVER PUBLISHED: CatEntry1. The archive ships for it until the next pass started in this runs '
+            + 'directory writes it from its artifact\n'
+            + 'verify-published: 0 of 0 pages carry every wording their artifacts promised; 0 of those at the length it implies, 0 '
+            + 'UNWEIGHED because the artifact predates the stored archive text\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'PRINTS that no published tree exists beside one settled entry, in the singular, and exits 0',
+      fn: async () => {
+        await using published = await publishedRun();
+        const { runsDir, } = published;
+        await rm(
+          join(
+            runsDir,
+            'fixed',
+          ),
+          { recursive: true, },
+        );
+
+        const run = await builtVerifier({ runsDir, },);
+        expect(run,).toEqual({
+          code: 0,
+          stdout: 'verify-published: NO PUBLISHED TREE (ENOENT). 1 settled entry is unpublished, and the next pass started in this '
+            + 'runs directory writes each from its artifact\n'
+            + 'verify-published: matched=0 settledWithNoPage=1 pageWithNoArtifact=0 declined=0\n'
+            + '  SETTLED AND NEVER PUBLISHED: CatEntry1. The archive ships for it until the next pass started in this runs '
+            + 'directory writes it from its artifact\n'
+            + 'verify-published: 0 of 0 pages carry every wording their artifacts promised; 0 of those at the length it implies, 0 '
+            + 'UNWEIGHED because the artifact predates the stored archive text\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'PRINTS a page with no artifact and a declined entry that has a page, whole, and exits 0',
+      fn: async () => {
+        await using published = await publishedRun();
+        const { runsDir, } = published;
+        await strayPage({
+          runsDir,
+          entryId: 'StrayCat2',
+        },);
+        await strayPage({
+          runsDir,
+          entryId: 'DeclinedCat3',
+        },);
+        await declineEntry({
+          runsDir,
+          entryId: 'DeclinedCat3',
+        },);
+
+        const run = await builtVerifier({ runsDir, },);
+        expect(run,).toEqual({
+          code: 0,
+          stdout: 'verify-published: matched=1 settledWithNoPage=0 pageWithNoArtifact=2 declined=1\n'
+            + '  DECLINED AND PUBLISHED ANYWAY: DeclinedCat3. The archive\'s note says the page is the author\'s own English, '
+            + 'so no page should stand here; the next pass started in this runs directory removes it\n'
+            + '  PUBLISHED AND NOT SETTLED: StrayCat2. It ships as it stands, with no artifact to check it against, until a '
+            + 'pass settles the entry again and overwrites it\n'
+            + 'CatEntry1: wordings=2 silent=0 chars=81=expected missing=0\n'
+            + 'verify-published: 1 of 1 page carries every wording its artifact promised; 1 of those at the length it implies, 0 '
+            + 'UNWEIGHED because the artifact predates the stored archive text\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'PRINTS an artifact that will not read by the class that refused it, naming no passage, and exits 0',
+      fn: async () => {
+        await using published = await publishedRun();
+        const { runsDir, } = published;
+        await writeFile(
+          join(
+            runsDir,
+            'artifacts',
+            `${ENTRY}.json`,
+          ),
+          '{ not json',
+        );
+
+        const run = await builtVerifier({ runsDir, },);
+        expect(run,).toEqual({
+          code: 0,
+          stdout: 'verify-published: matched=1 settledWithNoPage=0 pageWithNoArtifact=0 declined=0\n'
+            + 'CatEntry1: REFUSED by SyntaxError\n'
+            + 'verify-published: 0 of 1 page carry every wording their artifacts promised; 0 of those at the length it implies, 0 '
+            + 'UNWEIGHED because the artifact predates the stored archive text\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'PRINTS a page whose artifact predates the stored archive text as UNWEIGHED, whole, and exits 0',
+      fn: async () => {
+        await using published = await publishedRun();
+        const { runsDir, } = published;
+        await writeFile(
+          artifactPathOf({
+            runsDir,
+            entryId: ENTRY,
+          },),
+          artifactTextWithoutArchive({ entryId: ENTRY, },),
+        );
+
+        const run = await builtVerifier({ runsDir, },);
+        expect(run,).toEqual({
+          code: 0,
+          stdout: 'verify-published: matched=1 settledWithNoPage=0 pageWithNoArtifact=0 declined=0\n'
+            + 'CatEntry1: wordings=2 silent=0 chars=UNWEIGHED(artifact predates stored archive text) missing=0\n'
+            + 'verify-published: 1 of 1 page carries every wording its artifact promised; 0 of those at the length it implies, 1 '
+            + 'UNWEIGHED because the artifact predates the stored archive text\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'PRINTS sixty entries in the order the run lists them and exits 0',
+      fn: async () => {
+        /**
+         Entry ids in the order the run lists them.
+         */
+        const entryIds = Array.from(
+          { length: 60, },
+          function entryAt(_unused, index,): string {
+            return `CatEntry${ String(index,).padStart(
+              3,
+              '0',
+            ) }`;
+          },
+        );
+        await using published = await publishedRun({ entryIds, },);
+        const { runsDir, } = published;
+
+        const run = await builtVerifier({ runsDir, },);
+        expect(run.code,).toBe(0,);
+        expect(run.stdout
+          .split('\n',)
+          .filter(function isEntryLine(line,): boolean {
+            return line.startsWith('CatEntry',);
+          },)
+          .map(function idOf(line,): string {
+            return line.slice(
+              0,
+              line.indexOf(':',),
+            );
+          },),).toEqual(entryIds,);
+      },
+    },),
+    it({
+      name: 'EXITS 2 and says nothing was verified when the run has no artifacts directory',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'verify-published-bare-', },);
+
+        const run = await builtVerifier({ runsDir: scratch.path, },);
+        expect(run,).toEqual({
+          code: 2,
+          stdout: 'verify-published: NOTHING VERIFIED, no artifacts directory under the run (ENOENT). No page was read and no '
+            + 'artifact was compared, so this is not a clean run\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'EXITS 2 and says nothing was verified when the artifacts directory holds no artifact',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'verify-published-hollow-', },);
+        await mkdir(join(
+          scratch.path,
+          'artifacts',
+        ),);
+
+        const run = await builtVerifier({ runsDir: scratch.path, },);
+        expect(run,).toEqual({
+          code: 2,
+          stdout: 'verify-published: NOTHING VERIFIED, the artifacts directory holds no settled artifact. No page was read and '
+            + 'no artifact was compared, so this is not a clean run\n',
+          stderr: '',
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES a flag the command does not declare, as stated, at exit 6 with nothing on stdout',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'verify-published-flag-', },);
+
+        const run = await builtVerifier({
+          runsDir: scratch.path,
+          args: ['--bogus',],
+        },);
+        expect(run,).toEqual({ code: 6, stdout: '', stderr: 'verify-published: --bogus is not a flag this command reads. Usage: verify-published\n', },);
       },
     },),
   ],

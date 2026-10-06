@@ -21,10 +21,13 @@
 
 import {
   mkdir,
+  readdir,
+  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -33,21 +36,37 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  digestAuditedText,
+  digestPipeline,
   newestRun,
+  prepareDocumentPair,
   printAcross,
+  readRunnerClosure,
   readRunRows,
+  RUN_MODELS,
   type SettledAuditRow,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-
-/**
- Directory the probe store collects this probe's runs in.
- */
-const PROBE_NAME = 'rendering-audit-settled';
+import {
+  ARCHIVE,
+  OTHER_TEXTS,
+  PROBE_NAME,
+  ROSTER,
+  rowFor,
+  runOver,
+  SAME_TEXTS,
+  writeRun,
+} from './settled-run-file.test-fixture.ts';
+import {
+  ENTRY_ID,
+  makeCorpus,
+  SOURCE_PAGE,
+  TARGET_PAGE,
+  writeArtifact,
+} from './settled-archive.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -65,43 +84,7 @@ const REPORT_COMMAND = 'rendering-audit-settled-report';
 const AUDIT_COMMAND = 'rendering-audit-settled';
 
 /**
- Roster every fixture run records.
- */
-const ROSTER = [
-  'hf:cat/Tabby-1',
-  'hf:cat/Mouser-1',
-];
-
-/**
- Archive every fixture run says it read, a label only.
- */
-const ARCHIVE = '/nowhere/naptime-archive';
-
-/**
- Characters in a SHA-1 object id.
- */
-const OBJECT_ID_LENGTH = 40;
-
-/**
- One pair of texts, used wherever two rows are meant to match.
- */
-const SAME_TEXTS = {
-  sourceText: '毛毛跳上窗台。',
-  candidateText: 'Mittens jumped onto the windowsill.',
-  referenceContext: '',
-} as const;
-
-/**
- A different rendering of the same original.
- */
-const OTHER_TEXTS = {
-  sourceText: '毛毛跳上窗台。',
-  candidateText: 'Mittens hopped up on the sill.',
-  referenceContext: '',
-} as const;
-
-/**
- Builds one audited slice as the probe persists it.
+ Builds one audited slice typed as the report reads it.
 
  @param sliceIndex - slice index
 
@@ -111,141 +94,23 @@ const OTHER_TEXTS = {
 
  @example
  ```ts
- const row = rowFor({ sliceIndex: 0, texts: SAME_TEXTS, },);
+ const row = auditRowFor({ sliceIndex: 0, texts: SAME_TEXTS, },);
  ```
  */
-function rowFor(
+function auditRowFor(
   {
     sliceIndex,
     texts,
   }: {
     readonly sliceIndex: number;
-    readonly texts?: {
-      readonly sourceText: string;
-      readonly candidateText: string;
-      readonly referenceContext: string;
-    };
+    readonly texts?: Parameters<typeof rowFor>[0]['texts'];
   },
 ): SettledAuditRow {
-  return {
-    runSet: 'naptime-20260825',
-    entryId: 'mittens',
+  return rowFor({
     sliceIndex,
-    deliveryKind: 'replacement-shipped',
-    auditsArchiveText: false,
-    pageRelation: { kind: 'survives', },
-    artifactDigest: 'sha256-tree-v1:cafef00d',
-    corpusSha: 'b'.repeat(OBJECT_ID_LENGTH,),
-    identityKind: 'none',
-    ...((texts === undefined) ? {} : { textIdentity: digestAuditedText(texts,), }),
-    report: {
-      corroborated: [],
-      agreed: [],
-      near: [],
-      findings: [],
-      rows: [{
-        modelId: ROSTER[0],
-        verdict: 'no-defect-found',
-        findings: [],
-        dropped: [],
-      },],
-    },
-  } as unknown as SettledAuditRow;
+    ...((texts === undefined) ? {} : { texts, }),
+  },) as unknown as SettledAuditRow;
 }
-
-/**
- Writes one run file in the shape the probe store writes, under a runs
- directory of the caller's choosing.
-
- @param runsDir - throwaway runs directory
-
- @param stamp - filename-safe instant the run started at
-
- @param body - top-level fields, which a case may leave incomplete on purpose
-
- @returns Path written
-
- @example
- ```ts
- const path = await writeRun({ runsDir, stamp: '2026-08-25T01-00-00.000Z', body: { rows: [], }, },);
- ```
- */
-async function writeRun(
-  {
-    runsDir,
-    stamp,
-    body,
-  }: {
-    readonly runsDir: string;
-    readonly stamp: string;
-    readonly body: Readonly<Record<string, unknown>>;
-  },
-): Promise<string> {
-  /**
-   Where runs of this probe collect.
-   */
-  const probeDir = join(
-    runsDir,
-    PROBE_NAME,
-  );
-  await mkdir(
-    probeDir,
-    { recursive: true, },
-  );
-
-  /**
-   Run file, named the way the store names one.
-   */
-  const path = join(
-    probeDir,
-    `${stamp}-cafef00d.json`,
-  );
-  await writeFile(
-    path,
-    JSON.stringify(
-      body,
-      undefined,
-      2,
-    ),
-    'utf8',
-  );
-  return path;
-}
-
-/**
- A complete run over the given rows.
-
- @param rows - rows it bought
-
- @param roster - roster it recorded, absent to write a run from before the
- field was kept
-
- @returns Top-level fields
-
- @example
- ```ts
- const body = runOver({ rows: [rowFor({ sliceIndex: 0, },),], roster: ROSTER, },);
- ```
- */
-function runOver(
-  {
-    rows,
-    roster,
-  }: {
-    readonly rows: readonly SettledAuditRow[];
-    readonly roster?: readonly string[];
-  },
-): Readonly<Record<string, unknown>> {
-  return {
-    startedAt: '2026-08-25T01:00:00.000Z',
-    finishedAt: '2026-08-25T01:10:00.000Z',
-    pipelineDigest: 'sha256-tree-v1:cafef00d',
-    ...((roster === undefined) ? {} : { roster, }),
-    subject: { archiveDir: ARCHIVE, },
-    rows,
-  };
-}
-
 
 /**
  What a built command wrote and how it exited.
@@ -304,6 +169,236 @@ async function runBuilt(
   },);
 }
 
+/**
+ Directory of the built commands, which a run digests and reads its closure from.
+ */
+const BUILT_DIR = join(
+  import.meta.dirname,
+  '..',
+  '..',
+  'dist',
+  'final',
+  'node',
+);
+
+/**
+ What the built audit did over an archive of one settled artifact, with the places it was pointed at.
+ */
+type AuditOverArchive = {
+  /**
+   Exit code, then both streams whole.
+   */
+  readonly run: CommandRun;
+
+  /**
+   Runs directory the child kept its run in.
+   */
+  readonly runsDir: string;
+
+  /**
+   Archive the child read, written for the throwaway corpus.
+   */
+  readonly archiveDir: string;
+
+  /**
+   Throwaway corpus clone the child read the artifact's commit from.
+   */
+  readonly cloneDir: string;
+};
+
+/**
+ Runs the built audit against an archive holding one settled artifact and a throwaway corpus, with every
+ provider key withheld by the fixture and every location the command reads named here.
+
+ @param typed - flags after the archive and the clone
+
+ @param check - what the case reads while the throwaway directories still exist
+
+ @returns Nothing; the check holds the assertions
+
+ @example
+ ```ts
+ await auditOverArchive({ typed: ['--cap', '0',], check: async function read({ run, },) { expect(run.code,).toBe(0,); }, },);
+ ```
+ */
+async function auditOverArchive(
+  {
+    typed,
+    check,
+  }: {
+    readonly typed: readonly string[];
+    readonly check: (seen: AuditOverArchive,) => Promise<void>;
+  },
+): Promise<void> {
+  await using corpus = await makeCorpus();
+  await using archive = await scratchDir({ prefix: 'rendering-audit-settled-archive-', },);
+  await using runs = await scratchDir({ prefix: 'rendering-audit-settled-runs-', },);
+  await writeArtifact({
+    archiveDir: archive.path,
+    runSet: 'first-run',
+    prepared: prepareDocumentPair({
+      sourceText: SOURCE_PAGE,
+      targetText: TARGET_PAGE,
+    },),
+    corpusSha: corpus.commitSha,
+    entryId: ENTRY_ID,
+  },);
+  await check({
+    run: await runBuiltCommand({
+      command: AUDIT_COMMAND,
+      args: [
+        '--archive',
+        archive.path,
+        '--clone',
+        corpus.cloneDir,
+        ...typed,
+      ],
+      env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
+    },),
+    runsDir: runs.path,
+    archiveDir: archive.path,
+    cloneDir: corpus.cloneDir,
+  },);
+}
+
+/**
+ The line the population report prints for the one artifact every archive of these cases holds.
+ */
+const POPULATION_LINE = 'first-run/mittens.json  subjects=3 retained=2 replaced=1 displaced=0 undecided=3 verification=verified';
+
+/**
+ Paths of the two runs a report case leaves in its runs directory.
+ */
+type TwoRuns = {
+  /**
+   Runs directory both live in, which the child is pointed at.
+   */
+  readonly runsDir: string;
+
+  /**
+   The older run, which bought one row.
+   */
+  readonly older: string;
+
+  /**
+   The newer run, which bought two rows.
+   */
+  readonly newer: string;
+};
+
+/**
+ Writes an older run of one row and a newer run of two rows, runs the built report against them, and hands
+ the result to the case while the throwaway directory still exists.
+
+ @param typed - flags the report is run with, given where the two runs are
+
+ @param check - what the case reads of the finished child
+
+ @returns Nothing; the check holds the assertions
+
+ @example
+ ```ts
+ await reportOverTwoRuns({ typed: function none() { return []; }, check: async function read({ run, },) { expect(run.code,).toBe(0,); }, },);
+ ```
+ */
+async function reportOverTwoRuns(
+  {
+    typed,
+    check,
+  }: {
+    readonly typed: (runs: TwoRuns,) => readonly string[];
+    readonly check: (seen: { readonly run: CommandRun; readonly runs: TwoRuns; },) => Promise<void>;
+  },
+): Promise<void> {
+  await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
+  /**
+   Where the two runs are.
+   */
+  const runs: TwoRuns = {
+    runsDir: scratch.path,
+    older: await writeRun({
+      runsDir: scratch.path,
+      stamp: '2026-08-25T01-00-00.000Z',
+      body: runOver({
+        rows: [auditRowFor({
+          sliceIndex: 0,
+          texts: SAME_TEXTS,
+        },),],
+        roster: ROSTER,
+      },),
+    },),
+    newer: await writeRun({
+      runsDir: scratch.path,
+      stamp: '2026-08-26T01-00-00.000Z',
+      body: runOver({
+        rows: [
+          auditRowFor({
+            sliceIndex: 0,
+            texts: OTHER_TEXTS,
+          },),
+          auditRowFor({
+            sliceIndex: 1,
+            texts: SAME_TEXTS,
+          },),
+        ],
+        roster: ROSTER,
+      },),
+    },),
+  };
+  await check({
+    run: await runBuiltCommand({
+      command: REPORT_COMMAND,
+      args: typed(runs,),
+      env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
+    },),
+    runs,
+  },);
+}
+
+/**
+ What the built report prints over the newer run, which bought two fresh rows nobody audited twice, up to
+ and including the band line, then the closing lines.
+
+ @param path - run the report read, as it prints it
+
+ @param between - lines between the band and the closing lines, none unless the report was asked to compare
+
+ @returns Whole stdout
+
+ @example
+ ```ts
+ expect(run.stdout,).toBe(newerRunReport({ path: runs.newer, between: '', },),);
+ ```
+ */
+function newerRunReport(
+  {
+    path,
+    between,
+  }: {
+    readonly path: string;
+    readonly between: string;
+  },
+): string {
+  return `${path}\n2 subjects\n\n`
+    + 'THE TWO HALVES, READ APART\n'
+    + '  ARCHIVE text  subjects=0  drew a claim=0  claims=0  corroborated=0  agreed=0  near=0  degraded=0\n'
+    + '  FRESH   text  subjects=2  drew a claim=0  claims=0  corroborated=0  agreed=0  near=0  degraded=0\n\n'
+    + 'WHAT A DOCUMENT WOULD CARRY AT THE SAME SLICES\n'
+    + '  survives                                    subjects=2  claims=0\n'
+    + '  A displaced subject was audited on wording no reader of a document would meet. '
+    + 'An undecided one is waiting on a decision, not overruled.\n\n'
+    + 'WHAT EACH AUDITOR THOUGHT WAS WORTH A CLAIM\n'
+    + '  hf:cat/Tabby-1                                   asked=2 answered=2 lost=0 spoke on=0 claims=0 dropped=0\n'
+    + '  hf:cat/Mouser-1                                  asked=2 answered=0 lost=2 spoke on=0 claims=0 dropped=0\n\n'
+    + 'RELOCATION CANDIDATES: claim pairs=0 slice pairs=0\n\n'
+    + 'INSTRUMENT BAND over texts this run audited twice\n'
+    + '  NOTHING PAIRED. Either no text was audited twice, or the rows predate the recorded text identity '
+    + 'that pairing needs. No band is quotable from this run, so no comparison in it resolves anything.\n'
+    + `${between}\nTWO ENTRIES. Nothing here settles anything about a particular entry, and nothing here may gate `
+    + 'what ships: the instrument\'s own error rate is unmeasured.\n'
+    + `Archive that run read: ${ARCHIVE}\n`;
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -323,7 +418,7 @@ await describe({
               runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
-                rows: [rowFor({ sliceIndex: 0, },),],
+                rows: [auditRowFor({ sliceIndex: 0, },),],
                 roster: ROSTER,
               },),
             },);
@@ -350,7 +445,7 @@ await describe({
             const path = await writeRun({
               runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
-              body: runOver({ rows: [rowFor({ sliceIndex: 0, },),], },),
+              body: runOver({ rows: [auditRowFor({ sliceIndex: 0, },),], },),
             },);
 
             expect((await readRunRows({ path, },)).roster,).toEqual([],);
@@ -375,6 +470,39 @@ await describe({
             },);
 
             await expect(readRunRows({ path, },),).rejects.toThrow(StatedRefusalError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A ROW THAT IS NOT AN OBJECT as a stated refusal naming its position and never its content, '
+            + 'since every reading after this one reads fields off every row',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
+            /**
+             A run whose second row is a bare number.
+             */
+            const path = await writeRun({
+              runsDir: scratch.path,
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({
+                rows: [
+                  rowFor({ sliceIndex: 0, },),
+                  7,
+                ],
+                roster: ROSTER,
+              },),
+            },);
+
+            /**
+             What the reader said about the file.
+             */
+            const refusal = await rejectionOf(async function readBadRows() {
+              return await readRunRows({ path, },);
+            },);
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(refusal,),).toBe(
+              `StatedRefusalError: ${path} carries a row that is not an object, at position 1`,
+            );
           },
         },),
       ],
@@ -488,7 +616,7 @@ await describe({
               runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
-                rows: [rowFor({
+                rows: [auditRowFor({
                   sliceIndex: 0,
                   texts: SAME_TEXTS,
                 },),],
@@ -496,7 +624,7 @@ await describe({
             },);
 
             await printAcross({
-              rows: [rowFor({
+              rows: [auditRowFor({
                 sliceIndex: 0,
                 texts: SAME_TEXTS,
               },),],
@@ -528,7 +656,7 @@ await describe({
               runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
-                rows: [rowFor({
+                rows: [auditRowFor({
                   sliceIndex: 0,
                   texts: SAME_TEXTS,
                 },),],
@@ -536,7 +664,7 @@ await describe({
             },);
 
             await printAcross({
-              rows: [rowFor({
+              rows: [auditRowFor({
                 sliceIndex: 0,
               },),],
               against,
@@ -555,19 +683,19 @@ await describe({
               runsDir: scratch.path,
               stamp: '2026-08-25T02-00-00.000Z',
               body: runOver({
-                rows: [rowFor({
+                rows: [auditRowFor({
                   sliceIndex: 0,
                   texts: SAME_TEXTS,
-                },), rowFor({
+                },), auditRowFor({
                   sliceIndex: 1,
                   texts: SAME_TEXTS,
                 },),],
               },),
             },);
             await printAcross({
-              rows: [rowFor({
+              rows: [auditRowFor({
                 sliceIndex: 0,
-              },), rowFor({
+              },), auditRowFor({
                 sliceIndex: 1,
               },),],
               against: two,
@@ -594,7 +722,7 @@ await describe({
               runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
-                rows: [rowFor({
+                rows: [auditRowFor({
                   sliceIndex: 0,
                   texts: OTHER_TEXTS,
                 },),],
@@ -602,7 +730,7 @@ await describe({
             },);
 
             await printAcross({
-              rows: [rowFor({
+              rows: [auditRowFor({
                 sliceIndex: 0,
                 texts: SAME_TEXTS,
               },),],
@@ -627,11 +755,11 @@ await describe({
             const against = await writeRun({
               runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
-              body: runOver({ rows: [rowFor({ sliceIndex: 0, },),], },),
+              body: runOver({ rows: [auditRowFor({ sliceIndex: 0, },),], },),
             },);
 
             await printAcross({
-              rows: [rowFor({
+              rows: [auditRowFor({
                 sliceIndex: 0,
                 texts: SAME_TEXTS,
               },),],
@@ -661,7 +789,7 @@ await describe({
               runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
-                rows: [rowFor({
+                rows: [auditRowFor({
                   sliceIndex: 0,
                   texts: SAME_TEXTS,
                 },),],
@@ -720,6 +848,85 @@ await describe({
             expect(run.stderr.includes('    at ',),).toBe(false,);
           },
         },),
+
+        it({
+          name: 'REPORTS THE NEWEST RUN when none is named, since the store keeps every run and a reader that '
+            + 'merged them would undo that',
+          fn: async () => {
+            await reportOverTwoRuns({
+              typed: function none(): readonly string[] {
+                return [];
+              },
+              check: async function readReport({
+                run,
+                runs,
+              },): Promise<void> {
+                expect(run.code,).toBe(0,);
+                expect(run.stderr,).toBe('',);
+                expect(run.stdout,).toBe(newerRunReport({
+                  path: runs.newer,
+                  between: '',
+                },),);
+              },
+            },);
+          },
+        },),
+
+        it({
+          name: 'PAIRS TWO RUNS when asked to compare, printing the across-run band and what it left out, '
+            + 'beneath the run it reported',
+          fn: async () => {
+            await reportOverTwoRuns({
+              typed: function comparing({
+                older,
+                newer,
+              },): readonly string[] {
+                return [
+                  '--run',
+                  newer,
+                  '--against',
+                  older,
+                ];
+              },
+              check: async function readReport({
+                run,
+                runs,
+              },): Promise<void> {
+                expect(run.code,).toBe(0,);
+                expect(run.stderr,).toBe('',);
+                expect(run.stdout,).toBe(newerRunReport({
+                  path: runs.newer,
+                  between: `\nINSTRUMENT BAND over the same subjects in ${runs.older}\n`
+                    + '  NOTHING PAIRED. Either no text was audited twice, or the rows predate the recorded text '
+                    + 'identity that pairing needs. No band is quotable from this run, so no comparison in it '
+                    + 'resolves anything.\n'
+                    + '  One slot recorded by BOTH runs and the text DISAGREES, so the archive moved between '
+                    + 'them and these are left out: naptime-20260825/mittens#0\n',
+                },),);
+              },
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A RUN FLAG WRITTEN WITHOUT A VALUE with its line and exit 6, and prints nothing on stdout, '
+            + 'rather than reporting the newest run in silence',
+          fn: async () => {
+            await reportOverTwoRuns({
+              typed: function valueless(): readonly string[] {
+                return ['--run',];
+              },
+              check: async function readRefusal({ run, },): Promise<void> {
+                expect(run.code,).toBe(REFUSED_AS_STATED,);
+                expect(run.stdout,).toBe('',);
+                expect(run.stderr,).toBe(
+                  'rendering-audit-settled-report: --run needs a value written after it. Usage: '
+                    + 'rendering-audit-settled-report [--run <run file>] [--against <run file>]\n',
+                );
+              },
+            },);
+          },
+        },),
       ],
     },),
 
@@ -748,6 +955,162 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stderr.includes('no artifacts under',),).toBe(true,);
             expect(run.stderr.includes('    at ',),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'RUNS TO ITS END AT A ZERO CAP over an archive of one settled artifact: exit 0, the population, '
+            + 'the buying line and where the run was kept, and a kept run naming what was read and holding no row',
+          fn: async () => {
+            await auditOverArchive({
+              typed: [
+                '--cap',
+                '0',
+              ],
+              check: async function readKept({
+                run,
+                runsDir,
+                archiveDir,
+                cloneDir,
+              },): Promise<void> {
+                /**
+                 Files the run left in its probe's directory.
+                 */
+                const kept = await readdir(join(
+                  runsDir,
+                  PROBE_NAME,
+                ),);
+                expect(kept.length,).toBe(1,);
+                /**
+                 Name of the one kept run, which carries the start and the build's tail.
+                 */
+                const keptName = nonNullishOrThrow(kept[0],);
+                expect(run.code,).toBe(0,);
+                expect(run.stderr,).toBe('',);
+                expect(run.stdout,).toBe(
+                  `${POPULATION_LINE}\n\nBUYING 0 of 3 selectable subjects\n\n\nkept at ${
+                    join(
+                      runsDir,
+                      PROBE_NAME,
+                      keptName,
+                    )
+                  }\n`,
+                );
+                /**
+                 The kept run as written.
+                 */
+                const written = JSON.parse(await readFile(
+                  join(
+                    runsDir,
+                    PROBE_NAME,
+                    keptName,
+                  ),
+                  'utf8',
+                ),) as Record<string, unknown>;
+                /**
+                 Build the child ran under, digested the way the child digests it.
+                 */
+                const { digest, } = await digestPipeline({ dir: BUILT_DIR, },);
+                expect(written,).toEqual({
+                  startedAt: written.startedAt,
+                  finishedAt: written.finishedAt,
+                  pipelineDigest: digest,
+                  runnerClosure: await readRunnerClosure({
+                    entryPath: join(
+                      BUILT_DIR,
+                      `${AUDIT_COMMAND}.mjs`,
+                    ),
+                  },),
+                  roster: RUN_MODELS.checkerModelIds,
+                  subject: {
+                    archiveDir,
+                    cloneDir,
+                    cap: 0,
+                    onlyIds: [],
+                    artifacts: [
+                      {
+                        runSet: 'first-run',
+                        artifactFile: 'mittens.json',
+                        entryId: 'mittens',
+                        artifactDigest: `sha256-tree-v1:${'c'.repeat(64,)}`,
+                        subjects: 3,
+                        verification: 'verified',
+                      },
+                    ],
+                  },
+                  rows: [],
+                },);
+                expect(keptName,).toBe(`${String(written.startedAt,)
+                  .split(':',)
+                  .join('-',)}-${digest.slice(-8,)}.json`,);
+              },
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES AN ENTRY THE ARCHIVE DOES NOT HOLD after the population it read, with its line and exit 6, '
+            + 'and keeps nothing',
+          fn: async () => {
+            await auditOverArchive({
+              typed: [
+                '--only',
+                'nobody',
+              ],
+              check: async function readRefusal({ run, runsDir, },): Promise<void> {
+                expect(run.code,).toBe(REFUSED_AS_STATED,);
+                expect(run.stdout,).toBe(`${POPULATION_LINE}\n`,);
+                expect(run.stderr,).toBe(
+                  'rendering-audit-settled: --only asks for "nobody", which the settled archive does not hold\n',
+                );
+                expect(await readdir(runsDir,),).toEqual([],);
+              },
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES TO BUY WITHOUT A KEY after naming what it would buy, with its line and exit 6, asking '
+            + 'no model and keeping nothing',
+          fn: async () => {
+            await auditOverArchive({
+              typed: [
+                '--cap',
+                '1',
+              ],
+              check: async function readRefusal({ run, runsDir, },): Promise<void> {
+                expect(run.code,).toBe(REFUSED_AS_STATED,);
+                expect(run.stdout,).toBe(`${POPULATION_LINE}\n\nBUYING 1 of 3 selectable subjects\n\n`,);
+                expect(run.stderr,).toBe(
+                  'rendering-audit-settled: TRANSLATION_REPAIR_SYNTHETIC_API_KEY, '
+                    + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or '
+                    + 'TRANSLATION_REPAIR_OPENROUTER_API_KEY is not set; run under mise so sops injects it\n',
+                );
+                expect(await readdir(runsDir,),).toEqual([],);
+              },
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A CAP THAT IS NOT A WHOLE NUMBER before it reads the archive, with its line and exit 6, '
+            + 'and prints nothing on stdout',
+          fn: async () => {
+            await auditOverArchive({
+              typed: [
+                '--cap',
+                'kitten',
+              ],
+              check: async function readRefusal({ run, runsDir, },): Promise<void> {
+                expect(run.code,).toBe(REFUSED_AS_STATED,);
+                expect(run.stdout,).toBe('',);
+                expect(run.stderr,).toBe(
+                  'rendering-audit-settled: --cap needs a whole number written in digits, at most '
+                    + '9007199254740991, and "kitten" is not one\n',
+                );
+                expect(await readdir(runsDir,),).toEqual([],);
+              },
+            },);
           },
         },),
       ],
