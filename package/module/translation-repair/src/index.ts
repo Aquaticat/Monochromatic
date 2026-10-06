@@ -38,16 +38,6 @@ export {
   type QuoteLocation,
 } from './locate-quote.ts';
 export {
-  type ForcedAlignStep,
-  alignHeadingsForced,
-  type InsertionAnchor,
-  type UnpairedReason,
-} from './align-headings-forced.ts';
-export {
-  type OptimalPaths,
-  scanOptimalPaths,
-} from './align-headings-optimal.ts';
-export {
   type AlignmentAttachment,
   type AlignmentFinding,
   alignDocumentSections,
@@ -97,11 +87,7 @@ export {
   requireMdxRefusal,
 } from './parse-mdx.ts';
 export { treeNodes, } from './mdast-tree-nodes.ts';
-export {
-  parseDocument,
-  type ParseFinding,
-  type RepairDocument,
-} from './parse-document.ts';
+export { type ParseFinding, } from './parse-document.ts';
 export {
   type ExtractedCompletion,
   MalformedCompletionError,
@@ -155,7 +141,6 @@ export {
   SYNTHETIC_QUOTAS_URL,
   type RosterModelId,
   type SyntheticModelInfo,
-  type SyntheticVendorFamily,
 } from './synthetic-catalog.ts';
 export { carriesPicture, } from './chat-contract.ts';
 export type {

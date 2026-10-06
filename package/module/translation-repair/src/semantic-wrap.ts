@@ -31,8 +31,8 @@ import {
 // MEASURED BEFORE IT WAS WIRED IN, over all 64 shipped passages of that pool:
 // findings go from 326 to 0, no passage loses a non-newline character, the ten
 // that gain characters gain continuation prefixes inside blockquotes and lists,
-// and a second application changes nothing. `~/temp/agent/wrap-probe-2.mjs`,
-// written up in `doc/audit/line-structure-loss-when-a-replacement-ships.md`.
+// and a second application changes nothing. The probe is written up in
+// `doc/audit/line-structure-loss-when-a-replacement-ships.md`.
 //
 // IDEMPOTENCE IS WHAT LETS THIS RUN ON A CACHE REPLAY. A resumed slice is
 // wrapped on the way out of the cache rather than on the way in, so a pool

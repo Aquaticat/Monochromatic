@@ -15,8 +15,9 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // `refine-slice-settle.ts`). The candidate the judges see is the text after
 // both, so damage either edit added is damage in it; the accuracy repair's
 // only where its patch won the slice, since a lost patch is not in the text
-// (ledger L7). keyword233 on 2026-09-03
-// (`~/temp/agent/keyword233-seats-20260903`): the rewrite moved a paragraph
+// (ledger L7). keyword233 on 2026-09-03 (the section "The Hyper-slow judge is
+// seated per provider" of
+// `doc/planning/translation-repair-roster-calibration-2026-09-01.md`): the rewrite moved a paragraph
 // into the present tense, three probers corroborated it, and the contest chose
 // against the repair 5 of 7 on that tense without being shown the claims,
 // because only the accuracy probe was read then.

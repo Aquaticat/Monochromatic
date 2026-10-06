@@ -9,9 +9,7 @@ export {
   BEDROCK_MODELS,
   BEDROCK_ROUTE_PREFIX,
   type BedrockModelInfo,
-  type BedrockRoute,
   type BedrockServedId,
-  type BedrockStreamEnd,
   bedrockChatUrlFor,
 } from './bedrock-catalog.ts';
 export {

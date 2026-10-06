@@ -1,3 +1,4 @@
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { isDecimalText, } from '../whole-number-text.ts';
 
 //region Cap override
@@ -28,11 +29,11 @@ export const HARD_CAP_VAR = 'TRANSLATION_REPAIR_HARD_CAP_MINUTES';
 /**
  Raised when the override is present but is not a usable number of minutes.
  */
-export class HardCapOverrideError extends Error {
+export class HardCapOverrideError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names the variable and repeats the value the operator set in it.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names the variable, what it held, and why that cannot be a ceiling.
@@ -45,12 +46,12 @@ export class HardCapOverrideError extends Error {
    ```
    */
   constructor({ value, }: { readonly value: string; },) {
-    super(
-      `${HARD_CAP_VAR} must be a positive number of minutes; received ${JSON.stringify(value,)}.`
+    super({
+      says: `${HARD_CAP_VAR} must be a positive number of minutes; received ${JSON.stringify(value,)}.`
         + ' This is the ceiling that stops one entry running away with a whole pass, so an'
         + ' unreadable value is refused rather than quietly replaced by the default: an operator'
         + ' who set it believes the run is bounded the way they asked for.',
-    );
+    },);
     this.name = 'HardCapOverrideError';
   }
 }

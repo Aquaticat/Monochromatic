@@ -70,14 +70,11 @@ export {
   runEditorStage,
 } from './repair-editor-stage.ts';
 export {
-  type Candidate,
-  type CandidateProducer,
   describeProducer,
   FULL_VOTE_WEIGHT,
   mergeProducers,
   MIN_SELECTION_WEIGHT,
   producerModelIds,
-  type SelectionBallot,
   type SelectionDisposition,
   type SelectionOutcome,
   type SelectionTally,

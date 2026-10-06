@@ -9,6 +9,7 @@ import {
   corpusGitEnvironment,
 } from './corpus-git-context.ts';
 import { foldCarriageReturns, } from './line-endings.ts';
+import { StatedRefusalError, } from './stated-refusal.ts';
 
 //region Corpus source
 // Reads benchmark texts from the user's local clone of `one-among-us/data`.
@@ -184,11 +185,11 @@ function stderrText({ stderr, }: { readonly stderr: unknown; },): string {
  throw new CorpusReadError({ detail: 'people/whiskers/page.md at a41fc60', cause: error, },);
  ```
  */
-export class CorpusReadError extends Error {
+export class CorpusReadError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names the corpus path and revision that were asked for, never what they hold.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Which failure git reported, read off its stderr.
@@ -226,11 +227,11 @@ export class CorpusReadError extends Error {
      What git's stderr says the failure was.
      */
     const kind = classifyCorpusReadFailure({ cause, },);
-    super(
-      `corpus read failed for ${detail} (${kind});`
+    super({
+      says: `corpus read failed for ${detail} (${kind});`
         + ' check that the clone exists and the pinned commit is present.',
-      { cause, },
-    );
+      cause,
+    },);
     this.name = 'CorpusReadError';
     this.kind = kind;
   }

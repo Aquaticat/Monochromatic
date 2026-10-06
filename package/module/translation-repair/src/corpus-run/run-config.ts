@@ -106,9 +106,9 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = JUDGE_UNMEASURED;
  `inception/mercury-2.5` SAT HERE ON 2026-09-09 from its judge seat
  (its card in `model-cards.ts`) of 17:00 UTC until the 40-round producer
  calibration launched at 17:06 UTC that day (`producer-calibrate 40
- --candidates inception/mercury-2.5`, log
- `~/temp/agent/producer-calibrate-mercury-20260909.log`, read at 20:02 UTC)
- measured it beside the ten measured writers: 18 of 101 disinterested
+ --candidates inception/mercury-2.5`, read at 20:02 UTC, its reading recorded in
+ `doc/decision/translation-repair-roster-seating-2026-09-01.md`) measured it
+ beside the ten measured writers: 18 of 101 disinterested
  ballots (17.8 percent, adjusted 11.4 for the 23 of 40 candidates it wrote,
  z -0.43 against a 19.5 percent pooled null over 1,229 ballots, 49 of 49
  asks usable, completed streams p50 4.7 s and max 10.1 s), not separated
@@ -357,8 +357,7 @@ export const RUN_SELECT_JUDGES: readonly RosterModelId[] = [
  bench a reading seats is the first three a wet provider serves
  (`run-seats.ts`), and the static bench is the first three.
 
- THE BENCHMARK (`~/temp/agent/audit-repair/checker-cases.mjs`,
- `checker-bench.mjs`): 85 accepted issues from twelve settled runs, each
+ THE BENCHMARK (ledger M8 records how it was built and scored): 85 accepted issues from twelve settled runs, each
  shown once against the patch every heard checker had called fixed and once
  against the unchanged archive text, where not fixed is certain. Ranked on
  that certain half first, then on the fixes, unusable answers and latency:

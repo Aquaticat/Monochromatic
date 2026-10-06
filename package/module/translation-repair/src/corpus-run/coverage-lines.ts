@@ -13,6 +13,7 @@ import {
 } from '../json-guard.ts';
 import { lineStartsOf, } from '../line-starts.ts';
 import { parseModelJson, } from '../model-content.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { UncalledFunction, } from './coverage-tally.ts';
 
 //region Coverage lines
@@ -33,12 +34,12 @@ import type { UncalledFunction, } from './coverage-tally.ts';
  throw new SourceMapFileError({ path: 'dist/final/node/index.mjs.map', says: 'it has no mappings', },);
  ```
  */
-export class SourceMapFileError extends Error {
+export class SourceMapFileError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names a file of the package's
    own build and a shape this module describes.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Builds the refusal naming the file and what did not read.
@@ -59,7 +60,9 @@ export class SourceMapFileError extends Error {
     readonly path: string;
     readonly says: string;
   },) {
-    super(`source map ${path} does not read as a version 3 map: ${says}; build with the coverage config, which writes one beside every chunk`,);
+    super({
+      says: `source map ${path} does not read as a version 3 map: ${says}; build with the coverage config, which writes one beside every chunk`,
+    },);
     this.name = 'SourceMapFileError';
   }
 }

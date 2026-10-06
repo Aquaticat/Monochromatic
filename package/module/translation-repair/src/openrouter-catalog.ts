@@ -29,8 +29,8 @@ export type { OpenRouterServedId, } from './roster-id.ts';
 // which is the loud failure this catalog prefers over a silent substitution.
 //
 // FIELDS WERE READ OFF THE PUBLIC MODELS LISTING on 2026-09-03
-// (`GET https://openrouter.ai/api/v1/models`, snapshot at
-// `~/temp/agent/openrouter-models-20260903.json`): `architecture.input_modalities`
+// (`GET https://openrouter.ai/api/v1/models`, whose reading
+// `doc/planning/translation-repair-openrouter-2026-09-03.md` records): `architecture.input_modalities`
 // for pictures and `top_provider.max_completion_tokens` for the ceiling. Under
 // zero data retention and `require_parameters` the endpoint actually chosen may
 // cap lower; the ceiling is recorded as the listing's, and the client sends no
@@ -155,7 +155,7 @@ export type OpenRouterModelInfo = {
 
   /**
    USD per million prompt tokens, as the public listing priced the model on
-   2026-09-09 (`~/temp/agent/openrouter-models-20260909.json`); the
+   2026-09-09 (`GET https://openrouter.ai/api/v1/models`); the
    estimate for an abandoned stream is priced off it.
    */
   readonly promptUsdPerMillion: number;

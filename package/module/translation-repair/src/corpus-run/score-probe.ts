@@ -290,6 +290,8 @@ async function main({ line, }: { readonly line: CommandLineOf<'score-probe'>; },
     identity: readSheetIdentity({ text: sheetText, },),
     manifest,
     sheetLabel: 'repair sheet',
+    sheetPath: joinPaths.sheet,
+    manifestPath: joinPaths.manifest,
   },);
   if (binding === 'header-only')
     console.log(HEADER_ONLY_BINDING_NOTE,);

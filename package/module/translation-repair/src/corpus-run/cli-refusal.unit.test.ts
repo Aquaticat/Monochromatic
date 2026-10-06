@@ -47,9 +47,11 @@ import {
 
 import {
   BedrockCreditOverrideError,
+  CorpusReadError,
   createSeatTally,
   EmptyPoolError,
   GradedSheetExistsError,
+  HardCapOverrideError,
   LedgerShapeError,
   MixedGenerationError,
   readBaselineFile,
@@ -57,6 +59,9 @@ import {
   RUN_SEATS,
   RunConfigError,
   RunJsonUnreadableError,
+  RunsDirectoryBusyError,
+  SheetBindingError,
+  SourceMapFileError,
   SpendCeilingOverrideError,
   StatedRefusalError,
   UnsafeSeedError,
@@ -284,6 +289,31 @@ const OPERATOR_MISTAKES: readonly Error[] = [
     requiredCommit: 'cafe1234cafe1234',
   },),
   new MixedGenerationError({ census: TWO_PIPELINES, },),
+  new HardCapOverrideError({ value: 'soon', },),
+  new RunsDirectoryBusyError({
+    runsDir: '/runs/sunbeam',
+    holder: {
+      pid: 4_242,
+      startedAt: '2026-10-05T10:00:00.000Z',
+      token: 'sunbeam-pass',
+      identity: { kind: 'unrecorded', },
+    },
+    judgedBy: 'identity',
+  },),
+  new SheetBindingError({
+    kind: 'seed',
+    sheetLabel: 'repair sheet',
+    sheetPath: '/runs/grading-sheet-sunbeam.md',
+    manifestPath: '/runs/sample-manifest-moonbeam.json',
+  },),
+  new SourceMapFileError({
+    path: 'dist/final/node/index.mjs.map',
+    says: 'it has no mappings',
+  },),
+  new CorpusReadError({
+    detail: 'people/whiskers/page.md at a41fc60',
+    cause: new Error('fatal: not a git repository',),
+  },),
 ];
 
 await describe({

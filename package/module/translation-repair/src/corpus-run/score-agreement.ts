@@ -205,6 +205,7 @@ async function reportGrades({ line, }: { readonly line: CommandLineOf<'score-agr
   const seed = requireSheetSeed({
     identity,
     sheetLabel: 'detection sheet',
+    sheetPath,
   },);
 
   // Validated BEFORE anything is reported, and not beside the code that needs
@@ -212,17 +213,20 @@ async function reportGrades({ line, }: { readonly line: CommandLineOf<'score-agr
   // return taken when no pre-grades exist, so the run that most looks like a
   // plain precision reading was exactly the one that checked nothing.
   /**
+   Path the manifest of the draw this sheet came from is looked for at.
+   */
+  const manifestPath = writtenOr({
+    asked: line.flag('manifest',),
+    unwritten: join(
+      runsDir,
+      `sample-manifest-${seed}.json`,
+    ),
+  },);
+
+  /**
    Manifest of the draw this sheet came from, when one sits beside it.
    */
-  const manifest = await readOptional({
-    path: writtenOr({
-      asked: line.flag('manifest',),
-      unwritten: join(
-        runsDir,
-        `sample-manifest-${seed}.json`,
-      ),
-    },),
-  },);
+  const manifest = await readOptional({ path: manifestPath, },);
   if (manifest.found) {
     /**
      How firmly the sheet is tied to that manifest; refuses if it is not.
@@ -236,6 +240,8 @@ async function reportGrades({ line, }: { readonly line: CommandLineOf<'score-agr
         },),
       },),
       sheetLabel: 'detection sheet',
+      sheetPath,
+      manifestPath,
     },);
     if (binding === 'header-only')
       console.log(HEADER_ONLY_BINDING_NOTE,);

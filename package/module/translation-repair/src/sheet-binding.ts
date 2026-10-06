@@ -1,5 +1,6 @@
 import type { SheetIdentity, } from './repair-grade-read.ts';
 import type { SampleManifest, } from './sample-manifest.ts';
+import { StatedRefusalError, } from './stated-refusal.ts';
 
 //region Sheet binding
 // The one check both scorers run before joining a graded sheet to a manifest.
@@ -16,26 +17,108 @@ import type { SampleManifest, } from './sample-manifest.ts';
 // there.
 
 /**
+ Which half of the binding disagrees, a closed list so a message is built from
+ these and never from a value read off a sheet or a manifest.
+ */
+type SheetMismatchKind =
+  | 'corpus-pin'
+  | 'digest'
+  | 'manifest-only-digest'
+  | 'seed'
+  | 'sheet-only-digest';
+
+/**
+ Which sheet a refusal speaks of, a literal each scorer writes.
+ */
+type SheetLabel = 'detection sheet' | 'repair sheet';
+
+/**
+ What each mismatch says about the pair and what the operator can do, with no
+ value from either file in it.
+ */
+const MISMATCH_REASONS: Readonly<Record<SheetMismatchKind, string>> = {
+  'seed': 'belong to different draws: their seeds differ. Item counts can match across unrelated draws of the '
+    + 'same size, so position is not evidence they describe the same items. Name a sheet and a manifest that one '
+    + 'draw wrote.',
+  'corpus-pin': 'were produced against different corpus commits. The same entry can carry different text at two '
+    + 'commits, so the grades and the artifacts would be about different documents. Name a sheet and a manifest '
+    + 'produced against one corpus commit.',
+  'digest': 'carry different draw digests while agreeing on seed and corpus pin. The draw is deterministic in its '
+    + 'seed but not in its pool, so the same seed drawn after another entry settled names a different set of items '
+    + 'at the same positions. Name the manifest this sheet was drawn with.',
+  'sheet-only-digest': 'disagree about whether this draw is bound: the sheet carries a draw digest and the manifest '
+    + 'carries none. One draw writes both in the same instant, so this pair was assembled from two different draws, '
+    + 'or the manifest lost its digest. Name a sheet and a manifest that one draw wrote.',
+  'manifest-only-digest': 'disagree about whether this draw is bound: the manifest carries a draw digest and the '
+    + 'sheet carries none. One draw writes both in the same instant, so this pair was assembled from two different '
+    + 'draws, or the sheet lost its digest. Name a sheet and a manifest that one draw wrote.',
+};
+
+/**
+ What a sheet that declares no draw seed says, with no value from the file in it.
+ */
+const UNPLACED_REASON = 'declares no draw seed, so nothing can say which draw it came from. Every sheet the '
+  + 'formatters write carries a "Draw seed: " header; a file without one cannot be paired with a manifest or with '
+  + 'pre-grades except by guessing. Name a sheet a draw wrote.';
+
+/**
  Raised when a graded sheet and the manifest it is scored against cannot describe one draw.
+
+ A stated refusal, because the operator named the files, or left the defaults
+ that name them, and can mend it by naming a pair one draw wrote. The message
+ is built from a closed kind and the two paths, and quotes nothing read from
+ either file.
 
  @example
  ```ts
- throw new SheetBindingError({ message: 'sheet and manifest carry different draw digests', },);
+ throw new SheetBindingError({
+   kind: 'digest',
+   sheetLabel: 'repair sheet',
+   sheetPath: 'runs/grading-sheet-cat.md',
+   manifestPath: 'runs/sample-manifest-cat.json',
+ },);
  ```
  */
-export class SheetBindingError extends Error {
+export class SheetBindingError extends StatedRefusalError {
   /**
-   Builds refusal carrying what could not hold.
+   Declares this message safe to forward: it holds two file paths, a sheet
+   label and sentences written here, never a value read from either file.
+   */
+  override readonly messageNamesOnly: true = true;
 
-   @param message - which half of the binding disagrees, in sheet and manifest terms
+  /**
+   Builds the refusal from which half disagrees and which files were read.
+
+   @param fault - closed kind of the mismatch with the label and the paths of
+   the files compared; a sheet with no seed names no manifest, which was not
+   looked for yet
 
    @example
    ```ts
-   throw new SheetBindingError({ message: 'sheet and manifest carry different draw digests', },);
+   throw new SheetBindingError({ kind: 'no-seed', sheetLabel: 'detection sheet', sheetPath, },);
    ```
    */
-  public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  public constructor(
+    fault:
+      | {
+        readonly kind: SheetMismatchKind;
+        readonly sheetLabel: SheetLabel;
+        readonly sheetPath: string;
+        readonly manifestPath: string;
+      }
+      | {
+        readonly kind: 'no-seed';
+        readonly sheetLabel: SheetLabel;
+        readonly sheetPath: string;
+      },
+  ) {
+    super({
+      says: (fault.kind === 'no-seed')
+        ? `${fault.sheetLabel} ${fault.sheetPath} ${UNPLACED_REASON}`
+        : `${fault.sheetLabel} ${fault.sheetPath} and manifest ${fault.manifestPath} ${
+          MISMATCH_REASONS[fault.kind]
+        }`,
+    },);
     this.name = 'SheetBindingError';
   }
 }
@@ -68,15 +151,25 @@ export type SheetBindingStrength =
 
  @param sheetLabel - which sheet this is, for the failure message
 
+ @param sheetPath - file the sheet was read from, which the refusal names so the operator can find it
+
+ @param manifestPath - file the manifest was read from, which the refusal names for the same reason
+
  @returns Which check actually held, so a caller can report a weak binding
  rather than implying a strong one
 
- @throws {@link Error} when the two describe different draws, since joining
+ @throws {@link SheetBindingError} when the two describe different draws, since joining
  them by position would mislabel every verdict rather than fail
 
  @example
  ```ts
- const strength = assertSheetMatchesManifest({ identity, manifest, sheetLabel: 'repair sheet', },);
+ const strength = assertSheetMatchesManifest({
+   identity,
+   manifest,
+   sheetLabel: 'repair sheet',
+   sheetPath,
+   manifestPath,
+ },);
  ```
  */
 export function assertSheetMatchesManifest(
@@ -84,28 +177,30 @@ export function assertSheetMatchesManifest(
     identity,
     manifest,
     sheetLabel,
+    sheetPath,
+    manifestPath,
   }: {
     readonly identity: SheetIdentity;
     readonly manifest: SampleManifest;
-    readonly sheetLabel: string;
+    readonly sheetLabel: SheetLabel;
+    readonly sheetPath: string;
+    readonly manifestPath: string;
   },
 ): SheetBindingStrength {
   if (identity.seed !== manifest.seed)
     throw new SheetBindingError({
-      message: `${sheetLabel} and manifest belong to different draws: sheet says seed ${
-        JSON.stringify(identity.seed,)
-      }, manifest says ${JSON.stringify(manifest.seed,)}. Item counts can `
-        + 'match across unrelated draws of the same size, so position is not '
-        + 'evidence they describe the same items.',
+      kind: 'seed',
+      sheetLabel,
+      sheetPath,
+      manifestPath,
     },);
 
   if (identity.corpusSha !== manifest.corpusSha)
     throw new SheetBindingError({
-      message: `${sheetLabel} and manifest were produced against different corpus `
-        + `commits: sheet says ${JSON.stringify(identity.corpusSha,)}, manifest `
-        + `says ${JSON.stringify(manifest.corpusSha,)}. The same entry can `
-        + 'carry different text at two commits, so the grades and the '
-        + 'artifacts would be about different documents.',
+      kind: 'corpus-pin',
+      sheetLabel,
+      sheetPath,
+      manifestPath,
     },);
 
   /**
@@ -127,11 +222,10 @@ export function assertSheetMatchesManifest(
   // file's absence.
   if (sheetBound !== manifestBound)
     throw new SheetBindingError({
-      message: `${sheetLabel} and manifest disagree about whether this draw is bound: `
-        + `the ${sheetBound ? 'sheet' : 'manifest'} carries a draw digest and `
-        + `the ${sheetBound ? 'manifest' : 'sheet'} carries none. One draw `
-        + 'writes both in the same instant, so this pair was assembled from '
-        + 'two different draws, or one of them lost its digest.',
+      kind: sheetBound ? 'sheet-only-digest' : 'manifest-only-digest',
+      sheetLabel,
+      sheetPath,
+      manifestPath,
     },);
 
   // Absent on BOTH sides means the draw predates the binding, which is true of
@@ -144,13 +238,10 @@ export function assertSheetMatchesManifest(
 
   if (identity.drawDigest !== manifest.drawDigest)
     throw new SheetBindingError({
-      message: `${sheetLabel} and manifest carry different draw digests: sheet says ${
-        JSON.stringify(identity.drawDigest,)
-      }, manifest says ${JSON.stringify(manifest.drawDigest,)}. They agree on `
-        + 'seed and corpus pin, which is exactly the case the digest exists '
-        + 'for: the draw is deterministic in its seed but not in its pool, so '
-        + 'the same seed drawn after another entry settled names a different '
-        + 'set of items at the same positions.',
+      kind: 'digest',
+      sheetLabel,
+      sheetPath,
+      manifestPath,
     },);
 
   return 'digest';
@@ -169,30 +260,33 @@ export function assertSheetMatchesManifest(
 
  @param sheetLabel - which sheet this is, for the failure message
 
+ @param sheetPath - file the sheet was read from, which the refusal names so the operator can find it
+
  @returns Seed the sheet declares
 
- @throws {@link Error} when the sheet declares no seed
+ @throws {@link SheetBindingError} when the sheet declares no seed
 
  @example
  ```ts
- const seed = requireSheetSeed({ identity, sheetLabel: 'detection sheet', },);
+ const seed = requireSheetSeed({ identity, sheetLabel: 'detection sheet', sheetPath, },);
  ```
  */
 export function requireSheetSeed(
   {
     identity,
     sheetLabel,
+    sheetPath,
   }: {
     readonly identity: SheetIdentity;
-    readonly sheetLabel: string;
+    readonly sheetLabel: SheetLabel;
+    readonly sheetPath: string;
   },
 ): string {
   if (identity.seed === '')
     throw new SheetBindingError({
-      message: `${sheetLabel} declares no draw seed, so nothing can say which draw it `
-        + 'came from. Every sheet the formatters write carries a "Draw seed: " '
-        + 'header above its first item; a file without one cannot be paired '
-        + 'with a manifest or with pre-grades except by guessing.',
+      kind: 'no-seed',
+      sheetLabel,
+      sheetPath,
     },);
   return identity.seed;
 }

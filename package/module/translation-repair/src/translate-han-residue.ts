@@ -23,7 +23,7 @@ import { untranslatedFindings, } from './translate-untranslated.ts';
 // are read by `protectedRanges`, the scanner the page-wide rewrites share.
 //
 // WHAT IS EXCUSED, each shape measured over 1,264 archive slices and 3,975
-// would-ship slices (`~/temp/agent/audit-floor-replay/han-residue-*.mjs`):
+// would-ship slices (ledger F-3):
 // - a run inside parentheses, the gloss the house rule allows after the
 //   English (公摊面积 after "shared floor area", 晚安 in a pun's footnote);
 // - a title the title floor accepts as kept, cut before the scan exactly as

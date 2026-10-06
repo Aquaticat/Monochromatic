@@ -11,6 +11,7 @@ import { join, } from 'node:path';
 import { failureName, } from '../error-name.ts';
 import { contextRoot, } from '../log-context.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
   hostIdentity,
   startTicksOf,
@@ -85,12 +86,12 @@ const HELD_BECAUSE: Readonly<Record<HeldJudgement, string>> = {
 /**
  Raised when another pass already owns this runs directory.
  */
-export class RunsDirectoryBusyError extends Error {
+export class RunsDirectoryBusyError extends StatedRefusalError {
   /**
    Declares this message safe to forward: it names a process id, its start
    time, the directory, and a fixed phrase saying how the holder was judged.
    */
-  readonly messageNamesOnly: true = true;
+  override readonly messageNamesOnly: true = true;
 
   /**
    Names the holder, how it was judged, and the two ways forward.
@@ -117,8 +118,8 @@ export class RunsDirectoryBusyError extends Error {
       readonly judgedBy: HeldJudgement;
     },
   ) {
-    super(
-      [
+    super({
+      says: [
         `Another pass is running in ${runsDir}.`,
         ...(holder === undefined
           ? ['  its lock file records nothing readable',]
@@ -136,7 +137,7 @@ export class RunsDirectoryBusyError extends Error {
         'or stop the other pass. A lock whose process is gone is taken over',
         `automatically. ${HELD_BECAUSE[judgedBy]}`,
       ].join('\n',),
-    );
+    },);
     this.name = 'RunsDirectoryBusyError';
   }
 }

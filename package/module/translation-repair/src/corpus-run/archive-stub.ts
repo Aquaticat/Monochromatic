@@ -6,8 +6,8 @@ import { maskHtmlComments, } from '../mask-html-comments.ts';
 // page is a stub: front matter, the line `(To-Do)`, an HTML comment of
 // translator hints, and nothing the ORIGINAL says. The pipeline translated the
 // whole ORIGINAL below that and, since no slice covered the marker, published
-// `(To-Do)` over a finished translation (2026-09-03,
-// `~/temp/agent/xiept2-postscript-20260903`). The owner: "The pipeline's job
+// `(To-Do)` over a finished translation (2026-09-03; ledger A1
+// records the stub). The owner: "The pipeline's job
 // is to give a good result even when the originals are bad."
 // (`doc/decision/translation-repair-good-result-over-bad-original.md`).
 //

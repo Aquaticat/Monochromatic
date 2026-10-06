@@ -175,7 +175,6 @@ export {
   readCorpusNames,
 } from './corpus-name-index.ts';
 export { rosterQuorumSize, } from './roster-quorum-size.ts';
-export type { RunClient, } from './corpus-run/run-client-contract.ts';
 export {
   assertRequiredProvidersReady,
   readRequiredProviders,

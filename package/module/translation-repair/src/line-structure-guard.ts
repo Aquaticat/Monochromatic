@@ -254,6 +254,15 @@ function repeatedLines(
    Wordings and their counts, for the scan.
    */
   const entries = [...carried.entries(),];
+
+  // AN ORIGINAL WITH NO CONTENT LINE HAS NOTHING TO REPEAT, which `howOften`
+  // would have said as "no line more than 0 times".
+  /**
+   What the finding says of the original's own repeats.
+   */
+  const original = (allowed === 0)
+    ? 'has no line to repeat'
+    : `repeats no line more than ${howOften({ count: allowed, },)}`;
   return entries.flatMap(function toFinding([
     wording,
     times,
@@ -262,7 +271,7 @@ function repeatedLines(
       return [];
     return [
       `This slice is LINE-STRUCTURED and your rendering repeats the line \`${wording}\` `
-        + `${howOften({ count: times, },)} where the ORIGINAL repeats no line more than ${howOften({ count: allowed, },)}. `
+        + `${howOften({ count: times, },)} where the ORIGINAL ${original}. `
         + 'A Chinese line '
         + `and its own English beside it are one line to render, not two. Drop the repeat, keeping `
         + `the wording you chose.`,

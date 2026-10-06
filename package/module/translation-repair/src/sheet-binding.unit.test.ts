@@ -22,6 +22,7 @@ import {
   requireSheetSeed,
   type SampleManifest,
   SheetBindingError,
+  StatedRefusalError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -85,6 +86,16 @@ const CAT_GENERATION = {
   entries: 3,
 } as const;
 
+/**
+ Graded sheet every case names, as an operator's flag would.
+ */
+const SHEET_PATH = '/runs/grading-sheet-cat-seed.md';
+
+/**
+ Draw manifest every case names.
+ */
+const MANIFEST_PATH = '/runs/sample-manifest-cat-seed.json';
+
 await describe({
   name: '',
   concurrency: 1,
@@ -109,6 +120,8 @@ await describe({
               },
               manifest,
               sheetLabel: 'repair sheet',
+              sheetPath: SHEET_PATH,
+              manifestPath: MANIFEST_PATH,
             },),).toBe('digest',);
           },
         },),
@@ -146,11 +159,19 @@ await describe({
                 },
                 manifest,
                 sheetLabel: 'repair sheet',
+                sheetPath: SHEET_PATH,
+                manifestPath: MANIFEST_PATH,
               },);
             },);
 
             expect(refusalOfScoresAnotherDraw,).toBeInstanceOf(SheetBindingError,);
-            expect((refusalOfScoresAnotherDraw as Error).message,).toContain('different draw digests',);
+            expect(refusalOfScoresAnotherDraw,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(refusalOfScoresAnotherDraw,),).toBe(
+              `SheetBindingError: repair sheet ${SHEET_PATH} and manifest ${MANIFEST_PATH} carry different draw `
+                + 'digests while agreeing on seed and corpus pin. The draw is deterministic in its seed but not in its '
+                + 'pool, so the same seed drawn after another entry settled names a different set of items at the '
+                + 'same positions. Name the manifest this sheet was drawn with.',
+            );
           },
         },),
 
@@ -179,6 +200,8 @@ await describe({
                 ],
               },
               sheetLabel: 'detection sheet',
+              sheetPath: SHEET_PATH,
+              manifestPath: MANIFEST_PATH,
             },),).toBe('header-only',);
           },
         },),
@@ -220,11 +243,18 @@ await describe({
                 },
                 manifest: bound,
                 sheetLabel: 'detection sheet',
+                sheetPath: SHEET_PATH,
+                manifestPath: MANIFEST_PATH,
               },);
             },);
 
             expect(refusalOfLegacySheetWithBoundManifest,).toBeInstanceOf(SheetBindingError,);
-            expect((refusalOfLegacySheetWithBoundManifest as Error).message,).toContain('disagree about whether this draw is bound',);
+            expect(String(refusalOfLegacySheetWithBoundManifest,),).toBe(
+              `SheetBindingError: detection sheet ${SHEET_PATH} and manifest ${MANIFEST_PATH} disagree about whether `
+                + 'this draw is bound: the manifest carries a draw digest and the sheet carries none. One draw writes '
+                + 'both in the same instant, so this pair was assembled from two different draws, or the sheet lost '
+                + 'its digest. Name a sheet and a manifest that one draw wrote.',
+            );
 
             /**
              What boundSheetWithLegacyManifest raised, read for its class as well as its wording.
@@ -238,11 +268,18 @@ await describe({
                 },
                 manifest: unbound,
                 sheetLabel: 'detection sheet',
+                sheetPath: SHEET_PATH,
+                manifestPath: MANIFEST_PATH,
               },);
             },);
 
             expect(refusalOfBoundSheetWithLegacyManifest,).toBeInstanceOf(SheetBindingError,);
-            expect((refusalOfBoundSheetWithLegacyManifest as Error).message,).toContain('disagree about whether this draw is bound',);
+            expect(String(refusalOfBoundSheetWithLegacyManifest,),).toBe(
+              `SheetBindingError: detection sheet ${SHEET_PATH} and manifest ${MANIFEST_PATH} disagree about whether `
+                + 'this draw is bound: the sheet carries a draw digest and the manifest carries none. One draw writes '
+                + 'both in the same instant, so this pair was assembled from two different draws, or the manifest lost '
+                + 'its digest. Name a sheet and a manifest that one draw wrote.',
+            );
           },
         },),
 
@@ -266,11 +303,18 @@ await describe({
                 },
                 manifest,
                 sheetLabel: 'detection sheet',
+                sheetPath: SHEET_PATH,
+                manifestPath: MANIFEST_PATH,
               },);
             },);
 
             expect(refusalOfScoresAnotherSeed,).toBeInstanceOf(SheetBindingError,);
-            expect((refusalOfScoresAnotherSeed as Error).message,).toContain('different draws',);
+            expect(String(refusalOfScoresAnotherSeed,),).toBe(
+              `SheetBindingError: detection sheet ${SHEET_PATH} and manifest ${MANIFEST_PATH} belong to different `
+                + 'draws: their seeds differ. Item counts can match across unrelated draws of the same size, so '
+                + 'position is not evidence they describe the same items. Name a sheet and a manifest that one draw '
+                + 'wrote.',
+            );
 
             /**
              What scoresAnotherPin raised, read for its class as well as its wording.
@@ -284,11 +328,18 @@ await describe({
                 },
                 manifest,
                 sheetLabel: 'detection sheet',
+                sheetPath: SHEET_PATH,
+                manifestPath: MANIFEST_PATH,
               },);
             },);
 
             expect(refusalOfScoresAnotherPin,).toBeInstanceOf(SheetBindingError,);
-            expect((refusalOfScoresAnotherPin as Error).message,).toContain('different corpus',);
+            expect(String(refusalOfScoresAnotherPin,),).toBe(
+              `SheetBindingError: detection sheet ${SHEET_PATH} and manifest ${MANIFEST_PATH} were produced against `
+                + 'different corpus commits. The same entry can carry different text at two commits, so the grades '
+                + 'and the artifacts would be about different documents. Name a sheet and a manifest produced against '
+                + 'one corpus commit.',
+            );
           },
         },),
       ],
@@ -308,6 +359,7 @@ await describe({
                 drawDigest: '',
               },
               sheetLabel: 'detection sheet',
+              sheetPath: SHEET_PATH,
             },),).toBe('cat-seed',);
           },
         },),
@@ -331,11 +383,16 @@ await describe({
                   drawDigest: '',
                 },
                 sheetLabel: 'detection sheet',
+                sheetPath: SHEET_PATH,
               },);
             },);
 
             expect(refusalOfScoresAnUnplaceableSheet,).toBeInstanceOf(SheetBindingError,);
-            expect((refusalOfScoresAnUnplaceableSheet as Error).message,).toContain('declares no draw seed',);
+            expect(String(refusalOfScoresAnUnplaceableSheet,),).toBe(
+              `SheetBindingError: detection sheet ${SHEET_PATH} declares no draw seed, so nothing can say which draw `
+                + 'it came from. Every sheet the formatters write carries a "Draw seed: " header; a file without one '
+                + 'cannot be paired with a manifest or with pre-grades except by guessing. Name a sheet a draw wrote.',
+            );
           },
         },),
       ],

@@ -53,7 +53,7 @@ export function rawCharsPerCompletionTokenOf(rawCharsPerToken: number | 'unmeasu
 /**
  Raw stream characters per completion token, the 50th percentile over every
  completed OpenRouter stream of 2026-09-09 whose progress line sat beside
- its spend line (pass logs under `~/temp/agent`), read off the cards.
+ its spend line (pass logs, re-measured in ledger P7), read off the cards.
  Framing differs by endpoint, which is why one model reads three times
  another.
  */

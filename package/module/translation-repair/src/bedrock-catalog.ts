@@ -33,7 +33,7 @@ export type { BedrockServedId, } from './roster-id.ts';
 // raw fetch." The client rides the same transport seam as the other three.
 //
 // TWO ROUTES ON ONE HOST, MEASURED 2026-09-07 with the bearer key in us-east-1
-// (probes under `~/temp/agent`, recorded in
+// (probes recorded in
 // `doc/planning/translation-repair-openrouter-2026-09-03.md`). The three Gemma
 // 4 sizes answer only under `/openai/v1/chat/completions`; the default
 // `/v1/chat/completions` says "model isn't supported on this route", and each
