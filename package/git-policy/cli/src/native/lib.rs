@@ -263,6 +263,15 @@ pub mod candidate_version;
 /// Per-invocation listing, lazy bytes and invalidation of candidate versions.
 pub mod candidate_store;
 
+/// Pure parsing of `git ls-files --stage` records and the delta between two index states.
+pub mod candidate_stage;
+
+/// A private, timestamp-preserving copy of the real index, removed when dropped.
+pub mod candidate_private_index;
+
+/// What `git add` would stage, and the worktree files a direct command selects.
+pub mod candidate_prediction;
+
 /// The linked forbidden-strings scanner: one load per invocation, typed redacted findings.
 pub mod scanner_adapter;
 

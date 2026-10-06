@@ -19,6 +19,8 @@ use super::candidate_object::{CandidateMode, ObjectId, parse_object_id};
 use super::candidate_reader::{ObjectReader, start_object_reader};
 /// Import the listing parser and its records.
 use super::candidate_record::{CandidateRecord, parse_raw_records};
+/// Import the stage-record parser of `git ls-files --stage`.
+use super::candidate_stage::{StageRecord, parse_stage_records};
 /// Import the version types and builder.
 use super::candidate_version::{Candidate, CandidateSource, CandidateVersion, build_version};
 /// Import the captured-query runner and its line helper.
@@ -220,34 +222,39 @@ impl CandidateStore {
         return Ok(tree);
     }
 
-    /// What: List the index against a commit, or against the empty tree when there is none.
-    ///       `Option<&ObjectId>` is "a borrowed commit name or nothing".
+    /// What: List the index against a commit, or against the empty tree when there is none,
+    ///       limited to `pathspecs`. `Option<&ObjectId>` is "a borrowed commit name or
+    ///       nothing"; an empty `pathspecs` lists the whole index.
     /// Why:  `diff-index --cached` reads only the index and the tree, never the
     ///       worktree. Rename detection is off, so a renamed file is one deleted path
     ///       and one added path, each judged on its own.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// async #listStaged(baseline?: ObjectId): Promise<Buffer>
+    /// async #listStaged(baseline: ObjectId | undefined, pathspecs: string[]): Promise<Buffer>
     /// ```
-    fn list_staged(&self, baseline: Option<&ObjectId>) -> Result<Vec<u8>, CandidateError> {
+    fn list_staged(
+        &self,
+        baseline: Option<&ObjectId>,
+        pathspecs: &[OsString],
+    ) -> Result<Vec<u8>, CandidateError> {
         let tree: ObjectId = match baseline {
             Some(commit) => commit.clone(),
             None => self.empty_tree()?,
         };
-        return self.run_listing(
-            "diff-index",
-            &[
-                OsString::from("diff-index"),
-                OsString::from("--cached"),
-                OsString::from("--raw"),
-                OsString::from("-z"),
-                OsString::from("--no-renames"),
-                OsString::from("--no-abbrev"),
-                OsString::from(tree.as_str()),
-                OsString::from("--"),
-            ],
-        );
+        // `vec![...]` builds the fixed part of the command; the pathspecs follow `--`.
+        let mut command: Vec<OsString> = vec![
+            OsString::from("diff-index"),
+            OsString::from("--cached"),
+            OsString::from("--raw"),
+            OsString::from("-z"),
+            OsString::from("--no-renames"),
+            OsString::from("--no-abbrev"),
+            OsString::from(tree.as_str()),
+            OsString::from("--"),
+        ];
+        command.extend_from_slice(pathspecs);
+        return self.run_listing("diff-index", command.as_slice());
     }
 
     /// What: List what one commit changed against each of its parents.
@@ -296,10 +303,10 @@ impl CandidateStore {
         let output: Vec<u8> = match source {
             CandidateSource::StagedAgainstHead => {
                 let head: Option<ObjectId> = self.reader()?.head_commit()?;
-                // `.as_ref()` turns `&Option<ObjectId>` into `Option<&ObjectId>`.
-                self.list_staged(head.as_ref())?
+                // `.as_ref()` turns `&Option<ObjectId>` into `Option<&ObjectId>`; `&[]` is no pathspec.
+                self.list_staged(head.as_ref(), &[])?
             }
-            CandidateSource::StagedAgainstCommit(commit) => self.list_staged(Some(commit))?,
+            CandidateSource::StagedAgainstCommit(commit) => self.list_staged(Some(commit), &[])?,
             CandidateSource::Committed(commit) => self.list_committed(commit)?,
         };
         let records: Vec<CandidateRecord> = parse_raw_records(output.as_slice())?;
@@ -307,6 +314,65 @@ impl CandidateStore {
         let version: Rc<CandidateVersion> = Rc::new(build_version(self.generation, records));
         self.versions.push((source.clone(), Rc::clone(&version)));
         return Ok(version);
+    }
+
+    /// What: The index entries `pathspecs` select, every conflict stage included, with
+    ///       repository-relative pathnames.
+    /// Why:  `ls-files --stage` reads only the index, so comparing two of these listings
+    ///       shows exactly which entries an operation on that index changed. `--full-name`
+    ///       keeps pathnames repository-relative from any directory.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async stageRecords(pathspecs: string[]): Promise<StageRecord[]>
+    /// ```
+    pub fn stage_records(
+        &mut self,
+        pathspecs: &[OsString],
+    ) -> Result<Vec<StageRecord>, CandidateError> {
+        let mut command: Vec<OsString> = vec![
+            OsString::from("ls-files"),
+            OsString::from("--stage"),
+            OsString::from("-z"),
+            OsString::from("--full-name"),
+            OsString::from("--"),
+        ];
+        command.extend_from_slice(pathspecs);
+        let output: Vec<u8> = self.run_listing("ls-files", command.as_slice())?;
+        return parse_stage_records(output.as_slice());
+    }
+
+    /// What: The changed-path records of the index against `HEAD`, limited to `pathspecs`;
+    ///       against the empty tree when no commit exists yet.
+    /// Why:  Which selected paths `HEAD` lacks makes them additions, and which removed
+    ///       paths it has makes them deletions. The limit keeps a conflict elsewhere in the
+    ///       index out of the listing.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async headRecords(pathspecs: string[]): Promise<CandidateRecord[]>
+    /// ```
+    pub fn head_records(
+        &mut self,
+        pathspecs: &[OsString],
+    ) -> Result<Vec<CandidateRecord>, CandidateError> {
+        let head: Option<ObjectId> = self.reader()?.head_commit()?;
+        let output: Vec<u8> = self.list_staged(head.as_ref(), pathspecs)?;
+        return parse_raw_records(output.as_slice());
+    }
+
+    /// What: A version of the current generation built from records the caller derived.
+    ///       `Vec<CandidateRecord>` is taken by value: the records move into the version.
+    /// Why:  A predicted staging operation has no single listing command; its candidates
+    ///       come from comparing index states. The version is not remembered by source,
+    ///       because no source names it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// derivedVersion(records: CandidateRecord[]): CandidateVersion
+    /// ```
+    pub fn derived_version(&mut self, records: Vec<CandidateRecord>) -> Rc<CandidateVersion> {
+        return Rc::new(build_version(self.generation, records));
     }
 
     /// What: The exact bytes a candidate holds in its version.

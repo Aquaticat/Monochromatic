@@ -22,8 +22,8 @@ use forbidden_strings::ScanFinding;
 
 /// What: The code of one candidate-layer failure. `match` lists every cause by name and
 ///       has no catch-all arm; `A | B` in an arm means "either of these".
-/// Why:  Every cause but one is something Git could not list or hand over, so the content
-///       was unavailable. A stale candidate is different: its content can be read through
+/// Why:  Every cause but one is something Git could not list or hand over, or a private
+///       index a prediction needed could not be prepared, so the content was unavailable. A stale candidate is different: its content can be read through
 ///       a fresh version, and what failed is the calling pass, which kept a candidate
 ///       across an invalidation. Without a catch-all arm, a cause added later does not
 ///       compile until someone chooses its code.
@@ -45,7 +45,10 @@ pub fn candidate_failure_code(failure: CandidateFailure) -> EngineFailureCode {
         | CandidateFailure::ReplyTruncated
         | CandidateFailure::ReplyMismatched
         | CandidateFailure::ObjectMissing
-        | CandidateFailure::ObjectKindUnexpected => return EngineFailureCode::ContentUnavailable,
+        | CandidateFailure::ObjectKindUnexpected
+        | CandidateFailure::PrivateIndexUnavailable => {
+            return EngineFailureCode::ContentUnavailable;
+        }
         CandidateFailure::StaleCandidate => return EngineFailureCode::PolicyIncomplete,
     }
 }
