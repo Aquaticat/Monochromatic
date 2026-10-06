@@ -378,6 +378,10 @@ Quotations are the user's words.
   after 30 days without use ("Remove after N days unused";
   the 30 days are the agent's proposal).
 - The embedded license and notice texts are printed by `monochromatic-ide --licenses` ("--licenses flag").
+- The license notices of the Rust crates compiled into the executable are collected by a notice generator,
+  vetted first through the repository's technology-selection process,
+  embedded beside the other notices,
+  and printed by `--licenses` ("Adopt a notice generator").
 - Settled by the agent:
   the application's private state folder may lie inside any open project folder,
   since only that folder becomes writable either way.
