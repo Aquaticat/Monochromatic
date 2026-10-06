@@ -178,18 +178,24 @@ the items after it are the record of 2026-10-05 and older.
   about 13900 for each IDE worktree with a build cache).
   The coordinating session removed twelve clean,
   fully pushed IDE worktrees it had created
-  (their branches remain);
-  the fsmonitor setting is the user's to decide.
+  (their branches remain).
+  The user then chose to turn the monitor off for this repository:
+  `core.fsmonitor=false` is in `.git/config`
+  (the wrapper's shadow git directories include that file),
+  and stopping the sixteen running daemons that served this repository freed 436062 watches;
+  49870 were in use afterwards.
+  Three daemons for another session's worktree `translation-repair` started again afterwards,
+  one through an explicit `git fsmonitor--daemon start` under the git wrapper's shadow git directory;
+  the cause is not established.
 - Still owed to the user:
-  whether to add a launcher entry,
-  what to do about git's fsmonitor,
-  and UI batch 3 with screenshots
+  UI batch 3 with screenshots
   (hint row look,
   label shortening,
   diagnostic row wording,
   the caret card beside the rows,
   UI batch 2's open choices,
-  the watch-limit message).
+  the watch-limit message,
+  the launcher icon).
 
 Claude Opus resumed the queue on 2026-10-05 from `e81b01c42`
 and fanned the work out to in-process subagents at the user's request.

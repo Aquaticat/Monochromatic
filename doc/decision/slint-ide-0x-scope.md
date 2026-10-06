@@ -353,7 +353,11 @@ Quotations are the user's words.
 - Started without a project folder,
   the application opens the user's home folder:
   "Started w/o a project folder opens the user's home folder."
-  The question whether to add a launcher entry is still open.
+  The application gets a launcher entry,
+  written by the install task:
+  an app-menu item that opens the home folder,
+  and "Open with" for folders ("Add a launcher entry").
+  Its icon is asked later with screenshots.
 - Slint's testing crate may be added as a test-only dependency
   for rerunnable accessibility tests ("Allow it").
 - Settled by the agent from repository convention and the user's statement that size is not a constraint:
@@ -371,6 +375,13 @@ Quotations are the user's words.
   The application is still made to use as few watches as it can,
   to back off and stay quiet when the limit is reached,
   and to keep its build containers from starting podman's network helper.
+- git's file-system monitor is turned off for this repository only
+  (`core.fsmonitor=false` in `.git/config`;
+  the global setting stays):
+  "Off for this repo".
+  Measured before the change:
+  `git status` in the main checkout took 4.8 to 9.7 s with the monitor and 33 to 96 ms without it,
+  three alternating runs each under a load average near 100.
 
 ## Verification boundary
 
