@@ -305,6 +305,18 @@ await describe({
         },),
 
         it({
+          name: 'REPORTS a negative cost as unreadable, since a cost is money spent and a sum over one would '
+            + 'understate the bill',
+          fn: async () => {
+            expect(readSpendLine({
+              line: logged({
+                tail: 'SPEND provider=openrouter model=minimax/minimax-m3 prompt=5 completion=3072 cost=-0.5',
+              },),
+            },),).toBe('unreadable',);
+          },
+        },),
+
+        it({
           name: 'REPORTS an empty count as unreadable rather than as zero, which is '
             + 'what `Number` alone would have made of it',
           fn: async () => {

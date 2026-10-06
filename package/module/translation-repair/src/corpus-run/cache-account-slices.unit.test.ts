@@ -12,13 +12,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
+import fsPromises, {
   chmod,
   mkdir,
+  stat,
   symlink,
   utimes,
   writeFile,
 } from 'node:fs/promises';
+import { syncBuiltinESMExports, } from 'node:module';
 import { join, } from 'node:path';
 
 import {
@@ -240,6 +242,87 @@ await describe({
                 'Tabby',
                 '0-2-tabby.json',
               ),
+              modifiedMs: 2_000_000,
+            },
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'LEAVES OUT A RECORD A DISCARD REMOVED BETWEEN THE LISTING AND THE READ, counting and naming the rest',
+      fn: async (ctx,) => {
+        await using scratch = await scratchDir({ prefix: 'whiskers-cache-account-', },);
+        /**
+         The slice-cache directory of one entry.
+         */
+        const entryDir = join(
+          scratch.path,
+          'slice-cache',
+          'Tabby',
+        );
+        await mkdir(
+          entryDir,
+          { recursive: true, },
+        );
+        /**
+         The record the discard removes, and the one it leaves.
+         */
+        const [removed, kept,] = [
+          join(
+            entryDir,
+            '0-1-tabby.json',
+          ),
+          join(
+            entryDir,
+            '1-1-tabby.json',
+          ),
+        ];
+        await writeAt({
+          path: removed,
+          seconds: 1_000,
+        },);
+        await writeAt({
+          path: kept,
+          seconds: 2_000,
+        },);
+        /**
+         The real `stat`, which every other path still reaches.
+         */
+        const realStat = stat;
+        /**
+         `stat` as it answers once the discard has run: no such file for the
+         record it removed. A removal between a listing and a read cannot be
+         timed from a case, so the case stands in for its outcome.
+         */
+        const afterDiscard = ctx.sinon.stub(
+          fsPromises,
+          'stat',
+        ).callsFake(async function statAfterDiscard(path,) {
+          if (path === removed) {
+            throw Object.assign(
+              new Error('no such file',),
+              { code: 'ENOENT', },
+            );
+          }
+          return await realStat(path,);
+        },);
+        syncBuiltinESMExports();
+        // THE ESM BINDING OF `stat` FOLLOWS THE STUB ONLY WHILE IT IS SYNCED, so
+        // putting it back is a step of its own that the case's end runs.
+        using putBack = {
+          [Symbol.dispose]: function restoreStat(): void {
+            afterDiscard.restore();
+            syncBuiltinESMExports();
+          },
+        };
+        expect(await sliceCacheAccount({ runsDirs: [scratch.path,], },),).toEqual({
+          runsDirs: [scratch.path,],
+          count: 1,
+          newest: {
+            kind: 'found',
+            record: {
+              path: kept,
               modifiedMs: 2_000_000,
             },
           },
@@ -478,6 +561,60 @@ await describe({
             dir: absent,
             reason: 'ENOENT',
           },],
+        },);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE DIRECTORIES IT CANNOT LIST IN CODE-POINT ORDER, whatever order the filesystem listed them in',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'whiskers-cache-account-', },);
+        /**
+         Directories the search cannot list, created in ascending order.
+         */
+        const baskets = [
+          'basket-1',
+          'basket-2',
+          'basket-3',
+          'basket-4',
+          'basket-5',
+        ].map(function pathOf(name,): string {
+          return join(
+            scratch.path,
+            name,
+          );
+        },);
+        await Promise.all(baskets.map(async function lock(basket,): Promise<void> {
+          await mkdir(basket,);
+        },),);
+        // Permissions do not constrain a superuser, so run as root the baskets
+        // are listed and the case fails rather than passing quietly.
+        await Promise.all(baskets.map(async function lock(basket,): Promise<void> {
+          await chmod(
+            basket,
+            0o000,
+          );
+        },),);
+        /**
+         The search, read before the directories are put back.
+         */
+        const search = await runsDirsUnder({ root: scratch.path, },);
+        // Put the directories back before asserting, so a failing assertion
+        // still leaves a removable tree behind for the disposal.
+        await Promise.all(baskets.map(async function unlock(basket,): Promise<void> {
+          await chmod(
+            basket,
+            0o700,
+          );
+        },),);
+        expect(search,).toEqual({
+          found: [],
+          unlisted: baskets.map(function unlisted(basket,): { readonly dir: string; readonly reason: string; } {
+            return {
+              dir: basket,
+              reason: 'EACCES',
+            };
+          },),
         },);
       },
     },),

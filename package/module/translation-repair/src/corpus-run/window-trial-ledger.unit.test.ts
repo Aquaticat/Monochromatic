@@ -472,6 +472,51 @@ await describe({
       },
     },),
     it({
+      name: 'APPENDS TO A LEDGER FILE THAT EXISTS AND IS EMPTY as to one never written, the row alone in it',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-trial-', },);
+        const path = freshLedger({ dir: scratch.path, },);
+
+        await writeLedger({
+          path,
+          text: '',
+        },);
+        await appendTrialRow({
+          path,
+          row: WIDE,
+        },);
+        expect(await readFile(
+          path,
+          'utf8',
+        ),).toBe(lineOf({ row: WIDE, },),);
+      },
+    },),
+    it({
+      name: 'LEAVES A LEDGER THAT ENDS IN BLANK SPACE AFTER ITS LAST NEWLINE AS IT IS, appending the row after '
+        + 'that space and reading both rows back',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-trial-', },);
+        const path = freshLedger({ dir: scratch.path, },);
+
+        await writeLedger({
+          path,
+          text: `${lineOf({ row: NARROW_A, },)}  `,
+        },);
+        await appendTrialRow({
+          path,
+          row: WIDE,
+        },);
+        expect(await readFile(
+          path,
+          'utf8',
+        ),).toBe(`${lineOf({ row: NARROW_A, },)}  ${lineOf({ row: WIDE, },)}`,);
+        expect(await readTrialLedger({ path, },),).toEqual([
+          NARROW_A,
+          WIDE,
+        ],);
+      },
+    },),
+    it({
       name: 'REFUSES a line that ends in a newline and does not parse, wherever it sits, naming the file '
         + 'and the line number and none of the line\'s text, since a kill mid-append leaves only an '
         + 'unterminated last line',

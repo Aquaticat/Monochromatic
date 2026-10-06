@@ -18,6 +18,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -169,6 +170,30 @@ await describe({
               sorted: SORTED_NAPS,
               percentile: WHOLE,
             },),).toBe(LONGEST_NAP,);
+          },
+        },),
+        it({
+          name: 'REFUSES a percentile below zero or not a number, which names no rank, rather than answering zero '
+            + 'for a sample that holds none',
+          fn: async () => {
+            /**
+             What each percentile that names no rank raised.
+             */
+            const refusals = [
+              -10,
+              Number.NaN,
+            ].map(function refusalOf(percentile,): unknown {
+              return caught(function act(): unknown {
+                return percentileOf({
+                  sorted: SORTED_NAPS,
+                  percentile,
+                },);
+              },);
+            },);
+            expect(refusals.map(String,),).toEqual([
+              'RangeError: percentile -10 is not a number from zero up, so it names no rank in the sample',
+              'RangeError: percentile NaN is not a number from zero up, so it names no rank in the sample',
+            ],);
           },
         },),
         it({

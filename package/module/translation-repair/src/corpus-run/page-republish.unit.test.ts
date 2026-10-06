@@ -33,6 +33,7 @@ import {
   republishSettledPages,
   type RepublishOutcome,
 } from '../../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
@@ -46,6 +47,23 @@ const SOURCE_DOC = '## 第一节\n\n猫猫在窗台上睡觉。\n\n## 第二节\
  Archive English of the same shape.
  */
 const TARGET_DOC = '## Section one\n\nThe cat sleeps on the sill.\n\n## Section two\n\nThe cat has a bowl.\n';
+
+/**
+ The archive's own note that everything below it was written in English.
+ */
+const ENGLISH_ORIGINAL_NOTE = '<!-- 这段话以下全部，原文都是英文，中文是反向翻译的 -->';
+
+/**
+ Original whose archive seals its last paragraph as the English original.
+ */
+const SEALED_SOURCE_DOC = `## 第一节\n\n猫猫在窗台上睡觉。\n\n${ENGLISH_ORIGINAL_NOTE}\n\n五月四日，猫猫打了个盹。\n`;
+
+/**
+ Archive English whose last paragraph writes a date the page would put month
+ first, were it not sealed.
+ */
+const SEALED_TARGET_DOC
+  = `## Section one\n\nThe cat sleeps on the sill.\n\n${ENGLISH_ORIGINAL_NOTE}\n\nOn 4 May the cat napped.\n`;
 
 /**
  Entry every case settles.
@@ -68,22 +86,34 @@ class LitterBoxClosedError extends Error {
 }
 
 /**
- A throwaway runs directory holding one settled artifact, and where its page
- goes.
+ A throwaway runs directory holding one settled artifact over a pair, and
+ where its page goes.
 
  @param strip - preparation keys to delete from the artifact, which is how a
  file written before those fields existed looks
+
+ @param sourceText - original the artifact is settled over
+
+ @param targetText - archive English the artifact is settled over
 
  @returns Artifact and page roots, and the page path, removed when its
  `await using` scope ends
 
  @example
  ```ts
- await using run = await settledRun({ strip: [], },);
+ await using run = await settledRunOver({ strip: [], sourceText: SOURCE_DOC, targetText: TARGET_DOC, },);
  ```
  */
-async function settledRun(
-  { strip, }: { readonly strip: readonly string[]; },
+async function settledRunOver(
+  {
+    strip,
+    sourceText,
+    targetText,
+  }: {
+    readonly strip: readonly string[];
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
 ): Promise<{
   readonly artifactsDir: string;
   readonly publishDir: string;
@@ -110,8 +140,8 @@ async function settledRun(
        */
       const written = JSON.parse(settledArtifactText({
         prepared: prepareDocumentPair({
-          sourceText: SOURCE_DOC,
-          targetText: TARGET_DOC,
+          sourceText,
+          targetText,
           includeFrontMatter: true,
           sealArchiveOriginal: true,
         },),
@@ -148,6 +178,30 @@ async function settledRun(
         ),
       };
     },
+  },);
+}
+
+/**
+ A throwaway runs directory holding one settled artifact over the pair every
+ case but the sealed one settles, and where its page goes.
+
+ @param strip - preparation keys to delete from the artifact
+
+ @returns Artifact and page roots, and the page path, removed when its
+ `await using` scope ends
+
+ @example
+ ```ts
+ await using run = await settledRun({ strip: [], },);
+ ```
+ */
+async function settledRun(
+  { strip, }: { readonly strip: readonly string[]; },
+): Promise<Awaited<ReturnType<typeof settledRunOver>>> {
+  return await settledRunOver({
+    strip,
+    sourceText: SOURCE_DOC,
+    targetText: TARGET_DOC,
   },);
 }
 
@@ -365,6 +419,47 @@ await describe({
           'utf8',
         )).includes('stray corpus line',),).toBe(false,);
         expect(await verdictOf({ run, },),).toBe('agreed-weighed',);
+      },
+    },),
+    it({
+      name: 'REPUBLISHES A PAGE WHOSE ARCHIVE SEALS ITS LAST PARAGRAPH AS THE ENGLISH ORIGINAL, the spans the '
+        + 'artifact stored reaching the publish check, which finds nothing lost',
+      fn: async () => {
+        await using run = await settledRunOver({
+          strip: [],
+          sourceText: SEALED_SOURCE_DOC,
+          targetText: SEALED_TARGET_DOC,
+        },);
+        /**
+         Every line the republish logged, behind its level.
+         */
+        const lines: string[] = [];
+
+        expect(await republishSettledPages({
+          entryIds: [ENTRY,],
+          artifactsDir: run.artifactsDir,
+          publishDir: run.publishDir,
+          readPair: pairOf({
+            sourceText: SEALED_SOURCE_DOC,
+            targetText: SEALED_TARGET_DOC,
+          },),
+          l: levelCapturingLogger({ lines, },),
+        },),).toStrictEqual([{
+          entryId: ENTRY,
+          outcome: {
+            kind: 'republished',
+            why: 'missing',
+          },
+        },],);
+        expect(await readFile(
+          run.pagePath,
+          'utf8',
+        ),).toBe(SEALED_TARGET_DOC,);
+        expect(lines,).toEqual([
+          'info publish: wrote 1 slice into a page of 104 characters',
+          'info REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
+          'info republish: 1 settled page judged, 1 rewritten, 0 left',
+        ],);
       },
     },),
     it({

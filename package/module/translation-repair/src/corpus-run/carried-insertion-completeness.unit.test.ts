@@ -5,6 +5,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -127,6 +128,42 @@ await describe({
           targetText: TARGET,
           carried: CARRIED,
         },),).toThrow(TranslationRepairInterruptedError,);
+      },
+    },),
+    it({
+      name: 'ACCEPTS a page with no carried passage whatever it ships, since there is no region to lose',
+      fn: async () => {
+        expect(() => assertCarriedInsertionsRemain({
+          artifact: artifactShipping({ text: 'The cat waits by the window.\n', }),
+          slices: SLICES,
+          targetText: TARGET,
+          carried: [],
+        },),).not.toThrow();
+      },
+    },),
+    it({
+      name: 'PAUSES for a carried passage admitted with no region recorded, naming it as having none',
+      fn: async () => {
+        const interruption = caught(function act(): unknown {
+          return assertCarriedInsertionsRemain({
+            artifact: artifactShipping({ text: TARGET, }),
+            slices: SLICES,
+            targetText: TARGET,
+            carried: [{
+              position: 1,
+              sliceIndex: 1,
+              sourceText: '猫在阳光下睡觉。',
+              evidence: [],
+            },],
+          },);
+        },);
+        if (!(interruption instanceof TranslationRepairInterruptedError))
+          throw new Error('expected the passage with no region to pause the page',);
+        expect(interruption.reason,).toBe('carried-evidence-lost',);
+        expect(interruption.findings,).toEqual([
+          'carried-insertion-evidence-lost (count 1)',
+          'carried-insertion-evidence-lost slice 1: "(no region recorded)"',
+        ],);
       },
     },),
   ],

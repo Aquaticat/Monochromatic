@@ -27,11 +27,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { writeFileAtomic, } from '../../dist/final/node/index.mjs';
+import { warnLinesDuring, } from '../console-warn-lines.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
+/**
+ Characters in the uuid a temporary file's name carries.
+ */
+const UUID_LENGTH = 36;
+
 await describe({
   name: writeFileAtomic.name,
+  concurrency: 1,
   children: [
     it({
       name: 'writes the content under the name asked for, which is the whole '
@@ -248,6 +255,68 @@ await describe({
         },),).toEqual(['fulfilled', 'fulfilled',],);
         expect(texts.includes(landed,),).toBe(true,);
         expect(await readdir(dir,),).toEqual(['Pepper.json',],);
+      },
+    },),
+
+    it({
+      name: 'REJECTS WITH THE WRITE\'S OWN REFUSAL and warns that the temporary file could not be removed, a name '
+        + 'too long for the filesystem refusing the write and the removal alike',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'atomic-write-', },);
+        /**
+         Path whose file name leaves no room for the temporary name's suffix.
+         */
+        const path = join(
+          scratch.path,
+          `${'whiskers'.repeat(30,)}.json`,
+        );
+
+        const {
+          result: refusal,
+          warned,
+        } = await warnLinesDuring({
+          run: async function overlong(): Promise<unknown> {
+            return await rejectionOf(async function writeOverlong(): Promise<void> {
+              await writeFileAtomic({
+                path,
+                text: '{"id":"Whiskers"}\n',
+              },);
+            },);
+          },
+        },);
+
+        expect((Error.isError(refusal,) && ('code' in refusal) && ('syscall' in refusal))
+          ? {
+            code: refusal.code,
+            syscall: refusal.syscall,
+          }
+          : refusal,).toEqual({
+          code: 'ENAMETOOLONG',
+          syscall: 'open',
+        },);
+        expect(warned.length,).toBe(1,);
+        /**
+         What the warning says before and after the unique temporary name the write chose: this process's
+         id and a uuid, which the case cannot know.
+         */
+        const before = `[translation-repair] [removePartial] ${path}.${String(process.pid,)}.`;
+        const after = '.partial is left after a failed write and could not be removed (ENAMETOOLONG)';
+        const [line = '',] = warned;
+        expect({
+          opening: line.slice(
+            0,
+            before.length,
+          ),
+          closing: line.slice(line.length - after.length,),
+          uniqueName: line.slice(
+            before.length,
+            line.length - after.length,
+          ).length,
+        },).toEqual({
+          opening: before,
+          closing: after,
+          uniqueName: UUID_LENGTH,
+        },);
       },
     },),
   ],

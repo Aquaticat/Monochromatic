@@ -49,6 +49,18 @@ await describe({
   name: 'canadianizeText and canadianizePage (class one hundred thirty-four)',
   children: [
     it({
+      name: 'WRITES a day-first date month first and leaves the one to three digits after its month as they stand',
+      fn: async () => {
+        expect([
+          rewritten({ text: 'On 4 May 12 cats napped.', },),
+          rewritten({ text: 'On 4 May 123 cats napped.', },),
+        ],).toEqual([
+          'On May 4 12 cats napped.',
+          'On May 4 123 cats napped.',
+        ],);
+      },
+    },),
+    it({
       name: 'WRITES day-first dates month first, with a comma before a year and after it where the sentence '
         + 'goes on (ledger K1: the Language Portal of Canada sets the year off on both sides)',
       fn: async () => {

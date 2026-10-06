@@ -489,6 +489,27 @@ await describe({
       },
     },),
     it({
+      name: 'RECORDS A SLICE ONCE WHERE A PASS REWROTE IT AND THE FOOTNOTE GUARD TRIMMED IT, the guard\'s row '
+        + 'carrying the rewrite',
+      fn: async () => {
+        const assembly = guardPageAssembly({
+          artifact: consolidating({ notes: '[^1]: That is its favourite spot since 4 May.\n[^2]: A sparrow.', },),
+          slices: SLICES,
+          sourceText: '猫猫在窗台上打盹〔1〕。\n\n〔1〕：那是它最喜欢的位置。\n〔2〕：一只麻雀。\n',
+          targetText: TARGET,
+        },);
+        expect(assembly.withdrawn,).toEqual([],);
+        expect(assembly.trimmed,).toEqual([{
+          sliceIndex: 1,
+          replacementText: '[^1]: That is its favourite spot since May 4.',
+        },],);
+        expect(assembly.findings,).toEqual([
+          'canadian-form-rewritten (slice 1: "4 May" to "May 4")',
+          'assembly-footnote-trimmed orphan-definition gfm 2 (slice 1)',
+        ],);
+      },
+    },),
+    it({
       name: 'RESTORES THE ARCHIVE\'S GLOSS LINE OF A NAME the shipped text carries without any gloss '
         + '(class one hundred five, CuspariaKLSY9, 2026-09-23: "“Ling Shui Yu Yu Zi” means fish in clear '
         + 'water" dropped for the third time on the judges\' call)',

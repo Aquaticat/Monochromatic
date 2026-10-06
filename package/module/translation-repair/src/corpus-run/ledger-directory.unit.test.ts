@@ -41,6 +41,7 @@ import {
   refusalOf,
   RunJsonUnreadableError,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Ledger directory tests
@@ -140,6 +141,36 @@ await describe({
 
             expect(reading.rounds.length,).toBe(0,);
             expect(reading.refused.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'RAISES where a file stands in place of the directory, since a ledger that cannot be listed is '
+            + 'not one the run never wrote',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'ledger-directory-', },);
+            /**
+             Path of the ledger directory, a file standing there.
+             */
+            const dir = join(
+              scratch.path,
+              'ledger',
+            );
+            await writeFile(
+              dir,
+              'a cat sleeps here, not a ledger\n',
+              'utf8',
+            );
+
+            /**
+             What the read rejected with.
+             */
+            const refusal = await rejectionOf(async function overAFile(): Promise<void> {
+              await readLedgerDirectory({ dir, },);
+            },);
+
+            expect(String(refusal,),).toBe('Error: could not list the ledger directory (ENOTDIR)',);
+            expect(Error.isError(refusal,) && ('cause' in refusal) && Error.isError(refusal.cause,)
+              && ('code' in refusal.cause) && refusal.cause.code,).toBe('ENOTDIR',);
           },
         },),
         it({

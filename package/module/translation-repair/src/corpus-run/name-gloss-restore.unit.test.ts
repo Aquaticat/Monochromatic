@@ -10,12 +10,16 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { restoreNameGlossLines, } from '../../dist/final/node/index.mjs';
+import {
+  restoreNameGlossLines,
+  SliceNotOnPageError,
+} from '../../dist/final/node/index.mjs';
 import { pair, } from './archive-slice-pair.test-fixture.ts';
 
 /**
@@ -58,6 +62,23 @@ await describe({
           `name-gloss-restored (slice 0: "${GLOSS}")`,
           'name-gloss-restored (slice 1: ""Pip" means a seed.")',
         ],);
+      },
+    },),
+    it({
+      name: 'REFUSES a replacement for a slice the pairs lack rather than reading the archive as empty text',
+      fn: async () => {
+        const refusal = caught(function act(): unknown {
+          return restoreNameGlossLines({
+            slices: [pair({ sliceIndex: 0, target: ARCHIVE, },),],
+            replacements: [{ sliceIndex: 7, replacementText: 'Her handle was coined while she napped.', },],
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(SliceNotOnPageError,);
+        /**
+         The refusal the page text gives for that slice.
+         */
+        const expected = new SliceNotOnPageError({ sliceIndex: 7, },);
+        expect(String(refusal,),).toBe(String(expected,),);
       },
     },),
     it({

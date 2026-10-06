@@ -194,6 +194,30 @@ await describe({
       },
     },),
     it({
+      name: 'UNWRAPS a paragraph quoted in straight doubles, and LEAVES one holding a straight quotation inside it',
+      fn: async () => {
+        expect([
+          thirdSlice({
+            archive: [
+              '> Purr, said the kitten.',
+              '> The whiskers twitched.',
+            ],
+            replacement: '> "Please stay by the window."',
+          },),
+          thirdSlice({
+            archive: [
+              '> Purr, said the kitten.',
+              '> The whiskers twitched.',
+            ],
+            replacement: '> "The kitten said "meow" twice," wrote the cat.',
+          },),
+        ],).toEqual([
+          '> Please stay by the window.',
+          '> "The kitten said "meow" twice," wrote the cat.',
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES a quoted paragraph outside any blockquote',
       fn: async () => {
         expect(thirdSlice({

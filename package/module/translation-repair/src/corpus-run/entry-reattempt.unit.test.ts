@@ -91,6 +91,17 @@ await describe({
         },),
 
         it({
+          name: 'DECLINES WHOLE-ENTRY RETRY for an entry the pipeline declined, whatever the cache grew by',
+          fn: async () => {
+            expect(readAttemptOutcome({
+              outcome: { kind: 'declined', },
+              cachedBefore: 0,
+              cachedAfter: 13,
+            },),).toEqual({ kind: 'declined', },);
+          },
+        },),
+
+        it({
           name: 'REFUSES another attempt when the count did not move, which is the '
             + 'stop condition: no progress guarantee holds, so an entry that '
             + 'bought nothing would repeat itself until the soft budget was gone',

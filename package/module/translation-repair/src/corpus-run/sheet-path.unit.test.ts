@@ -27,6 +27,7 @@ import {
   resolveSheetPath,
   UnsafeSeedError,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
@@ -196,6 +197,28 @@ await describe({
           isFinal: true,
           kind: 'manifest',
         },),).rejects.toThrow(UnsafeSeedError,);
+      },
+    },),
+
+    it({
+      name: 'refuses an empty seed, which names no round and would leave every draw sharing one file name',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'translation-repair-sheet-path-', },);
+
+        /**
+         What the resolution rejected with.
+         */
+        const refusal = await rejectionOf(async function emptySeed(): Promise<void> {
+          await resolveSheetPath({
+            runsDir: scratch.path,
+            seed: '',
+            isFinal: true,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(UnsafeSeedError,);
+        expect(String(refusal,),).toBe(
+          'UnsafeSeedError: Draw seed is not usable as a file name: ""\nAllowed: letters, digits, dot, underscore, hyphen.',
+        );
       },
     },),
   ],

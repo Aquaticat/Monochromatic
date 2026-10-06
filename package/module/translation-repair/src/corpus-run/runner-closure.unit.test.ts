@@ -119,6 +119,51 @@ await describe({
     },),
 
     it({
+      name: 'READS A SPECIFIER CLOSED BY A SINGLE QUOTE where no double quote follows it in the file',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'runner-closure-', },);
+        /**
+         Readable source whose only quotes are single.
+         */
+        const path = await entryWith({
+          dir: scratch.path,
+          text: 'import { tagged, } from \'./run-config.mjs\';\n',
+        },);
+
+        /**
+         What it imports.
+         */
+        const closure = await readRunnerClosure({ entryPath: path, },);
+        if (closure.kind !== 'read')
+          throw new Error('read by construction',);
+        expect(closure.chunks,).toEqual(['run-config.mjs',],);
+      },
+    },),
+
+    it({
+      name: 'SKIPS A SPECIFIER WHOSE QUOTE NEVER CLOSES, a file cut off inside an import, rather than naming '
+        + 'the rest of the file a chunk',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'runner-closure-', },);
+        /**
+         An entry cut off inside its second import.
+         */
+        const path = await entryWith({
+          dir: scratch.path,
+          text: 'import{a}from"./run-config-ABC123.mjs";import{b}from"./whisker-DEF',
+        },);
+
+        /**
+         What it imports.
+         */
+        const closure = await readRunnerClosure({ entryPath: path, },);
+        if (closure.kind !== 'read')
+          throw new Error('read by construction',);
+        expect(closure.chunks,).toEqual(['run-config-ABC123.mjs',],);
+      },
+    },),
+
+    it({
       name: 'IGNORES BARE AND NODE SPECIFIERS, since only relative chunks belong to this build: '
         + 'a package name identifies a dependency and not the code that was executed',
       fn: async () => {

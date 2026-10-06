@@ -32,6 +32,15 @@ await describe({
       },
     },),
     it({
+      name: 'CORRECTS a capitalised syllable and keeps its capital',
+      fn: async () => {
+        expect(correctPinyinTones({ text: 'The cat ate yarn (线, Xiǎn) all night.', },),).toEqual({
+          text: 'The cat ate yarn (线, Xiàn) all night.',
+          changed: ['"Xiǎn" to "Xiàn" for 线',],
+        },);
+      },
+    },),
+    it({
       name: 'KEEPS the apostrophe between syllables',
       fn: async () => {
         expect(correctPinyinTones({ text: 'Cat food (鱼罐, yú’guǎn).', },).text,).toBe('Cat food (鱼罐, yú’guàn).',);

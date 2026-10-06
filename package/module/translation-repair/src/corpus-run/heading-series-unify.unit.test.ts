@@ -376,6 +376,34 @@ await describe({
       },
     },),
     it({
+      name: 'READS THE NUMBER BEFORE THE FIRST COLON where a title carries an ASCII colon and a fullwidth one after it',
+      fn: async () => {
+        const unified = unifyHeadingSeries({
+          slices: SLICES,
+          replacements: [
+            rendered({
+              sliceIndex: 0,
+              heading: '### One: Ginger',
+            },),
+            rendered({
+              sliceIndex: 1,
+              heading: '### Two: Sooty：the black one',
+            },),
+            rendered({
+              sliceIndex: 2,
+              heading: '### Three: Snowy',
+            },),
+          ],
+        },);
+        expect(headingsOf({ replacements: unified.replacements, },),).toEqual([
+          '### One: Ginger',
+          '### Two: Sooty：the black one',
+          '### Three: Snowy',
+        ],);
+        expect(unified.findings,).toEqual([],);
+      },
+    },),
+    it({
       name: 'LEAVES a page with fewer than two numbered headings alone',
       fn: async () => {
         const unified = unifyHeadingSeries({
