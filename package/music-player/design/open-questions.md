@@ -558,6 +558,9 @@ new IME work and native accessibility acceptance.
   `evidence/first-run-access-boundaries.md` records the scoped authored
   native study and `questions/first-run-access.html` is verified evidence,
   not a new preference ballot.
+  Since D95 and D100 (2026-10-06) only the declined state remains,
+  shown as an open but unreadable library;
+  its wording and layout are the agent's version and await approval.
   Production source-status/recovery binding and native accessibility
   acceptance remain separate.
 - **DEVELOPER-OWNED: desktop window default size (11c, D49).**
