@@ -91,8 +91,63 @@ for (const profile of ['debug', 'release']) {
 }
 """
 
+[tasks.notices]
+# The crate sources must be present: cargo-about runs with --frozen and without network.
+depends = ["fetch"]
+description = "Collect the license text of every Rust crate the executable is built from with cargo-about into target/crate-licenses.json"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const { createHash } = await import('node:crypto')
+const { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } = await import('node:fs')
+const output = 'target/crate-licenses.json'
+const stamp = 'target/crate-licenses.inputs'
+// cargo-about is installed in the build image (Containerfile); an image built before 2026-10-06 lacks it.
+let version = ''
+try {
+  version = runBounded(['cargo-about', '--version'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+} catch (error) {
+  version = 'none (' + String(error.message).split(String.fromCharCode(10))[0] + ')'
+}
+if (version !== 'cargo-about 0.9.2') {
+  throw new Error('The build image has no cargo-about 0.9.2 (found: ' + version + '). Rebuild the image with mise run //package/desktop-app/ide:image, which installs it, then run this task again.')
+}
+// The list depends only on these inputs, and one run takes about a minute, so an unchanged list is kept.
+const inputs = createHash('sha256')
+for (const file of ['Cargo.lock', 'Cargo.toml', 'about.toml', 'about.json.hbs']) inputs.update(file + String.fromCharCode(0)).update(readFileSync(file)).update(String.fromCharCode(0))
+inputs.update(version)
+const digest = inputs.digest('hex')
+if (existsSync(output) && existsSync(stamp) && readFileSync(stamp, 'utf8').trim() === digest) {
+  console.log(output + ' is current for these inputs')
+} else {
+  mkdirSync('target', { recursive: true })
+  rmSync(output + '.new', { force: true })
+  // --frozen: the locked graph, crate sources from the ide-cargo volume (the fetch task fills it), and no network.
+  // --fail: a crate whose license cannot be determined or is not accepted by about.toml stops the task.
+  runBounded(['cargo-about', '-c', 'never', 'generate', '--frozen', '--fail', '--config', 'about.toml', '--output-file', output + '.new', 'about.json.hbs'])
+  const list = JSON.parse(readFileSync(output + '.new', 'utf8'))
+  if (!Array.isArray(list.licenses) || list.licenses.length === 0) throw new Error('cargo-about wrote no license text to ' + output + '.new')
+  renameSync(output + '.new', output)
+  writeFileSync(stamp, digest + String.fromCharCode(10))
+  console.log('Wrote ' + output + ': ' + list.licenses.length + ' license texts for ' + new Set(list.licenses.flatMap(item => item.crates.map(used => used.name + ' ' + used.version))).size + ' crates')
+}
+"""
+
+[tasks."linked-crates"]
+description = "List the crates linked into the application binary (no procedural-macro or build edges) in target/linked-crates.txt for the bundle checks"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const { writeFileSync } = await import('node:fs')
+// cargo tree --edges normal,no-proc-macro follows what is compiled into the binary for its one target.
+const tree = runCargo(['tree', '--frozen', '--edges', 'normal,no-proc-macro', '--target', 'x86_64-unknown-linux-gnu', '--prefix', 'none', '--format', '{p}'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 })
+const crates = [...new Set(tree.split(String.fromCharCode(10)).filter(Boolean).map(line => line.replace(/ [(][*][)]$/, '').replace(/ [(].*[)]$/, '').replace(' v', ' ')))].sort()
+writeFileSync('target/linked-crates.txt', crates.join(String.fromCharCode(10)) + String.fromCharCode(10))
+console.log('Wrote target/linked-crates.txt: ' + crates.length + ' crates, the package itself included')
+"""
+
 [tasks."build:debug"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Build the debug IDE and its helper binaries in the bounded container"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -101,7 +156,7 @@ runCargo(['build'])
 """
 
 [tasks.build]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Build the optimized application binary in the bounded container, as sibling applications name their release build"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -141,7 +196,8 @@ description = "Install dist/monochromatic-ide as ~/.local/bin/monochromatic-ide 
 run = "node bin/install.mjs"
 
 [tasks."inspect:bundle"]
-description = "Check a single application executable: every runtime file and notice embedded byte for byte, and lone copies that highlight, reuse and repair their cache, ignore a user Helix runtime, start concurrently, and report a damaged embedded part"
+depends = ["linked-crates"]
+description = "Check a single application executable: every runtime file, notice, and Rust crate license embedded byte for byte, every linked crate covered, and lone copies that highlight, reuse and repair their cache, ignore a user Helix runtime, start concurrently, and report a damaged embedded part"
 usage = '''
 arg "[file]" default="dist/monochromatic-ide" help="Single executable to check"
 arg "[runtime]" default="target/release/runtime" help="Runtime directory the executable was built from"
@@ -150,6 +206,7 @@ arg "[only]" help="Comma-separated check names to run; default is every check"
 run = "node bin/inspect-bundle.mjs"
 
 [tasks."inspect:bundle-guards"]
+depends = ["linked-crates"]
 description = "Damage copies of a single application executable and observe each bundle check fail on its damage"
 usage = '''
 arg "[file]" default="dist/monochromatic-ide" help="Single executable to copy and damage"
@@ -172,7 +229,7 @@ runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
 [tasks."test:native"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Exercise native window events and fonts in process-isolated headless tests"
 usage = 'arg "[filter]" help="Optional nextest filter expression, for example test(/sidebar/); default is every native test"'
 shell = "node --input-type=module-typescript -e"
@@ -219,7 +276,7 @@ runCargo(['test', '--no-default-features', '--test', 'file_open'])
 """
 
 [tasks."test:cli"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Verify native-path argument grammar and executable help without display startup"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -244,8 +301,8 @@ runCargo(['test', '--no-default-features', '--test', 'raster_reuse', '--', '--no
 """
 
 [tasks."lint:clippy"]
-# The application binary embeds target/debug/runtime, so its build needs the prepared runtime.
-depends = ["runtime"]
+# The application binary embeds target/debug/runtime and target/crate-licenses.json, so its build needs both.
+depends = ["runtime", "notices"]
 description = "Check all IDE targets with warnings denied"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -254,7 +311,7 @@ runCargo(['clippy', '--all-targets', '--', '--deny', 'warnings'])
 """
 
 [tasks."lint:release"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Check the application binary under the release profile with warnings denied, as the build task compiles it"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -344,7 +401,7 @@ runCargo(['test', '--no-default-features', '--test', 'row_map', '--test', 'virtu
 """
 
 [tasks."test:annotations-native"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Exercise injected inlay hints and diagnostics through native window events in process-isolated headless tests"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -580,7 +637,7 @@ arg "[only]" help="Comma-separated guard names to run; default is every guard"
 run = "node bin/inspect-language-navigation-guards.mjs"
 
 [tasks.mcp]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Build and run the source-view gate with native headless UI inspection"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -604,7 +661,7 @@ execFileSync('./target/debug/monochromatic-ide', [scratch], { stdio: 'inherit', 
 """
 
 [tasks."inspect:native"]
-depends = ["runtime"]
+depends = ["runtime", "notices"]
 description = "Run the IDE in the repo compositor with isolated theme and font configuration"
 usage = '''
 arg "[scheme]" default="dark" help="Private system appearance: dark or light"
