@@ -68,6 +68,10 @@ fn dispatches_like_cmd_stash() {
         vec!["--", "file.ts"],
         vec!["-m", "push"],
         vec![HATCH],
+        // A word without a dash is never the single-dash typo, whatever its tail spells.
+        vec!["xpush"],
+        vec!["apus", "file"],
+        vec!["xlist"],
     ] {
         assert_eq!(
             region(values.as_slice()).subcommand,

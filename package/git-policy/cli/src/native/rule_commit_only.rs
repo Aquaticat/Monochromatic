@@ -268,28 +268,6 @@ pub fn resolve_index_state(
     ));
 }
 
-/// What: Whether the command is `commit` with the escape hatch in option position.
-/// Why:  The transform stage must know that an earlier pass already honored the hatch.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function hasCommitOnlyEscapeHatch(args: readonly string[]): boolean;
-/// ```
-pub fn has_commit_only_escape_hatch(
-    arguments: &[OsString],
-    wrapper_flags: &[&[u8]],
-) -> Result<bool, OptionError> {
-    let layout: GlobalLayout = global_layout(arguments);
-    if layout.outcome != GlobalOutcome::Command
-        || arguments[layout.prefix_len].as_encoded_bytes() != b"commit"
-    {
-        return Ok(false);
-    }
-    let region: CommitRegion =
-        parse_commit_region(&arguments[layout.prefix_len + 1..], wrapper_flags)?;
-    return Ok(!region.wrapper.escape.is_empty());
-}
-
 /// Every `commit-only.unit.test.ts` case.
 #[cfg(test)]
 #[path = "rule_commit_only_tests.rs"]
