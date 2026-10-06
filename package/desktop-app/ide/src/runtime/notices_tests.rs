@@ -95,7 +95,9 @@ fn license_folders_and_license_named_files_are_notices_and_nothing_else_is() {
     assert!(is_notice("runtime/queries/demo/COPYING"));
     assert!(is_notice("runtime/queries/demo/Notice.txt"));
     assert!(is_notice("runtime/queries/demo/licence.md"));
-    assert!(!is_notice("runtime/queries/licenses-and-more/highlights.scm"));
+    assert!(!is_notice(
+        "runtime/queries/licenses-and-more/highlights.scm"
+    ));
 }
 
 #[test]

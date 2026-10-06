@@ -45,11 +45,7 @@ pub fn is_notice(path: &str) -> bool {
     if path.starts_with("LICENSES/") || path.starts_with("runtime/licenses/") {
         return true;
     }
-    let name = path
-        .rsplit('/')
-        .next()
-        .unwrap_or(path)
-        .to_ascii_uppercase();
+    let name = path.rsplit('/').next().unwrap_or(path).to_ascii_uppercase();
     return name.contains("LICENSE")
         || name.contains("LICENCE")
         || name.starts_with("COPYING")

@@ -1778,7 +1778,7 @@ and reads grammars and queries through `src/runtime.rs`:
   then compares the cached file with them byte for byte.
   A missing, shortened, or altered cached file is written again and logged as a warning;
   a damaged embedded part is reported under the source
-  ("The language file runtime/grammars/sql.so embedded in … is damaged …"),
+  ("The file runtime/grammars/sql.so embedded in … is damaged …"),
   the file stays readable as plain text,
   and nothing is unpacked for it.
 - A write goes to a private file named after the process and a counter,
@@ -1934,6 +1934,13 @@ What changes:
   its server gets the project root,
   here the whole home folder,
   as workspace.
+  With `scratch.rs` directly in the disposable home of 283,450 files,
+  `rust-analyzer` started confined with that workspace,
+  its state below the home folder's `.cache`,
+  logged that it found no project there,
+  held 47,092 KiB of resident memory 20 s later,
+  and answered a hover request with "No hover information at this position.";
+  the window closed cleanly with nothing left running.
 - The tree reads only the folders shown,
   the change watcher watches only those (one inotify watch at start),
   and search runs `rg` over the home folder,
@@ -2036,6 +2043,15 @@ the digest test in `src/runtime/embedded_tests.rs`,
 the bind-order test,
 the state-directory test,
 and the home default in `tests/cli_args.rs`.
+The cache cleanup's guards were removed the same way:
+with the current key no longer skipped,
+`the_current_key_is_never_removed_however_long_unused` failed (the current folder was removed);
+with the age no longer compared,
+`a_folder_used_within_30_days_is_kept` failed (all four recent folders removed),
+and so did `a_start_removes_cache_folders_of_other_builds_unused_for_30_days` in `tests/cli_process.rs`
+("the folder used a day ago was removed");
+with the parser load no longer renewing the marker,
+`a_marker_renewed_by_a_running_copy_keeps_its_folder` failed.
 
 ### Measured on 2026-10-06
 

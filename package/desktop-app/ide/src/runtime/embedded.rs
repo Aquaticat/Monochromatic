@@ -129,17 +129,17 @@ impl EmbeddedRuntime {
                 path,
                 expected = file.digest,
                 found,
-                "embedded language file is damaged"
+                "embedded file is damaged"
             );
             // What: `bail!` is a macro (the `!`) that returns an error with this formatted message.
             // Why: The message names the file, the executable, what happened, and the remedy.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // throw new Error(`The language file ${path} embedded in ${exe} is damaged ...`);
+            // throw new Error(`The file ${path} embedded in ${exe} is damaged ...`);
             // ```
             bail!(
-                "The language file {path} embedded in {} is damaged: its contents no longer match the digest recorded when the application was built (expected {:016x}, found {found:016x}). Replace the executable with a fresh copy of the application, or build it again from source, then restart the application.",
+                "The file {path} embedded in {} is damaged: its contents no longer match the digest recorded when the application was built (expected {:016x}, found {found:016x}). Replace the executable with a fresh copy of the application, or build it again from source, then restart the application.",
                 executable_name(),
                 file.digest
             );

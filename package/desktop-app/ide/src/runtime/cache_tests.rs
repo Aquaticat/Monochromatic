@@ -127,9 +127,17 @@ fn a_rewrite_replaces_the_file_instead_of_writing_into_it() {
     let inode = fs::metadata(&path).expect("metadata").ino();
     unpack(&directory, "toml", &bytes).expect("rewrite");
     let mut seen = Vec::new();
-    held.read_to_end(&mut seen).expect("read through the earlier handle");
-    assert_eq!(seen, shortened, "the rewrite changed the file an earlier reader holds");
-    assert_ne!(fs::metadata(&path).expect("metadata").ino(), inode, "the name still points at the old file");
+    held.read_to_end(&mut seen)
+        .expect("read through the earlier handle");
+    assert_eq!(
+        seen, shortened,
+        "the rewrite changed the file an earlier reader holds"
+    );
+    assert_ne!(
+        fs::metadata(&path).expect("metadata").ino(),
+        inode,
+        "the name still points at the old file"
+    );
     assert_eq!(fs::read(&path).expect("rewritten"), bytes);
 }
 

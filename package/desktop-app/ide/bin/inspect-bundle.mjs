@@ -218,10 +218,18 @@ const session = async ({ name, application, cache, config, settled = settledOnSy
   });
   const log = join(directory, 'session.log');
   try {
+    // The compositor's own start (its EGL setup) took 37 s at a host load of 77 on 2026-10-06, and it starts the
+    // application only after that; the application's 60 s count from the compositor's first control reply.
+    const compositorDeadline = performance.now() + 120000;
+    while (!(await control('ping').then(reply => reply.startsWith('ok'), () => false))) {
+      demand(child.exitCode === null && child.signalCode === null, 'the session ended early with status ' + child.exitCode + '; see ' + log);
+      demand(performance.now() < compositorDeadline, 'the compositor did not answer its control socket within 120 s; see ' + log);
+      await wait(100);
+    }
     const deadline = performance.now() + 60000;
     while (!settled(output())) {
       demand(child.exitCode === null && child.signalCode === null, 'the session ended early with status ' + child.exitCode + '; see ' + log);
-      demand(performance.now() < deadline, 'the expected application output did not appear within 60 s; see ' + log);
+      demand(performance.now() < deadline, 'the expected application output did not appear within 60 s of the compositor answering; see ' + log);
       await wait(50);
     }
     const settledAfter = Math.round(performance.now() - started);
@@ -396,7 +404,8 @@ checks['damaged-embedded-part-reported'] = async () => {
   demand(report.includes('runtime/grammars/sql.so embedded in ' + application + ' is damaged'), 'the report does not name the damaged part and the executable: ' + report);
   demand(report.includes('Replace the executable'), 'the report does not give the remedy: ' + report);
   const unpackedRoot = join(home, 'cache', 'monochromatic-ide', 'runtime');
-  const unpacked = isDirectory(unpackedRoot) ? filesBelow(unpackedRoot) : [];
+  // Every start renews its key folder's `last-used` marker; anything else below the runtime cache was unpacked.
+  const unpacked = isDirectory(unpackedRoot) ? filesBelow(unpackedRoot).filter(file => !/^[0-9a-f]{16}\/last-used$/.test(file)) : [];
   demand(unpacked.length === 0, 'files were unpacked although the embedded part is damaged: ' + unpacked.join(', '));
   demand(ending === undefined, ending);
   return { report: report.slice(report.indexOf(unavailable)).slice(0, 400), frame };

@@ -225,10 +225,7 @@ fn last_use(key_folder: &Path) -> std::io::Result<SystemTime> {
 /// ```
 fn remove_folder(runtime_folder: &Path, name: &str) -> std::io::Result<()> {
     let number = NEXT_REMOVAL.fetch_add(1, Ordering::Relaxed);
-    let doomed = runtime_folder.join(format!(
-        ".{name}.removing-{}-{number}",
-        std::process::id()
-    ));
+    let doomed = runtime_folder.join(format!(".{name}.removing-{}-{number}", std::process::id()));
     fs::rename(runtime_folder.join(name), &doomed)?;
     return fs::remove_dir_all(&doomed);
 }
@@ -271,9 +268,7 @@ fn decide(
     // ```ts
     // const isFolder = entry.isDirectory(); // Dirent from withFileTypes does not follow links
     // ```
-    let is_folder = entry
-        .file_type()
-        .is_ok_and(|kind| return kind.is_dir());
+    let is_folder = entry.file_type().is_ok_and(|kind| return kind.is_dir());
     if is_folder && is_leftover(&name) {
         let doomed = runtime_folder.join(&name);
         match fs::remove_dir_all(&doomed) {
