@@ -94,45 +94,51 @@ with 96 passing cases (`test:template-reference`).
 It is design evidence for the editor study,
 not the player's parser.
 
-### Waiting for the human
+### Answered, and the study is being rebuilt
 
-The editor study is built,
-captured,
-published and verified,
-and its review page waits for an answer.
-State on 2026-10-06:
+On 2026-10-06 the human answered through the question tool:
+the preview scrolls with the page (D91),
+the language has no conditional (D92),
+an empty field is plain substitution with the unit inside the peak field (D93),
+and the page rests where Android puts a focused field (D94).
+`decisions.md` records each with the human's words.
+The layout study's 128 views stay published until the rebuild replaces them;
+its page and builder already describe the decided design,
+so `build:`,
+`lint:`,
+`verify:` and `test:template-editor` fail until then (the commits say so).
 
-- The review page is `questions/template-editor.html`
-  (about 33 MB,
-  self-contained).
-  It asks one question:
-  where the preview sits,
-  `flow`,
-  `rows` or `lines`.
-  The agent ranks `lines`,
-  then `rows`,
-  then `flow`,
-  for the measured reasons on the page.
-  The answer comes back as text prepared by the page and pasted into the chat.
-- `evidence/template-editor-boundaries.md` describes the study,
-  what was measured per layout and what was not exercised.
-  `questions/evidence/template-editor-review-verification.json` records the build,
+The rebuild,
+in order:
+
+- Reference and scenes:
+  done,
+  committed,
+  `test:template-reference` passes.
+  Eight scenes,
+  one layout,
+  default template `$tf(mi(len), m:ss)$ $mi(peak)$`,
+  and a changed template whose second row ends with the separator an empty peak leaves.
+- Kotlin study on the prototype branch:
+  layout option and authored scroll rule removed,
+  fixture values from the reference.
+  Then the unit task and the APK build (`build-template-editor-study.ts`).
+- Capture with `run-template-editor-until-complete.ts decided a`.
+  Check the first condition's views at once with `prepare-template-editor-crops.ts`:
+  the second preview row's line ends with a space,
+  and the hierarchy must keep it.
+- Inspect every sheet,
+  publish (the dry run must list all 128 layout-study images as superseded),
+  build,
   test,
-  guard-removal and offline browser results,
-  with no digest.
-- The study's code is on the prototype branch at
-  `82d2692b7471fcde27c86c9bb321a4d35557bbca`,
-  with 24 passing fixture unit tests.
-  Its 128 views are in
-  `settings-pane-native-private/template-editor-cohort-82d2692b7`.
-  A first build's 56 views in `template-editor-cohort` were a first look only.
-- `verify:template-editor`,
-  `test:template-editor` and `test:template-reference` pass.
-- When the answer arrives:
-  record it as a decision,
-  keep only the chosen layout in the review (RVC),
-  then study how the field list is reached while the keyboard is open,
-  which depends on the layout.
+  prove the guards,
+  browser check,
+  review record (`publish-template-editor-review.ts` holds result strings to refresh from the real outputs first),
+  boundary document,
+  then hand over through the question tool.
+- The private capture scripts no longer compare the APK's digest;
+  the next visit is their first run without it.
+
 - The page lists what the study assumes
   (one template,
   KWGT's spelling,
