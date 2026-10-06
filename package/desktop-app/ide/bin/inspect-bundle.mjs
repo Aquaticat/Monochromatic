@@ -7,6 +7,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
 import { chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createConnection } from 'node:net';
+import { inflateSync } from 'node:zlib';
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
@@ -122,6 +123,23 @@ const checks = {
 // the output first, so a damaged file is reported by its damage and not by a slow exit.
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session');
 const plain = text => text.replace(/\u001b\[[0-9;]*m/g, '');
+// Distinct colors among every 61st pixel of the compositor's RGBA PNG: a window not yet drawn is one flat color.
+const sampledColors = png => {
+  const chunks = [];
+  for (let offset = 8; offset < png.length;) {
+    const length = png.readUInt32BE(offset);
+    if (png.toString('latin1', offset + 4, offset + 8) === 'IDAT') chunks.push(png.subarray(offset + 8, offset + 8 + length));
+    offset += 12 + length;
+  }
+  const width = png.readUInt32BE(16);
+  const rows = inflateSync(Buffer.concat(chunks));
+  const stride = 1 + width * 4;
+  const colors = new Set();
+  for (let row = 0; row * stride < rows.length; row++) {
+    for (let column = row % 61; column < width; column += 61) colors.add(rows.readUInt32BE(row * stride + 1 + column * 4));
+  }
+  return colors.size;
+};
 // Stop and remove what a session may leave behind, and return what was found.
 // A compositor that ends by a signal leaves its hosted application, its private bus daemon, and that daemon's
 // directory, which carries the compositor's process id; a compositor that ends on `quit` leaves none of them.
@@ -158,13 +176,15 @@ const session = async ({ name, application, cache, config, settled = settledOnSy
   mkdirSync(config, { recursive: true });
   // SQL has a bundled grammar and no configured language server, so nothing but the application starts.
   writeFileSync(join(project, 'fixture.sql'), ['-- A comment, a keyword, a string, and a number.', "select 'cat' as name, 42 as answer from pets where name = 'cat';", ''].join('\n'));
-  // Nothing may point at the source tree: no runtime variable, no Cargo variable, private XDG homes. RUST_LOG asks
-  // for the debug records these checks read; a build whose default level is lower shows them only through it.
-  const env = { ...process.env, XDG_CONFIG_HOME: config, XDG_CACHE_HOME: cache, XDG_DATA_HOME: join(directory, 'data'), RUST_LOG: 'ide_app=debug,monochromatic_ide=debug' };
-  for (const key of ['HELIX_RUNTIME', 'CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_MCP_PORT', 'SLINT_SCALE_FACTOR']) delete env[key];
+  // Nothing may point at the source tree: no runtime variable, no Cargo variable, private XDG homes.
+  const env = { ...process.env, XDG_CONFIG_HOME: config, XDG_CACHE_HOME: cache, XDG_DATA_HOME: join(directory, 'data') };
+  for (const key of ['HELIX_RUNTIME', 'CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_MCP_PORT', 'SLINT_SCALE_FACTOR', 'RUST_LOG']) delete env[key];
   const socket = join(directory, 'control.sock');
   const started = performance.now();
-  const child = spawn(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', 'dark', '--', application, project, '--file', 'fixture.sql'], { cwd: '/', env, stdio: ['ignore', 'pipe', 'pipe'] });
+  // RUST_LOG asks the application for the debug records these checks read (a build whose default level is lower
+  // shows them only through it); it is set for the application alone, because the compositor reads it too.
+  const hosted = ['/usr/bin/env', 'RUST_LOG=ide_app=debug,monochromatic_ide=debug', application, project, '--file', 'fixture.sql'];
+  const child = spawn(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', 'dark', '--', ...hosted], { cwd: '/', env, stdio: ['ignore', 'pipe', 'pipe'] });
   const chunks = [];
   child.stdout.on('data', chunk => chunks.push(chunk));
   child.stderr.on('data', chunk => chunks.push(chunk));
@@ -174,6 +194,8 @@ const session = async ({ name, application, cache, config, settled = settledOnSy
     const connection = createConnection(socket);
     let reply = '';
     connection.on('error', reject);
+    // A compositor that is going away may close the connection without a reply; that must not hang the check.
+    connection.on('close', () => reject(new Error('the compositor closed the control connection without replying to ' + line)));
     connection.on('data', chunk => { reply += chunk; if (reply.includes('\n')) { connection.end(); resolveReply(reply.trim()); } });
     connection.write(line + '\n');
   });
@@ -186,16 +208,20 @@ const session = async ({ name, application, cache, config, settled = settledOnSy
       await wait(50);
     }
     const settledAfter = Math.round(performance.now() - started);
-    // A frame counts once two screenshots 250 ms apart are identical.
+    // A frame counts once the window is drawn (more than eight sampled colors) and two screenshots 250 ms apart
+    // are identical. The rows are filtered per line, but these screenshots use no filter, so pixels read directly.
     const frame = join(directory, 'frame.png');
     let previous;
-    for (let attempt = 0; attempt < 20; attempt++) {
+    let colors = 0;
+    for (let attempt = 0; attempt < 240; attempt++) {
       demand(await control('screenshot ' + frame) === 'ok', 'the compositor refused a screenshot');
       const bytes = readFileSync(frame);
-      if (previous?.equals(bytes)) break;
+      colors = sampledColors(bytes);
+      if (colors > 8 && previous?.equals(bytes)) break;
       previous = bytes;
       await wait(250);
     }
+    demand(colors > 8, 'the window was not drawn within 60 s of the settled output; see ' + frame);
     demand(await control('quit') === 'ok', 'the compositor refused quit');
     const [code, signal] = await exited;
     let ending;
@@ -322,11 +348,11 @@ checks['shadowing-query-ignored'] = async () => {
   return { spansWithout: without, spansWithShadowingQuery: withQuery, frame: shadowed.frame };
 };
 // Two first starts at the same moment, sharing one empty cache, both highlight and leave one intact parser.
+// Each runs its own identical copy, so the leftover sweep of one session cannot stop the other's application.
 checks['concurrent-first-starts'] = async () => {
-  const application = loneCopy('concurrent');
   const home = join(artifact, 'concurrent-home');
   const cache = join(home, 'cache');
-  const [left, right] = await Promise.all(['concurrent-left', 'concurrent-right'].map(name => session({ name, application, cache, config: join(home, 'config') })));
+  const [left, right] = await Promise.all(['concurrent-left', 'concurrent-right'].map(name => session({ name, application: loneCopy(name + '-copy'), cache, config: join(home, 'config') })));
   const spans = [spansOf(left.output, 'the first concurrent start'), spansOf(right.output, 'the second concurrent start')];
   demand(readFileSync(cachedSql(cache)).equals(sqlLibrary()), 'the shared cached parser is not intact');
   demand(partials(cache).length === 0, 'partial files remain in the cache: ' + partials(cache).join(', '));
