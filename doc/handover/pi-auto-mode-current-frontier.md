@@ -212,6 +212,14 @@ both occurrences are retained in order.
 with no tool execution or provider calls.
 `proc_979e` passed phase/copy/repeat controls and `proc_1597` passed action regressions.
 Evidence-only closure still supplies no policy outcome or permission.
+The full native suite passed in `proc_7d3e`.
+Native append outputs now enter the original source index and wire without acquiring authority.
+Repeated text keeps distinct original resource-frame positions,
+not invented raw-file identities.
+The current source controls passed in `proc_8684`;
+the initial failure in `proc_7df2` was an outdated authored snapshot missing the new append-input link,
+corrected without weakening the binding.
+The tagged-appendix original mixed-batch test is `proc_658a`.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
