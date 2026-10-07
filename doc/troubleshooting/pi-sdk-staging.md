@@ -46,12 +46,18 @@ Do not remove the notice merely to make preparation succeed.
 
 No upstream filing is warranted:
 
-- Fault: the failing path was chosen by our consumer.
-- Feasibility: the consumer correction is implemented and exercised.
-- Support: no SDK promise of that installed filename was relied on legitimately.
-- Contribution policy: not investigated because no upstream change is proposed.
-- Maintainer willingness: not investigated because no upstream fix is requested.
-- Prototype: the consumer fix is verified;
+- Fault:
+   the failing path was chosen by our consumer.
+- Feasibility:
+   the consumer correction is implemented and exercised.
+- Support:
+   no SDK promise of that installed filename was relied on legitimately.
+- Contribution policy:
+   not investigated because no upstream change is proposed.
+- Maintainer willingness:
+   not investigated because no upstream fix is requested.
+- Prototype:
+   the consumer fix is verified;
   there is no upstream defect prototype or public filing artifact to add.
 
 ## Owned prospective-input planner omitted rendered working-directory context
