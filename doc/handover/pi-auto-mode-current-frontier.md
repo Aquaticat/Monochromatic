@@ -85,8 +85,16 @@ Registered tiers and original-request scope are separate from observed wire plac
 A user-tier registration remains user-tier in a system message;
 per-action metadata cannot register an unregistered source.
 The new authority binding retains the exact original source and request identities.
-Registration and action-policy tests are running;
-complete governing-source coverage and other unresolved premises are not inferred from registration.
+The ordinary-host registration profile passed `proc_a0b3`,
+and action-policy regression passed `proc_61e6`.
+Registration now preserves the native host prompt,
+normal context files,
+and appended instructions instead of requiring a sole system carrier.
+`createBoundPolicyReviewer` fixes owner capabilities at bootstrap
+and takes only the original response,
+obtaining its existing judgment internally.
+Its additional entry-point controls are running.
+Complete governing-source coverage and other unresolved premises are not inferred from registration.
 Continue other authorized implementation without a new paid trial or source-locking pipeline.
 
 ## Current direction: incremental rule relevance
