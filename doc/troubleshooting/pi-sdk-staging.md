@@ -1,5 +1,89 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Owned SDK 1.0.4 hook masked terminal errors
+
+### Symptom and cause
+
+The private judgment-start listener failed in `proc_edda` with:
+
+```text
+# contract/integration/action-policy/judgment-start.mjs
+RequestProducerError: Response has no producer observation for this exact consumer
+```
+
+The listener authenticated every assistant message before checking whether the native loop could execute it.
+Pi's installed `pi-agent-core/dist/agent.js:365-383` constructs an error response in `handleRunFailure`.
+That message reports a host-side failure;
+it is not a model response associated by our request producer.
+Our callback therefore replaced the native diagnostic with an ownership error.
+
+The corrected private `contract/integration/action-policy/judgment-start.mjs:11-14` checks non-executing
+terminal reasons before producer authentication:
+
+```javascript
+// contract/integration/action-policy/judgment-start.mjs
+if (response.stopReason === 'error' || response.stopReason === 'aborted') return;
+producerOwner.assertMainAgentResponse({response, stream});
+```
+
+Executable responses still require the original producer observation.
+No new judgment or budget is created for the native terminal error.
+
+### Verification and distinct size boundary
+
+`proc_f814` passed `mise --no-env --no-hooks run test:start-failure` in the private
+`contract/integration/native-batch/` directory.
+A real SDK session retained its original local-stream error,
+started no judgment,
+and made no provider request.
+`proc_a46f` passed the action controls,
+including rejection of an unowned executable response.
+
+The full-policy diagnostic `proc_052e` then exposed a separate limit:
+
+```text
+# contract/collector/rule-relevance-sdk-copy/stage-private/resource-owner.mjs:197
+Base-linked source collection exceeds total byte bound
+```
+
+That private collector checks:
+
+```javascript
+// contract/collector/rule-relevance-sdk-copy/stage-private/resource-owner.mjs
+if (Buffer.byteLength(JSON.stringify(snapshot)) > 1048576)
+  throw new SourceCollectionError('Base-linked source collection exceeds total byte bound');
+```
+
+The oversized case included an independent copy of the full policy and a later run-ancestry snapshot.
+The bound was not raised.
+The negative mixed-batch fixture now ends explicitly after its batch-limit check;
+it does not claim support for the later oversized snapshot.
+The linked-source case completed its normal follow-up and passed in `proc_9e95`,
+as did the complete native suite in `proc_690f`.
+
+### Rejected remedies and filing decision
+
+Do not authenticate a native terminal diagnostic as a model response.
+Do not weaken authentication for executable tool proposals.
+Do not discard independent equal-text sources or lift collection limits merely to make this fixture pass.
+
+No upstream filing is warranted:
+
+- Fault:
+   our listener applied the wrong precondition;
+  the collection limit belongs to our private consumer.
+- Feasibility:
+   the listener ordering correction is implemented and verified.
+- Support:
+   no SDK promise of producer identity for synthesized terminal diagnostics was relied on legitimately.
+- Contribution policy:
+   not investigated because no upstream change is proposed.
+- Maintainer willingness:
+   not investigated because no upstream fix is requested.
+- Prototype:
+   the local correction passed;
+  there is no upstream defect or filing artifact.
+
 ## SDK 1.0.4 run publication resets at settlement
 
 ### Owned fixture failure
