@@ -135,6 +135,24 @@ protected manager shadows,
 and disposal were also exercised.
 This composition no longer uses the judgment facade,
 but its model stream and transport remain local doubles.
+`createRootSessionFactory` now reuses constructor and factory-cleanup owners as a reusable entry.
+`bindNativePolicyRuntime` composes the actual source,
+request,
+judgment,
+review,
+and execution owners.
+`proc_5be8` passed construction cleanup controls and the incumbent default scope cases;
+`proc_4ddb` passed runtime composition and active/duplicate binding controls.
+`proc_328f` passed the action-policy regressions after the effect-owner argument change.
+Independent review identified missing rollback after interrupted runtime installation
+and a provisional session association that could overwrite an existing association before rejection.
+`proc_87bc` reproduced retained hooks after interrupted binding;
+`proc_3b1b` reproduced loss of the previous session association after rejected reuse.
+Both were corrected,
+and `proc_fecd` passed the combined suite,
+including partial-registration cleanup and retryable detachment with falsy causes preserved.
+Next work connects incumbent native base/run prompt custody to the current SDK copy,
+without treating captured input as authority or complete instruction coverage.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
