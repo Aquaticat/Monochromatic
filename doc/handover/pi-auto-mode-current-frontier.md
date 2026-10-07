@@ -154,9 +154,17 @@ including partial-registration cleanup and retryable detachment with falsy cause
 The current SDK copy now reuses incumbent native base/run prompt custody.
 It contains five whole SDK modules plus the extracted native handler emitter.
 `bindPolicySessionCollector` retains those publications in the original request snapshot.
-The existing suite passed in `proc_e079`;
-additional publication-link and actual handler/alias controls are running in `proc_8791`,
-with source regressions in `proc_c172`.
+The existing suite passed in `proc_e079`,
+and source regressions passed in `proc_c172`.
+`proc_8791` exposed an owned test-phase error:
+native settlement clears the run publication,
+so request-time freshness does not survive `prompt()` returning.
+The corrected active-phase checks passed in `proc_a6fe`,
+including actual handler capture,
+late-alias independence,
+private-reader shadow resistance,
+reset/reload/disposal,
+and original request-publication links.
 Captured input still does not establish authority or complete instruction coverage.
 Complete governing-source coverage,
 delegation,

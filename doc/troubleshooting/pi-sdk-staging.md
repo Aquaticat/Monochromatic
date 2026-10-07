@@ -45,7 +45,12 @@ not a replacement instruction authority or permission.
 
 The fixture now checks active-run freshness inside its local stream,
 then checks reset and stale-snapshot rejection after settlement.
-Verification is pending through the ordinary native-batch test task.
+`proc_a6fe` passed `mise --no-env --no-hooks run test` in the private `contract/integration/native-batch/` directory.
+Active-run freshness and late-alias independence passed;
+post-settlement,
+copied-snapshot,
+reload,
+and disposal rejection passed.
 The native handler and all source owners remain real;
 only the model stream is local test data.
 
@@ -66,7 +71,7 @@ No upstream change is proposed:
 - Maintainer willingness:
    not investigated because no upstream fix is requested.
 - Prototype:
-   the local correction is under test;
+   the local correction passed;
   there is no upstream defect or filing artifact.
 
 ## SDK 1.0.4 private-copy license path assumption
