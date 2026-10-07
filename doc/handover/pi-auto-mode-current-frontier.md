@@ -64,7 +64,15 @@ private instance authentication fixed it,
 and `proc_f52c` passed the original/copy/proxy controls.
 The corrected system-view adapter now imports the native renderer directly,
 rather than accepting a caller renderer.
-Its final changed-source tests are pending.
+Corrected system-view tests passed `proc_4a3d`,
+action-policy tests passed `proc_d73e`,
+and the ordinary document render passed `proc_5031`.
+The new request-owner integration test is running in `proc_8d6d`.
+It uses the real producer,
+observer,
+collector,
+and budget owner,
+while retaining stream/transport/session-reader and judgment-facade doubles.
 Instruction authority and priority,
 additional governing-source coverage and delegation,
 qualified rule interpretation,
