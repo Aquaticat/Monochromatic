@@ -5,7 +5,19 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-05.
+Updated 2026-10-07.
+
+## Continuation decision: no additional live trial
+
+The user declined an additional trial on 2026-10-07.
+A stale frozen input is not a reason to repeat a paid experiment.
+Retain the successful full-rule interface call and the local native controls at their proven scopes.
+Refresh current policy and source inputs,
+then verify changed implementation paths deterministically.
+The prepared native-live snapshot was never dispatched and is not admitted for use.
+Live native end-to-end behavior,
+semantic accuracy,
+and production readiness remain unproven.
 
 ## Current direction: incremental rule relevance
 
@@ -255,9 +267,10 @@ These remain local mechanical controls,
 not a live native guard call.
 
 Next:
-connect the accepted representation to a separately admitted live original-judgment fixture,
-keeping exact prospective input checks and the preparation-inclusive deadline.
-Continue semantic and source/policy qualification separately.
+continue private implementation with current policy and source inputs,
+using deterministic checks rather than another live qualification trial.
+Keep exact input checks and the original preparation-inclusive deadline.
+Continue semantic and source/policy work without treating existing transport evidence as final permission.
 Do not truncate required inputs,
 assume moving guidance preserves calibration,
 reopen the original judgment,
