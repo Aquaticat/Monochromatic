@@ -199,6 +199,19 @@ Broader native/delegated source inventory,
 qualified interpretation,
 provider acceptance and full-policy capacity of the mixed representation,
 and complete-operation policy remain unfinished.
+
+`proc_1c65` then reproduced an owned review-lifecycle defect:
+a failed fact reader withheld execution but left its prepared judgment open.
+The bound reviewer now rejects phase/concurrency misuse before acquiring cleanup responsibility.
+On an accepted review failure,
+it uses the existing finalizer to close still-open evidence,
+then rethrows the original failure unchanged.
+If closure also fails,
+both occurrences are retained in order.
+`proc_0871` passed real-SDK zero/false/undefined/error and changed-dependency cases,
+with no tool execution or provider calls.
+`proc_979e` passed phase/copy/repeat controls and `proc_1597` passed action regressions.
+Evidence-only closure still supplies no policy outcome or permission.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
