@@ -166,6 +166,21 @@ private-reader shadow resistance,
 reset/reload/disposal,
 and original request-publication links.
 Captured input still does not establish authority or complete instruction coverage.
+Optional `customPromptAuthority` now registers explicitly configured host prompt text within the existing source owner.
+It requires the original resource/base publication and does not assign a tier to the composite system message,
+context files,
+appendices,
+or handler outputs.
+The file registration and host registration remain separate original-request bindings.
+Native tests passed in `proc_9463`,
+source tests in `proc_109e`,
+action tests in `proc_6e61`,
+and additional copy/per-action override controls in `proc_2961`.
+The original judgment still indexes only the selected policy file;
+host text remains unindexed and uninterpreted.
+The next rule-coverage change must preserve source-specific clause identity,
+including duplicate codes across sources,
+and carry complete governing text into the batched assessment without accepting complete-premise flags.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
