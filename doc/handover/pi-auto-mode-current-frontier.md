@@ -19,6 +19,17 @@ Live native end-to-end behavior,
 semantic accuracy,
 and production readiness remain unproven.
 
+Read-only intake `proc_48d7` found installed Pi SDK 1.0.4
+and 86 unavailable paths in the historical native source manifest.
+The protected policy now has 207 lexical rule markers and 31,867 bytes;
+its text is not merely whitespace-normalized equivalent to the captured policy.
+The Node binary still matches its pin.
+No SDK was imported,
+no credential was read,
+and no provider request was made by this intake.
+Re-index the current policy and rebase deterministic source checks;
+do not restore removed dependencies or reinterpret old receipts as current verification.
+
 ## Current direction: incremental rule relevance
 
 The user selected policy-change-time relevance classification
