@@ -176,11 +176,23 @@ Native tests passed in `proc_9463`,
 source tests in `proc_109e`,
 action tests in `proc_6e61`,
 and additional copy/per-action override controls in `proc_2961`.
-The original judgment still indexes only the selected policy file;
-host text remains unindexed and uninterpreted.
-The next rule-coverage change must preserve source-specific clause identity,
-including duplicate codes across sources,
-and carry complete governing text into the batched assessment without accepting complete-premise flags.
+The original judgment now indexes the selected policy and explicit fixed host prompt text,
+even when the latter has no authority registration.
+It preserves duplicate codes as distinct source-owned handles,
+rejects ambiguous bare-code selection,
+and retains unclassified prose per source.
+Whole-program and bounded prerequisite wire adapters retain all captured source text.
+Wire ordinals are representation data,
+not original-occurrence authentication.
+`proc_2fe0` passed an original judgment through the whole-program wire with one local relation-response double,
+retaining the native signal and original five-second deadline;
+its estimates remained unqualified and execution remained withheld.
+Source and action regressions passed in `proc_c356` and `proc_bf22`.
+No provider request was sent.
+Broader native/delegated source inventory,
+qualified interpretation,
+general mixed-definition transport,
+and complete-operation policy remain unfinished.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
