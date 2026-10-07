@@ -120,8 +120,21 @@ source-hash lock,
 or source manifest was introduced.
 The unsupported session-runtime replacement exports are intentionally absent from this private factory.
 
-The remaining integration step is replacing the judgment facade through the incumbent constructor
-and current root-lifecycle owners without weakening their guarantees.
+The current copy then added the incumbent manager copy/private-field/root-occurrence mechanisms
+and session liveness/disposal-completion mechanisms,
+for five copied modules.
+`proc_e023` passed the batch matrix and a real-owner composition:
+the original judgment constructor,
+constructor/root-lifecycle owners,
+registered source authority,
+and native read-fact owner ran through a current SDK session.
+The judgment closed and both members remained unentered because policy premises were incomplete.
+Native root reset/restoration did not revive an old lease;
+copied leases,
+protected manager shadows,
+and disposal were also exercised.
+This composition no longer uses the judgment facade,
+but its model stream and transport remain local doubles.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
