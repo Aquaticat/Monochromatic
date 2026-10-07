@@ -1,5 +1,74 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## SDK 1.0.4 run publication resets at settlement
+
+### Owned fixture failure
+
+The private native prompt-custody test in `proc_8791` asserted that a request's run publication remained current
+after `session.prompt()` returned.
+The original collector rejected it with:
+
+```text
+# contract/integration/native-batch/prompt-custody.test.mjs
+SourceCollectionError: Native run prompt was replaced after this source snapshot
+```
+
+The follow-up diagnostic `proc_0d2a` accessed `ordinal` on the now-absent publication and failed with
+`TypeError: Cannot read properties of undefined (reading 'ordinal')`.
+Neither failure demonstrates a native SDK defect.
+
+### Deciding source and correction
+
+Installed SDK 1.0.4 `dist/core/agent-session.js:1401-1408`,
+inside `_runAgentPrompt`,
+clears the run-specific prompt in its settlement cleanup:
+
+```javascript
+// Installed Pi SDK 1.0.4: dist/core/agent-session.js
+finally {
+    if (this._agentRunAbortRequested)
+        this._finishCancelledRetry();
+    this._failedResponse = undefined;
+    this._runSystemPromptOptions = undefined;
+    this._flushPendingBashMessages();
+    this._flushPendingCustomMessages();
+    await this._emitAgentSettled();
+}
+```
+
+The private custody transform mirrors that reset through the incumbent run owner.
+Request-time freshness and handler-alias independence must therefore be checked while the original run is active.
+After settlement,
+retain the historical snapshot but expect its freshness check to reject.
+The current native reader reports an absent run,
+not a replacement instruction authority or permission.
+
+The fixture now checks active-run freshness inside its local stream,
+then checks reset and stale-snapshot rejection after settlement.
+Verification is pending through the ordinary native-batch test task.
+The native handler and all source owners remain real;
+only the model stream is local test data.
+
+### Rejected reading and upstream decision
+
+An absent run after settlement is not evidence that the native capture failed.
+Keeping a completed run artificially current would contradict the SDK's reset boundary.
+No upstream change is proposed:
+
+- Fault:
+   the fixture asserted freshness after native reset.
+- Feasibility:
+   correct the consumer's assertion phase.
+- Support:
+   no SDK promise of post-settlement run-publication currency was found.
+- Contribution policy:
+   not investigated because no upstream fix is requested.
+- Maintainer willingness:
+   not investigated because no upstream fix is requested.
+- Prototype:
+   the local correction is under test;
+  there is no upstream defect or filing artifact.
+
 ## SDK 1.0.4 private-copy license path assumption
 
 ### Symptom and cause
