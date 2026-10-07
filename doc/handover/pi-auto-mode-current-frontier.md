@@ -78,9 +78,15 @@ additional governing-source coverage and delegation,
 qualified rule interpretation,
 and complete-operation coverage remain unresolved.
 Neither source identity nor a narrow read fact supplies those premises.
-The [authority-root proposal](../planning/pi-auto-mode-instruction-authority-root.md)
-asks whether trusted host bootstrap may explicitly assign source authority and scope.
-That additional trust boundary needs acceptance before implementing authority assignment.
+The user accepted [trusted-bootstrap authority registration](../planning/pi-auto-mode-instruction-authority-root.md)
+on 2026-10-07.
+The existing source owner's private state now retains an optional immutable startup declaration.
+Registered tiers and original-request scope are separate from observed wire placement.
+A user-tier registration remains user-tier in a system message;
+per-action metadata cannot register an unregistered source.
+The new authority binding retains the exact original source and request identities.
+Registration and action-policy tests are running;
+complete governing-source coverage and other unresolved premises are not inferred from registration.
 Continue other authorized implementation without a new paid trial or source-locking pipeline.
 
 ## Current direction: incremental rule relevance
