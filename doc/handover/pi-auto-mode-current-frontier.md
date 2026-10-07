@@ -35,6 +35,34 @@ and no provider request was made by this intake.
 Re-index the current policy and rebase deterministic source checks;
 do not restore removed dependencies or reinterpret old receipts as current verification.
 
+## Direct integration progress
+
+Private implementation lives in `contract/integration/` in the retained consumer-contract repository.
+The installed plugin is unchanged.
+The public relevance hook passed its provider-free current-policy cases in `proc_10ca`.
+The bound action review now retains original source and effect evidence through closure.
+It refuses caller-supplied completeness and invented permits,
+and selects the incumbent original-group approval binder directly.
+The combined action-policy suite passed in `proc_c7b7`.
+Its real native-read check used SDK 1.0.4 and a disposable file;
+request/judgment and approval doubles are not live sessions or genuine human confirmations.
+
+The new `policy-source` integration links the original policy capture to the actual native system-input callback.
+It preserves other context and appended inputs rather than deleting them to satisfy a profile.
+A bounded source-authority adapter checks the original resource,
+base,
+run,
+and final request links before assigning system-level source authority.
+`proc_6295` passed the source-publication tests using actual resource/base/run owners
+and the installed prompt builder,
+with a test-double final request boundary.
+Action-review wiring for this source binding is implemented and awaiting its targeted test result.
+Additional governing-source coverage and delegation,
+qualified rule interpretation,
+and complete-operation coverage remain unresolved.
+Neither source identity nor a narrow read fact supplies those premises.
+Continue implementing those boundaries without a new paid trial or source-locking pipeline.
+
 ## Current direction: incremental rule relevance
 
 The user selected policy-change-time relevance classification
