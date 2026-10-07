@@ -1,6 +1,6 @@
 # Auto-mode instruction authority root
 
-## Decision needed
+## Accepted decision
 
 The migration requires code-owned source authority,
 priority,
@@ -16,10 +16,11 @@ collector,
 and budget integration passed in `proc_8d6d` without a provider call.
 That verifies custody and currentness,
 not a policy authority root.
-The existing trusted-host confirmation decision covers original human confirmations;
-it does not explicitly settle host assignment of instruction authority.
+The user selected trusted-bootstrap registration (option A) on 2026-10-07.
+This explicitly accepts host assignment of source authority and scope as policy configuration,
+separately from the previously accepted human-confirmation workflow.
 
-## Proposed trust boundary
+## Trust boundary
 
 Allow the trusted host bootstrap to register a governing source with its actual authority tier and scope.
 That original registration,
@@ -55,8 +56,9 @@ so automatic policy resolution remains unresolved.
 ## Recommendation and status
 
 Prefer explicit trusted-bootstrap registration to pretending that observed placement establishes authority.
-Do not implement the proposed authority assignment until the user accepts this trust boundary.
-This proposal does not authorize production changes,
+Implement authority registration in the existing source owner,
+with immutable startup declarations and original source/request binding.
+The accepted decision does not authorize production changes,
 new paid trials,
 source-hash locking,
 or confidence thresholds.
