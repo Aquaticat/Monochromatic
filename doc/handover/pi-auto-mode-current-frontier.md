@@ -258,6 +258,21 @@ The original judgment-to-mixed-wire case still makes one local relation dispatch
 Native tests passed in `proc_fbd4`,
 source tests in `proc_2341`,
 and action tests in `proc_7e0e`.
+Native resource-system output is now retained when not already represented by a fixed host input
+or the selected-policy system carrier.
+Discovered `SYSTEM.md` and replacement callbacks do not establish tier or raw-file provenance.
+`proc_5351` passed discovered and empty system text through the original mixed wire,
+forced rendered-head isolation,
+and an in-place empty forced override.
+`proc_013e` passed reload,
+replacement,
+empty/absent,
+and existing owner rejection of invalid replacement types.
+Remaining source-index gaps include tool guidelines/snippets,
+section and other run-option replacements,
+skill descriptions,
+handler messages,
+and built-in or broader delegated inputs.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
