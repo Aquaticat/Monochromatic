@@ -11,6 +11,11 @@ Updated 2026-10-07.
 
 The user declined an additional trial on 2026-10-07.
 A stale frozen input is not a reason to repeat a paid experiment.
+The user also directed faster implementation without hash locking or unnecessary validation machinery.
+Do not add source-freeze manifests,
+admission pipelines,
+or repeated qualification runs as prerequisites for ordinary code changes.
+Use existing evidence and targeted tests.
 Retain the successful full-rule interface call and the local native controls at their proven scopes.
 Refresh current policy and source inputs,
 then verify changed implementation paths deterministically.
