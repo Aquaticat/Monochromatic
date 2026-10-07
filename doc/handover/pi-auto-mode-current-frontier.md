@@ -276,8 +276,16 @@ Native `proc_1eb2`,
 source `proc_34c5`,
 and action `proc_bea7` passed.
 The full current-policy local control still carries 207 clauses and 414 questions.
-Remaining source-index gaps include tool snippets,
-section and other run-option replacements,
+Tool-snippet and section-map inputs now retain original field/key positions too,
+including empty section entries and repeated text under different keys.
+Native `proc_cdd9`,
+source `proc_0537`,
+and action `proc_4646` passed.
+The expanded original-owner fixture carries 24 questions,
+or 22 with an empty discovered-system source,
+through one local mixed response.
+The full current-policy control remains 207 clauses and 414 questions.
+Remaining source-index gaps include scalar and context run-option replacements,
 skill descriptions,
 handler messages,
 and built-in or broader delegated inputs.
