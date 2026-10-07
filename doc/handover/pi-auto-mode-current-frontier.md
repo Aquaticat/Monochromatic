@@ -189,9 +189,13 @@ retaining the native signal and original five-second deadline;
 its estimates remained unqualified and execution remained withheld.
 Source and action regressions passed in `proc_c356` and `proc_bf22`.
 No provider request was sent.
+`bindRuleAssessmentWire` then added the fixed meaning and operation definitions in one request.
+`proc_2371` passed a single original mixed batch through one local response double.
+The original owner now also declares and issues that fixed batch within its existing synchronous binding segment;
+`proc_7f48` is the latest helper-composition result to reconcile.
 Broader native/delegated source inventory,
 qualified interpretation,
-general mixed-definition transport,
+provider acceptance and full-policy capacity of the mixed representation,
 and complete-operation policy remain unfinished.
 Complete governing-source coverage,
 delegation,
