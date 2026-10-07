@@ -49,15 +49,24 @@ request/judgment and approval doubles are not live sessions or genuine human con
 
 The new `policy-source` integration links the original policy capture to the actual native system-input callback.
 It preserves other context and appended inputs rather than deleting them to satisfy a profile.
-A bounded source-authority adapter checks the original resource,
+A bounded system-view adapter checks the original resource,
 base,
 run,
-and final request links before assigning system-level source authority.
-`proc_6295` passed the source-publication tests using actual resource/base/run owners
+and final request links.
+The initial numeric-priority claim was an overreach and has been removed:
+observed system placement does not establish instruction authority.
+`proc_6295` passed the initial source-publication tests using actual resource/base/run owners
 and the installed prompt builder,
 with a test-double final request boundary.
-Action-review wiring for this source binding is implemented and awaiting its targeted test result.
-Additional governing-source coverage and delegation,
+Action-review wiring passed `proc_ad11` and `proc_2de4`.
+A fabricated input-owner regression failed in `proc_e1d6`;
+private instance authentication fixed it,
+and `proc_f52c` passed the original/copy/proxy controls.
+The corrected system-view adapter now imports the native renderer directly,
+rather than accepting a caller renderer.
+Its final changed-source tests are pending.
+Instruction authority and priority,
+additional governing-source coverage and delegation,
 qualified rule interpretation,
 and complete-operation coverage remain unresolved.
 Neither source identity nor a narrow read fact supplies those premises.
