@@ -219,7 +219,33 @@ not invented raw-file identities.
 The current source controls passed in `proc_8684`;
 the initial failure in `proc_7df2` was an outdated authored snapshot missing the new append-input link,
 corrected without weakening the binding.
-The tagged-appendix original mixed-batch test is `proc_658a`.
+The tagged-appendix original mixed-batch test passed in `proc_658a`.
+Native context entries then entered the source-owned index without path-derived authority;
+native/source/action tests passed in `proc_ecf4`,
+`proc_4314`,
+and `proc_da14`.
+The full current-policy check caught repeated per-clause dependency checks in `proc_03b7`.
+Using the original synchronous binding segment passed `proc_18ea`,
+with 207 rules,
+414 unlinked occurrences,
+and 19 checks before fact collection.
+
+The ordinary-host loader now also preserves its configured context callback and emits fresh unchanged entries
+from the original selected policy capture.
+Original native returned-array/entry/frame checks establish these as carriers of that source,
+not proof of the displaced read.
+Unmatched entries stay independent,
+including equal text at another path.
+Source publication and failure controls passed in `proc_b756`.
+`proc_9e95` passed the current-policy comparison:
+207 canonical clauses and 414 mixed questions with the explicit carrier link;
+414 clauses and no dispatch with an additional independent copy.
+The negative fixture explicitly ends after its mixed-bound check.
+A later enlarged-ancestry request exceeded the existing private collection byte bound in `proc_052e`;
+that bound was not raised and later-request support is not claimed.
+A separate owned hook defect masked native terminal errors as missing producer observations in `proc_edda`.
+Reordering the non-executing terminal check fixed it in `proc_f814`;
+unowned executable responses still require authentication.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
