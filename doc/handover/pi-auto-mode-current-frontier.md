@@ -93,8 +93,40 @@ and appended instructions instead of requiring a sole system carrier.
 `createBoundPolicyReviewer` fixes owner capabilities at bootstrap
 and takes only the original response,
 obtaining its existing judgment internally.
-Its additional entry-point controls are running.
-Complete governing-source coverage and other unresolved premises are not inferred from registration.
+Its entry-point controls passed `proc_9c85`.
+An ordinary installed SDK 1.0.4 session retained the registered source in `proc_292a`,
+using an isolated home and local stream/transport doubles with no network requests.
+`proc_3a8c` verified judgment start before native argument preparation,
+original signal identity,
+and simulated expiry within the original five-second budget.
+
+Private `contract/integration/native-batch/` now copies only the SDK factory,
+Agent,
+and loop modules to add complete-group dispatch.
+It uses the incumbent prepared dispatcher and execution-context/cancellation wrappers.
+`proc_7fcb` passed 11 native SDK-session cases,
+including parallel/sequential ordering,
+whole-group blocking,
+preparation expiry,
+implementation-change retirement,
+unsupported nesting,
+multiple groups,
+and native termination requests.
+Positive reads were independently authorized disposable fixtures;
+judgment facades and local model-stream/transport doubles remain.
+No installed source,
+provider trial,
+source-hash lock,
+or source manifest was introduced.
+The unsupported session-runtime replacement exports are intentionally absent from this private factory.
+
+The remaining integration step is replacing the judgment facade through the incumbent constructor
+and current root-lifecycle owners without weakening their guarantees.
+Complete governing-source coverage,
+delegation,
+qualified interpretation,
+complete-operation policy,
+and broader nested/runtime support remain unfinished.
 Continue other authorized implementation without a new paid trial or source-locking pipeline.
 
 ## Current direction: incremental rule relevance

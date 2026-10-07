@@ -1,5 +1,59 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## SDK 1.0.4 private-copy license path assumption
+
+### Symptom and cause
+
+The owned current-SDK copy task failed in `proc_516a` at `copyFileSync`:
+
+```text
+# Private native-batch preparation
+Error: ENOENT: no such file or directory, copyfile '.../pi-coding-agent/LICENSE' -> '.../.sdk-private/LICENSE'
+```
+
+The initial private `contract/integration/native-batch/prepare.mjs:50`
+assumed the installed package shipped a file named `LICENSE`.
+`ls --all` showed no such file in either installed 1.0.4 package directory.
+This was an owned setup assumption,
+not evidence of an SDK runtime defect.
+The source copies had been written,
+but the task had not completed and no SDK test had run.
+
+### Verified recovery
+
+The upstream [license](https://github.com/earendil-works/pi/blob/main/LICENSE)
+matched the retained MIT notice.
+The consumer now keeps that notice in `PI-LICENSE.txt`.
+Current `contract/integration/native-batch/prepare.mjs:50` copies it explicitly:
+
+```javascript
+// contract/integration/native-batch/prepare.mjs
+copyFileSync(join(import.meta.dirname, 'PI-LICENSE.txt'), join(output, 'LICENSE'));
+```
+
+`mise --no-env --no-hooks run test` in the private `contract/integration/native-batch/` directory
+completed preparation and the native cases in `proc_3e64`.
+The later termination and repeated-group cases passed in `proc_7fcb`.
+The installed SDK files were not edited,
+and no provider request was made.
+The retained notice is independent of package layout;
+future upstream licensing changes still require review rather than silently reusing it.
+
+### Rejected approach and filing decision
+
+Do not assume an npm package includes the repository-root license filename.
+Do not remove the notice merely to make preparation succeed.
+
+No upstream filing is warranted:
+
+- Fault: the failing path was chosen by our consumer.
+- Feasibility: the consumer correction is implemented and exercised.
+- Support: no SDK promise of that installed filename was relied on legitimately.
+- Contribution policy: not investigated because no upstream change is proposed.
+- Maintainer willingness: not investigated because no upstream fix is requested.
+- Prototype: the consumer fix is verified;
+  there is no upstream defect prototype or public filing artifact to add.
+
 ## Owned prospective-input planner omitted rendered working-directory context
 
 ### Symptom and cause
