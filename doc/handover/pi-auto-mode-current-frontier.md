@@ -192,7 +192,9 @@ No provider request was sent.
 `bindRuleAssessmentWire` then added the fixed meaning and operation definitions in one request.
 `proc_2371` passed a single original mixed batch through one local response double.
 The original owner now also declares and issues that fixed batch within its existing synchronous binding segment;
-`proc_7f48` is the latest helper-composition result to reconcile.
+`proc_7f48` passed that original-owner helper composition with one local relation dispatch,
+no provider requests,
+and no execution release.
 Broader native/delegated source inventory,
 qualified interpretation,
 provider acceptance and full-policy capacity of the mixed representation,
