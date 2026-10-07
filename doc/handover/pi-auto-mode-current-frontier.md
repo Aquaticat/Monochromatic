@@ -67,7 +67,7 @@ rather than accepting a caller renderer.
 Corrected system-view tests passed `proc_4a3d`,
 action-policy tests passed `proc_d73e`,
 and the ordinary document render passed `proc_5031`.
-The new request-owner integration test is running in `proc_8d6d`.
+The request-owner integration test passed in `proc_8d6d` with one local stub terminal send and no provider calls.
 It uses the real producer,
 observer,
 collector,
@@ -78,7 +78,10 @@ additional governing-source coverage and delegation,
 qualified rule interpretation,
 and complete-operation coverage remain unresolved.
 Neither source identity nor a narrow read fact supplies those premises.
-Continue implementing those boundaries without a new paid trial or source-locking pipeline.
+The [authority-root proposal](../planning/pi-auto-mode-instruction-authority-root.md)
+asks whether trusted host bootstrap may explicitly assign source authority and scope.
+That additional trust boundary needs acceptance before implementing authority assignment.
+Continue other authorized implementation without a new paid trial or source-locking pipeline.
 
 ## Current direction: incremental rule relevance
 
