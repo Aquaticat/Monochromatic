@@ -151,8 +151,13 @@ and a provisional session association that could overwrite an existing associati
 Both were corrected,
 and `proc_fecd` passed the combined suite,
 including partial-registration cleanup and retryable detachment with falsy causes preserved.
-Next work connects incumbent native base/run prompt custody to the current SDK copy,
-without treating captured input as authority or complete instruction coverage.
+The current SDK copy now reuses incumbent native base/run prompt custody.
+It contains five whole SDK modules plus the extracted native handler emitter.
+`bindPolicySessionCollector` retains those publications in the original request snapshot.
+The existing suite passed in `proc_e079`;
+additional publication-link and actual handler/alias controls are running in `proc_8791`,
+with source regressions in `proc_c172`.
+Captured input still does not establish authority or complete instruction coverage.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
