@@ -268,7 +268,15 @@ and an in-place empty forced override.
 replacement,
 empty/absent,
 and existing owner rejection of invalid replacement types.
-Remaining source-index gaps include tool guidelines/snippets,
+Tool-guideline entries now retain their native map key and list position,
+including unselected tools and repeated text.
+Those positions survive the mixed and legacy wires as data,
+not authority or applicability.
+Native `proc_1eb2`,
+source `proc_34c5`,
+and action `proc_bea7` passed.
+The full current-policy local control still carries 207 clauses and 414 questions.
+Remaining source-index gaps include tool snippets,
 section and other run-option replacements,
 skill descriptions,
 handler messages,
