@@ -246,6 +246,18 @@ that bound was not raised and later-request support is not claimed.
 A separate owned hook defect masked native terminal errors as missing producer observations in `proc_edda`.
 Reordering the non-executing terminal check fixed it in `proc_f814`;
 unowned executable responses still require authentication.
+The full carrier suite passed in `proc_690f`.
+
+The incumbent run owner now captures forced prompt output and generic prompt-guideline inputs
+as original run-publication sources.
+Empty forced text is retained,
+and repeated guideline positions remain distinct.
+Neither system placement nor capture supplies an authority tier or proves rendered visibility.
+Late callback aliases do not alter published inputs.
+The original judgment-to-mixed-wire case still makes one local relation dispatch and releases no tools.
+Native tests passed in `proc_fbd4`,
+source tests in `proc_2341`,
+and action tests in `proc_7e0e`.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
