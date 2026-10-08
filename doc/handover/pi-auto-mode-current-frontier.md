@@ -341,7 +341,12 @@ at 66,405 bytes,
 before judgment creation.
 The failure must not be generalized to the linked default case.
 The render-requirement omission failed its committed regression in `proc_8931`;
-the requirement is restored.
+the requirement was restored in private `df8e07d`,
+and `proc_0a4d` passed.
+The complete native suite `proc_259b` passed the expanded rendering parity,
+original-owner controls,
+and both full-policy prompt variants.
+Document rendering passed in `proc_9dfa`.
 Remaining source-index gaps include general persisted-session messages,
 later-read skill-file contents,
 tool-schema descriptions,
