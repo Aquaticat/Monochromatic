@@ -120,8 +120,8 @@ fn idle_root_emits_no_extra_queue_updates() {
                 Update::Reconciled { names, .. } => Some(names.len()),
                 _ => None,
             };
-            if let Some(len) = len {
-                let _ = tx.send(len);
+            if let Some(queue_len) = len {
+                let _ = tx.send(queue_len);
             }
         },
         CacheHandle::open_degraded(),
@@ -212,8 +212,8 @@ fn watcher_drives_rescan_update_through_engine() {
                 Update::Reconciled { names, .. } => Some(names.len()),
                 _ => None,
             };
-            if let Some(len) = len {
-                let _ = tx.send(len);
+            if let Some(queue_len) = len {
+                let _ = tx.send(queue_len);
             }
         },
         CacheHandle::open_degraded(),
