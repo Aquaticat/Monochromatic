@@ -10,7 +10,7 @@ await describe({
     '--gtk-single-instance-extra=kept', '--unrelated=value with spaces',].map(function configuredFlag(flag,) {
     return it({
       name: `preserves configured Exec token ${flag}`,
-      fn: () => {
+      fn: async () => {
         expect(buildCommand({
           terminal: {
             entryId: 'fixture.desktop',
