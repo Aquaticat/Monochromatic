@@ -76,20 +76,177 @@ line 3344 calls `self.initSurface()` from that path.
 No contemporaneous screen-lock state was captured for the screenshot incident.
 Do not assign the historical delay to the screen locker without that evidence.
 
-### Follow-up implementation and verification queue
+### Current request lifetime
 
-- Preserve configured terminal `Exec` tokens and verify the exact generated command.
-- Keep a pending question alive through delayed desktop startup instead of expiring it at 30 seconds.
-- Replace the disposable-file executable entry with an inline bootstrap that handles explicit cancellation.
-- Require requester acknowledgement before starting an editor and test channel shutdown without bare errors.
-- Verify built artifacts, real terminal submission, cancellation, and the extension host boundary.
+The fix preserves the separate default-terminal editor workflow and model blocking.
+It does not replace the editor with a modal dialog or add a persistent broker.
 
-Commit `668d2781d` adds deliberately failing delayed-start,
+`package/pi-plugin/ask-user-question/src/answer-channel-auth.ts:114`
+uses a disposable notice timer rather than a cancellation deadline:
+
+```ts
+// package/pi-plugin/ask-user-question/src/answer-channel-auth.ts
+using notice = setTimeout(
+  function reportPendingStartup(): void {
+    l.warn('The answer terminal has not connected yet. The question remains active; unlock or reveal the desktop, inspect the terminal, or cancel the tool in Pi.');
+  },
+  HELPER_START_NOTICE_MS,
+);
+```
+
+The startup listener remains referenced.
+The 30-second notice neither deletes the workspace nor lets the model continue.
+A terminal that never executes its command now requires cancellation in Pi.
+This is intentional:
+wall-clock delay does not establish that a desktop launch failed.
+The separate 5-second authentication deadline begins only after a candidate socket connects.
+A regression exposed Node's `ERR_STREAM_PREMATURE_CLOSE` when that deadline destroyed an idle candidate;
+commit `724fb299a` contains that failure within the candidate and continues accepting helpers.
+
+`package/pi-plugin/ask-user-question/src/request-external-answer.ts:248`
+launches inline JavaScript with paths as separate argument tokens:
+
+```ts
+// package/pi-plugin/ask-user-question/src/request-external-answer.ts
+'--input-type=module',
+'--eval',
+ANSWER_BOOTSTRAP,
+helperPath,
+'--request',
+workspace.requestPath,
+```
+
+`package/pi-plugin/ask-user-question/src/helper-bootstrap.ts:15`
+loads the self-contained snapshot into memory before importing it:
+
+```js
+// package/pi-plugin/ask-user-question/src/helper-bootstrap.ts, embedded bootstrap
+const source = await readFile(helperPath);
+await import('data:text/javascript;base64,' + source.toString('base64'));
+```
+
+Only `ENOENT` naming the exact helper or request path means that the request ended.
+Malformed request JSON and other loading failures remain errors.
+No token or answer enters argv.
+Reading the bundle also avoids interpreting a valid filesystem name as a module URL.
+The quoted-path fixture exposed `ERR_INVALID_MODULE_SPECIFIER` with a backslash filename;
+commit `2e0df35a7` changed the bootstrap from file-URL import to byte loading.
+The fixture additionally exercises quotes,
+a newline,
+percent and hash characters,
+and shell separators.
+
+`package/pi-plugin/ask-user-question/src/answer-channel.ts:157`
+sends `HELPER_READY` only after authentication and a cancellation check.
+`package/pi-plugin/ask-user-question/src/helper-connection.ts:156`
+requires the complete acknowledgement before returning to editor startup:
+
+```ts
+// package/pi-plugin/ask-user-question/src/helper-connection.ts
+if (state.acknowledgement === HELPER_READY) {
+  signal.throwIfAborted();
+  rl.debug('requester accepted answer helper');
+  socket.resume();
+  return;
+}
+```
+
+The channel owns all accepted sockets,
+including unauthenticated candidates.
+The helper owns its connection and terminates the editor when the requester disconnects.
+Expected cancellation exits without a raw shutdown stack trace.
+`request-external-answer.ts:267` observes launcher and channel together:
+
+```ts
+// package/pi-plugin/ask-user-question/src/request-external-answer.ts
+const [, completion,] = await Promise.all([
+  launchAnswerTerminal(),
+  completionTask,
+]);
+```
+
+Cancellation therefore settles the tool even if the launcher has not returned yet.
+A later launcher rejection remains observed.
+A later successful launch receives the cancellation-aware bootstrap.
+
+`package/cli/terminal-exec/src/build-command.ts:122`
+now retains the parsed desktop-entry arguments directly:
+
+```ts
+// package/cli/terminal-exec/src/build-command.ts
+...terminal.execTokens,
+```
+
+This preserves both explicit `false` and explicit `true` values.
+The terminal's single-instance behavior belongs to its configuration,
+not a silent policy override in this library.
+Preserving the flag is verified independently of the cause of the historical startup delay.
+
+### Follow-up verification evidence
+
+Commit `668d2781d` introduced delayed-start,
 late-after-cancellation,
-and terminal-flag regressions.
-Verification results and final source references will be recorded after the implementation.
+and terminal-flag regressions before the implementation.
+The initial harness attempt failed at setup because a test dependency was unavailable and only one package had rebuilt.
+After correcting the fixture and rebuilding each package,
+the old implementation failed as intended:
 
-## Reproduced causes and changes
+- At 31 seconds the request had already settled instead of remaining answerable.
+- Both caller and session cancellation followed by late execution reproduced the screenshot's `MODULE_NOT_FOUND`.
+- The command builder removed `--gtk-single-instance=false`,
+  `--gtk-single-instance=true`,
+  the bare flag,
+  and even an unrelated longer prefix.
+- An unrelated terminal option remained present as the positive control.
+
+The implemented path passes the real delayed-start test:
+a helper launched after 31 seconds returns the exact multiline answer.
+Lifecycle tests exercise cancellation during a pending launcher,
+active editor termination with captured stderr,
+an unavailable editor,
+missing versus malformed request files,
+and idle authentication candidate cleanup.
+Acknowledgement tests exercise complete,
+fragmented,
+missing,
+and invalid replies from a fixture requester.
+
+A fresh Pi 1.0.4 TUI process was also exercised under a private PTY,
+with isolated `PI_CODING_AGENT_DIR`,
+no discovered extensions,
+offline mode,
+no model request,
+and an explicitly guarded test extension.
+That extension captures and registers the production tool,
+then invokes its real `execute` callback with the host's TUI context and a scripted editor.
+It verifies multiline answer details and empty-answer cancellation through the actual default Ghostty terminal.
+It does not simulate a model response or human keyboard entry.
+The disposable driver and extension are retained under `${HOME}/temp/agent/ask-host-*.ts`.
+No user editor configuration or existing session was modified.
+
+The package `verify:terminal` and `verify:extension` tasks also passed after the lifecycle change.
+Final post-bootstrap validation is tracked in the completion section of this document.
+
+### Follow-up limits and rejected approaches
+
+- Increasing the destructive timeout would only move the same race.
+- Retaining every cancelled workspace would accumulate private request data without preserving a live consumer.
+- A permanent broker is unnecessary while the answer belongs to one live Pi tool call.
+- A cancelled late terminal exits cleanly;
+  its message can disappear as the terminal closes and is not promised as a persistent notification.
+- Killing Pi before the terminal executes can invalidate Linux's `/proc/<pid>/exe` runtime path.
+  This change preserves the existing protection against runtime unlink while Pi is alive;
+  it does not make questions survive requester process death.
+- No screen-lock state was captured for the reported request,
+  and no test deliberately locked the user's desktop.
+- Real desktop verification covers Linux with Ghostty,
+  not Windows or macOS.
+
+## Historical fixes from 2026-10-04
+
+The source excerpts and line numbers in this section describe the earlier implementation.
+The 2026-10-08 follow-up supersedes its startup deadline and `AnswerHelperStartupTimeoutError` export.
+The runtime-retention and private helper-snapshot protections remain in place.
 
 ### Installed runtime disappears while requester remains alive
 

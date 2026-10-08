@@ -5,7 +5,10 @@ import {
   rm,
   stat,
 } from 'node:fs/promises';
-import { dirname, join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 
 import {
   createRequestRegistry,
@@ -43,18 +46,41 @@ async function quoteLaunchPaths(command: readonly string[],): Promise<readonly s
    Coordination path remains the final argument.
    */
   const requestPath = command.at(-1,);
-  if (helperPath === undefined || requestPath === undefined)
+  if ((helperPath === undefined) || (requestPath === undefined))
     throw new Error('Missing fixture launch inputs.',);
   /**
    Characters significant to shell, JavaScript, and URL grammars.
    */
-  const quotedHelper = join(dirname(helperPath,), `helper ' " # % ; $ \\n\n.mjs`,);
+  const quotedHelper = join(
+    dirname(helperPath,),
+    `helper ' " # % ; $ \\n\n.mjs`,
+  );
   /**
    Independently quoted request path exercises helper option parsing.
    */
-  const quotedRequest = join(dirname(requestPath,), `request ' " # % ; $ \\n\n.json`,);
-  await Promise.all([copyFile(helperPath, quotedHelper,), copyFile(requestPath, quotedRequest,),],);
-  return [...command.slice(0, HELPER_ARGUMENT_FROM_END,), quotedHelper, '--request', quotedRequest,];
+  const quotedRequest = join(
+    dirname(requestPath,),
+    `request ' " # % ; $ \\n\n.json`,
+  );
+  await Promise.all([
+    copyFile(
+      helperPath,
+      quotedHelper,
+    ),
+    copyFile(
+      requestPath,
+      quotedRequest,
+    ),
+  ],);
+  return [
+    ...command.slice(
+      0,
+      HELPER_ARGUMENT_FROM_END,
+    ),
+    quotedHelper,
+    '--request',
+    quotedRequest,
+  ];
 }
 /**
  Driver runs only after being copied beside disposable built artifacts.

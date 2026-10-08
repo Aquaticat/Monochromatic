@@ -49,7 +49,7 @@ await describe({
         server.listen({ host: '127.0.0.1', port: 0, },);
         await once(server, 'listening',);
         const address = server.address();
-        if (address === null || typeof address === 'string')
+        if ((address === null) || ((typeof address) === 'string'))
           throw new Error('Missing fixture endpoint.',);
         const controller = new AbortController();
         const state: { output?: Awaited<ReturnType<typeof runHelperCommand>>; } = {};
@@ -75,10 +75,10 @@ await describe({
         catch (error: unknown) {
           expect(error,).toBeInstanceOf(Error,);
         }
-        const output = state.output;
+        const {output} = state;
         if (output === undefined)
           throw new Error('Helper did not complete acknowledgement fixture.',);
-        if (kind === 'ready' || kind === 'fragmented')
+        if ((kind === 'ready') || (kind === 'fragmented'))
           expect(output.stdout,).toContain('FIXTURE_EDITOR_WAS_STARTED',);
         else
           expect(output.stdout,).not.toContain('FIXTURE_EDITOR_WAS_STARTED',);
