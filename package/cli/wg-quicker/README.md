@@ -193,7 +193,8 @@ it warns that Ghostty,
  Pale Moon,
  Firefox Nightly,
  ChatGPT,
- and Interpreter will use the tunnel and instructs the user to add
+ Interpreter,
+ and Qure will use the tunnel and instructs the user to add
 `ExemptMark = 100` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;
@@ -229,7 +230,8 @@ every `app-ghostty-surface-transient-*.scope`,
 Steam's `app-steam@*.service`,
 Firefox Nightly's `app-firefox\x2dnightly@*.service`,
 ChatGPT's `app-chatgpt@*.service`,
-and Interpreter's `app-interpreter@*.service`,
+Interpreter's `app-interpreter@*.service`,
+and Qure's `app-qure@*.service`,
 drains queued events,
 and scans again to close creation race.
 It reacts to future cgroup creation and periodically maps every live Helium executable,
@@ -248,6 +250,11 @@ covering the AppImage file,
 the mounted Electron image,
 the bundled `interpreter-*` agents,
 and the same vendor's terminal agent.
+The same periodic scan maps every Qure executable whose name begins with `qure`,
+covering the AppImage file,
+the mounted Electron image,
+the bundled pytest runner,
+and the agents its bundled CLI wrappers exec.
 Known process-discovered cgroups remain attached until directory disappears,
 covering process restarts inside same service or scope.
 Process discovery attaches entire current cgroup,
@@ -256,7 +263,8 @@ A newly started Helium,
 Pale Moon,
 Firefox Nightly,
 ChatGPT,
-or Interpreter process can create sockets before next 250-millisecond rescan;
+Interpreter,
+or Qure process can create sockets before next 250-millisecond rescan;
 applications already running during watcher startup are attached before readiness.
 Watcher state validates PID,
 process start time,
