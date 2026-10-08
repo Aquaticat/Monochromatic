@@ -169,6 +169,50 @@ async function authenticateSocket(
     readonly signal: AbortSignal;
   },
 ): Promise<AuthenticatedSocket | typeof AUTHENTICATION_REJECTED> {
+  /**
+   Only this candidate's authentication is bounded, not terminal startup.
+   */
+  const deadline = AbortSignal.timeout(AUTHENTICATION_TIMEOUT_MS,);
+  /**
+   Either cancellation source closes the candidate's pending read.
+   */
+  const candidateSignal = AbortSignal.any([signal, deadline,],);
+  using abortSubscription = addAbortListener(candidateSignal, function abortAuthentication(): void {
+    socket.destroy();
+  },);
+  try {
+    return await readAuthentication({ socket, token, signal: candidateSignal, },);
+  }
+  catch (error: unknown) {
+    signal.throwIfAborted();
+    if (deadline.aborted) {
+      l.warn(`answer helper authentication timed out: ${String(error,)}`,);
+      return AUTHENTICATION_REJECTED;
+    }
+    throw error;
+  }
+}
+
+/**
+ Reads a bounded authentication line while retaining any completion bytes.
+
+ @param socket - connected candidate
+
+ @param token - expected private credential
+
+ @param signal - candidate-specific cancellation
+
+ @returns accepted channel or wrong-token sentinel
+ */
+async function readAuthentication({
+  socket,
+  token,
+  signal,
+}: {
+  readonly socket: Socket;
+  readonly token: string;
+  readonly signal: AbortSignal;
+},): Promise<AuthenticatedSocket | typeof AUTHENTICATION_REJECTED> {
   socket.setEncoding('utf8',);
   /**
    Stream iterator retained for completion frame after authentication.
@@ -181,20 +225,6 @@ async function authenticateSocket(
     text: '',
     reading: true,
   };
-  /**
-   Subscription closing candidate socket when startup aborts.
-   */
-  const deadline = AbortSignal.timeout(AUTHENTICATION_TIMEOUT_MS,);
-  /**
-   Candidate timeout must not cancel the question or other queued connections.
-   */
-  const candidateSignal = AbortSignal.any([signal, deadline,],);
-  using abortSubscription = addAbortListener(
-    candidateSignal,
-    function abortAuthentication(): void {
-      socket.destroy();
-    },
-  );
   while (state.reading) {
     /**
      Next decoded socket chunk.
@@ -202,10 +232,6 @@ async function authenticateSocket(
     // oxlint-disable-next-line eslint/no-await-in-loop -- Stream chunks are ordered and authentication line cannot be parallelized.
     const next = await iterator.next();
     signal.throwIfAborted();
-    if (deadline.aborted) {
-      l.warn('answer helper connection did not send authentication before its deadline',);
-      return AUTHENTICATION_REJECTED;
-    }
     if (next.done === true) {
       state.reading = false;
       continue;
