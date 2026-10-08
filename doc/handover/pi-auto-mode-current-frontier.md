@@ -7,6 +7,66 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-08.
 
+## Accepted policy-consumer slice: partial implementation
+
+The user accepted the focused policy-consumer slice on 2026-10-08.
+Its contract is recorded in
+[the batched-assessment plan](../planning/pi-auto-mode-batched-assessment.md).
+The implemented part is established-clause lowering and original-owner premise diagnostics,
+not operative native compilation.
+
+Private `contract/integration/action-policy/clause-lowering.mjs`
+maps authored established permission and prohibition relationships to directives.
+Prerequisites become only authorization constraints.
+Satisfaction and approval-channel sufficiency remain independent code inputs.
+Unknown and unsupported meanings remain gaps;
+`none` adds no permission.
+Raw probability vectors,
+qualification flags,
+unsupported fields,
+and accessors cannot stand in for established relationships.
+
+Implementation `4591d78` passed `proc_4b77`,
+including 22 malformed-input controls
+and the incumbent Allow/Deny/Stop binder with controlled responses.
+These are authored relationships and fixture selections,
+not model-quality evidence or genuine human approvals.
+
+Private `premises.mjs` and `evaluate.mjs`
+now return frozen `premiseIssues` alongside the derived `missingPremises`.
+Issues retain original source,
+clause,
+and prepared-effect references.
+They distinguish registered source/request bindings from unregistered or mismatched sources.
+Equal text cannot borrow registration.
+Unclassified material and member-only facts remain visible gaps.
+Unsupported implementation-evidence kinds reject instead of being described as established member facts.
+
+Premise implementation `427416d`,
+tests `ff9f110`,
+action `proc_2503`,
+and canonical native control `proc_c8a8` passed.
+The canonical test uses the ordinary native reviewer,
+not an injected final Allow.
+It verifies withholding and retained identity,
+not operative approval.
+
+The incorrect prerequisite-to-`require-approval` mutation `16232a0`
+failed `proc_bf63` at the outcome assertion:
+`ask` instead of `deny` for an independent prohibition.
+The original constraint lowering is restored.
+Restored action suite `proc_0816` and full native regression `proc_72fa` passed.
+Document check `proc_9293` passed before this final result note.
+
+The remaining limit is explicit:
+current owners supply no established clause meanings for an operative native program.
+Source/delegation coverage and complete-operation coverage remain missing under their current contracts.
+The evaluator still sends no inference and has no operative rules.
+The new authored lowerer is not called by the canonical path because it has no established input to consume.
+Its complete-premises branch is currently unreachable.
+The lowerer's defensive branch for a future catalog label is also unexercised.
+Do not call this a completed policy consumer or claim that it can now approve ordinary native work.
+
 ## Current native program integration
 
 Current SDK program composition is implemented privately in
