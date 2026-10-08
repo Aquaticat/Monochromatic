@@ -82,7 +82,12 @@ its repository-root `//contract` task invocation required monorepo configuration
 The existing directory-local invocation was used instead.
 Implementation `27ad6ac` passed `proc_5a09`,
 including 14,400 partial programs checked against 112,896 complete worlds.
-Outcome-guard sensitivity and integration regressions remain in progress.
+Omission `2f409d4` made `proc_af31` return resolved instead of unresolved at the guard-outcome boundary.
+The guard is restored in `41d9294`;
+`proc_1c88` passed.
+Action `proc_d1d1`,
+native `proc_304b`,
+and rendered document checks `proc_dce0` passed.
 Routine kernel checks compare behavior instead of enforcing the historical textual source delta;
 the old verification record remains intact.
 
