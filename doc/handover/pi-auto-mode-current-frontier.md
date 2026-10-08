@@ -7,6 +7,57 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-08.
 
+## Current native program integration
+
+Current SDK program composition is implemented privately in
+`contract/integration/native-batch/program-source.mjs`,
+`tools.mjs`,
+and `prepare.mjs`.
+It reuses the original judgment,
+program and result owners,
+native nested runner,
+queue,
+and recorder.
+The actual sandbox and native script conversion run against the original request's executable-tool snapshot.
+The installed plugin and SDK remain unchanged.
+
+Initial control `proc_a75a`,
+execution matrix `proc_20e0`,
+and subsequent full native suite `proc_2615` passed.
+These fixtures independently authorize authored inert programs.
+They do not demonstrate native policy admission,
+complete semantic effects,
+or genuine human approval.
+Preparation now emits nine SDK-derived modules.
+
+Currentness follow-up found and repaired public runner shadowing
+(`proc_305f` to `proc_5adc`,
+fix `87b8e7e`).
+Transcript-based Advisor review then identified mutable prototype routing and shallow schema comparisons.
+Prototype control `proc_6072` reproduced redirection;
+input-schema control `proc_c467` reproduced execution after in-place mutation.
+Fix `3100219` passed `proc_9d00`.
+The existing tool owner now retains schema data descriptors,
+including TypeBox symbols,
+without freezing borrowed objects or extracting another JSON representation.
+The fixed request-wide profile limits property and object entries to 10,000.
+This protects runtime schema dependencies,
+not interpretation or permission.
+
+Expanded verification now asserts retained original failure causes,
+settled child execution,
+and one conversion per returned native result.
+`proc_3948` first exposed a test counting all declared groups as reached;
+the test was corrected against the original owner's `unreached` state.
+The next work is the corrected expanded matrix,
+affected regressions,
+shared-runner contention and suspended cleanup,
+and original executable-snapshot exclusion/substitution controls.
+Keep the canonical bound evaluator withholding.
+No semantic provider trial,
+threshold adoption,
+or installed activation occurred.
+
 ## Continuation decision: no additional live trial
 
 The user declined an additional trial on 2026-10-07.
