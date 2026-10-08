@@ -1,5 +1,51 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Typed-relation verification: Git inspection timeout and overlapping index access
+
+### Observations
+
+On 2026-10-08,
+the Bash tool timed out a private-repository `git status --short` and `git log` inspection after 20 seconds.
+It reported the existing logger diagnostic:
+
+```text
+# Reported during the owned Git inspection; emitting process was not captured.
+logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify
+```
+
+This was not a policy test or a state-changing Git invocation.
+It does not establish the cause described in another logger incident.
+The existing [logger investigation](cli-git-logger-sink-verify-timeout.md) retains the unresolved cause limits.
+
+The recovery inspection `proc_0b64` completed.
+The assistant incorrectly overlapped it with sensitivity commit `proc_e866` in the same private repository.
+That commit command failed at `git add` with `index.lock: File exists`;
+its test did not run.
+The actual lock holder was not captured,
+so overlapping dispatch is an observed scheduling error,
+not proof of a particular Git implementation path.
+
+### Recovery and verification
+
+After both processes exited,
+`ls --full-time .git/index.lock` reported no lock,
+and the scoped process search found no matching Git process.
+No lock was removed.
+The inspection showed the intended source modification still uncommitted and no new omission commit.
+Serialized `proc_a4ae` then committed omission `1c41a06` and reached the expected immutability assertion failure.
+Restoration `88f3635` passed separately as `proc_c971`.
+All Git calls for this repository are now serialized,
+including inspection calls.
+A successful later invocation is not evidence that the logger delay was fixed.
+
+### Rejected actions and upstream scope
+
+Do not classify a rejected Git command as a failed test,
+blindly replay an ambiguous commit,
+or remove an unassigned index lock.
+No upstream SDK or Git defect was established,
+and no issue was filed or reopened.
+
 ## SDK 1.0.4 default prompt with an independent policy copy exceeds the private source cap
 
 ### Symptom and cause

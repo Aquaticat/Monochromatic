@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-07.
+Updated 2026-10-08.
 
 ## Continuation decision: no additional live trial
 
@@ -91,6 +91,44 @@ and rendered document checks `proc_dce0` passed.
 Routine kernel checks compare behavior instead of enforcing the historical textual source delta;
 the old verification record remains intact.
 
+### Operation-bound typed clause estimates
+
+The experimental `clause_operation_relation` separates affirmative permission,
+prohibition,
+authorization prerequisite,
+no operative effect,
+unsupported semantics,
+and unknown premises.
+It estimates one clause's relationship to the complete original operation,
+not source authority or the final action outcome.
+Authorization prerequisites cannot be treated as conditional permission or proof that session Allow suffices.
+Unknown and unsupported meanings do not automatically fit the partial resolver's supported-effect domain.
+
+The existing selection owner,
+response parser,
+and assessment wire now retain typed choice estimates and their probability vectors.
+The rubric is included once;
+exact original request text is reused.
+Native `proc_e737` passed current-policy linked controls with 207 clauses and 207 questions per local response.
+Request bodies were 204,917 bytes with the host prompt and 209,700 bytes with native defaults.
+Normalized local answers were 34,253 bytes.
+Independent-source failures retain the existing bounds.
+No provider request or semantic qualification occurred.
+The default mixed helper and incomplete bound evaluator have not adopted these estimates as facts.
+Omission `1c41a06` failed `proc_a4ae` because choice probabilities were not frozen.
+Restoration `88f3635` passed `proc_c971`.
+Expanded action `proc_3e68` and complete native `proc_5ed5` passed.
+
+The next consumer gap is prerequisite-aware composition.
+A higher-tier instruction requiring authorization does not itself override a lower-tier independent prohibition.
+The legacy authored `require-approval` effect acts as conditional authorization through the approval adapter;
+a bare prerequisite cannot be lowered into it directly.
+Keep requirements separate and establish that the selected approval channel would actually suffice before asking.
+The partial-effect truth table proves its bounded algebra,
+not that ordinary prerequisite prose may be translated into that algebra.
+The native evaluator still withholds;
+this identifies a lowering risk rather than an observed production release.
+
 ### Unapplied instruction clarification
 
 A proposed tightening of the existing `RCI` rule in `AGENTS.md` is:
@@ -106,6 +144,12 @@ A proposed tightening of the existing `RCI` rule in `AGENTS.md` is:
 
 This proposal is recorded only;
 `AGENTS.md` remains unchanged.
+The overlapping Git inspection and index-lock incident also motivates this unapplied `CPN` tightening:
+
+> Commit pathspecs name every new file.
+> Serialize Git calls per repository,
+> including status,
+> and check status after the commit finishes.
 
 ## Direct integration progress
 
