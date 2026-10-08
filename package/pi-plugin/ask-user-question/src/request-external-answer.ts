@@ -176,16 +176,7 @@ export async function requestExternalAnswer(
   },
 ): Promise<ExternalAnswerOutcome> {
   /**
-   terminal-exec selected terminal identity.
-   */
-  const terminalEntryId = await resolveTerminalEntryId();
-  if (((typeof terminalEntryId) !== 'symbol') && isGhosttyHelixCombination({
-    terminalEntryId,
-    editorCommand,
-  },))
-    warn(GHOSTTY_HELIX_WARNING,);
-  /**
-   Session-scoped cancellation handle for pending helper.
+   Session-scoped cancellation covers terminal resolution as well as the pending helper.
    */
   using request = registry.open();
   /**
@@ -198,6 +189,16 @@ export async function requestExternalAnswer(
       request.signal,
     ],);
   requestSignal.throwIfAborted();
+  /**
+   terminal-exec selected terminal identity.
+   */
+  const terminalEntryId = await resolveTerminalEntryId();
+  requestSignal.throwIfAborted();
+  if (((typeof terminalEntryId) !== 'symbol') && isGhosttyHelixCombination({
+    terminalEntryId,
+    editorCommand,
+  },))
+    warn(GHOSTTY_HELIX_WARNING,);
   /**
    Executable retained by live Pi process where supported.
    */
