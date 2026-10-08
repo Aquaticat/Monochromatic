@@ -124,6 +124,11 @@ not semantic-model quality.
 
 ## Proposed expansion of request-source accounting
 
+The authorization requirement in the initial proposal is withdrawn for the narrow whole-request consumer.
+Independent review and the existing observer source confirmed that exact complete request bytes are already owned.
+Selecting and consuming that input through the same owner adds no source origin or parallel inventory.
+Treating that missing consumer as a new authorization requirement was an incorrect scope reading.
+
 The configured compiler now consumes original tagged,
 untagged,
 and orphan-heading candidates.
@@ -134,8 +139,11 @@ The remaining request-domain boundary is different:
 ordinary request material is retained in the original terminal request
 but is not associated with the current governing-source set.
 
-The proposed next scope is original request-message/source association and governing-use accounting
-through the existing request and source owners.
+The authorized next step is original whole-request-material selection and actual assessment
+through the existing request and judgment owners.
+It does not reconstruct messages,
+assign authority to transport roles,
+or establish request-wide governing sufficiency.
 The exact original request body must remain authoritative as an observation,
 not as instruction authority.
 Reuse its existing JSON-format validation if structured access is actually needed;
@@ -146,9 +154,13 @@ or infer authority from transport roles or equal text.
 Host authority registration remains the accepted mechanism;
 this proposal does not change its tier/scope policy or make registration prove coverage.
 
-This expands governing-input accounting beyond the already-represented source units,
-so authorization is requested before implementing it under the current no-source-inventory-expansion constraint.
-A model-generated completeness statement is not a substitute.
+The initial proposal incorrectly treated any additional governing-input accounting as source-inventory expansion.
+That restriction does not block a consumer of the already-retained whole request.
+A broader addition of origins,
+persisted provenance,
+a parallel message inventory,
+or unaccepted authority or closed-world policy remains a separate proposal.
+A model-generated completeness statement is not a substitute for code-established input scope.
 Production admission profiles,
 semantic cutoffs,
 additional paid trials,
@@ -156,18 +168,18 @@ and installed activation remain outside this proposal.
 Contextual-heading meaning and valid delegation remain separate obligations,
 not facts granted by scope approval.
 
-- Extend the existing owners to this request material.
-  This addresses the actual unaccounted input needed for request-wide policy use;
-  it also broadens the supported governing-input surface and needs origin-sensitive controls.
-- Keep the current source scope.
-  This avoids that expansion;
-  the general request-domain boundary remains unsupported,
-  so the current native compiler cannot release general approve/ask outcomes.
-
-Ranking:
- extend the existing owners before holding the current scope,
-because it addresses an observed input dependency without introducing another registry or a completeness oracle.
-Approval of this proposal is still pending.
+The consumer must retain an original assessment associated with the complete unchanged request,
+including whitespace,
+escaped text,
+and structured message content.
+Equal bytes from an independent request cannot substitute for its capability.
+An authored operative answer cannot produce a request-wide priority or directive.
+An authored `none` answer concerns only this bounded semantic use;
+origin association,
+contextual-heading meaning,
+delegation,
+and request-wide governing sufficiency remain independent obligations.
+No additional grant is awaited for that implementation.
 
 ## Incremental rule-relevance cache direction
 

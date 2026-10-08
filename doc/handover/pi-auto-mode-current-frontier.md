@@ -164,13 +164,20 @@ paid semantic trial,
 new source inventory,
 or installed activation was introduced.
 
-The next request-level source accounting is proposed in
-[the scope-expansion section](../planning/pi-auto-mode-batched-assessment.md#proposed-expansion-of-request-source-accounting).
-Ordinary request material already exists in the original terminal bytes,
-but it has no governing-source association in the current source set.
-Extending that accounting is awaiting authorization under the current source-expansion constraint.
-The proposal reuses existing owners and does not treat role labels or model completeness claims as evidence.
-Contextual-heading meaning and valid delegation remain separate obligations.
+The initial request-source proposal incorrectly required another grant for an already-retained input.
+That requirement is withdrawn in
+[the corrected scope proposal](../planning/pi-auto-mode-batched-assessment.md#proposed-expansion-of-request-source-accounting).
+The original observer already owns the complete exact request bytes;
+selecting and consuming them through the same request/judgment owner is authorized implementation,
+not a new source origin or parallel message inventory.
+The next consumer must bind an actual assessment to that original whole-request occurrence,
+not merely repeat the bytes as background context.
+No extra parsing or re-encoding is needed for this consumer.
+Whole-request operative answers cannot acquire one authority tier,
+and `none` cannot certify request-wide governing completeness.
+Origin association,
+contextual-heading meaning,
+and valid delegation remain separate obligations.
 
 ### Review disposition and remaining work
 
