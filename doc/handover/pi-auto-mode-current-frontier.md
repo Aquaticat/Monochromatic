@@ -81,6 +81,33 @@ The implementation now requires ordinary source-bearing data fields
 and observes copies through descriptors without invoking accessors.
 Early seal exits also discard transient payload references.
 
+## Whole-request and contextual-heading follow-up
+
+Whole-request identity omission `73fda0d` failed `proc_d064`;
+restoration passed `proc_de54`.
+Removing the independent request-domain obligation in `29272de`
+made `proc_e7ca` approve and enter an inert tool body.
+That omission is restored;
+full native `proc_8a24` and action `proc_74d6` passed.
+
+Contextual headings now have a separate original aggregate content use,
+`heading_instruction_content`,
+under their own captured startup policy.
+Implementation `2465042` preserves one group per original source.
+An admitted `none` clears only that group's independent heading-content obligation.
+Potential or unknown content supplies no directive,
+authority,
+or governing-domain completeness.
+Potential-as-resolved omission `ebe2514` failed `proc_9d89`.
+Restoration `e9161b3` passed native `proc_6fd2` and action `proc_a023` on SDK 1.0.4;
+the current SDK 1.1.0 full regressions also cover these consumers.
+
+The next proposed policy choice is
+[scoped incorporation of quoted policy text](../planning/pi-auto-mode-quoted-unit-incorporation.md).
+Q21's governing-instruction principle is settled.
+The narrower question is what should establish legitimate incorporation of an exact quoted unit.
+No quoted-unit incorporation implementation or new production admission rule has been adopted.
+
 ## Configured native clause compiler
 
 Private implementation `f172216` connects original typed estimates to the existing clause lowerer and resolver.

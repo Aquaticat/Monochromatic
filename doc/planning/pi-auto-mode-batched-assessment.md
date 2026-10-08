@@ -80,6 +80,12 @@ full native `proc_c4d5` and action `proc_2fa4` passed on SDK 1.1.0.
   new provider trial,
   or installed activation is adopted by these mechanisms.
 
+The next authority-composition choice is documented in
+[scoped incorporation of quoted policy text](pi-auto-mode-quoted-unit-incorporation.md).
+This is not another request to consume already-retained source bytes.
+The proposal distinguishes a new quoted-unit composition rule from settled source registration and Q21.
+No dependent incorporation implementation is started before resolving that policy choice.
+
 ### Clause consumption contract
 
 The lowering operation consumes an operation-bound relationship already admitted by trusted code policy,
