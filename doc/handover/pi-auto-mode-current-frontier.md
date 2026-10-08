@@ -7,6 +7,31 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-08.
 
+## Continuation correction: predecision program inspection
+
+The assistant incorrectly stopped after verifying partial helpers.
+The remaining consumer implementation is authorized work,
+not a reason to wait for another continuation prompt.
+The protected `AGENTS.md` remains unchanged;
+the existing unapplied `PXQ` proposal is tightened to distinguish missing implementation from a genuine blocker.
+
+The immediate consumer requirement is concrete:
+the native reviewer must receive the validated original program declaration before permission or execution.
+The current program owner parses that declaration only inside `openProgram`,
+after an execution token becomes active.
+Execution controls that independently allowed a fixture do not verify this earlier policy-consumption point.
+
+Work now reuses the existing declaration decoder and ownership check,
+the original callable-tool snapshot,
+and the original judgment member records.
+The declaration must be available before review and reused by identity during execution,
+under the same preparation-inclusive budget and currentness checks.
+No new registry,
+source-hash lock,
+semantic qualification,
+or provider trial follows from this work.
+Validated outer syntax still does not establish complete effects or instruction meaning.
+
 ## Accepted policy-consumer slice: partial implementation
 
 The user accepted the focused policy-consumer slice on 2026-10-08.
@@ -3054,12 +3079,13 @@ Current independently verifiable areas:
 Proposed tightening of `AGENTS.md` rule `PXQ`,
 not applied because that file remains protected:
 
-> Completion means the authorized queue,
->  not a phase.
->  After each checkpoint,
->  start the next authorized item.
->  Stop only at completion or a genuine blocker;
->  never require the user to say "continue".
+> Tracked work remains:
+>  start the next authorized item after verification.
+>  A missing implementation is work,
+>  not a blocker;
+>  stop only for missing authorization,
+>  unavailable input,
+>  or completion.
 
 - Establish the composed operation and relevant effect scope before mapping nested transport groups to judgments.
   Do not infer missing safety information merely from a runtime-dependent value.
