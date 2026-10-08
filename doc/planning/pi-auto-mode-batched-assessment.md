@@ -122,6 +122,53 @@ and member-only facts do not gain that status.
 Passing those tests verifies consumption logic,
 not semantic-model quality.
 
+## Proposed expansion of request-source accounting
+
+The configured compiler now consumes original tagged,
+untagged,
+and orphan-heading candidates.
+It derives source-local interpretation,
+authority,
+and inspected-operation uses rather than demanding blanket premises.
+The remaining request-domain boundary is different:
+ordinary request material is retained in the original terminal request
+but is not associated with the current governing-source set.
+
+The proposed next scope is original request-message/source association and governing-use accounting
+through the existing request and source owners.
+The exact original request body must remain authoritative as an observation,
+not as instruction authority.
+Reuse its existing JSON-format validation if structured access is actually needed;
+do not add a raw-span parser,
+re-encode the request,
+construct a parallel message inventory,
+or infer authority from transport roles or equal text.
+Host authority registration remains the accepted mechanism;
+this proposal does not change its tier/scope policy or make registration prove coverage.
+
+This expands governing-input accounting beyond the already-represented source units,
+so authorization is requested before implementing it under the current no-source-inventory-expansion constraint.
+A model-generated completeness statement is not a substitute.
+Production admission profiles,
+semantic cutoffs,
+additional paid trials,
+and installed activation remain outside this proposal.
+Contextual-heading meaning and valid delegation remain separate obligations,
+not facts granted by scope approval.
+
+- Extend the existing owners to this request material.
+  This addresses the actual unaccounted input needed for request-wide policy use;
+  it also broadens the supported governing-input surface and needs origin-sensitive controls.
+- Keep the current source scope.
+  This avoids that expansion;
+  the general request-domain boundary remains unsupported,
+  so the current native compiler cannot release general approve/ask outcomes.
+
+Ranking:
+ extend the existing owners before holding the current scope,
+because it addresses an observed input dependency without introducing another registry or a completeness oracle.
+Approval of this proposal is still pending.
+
 ## Incremental rule-relevance cache direction
 
 The user refined the rule-indexed proposal:

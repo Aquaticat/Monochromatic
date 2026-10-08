@@ -41,9 +41,11 @@ complete coverage,
 authorization satisfaction,
 or an action verdict.
 An inspected outer-program shape is not qualified callee effects.
-Unclassified source text,
-governing/delegation coverage,
-and sufficient operation coverage remain independent gaps.
+Consumed original candidates now discharge their supported interpretation and operation uses.
+Remaining request-domain,
+contextual-heading,
+authority/delegation,
+and unsupported operation uses stay explicit.
 All current native compiler cases therefore withhold execution.
 Production activation and the full migration remain unfinished.
 
@@ -94,18 +96,81 @@ it verifies preservation of uncertainty,
 not independent enforcement against an incorrect model answer.
 No semantic accuracy or production profile was established.
 
-The next concrete defect is the unconditional operation premise in `compiler.mjs`.
-Even an admitted relationship to the whole original inspected program
-cannot currently satisfy its operation-evidence consumer.
-The required canonical control is being run before changing this behavior.
-The initial scope is one original inspected enclosing program without a separate implementation-fact owner.
-Per-clause admitted uses must replace the universal static-effect demand;
-unknown uses,
+The unconditional operation premise in `compiler.mjs` was another concrete consumer defect.
+Canonical control `proc_7bd1` failed because an admitted relationship to the whole original inspected program
+still could not satisfy its operation-evidence consumer.
+The compiler now records per-clause `operationApplication` using the original member and program inspection.
+Supported admitted relationships replace the universal static-effect demand for one enclosing inspected program
+without a separate implementation-fact owner.
+Unknown uses,
 multi-member composition,
-and independent code-fact gaps must remain unresolved.
-After that consumer is verified,
-already-retained unclassified source spans need original selectable claims through their existing owner.
-Neither step adopts production policy or expands source inventory.
+and independent fact-owner gaps remain unresolved.
+Full native `proc_7b44` passed 23 compiler modes;
+action `proc_b3d0` passed.
+The estimated relationships remain estimates,
+not code facts or complete governing-source proof.
+
+Already-retained unclassified source spans now have original selectable capabilities
+through the existing index,
+source set,
+judgment,
+and typed wire.
+The canonical regression failed `proc_3ca8` with zero estimates instead of two
+for equal untagged prohibitions in independent original sources.
+Implementation passed `proc_b70d` and full native `proc_7e1b`.
+Source-owner and action checks passed `proc_db47`;
+native quotation control `proc_95a9` passed.
+Quotation-scope omission `8a03068` failed `proc_4ab6` by lowering quoted data with developer priority.
+The guard is restored and full native `proc_5707` passed.
+Structured content remains exact JSON,
+not reconstructed Markdown.
+Copied diagnostic spans do not authenticate candidates.
+
+The updated full-policy control measured 212 and 217 retained candidates
+for the short-host and native-default linked profiles,
+including 207 tagged rules.
+The corresponding typed requests were 208,145 and 216,999 bytes.
+Existing bounds still reject independent copies;
+no source equality merge,
+batch split,
+or limit increase occurred.
+
+Authority need is now derived from consumed original relationships.
+Sources whose consumed candidates are all admitted `none` no longer impose blanket authority premises.
+Operative,
+unknown,
+abstained,
+unrepresented-source,
+and unit-level delegation cases retain their gaps.
+The canonical control failed `proc_9516` before this change;
+full native `proc_7fff` and action `proc_66e7` passed after it.
+This is not a declaration that the complete source or request has no other governing instructions.
+
+Orphan headings and source-local coverage uses are now implemented in `6ca7009`.
+The missing original heading control failed `proc_7986`;
+heading-none,
+heading-unknown,
+and heading-operative controls passed `proc_2e5a`.
+Source-local candidate use is discharged only for admitted supported interpretations.
+Heading strings supplied only as ancestry retain a separate normative-use obligation.
+The original request observation remains attached to its independent request-domain issue.
+
+Omission `d8baccb` failed `proc_110b` by removing the original orphan-heading candidate.
+Restoration `69e69d2` passed full native `proc_44b5` and action `proc_9324`.
+The configured-compiler matrix now has 26 scenarios,
+and the linked full-policy counts remain 212 and 217 candidates.
+No production policy,
+paid semantic trial,
+new source inventory,
+or installed activation was introduced.
+
+The next request-level source accounting is proposed in
+[the scope-expansion section](../planning/pi-auto-mode-batched-assessment.md#proposed-expansion-of-request-source-accounting).
+Ordinary request material already exists in the original terminal bytes,
+but it has no governing-source association in the current source set.
+Extending that accounting is awaiting authorization under the current source-expansion constraint.
+The proposal reuses existing owners and does not treat role labels or model completeness claims as evidence.
+Contextual-heading meaning and valid delegation remain separate obligations.
 
 ### Review disposition and remaining work
 
