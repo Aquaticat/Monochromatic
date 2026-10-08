@@ -110,14 +110,20 @@ Private storage alone did not protect prototype method lookup.
 Schema-reference comparison alone did not detect in-place mutation.
 Adding another JSON tools source would not solve either consumed-runtime dependency.
 
-- Upstream fault: no.
+- Upstream fault:
+   no.
   The reproduced omissions were in our private adapter.
-- Upstream fixability: not needed for these fixes.
+- Upstream fixability:
+   not needed for these fixes.
   They are implemented at the existing consumer boundary.
-- Supported upstream use case: the private ownership contract is not asserted to be an SDK guarantee.
-- Contribution policy: not investigated because no upstream defect or filing is proposed.
-- Maintainer intent: not investigated for the same reason.
-- Prototype: private fixes and controls exist;
+- Supported upstream use case:
+   the private ownership contract is not asserted to be an SDK guarantee.
+- Contribution policy:
+   not investigated because no upstream defect or filing is proposed.
+- Maintainer intent:
+   not investigated for the same reason.
+- Prototype:
+   private fixes and controls exist;
   no upstream patch is claimed.
 
 There is nothing to file upstream from this evidence.
