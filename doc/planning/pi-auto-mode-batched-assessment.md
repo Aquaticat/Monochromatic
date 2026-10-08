@@ -1,11 +1,12 @@
 # Batched axioms with a three-call assessment ceiling
 
-## Proposed next policy-consumer slice
+## Accepted next policy-consumer slice
 
+The user accepted this slice on 2026-10-08.
 The bounded native-program checkpoint is verified.
-The next proposed work is the missing policy consumer,
+The next work is the missing policy consumer,
 not another runtime ownership matrix or provider trial.
-This proposal does not authorize installed activation or adopt semantic thresholds.
+Acceptance does not authorize installed activation or adopt semantic thresholds.
 
 The private `contract/integration/action-policy/evaluate.mjs#evaluateBoundPolicy`
 still sets `needsRelations: false`
@@ -52,6 +53,51 @@ record its exact missing premise rather than inventing a cutoff,
 default permission,
 or automatic approval request.
 Installation remains a later step.
+
+### Clause consumption contract
+
+The lowering operation consumes an already-established operation-bound relationship,
+not a wire answer or probability vector.
+It is an authored-input pure operation,
+like the existing resolver,
+not an evidence-authentication endpoint.
+The native evaluator must obtain any operative relationship through the original owners;
+callers cannot provide an interpreter,
+qualification flag,
+or completeness callback to make one appear.
+
+- `permission` produces an applicable `permit` directive with code-established priority.
+- `prohibition` produces an applicable `prohibit` directive with code-established priority.
+- `prerequisite` produces an applicable authorization requirement,
+   never a directive permission or legacy `require-approval` effect.
+  Satisfaction and channel sufficiency require separate code-established inputs.
+  Missing inputs remain unresolved.
+  Valid scope and any waivers must already be resolved before this lowering.
+- `none` contributes no operative directive or requirement.
+  It does not grant permission or establish complete governing coverage.
+- `unknown` and `unsupported` retain an interpretation gap.
+  They cannot become the kernel's bounded `effect: 'unresolved'` merely by changing the label.
+
+Original clause handles and source occurrences authenticate associations.
+Generated clause identifiers only correlate resolver output with those handles.
+Unregistered sources retain unknown authority;
+there is no user-tier default.
+A priority value in an authored unit fixture is not native authority evidence.
+
+The current relation owner marks every captured estimate as semantically unqualified.
+The rule index does not interpret its clauses.
+Current source views do not establish exhaustive governing/delegation coverage,
+and the current native-read fact does not establish whole-operation coverage.
+The first implementation must preserve these limits rather than promote their metadata into proofs.
+It may therefore derive the same unresolved outcome while identifying the particular missing premises.
+Do not send an assessment request that has no admissible consumer under the current contract.
+
+Positive lowering and approval-composition tests may use authored established relationships.
+Canonical native tests must separately show that raw estimates,
+missing source coverage,
+and member-only facts do not gain that status.
+Passing those tests verifies consumption logic,
+not semantic-model quality.
 
 ## Incremental rule-relevance cache direction
 
