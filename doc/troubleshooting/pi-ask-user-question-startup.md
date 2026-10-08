@@ -56,6 +56,10 @@ The matching local log is `node_modules/.monochromatic/2026-10-08T02-36-56.899Z.
 - Line 63 removes the workspace at `1791447423579`.
 
 The removal occurs exactly 30 seconds after launch dispatch.
+The matching Pi session's `ask_user_question` tool result at `2026-10-08T08:17:03.579Z`
+reports `The answer helper did not connect within 30 seconds.`
+Its timestamp is also `1791447423579`,
+confirming deadline expiry rather than an inferred user cancellation.
 The screenshot establishes that Node subsequently attempted the deleted path.
 This is evidence for the lifetime gap explicitly left open by the previous fix.
 It is not evidence that a package rebuild removed this helper.
@@ -225,6 +229,11 @@ The disposable driver and extension are retained under `${HOME}/temp/agent/ask-h
 No user editor configuration or existing session was modified.
 
 The package `verify:terminal` and `verify:extension` tasks also passed after the lifecycle change.
+The acknowledgement guard was also removed in a disposable copied bundle.
+The silent-requester regression then failed because an editor started without acknowledgement;
+restoring the original bundle made the same tests pass.
+Neither the installed artifact nor the working source was mutated by this guard test.
+
 Final post-bootstrap validation is tracked in the completion section of this document.
 
 ### Follow-up limits and rejected approaches

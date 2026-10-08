@@ -283,6 +283,33 @@ await describe({
       },
     },),
     it({
+      name: 'session shutdown during terminal resolution prevents a later launch',
+      fn: async () => {
+        const registry = createRequestRegistry();
+        const state = { launched: false, };
+        let caught: unknown;
+        try {
+          await requestExternalAnswer({
+            cwd: process.cwd(),
+            registry,
+            resolveTerminalEntryId: async () => {
+              registry.abortAll();
+              return 'fixture-terminal';
+            },
+            launch: async () => {
+              state.launched = true;
+              throw new Error('An already-cancelled request launched a terminal.',);
+            },
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(Error,);
+        expect(state.launched,).toBe(false,);
+      },
+    },),
+    it({
       name: 'propagates terminal launch failure without hanging channel',
       fn: async () => {
         /**
