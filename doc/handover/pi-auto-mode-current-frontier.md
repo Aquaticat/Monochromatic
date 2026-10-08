@@ -7,6 +7,97 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-08.
 
+## Configured native clause compiler
+
+Private implementation `f172216` connects original typed estimates to the existing clause lowerer and resolver.
+The ordinary native reviewer can now produce nonempty permission/prohibition inputs
+and separate authorization requirements,
+without an injected final decision.
+The startup `semanticAdmissionPolicy` fixes model,
+relation definition,
+inspected program profile,
+and a synchronous acceptance function.
+No production policy or probability band has been adopted.
+The unconfigured runtime still sends no semantic requests.
+
+The configured raw transport reuses the existing wire and response parser.
+It verifies the reported model and complete answer set
+before the original question-selection owner retains model attribution.
+Legacy normalized strings supply no model attribution and cannot satisfy the configured compiler.
+There is no new evidence registry,
+source-hash lock,
+tools-field extraction,
+or serialized answer envelope.
+Original `semanticQualification: 'not-established'` records remain unchanged.
+That tag limits what transport establishes;
+it is not a permanent veto on downstream code admission policy.
+Authored test acceptance rules establish no empirical model quality.
+
+The compiler authenticates the original batch,
+uses code-registered original source priorities,
+and preserves uncertainty instead of admitting unsupported or unknown meanings.
+Its acceptance function cannot return authority,
+complete coverage,
+authorization satisfaction,
+or an action verdict.
+An inspected outer-program shape is not qualified callee effects.
+Unclassified source text,
+governing/delegation coverage,
+and sufficient operation coverage remain independent gaps.
+All current native compiler cases therefore withhold execution.
+Production activation and the full migration remain unfinished.
+
+Initial canonical control `proc_b9d8` passed 17 modes.
+Action suite `proc_83cd` passed the new policy-capture,
+model-attribution,
+and original-evidence controls.
+Expanded full native regression `proc_daa0` passed 20 compiler modes
+plus the existing runtime suites.
+Those additional controls cover repeated codes across sources,
+multiple clauses with different relationships,
+reordered answer-object fields,
+exact original clause-projection association,
+mixed direct/program membership,
+and missing raw transport before native hook installation.
+
+Model-match omission `7e570a2` failed `proc_885f`:
+a mismatched model reached the acceptance callback.
+Restoration passed `proc_9198`.
+Abstention omission `004091c` failed `proc_6270`:
+`admitted` was returned instead of `abstained`.
+Both guards are restored.
+Full restored native `proc_d5a8` and action `proc_059a` passed.
+No semantic provider request,
+genuine approval,
+or installed change occurred.
+
+### Review disposition and remaining work
+
+The default Advisor call reported an operation deadline and unconfirmed remote settlement;
+it supplied no review.
+Explicit alternate `hyper/deepseek-v4-pro-0813` returned a transcript-based review,
+not an independent execution.
+Its missing-transport and multi-clause verification suggestions are covered by the expanded native controls.
+The existing issuer maps the immutable candidate list in order;
+the original selection owner preserves that exact issued order.
+No new identity registry was needed for correlation.
+
+Do not adopt the suggested direct lowering of `states_approval_prerequisite`.
+Its actual definition in private
+`contract/research/instruction-prerequisite-relation/cases.mjs`
+expressly excludes current-operation applicability and authorization satisfaction.
+A positive scalar cannot establish an applicable authorization requirement.
+Likewise,
+a single native-read member does not expand the existing execute-body fact
+into complete callback,
+transfer,
+or whole-operation coverage.
+
+Remaining authorized work is decision-specific source/delegation and operation coverage through existing owners.
+The compiler mechanism is no longer the unconditional empty-program placeholder.
+Do not mistake its configured test policy for production qualification,
+or treat the remaining implementation as automatically a blocker.
+
 ## Continuation correction: predecision program inspection
 
 The assistant incorrectly stopped after verifying partial helpers.
@@ -17,8 +108,9 @@ the existing unapplied `PXQ` proposal is tightened to distinguish missing implem
 
 The immediate consumer requirement is concrete:
 the native reviewer must receive the validated original program declaration before permission or execution.
-The current program owner parses that declaration only inside `openProgram`,
-after an execution token becomes active.
+Before `0381bdc`,
+the program owner parsed that declaration only inside `openProgram`,
+after an execution token became active.
 Execution controls that independently allowed a fixture do not verify this earlier policy-consumption point.
 
 Work now reuses the existing declaration decoder and ownership check,
@@ -51,17 +143,20 @@ Expanded canonical controls `proc_af20` passed.
 the corrected control forwards the canonical handler unchanged
 and checks its retained thrown error instead.
 
-Required-inspection sensitivity and full regressions are next,
-followed by the remaining authorized consumer work.
-Do not stop merely because this preparation dependency is verified.
+Required-inspection omission `003d6ec` failed `proc_6aa8` after running three inert children.
+Restoration `33e37ca` passed the full native suite in `proc_4785`.
+Document check `proc_3acf` also passed.
+This verifies the preparation dependency,
+not completion of the remaining consumer work.
 
 ## Accepted policy-consumer slice: partial implementation
 
 The user accepted the focused policy-consumer slice on 2026-10-08.
 Its contract is recorded in
 [the batched-assessment plan](../planning/pi-auto-mode-batched-assessment.md).
-The implemented part is established-clause lowering and original-owner premise diagnostics,
-not operative native compilation.
+The initial implementation established clause lowering and original-owner premise diagnostics.
+The configured native clause compiler now consumes those components;
+the historical controls in this section concern the initial partial implementation.
 
 Private `contract/integration/action-policy/clause-lowering.mjs`
 maps authored established permission and prohibition relationships to directives.
@@ -107,11 +202,10 @@ Restored action suite `proc_0816` and full native regression `proc_72fa` passed.
 Document check `proc_9293` passed before this final result note.
 
 The remaining limit is explicit:
-current owners supply no established clause meanings for an operative native program.
-Source/delegation coverage and complete-operation coverage remain missing under their current contracts.
-The evaluator still sends no inference and has no operative rules.
-The new authored lowerer is not called by the canonical path because it has no established input to consume.
-Its complete-premises branch is currently unreachable.
+source/delegation coverage and complete-operation coverage remain missing under their current contracts.
+The unconfigured evaluator sends no inference.
+The configured compiler calls the lowerer using original estimates admitted by fixed code policy,
+but the resolver's complete-premises branch is still unreachable with the current coverage producers.
 The lowerer's defensive branch for a future catalog label is also unexercised.
 Do not call this a completed policy consumer or claim that it can now approve ordinary native work.
 

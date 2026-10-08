@@ -8,13 +8,14 @@ The next work is the missing policy consumer,
 not another runtime ownership matrix or provider trial.
 Acceptance does not authorize installed activation or adopt semantic thresholds.
 
-The private `contract/integration/action-policy/evaluate.mjs#evaluateBoundPolicy`
-still sets `needsRelations: false`
-and returns `{premises: 'incomplete', rules: []}` unconditionally.
-The execution fixtures independently authorize inert programs;
-they do not exercise an operative policy decision through this evaluator.
+The standalone private `contract/integration/action-policy/evaluate.mjs#evaluateBoundPolicy`
+remains unconfigured and withholds execution.
+The new fixed-bootstrap evaluator can consume original typed estimates
+and produce nonempty rule inputs through the canonical native reviewer.
+Independent source/delegation and operation coverage remain unresolved.
+Execution fixtures that separately authorize inert programs do not establish those missing premises.
 
-- [ ] Establish the per-clause consumption contract from existing definitions and evidence.
+- [x] Establish the per-clause consumption contract from existing definitions and evidence.
   Retain original clause identity,
   authority,
   scope,
@@ -26,7 +27,8 @@ they do not exercise an operative policy decision through this evaluator.
   Identify exactly which estimates can support which conclusions;
   unsupported meanings and missing qualification remain unresolved.
 - [ ] Compute decision-relevant missing premises from the existing source and operation owners.
-  Replace the unconditional empty rule program with justified supported inputs.
+  The configured compiler now replaces the unconditional empty rule program with supported inputs;
+  sufficient decision-specific coverage is still unfinished.
   Unknown coverage is not absence,
   and potentially outcome-changing instructions cannot be ignored.
   Preserve the accepted use of qualified inspected-form estimates;
@@ -56,11 +58,13 @@ Installation remains a later step.
 
 ### Clause consumption contract
 
-The lowering operation consumes an already-established operation-bound relationship,
+The lowering operation consumes an operation-bound relationship already admitted by trusted code policy,
 not a wire answer or probability vector.
-It is an authored-input pure operation,
+It remains a pure operation,
 like the existing resolver,
 not an evidence-authentication endpoint.
+Authored established relationships and admitted estimates share this mapping;
+neither form turns the lowerer into an empirical qualification producer.
 The native evaluator must obtain any operative relationship through the original owners;
 callers cannot provide an interpreter,
 qualification flag,
@@ -85,12 +89,31 @@ there is no user-tier default.
 A priority value in an authored unit fixture is not native authority evidence.
 
 The current relation owner marks every captured estimate as semantically unqualified.
+That describes the owner's transport guarantee,
+not a prohibition on implementing a downstream configured consumer.
+The fixed-bootstrap compiler now authenticates the original batch and reported model,
+then applies the captured synchronous admission function before lowering.
+The function cannot return completeness,
+source authority,
+authorization satisfaction,
+or an action verdict.
+No default production policy or probability threshold is supplied.
 The rule index does not interpret its clauses.
 Current source views do not establish exhaustive governing/delegation coverage,
 and the current native-read fact does not establish whole-operation coverage.
 The first implementation must preserve these limits rather than promote their metadata into proofs.
 It may therefore derive the same unresolved outcome while identifying the particular missing premises.
 Do not send an assessment request that has no admissible consumer under the current contract.
+Unconfigured or out-of-profile native operations still skip assessment.
+Configured local controls exercise admitted relationships,
+not provider accuracy or production policy adoption.
+
+Implementation `f172216`,
+canonical control `proc_b9d8`,
+action `proc_83cd`,
+and expanded full native `proc_daa0` verify the connected compiler mechanism.
+Restored full native `proc_d5a8` and action `proc_059a` passed after model-match and abstention sensitivity checks.
+The canonical fixture outcomes remain unresolved because the independent coverage producers are unfinished.
 
 Positive lowering and approval-composition tests may use authored established relationships.
 Canonical native tests must separately show that raw estimates,
