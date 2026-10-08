@@ -87,34 +87,11 @@ function appendArg(
 }
 
 /**
- Tokens to strip from Exec lines because they interfere with programmatic launches.
- Single-instance flags cause IPC activation to an existing process, which may not
- forward `--working-directory` or other config overrides to the running instance.
- */
-const STRIPPED_TOKEN_PREFIXES: readonly string[] = [
-  '--gtk-single-instance',
-];
-
-/**
- Returns `true` when a token should be kept (not stripped).
- 
- @param token - single exec token to check
- 
- @returns whether to keep the token
- */
-function keepToken(token: string,): boolean {
-  return STRIPPED_TOKEN_PREFIXES.every(function notMatch(prefix,) {
-    return !token.startsWith(prefix,);
-  },);
-}
-
-/**
  Builds the final command array from a resolved terminal and user options.
  
- Strips single-instance flags from the Exec tokens because they cause IPC
- activation to a running instance, which does not reliably forward config
- overrides like `--working-directory`. Each applicable option block hands
- its key and value to {@link appendArg} to apply the trailing-`=` convention.
+ Preserves configured Exec tokens, including explicit single-instance policy.
+ Each applicable option block hands its key and value to {@link appendArg}
+ to apply the trailing-`=` convention.
  
  @param terminal - Resolved terminal entry with Exec tokens and argument keys.
  
@@ -139,11 +116,10 @@ export function buildCommand({
   readonly options: UserOptions;
 },): readonly string[] {
   /**
-   Immutable command: kept exec tokens followed by the tokens each applicable option block contributes.
+   Immutable command: configured exec tokens followed by the tokens each applicable option block contributes.
    */
   const args: readonly string[] = [
-    ...terminal.execTokens
-      .filter(keepToken,),
+    ...terminal.execTokens,
     ...(((options.appId
       .length
       > 0) && (terminal.appIdArg

@@ -94,6 +94,8 @@ function respondingLauncher(
       socket,
       'connect',
     );
+    // Drain the requester's acknowledgement while sending fixture completion.
+    socket.resume();
     /**
      Helper close subscribed before ending stream.
      */

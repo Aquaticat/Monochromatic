@@ -65,7 +65,7 @@ try {
       /**
        Snapshot and request must share request lifetime, not installation lifetime.
        */
-      const [, helperPath,] = command;
+      const helperPath = command.at(-3,);
       /**
        Request remains final argument so no token is exposed in process arguments.
        */

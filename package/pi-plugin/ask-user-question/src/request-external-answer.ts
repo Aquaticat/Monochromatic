@@ -28,6 +28,7 @@ import {
   resolveAnswerRuntime,
 } from './helper-launch.ts';
 import type { RequestRegistry, } from './request-registry.ts';
+import { ANSWER_BOOTSTRAP, } from './helper-bootstrap.ts';
 
 //region Constants
 
@@ -234,33 +235,33 @@ export async function requestExternalAnswer(
    Wait begins before detached launch to avoid missing fast helper connection.
    */
   const completionTask = channel.wait({ signal: requestSignal, },);
-  try {
-    await launch({
-      dir: cwd,
-      title: ANSWER_TERMINAL_TITLE,
-      command: [
-        runtimePath,
-        helperPath,
-        '--request',
-        workspace.requestPath,
-      ],
-    },);
-  }
-  catch (error: unknown) {
-    request.abort();
-    try {
-      await completionTask;
-    }
-    catch (completionError: unknown) {
-      l.debug(`answer channel stopped after launch failure: ${String(completionError,)}`,);
-    }
-    l.error(`answer terminal launch failed: ${String(error,)}`,);
-    throw error;
-  }
   /**
-   Helper completion while model tool remains blocked.
+   Observe launch and channel together, including cancellation while launch is pending.
+   A late launcher still receives a bootstrap that safely handles expired requests.
    */
-  const completion = await completionTask;
+  async function launchAnswerTerminal(): Promise<void> {
+    try {
+      await launch({
+        dir: cwd,
+        title: ANSWER_TERMINAL_TITLE,
+        command: [
+          runtimePath,
+          '--input-type=module',
+          '--eval',
+          ANSWER_BOOTSTRAP,
+          helperPath,
+          '--request',
+          workspace.requestPath,
+        ],
+      },);
+    }
+    catch (error: unknown) {
+      request.abort();
+      l.error(`answer terminal launch failed: ${String(error,)}`,);
+      throw error;
+    }
+  }
+  const [, completion,] = await Promise.all([launchAnswerTerminal(), completionTask,],);
   if (completion.status === 'cancelled') {
     l.info('answer helper cancelled',);
     return { status: 'cancelled', };
