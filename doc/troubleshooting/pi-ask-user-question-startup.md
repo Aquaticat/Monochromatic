@@ -106,8 +106,11 @@ wall-clock delay does not establish that a desktop launch failed.
 The separate 5-second authentication deadline begins only after a candidate socket connects.
 A regression exposed Node's `ERR_STREAM_PREMATURE_CLOSE` when that deadline destroyed an idle candidate;
 commit `724fb299a` contains that failure within the candidate and continues accepting helpers.
+Independent review identified the corresponding reset case;
+its new regression reproduced `ECONNRESET` expiring the question.
+Commit `c7b16bd39` rejects all failed unauthenticated candidates while preserving caller cancellation.
 
-`package/pi-plugin/ask-user-question/src/request-external-answer.ts:248`
+`package/pi-plugin/ask-user-question/src/request-external-answer.ts:249`
 launches inline JavaScript with paths as separate argument tokens:
 
 ```ts
@@ -139,6 +142,9 @@ The fixture additionally exercises quotes,
 a newline,
 percent and hash characters,
 and shell separators.
+The final `answer-helper.mjs` was inspected for module-location dependencies:
+its imports name only Node built-ins and it contains no `import.meta` references.
+The imported module therefore does not need its former filesystem location.
 
 `package/pi-plugin/ask-user-question/src/answer-channel.ts:157`
 sends `HELPER_READY` only after authentication and a cancellation check.
@@ -159,7 +165,7 @@ The channel owns all accepted sockets,
 including unauthenticated candidates.
 The helper owns its connection and terminates the editor when the requester disconnects.
 Expected cancellation exits without a raw shutdown stack trace.
-`request-external-answer.ts:267` observes launcher and channel together:
+`request-external-answer.ts:268` observes launcher and channel together:
 
 ```ts
 // package/pi-plugin/ask-user-question/src/request-external-answer.ts
@@ -172,6 +178,9 @@ const [, completion,] = await Promise.all([
 Cancellation therefore settles the tool even if the launcher has not returned yet.
 A later launcher rejection remains observed.
 A later successful launch receives the cancellation-aware bootstrap.
+Commit `269d21002` additionally opens the cancellation registry scope before terminal resolution.
+A regression demonstrated that shutdown during that first asynchronous operation could otherwise be forgotten,
+allowing an already-cancelled request to open a terminal.
 
 `package/cli/terminal-exec/src/build-command.ts:122`
 now retains the parsed desktop-entry arguments directly:
@@ -205,6 +214,10 @@ the old implementation failed as intended:
 
 The implemented path passes the real delayed-start test:
 a helper launched after 31 seconds returns the exact multiline answer.
+This test delays execution at the injected launcher boundary and then runs the production argv directly.
+It reproduces the requester's delayed-execution boundary,
+not an actual locked-desktop launch.
+The real Ghostty verifiers separately cover ordinary desktop startup.
 Lifecycle tests exercise cancellation during a pending launcher,
 active editor termination with captured stderr,
 an unavailable editor,
