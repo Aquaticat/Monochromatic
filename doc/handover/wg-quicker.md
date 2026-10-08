@@ -14,7 +14,8 @@ It:
    Pale Moon,
    Firefox Nightly,
    ChatGPT,
-   and Interpreter sockets through cgroup-BPF;
+   Interpreter,
+   and Qure sockets through cgroup-BPF;
 - keeps privileged BPF implementation in Rust;
 - does not move Ghostty into another systemd slice.
 
@@ -26,6 +27,10 @@ no WireGuard interface existed,
 no `wg-quicker-exempt` process ran,
 and no bypass `ip rule` was installed,
 so the next `up` starts a watcher from the current companion build.
+On 2026-10-08 that tunnel was up again with an active watcher,
+`wg-quicker-exempt __watch mx-que-mx1 100 1000`,
+and the priority `50` `fwmark 0x64` bypass rule installed,
+so Qure coverage landed against live tunnel state rather than an idle host.
 Do not bring tunnel up,
 restart it,
 or mutate live routing without explicit authorization.
@@ -99,6 +104,12 @@ instead of silently narrowing coverage.
    verify live target enumeration against real desktop launches,
    extend `~/disallowed.txt` with their measured endpoints,
    and switch both live configs to `AllowedIPsFromFiles`.
+- Qure follow-up:
+   discover its AppImage executables,
+   bundled CLI wrappers,
+   and desktop service,
+   verify live target enumeration against a real launch,
+   and extend `~/disallowed.txt` with its measured endpoints.
 
 No tracked implementation task remains.
 
@@ -131,6 +142,7 @@ a41cb8efb missing-ExemptMark warning and live config note
 7b3621d47 Pale Moon process discovery and exemption documentation
 5c65b29ce exact Pale Moon matching and cgroup-boundary documentation
 c07f6e56e ChatGPT and Interpreter executable discovery
+9e5e33d24 Qure executable and desktop-service discovery
 ```
 
 Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
@@ -309,7 +321,7 @@ Fallback-specific debug functional tests inject typed object-pin failure so desc
 deterministic.
 Separate public-CLI lifecycle test retains native pin-path coverage.
 
-## Ghostty, Steam, Helium, Pale Moon, Firefox Nightly, ChatGPT, and Interpreter coverage
+## Ghostty, Steam, Helium, Pale Moon, Firefox Nightly, ChatGPT, Interpreter, and Qure coverage
 
 `wg-quicker` starts Rust watcher only after bypass route exists.
 It stops watcher before removing bypass routing.
@@ -322,7 +334,8 @@ It states that Ghostty,
  Pale Moon,
  Firefox Nightly,
  ChatGPT,
- and Interpreter will use the tunnel.
+ Interpreter,
+ and Qure will use the tunnel.
 It instructs the user to add `ExemptMark = 100` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
@@ -370,6 +383,7 @@ Watcher behavior:
 - identifies Firefox Nightly's `app-firefox\x2dnightly@*.service` immediately;
 - identifies ChatGPT's `app-chatgpt@*.service` immediately;
 - identifies Interpreter's `app-interpreter@*.service` immediately;
+- identifies Qure's `app-qure@*.service` immediately;
 - maps live Helium,
   renderer,
   zygote,
@@ -381,6 +395,11 @@ Watcher behavior:
   to current cgroups;
 - maps every `interpreter`-prefixed executable,
   including the AppImage file and the bundled `interpreter-*` agents,
+  to current cgroups;
+- maps every `qure`-prefixed executable,
+  including the AppImage file,
+  the mounted Electron image,
+  and the agents its bundled CLI wrappers exec,
   to current cgroups;
 - periodically rescans processes entering existing cgroups;
 - retains known process-discovered cgroups through process restarts until cgroup removal;
@@ -451,7 +470,8 @@ Sibling processes sharing Helium,
 Pale Moon,
 Firefox Nightly,
 ChatGPT,
-or Interpreter cgroup also receive exemption until cgroup disappears or watcher stops.
+Interpreter,
+or Qure cgroup also receive exemption until cgroup disappears or watcher stops.
 A newly started process-discovered application can create sockets before next 250-millisecond rescan;
 applications present at watcher startup are attached before readiness.
 
@@ -555,6 +575,73 @@ and now generates as clearnet.
 The four permanently dead Steam and Valve domain names remain,
 as chosen,
 and warn on every generation.
+
+## Qure clearnet coverage
+
+JetBrains Qure reaches clearnet through the same two independent mechanisms as of 2026-10-08.
+
+Socket marking matches two shapes.
+Qure ships as `~/AppImages/qure.appimage`,
+which mounts read-only at `/tmp/.mount_qure.<random>` and runs the Electron image `qure-ai-assistant`.
+Matching accepts every executable whose name begins with `qure`,
+covering the AppImage file,
+the mounted image,
+the bundled `resources/qure_pytest/qure_pytest` runner,
+and every agent the bundled CLI wrappers spawn,
+because `~/.config/Qure/bin/preferred/browser-use`,
+`~/.config/Qure/bin/preferred/playwright-cli`,
+and `~/.config/Qure/bin/fallback/node` are shell scripts that `exec` that same mounted image.
+Qure's `qure.desktop` entry creates `app-qure@<hex>.service`,
+and the AppImage's own executable-named scope stays executable discovery's responsibility,
+since that name derives from the executable rather than the desktop entry.
+`chrome_crashpad_handler`,
+`chrome-sandbox`,
+and `AppRun` inside the mount carry Chromium-generic names,
+so they bypass only while sharing a matched cgroup.
+Qure's JVM agent ships as `resources/qure-agent-jvm/target/qure-agent.jar`,
+which the AppImage bundles no Java executable to run,
+so such an agent in a cgroup of its own relies on the `AllowedIPs` path instead.
+
+`AllowedIPs` generation gained the endpoints Qure was measured using:
+`api.quretests.com` and `quretests.com` from Chromium's `Network Persistent State` and the bundle,
+`o447951.ingest.sentry.io` from the bundle's DSN and one live connection,
+`eu.i.posthog.com` and `eu-assets.i.posthog.com` from two live connections,
+and `us.i.posthog.com` and `us-assets.i.posthog.com` from the same telemetry SDK's other region.
+Regenerating with the built command moved the value from `6537` to `7896` networks
+and from `156582` to `202048` bytes.
+Every then-current address of all seven hostnames left the generated value,
+except `7` of `16` `us.i.posthog.com` answers,
+whose AWS ELB set rotated between generation and probe,
+which is the decay `huggingface.co` documented.
+`example.com` stayed inside as a positive control.
+`o447951.ingest.sentry.io` was already clearnet before this change,
+because the pre-existing `o33249.ingest.sentry.io` entry resolves to the same two
+Google anycast addresses;
+the explicit entry keeps Qure covered if the OpenAI region ever loses it.
+`download.jetbrains.com` was deliberately left out:
+the bundle references it once,
+no connection was observed,
+and only `1` of its `12` CloudFront answers left the value when it was trialled,
+at a measured cost of `637` networks.
+
+Read-only target enumeration against the running Qure launch proved the discovery delta.
+The binary the active `mx-que-mx1` watcher still ran listed `16` targets;
+the rebuilt companion listed exactly two more:
+`app-org.chromium.Chromium-3862000.scope`,
+holding Qure's Electron main process,
+and `flatpak-session-helper.service`.
+That launch came through Gearlever,
+so `flatpak-spawn --host` placed `8` of Qure's `9` processes,
+including the network service that owns every measured connection,
+in a shared user-service cgroup that also holds `flatpak-session-helper`,
+`p11-kit-server`,
+and two `p11-kit-remote` processes.
+Marking it therefore exempts those daemons,
+and every later host-spawned flatpak child,
+until that service cgroup disappears.
+A launch from `qure.desktop` instead gives Qure its own `app-qure@<hex>.service` and scopes.
+No watcher was refreshed and no live route changed for this change;
+the deployment choice was put to the human with those two measured options.
 
 ## Verification evidence
 
@@ -662,7 +749,8 @@ fake procfs Helium,
 Pale Moon,
 Firefox Nightly,
 ChatGPT,
-and Interpreter mapping,
+Interpreter,
+and Qure mapping,
 Firefox Nightly service,
 executable,
 channel,
@@ -672,7 +760,13 @@ ChatGPT package-tree and sibling-directory boundaries,
 Interpreter family,
 stem,
 and case near misses,
-ChatGPT and Interpreter desktop-service names,
+Qure family,
+stem,
+case,
+and Chromium-generic-helper boundaries,
+ChatGPT,
+Interpreter,
+and Qure desktop-service names,
 path-key injectivity,
 exact cleanup,
 atomic exchange,
