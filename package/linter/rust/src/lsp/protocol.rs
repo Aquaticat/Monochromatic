@@ -48,11 +48,13 @@ pub fn read_message(input: &mut impl BufRead) -> Option<String> {
     }
 
     // A message with no length header cannot be read: its body has no end.
-    let length = length?;
+    // The unwrapped header value gets its own name so it does not shadow the
+    // `Option` accumulated above.
+    let body_length = length?;
 
     // `vec![0; length]` allocates exactly the body's size, so the read below
     // stops at the message boundary rather than consuming the next one.
-    let mut body = vec![0; length];
+    let mut body = vec![0; body_length];
     input.read_exact(&mut body).ok()?;
 
     return String::from_utf8(body).ok();
