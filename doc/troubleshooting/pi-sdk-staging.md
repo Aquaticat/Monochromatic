@@ -1,5 +1,87 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## SDK 1.0.4 default prompt with an independent policy copy exceeds the private source cap
+
+### Symptom and cause
+
+The expanded native control `proc_83e5` retained this synthetic terminal diagnostic:
+
+```text
+# contract/collector/collector.mjs
+Current rendered prompt exceeds source byte cap
+```
+
+The emitting `SourceCollectionError` belongs to our private collector,
+not the SDK or provider.
+Paths in this section are relative to the private consumer-contract repository.
+`contract/collector/collector.mjs:10,16,73` checks the complete rendered string:
+
+```javascript
+// contract/collector/collector.mjs
+const limits = Object.freeze({ sourceBytes: 65_536, totalBytes: 524_288, files: 64, appendTexts: 32 });
+if (Buffer.byteLength(value) > limits.sourceBytes)
+  throw new SourceCollectionError(`${label} exceeds source byte cap`);
+const rendered = text(adapter.render(), 'Current rendered prompt');
+```
+
+This cap is distinct from the one-MiB base-linked snapshot bound described in
+`Owned SDK 1.0.4 hook masked terminal errors`.
+It also differs from the generated-fragment text cap.
+The measured default preamble was 169 bytes;
+documentation guidance was 1517 bytes in the empty-system fixture.
+Those fragments did not individually exceed their source bound.
+
+### Verification and supported boundary
+
+`proc_a631` ran `mise --no-env --no-hooks run test:full-policy:default`
+in `contract/integration/native-batch/`.
+The native terminal listener measured the actual current rendered prompt before run settlement.
+
+- Linked current policy:
+   34,332 rendered bytes,
+  207 canonical clauses,
+  414 questions,
+  one local relation response.
+- Additional independent equal-text policy copy:
+   66,405 rendered bytes,
+  source-cap rejection before judgment creation,
+  zero relation requests.
+
+Both cases used the unmodified current policy as disposable fixture text.
+No provider request occurred.
+The default prompt with the linked policy is supported by this control;
+the failure must not be generalized to that case.
+
+### Limits and rejected remedies
+
+No bound was raised and no policy text was trimmed.
+An independent copy cannot be merged merely because its bytes match.
+The negative control now asserts the actual earlier source-cap boundary,
+rather than demanding the later clause-batch rejection.
+The accepted original-source carrier remains the supported representation for genuine linked copies,
+but it is not a workaround that authenticates an independent source.
+The oversized independent default case remains unsupported.
+
+### Upstream filing decision
+
+No upstream defect or filing artifact is established:
+
+- Fault:
+   the bound belongs to our private collector;
+  the test expected to reach a later boundary.
+- Feasibility:
+   an explicit negative control preserves the existing profile;
+  no SDK change is requested.
+- Support:
+   the default SDK rendering and linked-source path were exercised successfully.
+- Contribution policy:
+   not investigated because no upstream contribution is proposed.
+- Maintainer willingness:
+   not investigated because no upstream change is requested.
+- Prototype:
+   the consumer-side control passed;
+  installed SDK sources remain unchanged.
+
 ## SDK 1.0.4 empty append configuration is not an empty published entry
 
 ### Owned fixture symptom and cause
