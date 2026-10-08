@@ -192,19 +192,19 @@ fn decode(path: &Path) -> Option<Decoded> {
 /// Why: a failed decode still clears the pending requesters so they do not leak.
 fn deliver(inner: &Rc<ThumbInner>, path: &Path, decoded: Option<Decoded>) {
     let waiters = inner.pending.borrow_mut().remove(path).unwrap_or_default();
-    let Some(decoded) = decoded else {
+    let Some(pixels) = decoded else {
         tracing::warn!(path = %path.display(), "thumbnail decode failed");
         return;
     };
-    let texture = build_texture(&decoded);
-    insert_evicting(inner, path, texture.clone(), byte_cost(&decoded));
+    let texture = build_texture(&pixels);
+    insert_evicting(inner, path, texture.clone(), byte_cost(&pixels));
     for picture in waiters {
         picture.set_paintable(Some(&texture));
     }
     tracing::debug!(
         path = %path.display(),
-        width = decoded.width,
-        height = decoded.height,
+        width = pixels.width,
+        height = pixels.height,
         cache_bytes = inner.total_bytes.get(),
         "thumbnail ready"
     );
@@ -263,10 +263,10 @@ fn evict_to_budget(inner: &Rc<ThumbInner>) {
             .iter()
             .min_by_key(|(_, cached)| return cached.used)
             .map(|(victim_path, _)| return victim_path.clone());
-        let Some(victim) = victim else {
+        let Some(victim_path) = victim else {
             break;
         };
-        if let Some(removed) = inner.cache.borrow_mut().remove(&victim) {
+        if let Some(removed) = inner.cache.borrow_mut().remove(&victim_path) {
             inner.total_bytes.set(inner.total_bytes.get() - removed.bytes);
         }
     }
