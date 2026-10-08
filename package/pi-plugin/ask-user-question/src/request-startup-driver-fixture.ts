@@ -1,10 +1,11 @@
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
+  copyFile,
   rm,
   stat,
 } from 'node:fs/promises';
-import { dirname, } from 'node:path';
+import { dirname, join, } from 'node:path';
 
 import {
   createRequestRegistry,
@@ -25,6 +26,36 @@ const PRIVATE_FILE_MODE = 0o600;
  Bootstrap helper argument precedes the request option and its value.
  */
 const HELPER_ARGUMENT_FROM_END = -3;
+
+/**
+ Relocates both launch inputs to paths that must never become JavaScript syntax.
+
+ @param command - production argv whose final inputs belong to a disposable workspace
+
+ @returns equivalent argv containing quotes, separators, URL escapes, and a newline
+ */
+async function quoteLaunchPaths(command: readonly string[],): Promise<readonly string[]> {
+  /**
+   Request-owned files created by the actual requester.
+   */
+  const helperPath = command.at(HELPER_ARGUMENT_FROM_END,);
+  /**
+   Coordination path remains the final argument.
+   */
+  const requestPath = command.at(-1,);
+  if (helperPath === undefined || requestPath === undefined)
+    throw new Error('Missing fixture launch inputs.',);
+  /**
+   Characters significant to shell, JavaScript, and URL grammars.
+   */
+  const quotedHelper = join(dirname(helperPath,), `helper ' \" # % ; $ \\n.mjs`,);
+  /**
+   Independently quoted request path exercises helper option parsing.
+   */
+  const quotedRequest = join(dirname(requestPath,), `request ' \" # % ; $ \\n.json`,);
+  await Promise.all([copyFile(helperPath, quotedHelper,), copyFile(requestPath, quotedRequest,),],);
+  return [...command.slice(0, HELPER_ARGUMENT_FROM_END,), quotedHelper, '--request', quotedRequest,];
+}
 /**
  Driver runs only after being copied beside disposable built artifacts.
  */
@@ -88,7 +119,9 @@ try {
       /**
        Exact command assembled by production requester.
        */
-      const [executable, ...args] = command;
+      const [executable, ...args] = scenario === 'quoted-launch-paths'
+        ? await quoteLaunchPaths(command,)
+        : command;
       if (executable === undefined)
         throw new Error('Fixture received empty helper command.',);
       if (scenario === 'detached-start') {
