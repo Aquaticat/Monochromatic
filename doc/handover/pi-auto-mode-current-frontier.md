@@ -285,8 +285,24 @@ The expanded original-owner fixture carries 24 questions,
 or 22 with an empty discovered-system source,
 through one local mixed response.
 The full current-policy control remains 207 clauses and 414 questions.
-Remaining source-index gaps include scalar and context run-option replacements,
-skill descriptions,
+Scalar and context run inputs now preserve unchanged values through explicit original-base republication.
+Field and position select the original source link;
+no byte-keyed source search or append-subset decomposition occurs.
+Changed or added values remain independent unregistered run sources.
+`proc_a309` passed the complete native suite,
+including present/absent system inputs,
+empty values,
+removals,
+reordering,
+late aliases,
+and copied-snapshot rejection.
+The original replacement-input batch carries 30 questions through one local response.
+Source `proc_47a1` and action `proc_cfcf` passed.
+The first matrix failure was a fixture assumption about configured empty append strings;
+its native override-boundary correction passed `proc_26ba`
+and is recorded in `doc/troubleshooting/pi-sdk-staging.md`.
+The full-policy control remains 207 clauses and 414 questions.
+Remaining source-index gaps include skill descriptions,
 handler messages,
 and built-in or broader delegated inputs.
 Complete governing-source coverage,
