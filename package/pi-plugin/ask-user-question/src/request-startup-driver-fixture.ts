@@ -48,11 +48,11 @@ async function quoteLaunchPaths(command: readonly string[],): Promise<readonly s
   /**
    Characters significant to shell, JavaScript, and URL grammars.
    */
-  const quotedHelper = join(dirname(helperPath,), `helper ' \" # % ; $ \\n.mjs`,);
+  const quotedHelper = join(dirname(helperPath,), `helper ' " # % ; $ \\n\n.mjs`,);
   /**
    Independently quoted request path exercises helper option parsing.
    */
-  const quotedRequest = join(dirname(requestPath,), `request ' \" # % ; $ \\n.json`,);
+  const quotedRequest = join(dirname(requestPath,), `request ' " # % ; $ \\n\n.json`,);
   await Promise.all([copyFile(helperPath, quotedHelper,), copyFile(requestPath, quotedRequest,),],);
   return [...command.slice(0, HELPER_ARGUMENT_FROM_END,), quotedHelper, '--request', quotedRequest,];
 }
