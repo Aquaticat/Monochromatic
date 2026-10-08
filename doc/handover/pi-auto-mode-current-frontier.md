@@ -64,6 +64,28 @@ this is not a claim that native automatic decisions now work.
 The next substantive gap is admitted instruction effects and applicability from existing inputs.
 Do not introduce an unqualified-estimate-to-approval fallback or re-open that settled behavior.
 
+### Partial supported instruction effects
+
+The existing code resolver now accepts an explicit unresolved effect among its supported instruction effects.
+It retains the priority of a known-applicable rule whose effect is unknown,
+rather than falling through to a weaker known rule.
+Unknown meaning blocks only when it can change the outcome.
+Known-inapplicable rules and weaker rules do not defeat an established stronger result.
+This partial state does not stand for unclassified prose,
+unknown delegation,
+or unsupported conditions.
+Source admission and complete-operation requirements remain unchanged.
+
+`proc_b90a` reached the expected rejection before implementation.
+The preceding `proc_176a` committed the test but did not run it:
+its repository-root `//contract` task invocation required monorepo configuration absent in the private repository.
+The existing directory-local invocation was used instead.
+Implementation `27ad6ac` passed `proc_5a09`,
+including 14,400 partial programs checked against 112,896 complete worlds.
+Outcome-guard sensitivity and integration regressions remain in progress.
+Routine kernel checks compare behavior instead of enforcing the historical textual source delta;
+the old verification record remains intact.
+
 ### Unapplied instruction clarification
 
 A proposed tightening of the existing `RCI` rule in `AGENTS.md` is:
