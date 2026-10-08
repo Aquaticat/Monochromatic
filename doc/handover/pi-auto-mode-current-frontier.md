@@ -60,7 +60,13 @@ qualified interpretation and complete-operation policy are the substantive open 
 
 A proposed tightening of the existing `RCI` rule in `AGENTS.md` is:
 
-> Before adding capture, parsing, validation, or an owner, inspect existing generators, managers, and retained data.
+> Before adding capture,
+>  parsing,
+>  validation,
+>  or an owner,
+>  inspect existing generators,
+>  managers,
+>  and retained data.
 > Extend their owner only for a specific missing consumer requirement.
 
 This proposal is recorded only;
