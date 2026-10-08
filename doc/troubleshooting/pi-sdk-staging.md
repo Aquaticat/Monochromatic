@@ -1,5 +1,97 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## SDK 1.0.4 empty append configuration is not an empty published entry
+
+### Owned fixture symptom and cause
+
+The private `run-input-carriers.test.mjs` fixture in `proc_90fe` configured
+`appendSystemPrompt: ['', 'Retained appendix', '']`
+and incorrectly expected the resource loader to publish all those positions.
+Node's `assert.strictEqual` raised `AssertionError [ERR_ASSERTION]` with `1 !== 3`.
+The native agent retained that assertion text in its synthetic terminal error;
+the fixture then failed its expected assistant text check.
+
+Installed SDK 1.0.4
+`package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/resource-loader.js:100-103`
+treats a falsy configured prompt input as absent:
+
+```javascript
+// package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/resource-loader.js
+function resolvePromptInput(input, description) {
+    if (!input) {
+        return undefined;
+    }
+```
+
+The same file at lines 481 to 486 resolves and filters configured inputs before invoking the append override:
+
+```javascript
+// package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/resource-loader.js
+const baseAppend = appendSources
+    .map((s) => resolvePromptInput(s, "append system prompt"))
+    .filter((s) => s !== undefined);
+this.appendSystemPrompt = this.appendSystemPromptOverride
+    ? this.appendSystemPromptOverride(baseAppend)
+    : baseAppend;
+```
+
+The source-custody implementation had retained the actual native output correctly.
+The configuration-to-output count assumption belonged to the fixture.
+
+### Verification and corrected fixture
+
+`proc_26ba` passed `mise --no-env --no-hooks run test:run-inputs`
+in the private `contract/integration/native-batch/` directory.
+The corrected fixture asserts the resolved input first,
+then constructs the empty output positions at the intended native boundary:
+
+```javascript
+// contract/integration/native-batch/run-input-carriers.test.mjs
+appendSystemPromptOverride(previous) {
+  assert.deepEqual(previous, ['Retained appendix']);
+  return ['', 'Retained appendix', ''];
+}
+```
+
+The installed type declaration exposes that callback in
+`package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/resource-loader.d.ts:123`.
+Both present-system and absent-system session variants passed.
+They retain the complete ordered append sequence,
+including empty outputs,
+without selecting a subset by text matching.
+Other passing cases cover equal clones,
+empty or removed custom text,
+changed append text,
+added/reversed/removed/empty context entries,
+late aliases,
+and original snapshot ownership.
+No provider requests occurred.
+
+The callback deliberately constructs replacement outputs.
+This tests their publication and downstream custody;
+it does not claim that empty configuration strings survive native resolution.
+Do not weaken the carrier assertion or change SDK resolution to repair this fixture.
+
+### Upstream filing decision
+
+There is no upstream defect or filing artifact:
+
+- Fault:
+   the fixture confused configured inputs with published outputs.
+- Feasibility:
+   the fixture boundary correction is implemented;
+  no SDK change is requested.
+- Support:
+   the installed callback type accepts an output string array,
+  and the actual native invocation passed.
+- Contribution policy:
+   not investigated because no upstream contribution is proposed.
+- Maintainer willingness:
+   not investigated because no upstream behavior change is requested.
+- Prototype:
+   the consumer-side correction passed the native session matrix;
+  installed SDK sources remain unchanged.
+
 ## Owned SDK 1.0.4 hook masked terminal errors
 
 ### Symptom and cause
