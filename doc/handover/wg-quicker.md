@@ -622,6 +622,10 @@ while `1` of `16` `eu.i.posthog.com` answers,
 and `8` of `12` answers for each JetBrains download host rotated back in between generation and probe.
 That is the AWS ELB and CloudFront decay `huggingface.co` documented,
 and the two JetBrains hosts cost `1305` of the added networks for that partial coverage.
+The human was shown both measured costs and chose to keep every entry:
+the two JetBrains download hosts despite their rotation,
+and the two United States PostHog hosts despite never being observed,
+so this region carries each measured and bundle-referenced Qure endpoint.
 `example.com` stayed inside as a positive control.
 `o447951.ingest.sentry.io` was already clearnet before this change,
 because the pre-existing `o33249.ingest.sentry.io` entry resolves to the same two
