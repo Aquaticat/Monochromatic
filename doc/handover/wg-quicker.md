@@ -604,25 +604,36 @@ so such an agent in a cgroup of its own relies on the `AllowedIPs` path instead.
 
 `AllowedIPs` generation gained the endpoints Qure was measured using:
 `api.quretests.com` and `quretests.com` from Chromium's `Network Persistent State` and the bundle,
-`o447951.ingest.sentry.io` from the bundle's DSN and one live connection,
-`eu.i.posthog.com` and `eu-assets.i.posthog.com` from two live connections,
+`o447951.ingest.sentry.io` from the bundle's DSN and two live connections,
+`eu.i.posthog.com` and `eu-assets.i.posthog.com` from live connections,
+`download.jetbrains.com` and `download-cdn.jetbrains.com` from Sentry network breadcrumbs
+and two live CloudFront connections identified by distribution,
 and `us.i.posthog.com` and `us-assets.i.posthog.com` from the same telemetry SDK's other region.
-Regenerating with the built command moved the value from `6537` to `7896` networks
-and from `156582` to `202048` bytes.
-Every then-current address of all seven hostnames left the generated value,
-except `7` of `16` `us.i.posthog.com` answers,
-whose AWS ELB set rotated between generation and probe,
-which is the decay `huggingface.co` documented.
+Regenerating with the built command moved the value from `6537` to `9201` networks
+and from `156582` to `245116` bytes,
+with no new resolver or ASN warning.
+Every then-current address of `api.quretests.com`,
+`quretests.com`,
+`o447951.ingest.sentry.io`,
+`eu-assets.i.posthog.com`,
+and `us-assets.i.posthog.com` left the generated value,
+while `1` of `16` `eu.i.posthog.com` answers,
+`9` of `16` `us.i.posthog.com` answers,
+and `8` of `12` answers for each JetBrains download host rotated back in between generation and probe.
+That is the AWS ELB and CloudFront decay `huggingface.co` documented,
+and the two JetBrains hosts cost `1305` of the added networks for that partial coverage.
 `example.com` stayed inside as a positive control.
 `o447951.ingest.sentry.io` was already clearnet before this change,
 because the pre-existing `o33249.ingest.sentry.io` entry resolves to the same two
 Google anycast addresses;
 the explicit entry keeps Qure covered if the OpenAI region ever loses it.
-`download.jetbrains.com` was deliberately left out:
-the bundle references it once,
-no connection was observed,
-and only `1` of its `12` CloudFront answers left the value when it was trialled,
-at a measured cost of `637` networks.
+An earlier draft of this region omitted `download.jetbrains.com`
+on the strength of one bundle reference and no observed connection.
+A later capture of Qure's own established sockets falsified that:
+it held a connection to `2600:9000:287f:1e00:12:7c44:15c0:93a1`,
+whose CloudFront low half matches every `download.jetbrains.com` answer,
+and a second one to `download-cdn.jetbrains.com`'s distribution.
+Both hosts are in the region now.
 
 Read-only target enumeration against the running Qure launch proved the discovery delta.
 The binary the active `mx-que-mx1` watcher still ran listed `16` targets;
@@ -640,8 +651,80 @@ Marking it therefore exempts those daemons,
 and every later host-spawned flatpak child,
 until that service cgroup disappears.
 A launch from `qure.desktop` instead gives Qure its own `app-qure@<hex>.service` and scopes.
-No watcher was refreshed and no live route changed for this change;
-the deployment choice was put to the human with those two measured options.
+
+### Qure deployment on 2026-10-08
+
+The human chose the relaunch path and authorized terminating Qure.
+Teardown order mattered:
+terminating the AppImage FUSE server and the Electron main together left the main process in
+uninterruptible `D` state after the FUSE mount disappeared under it,
+so two further `SIGTERM` deliveries did nothing and `SIGKILL` was required.
+The second teardown terminated the Electron main first,
+and every Qure process,
+ including the runtime,
+ exited cleanly within eight seconds.
+See `doc/troubleshooting/appimage-fuse-teardown-order-d-state.md`.
+
+With no `qure`-prefixed process left,
+the rebuilt `list-targets 1000` returned the running watcher binary's set plus one Ghostty surface scope
+created in the meantime by agent shell activity,
+and listed neither `flatpak-session-helper.service` nor Qure's former Chromium scope,
+so the refresh could not mark that shared service.
+`watch-start mx-que-mx1 100 1000` then replaced the watcher:
+old pid `50227` from 2026-10-06 exited,
+new pid `3888199` started,
+`/proc/3888199/exe` reported the rebuilt release binary's exact device and inode,
+the recorded state became `1,3888199,21494257,100,1000`,
+`watch.log` stayed at `0` bytes,
+`ip rule show` was byte-identical before and after,
+and no pin directory appeared because the watcher holds its links directly.
+
+Relaunch needed a dedicated cgroup.
+`gtk-launch qure` from an agent shell placed ten Qure processes in that shell's own
+`app-ghostty-surface-transient-3862354.scope`,
+which is already an exempt Ghostty target,
+so Qure would have borrowed a terminal's exemption and died with it.
+This launch shape produced the desktop-entry unit instead:
+
+```sh
+systemd-run --user --collect --slice=app.slice \
+  --unit='app-qure@9f3c1d2e4b5a6c7d8e9f0a1b2c3d4e5f' \
+  --setenv=DESKTOPINTEGRATION=1 \
+  /home/user/AppImages/qure.appimage --no-sandbox
+```
+
+The relaunched Qure occupied exactly two cgroups:
+that service,
+ holding eight processes including the network service,
+and `app-org.chromium.Chromium-3889366.scope`,
+ holding the Electron main.
+`list-targets 1000` listed both and no shared service.
+This launch's mount was `/tmp/.mount_qure.aCNyBUv`,
+which confirms the runtime builds that name from `.mount_`,
+the first six characters of the AppImage filename,
+ here `qure.a`,
+and six random characters;
+because a rename changes it,
+ matching keys off the executable name rather than the mount path.
+
+Marking was verified twice.
+A disposable `app.slice` service running a copy of the host `python3` renamed to `qure-mark-probe`
+read `SO_MARK` `100` on TCP4,
+ TCP6,
+ UDP4,
+ and UDP6 sockets it created after attach,
+while the same probe as plain `python3` in `background.slice` read `0` on all four.
+Then Qure's own sockets were captured:
+fifteen packets between its established source ports and Sentry's `2600:1901:0:5e8a::`
+and the JetBrains CloudFront address crossed `wlp9s0` directly,
+while a simultaneous 45-second `mx-que-mx1` capture on the same four Qure peers recorded
+`0 packets captured`,
+and a `curl https://example.com/` run from `background.slice` during the same window put
+25 inner packets on `mx-que-mx1` from the tunnel address `fd00:4956:504e:ffff::ac11:aaaa`.
+Both transient probe units used `--collect` and left no unit,
+ cgroup,
+ or mount behind;
+the only remaining Qure unit is the application's own service.
 
 ## Verification evidence
 
