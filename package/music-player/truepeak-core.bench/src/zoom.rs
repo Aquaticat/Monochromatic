@@ -76,17 +76,19 @@ fn zoom_probe(track: &Track, pass1_coverage: f64, total_coverage: f64) -> (f64, 
     let mut used = 0usize;
     let mut peak = 0.0f32;
     // Decode a bin: mark, count, track the max, and enqueue it for expansion.
+    // The closure parameters keep names of their own so none shadows the outer
+    // frontier state it is handed by mutable reference.
     let decode = |index: usize,
-                      decoded: &mut Vec<bool>,
-                      heap: &mut BinaryHeap<(u32, usize)>,
-                      used: &mut usize,
-                      peak: &mut f32| {
-        decoded[index] = true;
-        *used += 1;
-        if bins[index] > *peak {
-            *peak = bins[index];
+                      decoded_flags: &mut Vec<bool>,
+                      loud_heap: &mut BinaryHeap<(u32, usize)>,
+                      used_count: &mut usize,
+                      peak_value: &mut f32| {
+        decoded_flags[index] = true;
+        *used_count += 1;
+        if bins[index] > *peak_value {
+            *peak_value = bins[index];
         }
-        heap.push((bins[index].to_bits(), index));
+        loud_heap.push((bins[index].to_bits(), index));
     };
     for index in even_indices(n, pass1_coverage) {
         if used >= budget_bins {
