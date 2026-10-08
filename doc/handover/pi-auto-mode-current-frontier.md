@@ -302,8 +302,16 @@ The first matrix failure was a fixture assumption about configured empty append 
 its native override-boundary correction passed `proc_26ba`
 and is recorded in `doc/troubleshooting/pi-sdk-staging.md`.
 The full-policy control remains 207 clauses and 414 questions.
-Remaining source-index gaps include skill descriptions,
-handler messages,
+Skill descriptions now retain their original positions and serialized native metadata,
+including disabled or empty entries.
+Metadata scope and paths do not supply authority or authenticate skill files.
+Native `proc_8037`,
+source `proc_db99`,
+and action `proc_c1af` passed.
+The initial failure was an owned JSON-boundary assertion,
+corrected without loosening source validation.
+Remaining source-index gaps include handler messages,
+later-read skill-file contents,
 and built-in or broader delegated inputs.
 Complete governing-source coverage,
 delegation,
