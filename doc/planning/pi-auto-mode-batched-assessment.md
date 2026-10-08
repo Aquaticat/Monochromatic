@@ -80,11 +80,15 @@ full native `proc_c4d5` and action `proc_2fa4` passed on SDK 1.1.0.
   new provider trial,
   or installed activation is adopted by these mechanisms.
 
-The next authority-composition choice is documented in
+The user accepted express same-source incorporation in
 [scoped incorporation of quoted policy text](pi-auto-mode-quoted-unit-incorporation.md).
-This is not another request to consume already-retained source bytes.
-The proposal distinguishes a new quoted-unit composition rule from settled source registration and Q21.
-No dependent incorporation implementation is started before resolving that policy choice.
+The original pair producer and canonical scope consumer are now implemented privately.
+The target still needs its separate admitted conditional-effect estimate;
+incorporation adds no permission or authority enlargement.
+Initial actual-serializer control passed `proc_d760`;
+expanded native controls passed `proc_84c5` and `proc_7c37`.
+Original selection and request-scope controls passed `proc_8f62`.
+Guard sensitivity and restored full regression remain in progress.
 
 ### Clause consumption contract
 

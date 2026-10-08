@@ -7,6 +7,72 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-08.
 
+## Express same-source quoted-unit incorporation
+
+The user accepted option A on 2026-10-08.
+The new `unitAdoptionAdmissionPolicy` fixes the `unit_adoption` definition,
+model,
+inspected program profile,
+and synchronous acceptance function separately from clause interpretation.
+No production semantic admission policy is supplied.
+
+The original judgment selects a bounded opportunity only when one existing source has one tagged adopter
+and one blockquote target,
+and the operation has one original prepared member.
+That shape is not authority.
+The existing instruction-binding and program-selection maps retain the exact pair and member.
+All original clause candidates still receive their independent assessments;
+pair questions join the same batch,
+deadline,
+and existing question bounds.
+
+A positive admitted pair must represent the complete adopting instruction as exact,
+unmodified incorporation.
+Code separately requires its original registered authority and original-request scope.
+A conflicting admitted primitive effect on the adopter prevents incorporation.
+An amendment,
+ambiguous reference,
+extra independent norm,
+unknown condition,
+unregistered source,
+or unadmitted pair does not establish target scope.
+
+For a selected quoted target,
+the clause estimator reports conditional directive meaning,
+not operative authority.
+The target must independently pass its own clause-admission policy.
+Only that target relationship supplies a permit,
+prohibit,
+or prerequisite effect.
+Incorporation itself supplies no permission or additional directive.
+The adopter's original primitive estimate remains unchanged;
+`representedByAdoption` identifies the separate admitted control meaning.
+
+The consumer discharges named clause-meaning and clause-operation obligations for that adopter
+and the exact quotation-use restriction for that target.
+Independent implementation-fact owners retain their operation obligations
+and receive no estimated incorporation operation marker.
+Other source,
+heading,
+request-domain,
+authorization-satisfaction,
+and approval-channel obligations remain.
+
+The actual-serializer control failed `proc_e0f1` with zero pair estimates instead of one.
+Initial implementation passed `proc_d760`.
+Expanded native `proc_84c5` passed 24 modes;
+the mixed-use,
+priority,
+fact-owner,
+and target-provenance expansion passed `proc_7c37`.
+Original selection,
+wire,
+request-scope,
+and priority controls passed `proc_8f62`.
+Guard-removal sensitivity and restored full regressions are in progress.
+These are authored mechanism controls,
+not model-accuracy evidence or installed activation.
+
 ## Native source association through the real serializer
 
 The SDK 1.1.0 private adapter passed full native regression `proc_a814`.
@@ -102,11 +168,11 @@ Potential-as-resolved omission `ebe2514` failed `proc_9d89`.
 Restoration `e9161b3` passed native `proc_6fd2` and action `proc_a023` on SDK 1.0.4;
 the current SDK 1.1.0 full regressions also cover these consumers.
 
-The next proposed policy choice is
+The user accepted express same-source incorporation in
 [scoped incorporation of quoted policy text](../planning/pi-auto-mode-quoted-unit-incorporation.md).
-Q21's governing-instruction principle is settled.
-The narrower question is what should establish legitimate incorporation of an exact quoted unit.
-No quoted-unit incorporation implementation or new production admission rule has been adopted.
+Its private consumer is implemented and under expanded verification.
+Q21's governing-instruction principle remains settled;
+no production semantic admission profile or installed activation is adopted.
 
 ## Configured native clause compiler
 

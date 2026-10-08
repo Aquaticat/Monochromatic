@@ -17,8 +17,12 @@ or installed activation.
 The accepted migration separates semantic estimates from code-owned authority and decisions.
 The original source-association consumer is implemented and verified privately on SDK 1.1.0.
 The accepted next consumer addresses quoted policy units that currently retain an unresolved scope obligation.
-Implementation and verification are in progress;
-no production policy is adopted.
+The original-pair producer and canonical consumer are implemented privately.
+Initial actual-serializer control passed `proc_d760`;
+expanded native controls passed `proc_84c5` and `proc_7c37`.
+Original selection and scope controls passed `proc_8f62`.
+Guard sensitivity and restored full regression remain in progress.
+No production semantic admission policy is adopted.
 
 [Q21](pi-auto-mode-axioms.md#q21-governing-instructions-and-unspecified-outcomes)
 already requires following applicable governing instructions.
