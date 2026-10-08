@@ -56,6 +56,14 @@ and check whether existing captured data already satisfies it.
 The migration remains incomplete;
 qualified interpretation and complete-operation policy are the substantive open areas.
 
+The assessment helper's operation-only call was then replaced with the existing original mixed batch
+so requested assessment includes both rule meaning and whole-operation relations.
+Action `proc_fde4` and native `proc_e5ac` passed.
+The bound evaluator remains incomplete;
+this is not a claim that native automatic decisions now work.
+The next substantive gap is admitted instruction effects and applicability from existing inputs.
+Do not introduce an unqualified-estimate-to-approval fallback or re-open that settled behavior.
+
 ### Unapplied instruction clarification
 
 A proposed tightening of the existing `RCI` rule in `AGENTS.md` is:
