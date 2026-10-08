@@ -152,12 +152,12 @@ and the complete answer is retained in a private temporary file whose path is re
 Run package validation from the repository root:
 
 ```sh
-cd package/pi-plugin/ask-user-question
-mise run build
-mise run test:unit
-mise run lint
-mise run verify:extension
-mise run verify:terminal
+# Repository root.
+mise run //package/pi-plugin/ask-user-question:build
+mise run //package/pi-plugin/ask-user-question:test:unit
+mise run //package/pi-plugin/ask-user-question:lint
+mise run //package/pi-plugin/ask-user-question:verify:extension
+mise run //package/pi-plugin/ask-user-question:verify:terminal
 ```
 
 `verify:terminal` opens the real default terminal with a scripted editor,

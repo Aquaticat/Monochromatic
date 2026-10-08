@@ -64,8 +64,8 @@ The screenshot establishes that Node subsequently attempted the deleted path.
 This is evidence for the lifetime gap explicitly left open by the previous fix.
 It is not evidence that a package rebuild removed this helper.
 
-A separate confirmed defect is in `package/cli/terminal-exec/src/build-command.ts`:
-it filters every token beginning with `--gtk-single-instance`,
+A separate confirmed defect was in the pre-fix `package/cli/terminal-exec/src/build-command.ts`:
+it filtered every token beginning with `--gtk-single-instance`,
 including the user's explicit `--gtk-single-instance=false`.
 The log retains that flag through tokenization but omits it from the final launch vector.
 The user explicitly authorized preserving the flag and changing the launcher on 2026-10-08.
@@ -161,7 +161,7 @@ if (state.acknowledgement === HELPER_READY) {
 }
 ```
 
-The channel owns all accepted sockets,
+The channel owns every connected socket,
 including unauthenticated candidates.
 The helper owns its connection and terminates the editor when the requester disconnects.
 Expected cancellation exits without a raw shutdown stack trace.
@@ -247,7 +247,7 @@ The silent-requester regression then failed because an editor started without ac
 restoring the original bundle made the same tests pass.
 Neither the installed artifact nor the working source was mutated by this guard test.
 
-Final post-bootstrap validation is tracked in the completion section of this document.
+Final post-bootstrap validation is recorded in [Completion on 2026-10-08](#completion-on-2026-10-08).
 
 ### Follow-up limits and rejected approaches
 
@@ -531,5 +531,63 @@ On 2026-10-04,
 This supersedes the investigation's initial recommendation to keep it open.
 No historical timeout was retroactively attributed to a particular missing file.
 Use a fresh Pi process to exercise the rebuilt extension rather than an already loaded bundle.
+
+## Completion on 2026-10-08
+
+The final implementation includes `5596ad743`,
+`724fb299a`,
+`2e0df35a7`,
+`269d21002`,
+and `c7b16bd39`.
+Both affected packages were rebuilt locally.
+Their type checks,
+Oxlint checks,
+and complete package test suites passed;
+Oxlint reported `Found 0 warnings and 0 errors.` for each package.
+
+```sh
+# Repository root, reproducible package checks.
+mise run //package/cli/terminal-exec:build
+mise run //package/cli/terminal-exec:lint
+mise run //package/cli/terminal-exec:test:unit
+mise run //package/pi-plugin/ask-user-question:build
+mise run //package/pi-plugin/ask-user-question:lint
+mise run //package/pi-plugin/ask-user-question:test:unit
+mise run //package/pi-plugin/ask-user-question:verify:terminal
+mise run //package/pi-plugin/ask-user-question:verify:extension
+```
+
+The final real-terminal launch log contains the user's exact `--gtk-single-instance=false` token.
+Consumer-boundary results after the final implementation were:
+
+```text
+Detached terminal verified: answered
+Detached terminal verified: cancelled
+ask-user-question extension verified: sequential question tool, shutdown cleanup, and detached helper artifact
+Real Pi TUI host verified: answered
+Real Pi TUI host verified: cancelled
+```
+
+The final package suite includes the 31-second delayed-start regression,
+late-after-caller and session cancellation,
+shutdown during terminal resolution,
+idle and reset candidates,
+active-editor cancellation with empty stderr,
+acknowledgement framing,
+and quoted launch paths.
+Tests deliberately exercising operational failures still emit their expected tagged diagnostics.
+No claim is made that the whole test runner's stderr is empty.
+
+The updated package READMEs and this investigation were rendered with Marked `18.0.11` and inspected.
+The terminal README's pre-existing broken fences were repaired so its configuration section renders as prose.
+Independent review informed the reset-candidate regression and the helper's module-location inspection.
+
+Existing Pi processes retain their already-loaded extension module.
+A fresh Pi process loads the rebuilt implementation.
+No editor setting,
+terminal preference,
+provider configuration,
+or existing user session was changed.
+Unrelated concurrent working-tree changes were left untouched.
 
 [issue]: https://github.com/Aquaticat/Monochromatic/issues/581
