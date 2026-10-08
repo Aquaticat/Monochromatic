@@ -310,7 +310,22 @@ source `proc_db99`,
 and action `proc_c1af` passed.
 The initial failure was an owned JSON-boundary assertion,
 corrected without loosening source validation.
-Remaining source-index gaps include handler messages,
+Handler output now retains original emitter occurrences through current-run ancestry.
+String content is indexed;
+text-block arrays are retained as JSON and explicitly unclassified,
+without guessing clause boundaries.
+Labels,
+display flags,
+and user-role transport do not grant authority or human origin.
+Native `proc_9d95` passed string and structured content through the original mixed wire,
+opaque-details exclusion,
+late aliases,
+and another next-turn ancestry level.
+Source `proc_d3ea` and action `proc_827f` passed.
+This does not establish provenance of older persisted messages after a new prompt resets ancestry.
+The private structured-content guard omission failed its regression in `proc_1d20`;
+the guard is restored.
+Remaining source-index gaps include general persisted-session messages,
 later-read skill-file contents,
 and built-in or broader delegated inputs.
 Complete governing-source coverage,
