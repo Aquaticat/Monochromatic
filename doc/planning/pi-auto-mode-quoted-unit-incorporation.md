@@ -20,7 +20,8 @@ not that additional composition rule.
 
 Suppose an established developer instruction says:
 
-> For this operation, follow this exact quoted rule:
+> For this operation,
+>  follow this exact quoted rule:
 >
 > Do not overwrite existing files.
 
@@ -80,7 +81,8 @@ or an automatic approval request.
 
 ## Ranking and risks
 
-Ranking: express same-source incorporation > explicit host registration > retaining unresolved scope.
+Ranking:
+ express same-source incorporation > explicit host registration > retaining unresolved scope.
 Express incorporation follows established instructions without per-unit configuration.
 Host registration can resolve scope explicitly but imposes that configuration burden.
 Retaining unresolved scope is preferable to fabricated authority,
