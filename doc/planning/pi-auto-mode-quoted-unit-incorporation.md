@@ -1,18 +1,31 @@
 # Scoped incorporation of quoted policy text
 
+## Accepted decision
+
+The user selected express same-source incorporation (option A) on 2026-10-08.
+An independently established governing instruction may incorporate exact quoted text from the same original source
+within its existing operation scope.
+Code enforces original identities and prevents authority or scope enlargement.
+Separately admitted semantic estimates identify incorporation and the target's meaning.
+This accepts the bounded private consumer,
+not production qualification,
+a new provider trial,
+or installed activation.
+
 ## Purpose and status
 
 The accepted migration separates semantic estimates from code-owned authority and decisions.
 The original source-association consumer is implemented and verified privately on SDK 1.1.0.
-The next proposed consumer addresses quoted policy units that currently retain an unresolved scope obligation.
-No incorporation consumer or production policy has been implemented by this proposal.
+The accepted next consumer addresses quoted policy units that currently retain an unresolved scope obligation.
+Implementation and verification are in progress;
+no production policy is adopted.
 
 [Q21](pi-auto-mode-axioms.md#q21-governing-instructions-and-unspecified-outcomes)
 already requires following applicable governing instructions.
 The [effect contract](pi-auto-mode-effect-contract.md)
 already distinguishes legitimate scoped delegation from a payload promoting itself into authority.
 This proposal does not reopen those principles.
-It asks which concrete rule should make incorporation of an exact quoted unit legitimate.
+The user selected the concrete express-incorporation rule described in this document.
 Trusted-bootstrap source registration supplies tier and scope,
 not that additional composition rule.
 
@@ -94,7 +107,7 @@ production probability thresholds,
 provider trials,
 and installed activation are outside this proposal.
 
-## Implementation and verification if accepted
+## Implementation and verification
 
 Reuse the existing source index,
 original member records,
