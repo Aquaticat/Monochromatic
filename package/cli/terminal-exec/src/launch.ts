@@ -16,6 +16,8 @@ import { buildCommand, } from './build-command.ts';
 import { resolveTerminal, } from './resolve.ts';
 import { NO_TERMINAL, } from './validate.ts';
 
+export { buildCommand, } from './build-command.ts';
+
 /**
  Logger root for terminal-exec after removing the package log shim.
  
