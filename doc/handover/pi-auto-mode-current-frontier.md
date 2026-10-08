@@ -7,6 +7,58 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-08.
 
+## Native source association through the real serializer
+
+The SDK 1.1.0 private adapter passed full native regression `proc_a814`.
+The new `serializer-association.test.mjs` uses the installed OpenAI serializer and local SSE responses,
+not a manually assembled model-request body.
+Missing-association control `proc_6ab2` reached canonical compilation and failed at the required source-use assertion.
+
+The existing run owner now retains the original sections publication.
+Its source capability is explicitly carried through the private manager's defensive copies
+and the SDK's initial context clone.
+Independent equal-text replacements remain unassociated.
+The request observer qualifies only the fixed installed serializer route,
+a full current-run sections publication,
+and the existing linked context source.
+Forced prompts,
+custom sections,
+additional system content,
+sampling overrides,
+and unrelated stream wrappers do not acquire an association.
+
+A payload callback can retain mutable aliases across the SDK's asynchronous body construction.
+The adapter therefore copies the ordinary payload root,
+message array,
+and original associated message after the callback.
+Only these newly owned containers are frozen.
+Borrowed callback objects remain mutable;
+changes to discarded aliases after materialization do not invalidate the historical request.
+Accessors,
+serialization hooks,
+and independently copied message nodes remain unsupported for association.
+
+The observer reuses its existing JSON validation to check the particular terminal field.
+It retains no parsed request tree and performs no second parse or request re-encoding.
+The original receipt owns the resulting contribution and its original request reference.
+The canonical consumer reports `requestSourceAssociationUses`.
+An accounted use covers only the particular original context contribution,
+not the full composite system message,
+authority,
+valid delegation,
+or the request's governing-source domain.
+The existing `request-source-domain` obligation remains.
+
+Matrix `proc_6043` passed 11 local modes,
+including source-copy rejection,
+changed content,
+callback hooks,
+opaque streams,
+post-materialization alias mutation,
+and permanent retirement after restoration.
+These controls performed no provider request or native tool execution.
+Equality-substitution sensitivity and full restored regressions are the next verification steps.
+
 ## Configured native clause compiler
 
 Private implementation `f172216` connects original typed estimates to the existing clause lowerer and resolver.
@@ -170,11 +222,31 @@ That requirement is withdrawn in
 The original observer already owns the complete exact request bytes;
 selecting and consuming them through the same request/judgment owner is authorized implementation,
 not a new source origin or parallel message inventory.
-The next consumer must bind an actual assessment to that original whole-request occurrence,
-not merely repeat the bytes as background context.
-No extra parsing or re-encoding is needed for this consumer.
-Whole-request operative answers cannot acquire one authority tier,
-and `none` cannot certify request-wide governing completeness.
+That consumer is now implemented through the original judgment's existing binding and assessment owners.
+The absent selection failed `proc_bd4a`;
+initial canonical none,
+potential-instruction,
+and unknown controls passed `proc_86c2`.
+A separately captured `requestMaterialAdmissionPolicy` selects `request_instruction_content`,
+not the clause-authority rubric.
+Independent clause and whole-request questions share the same original batch and deadline.
+No observer change,
+extra parsing,
+message inventory,
+or request re-encoding was needed.
+
+Expanded full native `proc_53ff` and action `proc_5aed` passed.
+The controls preserve complete whitespace,
+escaped text,
+and structured message content,
+and distinguish independent requests with identical bytes.
+They cover request-only operation,
+missing or mismatched request policy,
+abstention,
+bootstrap-copy isolation,
+and rejection of member/clause substitution.
+Whole-request operative answers acquire no single authority tier or directive lowering,
+and `none` still cannot certify request-wide governing completeness.
 Origin association,
 contextual-heading meaning,
 and valid delegation remain separate obligations.

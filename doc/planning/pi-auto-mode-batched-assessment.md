@@ -56,6 +56,27 @@ default permission,
 or automatic approval request.
 Installation remains a later step.
 
+### Existing source-association consumer
+
+Already-owned context-source association is authorized implementation,
+not another source-inventory grant.
+The actual SDK 1.1.0 serializer control failed `proc_6ab2` because the canonical reviewer had no source-use consumer.
+The original run,
+manager-copy,
+context-clone,
+and request-observation owners now carry that association.
+The canonical consumer can account for a specific contribution without resolving the global request domain.
+Local matrix `proc_6043` passed;
+identity sensitivity and restored full regressions remain pending.
+
+- [x] Preserve the original context carrier through actual native serialization.
+- [x] Consume its particular association without assigning composite authority or complete governing coverage.
+- [ ] Finish guard sensitivity and full restored regression.
+- [ ] Continue remaining decision-specific domain and delegation consumption.
+  No production semantic policy,
+  new provider trial,
+  or installed activation is adopted by these mechanisms.
+
 ### Clause consumption contract
 
 The lowering operation consumes an operation-bound relationship already admitted by trusted code policy,

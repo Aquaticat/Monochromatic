@@ -1,5 +1,102 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Private SDK 1.1.0 source association stops at defensive copies
+
+### Symptom and cause
+
+The private integration's actual-serializer control reached canonical review but reported `unresolved`
+where an original source association was expected.
+This was a private adapter gap,
+not an upstream SDK defect.
+`proc_6ab2` first exposed the absent consumer;
+`proc_66a8` and `proc_d722` then isolated lost sections-object identity.
+
+The private `contract/integration/native-batch/root-source.mjs` already copies entries on append
+and copies public projections to protect native state.
+Those copies intentionally replace objects.
+Installed `@earendil-works/pi-coding-agent@1.1.0/dist/core/extensions/runner.js:1006`
+then makes another request-context copy:
+
+```javascript
+// Installed pi-coding-agent dist/core/extensions/runner.js
+async emitContext(messages) {
+    const ctx = this.createContext();
+    let currentMessages = structuredClone(messages);
+```
+
+Comparing bytes after these operations would not authenticate an original source.
+The private owner now republishes its existing capability at the actual copy sites,
+before extension transforms.
+No persisted-session provenance is inferred.
+
+Installed `@earendil-works/pi-ai@1.1.0/dist/api/openai-completions.js:188`
+awaits the payload hook before handing the selected object to the client:
+
+```javascript
+// Installed pi-ai dist/api/openai-completions.js
+const nextParams = await options?.onPayload?.(params, model);
+if (nextParams !== undefined) {
+    params = nextParams;
+}
+```
+
+Installed `openai@7.19.0/client.mjs:1156` also awaits authentication before body construction:
+
+```javascript
+// Installed openai client.mjs
+const authenticationHeaders = this._provider || x509Authentication
+    ? undefined
+    : await this.authHeaders(inputOptions, inputOptions.__security ?? { bearerAuth: true });
+const { bodyHeaders, body, isStreamingBody } = this.buildBody({ options });
+```
+
+A payload-hook check alone therefore leaves an alias-mutation interval.
+The private adapter copies and freezes only newly owned payload containers for the associated branch.
+It does not freeze callback-owned objects or require discarded aliases to remain current after serialization.
+
+### Verification and supported workaround
+
+From the private repository's `contract/integration/native-batch` directory,
+run `mise --no-env --no-hooks run test:serializer-association`.
+It regenerates the adapter from the current installed SDK and uses local SSE responses through the actual serializer.
+`proc_6043` passed its 11-mode matrix on SDK 1.1.0.
+Provider requests and native tool executions were zero.
+
+Original publication,
+top-level payload replacement retaining the original message,
+and discarded-alias mutation after materialization remain associated.
+Equal-byte message copies,
+independent sections copies,
+changed text,
+accessors,
+serialization hooks,
+extra system content,
+and opaque stream wrappers acquire no association.
+An observed sections mutation permanently retires the original publication.
+Retirement must not block native recording of the failure itself;
+`proc_1b18` exposed that private cleanup error before `7890f0c` repaired it.
+
+The workaround is partial source association,
+not complete composite-origin accounting.
+Request-domain and delegation obligations still withhold canonical execution.
+It adds neither a JSON parser nor another request representation.
+
+### Rejected approaches and filing disposition
+
+Byte equality and transport role cannot replace source custody.
+A check of mutable payload aliases after serialization is also the wrong lifetime:
+the immutable historical request has already been produced.
+Neither approach is used as source authentication.
+
+No upstream filing is warranted:
+the lost association arose from private adapter copies and missing private propagation.
+Upstream capability propagation has not been established as a supported API requirement.
+Fixability does not imply an upstream defect,
+contribution welcome and maintainer intent were not evaluated,
+and no upstream patch is proposed.
+The verified patch belongs to the private consumer.
+There is no upstream filing artifact to add.
+
 ## Private SDK 1.0.4 adapter misses runner and schema mutation
 
 ### Symptoms
