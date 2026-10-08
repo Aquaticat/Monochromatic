@@ -119,15 +119,31 @@ Omission `1c41a06` failed `proc_a4ae` because choice probabilities were not froz
 Restoration `88f3635` passed `proc_c971`.
 Expanded action `proc_3e68` and complete native `proc_5ed5` passed.
 
-The next consumer gap is prerequisite-aware composition.
+### Authorization prerequisites remain constraints
+
+Prerequisite-aware composition is implemented in the existing code-owned consumer.
 A higher-tier instruction requiring authorization does not itself override a lower-tier independent prohibition.
 The legacy authored `require-approval` effect acts as conditional authorization through the approval adapter;
 a bare prerequisite cannot be lowered into it directly.
-Keep requirements separate and establish that the selected approval channel would actually suffice before asking.
+`authorizationRequirements` now retain applicability,
+satisfaction,
+and eligible-channel facts separately.
+Known denial remains denial;
+unknown satisfaction is not absence,
+and unsupported channels do not open the UI.
+Only an otherwise-permitted operation with fully satisfiable remaining requirements reaches approval.
+
+Naive lowering failed `proc_d724` with approve instead of deny.
+The missing composition also failed `proc_ae02` by skipping required UI.
+Implementation `7bad409` and interaction controls `fb203a1` passed action `proc_f0d3`
+and native `proc_e801`.
+Channel-eligibility omission `2e19c00` failed `proc_ff0d`;
+the guard is restored and action `proc_e1a6` passed.
+These are authored-fact and fixture-approval controls,
+not model qualification or genuine human approvals.
 The partial-effect truth table proves its bounded algebra,
-not that ordinary prerequisite prose may be translated into that algebra.
-The native evaluator still withholds;
-this identifies a lowering risk rather than an observed production release.
+not semantic lowering from prose.
+The native evaluator still withholds until admitted interpretation and complete-operation premises are available.
 
 ### Unapplied instruction clarification
 
