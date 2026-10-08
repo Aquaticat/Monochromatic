@@ -69,7 +69,25 @@ Original selection,
 wire,
 request-scope,
 and priority controls passed `proc_8f62`.
-Guard-removal sensitivity and restored full regressions are in progress.
+Guard-removal controls rejected missing positive meaning,
+foreign request scope,
+unadmitted target effects,
+foreign members,
+copied projections,
+conflicting adopter meanings,
+and unregistered authority.
+Every omitted guard is restored.
+Full native `proc_3c3a` passed with 36 incorporation scenarios;
+full action `proc_0b25` also passed.
+
+The full-policy control first exposed 674 pre-fact dependency checks in `proc_8a16`.
+Pair derivation now uses the incumbent synchronous binding segment with entry and exit checks.
+Restored measurements were 38 checks for the short-host profile and 41 for native-default.
+No cached freshness crosses an `await`.
+The existing source,
+candidate,
+question,
+and byte bounds are unchanged.
 These are authored mechanism controls,
 not model-accuracy evidence or installed activation.
 

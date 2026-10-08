@@ -21,7 +21,10 @@ The original-pair producer and canonical consumer are implemented privately.
 Initial actual-serializer control passed `proc_d760`;
 expanded native controls passed `proc_84c5` and `proc_7c37`.
 Original selection and scope controls passed `proc_8f62`.
-Guard sensitivity and restored full regression remain in progress.
+Guard sensitivity is verified and every omission is restored.
+Full native `proc_3c3a` passed with 36 incorporation scenarios;
+full action `proc_0b25` also passed.
+The original binding segment preserves full-policy dependency-check bounds without caching across an `await`.
 No production semantic admission policy is adopted.
 
 [Q21](pi-auto-mode-axioms.md#q21-governing-instructions-and-unspecified-outcomes)
