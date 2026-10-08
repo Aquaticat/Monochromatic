@@ -1,5 +1,130 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Private SDK 1.0.4 adapter misses runner and schema mutation
+
+### Symptoms
+
+These failures belonged to the private integration,
+not the installed SDK.
+Paths in this section are relative to the private consumer-contract repository,
+unless an installed package is named.
+
+`proc_305f` and `proc_6072` reproduced public runner shadowing and prototype-method replacement.
+The inert program returned a guarded root error instead of completing.
+The test emitted `AssertionError [ERR_ASSERTION]: true !== false`.
+After private runner storage alone passed,
+prototype replacement still redirected the method lookup.
+
+`proc_c467` reproduced a different failure.
+Changing an input schema in place after fixture assessment still permitted its three inert child executions.
+The test emitted `AssertionError [ERR_ASSERTION]: false !== true`.
+This was independently authored fixture execution,
+not a demonstrated production policy release.
+
+### Cause and repair
+
+The private adapter had protected object references without fixing every consumed method or nested data dependency.
+Current `contract/integration/native-batch/program-source.mjs:10,17`
+captures the original method before later prototype mutation
+and invokes it through the private session runner:
+
+```javascript
+// contract/integration/native-batch/program-source.mjs, generated source excerpts
+const originalCreateDeclaredProgram=NestedToolCallRunner.prototype.createDeclaredProgram;
+Reflect.apply(originalCreateDeclaredProgram,session.#getOwnedProgramRunner(),[input])
+```
+
+Schema reference identity was insufficient.
+Installed `@earendil-works/pi-ai@1.0.4/dist/utils/validation.js:280`
+uses the schema during argument preparation:
+
+```javascript
+// Installed pi-ai dist/utils/validation.js
+normalizeOptionalNulls(args, tool.parameters);
+Value.Convert(tool.parameters, args);
+const validator = getValidator(tool.parameters);
+```
+
+The existing execution-tool owner now retains data descriptors
+and validates both schema graphs at its currentness boundary.
+Relevant code is `contract/integration/native-batch/tools.mjs:29,45,59,60,66`:
+
+```javascript
+// contract/integration/native-batch/tools.mjs, currentness excerpt
+assertParameters();assertOutputSchema();
+```
+
+The comparisons include symbol keys,
+descriptor attributes,
+prototypes,
+and original values.
+They do not freeze borrowed objects or extract and encode a second request representation.
+Callable values remain identity dependencies,
+not proof of implementation semantics.
+Ordinary schema records and arrays are supported;
+accessors and nonordinary object prototypes are rejected.
+The request-wide bound is 10,000 property and object entries.
+This boundary is not a guarantee about arbitrary host callbacks or complete operation effects.
+
+### Verification and tradeoffs
+
+Private fix `87b8e7e` passed public-shadow control `proc_5adc`.
+Fix `3100219` passed prototype and input/output schema controls in `proc_9d00`.
+Expanded native matrix `proc_5caf` passed 18 cases,
+including original failure-cause and terminal-state assertions.
+Unit control `proc_a52b` passed nested,
+array,
+symbol,
+hidden-property,
+accessor,
+prototype,
+descriptor,
+callable-reference,
+bound,
+and permanent-retirement cases.
+These unit controls use execution-position facades;
+they are not native authentication or policy-admission evidence.
+Full native suite `proc_c1b1`,
+action compatibility `proc_edaa`,
+and source compatibility `proc_bdbb` passed.
+
+From `contract/integration/native-batch`,
+the runnable controls are:
+
+```sh
+# Private consumer-contract repository, contract/integration/native-batch
+mise --no-env --no-hooks run test:program
+mise --no-env --no-hooks run test:tools
+```
+
+The earlier `proc_3948` failure was a test mistake:
+inspection includes declared `unreached` groups.
+Counting only reached states repaired that assertion without changing an execution guard.
+A successful inert fixture does not qualify semantic estimates,
+authority interpretation,
+or production permission.
+
+### Rejected approaches and upstream filing decision
+
+Private storage alone did not protect prototype method lookup.
+Schema-reference comparison alone did not detect in-place mutation.
+Adding another JSON tools source would not solve either consumed-runtime dependency.
+
+- Upstream fault: no.
+  The reproduced omissions were in our private adapter.
+- Upstream fixability: not needed for these fixes.
+  They are implemented at the existing consumer boundary.
+- Supported upstream use case: the private ownership contract is not asserted to be an SDK guarantee.
+- Contribution policy: not investigated because no upstream defect or filing is proposed.
+- Maintainer intent: not investigated for the same reason.
+- Prototype: private fixes and controls exist;
+  no upstream patch is claimed.
+
+There is nothing to file upstream from this evidence.
+No SDK issue,
+provider request,
+or installed-source modification occurred.
+
 ## Typed-relation verification: Git inspection timeout and overlapping index access
 
 ### Observations
