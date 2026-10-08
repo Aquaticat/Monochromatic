@@ -49,10 +49,52 @@ settled child execution,
 and one conversion per returned native result.
 `proc_3948` first exposed a test counting all declared groups as reached;
 the test was corrected against the original owner's `unreached` state.
-The next work is the corrected expanded matrix,
-affected regressions,
-shared-runner contention and suspended cleanup,
-and original executable-snapshot exclusion/substitution controls.
+The corrected 18-case matrix `proc_5caf`,
+schema-owner checks `proc_a52b`,
+full native suite `proc_c1b1`,
+action `proc_edaa`,
+and source `proc_bdbb` passed.
+Schema unit checks include permanent retirement after restoration,
+but use execution-position facades rather than claiming native authentication.
+
+Shared-queue control `proc_0d8b` passed release,
+queued abort,
+and disposal while a child was suspended.
+Release executed six children across separate parent recorders;
+abort and disposal each entered only the initially suspended child.
+The driver verified empty child stderr,
+original judgment reuse,
+settled children,
+parent-specific usage and updates,
+late-context rejection,
+and refusal to detach before the agent run settles.
+`proc_7f41` was an inaccurate test regex for that existing detach diagnostic.
+
+A concrete missing consumer requirement then emerged:
+native Codemode can call inactive deferred tools,
+but the adapter had captured only active tools.
+`proc_7bfe` measured that limitation;
+the required callable behavior failed `proc_f19b`.
+Implementation `7d9bdeb` extends the existing per-request execution-tool owner.
+It captures native callable names before the model request
+and reuses each wrapper across the active and callable views.
+`proc_65de` passed active,
+inactive-but-originally-callable,
+and later-exposed cases.
+Later additions remain excluded.
+Inactive callable declarations are not added to the main model request.
+
+Native loadout descriptions were also being replaced by unprojected definition text.
+`proc_3145` reproduced the lost Codemode return-type guidance.
+The wrapper now retains the native projected description;
+`proc_8ebd` passed.
+The earlier `proc_622a` failure was a test reading `tools` from the normalized stream context.
+The corrected test observes the original execution context instead.
+
+Full regression after these last tool-owner changes and updated document rendering are next.
+Foreign-origin/substituted internal bridge inputs,
+arbitrary programs,
+and identifier forms outside the existing bounded profile remain unverified.
 Keep the canonical bound evaluator withholding.
 No semantic provider trial,
 threshold adoption,

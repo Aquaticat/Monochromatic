@@ -47,7 +47,7 @@ const validator = getValidator(tool.parameters);
 
 The existing execution-tool owner now retains data descriptors
 and validates both schema graphs at its currentness boundary.
-Relevant code is `contract/integration/native-batch/tools.mjs:29,45,59,60,66`:
+Relevant code is `contract/integration/native-batch/tools.mjs:29,45,61,62,68`:
 
 ```javascript
 // contract/integration/native-batch/tools.mjs, currentness excerpt
@@ -103,6 +103,40 @@ Counting only reached states repaired that assertion without changing an executi
 A successful inert fixture does not qualify semantic estimates,
 authority interpretation,
 or production permission.
+
+### Native loadout description preservation
+
+A later control,
+`proc_3145`,
+found that wrapping the registered definition discarded the native projected description.
+It specifically lost
+`Codemode: tools.fixture_value(args) resolves to a string.`
+(the native text places the call expression in backticks).
+The fixture rejected the group with
+`Preserve native loadout descriptions for fixture_value`.
+
+Installed `@earendil-works/pi-coding-agent@1.0.4/dist/core/agent-session.js:1190`
+creates that description projection without replacing the registered executable definition:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+declared = tools.map((tool) => {
+    const description = descriptions.get(tool.name);
+    return description === undefined ? tool : { ...tool, description };
+});
+```
+
+Current `contract/integration/native-batch/tools.mjs:84`
+preserves the projected description with the existing owned callbacks:
+
+```javascript
+// contract/integration/native-batch/tools.mjs
+const wrapped=wrapTool(tool.name),projected=Object.freeze({...wrapped,description:tool.description});
+```
+
+`proc_8ebd` passed the real native description and callable-snapshot controls.
+This repairs a consumer-side loss of native metadata;
+it does not make descriptions permission or qualified effect evidence.
 
 ### Rejected approaches and upstream filing decision
 
