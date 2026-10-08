@@ -91,10 +91,25 @@ The wrapper now retains the native projected description;
 The earlier `proc_622a` failure was a test reading `tools` from the normalized stream context.
 The corrected test observes the original execution context instead.
 
-Full regression after these last tool-owner changes and updated document rendering are next.
-Foreign-origin/substituted internal bridge inputs,
-arbitrary programs,
-and identifier forms outside the existing bounded profile remain unverified.
+Final suite `proc_a91d` passed after original-callable capture and description repair.
+It ran 21 program cases,
+22 schema mutation cases,
+and the shared-queue release,
+abort,
+and disposal controls.
+Document check `proc_659d` passed before this final result note.
+
+The bounded native-program checkpoint is complete.
+Independent transcript-based review found no further concrete defect in the actual issued-context path.
+It did not independently execute the tests or qualify semantic decisions.
+Forged direct calls to internal SDK glue are not a public admission endpoint;
+the fixed consumer callback supplies its captured session and tool view.
+Do not turn hypothetical trusted-helper misuse into another mandatory capture or hardening queue.
+
+Arbitrary programs and identifier forms outside the existing bounded profile remain unsupported.
+The substantive unresolved frontier is established actual clause interpretation/application
+and enough decision-specific instruction/operation coverage to exclude outcome-changing alternatives.
+The full migration and installed cutover remain incomplete.
 Keep the canonical bound evaluator withholding.
 No semantic provider trial,
 threshold adoption,
