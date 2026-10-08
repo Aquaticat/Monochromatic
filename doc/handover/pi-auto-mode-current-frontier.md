@@ -325,9 +325,27 @@ Source `proc_d3ea` and action `proc_827f` passed.
 This does not establish provenance of older persisted messages after a new prompt resets ancestry.
 The private structured-content guard omission failed its regression in `proc_1d20`;
 the guard is restored.
+Native prompt construction now captures built-in instruction fragments through the original run owner.
+The private copy includes seven SDK modules,
+with the native prompt builder and skill formatter retained in the new builder module.
+Rendered-section parity passed `proc_bc87`.
+Native `proc_997c`,
+source `proc_6abc`,
+and action `proc_2e52` passed.
+The native path requires its exact construction input and render occurrence;
+fragments remain unregistered and do not prove final visibility.
+`proc_a631` confirmed the linked default prompt supports 207 clauses and 414 questions
+at 34,332 rendered bytes.
+Only the independent-copy default case exceeded the unchanged 65,536-byte source cap,
+at 66,405 bytes,
+before judgment creation.
+The failure must not be generalized to the linked default case.
+The render-requirement omission failed its committed regression in `proc_8931`;
+the requirement is restored.
 Remaining source-index gaps include general persisted-session messages,
 later-read skill-file contents,
-and built-in or broader delegated inputs.
+tool-schema descriptions,
+and broader delegated inputs.
 Complete governing-source coverage,
 delegation,
 qualified interpretation,
