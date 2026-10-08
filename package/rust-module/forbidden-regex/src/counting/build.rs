@@ -199,7 +199,7 @@ impl Builder {
             Node::LineStart => return Some(self.leaf(Element::LineStart, false)),
             Node::LineEnd => return Some(self.leaf(Element::LineEnd, false)),
             Node::WordBoundary => return Some(self.leaf(Element::WordBoundary, false)),
-            Node::Repeat { node, min, max } => return self.build_repeat(node, *min, *max),
+            Node::Repeat { node: body, min, max } => return self.build_repeat(body, *min, *max),
             Node::Concat(parts) => return self.build_concat(parts),
             Node::Alt(parts) => return self.build_alt(parts),
             Node::Empty => return Some(empty_frag()),
