@@ -71,6 +71,42 @@ No semantic provider request,
 genuine approval,
 or installed change occurred.
 
+### Inspected-effect rubric correction
+
+The permission rubric previously required every relevant condition to be established by supplied code facts.
+That excluded Q13 B's accepted use of qualified inspected-form effect estimates.
+A permission conditional on a read-only inspected script exposed the contradiction.
+Independent transcript review confirmed the mismatch against
+[the accepted effect contract](../planning/pi-auto-mode-effect-contract.md).
+
+The rubric now separates estimated effects from external runtime facts.
+Effect estimates remain subject to code-owned admission;
+canonical paths,
+file contents,
+account ownership,
+and existing authorization cannot be invented by the estimator.
+Full native `proc_968f` passed 22 compiler modes;
+action `proc_d032` also passed.
+The new local cases exercise an authored estimated-effect relationship
+without promoting it to `establishedEffectFacts`.
+The missing-external-fact case supplies `unknown` explicitly:
+it verifies preservation of uncertainty,
+not independent enforcement against an incorrect model answer.
+No semantic accuracy or production profile was established.
+
+The next concrete defect is the unconditional operation premise in `compiler.mjs`.
+Even an admitted relationship to the whole original inspected program
+cannot currently satisfy its operation-evidence consumer.
+The required canonical control is being run before changing this behavior.
+The initial scope is one original inspected enclosing program without a separate implementation-fact owner.
+Per-clause admitted uses must replace the universal static-effect demand;
+unknown uses,
+multi-member composition,
+and independent code-fact gaps must remain unresolved.
+After that consumer is verified,
+already-retained unclassified source spans need original selectable claims through their existing owner.
+Neither step adopts production policy or expands source inventory.
+
 ### Review disposition and remaining work
 
 The default Advisor call reported an operation deadline and unconfirmed remote settlement;
