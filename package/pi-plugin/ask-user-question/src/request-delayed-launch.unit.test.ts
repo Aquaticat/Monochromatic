@@ -1,8 +1,7 @@
 import { execFile, } from 'node:child_process';
 import { access, } from 'node:fs/promises';
+import { setTimeout as wait, } from 'node:timers/promises';
 import { promisify, } from 'node:util';
-
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 
 import { createRequestRegistry, requestExternalAnswer, } from '../dist/final/node/index.mjs';

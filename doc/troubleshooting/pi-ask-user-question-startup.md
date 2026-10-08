@@ -37,6 +37,58 @@ and 2026-10-01.
 Those agree with the startup deadline but do not identify why the helper failed to connect.
 The reproduced cases in this document remain separate from those historical incidents.
 
+## Follow-up incident on 2026-10-08
+
+The reporter supplied `Screenshot_20261008_064047.png`.
+Node 26.10.0 reports `MODULE_NOT_FOUND` for the request-private helper,
+not the installed bundle:
+
+```text
+Error: Cannot find module '/tmp/pi-ask-user-question-Vh8iRc/answer-helper.mjs'
+```
+
+The matching local log is `node_modules/.monochromatic/2026-10-08T02-36-56.899Z.log.jsonl`:
+
+- Line 31 creates the workspace at timestamp `1791447393573`.
+- Line 32 prepares the helper at `1791447393574`.
+- Lines 60 and 61 dispatch the terminal command at `1791447393579`.
+- Line 62 closes the channel at `1791447423577`.
+- Line 63 removes the workspace at `1791447423579`.
+
+The removal occurs exactly 30 seconds after launch dispatch.
+The screenshot establishes that Node subsequently attempted the deleted path.
+This is evidence for the lifetime gap explicitly left open by the previous fix.
+It is not evidence that a package rebuild removed this helper.
+
+A separate confirmed defect is in `package/cli/terminal-exec/src/build-command.ts`:
+it filters every token beginning with `--gtk-single-instance`,
+including the user's explicit `--gtk-single-instance=false`.
+The log retains that flag through tokenization but omits it from the final launch vector.
+The user explicitly authorized preserving the flag and changing the launcher on 2026-10-08.
+Its contribution to the delayed startup is not established.
+
+The existing [locked-session investigation](ghostty-locked-session-no-command.md)
+documents why elapsed wall time is not a reliable terminal-start failure signal.
+The source at Ghostty `v1.3.1`,
+`src/apprt/gtk/class/surface.zig:3224`,
+still says initialization waits for the first resize;
+line 3344 calls `self.initSurface()` from that path.
+No contemporaneous screen-lock state was captured for the screenshot incident.
+Do not assign the historical delay to the screen locker without that evidence.
+
+### Follow-up implementation and verification queue
+
+- Preserve configured terminal `Exec` tokens and verify the exact generated command.
+- Keep a pending question alive through delayed desktop startup instead of expiring it at 30 seconds.
+- Replace the disposable-file executable entry with an inline bootstrap that handles explicit cancellation.
+- Require requester acknowledgement before starting an editor and test channel shutdown without bare errors.
+- Verify built artifacts, real terminal submission, cancellation, and the extension host boundary.
+
+Commit `668d2781d` adds deliberately failing delayed-start,
+late-after-cancellation,
+and terminal-flag regressions.
+Verification results and final source references will be recorded after the implementation.
+
 ## Reproduced causes and changes
 
 ### Installed runtime disappears while requester remains alive
