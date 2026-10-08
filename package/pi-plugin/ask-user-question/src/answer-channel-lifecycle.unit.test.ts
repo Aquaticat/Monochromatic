@@ -28,8 +28,8 @@ await describe({
         expect(caught,).toHaveProperty('cause', controller.signal.reason,);
       },
     },),
-    it({
-      name: 'an idle authentication candidate cannot expire the question',
+    ...['idle', 'reset',].map(kind => it({
+      name: `a ${kind} authentication candidate cannot expire the question`,
       timeout: 9_000,
       fn: async () => {
         await using channel = await createAnswerChannel();
@@ -54,7 +54,11 @@ await describe({
           idle.destroy();
         }, };
         idle.resume();
-        await once(idle, 'close',);
+        await once(idle, 'connect',);
+        const closed = once(idle, 'close',);
+        if (kind === 'reset')
+          idle.resetAndDestroy();
+        await closed;
         await wait(0,);
         expect(state.error,).toBeUndefined();
         const helper = createConnection({ host: channel.host, port: channel.port, },);
@@ -66,7 +70,7 @@ await describe({
         helper.end(`${channel.token}\n{"status":"cancelled"}`,);
         expect(await completion,).toEqual({ status: 'cancelled', },);
       },
-    },),
+    },),),
     it({
       name: 'disposes unauthenticated sockets without hanging shutdown',
       fn: async () => {
