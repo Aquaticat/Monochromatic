@@ -35,6 +35,37 @@ and no provider request was made by this intake.
 Re-index the current policy and rebase deterministic source checks;
 do not restore removed dependencies or reinterpret old receipts as current verification.
 
+## Simplification correction: reuse the original request
+
+The user asked why JSON was being parsed and serialized
+and directed the implementation not to overengineer.
+The tools-field extraction detour duplicated evidence already retained as `originalRequestBody`
+in `contract/integration/action-policy/wire.mjs`.
+Decoding and re-encoding that field introduced representation problems without supplying a missing policy premise.
+The detour was removed,
+including the separate source/binder,
+receipt projection,
+and raw-span regression.
+No raw-span parser was implemented.
+The existing request bytes and one-time JSON-format validation remain.
+
+Do not expand the source inventory merely for completeness.
+Before adding parsing or another evidence representation,
+identify the specific missing requirement in the actual policy consumer
+and check whether existing captured data already satisfies it.
+The migration remains incomplete;
+qualified interpretation and complete-operation policy are the substantive open areas.
+
+### Unapplied instruction clarification
+
+A proposed tightening of the existing `RCI` rule in `AGENTS.md` is:
+
+> Before adding capture, parsing, validation, or an owner, inspect existing generators, managers, and retained data.
+> Extend their owner only for a specific missing consumer requirement.
+
+This proposal is recorded only;
+`AGENTS.md` remains unchanged.
+
 ## Direct integration progress
 
 Private implementation lives in `contract/integration/` in the retained consumer-contract repository.
