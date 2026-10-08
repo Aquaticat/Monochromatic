@@ -3,20 +3,18 @@
 //! engine, and engine `Update`s are applied to the window's properties from the
 //! event-loop thread. Also handles CLI path arguments and the file-open dialog.
 
-/// What:     `mod slint_generated { ... }` creates a private namespace around
-///           Rust emitted by Slint. The lint attribute applies only inside that
-///           namespace, while package-owned Rust remains under the manifest's
-///           denied `implicit_return` and shadow lints.
-/// Why:      Slint 1.17 emits tail-expression returns and rebinds generated
-///           helpers (`self_rc`, `_self`, `the_struct`, ...) over each other. Its
-///           generated header already exempts several Clippy groups but not these
-///           restriction lints, so this boundary carries the exemption until Slint
-///           includes them itself.
+/// What:     `mod slint_generated;` loads the sibling `slint_generated.rs` module,
+///           the private lint boundary around Rust emitted by Slint. That file
+///           carries the generated-code Clippy allowances, while package-owned
+///           Rust remains under the manifest's denied `implicit_return` and
+///           shadow lints.
+/// Why:      Slint's generated output needs restriction-lint exemptions that must
+///           not leak into maintained modules, and keeping the boundary in its
+///           own file keeps those exemption lines out of this file's max-lines
+///           budget; see
+///           `doc/troubleshooting/slint-generated-rust-implicit-return.md`.
 /// Gotcha:   The direct attribute on `slint::include_modules!()` is ignored by
 ///           rustc; a module boundary is required for the lint level to apply.
-///           The exemption is stacked as two `#[allow]` attributes because one
-///           merged list would either overflow the 100-column format width or,
-///           wrapped across lines, push this file past its max-lines budget.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,18 +22,7 @@
 ///   export * from './app.slint.generated';
 /// }
 /// ```
-#[allow(clippy::implicit_return)]
-#[allow(clippy::shadow_reuse, clippy::shadow_same, clippy::shadow_unrelated)]
-mod slint_generated {
-    // What:     `slint::include_modules!()` includes build-time generated Rust.
-    // Why:      `AppWindow` and related UI bindings come from Slint markup.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // export * from './app.slint.generated';
-    // ```
-    slint::include_modules!();
-}
+mod slint_generated;
 
 /// Imports every public Slint binding from the generated-only lint boundary.
 use slint_generated::*;
