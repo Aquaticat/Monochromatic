@@ -180,10 +180,13 @@ mise run lint
 
 ### Isolate generated bindings in a private module
 
-Both affected binaries use this consumer-owned boundary:
+Both affected binaries use this consumer-owned boundary
+(the allowance list grew when the shadow lints were denied fleet-wide;
+see "The shadow lints reach the same generated code"):
 
 ```rust
 #[allow(clippy::implicit_return)]
+#[allow(clippy::shadow_reuse, clippy::shadow_same, clippy::shadow_unrelated)]
 mod slint_generated {
     slint::include_modules!();
 }
@@ -191,9 +194,10 @@ mod slint_generated {
 use slint_generated::*;
 ```
 
-`package/desktop-app/terminal/src/main.rs:8-37` and
-`package/music-player/desktop-app/src/main.rs:6-35` apply the allowance only to Slint output.
-Their `Cargo.toml` files continue denying `implicit_return` for every maintained module.
+`package/desktop-app/terminal/src/main.rs` and
+`package/music-player/desktop-app/src/main.rs` apply the allowances only to Slint output.
+Their `Cargo.toml` files continue denying `implicit_return` and the three shadow lints
+for every maintained module.
 
 Tradeoff:
 generated bindings gain one namespace and a root import.
@@ -212,9 +216,57 @@ diff --git a/internal/compiler/generator/rust.rs b/internal/compiler/generator/r
 
 The path-dependency probe failed before this patch and passed after it.
 
+The same generated-header location would carry the three shadow lints
+named in "The shadow lints reach the same generated code".
+
 Tradeoff:
 consumers need a patched Slint build or a release containing the change.
 The repository therefore keeps the private-module workaround while using crates.io Slint `1.17.0`.
+
+## The shadow lints reach the same generated code
+
+Commit `53c1e01a9` denied `clippy::shadow_reuse`,
+`clippy::shadow_same`,
+and `clippy::shadow_unrelated` in the canonical `[lints.clippy]` policy,
+and issue #604 tracked the fallout.
+Slint 1.17 generated Rust rebinds its own helpers over each other
+(`self_rc`,
+`_self`,
+`self_weak`,
+`the_struct`,
+`window`,
+`order`,
+`visitor`,
+`r#repeated_indices`),
+so the included `out/app.rs` failed the new policy exactly like it failed `implicit_return`:
+160 deduplicated generated findings behind `package/desktop-app/terminal/src/main.rs`,
+and the same shape behind `package/music-player/desktop-app/src/main.rs`,
+whose generated and bin findings surfaced only after its lib compiled
+(a failing lib masks every dependent target).
+
+The private-module boundary absorbs these too:
+both include-based boundaries now carry the stacked allowances shown in
+"Isolate generated bindings in a private module".
+`package/desktop-app/terminal/src/main.rs` writes all four lints as one wrapped `#[allow(...)]`;
+`package/music-player/desktop-app/src/main.rs` stacks two attributes instead,
+because the wrapped single list counts extra code lines and that `main.rs`
+sits at the 300-code-line `builtin(max-lines)` budget
+(measured 2026-10-08:
+wrapped single attribute 304 code lines,
+rejected;
+stacked pair 300,
+passing).
+
+`package/desktop-app/ide/src/native.rs` needs no shadow allowance.
+Since commit `8e471dba6` (2026-10-04) its `mod ui` uses the `slint::slint!` re-export macro
+instead of `slint::include_modules!()`,
+so the generated code reaches the crate as a procedural-macro expansion rather than an included file,
+and the 2026-10-08 run of `mise run //package/desktop-app/ide:lint:clippy`
+reports no shadow findings in generated or maintained source.
+
+Verified with `rustc 1.100.0-nightly (1303417c4 2026-09-21)`:
+after these boundary allowances and the maintained-source renames tracked in issue #604,
+each of the crates whose manifest carries the shadow policy passes its own Clippy task.
 
 ## What does not work
 
