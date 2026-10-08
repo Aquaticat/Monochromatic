@@ -1,17 +1,12 @@
-import { execFile, } from 'node:child_process';
 import { access, } from 'node:fs/promises';
 import { setTimeout as wait, } from 'node:timers/promises';
-import { promisify, } from 'node:util';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 
 import { createRequestRegistry, requestExternalAnswer, } from '../dist/final/node/index.mjs';
 
-//region Detached startup regressions
+import { runHelperCommand, } from './helper-process-fixture.ts';
 
-/**
- Captures the real helper's complete output, including shutdown diagnostics.
- */
-const execute = promisify(execFile,);
+//region Detached startup regressions
 
 /**
  Runs the exact argv handed to the detached terminal, without shell parsing.
@@ -21,10 +16,7 @@ const execute = promisify(execFile,);
  @returns complete stdout after a clean exit with no stderr
  */
 async function runCommand(command: readonly string[],): Promise<string> {
-  const [executable, ...args] = command;
-  if (executable === undefined)
-    throw new Error('Missing detached helper command.',);
-  const output = await execute(executable, args, { timeout: 10_000, },);
+  const output = await runHelperCommand({ command, },);
   expect(output.stderr,).toBe('',);
   return output.stdout;
 }
@@ -53,24 +45,20 @@ await describe({
          Observe rejection immediately while the simulated desktop delays execution.
          */
         const observed = (async function observe() {
-          try {
-            return await outcome;
-          }
-          finally {
-            state.settled = true;
-          }
+          const results = await Promise.allSettled([outcome,],);
+          state.settled = true;
+          return results;
         })();
-        const settled = Promise.allSettled([observed,],);
-        try {
-          await wait(31_000,);
-          expect(state.settled,).toBe(false,);
-          await runCommand(state.command,);
-          expect(await outcome,).toEqual({ status: 'answered', answer: 'delayed\nanswer', },);
-        }
-        finally {
-          controller.abort();
-          await settled;
-        }
+        await using cleanup = {
+          async [Symbol.asyncDispose](): Promise<void> {
+            controller.abort();
+            await observed;
+          },
+        };
+        await wait(31_000,);
+        expect(state.settled,).toBe(false,);
+        await runCommand(state.command,);
+        expect(await outcome,).toEqual({ status: 'answered', answer: 'delayed\nanswer', },);
       },
     },),
     ...['caller', 'session',].map(function cancellationCase(kind,) {

@@ -47,10 +47,24 @@ export type HelperConnection = Disposable & {
  @param request - private endpoint and authentication token
 
  @returns owned channel with cancellation tied to peer lifetime
+
+ @example
+ ```ts
+ using connection = createHelperConnection(request);
+ ```
  */
 export function createHelperConnection(request: HelperRequest,): HelperConnection {
+  /**
+   Function-scoped lifecycle diagnostics.
+   */
   const rl = tagged({ tag: createHelperConnection.name, l, },);
+  /**
+   One cancellation source shared with the attached editor.
+   */
   const controller = new AbortController();
+  /**
+   Socket retained until completion or explicit disposal.
+   */
   const socket = createConnection({ host: request.host, port: request.port, },);
   socket.setEncoding('utf8',);
   socket.setNoDelay(true,);
@@ -79,6 +93,11 @@ export function createHelperConnection(request: HelperRequest,): HelperConnectio
  @param token - private request credential
 
  @throws when the requester disconnects or sends an unexpected acknowledgement
+
+ @example
+ ```ts
+ await authenticateHelper({ connection, token: request.token });
+ ```
  */
 export async function authenticateHelper({
   connection,
@@ -87,17 +106,26 @@ export async function authenticateHelper({
   readonly connection: HelperConnection;
   readonly token: string;
 },): Promise<void> {
+  /**
+   Function-scoped authentication diagnostics.
+   */
   const rl = tagged({ tag: authenticateHelper.name, l, },);
+  /**
+   Request-owned channel capabilities.
+   */
   const { socket, signal, } = connection;
   await once(socket, 'connect', { signal, },);
   signal.throwIfAborted();
   socket.write(`${token}\n`,);
-  let acknowledgement = '';
+  /**
+   Bounded acknowledgement accumulator cannot exceed the fixed protocol frame.
+   */
+  const state = { acknowledgement: '', };
   for await (const chunk of socket.iterator({ destroyOnReturn: false, },)) {
-    acknowledgement += String(chunk,);
-    if (!HELPER_READY.startsWith(acknowledgement,))
+    state.acknowledgement += String(chunk,);
+    if (!HELPER_READY.startsWith(state.acknowledgement,))
       throw new HelperProtocolError('Answer requester sent an invalid startup acknowledgement.',);
-    if (acknowledgement === HELPER_READY) {
+    if (state.acknowledgement === HELPER_READY) {
       signal.throwIfAborted();
       rl.debug('requester accepted answer helper',);
       socket.resume();

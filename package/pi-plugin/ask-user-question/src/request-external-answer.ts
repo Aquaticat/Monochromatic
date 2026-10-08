@@ -261,6 +261,9 @@ export async function requestExternalAnswer(
       throw error;
     }
   }
+  /**
+   Both tasks are observed immediately, so cancellation cannot leave a rejected wait unhandled.
+   */
   const [, completion,] = await Promise.all([launchAnswerTerminal(), completionTask,],);
   if (completion.status === 'cancelled') {
     l.info('answer helper cancelled',);

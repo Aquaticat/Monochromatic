@@ -1,5 +1,6 @@
 import { once, } from 'node:events';
 import { createConnection, } from 'node:net';
+import { setTimeout as wait, } from 'node:timers/promises';
 
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 
@@ -28,22 +29,52 @@ await describe({
       },
     },),
     it({
+      name: 'an idle authentication candidate cannot expire the question',
+      timeout: 9_000,
+      fn: async () => {
+        await using channel = await createAnswerChannel();
+        const controller = new AbortController();
+        const state: { error?: unknown; } = {};
+        const completion = (async function observe() {
+          try {
+            return await channel.wait({ signal: controller.signal, },);
+          }
+          catch (error: unknown) {
+            state.error = error;
+            throw error;
+          }
+        })();
+        const settled = Promise.allSettled([completion,],);
+        await using cleanup = { async [Symbol.asyncDispose](): Promise<void> {
+          controller.abort();
+          await settled;
+        }, };
+        const idle = createConnection({ host: channel.host, port: channel.port, },);
+        using idleCleanup = { [Symbol.dispose](): void { idle.destroy(); }, };
+        idle.resume();
+        await once(idle, 'close',);
+        await wait(0,);
+        expect(state.error,).toBeUndefined();
+        const helper = createConnection({ host: channel.host, port: channel.port, },);
+        using helperCleanup = { [Symbol.dispose](): void { helper.destroy(); }, };
+        helper.resume();
+        await once(helper, 'connect',);
+        helper.end(`${channel.token}\n{"status":"cancelled"}`,);
+        expect(await completion,).toEqual({ status: 'cancelled', },);
+      },
+    },),
+    it({
       name: 'disposes unauthenticated sockets without hanging shutdown',
       fn: async () => {
-        const channel = await createAnswerChannel();
+        await using channel = await createAnswerChannel();
         const socket = createConnection({ host: channel.host, port: channel.port, },);
-        try {
-          await once(socket, 'connect',);
-          const closed = once(socket, 'close',);
-          socket.resume();
-          await channel[Symbol.asyncDispose]();
-          await closed;
-          expect(socket.destroyed,).toBe(true,);
-        }
-        finally {
-          socket.destroy();
-          await channel[Symbol.asyncDispose]();
-        }
+        using cleanup = { [Symbol.dispose](): void { socket.destroy(); }, };
+        await once(socket, 'connect',);
+        const closed = once(socket, 'close',);
+        socket.resume();
+        await channel[Symbol.asyncDispose]();
+        await closed;
+        expect(socket.destroyed,).toBe(true,);
       },
     },),
   ],

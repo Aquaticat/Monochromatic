@@ -52,6 +52,9 @@ export async function runAnswerHelper(
    Loopback connection kept open for editor lifetime.
    */
   using connection = createHelperConnection(request,);
+  /**
+   Request-owned channel and editor cancellation capabilities.
+   */
   const { socket, signal, } = connection;
   try {
     await authenticateHelper({ connection, token: request.token, },);

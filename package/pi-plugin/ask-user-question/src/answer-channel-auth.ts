@@ -111,11 +111,13 @@ export async function acceptAuthenticatedSocket(
   /**
    Slow startup is observable, not evidence that the user cancelled the question.
    */
-  const notice = setTimeout(function reportPendingStartup(): void {
+  using notice = setTimeout(function reportPendingStartup(): void {
     l.warn('The answer terminal has not connected yet. The question remains active; unlock or reveal the desktop, inspect the terminal, or cancel the tool in Pi.',);
   }, HELPER_START_NOTICE_MS,);
+  /**
+   Only caller cancellation ends a pending desktop launch.
+   */
   const startupSignal = signal ?? new AbortController().signal;
-  try {
     for await (const connection of on(
       server,
       'connection',
@@ -143,10 +145,6 @@ export async function acceptAuthenticatedSocket(
       l.warn('rejected unauthenticated answer helper connection',);
     }
     throw new HelperProtocolError('Answer channel stopped before helper authenticated.',);
-  }
-  finally {
-    clearTimeout(notice,);
-  }
 }
 
 /**
@@ -187,6 +185,9 @@ async function authenticateSocket(
    Subscription closing candidate socket when startup aborts.
    */
   const deadline = AbortSignal.timeout(AUTHENTICATION_TIMEOUT_MS,);
+  /**
+   Candidate timeout must not cancel the question or other queued connections.
+   */
   const candidateSignal = AbortSignal.any([signal, deadline,],);
   using abortSubscription = addAbortListener(
     candidateSignal,
