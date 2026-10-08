@@ -90,7 +90,7 @@ export type AuthenticatedSocket = {
  
  @returns authenticated socket positioned after token line
  
- @throws when caller cancellation aborts waiting or authentication is malformed
+ @throws when caller cancellation aborts waiting or the listener yields an invalid connection
  
  @example
  ```ts
@@ -201,11 +201,12 @@ async function authenticateSocket(
   }
   catch (error: unknown) {
     signal.throwIfAborted();
-    if (deadline.aborted) {
-      l.warn(`answer helper authentication timed out: ${String(error,)}`,);
-      return AUTHENTICATION_REJECTED;
-    }
-    throw error;
+    /**
+     Candidate-specific failure never revokes another helper's pending question.
+     */
+    const reason = deadline.aborted ? 'timed out' : 'failed before authentication';
+    l.warn(`answer helper connection ${reason}: ${String(error,)}`,);
+    return AUTHENTICATION_REJECTED;
   }
 }
 
