@@ -1,6 +1,6 @@
-# TypeScript aggregator (native tsc 7.0.1-rc and classic tsc6 6.0.x): seven failure modes from dprint baseUrl warnings through native LSP ScriptKindUnknown panic on non-source files
+# TypeScript aggregator (native tsc 7.0.1-rc through 7.0.2 and classic tsc6 6.0.x): eight failure modes from dprint baseUrl warnings through `using` downlevel helpers
 
-This file aggregates seven distinct TypeScript-related failure modes
+This file aggregates eight distinct TypeScript-related failure modes
 encountered across the workspace.
  Each section follows the
 troubleshooting-doc canonical structure (Symptom / Root cause /
@@ -1266,6 +1266,537 @@ panicking).
 - denoland/deno#31423: CSS imports causing the same panic.
 - neovim/nvim-lspconfig#4018: filetype mismatch in LSP.
 ````
+
+## `using` downlevel helpers: 2381 bytes inlined per emitted file, and a `null` `Symbol.asyncDispose` guard that diverges from the spec
+
+### Problem
+
+Two symptoms share one emit path.
+Both were measured with the installed `typescript@7.0.2` and with a compiler built from
+`microsoft/TypeScript` main at `fed0bf24149fb1ed36039212648bafdafc1ea10e` (2026-10-08).
+
+Symptom 1 is size and duplication.
+Every `.js` file `tsc` emits from a source containing `using` or `await using` starts with both helper
+definitions verbatim.
+On a three-function fixture the helper block is 2381 bytes of a 3264 byte emit,
+ and the same bytes repeat
+in every other emitted file of the program that uses `using`:
+
+```text
+# node <repo>/node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/bin/tsc \
+#   --project tsconfig.json   (target es2025, two one-line `using` files)
+out/a.js   bytes=2678   __disposeResources occurrences=2
+out/b.js   bytes=2678   __disposeResources occurrences=2
+```
+
+In this workspace 7 of the 135 ignored stray `.js` files carry the helper,
+ for example
+`package/module/logger/src/create-logger.unit.test.js:1`.
+
+Symptom 2 is behavior.
+`await using` on an object whose `[Symbol.asyncDispose]` is `null` and whose `[Symbol.dispose]` is
+callable throws in the downlevel output and completes natively.
+The downlevel path reports `TypeError: Object not disposable.`
+
+A third surprise frames both:
+ `target: esnext` emits no helper at all and keeps native `using`,
+ while
+every named target downlevels,
+ including `es2025` and (on upstream main) `es2026`,
+ even though explicit
+resource management is in the ES2026 edition (tc39/ecma262#3000,
+ merged 2026-06-24).
+
+### Root cause
+
+Three separate mechanisms,
+ cited against `microsoft/TypeScript` main at `fed0bf24149f`.
+
+**1.
+ Only the floating `esnext` target skips the transform.**
+`tsc/internal/transformers/estransforms/definitions.go:10` builds the chain that owns `using`:
+
+```go
+// tsc/internal/transformers/estransforms/definitions.go:10
+NewESNextTransformer = transformers.Chain(newUsingDeclarationTransformer, esDecoratorAndClassFields)
+```
+
+`tsc/internal/transformers/estransforms/definitions.go:24` selects that chain by target:
+
+```go
+// tsc/internal/transformers/estransforms/definitions.go:27-30
+case core.ScriptTargetESNext:
+	return esDecoratorAndClassFields(opts)
+case core.ScriptTargetES2026, core.ScriptTargetES2025, core.ScriptTargetES2024, core.ScriptTargetES2023, core.ScriptTargetES2022, core.ScriptTargetES2021:
+	return NewESNextTransformer(opts)
+```
+
+The `esnext` arm omits `newUsingDeclarationTransformer`,
+ so `using` survives into the output.
+Every named edition arm includes it,
+ so `tsc/internal/transformers/estransforms/using.go:21` rewrites each
+`using` into an `env` record plus `try`/`catch`/`finally` calling the two helpers.
+The file's own comment at `tsc/internal/transformers/estransforms/definitions.go:11` records
+`// 2026: no new downlevel syntax`,
+ which is why `es2026` still routes through the `using` transform:
+the gate is the floating target,
+ not edition membership.
+
+**2.
+ Without `importHelpers`,
+ the printer has nowhere to point but the file itself.**
+The helper carries both an inline text body and an import name:
+
+```go
+// tsc/internal/printer/helpers.go:70-72
+var addDisposableResourceHelper = &EmitHelper{
+	Name:       "typescript:addDisposableResource",
+	ImportName: "__addDisposableResource",
+```
+
+`tsc/internal/printer/printer.go:4635` skips per-file text only when helpers are external or disabled:
+
+```go
+// tsc/internal/printer/printer.go:4638
+shouldSkip := p.Options.NoEmitHelpers || (sourceFile != nil && p.emitContext.HasRecordedExternalHelpers(sourceFile))
+```
+
+External helpers are recorded only when `importHelpers` is set for that file,
+`tsc/internal/compiler/program.go:493` gated at `tsc/internal/compiler/program.go:496`:
+
+```go
+// tsc/internal/compiler/program.go:496
+if !optionsForFile.ImportHelpers.IsTrue() {
+```
+
+`tsc` ships no runtime module of its own,
+ so with neither option set the only choices are per-file text or
+an unresolvable reference.
+That is the mechanism behind "into every .js file".
+
+**3.
+ The inlined helper treats `null` as present,
+ the spec treats it as absent.**
+
+```js
+// tsc/internal/printer/helpers.go:78-87 (emitted text)
+if (async) {
+    if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
+    dispose = value[Symbol.asyncDispose];
+}
+if (dispose === void 0) {
+    if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
+    dispose = value[Symbol.dispose];
+    if (async) inner = dispose;
+}
+if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
+```
+
+The guard is `dispose === void 0`,
+ so a `null` `Symbol.asyncDispose` skips the `Symbol.dispose` fallback
+and reaches the `typeof` check,
+ which throws.
+The merged spec's `GetDisposeMethod` uses `GetMethod`,
+ and `GetMethod` returns `undefined` for a property
+value that is `undefined` **or** `null`,
+ then falls back to `%Symbol.dispose%`:
+
+```text
+# tc39/ecma262 PR 3000, sec-getdisposemethod
+1. If kind is sync-dispose, return ? GetMethod(value, %Symbol.dispose%).
+1. Let asyncMethod be ? GetMethod(value, %Symbol.asyncDispose%).
+1. If asyncMethod is not undefined, return asyncMethod.
+1. Let syncMethod be ? GetMethod(value, %Symbol.dispose%).
+```
+
+Engines implement the fallback,
+ which is why native output succeeds on the same input.
+`tslib@2.8.1` carries the identical guard at
+`node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.es6.js:305`,
+ so `importHelpers` does not avoid
+symptom 2.
+
+An earlier hypothesis in this workspace was that the stray `.js` files came from a bare `tsc <file>`
+invocation.
+That specific attribution is not established:
+ TS 7 rejects file arguments in a directory containing a
+`tsconfig.json` with `TS5112` unless `--ignoreConfig` is passed (measured),
+ and
+`package/module/logger` has one.
+What the evidence does support is emit produced outside
+`package/config/typescript/tsconfig.options.json`,
+ whose `target: esnext` would have emitted no helper.
+Finding the emitting task is tracked separately in `doc/handover/slopo-cluster-issue-triage.md`.
+
+### Verification
+
+Versions under test:
+ `typescript@7.0.2` from `node_modules/.pnpm/typescript@7.0.2`,
+ upstream
+`microsoft/TypeScript` main `fed0bf24149fb1ed36039212648bafdafc1ea10e`,
+ `node v26.10.0`,
+ `tslib@2.8.1`,
+`rolldown@1.2.12`.
+
+Minimal reproduction of symptom 2,
+ zero diagnostics under both targets:
+
+```ts
+// repro.ts
+async function main(): Promise<void> {
+  await using resource = {
+    [Symbol.asyncDispose]: null,
+    [Symbol.dispose]: () => { console.log('sync dispose ran'); },
+  } as unknown as AsyncDisposable;
+  console.log('body completed');
+}
+
+await main();
+
+export {};
+```
+
+```sh
+# tsc = node <repo>/node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/bin/tsc
+$tsc repro.ts --ignoreConfig --target es2025 --module esnext --lib ESNext,DOM --outDir out-downlevel
+node out-downlevel/repro.js
+# TypeError: Object not disposable.
+
+$tsc repro.ts --ignoreConfig --target esnext --module esnext --lib ESNext,DOM --outDir out-native
+node out-native/repro.js
+# body completed
+# sync dispose ran
+```
+
+Catalog of emit shapes that carry no helper,
+ measured on the three-function fixture:
+
+- `--target esnext`:
+   native `using` and `await using`,
+   293 bytes.
+- `--target es2025 --importHelpers`:
+   `import { __addDisposableResource, __disposeResources } from "tslib";`,
+  952 bytes,
+   with `tslib` resolvable from the output directory.
+- `rolldown` `transformSync` with `target: ['firefox153']` or `['chrome154', 'firefox153', 'node26']`:
+  native `using`,
+   288 bytes.
+
+Catalog of emit shapes that carry disposal machinery:
+
+- `--target es2015`:
+   4061 bytes,
+   helper text inlined.
+- `--target es2020` through `--target es2025`:
+   3264 bytes each,
+   helper text inlined.
+- `--target es2025 --importHelpers` with `tslib` unresolvable:
+   `error TS2354: This syntax requires an
+  imported helper but module 'tslib' cannot be found.`
+- `--target es2025 --noEmitHelpers`:
+   no helper text,
+   and running the output throws
+  `ReferenceError: __disposeResources is not defined`.
+- `rolldown` `transformSync` with `target: 'es2022'`,
+   `'es2025'`,
+   or `['firefox140']`:
+   598 bytes,
+  `import _usingCtx2 from "@oxc-project/runtime/helpers/usingCtx";`,
+   one shared helper module instead of
+  per-file text.
+
+Catalog of disposal semantics that match between native emit and the inlined helper,
+ measured by running a
+twelve-case fixture compiled three ways (native `esnext`,
+ inline `es2025`,
+ `es2025` with `tslib`) and
+diffing the event logs:
+
+- Nested scopes dispose in reverse acquisition order.
+- Early `return` disposes before returning.
+- A body throw disposes,
+   then the original error propagates.
+- A body throw plus a disposer throw yields `SuppressedError` with `.error` holding the disposer's error,
+  `.suppressed` holding the body error,
+   `instanceof Error` true,
+   and prototype name `SuppressedError`.
+- Two failing disposers nest with the later acquisition as `.error`.
+- `for...of` with `using` inside the body disposes per iteration,
+   including on `break`.
+- `for (using x of iterable)` disposes each yielded resource and the disposable iterable itself.
+- `await using` with an async disposer awaits it.
+- `await using null` is a no-op.
+- `for await` combined with `await using` disposes per iteration across `continue`.
+- A synchronous `[Symbol.dispose]` returning a thenable under `await using` is not awaited.
+
+Catalog of semantics that differ:
+
+- `null` `[Symbol.asyncDispose]` with a callable `[Symbol.dispose]`:
+   native falls back and completes,
+   the
+  helper throws `TypeError: Object not disposable.`
+- `SuppressedError` message text:
+   native `An error was suppressed during disposal`,
+   helper
+  `An error was suppressed during disposal.`
+  The spec creates "a newly created *SuppressedError* object" without passing a message,
+   so this string is
+  implementation-defined and the difference is cosmetic.
+
+### Workarounds
+
+1. **Compile with `target: esnext`.**
+   No helper text,
+    native syntax,
+    and symptom 2 disappears because the engine implements the fallback.
+   This workspace already sets `target: esnext` in `package/config/typescript/tsconfig.options.json`.
+   Tradeoffs:
+    `esnext` floats,
+    so a compiler upgrade can start preserving other syntax with no config
+   change;
+    the output only runs where `using` parses,
+    which per mdn/browser-compat-data means Chrome 134,
+   Firefox 141,
+    Node 24.0.0,
+    Deno 1.37 for `using` and 2.2.10 for `await using`,
+    Bun 1.0.23,
+    with Safari
+   recorded as preview;
+    and the option governs all downleveling,
+    not disposal alone.
+2. **Set `importHelpers: true` with `tslib` available at runtime.**
+   Fixture emit drops from 3264 to 952 bytes and one copy of the helper serves the whole dependency graph.
+   `tslib@2.8.1` exports both helpers at `tslib.es6.js:305` and `tslib.es6.js:334`.
+   Tradeoffs:
+    adds a runtime dependency;
+    the per-scope `try`/`catch`/`finally` scaffolding stays in every
+   function;
+    symptom 2 is unchanged because `tslib` carries the same guard;
+    and `importHelpers` applies to
+   module files.
+3. **Let the bundler own the transform.**
+   `rolldown` and oxc import one shared `@oxc-project/runtime/helpers/usingCtx` when the target lacks
+   support and preserve native `using` when it does not.
+   This workspace's shipped artifacts take the preserving path:
+    `.browserslistrc` resolves to chrome 154,
+   firefox 153,
+    android 154,
+    and_chr 154,
+    and_ff 157,
+    and node 26.x,
+    all above the thresholds,
+    and
+   `package/cloudflare-worker/rand/dist/final/neutral/worker.mjs:1` contains
+   `using flushAtExit=flushOnExit(ctx)`.
+   Tradeoffs:
+    the final emitter decides shipping syntax,
+    not `tsc`;
+    and
+   `package/config/rolldown/src/browserslist-targets.ts` prefers a generated targets JSON over a fresh
+   `browserslist` query when that file exists,
+    so verify what the build actually reads.
+4. **Hand-write `try`/`finally`.**
+   No helpers and no target coupling.
+   Tradeoffs:
+    loses the `SuppressedError` composition and the reverse-order guarantee,
+    and reintroduces the
+   cleanup duplication `using` exists to remove.
+
+### What does not work
+
+- Reaching for a named edition target.
+  `es2025` downlevels (measured),
+   and upstream main routes `es2026` through the same transform
+  (`tsc/internal/transformers/estransforms/definitions.go:29`),
+   so the feature being in ES2026 does not
+  move the gate.
+- `lib: ESNext` on its own.
+  `lib` selects type declarations;
+   the target arm selects the transform.
+- Polyfilling `Symbol.dispose` to make downleveling unnecessary.
+  The helper itself throws `TypeError: Symbol.dispose is not defined.` when the symbol is missing,
+   so
+  downleveling buys parser compatibility only,
+   never runtime compatibility.
+- `noEmitHelpers: true` without `importHelpers`.
+  The output references identifiers nothing defines,
+   and executing it throws
+  `ReferenceError: __disposeResources is not defined` (measured).
+- Treating `Symbol.dispose` availability as syntax availability.
+  Per mdn/browser-compat-data,
+   `Symbol.dispose` and `Symbol.asyncDispose` exist in Node 18.18.0 and 20.4.0
+  and in Chrome 125 and 127,
+   well before the `using` syntax in Node 24.0.0 and Chrome 134.
+  That gap is exactly the population where the 2381 bytes still earn their place.
+
+### Upstream filing decision (6 constraints)
+
+Symptom 2 is the only candidate;
+ symptom 1 is documented,
+ intended behavior of `importHelpers`.
+
+1. **Upstream's fault?**
+   Yes.
+   The guard is TypeScript's own emitted text at `tsc/internal/printer/helpers.go:82`,
+    and it contradicts
+   `GetDisposeMethod` as merged in tc39/ecma262#3000.
+   Not a wording issue and not an architectural restriction.
+2. **Can upstream fix it?**
+   Yes.
+   One token,
+    prototyped and built here.
+3. **Are they supporting this use case?**
+   Yes.
+   `using` downlevel emit is a documented feature with conformance baselines under
+   `tsc/testdata/baselines/reference/conformance/usingDeclarations*`,
+    including
+   `usingDeclarationsWithImportHelpers.js`.
+4. **Would the repo welcome our contribution?**
+   No for an agent-filed report or pull request.
+   `CONTRIBUTING.md:15` ("Instructions for autonomous coding agents") states a pull request is acceptable
+   only if a specific human operator chose that specific issue and will shepherd it through review,
+    and
+   `CONTRIBUTING.md:25` bans automated comments with an immediate block for inauthentic activity.
+   No blanket ban on human-filed reports that disclose AI assistance was found in `CONTRIBUTING.md` or
+   `.github/ISSUE_TEMPLATE/`.
+   Per that section's own instruction to surface it and stop,
+    this is handed to the operator.
+5. **Will they likely fix it?**
+   No signal either way,
+    which meets the constraint.
+   The helper text is actively maintained,
+    a related emit bug is open at microsoft/TypeScript#63522
+   ("Declarations that shadow global `Symbol` break emit for `using` declarations"),
+    and duplicate searches
+   over `gh search issues` and `gh search prs` for `asyncDispose null`,
+    `Object not disposable`,
+    and
+   `addDisposableResource asyncDispose null` returned no matches in `microsoft/TypeScript` or
+   `microsoft/tslib`.
+6. **Minimal fix prototyped?**
+   Yes,
+    in a disposable clone at `${HOME}/temp/agent/upstream-prototype.Dqh0XXSR/ts`,
+    origin
+   `https://github.com/microsoft/TypeScript.git`,
+    HEAD `fed0bf24149fb1ed36039212648bafdafc1ea10e`,
+    built
+   with `GOMAXPROCS=2 go build -p 2 -o ./tsc-patched ./cmd/tsc` (4m27s,
+    go 1.27.1).
+
+The prototyped diff:
+
+```diff
+--- a/tsc/internal/printer/helpers.go
++++ b/tsc/internal/printer/helpers.go
+@@ -79,7 +79,7 @@ var addDisposableResourceHelper = &EmitHelper{
+             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
+             dispose = value[Symbol.asyncDispose];
+         }
+-        if (dispose === void 0) {
++        if (dispose === void 0 || dispose === null) {
+             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
+             dispose = value[Symbol.dispose];
+             if (async) inner = dispose;
+```
+
+Verification command and output:
+
+```sh
+# Recompiles the twelve-case fixture with the patched binary at target es2025, then runs
+# native, inline-downlevel, patched-downlevel, and tslib variants and diffs their event logs.
+node ${HOME}/temp/agent/ts-dispose-probe/sem/runner.mjs
+# native vs downlevel: 11 difference(s)
+# native vs patched:    1 difference(s)   <- only the implementation-defined message text
+# downlevel vs tslib:   IDENTICAL
+```
+
+`tslib` needs the same one-token change at `tslib.es6.js:305` for the `importHelpers` path to match.
+
+Outcome:
+ constraints 1,
+ 2,
+ 3,
+ 5,
+ and 6 hold.
+Constraint 4 fails for an agent filing,
+ so the draft is kept below and is not fileable from a session.
+
+### Draft upstream issue (do not file as-is; a human operator must choose and shepherd it per `CONTRIBUTING.md`)
+
+~~~md
+Title: `__addDisposableResource` helper throws on a `null` `Symbol.asyncDispose` instead of falling back to `Symbol.dispose`
+
+Labels: Bug, Domain: JS Emit
+
+The `__addDisposableResource` emit helper treats only `undefined` as an absent async disposer.
+`GetDisposeMethod` in the merged explicit resource management text uses `GetMethod`, which returns
+`undefined` for a property value that is `undefined` or `null`, and then falls back to `%Symbol.dispose%`.
+
+Reproduction, TypeScript 7.0.2 and main at fed0bf24149fb1ed36039212648bafdafc1ea10e:
+
+```ts
+// repro.ts
+async function main(): Promise<void> {
+  await using resource = {
+    [Symbol.asyncDispose]: null,
+    [Symbol.dispose]: () => { console.log('sync dispose ran'); },
+  } as unknown as AsyncDisposable;
+  console.log('body completed');
+}
+
+await main();
+
+export {};
+```
+
+```sh
+tsc repro.ts --ignoreConfig --target es2025 --module esnext --lib ESNext,DOM --outDir out
+node out/repro.js
+```
+
+Expected (matches V8 with `--target esnext`, and matches the spec): `body completed`, then
+`sync dispose ran`.
+Actual: `TypeError: Object not disposable.`
+
+Cause, `tsc/internal/printer/helpers.go:82`:
+
+```js
+if (dispose === void 0) {
+```
+
+Suggested fix:
+
+```diff
+-        if (dispose === void 0) {
++        if (dispose === void 0 || dispose === null) {
+```
+
+Built and verified against a twelve-case disposal fixture: with this change the `es2025` output matches
+`esnext` output on every case except the implementation-defined `SuppressedError` message text.
+`tslib`'s copy of the helper needs the same change.
+~~~
+
+### References
+
+- `tsc/internal/transformers/estransforms/definitions.go:10,24,27,29` (target gate)
+- `tsc/internal/transformers/estransforms/using.go:21` (transform entry)
+- `tsc/internal/printer/helpers.go:70,82,98` (helper text and the `null` guard)
+- `tsc/internal/printer/printer.go:4635,4638` (per-file inline versus external helpers)
+- `tsc/internal/compiler/program.go:493,496` (`importHelpers` gate)
+- tc39/ecma262#3000,
+   `sec-getdisposemethod` and `sec-disposeresources`,
+   merged 2026-06-24
+- mdn/browser-compat-data `javascript/statements.json` (`using`,
+   `await_using`) and
+  `javascript/builtins/Symbol.json` (`dispose`,
+   `asyncDispose`)
+- babel/babel#16409,
+   which aligned Babel's helper to the same `GetDisposeMethod` fallback
+- microsoft/TypeScript#63522,
+   an open `using` emit bug involving shadowed `Symbol`
+- `doc/handover/slopo-cluster-issue-triage.md`,
+   which tracks the stray emitted `.js` files in this
+  workspace
 
 ## Related Documentation
 
