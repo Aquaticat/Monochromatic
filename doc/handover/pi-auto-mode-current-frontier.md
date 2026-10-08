@@ -7,6 +7,52 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-08.
 
+## Original rendered prompt-input contributions
+
+The serializer consumer now accounts for original host,
+append,
+and context base inputs through the existing `runInputCarriers`.
+It also accounts for already-retained run replacements through their original run publication.
+Neither route invents a source inventory,
+reparses the request,
+or re-encodes it.
+
+Each nonempty rendered input retains its own original source reference.
+Independent equal append or context inputs do not borrow the host's authority.
+Removed inputs receive no representation association,
+but non-transmission does not revoke a separately governing instruction.
+Replaced or reordered inputs retain their replacement occurrence rather than claiming the displaced base identity.
+Empty run inputs and native-default rendering remain separate cases.
+
+The canonical consumer requires the original source view's request receipt,
+the original terminal request,
+and the original run carrier or replacement publication.
+Associations remain partial contributions to a containing field,
+not byte ranges or complete composite coverage.
+They add no priority,
+permission,
+or delegation.
+
+Missing host association failed `proc_c437`;
+missing replacement association failed `proc_09d9`.
+The extended renderer matrix passed `proc_7111`,
+and source-owner controls passed `proc_85bb`.
+The original owners still bound context entries to 64 and append inputs to 32.
+The actual-serializer bound control retained 97 separate partial contributions,
+including repeated explicit republications of one original source.
+Independent sources are not merged.
+
+A proxy that changed its sections between validation and serialization failed `proc_50ca`.
+Association now excludes proxy envelopes and arrays through Node's native proxy predicate.
+The fixed profile also requires the native normalized message-only context.
+Accessor and proxy exclusions do not replace original identity checks.
+
+Full native `proc_d303` and action `proc_0247` passed before replacement support.
+Full regression after replacement support is the remaining verification step.
+The unassociated ordinary request domain,
+forced/custom prompt profiles,
+and other unconsumed producer relationships remain explicit.
+
 ## Express same-source quoted-unit incorporation
 
 The user accepted option A on 2026-10-08.
