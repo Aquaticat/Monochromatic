@@ -50,13 +50,17 @@ await describe({
           await settled;
         }, };
         const idle = createConnection({ host: channel.host, port: channel.port, },);
-        using idleCleanup = { [Symbol.dispose](): void { idle.destroy(); }, };
+        using idleCleanup = { [Symbol.dispose](): void {
+          idle.destroy();
+        }, };
         idle.resume();
         await once(idle, 'close',);
         await wait(0,);
         expect(state.error,).toBeUndefined();
         const helper = createConnection({ host: channel.host, port: channel.port, },);
-        using helperCleanup = { [Symbol.dispose](): void { helper.destroy(); }, };
+        using helperCleanup = { [Symbol.dispose](): void {
+          helper.destroy();
+        }, };
         helper.resume();
         await once(helper, 'connect',);
         helper.end(`${channel.token}\n{"status":"cancelled"}`,);
@@ -68,7 +72,9 @@ await describe({
       fn: async () => {
         await using channel = await createAnswerChannel();
         const socket = createConnection({ host: channel.host, port: channel.port, },);
-        using cleanup = { [Symbol.dispose](): void { socket.destroy(); }, };
+        using cleanup = { [Symbol.dispose](): void {
+          socket.destroy();
+        }, };
         await once(socket, 'connect',);
         const closed = once(socket, 'close',);
         socket.resume();

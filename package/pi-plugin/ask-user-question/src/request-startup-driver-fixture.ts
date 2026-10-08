@@ -22,6 +22,10 @@ const PERMISSION_MASK = 0o777;
  */
 const PRIVATE_FILE_MODE = 0o600;
 /**
+ Bootstrap helper argument precedes the request option and its value.
+ */
+const HELPER_ARGUMENT_FROM_END = -3;
+/**
  Driver runs only after being copied beside disposable built artifacts.
  */
 const scenario = process.argv
@@ -65,7 +69,7 @@ try {
       /**
        Snapshot and request must share request lifetime, not installation lifetime.
        */
-      const helperPath = command.at(-3,);
+      const helperPath = command.at(HELPER_ARGUMENT_FROM_END,);
       /**
        Request remains final argument so no token is exposed in process arguments.
        */

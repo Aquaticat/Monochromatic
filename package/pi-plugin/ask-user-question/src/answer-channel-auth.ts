@@ -111,9 +111,12 @@ export async function acceptAuthenticatedSocket(
   /**
    Slow startup is observable, not evidence that the user cancelled the question.
    */
-  using notice = setTimeout(function reportPendingStartup(): void {
+  using notice = setTimeout(
+    function reportPendingStartup(): void {
     l.warn('The answer terminal has not connected yet. The question remains active; unlock or reveal the desktop, inspect the terminal, or cancel the tool in Pi.',);
-  }, HELPER_START_NOTICE_MS,);
+  },
+    HELPER_START_NOTICE_MS,
+  );
   /**
    Only caller cancellation ends a pending desktop launch.
    */
@@ -176,12 +179,25 @@ async function authenticateSocket(
   /**
    Either cancellation source closes the candidate's pending read.
    */
-  const candidateSignal = AbortSignal.any([signal, deadline,],);
-  using abortSubscription = addAbortListener(candidateSignal, function abortAuthentication(): void {
+  const candidateSignal = AbortSignal.any([
+    signal,
+    deadline,
+  ],);
+  /**
+   Destroy a stalled candidate without ending the listener or question.
+   */
+  using abortSubscription = addAbortListener(
+    candidateSignal,
+    function abortAuthentication(): void {
     socket.destroy();
-  },);
+  },
+  );
   try {
-    return await readAuthentication({ socket, token, signal: candidateSignal, },);
+    return await readAuthentication({
+      socket,
+      token,
+      signal: candidateSignal,
+    },);
   }
   catch (error: unknown) {
     signal.throwIfAborted();

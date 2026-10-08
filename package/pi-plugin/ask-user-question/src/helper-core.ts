@@ -55,9 +55,15 @@ export async function runAnswerHelper(
   /**
    Request-owned channel and editor cancellation capabilities.
    */
-  const { socket, signal, } = connection;
+  const {
+    socket,
+    signal,
+  } = connection;
   try {
-    await authenticateHelper({ connection, token: request.token, },);
+    await authenticateHelper({
+      connection,
+      token: request.token,
+    },);
     /**
      Attached editor outcome mapped directly to protocol status.
      */

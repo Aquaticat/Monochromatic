@@ -1,5 +1,8 @@
 import { once, } from 'node:events';
-import { createConnection, type Socket, } from 'node:net';
+import {
+  createConnection,
+  type Socket,
+} from 'node:net';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -28,7 +31,10 @@ export class AnswerRequestEndedError extends Error {
    @param cause - request channel failure or closure
    */
   constructor(cause: unknown,) {
-    super('This question is no longer active. Return to Pi for the current question.', { cause, },);
+    super(
+      'This question is no longer active. Return to Pi for the current question.',
+      { cause, },
+    );
     this.name = 'AnswerRequestEndedError';
   }
 }
@@ -57,7 +63,10 @@ export function createHelperConnection(request: HelperRequest,): HelperConnectio
   /**
    Function-scoped lifecycle diagnostics.
    */
-  const rl = tagged({ tag: createHelperConnection.name, l, },);
+  const rl = tagged({
+    tag: createHelperConnection.name,
+    l,
+  },);
   /**
    One cancellation source shared with the attached editor.
    */
@@ -65,17 +74,26 @@ export function createHelperConnection(request: HelperRequest,): HelperConnectio
   /**
    Socket retained until completion or explicit disposal.
    */
-  const socket = createConnection({ host: request.host, port: request.port, },);
+  const socket = createConnection({
+    host: request.host,
+    port: request.port,
+  },);
   socket.setEncoding('utf8',);
   socket.setNoDelay(true,);
-  socket.on('error', function onConnectionError(error: Error,): void {
+  socket.on(
+    'error',
+    function onConnectionError(error: Error,): void {
     rl.debug(`answer channel failed: ${String(error,)}`,);
     controller.abort(new AnswerRequestEndedError(error,),);
-  },);
-  socket.once('close', function onConnectionClosed(): void {
+  },
+  );
+  socket.once(
+    'close',
+    function onConnectionClosed(): void {
     rl.debug('answer channel closed',);
     controller.abort(new AnswerRequestEndedError('request channel closed',),);
-  },);
+  },
+  );
   return {
     socket,
     signal: controller.signal,
@@ -109,12 +127,22 @@ export async function authenticateHelper({
   /**
    Function-scoped authentication diagnostics.
    */
-  const rl = tagged({ tag: authenticateHelper.name, l, },);
+  const rl = tagged({
+    tag: authenticateHelper.name,
+    l,
+  },);
   /**
    Request-owned channel capabilities.
    */
-  const { socket, signal, } = connection;
-  await once(socket, 'connect', { signal, },);
+  const {
+    socket,
+    signal,
+  } = connection;
+  await once(
+    socket,
+    'connect',
+    { signal, },
+  );
   signal.throwIfAborted();
   socket.write(`${token}\n`,);
   /**

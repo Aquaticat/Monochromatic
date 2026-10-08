@@ -1,7 +1,15 @@
 import { spawn, } from 'node:child_process';
-import { addAbortListener, once, } from 'node:events';
+import {
+  addAbortListener,
+  once,
+} from 'node:events';
 
 //region Real helper process
+
+/**
+ Maximum lifetime of a fixture child, not a production request deadline.
+ */
+const FIXTURE_DEADLINE_MS = 10_000;
 
 /**
  Runs production argv and captures both streams, including lifecycle shutdown noise.
@@ -13,6 +21,11 @@ import { addAbortListener, once, } from 'node:events';
  @returns complete output after a successful helper exit
 
  @throws when the helper fails or exceeds the fixture deadline
+
+ @example
+ ```ts
+ const output = await runHelperCommand({ command });
+ ```
  */
 export async function runHelperCommand({
   command,
@@ -20,7 +33,10 @@ export async function runHelperCommand({
 }: {
   readonly command: readonly string[];
   readonly onOutput?: (output: string) => void;
-},): Promise<{ stdout: string; stderr: string; }> {
+},): Promise<{
+  stdout: string;
+  stderr: string
+}> {
   /**
    Runtime and independent argument tokens supplied by the requester.
    */
@@ -30,36 +46,74 @@ export async function runHelperCommand({
   /**
    Child cannot inherit terminal input or access the test runner's stdin.
    */
-  const child = spawn(executable, args, { stdio: ['ignore', 'pipe', 'pipe',], },);
+  const child = spawn(
+    executable,
+    args,
+    { stdio: [
+      'ignore',
+      'pipe',
+      'pipe',
+    ], },
+  );
   /**
    Test owns and terminates its process on every outcome.
    */
-  using cleanup = { [Symbol.dispose](): void { child.kill(); }, };
+  using cleanup = {
+    [Symbol.dispose](): void {
+      child.kill();
+    },
+  };
   /**
    Bounds only the fixture, never production editing or desktop startup.
    */
-  const deadline = AbortSignal.timeout(10_000,);
-  using abortSubscription = addAbortListener(deadline, function stopTimedOutFixture(): void {
+  const deadline = AbortSignal.timeout(FIXTURE_DEADLINE_MS,);
+  /**
+   Terminate a hung fixture without leaving a child after assertion failure.
+   */
+  using abortSubscription = addAbortListener(
+    deadline,
+    function stopTimedOutFixture(): void {
     child.kill();
-  },);
+  },
+  );
   /**
    Retained streams distinguish clean cancellation from a swallowed child error.
    */
-  const output = { stdout: '', stderr: '', };
-  child.stdout.setEncoding('utf8',);
-  child.stderr.setEncoding('utf8',);
-  child.stdout.on('data', function captureOutput(chunk: string,): void {
+  const output = {
+    stdout: '',
+    stderr: '',
+  };
+  child.stdout
+    .setEncoding('utf8',);
+  child.stderr
+    .setEncoding('utf8',);
+  child.stdout
+    .on(
+      'data',
+      function captureOutput(chunk: string,): void {
     output.stdout += chunk;
     onOutput?.(output.stdout,);
-  },);
-  child.stderr.on('data', function captureError(chunk: string,): void {
+  },
+    );
+  child.stderr
+    .on(
+      'data',
+      function captureError(chunk: string,): void {
     output.stderr += chunk;
-  },);
+  },
+    );
   /**
    Close drains both streams before evaluating exit status.
    */
-  const [code,] = await once(child, 'close',);
+  const exit: readonly unknown[] = await once(
+    child,
+    'close',
+  );
   deadline.throwIfAborted();
+  /**
+   Exit code narrowed independently of the event helper's untyped tuple.
+   */
+  const [code,] = exit;
   if (code !== 0)
     throw new Error(`Detached helper exited ${String(code,)}:\n${output.stderr}`,);
   return output;

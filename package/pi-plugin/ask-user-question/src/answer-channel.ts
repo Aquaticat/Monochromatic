@@ -96,15 +96,24 @@ export async function createAnswerChannel(): Promise<AnswerChannel> {
    Mutable accepted-socket slot used by disposal path.
    */
   const sockets = new Set<Socket>();
-  server.on('connection', function retainConnection(socket: Socket,): void {
+  server.on(
+    'connection',
+    function retainConnection(socket: Socket,): void {
     sockets.add(socket,);
-    socket.on('error', function logSocketError(error: Error,): void {
+    socket.on(
+      'error',
+      function logSocketError(error: Error,): void {
       l.debug(`answer connection failed: ${String(error,)}`,);
-    },);
-    socket.once('close', function releaseConnection(): void {
+    },
+    );
+    socket.once(
+      'close',
+      function releaseConnection(): void {
       sockets.delete(socket,);
-    },);
-  },);
+    },
+    );
+  },
+  );
   server.listen({
     host: LOOPBACK_HOST,
     port: 0,
@@ -144,7 +153,8 @@ export async function createAnswerChannel(): Promise<AnswerChannel> {
       },);
       if (signal !== undefined)
         signal.throwIfAborted();
-      authenticated.socket.write(HELPER_READY,);
+      authenticated.socket
+        .write(HELPER_READY,);
       for (const socket of sockets) {
         if (socket !== authenticated.socket)
           socket.destroy();

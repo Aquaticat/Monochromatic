@@ -123,10 +123,9 @@ await describe({
                 const requestPath = command.at(-1,);
                 if (requestPath === undefined)
                   throw new Error('Missing fixture request path.',);
-                if (kind === 'missing')
-                  await rm(requestPath,);
-                else
-                  await writeFile(requestPath, '{invalid JSON',);
+                await (kind === 'missing'
+                  ? rm(requestPath,)
+                  : writeFile(requestPath, '{invalid JSON',));
                 try {
                   const output = await runHelperCommand({ command, },);
                   expect(output.stderr,).toBe('',);
