@@ -81,6 +81,29 @@ not complete composite-origin accounting.
 Request-domain and delegation obligations still withhold canonical execution.
 It adds neither a JSON parser nor another request representation.
 
+Expanded matrix `proc_2731` passed 15 modes.
+`proc_0731` first reproduced a sections accessor swapping its result between authentication and serialization.
+`proc_98b2` separately reproduced the copy observer invoking a nonenumerable getter that throws `false`.
+Source-bearing envelopes now require ordinary data fields;
+copy observation uses descriptors and does not invoke getters.
+The enumerable-getter control counts only the native clone's invocations.
+
+`proc_3ece` compared installed and private context processing in 10 SDK sessions:
+unchanged conversation,
+changed conversation,
+system-message replacement,
+in-place mutation,
+and a handler throwing `false`.
+The ordered handler observations and serializer inputs matched.
+
+Equality omission `34a0355` failed `proc_92e5`.
+Owned-payload omission `8bc2eb4` failed `proc_7738` during real client body construction,
+before terminal fetch.
+Both omissions are restored.
+Full native `proc_c4d5` and action `proc_2fa4` passed.
+These results remain scoped to the explicit fixed serializer and current-run publication,
+not the default model-runtime wrapper or general history provenance.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.

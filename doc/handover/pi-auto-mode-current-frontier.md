@@ -57,7 +57,29 @@ opaque streams,
 post-materialization alias mutation,
 and permanent retirement after restoration.
 These controls performed no provider request or native tool execution.
-Equality-substitution sensitivity and full restored regressions are the next verification steps.
+Equality substitution `34a0355` failed `proc_92e5`:
+an independent equal-byte payload became accounted.
+The original identity guard is restored.
+Expanded matrix `proc_2731` passed 15 modes,
+including accessor substitution,
+getter-call parity,
+and callback-alias replacement during actual client authentication before body materialization.
+Custody omission `8bc2eb4` failed that timing control in `proc_7738`;
+the owned copy is restored.
+Native context-transform parity `proc_3ece` compared 10 installed/private SDK sessions.
+Full restored native `proc_c4d5` and action `proc_2fa4` passed on SDK 1.1.0.
+
+The association currently requires explicit bootstrap selection of `nativeOpenAIStream`
+and a full current-run sections publication.
+The default model-runtime wrapper and later runs without that publication remain outside this bounded association.
+Only content origin is associated:
+the complete message node and its other fields are not claimed semantically unchanged.
+
+Independent review exposed input-envelope accessors and copy-observer getter side effects.
+The native controls reproduced both in `proc_0731` and `proc_98b2`.
+The implementation now requires ordinary source-bearing data fields
+and observes copies through descriptors without invoking accessors.
+Early seal exits also discard transient payload references.
 
 ## Configured native clause compiler
 

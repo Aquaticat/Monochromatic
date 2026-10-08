@@ -66,12 +66,15 @@ manager-copy,
 context-clone,
 and request-observation owners now carry that association.
 The canonical consumer can account for a specific contribution without resolving the global request domain.
-Local matrix `proc_6043` passed;
-identity sensitivity and restored full regressions remain pending.
+Expanded local matrix `proc_2731` passed 15 modes.
+Identity omission `proc_92e5` and payload-custody omission `proc_7738` failed as intended.
+Both guards are restored.
+Context-handler parity passed `proc_3ece`;
+full native `proc_c4d5` and action `proc_2fa4` passed on SDK 1.1.0.
 
 - [x] Preserve the original context carrier through actual native serialization.
 - [x] Consume its particular association without assigning composite authority or complete governing coverage.
-- [ ] Finish guard sensitivity and full restored regression.
+- [x] Finish guard sensitivity and full restored regression.
 - [ ] Continue remaining decision-specific domain and delegation consumption.
   No production semantic policy,
   new provider trial,
