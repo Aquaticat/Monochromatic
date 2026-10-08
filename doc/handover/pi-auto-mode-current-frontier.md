@@ -32,6 +32,29 @@ semantic qualification,
 or provider trial follows from this work.
 Validated outer syntax still does not establish complete effects or instruction meaning.
 
+The missing predecision reader failed `proc_c2f6`.
+Implementation `0381bdc` now compiles through the existing decoder before review,
+binds its original declaration to the judgment's prepared member,
+and requires execution to reuse it by identity.
+Canonical control `proc_063c` passed without an injected Allow or model request.
+Execution and shared-queue controls `proc_3f37` passed.
+The source remains private;
+no installed SDK or plugin was changed.
+
+The policy inputs now retain `programInspection`
+and revalidate it through the original judgment.
+Referenced callable metadata participates in the original dependency checks.
+Unsupported shapes close evidence before review;
+changed callees permanently retire eligibility.
+Expanded canonical controls `proc_af20` passed.
+`proc_355e` was a test expecting the original decoder diagnostic in a rendered native outcome;
+the corrected control forwards the canonical handler unchanged
+and checks its retained thrown error instead.
+
+Required-inspection sensitivity and full regressions are next,
+followed by the remaining authorized consumer work.
+Do not stop merely because this preparation dependency is verified.
+
 ## Accepted policy-consumer slice: partial implementation
 
 The user accepted the focused policy-consumer slice on 2026-10-08.
