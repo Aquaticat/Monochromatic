@@ -1,5 +1,58 @@
 # Batched axioms with a three-call assessment ceiling
 
+## Proposed next policy-consumer slice
+
+The bounded native-program checkpoint is verified.
+The next proposed work is the missing policy consumer,
+not another runtime ownership matrix or provider trial.
+This proposal does not authorize installed activation or adopt semantic thresholds.
+
+The private `contract/integration/action-policy/evaluate.mjs#evaluateBoundPolicy`
+still sets `needsRelations: false`
+and returns `{premises: 'incomplete', rules: []}` unconditionally.
+The execution fixtures independently authorize inert programs;
+they do not exercise an operative policy decision through this evaluator.
+
+- [ ] Establish the per-clause consumption contract from existing definitions and evidence.
+  Retain original clause identity,
+  authority,
+  scope,
+  conditions,
+  and whole-operation binding.
+  Separate permissions,
+  prohibitions,
+  and authorization prerequisites.
+  Identify exactly which estimates can support which conclusions;
+  unsupported meanings and missing qualification remain unresolved.
+- [ ] Compute decision-relevant missing premises from the existing source and operation owners.
+  Replace the unconditional empty rule program with justified supported inputs.
+  Unknown coverage is not absence,
+  and potentially outcome-changing instructions cannot be ignored.
+  Preserve the accepted use of qualified inspected-form estimates;
+  do not replace it with a universal code-proof-only requirement.
+- [ ] Exercise the canonical native handler without injecting final decisions.
+  Cover denial,
+  approval where justified,
+  eligible incumbent approval requests,
+  unresolved premises,
+  and unspecified policy.
+  Deterministic transport doubles can verify wiring,
+  but cannot establish model accuracy.
+  Preserve the original deadline,
+  evidence closure,
+  currentness,
+  cancellation,
+  and Allow/Deny/Stop behavior.
+
+The immediate deliverable is an explicit mapping from the current clause/effect evidence
+to the existing resolver's supported inputs,
+with regression cases for misleading lowerings and missing premises.
+If existing evidence cannot justify an operative branch,
+record its exact missing premise rather than inventing a cutoff,
+default permission,
+or automatic approval request.
+Installation remains a later step.
+
 ## Incremental rule-relevance cache direction
 
 The user refined the rule-indexed proposal:
