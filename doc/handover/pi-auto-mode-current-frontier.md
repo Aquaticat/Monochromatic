@@ -56,10 +56,15 @@ The actual native forced-prompt projection publishes its new message through tha
 The serializer associates only that original message with the original forced input;
 equal text in a copied message or displaced base input supplies no link or authority.
 The initial forced-source control failed `proc_84e0` and passed `proc_6a2e`.
-Copied,
+Full native `proc_f939`,
+action `proc_bf15`,
+and consumer identity `proc_3056` passed copied,
 equal-text,
 empty,
-and permanently retired forced projections are under expanded verification.
+and permanently retired forced-projection controls.
+Omission `c316f17` failed `proc_305b` by associating an independent equal-byte copy.
+The identity guard is restored;
+final restored regressions are running.
 
 The unassociated ordinary request domain,
 custom section profiles,
