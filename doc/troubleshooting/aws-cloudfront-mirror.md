@@ -461,6 +461,18 @@ dig +short CNAME aws.aquati.cat
 
 ## Issue 6: removing the subdomain CAA stays safe because ACM follows CNAMEs
 
+**Retracted on 2026-10-09.**
+The mechanism below is wrong,
+and relying on it is what let a renewal run into expiry.
+RFC 8659 section 3 climbs the parents of the queried FQDN;
+only the single-node CAA query chases the alias.
+Section 7 states this replaced the RFC 6844 algorithm that climbed
+CNAME and DNAME chains.
+ACM's renewal refusal for `aws.aquati.cat` on 2026-10-09 is the measured
+confirmation.
+See [`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
+The text below is kept as the record of what was believed.
+
 ### Concern
 
 Removing the CAA at `aws.aquati.cat` (issue 5) appears to re-expose the
@@ -545,7 +557,7 @@ dig +short CAA cloudfront.net
 ### Symptom
 
 After completing issues 1 to 6,
- the CloudFront distribution `EYK5GXXEGWEYZ`
+ the CloudFront distribution `<distribution-id>`
 deploys cleanly.
  The first end-to-end test against `https://aws.aquati.cat/`
 returns HTTP 502 from CloudFront:
@@ -622,7 +634,7 @@ The following read-only calls succeeded:
 
 ```bash
 # Distribution details were queried with secret-bearing header values omitted.
-aws cloudfront get-distribution --id EYK5GXXEGWEYZ \
+aws cloudfront get-distribution --id <distribution-id> \
   --query '{ETag:ETag,Status:Distribution.Status,LastModifiedTime:Distribution.LastModifiedTime}' \
   --output json --no-cli-pager
 aws cloudfront get-origin-request-policy --id 216adef6-5c7f-47e4-b989-5492eafa07d3 \
@@ -637,7 +649,7 @@ The distribution read returned:
 
 - `Status: Deployed`,
   `Enabled: true`,
-  ETag `E13V1IB3VIYZZH`,
+  ETag `<original-etag>`,
   last modified `2026-05-09T05:36:01.600000+00:00`.
 - Origin `aquati.cat`,
   HTTPS port 443,
@@ -837,7 +849,7 @@ list calls confirmed their absence.
 #### Verified production resolution
 
 The live function association was accepted at `2026-09-07T21:38:48Z`.
-The deployed distribution ETag is `E1VC38T7YXB528`.
+The deployed distribution ETag is `<etag>`.
 A full configuration comparison proved that only
 `DefaultCacheBehavior.FunctionAssociations` changed from the pre-task snapshot.
 The comparison includes origin settings,
@@ -1279,7 +1291,7 @@ openssl s_client -4 -connect aquati.cat:443 -servername aquati.cat -tls1_2 -brie
 
 # Keeping IPv4 and TLS 1.3 unchanged, changing only SNI fails.
 openssl s_client -4 -connect aquati.cat:443 -servername aws.aquati.cat -tls1_3 -brief </dev/null
-openssl s_client -4 -connect aquati.cat:443 -servername dyfbcoafqtni3.cloudfront.net -tls1_3 -brief </dev/null
+openssl s_client -4 -connect aquati.cat:443 -servername <distribution-domain> -tls1_3 -brief </dev/null
 # tlsv1 alert internal error; SSL alert number 80; exit 1
 
 curl --silent --show-error --head --connect-timeout 15 --max-time 30 https://aws.aquati.cat/
@@ -1296,7 +1308,7 @@ A separate GET also returned the generic CloudFront 502 page.
 Initial evidence acquisition limits,
 with authentication subsequently restored:
 
-- `aws cloudfront get-distribution-config --id EYK5GXXEGWEYZ` with a field-filtered query failed:
+- `aws cloudfront get-distribution-config --id <distribution-id>` with a field-filtered query failed:
   `aws: [ERROR]: Your session has expired. Please reauthenticate using 'aws login'.`
   Exit status 255;
   `aws configure list-profiles` listed only `default`.
@@ -1328,27 +1340,39 @@ The disposable distribution and unused custom cache policy are deleted.
 The remaining certificate and DNS inventory records the original investigation
 unless explicitly corroborated in the authenticated follow-up.
 
-Concrete identifiers recorded on 2026-05-09:
+Concrete identifiers recorded on 2026-05-09,
+redacted on 2026-10-09 because this repository is public.
+Each placeholder is recoverable from the account with one read-only call:
 
 - AWS account:
-   `016042452668`.
+   `<account-id>`
+  (`aws sts get-caller-identity --query Account`).
 - ACM certificate ARN:
-  `arn:aws:acm:us-east-1:016042452668:certificate/c5d23357-7ed7-4393-87b4-e62f4c5d4751`.
+   `<certificate-arn>`
+  (`aws acm list-certificates --region us-east-1`).
 - CloudFront distribution ID:
-   `EYK5GXXEGWEYZ`.
+   `<distribution-id>`
+  (`aws cloudfront list-distributions`).
 - CloudFront distribution domain:
-   `dyfbcoafqtni3.cloudfront.net`.
+   `<distribution-domain>`
+  (`aws cloudfront get-distribution --id <distribution-id> --query 'Distribution.DomainName'`,
+   also public as the `aws.aquati.cat` CNAME target).
 
-DNS records:
+DNS records,
+ measured on 2026-10-09:
 
-- `aquati.cat. IN CAA 0 issue "letsencrypt.org"` (apex,
-   unchanged from
-  the starting state).
-- `aws.aquati.cat. IN CNAME dyfbcoafqtni3.cloudfront.net.`
-- `_9593853f9aa43436c944ab2fe8d548d3.aws.aquati.cat. IN CNAME _7a600be3b5a98f691b651f493a643f06.jkddzztszm.acm-validations.aws.`
+- `aquati.cat. IN CAA 0 issue "letsencrypt.org"` (apex).
+- `aquati.cat. IN CAA 0 issue "certainly.com"` (apex).
+   This second record is drift from the starting state this document
+  describes as letsencrypt-only;
+   no commit or section here records when or why it was added.
+- `aws.aquati.cat. IN CNAME <distribution-domain>.`
+- `_<validation-token>.aws.aquati.cat. IN CNAME _<validation-value>.<validation-zone>.acm-validations.aws.`
   (kept permanently for renewal;
    deleting this record breaks the next
-  ACM renewal cycle).
+  ACM renewal cycle.
+   Recover both halves with
+  `aws acm describe-certificate --certificate-arn <certificate-arn> --region us-east-1 --query 'Certificate.DomainValidationOptions[0].ResourceRecord'`).
 
 ACM cert:
 
@@ -1362,15 +1386,34 @@ ACM cert:
 - Validation method:
    DNS.
 
-Properties this configuration preserves:
+Properties this configuration was believed to preserve,
+with a 2026-10-09 correction:
 
 - The apex CAA is unchanged.
    Only Let's Encrypt may issue certs for
   `aquati.cat`.
+   **Correction,
+   2026-10-09**:
+   the apex now also publishes
+  `0 issue "certainly.com"`,
+   so two CAs are authorized for apex-inheriting names.
 - Amazon may issue certs only for `aws.aquati.cat`,
    and only because the
   CAA chain at renewal time runs through `cloudfront.net`'s empty CAA,
   not through the apex.
+   **Correction,
+   2026-10-09**:
+   this is false and is the root cause of the
+  renewal failure recorded in
+  [`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
+   `cloudfront.net` is not empty;
+   it publishes `0 issuewild "amazonaws.com"` and
+  `0 issuewild "digicert.com"`.
+   More decisively,
+   RFC 8659 section 3 climbs the parents of the queried FQDN,
+   not the parents of its CNAME target,
+   so ACM read the apex and refused.
+   Issue 6 is retracted.
 
 ## What does not work
 
@@ -1384,6 +1427,12 @@ The following alternatives were considered and rejected:
   attack surface narrow.
    Permitting Amazon to issue for the apex
   defeats the purpose of running a restrictive CAA at all.
+   Reopened by the 2026-10-09 renewal failure:
+   the apex now also publishes
+  `0 issue "certainly.com"`,
+   so the property this rejection protects no longer holds as measured.
+   Ranking and alternatives are in
+  [`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
 - **ALIAS records at the apex** pointing to CloudFront.
    Njalla supports
   only standard DNS record types;
@@ -1400,6 +1449,21 @@ The following alternatives were considered and rejected:
    The label name is irrelevant;
    the structural issues
   are identical.
+   **Correction,
+   2026-10-09**:
+   this holds only for a single label below
+  the apex.
+   A two-label path breaks the walk:
+   `mirror.aquati.cat` is an ordinary node,
+   so it can publish `0 issue "amazon.com"`,
+   and the climb for `aws.mirror.aquati.cat` terminates there without
+   reading the apex.
+   The leaf may still be a CNAME,
+   because the CAA lives one level up.
+   The cost is a hostname change,
+   not a security widening.
+   See
+  [`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
 - **`EC_secp384r1` cert** (P-384).
    CloudFront rejects it with the opaque
   `InvalidViewerCertificate` error documented in issue 3.
