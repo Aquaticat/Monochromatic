@@ -579,6 +579,29 @@ What the second round produced:
 Lesson for the next review of this kind: the question to ask of a duplicate pair is not how much code it shares or
 how many copies exist, but who owns the pattern and what stops the next copy.
 
+### Decisions applied the same day
+
+The maintainer reviewed the partition and the drafted designs and decided all of it in one pass.
+
+- The 67 bucket C entries are in `slopo.ignore.txt`, each under the heading its recorded verdict names. Verified with
+  slopo itself against a copy of the 2026-10-07 index, so the reference report survived: the run logged `Ignored 67
+  previously reviewed clusters.`, reported 941 clusters instead of 1008, and the removed hash set equalled the accepted
+  set exactly with no additions. Twelve dead keys whose successors were accepted were removed, eleven whose successors
+  are held were kept and annotated, and the 23 stale keys stay commented out.
+- The eight owner designs became eight issues rather than one bundled proposal: #666 base error class, #667 Rust
+  display and constructor macros, #668 `io::ErrorKind` helper, #669 shadow-element factory, #670 `nullRecord()`,
+  #671 `compareBy`, #672 module-id query stripper, #673 batch dispatch macro. #665 is their index with the sequencing.
+- The two rules were redirected out of `AGENTS.md` into `.agents/skills/project-code-review/SKILL.md` as `GRW` and
+  `TWS`, on the grounds that both were too narrow for `AGENTS.md` and apply to every development task rather than only
+  to duplicate-code dismissals. The narrower dismissal-side form also landed as rule 9 of the recording convention in
+  `doc/troubleshooting/slopo-threshold-tuning.md`.
+- #664's two clusters and #660's item 8 have recorded decisions, both consolidating rather than dismissing.
+- `slopo.conf.yaml` now says that 13 is a hand-tuned floor and that `0.8.0` defaults to 20, so the value is more
+  permissive than upstream rather than less. `mise.toml` pins `pipx:slopo` to `0.8.0` with the reason. That pin is
+  applied in the working tree but was left uncommitted, because the file carries an unrelated uncommitted `_.path`
+  change that is not this work's to commit.
+- No production source changed. Implementation belongs to #666 through #673.
+
 ## Constraints to respect
 
 - `AUT`/`VRB`: the request authorizes opening issues, not editing repo source or `slopo.ignore.txt`.
