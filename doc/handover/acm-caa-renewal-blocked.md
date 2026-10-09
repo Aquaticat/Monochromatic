@@ -11,12 +11,12 @@ certificate expires,
 so nothing breaks immediately and nothing fixes itself either.
 
 This file hands over a completed diagnosis,
-six remediation options with a ranking,
+seven remediation options with a ranking,
 and the dead ends that were measured so they are not re-explored.
-No DNS,
-AWS,
-or repository configuration was changed to remediate the failure.
-The decision is the reader's.
+The remedy was executed and verified on 2026-10-09;
+see "Executed remedy and verification".
+The options and their ranking are retained because two of them remain live
+choices for later work.
 
 The diagnosis also retracts a mechanism claim in
 [`doc/troubleshooting/aws-cloudfront-mirror.md`](../troubleshooting/aws-cloudfront-mirror.md)
@@ -784,15 +784,111 @@ published,
 and the old hostname must be checked for the intended failure
 (a TLS name mismatch) rather than left silently broken.
 
+## Executed remedy and verification
+
+The maintainer chose option 7 for the expiring certificate,
+then asked for the option 2 hostname as well,
+so both were implemented together with one certificate covering both names.
+
+DNS at Njalla,
+in this order:
+
+1.  Two probes at throwaway labels,
+    `anameprobe` and `cfprobe`,
+    established that ANAME coexists with CAA and that a flattened
+    CloudFront target serves the mirror.
+    Both were deleted inside the same run,
+    and the zone record count returned to its original 85.
+2.  `aws.aquati.cat`:
+    the CNAME was replaced with an ANAME to the same distribution domain,
+    and the four Amazon `issue` records were added at the leaf.
+    TTL 86400 was carried over from the CNAME it replaced,
+    on the instruction to keep the TTL as-is and shorten it only if
+    flattening staleness ever hurts.
+3.  `amazon.aquati.cat`:
+    the four Amazon `issue` records,
+    so the climb for names below it terminates there.
+4.  `mirror.amazon.aquati.cat`:
+    a real CNAME to the distribution domain,
+    so CloudFront keeps per-querier edge selection for that name.
+
+Njalla states the CNAME restriction verbatim when it applies,
+which is why step 2 replaced the alias rather than adding beside it:
+
+```text
+add-record rejected: code 400 You can not have both CNAME and CAA records.
+```
+
+On the AWS side:
+
+5.  One certificate was requested for both names,
+    `EC_prime256v1`,
+    DNS validation,
+    `us-east-1`.
+    It reached `ISSUED` in 126 seconds,
+    `notBefore` 2026-10-09,
+    `notAfter` 2027-04-24.
+6.  The existing name reused its deterministic validation record,
+    which independently re-confirms issue 4 of the mirror troubleshooting
+    doc.
+    The new name needed one new validation CNAME,
+    added automatically.
+7.  `UpdateDistribution` changed `Aliases` and `ViewerCertificate` and
+    nothing else,
+    asserted field by field against the live configuration before
+    submission.
+    It was accepted and reached `Deployed` in 432 seconds.
+
+That answers the Free-plan question:
+this plan does permit changing `Aliases` and `ViewerCertificate`.
+It also accepted an alias whose DNS is a flattened ANAME,
+which confirms empirically that CloudFront authorizes an alternate domain
+name by the attached certificate's SAN rather than by the DNS record type.
+
+Boundary verification,
+every check passing:
+
+- `/` and `/en/about` through both hostnames matched the origin on status,
+  byte count,
+  and body digest:
+  200 and 3418 bytes with digest `15789f6f382e8750`,
+  then 200 and 6070 bytes with digest `4f333bd94794b4af`.
+- Both hostnames serve the new certificate,
+  whose SAN list holds both names.
+- IPv4 and IPv6 each returned 200 on both hostnames.
+- The distribution lists both aliases.
+- The replaced certificate reports no attached resources.
+
+Cost of the whole remedy was zero.
+ACM's pricing page states that it issues certificates at no cost for use
+with services integrated with ACM,
+and charges per domain only for ACME-enrolled and exportable certificates.
+Alternate domain names carry no per-alias charge,
+and Njalla records are included with the domain.
+
+Two observations recorded rather than acted on:
+
+- `aws acm list-certificates` returned an empty list throughout,
+  because its documented default key-type filter admits only RSA and both
+  certificates are ECDSA.
+  Diagnosed in
+  [`doc/troubleshooting/acm-list-certificates-key-type-default.md`](../troubleshooting/acm-list-certificates-key-type-default.md).
+  The distribution was therefore identified by the alias it serves rather
+  than by a saved identifier.
+- The CLI session is the account root identity.
+  Routine certificate and distribution work through root is a wider blast
+  radius than this task needed.
+  Nothing was changed about it.
+
 ## Open questions
 
-- Does the Free pricing plan permit an `UpdateDistribution` that changes
-  `Aliases` and `ViewerCertificate`?
-  The 2026-09-07 work preserved both fields rather than changing them,
-  and measured only that a custom cache policy is rejected.
-  This gates options 1,
-  2,
-  and 5.
+- Delete the replaced certificate?
+  It is unattached,
+  ineligible for managed renewal because it is neither associated nor
+  exported,
+  and expires 2026-11-22.
+  Deleting is one call and needs authorization;
+  keeping it costs nothing and preserves a rollback path until it expires.
 - Why does the apex authorize `certainly.com`?
   No commit or document records adding it.
   The Fastly mirror's Certainly certificate is consistent with it being
@@ -806,8 +902,11 @@ and the old hostname must be checked for the intended failure
 - Should the Fastly mirror move under the same intermediate label as
   option 2,
   which would let the apex return to `letsencrypt.org` only?
-- Is a Certificate Transparency watch for `aquati.cat` worth adding as a
-  compensating control if option 4 is chosen?
+- Is a Certificate Transparency watch for `aquati.cat` worth adding?
+  Amazon is now authorized at two nodes,
+  the mirror leaf and `amazon.aquati.cat`,
+  rather than at the apex,
+  which narrows what it could issue for but does not eliminate it.
   `iodef` is documented as ignored by ACM,
   so it would not report these refusals.
 
