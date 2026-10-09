@@ -142,7 +142,10 @@ Corrected separate invocations passed those checks in `proc_4b3c`.
 Consumer controls passed `proc_52c2` and `proc_0b8d`.
 Producer omission `proc_3a5c` fabricated a suppressed occurrence's contribution;
 consumer omission `proc_1fd3` incorrectly accounted for a `not-inserted` fact.
-Both guards are restored and full regressions are running.
+Both guards are restored.
+Full native `proc_a618`,
+action `proc_412e`,
+and eleven-document render `proc_d1a5` passed.
 The new fact concerns only local native insertion,
 not instruction authority,
 complete governing coverage,

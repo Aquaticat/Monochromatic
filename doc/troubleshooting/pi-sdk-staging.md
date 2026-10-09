@@ -265,8 +265,10 @@ Producer omission `2885c7d` failed `proc_3a5c` with `1 !== 0`
 for a fabricated suppressed-source contribution.
 Consumer omission `39c6c44` failed `proc_1fd3` by reporting `accounted` instead of `unresolved`
 for `rule-not-inserted`.
-Both guards are restored;
-full regression is running.
+Both guards are restored.
+Full native `proc_a618`,
+action `proc_412e`,
+and eleven-document render `proc_d1a5` passed.
 The underlying native deduplication was correct;
 this was a private source-consumption gap,
 not an upstream defect or a reason to infer authority from equal bytes.
