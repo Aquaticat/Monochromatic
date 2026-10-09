@@ -338,7 +338,11 @@ final-context omission `proc_0903`,
 and prior-input-union omission `proc_a4c1` each failed their required control.
 All omitted code is restored.
 Creation-owner and manager controls are integrated into the routine suite;
-complete regression remains pending.
+complete native `proc_8bde`,
+action `proc_9601`,
+source-policy `proc_f730`,
+and 14-document rendering `proc_a31c` / `proc_c9e9` passed.
+The native ordinal assertion passed without adding one to the header-inclusive position.
 Current summaries,
 queued inputs,
 mixed representations,

@@ -1013,7 +1013,10 @@ Append omission `proc_7ed6`,
 final-observation omission `proc_0903`,
 and prior-input-union omission `proc_a4c1` each failed their control.
 All omitted code is restored.
-Complete regression remains pending.
+Complete native `proc_8bde`,
+action `proc_9601`,
+source-policy `proc_f730`,
+and 14-document rendering `proc_a31c` / `proc_c9e9` passed.
 
 Run `mise --no-env --no-hooks run test:created-edit-context`
 and `mise --no-env --no-hooks run test:selected-path-owner`
