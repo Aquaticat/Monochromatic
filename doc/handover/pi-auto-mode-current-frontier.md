@@ -296,6 +296,51 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original current-session summary inputs and append membership
+
+Current compaction and branch-summary arguments now use the incumbent manager input owner.
+Each is a fresh `native-append` input.
+The current derived system checkpoint is not recaptured as a new independent instruction source;
+reopening its saved file creates a separate `native-load` input.
+This does not prove complete composition or governing scope.
+
+Capturing the argument alone was insufficient when a context handler appended it
+without returning a rebuilt projection.
+Required red `5f576bb` / `proc_6f5a` exposed that untransmitted-input gap.
+The actual native leaf assignment now extends the existing root-scoped known-input reference set.
+No additional tree walk,
+message inventory,
+authority registration,
+or budget was added.
+
+The append observation happens after native in-memory index/leaf publication and before persistence.
+Source-set overflow is deferred to source use and latched for that root,
+so an observation-bound failure does not replace a native append error.
+A new root can start a new observation set;
+that does not revive the retired runtime.
+
+Summary required red `e539d3c` / `proc_02e3`
+became native green `901ee9d` / `proc_3775`.
+Untransmitted edit/summary consumers passed `466cb3d` / `proc_7838`.
+Summary/derived-checkpoint,
+branch/reset,
+and 43-mode native controls passed `proc_eecb`.
+Root,
+duplicate,
+foreign,
+and deferred-bound controls plus loaded-input regression passed `proc_1bea`.
+Combined capture-overflow and native write-error controls passed `proc_f207`.
+
+Leaf-observation and latch sensitivity,
+routine-suite integration,
+and complete regressions remain pending.
+Queued inputs,
+mixed representations,
+tool instruction-source ownership,
+applicable governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
 ## Original current-session context-edit inputs
 
 The existing manager input owner now observes native context-edit appends after defensive cloning.
