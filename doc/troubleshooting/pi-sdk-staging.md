@@ -161,8 +161,10 @@ Removing source membership initially failed on an unrelated source shape in `pro
 that result did not demonstrate false admission.
 Refined omission `fa5432b` failed `proc_cb23` with `nonmember`,
 reporting `accounted` instead of `unresolved`.
-Both guards are restored;
-full custom-section regression is running.
+Both guards are restored.
+Full native `proc_744b`,
+action `proc_09ee`,
+and ten-document render `proc_fed3` passed.
 
 This remains partial lineage at a containing serialized field,
 not complete request-origin accounting or instruction authority.

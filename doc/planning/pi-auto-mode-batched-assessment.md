@@ -102,7 +102,9 @@ and custom-section inputs.
 Forced projection identity passed restored native `proc_38d6` and action `proc_3eaf`.
 Custom-section controls passed `proc_49c5` and `proc_73fc` before deliberate omissions;
 both the source-membership and native shadowing omissions failed and are restored.
-Full restored custom-section regression is running.
+Full restored native `proc_744b`,
+action `proc_09ee`,
+and ten-document render `proc_fed3` passed.
 These contributions are partial lineage,
 not governing-domain completeness or new source-authority grants.
 See [original rendered prompt-input contributions](../handover/pi-auto-mode-current-frontier.md#original-rendered-prompt-input-contributions).

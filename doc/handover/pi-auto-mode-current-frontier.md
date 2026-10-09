@@ -87,7 +87,10 @@ and invalid section names.
 Source-owner and inherited map-bound controls passed `proc_73fc`.
 Omission `proc_30bf` incorrectly credited a displaced context input;
 omission `proc_cb23` incorrectly accounted for a source outside the original run's mapped inputs.
-Both guards are restored and full custom-section regressions are running.
+Both guards are restored.
+Full native `proc_744b`,
+full action `proc_09ee`,
+and ten-document render `proc_fed3` passed.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
