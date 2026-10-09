@@ -336,7 +336,13 @@ The current dispatcher also passed actual fixture-authorized execution,
 queue,
 abort,
 and disposal controls in `proc_c317`.
-Sensitivity checks and full native regression for this extension remain pending.
+All deliberate guard omissions are restored.
+Producer `proc_e6ad` misreported tool-forced sequential scheduling;
+consumer `proc_b025` accepted inconsistent schedules;
+`proc_54ee` erased an independent fact-owner gap;
+`proc_9907` accepted a wrong inspected profile.
+Each control failed.
+Restored full native `proc_c1a5`, action `proc_2992`, and eleven-document render `proc_f581` passed.
 Production admission and installed activation remain unchanged.
 
 ## Express same-source quoted-unit incorporation

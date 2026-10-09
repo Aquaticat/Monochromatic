@@ -62,7 +62,13 @@ missing multi-program consumption failed `proc_e3d5`.
 Actual parallel/sequential consumption passed `proc_5a03`,
 full action tests passed `proc_e8e3`,
 and the expanded native matrix passed `proc_bce2`.
-Guard-sensitivity and full native regression for this extension remain pending.
+All deliberate guard omissions are restored.
+Producer `proc_e6ad` misreported tool-forced sequential scheduling;
+consumer `proc_b025` accepted inconsistent schedules;
+`proc_54ee` erased an independent fact-owner gap;
+`proc_9907` accepted a wrong inspected profile.
+Each control failed.
+Restored full native `proc_c1a5`, action `proc_2992`, and eleven-document render `proc_f581` passed.
 No production admission policy,
 qualification threshold,
 provider request,
