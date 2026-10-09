@@ -112,7 +112,13 @@ No upstream filing or upstream patch is proposed.
 The missing custody edge belongs to the private adapter.
 Native queue support does not promise this application's instruction authority or domain closure.
 The production qualification and installed-cutover gates remain closed;
-the remaining sensitivity and full-regression work is local.
+sensitivity and full-regression work remain local.
+Installed/private API parity passed `proc_6162`.
+Omissions `proc_d12b`,
+`proc_2f0b`,
+and `proc_88a1` failed at their intended source obligations;
+all were restored before integrated `proc_2ae8` passed.
+Complete native regression is running.
 
 ## Private SDK 1.1.0 source association stops at defensive copies
 

@@ -361,7 +361,18 @@ authority,
 delegation,
 semantic qualification,
 and independent approval sufficiency remain separate unresolved premises.
-Sensitivity and complete regression are pending;
+Installed/private queue API parity passed `proc_6162`,
+including images without origin claims,
+transformed/handled input,
+and unchanged falsy native enqueue errors.
+Omissions `proc_d12b`,
+`proc_2f0b`,
+and `proc_88a1` independently lost pending-input membership,
+late-input source retirement,
+and unchanged-view capture-failure rechecking.
+All were restored;
+integrated controls passed `proc_2ae8` with empty child stderr.
+Complete regression is running;
 nothing is installed or activated.
 
 ## Original current-session summary inputs and append membership
