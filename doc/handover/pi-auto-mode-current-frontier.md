@@ -317,7 +317,12 @@ nullish,
 unsupported,
 and over-bound inputs.
 Shared-bound and opaque-metadata owner controls passed `proc_8cb1`.
-Conversion sensitivity and restored full regressions remain pending.
+Conversion omission `cdbbdf8` / `proc_6d32` lost the original alias in the actual SDK converted message.
+The omitted branch is restored.
+Full native `proc_297d`,
+action `proc_7871`,
+source-policy `proc_de4f`,
+and 14-document rendering `proc_4922` passed.
 
 Other loaded message roles,
 summaries,
