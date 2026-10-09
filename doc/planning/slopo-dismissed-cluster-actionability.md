@@ -665,41 +665,39 @@ which is how the numbers below were produced.
    which is why #618's proposal is about named guards such as `isRecord` and `isStringArray`
    rather than every call.
 
-## Corrected partition
+## Why family size was also the wrong test
 
-Hold 36 of the 147 proposed entries;
-accept 111.
+Family size is a magnitude,
+ and the question is generative.
+A pattern instantiated twice is a template for the third copy,
+so a family of 2 and a family of 210 have the same implication:
+if nobody owns the pattern,
+ it keeps being copied.
+This repository is the evidence.
+The error-name constructor was 2 sites when it was first written and is 210 today;
+`attachShadow` is 22;
+`.localeCompare(` is 40;
+`Object.create(null` is 21.
+None of those grew because someone decided to duplicate;
+each grew because the previous copy was the nearest thing to a template.
 
-Held,
- by reason:
+So the deciding question for a dismissal is not how much code the two sides share
+and not how many copies exist today.
+It is whether future work will instantiate the pattern again,
+and if so what should own it.
+That produces three buckets,
+and every one of the 86 concepts behind the 147 proposed entries was classified.
 
-- 9 have byte-identical bodies:
-   C13,
-   C15,
-   C617,
-   C629,
-   C636,
-   C639,
-   C665,
-   C669,
-   C688.
-- 7 are i18n renderers whose grammar difference is a field selection inside otherwise identical
-   functions that #639 already proposes to parameterise:
-   C321,
-   C327,
-   C328,
-   C336,
-   C348,
-   C353,
-   C582.
-- 5 share a function-sized run where the variance is names rather than intent:
-   C604,
-   C896,
-   C906,
-   C963,
-   C977.
-- 12 belong to the error-name constructor family of 210 sites:
-   C139,
+## Bucket A: propagating patterns that need an owner
+
+40 clusters in 17 concepts.
+The shared part holds a policy,
+and new instances appear whenever the repository grows in that direction.
+
+Eleven of the seventeen have no owner today:
+
+- Error-class naming,
+   12 clusters (C139,
    C298,
    C311,
    C317,
@@ -710,40 +708,192 @@ Held,
    C907,
    C914,
    C922,
-   C947.
-- 3 more belong to measured families of 15 to 22 sites:
+   C947).
+   210 `this.name = ` sites across 146 files of 241 `extends Error` declarations.
+   Owner:
+   a base class assigning `this.name = new.target.name`.
+- Rust one-line `Display`,
+   C13,
+   11 byte-identical impls of 50.
+   Owner:
+   a `display_message!` macro in a `rust-module/*` crate.
+- Rust one-line error constructors,
+   C15,
+   17 `String::from(message` sites across 16 files.
+   Owner:
+   the same macro family.
+- Rust error kinds,
    C998,
+   15 `io::Error::new(io::ErrorKind::` sites across 8 files,
+   11 of them in `cli/wg-quicker-exempt`.
+   Owner:
+   one helper that chooses the kind.
+- Web-component shadow roots,
    C305,
-   C355.
+   22 `attachShadow(` sites of 25 `extends HTMLElement`.
+   Owner:
+   a base element class or a `defineComponent` helper.
+   #69 owns the `done` against `done-postcss` fork,
+   not the base.
+- Null-prototype records,
+   C355,
+   21 `Object.create(null` sites across 14 files.
+   Owner:
+   a `nullRecord()` helper or a lint rule.
+- Comparators,
+   C315 and C358,
+   40 `.localeCompare(` sites across 37 files.
+   Owner:
+   `compareBy([...keyFns])`,
+   which #659's own caveat 1 proposes.
+- Module-id query stripping,
+   C187.
+   Two sites today,
+   both in plugins that parse module ids,
+   and every future id-parsing plugin is a
+   third.
+   Owner:
+   one stripper taking the marker explicitly.
+- Batch dispatch wrappers,
+   C604,
+   eight wrappers sharing 67 of 68 tokens.
+   Owner:
+   one macro or a generic wrapper taking the kernel as a parameter.
 
-Accepted,
- 111 entries,
- because either the family behind the pair measures 2 to 4 sites,
-so there is nothing to own,
-or the variance is the point of the code:
-differential-fuzz adapters where both sides must be written out,
+Six have an owner that does not yet know about these clusters:
+
+- i18n per-locale renderers,
+   all 13 clusters (C321,
+   C322,
+   C327,
+   C328,
+   C336,
+   C348,
+   C353,
+   C361,
+   C364,
+   C450,
+   C504,
+   C582,
+   C597).
+   Owner:
+   #639,
+   which already proposes "the renderers and case invariants injected" for 11 sibling
+   clusters.
+   A fourth locale copies the whole tree,
+   so the propagation is per locale rather than per helper.
+- Shell and git-config quoting,
+   C588 and C599.
+   Owner:
+   #650,
+   which covers html,
+   xml,
+   markdown and JSON escaping but not these two grammars.
+- Line-ending normalisation,
+   C295.
+   Owner:
+   the text module #617 proposes.
+- Abort-controller disposables,
+   C351.
+   Owner:
+   #620.
+- Path segments,
+   C833.
+   Owner:
+   #619,
+   which is consolidating `module/fs-path`.
+- Manifest license readers,
+   C878.
+   Owner:
+   #633,
+   which owns the file,
+   while `dev-script/deps-cube` already has the reader that also unwraps the object form.
+
+## Bucket B: propagating habits that need a policy decision
+
+40 clusters in 20 concepts.
+The pattern here is not a utility anyone forgot to write;
+it is the habit of writing both sides by hand,
+and it propagates across the repository even though each instance is a closed pair.
+
+- Differential-fuzz adapters,
+   10 clusters.
+   Each new forked package needs an adapter pair,
+   and there are 13 sidecars today.
+   The two sides must stay explicit,
+   because identical adapter code is what makes an observation
+   difference mean a behaviour difference,
+   so the owner is the scaffolding in #613's shared harness
+   rather than a merged adapter.
+- Sync and async twins,
+   7 clusters plus 1 test cluster,
+   and 22 `*Async` function names today.
+   Hand-writing both sides is the current policy and nothing records it as a choice.
+- Pipe arity unrolling,
+   C906 and C963,
+   sharing 519 and 361 tokens with only async markers varying.
+   Each new arity adds another unrolled copy.
+- Complementary predicates,
+   3 clusters,
+   plus the mirror families:
+   per-event handlers (2),
+   key handlers,
+   navigation,
+   stream pause and resume,
+   priority providers,
+   root markers,
+   column close,
+   edit conflicts,
+   single against batch,
+   get against peek,
+   platform sink sets,
+   fixture compilers,
+   filter composition and type-case emitters.
+   Each is a closed pair,
+   and each teaches the next author to write two.
+- The repository has already made one of these calls explicitly:
+   `slopo.ignore.txt` records that a polarity parameter would restate what two names carry.
+   That is a policy,
+   and it should be stated as one for the whole bucket rather than re-argued
+   cluster by cluster.
+
+## Bucket C: closed patterns and data
+
+67 clusters in 49 concepts.
+Either the pattern cannot grow,
+or each instance is data rather than code that could be owned:
 coverage probes where the invalid input is the test,
-sync and async twins whose only variance is `async`,
-`await`,
-`Promise<T>` or `readFileSync`,
-polarity pairs where the repository has already chosen two names over one parameter,
-SIMD kernels that are different machine code,
-and the coincidental-shape pairs whose shared part is a language idiom with no policy in it.
-By verdict:
-39 `INTENTIONAL-VARIANT`,
-39 `STRUCTURAL-IDIOM`,
-20 `COINCIDENTAL-SHAPE`,
-12 `BOILERPLATE-TRIVIAL` and 1 `TEST-OR-GENERATED`.
+benchmark arms where the difference is the experiment,
+fuzz arbitraries and fixtures per grammar construct,
+per-node-type visitors,
+protocol line formats fixed by git,
+two-CLI output contracts,
+two payload conventions,
+two enums,
+two unrelated frameworks,
+and the coincidental shapes whose shared part is a language idiom carrying no policy.
+Four of these already have their pattern owned in place,
+which is why the dismissal is safe:
+`one-line-forwarders` and `engine-send-wrapper` both delegate to a shared function,
+`oxlint-createonce-scaffolding` uses the `createOnce` the plugin already extracted,
+and `or-throw-sibling-guards` lives in `module/or-throw`.
 
-Two accepted clusters carry a caveat rather than a clean pass.
-C629,
- C636,
- C669 and C688 are byte-identical pairs whose families measure 2 sites,
-so the dismissal is right on family size but their recorded reasons still need correcting where they
-claim a difference the bodies do not contain.
-C315 and C358 are accepted as pairs while the 40-site comparator family stays open as a design
-question,
-which is what #659's caveat 1 already proposed.
+## What this says about the taxonomy itself
+
+Every category in `slopo.ignore.txt` is a magnitude claim about a pair:
+`BOILERPLATE-TRIVIAL` says extraction costs more than it saves,
+`COINCIDENTAL-SHAPE` says the units do unrelated work,
+`STRUCTURAL-IDIOM` says the skeleton is shared but the logic differs,
+`INTENTIONAL-VARIANT` says the two sides are meant to mirror each other.
+None of them asks whether the pattern will be instantiated again,
+and none names an owner.
+That is why a review using only these categories can dismiss 210 copies of one idiom as twelve
+unrelated instances of trivial boilerplate.
+
+The missing question is the one this document now asks first:
+who owns this pattern,
+and if nobody does,
+what stops the next copy.
 
 ## Judgements adopted
 
@@ -751,72 +901,86 @@ These are calls,
  not options,
  and each is recorded here so it can be vetoed rather than rediscovered.
 
-1. Hold 36 of the 147 proposed entries and accept 111.
-   The hold list is the five groups above.
-   No entry is accepted on the grounds that its shared run is small;
-   small runs are accepted only where the family behind them measures 2 to 4 sites
-   or the variance is the point of the code.
-2. Move the seven i18n clusters into #639's scope instead of dismissing them,
-   and note on #658 that C353 contains the `renderTimeOperand` helper #639 already claims as C331.
-3. Re-verdict the identical-body clusters whose reasoning contradicts their evidence:
-   C617 becomes a code change,
-   one handler registered for both events;
-   C665 moves out of `STRUCTURAL-IDIOM`,
-   which requires differing logic;
-   C639 keeps its dismissal with the reason restated as being about signatures rather than bodies;
-   C629,
+1. Hold 80 of the 147 proposed entries,
+    the 40 in bucket A and the 40 in bucket B,
+   and accept the 67 in bucket C.
+   A bucket C entry is accepted because the pattern cannot grow or because each instance is data,
+   never because the shared code is small.
+2. Add the propagation question to the dismissal convention in
+   `doc/troubleshooting/slopo-threshold-tuning.md`:
+   an entry must name the owner of the pattern,
+   or state that the pattern is closed,
+   or state the policy that accepts the copies.
+   "Too small to extract" is not a reason on its own.
+3. Hand the six owned bucket-A concepts to their issues with the measured site lists:
+   the 13 i18n clusters to #639,
+   the two quoting clusters to #650,
+   C295 to #617,
+   C351 to #620,
+   C833 to #619 and C878 to #633.
+4. File the eleven ownerless bucket-A patterns as proposals rather than dismissals,
+   grouped by remedy:
+   one base error class for the 210 sites;
+   one Rust macro family for the 11 `Display` impls and 17 one-line constructors;
+   one `io::ErrorKind` helper for the 15 sites;
+   one base element for the 22 shadow roots;
+   one `nullRecord()` helper for the 21 sites;
+   one `compareBy` for the 40 comparator sites;
+   one module-id stripper;
+   one dispatch macro for the eight forbidden-regex wrappers.
+5. Put bucket B to you as one policy decision rather than 40 dismissals:
+   either the repository adopts a rule for the two-sided habit
+   (share a core,
+   generate one side,
+   or parameterise)
+   or it records the opposite choice as policy,
+   the way `slopo.ignore.txt` already records the polarity-parameter call.
+   Until one of those is written down,
+   each new pair is authored without a decision behind it.
+6. Correct the identical-body clusters whose recorded reasoning claims a difference the bodies do
+   not contain:
+   C617 (one handler serves both events),
+   C665 (identical bodies cannot be `STRUCTURAL-IDIOM`),
+   C639 (the reason is about signatures),
+   and C629,
     C636,
-    C669 and C688 keep their dismissals with the family size recorded as the reason.
-4. Put the error-name family to you as one decision rather than twelve dismissals:
-   210 sites across 146 files,
-   154 of them the pure two-statement idiom,
-   21 forwarding `options`,
-   3 already assigning `X.name` instead of a literal,
-   no drift measured,
-   and `mangle: false` in all three rolldown configs meaning derived names survive bundling.
-   The twelve clusters stay held until that decision is made either way.
-5. File C13 and C15 as one proposal for a Rust error-display macro in a `rust-module/*` crate,
-   covering the 11 identical `Display` impls and the 17 one-line constructors,
-   with `thiserror` named as an alternative needing `choosing-technology` vetting
-   since it is in no `Cargo.toml` today.
-6. File C604's eight dispatch wrappers as a macro or generic-wrapper proposal against
-   `rust-module/forbidden-regex`,
-   and record that the current rationale describes the kernels rather than the wrappers,
-   which contain no intrinsics and no `cfg`.
-7. Put C963 and C906 to you as one design question:
-   519 and 361 shared tokens with only async markers varying is the largest duplication in the set,
-   and the recorded reason is about signatures rather than bodies.
-8. Open the 40-site comparator family as a design question,
-   which is #659's own caveat 1 proposal,
-   while accepting C315 and C358 as pairs.
-9. Record three recipes in `doc/troubleshooting/slopo-threshold-tuning.md`:
+    C669 and C688 (the reason is that the pattern is closed at two,
+   which is now measured rather than assumed).
+7. Record three recipes in the tuning doc:
    the family-count query over `code_units`,
    the shared-run comparison over report bodies,
    and the targeted-pattern family count,
-   with the warning that skeleton grouping alone produces artifacts.
-   All three read data slopo already writes and need no re-index and no embedding.
-10. Record in the same doc that a dismissal entry must state the family size behind the pair and
-   why sharing it costs more than it saves.
-   That is the method failure behind every correction in this document.
-11. Comment the measured sub-floor members on #613 and the third license reader on #633.
-   Skip #617 and #618,
-   which already enumerated their families and,
-   in #617's case,
-   found real drift in the digit predicates.
-12. Give the three held-back `UNCERTAIN` clusters a home:
+   with the warning that skeleton grouping alone produces artifacts
+   (it collapsed every one-expression template return into a spurious 127-unit family).
+8. Give the three held-back `UNCERTAIN` clusters a home:
    C562 joins #660 as an eighth judgement call,
    and C622 and C721 get one focused issue.
-13. Copy the review ledger into `doc/artifact/` as a dated record.
-14. Leave `slopo.conf.yaml` and `mise.toml` untouched.
-   The threshold is hand-tuned and stays at 13.
-   Two wording fixes are proposed rather than applied:
-   the conf comment "increased from default 10 until no bad reports remain" describes a `0.4.0`
-   default,
+9. Copy the review ledger into `doc/artifact/` as a dated record.
+10. Leave `slopo.conf.yaml` and `mise.toml` untouched;
+   13 stays.
+   Two wording fixes are proposals only:
+   the conf comment "increased from default 10" describes a `0.4.0` default,
    since `0.8.0` defaults to 20 at `slopo/config.py:151-152`;
-   and `mise.toml:213` installs `pipx:slopo` at `latest` while the tuning doc is verified against two
-   specific versions whose source paths already moved.
+   and `mise.toml:213` installs `pipx:slopo` at `latest` while the tuning doc is verified against
+   two specific versions whose source paths already moved.
 
 ## Verification limits
+
+- The bucket A,
+   B and C classification is a hand judgement per concept,
+   made for all 86 concepts
+   behind the 147 entries.
+   It is the weakest link in this document:
+   the site counts and shared-run figures are measured,
+   but "will this pattern be instantiated again" is a forecast.
+   Bucket C is where a wrong call hides a propagating pattern,
+   and its 49 concepts are listed by name in "Bucket C:
+   closed patterns and data" so each can be
+   challenged individually.
+- A pattern's propagation can also be closed by an owner that already exists in place,
+   which is why four bucket C concepts are named as already owned.
+   That check was made by reading the bodies,
+   not by tracing every call site.
 
 - The probe index at threshold 4 used a throwaway database and did not touch `.slopo.local.dir/`.
    It indexed only;
