@@ -68,15 +68,20 @@ so parked rather than assumed:
   markdown plugin is commented out in `package/config/dprint/index.json`;
 - recording why `certainly.com` sits at the apex.
 
-Blockers measured on 2026-10-09:
+Blockers measured on 2026-10-09,
+both cleared during execution:
 
-- `aws sts get-caller-identity` still fails with the expired-session error
-  quoted in "What to inspect and how to respond".
-  Only the maintainer can run the interactive `aws login`.
-- No Njalla credential exists in this environment:
-  no matching variable in the process environment and no match under
-  `~/.config`.
-  The records above need the maintainer's dashboard or an API token.
+- `aws sts get-caller-identity` failed with the expired-session error quoted
+  in "What to inspect and how to respond" until the maintainer ran the
+  interactive `aws login`.
+  The identity that resulted is the account root,
+  recorded as an observation in "Executed remedy and verification".
+- No Njalla credential existed in this environment until the maintainer wrote
+  one to `~/.config/njalla/token` with mode 600.
+  The API's wire shape is undocumented and its endpoint is sensitive to a
+  trailing slash;
+  both are recorded in
+  [`doc/troubleshooting/njalla-dns-api-jsonrpc-shape.md`](../troubleshooting/njalla-dns-api-jsonrpc-shape.md).
 
 Reusable prior art for the AWS mutations lives in the private task
 directory recorded in
@@ -918,17 +923,22 @@ Two observations recorded rather than acted on:
   Under RFC 8659 the apex set is also what authorizes Certainly for
   `fastly.aquati.cat`,
   since that name is a CNAME with no CAA of its own.
+  The question is now mostly historical:
+  [issue 674](https://github.com/Aquaticat/Monochromatic/issues/674) would
+  move that authorization off the apex.
 - Does the origin's Let's Encrypt certificate use DNS-01 against Njalla?
   Only relevant if DNS for the apex ever moves.
-- Should the Fastly mirror move under the same intermediate label as
-  option 2,
-  which would let the apex return to `letsencrypt.org` only?
-- Is a Certificate Transparency watch for `aquati.cat` worth adding?
-  Amazon is now authorized at two nodes,
+- The Fastly mirror relocation,
+  which would let the apex return to `letsencrypt.org` only,
+  is tracked as
+  [issue 674](https://github.com/Aquaticat/Monochromatic/issues/674).
+- A Certificate Transparency watch for `aquati.cat` is tracked as
+  [issue 675](https://github.com/Aquaticat/Monochromatic/issues/675).
+  Amazon is authorized at two nodes,
   the mirror leaf and `amazon.aquati.cat`,
   rather than at the apex,
-  which narrows what it could issue for but does not eliminate it.
-  `iodef` is documented as ignored by ACM,
+  which narrows what it could issue for but does not eliminate it,
+  and `iodef` is documented as ignored by ACM,
   so it would not report these refusals.
 
 ## Redaction convention
