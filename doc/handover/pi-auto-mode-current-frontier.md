@@ -325,7 +325,10 @@ Constructor omission `076347b` / `proc_de3c` lost the summary identity;
 that edge is restored.
 Companion-attribution omission `f165d21` / `proc_9769` incorrectly marked the stored system message.
 The single-output guard is restored.
-Complete regression remains pending.
+Complete native `proc_18d1`,
+action `proc_06a7`,
+source-policy `proc_62b3`,
+and 14-document rendering `proc_7bd6` passed.
 
 Current-run generated summaries,
 other loaded roles,

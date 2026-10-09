@@ -812,7 +812,10 @@ Compaction-constructor omission `proc_de3c` lost the summary alias;
 the constructor observation is restored.
 Companion-attribution omission `proc_9769` failed because the stored system message acquired summary provenance.
 The single-output guard is restored.
-Complete regression remains pending.
+Complete native `proc_18d1`,
+action `proc_06a7`,
+source-policy `proc_62b3`,
+and 14-document rendering `proc_7bd6` passed.
 
 Run the private controls from `contract/integration/native-batch`:
 
