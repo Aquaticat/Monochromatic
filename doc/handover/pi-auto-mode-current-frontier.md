@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-08.
+Updated 2026-10-09.
 
 ## Original rendered prompt-input contributions
 
@@ -295,6 +295,55 @@ Restored full native `proc_41bf` and action `proc_de99` passed.
 Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
+
+## Original expanded-prompt input and contribution
+
+The incumbent run owner now captures the actual native `expandedText` handoff
+after input,
+skill,
+and template expansion.
+This establishes that native occurrence,
+not unmodified caller wording,
+human origin,
+or instruction authority.
+The input remains unregistered.
+
+The existing source collection now exposes `runMessageInputs`
+(renamed from the collector snapshot's `handlerMessageInputs` on 2026-10-09).
+It references the same run-owned expanded-prompt and handler records.
+Per-run `handlerMessageInputs` remains the emitter-only collection.
+No parallel message inventory,
+second request parse,
+or request re-encoding was added.
+
+The existing publication/copy index now supports the actual text-only native user construction.
+Native identity pass-through checks known original aliases before retaining them.
+Independent deep copies,
+equal context-edit replacements,
+and replaced text parts do not inherit lineage.
+Wrappers retaining the actual original part capabilities remain distinct from independent material copies.
+Payload custody still owns fresh arrays and text blocks across awaited authentication
+and discards transient aliases at sealing.
+
+Image-containing and hint-modified constructions retain the original expanded text
+but remain outside this association profile.
+Empty and malformed text receives no invented contribution.
+Active ancestry is supported;
+prior prompt occurrences cannot supply the new prompt's source association.
+
+Missing origin failed `proc_2f9f`;
+retained origin without association failed `proc_6dd4`;
+initial native consumer passed `proc_3e36`.
+Native input-owner controls passed `proc_1190`,
+conversion parity `proc_f69b`,
+source-policy `proc_898f`,
+and action `proc_dd50`.
+The 23-mode native input/representation matrix passed `proc_7109`,
+including actual native image and normalization-hint paths.
+Original scalar-publication controls passed `proc_b338`.
+The pass-through retirement positive control passed `proc_eebb`.
+Guard-sensitivity and restored full native regression remain pending.
+Source accounting remains partial and `request-source-domain` remains unresolved.
 
 ## Original orphan-heading directive use
 

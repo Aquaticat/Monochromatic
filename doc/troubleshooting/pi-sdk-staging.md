@@ -614,6 +614,77 @@ These are private consumer and fixture changes,
 not an upstream defect or a reason to relax configuration freshness.
 No model was asked to decide scheduling or the final action outcome.
 
+### SDK 1.1.0 expanded prompt identity differs from transport user role
+
+The original body already retained prompt bytes,
+but the private source set had no original expanded-prompt occurrence.
+Required control `proc_2f9f` failed with Node's `AssertionError [ERR_ASSERTION]`:
+`The native expanded prompt needs its original run-bound source capability, not attribution from serialized user role`.
+After adding capture to the existing run owner,
+`proc_6dd4` reached the missing serialized-contribution assertion.
+This separates absent input ownership from absent publication lineage.
+
+SDK `dist/core/agent-session.js:1591` passes the post-input/skill/template text
+into its actual before-agent-start emitter:
+
+```js
+// Pi SDK 1.1.0, dist/core/agent-session.js:1591
+const result = await this._extensionRunner.emitBeforeAgentStart(expandedText, currentImages, this._baseSystemPromptOptions);
+```
+
+The native image normalizer can then change the text
+at `dist/core/agent-session.js:1600`:
+
+```js
+// Pi SDK 1.1.0, dist/core/agent-session.js:1600
+const userText = normalized.hints.length > 0 ? `${expandedText}\n\n${normalized.hints.join("\n")}` : expandedText;
+```
+
+The private capture identifies `expandedText`,
+not an unmodified human utterance or every upstream transformation.
+Its text-only publication observes the actual native user-message construction.
+Image-containing and hint-modified constructions keep their original input source
+without receiving an unsupported contribution association.
+Native output and errors remain native.
+
+The original copy/publication index is reused for ordinary user identity pass-through,
+manager/context copies,
+and the fixed native serializer.
+The collector's combined field is `runMessageInputs`
+(renamed from snapshot `handlerMessageInputs` on 2026-10-09);
+per-run `handlerMessageInputs` remains emitter-only.
+The original expanded input is unregistered.
+No second JSON parse,
+request re-encoding,
+parallel message inventory,
+or role-derived authority was introduced.
+
+Initial full consumer `proc_3e36` passed.
+Owner regressions passed `proc_1190`,
+conversion parity `proc_f69b`,
+source-policy `proc_898f`,
+and action `proc_dd50`.
+The 23-mode native matrix passed `proc_7109`,
+including actual native image and normalization-hint routes.
+The passing catalog distinguishes independent deep material copies from wrappers
+that retain original part capabilities,
+and covers context edits,
+input transformation,
+empty/whitespace/malformed text,
+payload races,
+active ancestry,
+and separate new prompts.
+
+The additional retirement control passed `proc_eebb`.
+Removing pass-through currentness observation failed `proc_334e`:
+an equal replaced part regained an `accounted` contribution on a later request after restoration.
+Run `mise --no-env --no-hooks run test:expanded-prompt-controls`
+inside private `contract/integration/native-batch`.
+This proves a bounded origin edge,
+not complete request-domain coverage,
+source authority,
+or permission.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
