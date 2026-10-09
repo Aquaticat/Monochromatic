@@ -123,7 +123,9 @@ Missing context-introduction association failed `proc_0f4b`;
 initial context/skill consumer `proc_0500` and the 32-mode matrix `proc_edd5` passed.
 The existing base-bound fixture still has 97 base-input contributions;
 the separately retained native introduction makes 98 total contributions without increasing any input limit.
-Full context/skill regressions are running.
+Full native `proc_4f7c`,
+action `proc_2217`,
+and ten-document render `proc_bd76` passed for context/skill guidance.
 Default-rule deduplication remains unconsumed until its exact native emission is established.
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
