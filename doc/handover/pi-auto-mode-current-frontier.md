@@ -208,6 +208,28 @@ Full native `proc_8600`,
 action `proc_4807`,
 and eleven-document render `proc_9301` passed.
 
+Original prompt and tool guideline sources now collect insertion evidence within their native render.
+The existing source records are constructed as private drafts from the frozen render input,
+updated directly by the fixed native loop observations,
+then sealed and published as those same records.
+No parallel source inventory or request parser is introduced.
+
+The observer uses the existing active-render window and its existing cleanup path.
+Late calls cannot change or poison a published run.
+A caught observation failure still retires the original render,
+including when its thrown value is `false`.
+Unobserved legacy sources receive no insertion fact.
+
+Missing guideline association failed `proc_99ae`;
+initial native consumer `proc_f2dc` passed.
+Original-source/lifetime and builder parity controls passed `proc_8829`;
+the 69-mode visibility matrix passed `proc_b1b1`;
+consumer-owner checks passed `proc_c84f`.
+Equal entries within one array and equal prompt/tool entries remain independent sources.
+Only the actual inserted occurrence contributes,
+and later rules-section or forced overrides still prevent association.
+Guideline guard sensitivity and full regression are being completed.
+
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
