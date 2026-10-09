@@ -87,6 +87,76 @@ and `apply-live.ts` shows the read-config,
 change-one-field,
 assert-only-that-field-changed pattern this work must repeat.
 
+## Option 7, measured after the decision
+
+Execution began with a read-only zone dump through the Njalla API,
+which returned 85 records including 43 live `ANAME` records and 2
+`Redirect` records.
+`ANAME` is a flattening alias:
+Njalla resolves the target itself and answers A and AAAA,
+with no CNAME on the wire.
+Two probes at throwaway labels,
+each deleted and verified absent before the script exited,
+measured what that means here.
+
+- ANAME and CAA coexist at one name.
+   At `anameprobe.aquati.cat` the authoritative server returned
+  `A 135.181.104.96`,
+  an empty CNAME answer,
+  and `CAA 0 issue "amazon.com"` together.
+- Flattening a CloudFront target serves the mirror.
+   At `cfprobe.aquati.cat`,
+  an ANAME to the distribution domain answered four A and eight AAAA
+  records,
+  and `curl --resolve` against two of those addresses while requesting the
+  real mirror hostname returned HTTP 200 and 3445 bytes,
+  matching the origin body length measured earlier.
+- The flattened addresses were in `18.239.18.0/24` while the CNAME path
+  resolved to `3.168.2.0/24` from this host,
+  so Njalla publishes the edge set it resolves,
+  not the querier's nearest edge.
+
+That yields a seventh option no earlier section considered:
+replace the CNAME at `aws.aquati.cat` with an ANAME to the same target,
+and publish the four Amazon `issue` records at `aws.aquati.cat` itself.
+The climb for that FQDN then terminates at the leaf,
+because the leaf has CAA and shows no alias on the wire.
+ACM's existing retry loop renews the certificate already in place,
+so nothing on the AWS side changes at all.
+
+- Pros:
+   the hostname does not change;
+  the apex does not change;
+  the existing certificate is renewed rather than replaced;
+  no `UpdateDistribution`,
+  so no Free-plan mutation risk and no deploy wait;
+  no window in which any hostname is broken;
+  zero cost.
+- Cons:
+   every querier receives the edge addresses Njalla resolved rather than
+  its own nearest edge,
+  which costs latency for distant clients;
+  Njalla publishes no documentation of how often it re-resolves an ANAME
+  target,
+  so the staleness window if CloudFront retires those addresses is
+  unmeasured;
+  the zone's 43 existing ANAME records all target names under
+  `aquati.cat` with static addresses,
+  so nothing in the zone already flattens a CDN.
+
+Options 2 and 7 compose.
+Option 7 keeps `aws.aquati.cat` alive on the existing certificate,
+and option 2 adds `mirror.amazon.aquati.cat` on a CNAME with no flattening.
+One certificate can cover both names,
+because each name's climb terminates at its own CAA record.
+
+These measurements postdate the choice recorded in "Decision on
+2026-10-09",
+so that choice is being re-confirmed before any mutation.
+No DNS record,
+AWS resource,
+or certificate has been changed.
+
 ## What to inspect and how to respond
 
 Follow "Remediation steps" for option 1,
@@ -315,6 +385,19 @@ except option 3,
 which buys back all three by moving that one name to a DNS host that
 supports an alias-type record,
 so the leaf can carry its own CAA.
+
+**Correction,
+ measured later the same day**:
+ the premise is wrong.
+Njalla does have an alias-type record,
+`ANAME`,
+and it coexists with CAA at the same name.
+So the leaf can carry its own CAA without moving DNS anywhere.
+That is option 7,
+and it buys back all three properties at zero cost,
+trading CloudFront's per-querier edge selection for them.
+See "Option 7,
+ measured after the decision".
 
 ## Options and ranking
 

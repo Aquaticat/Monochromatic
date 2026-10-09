@@ -1442,6 +1442,23 @@ The following alternatives were considered and rejected:
    the apex
   would still need CAA permitting Amazon at issuance time (same dead
   end as widening the apex CAA).
+   **Correction,
+   2026-10-09**:
+   the first half is false.
+   Njalla does have a flattening alias,
+   its `ANAME` type,
+   already live on 43 names in this zone.
+   A probe at a throwaway label confirmed an ANAME coexists with a CAA
+   record at the same name and answers A and AAAA with no CNAME on the
+   wire,
+   and a second probe confirmed an ANAME to the CloudFront distribution
+   domain serves the mirror.
+   The second half still holds:
+   at the apex the Relevant RRset is the apex's own,
+   so an ANAME there would not avoid authorizing Amazon at the apex.
+   At the mirror leaf it does avoid that,
+   which is option 7 in
+   [`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
 - **Alternate label** like `cdn.aquati.cat`.
    The CAA tree-walk and
   CAA-vs-CNAME constraints apply equally to any subdomain of
