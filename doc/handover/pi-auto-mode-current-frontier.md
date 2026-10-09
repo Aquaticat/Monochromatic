@@ -323,10 +323,12 @@ After that correction,
 `edit-hidden` accidentally enabled compaction-system hidden behavior.
 The fixture now keeps those families separate and explicitly checks the displaced target's content.
 
-Corrected matrix,
-unapplied-target controls,
-constructor sensitivity,
-and complete regressions remain tracked in `current-progress.json`.
+Corrected 36-mode matrix,
+19 native edit-manager cases,
+and owner controls passed `proc_da68`.
+Construction omission `ddc6f13` / `proc_e0e8` lost the edited message's original publication.
+The observer is restored.
+Complete regression remains pending.
 Mixed or unsupported representations,
 current-run generated inputs,
 queued transformations,

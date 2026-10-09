@@ -906,6 +906,64 @@ but do not execute their recorded commands.
 This is a private propagation repair,
 not an upstream defect or a filing proposal.
 
+### SDK 1.1.0 context edits create replacement messages without transferring authority
+
+Native context edits retain message metadata while replacing content.
+In `dist/core/session-manager.js:235`,
+`projectContextEntry` returns no messages for a null replacement.
+For supported editable roles,
+line 252 constructs a fresh output:
+
+```js
+// Pi SDK 1.1.0, dist/core/session-manager.js:249
+const content = (message.role === "assistant" || message.role === "toolResult") && typeof replacement.content === "string"
+    ? [{ type: "text", text: replacement.content }]
+    : replacement.content;
+return { ...message, content };
+```
+
+The private observer attaches the original edit input only at that construction.
+It does not reuse the displaced target's publication.
+System messages and summaries that the native non-null edit leaves unchanged do not acquire edit provenance.
+Missing targets likewise produce no replacement output.
+
+The canonical equal-edit fixture initially searched only array-shaped user content.
+Pi AI `dist/api/openai-completions.js:926` preserves scalar user text:
+
+```js
+// Pi AI 1.1.0, dist/api/openai-completions.js:926
+if (typeof msg.content === "string") {
+    params.push({
+        role: "user",
+        content: sanitizeSurrogates(msg.content),
+    });
+}
+```
+
+`proc_5125` and the matrix phase of `proc_2061` exposed that fixture omission.
+The fixture now checks both native representations.
+A separate fixture error,
+`proc_871e`,
+used a family-unspecific hidden-mode match and unintentionally created a compaction for `edit-hidden`.
+That flag now requires the compaction-system family.
+Neither correction changes runtime provenance or native output.
+
+Corrected `proc_da68` passed native editable-role variants,
+unapplied system/missing/compaction targets,
+owner shape/getter/shared-cap checks,
+and the 36-mode loaded-input matrix.
+Construction omission `ddc6f13` / `proc_e0e8` lost the edited message's original publication.
+The observer is restored.
+Complete regression remains pending.
+
+Run `mise --no-env --no-hooks run test:loaded-edit-manager`
+inside private `contract/integration/native-batch`.
+Omissions and shadowed edits remain original inputs,
+not proof that an earlier governing instruction was revoked.
+The source profile remains input-only and unregistered.
+This is private consumer propagation and fixture repair;
+no upstream defect or filing is proposed.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
