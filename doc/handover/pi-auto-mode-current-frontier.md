@@ -341,10 +341,22 @@ Native consumer `proc_397c` and publication regression `proc_9794` passed.
 Pure identity,
 bounds,
 and deferred-failure controls passed `proc_4bbb`.
-Native manager parity,
-broader lifecycle controls,
-sensitivity,
-and full regressions remain pending.
+Native manager identity/value parity passed `proc_3dd2`;
+native migration and invalid-file controls passed `proc_68f4`.
+Capture-failure omission `342436b` / `proc_647a`
+and pre-attachment observer omission `4e579c9` / `proc_1f27` failed and were restored.
+Full native `proc_2f89`,
+action `proc_0d50`,
+and policy-source `proc_1b35` passed.
+
+Failed in-place loading exposed an incorrect fixture expectation in `proc_12a4`.
+Corrected `proc_84c8` follows surviving native state or withholds provenance;
+it does not relabel prior indexed values as a newly attempted load.
+The details are in main `doc/troubleshooting/pi-sdk-staging.md`.
+Material-guard omission `9e05514` / `proc_9357` incorrectly accounted input-only membership;
+the guard is restored and complete action regression `proc_eb8e` passed.
+The earlier attempt `proc_8568` stopped at a Git lock collision and ran no test.
+Runtime/generator sources match full-native checkpoint `a3d2086` by scoped Git diff.
 
 This initial profile covers supported stored user-message text content.
 It does not authenticate a prior human,
