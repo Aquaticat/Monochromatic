@@ -360,8 +360,13 @@ Diagnostic-only retry `proc_9a1e` passed with unchanged runtime and the same pol
 That non-reproduction proves neither cause nor fix.
 The five-second budget remains unchanged,
 and nested failure diagnostics are now preserved.
-Integrated verification is running in `proc_4a74`;
-sensitivity and complete post-change regressions remain unfinished.
+Integrated `proc_4a74` passed 85 constructed-input outputs with empty child stderr.
+Rethrow omission `0d7076e` / `proc_82cb` failed with `Missing expected rejection.`
+Entry-observation omission `5a3020f` / `proc_c64f` lost the original rejected-call source.
+Both guards are restored;
+no deliberate omission remains.
+Complete native regression is running in `proc_834c`.
+Complete action/source regressions and final closeout remain pending.
 No production admission or governing-domain closure is claimed.
 
 ## Original known-command input before interception
