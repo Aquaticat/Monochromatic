@@ -237,6 +237,54 @@ Full native `proc_f733`,
 action `proc_8b6b`,
 and eleven-document render `proc_1cf2` passed.
 
+## Original handler-message contributions
+
+Original `before_agent_start` message inputs now retain their source identity through actual native construction,
+manager copies,
+session projection,
+custom-to-user conversion,
+and user-content serialization.
+The existing handler sources and active run ancestry are reused.
+Text-block arrays stay original JSON sources;
+there is no joined Markdown,
+additional request parser,
+or second source inventory.
+
+Only actual original-capability transfers establish these links.
+Equal independent messages and context-edit replacements cannot borrow an original handler source.
+Payload custody owns new text arrays and blocks before the OpenAI client's awaited authentication,
+without freezing callback-owned objects.
+Historical receipts discard transient payload nodes and do not depend on later mutations of those aliases.
+
+Required missing-association control `proc_51d1` failed;
+canonical handler accounting passed `proc_e424`.
+Original emitting-run/ancestry consumer controls passed `proc_9621`.
+Installed/private conversion parity passed `proc_1bd1` with 15 SDK cases and 60 provider cases;
+existing serializer regressions passed `proc_6131`.
+Private preparation now copies 11 native modules and leaves installed files unchanged.
+
+Nested equal replacement failed `proc_2adc`;
+descriptor-restoration revival failed `proc_9061`.
+Both defects are fixed:
+existing aliases retain content and part identities,
+and observed currentness failure retires eligibility before structural rejection can short-circuit it.
+The restored owner controls and 24-mode native handler matrix passed `proc_7137`.
+These include empty/nullish content,
+structured text,
+equal independent inputs,
+context edits,
+payload copies,
+borrowed input mutation,
+malformed Unicode,
+and pre/post-materialization payload mutations.
+
+This is partial source lineage only.
+System-like labels and user transport roles supply no authority or permission.
+Independent boundary drafts,
+`sendCustomMessage` deliveries,
+and general persisted-session provenance remain outside this retained-handler profile.
+Full native/action regression and guard-omission checks after this extension are pending.
+
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation

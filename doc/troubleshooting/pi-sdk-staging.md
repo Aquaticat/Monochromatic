@@ -435,6 +435,111 @@ Native guideline handling itself was correct;
 this remains a private source-consumption and ownership change,
 not an upstream filing.
 
+### SDK 1.1.0 handler messages need original construction and conversion links
+
+The private required control failed `proc_51d1` with Node's `AssertionError [ERR_ASSERTION]`:
+`The original retained handler message needs its own non-system field association`.
+The native body contained the handler text;
+the private source consumer had no lineage across the native object constructions.
+
+SDK 1.1.0 `dist/core/agent-session.js:1615` creates a new native custom message
+from each original emitter-result member:
+
+```js
+// Pi SDK 1.1.0, dist/core/agent-session.js:1615 to 1625
+for (const msg of result.messages) {
+    messages.push({
+        role: "custom",
+        customType: msg.customType,
+        // Untyped extensions can pass null/missing content; normalize at ingestion.
+        content: msg.content ?? [],
+        display: msg.display,
+        details: msg.details,
+        timestamp: Date.now(),
+    });
+}
+```
+
+SDK `dist/core/messages.js:89` creates another object during LLM conversion:
+
+```js
+// Pi SDK 1.1.0, dist/core/messages.js:89 to 97
+case "custom": {
+    const content = typeof m.content === "string" ? [{ type: "text", text: m.content }] : m.content;
+    return {
+        role: "user",
+        content,
+        timestamp: m.timestamp,
+    };
+}
+```
+
+Pi AI 1.1.0 `dist/api/openai-completions.js:933` filters empty text
+and constructs fresh provider text blocks.
+Its text branch is:
+
+```js
+// Pi AI 1.1.0, dist/api/openai-completions.js:936 to 941
+if (item.type === "text") {
+    return {
+        type: "text",
+        text: sanitizeSurrogates(item.text),
+    };
+}
+```
+
+The private patch observes those actual constructions,
+the existing native manager copy sites,
+and the existing projection's `sourceEntry`/message relationships.
+It does not match origins by text,
+entry ID,
+message ordinal,
+or `customType`.
+Context-edit targets do not republish the displaced source,
+including when replacement text is equal.
+Other custom-message append sites serve boundary drafts and `sendCustomMessage` deliveries;
+they have no retained original handler-input publication merely because their text matches.
+
+The verified consumer preserves original string or JSON source text,
+owns fresh nested payload containers,
+and seals through the existing terminal JSON validation.
+There is no extra request parse or request re-encoding.
+The installed/private conversion check passed `proc_1bd1`:
+15 SDK cases and 60 provider cases,
+including image downgrading and synthetic transcript messages.
+Canonical handler accounting passed `proc_e424`;
+original-source/run consumer controls passed `proc_9621`;
+the restored 24-mode native matrix passed `proc_7137`.
+Run `mise --no-env --no-hooks run test:handler-source-controls`
+inside private `contract/integration/native-batch`.
+
+The passing catalog includes original structured text,
+empty/nullish inputs without invented transmission,
+equal independent inputs,
+blocked-image settings with text,
+native context edits,
+and mutation of discarded payload aliases before and after materialization.
+Unsupported image input still rejects at the incumbent text-only snapshot boundary.
+Malformed Unicode remains retained but unassociated under this original-text profile.
+
+Two private guard defects were reproduced and fixed.
+`proc_2adc` reported `Equal independent nested replacement must retire content-array`:
+equal text had concealed replacement of an original nested object.
+Alias signatures now compare the original content and part references,
+not only values and descriptor flags.
+`proc_9061` reported
+`Observed accessor substitution cannot revive after descriptor restoration`
+with `true !== false`.
+Known handler currentness now runs before structural rejection can skip retirement.
+
+The first matrix attempt `proc_2a7c` also caught a fixture error:
+its callback changed both requests while its getter assertion expected only the first.
+The fixture now explicitly targets the first request.
+The first restoration attempt `proc_71c1` threw its assertion inside the native stream catch;
+the explicit `proc_9061` control records the observation and asserts outside that catch.
+These failures are not upstream SDK defects,
+and no installed source was changed.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
