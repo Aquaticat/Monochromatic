@@ -325,7 +325,12 @@ The first broader matrix,
 exposed a fixture assumption that the requested source was always first.
 Capturing the seed assistant changed that order for branch summaries.
 The corrected fixture selects the original role/content and keeps exact source-count assertions.
-Broader controls and complete regressions are still pending.
+Corrected 28-mode matrix,
+native manager checks including legacy custom migration,
+and owner controls passed `816732c` / `proc_0bf6`.
+Text-profile omission `e938c5d` / `proc_2f73` produced native `stop` instead of the required source-use `error`.
+Validation is restored.
+Complete regression remains pending.
 
 Bash execution inputs,
 mixed or unsupported representations,
