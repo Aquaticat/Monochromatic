@@ -894,7 +894,10 @@ owner getter/profile controls,
 and the 31-mode loaded-input matrix passed `proc_589c`.
 Conversion omission `proc_30e1` lost the resulting user message's original publication.
 The conversion observation is restored.
-Complete regression remains pending.
+Complete native `proc_aa93`,
+action `proc_25cc`,
+source-policy `proc_7e06`,
+and 14-document rendering `proc_e36e` / `proc_0f9f` passed.
 
 Run `mise --no-env --no-hooks run test:loaded-bash-manager`
 inside private `contract/integration/native-batch`.

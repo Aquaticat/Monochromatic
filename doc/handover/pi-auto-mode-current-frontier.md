@@ -324,7 +324,10 @@ the 31-mode native input matrix,
 and manager regression passed `proc_589c`.
 Conversion omission `1316895` / `proc_30e1` lost the formatted message's original publication.
 The observation is restored.
-Complete regression remains pending.
+Complete native `proc_aa93`,
+action `proc_25cc`,
+source-policy `proc_7e06`,
+and 14-document rendering `proc_e36e` / `proc_0f9f` passed.
 
 Loaded context-edit replacement inputs,
 mixed or unsupported representations,
