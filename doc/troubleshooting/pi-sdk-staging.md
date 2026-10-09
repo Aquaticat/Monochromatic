@@ -1,5 +1,119 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 queued text has no session entry at construction
+
+### Symptom and native source boundary
+
+The private provenance consumer initially omitted queued user text:
+`proc_10e8` reached canonical review but found zero original queue sources instead of one.
+This is a private adapter gap,
+not an upstream queue failure.
+
+Installed `pi-coding-agent@1.1.0/dist/core/agent-session.js:1690`
+runs input handlers and expansions before calling the queue constructors.
+At lines 1733 and 1749,
+the constructors build native content and pass a new user message to the agent:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+const content = [{ type: "text", text }];
+if (images) {
+    content.push(...images);
+}
+this.agent.followUp({ role: "user", content, timestamp: Date.now() });
+```
+
+Installed `pi-agent-core@1.1.0/dist/agent.js:60`
+retains those original object references in `PendingMessageQueue`:
+
+```javascript
+// Installed pi-agent-core dist/agent.js
+enqueue(message) {
+    this.messages.push(message);
+}
+drain() {
+    const drained = this.peek();
+    this.messages = this.messages.slice(drained.length);
+    return drained;
+}
+clear() {
+    this.messages = [];
+}
+```
+
+The queue therefore exists before any session-entry position.
+Queue removal alone proves no policy revocation or historical human authorship.
+The private source location uses delivery metadata without inventing an entry ordinal.
+
+### Private correction and verification
+
+The existing manager input owner captures only the actual constructor's original text.
+Its frozen queued-input view contains source/publication references,
+not copied messages.
+The shared source caps,
+native queue results,
+and deferred capture-error boundary remain.
+Source reads refresh changed nonempty views and recheck failures even when the view is unchanged.
+
+`proc_43ef` and `proc_83d8` passed delivered and cleared steering/follow-up cases.
+The first request for a pending follow-up omits its text while source accounting retains the original input.
+Delivered objects and copied `entry.message` values retain the original input-only publication.
+They never become payload capabilities.
+
+`proc_14cd` rejected late arrivals during semantic assessment,
+including streaming prompt and extension routes.
+Oversized captured text preserved native enqueue completion,
+then failed guarded source use.
+Native reset before the new input merged raised `Root lease has been retired`;
+no member executed.
+This contradicts a reviewer hypothesis that this tested reset window silently continued.
+
+`proc_3fab` showed why the first empty queue view must not trigger context retention.
+The corrected owner passed `proc_a0bc`.
+A new empty owner view also reuses already-published unchanged membership.
+A changed owner cannot validate previously retained queued origins.
+
+Run `mise --no-env --no-hooks run test:queued-input-source`,
+`test:queued-input-late`,
+`test:queued-input-lifetime`,
+`test:queued-input-owner`,
+and `test:selected-path-owner` separately in the private
+`contract/integration/native-batch` directory.
+The fixtures use authored local responses,
+not provider requests or genuine approvals.
+
+### Rejected readings and remaining scope
+
+The private generator initially referenced `_sessionManager`,
+which was not the actual private field.
+`proc_1693` raised Node's
+`TypeError: Cannot read properties of undefined (reading '#loadedInputs')`.
+The generator now uses `#sessionManager`;
+installed source is unchanged.
+
+The ordinary-entry alias assertion in `proc_60ef` was also wrong:
+the maintained copy observer follows `entry.message`,
+not its wrapper.
+No new wrapper alias was added to satisfy the fixture.
+
+A source review suggested all queued images would poison capture.
+The implementation captures the separate text argument,
+not image data;
+independent image origin remains unresolved.
+Direct agent queue APIs,
+custom queue producers,
+and text removed by preceding input handlers are also outside this increment.
+The governing-domain obligation remains open,
+so these gaps do not produce automatic permission.
+
+### Upstream filing decision
+
+No upstream filing or upstream patch is proposed.
+The missing custody edge belongs to the private adapter.
+Native queue support does not promise this application's instruction authority or domain closure.
+The production qualification and installed-cutover gates remain closed;
+the remaining sensitivity and full-regression work is local.
+
 ## Private SDK 1.1.0 source association stops at defensive copies
 
 ### Symptom and cause

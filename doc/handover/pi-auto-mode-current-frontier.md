@@ -296,6 +296,74 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original native queued user text
+
+The private consumer captures the actual user-message construction in
+`AgentSession._queueSteer` and `AgentSession._queueFollowUp`,
+after native input handlers,
+skill expansion,
+and prompt-template expansion.
+The existing manager input owner retains the original text and input-only publication.
+It assigns `inputOrigin:'native-queue'`,
+a fresh input occurrence,
+and delivery metadata,
+not an emitting run,
+a saved issuer,
+or a session-entry ordinal.
+
+A frozen view holds references to those original source/publication records.
+It is not another transcript,
+message inventory,
+parser,
+or serialized request.
+Loaded,
+appended,
+and queued sources share the existing 64-source and four-MiB serialized-record limits.
+The source remains unregistered and cannot authenticate a payload contribution.
+Queue clearing and delayed transmission do not independently prove governing-policy revocation.
+
+Context retention incorporates these known inputs independently of transmission.
+A source read refreshes nonempty changed queue views and rechecks deferred capture failure.
+Empty queues do not manufacture a native context observation.
+The queued-view marker is committed only after successful retention or unchanged-view reuse.
+Late input changes invalidate the original request source view rather than borrowing its earlier assessment.
+
+Required red `7047d65` / `proc_10e8` lacked the original queued occurrence.
+The first implementation failed `proc_1693` because a late generator insertion used
+`_sessionManager` instead of the already-private `#sessionManager`.
+Corrected native delivered/cleared cases passed `proc_43ef`.
+Late-arrival controls `proc_f702` and `proc_14cd` closed the original judgment with
+`close-failed` and all members unentered.
+They cover explicit queue calls,
+streaming prompt/extension routes,
+oversized capture with unchanged queue-view identity,
+and native reset before merge.
+
+Empty-view red `ddea9bd` / `proc_3fab` was corrected in `242d62c`.
+`proc_cd98` passed queue-owner controls only:
+mise treated the other task name as an argument.
+Separate `proc_a0bc` passed the 23 selected-path,
+append,
+and queue-owner controls.
+`proc_60ef` exposed a fixture assertion against an ordinary entry wrapper;
+the actual copy observer associates `entry.message`.
+Corrected native aliases passed `proc_83d8`.
+
+This is construction-field custody,
+not complete original-input coverage.
+Direct `Agent.steer` / `Agent.followUp` calls,
+custom queue messages,
+pre-handler inputs,
+and independent image/mixed-content origins remain unestablished.
+Native delivery metadata is not governing applicability.
+`request-source-domain`,
+authority,
+delegation,
+semantic qualification,
+and independent approval sufficiency remain separate unresolved premises.
+Sensitivity and complete regression are pending;
+nothing is installed or activated.
+
 ## Original current-session summary inputs and append membership
 
 Current compaction and branch-summary arguments now use the incumbent manager input owner.
