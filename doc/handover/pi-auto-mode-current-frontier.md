@@ -203,7 +203,10 @@ backslashes,
 and newlines.
 Disabled-entry omission `proc_0567` and reader-availability omission `proc_0dff`
 each wrongly associated non-rendered descriptions.
-Both guards are restored and full skill-description regressions are running.
+Both guards are restored.
+Full native `proc_8600`,
+action `proc_4807`,
+and eleven-document render `proc_9301` passed.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
