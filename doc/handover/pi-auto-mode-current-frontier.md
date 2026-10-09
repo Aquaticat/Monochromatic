@@ -228,7 +228,11 @@ consumer-owner checks passed `proc_c84f`.
 Equal entries within one array and equal prompt/tool entries remain independent sources.
 Only the actual inserted occurrence contributes,
 and later rules-section or forced overrides still prevent association.
-Guideline guard sensitivity and full regression are being completed.
+Failure-ledger omission `proc_acd7` allowed a caught observation error to disappear;
+render-window omission `proc_3d7a` poisoned the old scope on a late call.
+Producer omission `proc_95dc` fabricated a suppressed contribution;
+consumer omission `proc_5308` incorrectly accounted for a `not-inserted` fact.
+Every guard is restored and full guideline regressions are running.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 

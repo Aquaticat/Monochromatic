@@ -372,6 +372,67 @@ source membership and actual native visibility remain independent requirements.
 The installed formatter required no changes;
 this is private source accounting rather than an upstream defect or filing.
 
+### Prompt and tool guideline insertion needs the original render window
+
+SDK 1.1.0 `dist/core/system-prompt.js:57` visits tool guideline arrays before prompt guideline entries.
+The same native `addRule` normalization and deduplication determines which original occurrence contributes.
+An equal later entry must not borrow the first entry's insertion.
+
+```javascript
+// Installed pi-coding-agent dist/core/system-prompt.js:57
+for (const name of selectedTools) {
+    for (const rule of toolGuidelines[name] ?? [])
+        addRule(rule);
+}
+for (const rule of promptGuidelines)
+    addRule(rule);
+```
+
+The private adapter now constructs the existing guideline source records as private drafts
+from the original frozen render input.
+The fixed native loops report their field,
+tool name where applicable,
+loop-local ordinal,
+raw value,
+and observed local insertion result directly to that owner.
+The owner seals and publishes the same records rather than creating a second inventory.
+The recorder never supplies an instruction tier or a decision.
+
+The existing run owner's render-finally path closes the observation window on success and failure.
+Late or foreign-render calls reject before recording a new failure on an old run.
+Failures during an accepted observation enter the original failure ledger,
+so catching one in the builder cannot revive eligibility.
+Legacy owner fixtures without native rendering retain their inputs without an insertion fact.
+
+Required red `proc_99ae` preceded actual-serializer green `proc_f2dc`.
+Original-record,
+lifetime,
+and unchanged-builder-output controls passed `proc_8829` and `proc_ab19`.
+The latter includes a caught liveness failure that throws `false`.
+Expanded visibility matrix `proc_b1b1` passed 69 modes;
+consumer-owner controls passed `proc_c84f`.
+The matrix includes duplicate entries within one array,
+equal prompt/tool entries,
+whitespace-equivalent entries,
+hidden/inactive tool guidelines,
+empty inputs,
+custom prompts,
+section overrides,
+and forced output.
+
+Failure-recording omission `77e34e4` failed `proc_acd7` with `Missing expected exception.`:
+a builder caught the observation failure and incorrectly completed its render.
+Render-window omission `a143431` failed `proc_3d7a` by recording
+`Guideline insertion observation is already sealed` on the old scope after a late call.
+Producer omission `6cfcc6c` failed `proc_95dc` with `1 !== 0` for a suppressed contribution.
+Consumer omission `d3ab546` failed `proc_5308` with `accounted` instead of `unresolved`
+for `Guideline not-inserted`.
+Every guard is restored;
+full guideline regression is running.
+Native guideline handling itself was correct;
+this remains a private source-consumption and ownership change,
+not an upstream filing.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
