@@ -296,6 +296,65 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original native input-event text
+
+The private emitter now observes each actual native `input` event before its handler receives it.
+The existing manager owner retains original text and source/streaming metadata as
+`native-input-event`,
+using the same constructed-input reference view and source limits.
+It does not read image data,
+freeze the borrowed event,
+infer human origin from `source:'interactive'`,
+or grant payload eligibility.
+
+The maintained generator copies the current SDK's input emitter,
+including its handler snapshot,
+ordering,
+transform chain,
+handled short-circuit,
+and native error reporting.
+Equal text passed to distinct handler events keeps distinct original occurrences.
+Handled or transformed text remains represented even when absent from the model request.
+
+Required red `b4c72b5` / `proc_dae2` lacked the original intercepted input.
+`09cb90e` / `proc_7ee7` passed handled and transformed consumers.
+`proc_64d3` passed chained transforms,
+equal events,
+handled-after-transform,
+and late handled/oversized input.
+A handled input can invalidate earlier source evidence without ever becoming a queued message.
+
+`proc_5822` exposed an obsolete fixture count:
+an intercepted queue call now has its actual input-event occurrence as well as queue construction.
+The corrected parity assertions in `proc_7530` distinguish both original publications.
+Pure source controls `proc_6bb9` cover UTF-8 bounds,
+metadata,
+borrowed-event mutation,
+getter rejection,
+image-read exclusion,
+and shared load/append/queue/custom/event limits.
+
+Independent review identified a private diagnostic error:
+observation was inside the native handler catch.
+Structural red `a0e0071` / `proc_c956` showed an observer's falsy throw was swallowed and attributed to the extension.
+`9cde800` moves construction/observation before the handler try.
+Native handler failures keep their own catch and reporting;
+unexpected observation failures propagate as themselves.
+Ordinary source-profile failures still latch for guarded use.
+The initial consumers passed `proc_be20` after the change.
+
+Integrated verification,
+sensitivity,
+and complete regression remain in progress.
+No-handler fast paths and commands handled before the input emitter construct no event under this profile.
+Their absence is not proof of non-governing input.
+Images,
+direct-agent producers,
+authenticated callers,
+applicable governing scope,
+and domain closure remain unfinished.
+No provider trial or installed change is authorized.
+
 ## Original current custom-message construction inputs
 
 The private native `sendCustomMessage` constructor now captures its normalized

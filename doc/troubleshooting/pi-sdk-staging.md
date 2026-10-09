@@ -1,5 +1,91 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 input handlers can remove original text before prompt construction
+
+### Symptom and native cause
+
+The private consumer initially lost original input when an extension handled it or rewrote it.
+`proc_dae2` reached canonical review after a handled input and found no original event source.
+Installed `pi-coding-agent@1.1.0/dist/core/extensions/runner.js:1202`
+creates an event for each snapshotted handler and then applies its result:
+
+```javascript
+// Installed pi-coding-agent dist/core/extensions/runner.js
+const event = {
+    type: "input",
+    text: currentText,
+    images: currentImages,
+    source,
+    streamingBehavior,
+};
+const result = (await handler(event, ctx));
+if (result?.action === "handled")
+    return result;
+if (result?.action === "transform") {
+    currentText = result.text;
+    currentImages = result.images ?? currentImages;
+}
+```
+
+Installed `dist/core/agent-session.js:1476` returns no processed input for `handled`.
+The later prompt/queue constructor therefore cannot recover the original event from final text.
+Byte equality with another message would not authenticate it.
+
+### Private correction and error boundary
+
+The existing copied emitter observes the actual event before invoking its handler.
+The manager's existing source owner captures text and source/streaming metadata,
+with input-only identity and no image reads.
+No callback input is frozen.
+Original events remain distinct even when text is equal.
+
+The first placement put observation inside the native handler try/catch.
+That could misattribute a bridge defect to the extension.
+Structural control `proc_c956` supplied an authored observer throwing `false`
+to the copied emitter with a real native runner.
+It failed `Missing expected rejection`;
+the native catch had swallowed the observer failure.
+This was a private instrumentation error,
+not an upstream handler defect.
+
+The generator now constructs/observes the event before the handler try.
+The constructor contains only fixed data fields from existing local values.
+Handler invocation and native error reporting remain inside their original catch boundary.
+Normal capture failures still latch in the manager owner;
+an unexpected observer failure is not relabeled as a handler failure.
+
+### Verification and rejected readings
+
+Run `test:input-event-source`,
+`test:input-event-chain`,
+`test:queued-input-native`,
+and `test:queued-input-controls` separately through
+`mise --no-env --no-hooks run`
+in the private `contract/integration/native-batch` directory.
+
+`proc_7ee7` passed handled/transformed source retention.
+`proc_64d3` passed chained/equal/chained-handled events and late handled/oversized input.
+`proc_6bb9` passed original-owner bounds,
+data-property validation,
+and no-extra-image-read controls.
+An intercepted queue API call has an input event plus queue construction;
+`proc_5822` exposed the old single-occurrence fixture assumption,
+and corrected `proc_7530` passed.
+The observer-error correction's initial native consumers passed `proc_be20`.
+
+Native source labels such as `interactive` do not establish a human author.
+The no-handler fast path and commands handled before `emitInput` are not represented by fabricated events.
+Their original-input accounting remains a separate gap.
+Image origin and governing-domain completeness remain unestablished.
+
+### Upstream filing decision
+
+No upstream filing is proposed.
+The private adapter needed an earlier observation boundary and correct observer-error attribution.
+Native input-handler behavior itself is unchanged for supported capture.
+Integrated and complete regressions remain pending;
+the installed plugin is untouched.
+
 ## Pi 1.1.0 custom message construction can precede any prompt run
 
 ### Symptom and cause
