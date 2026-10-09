@@ -343,9 +343,11 @@ unexpected observation failures propagate as themselves.
 Ordinary source-profile failures still latch for guarded use.
 The initial consumers passed `proc_be20` after the change.
 
-Integrated verification,
-sensitivity,
-and complete regression remain in progress.
+Integrated `proc_a059` passed with empty child stderr,
+including the absent-handler negative and separate observer/handler error paths.
+Omitting the actual observation edge failed `proc_e954`;
+the edge is restored.
+Complete native regression `proc_a1d5` is running.
 No-handler fast paths and commands handled before the input emitter construct no event under this profile.
 Their absence is not proof of non-governing input.
 Images,

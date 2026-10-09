@@ -83,8 +83,11 @@ Image origin and governing-domain completeness remain unestablished.
 No upstream filing is proposed.
 The private adapter needed an earlier observation boundary and correct observer-error attribution.
 Native input-handler behavior itself is unchanged for supported capture.
-Integrated and complete regressions remain pending;
-the installed plugin is untouched.
+Integrated `proc_a059` passed with empty child stderr.
+Observation-edge omission `proc_e954` lost the original handled input and failed;
+the edge is restored.
+Complete native regression `proc_a1d5` is running.
+The installed plugin is untouched.
 
 ## Pi 1.1.0 custom message construction can precede any prompt run
 
