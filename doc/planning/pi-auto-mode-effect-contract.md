@@ -68,7 +68,9 @@ consumer `proc_b025` accepted inconsistent schedules;
 `proc_54ee` erased an independent fact-owner gap;
 `proc_9907` accepted a wrong inspected profile.
 Each control failed.
-Restored full native `proc_c1a5`, action `proc_2992`, and eleven-document render `proc_f581` passed.
+Restored full native `proc_c1a5`,
+action `proc_2992`,
+and eleven-document render `proc_f581` passed.
 No production admission policy,
 qualification threshold,
 provider request,

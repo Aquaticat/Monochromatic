@@ -328,7 +328,13 @@ No source scope,
 question budget,
 production admission,
 or request-domain completeness is enlarged.
-Guard sensitivity and full native regression for this extension are pending.
+Quoted-scope omission `proc_5954` wrongly lowered a quoted heading;
+source-authority omission `proc_9adf` invented priority for an unregistered heading;
+admission omission `proc_18d4` treated an abstained heading as interpreted.
+All guards are restored.
+Full native `proc_b8db` and action/source `proc_39cd` passed.
+The expanded document check now includes the effect contract;
+its final formatting/rendering verification is pending.
 
 ## Original complete-group scheduling and multi-program application
 
@@ -376,7 +382,9 @@ consumer `proc_b025` accepted inconsistent schedules;
 `proc_54ee` erased an independent fact-owner gap;
 `proc_9907` accepted a wrong inspected profile.
 Each control failed.
-Restored full native `proc_c1a5`, action `proc_2992`, and eleven-document render `proc_f581` passed.
+Restored full native `proc_c1a5`,
+action `proc_2992`,
+and eleven-document render `proc_f581` passed.
 Production admission and installed activation remain unchanged.
 
 ## Express same-source quoted-unit incorporation
