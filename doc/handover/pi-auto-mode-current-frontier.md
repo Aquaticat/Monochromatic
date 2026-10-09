@@ -296,6 +296,45 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loaded context-edit inputs
+
+The existing load owner captures original `context_edit` replacement content and null omissions.
+Displaced target inputs and shadowed edits remain separate original occurrences.
+Actual native replacement construction propagates the edit's input-only identity,
+not the displaced target's identity.
+Unapplied replacements do not authenticate unchanged or unrelated outputs.
+
+Target IDs remain metadata.
+Neither context suppression nor replacement establishes policy revocation,
+authority,
+permission,
+execution facts,
+or complete composite origin.
+The shared source and byte limits remain unchanged.
+
+Required red `4f164d6` / `proc_d556`
+preceded consumer `f001a43`.
+Native editable-role and owner checks passed inside `proc_2061`,
+but its matrix phase failed.
+The equal-edit fixture incorrectly searched array content only;
+the native serializer also preserves scalar user text.
+After that correction,
+`proc_871e` exposed a separate fixture flag collision:
+`edit-hidden` accidentally enabled compaction-system hidden behavior.
+The fixture now keeps those families separate and explicitly checks the displaced target's content.
+
+Corrected matrix,
+unapplied-target controls,
+constructor sensitivity,
+and complete regressions remain tracked in `current-progress.json`.
+Mixed or unsupported representations,
+current-run generated inputs,
+queued transformations,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
 ## Original loaded bash record inputs
 
 The existing load owner captures native `bashExecution` command and output text.
