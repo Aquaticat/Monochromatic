@@ -247,6 +247,35 @@ so the staleness window if the target's addresses rotate is unmeasured.
 For a CDN target this costs edge locality;
 for a static-address target it costs nothing.
 
+Measured a second time on 2026-10-09 against a Fastly shared-SNI target,
+`x.sni.global.fastly.net`,
+and the result differs from the CloudFront case in
+a way that matters.
+The CloudFront probe answered four `A` and eight `AAAA`
+records.
+The Fastly probe answered **one** `A` and **one** `AAAA`,
+`199.232.173.242` and `2a04:4e42:6b::498`,
+and the IPv4 address was not among
+the four that Fastly's own API publishes as the expected `A` records for that
+hostname.
+Both are Fastly anycast ranges and the address served the content
+correctly,
+but flattening handed every querier a single address instead of a
+set,
+and not the set the CDN documents.
+So the flattening tradeoff is not
+uniform across CDN targets:
+it depends on how many addresses the target's
+authoritative server returns to Njalla's resolver,
+which is not under the zone
+owner's control.
+A CDN that publishes a fixed anycast set through its API is a
+candidate for explicit `A` and `AAAA` records instead of an `ANAME`,
+which is
+what Fastly's own apex-domain guidance recommends and what its discouragement
+of "proprietary CNAME flattening features offered by some DNS providers (e.g.,
+ALIAS or ANAME)" amounts to in practice.
+
 ## What does not work
 
 - **Fixing the body.**
@@ -269,6 +298,24 @@ for a static-address target it costs nothing.
   Refused at the API with the verbatim message in "Symptom".
   Replace the `CNAME` with an `ANAME` instead,
   per workaround 4.
+- **Proving a name is retired by expecting `NXDOMAIN`.**
+  This zone holds a
+  wildcard record,
+  `*.aquati.cat. IN HTTPS` advertising `alpn="h3"`,
+  so
+  every name under the apex exists by synthesis and `NXDOMAIN` is unreachable
+  for any of them.
+   A deleted name answers `NOERROR` with `ANSWER: 0` and the
+  SOA in the authority section,
+   which is indistinguishable from a label that
+  never existed.
+   Verify retirement with a control pair instead:
+   the retired
+  name and a known-never-existed name must both answer zero records,
+   while a
+  name that must still resolve answers at least one.
+   Measured on 2026-10-09,
+  all three behaved as described and a serving name answered four `A` records.
 
 ## Upstream filing decision
 

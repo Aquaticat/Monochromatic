@@ -62,11 +62,22 @@ Asked and left unanswered,
 so parked rather than assumed:
 
 - relocating the Fastly mirror under the same intermediate label,
-  which would let the apex return to `letsencrypt.org` only;
+  which would let the apex return to `letsencrypt.org` only.
+   **Resolved
+  2026-10-09**,
+   and not by relocation:
+   see the section headed
+  "Fastly mirror moved to a leaf CAA,
+   and the AWS mirror renamed".
 - the stale `mise.toml` comment claiming dprint formats markdown,
    when the
   markdown plugin is commented out in `package/config/dprint/index.json`;
 - recording why `certainly.com` sits at the apex.
+   **Resolved 2026-10-09**:
+  the record is deleted.
+   The why stays historical;
+   no commit or document
+  ever recorded adding it.
 
 Blockers measured on 2026-10-09,
 both cleared during execution:
@@ -913,33 +924,312 @@ Two observations recorded rather than acted on:
   radius than this task needed.
   Nothing was changed about it.
 
+## Fastly mirror moved to a leaf CAA, and the AWS mirror renamed
+
+Executed later on 2026-10-09 for
+[issue 674](https://github.com/Aquaticat/Monochromatic/issues/674).
+
+The issue proposed relocating the Fastly mirror one label deeper,
+to a
+hostname like `fastly.mirror.aquati.cat` under an intermediate
+`mirror.aquati.cat` carrying `0 issue "certainly.com"`.
+The maintainer chose
+instead to keep the existing hostname by applying option 7's mechanism to
+Fastly:
+make the leaf a flattened alias so it can carry its own CAA.
+Two further
+instructions arrived during execution:
+add `mirror.fastly.aquati.cat` as a
+working second hostname,
+and move the AWS mirror from `aws.aquati.cat` to
+`amazon.aquati.cat`.
+
+The end state is symmetric across both mirrors,
+and in both cases the
+flattened name doubles as the climb-terminating label for the CNAME below it:
+
+```text
+aquati.cat.               CAA    0 issue "letsencrypt.org"
+fastly.aquati.cat.        ANAME  x.sni.global.fastly.net.
+fastly.aquati.cat.        CAA    0 issue "certainly.com"
+mirror.fastly.aquati.cat. CNAME  x.sni.global.fastly.net.
+amazon.aquati.cat.        ANAME  <distribution-domain>.
+amazon.aquati.cat.        CAA    0 issue "amazon.com"   (plus three more)
+mirror.amazon.aquati.cat. CNAME  <distribution-domain>.
+```
+
+### What Fastly publishes, measured before touching anything
+
+`GET /tls/configurations/<tls-configuration-id>?include=dns_records` returns
+the records Fastly expects for a hostname on that configuration:
+four `A`
+records marked `region: global`,
+and the `CNAME` target.
+Those four addresses
+are the same values the `managed-http-a` challenge lists.
+
+`GET /tls/subscriptions/<id>?include=tls_authorizations` returns three
+challenge types for a shared-SNI hostname:
+
+- `managed-dns`,
+   a `CNAME` at `_acme-challenge.<hostname>` into
+  `fastly-validations.com`;
+- `managed-http-cname`,
+   a `CNAME` at the hostname to the shared-SNI target;
+- `managed-http-a`,
+   `A` records at the hostname equal to the four anycast
+  addresses above.
+
+Fastly's Certainly product page states the renewal contract:
+certificates are
+valid 30 days,
+and Fastly re-verifies and renews after 20 days "as long as your
+DNS records point to Fastly and your Certification Authority Authorization
+(CAA),
+if in use,
+is set to Certainly".
+
+Fastly's apex-domain guide does **not** recommend "proprietary CNAME flattening
+features offered by some DNS providers (e.g.,
+ALIAS or ANAME)",
+and instead
+offers anycast `A` and `AAAA` records.
+The maintainer chose the ANAME route
+anyway,
+after that trade-off was put to them with the measurements.
+
+A throwaway probe at `fastlyprobe.aquati.cat`,
+deleted inside the same run,
+measured what Njalla's flattening actually publishes for this target:
+`A 199.232.173.242` and `AAAA 2a04:4e42:6b::498`,
+one of each.
+That address
+serves the mirror:
+`curl --resolve` against it while requesting the real
+hostname returned HTTP 200 with 3445 and 6081 bytes on two routes,
+byte-for-byte identical to the live CNAME path.
+It is a valid Fastly anycast
+address,
+but it is not one of the four values Fastly lists for
+`managed-http-a`.
+The zone record count returned to its starting value before
+the script exited.
+
+### Changes made
+
+DNS at Njalla:
+
+1.  `fastly.aquati.cat`:
+    the CNAME was replaced with an ANAME to the same
+    target,
+    TTL 86400 carried over,
+    then `0 issue "certainly.com"` was
+    added at the leaf,
+    TTL 86400 matching the apex record it replaces.
+    Njalla refuses CAA beside a CNAME with
+    `code 400 You can not have both CNAME and CAA records.`,
+    which is why the
+    alias had to be replaced rather than joined.
+2.  `mirror.fastly.aquati.cat`:
+    a real CNAME to the shared-SNI target,
+    TTL 86400,
+    matching `mirror.amazon.aquati.cat`.
+3.  `_acme-challenge.mirror.fastly.aquati.cat`:
+    the CNAME Fastly's
+    `managed-dns` challenge asked for,
+    TTL 300.
+4.  `amazon.aquati.cat`:
+    an ANAME to the distribution domain,
+    TTL 86400.
+    Its four Amazon CAA records already existed.
+5.  The new ACM validation CNAME under `amazon.aquati.cat`,
+    TTL 300.
+    The
+    value ACM gave for `mirror.amazon.aquati.cat` matched the record already
+    in the zone byte for byte,
+    which independently re-confirms issue 4 of
+    [`doc/troubleshooting/aws-cloudfront-mirror.md`](../troubleshooting/aws-cloudfront-mirror.md).
+6.  `aws.aquati.cat`:
+    all six records deleted,
+    the ANAME,
+    the four CAA
+    records,
+    and the validation CNAME.
+7.  `aquati.cat`:
+    `0 issue "certainly.com"` deleted.
+
+On the Fastly side:
+
+8.  `mirror.fastly.aquati.cat` was added as a service domain.
+    In this
+    account's service model domains attach at the service level,
+    so no
+    version was cloned or activated.
+9.  A **separate** Certainly subscription was created for the new name rather
+    than adding it to the existing one,
+    so the working `fastly.aquati.cat`
+    certificate was never re-issued.
+    Its authorization went `blocked`,
+    then
+    `passing`,
+    then the subscription reached `issued`,
+    and Fastly created
+    the TLS activation itself.
+
+On the AWS side:
+
+10. One certificate was requested for `amazon.aquati.cat` and
+    `mirror.amazon.aquati.cat`,
+    `EC_prime256v1`,
+    DNS validation,
+    `us-east-1`.
+    It reached `ISSUED` with both validations `SUCCESS`.
+    A
+    third certificate was unavoidable:
+    ACM cannot add a name to an issued
+    certificate,
+    and CloudFront rejects an alias its viewer certificate does
+    not cover.
+11. One `UpdateDistribution` set `Aliases` to the two current names and
+    `ViewerCertificate.ACMCertificateArn` to the replacement.
+    A field-level
+    diff against the saved live configuration asserted that only
+    `Aliases.Items` and `ViewerCertificate.ACMCertificateArn` moved,
+    plus the
+    two response-only members `Certificate` and `CertificateSource`,
+    which
+    `update-distribution` rejects if echoed back.
+    The deploy reached
+    `Deployed`.
+12. The replaced certificate was deleted under the same three assertions the
+    earlier remedy used,
+    with the third adapted because both certificates
+    now hold two names:
+    the target's subject alternative names contain
+    `aws.aquati.cat`,
+    where the replacement's contain `amazon.aquati.cat`.
+
+### Verification
+
+Content parity against the origin held for all four serving hostnames on two
+routes,
+by status,
+byte count,
+and body digest:
+200 and 3445 bytes with digest
+`15789f6f382e8750`,
+then 200 and 6081 bytes with digest `4f333bd94794b4af`.
+Strict TLS verification reported `ssl_verify_result` 0 everywhere,
+and each
+certificate's subject alternative names cover the hostname served.
+
+The strongest evidence is the issuance for `mirror.fastly.aquati.cat`.
+That
+name has no CAA of its own,
+and its CNAME target `x.sni.global.fastly.net`
+answers empty for CAA,
+so its climb terminated at `fastly.aquati.cat`'s new
+record and never read the apex.
+Certainly issued anyway.
+A leaf CAA record at
+`fastly.aquati.cat` is therefore sufficient on its own,
+proven by issuance
+rather than inferred from RFC 8659.
+
+The retired name was verified with controls rather than by assertion alone.
+The zone holds a wildcard `*` HTTPS record advertising `alpn="h3"`,
+so every
+name under `aquati.cat` exists and `NXDOMAIN` is unreachable.
+`aws.aquati.cat`
+answers `NOERROR` with zero A and zero AAAA,
+identical to a label that never
+existed,
+while all four serving hostnames answer with at least one record.
+
+The zone went from 95 records to 93:
+minus one CNAME,
+minus six `aws.` records,
+minus one apex CAA,
+plus one ANAME and one CAA at `fastly.`,
+plus two
+`mirror.fastly.` records,
+plus one `amazon.` ANAME,
+plus one `amazon.`
+validation CNAME.
+
+### Residual risk and its fallback
+
+One thing is still unverified.
+Fastly's `tls_authorizations` for
+`fastly.aquati.cat` reports `state: passing` with `updated_at` 2026-05-29,
+months before this change,
+so the field is cached and gives no live signal
+about the new DNS shape.
+Whether Fastly's day-20 re-verification still
+considers the hostname pointed at Fastly once the leaf is an ANAME publishing
+`199.232.173.242`,
+rather than a CNAME or the four addresses in its
+`managed-http-a` list,
+can only be settled by that renewal,
+due around
+2026-10-16 for a certificate expiring 2026-10-26.
+
+The maintainer accepted deleting the apex record before that renewal,
+on the
+grounds that nothing depends on the Fastly mirror.
+The CAA half of the risk
+was already closed by the `mirror.fastly.aquati.cat` issuance.
+
+If the renewal does fail,
+the fallback is DNS-only and needs no Fastly-side
+mutation:
+replace the ANAME with the four `A` records Fastly publishes in
+`managed-http-a`,
+plus the four `AAAA` records measured from the shared-SNI
+target (`2a04:4e42::498`,
+`2a04:4e42:200::498`,
+`2a04:4e42:400::498`,
+`2a04:4e42:600::498`).
+The leaf CAA record is unaffected by that swap.
+Fastly's dualstack guide says the official anycast IPv6 list comes from
+support;
+the measured values are the ones the CNAME target already answers
+with.
+The cost of the fallback is manual maintenance if Fastly ever rotates
+those addresses,
+which a CNAME or an ANAME would follow by itself.
+
 ## Open questions
 
-- Why does the apex authorize `certainly.com`?
-  No commit or document records adding it.
-  The Fastly mirror's Certainly certificate is consistent with it being
-  deliberate,
-  and the zone SOA serial shows the last change predates this incident.
-  Under RFC 8659 the apex set is also what authorizes Certainly for
-  `fastly.aquati.cat`,
-  since that name is a CNAME with no CAA of its own.
-  The question is now mostly historical:
-  [issue 674](https://github.com/Aquaticat/Monochromatic/issues/674) would
-  move that authorization off the apex.
+- Does Fastly's day-20 re-verification still accept `fastly.aquati.cat` as an
+  ANAME?
+   Due around 2026-10-16.
+   See "Residual risk and its fallback".
 - Does the origin's Let's Encrypt certificate use DNS-01 against Njalla?
   Only relevant if DNS for the apex ever moves.
-- The Fastly mirror relocation,
-  which would let the apex return to `letsencrypt.org` only,
-  is tracked as
-  [issue 674](https://github.com/Aquaticat/Monochromatic/issues/674).
 - A Certificate Transparency watch for `aquati.cat` is tracked as
   [issue 675](https://github.com/Aquaticat/Monochromatic/issues/675).
-  Amazon is authorized at two nodes,
-  the mirror leaf and `amazon.aquati.cat`,
-  rather than at the apex,
-  which narrows what it could issue for but does not eliminate it,
+  Amazon is authorized at `amazon.aquati.cat`,
+  Certainly at
+  `fastly.aquati.cat`,
+  and each covers the CNAME leaf below it,
+  rather than
+  either sitting at the apex.
+   That narrows what each could issue for but
+  does not eliminate it,
   and `iodef` is documented as ignored by ACM,
-  so it would not report these refusals.
+  so it
+  would not report these refusals.
+- Should `fastly.aquati.cat` also authorize `letsencrypt.org`?
+   It currently
+  authorizes Certainly only,
+  which is the tightest set that works.
+   Fastly
+  can migrate a subscription between certification authorities,
+  and a
+  Certainly-only record would block a move to Let's Encrypt until the record
+  is widened.
+   Left narrow deliberately.
 
 ## Redaction convention
 

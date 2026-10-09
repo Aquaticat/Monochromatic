@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`aws.aquati.cat` must reach the primary origin as `aquati.cat`
+`amazon.aquati.cat` must reach the primary origin as `aquati.cat`
 for both HTTP Host and TLS SNI.
 The existing cache and origin-request policies forward the viewer hostname.
 The live Free flat-rate plan rejects the otherwise-equivalent custom cache policy that removes `host`.
@@ -75,6 +75,9 @@ The Test API does not verify origin overrides.
 Actual requests through a disposable distribution with the original policies demonstrated
 HTTP 502 without the function and matching origin content with it.
 The same published bytes were then deployed to `<distribution-id>` at `aws.aquati.cat`.
+That hostname moved to `amazon.aquati.cat` on 2026-10-09;
+ this sentence keeps the name
+the deployment actually used.
 Redacted on 2026-10-09;
  recover it with `aws cloudfront list-distributions`.
 Live verification passed at `2026-09-07T21:42:12Z`;

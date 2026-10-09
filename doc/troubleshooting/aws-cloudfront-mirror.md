@@ -12,6 +12,31 @@
 and issue 6 is retracted.
  See
 [`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
+**Hostname move**:
+ 2026-10-09,
+ later the same day.
+ The public mirror hostname moved from
+`aws.aquati.cat` to `amazon.aquati.cat`,
+ the label that already carried the four
+Amazon CAA records and already terminated the climb for
+`mirror.amazon.aquati.cat`.
+`aws.aquati.cat` is retired:
+ all six of its DNS records are deleted and the
+name now answers `NOERROR` with no address,
+ exactly as a label that never
+existed does.
+ Every `aws.aquati.cat` mention after this paragraph is a
+historical record and keeps its original text;
+ the current serving names are
+`amazon.aquati.cat` and `mirror.amazon.aquati.cat`.
+The same change removed `0 issue "certainly.com"` from the apex,
+ so
+`dig +short CAA aquati.cat` returns only `0 issue "letsencrypt.org"` again,
+which is the property this document was written to protect.
+ The Fastly mirror
+moved to the same leaf-CAA shape at `fastly.aquati.cat`.
+ Tracked as
+[issue 674](https://github.com/Aquaticat/Monochromatic/issues/674).
 **Subject**:
  Setting up `aws.aquati.cat` as a public CloudFront mirror of
 self-hosted `aquati.cat` while keeping the apex CAA limited to
@@ -1386,50 +1411,69 @@ Each placeholder is recoverable from the account with one read-only call:
 - CloudFront distribution domain:
    `<distribution-domain>`
   (`aws cloudfront get-distribution --id <distribution-id> --query 'Distribution.DomainName'`,
-   also public as the `aws.aquati.cat` CNAME target).
+   also public as the `amazon.aquati.cat` ANAME target;
+   before the
+  2026-10-09 hostname move it was the `aws.aquati.cat` CNAME,
+   then ANAME,
+   target).
 
 DNS records,
- measured on 2026-10-09:
+ measured on 2026-10-09 after the hostname move:
 
 - `aquati.cat. IN CAA 0 issue "letsencrypt.org"` (apex).
-- `aquati.cat. IN CAA 0 issue "certainly.com"` (apex).
-   This second record is drift from the starting state this document
-  describes as letsencrypt-only;
-   no commit or section here records when or why it was added.
-- `aws.aquati.cat. IN ANAME <distribution-domain>.`
-   Replaced the CNAME on 2026-10-09 so the leaf can carry its own CAA.
-- `aws.aquati.cat. IN CAA 0 issue "amazon.com"`,
+   This is the only
+  CAA record at the apex.
+   The `0 issue "certainly.com"` record that sat
+  beside it was drift from the starting state this document describes as
+  letsencrypt-only,
+   and was deleted on 2026-10-09 once the Fastly mirror
+  carried its own CAA at `fastly.aquati.cat`.
+- `amazon.aquati.cat. IN ANAME <distribution-domain>.`
+   Added on 2026-10-09
+  when this name became the serving hostname.
+   It is a flattened alias
+  rather than a CNAME so the node can carry CAA beside it.
+- `amazon.aquati.cat. IN CAA 0 issue "amazon.com"`,
    plus the same record for
   `amazontrust.com`,
    `awstrust.com`,
    and `amazonaws.com`.
-   These four are what let ACM renew without touching the apex.
-- `_<validation-token>.aws.aquati.cat. IN CNAME _<validation-value>.<validation-zone>.acm-validations.aws.`
+   These four
+  already existed as the climb-terminating label for
+  `mirror.amazon.aquati.cat`,
+   and they are what now let ACM renew this name
+  without touching the apex.
+- `_<validation-token>.amazon.aquati.cat. IN CNAME _<validation-value>.<validation-zone>.acm-validations.aws.`
   (kept permanently for renewal;
    deleting this record breaks the next
   ACM renewal cycle.
    Recover both halves with
-  `aws acm describe-certificate --certificate-arn <certificate-arn> --region us-east-1 --query 'Certificate.DomainValidationOptions[0].ResourceRecord'`).
-- `amazon.aquati.cat. IN CAA 0 issue "amazon.com"`,
-   plus the same record for
-  the other three Amazon issuer domains.
-   This node exists only to terminate the climb for names below it.
+  `aws acm describe-certificate --certificate-arn <certificate-arn> --region us-east-1 --query 'Certificate.DomainValidationOptions[?DomainName==`amazon.aquati.cat`].ResourceRecord'`).
 - `mirror.amazon.aquati.cat. IN CNAME <distribution-domain>.`
    A second mirror hostname added on 2026-10-09.
    It is a real CNAME,
    so CloudFront keeps per-querier edge selection for it.
+   Its climb
+  terminates at `amazon.aquati.cat`.
 - `_<validation-token>.mirror.amazon.aquati.cat. IN CNAME _<validation-value>.<validation-zone>.acm-validations.aws.`
   (also kept permanently for renewal;
    deleting either validation record
   breaks renewal of the two-name certificate).
+- `aws.aquati.cat`:
+   no records.
+   The ANAME,
+   the four CAA records,
+   and the
+  validation CNAME were deleted on 2026-10-09 after the distribution stopped
+  listing the name as an alias.
 
 ACM cert,
- current as of 2026-10-09:
+ current as of 2026-10-09 after the hostname move:
 
 - Region:
    `us-east-1` (mandatory for CloudFront viewer certs).
 - Names:
-   `aws.aquati.cat` and `mirror.amazon.aquati.cat`.
+   `amazon.aquati.cat` and `mirror.amazon.aquati.cat`.
    One certificate covers both because a distribution holds exactly one
   viewer certificate.
 - Key algorithm:
@@ -1445,6 +1489,32 @@ ACM cert,
   leaf CAA records unblocked it,
    then deleted after the two-name
   certificate was attached and verified.
+- That two-name certificate covered `aws.aquati.cat` and
+  `mirror.amazon.aquati.cat`.
+   The hostname move needed a third
+  certificate,
+   because ACM cannot add a name to an issued certificate and
+  CloudFront rejects an alias its viewer certificate does not cover.
+   The
+  replacement was requested for both current names,
+   reached `ISSUED` with
+  both DNS validations `SUCCESS`,
+   and was attached by one
+  `UpdateDistribution` that also dropped the retired alias.
+   The predecessor
+  was then deleted under three assertions:
+   the distribution's attached ARN
+  was the replacement,
+   the target reported `InUseBy: []`,
+   and the target's
+  subject alternative names contained `aws.aquati.cat` where the
+  replacement's contained `amazon.aquati.cat`.
+   `describe-certificate` on the
+  deleted ARN now returns `ResourceNotFoundException`.
+  Deleting the predecessor is coupled to deleting the four CAA records at
+`aws.`:
+ an unattached certificate whose authorization has been removed would
+fail its next renewal and reproduce the incident this document records.
 
 Properties this configuration was believed to preserve,
 with a 2026-10-09 correction:
@@ -1457,6 +1527,18 @@ with a 2026-10-09 correction:
    the apex now also publishes
   `0 issue "certainly.com"`,
    so two CAs are authorized for apex-inheriting names.
+   **Restored,
+   2026-10-09**:
+   that record is deleted.
+   The Fastly mirror
+  publishes `0 issue "certainly.com"` at `fastly.aquati.cat` instead,
+   so the
+  climb for it and for `mirror.fastly.aquati.cat` terminates there and never
+  reads the apex.
+   `dig +short CAA aquati.cat` again returns only
+  `0 issue "letsencrypt.org"`,
+   which is the property this document exists
+  to protect.
 - Amazon may issue certs only for `aws.aquati.cat`,
    and only because the
   CAA chain at renewal time runs through `cloudfront.net`'s empty CAA,
@@ -1491,6 +1573,13 @@ The following alternatives were considered and rejected:
    the apex now also publishes
   `0 issue "certainly.com"`,
    so the property this rejection protects no longer holds as measured.
+   **Resolved,
+   2026-10-09**:
+   that record is deleted,
+   the rejection stands
+  again,
+   and the need it was reopened for is met by leaf and intermediate
+  label CAA records instead.
    Ranking and alternatives are in
   [`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
 - **ALIAS records at the apex** pointing to CloudFront.
