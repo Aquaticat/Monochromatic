@@ -296,6 +296,69 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original direct Agent queue-call inputs
+
+Direct `Agent.steer(message)` and `followUp(message)` bypass `AgentSession` text entry.
+Required red `c6bc256` / `proc_d56b` queued the exact supplied message,
+cleared it through native `clearAllQueues`,
+then found zero original direct-Agent sources during later review.
+
+The existing SDK generator now attaches a fixed observer immediately after constructing each private Agent.
+It closes over that SDK construction's original manager.
+The Agent stores the callback in a once-assignable private field.
+No borrowed constructor option,
+new registry,
+or source-domain flag is used.
+Each actual queue-call arguments frame gets an input-only source,
+so an already-published message keeps its prior alias.
+Observation precedes enqueue and proves neither enqueue success nor material contribution.
+
+`native-agent-input` uses `agentInput`,
+with method and selected message metadata.
+Supported content uses the incumbent bounded copier and text-content profile for user,
+custom,
+assistant,
+tool-result,
+and legacy hook-message roles.
+System and non-text/mixed representations remain unsupported.
+Expected capture failures latch while native queue behavior continues.
+Unexpected observer failures latch and rethrow their original value.
+
+`f58fd92` / `proc_afcc` passed the cleared-input consumer.
+`proc_0d29` passed native queue/reference parity,
+one-time attachment,
+unchanged constructor-option reads,
+two-SDK-manager isolation,
+publication preservation,
+and native/capture error boundaries.
+The owner phase of `proc_c501` passed content and shared-bound controls.
+`proc_7763` passed delivery,
+clearing,
+late changes,
+overflow,
+reset,
+and disposal cancellation.
+
+This observation also sees internal `AgentSession` forwarding.
+Mixed image messages can therefore latch the text-only source-profile failure even when their earlier text input
+was captured.
+Native messages/images remain unfrozen and queue behavior remains unchanged;
+this does not complete image governance.
+All caps remain unchanged.
+
+Queue fixture `proc_77d0` failed because a preceding private-only injected enqueue failure left native steering
+bookkeeping on only one side.
+An erroneous progress sentence marking that run as passed was retracted.
+`proc_54e8` now tests the preceding failure on both SDKs,
+verifies and clears identical bookkeeping,
+and passes the supported-text and explicit mixed-image cases.
+No runtime guard was weakened.
+
+Integrated verification,
+attachment/observation/error sensitivity,
+and complete regressions remain pending.
+Direct Agent prompt/state producers and governing-domain closure remain unfinished.
+
 ## Original public API input before native branching
 
 Public `AgentSession.prompt`,

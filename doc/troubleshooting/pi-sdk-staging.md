@@ -1,5 +1,114 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 direct Agent queues bypass session input construction
+
+### Symptom and native boundary
+
+Direct core-Agent queue calls do not pass through `AgentSession` text entry or user-message construction.
+Required red `proc_d56b` enqueued a caller-owned message,
+cleared it through native `clearAllQueues`,
+then failed with zero original sources instead of one.
+
+Installed `pi-agent-core@1.1.0/dist/agent.js:60`
+stores the message itself,
+not a new queue-entry wrapper:
+
+```javascript
+// Installed pi-agent-core dist/agent.js
+enqueue(message) {
+    this.messages.push(message);
+}
+```
+
+At lines 184 and 189,
+`Agent.steer` and `followUp` synchronously call their queue's `enqueue`.
+These methods have no separate processing-state or message-validation branch.
+
+Installed `pi-coding-agent@1.1.0/dist/core/sdk.js:77`
+constructs/selects the session manager before `new Agent` at line 253.
+That existing factory boundary supplies the fixed observer's manager without a new registry.
+
+### Private correction and verified controls
+
+The existing generator attaches the observer immediately after native Agent construction,
+without reading any additional borrowed constructor option.
+A once-assignable private Agent field holds it.
+Actual queue-call arguments frames carry the new input-only publication;
+the message itself keeps any earlier publication.
+
+The manager captures only supported content and companion metadata,
+using the existing bounded copier,
+source record,
+constructed-input reference view,
+and shared caps.
+It publishes no payload capability or execution fact.
+Native enqueue still runs after expected source-profile failure;
+unexpected observer failure retains its original thrown value.
+
+Run `test:agent-input-source`,
+`test:agent-input-native`,
+`test:agent-input-owner`,
+and `test:agent-input-paths` separately
+through `mise --no-env --no-hooks run` in private `contract/integration/native-batch`.
+
+Canonical `proc_afcc` passed.
+Native `proc_0d29` verified queue references,
+attachment rejection cases,
+constructor-getter parity,
+actual SDK manager isolation,
+same-message mutation,
+prior publication preservation,
+capture failures,
+queue failures,
+and disposed-session source refusal.
+The owner phase of `proc_c501` passed profile and shared-bound checks.
+Consumer `proc_7763` passed delivery,
+clear,
+late,
+oversize,
+reset,
+and disposal paths.
+
+### Profile tradeoff and corrected fixture evidence
+
+The supported direct-Agent source profile is text-only.
+System,
+mixed image,
+and other non-text representations latch capture failure,
+including internal forwarding through an already-observed `AgentSession` API.
+Native queuing still retains the exact original message.
+Image fields are not emitted as semantic source material,
+and borrowed messages/images are not frozen.
+This is not a complete image-origin claim.
+
+`proc_c501` later failed the old queue fixture:
+its initial image call latched source failure,
+so the next expected source was absent.
+The fixture now separates supported-text success from mixed-image source failure.
+
+The first separated run `proc_77d0` also failed:
+an earlier fixture had injected an enqueue failure only into the private SDK,
+which retained steering text before the throw.
+Its later queue-clear result therefore differed from the installed SDK's result.
+The progress record's premature pass claim was retracted.
+
+Corrected `proc_54e8` injects the earlier failure into both SDKs,
+asserts identical retained steering text,
+clears it,
+then passes the image/reference comparison with the expected source-profile failure.
+No native state behavior or source guard was changed.
+
+### Remaining scope and upstream filing decision
+
+Integrated and complete regressions plus attachment/observation/error sensitivity remain pending.
+Other direct Agent producers,
+image governance,
+and full governing-domain closure remain unfinished.
+Nothing is proposed upstream:
+this is a private observation extension and fixture correction,
+not a native queue defect.
+No installed activation or production policy admission changed.
+
 ## Pi 1.1.0 public input calls can reject before input construction
 
 ### Symptom and native boundary
