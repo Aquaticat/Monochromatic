@@ -209,10 +209,67 @@ and equal payload copies.
 No provider request or native tool execution occurred.
 
 This does not associate arbitrary skill-file contents or establish their authority.
-Default-rule fragments still need their separate normalization/deduplication emission evidence.
+Default-rule fragments use separate normalization/deduplication emission evidence,
+not this whitespace-transformation profile.
 Native trimming is expected behavior;
 only private source consumption needed extension,
 so there is no upstream defect or filing artifact.
+
+### Default-rule construction can precede deduplication
+
+SDK 1.1.0 `dist/core/system-prompt.js:34` normalizes and deduplicates each rule before appending it:
+
+```javascript
+// Installed pi-coding-agent dist/core/system-prompt.js:34
+const addRule = (rule) => {
+    const normalized = rule.trim();
+    if (!normalized || seen.has(normalized))
+        return;
+    seen.add(normalized);
+    rules.push(normalized);
+};
+```
+
+The private recorder previously retained each constructed default literal before calling `addRule`.
+That established construction,
+not contribution to the serialized rules section.
+An independent guideline could already have supplied identical text.
+
+The fixed private recorder now observes the original local array length around the untouched native call:
+
+```javascript
+// Private builder-source.mjs: generated addBuiltInRule instrumentation.
+const before = rules.length;
+addRule(rule);
+recordGenerated({
+    slot: "default-rule",
+    content: rule,
+    nativeRuleInsertion: rules.length > before ? "inserted" : "not-inserted",
+});
+```
+
+The existing render-input owner accepts this optional enum only as an own string data field on a default rule.
+It freezes the fact on the existing original source.
+No source is dropped from instruction assessment when its addition was suppressed.
+Producer and consumer both require `inserted` for a contribution,
+with the original run/render/source/publication checks and later override handling unchanged.
+
+Private native task `test:native-rule-source` failed `proc_ed24` before the consumer existed,
+then passed `proc_bfe3`.
+The expanded rendering matrix passed `proc_a236` with 38 modes.
+Its extra task names were forwarded as arguments rather than running builder/owner checks;
+corrected separate invocations passed `proc_4b3c`.
+See [mise task argument forwarding](mise-usage-args-inline-node.md#additional-task-names-can-be-forwarded-as-ordinary-arguments).
+
+Producer omission `2885c7d` failed `proc_3a5c` with `1 !== 0`
+for a fabricated suppressed-source contribution.
+Consumer omission `39c6c44` failed `proc_1fd3` by reporting `accounted` instead of `unresolved`
+for `rule-not-inserted`.
+Both guards are restored;
+full regression is running.
+The underlying native deduplication was correct;
+this was a private source-consumption gap,
+not an upstream defect or a reason to infer authority from equal bytes.
 
 ### Rejected approaches and filing disposition
 

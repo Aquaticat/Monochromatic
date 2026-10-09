@@ -126,7 +126,27 @@ the separately retained native introduction makes 98 total contributions without
 Full native `proc_4f7c`,
 action `proc_2217`,
 and ten-document render `proc_bd76` passed for context/skill guidance.
-Default-rule deduplication remains unconsumed until its exact native emission is established.
+Default-rule sources now retain the fixed native builder's observed `nativeRuleInsertion` result.
+The recorder measures the original local rules-array length around the untouched `addRule` call.
+It preserves every constructed default occurrence,
+including rules suppressed by normalization or deduplication.
+Only an inserted occurrence can receive a contribution association,
+and a subsequent section override or forced prompt still prevents it.
+Equal text emitted by an independent guideline supplies no identity for the suppressed default.
+
+Missing insertion association failed `proc_ed24`;
+initial consumer `proc_bfe3` and the 38-mode rendering matrix `proc_a236` passed.
+The `proc_a236` command forwarded later task names as script arguments,
+so it did not verify builder parity or render-owner controls.
+Corrected separate invocations passed those checks in `proc_4b3c`.
+Consumer controls passed `proc_52c2` and `proc_0b8d`.
+Producer omission `proc_3a5c` fabricated a suppressed occurrence's contribution;
+consumer omission `proc_1fd3` incorrectly accounted for a `not-inserted` fact.
+Both guards are restored and full regressions are running.
+The new fact concerns only local native insertion,
+not instruction authority,
+complete governing coverage,
+or permission.
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
