@@ -350,8 +350,9 @@ Rethrow omission `b30b5b0` / `proc_1854` failed with `Missing expected rejection
 Observation omission `9bebebc` / `proc_e106` lost the original command source after real handler entry.
 Both guards are restored;
 no deliberate omission remains.
-Complete native regression is running in `proc_1736`;
-complete action/source regressions are still pending.
+Complete native `proc_1736` passed in 411 seconds.
+Complete action-policy `proc_4dfe` and policy-source `proc_666d` also passed.
+These local checks do not qualify semantic estimates or admit production policy.
 Deferred or rejected calls before this observed handoff,
 direct-agent inputs,
 image governance,

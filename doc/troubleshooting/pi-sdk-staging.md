@@ -99,8 +99,8 @@ including awaited-handler reset/disposal.
 Rethrow omission `b30b5b0` / `proc_1854` failed with `Missing expected rejection.`
 Observation omission `9bebebc` / `proc_e106` retained zero original command sources instead of one.
 Both guards are restored.
-Complete native regression is running in `proc_1736`;
-complete action/source regressions remain pending.
+Complete native `proc_1736` passed in 411 seconds;
+complete action-policy `proc_4dfe` and policy-source `proc_666d` also passed.
 Earlier deferred/rejected calls and full governing-domain closure are not covered.
 
 ### Upstream filing decision
