@@ -296,6 +296,68 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Retained original run inputs after another prompt
+
+The user accepted governing-domain option A on 2026-10-09:
+account for all original host instruction inputs within their applicable scope,
+without treating unregistered possible instructions as absent.
+The accepted scope is recorded in
+`doc/planning/pi-auto-mode-governing-domain-closure.md`
+in the main repository.
+It is not a completeness declaration.
+
+The first implementation increment retains known original prompt and handler inputs
+that are actually present at the native context-emitter entry after another prompt.
+The existing run-scope lookup and publication alias index supply the original references.
+The current run stores frozen `retainedMessageOrigins` links;
+it does not promote the earlier emitting run into active ancestry.
+The combined `runMessageInputs` collection retains those same source records,
+not copied text or a second message inventory.
+
+Source retention and serialized contribution eligibility remain separate.
+A context handler can remove or independently copy the old message:
+its original input remains available for assessment,
+but the replacement acquires no contribution capability.
+Observed publication retirement remains permanent.
+Known native copy edges preserve message aliases even while a new prompt has no current run;
+system-publication copying still requires its current run.
+
+Required consumer red `db94d91` / `proc_b7c9`
+became native green `387c717` / `proc_0333`.
+Prompt and handler matrices passed `proc_93b2`;
+canonical source-binding controls passed `proc_a3ce`.
+Retained-membership omission `4057cef` / `proc_0e9a`
+incorrectly accounted a nonmember and is restored.
+
+The first preparation-copy fixture `proc_9841` was invalid evidence:
+a nonexistent `replaceMessages` call was swallowed by the native handler catch.
+The setter control `proc_2904` did not prove its copied objects reached conversion.
+The refined fixture actually routes its saved native preparation copy into context conversion.
+Restoring the old no-current-run gate then failed as `b164094` / `proc_9d78`;
+the message copy path is restored.
+
+Full native `proc_dd40` reached the original handler-input fixture
+and failed its obsolete count after another prompt:
+the correct retained source count was 12,
+not 6.
+The fixture now checks exact distinct original source references rather than enlarging bounds;
+targeted owner regressions passed `proc_c5e4`.
+Full action `proc_4576` and source-policy `proc_9fad` passed.
+Native branch and manager-replacement controls and the restored full native rerun remain pending.
+
+This owner-local route does not establish disk-loaded,
+queued,
+compacted,
+or pre-capture-excluded origins.
+It does not prove revocation when a source is absent from the current transcript.
+Registration,
+applicable governing scope,
+and request-domain completeness remain independent.
+No new authority,
+permission,
+provider trial,
+or installed activation occurred.
+
 ## Original expanded-prompt input and contribution
 
 The incumbent run owner now captures the actual native `expandedText` handoff
