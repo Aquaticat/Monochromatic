@@ -296,6 +296,37 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loaded custom-message inputs
+
+The existing manager-load owner now captures supported `custom_message` inputs as well as stored user messages.
+It retains bounded content and native `customType`/`display` companion data.
+Opaque `details` are neither read for source assessment nor serialized as semantic metadata.
+An authority-looking custom label or details object grants no authority.
+
+Input-only aliases follow the actual native custom-to-user conversion.
+This preserves original input identity without producing text-part or payload capabilities.
+User and custom inputs share the original source and byte limits.
+
+Required red `a7b820e` / `proc_e115`
+became native green `e50abe1` / `proc_71df`.
+Native matrix and manager/conversion parity passed `proc_f925`,
+covering string,
+structured,
+empty,
+nullish,
+unsupported,
+and over-bound inputs.
+Shared-bound and opaque-metadata owner controls passed `proc_8cb1`.
+Conversion sensitivity and restored full regressions remain pending.
+
+Other loaded message roles,
+summaries,
+queued inputs,
+historical issuer authentication,
+and governing-domain closure are still unfinished.
+This is another original input consumer,
+not a production qualification or installed activation.
+
 ## Original owned session-load inputs
 
 The next accepted-domain increment records a new native load occurrence,
