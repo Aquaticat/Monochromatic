@@ -296,6 +296,52 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original current-session context-edit inputs
+
+The existing manager input owner now observes native context-edit appends after defensive cloning.
+Each actual append gets a fresh input occurrence with `inputOrigin: native-append`;
+file-loaded inputs remain `native-load`.
+No earlier run,
+historical issuer,
+authority,
+or payload eligibility is invented.
+Other append families and derived system checkpoints are not recaptured.
+
+Context handlers can create an edit after initial context observation.
+The private native context return therefore rechecks the original run handle and current manager input owner.
+It unions newly observed inputs with the original pre-handler membership.
+Removing visible output does not remove the original input;
+an unchanged published view is reused without another observation charge.
+First empty observation still publishes its empty view.
+
+Between-prompt required red `e1ab1be` / `proc_0fe4`
+became native green `b2cd8aa` / `proc_398f`.
+Owner,
+append/load distinction,
+shared-limit,
+failure-latching,
+and failed-native-write controls passed `proc_61e1`.
+Same-request red `b2d9480` / `proc_cc5e`
+identified the missing final context boundary.
+Superseded-run red `a1c3a1a` / `proc_db41` required exact run-handle revalidation.
+
+The no-op optimization initially skipped the first empty observation (`proc_5206`);
+that is fixed.
+The image fixture initially expected the nested capture error's text,
+then attempted to inspect the failed run after prompt reset (`proc_ef57` / `proc_6aad`).
+It now intercepts and rethrows the actual native context error before cleanup,
+checking the exact original nested failure.
+Corrected owner checks and the 41-mode native matrix passed `proc_b11b`.
+
+Append/final-context/union omission controls and complete regressions remain pending.
+Current summaries,
+queued inputs,
+mixed representations,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
 ## Original loaded context-edit inputs
 
 The existing load owner captures original `context_edit` replacement content and null omissions.
