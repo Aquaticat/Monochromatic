@@ -334,7 +334,10 @@ Combined capture-overflow and native write-error controls passed `proc_f207`.
 Leaf-observation omission `proc_19e4` and failure-latch omission `proc_40b7` each failed their control.
 Both guards are restored.
 Current summary manager controls are included in routine verification;
-complete regression remains pending.
+complete native `proc_7a67`,
+action `proc_a32c`,
+source-policy `proc_42e6`,
+and 14-document rendering `proc_62a0` / `proc_28b9` passed.
 Queued inputs,
 mixed representations,
 tool instruction-source ownership,

@@ -1071,7 +1071,10 @@ Original in-memory membership is not proof of successful persistence or qualifie
 Leaf-observation omission `proc_19e4`
 and same-root latch omission `proc_40b7` failed their required controls.
 Both guards are restored.
-Complete regression remains pending.
+Complete native `proc_7a67`,
+action `proc_a32c`,
+source-policy `proc_42e6`,
+and 14-document rendering `proc_62a0` / `proc_28b9` passed.
 
 Run `mise --no-env --no-hooks run test:created-edit-owner`
 and `mise --no-env --no-hooks run test:selected-path-owner`
