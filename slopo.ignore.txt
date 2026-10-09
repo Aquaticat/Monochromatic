@@ -7,6 +7,25 @@
 # This inventory was refreshed against the voyage/voyage-code-4 report.
 # Entries mapped by historical unit identity unless marked as semantic remaps.
 
+# State as of 2026-10-09: every hash this file held matched nothing in the report generated
+# 2026-10-07 22:36:47, so the file suppressed nothing. Two probes on copies of that index,
+# one with an empty ignore file and one with this file, both reported 1008 clusters with
+# 4377 units, and the second printed no "Ignored ... previously reviewed clusters." line,
+# which slopo emits only when a key matches.
+#
+# The keys are therefore kept in explicit states instead of looking live:
+#   1. DEAD, SUCCESSOR PENDING: the cluster re-surfaced under a new hash that a dismissal issue
+#      proposes. Swap the key when that issue is accepted. 23 keys.
+#   2. STALE, NO RECORDED SUCCESSOR: commented out so the live key set stays meaningful, with the
+#      earlier review's rationale kept beside each. 23 keys.
+#   3. DELETED: 9 keys whose clusters re-surfaced into code-change issues, where the code is
+#      meant to change rather than be suppressed. Listed with their successors in
+#      doc/troubleshooting/slopo-threshold-tuning.md under "Open cleanup decision".
+#
+# Convention for new entries: doc/troubleshooting/slopo-threshold-tuning.md, "Recording a
+# dismissal". A complete comment naming both sides by path and symbol, no cluster ordinal, no
+# line number, and the hash under the heading of the category the review recorded.
+
 # ── Deliberately NOT dismissed: music-player android/desktop drift ──
 # The android app (Kotlin, package/music-player/android-app/app/src/main/kotlin/.../core)
 # and the desktop app (Rust, package/music-player/desktop-app/src) carry parallel core
@@ -19,133 +38,151 @@
 # the Kotlin/Rust divergence is gone. (Cross-language code cannot share a function, so these
 # are not extract-a-helper candidates; the remediation is the rewrite, not an ignore entry.)
 
-# ── INTENTIONAL-VARIANT (17) ──
+# ── INTENTIONAL-VARIANT (15 keys, all dead, successors pending) ──
 # Intentional sibling variants (sync/async, single/batch, get/set,
 # plain-vs-from constructors, mirror event handlers). Meant to mirror each
 # other and stay separate; merging would hurt clarity.
 # batch_sheng/batch_sheng2 SIMD-variant twins
+# DEAD 2026-10-09: re-surfaced as C604 f4276b65d03e, C771 f8cbcd443ae9, C873 34782ce8702d; proposed by #657
 f498089d4a03
 # per-event handlers (touchstart/touchmove)
+# DEAD 2026-10-09: re-surfaced as C617 e06e2fa3741c, C728 ef6cabac2a7e; proposed by #657
 1fa31c0bbf53
-# mirror yields-rule handlers, opposite conditions/messageIds
-7bb436bcb362
 # distinct AVX512 kernels: single-byte sheng vs pair sheng2
+# DEAD 2026-10-09: re-surfaced as C604 f4276b65d03e, C771 f8cbcd443ae9, C873 34782ce8702d; proposed by #657
 e3a81ba95d1e
-# healBackends/healBackendsSync sync/async twins
-58a7daddad88
 # sync/async queryBackend twins
+# DEAD 2026-10-09: re-surfaced as C810 56fb721423ef; proposed by #657
 676b3bc00e50
 # sibling or-throw guards, one per iterable kind
+# DEAD 2026-10-09: re-surfaced as C814 3df687079c14; proposed by #657
 3fb24b23d353
 # sync/async readCssFile twins
+# DEAD 2026-10-09: re-surfaced as C910 c24ca573a489; proposed by #657
 4e3502a0862f
 # mirror keydown/keyup handlers, opposite cursor
+# DEAD 2026-10-09: re-surfaced as C700 3147720f225b, C728 ef6cabac2a7e; proposed by #657
 714056a4f14c
 # sheng/sheng2 per-strategy platform dispatch, including NEON and AVX paths
+# DEAD 2026-10-09: re-surfaced as C604 f4276b65d03e, C873 34782ce8702d, C935 5678f2672a8c; proposed by #657
 13ad287ede50
 # sync/async delete twins (kv-store)
+# DEAD 2026-10-09: re-surfaced as C758 39a7d0d48b9f; proposed by #657
 c2f031e4e416
 # sync/async get twins (kv-store)
+# DEAD 2026-10-09: re-surfaced as C758 39a7d0d48b9f; proposed by #657
 df0864563834
 # lazyOnce/lazyOnceAsync sync/async twins
+# DEAD 2026-10-09: re-surfaced as C753 672dd9acf2cd, C839 c4932da95e09; proposed by #657
 fedafcaaa399
 # isPrefix/isStrictPrefix complementary predicates, differing only by <= vs <
+# DEAD 2026-10-09: re-surfaced as C762 1a567d9909bc; proposed by #617
+# DEAD 2026-10-09: re-surfaced as C700 3147720f225b, C742 a038b98749e2, C764 145e61b9f78f; proposed by #657
 54a947960da7
 # sync/async clear twins (kv-store)
+# DEAD 2026-10-09: re-surfaced as C758 39a7d0d48b9f; proposed by #657
 0ed673440f37
 # embedAll/embedBatchAll single vs batch twins
+# DEAD 2026-10-09: re-surfaced as C977 964a18ec15c3; proposed by #657
 3351a8d310ee
 # sync/async captureError twins (test fixtures)
+# DEAD 2026-10-09: re-surfaced as C730 e4131bbe2ef2; proposed by #657
 a1b664fb91ed
 
-# ── STRUCTURAL-IDIOM (14) ──
+# ── STRUCTURAL-IDIOM (2 keys, all dead, successors pending) ──
 # Structural idioms mandated by conventions. Shared skeleton (oxlint createOnce
 # rule scaffolding and per-locale i18n grammar renderers) where each body's actual
 # logic differs. Not extractable without a false abstraction.
-# semantic split of reviewed wh-question renderers: locale dispatcher
-7ec17c4edbdf
-# semantic split of reviewed wh-question renderers: adverbial questions
-0a43dc0e4435
-# semantic split of reviewed wh-question renderers: subject questions
-6ffeaa95d661
-# semantic split of reviewed wh-question renderers: object questions
-e9510c048af2
-# semantic remap: sentence dispatcher/factory glue; signatures differ
-b3c3ce7ac317
-# imperative renderers diverge per language
-92ae195f9975
-# semantic remap: noun-phrase renderers diverge (articles vs classifiers)
-e0af1a5083e9
-# semantic remap: adverbial renderers diverge (prepositions vs coverbs)
-3350cc2028ca
-# yes/no question renderers diverge per language
-0a6536d03a2b
-# declarative renderers diverge per language
-329c6892e8f0
-# per-locale wrapper binding locale to shared applyCapitalization
-f563c71baeff
-# possessive suffix differs per language grammar
-238136eee5b5
 # semantic merge of reviewed returns/params createOnce scaffolding
+# DEAD 2026-10-09: re-surfaced as C973 b4653374047d; proposed by #658
 b80f583dad64
 # per-rule TSDoc handlers; conditions differ, report shape shared
+# DEAD 2026-10-09: re-surfaced as C973 b4653374047d; proposed by #658
 cbff52731c64
 
-# ── COINCIDENTAL-SHAPE (3) ──
+# ── COINCIDENTAL-SHAPE (0 keys) ──
 # Coincidental shape matches. Units share an implementation idiom but do
 # unrelated work; no common logic to extract.
-# engine Drop differs per app (fields, unpark)
-7a68ec2bdb9c
-# two is_match_batch impls on different types, unrelated bodies
-3a4a83b47c31
-# one database-row helper wraps another with mapping; return-type shape only
-1a33c04f7f3d
+# Its 3 former keys are stale with no recorded successor;
+# see the section "STALE: dismissed by an earlier review".
+# Issue 659 proposes 20 entries for this heading.
 
-# ── BOILERPLATE-TRIVIAL (18) ──
+# ── BOILERPLATE-TRIVIAL (6 keys, all dead, successors pending) ──
 # Trivial boilerplate fragments. One-line wrappers/forwarders, tiny fixer stubs,
 # From impls, and cleanup fragments where extraction costs more than it saves.
-# one-line winit with_name idiom, two unrelated desktop apps
-8d50990c49cb
-# one-line From impl (error.rs; duplicate kept through a larger Display cluster)
-811c54eb8a98
-# one-line From impl (error.rs)
-39dbd96a2ba3
-# one-line From impl (error.rs)
-654e1000a9c0
-# expanded fake-API sendMessage stubs; whole fake harness stays visible
-798d10651694
-# expanded fake-API exec stubs
-40f0c1f3840b
-# expanded fake-API registerTool stubs
-0e41fd1057e6
 # standard web-component super/attachShadow boilerplate
+# DEAD 2026-10-09: re-surfaced as C305 7ba7109bc41d; proposed by #656
 a907be03b808
-# dynamic browserslist import wrappers; returns differ
-b9640ab1d320
 # one-line bitset empty-check on distinct types
+# DEAD 2026-10-09: re-surfaced as C586 0f42b561be36; proposed by #656
 0f21701dfcb4
-# thin getLastToken wrappers; divergent null handling
-8717b08104c9
 # one-line atomic-store setter across two audio backends
+# DEAD 2026-10-09: re-surfaced as C669 696cc8b6cc1e; proposed by #656
 9052405ce43f
 # one-line method wrapper delegating to shared send_and_wake
+# DEAD 2026-10-09: re-surfaced as C636 ba8d13a458c0; proposed by #656
 fce6f6ca1d38
-# single-line table-engine closure
-6d15bb200a5b
-# four-line onEnd fragment; broader onConnect logic stays visible
-1682a0e0531e
 # error-subclass constructors each setting their own name
+# DEAD 2026-10-09: re-surfaced as C302 902cbb4ed717; proposed by #642
+# DEAD 2026-10-09: re-surfaced as C298 ee0a1e9394fb, C311 6540390d4c00, C922 8ebc5ed13954; proposed by #656
 0a3773a1c347
-# short onTimeout handlers differing only in message, per transport
-77653aa954c8
 # block-body opening/closing fixer stubs, different ranges and indentation
+# DEAD 2026-10-09: re-surfaced as C959 06155afd5594; proposed by #656
+# DEAD 2026-10-09: re-surfaced as C656 8cf5dfbc613e; proposed by #660
 6be7f9516c9d
 
-# ── TEST-OR-GENERATED (3) ──
+# ── TEST-OR-GENERATED (0 keys) ──
 # Test and generated code where DRY does not apply.
-# bench harness closures (truepeak-core.bench)
-8df402384c84
-# .js transpiled output of collapse() in its .ts sibling (handover)
-da53cb2e3bfa
-# .js transpiled output of parseImports() in its .ts sibling (handover)
-6ddb97d5cd76
+# Its 3 former keys were deleted: their clusters re-surfaced into
+# code-change issues, which are listed in the troubleshooting doc.
+# Issue 656 proposes 1 entry for this heading.
+
+# ── STALE: dismissed by an earlier review, no matching cluster and no recorded successor (23) ──
+# Commented out so the live key set above stays meaningful. Uncomment one only if a future
+# report re-surfaces the same cluster under the same hash, which needs identical bodies and paths.
+# mirror yields-rule handlers, opposite conditions/messageIds [INTENTIONAL-VARIANT]
+# 7bb436bcb362
+# healBackends/healBackendsSync sync/async twins [INTENTIONAL-VARIANT]
+# 58a7daddad88
+# semantic split of reviewed wh-question renderers: locale dispatcher [STRUCTURAL-IDIOM]
+# 7ec17c4edbdf
+# semantic split of reviewed wh-question renderers: adverbial questions [STRUCTURAL-IDIOM]
+# 0a43dc0e4435
+# semantic split of reviewed wh-question renderers: subject questions [STRUCTURAL-IDIOM]
+# 6ffeaa95d661
+# semantic split of reviewed wh-question renderers: object questions [STRUCTURAL-IDIOM]
+# e9510c048af2
+# semantic remap: sentence dispatcher/factory glue; signatures differ [STRUCTURAL-IDIOM]
+# b3c3ce7ac317
+# imperative renderers diverge per language [STRUCTURAL-IDIOM]
+# 92ae195f9975
+# semantic remap: noun-phrase renderers diverge (articles vs classifiers) [STRUCTURAL-IDIOM]
+# e0af1a5083e9
+# semantic remap: adverbial renderers diverge (prepositions vs coverbs) [STRUCTURAL-IDIOM]
+# 3350cc2028ca
+# yes/no question renderers diverge per language [STRUCTURAL-IDIOM]
+# 0a6536d03a2b
+# declarative renderers diverge per language [STRUCTURAL-IDIOM]
+# 329c6892e8f0
+# per-locale wrapper binding locale to shared applyCapitalization [STRUCTURAL-IDIOM]
+# f563c71baeff
+# possessive suffix differs per language grammar [STRUCTURAL-IDIOM]
+# 238136eee5b5
+# engine Drop differs per app (fields, unpark) [COINCIDENTAL-SHAPE]
+# 7a68ec2bdb9c
+# two is_match_batch impls on different types, unrelated bodies [COINCIDENTAL-SHAPE]
+# 3a4a83b47c31
+# one database-row helper wraps another with mapping; return-type shape only [COINCIDENTAL-SHAPE]
+# 1a33c04f7f3d
+# one-line winit with_name idiom, two unrelated desktop apps [BOILERPLATE-TRIVIAL]
+# 8d50990c49cb
+# one-line From impl (error.rs; duplicate kept through a larger Display cluster) [BOILERPLATE-TRIVIAL]
+# 811c54eb8a98
+# one-line From impl (error.rs) [BOILERPLATE-TRIVIAL]
+# 39dbd96a2ba3
+# one-line From impl (error.rs) [BOILERPLATE-TRIVIAL]
+# 654e1000a9c0
+# thin getLastToken wrappers; divergent null handling [BOILERPLATE-TRIVIAL]
+# 8717b08104c9
+# single-line table-engine closure [BOILERPLATE-TRIVIAL]
+# 6d15bb200a5b
