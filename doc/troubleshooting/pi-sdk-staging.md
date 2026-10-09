@@ -1025,6 +1025,61 @@ These are private observation and fixture corrections,
 not SDK defects.
 They establish neither full governing-domain coverage nor authority from native role labels.
 
+### SDK 1.1.0 publishes appended entries in memory before persistence
+
+Installed `dist/core/session-manager.js:815` orders append operations as follows:
+
+```js
+// Pi SDK 1.1.0, dist/core/session-manager.js:815
+_appendEntry(entry) {
+    this.fileEntries.push(entry);
+    this.byId.set(entry.id, entry);
+    this.leafId = entry.id;
+    this._persist(entry);
+}
+```
+
+A context handler can append an instruction input without rebuilding or returning the native projection.
+That input can therefore be absent from the transmitted request and the most recent observed path prefix.
+Required red `proc_6f5a` exposed this missing original input.
+
+The private observer now records known original input membership after the native leaf assignment
+and before persistence.
+It extends the incumbent source-reference set without another path walk.
+Same-root overflow is deferred to source use and latched;
+a later shorter observation cannot clear it.
+Root replacement starts a separate observation scope,
+not revival of the old runtime.
+
+Current summary arguments receive original append occurrences,
+but their derived system checkpoints are not minted as new independent instruction roots.
+Loading a saved checkpoint is a separate original load observation.
+Neither route proves complete composite origin or governing authority.
+
+`proc_7838` passed untransmitted edit/summary consumers.
+`proc_eecb` passed current-summary/derived-checkpoint and expanded native controls.
+`proc_1bea` passed root,
+duplicate,
+foreign,
+and deferred-bound controls.
+`proc_f207` passed native write-error parity after this hook,
+including simultaneous capture overflow and filesystem `EACCES`.
+The native error surfaced immediately,
+while the capture failure remained available at source use.
+Original in-memory membership is not proof of successful persistence or qualified continuation.
+
+Leaf-observation omission `proc_19e4`
+and same-root latch omission `proc_40b7` failed their required controls.
+Both guards are restored.
+Complete regression remains pending.
+
+Run `mise --no-env --no-hooks run test:created-edit-owner`
+and `mise --no-env --no-hooks run test:selected-path-owner`
+inside private `contract/integration/native-batch`.
+This is private consumer observation,
+not an upstream append defect;
+no upstream filing is proposed.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
