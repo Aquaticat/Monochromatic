@@ -487,6 +487,12 @@ None required for this task. Follow-ups a maintainer may want:
    themselves: `parse_clusters.py` checks every cluster against `index.md`, `control_support.py` proves
    the duplicate-artifact check can fail, and `verify_mirror.py` proves the mirror relationship
    byte-for-byte.
+4. Read `doc/planning/slopo-dismissed-cluster-actionability.md` before accepting any dismissal batch.
+   It measures what this review never did: the size of the family behind each pair. The error-class
+   constructor idiom alone spans 212 indexed units across 147 files, all above the hand-tuned
+   `body_node_count_threshold: 13`, and this review saw it only as 17 clusters split across four
+   issues and four verdicts, 12 of them dismissed as trivial. The unit of judgement here was the
+   cluster; duplication lives in families, and similarity clustering cannot size one.
 
 ## Corrections applied on 2026-10-09
 

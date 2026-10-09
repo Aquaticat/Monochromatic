@@ -588,3 +588,13 @@ Still open,
    which
    no issue tracks.
 - The cleanup decision for the 23 dead keys with no evidenced successor.
+
+A follow-up investigation asked whether these dismissals are right at all,
+or whether they normalise duplication and miss small shared utilities.
+It is recorded in `doc/planning/slopo-dismissed-cluster-actionability.md`.
+Its bearing on this review:
+ eight of the eleven judgement-heavy clusters in `#659` stand,
+three point at an extraction that belongs to an existing issue or to one file's internal helper,
+and the review's method,
+ not the tool's threshold,
+is what kept a 212-unit idiom family from ever being counted.
