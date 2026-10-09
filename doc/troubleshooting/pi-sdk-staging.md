@@ -89,6 +89,17 @@ its loaded-source selector also included the new current native input.
 The corrected selector requires `native-load`;
 loaded `proc_e82c` and expanded `proc_3db1` regressions passed.
 
+Complete run `proc_5485` exposed the same category of stale fixture assumption in
+`original-judgment.test.mjs`:
+its built-in source slice now also contained the original raw prompt.
+Node reported `ERR_ASSERTION` from the fixture's wire validator,
+then the original failure remained in the closed judgment with both tool members unentered.
+Narrow `test:original` reproduction `proc_28b6` failed the same assertion.
+`cf238c5` explicitly verifies the raw wire/source publication before the generated-fragment slice;
+no source was dropped and no runtime guard changed.
+`proc_5f2e` and every original-judgment source profile in `proc_1be7` passed.
+Complete retry `proc_efa9` is running.
+
 Omitting the native return observation failed `proc_8292`;
 the observation is restored.
 Equal bytes do not merge raw and expanded source identities or grant a payload capability.

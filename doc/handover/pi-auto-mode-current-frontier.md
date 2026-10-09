@@ -354,7 +354,14 @@ foreign-manager rejection,
 and reset before consumption.
 Observation-edge omission `proc_8292` lost the original raw source and failed;
 the edge is restored.
-Complete post-change regression is running.
+The first complete run `proc_5485` stopped at an obsolete built-in source offset in
+`original-judgment.test.mjs`.
+Its wire correctly included the original raw prompt before generated fragments.
+Narrow red `proc_28b6` reproduced the assertion;
+`cf238c5` now verifies the raw source and its original publication separately.
+Restored `proc_5f2e` and all source profiles in `proc_1be7` passed.
+No runtime or generator code changed for this fixture correction.
+Complete retry `proc_efa9` is running.
 
 This does not cover commands or deferred/rejected calls before the observed branch,
 last-handler output before further expansion,
