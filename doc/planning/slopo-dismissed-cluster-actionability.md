@@ -1026,6 +1026,59 @@ The record:
    23 commented out as stale with no recorded successor,
    and 9 deleted where the successor is owned by a code-change issue.
 
+## Decisions taken and applied on 2026-10-09
+
+The maintainer reviewed the partition and the drafted designs and decided all of it in one pass.
+What was applied:
+
+- The 67 bucket C entries were accepted and written into `slopo.ignore.txt`,
+   each under the heading its recorded verdict names.
+   Verified with slopo itself against a copy of the 2026-10-07 index,
+   so the reference report was left intact:
+   the run logged `Ignored 67 previously reviewed clusters.`,
+   reported 941 clusters instead of 1008,
+   and the removed hash set equalled the accepted set exactly with no additions.
+   The heading counts are now `INTENTIONAL-VARIANT` 9 live plus 10 dead pending,
+   `STRUCTURAL-IDIOM` 30 live,
+   `COINCIDENTAL-SHAPE` 11 live,
+   `BOILERPLATE-TRIVIAL` 16 live plus 1 dead pending,
+   and `TEST-OR-GENERATED` 1 live.
+   Twelve dead keys whose successors were accepted were removed,
+   eleven whose successors are held were kept and annotated,
+   and the 23 stale keys stay commented out with their rationale.
+- The eight owner designs became eight issues,
+   one per pattern rather than one bundled proposal:
+   #666 base error class,
+   #667 Rust display and constructor macros,
+   #668 `io::ErrorKind` helper,
+   #669 shadow-element factory,
+   #670 `nullRecord()`,
+   #671 `compareBy`,
+   #672 module-id query stripper,
+   #673 batch dispatch macro.
+   #665 is now their index with the recommended sequencing.
+- The two rules were redirected out of `AGENTS.md` into
+   `.agents/skills/project-code-review/SKILL.md` as `GRW` and `TWS`,
+   broadened so they fire on any diff rather than only on duplicate-code dismissals.
+   The narrower dismissal-side form also landed as rule 9 of the recording convention in
+   `doc/troubleshooting/slopo-threshold-tuning.md`.
+- #664's two clusters and #660's item 8 have recorded decisions,
+   both consolidating rather than dismissing.
+- Both wording fixes were applied:
+   `slopo.conf.yaml` now says that 13 is a hand-tuned floor and that `0.8.0` defaults to 20,
+   so the value is more permissive than upstream rather than less;
+   and `mise.toml` pins `pipx:slopo` to `0.8.0` with the reason,
+   since an unpinned upgrade can invalidate every suppression silently and slopo has no dead-key
+   detection.
+   The `mise.toml` pin is applied in the working tree but was left uncommitted,
+   because that file carries an unrelated uncommitted change to `_.path` that is not this work's to
+   commit.
+
+What was not done,
+ deliberately:
+no production source changed.
+Implementation of the eight owners belongs to the issues that now track them.
+
 ## Verification limits
 
 - The bucket A,
