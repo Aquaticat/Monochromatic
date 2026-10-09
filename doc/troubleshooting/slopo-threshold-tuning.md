@@ -1,5 +1,12 @@
 # Slopo 0.4.0: raising a threshold for one incidental match hides useful reports
 
+The title pins the version this investigation verified.
+`mise.toml:213` installs `pipx:slopo` at `latest`,
+so the running version moves without any signal in this file.
+The section `Re-verification against slopo 0.8.0 on 2026-10-09` records what moved,
+what still holds,
+and the state of the ignore inventory today.
+
 ## Symptom
 
 Slopo reports the two `fix` callbacks in
@@ -109,7 +116,11 @@ It also cannot distinguish shallow scaffolding from useful shared behavior.
 ### Ignore hashes are the intended review mechanism
 
 Slopo applies reviewed cluster hashes after thresholding and clustering at
-`src/slopo/analysis/command.py:63-69`:
+`src/slopo/analysis/command.py:63-69`
+(that path is the `0.4.0` layout;
+as of `0.8.0`,
+re-verified 2026-10-09,
+it is `slopo/result/analysis/command.py:65-73`):
 
 ```python
 ensure_ignore_file(cfg.ignore_file)
@@ -127,7 +138,12 @@ The repository categorizes comparable tiny fixer matches under
 
 ### Path migration made prior ignore hashes stale
 
-`src/slopo/analysis/ignore.py:18-24` includes every unit path and body hash in a cluster hash:
+`src/slopo/analysis/ignore.py:18-24` includes every unit path and body hash in a cluster hash
+(that path is the `0.4.0` layout;
+as of `0.8.0`,
+re-verified 2026-10-09,
+the hash is built in `slopo/result/identity.py:24-30`
+and `slopo/result/analysis/ignore.py:14-22` holds only the loader and the header template):
 
 ```python
 pairs = sorted(
@@ -234,6 +250,89 @@ All ignored hashes were unique and present in the baseline report.
 No ignored hash overlaps the currently visible music-player Android/Rust drift clusters,
 and the whole fake Pi harness cluster remains visible.
 
+## Re-verification against slopo 0.8.0 on 2026-10-09
+
+Verified against installed slopo `0.8.0`
+(`mise which slopo` resolves to
+`~/.local/share/mise/installs/pipx-slopo/0.8.0/bin/slopo`),
+the report generated 2026-10-07 22:36:47 in `.slopo.local.dir/`,
+and `slopo.ignore.txt` as of that date.
+The mechanism this document relies on is unchanged from `0.4.0`:
+`config.py:120-121` still defaults `ignore_file` to `slopo.ignore.txt`,
+the loader still drops everything from `#` onward,
+the filter still runs after clustering,
+and the hash is still sha256 over the sorted `(file_path, body_hash)` pairs of a cluster's units,
+truncated to 12 hex characters.
+
+### The whole inventory is dead keys
+
+All 55 hashes in `slopo.ignore.txt` match nothing in the 2026-10-07 report.
+Two probes on copies of that index,
+each with its own report directory under `~/temp/agent`,
+confirm it:
+
+- an empty ignore file reported `1008 clusters with 4377 units`;
+- the real ignore file reported the same `1008 clusters with 4377 units`
+   and printed no `Ignored ... previously reviewed clusters.` line,
+   which `slopo/result/analysis/command.py:65-73` emits only when a key matches.
+
+Both runs produced an identical 1008-hash set.
+That also means the report is reproducible from the same index on a later date,
+and that the earlier `Ignored 55 previously reviewed clusters` measurement in
+`Refreshed inventory` describes an older index rather than this one.
+The practical consequence:
+the inventory currently suppresses nothing,
+so a dismissal issue that proposes entries without replacing the keys whose clusters re-surfaced
+leaves lines in the file that look like suppressions and are not.
+
+slopo has no dead-key detection.
+`load_ignored` returns a set,
+the filter logs only an aggregate count of matching clusters,
+and nothing compares the file's keys against the current report.
+The check is manual:
+extract the hashes from `.slopo.local.dir/index.md` and intersect them with the file.
+
+### Open cleanup decision for the 55 dead keys
+
+The 2026-10-07 review ledger records a successor cluster for 32 of the 55:
+
+- 23 succeed into the four dismissal issues,
+   which propose refreshed hashes:
+   6 keys into #656,
+   15 into #657,
+   2 into #658,
+   and none into #659.
+- 9 succeed into clusters owned by code-change issues,
+   where deletion is the right action rather than refresh,
+   because the code is meant to change:
+   `0e41fd1057e6`,
+   `40f0c1f3840b`
+   and `798d10651694` into #621;
+   `1682a0e0531e` and `77653aa954c8` into #653;
+   `6ddb97d5cd76` and `da53cb2e3bfa` into #616;
+   `8df402384c84` into #647;
+   and `b9640ab1d320` into #633.
+
+The other 23 keys have no recorded successor.
+Twelve of those 23 are the i18n renderer keys in the `STRUCTURAL-IDIOM` section
+(`7ec17c4edbdf`,
+`0a43dc0e4435`,
+`6ffeaa95d661`,
+`e9510c048af2`,
+`b3c3ce7ac317`,
+`92ae195f9975`,
+`e0af1a5083e9`,
+`3350cc2028ca`,
+`0a6536d03a2b`,
+`329c6892e8f0`,
+`f563c71baeff`,
+`238136eee5b5`),
+which #658 discusses as a family.
+Deleting a dead key restores no visibility,
+because it matches no current cluster;
+keeping it records that a review happened but tells a reader the cluster is suppressed when it is not.
+The choice is open and belongs to the maintainer.
+
 ## Verified workarounds
 
 ### Dismiss the reviewed cluster hash
@@ -250,6 +349,46 @@ Its tradeoff is intentional:
 editing either body or moving either path changes the hash,
 so Slopo asks for review again.
 The inventory refresh replaced the path-invalidated entries and deleted stale hashes that could not be recovered.
+
+### Recording a dismissal
+
+An entry is a hash line preceded by comment lines.
+`load_ignored` drops everything from `#` onward,
+so comments are inert and only the hash reaches the tool.
+The comment is nonetheless the durable half of the record,
+because `.slopo.local.dir/` is gitignored by `.gitignore:11` (`*.local.*`)
+and `index.md` records nothing but a timestamp.
+
+Rules this repository follows,
+each learned from a defect:
+
+1. Write a complete sentence naming both sides by path and symbol.
+   Never truncate mid-clause and never append an ellipsis.
+   An entry whose reason is cut off is indistinguishable from a bare suppression.
+2. Never write a cluster ordinal such as `C187` into the file.
+   Ordinals come from `enumerate(clusters, 1)` at report time
+   (`slopo/result/report/markdown/analyze.py:22-23`),
+   so they denote a different cluster after the next regeneration.
+   Ordinals belong in an issue body,
+   which carries its report date.
+3. Never write line numbers into the file.
+   They drift on any edit to the file they point at.
+4. Put each hash under the heading of the category the review recorded for that cluster,
+   not the category of the issue that happens to carry it,
+   and update the count in that heading once every issue in a batch is decided,
+   so two issues adding to one heading cannot race.
+5. Replace a dead key rather than accumulating it,
+   and name in the issue which keys are replaced and by which successors.
+6. Verify by hash-set diff,
+   not by the logged count.
+   Capture the hashes in `.slopo.local.dir/index.md`,
+   run `mise run slopo:analyze`,
+   and require the removed set to equal exactly the accepted hashes.
+   `Ignored N previously reviewed clusters.` is an aggregate over every matching key
+   and is not printed at all when the count is zero.
+7. Never write a literal triple backtick into a comment that will also be pasted inside a fenced
+   block in an issue body.
+   It closes the fence early and breaks the rendering of everything after it.
 
 ### Raise thresholds only after labeled calibration
 
