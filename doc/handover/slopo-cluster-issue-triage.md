@@ -48,6 +48,11 @@
 - `open-issues.tsv`: dump of open issues (number, labels, title) for duplicate checks.
 - `review/ledger.jsonl` (to be created): durable per-cluster verdicts. Append-only; survives compaction.
 - `review/digest-<batch>.txt` (to be created): condensed per-cluster digests for reading.
+- `append_ignore_block.py`: built the originally posted proposal blocks. Superseded on 2026-10-09 and no longer
+  correct to rerun: it truncates each comment at 130 characters, prefixes cluster ordinals, and groups by concept
+  rather than by recorded verdict. Its replacement lives in `${HOME}/temp/agent/review-659/work/` as
+  `build_blocks.py` (category-grouped blocks, complete comments, dead-key mapping, held-back list) plus
+  `build_bodies.py` and `specs_65[6789].py` (asserted narrative patches per issue). Rerun those, not this.
 
 Report grammar (slopo source `slopo/result/report/markdown/analyze.py`): each `### ______ N ______`
 section is one body-hash group; path lines may be followed by a context code block; the last code
