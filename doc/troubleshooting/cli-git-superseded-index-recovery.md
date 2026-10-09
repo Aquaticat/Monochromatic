@@ -139,7 +139,7 @@ The native wait preserves a lock when its owner is not proven alive
 and the configured unproven-owner budget expires:
 
 ```typescript
-// package/git-policy/cli/src/index-lock/index-lock-wait.ts:349
+// package/git-policy/cli/src/index-lock/index-lock-wait.ts:350
 if (state.unprovenMs >= timeoutMs)
   throw new IndexLockUnprovenOwnerError({
     evidence,
