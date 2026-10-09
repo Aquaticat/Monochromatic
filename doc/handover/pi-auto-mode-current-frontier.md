@@ -296,6 +296,63 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original owned session-load inputs
+
+The next accepted-domain increment records a new native load occurrence,
+not the historical issuer of a saved message.
+Required red `ae9d582` / `proc_ddb2` opened a native-written session through a distinct owned manager
+and reached canonical review with the prior user text in the body,
+but without an original source view.
+
+The existing private manager now owns capture of supported loaded user-message content
+after its defensive clone and before migration.
+Each record is unregistered,
+with historical issuer,
+authority,
+and priority unestablished.
+Saved roles,
+IDs,
+timestamps,
+paths,
+and equal bytes do not carry an older capability into this load.
+Loaded sources have their own session-input occurrence,
+not an invented emitting run.
+
+A default message-copy observer preserves input-only aliases during initial SDK projection,
+before `AgentSession` attaches its run observer.
+The fixed manager reader supplies original loaded-source lookup to the existing source collection.
+It stores source/publication references,
+not a parallel transcript.
+Loaded input aliases do not grant text-part or serialized-payload eligibility.
+
+Capture failures remain owner-local until source use.
+The native file loader still runs its parser,
+migration,
+and original error paths.
+The source-use assertion fails on capture errors rather than publishing a truncated source set as complete.
+The incumbent data copier,
+source limit,
+source-byte limit,
+and snapshot ledger are retained.
+
+Initial stage `proc_0bb0` rejected the injected helper imports.
+Explicit mappings in `342b64f` repaired that import allow-list without accepting arbitrary file URLs.
+Native consumer `proc_397c` and publication regression `proc_9794` passed.
+Pure identity,
+bounds,
+and deferred-failure controls passed `proc_4bbb`.
+Native manager parity,
+broader lifecycle controls,
+sensitivity,
+and full regressions remain pending.
+
+This initial profile covers supported stored user-message text content.
+It does not authenticate a prior human,
+inherit a registration,
+establish other loaded message kinds,
+or close the governing domain.
+No provider trial or installed activation occurred.
+
 ## Original selected-path inputs after native projection
 
 Native compaction and context edits can remove an input from the rendered transcript
