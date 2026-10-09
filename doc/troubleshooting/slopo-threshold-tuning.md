@@ -389,6 +389,14 @@ each learned from a defect:
 7. Never write a literal triple backtick into a comment that will also be pasted inside a fenced
    block in an issue body.
    It closes the fence early and breaks the rendering of everything after it.
+8. Prefix every non-hash line of a proposed block with `#`,
+   including trailers such as an entry count.
+   `load_ignored` treats any line whose text before the first `#` is non-empty as a hash,
+   so a pasted trailer becomes a junk entry that matches nothing and looks like corruption.
+   The four dismissal issues were paste-tested this way on 2026-10-09:
+    appending all four proposed
+   blocks to a copy of `slopo.ignore.txt` and calling `load_ignored` on it loaded exactly the 147
+   proposed hashes and no other token.
 
 ### Raise thresholds only after labeled calibration
 

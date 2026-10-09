@@ -533,6 +533,14 @@ What the regenerated blocks changed:
    the rendering of everything after it.
    The text is spelled out and the builder now rejects any
    block containing a fence.
+- Every non-hash line of a block is now a comment,
+   including the entry-count trailer,
+   which the first regeneration emitted bare.
+   A paste test found it:
+   appending all four blocks to a copy of `slopo.ignore.txt` and calling
+   `load_ignored` on the result loaded 148 tokens instead of 147,
+   the extra one being the trailer text.
+   After the fix the same test loads exactly the 147 proposed hashes and no other token.
 - Each body carries the provenance the report itself lacks,
    and the acceptance criteria verify by
    hash-set diff against a measured baseline instead of the aggregate `Ignored N` log line.
