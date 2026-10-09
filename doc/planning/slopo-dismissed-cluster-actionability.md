@@ -174,143 +174,296 @@ or existing-utility check.
 "Extraction costs more than it saves" was asserted per pair and never tested against the size of
 the family the pair belongs to.
 
-## What survives a re-read of the judgement-heavy clusters
+## What I read, and what it showed
 
-The 11 clusters in #659 that sit in one file or one package and carry a
-`COINCIDENTAL-SHAPE` or `BOILERPLATE-TRIVIAL` verdict,
- read against their source.
+Two kinds of evidence,
+ because reading 147 clusters by hand is not what was missing.
 
-Eight stand,
-because the shared part is already extracted or the two sides answer different questions:
+Mechanical,
+ over all 147 proposed entries.
+The report grammar puts one body-hash group per `### ______ N ______` section,
+so a single-section cluster means every unit has byte-identical body text.
+Bodies were then tokenised with identifiers and literals normalised to placeholders,
+so "same skeleton,
+ different names" separates from "structurally different".
 
-- C588 and C599:
-   only one shell single-quote escaper and one git-config double-quote escaper exist
-   in the repository,
-   so there is no family and no shared home.
-- C706:
-   three distinct git wire formats (mktree `-z` record,
-   packed-refs line,
-   batch-ref-update create line).
-   A shared builder would take the format as a parameter and restate the difference.
-- C811:
-   `toSummary` and `toMinimal` are two inline `map` callbacks in one function projecting
-   different field sets for different payloads.
-- C837:
-   two CLIs with two output contracts.
-- C909:
-   the shared part,
-   `IDENTITY_SEPARATOR`,
-   is already a constant both key builders use.
-- C937:
-   two guards for two payload conventions,
-   `{ html }` and `{ __html: string }`.
-- C974:
-   three resolvers already layered by delegation.
+- 9 clusters have one body shared by every unit:
+   8 with 2 units and 1 with 11 units.
+- 39 clusters have the same token skeleton with different names or literals.
+- 99 differ structurally,
+   and 6 of those differ only by `async` and `await` plus names.
 
-Three have a small real extraction available:
+Hand reads,
+ 50 clusters,
+ chosen as the largest and the highest-risk families.
 
-- C833:
-   the split-and-filter tail of the two `pathSegments` functions in `module/fs-path` is
-   identical and only the resolve step differs.
-   `splitSegments(path)` is the issue's own caveat 1 proposal,
-   and #619 is already consolidating that package,
-   so it belongs there rather than in a new issue.
-- C866 and C989:
-   `cssOklch`,
-   `cssOklchFrom`,
-   `cssMin`,
-   `cssMax`,
-   `cssClamp` and `cssCubicBezier`
-   are the 6 constructors above the floor in that file,
-   and `cssMin` and `cssMax` differ only in the function name they emit.
-   An internal helper for that shape is cheap and stays inside one file,
-   with no new package and no new dependency.
-   The 25 below the floor should stay as they are.
-- C878:
-   a third license reader already exists.
-   `dev-script/deps-cube/src/probe-field-parsers.ts` normalises a license field and unwraps the
-   object form `{ type: '...' }`,
-   while root `file-enforcer.config.ts`'s `packageJsonLicenseExpression` accepts only a string.
-   No tracked `package.json` in the repository uses the object form,
-   so the behavioural gap is theoretical here,
-   but the reuse is real and #633 already owns that file.
+- 24 deliberate-mirror clusters in #657 (`sync-async-twins`,
+   `complementary-predicate-twins`,
+   `differential-fuzz-adapters`,
+   `or-throw-sibling-guards`,
+   `perf-benchmark-arms`,
+   `sync-async-test-twins`),
+   diffed line by line.
+   Every difference is on the intended axis:
+   `await` and `Promise<T>` for the twins,
+   `readFile` against `readFileSync`,
+   `<=` against `<` for `isPrefix` and `isStrictPrefix`,
+   swapped ternary branches and a De Morgan swap for the complements,
+   `peek` against `get` and object-form against positional arguments for the fork adapters.
+   No drift in any of them.
+- 11 coverage-probe clusters in #658.
+   Each unit is a distinct invalid input:
+   `parseCss` on `.a {` against `.a` against `.a ; {}`,
+   `pify` on `null` against `'nope'`,
+   `config.set` on `__internal__` against `__internal__.x` against a nested value.
+   Compressing them into a table would hide which branch each input reaches,
+   which is the file's purpose.
+- 4 of the 13 i18n clusters in #658.
+   `en` and `ca` select a complement form through `nonFiniteSurface({ entry, form })`
+   while `zh` reads `.surface`;
+   `en` passes `{ sentence, deps }` to `renderWhSubject` while `zh` passes `sentence`;
+   `ca` reads `entry.infinitive` where `en` reads the verb entry whole.
+   The differences are grammatical,
+   as claimed.
+- The 11 judgement-heavy clusters in #659,
+   read against their source.
 
-## Options, all at threshold 13
+Among the clusters whose bodies differ,
+ the hand reads found no counterexample.
+Every counterexample is in the identical-body group.
 
-1. Count families with a direct query against the existing index instead of reading clusters.
-   `code_units.body` and `body_node_count` are already in `.slopo.local.dir/index.db`,
-   so an idiom can be sized with one `like` query and no re-index,
-   no embedding and no threshold change.
-   That is how the 212-unit figure was produced.
-   Pros:
-    free,
-   repeatable,
-   and it measures the thing the review never measured.
-   Cons:
-    it needs a pattern per idiom,
-   so it finds families someone thought to ask about.
-2. Give the error-name family its own proposal:
-   a base class assigning `this.name = new.target.name`,
-   which deletes 212 hand-written constructors and one drift risk,
-   with `mangle: false` already guaranteeing the names survive bundling.
-   Pros:
-    the largest measured family above the floor,
-   mechanical,
-   and verifiable by the same comparison used here.
-   Cons:
-    it touches 147 files,
-   published `module/*` packages would gain a dependency,
-   and `PP4`'s class-per-failure-mode requirement still means one class per error.
-3. Hand the measured site lists to the issues that own the families:
-   the coverage-report groups to #613,
-   the guard groups to #618,
-   the text predicates to #617,
-   the harness callbacks to #621,
-   the transport collectors to #653,
-   and the license readers to #633.
-   Pros:
-    no new issues,
-   and each family gets the members the report never showed it.
-   Cons:
-    five or six issue edits,
-   and their cluster counts and titles change.
-4. Standardise the two spellings of the non-empty-line predicate (28 sites) without extracting it.
-   Pros:
-    removes the inconsistency,
-   which is the only real cost,
-   and changes no interface.
-   Cons:
-    a 28-site edit for a spelling preference.
+## Nine proposed dismissals are byte-identical copies
 
-Ranking:
- 1 over 3 over 2 over 4.
-1 beats 3 because measurement is what was missing and it is free,
-while 3 spends editorial effort on lists that the next re-index will shift.
-3 beats 2 because most invisible families already have an owner,
-whereas the error-name family would need a new proposal,
-a new dependency edge in published packages,
-and a 147-file change whose benefit is drift prevention that has not yet drifted.
-2 beats 4 because a 212-site idiom with a one-line fix is a larger prize than a spelling
-convention,
-and 4 is the kind of change that is only worth riding along with something else.
+Bodies quoted exactly as indexed.
+
+- C13,
+   #656,
+   `BOILERPLATE-TRIVIAL`,
+   11 identical units:
+   `{ return formatter.write_str(self.message.as_str()); }`.
+   Eleven byte-identical Rust `Display` impls,
+   out of 50 `Display` impls in the repository.
+   The recorded reason is "idiomatic per-type Rust `Display` impls".
+   Idiomatic and identical are different claims:
+   11 copies of one line is what a `macro_rules!` in a `rust-module/*` crate removes,
+   and `thiserror` would too,
+   though it appears in no `Cargo.toml` in the repository and only in third-party audits
+   (`doc/audit/turso-cargo-toml-0.6.1.md` and two vetting docs),
+   so adopting it is a `choosing-technology` decision rather than a fix.
+- C617,
+   #657,
+   `INTENTIONAL-VARIANT`,
+   2 identical units:
+   `{ if (getToolMode() === 'zoom') event.preventDefault(); }`.
+   The recorded reason is "mirror keydown/keyup handlers,
+   opposite cursor".
+   The bodies are identical,
+   so nothing about them is opposite;
+   the difference lives in which event each is registered for.
+   One handler function registered for both events would be behaviour-preserving.
+- C665,
+   #658,
+   `STRUCTURAL-IDIOM`,
+   2 identical units:
+   `{ return dispatch({ model, context, ...(options === undefined ? {} : { options, }), },); }`.
+   `STRUCTURAL-IDIOM` is defined in `slopo.ignore.txt` as
+   "shared skeleton where each body's actual logic differs".
+   Here the logic is byte-identical and the difference is in the parameter types,
+   which is a real distinction but not that category's.
+- C15,
+   #656,
+   `BOILERPLATE-TRIVIAL`,
+   2 identical units:
+   `{ return ConfigError { message: String::from(message), }; }`.
+   Same Rust error-boilerplate family as C13.
+- C629,
+   #656,
+   2 identical units:
+   `return w.toplevel().unwrap().wl_surface() == &root`.
+- C636,
+   #656,
+   2 identical units:
+   `{ send_and_wake(&self.tx, &self.worker, command); }`.
+   Both already delegate to one shared function,
+   so nothing is left to extract.
+   This dismissal is correct.
+- C639,
+   #657,
+   2 identical units:
+   the `expiresIn` fork and upstream adapters.
+   Defensible for differential fuzzing,
+   where both sides are written out on purpose,
+   but the recorded reason describes an API difference that the body does not contain.
+- C669,
+   #656,
+   2 identical units:
+   `{ self.playing.store(on, Ordering::Relaxed); }`.
+- C688,
+   #656,
+   2 identical units:
+   `{ return Rc::new(VecModel::from(Vec::new())); }`.
+
+The last four are one-line bodies where extraction saves nothing and the dismissal stands.
+C13,
+ C15,
+ C617,
+ C639 and C665 are the ones whose recorded reasoning does not match their evidence,
+and C13 is the one with a real remedy.
+
+## Retractions from the first pass of this investigation
+
+- The suggestion that C866 and C989 could share an in-file helper is withdrawn.
+   `package/module/hyperscript/README.md` documents the family as the design:
+   "Branded value constructors replace raw strings,
+   preventing invalid units and disallowed color functions at the type level",
+   and lists `cssRem`,
+   `cssEm`,
+   `cssCh`,
+   `cssLh`,
+   `cssVi`,
+   `cssVb`,
+   `cssCqi`,
+   `cssCqb`,
+   `cssDvi`
+   as named exports.
+   `cssMin` and `cssMax` returning a branded `CssValue` is the point,
+   not the duplication.
+- Handing measured site lists to #617 and #618 is redundant.
+   #617 already enumerates roughly 70 call sites across 16 clusters and records real drift:
+   the whole-string digit predicates disagree about the empty string and about leading zeros.
+   #618 already enumerates its guard family,
+   including `isStringArray` at six sites with two different narrowings,
+   and proposes `isNonEmptyString`.
+   Those two owners did family-level work;
+   the dismissal issues did not.
+- The "119 lower-risk against 28 judgement-heavy" split was a heuristic built from package
+   placement and never tested.
+   The identical-body test replaces it,
+   because it is mechanical,
+   covers all 147,
+   and found the counterexamples the heuristic missed.
+
+## The error-name family, measured properly
+
+- 212 indexed units contain `this.name = `,
+   across 147 files,
+   minimum `body_node_count` 13.
+- 154 are the pure two-statement idiom,
+   `super(message,); this.name = 'XError';`.
+- 58 do more:
+   extra fields such as `this.status`,
+   `this.url` and `this.reason`,
+   a tagged logger built in the constructor,
+   or a multi-line message.
+   A base class removes the name line from those but keeps their constructors.
+- 21 forward an `options` argument to `super`,
+   so any base class must forward it too.
+- 209 assign a string literal and 3 already assign `X.name`,
+   as in `this.name = SkillMirrorManifestError.name` in root `file-enforcer.config.ts`.
+   The pattern that makes the literal redundant already exists in the repository.
+- All 209 literals found by `rg` match their enclosing class name,
+   checked by a comparison proven able to fail against a planted mismatch.
+
+So a base class assigning `this.name = new.target.name` would delete 154 constructors and one line
+from 58 more,
+with `mangle: false` in all three rolldown configs keeping the names intact in published artifacts.
+It has not drifted yet,
+it touches 147 files,
+and published `module/*` packages would gain a dependency edge.
+
+## What slopo cannot tell you
+
+- No stale-entry reporting exists.
+   Its nine commands are `init`,
+   `show-config`,
+   `index`,
+   `embed`,
+   `analyze`,
+   `review`,
+   `agent-configs`,
+   `agent-review` and `agent-analyze`;
+   none compares `slopo.ignore.txt` against the current report,
+   and nothing in `slopo/result/analysis/` mentions unused,
+   stale or orphaned entries.
+- Clustering cannot size a family.
+   Two error constructors differing only in a class-name literal are near-duplicates,
+   not exact ones,
+   so a 212-member idiom surfaces as 17 clusters or fewer,
+   split across four issues and four verdicts.
+- What can size one is already in the index.
+   `code_units.body`,
+   `body_node_count` and `body_hash` are populated at threshold 13,
+   so one query counts a family with no re-index,
+   no embedding and no API cost:
+   that is how 212 was produced.
+
+## Judgements adopted
+
+These are calls,
+ not options,
+ and each is recorded here so it can be vetoed rather than rediscovered.
+
+1. Hold back the 9 identical-body clusters from acceptance and accept the other 138.
+   For the 138 the two sides demonstrably differ,
+   and 50 of them were read at body level with no counterexample.
+   The remaining 88 rest on the ledger's `full-read` verdicts plus the mechanical fact that their
+   bodies are not identical.
+2. Re-verdict the five whose reasoning contradicts their evidence:
+   C13 and C15 become one proposal for a Rust error-display macro;
+   C617 becomes a code change,
+    one handler registered for both events;
+   C665 moves out of `STRUCTURAL-IDIOM`,
+    because its bodies are identical;
+   C639 keeps its dismissal with the reason restated as being about signatures,
+    not bodies.
+3. Do not propose the error-name base class now.
+   The family is large and the change is mechanical,
+   but nothing has drifted in 209 sites,
+   the change touches 147 files,
+   and it adds a dependency edge to published packages.
+   The measurement is recorded here so the next reviewer does not re-derive it.
+4. Record the family-count query as a recipe in
+   `doc/troubleshooting/slopo-threshold-tuning.md` rather than adding a `mise` task or a package.
+   A task would need a README,
+    tasks and tests under the repository's completeness rules for
+   something used a few times a year.
+5. Comment the sub-floor coverage-report members on #613 and the third license reader on #633,
+   because those two owners lack the information.
+   Skip #617,
+    #618,
+    #621 and #653,
+    which already enumerated their families.
+6. Give the three held-back `UNCERTAIN` clusters a home:
+   C562 joins #660 as an eighth judgement call,
+   and C622 and C721 get one focused issue,
+   since both are in the quick-lru fork family and neither is tracked anywhere.
+7. Copy the review ledger into `doc/artifact/` as a dated record and leave the builders in scratch.
+   The ledger is the only per-cluster rationale for 147 proposed suppressions and it currently lives
+   outside the repository.
+8. Leave `slopo.conf.yaml` and `mise.toml` alone.
+   The threshold is hand-tuned and stays at 13.
+   The `latest` pin and the stale "increased from default 10" comment are proposed as wording,
+   not applied,
+   because `mise.toml` carries uncommitted local modifications that are not this work's to touch.
 
 ## Verification limits
 
-- The probe index used a throwaway database and did not touch `.slopo.local.dir/`.
+- The probe index at threshold 4 used a throwaway database and did not touch `.slopo.local.dir/`.
    It indexed only;
    it did not embed,
-   so no similarity or clustering ran on the new units.
-   The duplicate counts here are exact-body-hash groups,
+   so no clustering ran on the new units.
+   The duplicate counts are exact-body-hash groups,
    not slopo clusters.
+- The identical-body test relies on the report's section grammar,
+   one body-hash group per section,
+   which the triage handover validated against `index.md` for all 1008 clusters.
+- The skeleton comparison normalises identifiers and literals but not operator or keyword choice,
+   so it reports sync/async twins as structurally different.
+   Those 99 clusters were classified further by hand for the families named in "What I read",
+   and the rest were not read at all.
 - Site counts are `rg` and index queries over tracked TypeScript and Rust at HEAD on 2026-10-09.
-   The repository's blanket `*.js` ignore excludes transpiled output from `rg`,
-   but slopo indexes it,
-   which is why build output appears in some duplicate groups and is named where it matters.
-- The error-name comparison was proven able to detect a mismatch against a planted fixture before
-   its zero-mismatch result was trusted.
-- The `done-*` exclusion was verified with `pathspec`,
-   the same gitignore matcher slopo's scanner uses.
-- Whether a base error class is worth 147 files of churn is a values judgement about depth versus
-   governance,
-   not a measurement,
-   so option 2 is presented rather than adopted.
+   slopo indexes transpiled `.js` that the repository's blanket `*.js` ignore hides from `rg`,
+   which is why build output appears in some duplicate groups.
+- Whether a 147-file mechanical change is worth making to prevent drift that has not happened is a
+   values judgement about depth against governance,
+   so judgement 3 is a recommendation and not a fact.
