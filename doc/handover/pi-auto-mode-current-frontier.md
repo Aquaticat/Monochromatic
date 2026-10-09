@@ -232,7 +232,10 @@ Failure-ledger omission `proc_acd7` allowed a caught observation error to disapp
 render-window omission `proc_3d7a` poisoned the old scope on a late call.
 Producer omission `proc_95dc` fabricated a suppressed contribution;
 consumer omission `proc_5308` incorrectly accounted for a `not-inserted` fact.
-Every guard is restored and full guideline regressions are running.
+Every guard is restored.
+Full native `proc_f733`,
+action `proc_8b6b`,
+and eleven-document render `proc_1cf2` passed.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 

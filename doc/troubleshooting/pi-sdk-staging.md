@@ -427,8 +427,10 @@ Render-window omission `a143431` failed `proc_3d7a` by recording
 Producer omission `6cfcc6c` failed `proc_95dc` with `1 !== 0` for a suppressed contribution.
 Consumer omission `d3ab546` failed `proc_5308` with `accounted` instead of `unresolved`
 for `Guideline not-inserted`.
-Every guard is restored;
-full guideline regression is running.
+Every guard is restored.
+Full native `proc_f733`,
+action `proc_8b6b`,
+and eleven-document render `proc_1cf2` passed.
 Native guideline handling itself was correct;
 this remains a private source-consumption and ownership change,
 not an upstream filing.
