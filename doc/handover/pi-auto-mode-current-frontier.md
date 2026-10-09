@@ -296,6 +296,77 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original unintercepted input before expansion
+
+The private SDK now observes the actual `{text,images}` return object from the
+no-input-handler branch before skill/template expansion.
+It returns that same object unchanged and records only original text and source/streaming metadata
+through the existing manager owner.
+The source is `native-unintercepted-input`,
+not a fabricated input event,
+run,
+entry position,
+human issuer,
+or payload capability.
+
+Required red `c2ca326` / `proc_785c` used a native template without argument placeholders.
+The expanded request omitted the raw invocation and its arguments.
+`1509002` / `proc_bd69` preserved that original input;
+the installed template parser and expander remain unchanged.
+
+`proc_af25` matched installed/private return values,
+borrowed image references,
+empty and UTF-8 boundary inputs,
+reset,
+and oversized capture preserving the native return.
+`proc_a904` covered steering,
+follow-up,
+cleared queues,
+a raw input rejected before transport,
+and a rejected streaming prompt that still retires earlier source evidence without queuing anything.
+Expanded strings and equal raw strings remain distinct source occurrences;
+the raw input never borrows the expanded prompt's material association.
+
+The ordinary source-content cap remains 65536 bytes,
+with the same combined 64-source/four-MiB record limits.
+Raw text can now fail the source profile even if later expansion shortens it.
+The first capture failure remains latched across a later valid input.
+A fresh native input owner can clear that capture failure,
+but does not revive the old root lease.
+Wrong-manager observation rejects without publishing a source.
+
+`proc_801f` exposed a loaded-source fixture that counted every manager-owned source as loaded.
+Selecting `native-load` explicitly restored the original load assertions in `proc_e82c`.
+Expanded-prompt regression `proc_3db1` also passed.
+
+Metadata validation already rejected nested getters before cloning.
+Proxy traps were a distinct gap:
+`bfb344f` / `input-metadata-proxy-read-required-red` observed two trap calls before rejection.
+The incumbent `copyMessageData` now checks Node's `types.isProxy` before reflection.
+`1583671` / `proc_5258` passed the zero-side-effect controls.
+No additional copier or registry was introduced.
+
+Integrated `proc_753b` passed with empty child stderr,
+including placeholders,
+equal raw/expanded values,
+persistent failure,
+foreign-manager rejection,
+and reset before consumption.
+Observation-edge omission `proc_8292` lost the original raw source and failed;
+the edge is restored.
+Complete post-change regression is running.
+
+This does not cover commands or deferred/rejected calls before the observed branch,
+last-handler output before further expansion,
+direct-agent producers,
+image origin,
+or complete governing scope.
+Skill expansion is not separately exercised here.
+`request-source-domain`,
+semantic qualification,
+and independent approval sufficiency remain unresolved.
+No installed change or provider trial occurred.
+
 ## Original native input-event text
 
 The private emitter now observes each actual native `input` event before its handler receives it.

@@ -1,5 +1,117 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 template expansion can discard unintercepted raw input
+
+### Symptom and native source boundary
+
+A native template without argument placeholders can replace the entire original invocation.
+The private expanded-prompt capture alone therefore misses unused original argument text.
+`proc_785c` demonstrated the missing source in canonical review.
+
+Installed `pi-coding-agent@1.1.0/dist/core/agent-session.js:1476`
+returns a fresh native value when no input handler exists:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+if (!this._extensionRunner.hasHandlers("input")) {
+    return { text, images };
+}
+```
+
+Installed `dist/core/prompt-templates.js:247` passes only template content and parsed arguments to substitution:
+
+```javascript
+// Installed pi-coding-agent dist/core/prompt-templates.js
+if (template) {
+    const args = parseCommandArgs(argsString);
+    return substituteArgs(template.content, args);
+}
+```
+
+At `prompt-templates.js:56`,
+`substituteArgs` returns a replacement over template content,
+not content followed by unused arguments.
+A template with no matching placeholders consequently preserves none of those unused arguments.
+
+### Private correction and verification
+
+The maintained generator observes the original native return object before expansion.
+The existing manager owner captures text and source/streaming metadata,
+then the observer returns the identical object.
+Image data is not read or frozen.
+This creates no synthetic input event or run.
+
+Run `test:unintercepted-input-source`,
+`test:unintercepted-input-native`,
+`test:unintercepted-input-paths`,
+and `test:queued-input-controls` separately through `mise --no-env --no-hooks run`
+in private `contract/integration/native-batch`.
+
+`proc_bd69` passed the original raw template consumer.
+`proc_af25` matched installed/private returns and borrowed image references.
+`proc_a904` preserved raw sources through template queuing,
+clearing,
+and a native rejected streaming prompt.
+`proc_753b` passed the integrated controls with empty child stderr,
+including equal raw/expanded data with no raw payload upgrade,
+original failure latching,
+and reset before source consumption.
+The source stays unregistered.
+
+The same ordinary 65536-byte source-content cap now applies before expansion.
+A raw input exceeding it is unsupported even when the native template would shorten its output.
+Native return values remain unchanged,
+but guarded continuation rejects the captured-source failure.
+A later valid input cannot clear that failure.
+Fresh native owner creation can clear capture state,
+while original root retirement remains independent.
+No budget was enlarged.
+
+### Metadata proxy correction
+
+The existing copier already rejects accessor descriptors before cloning.
+The proxy case differed:
+it inspected a proxy's prototype and keys before rejecting it.
+Private commit `bfb344f`,
+in process `input-metadata-proxy-read-required-red`,
+failed `2 !== 0` for observer trap calls.
+That process's short ID `proc_f207` is distinct from the historical append-persistence control with the same ID.
+
+The original `contract/collector/run-prompt-custody/messages.mjs` now rejects proxies with
+`types.isProxy` before reflective reads.
+`1583671` / `proc_5258` verified zero observer getter/proxy calls.
+No parallel copier was added.
+
+### Rejected readings and remaining scope
+
+`proc_801f` was a fixture error:
+its loaded-source selector also included the new current native input.
+The corrected selector requires `native-load`;
+loaded `proc_e82c` and expanded `proc_3db1` regressions passed.
+
+Omitting the native return observation failed `proc_8292`;
+the observation is restored.
+Equal bytes do not merge raw and expanded source identities or grant a payload capability.
+Metadata such as `source:'interactive'` does not establish a human author.
+
+Earlier commands,
+deferred/rejected calls before this branch,
+last-handler outputs before additional expansion,
+direct-agent inputs,
+image origin,
+and complete governing scope remain separate gaps.
+Skills expansion is not separately exercised by this increment.
+
+### Upstream filing decision
+
+No upstream report is proposed:
+the template's placeholder behavior is native behavior,
+and the missing observation and proxy reads were private adapter issues.
+Full post-change regression is running.
+The installed plugin,
+production qualification,
+and automatic policy admission remain unchanged.
+
 ## Pi 1.1.0 input handlers can remove original text before prompt construction
 
 ### Symptom and native cause
@@ -75,7 +187,8 @@ The observer-error correction's initial native consumers passed `proc_be20`.
 
 Native source labels such as `interactive` do not establish a human author.
 The no-handler fast path and commands handled before `emitInput` are not represented by fabricated events.
-Their original-input accounting remains a separate gap.
+On 2026-10-09 the no-handler return gained a separate original-input capture;
+commands handled before that boundary remain a gap.
 Image origin and governing-domain completeness remain unestablished.
 
 ### Upstream filing decision
