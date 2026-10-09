@@ -92,6 +92,19 @@ Full native `proc_744b`,
 full action `proc_09ee`,
 and ten-document render `proc_fed3` passed.
 
+The direct native-generated default preamble,
+tool-discovery guidance,
+and documentation guidance now retain their original run and render association.
+They use existing generated-input occurrences,
+not a second inventory or authority inferred from native placement.
+Custom-host rendering does not construct these sources;
+truthy section overrides and forced prompts prevent their contribution association.
+
+Missing native-fragment association failed `proc_b831` before initial green `proc_c667`.
+Expanded visibility matrix `proc_4165` passed 24 modes;
+original source/render controls passed `proc_814f`.
+Guard sensitivity and full regression for these direct generated fragments are next.
+Default-rule deduplication and other generated slots remain unconsumed until their exact native emission is established.
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
