@@ -391,14 +391,14 @@ Issue map, ordered by cluster count, generated from the ledger and the live issu
 - #611 refactor(music-player-design): emit one support.js instead of two byte-identical copies (159 duplicate clusters): 159 clusters
 - #612 refactor(git-policy-cli): decide the fate of the generated src/optional mirror tree (99 duplicate clusters): 99 clusters
 - #614 build(*): transpiled .js is emitted beside .ts sources in src/, producing 71 duplicate clusters: 71 clusters
-- #657 chore(slopo): dismiss 50 intentional-variant duplicate clusters and refresh 17 superseded ignore hashes: 50 clusters
-- #658 chore(slopo): dismiss 45 structural-idiom duplicate clusters (per-locale grammars, coverage probes, per-kind branches): 45 clusters
+- #657 chore(slopo): dismiss 50 intentional-variant duplicate clusters and refresh 17 superseded ignore hashes: 50 clusters (retitled 2026-10-09 to `chore(slopo): dismiss 47 variant clusters, hold 3 uncertain ones visible, and replace 15 dead ignore keys`)
+- #658 chore(slopo): dismiss 45 structural-idiom duplicate clusters (per-locale grammars, coverage probes, per-kind branches): 45 clusters (retitled 2026-10-09 to `chore(slopo): dismiss 45 clusters (44 structural-idiom, 1 intentional-variant) and replace 2 dead ignore keys`)
 - #613 refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters): 44 clusters
 - #622 refactor(file-manager): share the GTK shell with the sticky prototype or settle its fate (40 clusters, 6 behaviour drifts): 40 clusters
-- #656 chore(slopo): dismiss 33 boilerplate-trivial duplicate clusters and refresh 8 superseded ignore hashes: 33 clusters
+- #656 chore(slopo): dismiss 33 boilerplate-trivial duplicate clusters and refresh 8 superseded ignore hashes: 33 clusters (retitled 2026-10-09 to `chore(slopo): dismiss 33 clusters (32 boilerplate-trivial, 1 test-or-generated) and replace 6 dead ignore keys`)
 - #646 refactor(*): internal duplication inside the fuzz sidecars, including two names for one enumerability test (26 clusters): 29 clusters
 - #623 refactor(music-player): extract the duplicated Rust decode, opus and truepeak core into a shared crate (22 clusters): 22 clusters
-- #659 chore(slopo): dismiss 22 coincidental-shape duplicate clusters: 22 clusters
+- #659 chore(slopo): dismiss 22 coincidental-shape duplicate clusters: 22 clusters (retitled 2026-10-09 to `chore(slopo): dismiss 22 clusters (20 coincidental-shape, 1 structural-idiom, 1 boilerplate-trivial)`)
 - #644 refactor(dev-script): shared steps in vm-builder, watch-restart, file-enforcer, deps-cube and tofu (20 clusters): 20 clusters
 - #627 refactor(git-policy-cli): shared patch, ordering, path-safety, liveness and git-invocation helpers (17 clusters, 4 defects): 17 clusters
 - #647 refactor(rust-module-forbidden-regex): share the bench port helpers, codec mappings and bench harness (17 clusters): 17 clusters
@@ -473,12 +473,66 @@ None required for this task. Follow-ups a maintainer may want:
    #622 (prototype fate), #623 (extract now or wait for the proposal), #630 (declarative scenarios) and
    #660 (seven consolidate-or-dismiss calls).
 2. Decide whether the four dismissal issues (#656, #657, #658, #659) should be applied to
-   `slopo.ignore.txt`. Each carries a ready-to-paste block of comment-plus-hash entries generated from
-   the review evidence. This task deliberately did not edit the ignore file.
+   `slopo.ignore.txt`. Each carries a paste-ready block of comment-plus-hash entries, regenerated on 2026-10-09 so
+   comments are complete sentences grouped by recorded category, with no cluster ordinals and no line numbers.
+   This task deliberately did not edit the ignore file, and the 2026-10-09 corrections did not either. All 55 keys
+   in the file are dead against the current report, so accepting any batch also means deciding the cleanup recorded
+   in `doc/troubleshooting/slopo-threshold-tuning.md` under "Open cleanup decision for the 55 dead keys".
 3. If the report is regenerated, re-run the review scripts. They are deterministic and validate
    themselves: `parse_clusters.py` checks every cluster against `index.md`, `control_support.py` proves
    the duplicate-artifact check can fail, and `verify_mirror.py` proves the mirror relationship
    byte-for-byte.
+
+## Corrections applied on 2026-10-09
+
+A framing review of #659 (`doc/planning/issue-659-coincidental-shape-framing.md`) found defects the generator shared
+with all four dismissal issues. The bodies of #656, #657, #658 and #659 were corrected in place, each with a comment
+recording what changed and the measurement behind it. Nothing was written to `slopo.ignore.txt`; the accept decision
+is still the maintainer's.
+
+Generator defects, all confirmed by measurement:
+
+- `append_ignore_block.py` truncated each comment at 130 characters and appended ` ...`, so every proposed entry lost
+  the half of its rationale that names the second side.
+- It prefixed each comment with a cluster ordinal. Ordinals come from `enumerate(clusters, 1)` at report time
+  (`slopo/result/report/markdown/analyze.py:22-23`), so they denote a different cluster after the next regeneration.
+- It grouped entries by concept and assigned concepts to issues wholesale, which put clusters under a heading their
+  own ledger verdict contradicts: 9 of the 150 clusters across the four issues. #656 carried C284
+  (`TEST-OR-GENERATED`), #657 carried C562, C622 and C721 (`UNCERTAIN`) plus C825 and C932 (`STRUCTURAL-IDIOM`),
+  #658 carried C748 (`INTENTIONAL-VARIANT`), and #659 carried C866 (`STRUCTURAL-IDIOM`) and C989
+  (`BOILERPLATE-TRIVIAL`). Blocks are now grouped by recorded verdict.
+- One comment (C919 in #656) quoted a literal triple backtick, which closed the issue's fenced block early and broke
+  the rendering of everything after it.
+
+Content defects corrected:
+
+- #659 described C293 in prose while proposing 22 hashes; C293 is `BOILERPLATE-TRIVIAL` and #656 owns it.
+- #656 listed C866 and C989 among its one-line wrappers while #659 proposed their hashes.
+- Superseded-key counts were unevidenced: #656 said eight and named six, #657 said seventeen and named none, #658 said
+  eleven of which two are evidenced. The evidenced counts are 6, 15 and 2, derived from ledger rows that name an
+  existing key.
+- #657's caveat named C1003 as uncertain; C1003 is `full-read+file-inspected` against the `p-map-fork` README. The
+  three `UNCERTAIN` clusters are C562, C622 and C721, and they are now held back from the proposal rather than
+  dismissed, which is why #657 proposes 47 entries.
+- #647 points at "the remaining-uncertain issue" for the single-versus-batch `for_each_candidate` closure, but #660
+  covers clusters 218, 291, 294, 352, 600, 656 and 912 and not C562. A comment on #647 records the dangling pointer
+  and the two clusters in the same position (C622, C721).
+- Acceptance criteria now verify by hash-set diff instead of the aggregate `Ignored N` log line, and heading counts
+  are computed across all four issues together so two issues adding to one heading cannot race.
+
+Measurements that changed the picture:
+
+- All 55 keys in `slopo.ignore.txt` are dead against the 2026-10-07 report. Two probes on copies of that index, one
+  with an empty ignore file and one with the real file, both reported `1008 clusters with 4377 units`, and the second
+  printed no `Ignored` line, which slopo emits only when a key matches. The report on disk is therefore not
+  ignore-filtered, and the intersection of 0 recorded in "Facts measured" means the keys are dead rather than hidden.
+- Re-running `slopo analyze` on a copy of the index on 2026-10-09 reproduced the identical 1008-hash set, so the
+  report is deterministic from that index and every proposed hash was live on that date.
+- Churn exposure is narrower than a file-level reading suggests: 0 of the 22 clusters in #659 share a code unit with a
+  cluster owned by another issue, and no sibling issue names any of their symbols. The two exposed entries are C358
+  and C342, which have units in the fuzz sidecar tree that #613 proposes to consolidate.
+- slopo has no dead-key detection: `load_ignored` returns a set and the filter logs only an aggregate count, so keys
+  that stop matching stay in the file silently.
 
 ## Constraints to respect
 
