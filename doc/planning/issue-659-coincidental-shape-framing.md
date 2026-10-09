@@ -345,6 +345,9 @@ One supporting fact does hold:
 report,
  ignore filtering removed nothing from it,
 so the report is effectively a no-ignore report and the 22 keys are genuinely unreviewed.
+That last step was an inference when this review was first written and is now measured:
+the section "Actions taken on 2026-10-09" records two probe runs on copies of the index which
+produced identical 1008-hash sets with an empty ignore file and with the real one.
 
 ### 13. Smaller framing costs
 
@@ -471,3 +474,109 @@ B beats C because the defect sits at the point of use:
    and the move date.
 - That doc's title pins `0.4.0` while `mise.toml:213` installs `pipx:slopo` at `latest`,
    so the verified version and the running version can diverge without any signal.
+
+## Actions taken on 2026-10-09
+
+The user asked for all the work needed,
+ so option B was executed:
+ all four dismissal issues were
+corrected,
+ the convention was recorded once,
+ and both related repository findings were fixed.
+Nothing was written to `slopo.ignore.txt`;
+ the accept decision in each issue's criterion 1 is still
+the maintainer's.
+
+Issues corrected in place,
+ each with a comment recording the change and its measurement basis:
+
+- `#659`,
+   retitled to `chore(slopo): dismiss 22 clusters (20 coincidental-shape, 1 structural-idiom,
+   1 boilerplate-trivial)`.
+- `#656`,
+   retitled to name 32 boilerplate-trivial entries plus 1 test-or-generated and 6 dead keys.
+   Its double claim on C866 and C989 was removed,
+   since `#659` proposes those two.
+- `#657`,
+   retitled to name 47 proposed entries,
+   3 held back and 15 dead keys.
+- `#658`,
+   retitled to name 44 structural-idiom entries plus 1 intentional-variant and 2 dead keys.
+- `#647` received a comment recording that its pointer to "the remaining-uncertain issue" does not
+   resolve for cluster 562,
+   because `#660` covers clusters 218,
+   291,
+   294,
+   352,
+   600,
+   656 and 912.
+
+What the regenerated blocks changed:
+
+- Comments are complete sentences built from the review ledger's evidence,
+   never truncated,
+   and none
+   ends with an ellipsis.
+   All 147 proposed entries pass a check that each comment names two distinct
+   units.
+- No comment carries a cluster ordinal or a line number.
+- Entries are grouped by the category the ledger recorded for that cluster,
+   so the 9 clusters that
+   concept-based grouping had filed under a contradicting heading now sit under the right one.
+- Three clusters recorded `UNCERTAIN` (562,
+   622, 721) are held back from `#657`'s proposal entirely
+   and listed with their evidence,
+   because "competing actions are equally valid" is not grounds for
+   suppression.
+- One comment quoted a literal triple backtick,
+   which closed `#656`'s fenced block early and broke
+   the rendering of everything after it.
+   The text is spelled out and the builder now rejects any
+   block containing a fence.
+- Each body carries the provenance the report itself lacks,
+   and the acceptance criteria verify by
+   hash-set diff against a measured baseline instead of the aggregate `Ignored N` log line.
+
+Repository changes committed:
+
+- `doc/troubleshooting/slopo-threshold-tuning.md` gained a `0.8.0` re-verification section,
+   the
+   in-place path notes `WR6` requires,
+   the dead-key measurement,
+   the cleanup decision for the 55
+   keys,
+   and a "Recording a dismissal" convention section that all four issues now cite.
+- `doc/handover/slopo-cluster-issue-triage.md` gained a corrections section and retitled entries for
+   the four issues,
+   kept in the file's existing wrapping style so the additions are not buried in a
+   reformat of its 629 pre-existing violations.
+
+New measurements that were not available when the findings were written:
+
+- All 55 keys in `slopo.ignore.txt` are dead against the 2026-10-07 report.
+   Two `slopo analyze` runs
+   on copies of that index,
+   one with an empty ignore file and one with the real file,
+   both reported
+   `1008 clusters with 4377 units`,
+   and the second printed no `Ignored` line.
+   Both produced the
+   identical 1008-hash set,
+   which also proves the report on disk was not ignore-filtered and that it
+   is reproducible from that index on a later date.
+- The dead keys split into 32 with a ledger-evidenced successor (23 into the four dismissal issues,
+   9 into clusters owned by code-change issues where deletion rather than refresh is the right
+   action) and 23 with no recorded successor,
+   12 of which are the i18n renderer keys `#658`
+   discusses.
+
+Still open,
+ and not this review's to close:
+
+- The accept decision in each of the four issues.
+- A home for the three held-back clusters:
+   562's dangling pointer from `#647`,
+   and 622 and 721,
+   which
+   no issue tracks.
+- The cleanup decision for the 23 dead keys with no evidenced successor.
