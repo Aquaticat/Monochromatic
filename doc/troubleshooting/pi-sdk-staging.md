@@ -174,6 +174,46 @@ The existing filing disposition applies:
 these are private-consumer gaps,
 not defects in native copying or native override behavior.
 
+### Native skill-guidance whitespace is transformed before publication
+
+SDK 1.1.0 `dist/core/skills.js:283` constructs the guidance with leading blank lines:
+
+```javascript
+// Installed pi-coding-agent dist/core/skills.js:283
+const lines = [
+    "\n\nThe following skills provide specialized instructions for specific tasks.",
+```
+
+Its caller in `dist/core/system-prompt.js:106` trims the complete skills section:
+
+```javascript
+// Installed pi-coding-agent dist/core/system-prompt.js:106
+const skillsPrompt = formatSkillsForPrompt(skills, skillFileReadTool).trim();
+```
+
+The retained guidance source therefore differs from the rendered prefix's leading whitespace.
+The private association follows this known native transformation through the original full sections publication;
+it does not rewrite the retained source or authenticate it by substring equality.
+Test-only terminal parity checks the trimmed prefix separately from original-capability checks.
+
+Private `mise --no-env --no-hooks run test:context-skill-source`
+in `contract/integration/native-batch` failed `proc_0f4b` on the absent project-context introduction association,
+then passed `proc_0500` after both introduction and skill-guidance links were added.
+The expanded `test:section-source-association` matrix passed `proc_edd5` with 32 modes,
+including read/bash guidance,
+disabled skills,
+no reader,
+section overrides,
+forced output,
+and equal payload copies.
+No provider request or native tool execution occurred.
+
+This does not associate arbitrary skill-file contents or establish their authority.
+Default-rule fragments still need their separate normalization/deduplication emission evidence.
+Native trimming is expected behavior;
+only private source consumption needed extension,
+so there is no upstream defect or filing artifact.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.

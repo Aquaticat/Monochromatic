@@ -109,7 +109,22 @@ Both guards are restored.
 Full native `proc_fd1a`,
 action `proc_5a42`,
 and ten-document render `proc_d198` passed for these direct generated fragments.
-Default-rule deduplication and other generated slots remain unconsumed until their exact native emission is established.
+Project-context introduction and skill-usage guidance now use the same original run/render linkage.
+The skill formatter constructs leading blank lines that native section construction trims;
+the source remains unchanged and its contribution follows that known native transformation.
+No skill-file identity or authority is inferred.
+Disabled skills,
+absence of a selected reader,
+custom-section overrides,
+forced prompts,
+and independent payload copies retain their distinct behavior.
+
+Missing context-introduction association failed `proc_0f4b`;
+initial context/skill consumer `proc_0500` and the 32-mode matrix `proc_edd5` passed.
+The existing base-bound fixture still has 97 base-input contributions;
+the separately retained native introduction makes 98 total contributions without increasing any input limit.
+Full context/skill regressions are running.
+Default-rule deduplication remains unconsumed until its exact native emission is established.
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
