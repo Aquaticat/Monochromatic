@@ -150,6 +150,29 @@ The new fact concerns only local native insertion,
 not instruction authority,
 complete governing coverage,
 or permission.
+Already-retained tool snippets now use the original mapped-input sources.
+Only selected,
+visible,
+nonempty snippets in native-default rendering receive a contribution association.
+Custom prompts,
+tools-section replacements,
+and forced output do not borrow snippet identities.
+Equal inactive snippets remain distinct and unassociated.
+
+Native declaration hiding comes from the tool's `prepareLoadout` hook;
+the SDK overwrites `hiddenTools` during loadout preparation.
+The controls exercise that actual hook and inspect the resulting original options.
+A hidden read tool still permits native indirect skill guidance,
+without exposing its declaration or naming the reader.
+
+Missing snippet association failed `proc_9121`;
+initial `proc_04cd`,
+expanded visibility `proc_4f4e`,
+and consumer-owner `proc_43a1` checks passed.
+Hidden-declaration omission `proc_882a` and selected-tool omission `proc_d76d`
+each wrongly associated a non-rendered snippet.
+Both guards are restored;
+full snippet regressions are running.
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
