@@ -296,6 +296,26 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Input-origin-only links for unsupported prompt representations
+
+A native prompt containing an image or normalization hint still has an original expanded-text input.
+It must not disappear from source assessment merely because its representation is outside the text-only association profile.
+Required control `1c03dff` / `proc_1b9c` failed on that missing retained input.
+
+The existing publication alias index now distinguishes `input-only` links
+from text-part and payload capabilities.
+They retain the original input through actual native copies without claiming unchanged current content.
+Changing such a message into an equal text-only shape does not upgrade its capability.
+Independent copies still have no origin until an actual native copy edge connects them.
+Original occurrence collisions must not overwrite another publication.
+
+The native image/hint retention controls passed in the 35-mode matrix `proc_0441`.
+Pure publication controls also check that observers do not invoke getters
+and that input-only aliases cannot become text contributions.
+The full native pass `proc_3da2` predates this increment;
+its restored full regression and collision-guard sensitivity are still pending.
+This adds neither authority nor request-domain completeness.
+
 ## Retained original run inputs after another prompt
 
 The user accepted governing-domain option A on 2026-10-09:
