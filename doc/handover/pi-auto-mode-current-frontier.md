@@ -327,7 +327,18 @@ The expanded native matrix `proc_d92e` passed original prompt and handler retent
 pre-capture context removal and equal replacement,
 and reset without a refreshed path observation.
 Native root controls and installed/private projection parity passed `proc_501a`.
-Root-guard sensitivity and restored full native verification remain pending.
+The first native reset omission `proc_95d4` passed,
+so it was not claimed as a sensitivity witness.
+The original-owner interleaving control `65ec659` / `proc_6875` then failed as intended
+when a changed root retained one old source instead of zero.
+That is an authored owner-boundary control,
+not proof of a native scheduling interleaving.
+The guard is restored;
+owner controls and the 40-mode native matrix passed `proc_70e3`.
+Runtime and generator sources match full-native checkpoint `71d727c` byte-for-byte by scoped Git diff.
+Full native `proc_c35b`,
+action `proc_066c`,
+and 14-document rendering `proc_aa7e` passed.
 
 Known originals are retained even when they have no current serialized contribution.
 This does not establish the origin or authority of an unknown compaction summary,
