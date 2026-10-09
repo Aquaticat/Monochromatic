@@ -967,6 +967,61 @@ The source profile remains input-only and unregistered.
 This is private consumer propagation and fixture repair;
 no upstream defect or filing is proposed.
 
+### SDK 1.1.0 context handlers can create inputs after initial capture
+
+The native context emitter first clones messages,
+then awaits extension handlers,
+then returns the final message list.
+Installed `dist/core/extensions/runner.js:1006-1065` was read in full:
+there is one final return after both handler loops.
+The relevant operations include:
+
+```js
+// Pi SDK 1.1.0, dist/core/extensions/runner.js:1006-1065, excerpts
+let currentMessages = structuredClone(messages);
+const handlerResult = (await handler(event, ctx));
+currentMessages = handlerResult?.messages ?? currentMessages;
+return currentMessages;
+```
+
+Capturing only at entry misses a context edit appended during those awaited handlers.
+Required red `proc_cc5e` demonstrated that missing same-request input.
+The private emitter now returns the original run handle from entry observation
+and revalidates it at final observation.
+The same manager input owner captures each native edit append with a fresh occurrence,
+not a fabricated file-load or earlier-run identity.
+
+Final observation rechecks the capture-failure latch before considering view reuse.
+It preserves previous original inputs,
+validates their current manager membership,
+and adds newly observed inputs.
+No-op reuse requires an already-published view;
+the first empty observation must still publish.
+The initial optimization broke that distinction in `proc_5206`.
+
+The native image-failure fixture first asserted the nested capture-error message,
+then tried reading a failed run after prompt cleanup (`proc_ef57` / `proc_6aad`).
+The actual native surface was `RunPromptCustodyError`.
+The corrected fixture intercepts and rethrows the original context error before cleanup,
+then checks the exact nested `SessionInputCaptureError`.
+`proc_b11b` passed that control,
+the 41-mode native matrix,
+and original-owner controls.
+A superseded completion was independently rejected after required red `proc_db41`.
+
+Append omission `proc_7ed6`,
+final-observation omission `proc_0903`,
+and prior-input-union omission `proc_a4c1` each failed their control.
+All omitted code is restored.
+Complete regression remains pending.
+
+Run `mise --no-env --no-hooks run test:created-edit-context`
+and `mise --no-env --no-hooks run test:selected-path-owner`
+inside private `contract/integration/native-batch`.
+These are private observation and fixture corrections,
+not SDK defects.
+They establish neither full governing-domain coverage nor authority from native role labels.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
