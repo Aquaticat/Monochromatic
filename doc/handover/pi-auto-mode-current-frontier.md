@@ -335,7 +335,11 @@ null sections,
 and getter non-invocation controls passed `proc_db9e`.
 Retention omission `f29b4be` / `proc_aef6` lost the hidden older companion (`4 !== 5` sources).
 The edge is restored.
-Complete regression remains pending.
+Complete native `proc_c526`,
+action `proc_1b97`,
+source-policy `proc_e729`,
+and 14-document rendering `proc_949d` / `proc_9332` passed.
+The routine native matrix now also covers a native-written 32-compaction history exceeding the shared source cap.
 
 Other loaded roles,
 current-run generated inputs,
