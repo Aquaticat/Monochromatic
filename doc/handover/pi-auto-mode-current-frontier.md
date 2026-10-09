@@ -296,6 +296,50 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loaded system prose
+
+The existing load owner now captures original system-message `content` and optional `sections`.
+It also captures a compaction entry's stored `systemMessage` prose as its own input,
+separate from the summary.
+The already-observed native selected path retains each original capability,
+including non-transmitted older checkpoint inputs.
+
+Scalar content remains text.
+Combined content and sections use the incumbent `native-content-json` source representation,
+not a rebuilt request body.
+The observer does not read or serialize `toolsAdded` or `toolsRemoved`.
+Tool schemas,
+tool instruction sources,
+and prose origins remain separate responsibilities.
+All message and companion records share the existing source and byte limits.
+
+A stored `system` role or section name grants no authority.
+Original input identity remains input-only,
+without text-part or payload capability.
+Native replay may remove null section values before storing a checkpoint;
+the original delta and the checkpoint are distinct inputs,
+not equal source records.
+Native deletion of a section is not policy-revocation evidence.
+
+Required red `2c57586` / `proc_147b`
+preceded consumer `4289eec`.
+Initial run `proc_3666` passed plain,
+section,
+and companion cases but exposed an incorrect fixture expectation for replayed null sections.
+The corrected fixture checks each original stored field separately.
+Owner and native companion controls passed `proc_950c`.
+Corrected matrix,
+retention sensitivity,
+and complete regression are tracked in `current-progress.json`.
+
+Other loaded roles,
+current-run generated inputs,
+queued or unobserved transformations,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
 ## Original loaded summary inputs
 
 The existing load owner captures original `compaction.summary` and `branch_summary.summary` text,
@@ -308,7 +352,8 @@ A native compaction entry can project to a stored system message and a summary.
 The private constructor observation attaches the summary input only to the actual summary output.
 Native summary-to-user conversion keeps input-only identity,
 not text-part or payload capability.
-The system companion remains a separate unresolved source boundary.
+The summary publication never authenticates the system companion.
+Its separate capture is described in “Original loaded system prose”.
 
 Required red `fced351` / `proc_640e`
 became canonical native green `cc6c408` / `proc_1efc`.

@@ -833,6 +833,37 @@ This is private adapter propagation,
 not an upstream defect;
 the filing disposition in this section remains unchanged.
 
+### SDK 1.1.0 stored system deltas differ from compaction checkpoints
+
+A system source fixture incorrectly expected a checkpoint to preserve a null section deletion verbatim.
+`proc_3666` instead reported a source containing only the surviving text section.
+The original loaded delta still contained the null value.
+
+Native `appendCompaction` stores the result of system-message replay,
+not a byte copy of every prior message.
+Pi AI `dist/utils/transcript.js:69` applies section updates:
+
+```js
+// Pi AI 1.1.0, dist/utils/transcript.js:69
+for (const [name, value] of Object.entries(message.sections ?? {})) {
+    if (value === null)
+        sections.delete(name);
+    else
+        sections.set(name, value);
+}
+```
+
+The private fixture now checks original system entries and stored checkpoint companions independently.
+The source observer retains their original values rather than rewriting either to match the other.
+It captures content and sections only,
+without extracting tool definitions or rebuilding the request body.
+Native section deletion does not establish revocation of a governing instruction.
+
+Private owner and native companion checks passed `proc_950c`.
+The corrected source matrix and complete regression remain tracked in the private progress record.
+This is a fixture correction and private provenance extension,
+not an SDK defect or an upstream filing.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
