@@ -273,6 +273,57 @@ The underlying native deduplication was correct;
 this was a private source-consumption gap,
 not an upstream defect or a reason to infer authority from equal bytes.
 
+### Tool snippet rendering follows the actual prepared loadout
+
+SDK 1.1.0 `dist/core/agent-session.js:1306` replaces the prompt's hidden-tool list during native preparation:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js:1306
+options.hiddenTools = [...this._hiddenDeclarations];
+```
+
+The list comes from actual `prepareLoadout` hook results collected at `dist/core/agent-session.js:1182`.
+Editing only the earlier handler's `systemPromptOptions.hiddenTools` would not exercise that native outcome.
+The private fixture uses the hook and checks the original final options,
+without changing native loadout behavior.
+
+In `dist/core/system-prompt.js:76`,
+declared tools exclude hidden names.
+Inside native-default rendering,
+the tools section then uses only declarations with nonempty snippets:
+
+```javascript
+// Installed pi-coding-agent dist/core/system-prompt.js:84
+const visibleTools = declaredTools.filter((name) => !!toolSnippets[name]);
+```
+
+The source consumer now accounts for the existing original mapped snippet occurrence only on that route.
+Custom prompts,
+inactive or hidden tools,
+empty snippets,
+a tools-section override,
+or forced output do not receive that snippet association.
+A hidden read tool can still produce indirect skill guidance;
+that distinct native behavior is preserved rather than treating hidden declarations as unavailable callables.
+
+Actual-serializer red `proc_9121` preceded green `proc_04cd`.
+Expanded snippet/hidden-reader matrix `proc_4f4e` and consumer-owner controls `proc_43a1` passed.
+The controls include independent equal active/inactive snippets,
+whitespace,
+empty overrides,
+and payload copies.
+Hidden-declaration omission `2fdd453` failed `proc_882a`;
+selected-tool omission `5943e0f` failed `proc_d76d`.
+Both incorrectly associated a non-rendered source and both are restored.
+Full snippet regression is running.
+
+Tool names and native declaration placement still supply no source authority,
+implementation-effect proof,
+or governing-domain completeness.
+The native loadout and rendering behavior was not defective;
+only the private consumer lacked these source relationships.
+There is no upstream filing artifact.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
