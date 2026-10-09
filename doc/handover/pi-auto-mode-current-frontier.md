@@ -333,7 +333,12 @@ It now intercepts and rethrows the actual native context error before cleanup,
 checking the exact original nested failure.
 Corrected owner checks and the 41-mode native matrix passed `proc_b11b`.
 
-Append/final-context/union omission controls and complete regressions remain pending.
+Append omission `proc_7ed6`,
+final-context omission `proc_0903`,
+and prior-input-union omission `proc_a4c1` each failed their required control.
+All omitted code is restored.
+Creation-owner and manager controls are integrated into the routine suite;
+complete regression remains pending.
 Current summaries,
 queued inputs,
 mixed representations,
