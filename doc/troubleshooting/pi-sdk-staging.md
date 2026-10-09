@@ -751,6 +751,85 @@ but stops the private source-use path before transport.
 That is intentional fail-closed behavior,
 not transparent compatibility with every unguarded prompt.
 
+### SDK 1.1.0 compaction projection has distinct system and summary outputs
+
+A private summary observer must not assign one summary input's identity to every message from its entry.
+Native `appendCompaction` stores the current system message inside the new compaction entry.
+SDK `dist/core/session-manager.js:880` contains:
+
+```js
+// Pi SDK 1.1.0, dist/core/session-manager.js:880
+const systemMessage = getCurrentSystemMessage(this.buildSessionProjection().messages);
+// Entry construction includes this separate companion:
+...(systemMessage ? { systemMessage: { ...systemMessage, timestamp: new Date(timestamp).getTime() } } : {}),
+```
+
+The same file's `sessionEntryToContextMessages`,
+at line 188,
+constructs the summary separately:
+
+```js
+// Pi SDK 1.1.0, dist/core/session-manager.js:188
+const summary = createCompactionSummaryMessage(entry.summary, entry.tokensBefore, entry.timestamp);
+return entry.systemMessage ? [entry.systemMessage, summary] : [summary];
+```
+
+The original system entry is not duplicated in the retained range:
+`buildContextEntries`,
+at line 223,
+excludes system-message entries there:
+
+```js
+// Pi SDK 1.1.0, dist/core/session-manager.js:223
+if (foundFirstKept && !(entry.type === "message" && entry.message.role === "system")) {
+    contextEntries.push(entry);
+}
+```
+
+A reviewer hypothesis that one projected system message disproved a same-entry companion was incorrect.
+Native row-cardinality assertions in `proc_047a` verify the actual two-output compaction row,
+including its stored `systemMessage`.
+
+The private `contract/integration/native-batch/root-source.mjs` generator observes the actual summary constructor.
+The shared publication owner records only that summary output's input-only identity.
+Its generic entry projection still requires one output,
+so it cannot assign summary provenance to the system companion.
+The summary-to-user conversion observer preserves historical input identity without payload eligibility.
+No additional file parser,
+request parser,
+or transcript inventory was added.
+
+Required missing-source control `proc_640e` failed;
+connected compaction and branch-summary consumers passed `proc_1efc`.
+Empty-summary and other loaded-input modes passed `proc_503b`.
+Native output parity,
+same-entry companion isolation,
+version-1/version-2 migration,
+failed migration-rewrite withholding,
+shared limits,
+and distinct equal-value occurrences passed `proc_047a`.
+Compaction-constructor omission `proc_de3c` lost the summary alias;
+the constructor observation is restored.
+Companion-attribution omission `proc_9769` failed because the stored system message acquired summary provenance.
+The single-output guard is restored.
+Complete regression remains pending.
+
+Run the private controls from `contract/integration/native-batch`:
+
+```sh
+# Private consumer-contract repository, contract/integration/native-batch
+mise --no-env --no-hooks run test:loaded-summary-manager
+mise --no-env --no-hooks run test:loaded-input-controls
+```
+
+The boundary remains partial:
+stored system companions and current-run generated summaries do not gain an original instruction-source capability
+from capturing a loaded summary.
+Saved summaries establish neither historical human intent nor governing authority.
+This is private adapter propagation,
+not an upstream defect;
+the filing disposition in this section remains unchanged.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.

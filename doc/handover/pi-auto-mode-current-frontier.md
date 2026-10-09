@@ -296,6 +296,44 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loaded summary inputs
+
+The existing load owner captures original `compaction.summary` and `branch_summary.summary` text,
+including empty inputs.
+Summaries share the user/custom source and byte limits.
+Equal text keeps distinct source occurrences.
+No saved summary authenticates prior human instructions or receives inherited authority.
+
+A native compaction entry can project to a stored system message and a summary.
+The private constructor observation attaches the summary input only to the actual summary output.
+Native summary-to-user conversion keeps input-only identity,
+not text-part or payload capability.
+The system companion remains a separate unresolved source boundary.
+
+Required red `fced351` / `proc_640e`
+became canonical native green `cc6c408` / `proc_1efc`.
+The 14-mode loaded-input matrix,
+including empty summaries,
+passed `proc_503b`.
+Explicit two-output row,
+legacy migration,
+failed-rewrite withholding,
+native conversion parity,
+shared bounds,
+and occurrence controls passed `proc_047a`.
+Constructor omission `076347b` / `proc_de3c` lost the summary identity;
+that edge is restored.
+Companion-attribution omission `f165d21` / `proc_9769` incorrectly marked the stored system message.
+The single-output guard is restored.
+Complete regression remains pending.
+
+Current-run generated summaries,
+other loaded roles,
+queued or unobserved inputs,
+applicable governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
 ## Original loaded custom-message inputs
 
 The existing manager-load owner now captures supported `custom_message` inputs as well as stored user messages.
@@ -325,10 +363,10 @@ source-policy `proc_de4f`,
 and 14-document rendering `proc_4922` passed.
 
 Other loaded message roles,
-summaries,
 queued inputs,
 historical issuer authentication,
 and governing-domain closure are still unfinished.
+The separate loaded-summary increment is described in “Original loaded summary inputs”.
 This is another original input consumer,
 not a production qualification or installed activation.
 
