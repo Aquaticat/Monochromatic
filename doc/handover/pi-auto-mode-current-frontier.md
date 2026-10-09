@@ -322,7 +322,9 @@ Formatting variants,
 owner shape/getter controls,
 the 31-mode native input matrix,
 and manager regression passed `proc_589c`.
-Conversion sensitivity and complete regression remain pending.
+Conversion omission `1316895` / `proc_30e1` lost the formatted message's original publication.
+The observation is restored.
+Complete regression remains pending.
 
 Loaded context-edit replacement inputs,
 mixed or unsupported representations,
@@ -372,7 +374,7 @@ action `proc_a1d6`,
 source-policy `proc_c54d`,
 and 14-document rendering `proc_5570` passed.
 
-Bash execution inputs,
+Loaded context-edit inputs,
 mixed or unsupported representations,
 queued inputs,
 tool instruction-source ownership,
