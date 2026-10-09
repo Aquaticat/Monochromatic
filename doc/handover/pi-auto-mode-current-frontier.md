@@ -296,6 +296,87 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original current custom-message construction inputs
+
+The private native `sendCustomMessage` constructor now captures its normalized
+`appMessage` through the existing manager input owner.
+Text stays text;
+text-block arrays stay structured source data.
+`customType` and `display` remain metadata,
+not authority.
+Opaque `details` are not read into instruction metadata.
+The source uses `native-custom-construction`,
+a fresh manager input occurrence,
+and no fabricated run or entry ordinal.
+
+The shared reference view is now named `readConstructedInputs`.
+Its native reader is `readNativeConstructedInputOrigins`.
+These replaced the private `readQueuedInputs` and `readNativeQueuedInputOrigins` names on 2026-10-09.
+Existing queued-user source metadata is unchanged.
+This remains one view of original source/publication records,
+not a second message inventory.
+
+Actual custom-entry construction now propagates input-only identity,
+including the immediate `_appendCustomMessage` path.
+Projection and conversion retain that identity without payload eligibility.
+Native normalization,
+queue behavior,
+and dispatch errors remain native.
+
+Required red `0abb416` / `proc_2d96` lacked the original constructed source.
+`74e6e10` / `proc_fb7c` then exposed the missing input-only entry edge.
+`d7c857e` / `proc_07f8` passed immediate,
+next-turn,
+and hidden inputs,
+but exposed first-turn `triggerTurn` without a native run composition.
+
+The incumbent policy-input collector now retains original constructed inputs directly when no native run exists.
+Its fixed native session reader checks liveness and capture failure.
+The snapshot carries `nativeConstructedInputs`;
+the source view invents neither `runOccurrence` nor `currentRunOccurrence`.
+Changed source references or capture failure retire earlier request evidence.
+Once a native run exists,
+the original run-retention path remains the carrier.
+
+A copied resource-owner attempt failed `proc_15b4` at
+`Native base composition lacks its exact owned resource binding`.
+That duplicate-owner route,
+generator,
+and unused generated artifact were removed.
+The correction in `6fe0552` extends the incumbent collector and preserves its original binding map.
+
+`proc_f9b4` passed immediate,
+next-turn,
+hidden,
+initial trigger,
+and streaming steering/follow-up/deferred construction.
+`proc_d5cb` rejected late pre-run changes,
+oversize capture,
+and reset.
+`proc_fb31` passed installed/private normalization parity and retained-input controls.
+`proc_bbe9` passed the integrated user/custom matrix with empty child stderr,
+including actual continuation delivery and original entry aliases.
+
+The pre-run snapshot keeps the existing one-MiB base-linked bound,
+separate from the shared 64-source/four-MiB owner limits.
+The allowed control retained eight pending 63000-byte inputs;
+18 such inputs failed before transport.
+Unsupported custom image content and oversized immediate input also failed before transport.
+The disposal fixture initially expected the wrong error:
+`proc_685d` showed original `JudgmentCancelledError` with its `AbortError` cause.
+The corrected fixture preserves that cause identity and separately rejects reads after disposal.
+
+Sensitivity and complete regression are still pending for this increment.
+Direct agent producers,
+pre-handler inputs,
+mixed-content origin,
+and complete governing-domain coverage remain unfinished.
+The settled-action deferred callback is not separately exercised.
+No installed activation,
+semantic qualification,
+policy grant,
+or provider request is implied.
+
 ## Original native queued user text
 
 The private consumer captures the actual user-message construction in
