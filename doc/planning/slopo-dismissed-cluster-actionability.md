@@ -397,54 +397,233 @@ and published `module/*` packages would gain a dependency edge.
    no embedding and no API cost:
    that is how 212 was produced.
 
+## The test that should have been used first
+
+"Bodies differ" does not settle whether an extraction is demanded.
+Two bodies can differ in their data while sharing one policy,
+so the right instrument measures the shared part and asks what kind of thing varies.
+
+For all 147 proposed entries,
+the longest common token subsequence between each cluster's bodies was computed,
+sized against `body_node_count_threshold: 13`
+(the repository's own bar for "this is a function worth indexing"),
+and the variant tokens were classified as names,
+literals,
+punctuation,
+`async` and `await` markers,
+or polarity operators.
+
+- 9 clusters have byte-identical bodies,
+   27 units.
+- 34 clusters share a run of 50 tokens or more,
+   roughly five lines,
+   across 97 units.
+- 104 clusters share less than 50 tokens,
+   across 291 units.
+
+The last group is where dismissal is safe on measurement alone:
+the shared part is a few tokens,
+so an extracted helper would be longer than what it replaces.
+The first two groups are not,
+and the 34 were read individually.
+
+## Verdicts on the 34 clusters with a function-sized shared part
+
+Held back,
+ because the recorded reason does not survive the measurement:
+
+- Seven i18n clusters in #658:
+   C327 (168 of 169 tokens shared across 8 units),
+   C353 (150 of 152),
+   C348 (397 of 407),
+   C321 (135 of 145),
+   C582 (172 of 186 across 6 units),
+   C328 (103 of 121) and C336 (60 of 75).
+   The grammar difference is real and is expressed as which field to read:
+   `en/render-sentence-core.ts` selects `entry.imperative ?? entry.base` where
+   `ca/render-sentence-core.ts` selects `.imperative ?? .infinitive`,
+   and the adverbial renderers differ in `locationPreposition(adv.relation)` against
+   `locativeCoverb(adv.relation)` against a bare `${adv.relation}`.
+   That is a handful of tokens inside 60 to 140-line functions that are otherwise identical.
+   #639 already proposes the mechanism for this package,
+   "the renderers and case invariants injected",
+   and its criterion names `renderOptionalComplement`,
+   `renderOptionalObject`,
+   `renderPart`,
+   `renderTimeOperand` and `capitalizeBody`.
+   These seven are the same design question one level up,
+   so they belong in #639's scope rather than in a dismissal.
+   C353's three bodies also each open with a byte-identical `renderTimeOperand`,
+   which #639 lists as its own cluster C331,
+   so dismissing C353 hides code an open extraction issue already claims.
+- C604 in #657,
+   8 units sharing 67 of 68 tokens.
+   These are `batch_sheng`,
+   `batch_sheng2`,
+   `is_match_batch_scalar`,
+   `is_match_batch_interleaved`,
+   `batch_inter_w::<N>` and `batch_tight_w::<N>`,
+   and every body is the same three-step wrapper:
+   allocate `vec![false; lines.len()]`,
+   match on `self.engine.table_dfa()`,
+   call one kernel or fall back to `self.engine.is_match_batch`.
+   Only the kernel name varies.
+   The recorded reason,
+   "the `cfg` and feature-detection ladder has to be written per kernel because each calls its own
+   intrinsics",
+   describes the kernels in `dfa/sheng.rs` and `dfa/sheng2.rs`,
+   not these dispatch wrappers,
+   which contain no intrinsics and no `cfg`.
+   A `macro_rules!` or one generic wrapper taking the kernel as a parameter removes all eight bodies.
+- C963 and C906 in #657,
+   `runPipe` against `runPipeAsync`,
+   sharing 519 of 575 tokens and 361 of 415,
+   with the only variance being 54 `async` and `await` markers.
+   This is the largest duplication in the whole dismissal set.
+   The recorded reason is that unrolling preserves the per-arity types,
+   which is true of the signatures and says nothing about the bodies.
+   The open question is whether one side can be generated from the other,
+   or share a core,
+   without losing those types.
+- C896 in #657,
+   `stream` against `streamSimple`,
+   sharing 68 of 70 tokens with four name variants.
+- C977 in #657,
+   `embedAll` against `embedBatchAll`,
+   sharing 87 of 93 tokens with eight name and four literal variants.
+   The batch form can share a core with the single form even though their public contracts differ.
+
+Kept dismissed,
+ because the variance is the point of the code:
+
+- C744,
+   376 of 406 tokens shared,
+   the fork and upstream adapters in `p-map-fork.fuzz`.
+   Differential fuzzing needs both sides written out so that an observation difference means a
+   behaviour difference.
+   The duplication is the method.
+- C771,
+   C935 and C873,
+   the SIMD kernels themselves,
+   sharing 48%,
+   78% and 42% with heavy operator and intrinsic variance.
+   These are different machine code,
+   unlike C604's wrappers.
+- C853,
+   C616,
+   C784,
+   C892,
+   C900,
+   C911 and C979,
+   the coverage probes.
+   Each body is one invalid input,
+   and the input is the test.
+   A table would hide which branch each reaches.
+- C753,
+   C758 and C910,
+   sync and async twins sharing 95%,
+   94% and 79%,
+   where every variant is `async`,
+   `await`,
+   `Promise<T>` or `readFile` against `readFileSync`.
+   The duplication is the deliberate cost of two typed entry points,
+   and no drift was found in any of them.
+- C700 (`prependComments` against `appendComments`,
+   97% shared) and
+   C764,
+   C751 and C903 (complementary predicates).
+   A shared version needs a polarity parameter that restates what the two names already carry.
+   This is a values call the repository has already made in `slopo.ignore.txt`.
+- C814,
+   the `or-throw` sibling guards:
+   the kind of iterable is the API.
+- C1003,
+   the two `p-map-fork` engines,
+   29% shared and already verified against the package README.
+- C976,
+   the record and array branches of one recursive JSONC delete.
+- C745,
+   `get` against `peek` in quick-lru:
+   recency updating is the difference.
+- C973,
+   the four `createOnce` rule factories,
+   whose shared scaffolding the plugin already extracted.
+- C993 and C808,
+   coverage-fixture iterators whose yield schedules are the fixture.
+- C865,
+   two hidden subcommand branches.
+   C770,
+   six per-API mutation-differential cases.
+   C804,
+   mirror key handlers.
+   C599,
+   the shell against git-config quoting pair,
+   where the shared 62 tokens are `Array.from(...).map(...).join(...)`
+   and the escape tables are the whole content.
+
 ## Judgements adopted
 
 These are calls,
  not options,
  and each is recorded here so it can be vetoed rather than rediscovered.
 
-1. Hold back the 9 identical-body clusters from acceptance and accept the other 138.
-   For the 138 the two sides demonstrably differ,
-   and 50 of them were read at body level with no counterexample.
-   The remaining 88 rest on the ledger's `full-read` verdicts plus the mechanical fact that their
-   bodies are not identical.
-2. Re-verdict the five whose reasoning contradicts their evidence:
-   C13 and C15 become one proposal for a Rust error-display macro;
+1. Hold back 21 of the 147 proposed entries and accept the other 126.
+   The 21 are the 9 byte-identical clusters and the 12 named in "Verdicts on the 34 clusters with a
+   function-sized shared part".
+   For the 126 the shared run is either under 50 tokens,
+   where a helper would be longer than what it replaces,
+   or large with variance that is the point of the code.
+2. Move the seven i18n clusters into #639's scope instead of dismissing them,
+   and note in #658 that C353 contains the `renderTimeOperand` helper #639 already claims as C331.
+3. Re-verdict the five identical-body clusters whose reasoning contradicts their evidence:
+   C13 and C15 become one proposal for a Rust error-display macro,
+   with `thiserror` named as an alternative needing `choosing-technology` vetting;
    C617 becomes a code change,
-    one handler registered for both events;
+   one handler registered for both events;
    C665 moves out of `STRUCTURAL-IDIOM`,
-    because its bodies are identical;
-   C639 keeps its dismissal with the reason restated as being about signatures,
-    not bodies.
-3. Do not propose the error-name base class now.
-   The family is large and the change is mechanical,
-   but nothing has drifted in 209 sites,
+   because its two bodies are identical and that category requires differing logic;
+   C639 keeps its dismissal with the reason restated as being about signatures rather than bodies.
+4. File C604's eight dispatch wrappers as a macro or generic-wrapper proposal against
+   `rust-module/forbidden-regex`,
+   and record that the current rationale describes the kernels rather than the wrappers.
+5. Put C963 and C906 to the maintainer as one design question,
+   because 519 shared tokens is the largest duplication in the set and the recorded reason is about
+   signatures rather than bodies.
+6. Do not propose the error-name base class now.
+   The family is 212 units across 147 files,
+   154 of them the pure two-statement idiom,
+   3 sites already assign `X.name` instead of a literal,
+   and `mangle: false` in all three rolldown configs would keep derived names intact in published
+   artifacts.
+   Nothing has drifted in 209 sites,
    the change touches 147 files,
-   and it adds a dependency edge to published packages.
-   The measurement is recorded here so the next reviewer does not re-derive it.
-4. Record the family-count query as a recipe in
+   and published `module/*` packages would gain a dependency edge.
+   The measurement is recorded so nobody re-derives it.
+7. Record the shared-run measurement beside the family-count query as a recipe in
    `doc/troubleshooting/slopo-threshold-tuning.md` rather than adding a `mise` task or a package.
-   A task would need a README,
-    tasks and tests under the repository's completeness rules for
-   something used a few times a year.
-5. Comment the sub-floor coverage-report members on #613 and the third license reader on #633,
-   because those two owners lack the information.
-   Skip #617,
-    #618,
-    #621 and #653,
-    which already enumerated their families.
-6. Give the three held-back `UNCERTAIN` clusters a home:
+   Both are queries over data slopo already writes,
+   and a task would need a README,
+   tasks and tests under the repository's completeness rules for something used a few times a year.
+8. Comment the measured sub-floor members on #613 and the third license reader on #633.
+   Skip #617 and #618,
+   which already enumerated their families and,
+   in #617's case,
+   found real drift in the digit predicates.
+9. Give the three held-back `UNCERTAIN` clusters a home:
    C562 joins #660 as an eighth judgement call,
    and C622 and C721 get one focused issue,
-   since both are in the quick-lru fork family and neither is tracked anywhere.
-7. Copy the review ledger into `doc/artifact/` as a dated record and leave the builders in scratch.
-   The ledger is the only per-cluster rationale for 147 proposed suppressions and it currently lives
-   outside the repository.
-8. Leave `slopo.conf.yaml` and `mise.toml` alone.
+   since both sit in the quick-lru fork family and no issue tracks either.
+10. Copy the review ledger into `doc/artifact/` as a dated record and leave the builders in scratch.
+11. Leave `slopo.conf.yaml` and `mise.toml` untouched.
    The threshold is hand-tuned and stays at 13.
-   The `latest` pin and the stale "increased from default 10" comment are proposed as wording,
-   not applied,
-   because `mise.toml` carries uncommitted local modifications that are not this work's to touch.
+   Two wording fixes are proposed rather than applied:
+   the conf comment "increased from default 10 until no bad reports remain" describes a `0.4.0`
+   default,
+   since `0.8.0` defaults to 20 at `slopo/config.py:151-152`,
+   which makes 13 more permissive than upstream rather than less;
+   and `mise.toml:213` installs `pipx:slopo` at `latest` while the tuning doc is verified against two
+   specific versions whose source paths already moved.
+   `mise.toml` also carries uncommitted local modifications that are not this work's to touch.
 
 ## Verification limits
 
@@ -457,13 +636,29 @@ These are calls,
 - The identical-body test relies on the report's section grammar,
    one body-hash group per section,
    which the triage handover validated against `index.md` for all 1008 clusters.
-- The skeleton comparison normalises identifiers and literals but not operator or keyword choice,
-   so it reports sync/async twins as structurally different.
-   Those 99 clusters were classified further by hand for the families named in "What I read",
-   and the rest were not read at all.
+- The skeleton comparison that produced the first 99-cluster "structurally different" figure
+   normalises identifiers and literals but not operator or keyword choice,
+   so it reported sync/async twins as structurally different.
+   It was replaced by the shared-run measurement in
+   "The test that should have been used first",
+   which sizes the common part and classifies the variance instead of asking whether the bodies
+   match.
+- The shared-run figure is a longest-common-token-subsequence length,
+   not an AST node count,
+   so "50 tokens" is an approximation of the 13-node floor rather than the same unit.
+   It also measures the best pair in a cluster,
+   so a cluster of eight units is summarised by its most similar two.
+- The 34 clusters with a function-sized shared part were read individually.
+   The 104 clusters sharing under 50 tokens were not read,
+   and their acceptance rests on the measurement that a helper would be longer than what it
+   replaces.
 - Site counts are `rg` and index queries over tracked TypeScript and Rust at HEAD on 2026-10-09.
    slopo indexes transpiled `.js` that the repository's blanket `*.js` ignore hides from `rg`,
    which is why build output appears in some duplicate groups.
 - Whether a 147-file mechanical change is worth making to prevent drift that has not happened is a
    values judgement about depth against governance,
-   so judgement 3 is a recommendation and not a fact.
+   so judgement 6 is a recommendation and not a fact.
+   The same applies to the polarity pairs in C700,
+   C751,
+   C764 and C903,
+   where the repository has already chosen two names over one parameter.
