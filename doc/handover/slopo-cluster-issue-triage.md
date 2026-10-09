@@ -478,11 +478,12 @@ None required for this task. Follow-ups a maintainer may want:
    #622 (prototype fate), #623 (extract now or wait for the proposal), #630 (declarative scenarios) and
    #660 (seven consolidate-or-dismiss calls).
 2. Decide whether the four dismissal issues (#656, #657, #658, #659) should be applied to
-   `slopo.ignore.txt`. Each carries a paste-ready block of comment-plus-hash entries, regenerated on 2026-10-09 so
-   comments are complete sentences grouped by recorded category, with no cluster ordinals and no line numbers.
-   This task deliberately did not edit the ignore file, and the 2026-10-09 corrections did not either. All 55 keys
-   in the file are dead against the current report, so accepting any batch also means deciding the cleanup recorded
-   in `doc/troubleshooting/slopo-threshold-tuning.md` under "Open cleanup decision for the 55 dead keys".
+   `slopo.ignore.txt`. As of the second correction round on 2026-10-09 they propose 67 entries between them and
+   hold 80 back, so the decision is now per bucket rather than per batch: accept the 67 whose patterns are closed or
+   whose instances are data, and give the held patterns an owner or a policy. Read
+   `doc/planning/slopo-dismissed-cluster-actionability.md` first; it records why a pair-level verdict is not
+   sufficient and what the family measurements showed. The dead-key cleanup it depends on is recorded in
+   `doc/troubleshooting/slopo-threshold-tuning.md` under "Open cleanup decision for the 55 dead keys".
 3. If the report is regenerated, re-run the review scripts. They are deterministic and validate
    themselves: `parse_clusters.py` checks every cluster against `index.md`, `control_support.py` proves
    the duplicate-artifact check can fail, and `verify_mirror.py` proves the mirror relationship
@@ -544,6 +545,39 @@ Measurements that changed the picture:
   and C342, which have units in the fuzz sidecar tree that #613 proposes to consolidate.
 - slopo has no dead-key detection: `load_ignored` returns a set and the filter logs only an aggregate count, so keys
   that stop matching stay in the file silently.
+
+### Second correction round, same day: the partition is by propagation
+
+The first round's remaining defect was its test. It accepted entries whose two sides differ, then entries whose
+shared run is small, then entries whose family is small. All three are magnitude tests, and duplication is
+generative: a pattern instantiated twice is a template for the third copy. The error-name constructor idiom was 2
+sites when first written and is 210 today across 146 files, `attachShadow(` is 22, `.localeCompare(` is 40 and
+`Object.create(null` is 21.
+
+Every one of the 86 concepts behind the 147 entries was therefore classified by whether future work will instantiate
+the pattern again: 40 clusters need an owner, 40 are instances of the two-sided habit and need one policy decision,
+and 67 are closed or are data. The four issues were rebuilt around that partition and now propose 67 entries and hold
+80, each held entry naming the owner or decision it waits on.
+
+What the second round produced:
+
+- `doc/planning/slopo-dismissed-cluster-actionability.md`: the classification, the measurements, the three withdrawn
+  tests and the instruments that replaced them.
+- `doc/planning/propagating-pattern-owners.md`: eight drafted designs with code shape, migration, risk and falsifier,
+  plus two proposed `AGENTS.md` rules with tag codes checked against both forbidden-strings appendixes.
+- #665: the eight owner proposals as one issue.
+- #664: the two quick-lru clusters held back as `UNCERTAIN`, with the review's own evidence corrected by reading the
+  source. The coverage driver's eviction text is not differently formatted, because `renderPair` returns the same
+  `${key}=${value}`; the finding is that the driver discards its array with `void evicted;` and nothing reads it.
+- C562 became item 8 of #660, which resolves the pointer #647 made to "the remaining-uncertain issue".
+- Measured site lists went to #639, #650, #617, #620, #619 and #633 for patterns they own and did not know about.
+- Rule 9 of the recording convention, in `doc/troubleshooting/slopo-threshold-tuning.md`, now requires a dismissal to
+  name the pattern's owner, state that it is closed, or state the policy that accepts the copies.
+- The review ledger became a repository artifact at `doc/artifact/slopo-cluster-review-ledger-2026-10-07.jsonl`.
+- `slopo.ignore.txt` was restructured into three explicit states, since all 55 of its keys were dead.
+
+Lesson for the next review of this kind: the question to ask of a duplicate pair is not how much code it shares or
+how many copies exist, but who owns the pattern and what stops the next copy.
 
 ## Constraints to respect
 
