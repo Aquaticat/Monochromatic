@@ -32,9 +32,21 @@ not the completeness of the governing domain.
 
 Existing source associations establish original contributions to containing fields.
 They do not establish complete composite origins.
-Current run-message capture covers active ancestry,
-not arbitrary persisted or queued inputs.
-Original expanded text and handler output are unregistered;
+Current capture covers active ancestry,
+retained original run inputs,
+and known inputs on the selected native path.
+The bounded manager-load profile now includes user/custom text,
+summaries,
+and system prose,
+including separate stored compaction companions.
+Other loaded roles,
+unsupported representations,
+queued inputs,
+and unobserved transformations remain incomplete.
+The [current frontier](../handover/pi-auto-mode-current-frontier.md) records each consumer's verification boundary.
+Original expanded text,
+handler output,
+and loaded inputs are unregistered;
 transport roles do not assign authority.
 Callable and schema dependency snapshots do not establish a tool-description instruction-source capability.
 
