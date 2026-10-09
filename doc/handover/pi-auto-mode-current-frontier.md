@@ -296,6 +296,46 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original selected-path inputs after native projection
+
+Native compaction and context edits can remove an input from the rendered transcript
+without establishing that its instructions ceased to govern.
+The selected-path increment retains known original run inputs through that boundary,
+without assigning them authority or scope.
+
+The maintained private manager generator observes the path already computed by native `buildSessionProjection`,
+before compaction and edit projection.
+It adds no second traversal,
+JSON parse,
+or retained entry tree.
+The run owner keeps original source/publication references and the manager's original root occurrence.
+At context consumption,
+it re-reads that root and verifies original tuple membership.
+Payload eligibility is checked separately.
+
+Native root occurrences rotate on branch,
+reset,
+fork,
+and load operations.
+Ordinary append-only extensions preserve the observed selected path as a prefix.
+The stored observation therefore does not claim to describe every entry in the later current path.
+Missing or unknown input origins still keep `request-source-domain` unresolved.
+
+Required compaction red `53b92f5` / `proc_a393`
+became native green `a3ffc46` / `proc_e0fd`.
+The expanded native matrix `proc_d92e` passed original prompt and handler retention after compaction,
+pre-capture context removal and equal replacement,
+and reset without a refreshed path observation.
+Native root controls and installed/private projection parity passed `proc_501a`.
+Root-guard sensitivity and restored full native verification remain pending.
+
+Known originals are retained even when they have no current serialized contribution.
+This does not establish the origin or authority of an unknown compaction summary,
+a disk-loaded history,
+queued input,
+or an unobserved transformation.
+The accepted all-host-input domain remains unfinished.
+
 ## Input-origin-only links for unsupported prompt representations
 
 A native prompt containing an image or normalization hint still has an original expanded-text input.
@@ -375,10 +415,12 @@ These are manager/projection controls,
 not qualification of the full host resume or fork workflow.
 The restored full native rerun `proc_3da2` passed.
 
-This owner-local route does not establish disk-loaded,
+The initial owner-local route did not establish disk-loaded,
 queued,
 compacted,
 or pre-capture-excluded origins.
+The selected-path increment now retains known original inputs omitted by native projection;
+unknown summary and historical origins remain unresolved.
 It does not prove revocation when a source is absent from the current transcript.
 Registration,
 applicable governing scope,
