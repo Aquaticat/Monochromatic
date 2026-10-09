@@ -100,7 +100,14 @@ No native state behavior or source guard was changed.
 
 ### Remaining scope and upstream filing decision
 
-Integrated and complete regressions plus attachment/observation/error sensitivity remain pending.
+Integrated `proc_b210` passed 97 constructed-input outputs with empty child stderr,
+including actual settled-event queueing before clear.
+Rethrow omission `92fe738` / `proc_7cf0` failed with `Missing expected exception.`
+SDK attachment omission `b3c1431` / `proc_7234` and queue-observation omission `d34d75c` / `proc_cd4a`
+each lost the original cleared input.
+All guards and observations are restored.
+Complete native regression is running in `proc_c273`;
+complete action/source regressions and final closeout remain pending.
 Other direct Agent producers,
 image governance,
 and full governing-domain closure remain unfinished.

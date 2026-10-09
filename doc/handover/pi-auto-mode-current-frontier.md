@@ -354,9 +354,14 @@ verifies and clears identical bookkeeping,
 and passes the supported-text and explicit mixed-image cases.
 No runtime guard was weakened.
 
-Integrated verification,
-attachment/observation/error sensitivity,
-and complete regressions remain pending.
+Integrated `proc_b210` passed 97 constructed-input outputs with empty child stderr,
+including actual settled-event queueing before clear.
+Rethrow omission `92fe738` / `proc_7cf0` failed with `Missing expected exception.`
+SDK attachment omission `b3c1431` / `proc_7234` and queue-observation omission `d34d75c` / `proc_cd4a`
+each lost the original cleared input.
+All guards and observations are restored.
+Complete native regression is running in `proc_c273`;
+complete action/source regressions and final closeout remain pending.
 Direct Agent prompt/state producers and governing-domain closure remain unfinished.
 
 ## Original public API input before native branching
