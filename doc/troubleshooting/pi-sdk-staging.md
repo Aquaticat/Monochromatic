@@ -41,7 +41,9 @@ else if (options?.triggerTurn) {
 
 That route does not construct a user-prompt emitter occurrence.
 The private source collector must not invent one merely to retain the actual custom input.
-The settled-callback variant is not separately exercised by this increment.
+The later `proc_3e24` control exercised the actual `agent_settled` callback,
+observed one deferred action while not streaming,
+and verified its later original custom-message delivery.
 
 ### Private correction
 
@@ -135,8 +137,13 @@ This source subset has no authority,
 delegation,
 semantic qualification,
 or production policy grant.
-Complete post-change regression is running,
-and the installed plugin is unchanged.
+Complete native `proc_d3b5`,
+action `proc_f8cd`,
+source-policy `proc_21a7`,
+and 14-document render `proc_3378` passed.
+The settled-callback addition changes tests only;
+runtime and generator source is unchanged after the full-native checkpoint.
+The installed plugin is unchanged.
 
 ## Pi 1.1.0 queued text has no session entry at construction
 

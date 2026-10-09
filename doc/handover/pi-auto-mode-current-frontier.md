@@ -370,13 +370,21 @@ Entry omission `proc_2dde` and pre-run freshness omission `proc_c28d` failed as 
 The byte-bound omission first survived `proc_ef01`:
 a later check emitted the same error after one original transport.
 The strengthened before-transport assertion failed `proc_0fdc` with `1 !== 0`.
-All guards are restored;
-complete post-change regression is running.
+All guards are restored.
+Full native `proc_d3b5` passed in 359 seconds;
+action `proc_f8cd`,
+source-policy `proc_21a7`,
+and 14-document render `proc_3378` also passed.
+Runtime and generator source is unchanged after that full-native checkpoint.
 Direct agent producers,
 pre-handler inputs,
 mixed-content origin,
 and complete governing-domain coverage remain unfinished.
-The settled-action deferred callback is not separately exercised.
+Native settled-callback control `proc_3e24` also passed:
+it observed actual `agent_settled`,
+queued one deferred custom action while not streaming,
+and verified later delivery and original entry identity.
+This test-only addition is in the integrated matrix.
 No installed activation,
 semantic qualification,
 policy grant,
