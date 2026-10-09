@@ -106,7 +106,11 @@ The existing task sequence is split at `test:runtime`,
 without dropping cases,
 so fixture retries do not repeat the source phase.
 Runtime stage `proc_1cea` passed in 39 seconds.
-Complete staged parent run `proc_075f` is in progress.
+Complete staged parent run `proc_075f` passed in 431 seconds.
+Complete action-policy `proc_843e` and policy-source `proc_87c4` also passed.
+All deliberate omissions are restored;
+these are local mechanism checks,
+not semantic qualification or production policy admission.
 
 Omitting the native return observation failed `proc_8292`;
 the observation is restored.
@@ -126,7 +130,9 @@ Skills expansion is not separately exercised by this increment.
 No upstream report is proposed:
 the template's placeholder behavior is native behavior,
 and the missing observation and proxy reads were private adapter issues.
-Full post-change regression is running.
+The restored native,
+action-policy,
+and policy-source regressions passed.
 The installed plugin,
 production qualification,
 and automatic policy admission remain unchanged.

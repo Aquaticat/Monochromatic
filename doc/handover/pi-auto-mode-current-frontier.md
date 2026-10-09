@@ -369,7 +369,11 @@ The existing task sequence is split at `test:runtime`,
 without dropping cases,
 so fixture retries do not repeat the source phase.
 Runtime stage `proc_1cea` passed in 39 seconds.
-Complete staged parent run `proc_075f` is in progress.
+Complete staged parent run `proc_075f` passed in 431 seconds.
+Complete action-policy `proc_843e` and policy-source `proc_87c4` also passed.
+All deliberate omissions are restored;
+these are local mechanism checks,
+not semantic qualification or production policy admission.
 
 This does not cover commands or deferred/rejected calls before the observed branch,
 last-handler output before further expansion,
