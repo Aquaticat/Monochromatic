@@ -964,6 +964,68 @@ These are calls,
    and `mise.toml:213` installs `pipx:slopo` at `latest` while the tuning doc is verified against
    two specific versions whose source paths already moved.
 
+## Executed on 2026-10-09
+
+All fourteen judgements were carried out.
+The record:
+
+- The four dismissal issues were rewritten around the partition:
+   #656 proposes 16 and holds 17,
+   #657 proposes 8 and holds 42,
+   #658 proposes 30 and holds 15,
+   #659 proposes 13 and holds 9.
+   67 entries are proposed in total,
+   each under the heading its recorded verdict names,
+   and 80 are held with the owner or decision each waits on named in its entry.
+   Verified at the tracker boundary:
+   proposed and held hash sets do not overlap,
+   fences are balanced,
+   and no comment is truncated.
+- C665 was re-filed under `INTENTIONAL-VARIANT` with a hand-written comment,
+   because its two bodies are byte-identical and `STRUCTURAL-IDIOM` requires differing logic.
+- Six issues received the measured site lists for patterns they own and did not know about:
+   #639 (13 i18n clusters with their shared-run figures,
+   plus the note that C353 contains the `renderTimeOperand` it claims as C331),
+   #650 (the shell and git-config quoting grammars),
+   #617 (line-ending normalisation and the 28-site non-empty-line predicate in two spellings),
+   #620 (the `AbortController` disposable pair),
+   #619 (`splitSegments` for `module/fs-path`) and #633 (the two license readers and the third
+   reader in `deps-cube` that unwraps the object form).
+- #665 was opened with the eight drafted owner designs,
+   each carrying its measurement,
+   code shape,
+   migration,
+   risk and falsifier,
+   plus the two proposed `AGENTS.md` rules with tag codes checked against both forbidden-strings
+   appendixes.
+- #664 was opened for the two held-back `UNCERTAIN` clusters in the quick-lru family,
+   and C562 became item 8 of #660,
+   which resolves the pointer #647 made to "the remaining-uncertain issue".
+- Reading the source for #664 corrected the review's own evidence:
+   the coverage driver's eviction text is not differently formatted,
+   because `renderPair` returns the same `${key}=${value}`,
+   and the real finding is that the driver discards its array with `void evicted;` and nothing reads
+   it.
+   The same file holds six iteration generators rather than the three the cluster reports,
+   with one expiry-filter policy written identically three times.
+   #657's body carries the correction inline.
+- `doc/troubleshooting/slopo-threshold-tuning.md` gained rule 9 of the recording convention,
+   requiring a dismissal to name the pattern's owner or state that it is closed or state the policy
+   that accepts the copies,
+   and a "Measuring a family instead of a pair" section with the three instruments and the
+   skeleton-grouping trap.
+- The review ledger is now a repository artifact,
+   `doc/artifact/slopo-cluster-review-ledger-2026-10-07.jsonl` with a companion explaining its
+   fields,
+   distributions and limits.
+- `slopo.conf.yaml` and `mise.toml` were left untouched.
+   The two wording fixes remain proposals recorded in the judgements.
+- `slopo.ignore.txt` was restructured earlier the same day into three explicit states,
+   because all 55 of its keys were dead:
+   23 annotated with the successors the dismissal issues propose,
+   23 commented out as stale with no recorded successor,
+   and 9 deleted where the successor is owned by a code-change issue.
+
 ## Verification limits
 
 - The bucket A,
