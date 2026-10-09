@@ -360,8 +360,10 @@ Rethrow omission `92fe738` / `proc_7cf0` failed with `Missing expected exception
 SDK attachment omission `b3c1431` / `proc_7234` and queue-observation omission `d34d75c` / `proc_cd4a`
 each lost the original cleared input.
 All guards and observations are restored.
-Complete native regression is running in `proc_c273`;
-complete action/source regressions and final closeout remain pending.
+Complete native `proc_c273` passed in 428 seconds.
+Complete action-policy `proc_43c5` and policy-source `proc_89b0` also passed.
+These local checks establish the bounded mechanism,
+not empirical qualification or a production admission policy.
 Direct Agent prompt/state producers and governing-domain closure remain unfinished.
 
 ## Original public API input before native branching
