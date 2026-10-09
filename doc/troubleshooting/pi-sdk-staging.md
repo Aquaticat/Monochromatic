@@ -680,6 +680,12 @@ Removing pass-through currentness observation failed `proc_334e`:
 an equal replaced part regained an `accounted` contribution on a later request after restoration.
 Run `mise --no-env --no-hooks run test:expanded-prompt-controls`
 inside private `contract/integration/native-batch`.
+Scalar-publication omission `proc_b17c` also admitted a copied publication;
+hint-profile omission `proc_7ea3` changed unsupported hint handling into an exception.
+All guards are restored.
+Full native `proc_5d3b`,
+full action `proc_15a2`,
+and 12-document rendering `proc_2db5` passed.
 This proves a bounded origin edge,
 not complete request-domain coverage,
 source authority,

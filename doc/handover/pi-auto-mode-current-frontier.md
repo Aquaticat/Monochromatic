@@ -342,7 +342,13 @@ The 23-mode native input/representation matrix passed `proc_7109`,
 including actual native image and normalization-hint paths.
 Original scalar-publication controls passed `proc_b338`.
 The pass-through retirement positive control passed `proc_eebb`.
-Guard-sensitivity and restored full native regression remain pending.
+Pass-through omission `proc_334e` revived invalid prompt lineage on a later review;
+scalar-publication omission `proc_b17c` admitted a copied publication;
+hint-profile omission `proc_7ea3` changed unsupported native output into an exception.
+All guards are restored.
+Full native `proc_5d3b`,
+full action `proc_15a2`,
+and 12-document rendering `proc_2db5` passed.
 Source accounting remains partial and `request-source-domain` remains unresolved.
 
 ## Original orphan-heading directive use
