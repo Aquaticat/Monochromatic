@@ -350,7 +350,7 @@ Branch return preserves observed original input links without reviving the retir
 The reset and uninstrumented fork-copy paths do not borrow the earlier run's origins.
 These are manager/projection controls,
 not qualification of the full host resume or fork workflow.
-The restored full native rerun is `proc_3da2`.
+The restored full native rerun `proc_3da2` passed.
 
 This owner-local route does not establish disk-loaded,
 queued,
