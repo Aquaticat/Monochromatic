@@ -110,8 +110,12 @@ Rethrow omission `0d7076e` / `proc_82cb` failed with `Missing expected rejection
 Entry-observation omission `5a3020f` / `proc_c64f` lost the original rejected-call source.
 Both guards are restored;
 no deliberate omission remains.
-Complete native regression is running in `proc_834c`.
-Complete action/source regressions and final closeout remain pending.
+Complete native `proc_834c` passed in 428 seconds,
+including the full-policy fixture.
+Complete action-policy `proc_fcb7` and policy-source `proc_e74d` also passed.
+The prior full-policy incident remains unattributed;
+these later passes are not evidence of a runtime fix.
+All guards and original bounds remain intact.
 Direct-agent producers and complete governing-domain closure remain unfinished.
 
 ### Upstream filing decision
