@@ -331,9 +331,10 @@ foreign,
 and deferred-bound controls plus loaded-input regression passed `proc_1bea`.
 Combined capture-overflow and native write-error controls passed `proc_f207`.
 
-Leaf-observation and latch sensitivity,
-routine-suite integration,
-and complete regressions remain pending.
+Leaf-observation omission `proc_19e4` and failure-latch omission `proc_40b7` each failed their control.
+Both guards are restored.
+Current summary manager controls are included in routine verification;
+complete regression remains pending.
 Queued inputs,
 mixed representations,
 tool instruction-source ownership,
@@ -350,7 +351,8 @@ No earlier run,
 historical issuer,
 authority,
 or payload eligibility is invented.
-Other append families and derived system checkpoints are not recaptured.
+Only supported edit and summary inputs are newly captured;
+known run publications and derived system checkpoints are not recaptured.
 
 Context handlers can create an edit after initial context observation.
 The private native context return therefore rechecks the original run handle and current manager input owner.
@@ -388,7 +390,7 @@ action `proc_9601`,
 source-policy `proc_f730`,
 and 14-document rendering `proc_a31c` / `proc_c9e9` passed.
 The native ordinal assertion passed without adding one to the header-inclusive position.
-Current summaries,
+Other current inputs,
 queued inputs,
 mixed representations,
 tool instruction-source ownership,
