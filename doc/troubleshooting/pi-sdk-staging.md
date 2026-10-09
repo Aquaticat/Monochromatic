@@ -864,6 +864,45 @@ The corrected source matrix and complete regression remain tracked in the privat
 This is a fixture correction and private provenance extension,
 not an SDK defect or an upstream filing.
 
+### SDK 1.1.0 bash record formatting creates a new user message
+
+A loaded `bashExecution` record is data about a command,
+not authenticated proof that the command ran.
+Its native formatting also creates a different object.
+In `dist/core/messages.js:79`:
+
+```js
+// Pi SDK 1.1.0, dist/core/messages.js:79
+case "bashExecution":
+    if (m.excludeFromContext) {
+        return undefined;
+    }
+    return {
+        role: "user",
+        content: [{ type: "text", text: bashExecutionToText(m) }],
+        timestamp: m.timestamp,
+    };
+```
+
+The private observer follows that actual construction edge.
+It preserves input-only identity without authenticating payload text or historical execution facts.
+Excluded and compacted inputs remain separately retained through original source membership.
+
+Required missing-input red `proc_f853` became native consumer green `proc_5aac`.
+Native formatting and exclusion variants,
+owner getter/profile controls,
+and the 31-mode loaded-input matrix passed `proc_589c`.
+Conversion omission `proc_30e1` lost the resulting user message's original publication.
+The conversion observation is restored.
+Complete regression remains pending.
+
+Run `mise --no-env --no-hooks run test:loaded-bash-manager`
+inside private `contract/integration/native-batch`.
+The fixtures write authored session records,
+but do not execute their recorded commands.
+This is a private propagation repair,
+not an upstream defect or a filing proposal.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
