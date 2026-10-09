@@ -118,7 +118,10 @@ Omissions `proc_d12b`,
 `proc_2f0b`,
 and `proc_88a1` failed at their intended source obligations;
 all were restored before integrated `proc_2ae8` passed.
-Complete native regression is running.
+Complete native `proc_33e4`,
+action `proc_593c`,
+source-policy `proc_188a`,
+and 14-document rendering `proc_b538` passed.
 
 ## Private SDK 1.1.0 source association stops at defensive copies
 

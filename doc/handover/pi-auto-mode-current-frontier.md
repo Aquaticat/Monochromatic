@@ -372,8 +372,11 @@ late-input source retirement,
 and unchanged-view capture-failure rechecking.
 All were restored;
 integrated controls passed `proc_2ae8` with empty child stderr.
-Complete regression is running;
-nothing is installed or activated.
+Complete native `proc_33e4` passed in 346 seconds;
+complete action `proc_593c`,
+source-policy `proc_188a`,
+and the 14-document render `proc_b538` also passed.
+Nothing is installed or activated.
 
 ## Original current-session summary inputs and append membership
 
