@@ -315,7 +315,9 @@ and payload copies.
 Hidden-declaration omission `2fdd453` failed `proc_882a`;
 selected-tool omission `5943e0f` failed `proc_d76d`.
 Both incorrectly associated a non-rendered source and both are restored.
-Full snippet regression is running.
+Full native `proc_18cf`,
+action `proc_7c12`,
+and eleven-document render `proc_3594` passed.
 
 Tool names and native declaration placement still supply no source authority,
 implementation-effect proof,

@@ -171,8 +171,10 @@ expanded visibility `proc_4f4e`,
 and consumer-owner `proc_43a1` checks passed.
 Hidden-declaration omission `proc_882a` and selected-tool omission `proc_d76d`
 each wrongly associated a non-rendered snippet.
-Both guards are restored;
-full snippet regressions are running.
+Both guards are restored.
+Full native `proc_18cf`,
+action `proc_7c12`,
+and eleven-document render `proc_3594` passed.
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
