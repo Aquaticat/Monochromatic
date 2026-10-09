@@ -691,6 +691,66 @@ not complete request-domain coverage,
 source authority,
 or permission.
 
+### SDK 1.1.0 failed migration writes leave a partial in-place load
+
+A disposable read-only version-2 session caused native `setSessionFile`
+to throw filesystem `EACCES` from `open` during migration rewriting.
+The installed and private managers returned equal surviving projections,
+but those projections still selected the previous indexed entries.
+Their entry arrays already contained the attempted new load.
+
+The deciding order is in SDK `dist/core/session-manager.js:717`:
+
+```js
+// Pi SDK 1.1.0, dist/core/session-manager.js:717
+_loadEntries(entries, options) {
+    const header = entries.find((e) => e.type === "session");
+    if (header) {
+        this.fileEntries = entries;
+        this.sessionId = header.id;
+        if (migrateToCurrentVersion(this.fileEntries)) {
+            this._rewriteFile();
+        }
+    }
+    else {
+        this.newSession(options);
+        this.fileEntries = this.fileEntries.concat(entries);
+    }
+    this._buildIndex();
+}
+```
+
+The rewrite can fail after replacing `fileEntries` but before rebuilding `byId`.
+This does not establish a rollback guarantee.
+The original fixture `proc_12a4` wrongly expected the attempted new value
+to be the value returned by the surviving projection.
+Corrected `proc_84c8` checks both the new entry-array value and the old projected value,
+native output/error parity,
+and unchanged read-only file bytes.
+
+The private origin reader withholds the prior indexed value's origin
+rather than relabeling it as the attempted new load.
+This remains an unresolved provenance case,
+not a qualified session continuation.
+A separate invalid-file switch that fails before entry replacement preserves the original loaded values
+and their existing original load occurrence.
+Native root retirement remains independent.
+
+The checks use only disposable files and restore their writable modes afterward.
+No native rollback,
+file repair,
+or upstream SDK modification was implemented.
+The successful loading and migration controls are distinct:
+`proc_3dd2` covers original manager identity and value output;
+`proc_68f4` covers version-1/version-2 migration and invalid-file opening;
+`proc_84c8` covers failed in-place loading.
+
+Provenance capture failures also have a separate boundary.
+Unsupported loaded content or an exceeded source bound leaves native file loading intact,
+but stops the private source-use path before transport.
+That is intentional fail-closed behavior,
+not transparent compatibility with every unguarded prompt.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
