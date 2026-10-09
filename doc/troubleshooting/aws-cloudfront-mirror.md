@@ -4,6 +4,14 @@
  2026-05-09.
 **Reassessment**:
  2026-09-07.
+**CAA renewal remedy**:
+ 2026-10-09.
+ The mirror leaf became an ANAME carrying its own CAA,
+ a second hostname
+`mirror.amazon.aquati.cat` was added under a label that terminates the climb,
+and issue 6 is retracted.
+ See
+[`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
 **Subject**:
  Setting up `aws.aquati.cat` as a public CloudFront mirror of
 self-hosted `aquati.cat` while keeping the apex CAA limited to
@@ -448,6 +456,28 @@ Remove the CAA record at `aws.aquati.cat` before adding the CNAME:
 
 1. Delete `aws.aquati.cat. IN CAA 0 issue "amazon.com"`.
 2. Add `aws.aquati.cat. IN CNAME <distribution>.cloudfront.net.`.
+
+**Better solution,
+ measured 2026-10-09**:
+ the conflict only exists for a
+real CNAME.
+Njalla's `ANAME` type is a flattening alias that answers A and AAAA with
+no CNAME on the wire,
+and it does coexist with CAA at the same name.
+Keeping the alias and the authorization at the leaf means the RFC 8659
+climb terminates there and the apex is never read,
+so nothing has to be removed and later restored.
+Njalla states the CNAME restriction verbatim when the conflict is real:
+
+```text
+add-record rejected: code 400 You can not have both CNAME and CAA records.
+```
+
+The trade is that a flattened alias publishes the addresses the provider
+resolved rather than the querier's nearest edge,
+and Njalla documents no re-resolution interval.
+See option 7 in
+[`doc/handover/acm-caa-renewal-blocked.md`](../handover/acm-caa-renewal-blocked.md).
 
 ### Verification commands
 
@@ -1366,13 +1396,29 @@ DNS records,
    This second record is drift from the starting state this document
   describes as letsencrypt-only;
    no commit or section here records when or why it was added.
-- `aws.aquati.cat. IN CNAME <distribution-domain>.`
+- `aws.aquati.cat. IN ANAME <distribution-domain>.`
+   Replaced the CNAME on 2026-10-09 so the leaf can carry its own CAA.
+- `aws.aquati.cat. IN CAA 0 issue "amazon.com"`,
+   plus the same record for
+  `amazontrust.com`,
+   `awstrust.com`,
+   and `amazonaws.com`.
+   These four are what let ACM renew without touching the apex.
 - `_<validation-token>.aws.aquati.cat. IN CNAME _<validation-value>.<validation-zone>.acm-validations.aws.`
   (kept permanently for renewal;
    deleting this record breaks the next
   ACM renewal cycle.
    Recover both halves with
   `aws acm describe-certificate --certificate-arn <certificate-arn> --region us-east-1 --query 'Certificate.DomainValidationOptions[0].ResourceRecord'`).
+- `amazon.aquati.cat. IN CAA 0 issue "amazon.com"`,
+   plus the same record for
+  the other three Amazon issuer domains.
+   This node exists only to terminate the climb for names below it.
+- `mirror.amazon.aquati.cat. IN CNAME <distribution-domain>.`
+   A second mirror hostname added on 2026-10-09.
+   It is a real CNAME,
+   so CloudFront keeps per-querier edge selection for it.
+- `_<validation-token>.mirror.amazon.aquati.cat. IN CNAME _<validation-value>.<validation-zone>.acm-validations.aws.`
 
 ACM cert:
 

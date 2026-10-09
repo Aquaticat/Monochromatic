@@ -136,12 +136,15 @@ Cache manifest lives at `.cache/build-manifest.json`.
 
 ## CloudFront mirror
 
-`aws.aquati.cat` reaches the primary Caddy origin through a native origin Host/SNI override.
+`aws.aquati.cat` and `mirror.amazon.aquati.cat` reach the primary Caddy origin through a native origin Host/SNI override.
+One certificate covers both names.
 The independently deployed function,
 verification results,
 and rollback boundary are documented in
 [`cloudfront/README.md`](cloudfront/README.md).
 The site build does not deploy this CloudFront function.
+DNS and certificate authority records for both names are in
+[`doc/troubleshooting/aws-cloudfront-mirror.md`](../../../doc/troubleshooting/aws-cloudfront-mirror.md).
 
 ## Images
 
