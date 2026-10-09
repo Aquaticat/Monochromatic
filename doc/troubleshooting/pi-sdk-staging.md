@@ -1,5 +1,90 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 final input transformations can disappear during template expansion
+
+### Symptom and native boundary
+
+Per-handler input observations cannot capture text first created by the last handler.
+Required red `proc_2bf2` passed native terminal-success checks,
+then failed `The original native input must survive handling or expansion` in canonical review.
+
+Installed `pi-coding-agent@1.1.0/dist/core/agent-session.js:1484`
+constructs the aggregate transformed result before template expansion:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+if (inputResult.action === "transform") {
+    return { text: inputResult.text, images: inputResult.images ?? images };
+}
+```
+
+Installed `dist/core/extensions/runner.js:1234` compares final values,
+not whether a handler ever returned a transform action:
+
+```javascript
+// Installed pi-coding-agent dist/core/extensions/runner.js
+return currentText !== text || currentImages !== images
+    ? { action: "transform", text: currentText, images: currentImages }
+    : { action: "continue" };
+```
+
+Consequently,
+equal or restored text with the original image reference takes the continue branch.
+Changed image references can select transform even when text bytes are equal.
+
+### Private correction and verified controls
+
+The incumbent generator observes the fresh transformed-return object and returns that exact object.
+The existing manager source owner captures its text as `native-transformed-input`,
+at `transformedInput`,
+with no image inspection,
+authority,
+invented run,
+or entry ordinal.
+Observation is outside the native handler catch boundary.
+This does not observe each intermediate handler result or grant material contribution.
+
+Run `test:transformed-input-source` and `test:transformed-input-native` separately
+through `mise --no-env --no-hooks run` in private `contract/integration/native-batch`.
+
+Canonical `proc_03ab` passed.
+Parity and owner controls `proc_83f6` passed empty/changed/equal/restored text,
+handled outcomes,
+falsy handler errors,
+omitted/null/empty/replacement images,
+chained transformations,
+UTF-8 limits,
+original failure latching,
+foreign-manager rejection,
+and reset/disposal during the awaited handler.
+Observer image reads remained zero.
+
+The unchanged ordinary source cap now also applies to the final transformed text.
+An oversized final transformation is unsupported even if native expansion would shorten it.
+Expected capture failure preserves native returns,
+but guarded source use fails.
+Reset can replace capture state,
+not revive the original root lease.
+
+### Rejected readings and remaining verification
+
+An earlier input event is not the final transformed return.
+The handler's result object is not the native aggregate return object.
+Byte equality does not merge those occurrences,
+and source/streaming labels do not authenticate authorship.
+
+Integrated delivery,
+observation-omission sensitivity,
+and complete post-change regression are pending.
+No installed source or production admission was changed.
+
+### Upstream filing decision
+
+Nothing to report upstream:
+this is a private observer coverage gap,
+not a native template or handler defect.
+The native behavior is preserved.
+
 ## Pi 1.1.0 template expansion can discard unintercepted raw input
 
 ### Symptom and native source boundary

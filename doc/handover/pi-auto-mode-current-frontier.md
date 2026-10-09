@@ -296,6 +296,41 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Final transformed input before expansion
+
+The final input handler can create text that no later input event sees.
+A native template can then discard that text.
+Required red `91b4edb` / `proc_2bf2` isolated a restriction-like argument created only by the final handler;
+canonical review lacked its original source despite successful native termination.
+
+The maintained generator now observes the actual aggregate transform-return construction.
+The existing manager owner retains `native-transformed-input` at `transformedInput`,
+with text and source/streaming metadata.
+It returns the identical native object,
+does not inspect or freeze borrowed images,
+and invents no handler event,
+run,
+entry ordinal,
+or authority.
+This is not the handler's borrowed result object.
+Native aggregate continue and handled outcomes create no transformed-return publication.
+Equal text with changed images can still select the native transform branch.
+
+`80fe2f5` / `proc_03ab` passed the canonical source/publication and assessment-wire assertions.
+`proc_83f6` passed installed/private return parity,
+original failure latching,
+shared source and serialized-record bounds,
+and reset/disposal during awaited handlers.
+The original root lease remains ineligible after reset;
+disposal still rejects guarded source access.
+All source bounds remain unchanged.
+These checks do not establish image governance or payload eligibility.
+
+The expanded delivery matrix is running.
+Observation-omission sensitivity and complete post-change regressions remain pending.
+The earlier unintercepted-input closeout remains a separate verified checkpoint,
+not verification of this new construction edge.
+
 ## Original unintercepted input before expansion
 
 The private SDK now observes the actual `{text,images}` return object from the
