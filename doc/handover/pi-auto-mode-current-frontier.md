@@ -103,7 +103,10 @@ truthy section overrides and forced prompts prevent their contribution associati
 Missing native-fragment association failed `proc_b831` before initial green `proc_c667`.
 Expanded visibility matrix `proc_4165` passed 24 modes;
 original source/render controls passed `proc_814f`.
-Guard sensitivity and full regression for these direct generated fragments are next.
+Displacement omission `c79930b` failed `proc_1ffa` by associating overridden documentation guidance.
+Render-binding omission `1dae346` failed `proc_d254` by accounting for a source from a foreign render.
+Both guards are restored;
+full native and action regressions for these direct generated fragments are running.
 Default-rule deduplication and other generated slots remain unconsumed until their exact native emission is established.
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
