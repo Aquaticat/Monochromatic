@@ -296,6 +296,39 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original direct Agent string prompts
+
+String-form `Agent.prompt(input, images)` is now observed before its active-run check and normalization.
+Required red `8e56006` / `proc_b58b` completed the direct request without session input events,
+then found its original source absent from canonical review.
+
+The existing private Agent observer and manager owner retain the actual call frame's string input.
+The source remains `native-agent-input` at `agentInput`,
+with method `prompt`,
+no role-derived authority,
+and no fabricated user-message publication.
+The observer does not read the image argument.
+Message/array prompt forms are deliberately untouched and remain a separate gap.
+
+Canonical `b192dc9` / `proc_960b` passed direct source/reference/wire assertions
+and real active-run rejection retiring the earlier review.
+`proc_f1aa` passed native entry-frame,
+empty/adversarial/UTF-8 bound,
+strict/unmapped,
+image-reference,
+non-string branch,
+oversize,
+and error controls.
+Its normalization delegate is a labelled double;
+the canonical consumer separately exercises real request and busy-run behavior.
+No image governance or full producer coverage is inferred.
+
+The integrated string-prompt matrix is running.
+Observation sensitivity and complete regressions remain pending.
+All source limits,
+budgets,
+and installed files remain unchanged.
+
 ## Original direct Agent queue-call inputs
 
 Direct `Agent.steer(message)` and `followUp(message)` bypass `AgentSession` text entry.

@@ -1,5 +1,71 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 direct Agent string prompts bypass session text input capture
+
+### Symptom and native boundary
+
+Direct `Agent.prompt` does not pass through `AgentSession.prompt`.
+Required red `proc_b58b` completed the actual direct request,
+then failed the original-source assertion during canonical review.
+
+Installed `pi-agent-core@1.1.0/dist/agent.js` checks the active run before normalization:
+
+```javascript
+// Installed pi-agent-core dist/agent.js, Agent.prompt
+async prompt(input, images) {
+    if (this.activeRun) {
+        throw new Error("Agent is already processing a prompt. Use steer() or followUp() to queue messages, or wait for completion.");
+    }
+    const messages = this.normalizePromptInput(input, images);
+    await this.runPromptMessages(messages);
+}
+```
+
+The native normalizer preserves array input,
+wraps a non-string single input,
+and constructs a user message only for string input.
+This private increment observes only that original string argument,
+not the later user-message identity.
+
+### Private correction and verification
+
+The existing fixed observer runs synchronously at method entry only for string input.
+The existing manager owner selects the original frame's first data descriptor
+and retains text with method `prompt`.
+Images are not inspected by the observer.
+Input-only membership supplies neither role authority nor payload association.
+Non-string forms remain unobserved by this branch.
+
+Run `test:agent-prompt-source` and `test:agent-prompt-native` separately
+through `mise --no-env --no-hooks run` in private `contract/integration/native-batch`.
+
+Canonical `proc_960b` passed both the real direct request and active-run rejection/source-retirement cases.
+Native/owner `proc_f1aa` passed exact frames,
+normalization output,
+unchanged image references,
+zero observer image reads,
+unmapped frame mutation,
+untouched non-string forms,
+source limits,
+failure latching,
+and original unexpected observer failure.
+The normalization delegate is a double,
+not a provider or qualification trial.
+
+### Remaining scope and upstream filing decision
+
+Integrated controls,
+observation sensitivity,
+and full regressions remain pending.
+Message/array prompt inputs,
+image governance,
+other state producers,
+and governing-domain closure remain unfinished.
+Nothing is proposed upstream:
+native prompt behavior remains unchanged,
+and this is a private observation extension.
+No installed activation or production policy admission changed.
+
 ## Pi 1.1.0 direct Agent queues bypass session input construction
 
 ### Symptom and native boundary
