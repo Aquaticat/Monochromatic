@@ -1419,18 +1419,32 @@ DNS records,
    It is a real CNAME,
    so CloudFront keeps per-querier edge selection for it.
 - `_<validation-token>.mirror.amazon.aquati.cat. IN CNAME _<validation-value>.<validation-zone>.acm-validations.aws.`
+  (also kept permanently for renewal;
+   deleting either validation record
+  breaks renewal of the two-name certificate).
 
-ACM cert:
+ACM cert,
+ current as of 2026-10-09:
 
 - Region:
    `us-east-1` (mandatory for CloudFront viewer certs).
-- Domain:
-   `aws.aquati.cat` (single name,
-   no SANs).
+- Names:
+   `aws.aquati.cat` and `mirror.amazon.aquati.cat`.
+   One certificate covers both because a distribution holds exactly one
+  viewer certificate.
 - Key algorithm:
    `EC_prime256v1`.
 - Validation method:
-   DNS.
+   DNS,
+   one record per name,
+   both of which must stay published.
+- Validity:
+   `notBefore` 2026-10-09,
+   `notAfter` 2027-04-24.
+- The single-name predecessor was renewed by ACM on 2026-10-09 once the
+  leaf CAA records unblocked it,
+   then deleted after the two-name
+  certificate was attached and verified.
 
 Properties this configuration was believed to preserve,
 with a 2026-10-09 correction:
