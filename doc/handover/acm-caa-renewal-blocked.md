@@ -838,6 +838,26 @@ On the AWS side:
     asserted field by field against the live configuration before
     submission.
     It was accepted and reached `Deployed` in 432 seconds.
+8.  The replaced certificate was deleted after the maintainer authorized it.
+    Three assertions ran first:
+    the distribution's attached ARN differed from the deletion target,
+    the target reported no attached resources,
+    and the target's subject alternative name list held exactly one name,
+    `aws.aquati.cat`,
+    so it could not be the two-name replacement.
+    `describe-certificate` on the deleted ARN now returns
+    `ResourceNotFoundException`,
+    and the filtered inventory holds one certificate whose subject
+    alternative names cover both hostnames.
+
+The deletion surfaced the strongest evidence that option 7 works as designed.
+The replaced certificate's `notAfter` had moved from 2026-11-22 to 2027-04-24
+between the morning's diagnosis and the evening's cleanup,
+while its subject alternative name list was still the single original name.
+Nothing renewed it except ACM's own retry loop,
+which is exactly what the leaf CAA records unblocked.
+A certificate's `notAfter` cannot change without reissuance,
+so the field alone proves the renewal.
 
 That answers the Free-plan question:
 this plan does permit changing `Aliases` and `ViewerCertificate`.
@@ -858,6 +878,14 @@ every check passing:
 - IPv4 and IPv6 each returned 200 on both hostnames.
 - The distribution lists both aliases.
 - The replaced certificate reports no attached resources.
+
+A second boundary check ran after the deletion:
+`aws.aquati.cat`,
+`mirror.amazon.aquati.cat`,
+and `aquati.cat` each returned 200 with an identical 3445-byte body.
+The byte count differs from the digest comparison earlier in this section
+because the origin's content changed between the two checks;
+parity held at both.
 
 Cost of the whole remedy was zero.
 ACM's pricing page states that it issues certificates at no cost for use
@@ -882,13 +910,6 @@ Two observations recorded rather than acted on:
 
 ## Open questions
 
-- Delete the replaced certificate?
-  It is unattached,
-  ineligible for managed renewal because it is neither associated nor
-  exported,
-  and expires 2026-11-22.
-  Deleting is one call and needs authorization;
-  keeping it costs nothing and preserves a rollback path until it expires.
 - Why does the apex authorize `certainly.com`?
   No commit or document records adding it.
   The Fastly mirror's Certainly certificate is consistent with it being
