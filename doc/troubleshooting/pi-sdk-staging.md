@@ -86,7 +86,10 @@ Native input-handler behavior itself is unchanged for supported capture.
 Integrated `proc_a059` passed with empty child stderr.
 Observation-edge omission `proc_e954` lost the original handled input and failed;
 the edge is restored.
-Complete native regression `proc_a1d5` is running.
+Complete native `proc_a1d5`,
+action `proc_d1a1`,
+source-policy `proc_62bd`,
+and 14-document rendering `proc_e9ec` passed.
 The installed plugin is untouched.
 
 ## Pi 1.1.0 custom message construction can precede any prompt run

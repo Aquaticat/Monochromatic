@@ -347,7 +347,10 @@ Integrated `proc_a059` passed with empty child stderr,
 including the absent-handler negative and separate observer/handler error paths.
 Omitting the actual observation edge failed `proc_e954`;
 the edge is restored.
-Complete native regression `proc_a1d5` is running.
+Complete native `proc_a1d5` passed in 365 seconds;
+action `proc_d1a1`,
+source-policy `proc_62bd`,
+and 14-document rendering `proc_e9ec` also passed.
 No-handler fast paths and commands handled before the input emitter construct no event under this profile.
 Their absence is not proof of non-governing input.
 Images,
