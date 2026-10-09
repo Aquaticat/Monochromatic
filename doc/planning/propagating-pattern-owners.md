@@ -459,52 +459,68 @@ The repository has already made one instance of it explicitly:
 That reasoning is sound and is worth generalising,
 but it is currently written as a comment on a suppression rather than as a rule.
 
-Proposed rule text for `AGENTS.md`,
-in the repo's tagged style and within its 50-word and 200-character limits:
+Landed as review rules,
+ not `AGENTS.md` rules.
+The maintainer's direction on 2026-10-09 was that both drafts were too narrow,
+ applying only to
+duplicate-code dismissals rather than to every development task,
+and that they belong in the project code review skill.
+They are now `GRW` and `TWS` in `.agents/skills/project-code-review/SKILL.md`,
+under "Duplication and pattern ownership",
+generalised so they fire on any diff that adds,
+ keeps or approves a repeated shape:
 
-- Code `GRW` (recommended;
-   free in both forbidden-strings appendixes and in `AGENTS.md`;
-   first reading is "grows",
-   which is the intent):
-   "Dismiss duplication only by naming the pattern's owner,
-   or stating the pattern is closed,
-   or stating the policy that accepts the copies.
-   Two copies template a third;
-   size today is not the test."
-- Code `TWS` (recommended;
-   free in both appendixes;
-   the competing first reading is True Wireless Stereo,
-   which is niche enough to reject only if the reviewer disagrees):
-   "Two-sided code (sync and async,
-   mirrors,
-   complements,
-   arity variants) needs one stated choice:
-   share a core,
-   generate one side,
-   or hand-write both and say so.
-   Never author a new pair silently."
+- `GRW` requires a repeated shape to name its owner,
+   a shared function,
+   base class,
+   macro,
+   factory,
+   lint rule or written convention,
+   and rejects "it is only two places" and "it is too small to
+   extract" as answers,
+   because a pattern instantiated twice templates the third copy.
+   Where nothing should own it,
+   the reviewer states why the pattern is closed instead.
+   Severity is WARNING at two places and BLOCKER when the diff adds a third copy or the shape
+   already exists at ten or more sites.
+- `TWS` requires two-sided code to record which arrangement applies:
+   a shared core,
+   one side
+   generated from the other,
+   or both hand-written on purpose.
+   Severity is WARNING for a new pair with no stated choice and BLOCKER when the pair shares roughly
+   50 or more tokens of identical body and still has none.
 
-Both codes were checked against `AGENTS.md` and against
+Both carry the differential-fuzz exception the draft called for,
+ since identical adapter code on
+both sides is what makes an observation difference mean a behaviour difference.
+Both codes were checked against `AGENTS.md`,
+ the skills directory,
+ and
 `forbidden-strings.append.txt` and `forbidden-strings.append.local.txt` on 2026-10-09.
-Alternatives if either reading is objected to:
-`CPL` for the first (complements,
-but that collides with the second rule's subject)
-and `BIL` for the second (bilateral,
-with a "bill" first reading).
 
-An explicit exception belongs in the second rule:
-differential-fuzz adapters must stay written out on both sides,
-because identical adapter code is what makes an observation difference mean a behaviour difference.
-That is a case where the duplication is the method,
-and the rule should say so rather than let each reviewer rediscover it.
+The narrower dismissal-side form also landed,
+ as rule 9 of the recording convention in
+`doc/troubleshooting/slopo-threshold-tuning.md`,
+ so an ignore-file entry must name the pattern's
+owner,
+ state that it is closed,
+ or state the policy that accepts the copies.
 
 ## Sequencing
 
-1 and 2 are mechanical and independently verifiable,
-so they can go first.
-3 and 5 are small and local.
-8 needs a compile check before anyone trusts the shape.
-4 waits on #69's decision about the `done-postcss` fork.
-6 is the largest migration and the only one that can change ordering behaviour,
-so it goes last and per site.
-7 is the one to reject if the cost of a shared home outweighs two call sites.
+Each design is its own issue,
+ filed 2026-10-09 and indexed at #665.
+
+1. #667 and #673 are mechanical and independently verifiable,
+    so they go first.
+2. #668 and #670 are small and local.
+3. #666 is the largest mechanical change and migrates package by package,
+    with the
+   name-against-class comparison run before and after each step.
+4. #669 waits on #69's decision about the `done-postcss` fork.
+5. #671 goes last and per site,
+    because it is the only one that can silently change ordering.
+6. #672 is a decision rather than an implementation,
+    and rejecting it on cost is a defensible
+   outcome.
