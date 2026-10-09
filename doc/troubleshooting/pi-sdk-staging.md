@@ -104,6 +104,74 @@ Full native `proc_c4d5` and action `proc_2fa4` passed.
 These results remain scoped to the explicit fixed serializer and current-run publication,
 not the default model-runtime wrapper or general history provenance.
 
+### Retained forced and custom-section inputs
+
+The private consumer separately lacked forced-prompt and custom-section links.
+Actual-serializer checks `proc_84e0` and `proc_ff08` failed with `AssertionError [ERR_ASSERTION]`
+at the required original-source association assertions.
+The captured source text already existed;
+adding another source inventory or JSON parser would not supply the missing publication lineage.
+
+The existing run owner now records the actual forced-message projection.
+Its source does not inherit a displaced host source's authority,
+even when their text is equal.
+Identity omission `c316f17` failed `proc_305b` by associating an independent equal-byte message copy.
+After restoration,
+full native `proc_38d6` and action `proc_3eaf` passed.
+
+Installed Pi SDK 1.1.0 `dist/core/system-prompt.js:97` first assigns appended and project-context text.
+Its custom-section override at `dist/core/system-prompt.js:111` then replaces only truthy values:
+
+```javascript
+// Installed pi-coding-agent dist/core/system-prompt.js:111
+for (const [name, content] of Object.entries(customSections)) {
+    if (content)
+        promptSections[name] = content;
+}
+```
+
+Consequently,
+a retained base or run-replacement input does not contribute when a nonempty custom section displaces it.
+An empty custom value does not remove the original section.
+The private adapter consumes existing `mappedPromptInputs` only through their original run,
+source membership,
+and full sections publication.
+`contract/collector/run-prompt-custody-v3/owner.mjs:201` binds the published options to the captured render:
+
+```javascript
+// Private contract/collector/run-prompt-custody-v3/owner.mjs:201
+if(scope.rendered&&(scope.rendered.options!==(scope.delivery??scope.working)||!isDeepStrictEqual(scope.rendered.input,options)))throw new SourceCollectionError('Native run publication differs from its original prompt construction inputs');
+```
+
+From private `contract/integration/native-batch`,
+`mise --no-env --no-hooks run test:section-source-association` passed `proc_49c5` with 18 modes.
+These cover additions,
+base and run-replacement shadowing,
+empty overrides,
+forced precedence,
+independent copies,
+malformed Unicode,
+native-default rendering,
+and invalid section names.
+From private `contract/integration/action-policy`,
+`mise --no-env --no-hooks run test:source-association` passed `proc_73fc` for original capabilities and map bounds.
+
+Removing native shadowing failed `proc_30bf` by crediting displaced project-context text.
+Removing source membership initially failed on an unrelated source shape in `proc_d146`;
+that result did not demonstrate false admission.
+Refined omission `fa5432b` failed `proc_cb23` with `nonmember`,
+reporting `accounted` instead of `unresolved`.
+Both guards are restored;
+full custom-section regression is running.
+
+This remains partial lineage at a containing serialized field,
+not complete request-origin accounting or instruction authority.
+Non-transmission does not revoke separately established governing instructions.
+The private adapter still withholds execution on independent missing premises.
+The existing filing disposition applies:
+these are private-consumer gaps,
+not defects in native copying or native override behavior.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.

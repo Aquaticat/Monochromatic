@@ -63,12 +63,33 @@ equal-text,
 empty,
 and permanently retired forced-projection controls.
 Omission `c316f17` failed `proc_305b` by associating an independent equal-byte copy.
-The identity guard is restored;
-final restored regressions are running.
+The identity guard is restored.
+Full native `proc_38d6`,
+action `proc_3eaf`,
+and ten-document render `proc_f55b` passed.
 
-The unassociated ordinary request domain,
-custom section profiles,
-and other unconsumed producer relationships remain explicit.
+Already-retained custom sections now use original `mappedPromptInputs` and the full sections publication.
+A nonempty `addendum` or `project_context` override displaces its base or replacement input contribution;
+an empty override preserves the native base rendering.
+This affects representation only,
+not separately established governing authority.
+Section names and equal bytes grant no authority.
+
+Missing-association red `proc_ff08` preceded green `proc_48c0`.
+Expanded matrix `proc_49c5` passed 18 modes,
+including replacement shadowing,
+empty overrides,
+forced precedence,
+copied sections,
+malformed Unicode,
+native-default rendering,
+and invalid section names.
+Source-owner and inherited map-bound controls passed `proc_73fc`.
+Omission `proc_30bf` incorrectly credited a displaced context input;
+omission `proc_cb23` incorrectly accounted for a source outside the original run's mapped inputs.
+Both guards are restored and full custom-section regressions are running.
+
+The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
 
@@ -165,14 +186,16 @@ The existing run owner now retains the original sections publication.
 Its source capability is explicitly carried through the private manager's defensive copies
 and the SDK's initial context clone.
 Independent equal-text replacements remain unassociated.
-The request observer qualifies only the fixed installed serializer route,
+The initial request-observer profile qualified only the fixed installed serializer route,
 a full current-run sections publication,
 and the existing linked context source.
-Forced prompts,
-custom sections,
-additional system content,
+The expanded profiles described in "Original rendered prompt-input contributions" also consume base,
+replacement,
+forced,
+and custom-section contributions.
+Additional independent system content,
 sampling overrides,
-and unrelated stream wrappers do not acquire an association.
+and unrelated stream wrappers remain outside association.
 
 A payload callback can retain mutable aliases across the SDK's asynchronous body construction.
 The adapter therefore copies the ordinary payload root,

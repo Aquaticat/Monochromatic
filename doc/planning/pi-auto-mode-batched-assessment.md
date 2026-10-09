@@ -93,6 +93,20 @@ Full native `proc_3c3a` passed with 36 incorporation scenarios;
 full action `proc_0b25` also passed.
 The original binding segment preserves full-policy dependency-check bounds without caching across an `await`.
 
+The rendered-input consumers now also cover retained host,
+append,
+context,
+run-replacement,
+forced,
+and custom-section inputs.
+Forced projection identity passed restored native `proc_38d6` and action `proc_3eaf`.
+Custom-section controls passed `proc_49c5` and `proc_73fc` before deliberate omissions;
+both the source-membership and native shadowing omissions failed and are restored.
+Full restored custom-section regression is running.
+These contributions are partial lineage,
+not governing-domain completeness or new source-authority grants.
+See [original rendered prompt-input contributions](../handover/pi-auto-mode-current-frontier.md#original-rendered-prompt-input-contributions).
+
 ### Clause consumption contract
 
 The lowering operation consumes an operation-bound relationship already admitted by trusted code policy,
