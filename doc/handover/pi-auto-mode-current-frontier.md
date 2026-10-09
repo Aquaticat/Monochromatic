@@ -201,7 +201,9 @@ ampersands,
 quotes,
 backslashes,
 and newlines.
-Guard sensitivity and full skill-description regression are being completed.
+Disabled-entry omission `proc_0567` and reader-availability omission `proc_0dff`
+each wrongly associated non-rendered descriptions.
+Both guards are restored and full skill-description regressions are running.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 

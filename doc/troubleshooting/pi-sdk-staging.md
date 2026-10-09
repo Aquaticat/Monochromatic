@@ -326,6 +326,52 @@ The native loadout and rendering behavior was not defective;
 only the private consumer lacked these source relationships.
 There is no upstream filing artifact.
 
+### Skill descriptions retain original sources through XML escaping
+
+SDK 1.1.0 selects a native read/bash or indirect reader before rendering skills
+in `dist/core/system-prompt.js:103`.
+Its formatter excludes disabled entries at `dist/core/skills.js:279`:
+
+```javascript
+// Installed pi-coding-agent dist/core/skills.js:279
+const visibleSkills = skills.filter((s) => !s.disableModelInvocation);
+```
+
+The emitted description uses the native XML encoder:
+
+```javascript
+// Installed pi-coding-agent dist/core/skills.js:297
+lines.push(`    <description>${escapeXml(skill.description)}</description>`);
+```
+
+The private consumer now links existing original skill-description sources through that known rendering.
+It does not parse metadata into a second inventory,
+rewrite the retained description,
+or infer the referenced file's identity or instruction authority.
+An enabled empty description still creates native XML markup,
+but no contribution from description text.
+Equal enabled descriptions remain separate original occurrences.
+
+Actual-serializer red `proc_f07f` preceded green `proc_cd76`.
+Expanded matrix `proc_1cc5` passed 55 modes,
+including native read/bash/indirect readers,
+disabled and empty descriptions,
+section and forced overrides,
+independent copies,
+and equal enabled descriptions.
+The adversarial description contains closing-tag delimiters,
+quotes,
+an ampersand,
+a backslash,
+and newlines;
+its expected escaped text is authored separately from the native formatter.
+Original source/run/publication rejection controls passed `proc_848f`.
+
+Construction and byte appearance alone are insufficient:
+source membership and actual native visibility remain independent requirements.
+The installed formatter required no changes;
+this is private source accounting rather than an upstream defect or filing.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
