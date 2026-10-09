@@ -342,6 +342,11 @@ and C13 is the one with a real remedy.
    because it is mechanical,
    covers all 147,
    and found the counterexamples the heuristic missed.
+- The 50-token shared-run cut that replaced it was also wrong,
+   for a different reason:
+   it measured the pair instead of the family.
+   That retraction and the corrected partition are in
+   "Why \"under 50 tokens\" was the wrong excuse".
 
 ## The error-name family, measured properly
 
@@ -421,11 +426,13 @@ or polarity operators.
 - 104 clusters share less than 50 tokens,
    across 291 units.
 
-The last group is where dismissal is safe on measurement alone:
-the shared part is a few tokens,
-so an extracted helper would be longer than what it replaces.
-The first two groups are not,
-and the 34 were read individually.
+The last group is where this investigation first claimed dismissal was safe on measurement alone,
+on the reasoning that a helper would be longer than what it replaces.
+That claim is withdrawn in "Why \"under 50 tokens\" was the wrong excuse":
+pair size does not decide whether a utility is worth extracting,
+family size does,
+and the 104 clusters were then sized by pattern instead.
+The first two groups were read individually.
 
 ## Verdicts on the 34 clusters with a function-sized shared part
 
@@ -561,69 +568,253 @@ Kept dismissed,
    where the shared 62 tokens are `Array.from(...).map(...).join(...)`
    and the escape tables are the whole content.
 
+## Why "under 50 tokens" was the wrong excuse
+
+The partition above ended by accepting 104 clusters because their shared run was under 50 tokens.
+That reasoning is withdrawn.
+Pair size does not determine whether a utility is worth extracting;
+family size does.
+A two-line predicate repeated at 28 sites is a better extraction candidate than a 60-line function
+duplicated once,
+because the value of a shared utility is one place to hold a policy times the number of consumers,
+not lines saved per pair.
+This repository is full of that shape:
+`module/or-throw`,
+`module/numeric-format`,
+`module/throws` and `agent-harness-shared/text-scan` are all small utilities with many consumers.
+
+So the test is three questions,
+none of which is "how much code do the two sides share":
+
+1. How many units repo-wide instantiate this idiom?
+2. Does the shared part hold a policy that can be wrong,
+   or drift,
+   such as a comparison,
+   a boundary condition,
+   a format string,
+   an escape table or an error kind?
+3. Does an owner already exist?
+
+Sizing families by skeleton grouping does not work on its own.
+Normalising identifiers and literals collapses every one-expression template return into one
+skeleton,
+which produced a spurious 127-unit family across 40 packages for four unrelated clusters
+(C342,
+ C706,
+ C731,
+ C999 and C994).
+The reliable instrument is a targeted pattern per idiom,
+which is how the numbers below were produced.
+
+## Families behind the dismissals, measured by pattern
+
+- Error-class naming:
+   `extends Error` at 241 declarations across 181 files,
+   and `this.name = ` at 210 sites across 146 files.
+   The policy is "the error's name matches its class",
+   currently enforced by hand at 210 sites.
+   A base class assigning `this.name = new.target.name` moves it to one.
+   Measured drift today:
+   none,
+   verified by a comparison proven able to fail against a planted mismatch.
+   Twelve proposed dismissals belong to this family:
+   C139,
+   C298,
+   C311,
+   C317,
+   C341,
+   C346,
+   C432,
+   C573,
+   C907,
+   C914,
+   C922 and C947.
+- Rust one-line `Display` forwarding a message field:
+   `write_str(self.message` at 11 sites
+   across 11 files,
+   out of 50 `Display` impls across 32 files.
+   C13 is this family and its 11 units are byte-identical.
+- Rust one-line error constructors:
+   `String::from(message` at 17 sites across 16 files.
+   C15 belongs here.
+- Rust error kinds:
+   `io::Error::new(io::ErrorKind::` at 15 sites across 8 files,
+   11 of them in `cli/wg-quicker-exempt`.
+   The policy is which kind maps to which failure.
+   C998 belongs here.
+- Web-component shadow roots:
+   `attachShadow(` at 22 sites across 22 files,
+   of 25 `extends HTMLElement` declarations.
+   The policy is the shadow mode and where the root is stored.
+   C305 is 9 of them;
+   the other 11 are in `done-postcss`,
+   which `done-*` excludes from indexing and #69 tracks as a fork.
+- Null-prototype records:
+   `Object.create(null` at 21 sites across 14 files.
+   C355 belongs here.
+- Comparators:
+   `.localeCompare(` at 40 sites across 37 files,
+   with no shared comparator utility.
+   #659 dismisses C315 and C358 as coincidental comparators while its own caveat 1 proposes
+   `compareBy([...keyFns])`.
+   The family measurement supports the caveat rather than the dismissal.
+- Not families:
+   `Array.isArray(` at 296 hits and `Promise.resolve(` at 350 hits are language
+   primitives used inline.
+   Counting them overstates duplication,
+   which is why #618's proposal is about named guards such as `isRecord` and `isStringArray`
+   rather than every call.
+
+## Corrected partition
+
+Hold 36 of the 147 proposed entries;
+accept 111.
+
+Held,
+ by reason:
+
+- 9 have byte-identical bodies:
+   C13,
+   C15,
+   C617,
+   C629,
+   C636,
+   C639,
+   C665,
+   C669,
+   C688.
+- 7 are i18n renderers whose grammar difference is a field selection inside otherwise identical
+   functions that #639 already proposes to parameterise:
+   C321,
+   C327,
+   C328,
+   C336,
+   C348,
+   C353,
+   C582.
+- 5 share a function-sized run where the variance is names rather than intent:
+   C604,
+   C896,
+   C906,
+   C963,
+   C977.
+- 12 belong to the error-name constructor family of 210 sites:
+   C139,
+   C298,
+   C311,
+   C317,
+   C341,
+   C346,
+   C432,
+   C573,
+   C907,
+   C914,
+   C922,
+   C947.
+- 3 more belong to measured families of 15 to 22 sites:
+   C998,
+   C305,
+   C355.
+
+Accepted,
+ 111 entries,
+ because either the family behind the pair measures 2 to 4 sites,
+so there is nothing to own,
+or the variance is the point of the code:
+differential-fuzz adapters where both sides must be written out,
+coverage probes where the invalid input is the test,
+sync and async twins whose only variance is `async`,
+`await`,
+`Promise<T>` or `readFileSync`,
+polarity pairs where the repository has already chosen two names over one parameter,
+SIMD kernels that are different machine code,
+and the coincidental-shape pairs whose shared part is a language idiom with no policy in it.
+By verdict:
+39 `INTENTIONAL-VARIANT`,
+39 `STRUCTURAL-IDIOM`,
+20 `COINCIDENTAL-SHAPE`,
+12 `BOILERPLATE-TRIVIAL` and 1 `TEST-OR-GENERATED`.
+
+Two accepted clusters carry a caveat rather than a clean pass.
+C629,
+ C636,
+ C669 and C688 are byte-identical pairs whose families measure 2 sites,
+so the dismissal is right on family size but their recorded reasons still need correcting where they
+claim a difference the bodies do not contain.
+C315 and C358 are accepted as pairs while the 40-site comparator family stays open as a design
+question,
+which is what #659's caveat 1 already proposed.
+
 ## Judgements adopted
 
 These are calls,
  not options,
  and each is recorded here so it can be vetoed rather than rediscovered.
 
-1. Hold back 21 of the 147 proposed entries and accept the other 126.
-   The 21 are the 9 byte-identical clusters and the 12 named in "Verdicts on the 34 clusters with a
-   function-sized shared part".
-   For the 126 the shared run is either under 50 tokens,
-   where a helper would be longer than what it replaces,
-   or large with variance that is the point of the code.
+1. Hold 36 of the 147 proposed entries and accept 111.
+   The hold list is the five groups above.
+   No entry is accepted on the grounds that its shared run is small;
+   small runs are accepted only where the family behind them measures 2 to 4 sites
+   or the variance is the point of the code.
 2. Move the seven i18n clusters into #639's scope instead of dismissing them,
-   and note in #658 that C353 contains the `renderTimeOperand` helper #639 already claims as C331.
-3. Re-verdict the five identical-body clusters whose reasoning contradicts their evidence:
-   C13 and C15 become one proposal for a Rust error-display macro,
-   with `thiserror` named as an alternative needing `choosing-technology` vetting;
+   and note on #658 that C353 contains the `renderTimeOperand` helper #639 already claims as C331.
+3. Re-verdict the identical-body clusters whose reasoning contradicts their evidence:
    C617 becomes a code change,
    one handler registered for both events;
    C665 moves out of `STRUCTURAL-IDIOM`,
-   because its two bodies are identical and that category requires differing logic;
-   C639 keeps its dismissal with the reason restated as being about signatures rather than bodies.
-4. File C604's eight dispatch wrappers as a macro or generic-wrapper proposal against
-   `rust-module/forbidden-regex`,
-   and record that the current rationale describes the kernels rather than the wrappers.
-5. Put C963 and C906 to the maintainer as one design question,
-   because 519 shared tokens is the largest duplication in the set and the recorded reason is about
-   signatures rather than bodies.
-6. Do not propose the error-name base class now.
-   The family is 212 units across 147 files,
+   which requires differing logic;
+   C639 keeps its dismissal with the reason restated as being about signatures rather than bodies;
+   C629,
+    C636,
+    C669 and C688 keep their dismissals with the family size recorded as the reason.
+4. Put the error-name family to you as one decision rather than twelve dismissals:
+   210 sites across 146 files,
    154 of them the pure two-statement idiom,
-   3 sites already assign `X.name` instead of a literal,
-   and `mangle: false` in all three rolldown configs would keep derived names intact in published
-   artifacts.
-   Nothing has drifted in 209 sites,
-   the change touches 147 files,
-   and published `module/*` packages would gain a dependency edge.
-   The measurement is recorded so nobody re-derives it.
-7. Record the shared-run measurement beside the family-count query as a recipe in
-   `doc/troubleshooting/slopo-threshold-tuning.md` rather than adding a `mise` task or a package.
-   Both are queries over data slopo already writes,
-   and a task would need a README,
-   tasks and tests under the repository's completeness rules for something used a few times a year.
-8. Comment the measured sub-floor members on #613 and the third license reader on #633.
+   21 forwarding `options`,
+   3 already assigning `X.name` instead of a literal,
+   no drift measured,
+   and `mangle: false` in all three rolldown configs meaning derived names survive bundling.
+   The twelve clusters stay held until that decision is made either way.
+5. File C13 and C15 as one proposal for a Rust error-display macro in a `rust-module/*` crate,
+   covering the 11 identical `Display` impls and the 17 one-line constructors,
+   with `thiserror` named as an alternative needing `choosing-technology` vetting
+   since it is in no `Cargo.toml` today.
+6. File C604's eight dispatch wrappers as a macro or generic-wrapper proposal against
+   `rust-module/forbidden-regex`,
+   and record that the current rationale describes the kernels rather than the wrappers,
+   which contain no intrinsics and no `cfg`.
+7. Put C963 and C906 to you as one design question:
+   519 and 361 shared tokens with only async markers varying is the largest duplication in the set,
+   and the recorded reason is about signatures rather than bodies.
+8. Open the 40-site comparator family as a design question,
+   which is #659's own caveat 1 proposal,
+   while accepting C315 and C358 as pairs.
+9. Record three recipes in `doc/troubleshooting/slopo-threshold-tuning.md`:
+   the family-count query over `code_units`,
+   the shared-run comparison over report bodies,
+   and the targeted-pattern family count,
+   with the warning that skeleton grouping alone produces artifacts.
+   All three read data slopo already writes and need no re-index and no embedding.
+10. Record in the same doc that a dismissal entry must state the family size behind the pair and
+   why sharing it costs more than it saves.
+   That is the method failure behind every correction in this document.
+11. Comment the measured sub-floor members on #613 and the third license reader on #633.
    Skip #617 and #618,
    which already enumerated their families and,
    in #617's case,
    found real drift in the digit predicates.
-9. Give the three held-back `UNCERTAIN` clusters a home:
+12. Give the three held-back `UNCERTAIN` clusters a home:
    C562 joins #660 as an eighth judgement call,
-   and C622 and C721 get one focused issue,
-   since both sit in the quick-lru fork family and no issue tracks either.
-10. Copy the review ledger into `doc/artifact/` as a dated record and leave the builders in scratch.
-11. Leave `slopo.conf.yaml` and `mise.toml` untouched.
+   and C622 and C721 get one focused issue.
+13. Copy the review ledger into `doc/artifact/` as a dated record.
+14. Leave `slopo.conf.yaml` and `mise.toml` untouched.
    The threshold is hand-tuned and stays at 13.
    Two wording fixes are proposed rather than applied:
    the conf comment "increased from default 10 until no bad reports remain" describes a `0.4.0`
    default,
-   since `0.8.0` defaults to 20 at `slopo/config.py:151-152`,
-   which makes 13 more permissive than upstream rather than less;
+   since `0.8.0` defaults to 20 at `slopo/config.py:151-152`;
    and `mise.toml:213` installs `pipx:slopo` at `latest` while the tuning doc is verified against two
    specific versions whose source paths already moved.
-   `mise.toml` also carries uncommitted local modifications that are not this work's to touch.
 
 ## Verification limits
 
