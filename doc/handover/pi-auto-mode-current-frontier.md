@@ -335,8 +335,11 @@ and rejected-streaming transformed inputs.
 Omitting only this native observation failed `c0e74fc` / `proc_166f` at the original-source assertion.
 The observation is restored in `6e373a9`;
 no deliberate omission remains.
-Standalone source profiles and the complete native parent suite are running in `proc_3e8e`.
-Complete post-change action/source regressions remain pending.
+Standalone source profiles with explicit preparation and the complete native parent suite passed in `proc_3e8e`
+(426 seconds for the combined command).
+Complete action-policy `proc_db21` and policy-source `proc_8595` also passed.
+These remain local mechanism checks,
+not empirical semantic qualification or a production admission policy.
 The earlier unintercepted-input closeout remains a separate verified checkpoint,
 not verification of this new construction edge.
 

@@ -81,8 +81,9 @@ oversized-before-expansion,
 and rejected-streaming transformations.
 Observation-only omission `c0e74fc` / `proc_166f` failed at the committed original-source assertion.
 `6e373a9` restores the observation.
-Complete native regression and standalone source-profile preparation are running in `proc_3e8e`;
-complete action/source regressions remain pending.
+Standalone source-profile preparation and complete native regression passed in `proc_3e8e`
+(426 seconds for the combined command).
+Complete action-policy `proc_db21` and policy-source `proc_8595` passed.
 No installed source or production admission was changed.
 
 ### Upstream filing decision
