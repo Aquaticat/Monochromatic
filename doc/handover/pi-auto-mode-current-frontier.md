@@ -312,8 +312,11 @@ Original occurrence collisions must not overwrite another publication.
 The native image/hint retention controls passed in the 35-mode matrix `proc_0441`.
 Pure publication controls also check that observers do not invoke getters
 and that input-only aliases cannot become text contributions.
-The full native pass `proc_3da2` predates this increment;
-its restored full regression and collision-guard sensitivity are still pending.
+Collision-guard omission `7bd4d85` / `proc_e92d` overwrote another original occurrence and failed its control.
+The guard is restored.
+Complete native `proc_0f88`,
+action `proc_df6e`,
+and 14-document rendering `proc_1715` passed.
 This adds neither authority nor request-domain completeness.
 
 ## Retained original run inputs after another prompt
