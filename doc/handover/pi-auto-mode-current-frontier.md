@@ -296,6 +296,49 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original complete-group scheduling and multi-program application
+
+The original dispatcher now adds its effective `groupExecutionMode`
+to the existing frozen prepared-member records.
+The value comes from the same latched `serial` decision that controls native entry turns,
+including a sequential tool forcing the whole group to run sequentially.
+The existing prepared-manifest serialization carries it;
+there is no new parser,
+source inventory,
+or scheduling owner.
+
+Missing original scheduling failed `proc_c205`.
+Explicit modes,
+per-tool forcing,
+borrowed argument mutation,
+live configuration retirement,
+and original error-class identity passed `proc_5337`.
+The live configuration negative preserves
+`Native tool "codemode" or its context owner changed after request preparation`;
+it is not a reason to relax freshness.
+
+Missing complete-group application failed `proc_e3d5`.
+The compiler now consumes admitted whole-proposal relationships for matching original inspected programs
+with a consistent original scheduling fact and no bypassed independent fact owner.
+Application records retain the original `preparedOperations` array.
+They do not turn effect estimates into code-established effects.
+Mixed or uninspected programs,
+missing/inconsistent schedules,
+unknown meanings,
+abstention,
+and independent fact-owner gaps remain unresolved.
+Same-source incorporation remains single-member.
+
+Parallel/sequential native consumers passed `proc_5a03`;
+full action tests passed `proc_e8e3`;
+the 12-mode native scheduling/application matrix passed `proc_bce2`.
+The current dispatcher also passed actual fixture-authorized execution,
+queue,
+abort,
+and disposal controls in `proc_c317`.
+Sensitivity checks and full native regression for this extension remain pending.
+Production admission and installed activation remain unchanged.
+
 ## Express same-source quoted-unit incorporation
 
 The user accepted option A on 2026-10-08.
@@ -578,9 +621,12 @@ still could not satisfy its operation-evidence consumer.
 The compiler now records per-clause `operationApplication` using the original member and program inspection.
 Supported admitted relationships replace the universal static-effect demand for one enclosing inspected program
 without a separate implementation-fact owner.
-Unknown uses,
+At that checkpoint,
+unknown uses,
 multi-member composition,
-and independent fact-owner gaps remain unresolved.
+and independent fact-owner gaps remained unresolved.
+The current bounded multi-program route is recorded in
+[Original complete-group scheduling and multi-program application](#original-complete-group-scheduling-and-multi-program-application).
 Full native `proc_7b44` passed 23 compiler modes;
 action `proc_b3d0` passed.
 The estimated relationships remain estimates,

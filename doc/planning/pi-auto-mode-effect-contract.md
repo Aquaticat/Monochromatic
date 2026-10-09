@@ -3,7 +3,7 @@
 ## Status and scope
 
 This is a contract inventory for the private qualification phase confirmed in Q22,
-not a qualified production policy or an adopted implementation.
+not a qualified production policy or installed implementation.
 It extends the [axiom design](pi-auto-mode-axioms.md)
 beyond the private protected-read,
 protected-transfer,
@@ -23,6 +23,50 @@ not every tool's execution semantics.
 Do not silently expand guard coverage or describe existing unflagged tools as newly verified safe.
 Additional unsupported reviewed actions may require manual approval,
 as already accepted by the user.
+
+## Original complete-group scheduling and estimated application
+
+The private dispatcher now publishes its actual group-wide scheduling decision
+on each original frozen prepared member as `groupExecutionMode`.
+It reads the same `serial` constant that gates member entry:
+either explicit sequential configuration or any sequential tool makes the whole group sequential.
+The existing prepared manifest serialization carries this fact.
+No additional request parser,
+mode inference from member order,
+or scheduling owner is introduced.
+
+Borrowed batch-argument mutation cannot rewrite the captured mode.
+Changing the authenticated live agent configuration instead retains the incumbent dependency failure.
+These are different controls:
+`proc_5337` verifies both without weakening currentness.
+Native dispatcher behavior,
+including independent fixture-authorized execution,
+shared-queue ordering,
+abort,
+and disposal,
+passed `proc_c317`.
+
+The whole-operation clause consumer now supports a group of matching original inspected programs
+when the original scheduling facts agree and no independent implementation-fact owner is bypassed.
+Each admitted application retains the original prepared-operation collection;
+it does not reconstruct another member inventory.
+Missing or inconsistent scheduling,
+unsupported profiles,
+unknown or unsupported relationships,
+abstention,
+and independent fact-owner obligations retain their gaps.
+Same-source incorporation remains restricted to one original member.
+
+Missing scheduling failed `proc_c205`;
+missing multi-program consumption failed `proc_e3d5`.
+Actual parallel/sequential consumption passed `proc_5a03`,
+full action tests passed `proc_e8e3`,
+and the expanded native matrix passed `proc_bce2`.
+Guard-sensitivity and full native regression for this extension remain pending.
+No production admission policy,
+qualification threshold,
+provider request,
+or installed cutover is implied.
 
 ## Policy epoch admission
 
