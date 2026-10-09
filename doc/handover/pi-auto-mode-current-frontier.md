@@ -175,6 +175,34 @@ Both guards are restored.
 Full native `proc_18cf`,
 action `proc_7c12`,
 and eleven-document render `proc_3594` passed.
+Already-retained skill descriptions now use their original source,
+run,
+and sections publication.
+Their contribution follows the native XML escaping rather than rewriting the retained description.
+No skill-file identity,
+instruction authority,
+or delegation is inferred from the description's companion metadata.
+
+Disabled entries,
+no selected reader,
+empty descriptions,
+skills-section overrides,
+forced output,
+and independent payload copies receive no description contribution.
+Hidden readers still support the native indirect route.
+Equal enabled descriptions retain separate original occurrences.
+
+Missing description association failed `proc_f07f`;
+initial `proc_cd76`,
+55-mode visibility/escaping `proc_1cc5`,
+and consumer-owner `proc_848f` checks passed.
+The XML control includes closing-tag delimiters,
+ampersands,
+quotes,
+backslashes,
+and newlines.
+Guard sensitivity and full skill-description regression are being completed.
+
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
