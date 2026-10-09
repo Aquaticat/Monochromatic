@@ -91,10 +91,22 @@ earlier occupancy exhaustion is possible.
 Deferred replay is a separate physical invocation,
 not a separately authenticated human instruction.
 
-Real deferred/lifetime checks,
-integrated fixture reconciliation,
-sensitivity,
-and full regressions remain pending.
+Native settled deferral/replay and reset/disposal checks passed `proc_1842`.
+The deferred entry reads no options;
+replay has its own physical invocation,
+and prior root eligibility is not restored.
+Late rejected-call and unchanged-view failure controls passed `proc_d2ba`.
+Original-judgment profiles passed within `proc_0abb`;
+subsequent prompt/handler fixtures now verify API-call and return sources separately.
+
+Runtime `proc_5939` passed those custody checks,
+then the full-policy fixture failed to reach review during independent-copy preparation.
+Diagnostic-only retry `proc_9a1e` passed with unchanged runtime and the same policy input.
+That non-reproduction proves neither cause nor fix.
+The five-second budget remains unchanged,
+and nested failure diagnostics are now preserved.
+Integrated verification is running in `proc_4a74`;
+sensitivity and complete post-change regressions remain unfinished.
 Direct-agent producers and complete governing-domain closure remain unfinished.
 
 ### Upstream filing decision
