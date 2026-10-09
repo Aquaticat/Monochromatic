@@ -1,5 +1,111 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 known commands bypass native input events
+
+### Symptom and native source boundary
+
+A known extension command can complete without passing through `_runInputHandlers`.
+Private red `proc_d845` recorded its original arguments and actual handler entry,
+with no input event or initial transport,
+then failed `The original native input must survive handling or expansion` in later review.
+
+Installed `pi-coding-agent@1.1.0/dist/core/agent-session.js:1636`
+parses the command and returns before context construction when no command matches.
+At line 1645,
+the known-command branch constructs context before its handler catch boundary:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+const ctx = this._extensionRunner.createCommandContext();
+try {
+    await command.handler(args, ctx);
+    return true;
+}
+```
+
+Installed `dist/core/extensions/runner.js:724`
+preserves lazy context getters through property descriptors:
+
+```javascript
+// Installed pi-coding-agent dist/core/extensions/runner.js
+const context = Object.defineProperties({}, Object.getOwnPropertyDescriptors(this.createContext()));
+```
+
+The context authenticates this observed construction/handoff occurrence,
+not text-bearing context fields or successful dispatch.
+The native handler receives parsed arguments;
+the private source retains the original full text independently.
+
+### Private correction and verification
+
+The existing manager owner records `native-command-input` at `commandInput`,
+using the actual context as an input-only alias.
+It does not copy context fields,
+call getters,
+freeze borrowed values,
+or assign authority.
+Capture precedes the native handler `try`.
+Expected `SourceCollectionError` profiles latch and permit native handler behavior;
+unexpected failures also latch,
+then rethrow their original value outside the handler catch.
+
+Run `test:command-input-source`,
+`test:command-input-owner`,
+`test:command-input-native`,
+and `test:command-input-paths` separately
+through `mise --no-env --no-hooks run` in private `contract/integration/native-batch`.
+
+Canonical `proc_e670` and corrected owner `proc_24cc` passed.
+Paired native `proc_cfac` exercised argument boundaries,
+equal calls,
+lazy getters with an intentional read control,
+unknown commands,
+falsy synchronous/awaited handler failures,
+reporter failure,
+context-factory failure,
+oversize capture combined with a native handler error,
+and unexpected observer failure before handler entry.
+`proc_797b` exercised pre-run delivery,
+overlap,
+reentrancy,
+late capture,
+oversize failure,
+and reset before consumption.
+
+### Rejected readings and remaining scope
+
+Owner control `proc_d918` wrongly treated a `toJSON` accessor as supported.
+The incumbent `contract/collector/run-prompt-custody-v3/handler-publication.mjs:8`
+excludes that property by presence:
+
+```javascript
+// Private contract/collector/run-prompt-custody-v3/handler-publication.mjs
+return value!==null&&typeof value==='object'&&!types.isProxy(value)
+ &&Object.getPrototypeOf(value)===Object.prototype&&!('toJSON' in value);
+```
+
+The corrected positive control uses ordinary lazy context getters;
+the negative control requires hook rejection without invoking it.
+No guard was loosened.
+
+A native `true` result also follows reported handler failure.
+Capture therefore proves neither successful execution nor permission.
+Unknown commands and context-factory failures do not reach this capture edge.
+The unchanged source-content and aggregate caps can withhold guarded continuation,
+even when native command handling completes.
+
+Integrated awaited-handler lifetimes,
+observation/exception sensitivity,
+and complete regressions remain pending.
+Earlier deferred/rejected calls and full governing-domain closure are not covered.
+
+### Upstream filing decision
+
+Nothing to report upstream:
+native command dispatch is preserved,
+and this is a private observation-coverage change.
+The installed plugin and production admission remain unchanged.
+
 ## Pi 1.1.0 final input transformations can disappear during template expansion
 
 ### Symptom and native boundary

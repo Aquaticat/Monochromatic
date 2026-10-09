@@ -296,6 +296,63 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original known-command input before interception
+
+Known extension commands can return before input-event observation.
+Required red `1e2add0` / `proc_d845` ran an inert command with no input event or initial transport;
+later canonical review lacked its original text.
+
+The existing manager owner now records the original full text and native parsed command name
+beside the actual freshly constructed command context,
+before attempting the handler call.
+`native-command-input` uses location `commandInput`.
+The context is only an opaque input-only identity witness:
+its getters,
+methods,
+and other fields are neither read nor serialized.
+The handler still receives native arguments,
+not a reconstructed command.
+There is no invented event,
+run,
+ordinal,
+authority,
+or successful-execution fact.
+
+`3356afe` / `proc_e670` passed the canonical source/publication and assessment-wire checks.
+Corrected owner controls `proc_24cc` preserve the existing `toJSON` exclusion,
+zero getter/proxy reads,
+distinct equal occurrences,
+first-failure latching,
+and shared bounds.
+The initial positive getter fixture in `proc_d918` incorrectly included `toJSON`;
+the guard was preserved and the fixture now tests that hook as rejected.
+
+Installed/private parity `proc_cfac` preserved native parsing,
+context construction,
+handler receiver,
+lazy getter behavior,
+unknown-command absence,
+and native handler/reporter/context-factory failures.
+Expected capture-profile failure does not replace native handler behavior.
+Unexpected observer failure retains the original thrown value,
+latches guarded source failure,
+and is not reported as a command-handler failure.
+
+`proc_797b` passed pre-run command-triggered delivery,
+overlapping equal commands,
+reentrancy,
+late non-transmitted input,
+oversized late capture,
+and reset before consumption.
+Integrated awaited-handler lifetime checks,
+sensitivity omissions,
+and complete post-change regressions remain in progress.
+Deferred or rejected calls before this observed handoff,
+direct-agent inputs,
+image governance,
+delegation,
+and domain closure remain unfinished.
+
 ## Final transformed input before expansion
 
 The final input handler can create text that no later input event sees.
