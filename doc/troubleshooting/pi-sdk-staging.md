@@ -98,7 +98,15 @@ Narrow `test:original` reproduction `proc_28b6` failed the same assertion.
 `cf238c5` explicitly verifies the raw wire/source publication before the generated-fragment slice;
 no source was dropped and no runtime guard changed.
 `proc_5f2e` and every original-judgment source profile in `proc_1be7` passed.
-Complete retry `proc_efa9` is running.
+Complete retry `proc_efa9` passed the source profiles but exposed another stale assumption:
+settled prompt/handler snapshots expected raw inputs to disappear with the run.
+`proc_18dd` also exposed stream assertions converted into native terminal error messages.
+The fixtures now require successful native termination and compare original run/raw source references separately.
+The existing task sequence is split at `test:runtime`,
+without dropping cases,
+so fixture retries do not repeat the source phase.
+Runtime stage `proc_1cea` passed in 39 seconds.
+Complete staged parent run `proc_075f` is in progress.
 
 Omitting the native return observation failed `proc_8292`;
 the observation is restored.
