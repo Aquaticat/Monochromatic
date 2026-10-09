@@ -296,6 +296,40 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original orphan-heading directive use
+
+Original top-level orphan headings now use the existing clause-operation consumer
+when their directive meaning is separately admitted and their original source has registered request scope.
+The existing parser visits root children only;
+a heading inside a blockquote,
+fence,
+or list remains inside that different original candidate.
+Both ATX and setext heading forms use the same original heading capability.
+
+Heading syntax supplies neither authority nor meaning.
+Priority still comes from the exact original registered source,
+and copied or unregistered sources receive no substitute priority.
+Unknown and abstained meanings remain unresolved;
+an admitted `none` adds no directive.
+Contextual-heading aggregates remain separate:
+`potential-instruction` is not a directive and cannot use this route.
+Structured JSON is not reinterpreted as Markdown.
+
+Required native red `proc_9b23` lacked the registered heading's prohibition.
+Initial native `proc_3043` and action/source `proc_c39d` passed.
+The expanded compiler matrix passed `proc_1da2`,
+including quoted,
+fenced,
+list,
+unregistered,
+abstained,
+and setext controls.
+No source scope,
+question budget,
+production admission,
+or request-domain completeness is enlarged.
+Guard sensitivity and full native regression for this extension are pending.
+
 ## Original complete-group scheduling and multi-program application
 
 The original dispatcher now adds its effective `groupExecutionMode`
