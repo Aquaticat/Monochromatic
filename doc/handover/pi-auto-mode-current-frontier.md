@@ -283,7 +283,16 @@ System-like labels and user transport roles supply no authority or permission.
 Independent boundary drafts,
 `sendCustomMessage` deliveries,
 and general persisted-session provenance remain outside this retained-handler profile.
-Full native/action regression and guard-omission checks after this extension are pending.
+All guards are restored.
+Expanded 26-mode handler verification passed `proc_2471`,
+including an actual later review using original run ancestry and isolation of new prompts from persisted equal text.
+Nested part-identity omission `proc_cecc` republished an equal replacement;
+context-edit omission `proc_dd37` credited equal replacement text;
+nested payload-custody omission `proc_6256` exposed mutation during awaited authentication;
+emitting-run membership omission `proc_6486` accounted a copied run.
+Each targeted control failed.
+Restored full native `proc_41bf` and action `proc_de99` passed.
+Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 

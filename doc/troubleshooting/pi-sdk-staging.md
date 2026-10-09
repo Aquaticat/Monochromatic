@@ -540,6 +540,16 @@ the explicit `proc_9061` control records the observation and asserts outside tha
 These failures are not upstream SDK defects,
 and no installed source was changed.
 
+The expanded 26-mode matrix passed `proc_2471`,
+including real later-review ancestry and new-prompt isolation from persisted equal text.
+Deliberate omissions failed for nested part identity (`proc_cecc`),
+context-edit exclusion (`proc_dd37`),
+nested payload custody (`proc_6256`),
+and original emitting-run membership (`proc_6486`).
+Every guard is restored.
+Full native `proc_41bf` and action `proc_de99` passed;
+eleven-document rendering passed `proc_c7e4` before this evidence update.
+
 ### Rejected approaches and filing disposition
 
 Byte equality and transport role cannot replace source custody.
