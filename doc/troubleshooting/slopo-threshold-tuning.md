@@ -394,9 +394,89 @@ each learned from a defect:
    `load_ignored` treats any line whose text before the first `#` is non-empty as a hash,
    so a pasted trailer becomes a junk entry that matches nothing and looks like corruption.
    The four dismissal issues were paste-tested this way on 2026-10-09:
-    appending all four proposed
-   blocks to a copy of `slopo.ignore.txt` and calling `load_ignored` on it loaded exactly the 147
+    appending the proposed
+   blocks to a copy of `slopo.ignore.txt` and calling `load_ignored` on it loaded exactly the
    proposed hashes and no other token.
+   That test caught a bare `Entry count:` trailer becoming a junk key.
+9. State why the pattern will not keep spreading.
+   An entry must name the owner of the pattern it dismisses,
+   or state that the pattern is closed,
+   or state the policy that accepts the copies.
+   "Too small to extract" is not a sufficient reason,
+   because size today does not bound size later:
+   the error-name constructor idiom in this repository was two sites when it was first written
+   and is 210 sites across 146 files today,
+   and every one of those copies was the nearest thing to a template when it was written.
+   The four dismissal categories in this file are all claims about a pair,
+   and none of them asks who owns the pattern,
+   which is how twelve clusters of one 210-site idiom were recorded as twelve unrelated instances
+   of trivial boilerplate.
+
+### Measuring a family instead of a pair
+
+Three instruments,
+ all reading data slopo already writes,
+ with no re-index and no embedding cost.
+They exist because a cluster is a pair and duplication is a family.
+
+1. Count a family with one query over the index.
+   `code_units` holds `body`,
+    `body_node_count` and `body_hash` for every indexed unit:
+
+   ```bash
+   # How many units instantiate an idiom, in how many files, and how large are they?
+   sqlite3 .slopo.local.dir/index.db "select count(*), count(distinct file_id),
+     min(body_node_count) from code_units where body like '%this.name = %';"
+
+   # Which bodies are byte-identical, and how many copies of each?
+   sqlite3 .slopo.local.dir/index.db "select body_hash, count(*) n from code_units
+     group by body_hash having n > 1 order by n desc limit 20;"
+   ```
+
+   On 2026-10-09 the first query returned 212 units across 147 files with a minimum of exactly 13
+   nodes,
+    and the index held 18440 units with 690 duplicated body hashes.
+2. Size what a cluster's units share.
+   Tokenise each body from the report,
+   take the longest common token run between pairs with `difflib.SequenceMatcher`,
+   and classify the tokens that do not match as names,
+   literals,
+   punctuation,
+   `async` and `await` markers,
+   or polarity operators.
+   Variance that is only names and literals is a parameterisation candidate;
+   variance that is only async markers is a twin;
+   variance in operators and intrinsics is a real difference.
+   Applied to the 147 proposed entries this found 9 clusters with byte-identical bodies and 34
+   sharing 50 or more tokens,
+   and it is what showed that eight `forbidden-regex` batch wrappers share 67 of 68 tokens.
+3. Count what the indexing floor hides,
+    without changing it.
+   `body_node_count_threshold: 13` is hand-tuned and stays.
+   To measure below it,
+    copy the database and index into a throwaway one:
+
+   ```bash
+   # A second config with its own db_file, report_dir and an empty ignore_file.
+   slopo --config <throwaway>/slopo.conf.yaml index
+   ```
+
+   Indexing parses only and makes no embedding call,
+    so it is free;
+    `slopo embed` is the paid step
+   and is not needed to count units or group body hashes.
+   At threshold 4 the same tree yields 23671 units and 1274 duplicated body hashes against 18440
+   and 690 at 13.
+
+One trap in instrument 2.
+ Do not size families by normalising identifiers and literals into a
+skeleton and grouping on it.
+That collapses every one-expression template return in the repository into a single group,
+ which on
+2026-10-09 produced a spurious 127-unit family across 40 packages out of four unrelated clusters.
+Group on a targeted pattern per idiom instead,
+ which is how every family count quoted in
+`doc/planning/slopo-dismissed-cluster-actionability.md` was produced.
 
 ### Raise thresholds only after labeled calibration
 
