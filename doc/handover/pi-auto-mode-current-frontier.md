@@ -296,6 +296,62 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original public API input before native branching
+
+Public `AgentSession.prompt`,
+`steer`,
+and `followUp` can reject or defer before the already-observed input constructions.
+Required red `c05cf9d` / `proc_30b3` rejected a known command through the real queue API,
+with no command handler,
+input event,
+or transport,
+then found its original text absent from later canonical review.
+
+The maintained generator now observes each actual method-entry `arguments` object synchronously.
+The existing manager owner selects only its own text data descriptor at index zero.
+`native-call-input` uses `callInput` with fixed method metadata.
+No option/image fields are read or serialized.
+No call inventory,
+synthetic event,
+run,
+entry ordinal,
+authority,
+or human origin is invented.
+The opaque frame remains mutable and input-only.
+
+Engine/owner probe `proc_dd75` was not SDK coverage.
+Actual native `proc_2d41` subsequently verified strict/unmapped entry frames for all supported methods,
+original publication identity,
+native argument behavior after frame-only mutation,
+and installed/private option-getter,
+rejection,
+and oversize parity.
+These are `AgentSession` text APIs;
+direct `Agent` message APIs remain separate.
+
+Canonical `3dbf0f6` / `proc_0ff4` passed rejected steering,
+rejected follow-up,
+and original prompt-option getter failure.
+Owner/queue controls `proc_48a4` passed shared bounds and explicit source ordering.
+`proc_118a` had exposed an obsolete fixture index:
+the new call input precedes the native input event.
+The fixture now verifies both rather than dropping either source.
+
+Successful calls also add original invocation occurrences.
+Existing constructor/event occurrences are not merged by equal bytes.
+The same source-count,
+content,
+serialized-record,
+and snapshot caps apply,
+so supported occupancy can be exhausted earlier.
+No bound or judgment deadline was enlarged.
+
+Real settled deferral/lifetime checks are running.
+Integrated source-count reconciliation,
+sensitivity,
+and complete post-change regressions remain unfinished.
+No production admission or governing-domain closure is claimed.
+
 ## Original known-command input before interception
 
 Known extension commands can return before input-event observation.

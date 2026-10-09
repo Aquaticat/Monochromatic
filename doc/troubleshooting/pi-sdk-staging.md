@@ -1,5 +1,109 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 public input calls can reject before input construction
+
+### Symptom and native boundary
+
+Known commands rejected by queue APIs do not reach either command-context construction or input events.
+A throwing prompt-option getter can likewise stop before input handling.
+Required red `proc_30b3` preserved the native queue rejection,
+then failed the original-source assertion during later canonical review.
+
+Installed `pi-coding-agent@1.1.0/dist/core/agent-session.js:1517`
+starts prompt deferral before input construction:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+async prompt(text, options) {
+    if (this._isEmittingAgentSettled) {
+        this._deferredSettledActions.push(async () => await this.prompt(text, options));
+        return;
+    }
+```
+
+At lines 1716 and 1727,
+the public queue methods receive text first and evaluate option source before queue handling:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+async steer(text, images, options) {
+    return this._queueUserInput(text, images, "steer", options?.source ?? "interactive");
+}
+async followUp(text, images, options) {
+    return this._queueUserInput(text, images, "followUp", options?.source ?? "interactive");
+}
+```
+
+These are not the direct `Agent.steer(message)` and `Agent.followUp(message)` producers.
+Options contain metadata,
+not established authority.
+
+### Private observation and verification
+
+The maintained generator observes the actual engine-created entry `arguments` object.
+The incumbent manager owner reads only its own index-zero data descriptor,
+validates an actual arguments object and supported method,
+and retains an input-only publication.
+It does not enumerate arguments or read options/images.
+Capture is synchronous and precedes native branching.
+
+Engine-only `proc_dd75` first checked compatibility with the existing alias owner.
+It did not establish native SDK coverage.
+Actual native `proc_2d41` then verified strict callee descriptors,
+original frame identity,
+unchanged native formal arguments after frame-only mutation,
+and installed/private behavior for each public method.
+The option-getter counters have native positive reads and zero added observer reads.
+
+Run `test:call-frame-profile`,
+`test:call-input-source`,
+`test:call-input-native`,
+`test:call-input-owner`,
+and `test:call-input-deferred` separately
+through `mise --no-env --no-hooks run` in private `contract/integration/native-batch`.
+
+Canonical `proc_0ff4` passed both queue-method rejections and original prompt-option getter failure.
+Owner and queue `proc_48a4` passed source-profile,
+shared-bound,
+collision,
+and failure controls.
+Expected source-profile failures latch without replacing native behavior;
+unexpected failures latch and rethrow their original value.
+
+### Rejected readings and remaining verification
+
+The synthetic class probe alone was insufficient evidence for native frames.
+Direct `Agent` message-shaped APIs are not these `AgentSession` text APIs.
+Input-only aliases retain historical membership,
+not current payload signatures.
+Neither original invocation nor deferred replay proves a human author.
+
+`proc_118a` exposed stale queue-fixture ordering,
+not a runtime source error:
+the first source was now `native-call-input`,
+rather than `native-input-event`.
+Explicit assertions preserve both sources and the original native queue result.
+
+The public-entry observation adds genuine call occurrences even on successful paths.
+Equal text is not deduplication authority.
+All existing caps remain unchanged;
+earlier occupancy exhaustion is possible.
+Deferred replay is a separate physical invocation,
+not a separately authenticated human instruction.
+
+Real deferred/lifetime checks,
+integrated fixture reconciliation,
+sensitivity,
+and full regressions remain pending.
+Direct-agent producers and complete governing-domain closure remain unfinished.
+
+### Upstream filing decision
+
+Nothing to report upstream:
+native early-return and rejection behavior is preserved.
+This is a private observer-coverage change,
+with no installed activation or production policy admission.
+
 ## Pi 1.1.0 known commands bypass native input events
 
 ### Symptom and native source boundary
