@@ -343,7 +343,14 @@ not 6.
 The fixture now checks exact distinct original source references rather than enlarging bounds;
 targeted owner regressions passed `proc_c5e4`.
 Full action `proc_4576` and source-policy `proc_9fad` passed.
-Native branch and manager-replacement controls and the restored full native rerun remain pending.
+The 33-mode expanded-prompt/retained-input matrix passed `proc_b46c`.
+Actual native branch departure/return and manager reset/fork controls observed their input boundaries,
+but the original bound policy runtime correctly refused new transport with `Root lease has been retired`.
+Branch return preserves observed original input links without reviving the retired root.
+The reset and uninstrumented fork-copy paths do not borrow the earlier run's origins.
+These are manager/projection controls,
+not qualification of the full host resume or fork workflow.
+The restored full native rerun is `proc_3da2`.
 
 This owner-local route does not establish disk-loaded,
 queued,
