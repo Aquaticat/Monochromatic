@@ -136,10 +136,10 @@ An empty custom value does not remove the original section.
 The private adapter consumes existing `mappedPromptInputs` only through their original run,
 source membership,
 and full sections publication.
-`contract/collector/run-prompt-custody-v3/owner.mjs:201` binds the published options to the captured render:
+`contract/collector/run-prompt-custody-v3/owner.mjs:203` binds the published options to the captured render:
 
 ```javascript
-// Private contract/collector/run-prompt-custody-v3/owner.mjs:201
+// Private contract/collector/run-prompt-custody-v3/owner.mjs:203
 if(scope.rendered&&(scope.rendered.options!==(scope.delivery??scope.working)||!isDeepStrictEqual(scope.rendered.input,options)))throw new SourceCollectionError('Native run publication differs from its original prompt construction inputs');
 ```
 
