@@ -296,6 +296,45 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loaded assistant and tool text
+
+The incumbent text-content profile now includes stored `assistant`,
+`toolResult`,
+and message-form `custom`/`hookMessage` inputs.
+These use the same original load occurrence,
+source limits,
+and input-only publication mechanism.
+Saved role labels,
+tool names,
+call IDs,
+and reported error flags establish neither authority nor execution facts.
+
+Opaque details,
+usage,
+and nested-call records are not copied into semantic source material.
+Legacy `hookMessage` capture occurs before native migration to `custom`;
+the saved role remains source metadata while actual native conversion preserves input-only identity.
+Mixed assistant thinking/tool-call content and media remain outside this text-only profile.
+Unsupported content fails closed at guarded source use,
+not during native file parsing.
+
+Required red `b56aa77` / `proc_1259`
+became native consumer green `4086f0a` / `proc_b37f`.
+The first broader matrix,
+`proc_d69d`,
+exposed a fixture assumption that the requested source was always first.
+Capturing the seed assistant changed that order for branch summaries.
+The corrected fixture selects the original role/content and keeps exact source-count assertions.
+Broader controls and complete regressions are still pending.
+
+Bash execution inputs,
+mixed or unsupported representations,
+queued inputs,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
 ## Original loaded system prose
 
 The existing load owner now captures original system-message `content` and optional `sections`.
