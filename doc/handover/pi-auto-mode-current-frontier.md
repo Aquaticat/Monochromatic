@@ -328,9 +328,14 @@ section,
 and companion cases but exposed an incorrect fixture expectation for replayed null sections.
 The corrected fixture checks each original stored field separately.
 Owner and native companion controls passed `proc_950c`.
-Corrected matrix,
-retention sensitivity,
-and complete regression are tracked in `current-progress.json`.
+Corrected 22-mode native matrix and manager regression passed `proc_69e4`.
+Native reset,
+selected-path root retirement,
+null sections,
+and getter non-invocation controls passed `proc_db9e`.
+Retention omission `f29b4be` / `proc_aef6` lost the hidden older companion (`4 !== 5` sources).
+The edge is restored.
+Complete regression remains pending.
 
 Other loaded roles,
 current-run generated inputs,
