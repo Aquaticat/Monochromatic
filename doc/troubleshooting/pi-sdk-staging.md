@@ -94,9 +94,13 @@ Unknown commands and context-factory failures do not reach this capture edge.
 The unchanged source-content and aggregate caps can withhold guarded continuation,
 even when native command handling completes.
 
-Integrated awaited-handler lifetimes,
-observation/exception sensitivity,
-and complete regressions remain pending.
+Integrated `proc_375b` passed 71 constructed-input outputs with empty child stderr,
+including awaited-handler reset/disposal.
+Rethrow omission `b30b5b0` / `proc_1854` failed with `Missing expected rejection.`
+Observation omission `9bebebc` / `proc_e106` retained zero original command sources instead of one.
+Both guards are restored.
+Complete native regression is running in `proc_1736`;
+complete action/source regressions remain pending.
 Earlier deferred/rejected calls and full governing-domain closure are not covered.
 
 ### Upstream filing decision

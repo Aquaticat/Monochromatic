@@ -344,9 +344,14 @@ reentrancy,
 late non-transmitted input,
 oversized late capture,
 and reset before consumption.
-Integrated awaited-handler lifetime checks,
-sensitivity omissions,
-and complete post-change regressions remain in progress.
+Integrated `proc_375b` passed 71 constructed-input outputs with empty child stderr,
+including reset/disposal during awaited command handlers.
+Rethrow omission `b30b5b0` / `proc_1854` failed with `Missing expected rejection.`
+Observation omission `9bebebc` / `proc_e106` lost the original command source after real handler entry.
+Both guards are restored;
+no deliberate omission remains.
+Complete native regression is running in `proc_1736`;
+complete action/source regressions are still pending.
 Deferred or rejected calls before this observed handoff,
 direct-agent inputs,
 image governance,
