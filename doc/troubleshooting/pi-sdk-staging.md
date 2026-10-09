@@ -1,5 +1,143 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 custom message construction can precede any prompt run
+
+### Symptom and cause
+
+Private control `proc_2d96` found no original input source for a current custom message.
+After construction capture landed,
+`proc_fb7c` exposed a lost input-only alias at custom-entry construction.
+`proc_07f8` then found that first-turn `triggerTurn` has no earlier native prompt-run carrier.
+
+Installed `pi-coding-agent@1.1.0/dist/core/agent-session.js:1782`
+constructs the message before choosing its dispatch route:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+const appMessage = {
+    role: "custom",
+    customType: message.customType,
+    content: message.content ?? [],
+    display: message.display,
+    details: message.details,
+    timestamp: Date.now(),
+};
+```
+
+At `agent-session.js:1803`,
+an idle triggering call goes directly to the agent prompt,
+or defers that same call while settled callbacks are being emitted:
+
+```javascript
+// Installed pi-coding-agent dist/core/agent-session.js
+else if (options?.triggerTurn) {
+    if (this._isEmittingAgentSettled) {
+        this._deferredSettledActions.push(async () => await this._runAgentPrompt(appMessage));
+        return;
+    }
+    await this._runAgentPrompt(appMessage);
+}
+```
+
+That route does not construct a user-prompt emitter occurrence.
+The private source collector must not invent one merely to retain the actual custom input.
+The settled-callback variant is not separately exercised by this increment.
+
+### Private correction
+
+The existing manager source owner captures normalized custom content and selected metadata,
+excluding opaque details,
+at the actual constructor.
+The existing input-only alias owner now follows the custom-entry edge.
+Private `contract/collector/run-prompt-custody-v3/handler-publication.mjs:126` uses:
+
+```javascript
+// Private contract/collector/run-prompt-custody-v3/handler-publication.mjs
+const known=aliases.get(before);
+if(known?.owner===owner&&known.kind==='input-only'){retainInput(after);return;}
+```
+
+The direct append helper passes its original `appMessage` to the same native entry observer.
+This neither creates text-part eligibility nor authenticates a serialized contribution.
+
+Private `contract/integration/policy-source/system-slot.mjs:152`
+reads the original manager reference view only when no run is present:
+
+```javascript
+// Private contract/integration/policy-source/system-slot.mjs
+function constructedInputs(run){
+    return run===undefined&&session?readSessionConstructedInputs?.(session):undefined;
+}
+```
+
+The fixed session reader checks disposal and deferred capture failure.
+The incumbent collector keeps the returned original references in `nativeConstructedInputs`,
+checks their identity during capture and finalization,
+and retains the original one-MiB base-linked snapshot limit.
+The 64-source/four-MiB owner limits are separate.
+An absent reader never establishes governing-domain completeness.
+
+### Verification and rejected remedies
+
+Run the private `contract/integration/native-batch` tasks separately:
+`test:custom-message-input`,
+`test:custom-message-before-run`,
+`test:custom-message-bounds`,
+and `test:queued-input-controls`.
+They use native APIs with authored local responses,
+not provider requests.
+
+`proc_f9b4` passed immediate,
+next-turn,
+hidden,
+initial-trigger,
+and streaming construction cases.
+`proc_d5cb` rejected late pre-run additions,
+capture failure,
+and root reset.
+`proc_fb31` matched installed/private normalization,
+including null and missing content.
+`proc_bbe9` passed the integrated matrix with empty child stderr.
+It verifies actual continuation transmission and original entry aliases for streaming custom messages.
+
+The pre-run budget control accepts eight pending 63000-byte inputs.
+It rejects 18 before any original transport.
+The first omission probe `proc_ef01` survived because a later check emitted the same error after one transport.
+That is not sensitivity evidence.
+The corrected assertion failed `proc_0fdc` with `1 !== 0`;
+the guard is restored.
+
+Entry-edge omission `proc_2dde` lost the saved custom-entry alias.
+Pre-run freshness omission `proc_c28d` wrongly let the earlier review finish.
+Both are restored.
+
+A copied-resource-owner remedy failed `proc_15b4` with
+`Native base composition lacks its exact owned resource binding`.
+Copying that module separated its binding map from the incumbent owner.
+The extra route and its unused generated artifact were removed.
+The implementation now extends the incumbent policy-input collector.
+
+The disposal fixture initially expected a disposed-reader error to win.
+`proc_685d` showed `JudgmentCancelledError` with the original `AbortError` cause instead.
+The corrected control preserves cancellation precedence and separately checks the disposed reader.
+No native error was replaced to satisfy the fixture.
+
+### Upstream filing decision and remaining scope
+
+No upstream report or patch is proposed:
+these were private adapter gaps.
+Direct agent producers,
+pre-handler content,
+mixed representations,
+applicable governing scope,
+and actual source-domain closure remain unfinished.
+This source subset has no authority,
+delegation,
+semantic qualification,
+or production policy grant.
+Complete post-change regression is running,
+and the installed plugin is unchanged.
+
 ## Pi 1.1.0 queued text has no session entry at construction
 
 ### Symptom and native source boundary

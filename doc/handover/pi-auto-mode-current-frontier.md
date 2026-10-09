@@ -366,7 +366,12 @@ The disposal fixture initially expected the wrong error:
 `proc_685d` showed original `JudgmentCancelledError` with its `AbortError` cause.
 The corrected fixture preserves that cause identity and separately rejects reads after disposal.
 
-Sensitivity and complete regression are still pending for this increment.
+Entry omission `proc_2dde` and pre-run freshness omission `proc_c28d` failed as required.
+The byte-bound omission first survived `proc_ef01`:
+a later check emitted the same error after one original transport.
+The strengthened before-transport assertion failed `proc_0fdc` with `1 !== 0`.
+All guards are restored;
+complete post-change regression is running.
 Direct agent producers,
 pre-handler inputs,
 mixed-content origin,
