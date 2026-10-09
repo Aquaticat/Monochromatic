@@ -326,8 +326,17 @@ disposal still rejects guarded source access.
 All source bounds remain unchanged.
 These checks do not establish image governance or payload eligibility.
 
-The expanded delivery matrix is running.
-Observation-omission sensitivity and complete post-change regressions remain pending.
+Integrated `proc_1851` passed 60 constructed-input outputs with empty child stderr,
+including queued/cleared,
+chained,
+equal-byte,
+oversized,
+and rejected-streaming transformed inputs.
+Omitting only this native observation failed `c0e74fc` / `proc_166f` at the original-source assertion.
+The observation is restored in `6e373a9`;
+no deliberate omission remains.
+Standalone source profiles and the complete native parent suite are running in `proc_3e8e`.
+Complete post-change action/source regressions remain pending.
 The earlier unintercepted-input closeout remains a separate verified checkpoint,
 not verification of this new construction edge.
 

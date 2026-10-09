@@ -73,9 +73,16 @@ The handler's result object is not the native aggregate return object.
 Byte equality does not merge those occurrences,
 and source/streaming labels do not authenticate authorship.
 
-Integrated delivery,
-observation-omission sensitivity,
-and complete post-change regression are pending.
+Integrated `proc_1851` passed 60 constructed-input outputs with empty child stderr.
+The matrix includes queued/cleared,
+chained,
+equal-byte,
+oversized-before-expansion,
+and rejected-streaming transformations.
+Observation-only omission `c0e74fc` / `proc_166f` failed at the committed original-source assertion.
+`6e373a9` restores the observation.
+Complete native regression and standalone source-profile preparation are running in `proc_3e8e`;
+complete action/source regressions remain pending.
 No installed source or production admission was changed.
 
 ### Upstream filing decision
