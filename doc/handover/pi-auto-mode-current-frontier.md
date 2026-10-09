@@ -330,7 +330,10 @@ native manager checks including legacy custom migration,
 and owner controls passed `816732c` / `proc_0bf6`.
 Text-profile omission `e938c5d` / `proc_2f73` produced native `stop` instead of the required source-use `error`.
 Validation is restored.
-Complete regression remains pending.
+Complete native `proc_1011`,
+action `proc_a1d6`,
+source-policy `proc_c54d`,
+and 14-document rendering `proc_5570` passed.
 
 Bash execution inputs,
 mixed or unsupported representations,
