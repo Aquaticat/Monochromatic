@@ -23,14 +23,81 @@ The diagnosis also retracts a mechanism claim in
 issue 6,
 which is what made this failure look impossible.
 
+## Decision on 2026-10-09
+
+The maintainer chose option 1 followed by option 2,
+with `mirror.amazon.aquati.cat` as the option 2 hostname.
+
+Option 1 first stops the expiry clock with an AWS-only change and no DNS
+dependency.
+Option 2 then restores a hostname inside `aquati.cat`.
+Each needs one `UpdateDistribution` call.
+If Njalla access is immediate,
+option 2 alone also beats the deadline,
+since ACM issues minutes after validation;
+option 1 stays the safer first step because it needs no DNS.
+
+The chosen hostname has two labels below the apex,
+so the CAA record belongs at `amazon.aquati.cat`,
+one label above the leaf:
+
+```text
+amazon.aquati.cat.         CAA   0 issue "amazon.com"
+amazon.aquati.cat.         CAA   0 issue "amazontrust.com"
+amazon.aquati.cat.         CAA   0 issue "awstrust.com"
+amazon.aquati.cat.         CAA   0 issue "amazonaws.com"
+mirror.amazon.aquati.cat.  CNAME <distribution-domain>.
+```
+
+The climb for `mirror.amazon.aquati.cat` terminates at `amazon.aquati.cat`,
+so the apex keeps `letsencrypt.org` and `certainly.com` untouched.
+
+One consequence to accept deliberately:
+every name under `amazon.aquati.cat` inherits that set,
+so nothing in the subtree can obtain a Let's Encrypt certificate unless
+`0 issue "letsencrypt.org"` is added there too.
+The subtree is a natural home for Amazon-issued names only.
+
+Asked and left unanswered,
+so parked rather than assumed:
+
+- relocating the Fastly mirror under the same intermediate label,
+  which would let the apex return to `letsencrypt.org` only;
+- the stale `mise.toml` comment claiming dprint formats markdown,
+   when the
+  markdown plugin is commented out in `package/config/dprint/index.json`;
+- recording why `certainly.com` sits at the apex.
+
+Blockers measured on 2026-10-09:
+
+- `aws sts get-caller-identity` still fails with the expired-session error
+  quoted in "What to inspect and how to respond".
+  Only the maintainer can run the interactive `aws login`.
+- No Njalla credential exists in this environment:
+  no matching variable in the process environment and no match under
+  `~/.config`.
+  The records above need the maintainer's dashboard or an API token.
+
+Reusable prior art for the AWS mutations lives in the private task
+directory recorded in
+[`aws-cloudfront-mirror-correction.md`](aws-cloudfront-mirror-correction.md):
+`common.ts` wraps the CLI with bounded waits,
+saves immutable evidence per call,
+and `apply-live.ts` shows the read-config,
+change-one-field,
+assert-only-that-field-changed pattern this work must repeat.
+
 ## What to inspect and how to respond
 
-Read "Options and ranking" and pick one entry.
-Then follow the matching entry in "Remediation steps".
+Follow "Remediation steps" for option 1,
+then for option 2,
+substituting `mirror.amazon.aquati.cat` for the placeholder hostname and
+`amazon.aquati.cat` for the placeholder intermediate label.
 Every step is a DNS edit at Njalla or an AWS CLI call;
 none needs code changes in this repository.
 
-Two of the options need an authenticated AWS session.
+Five of the six options need an authenticated AWS session;
+only option 4 is a pure DNS edit.
 At the time of writing,
 `aws sts get-caller-identity` fails with:
 
@@ -38,9 +105,8 @@ At the time of writing,
 aws: [ERROR]: Your session has expired. Please reauthenticate using 'aws login'.
 ```
 
-Re-authenticate before starting option 3,
-option 4,
-or any verification that reads ACM state.
+Re-authenticate before any step that reads or mutates ACM or CloudFront
+state.
 
 ## Repository changes made while diagnosing
 
