@@ -105,8 +105,10 @@ Expanded visibility matrix `proc_4165` passed 24 modes;
 original source/render controls passed `proc_814f`.
 Displacement omission `c79930b` failed `proc_1ffa` by associating overridden documentation guidance.
 Render-binding omission `1dae346` failed `proc_d254` by accounting for a source from a foreign render.
-Both guards are restored;
-full native and action regressions for these direct generated fragments are running.
+Both guards are restored.
+Full native `proc_fd1a`,
+action `proc_5a42`,
+and ten-document render `proc_d198` passed for these direct generated fragments.
 Default-rule deduplication and other generated slots remain unconsumed until their exact native emission is established.
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
