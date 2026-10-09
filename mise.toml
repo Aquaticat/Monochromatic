@@ -210,13 +210,7 @@ java = "temurin-21"
 "cargo:cargo-ndk" = "latest"
 
 # Duplicate code detection github.com/rafal-qa/slopo
-# Pinned rather than `latest`: a cluster hash in slopo.ignore.txt is sha256 over the sorted
-# (file_path, body_hash) pairs of a cluster's units, and both the report's cluster ordinals and
-# slopo's own source paths move between releases (0.4.0's src/slopo/analysis/* is 0.8.0's
-# slopo/result/*). An unpinned upgrade can invalidate every suppression silently, and slopo has no
-# dead-key detection. Bump deliberately, then re-verify
-# doc/troubleshooting/slopo-threshold-tuning.md against the new version.
-"pipx:slopo" = "0.8.0"
+"pipx:slopo" = "latest"
 
 [settings]
 # Generate mise.lock
