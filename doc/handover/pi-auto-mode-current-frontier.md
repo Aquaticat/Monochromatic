@@ -333,8 +333,9 @@ source-authority omission `proc_9adf` invented priority for an unregistered head
 admission omission `proc_18d4` treated an abstained heading as interpreted.
 All guards are restored.
 Full native `proc_b8db` and action/source `proc_39cd` passed.
-The expanded document check now includes the effect contract;
-its final formatting/rendering verification is pending.
+The expanded 12-document check,
+including the effect contract,
+passed `proc_40a3` with zero diagnostics.
 
 ## Original complete-group scheduling and multi-program application
 
