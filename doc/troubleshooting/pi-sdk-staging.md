@@ -954,7 +954,10 @@ owner shape/getter/shared-cap checks,
 and the 36-mode loaded-input matrix.
 Construction omission `ddc6f13` / `proc_e0e8` lost the edited message's original publication.
 The observer is restored.
-Complete regression remains pending.
+Complete native `proc_36c9`,
+action `proc_fafc`,
+source-policy `proc_80b6`,
+and 14-document rendering `proc_18b1` passed.
 
 Run `mise --no-env --no-hooks run test:loaded-edit-manager`
 inside private `contract/integration/native-batch`.

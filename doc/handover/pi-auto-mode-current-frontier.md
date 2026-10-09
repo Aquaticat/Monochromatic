@@ -328,7 +328,10 @@ Corrected 36-mode matrix,
 and owner controls passed `proc_da68`.
 Construction omission `ddc6f13` / `proc_e0e8` lost the edited message's original publication.
 The observer is restored.
-Complete regression remains pending.
+Complete native `proc_36c9`,
+action `proc_fafc`,
+source-policy `proc_80b6`,
+and 14-document rendering `proc_18b1` passed.
 Mixed or unsupported representations,
 current-run generated inputs,
 queued transformations,
