@@ -47,10 +47,22 @@ Association now excludes proxy envelopes and arrays through Node's native proxy 
 The fixed profile also requires the native normalized message-only context.
 Accessor and proxy exclusions do not replace original identity checks.
 
-Full native `proc_d303` and action `proc_0247` passed before replacement support.
-Full regression after replacement support is the remaining verification step.
+Full native `proc_efb9`,
+action `proc_4e12`,
+and ten-document render `proc_bc5d` passed after replacement support.
+The already-retained forced prompt now has a separate original publication capability
+created by the existing run owner.
+The actual native forced-prompt projection publishes its new message through that owner.
+The serializer associates only that original message with the original forced input;
+equal text in a copied message or displaced base input supplies no link or authority.
+The initial forced-source control failed `proc_84e0` and passed `proc_6a2e`.
+Copied,
+equal-text,
+empty,
+and permanently retired forced projections are under expanded verification.
+
 The unassociated ordinary request domain,
-forced/custom prompt profiles,
+custom section profiles,
 and other unconsumed producer relationships remain explicit.
 
 ## Express same-source quoted-unit incorporation
