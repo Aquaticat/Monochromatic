@@ -296,6 +296,43 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loaded bash record inputs
+
+The existing load owner captures native `bashExecution` command and output text.
+Reported exit,
+cancellation,
+truncation,
+path,
+and context-exclusion fields remain metadata,
+not historical execution facts.
+These fixtures store authored records;
+they never execute the recorded shell commands.
+
+Actual native formatting propagates input-only identity to the resulting user message.
+Excluded and compacted records remain original inputs without inventing visible contributions.
+The source does not acquire authority,
+permission,
+text-part eligibility,
+or payload eligibility.
+The existing source and byte limits still apply.
+
+Required red `a7a1966` / `proc_f853`
+became canonical native green `646453a` / `proc_5aac`.
+Formatting variants,
+owner shape/getter controls,
+the 31-mode native input matrix,
+and manager regression passed `proc_589c`.
+Conversion sensitivity and complete regression remain pending.
+
+Loaded context-edit replacement inputs,
+mixed or unsupported representations,
+current-run generated inputs,
+queued transformations,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
 ## Original loaded assistant and tool text
 
 The incumbent text-content profile now includes stored `assistant`,
