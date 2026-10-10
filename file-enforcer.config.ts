@@ -1624,14 +1624,14 @@ const CARGO_PROFILE_FUZZ: CargoProfileSpec = {
  
  @example
  ```ts
- console.log(CARGO_PROFILE_BY_DIR['package/linter/rust']);
+ console.log(CARGO_PROFILE_BY_DIR['package/linter/monochromatic-lint']);
  ```
  */
 const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
   'package/cli/forbidden-strings': CARGO_PROFILE_SCANNER,
   'package/rust-module/forbidden-regex': CARGO_PROFILE_SCANNER,
   'package/cli/nested-wayland-session': CARGO_PROFILE_OVERFLOW,
-  'package/linter/rust': CARGO_PROFILE_LINTER,
+  'package/linter/monochromatic-lint': CARGO_PROFILE_LINTER,
   'package/rust-module/forbidden-regex.bench': CARGO_PROFILE_BENCH,
   'package/music-player/truepeak-core.bench': CARGO_PROFILE_BENCH,
   'package/music-player/desktop-app': CARGO_PROFILE_MUSIC,
@@ -1675,7 +1675,7 @@ const CARGO_STATIC_ENFORCEMENTS: readonly CargoEnforcement[] = [
  
  @example
  ```ts
- cargoPackageDir({ manifestPath: 'package/linter/rust/Cargo.toml' }); // 'package/linter/rust'
+ cargoPackageDir({ manifestPath: 'package/linter/monochromatic-lint/Cargo.toml' }); // 'package/linter/monochromatic-lint'
  ```
  */
 function cargoPackageDir({ manifestPath, }: { readonly manifestPath: string; },): string {
@@ -1694,7 +1694,7 @@ function cargoPackageDir({ manifestPath, }: { readonly manifestPath: string; },)
  
  @example
  ```ts
- cargoHomepage({ manifestPath: 'package/linter/rust/Cargo.toml' });
+ cargoHomepage({ manifestPath: 'package/linter/monochromatic-lint/Cargo.toml' });
  ```
  */
 function cargoHomepage({ manifestPath, }: { readonly manifestPath: string; },): string {
@@ -1710,7 +1710,7 @@ function cargoHomepage({ manifestPath, }: { readonly manifestPath: string; },): 
  
  @example
  ```ts
- cargoProfileEnforcements({ manifestPath: 'package/linter/rust/Cargo.toml' });
+ cargoProfileEnforcements({ manifestPath: 'package/linter/monochromatic-lint/Cargo.toml' });
  ```
  */
 function cargoProfileEnforcements(
@@ -1745,7 +1745,7 @@ function cargoProfileEnforcements(
  
  @example
  ```ts
- buildCargoManifestPlan({ manifestPath: 'package/linter/rust/Cargo.toml' });
+ buildCargoManifestPlan({ manifestPath: 'package/linter/monochromatic-lint/Cargo.toml' });
  ```
  */
 function buildCargoManifestPlan(
@@ -2324,7 +2324,10 @@ ${await cat(['./AGENTS.md',],)}`,
     'errors.ts',
     'full-content-patch.ts',
     'index.ts',
+    'lint-configuration.ts',
+    'lint-report.ts',
     'rewrite-candidates.ts',
+    'run-linter.ts',
   ].map(async function mirrorMarkdownLintPolicy(fileName,) {
     return overwrite({
       dest: `./package/git-policy/cli/src/optional/markdown-lint/${fileName}`,

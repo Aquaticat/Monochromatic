@@ -1,37 +1,61 @@
-//! Stage two of the builtin-baseline generation chain: rewrites the stage-one
+//! Stage two of the builtin-baseline generation chain:
+//!  rewrites the stage-one
 //! intermediate into the forbidden-regex dialect and writes the embedded baseline.
 //!
-//! What: reads the tail-format intermediate the TS porter (stage one,
+//! What:
+//!  reads the tail-format intermediate the TS porter (stage one,
 //! `package/cli/forbidden-strings/src/mise.port-betterleaks.ts`) wrote to
-//! `<repo>/.cache/forbidden-strings-builtin-stage1.txt`, rewrites every
+//! `<repo>/.cache/forbidden-strings-builtin-stage1.txt`,
+//!  rewrites every
 //! `/PATTERN/FLAGS` line into the restricted dialect while passing every other line
-//! (section headers, comments, blanks) through byte-identically on its original
-//! 1-based line, verifies each ported rule through strict
-//! `forbidden_regex::RegexSet::new`, proves the whole output loads through the
-//! scanner's own tail-format loader, and writes
-//! `<repo>/package/cli/forbidden-strings/data/builtin-rules.txt`. Why: the committed
-//! baseline stays reproducible from the upstream TOML; run both stages via
-//! `mise run //package/cli/forbidden-strings:generate:rules`. This bin was first
-//! written for the one-shot #376 port, removed after that cutover, and recovered as
+//! (section headers,
+//!  comments,
+//!  blanks) through byte-identically on its original
+//! 1-based line,
+//!  verifies each ported rule through strict
+//! `forbidden_regex::RegexSet::new`,
+//!  proves the whole output loads through the
+//! scanner's own tail-format loader,
+//!  and writes
+//! `<repo>/package/cli/forbidden-strings/data/builtin-rules.txt`.
+//!  Why:
+//!  the committed
+//! baseline stays reproducible from the upstream TOML;
+//!  run both stages via
+//! `mise run //package/cli/forbidden-strings:generate:rules`.
+//!  This bin was first
+//! written for the one-shot #376 port,
+//!  removed after that cutover,
+//!  and recovered as
 //! the standing stage two when the baseline adopted the tail rule-file format.
 //!
 //! It reuses the sidecar's `normalize` (dialect normalizer) and `port` (its `class_end`
-//! span helper) modules; the porting passes themselves live in the sibling
-//! `src/dialectport/` modules, split by role to honor the max-lines budget.
+//! span helper) modules;
+//!  the porting passes themselves live in the sibling
+//! `src/dialectport/` modules,
+//!  split by role to honor the max-lines budget.
 
-/// Registers the shared dialect normalizer module (POSIX classes, case flags, capturing
-/// groups, quantifier bounding).
+/// Registers the shared dialect normalizer module (POSIX classes,
+///  case flags,
+///  capturing
+/// groups,
+///  quantifier bounding).
 #[path = "../normalize.rs"]
 mod normalize;
 
-/// Registers the shared porter module; only its `class_end` span helper is reused here, but
-/// `normalize` depends on the module so it must be compiled in. This bin exercises a subset
-/// of the module, so its context-stripping `port` path is dead here.
+/// Registers the shared porter module;
+///  only its `class_end` span helper is reused here,
+///  but
+/// `normalize` depends on the module so it must be compiled in.
+///  This bin exercises a subset
+/// of the module,
+///  so its context-stripping `port` path is dead here.
 #[allow(dead_code)]
 #[path = "../port.rs"]
 mod port;
 
-/// Registers the case-expansion module: the three-casing expander that rewrites inline `(?i)`
+/// Registers the case-expansion module:
+///  the three-casing expander that rewrites inline `(?i)`
 /// scopes into case-sensitive dialect before normalization runs.
 #[path = "../caseexpand.rs"]
 mod caseexpand;
@@ -51,7 +75,8 @@ mod portpass;
 /// Imports the strict ruleset compiler used as the fail-closed verifier.
 use forbidden_regex::RegexSet;
 
-/// Imports the scanner's rule loader, used to prove the written output loads
+/// Imports the scanner's rule loader,
+///  used to prove the written output loads
 /// end-to-end through the same tail-format path the runtime uses.
 use forbidden_strings::compile_from_text;
 
@@ -61,13 +86,22 @@ use std::process::ExitCode;
 /// Imports the whole-source porting pass and the per-rule classification record.
 use crate::portpass::{port_source, Ported};
 
-/// Strict-compiles every ported rule individually, attributing failures to source lines.
+/// Strict-compiles every ported rule individually,
+///  attributing failures to source lines.
 ///
-/// What: validates the flags slot, then compiles each ported body through strict
-/// `RegexSet::new` on a one-element slice (never `compile_lenient`), across a pool of worker
-/// threads pulling from a shared index, recording the line and error of any rejection. Why:
-/// the port is fail-closed (every rule proven on its own, zero silently dropped); the
-/// faithful full-context rules are individually costly to determinize, so the per-rule proofs
+/// What:
+///  validates the flags slot,
+///  then compiles each ported body through strict
+/// `RegexSet::new` on a one-element slice (never `compile_lenient`),
+///  across a pool of worker
+/// threads pulling from a shared index,
+///  recording the line and error of any rejection.
+///  Why:
+/// the port is fail-closed (every rule proven on its own,
+///  zero silently dropped);
+///  the
+/// faithful full-context rules are individually costly to determinize,
+///  so the per-rule proofs
 /// are fanned out to keep the run bounded.
 fn verify(rules: &[&Ported]) -> Vec<(usize, String)> {
     let failures: std::sync::Mutex<Vec<(usize, String)>> = std::sync::Mutex::new(Vec::new());
@@ -108,8 +142,13 @@ fn verify(rules: &[&Ported]) -> Vec<(usize, String)> {
 
 /// Prints one file's change breakdown and a per-changed-rule dump to stdout.
 ///
-/// What: counts rewritten and semantically-changed rules, prints per-category totals, and
-/// emits one `CHANGE` line per changed rule for authoring the review doc. Why: the review
+/// What:
+///  counts rewritten and semantically-changed rules,
+///  prints per-category totals,
+///  and
+/// emits one `CHANGE` line per changed rule for authoring the review doc.
+///  Why:
+///  the review
 /// doc must list every semantically changed rule with before and after.
 fn report(name: &str, rules: &[Ported]) {
     let rewritten = rules.iter().filter(|r| return r.ported != r.source).count();
@@ -160,10 +199,15 @@ fn report(name: &str, rules: &[Ported]) {
     }
 }
 
-/// Returns the repository root, derived from this crate's compile-time manifest directory.
+/// Returns the repository root,
+///  derived from this crate's compile-time manifest directory.
 ///
-/// What: the manifest dir is `<repo>/package/rust-module/forbidden-regex.bench`; its third
-/// ancestor is the repo root. Why: the bin writes to fixed repo-relative paths regardless of
+/// What:
+///  the manifest dir is `<repo>/package/rust-module/forbidden-regex.bench`;
+///  its third
+/// ancestor is the repo root.
+///  Why:
+///  the bin writes to fixed repo-relative paths regardless of
 /// its working directory.
 fn repo_root() -> std::path::PathBuf {
     let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -174,13 +218,22 @@ fn repo_root() -> std::path::PathBuf {
         .to_path_buf();
 }
 
-/// Ports the stage-one intermediate, verifies the set, and writes the live baseline.
+/// Ports the stage-one intermediate,
+///  verifies the set,
+///  and writes the live baseline.
 ///
-/// What: reads the tail-format intermediate stage one wrote under `.cache/`, ports every
-/// `/PATTERN/FLAGS` body, strict-compiles each ported rule with per-line attribution,
+/// What:
+///  reads the tail-format intermediate stage one wrote under `.cache/`,
+///  ports every
+/// `/PATTERN/FLAGS` body,
+///  strict-compiles each ported rule with per-line attribution,
 /// proves the whole output loads through the scanner's own tail-format loader (headers,
-/// name uniqueness, per-section classification), and only then overwrites the committed
-/// `data/builtin-rules.txt`. Why: the embedded baseline must stay reproducible and the
+/// name uniqueness,
+///  per-section classification),
+///  and only then overwrites the committed
+/// `data/builtin-rules.txt`.
+///  Why:
+///  the embedded baseline must stay reproducible and the
 /// write must be fail-closed at both the per-rule and whole-file layers.
 fn main() -> ExitCode {
     let root = repo_root();

@@ -16,7 +16,8 @@ fn stamp(document: &Document) -> FrameStamp {
     return FrameStamp::new(document, viewport(), 0.0, colors(), SourceStyles::from([]));
 }
 
-/// Standard logical viewport, with a nonintegral scale to exercise physical identity.
+/// Standard logical viewport,
+///  with a nonintegral scale to exercise physical identity.
 fn viewport() -> Viewport {
     return Viewport {
         first: 0,
@@ -35,7 +36,8 @@ fn colors() -> CodeColors {
     };
 }
 
-/// Moving an empty selection changes caret position, not source-image pixels.
+/// Moving an empty selection changes caret position,
+///  not source-image pixels.
 #[test]
 fn caret_only_movement_reuses_image() {
     // What: mut permits selection updates; Document still exposes no file-writing operation.
@@ -83,7 +85,9 @@ fn selection_invalidates_but_direction_does_not() {
     assert!(selected != stamp(&document));
 }
 
-/// Every tile, palette, and syntax input affects paint identity.
+/// Every tile,
+///  palette,
+///  and syntax input affects paint identity.
 #[test]
 fn materialization_scale_theme_and_syntax_invalidate() {
     let document = Document::new("猫 and Latin");
@@ -152,7 +156,8 @@ fn source_revision_invalidates() {
     assert!(original != stamp(&document));
 }
 
-/// In-file find matches are a paint input: a different match list is a different frame.
+/// In-file find matches are a paint input:
+///  a different match list is a different frame.
 #[test]
 fn find_matches_invalidate_and_equal_lists_reuse() {
     let document = Document::new("needle and needle");

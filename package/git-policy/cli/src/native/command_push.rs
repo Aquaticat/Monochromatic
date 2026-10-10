@@ -1,15 +1,24 @@
-//! What: The complete `git push` option table of Git 2.56.0 and the facts read from it.
-//! Why: The atomic-push transform must know whether the caller already chose atomicity,
-//!      and the manual-push gate whether the push is a dry run; both in every spelling Git
-//!      accepts (`--at`, `--no-at`, `-nf`), which a list of exact tokens misses.
+//! What:
+//!  The complete `git push` option table of Git 2.56.0 and the facts read from it.
+//! Why:
+//!  The atomic-push transform must know whether the caller already chose atomicity,
+//!      and the manual-push gate whether the push is a dry run;
+//!  both in every spelling Git
+//!      accepts (`--at`,
+//!  `--no-at`,
+//!  `-nf`),
+//!  which a list of exact tokens misses.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // parsePushRegion(postSubcommandArgs): PushRegion  (throws OptionError)
 //! ```
 
-/// What: Bring the tokenizer, its table builder and its questions into this file.
-/// Why:  This module only declares Git's table and interprets what the tokenizer found.
+/// What:
+///  Bring the tokenizer,
+///  its table builder and its questions into this file.
+/// Why:
+///   This module only declares Git's table and interprets what the tokenizer found.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,14 +32,22 @@ use super::command_options_query::{is_enabled, is_stated};
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// `--atomic`: request an atomic transaction on the remote side.
+/// `--atomic`:
+///  request an atomic transaction on the remote side.
 pub const ATOMIC: u16 = 1;
-/// `-n`, `--dry-run`: do everything except send the updates.
+/// `-n`,
+///  `--dry-run`:
+///  do everything except send the updates.
 pub const DRY_RUN: u16 = 2;
 
-/// What: Rows of `options[]` in `cmd_push` (builtin/push.c:707-743), in source order.
+/// What:
+///  Rows of `options[]` in `cmd_push` (builtin/push.c:707-743),
+///  in source order.
 ///       `&[OptionSpec]` is a borrowed table baked into the program.
-/// Why:  `--branches` is an `OPT_ALIAS` of `--all`; the two names share no prefix, so the
+/// Why:
+///   `--branches` is an `OPT_ALIAS` of `--all`;
+///  the two names share no prefix,
+///  so the
 ///       alias needs no special ambiguity handling and is a row of its own.
 ///
 /// In TS you'd write (pseudocode):
@@ -88,10 +105,16 @@ pub const PUSH_TABLE: &[OptionSpec] = &[
     row(UNREAD, Some(b'6'), Some("ipv6"), Arity::None, false),
 ];
 
-/// What: Final-state facts of one `git push` region. `bool` is true or false;
+/// What:
+///  Final-state facts of one `git push` region.
+///  `bool` is true or false;
 ///       `Vec<WrapperOccurrence>` is an owned list of wrapper-flag positions.
-/// Why:  `atomic_stated` is "the caller chose", in either direction; `dry_run` is the state
-///       after the last `-n`, `--dry-run` or `--no-dry-run`.
+/// Why:
+///   `atomic_stated` is "the caller chose",
+///  in either direction;
+///  `dry_run` is the state
+///       after the last `-n`,
+///  `--dry-run` or `--no-dry-run`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -99,16 +122,22 @@ pub const PUSH_TABLE: &[OptionSpec] = &[
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PushRegion {
-    /// `--atomic` or `--no-atomic` was written, in any accepted abbreviation.
+    /// `--atomic` or `--no-atomic` was written,
+    ///  in any accepted abbreviation.
     pub atomic_stated: bool,
     /// The push sends no updates.
     pub dry_run: bool,
-    /// Wrapper-only flags in option position; `flag` indexes the caller's list.
+    /// Wrapper-only flags in option position;
+    ///  `flag` indexes the caller's list.
     pub wrapper: Vec<WrapperOccurrence>,
 }
 
-/// What: Parse the region after `push`. `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  A region Git itself would refuse yields the refusal, never a guessed fact set.
+/// What:
+///  Parse the region after `push`.
+///  `Result<A, B>` is "either success `A` or failure `B`".
+/// Why:
+///   A region Git itself would refuse yields the refusal,
+///  never a guessed fact set.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -128,7 +157,8 @@ pub fn parse_push_region(
     });
 }
 
-/// Facts in every accepted spelling, and real-Git controls of the table and its abbreviations.
+/// Facts in every accepted spelling,
+///  and real-Git controls of the table and its abbreviations.
 #[cfg(test)]
 #[path = "command_push_tests.rs"]
 mod tests;

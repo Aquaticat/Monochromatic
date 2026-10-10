@@ -1,14 +1,28 @@
-//! The persistent decision cache, backed by Turso (behind the `service` feature).
+//! The persistent decision cache,
+//!  backed by Turso (behind the `service` feature).
 //!
-//! One row per decision, keyed by the source fingerprint and the full cache identity tuple
-//! (policy, meter, decoder stack, and schema version), so a row is reused only when its
-//! whole production environment matches. Writes upsert, but an exact decision is never
-//! overwritten by a probe estimate for the same key, because the exact decision is strictly
-//! better evidence. The whole module compiles only with the `service` feature, so the
+//! One row per decision,
+//!  keyed by the source fingerprint and the full cache identity tuple
+//! (policy,
+//!  meter,
+//!  decoder stack,
+//!  and schema version),
+//!  so a row is reused only when its
+//! whole production environment matches.
+//!  Writes upsert,
+//!  but an exact decision is never
+//! overwritten by a probe estimate for the same key,
+//!  because the exact decision is strictly
+//! better evidence.
+//!  The whole module compiles only with the `service` feature,
+//!  so the
 //! meter-only build never pulls Turso or Tokio.
 
-/// What:     `use crate::decision::{Decision, DecisionKind};`. The value stored and its tag.
-/// Why:      Rows are read into and written from `Decision`s.
+/// What:
+///      `use crate::decision::{Decision, DecisionKind};`.
+///  The value stored and its tag.
+/// Why:
+///       Rows are read into and written from `Decision`s.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -16,8 +30,11 @@
 /// ```
 use crate::decision::{Decision, DecisionKind};
 
-/// What:     `use crate::policy::CacheIdentity;`. The four-part identity a row must match.
-/// Why:      It supplies the non-fingerprint half of the primary key.
+/// What:
+///      `use crate::policy::CacheIdentity;`.
+///  The four-part identity a row must match.
+/// Why:
+///       It supplies the non-fingerprint half of the primary key.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,8 +42,12 @@ use crate::decision::{Decision, DecisionKind};
 /// ```
 use crate::policy::CacheIdentity;
 
-/// What:     `use std::collections::HashSet;`. A set of owned `u64` fingerprints.
-/// Why:      `exact_fingerprints` returns every fingerprint whose decision is exact, for a
+/// What:
+///      `use std::collections::HashSet;`.
+///  A set of owned `u64` fingerprints.
+/// Why:
+///       `exact_fingerprints` returns every fingerprint whose decision is exact,
+///  for a
 ///           warming sweep's bulk skip-check.
 ///
 /// In TS you'd write (pseudocode):
@@ -35,8 +56,12 @@ use crate::policy::CacheIdentity;
 /// ```
 use std::collections::HashSet;
 
-/// What:     `use std::fmt;`. The formatting module, for the error `Display`.
-/// Why:      `CacheError` renders a human message for logs.
+/// What:
+///      `use std::fmt;`.
+///  The formatting module,
+///  for the error `Display`.
+/// Why:
+///       `CacheError` renders a human message for logs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,10 +69,18 @@ use std::collections::HashSet;
 /// ```
 use std::fmt;
 
-/// What:     `use turso::{Builder, Connection};`. The Turso database builder and an open
-///           connection. A stored cell is a `turso::Value` (`Integer(i64)`, `Real(f64)`,
-///           `Text`, `Blob`, `Null`), reached through `row.get_value` rather than imported.
-/// Why:      `Builder` opens the file and `Connection` runs statements.
+/// What:
+///      `use turso::{Builder, Connection};`.
+///  The Turso database builder and an open
+///           connection.
+///  A stored cell is a `turso::Value` (`Integer(i64)`,
+///  `Real(f64)`,
+///           `Text`,
+///  `Blob`,
+///  `Null`),
+///  reached through `row.get_value` rather than imported.
+/// Why:
+///       `Builder` opens the file and `Connection` runs statements.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,10 +88,15 @@ use std::fmt;
 /// ```
 use turso::{Builder, Connection};
 
-/// What:     `const CREATE_TABLE: &str = "...";`. The decisions table: the fingerprint and
-///           the four identity columns form the primary key. `&str` (sibling `String`) is a
+/// What:
+///      `const CREATE_TABLE: &str = "...";`.
+///  The decisions table:
+///  the fingerprint and
+///           the four identity columns form the primary key.
+///  `&str` (sibling `String`) is a
 ///           baked-in literal.
-/// Why:      A row is reusable only when all five key columns match.
+/// Why:
+///       A row is reusable only when all five key columns match.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -70,9 +108,13 @@ const CREATE_TABLE: &str = "CREATE TABLE IF NOT EXISTS decisions (\
     gain REAL NOT NULL, measured_peak REAL NOT NULL, duration_secs REAL NOT NULL, \
     PRIMARY KEY (fingerprint, policy_id, meter_id, decoder_stack_id, schema_version))";
 
-/// What:     `const SELECT_DECISION: &str = "...";`. Read the four decision columns for one
-///           exact key. `&str` literal.
-/// Why:      A cache hit returns the stored gain and its evidence.
+/// What:
+///      `const SELECT_DECISION: &str = "...";`.
+///  Read the four decision columns for one
+///           exact key.
+///  `&str` literal.
+/// Why:
+///       A cache hit returns the stored gain and its evidence.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,10 +124,15 @@ const SELECT_DECISION: &str = "SELECT kind, gain, measured_peak, duration_secs F
     WHERE fingerprint = ?1 AND policy_id = ?2 AND meter_id = ?3 AND decoder_stack_id = ?4 \
     AND schema_version = ?5";
 
-/// What:     `const UPSERT_DECISION: &str = "...";`. Insert or update, but the `WHERE` on the
+/// What:
+///      `const UPSERT_DECISION: &str = "...";`.
+///  Insert or update,
+///  but the `WHERE` on the
 ///           update clause skips overwriting an exact row (kind 0 or 2) with a probe (kind
-///           1). `&str` literal.
-/// Why:      An exact decision must never be downgraded to a probe estimate.
+///           1).
+///  `&str` literal.
+/// Why:
+///       An exact decision must never be downgraded to a probe estimate.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -99,9 +146,15 @@ const UPSERT_DECISION: &str = "INSERT INTO decisions (fingerprint, policy_id, me
     measured_peak = excluded.measured_peak, duration_secs = excluded.duration_secs \
     WHERE NOT (decisions.kind IN (0, 2) AND excluded.kind = 1)";
 
-/// What:     `const SELECT_EXACT: &str = "...";`. Read every fingerprint whose stored decision
-///           is exact (kind 0 short or 2 full), for the identity tuple. `&str` literal.
-/// Why:      A warming sweep skips tracks that already carry an exact gain, and re-scans only
+/// What:
+///      `const SELECT_EXACT: &str = "...";`.
+///  Read every fingerprint whose stored decision
+///           is exact (kind 0 short or 2 full),
+///  for the identity tuple.
+///  `&str` literal.
+/// Why:
+///       A warming sweep skips tracks that already carry an exact gain,
+///  and re-scans only
 ///           those with no row or a mere probe estimate (kind 1).
 ///
 /// In TS you'd write (pseudocode):
@@ -112,9 +165,14 @@ const SELECT_EXACT: &str = "SELECT fingerprint FROM decisions \
     WHERE policy_id = ?1 AND meter_id = ?2 AND decoder_stack_id = ?3 AND schema_version = ?4 \
     AND kind IN (0, 2)";
 
-/// What:     `pub struct CacheError { pub message: String }`. A turso-free error wrapping a
-///           message. `String` (sibling `&str`) owns the text past the turso error's life.
-/// Why:      The public cache API does not name a turso type, so callers stay decoupled.
+/// What:
+///      `pub struct CacheError { pub message: String }`.
+///  A turso-free error wrapping a
+///           message.
+///  `String` (sibling `&str`) owns the text past the turso error's life.
+/// Why:
+///       The public cache API does not name a turso type,
+///  so callers stay decoupled.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -122,8 +180,12 @@ const SELECT_EXACT: &str = "SELECT fingerprint FROM decisions \
 /// ```
 #[derive(Debug)]
 pub struct CacheError {
-    /// What:     `pub message: String`. The human-readable cause.
-    /// Why:      Logged and shown; owns its text.
+    /// What:
+    ///      `pub message: String`.
+    ///  The human-readable cause.
+    /// Why:
+    ///       Logged and shown;
+    ///  owns its text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -132,8 +194,11 @@ pub struct CacheError {
     pub message: String,
 }
 
-/// What:     `impl fmt::Display for CacheError`. Render the message.
-/// Why:      Logs and the `Error` impl below.
+/// What:
+///      `impl fmt::Display for CacheError`.
+///  Render the message.
+/// Why:
+///       Logs and the `Error` impl below.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -146,8 +211,11 @@ impl fmt::Display for CacheError {
     }
 }
 
-/// What:     `impl std::error::Error for CacheError {}`. Opt into the std error trait.
-/// Why:      Participate in `?` propagation and generic std error reporting.
+/// What:
+///      `impl std::error::Error for CacheError {}`.
+///  Opt into the std error trait.
+/// Why:
+///       Participate in `?` propagation and generic std error reporting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -155,8 +223,11 @@ impl fmt::Display for CacheError {
 /// ```
 impl std::error::Error for CacheError {}
 
-/// What:     `impl From<turso::Error> for CacheError`. Convert a turso error into ours.
-/// Why:      Lets `?` on turso calls produce a `CacheError` without leaking the turso type.
+/// What:
+///      `impl From<turso::Error> for CacheError`.
+///  Convert a turso error into ours.
+/// Why:
+///       Lets `?` on turso calls produce a `CacheError` without leaking the turso type.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -169,8 +240,12 @@ impl From<turso::Error> for CacheError {
     }
 }
 
-/// What:     `fn kind_to_int(kind: DecisionKind) -> i64`. Encode the tag as a small integer.
-/// Why:      The precedence `WHERE` compares kinds as integers (0 and 2 exact, 1 probe).
+/// What:
+///      `fn kind_to_int(kind: DecisionKind) -> i64`.
+///  Encode the tag as a small integer.
+/// Why:
+///       The precedence `WHERE` compares kinds as integers (0 and 2 exact,
+///  1 probe).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -191,9 +266,13 @@ fn kind_to_int(kind: DecisionKind) -> i64 {
     }
 }
 
-/// What:     `fn kind_from_int(value: i64) -> Result<DecisionKind, CacheError>`. Decode a
-///           stored integer back to a tag, rejecting anything unexpected.
-/// Why:      A corrupt or future row must not silently become the wrong kind.
+/// What:
+///      `fn kind_from_int(value: i64) -> Result<DecisionKind, CacheError>`.
+///  Decode a
+///           stored integer back to a tag,
+///  rejecting anything unexpected.
+/// Why:
+///       A corrupt or future row must not silently become the wrong kind.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -220,10 +299,16 @@ fn kind_from_int(value: i64) -> Result<DecisionKind, CacheError> {
     }
 }
 
-/// What:     `fn real_at(row: &turso::Row, index: usize) -> Result<f64, CacheError>`. Read a
-///           `REAL` column, failing if the cell is not a real. `usize` is the column index
+/// What:
+///      `fn real_at(row: &turso::Row, index: usize) -> Result<f64, CacheError>`.
+///  Read a
+///           `REAL` column,
+///  failing if the cell is not a real.
+///  `usize` is the column index
 ///           type Turso's `get_value` wants.
-/// Why:      A NULL or wrong-typed cell is corruption, not a value to coerce.
+/// Why:
+///       A NULL or wrong-typed cell is corruption,
+///  not a value to coerce.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -246,17 +331,24 @@ fn real_at(row: &turso::Row, index: usize) -> Result<f64, CacheError> {
         .inspect_err(|error| tracing::error!(index, cause = %error.message, "cache real column corrupt"))
 }
 
-/// What:     `pub struct DecisionCache { conn: Connection }`. An open connection to the
-///           decision database. `Connection` is Turso's per-database handle.
-/// Why:      All reads and writes go through one connection the platform owns.
+/// What:
+///      `pub struct DecisionCache { conn: Connection }`.
+///  An open connection to the
+///           decision database.
+///  `Connection` is Turso's per-database handle.
+/// Why:
+///       All reads and writes go through one connection the platform owns.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class DecisionCache { private conn: Connection; }
 /// ```
 pub struct DecisionCache {
-    /// What:     `conn: Connection`. The open Turso connection.
-    /// Why:      Runs the select and upsert statements.
+    /// What:
+    ///      `conn: Connection`.
+    ///  The open Turso connection.
+    /// Why:
+    ///       Runs the select and upsert statements.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -265,18 +357,26 @@ pub struct DecisionCache {
     conn: Connection,
 }
 
-/// What:     `impl DecisionCache { ... }`. Open, read, and write behavior.
-/// Why:      The three operations the service needs from persistence.
+/// What:
+///      `impl DecisionCache { ... }`.
+///  Open,
+///  read,
+///  and write behavior.
+/// Why:
+///       The three operations the service needs from persistence.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class DecisionCache { async open() {} async get() {} async put() {} }
 /// ```
 impl DecisionCache {
-    /// What:     `pub async fn open(path: &str) -> Result<DecisionCache, CacheError>`. Open
+    /// What:
+    ///      `pub async fn open(path: &str) -> Result<DecisionCache, CacheError>`.
+    ///  Open
     ///           (or create) the database file at `path` and ensure the table exists.
     ///           `async` returns a future the platform's runtime drives.
-    /// Why:      A ready cache the service can query.
+    /// Why:
+    ///       A ready cache the service can query.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -321,10 +421,14 @@ impl DecisionCache {
         return Ok(DecisionCache { conn })
     }
 
-    /// What:     `pub async fn get(&self, fingerprint: u64, identity: CacheIdentity) ->
-    ///           Result<Option<Decision>, CacheError>`. Look up the decision for one exact
-    ///           key. `&self` borrows the cache read-only.
-    /// Why:      A hit lets playback apply a cached gain immediately.
+    /// What:
+    ///      `pub async fn get(&self, fingerprint: u64, identity: CacheIdentity) ->
+    ///           Result<Option<Decision>, CacheError>`.
+    ///  Look up the decision for one exact
+    ///           key.
+    ///  `&self` borrows the cache read-only.
+    /// Why:
+    ///       A hit lets playback apply a cached gain immediately.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -408,10 +512,15 @@ impl DecisionCache {
         }
     }
 
-    /// What:     `pub async fn put(&self, fingerprint: u64, identity: CacheIdentity, decision:
-    ///           &Decision) -> Result<(), CacheError>`. Store or upgrade a decision, never
-    ///           downgrading an exact row to a probe. `&Decision` borrows it read-only.
-    /// Why:      Persist a resolved decision so later plays hit the cache.
+    /// What:
+    ///      `pub async fn put(&self, fingerprint: u64, identity: CacheIdentity, decision:
+    ///           &Decision) -> Result<(), CacheError>`.
+    ///  Store or upgrade a decision,
+    ///  never
+    ///           downgrading an exact row to a probe.
+    ///  `&Decision` borrows it read-only.
+    /// Why:
+    ///       Persist a resolved decision so later plays hit the cache.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -462,12 +571,18 @@ impl DecisionCache {
         return Ok(())
     }
 
-    /// What:     `pub async fn exact_fingerprints(&self, identity: CacheIdentity) ->
-    ///           Result<HashSet<u64>, CacheError>`. Collect every fingerprint whose stored
-    ///           decision is exact (short or full scan) for this identity. `&self` borrows the
+    /// What:
+    ///      `pub async fn exact_fingerprints(&self, identity: CacheIdentity) ->
+    ///           Result<HashSet<u64>, CacheError>`.
+    ///  Collect every fingerprint whose stored
+    ///           decision is exact (short or full scan) for this identity.
+    ///  `&self` borrows the
     ///           cache read-only.
-    /// Why:      A warming sweep seeds its skip-check from this set, so it re-scans only tracks
-    ///           with no decision or a mere probe estimate, upgrading them to exact over time.
+    /// Why:
+    ///       A warming sweep seeds its skip-check from this set,
+    ///  so it re-scans only tracks
+    ///           with no decision or a mere probe estimate,
+    ///  upgrading them to exact over time.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -549,9 +664,14 @@ impl DecisionCache {
     }
 }
 
-/// What:     `#[cfg(test)] #[path = "cache_tests.rs"] mod tests;`. Test-only submodule in the
-///           sibling file, gated to test builds of the `service` feature.
-/// Why:      Keep this file to production code; sibling `*_tests.rs` is max-lines exempt.
+/// What:
+///      `#[cfg(test)] #[path = "cache_tests.rs"] mod tests;`.
+///  Test-only submodule in the
+///           sibling file,
+///  gated to test builds of the `service` feature.
+/// Why:
+///       Keep this file to production code;
+///  sibling `*_tests.rs` is max-lines exempt.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

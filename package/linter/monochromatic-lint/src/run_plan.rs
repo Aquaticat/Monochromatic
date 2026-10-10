@@ -1,13 +1,19 @@
-//! What: Decide, before any rule runs, what each input file is and which configuration governs it.
-//! Why: Configuration and setup errors must stop the run with status 2 before a single file is
-//! read for linting or rewritten, and worker threads then need only immutable plans.
+//! What:
+//!  Decide,
+//!  before any rule runs,
+//!  what each input file is and which configuration governs it.
+//! Why:
+//!  Configuration and setup errors must stop the run with status 2 before a single file is
+//! read for linting or rewritten,
+//!  and worker threads then need only immutable plans.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // planFile(store, path) -> { absolute, display, relative, language, config, root } | skipped
 //! ```
 
-/// Import configuration loading, matching and typed rule selection.
+/// Import configuration loading,
+///  matching and typed rule selection.
 use crate::{
     config_error::ConfigError,
     config_lookup::{ConfigurationSource, discover_configuration, load_configuration_at},
@@ -23,9 +29,14 @@ use std::{
     sync::Arc,
 };
 
-/// What: The rules selected for a host file itself, already typed for its language.
-/// Why: A host with no matching block still has its embedded virtual files checked, so "no root
-/// rules" is a normal plan, not a skipped file.
+/// What:
+///  The rules selected for a host file itself,
+///  already typed for its language.
+/// Why:
+///  A host with no matching block still has its embedded virtual files checked,
+///  so "no root
+/// rules" is a normal plan,
+///  not a skipped file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,8 +58,12 @@ pub enum RootRules {
     },
 }
 
-/// What: Everything a worker needs to lint one file, with no further setup that can fail.
-/// Why: Plans are immutable and shareable across threads; only file contents remain to be read.
+/// What:
+///  Everything a worker needs to lint one file,
+///  with no further setup that can fail.
+/// Why:
+///  Plans are immutable and shareable across threads;
+///  only file contents remain to be read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -56,11 +71,15 @@ pub enum RootRules {
 /// ```
 #[derive(Clone)]
 pub struct FilePlan {
-    /// Absolute, lexically normal location used for reads, writes and repository discovery.
+    /// Absolute,
+    ///  lexically normal location used for reads,
+    ///  writes and repository discovery.
     pub absolute: PathBuf,
-    /// Name reported in findings, relative to the working directory when inside it.
+    /// Name reported in findings,
+    ///  relative to the working directory when inside it.
     pub display: String,
-    /// Logical path relative to the configuration's base, used to match virtual files.
+    /// Logical path relative to the configuration's base,
+    ///  used to match virtual files.
     pub relative: PathBuf,
     /// Language chosen by the file extension.
     pub language: Language,
@@ -70,8 +89,12 @@ pub struct FilePlan {
     pub root: RootRules,
 }
 
-/// What: Whether this plan needs the Cargo-backed semantic engine.
-/// Why: Semantic sessions are owned by one thread; such plans are processed there, after the workers.
+/// What:
+///  Whether this plan needs the Cargo-backed semantic engine.
+/// Why:
+///  Semantic sessions are owned by one thread;
+///  such plans are processed there,
+///  after the workers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -87,8 +110,11 @@ impl FilePlan {
     }
 }
 
-/// What: The outcome of planning one input path.
-/// Why: A skipped file is distinguished by reason, so the run can tell "nothing configured anywhere"
+/// What:
+///  The outcome of planning one input path.
+/// Why:
+///  A skipped file is distinguished by reason,
+///  so the run can tell "nothing configured anywhere"
 /// (a setup error) from "this file is deliberately ignored".
 ///
 /// In TS you'd write (pseudocode):
@@ -98,35 +124,46 @@ impl FilePlan {
 pub enum Planned {
     /// The file is linted under this plan.
     Lint {
-        /// The complete plan; `Box` keeps this enum small next to its field-less variants.
+        /// The complete plan;
+        ///  `Box` keeps this enum small next to its field-less variants.
         plan: Box<FilePlan>,
     },
     /// An ignores-only block removes the file from linting entirely.
     Ignored,
     /// No configuration file exists in the file's directory or any ancestor.
     NoConfiguration,
-    /// The extension is not `.rs`, `.md` or `.mdx`.
+    /// The extension is not `.rs`,
+    ///  `.md` or `.mdx`.
     Unsupported,
 }
 
-/// What: Per-run configuration loading with one parse per configuration file.
-/// Why: Thousands of files share a few configurations; lookup is memoized by directory.
+/// What:
+///  Per-run configuration loading with one parse per configuration file.
+/// Why:
+///  Thousands of files share a few configurations;
+///  lookup is memoized by directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ConfigStore { private byDirectory = new Map<Path, PreparedConfiguration | undefined>(); }
 /// ```
 pub struct ConfigStore {
-    /// Working directory: the base for `--config` patterns and for display names.
+    /// Working directory:
+    ///  the base for `--config` patterns and for display names.
     cwd: PathBuf,
-    /// The `--config` file, used for every input when present.
+    /// The `--config` file,
+    ///  used for every input when present.
     explicit: Option<Arc<PreparedConfiguration>>,
-    /// Nearest configuration for each directory already looked up; `None` records "none found".
+    /// Nearest configuration for each directory already looked up;
+    ///  `None` records "none found".
     by_directory: BTreeMap<PathBuf, Option<Arc<PreparedConfiguration>>>,
 }
 
-/// What: Build the store and answer per-file configuration questions.
-/// Why: `--config` skips lookup and resolves patterns against the working directory, so a
+/// What:
+///  Build the store and answer per-file configuration questions.
+/// Why:
+///  `--config` skips lookup and resolves patterns against the working directory,
+///  so a
 /// temporary file outside the repository still matches repository paths.
 ///
 /// In TS you'd write (pseudocode):
@@ -134,8 +171,11 @@ pub struct ConfigStore {
 /// new ConfigStore(cwd, explicitPath).plan(path)
 /// ```
 impl ConfigStore {
-    /// What: Load the explicit configuration now, if one was given.
-    /// Why: A missing or malformed `--config` file is a setup error before any file is planned.
+    /// What:
+    ///  Load the explicit configuration now,
+    ///  if one was given.
+    /// Why:
+    ///  A missing or malformed `--config` file is a setup error before any file is planned.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -158,9 +198,14 @@ impl ConfigStore {
         });
     }
 
-    /// What: The nearest configuration for a directory, walking toward the filesystem root.
-    /// Why: Each directory on the way is remembered, so siblings and descendants reuse the answer.
-    /// The nearest file is used alone; configurations are never merged across directories.
+    /// What:
+    ///  The nearest configuration for a directory,
+    ///  walking toward the filesystem root.
+    /// Why:
+    ///  Each directory on the way is remembered,
+    ///  so siblings and descendants reuse the answer.
+    /// The nearest file is used alone;
+    ///  configurations are never merged across directories.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -189,8 +234,11 @@ impl ConfigStore {
         return Ok(found);
     }
 
-    /// What: The configuration governing one absolute file path, explicit or nearest.
-    /// Why: Both `--print-config` and linting ask the same question through the same code.
+    /// What:
+    ///  The configuration governing one absolute file path,
+    ///  explicit or nearest.
+    /// Why:
+    ///  Both `--print-config` and linting ask the same question through the same code.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -209,8 +257,12 @@ impl ConfigStore {
         return self.nearest(directory);
     }
 
-    /// What: Plan one input path given by the user or the walker.
-    /// Why: Language, names, governing configuration and typed root rules are all fixed here,
+    /// What:
+    ///  Plan one input path given by the user or the walker.
+    /// Why:
+    ///  Language,
+    ///  names,
+    ///  governing configuration and typed root rules are all fixed here,
     /// so every configuration error surfaces before linting starts.
     ///
     /// In TS you'd write (pseudocode):
@@ -255,7 +307,8 @@ impl ConfigStore {
     }
 }
 
-/// Lookup, memoization and classification controls stay outside release artifacts.
+/// Lookup,
+///  memoization and classification controls stay outside release artifacts.
 #[cfg(test)]
 #[path = "run_plan_tests.rs"]
 mod tests;

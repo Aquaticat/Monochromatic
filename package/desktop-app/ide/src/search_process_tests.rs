@@ -138,7 +138,8 @@ async fn pre_cancelled_search_skips_process_start_and_live_spawn_errors_are_visi
     );
 }
 
-/// A completed process needs no further signal, and its already reaped status remains available.
+/// A completed process needs no further signal,
+///  and its already reaped status remains available.
 #[tokio::test]
 async fn stopping_an_already_completed_child_keeps_its_status() {
     let mut child = Command::new("true").spawn().expect("immediate child");
@@ -146,7 +147,8 @@ async fn stopping_an_already_completed_child_keeps_its_status() {
     assert_eq!(stop(&mut child).await.expect("completed cleanup"), finished);
 }
 
-/// Inherited preprocessing configuration is a real positive control, then the production flags disable it.
+/// Inherited preprocessing configuration is a real positive control,
+///  then the production flags disable it.
 #[tokio::test]
 async fn production_command_ignores_external_ripgrep_configuration() {
     let fixture = tempfile::tempdir().expect("disposable parent");

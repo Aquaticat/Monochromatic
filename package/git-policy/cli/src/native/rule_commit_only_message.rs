@@ -1,5 +1,8 @@
-//! What: The user-facing diagnostics of the commit-only transform.
-//! Why: Each message names the rejected form and every valid way forward; keeping the text
+//! What:
+//!  The user-facing diagnostics of the commit-only transform.
+//! Why:
+//!  Each message names the rejected form and every valid way forward;
+//!  keeping the text
 //!      apart from the decision keeps both files readable.
 //!
 //! In TS you'd write (pseudocode):
@@ -14,14 +17,19 @@ Name the paths in the commit command (for example, git commit -m <msg> <path>), 
 pass --pathspec-from-file, pass --no-only to commit the entire index, \
 or pass --no-enforce-only to bypass for this invocation.";
 
-/// Diagnostic for `-a`/`--all`, which stages tracked modifications implicitly.
+/// Diagnostic for `-a`/`--all`,
+///  which stages tracked modifications implicitly.
 pub const ALL_FLAG_MESSAGE: &str = "cli-git: git commit rejects -a/--all because it stages every tracked modification before committing. \
 Stage paths explicitly and commit with git commit -m <msg> <path>, \
 or pass --no-enforce-only to bypass for this invocation.";
 
-/// What: Build the diagnostic for a pathless `--amend`/`--allow-empty` commit over a dirty
-///       index. `&str` borrows the flag text; `String` is the owned result.
-/// Why:  An injected `--only` would commit `HEAD`'s existing tree and leave the staged
+/// What:
+///  Build the diagnostic for a pathless `--amend`/`--allow-empty` commit over a dirty
+///       index.
+///  `&str` borrows the flag text;
+///  `String` is the owned result.
+/// Why:
+///   An injected `--only` would commit `HEAD`'s existing tree and leave the staged
 ///       changes staged without any warning from Git.
 ///
 /// In TS you'd write (pseudocode):

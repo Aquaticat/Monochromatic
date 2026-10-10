@@ -1,8 +1,10 @@
 //! Encodes and validates scanner-owned runtime cache envelopes.
 //!
 //! Framing is explicit little-endian data around the engine's existing bincode
-//! bytes. Every declared size is checked against a fixed ceiling and remaining
-//! input before allocation or slicing. The decoder accepts no trailing bytes.
+//! bytes.
+//!  Every declared size is checked against a fixed ceiling and remaining
+//! input before allocation or slicing.
+//!  The decoder accepts no trailing bytes.
 
 /// Imports hybrid runtime rule bundle reconstructed by cache decoder.
 use crate::runtime_matcher::{LiteralGroup, RuntimeRules};
@@ -20,7 +22,8 @@ use super::warning::CacheWarningReason;
 const MAGIC: &[u8; 8] = b"FSRULES\0";
 /// Scanner-owned outer envelope schema version.
 const SCHEMA_VERSION: u32 = 2;
-/// Maximum complete artifact accepted before reading or decoding: 512 MiB.
+/// Maximum complete artifact accepted before reading or decoding:
+///  512 MiB.
 pub(super) const MAX_ARTIFACT_BYTES: u64 = 512 * 1024 * 1024;
 /// Maximum rule identities decoded into memory.
 const MAX_RULE_COUNT: u32 = 1_000_000;
@@ -38,11 +41,16 @@ const NAME_PRESENT: u8 = 1;
 /// Redacted envelope rejection category.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum EnvelopeError {
-    /// Schema, scanner version, or platform identity differs.
+    /// Schema,
+    ///  scanner version,
+    ///  or platform identity differs.
     Incompatible,
     /// Embedded source digest disagrees with current source.
     SourceMismatch,
-    /// Framing, names, counts, or engine bytes are malformed.
+    /// Framing,
+    ///  names,
+    ///  counts,
+    ///  or engine bytes are malformed.
     Invalid,
 }
 

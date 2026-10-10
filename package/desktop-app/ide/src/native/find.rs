@@ -1,21 +1,33 @@
-//! Native in-file find: bar lifecycle, worker polling, and selection-based match navigation.
+//! Native in-file find:
+//!  bar lifecycle,
+//!  worker polling,
+//!  and selection-based match navigation.
 
-/// One window and one source owner; the find worker never receives either.
+/// One window and one source owner;
+///  the find worker never receives either.
 use super::{AppWindow, State};
-/// What: `Result` carries either the started binding or a startup error.
-/// Why: A window without a find worker must report that at startup, not offer a dead shortcut.
+/// What:
+///  `Result` carries either the started binding or a startup error.
+/// Why:
+///  A window without a find worker must report that at startup,
+///  not offer a dead shortcut.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// // bind() throws when the worker thread cannot start
 /// ```
 use anyhow::Result;
-/// Requests and replies are tagged by file generation, content revision, and query generation.
+/// Requests and replies are tagged by file generation,
+///  content revision,
+///  and query generation.
 use ide_app::find_worker::{FindIdentity, FindWorker};
 /// Weak window handles and a retained timer connect worker replies to the native event loop.
 use slint::{ComponentHandle, Timer, TimerMode};
-/// What: `Rc` shares one owner on this thread; `RefCell` checks mutable borrows at run time.
-/// Why: Four callbacks and one timer change the same find state without cross-thread locking.
+/// What:
+///  `Rc` shares one owner on this thread;
+///  `RefCell` checks mutable borrows at run time.
+/// Why:
+///  Four callbacks and one timer change the same find state without cross-thread locking.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,13 +37,20 @@ use std::{cell::RefCell, rc::Rc, time::Duration};
 
 /// Count text and active match derived from accepted results and the selection.
 pub(super) mod present;
-/// Open, edit, navigate, and close transitions.
+/// Open,
+///  edit,
+///  navigate,
+///  and close transitions.
 mod session;
 /// Identity synchronization with the displayed document and reply application.
 mod tick;
 
-/// What: Window-local find state; `u64` is a fixed 64-bit counter (sibling `usize` is pointer-sized).
-/// Why: Matches live in the source state for painting; this record owns only the request lifecycle.
+/// What:
+///  Window-local find state;
+///  `u64` is a fixed 64-bit counter (sibling `usize` is pointer-sized).
+/// Why:
+///  Matches live in the source state for painting;
+///  this record owns only the request lifecycle.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,24 +58,30 @@ mod tick;
 ///   requested?: FindIdentity; seek: boolean; available: boolean };
 /// ```
 pub(super) struct Find {
-    /// One background job and one waiting request; joined when this state is dropped.
+    /// One background job and one waiting request;
+    ///  joined when this state is dropped.
     worker: FindWorker,
     /// True between Ctrl+F and Escape.
     open: bool,
-    /// Latest find text, kept across closing so reopening offers it selected.
+    /// Latest find text,
+    ///  kept across closing so reopening offers it selected.
     query: String,
-    /// Incremented on every edit; part of every request tag.
+    /// Incremented on every edit;
+    ///  part of every request tag.
     query_generation: u64,
-    /// Identity last handed to the worker; a different displayed identity triggers a new request.
+    /// Identity last handed to the worker;
+    ///  a different displayed identity triggers a new request.
     requested: Option<FindIdentity>,
     /// An edit asks the next accepted reply to select the first match at or after the selection start.
     seek: bool,
-    /// False after the worker stopped unexpectedly, so its diagnostic is reported once.
+    /// False after the worker stopped unexpectedly,
+    ///  so its diagnostic is reported once.
     available: bool,
 }
 
 /// Bind the find callbacks and poll the worker every 20 ms.
-/// The returned timer must stay alive until the window closes; dropping all owners joins the worker.
+/// The returned timer must stay alive until the window closes;
+///  dropping all owners joins the worker.
 pub(super) fn bind(owner: &AppWindow, source: &Rc<RefCell<State>>) -> Result<Timer> {
     // What: `?` returns a worker-start failure; `Rc::new(RefCell::new(...))` creates the shared owner.
     // Why: Every callback below needs the same find state after this function returns.

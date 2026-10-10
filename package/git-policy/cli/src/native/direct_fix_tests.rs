@@ -1,8 +1,19 @@
-//! What: Controls for the direct fix over real Git: the loop's three operations, what a
-//!       settled, blocked, cycling or unbounded fix reports, and when files are installed.
-//! Why: Only the last pass may be reported, nothing may be installed unless it exits 0,
-//!      and the index must never change; each ending is driven for real or, where the
-//!      shipped policies cannot reach it, through the ending function itself.
+//! What:
+//!  Controls for the direct fix over real Git:
+//!  the loop's three operations,
+//!  what a
+//!       settled,
+//!  blocked,
+//!  cycling or unbounded fix reports,
+//!  and when files are installed.
+//! Why:
+//!  Only the last pass may be reported,
+//!  nothing may be installed unless it exits 0,
+//!      and the index must never change;
+//!  each ending is driven for real or,
+//!  where the
+//!      shipped policies cannot reach it,
+//!  through the ending function itself.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -48,7 +59,8 @@ fn fix_request(config: PolicyConfig) -> StageRequest {
     };
 }
 
-/// Shipped checks over the whole worktree of `repo`, preparing with real Git.
+/// Shipped checks over the whole worktree of `repo`,
+///  preparing with real Git.
 fn fix_checks(repo: &Path) -> ShippedChecks<ScriptedFacts> {
     let mut facts: ScriptedFacts = scripted_facts();
     facts.candidates_repository = Some(repo.to_path_buf());
@@ -73,7 +85,8 @@ fn summary(passes: u64, paths: &[&str]) -> PolicyEvent {
     };
 }
 
-/// A pass result with these events and ending, and no arguments.
+/// A pass result with these events and ending,
+///  and no arguments.
 fn pass_with(events: Vec<PolicyEvent>, end: StageEnd) -> PassResult {
     return PassResult {
         arguments: Vec::new(),
@@ -82,8 +95,11 @@ fn pass_with(events: Vec<PolicyEvent>, end: StageEnd) -> PassResult {
     };
 }
 
-/// A repository whose `a.txt` lacks its final newline, `b.txt` has two, `run.sh` is an
-/// executable without one, and `ok.txt` is canonical.
+/// A repository whose `a.txt` lacks its final newline,
+///  `b.txt` has two,
+///  `run.sh` is an
+/// executable without one,
+///  and `ok.txt` is canonical.
 fn untidy_repository(root: &Path) -> PathBuf {
     let repo: PathBuf = repository(root, "repo");
     std::fs::write(repo.join("ok.txt"), b"ok\n").expect("ok");
@@ -95,7 +111,8 @@ fn untidy_repository(root: &Path) -> PathBuf {
     return repo;
 }
 
-/// Each stage ending is read by the loop as stable, proposing or failed.
+/// Each stage ending is read by the loop as stable,
+///  proposing or failed.
 #[test]
 fn stage_endings_drive_the_loop() {
     assert_eq!(
@@ -116,8 +133,13 @@ fn stage_endings_drive_the_loop() {
     );
 }
 
-/// The loop's operations on real candidates: a proposing pass, its application, the
-/// stored states, and a stable pass; stale proposals never reach the next pass.
+/// The loop's operations on real candidates:
+///  a proposing pass,
+///  its application,
+///  the
+/// stored states,
+///  and a stable pass;
+///  stale proposals never reach the next pass.
 #[test]
 fn passes_propose_apply_and_compare_states() {
     let root: PathBuf = fixture("direct-fix-passes");
@@ -164,8 +186,10 @@ fn change_path(change: crate::direct_fix_install::InstallChange) -> Vec<u8> {
     return change.path;
 }
 
-/// A fix that settles cleanly installs every corrected file, keeps modes and the index,
-/// and reports only the summary; a second fix finds nothing.
+/// A fix that settles cleanly installs every corrected file,
+///  keeps modes and the index,
+/// and reports only the summary;
+///  a second fix finds nothing.
 #[test]
 fn a_clean_fix_installs_and_reports_only_its_summary() {
     let root: PathBuf = fixture("direct-fix-clean");
@@ -203,9 +227,12 @@ fn a_clean_fix_installs_and_reports_only_its_summary() {
     remove(root.as_path());
 }
 
-/// A last pass that refuses installs nothing and reports that pass. Only `final-newline`,
-/// `markdown/autofix` and `mono/dependent-version-bump` run on a direct fix, as in the
-/// installed wrapper, so a refusal is the one unclean last pass real policies can reach.
+/// A last pass that refuses installs nothing and reports that pass.
+///  Only `final-newline`,
+/// `markdown/autofix` and `mono/dependent-version-bump` run on a direct fix,
+///  as in the
+/// installed wrapper,
+///  so a refusal is the one unclean last pass real policies can reach.
 #[test]
 fn a_fix_whose_last_pass_refuses_installs_nothing() {
     let root: PathBuf = fixture("direct-fix-blocked");
@@ -231,7 +258,9 @@ fn a_fix_whose_last_pass_refuses_installs_nothing() {
     remove(root.as_path());
 }
 
-/// A settled fix without a worktree, or whose installation fails, reports one
+/// A settled fix without a worktree,
+///  or whose installation fails,
+///  reports one
 /// transaction failure and changes nothing.
 #[test]
 fn a_settled_fix_that_cannot_install_reports_one_failure() {
@@ -270,8 +299,11 @@ fn a_settled_fix_that_cannot_install_reports_one_failure() {
     remove(root.as_path());
 }
 
-/// The endings the shipped policies cannot reach: a cycle and a pass limit report one
-/// engine failure each and drop the pass; a blocked fix reports its pass; a settled pass
+/// The endings the shipped policies cannot reach:
+///  a cycle and a pass limit report one
+/// engine failure each and drop the pass;
+///  a blocked fix reports its pass;
+///  a settled pass
 /// with nothing corrected or a nonzero exit is reported as it is.
 #[test]
 fn every_ending_reports_what_the_installed_wrapper_reports() {

@@ -1,5 +1,7 @@
-//! What: Disposable directories and real-Git fixtures shared by unit tests.
-//! Why: Every test that touches the filesystem or a repository owns a fresh directory
+//! What:
+//!  Disposable directories and real-Git fixtures shared by unit tests.
+//! Why:
+//!  Every test that touches the filesystem or a repository owns a fresh directory
 //!      under the temporary directory and never reads the real home or global Git configuration.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,7 +9,8 @@
 //! // const root = await mkdtemp(join(tmpdir(), 'native-')); await git(root, ['init']);
 //! ```
 
-/// Native string, path and process types used by the fixtures.
+/// Native string,
+///  path and process types used by the fixtures.
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, Command, Output, Stdio};
@@ -75,11 +78,19 @@ pub(crate) fn repository(parent: &Path, name: &str) -> PathBuf {
     return root;
 }
 
-/// What: Write an executable file, as a PATH candidate fixture, through a child `tee` process.
-/// Why:  Tests run on several threads. If this process opened the file for writing, a
+/// What:
+///  Write an executable file,
+///  as a PATH candidate fixture,
+///  through a child `tee` process.
+/// Why:
+///   Tests run on several threads.
+///  If this process opened the file for writing,
+///  a
 ///       child forked by another test at that moment would inherit the open file until it
-///       starts its own program, and running the fixture in that window fails with
-///       "Text file busy". A file only ever opened for writing by `tee` cannot be
+///       starts its own program,
+///  and running the fixture in that window fails with
+///       "Text file busy".
+///  A file only ever opened for writing by `tee` cannot be
 ///       inherited by any other child of this process.
 ///
 /// In TS you'd write (pseudocode):

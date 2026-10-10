@@ -1,5 +1,7 @@
-//! What: Owned Markdown byte-to-line and UTF-16-column indexes.
-//! Why: Diagnostics keep original byte addresses while columns follow the established Markdown consumer contract.
+//! What:
+//!  Owned Markdown byte-to-line and UTF-16-column indexes.
+//! Why:
+//!  Diagnostics keep original byte addresses while columns follow the established Markdown consumer contract.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,11 +10,14 @@
 
 /// Import the common diagnostic wire span.
 use crate::diagnostic::Span;
-/// Import the parser's CR, LF and CRLF boundary iterator instead of inventing another newline grammar.
+/// Import the parser's CR,
+///  LF and CRLF boundary iterator instead of inventing another newline grammar.
 use satteri_arena::line_ending_iter;
 
-/// What: Cumulative difference between UTF-8 bytes and UTF-16 units at a multibyte character end.
-/// Why: Sparse width changes let each position lookup use binary search without rescanning a long line.
+/// What:
+///  Cumulative difference between UTF-8 bytes and UTF-16 units at a multibyte character end.
+/// Why:
+///  Sparse width changes let each position lookup use binary search without rescanning a long line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,15 +30,18 @@ struct WidthChange {
     extra_bytes: usize,
 }
 
-/// What: An owned position index with no references into its source string.
-/// Why: The parsed document can own its source and index without a self-referential lifetime.
+/// What:
+///  An owned position index with no references into its source string.
+/// Why:
+///  The parsed document can own its source and index without a self-referential lifetime.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class MarkdownPositions { starts: number[]; widths: WidthChange[]; length: number }
 /// ```
 pub(crate) struct MarkdownPositions {
-    /// Original byte offset of each line start; a leading BOM precedes the first content position.
+    /// Original byte offset of each line start;
+    ///  a leading BOM precedes the first content position.
     starts: Vec<usize>,
     /// Sparse cumulative Unicode-width changes.
     widths: Vec<WidthChange>,
@@ -41,8 +49,10 @@ pub(crate) struct MarkdownPositions {
     length: usize,
 }
 
-/// What: Construct and query Markdown positions.
-/// Why: A leading BOM is excluded from columns but retained in original-source byte offsets.
+/// What:
+///  Construct and query Markdown positions.
+/// Why:
+///  A leading BOM is excluded from columns but retained in original-source byte offsets.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

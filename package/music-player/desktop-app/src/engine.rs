@@ -1,19 +1,37 @@
-//! Engine: the worker-thread front door. `Engine::spawn` starts a background
-//! thread running `run`, which owns a `Controller` (the real playback state, in
+//! Engine:
+//!  the worker-thread front door.
+//!  `Engine::spawn` starts a background
+//! thread running `run`,
+//!  which owns a `Controller` (the real playback state,
+//!  in
 //! `controller.rs`) and drives it from the command channel.
 //!
-//! Threads, for a TypeScript reader: `Engine::spawn` starts a background worker
-//! (`std::thread`). The UI talks to it through a one-way queue of `Command`s
-//! (an `mpsc` channel: many senders, one receiver). The worker replies by
-//! calling an `on_update` callback the UI supplied. The PipeWire output runs its
-//! OWN thread internally; the controller thread only decodes and pushes samples
+//! Threads,
+//!  for a TypeScript reader:
+//!  `Engine::spawn` starts a background worker
+//! (`std::thread`).
+//!  The UI talks to it through a one-way queue of `Command`s
+//! (an `mpsc` channel:
+//!  many senders,
+//!  one receiver).
+//!  The worker replies by
+//! calling an `on_update` callback the UI supplied.
+//!  The PipeWire output runs its
+//! OWN thread internally;
+//!  the controller thread only decodes and pushes samples
 //! into the ring buffer the output hands back.
 
-/// What:     `use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};`. The
-///           multi-producer/single-consumer channel: `Sender` pushes, `Receiver` pops,
-///           `TryRecvError` reports "empty" vs "all senders gone". `self` also imports
+/// What:
+///      `use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};`.
+///  The
+///           multi-producer/single-consumer channel:
+///  `Sender` pushes,
+///  `Receiver` pops,
+///           `TryRecvError` reports "empty" vs "all senders gone".
+///  `self` also imports
 ///           the `mpsc` module itself (for `mpsc::channel()`).
-/// Why:      The UI thread sends `Command`s to this worker thread.
+/// Why:
+///       The UI thread sends `Command`s to this worker thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,12 +39,22 @@
 /// ```
 use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 
-/// What:     `use std::thread::{self, JoinHandle, Thread};`. `thread::spawn` starts a
-///           worker; a `JoinHandle` lets us wait for it to finish; a `Thread` is a cheap,
-///           cloneable HANDLE to a running thread (it wraps an internal `Arc`), used here
-///           only to call `.unpark()` on the worker. Sibling you might expect: there is no
-///           separate "thread id" type you'd pass around; `Thread` is that handle.
-/// Why:      The engine runs on its own thread, and other threads need a `Thread` handle
+/// What:
+///      `use std::thread::{self, JoinHandle, Thread};`.
+///  `thread::spawn` starts a
+///           worker;
+///  a `JoinHandle` lets us wait for it to finish;
+///  a `Thread` is a cheap,
+///           cloneable HANDLE to a running thread (it wraps an internal `Arc`),
+///  used here
+///           only to call `.unpark()` on the worker.
+///  Sibling you might expect:
+///  there is no
+///           separate "thread id" type you'd pass around;
+///  `Thread` is that handle.
+/// Why:
+///       The engine runs on its own thread,
+///  and other threads need a `Thread` handle
 ///           to wake it from a park (see `park_timeout` in `run`).
 ///
 /// In TS you'd write (pseudocode):
@@ -35,8 +63,12 @@ use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 /// ```
 use std::thread::{self, JoinHandle, Thread};
 
-/// What:     `use std::time::Duration;`. A span of time (here, a sleep interval).
-/// Why:      We sleep briefly when idle to avoid busy-spinning the CPU.
+/// What:
+///      `use std::time::Duration;`.
+///  A span of time (here,
+///  a sleep interval).
+/// Why:
+///       We sleep briefly when idle to avoid busy-spinning the CPU.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,9 +76,13 @@ use std::thread::{self, JoinHandle, Thread};
 /// ```
 use std::time::Duration;
 
-/// What:     `use crate::command::{Command, Update};`. The UI->engine and engine->UI
+/// What:
+///      `use crate::command::{Command, Update};`.
+///  The UI->engine and engine->UI
 ///           message enums.
-/// Why:      The channel carries `Command`s; the callback delivers `Update`s.
+/// Why:
+///       The channel carries `Command`s;
+///  the callback delivers `Update`s.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,8 +90,11 @@ use std::time::Duration;
 /// ```
 use crate::command::{Command, Update};
 
-/// What:     `use crate::controller::Controller;`. The playback state machine.
-/// Why:      `run` builds one and forwards commands/audio pumping to it.
+/// What:
+///      `use crate::controller::Controller;`.
+///  The playback state machine.
+/// Why:
+///       `run` builds one and forwards commands/audio pumping to it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -63,10 +102,14 @@ use crate::command::{Command, Update};
 /// ```
 use crate::controller::Controller;
 
-/// What:     `use crate::peakcache::CacheHandle;`. The synchronous handle to the peak-cache
+/// What:
+///      `use crate::peakcache::CacheHandle;`.
+///  The synchronous handle to the peak-cache
 ///           actor.
-/// Why:      `run` opens the production cache (`CacheHandle::open`) and injects it into the
-///           controller, so the controller constructor stays test-friendly.
+/// Why:
+///       `run` opens the production cache (`CacheHandle::open`) and injects it into the
+///           controller,
+///  so the controller constructor stays test-friendly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -74,8 +117,11 @@ use crate::controller::Controller;
 /// ```
 use crate::peakcache::CacheHandle;
 
-/// What:     `use crate::output::Output;`. The PipeWire output (FFI boundary).
-/// Why:      `run` tries to create one and hands it to the controller.
+/// What:
+///      `use crate::output::Output;`.
+///  The PipeWire output (FFI boundary).
+/// Why:
+///       `run` tries to create one and hands it to the controller.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -83,17 +129,30 @@ use crate::peakcache::CacheHandle;
 /// ```
 use crate::output::Output;
 
-/// What:     `const IDLE_PARK_FALLBACK_MS: u64 = 100;`. Milliseconds the worker will PARK
-///           (block, using ~0 CPU) when there is no audio work this cycle, if nothing
-///           wakes it sooner. `u64` (not `u32`/`i64`) is what `Duration::from_millis`
-///           wants. The worker is normally woken EARLY by an `unpark()` call: the audio
+/// What:
+///      `const IDLE_PARK_FALLBACK_MS: u64 = 100;`.
+///  Milliseconds the worker will PARK
+///           (block,
+///  using ~0 CPU) when there is no audio work this cycle,
+///  if nothing
+///           wakes it sooner.
+///  `u64` (not `u32`/`i64`) is what `Duration::from_millis`
+///           wants.
+///  The worker is normally woken EARLY by an `unpark()` call:
+///  the audio
 ///           callback unparks it after draining the ring buffer (space freed -> decode
-///           more), and command senders unpark it after queueing a command (act on it
-///           now). This timeout is only a SAFETY NET in case an `unpark` is ever missed;
-///           it caps any stall well under the ~1 second the ring buffer holds, so a missed
+///           more),
+///  and command senders unpark it after queueing a command (act on it
+///           now).
+///  This timeout is only a SAFETY NET in case an `unpark` is ever missed;
+///           it caps any stall well under the ~1 second the ring buffer holds,
+///  so a missed
 ///           wake never causes an audio gap.
-/// Why:      Replaces the old busy-poll: the worker used to skip its sleep whenever a push
-///           accepted even one sample, so during playback it spun a whole CPU core.
+/// Why:
+///       Replaces the old busy-poll:
+///  the worker used to skip its sleep whenever a push
+///           accepted even one sample,
+///  so during playback it spun a whole CPU core.
 ///           Parking until explicitly woken drops idle CPU to near zero.
 ///
 /// In TS you'd write (pseudocode):
@@ -102,28 +161,43 @@ use crate::output::Output;
 /// ```
 const IDLE_PARK_FALLBACK_MS: u64 = 100;
 
-/// What:     `pub struct Engine { ... }`. The handle the UI keeps. It is `Send` (only a
-///           channel sender + a thread handle), unlike the controller's internal state.
-/// Why:      Lets the UI send commands and stop the worker on drop.
+/// What:
+///      `pub struct Engine { ... }`.
+///  The handle the UI keeps.
+///  It is `Send` (only a
+///           channel sender + a thread handle),
+///  unlike the controller's internal state.
+/// Why:
+///       Lets the UI send commands and stop the worker on drop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class Engine { tx: Sender<Command>; worker: WorkerRef; handle: ThreadHandle | null; }
 /// ```
 pub struct Engine {
-    /// What:     `tx: Sender<Command>`. The send end of the command channel.
-    /// Why:      `send` pushes commands to the worker.
+    /// What:
+    ///      `tx: Sender<Command>`.
+    ///  The send end of the command channel.
+    /// Why:
+    ///       `send` pushes commands to the worker.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// tx: Sender<Command>;
     /// ```
     tx: Sender<Command>,
-    /// What:     `worker: Thread`. A cloneable handle to the worker thread (the one
-    ///           running `run`). We never join through this; we only call `.unpark()` on
+    /// What:
+    ///      `worker: Thread`.
+    ///  A cloneable handle to the worker thread (the one
+    ///           running `run`).
+    ///  We never join through this;
+    ///  we only call `.unpark()` on
     ///           it.
-    /// Why:      After sending a command we must WAKE the worker, which is otherwise parked
-    ///           (blocked) when idle; without this the command would sit unhandled until
+    /// Why:
+    ///       After sending a command we must WAKE the worker,
+    ///  which is otherwise parked
+    ///           (blocked) when idle;
+    ///  without this the command would sit unhandled until
     ///           the fallback timeout fires.
     ///
     /// In TS you'd write (pseudocode):
@@ -131,9 +205,14 @@ pub struct Engine {
     /// worker: WorkerRef;
     /// ```
     worker: Thread,
-    /// What:     `handle: Option<JoinHandle<()>>`. The worker's join handle, or `None`
-    ///           after we have joined it. `JoinHandle<()>` = the thread returns nothing.
-    /// Why:      `Drop` joins the thread so the output cleans up before exit.
+    /// What:
+    ///      `handle: Option<JoinHandle<()>>`.
+    ///  The worker's join handle,
+    ///  or `None`
+    ///           after we have joined it.
+    ///  `JoinHandle<()>` = the thread returns nothing.
+    /// Why:
+    ///       `Drop` joins the thread so the output cleans up before exit.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -142,12 +221,20 @@ pub struct Engine {
     handle: Option<JoinHandle<()>>,
 }
 
-/// What:     `fn send_and_wake(tx: &Sender<Command>, worker: &Thread, command: Command)`.
-///           Queue `command` on the channel, then unpark the worker. Borrows the channel and
-///           the worker handle; takes the command by value. Module-private.
-/// Why:      `Engine::send` and `CommandSender::send` share this exact send-then-wake
-///           contract; defining it once keeps the "never queue a command without waking the
-///           worker" rule in one place. A free function (rather than `Engine::send`
+/// What:
+///      `fn send_and_wake(tx: &Sender<Command>, worker: &Thread, command: Command)`.
+///           Queue `command` on the channel,
+///  then unpark the worker.
+///  Borrows the channel and
+///           the worker handle;
+///  takes the command by value.
+///  Module-private.
+/// Why:
+///       `Engine::send` and `CommandSender::send` share this exact send-then-wake
+///           contract;
+///  defining it once keeps the "never queue a command without waking the
+///           worker" rule in one place.
+///  A free function (rather than `Engine::send`
 ///           delegating through `sender()`) avoids the per-send `tx`/`worker` clones that
 ///           `sender()` would add.
 ///
@@ -180,14 +267,21 @@ fn send_and_wake(tx: &Sender<Command>, worker: &Thread, command: Command) {
     worker.unpark();
 }
 
-/// What:     `#[derive(Clone)] pub struct CommandSender { ... }`. A small bundle of the
+/// What:
+///      `#[derive(Clone)] pub struct CommandSender { ... }`.
+///  A small bundle of the
 ///           command channel's send end PLUS the worker's `Thread` handle.
 ///           `#[derive(Clone)]` auto-generates a `.clone()` that clones both fields (both
-///           are cheap: a `Sender` clone shares the channel, a `Thread` clone bumps an
+///           are cheap:
+///  a `Sender` clone shares the channel,
+///  a `Thread` clone bumps an
 ///           internal refcount).
-/// Why:      Threads other than the UI (the file-picker thread) need to send commands AND
-///           wake the worker. Handing out a bare `Sender` would let them queue a command
-///           without unparking, so it would not be acted on until the timeout.
+/// Why:
+///       Threads other than the UI (the file-picker thread) need to send commands AND
+///           wake the worker.
+///  Handing out a bare `Sender` would let them queue a command
+///           without unparking,
+///  so it would not be acted on until the timeout.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -195,16 +289,22 @@ fn send_and_wake(tx: &Sender<Command>, worker: &Thread, command: Command) {
 /// ```
 #[derive(Clone)]
 pub struct CommandSender {
-    /// What:     `tx: Sender<Command>`. The send end of the command channel.
-    /// Why:      The picker thread pushes `OpenPaths` through it.
+    /// What:
+    ///      `tx: Sender<Command>`.
+    ///  The send end of the command channel.
+    /// Why:
+    ///       The picker thread pushes `OpenPaths` through it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// tx: Sender<Command>;
     /// ```
     tx: Sender<Command>,
-    /// What:     `worker: Thread`. The same worker handle `Engine` holds.
-    /// Why:      Wake the worker after queueing a command.
+    /// What:
+    ///      `worker: Thread`.
+    ///  The same worker handle `Engine` holds.
+    /// Why:
+    ///       Wake the worker after queueing a command.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -213,17 +313,26 @@ pub struct CommandSender {
     worker: Thread,
 }
 
-/// What:     `impl CommandSender { ... }`. Its one method.
-/// Why:      Mirror `Engine::send` for off-UI threads.
+/// What:
+///      `impl CommandSender { ... }`.
+///  Its one method.
+/// Why:
+///       Mirror `Engine::send` for off-UI threads.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class CommandSender { send(command: Command): void { ... } }
 /// ```
 impl CommandSender {
-    /// What:     `pub fn send(&self, command: Command)`. Queue a command, then wake the
-    ///           worker. Read-only borrow of self.
-    /// Why:      Same contract as `Engine::send`, usable from another OS thread.
+    /// What:
+    ///      `pub fn send(&self, command: Command)`.
+    ///  Queue a command,
+    ///  then wake the
+    ///           worker.
+    ///  Read-only borrow of self.
+    /// Why:
+    ///       Same contract as `Engine::send`,
+    ///  usable from another OS thread.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -243,19 +352,28 @@ impl CommandSender {
     }
 }
 
-/// What:     `impl Engine { ... }`. The handle's methods.
-/// Why:      Construction and command sending.
+/// What:
+///      `impl Engine { ... }`.
+///  The handle's methods.
+/// Why:
+///       Construction and command sending.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class Engine { /* spawn, sender, send */ }
 /// ```
 impl Engine {
-    /// What:     `pub fn spawn<F>(on_update: F) -> Engine where F: Fn(Update) + Send + 'static`.
-    ///           Start the worker. `F` is the callback type; the WHERE clause requires it
-    ///           be callable repeatedly (`Fn`), movable to another thread (`Send`), and own
+    /// What:
+    ///      `pub fn spawn<F>(on_update: F) -> Engine where F: Fn(Update) + Send + 'static`.
+    ///           Start the worker.
+    ///  `F` is the callback type;
+    ///  the WHERE clause requires it
+    ///           be callable repeatedly (`Fn`),
+    ///  movable to another thread (`Send`),
+    ///  and own
     ///           no short-lived borrows (`'static`).
-    /// Why:      The UI passes a closure that forwards updates to the Slint loop.
+    /// Why:
+    ///       The UI passes a closure that forwards updates to the Slint loop.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -277,11 +395,15 @@ impl Engine {
         return Engine::spawn_with_cache(on_update, CacheHandle::open())
     }
 
-    /// What:     `pub(crate) fn spawn_with_cache<F>(on_update: F, cache: CacheHandle) -> Engine where F: Fn(Update) + Send + 'static`.
+    /// What:
+    ///      `pub(crate) fn spawn_with_cache<F>(on_update: F, cache: CacheHandle) -> Engine where F: Fn(Update) + Send + 'static`.
     ///           Start the worker around an INJECTED cache handle (the public `spawn` body,
     ///           minus opening the cache).
-    /// Why:      Production `spawn` passes `CacheHandle::open()`; the engine tests pass a
-    ///           degraded handle, so the worker never touches the real config dir.
+    /// Why:
+    ///       Production `spawn` passes `CacheHandle::open()`;
+    ///  the engine tests pass a
+    ///           degraded handle,
+    ///  so the worker never touches the real config dir.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -366,12 +488,17 @@ impl Engine {
         }
     }
 
-    /// What:     `pub fn sender(&self) -> CommandSender`. Hand out a `CommandSender` (a
+    /// What:
+    ///      `pub fn sender(&self) -> CommandSender`.
+    ///  Hand out a `CommandSender` (a
     ///           CLONE of the channel's send end bundled with the worker `Thread` handle).
-    ///           Both inner parts are `Send`, so the bundle can be moved to another OS
+    ///           Both inner parts are `Send`,
+    ///  so the bundle can be moved to another OS
     ///           thread (the file-picker thread).
-    /// Why:      The file dialog runs on its own thread and must send `OpenPaths` back AND
-    ///           wake the worker; it cannot hold the `!Send` `Rc<Engine>` the UI uses.
+    /// Why:
+    ///       The file dialog runs on its own thread and must send `OpenPaths` back AND
+    ///           wake the worker;
+    ///  it cannot hold the `!Send` `Rc<Engine>` the UI uses.
     ///           Returning the bundle (not a bare `Sender`) guarantees that off-UI sends
     ///           also unpark the worker.
     ///
@@ -396,9 +523,12 @@ impl Engine {
         }
     }
 
-    /// What:     `pub fn send(&self, command: Command)`. Forward a command to the worker.
+    /// What:
+    ///      `pub fn send(&self, command: Command)`.
+    ///  Forward a command to the worker.
     ///           Read-only borrow of self.
-    /// Why:      The UI's only way to control playback.
+    /// Why:
+    ///       The UI's only way to control playback.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -418,18 +548,28 @@ impl Engine {
     }
 }
 
-/// What:     `impl Drop for Engine { ... }`. Cleanup when the UI drops the engine. `Drop`
-///           is the destructor trait; its `drop` runs at end of scope.
-/// Why:      Tell the worker to quit and wait for it, so PipeWire shuts down.
+/// What:
+///      `impl Drop for Engine { ... }`.
+///  Cleanup when the UI drops the engine.
+///  `Drop`
+///           is the destructor trait;
+///  its `drop` runs at end of scope.
+/// Why:
+///       Tell the worker to quit and wait for it,
+///  so PipeWire shuts down.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class Engine { [Symbol.dispose]() { /* stop + join worker */ } }
 /// ```
 impl Drop for Engine {
-    /// What:     `fn drop(&mut self)`. Runs at end of life. `&mut self` because it tears the
+    /// What:
+    ///      `fn drop(&mut self)`.
+    ///  Runs at end of life.
+    ///  `&mut self` because it tears the
     ///           engine down.
-    /// Why:      Graceful shutdown.
+    /// Why:
+    ///       Graceful shutdown.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -471,12 +611,19 @@ impl Drop for Engine {
     }
 }
 
-/// What:     `fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>, self_tx: Sender<Command>, cache: CacheHandle)`.
-///           The worker's entry point: set up state around the injected `cache`, then loop
-///           handling commands and pumping audio until told to quit. `Box<dyn Fn(...)>` is
+/// What:
+///      `fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>, self_tx: Sender<Command>, cache: CacheHandle)`.
+///           The worker's entry point:
+///  set up state around the injected `cache`,
+///  then loop
+///           handling commands and pumping audio until told to quit.
+///  `Box<dyn Fn(...)>` is
 ///           the heap-boxed callback trait object.
-/// Why:      Everything playback-related lives on this one thread. The cache is injected (not
-///           opened here) so the engine tests can pass a degraded, no-disk handle.
+/// Why:
+///       Everything playback-related lives on this one thread.
+///  The cache is injected (not
+///           opened here) so the engine tests can pass a degraded,
+///  no-disk handle.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -701,9 +848,14 @@ fn run(
     }
 }
 
-/// What:     `#[cfg(test)] #[path = "engine_tests.rs"] mod tests;`. Pull the end-to-end
-///           integration test in from the sibling file `engine_tests.rs`; test builds only.
-/// Why:      Keep `engine.rs` to production code; the live-update seam test lives beside it.
+/// What:
+///      `#[cfg(test)] #[path = "engine_tests.rs"] mod tests;`.
+///  Pull the end-to-end
+///           integration test in from the sibling file `engine_tests.rs`;
+///  test builds only.
+/// Why:
+///       Keep `engine.rs` to production code;
+///  the live-update seam test lives beside it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

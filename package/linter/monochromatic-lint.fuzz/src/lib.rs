@@ -1,5 +1,7 @@
-//! What: Invariants for the unified linter's merge and configuration boundaries.
-//! Why: Structured generation reaches valid inputs while raw JSONC mutation also exercises rejection paths.
+//! What:
+//!  Invariants for the unified linter's merge and configuration boundaries.
+//! Why:
+//!  Structured generation reaches valid inputs while raw JSONC mutation also exercises rejection paths.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -9,7 +11,11 @@
 /// Counted Markdown/MDX rules and raw-source edit safety controls.
 pub mod markdown;
 
-/// Whole per-source path: host rules, processors, nested doc tests, projection and the fix loop.
+/// Whole per-source path:
+///  host rules,
+///  processors,
+///  nested doc tests,
+///  projection and the fix loop.
 pub mod orchestration;
 
 /// Semantic explicit-type property controls.
@@ -27,8 +33,10 @@ use monochromatic_lint::configuration::parse_configuration;
 /// Import decoded-key deduplication for an independent order invariant.
 use std::collections::BTreeSet;
 
-/// What: Exercise merge laws over a structured document.
-/// Why: These laws do not reimplement recursive merge and cannot share its recursive grouping bug.
+/// What:
+///  Exercise merge laws over a structured document.
+/// Why:
+///  These laws do not reimplement recursive merge and cannot share its recursive grouping bug.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -99,8 +107,10 @@ pub fn check_merge(document: &JsoncValue) {
     );
 }
 
-/// What: Construct an owned record member for generated configurations.
-/// Why: The parser's constructors perform string escaping rather than an invented text interpolation.
+/// What:
+///  Construct an owned record member for generated configurations.
+/// Why:
+///  The parser's constructors perform string escaping rather than an invented text interpolation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -113,8 +123,12 @@ fn entry(name: &str, value: JsoncValue) -> JsoncEntry {
     };
 }
 
-/// What: Construct ordinary generated string data through the JSONC value model.
-/// Why: Final emission, not the generator, is responsible for JSON quoting.
+/// What:
+///  Construct ordinary generated string data through the JSONC value model.
+/// Why:
+///  Final emission,
+///  not the generator,
+///  is responsible for JSON quoting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -124,8 +138,11 @@ fn text(value: &str) -> JsoncValue {
     return JsoncValue::text_from_units(value.encode_utf16().collect());
 }
 
-/// What: Build a valid configuration from arbitrary bytes, with bounded block count.
-/// Why: Raw bytes alone rarely reach successful rule validation and merging.
+/// What:
+///  Build a valid configuration from arbitrary bytes,
+///  with bounded block count.
+/// Why:
+///  Raw bytes alone rarely reach successful rule validation and merging.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,8 +176,10 @@ pub fn generated_configuration(bytes: &[u8]) -> JsoncValue {
     return JsoncValue::array(blocks);
 }
 
-/// What: Exercise configuration validation and check that merging valid blocks remains valid.
-/// Why: Per-block validity must remain true after the selected rules are combined.
+/// What:
+///  Exercise configuration validation and check that merging valid blocks remains valid.
+/// Why:
+///  Per-block validity must remain true after the selected rules are combined.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

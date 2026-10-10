@@ -1,5 +1,8 @@
-//! What:    A byte cursor over the pattern that skips verbose-mode whitespace and comments.
-//! Why:     This file is the Rust module that groups the cursor implementation, so the
+//! What:
+//!     A byte cursor over the pattern that skips verbose-mode whitespace and comments.
+//! Why:
+//!      This file is the Rust module that groups the cursor implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,9 +12,14 @@
 
 /// A forward cursor over the pattern bytes.
 ///
-/// What: holds the source bytes and a current offset, and knows how to skip the
+/// What:
+///  holds the source bytes and a current offset,
+///  and knows how to skip the
 /// always-on verbose-mode noise (unescaped whitespace and first-column `#`
-/// comments). Why: every grammar rule reads through this one cursor, so the
+/// comments).
+///  Why:
+///  every grammar rule reads through this one cursor,
+///  so the
 /// verbose-mode rules live in exactly one place.
 ///
 /// In TS you'd write (pseudocode):
@@ -21,9 +29,14 @@
 /// };
 /// ```
 pub struct Cursor<'a> {
-    /// What:    The pattern as raw bytes; matching and parsing are both byte-oriented.
-    /// Why:     `src` stores the pattern as raw bytes; matching and parsing are both
-    ///          byte-oriented, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     The pattern as raw bytes;
+    ///  matching and parsing are both byte-oriented.
+    /// Why:
+    ///      `src` stores the pattern as raw bytes;
+    ///  matching and parsing are both
+    ///          byte-oriented,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -31,8 +44,11 @@ pub struct Cursor<'a> {
     /// src: 'a [u8];
     /// ```
     src: &'a [u8],
-    /// What:    Current read offset into `src`.
-    /// Why:     `pos` stores current read offset into `src`, so matcher code reads that
+    /// What:
+    ///     Current read offset into `src`.
+    /// Why:
+    ///      `pos` stores current read offset into `src`,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -42,8 +58,10 @@ pub struct Cursor<'a> {
     pos: usize,
 }
 
-/// What:    Reading and verbose-mode skipping over the pattern bytes.
-/// Why:     The program attaches these functions to the named Rust type so callers can use
+/// What:
+///     Reading and verbose-mode skipping over the pattern bytes.
+/// Why:
+///      The program attaches these functions to the named Rust type so callers can use
 ///          method syntax.
 ///
 /// In TS you'd write (pseudocode):
@@ -53,7 +71,10 @@ pub struct Cursor<'a> {
 impl<'a> Cursor<'a> {
     /// Builds a cursor at the start of `src`.
     ///
-    /// What: offset zero over the given bytes. Why: parsing begins at the front.
+    /// What:
+    ///  offset zero over the given bytes.
+    ///  Why:
+    ///  parsing begins at the front.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -67,7 +88,10 @@ impl<'a> Cursor<'a> {
 
     /// Returns the current byte offset.
     ///
-    /// What: the index used for error positions. Why: `CompileError::Syntax`
+    /// What:
+    ///  the index used for error positions.
+    ///  Why:
+    ///  `CompileError::Syntax`
     /// reports where a problem was found.
     ///
     /// In TS you'd write (pseudocode):
@@ -82,7 +106,10 @@ impl<'a> Cursor<'a> {
 
     /// Reports whether the cursor is at or past the end.
     ///
-    /// What: `pos >= len`. Why: loops stop when input is exhausted.
+    /// What:
+    ///  `pos >= len`.
+    ///  Why:
+    ///  loops stop when input is exhausted.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -96,7 +123,10 @@ impl<'a> Cursor<'a> {
 
     /// Returns the current byte without advancing.
     ///
-    /// What: `src.get(pos)`. Why: lookahead to decide which rule applies.
+    /// What:
+    ///  `src.get(pos)`.
+    ///  Why:
+    ///  lookahead to decide which rule applies.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -110,7 +140,10 @@ impl<'a> Cursor<'a> {
 
     /// Returns the byte `offset` ahead without advancing.
     ///
-    /// What: `src.get(pos + offset)`. Why: range detection in classes and the
+    /// What:
+    ///  `src.get(pos + offset)`.
+    ///  Why:
+    ///  range detection in classes and the
     /// `{n,` form need one byte of extra lookahead.
     ///
     /// In TS you'd write (pseudocode):
@@ -125,7 +158,10 @@ impl<'a> Cursor<'a> {
 
     /// Returns the current byte and advances past it.
     ///
-    /// What: reads then increments `pos`. Why: the consuming primitive every
+    /// What:
+    ///  reads then increments `pos`.
+    ///  Why:
+    ///  the consuming primitive every
     /// rule builds on.
     ///
     /// In TS you'd write (pseudocode):
@@ -144,7 +180,10 @@ impl<'a> Cursor<'a> {
 
     /// Reports whether the cursor sits at the first column of a line.
     ///
-    /// What: true at offset zero or right after a newline. Why: a `#` comment is
+    /// What:
+    ///  true at offset zero or right after a newline.
+    ///  Why:
+    ///  a `#` comment is
     /// only a comment when it is the first character of its line.
     ///
     /// In TS you'd write (pseudocode):
@@ -159,9 +198,16 @@ impl<'a> Cursor<'a> {
 
     /// Skips verbose-mode whitespace and first-column comments.
     ///
-    /// What: advances over ASCII whitespace and, at a line start, over a `#` and
-    /// the rest of that line. Why: verbose mode is always on, so a rule may span
-    /// many lines and carry first-column comment lines; this is where both are
+    /// What:
+    ///  advances over ASCII whitespace and,
+    ///  at a line start,
+    ///  over a `#` and
+    /// the rest of that line.
+    ///  Why:
+    ///  verbose mode is always on,
+    ///  so a rule may span
+    /// many lines and carry first-column comment lines;
+    ///  this is where both are
     /// consumed before any token is read.
     ///
     /// In TS you'd write (pseudocode):

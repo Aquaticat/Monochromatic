@@ -1,8 +1,15 @@
-//! What: The per-invocation owner of candidate versions and candidate bytes.
-//! Why: Policies read committed or staged content, never whatever is in the live
-//!      worktree. A version costs one listing process, its bytes come from one
-//!      long-lived object reader, and neither count grows with the number of files.
-//!      After a fix or replay changed the index, `invalidate` retires every version.
+//! What:
+//!  The per-invocation owner of candidate versions and candidate bytes.
+//! Why:
+//!  Policies read committed or staged content,
+//!  never whatever is in the live
+//!      worktree.
+//!  A version costs one listing process,
+//!  its bytes come from one
+//!      long-lived object reader,
+//!  and neither count grows with the number of files.
+//!      After a fix or replay changed the index,
+//!  `invalidate` retires every version.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +20,8 @@
 
 /// Import the layer's failure type and its closed list of causes.
 use super::candidate_error::{CandidateError, CandidateFailure};
-/// Import the candidate modes, the validated object name and its parser.
+/// Import the candidate modes,
+///  the validated object name and its parser.
 use super::candidate_object::{CandidateMode, ObjectId, parse_object_id};
 /// Import the long-lived object reader.
 use super::candidate_reader::{ObjectReader, start_object_reader};
@@ -29,11 +37,21 @@ use super::git_metadata::{MetadataOutput, run_metadata_git, strip_git_line};
 use std::ffi::OsString;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
 use std::path::{Path, PathBuf};
-/// What: `Rc<T>` is a shared, read-only handle to one heap value, counted so the value
-///       lives until its last handle is gone (siblings: `Box<T>`, a single owner, and
-///       `Arc<T>`, the thread-safe form).
-/// Why:  Several policies hold the same version and the same bytes at once. Nothing
-///       here crosses threads, so `Arc` would add cost for no benefit.
+/// What:
+///  `Rc<T>` is a shared,
+///  read-only handle to one heap value,
+///  counted so the value
+///       lives until its last handle is gone (siblings:
+///  `Box<T>`,
+///  a single owner,
+///  and
+///       `Arc<T>`,
+///  the thread-safe form).
+/// Why:
+///   Several policies hold the same version and the same bytes at once.
+///  Nothing
+///       here crosses threads,
+///  so `Arc` would add cost for no benefit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -41,11 +59,17 @@ use std::path::{Path, PathBuf};
 /// ```
 use std::rc::Rc;
 
-/// What: Everything one invocation needs to list and read candidates.
-///       `Option<ObjectReader>` is "a running reader or nothing"; `u64` is an unsigned
-///       64-bit counter (siblings `u32`, `usize`).
-/// Why:  The reader is started only when something needs it, so an invocation that
-///       reads no object starts no reader. `u64` cannot run out within a process.
+/// What:
+///  Everything one invocation needs to list and read candidates.
+///       `Option<ObjectReader>` is "a running reader or nothing";
+///  `u64` is an unsigned
+///       64-bit counter (siblings `u32`,
+///  `usize`).
+/// Why:
+///   The reader is started only when something needs it,
+///  so an invocation that
+///       reads no object starts no reader.
+///  `u64` cannot run out within a process.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,20 +78,28 @@ use std::rc::Rc;
 pub struct CandidateStore {
     /// The real Git executable every listing and the reader start.
     real_git: PathBuf,
-    /// The caller's arguments before the subcommand, replayed so Git selects the same repository.
+    /// The caller's arguments before the subcommand,
+    ///  replayed so Git selects the same repository.
     global_prefix: Vec<OsString>,
-    /// Added environment pairs, such as a private index file or object directory.
+    /// Added environment pairs,
+    ///  such as a private index file or object directory.
     overlay: Vec<(OsString, OsString)>,
-    /// The long-lived object reader, once started.
+    /// The long-lived object reader,
+    ///  once started.
     reader: Option<ObjectReader>,
-    /// Counts invalidations; candidates of an earlier generation are refused.
+    /// Counts invalidations;
+    ///  candidates of an earlier generation are refused.
     generation: u64,
-    /// Versions already listed in this generation, by source.
+    /// Versions already listed in this generation,
+    ///  by source.
     versions: Vec<(CandidateSource, Rc<CandidateVersion>)>,
 }
 
-/// What: Build the failure of a listing command that could not be started or exited unsuccessfully.
-/// Why:  The message names the Git operation, so the person can rerun it.
+/// What:
+///  Build the failure of a listing command that could not be started or exited unsuccessfully.
+/// Why:
+///   The message names the Git operation,
+///  so the person can rerun it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,8 +112,12 @@ fn listing_failure(failure: CandidateFailure, operation: &str, detail: &str) -> 
     );
 }
 
-/// What: `impl CandidateStore { ... }` attaches the store's operations, like class methods.
-/// Why:  The store is the only place that starts Git for candidates, which is what
+/// What:
+///  `impl CandidateStore { ... }` attaches the store's operations,
+///  like class methods.
+/// Why:
+///   The store is the only place that starts Git for candidates,
+///  which is what
 ///       keeps the process count bounded.
 ///
 /// In TS you'd write (pseudocode):
@@ -89,10 +125,15 @@ fn listing_failure(failure: CandidateFailure, operation: &str, detail: &str) -> 
 /// class CandidateStore { version(source) {} bytes(candidate) {} invalidate() {} }
 /// ```
 impl CandidateStore {
-    /// What: Create a store without starting any process.
-    ///       `&[OsString]` borrows the global arguments; `&[(OsString, OsString)]` borrows
-    ///       environment pairs; `.to_vec()` and `.to_path_buf()` copy them into owned storage.
-    /// Why:  The store outlives the caller's borrowed arguments, and commands that
+    /// What:
+    ///  Create a store without starting any process.
+    ///       `&[OsString]` borrows the global arguments;
+    ///  `&[(OsString, OsString)]` borrows
+    ///       environment pairs;
+    ///  `.to_vec()` and `.to_path_buf()` copy them into owned storage.
+    /// Why:
+    ///   The store outlives the caller's borrowed arguments,
+    ///  and commands that
     ///       never ask for candidates pay nothing.
     ///
     /// In TS you'd write (pseudocode):
@@ -115,8 +156,12 @@ impl CandidateStore {
         };
     }
 
-    /// What: The running reader, started on first use. `&mut ObjectReader` lends it for changing.
-    /// Why:  One reader serves every object read of the invocation.
+    /// What:
+    ///  The running reader,
+    ///  started on first use.
+    ///  `&mut ObjectReader` lends it for changing.
+    /// Why:
+    ///   One reader serves every object read of the invocation.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -145,10 +190,14 @@ impl CandidateStore {
         return Ok(reader);
     }
 
-    /// What: Run one listing command and return its standard output.
+    /// What:
+    ///  Run one listing command and return its standard output.
     ///       `Vec<u8>` is an owned byte list (sibling `String` would require UTF-8).
-    /// Why:  Listings print raw pathname bytes. A command that fails lists nothing
-    ///       trustworthy, so its output is discarded and Git's own message is reported.
+    /// Why:
+    ///   Listings print raw pathname bytes.
+    ///  A command that fails lists nothing
+    ///       trustworthy,
+    ///  so its output is discarded and Git's own message is reported.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -192,10 +241,15 @@ impl CandidateStore {
         return Ok(output.stdout);
     }
 
-    /// What: The name of the empty tree in this repository's hash format.
-    /// Why:  A repository without commits has no `HEAD` to compare the index with; the
-    ///       empty tree makes every staged entry an addition. Git computes the name
-    ///       from empty input, so SHA-1 and SHA-256 repositories both work.
+    /// What:
+    ///  The name of the empty tree in this repository's hash format.
+    /// Why:
+    ///   A repository without commits has no `HEAD` to compare the index with;
+    ///  the
+    ///       empty tree makes every staged entry an addition.
+    ///  Git computes the name
+    ///       from empty input,
+    ///  so SHA-1 and SHA-256 repositories both work.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -222,12 +276,21 @@ impl CandidateStore {
         return Ok(tree);
     }
 
-    /// What: List the index against a commit, or against the empty tree when there is none,
-    ///       limited to `pathspecs`. `Option<&ObjectId>` is "a borrowed commit name or
-    ///       nothing"; an empty `pathspecs` lists the whole index.
-    /// Why:  `diff-index --cached` reads only the index and the tree, never the
-    ///       worktree. Rename detection is off, so a renamed file is one deleted path
-    ///       and one added path, each judged on its own.
+    /// What:
+    ///  List the index against a commit,
+    ///  or against the empty tree when there is none,
+    ///       limited to `pathspecs`.
+    ///  `Option<&ObjectId>` is "a borrowed commit name or
+    ///       nothing";
+    ///  an empty `pathspecs` lists the whole index.
+    /// Why:
+    ///   `diff-index --cached` reads only the index and the tree,
+    ///  never the
+    ///       worktree.
+    ///  Rename detection is off,
+    ///  so a renamed file is one deleted path
+    ///       and one added path,
+    ///  each judged on its own.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -257,9 +320,12 @@ impl CandidateStore {
         return self.run_listing("diff-index", command.as_slice());
     }
 
-    /// What: List what one commit changed against each of its parents.
-    /// Why:  `-m` lists a merge once per parent and `--root` lists a first commit
-    ///       against nothing, so every commit shape yields its changed paths.
+    /// What:
+    ///  List what one commit changed against each of its parents.
+    /// Why:
+    ///   `-m` lists a merge once per parent and `--root` lists a first commit
+    ///       against nothing,
+    ///  so every commit shape yields its changed paths.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -282,9 +348,13 @@ impl CandidateStore {
         );
     }
 
-    /// What: The version of one source, listed once per generation and shared afterwards.
+    /// What:
+    ///  The version of one source,
+    ///  listed once per generation and shared afterwards.
     ///       `Rc::clone(..)` makes another handle to the same version without copying it.
-    /// Why:  Every policy of a pass sees the same paths, and asking again costs no process.
+    /// Why:
+    ///   Every policy of a pass sees the same paths,
+    ///  and asking again costs no process.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -316,10 +386,16 @@ impl CandidateStore {
         return Ok(version);
     }
 
-    /// What: The index entries `pathspecs` select, every conflict stage included, with
+    /// What:
+    ///  The index entries `pathspecs` select,
+    ///  every conflict stage included,
+    ///  with
     ///       repository-relative pathnames.
-    /// Why:  `ls-files --stage` reads only the index, so comparing two of these listings
-    ///       shows exactly which entries an operation on that index changed. `--full-name`
+    /// Why:
+    ///   `ls-files --stage` reads only the index,
+    ///  so comparing two of these listings
+    ///       shows exactly which entries an operation on that index changed.
+    ///  `--full-name`
     ///       keeps pathnames repository-relative from any directory.
     ///
     /// In TS you'd write (pseudocode):
@@ -342,10 +418,15 @@ impl CandidateStore {
         return parse_stage_records(output.as_slice());
     }
 
-    /// What: The changed-path records of the index against `HEAD`, limited to `pathspecs`;
+    /// What:
+    ///  The changed-path records of the index against `HEAD`,
+    ///  limited to `pathspecs`;
     ///       against the empty tree when no commit exists yet.
-    /// Why:  Which selected paths `HEAD` lacks makes them additions, and which removed
-    ///       paths it has makes them deletions. The limit keeps a conflict elsewhere in the
+    /// Why:
+    ///   Which selected paths `HEAD` lacks makes them additions,
+    ///  and which removed
+    ///       paths it has makes them deletions.
+    ///  The limit keeps a conflict elsewhere in the
     ///       index out of the listing.
     ///
     /// In TS you'd write (pseudocode):
@@ -361,10 +442,15 @@ impl CandidateStore {
         return parse_raw_records(output.as_slice());
     }
 
-    /// What: A version of the current generation built from records the caller derived.
-    ///       `Vec<CandidateRecord>` is taken by value: the records move into the version.
-    /// Why:  A predicted staging operation has no single listing command; its candidates
-    ///       come from comparing index states. The version is not remembered by source,
+    /// What:
+    ///  A version of the current generation built from records the caller derived.
+    ///       `Vec<CandidateRecord>` is taken by value:
+    ///  the records move into the version.
+    /// Why:
+    ///   A predicted staging operation has no single listing command;
+    ///  its candidates
+    ///       come from comparing index states.
+    ///  The version is not remembered by source,
     ///       because no source names it.
     ///
     /// In TS you'd write (pseudocode):
@@ -375,12 +461,20 @@ impl CandidateStore {
         return Rc::new(build_version(self.generation, records));
     }
 
-    /// What: The exact bytes a candidate holds in its version.
+    /// What:
+    ///  The exact bytes a candidate holds in its version.
     ///       `Rc<[u8]>` is a shared read-only byte list.
-    /// Why:  Bytes come from the object the listing named, so an edit to the worktree
-    ///       file after staging is invisible here. A deleted path has no bytes. A
-    ///       gitlink has no blob in this repository, so its bytes are the submodule
-    ///       commit's name, as in the TypeScript wrapper. A candidate of a retired
+    /// Why:
+    ///   Bytes come from the object the listing named,
+    ///  so an edit to the worktree
+    ///       file after staging is invisible here.
+    ///  A deleted path has no bytes.
+    ///  A
+    ///       gitlink has no blob in this repository,
+    ///  so its bytes are the submodule
+    ///       commit's name,
+    ///  as in the TypeScript wrapper.
+    ///  A candidate of a retired
     ///       version is refused instead of answered with bytes that may be outdated.
     ///
     /// In TS you'd write (pseudocode):
@@ -406,10 +500,16 @@ impl CandidateStore {
         return self.reader()?.blob(object);
     }
 
-    /// What: Retire every version listed so far. `+= 1` advances the generation.
-    /// Why:  A fix or replay rewrites index entries, so earlier listings no longer
-    ///       describe what would be committed. Blob bytes stay remembered in the
-    ///       reader: an object name always denotes the same bytes.
+    /// What:
+    ///  Retire every version listed so far.
+    ///  `+= 1` advances the generation.
+    /// Why:
+    ///   A fix or replay rewrites index entries,
+    ///  so earlier listings no longer
+    ///       describe what would be committed.
+    ///  Blob bytes stay remembered in the
+    ///       reader:
+    ///  an object name always denotes the same bytes.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -426,7 +526,8 @@ impl CandidateStore {
 #[path = "candidate_store_tests.rs"]
 mod tests;
 
-/// Committed versions, invalidation and listing failures.
+/// Committed versions,
+///  invalidation and listing failures.
 #[cfg(test)]
 #[path = "candidate_store_lifecycle_tests.rs"]
 mod lifecycle_tests;
@@ -436,7 +537,8 @@ mod lifecycle_tests;
 #[path = "candidate_process_count_tests.rs"]
 mod process_count_tests;
 
-/// Unborn, SHA-256 and private-index listings.
+/// Unborn,
+///  SHA-256 and private-index listings.
 #[cfg(test)]
 #[path = "candidate_store_baseline_tests.rs"]
 mod baseline_tests;

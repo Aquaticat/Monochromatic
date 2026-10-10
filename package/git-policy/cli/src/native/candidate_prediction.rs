@@ -1,12 +1,22 @@
-//! What: The two candidate sources that need a private index: what `git add` would stage,
+//! What:
+//!  The two candidate sources that need a private index:
+//!  what `git add` would stage,
 //!       and the worktree files a direct `git cli-git check` or `fix` selects.
-//! Why: Both are answered before Git touches the real index. `git add` is replayed on a
-//!      private copy of the index, and the candidates are the entries the replay changed,
+//! Why:
+//!  Both are answered before Git touches the real index.
+//!  `git add` is replayed on a
+//!      private copy of the index,
+//!  and the candidates are the entries the replay changed,
 //!      as the installed wrapper's `add-policy-facts.ts` and `add-staged-delta.ts` define
-//!      them. A direct command stages its scope with `git add --all` on a private copy,
-//!      as `direct-check-facts.ts` does, and every selected entry is a candidate. Either
-//!      way the bytes are blobs Git hashed from the worktree at that moment, read through
-//!      the one object reader, so the number of Git processes does not grow with the
+//!      them.
+//!  A direct command stages its scope with `git add --all` on a private copy,
+//!      as `direct-check-facts.ts` does,
+//!  and every selected entry is a candidate.
+//!  Either
+//!      way the bytes are blobs Git hashed from the worktree at that moment,
+//!  read through
+//!      the one object reader,
+//!  so the number of Git processes does not grow with the
 //!      number of files.
 //!
 //! In TS you'd write (pseudocode):
@@ -31,9 +41,12 @@ use super::candidate_store::CandidateStore;
 use super::candidate_version::CandidateVersion;
 /// Import the captured-query runner and its byte helpers.
 use super::git_metadata::{MetadataOutput, path_from_git_bytes, run_metadata_git, strip_git_line};
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  Arguments, pathspecs and environment values reach Git byte for byte.
+/// Why:
+///   Arguments,
+///  pathspecs and environment values reach Git byte for byte.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -42,16 +55,23 @@ use super::git_metadata::{MetadataOutput, path_from_git_bytes, run_metadata_git,
 use std::ffi::OsString;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
 use std::path::{Path, PathBuf};
-/// `Rc<T>` is a shared, read-only handle; versions are shared by every policy of a pass.
+/// `Rc<T>` is a shared,
+///  read-only handle;
+///  versions are shared by every policy of a pass.
 use std::rc::Rc;
 
 /// The environment variable that points Git at a different index file.
 pub const INDEX_FILE_VARIABLE: &str = "GIT_INDEX_FILE";
 
-/// What: The most pathspecs one `git diff-index` receives. `usize` is the type of counts.
-/// Why:  The installed wrapper passes candidate paths 2,048 at a time
-///       (`commit-transaction-candidate-batch.ts`), far below any platform's argument
-///       limit; one process per 2,048 changed paths keeps the count bounded.
+/// What:
+///  The most pathspecs one `git diff-index` receives.
+///  `usize` is the type of counts.
+/// Why:
+///   The installed wrapper passes candidate paths 2,048 at a time
+///       (`commit-transaction-candidate-batch.ts`),
+///  far below any platform's argument
+///       limit;
+///  one process per 2,048 changed paths keeps the count bounded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,10 +79,16 @@ pub const INDEX_FILE_VARIABLE: &str = "GIT_INDEX_FILE";
 /// ```
 pub const PATHSPEC_CHUNK_SIZE: usize = 2_048;
 
-/// What: What a lifecycle asks for. An `enum` is a closed set of named alternatives; each
-///       carries the arguments it needs. `#[derive(...)]` generates cloning, debug
+/// What:
+///  What a lifecycle asks for.
+///  An `enum` is a closed set of named alternatives;
+///  each
+///       carries the arguments it needs.
+///  `#[derive(...)]` generates cloning,
+///  debug
 ///       printing and `==`.
-/// Why:  The two sources differ only in what is staged on the private copy and in which
+/// Why:
+///   The two sources differ only in what is staged on the private copy and in which
 ///       entries become candidates.
 ///
 /// In TS you'd write (pseudocode):
@@ -73,21 +99,31 @@ pub const PATHSPEC_CHUNK_SIZE: usize = 2_048;
 pub enum CandidateRequest {
     /// What `git add` with these arguments would stage.
     Add(
-        /// The arguments after `add`, wrapper controls removed.
+        /// The arguments after `add`,
+        ///  wrapper controls removed.
         Vec<OsString>,
     ),
     /// The worktree files a direct command selects.
     Direct(
-        /// The pathspecs of the scope; `--all` is `:/`.
+        /// The pathspecs of the scope;
+        ///  `--all` is `:/`.
         Vec<OsString>,
     ),
 }
 
-/// What: Prepared candidates: the store that reads their bytes, the version that lists
-///       them, and the private index the store is bound to. Fields are dropped in the
-///       order written, so the store's object reader ends before the private directory
+/// What:
+///  Prepared candidates:
+///  the store that reads their bytes,
+///  the version that lists
+///       them,
+///  and the private index the store is bound to.
+///  Fields are dropped in the
+///       order written,
+///  so the store's object reader ends before the private directory
 ///       is removed.
-/// Why:  The store keeps reading blobs after preparation; the private index must outlive it.
+/// Why:
+///   The store keeps reading blobs after preparation;
+///  the private index must outlive it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -96,17 +132,24 @@ pub enum CandidateRequest {
 pub struct PreparedCandidates {
     /// Reads candidate bytes through one long-lived object reader.
     pub store: CandidateStore,
-    /// The candidates, in the order the installed wrapper reports them.
+    /// The candidates,
+    ///  in the order the installed wrapper reports them.
     pub version: Rc<CandidateVersion>,
-    /// The real index the private copy was made from, which a direct fix proves unchanged.
+    /// The real index the private copy was made from,
+    ///  which a direct fix proves unchanged.
     pub real_index: PathBuf,
-    /// Kept only so the private directory lives as long as the store; never read.
+    /// Kept only so the private directory lives as long as the store;
+    ///  never read.
     _private: PrivateIndex,
 }
 
-/// What: Build the failure of a Git command a prediction ran.
-///       `&MetadataOutput` borrows the captured run; `None` means Git could not be started.
-/// Why:  A failed replay is reported with Git's own message, so the person sees why the
+/// What:
+///  Build the failure of a Git command a prediction ran.
+///       `&MetadataOutput` borrows the captured run;
+///  `None` means Git could not be started.
+/// Why:
+///   A failed replay is reported with Git's own message,
+///  so the person sees why the
 ///       command they typed could not be staged.
 ///
 /// In TS you'd write (pseudocode):
@@ -125,8 +168,11 @@ fn command_failure(purpose: &str, operation: &str, output: &MetadataOutput) -> C
     );
 }
 
-/// What: Build the failure of a Git command that could not be started.
-/// Why:  Without Git there is nothing to predict, and the person needs the reason.
+/// What:
+///  Build the failure of a Git command that could not be started.
+/// Why:
+///   Without Git there is nothing to predict,
+///  and the person needs the reason.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -140,9 +186,12 @@ fn not_started(purpose: &str, operation: &str, error: &std::io::Error) -> Candid
     );
 }
 
-/// What: Run one Git command of a prediction and return its output when it succeeded.
+/// What:
+///  Run one Git command of a prediction and return its output when it succeeded.
 ///       `&[OsString]` borrows the global prefix and the command separately.
-/// Why:  The prefix selects the same repository the caller's command selects; the
+/// Why:
+///   The prefix selects the same repository the caller's command selects;
+///  the
 ///       command follows it.
 ///
 /// In TS you'd write (pseudocode):
@@ -175,9 +224,13 @@ fn run_git(
     return Ok(output);
 }
 
-/// What: The absolute path of the index the caller's command would use.
-/// Why:  Git answers for `GIT_INDEX_FILE`, a linked worktree's own index and
-///       `--git-dir`, so the copy is of exactly the index `git add` would change.
+/// What:
+///  The absolute path of the index the caller's command would use.
+/// Why:
+///   Git answers for `GIT_INDEX_FILE`,
+///  a linked worktree's own index and
+///       `--git-dir`,
+///  so the copy is of exactly the index `git add` would change.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -216,10 +269,15 @@ fn real_index_path(
     }
 }
 
-/// What: One literal, top-level pathspec naming exactly `path`, or nothing when the bytes
+/// What:
+///  One literal,
+///  top-level pathspec naming exactly `path`,
+///  or nothing when the bytes
 ///       cannot be a path on this platform.
-/// Why:  `:(top,literal)` makes Git match the repository-relative name byte for byte from
-///       any directory, whatever wildcard or magic characters it contains.
+/// Why:
+///   `:(top,literal)` makes Git match the repository-relative name byte for byte from
+///       any directory,
+///  whatever wildcard or magic characters it contains.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -233,10 +291,15 @@ fn literal_pathspec(path: &[u8]) -> Option<OsString> {
     return Some(pathspec);
 }
 
-/// What: The records of `HEAD` for the changed paths, asked 2,048 paths at a time.
-/// Why:  Which changed paths `HEAD` lacks or still has decides additions and deletions;
-///       nothing outside the changed paths is listed, so a conflict elsewhere in the
-///       index cannot stop the prediction. No change asks nothing.
+/// What:
+///  The records of `HEAD` for the changed paths,
+///  asked 2,048 paths at a time.
+/// Why:
+///   Which changed paths `HEAD` lacks or still has decides additions and deletions;
+///       nothing outside the changed paths is listed,
+///  so a conflict elsewhere in the
+///       index cannot stop the prediction.
+///  No change asks nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -265,10 +328,16 @@ fn baseline_records(
     return Ok(records);
 }
 
-/// What: The candidates `git add` with `region` would stage, against `store`'s private index.
-/// Why:  The whole index is listed before and after the replay, so a path the replay
-///       touched outside the caller's directory is still found. The replay uses the
-///       caller's own prefix and environment, so it reads its pathspecs exactly as the
+/// What:
+///  The candidates `git add` with `region` would stage,
+///  against `store`'s private index.
+/// Why:
+///   The whole index is listed before and after the replay,
+///  so a path the replay
+///       touched outside the caller's directory is still found.
+///  The replay uses the
+///       caller's own prefix and environment,
+///  so it reads its pathspecs exactly as the
 ///       real command will.
 ///
 /// In TS you'd write (pseudocode):
@@ -299,10 +368,15 @@ fn predicted_add(
     return delta_candidates(changed.as_slice(), baseline.as_slice());
 }
 
-/// What: Every entry `pathspecs` select after staging them with `git add --all` on the
+/// What:
+///  Every entry `pathspecs` select after staging them with `git add --all` on the
 ///       private index.
-/// Why:  The private stage hashes the selected worktree files, so their bytes are what
-///       the worktree holds, tracked and new files alike, and the real index is untouched.
+/// Why:
+///   The private stage hashes the selected worktree files,
+///  so their bytes are what
+///       the worktree holds,
+///  tracked and new files alike,
+///  and the real index is untouched.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -337,14 +411,28 @@ fn projected_scope(
     return scope_candidates(entries.as_slice(), baseline.as_slice());
 }
 
-/// What: Prepare the candidates of one request. `real_git`, `global_prefix` and `overlay`
-///       are the Git executable, the caller's arguments before the subcommand and the
-///       child environment additions, exactly as every other Git query receives them.
-/// Why:  The real index is copied first, so nothing below can change it. For `git add`
+/// What:
+///  Prepare the candidates of one request.
+///  `real_git`,
+///  `global_prefix` and `overlay`
+///       are the Git executable,
+///  the caller's arguments before the subcommand and the
+///       child environment additions,
+///  exactly as every other Git query receives them.
+/// Why:
+///   The real index is copied first,
+///  so nothing below can change it.
+///  For `git add`
 ///       the store's own listings add `--no-literal-pathspecs` after the caller's prefix:
-///       they rely on pathspec magic (`:/`, `:(top,literal)`), which literal pathspec
-///       mode, from `GIT_LITERAL_PATHSPECS` or `--literal-pathspecs`, would turn into
-///       names that match nothing, leaving every change unchecked. The replay keeps the
+///       they rely on pathspec magic (`:/`,
+///  `:(top,literal)`),
+///  which literal pathspec
+///       mode,
+///  from `GIT_LITERAL_PATHSPECS` or `--literal-pathspecs`,
+///  would turn into
+///       names that match nothing,
+///  leaving every change unchecked.
+///  The replay keeps the
 ///       caller's mode.
 ///
 /// In TS you'd write (pseudocode):

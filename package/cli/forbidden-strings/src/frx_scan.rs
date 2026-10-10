@@ -1,16 +1,27 @@
 //! Line-based file scan against the forbidden-regex engine's batch API.
 //!
 //! Stage two of the engine swap (#384) replaces the aho-corasick/resharp per-file
-//! scan with the engine's buffer-batch face. A file's bytes are split into lines and
-//! handed to `RegexSet::line_matches(buf, starts)`, which resolves per-line rule ids
-//! in one SIMD prefilter sweep. Findings emit as `PATH:LINE rule=N`, one per
-//! line-and-rule pair, with no column segment (the engine reports per-line rule
-//! indices, not spans).
+//! scan with the engine's buffer-batch face.
+//!  A file's bytes are split into lines and
+//! handed to `RegexSet::line_matches(buf, starts)`,
+//!  which resolves per-line rule ids
+//! in one SIMD prefilter sweep.
+//!  Findings emit as `PATH:LINE rule=N`,
+//!  one per
+//! line-and-rule pair,
+//!  with no column segment (the engine reports per-line rule
+//! indices,
+//!  not spans).
 //!
-//! Line mechanics mirror the engine's contract: split on `\n`, one trailing `\r` and
-//! the terminator excluded by the matcher, empty lines skipped. The batch call runs
+//! Line mechanics mirror the engine's contract:
+//!  split on `\n`,
+//!  one trailing `\r` and
+//! the terminator excluded by the matcher,
+//!  empty lines skipped.
+//!  The batch call runs
 //! under a `catch_unwind` boundary so an engine panic fails closed as a synthetic
-//! finding rather than aborting the scan, preserving the scanner's fail-closed
+//! finding rather than aborting the scan,
+//!  preserving the scanner's fail-closed
 //! guarantee against a secret-scanning gate exiting clean on an engine fault.
 
 /// Imports the SIMD newline scan used to build the line-start offsets.
@@ -26,12 +37,19 @@ use crate::scan_finding::ScanFinding;
 
 /// Builds the line-start offsets `RegexSet::line_matches` requires for `buf`.
 ///
-/// The engine's precondition is that `starts` ascends, begins at 0, and every offset
-/// indexes within `buf`. This returns 0 followed by the offset just past each `\n`,
+/// The engine's precondition is that `starts` ascends,
+///  begins at 0,
+///  and every offset
+/// indexes within `buf`.
+///  This returns 0 followed by the offset just past each `\n`,
 /// dropping a final offset equal to `buf.len()` (the empty line after a trailing
-/// newline): the matcher would skip it anyway, and omitting it keeps every offset a
-/// valid in-bounds index. Interior empty lines keep their offset and the matcher
-/// skips them, so line numbering stays aligned with the file.
+/// newline):
+///  the matcher would skip it anyway,
+///  and omitting it keeps every offset a
+/// valid in-bounds index.
+///  Interior empty lines keep their offset and the matcher
+/// skips them,
+///  so line numbering stays aligned with the file.
 fn line_starts(buf: &[u8]) -> Vec<usize> {
     let mut starts: Vec<usize> = Vec::with_capacity(buf.len() / 32 + 1);
     starts.push(0);
@@ -48,7 +66,8 @@ fn line_starts(buf: &[u8]) -> Vec<usize> {
 
 /// Renders the stable opaque identity of one matching rule.
 ///
-/// Named rules use their section name; unnamed rules use the set's base offset.
+/// Named rules use their section name;
+///  unnamed rules use the set's base offset.
 /// This shared formatter keeps content and pathname findings consistent.
 pub(crate) fn rule_token(base: usize, names: &[Option<String>], rule_id: usize) -> String {
     // A borrowed name is copied only when a finding is emitted.
@@ -61,9 +80,12 @@ pub(crate) fn rule_token(base: usize, names: &[Option<String>], rule_id: usize) 
 /// Runs one set's batch matcher under a fail-closed unwind boundary.
 ///
 /// Normal `(line index, rule id)` pairs become typed content findings with one-based
-/// lines and the shared opaque rule identity. A caught panic becomes an explicit
-/// EngineError record, so neither embedded nor standalone callers can treat it as
-/// a clean scan. Terminal rendering happens separately.
+/// lines and the shared opaque rule identity.
+///  A caught panic becomes an explicit
+/// EngineError record,
+///  so neither embedded nor standalone callers can treat it as
+/// a clean scan.
+///  Terminal rendering happens separately.
 fn scan_one_set<Match>(
     base: usize,
     names: &[Option<String>],
@@ -92,11 +114,14 @@ where
     }
 }
 
-/// Scan exact file bytes against each loaded set, returning only redacted structured records.
+/// Scan exact file bytes against each loaded set,
+///  returning only redacted structured records.
 ///
-/// Line splitting happens once. Runtime rules precede the builtin baseline,
+/// Line splitting happens once.
+///  Runtime rules precede the builtin baseline,
 /// and each set retains its rule-id offset and configured non-secret names.
-/// Empty input yields no findings. The caller supplies candidate identity and
+/// Empty input yields no findings.
+///  The caller supplies candidate identity and
 /// a sanitized display path outside this content-matching boundary.
 pub(crate) fn scan_content(buf: &[u8], loaded: &LoadedRules) -> Vec<ScanFinding> {
     if buf.is_empty() {
@@ -115,8 +140,11 @@ pub(crate) fn scan_content(buf: &[u8], loaded: &LoadedRules) -> Vec<ScanFinding>
     return hits
 }
 
-/// What: Preserve the standalone text protocol by rendering canonical content records.
-/// Why: Embedded callers use scan_content directly, without parsing terminal strings.
+/// What:
+///  Preserve the standalone text protocol by rendering canonical content records.
+/// Why:
+///  Embedded callers use scan_content directly,
+///  without parsing terminal strings.
 ///
 /// In TS you\'d write (pseudocode):
 /// ```ts
@@ -131,7 +159,8 @@ pub fn scan_file(path: &str, buf: &[u8], loaded: &LoadedRules) -> Vec<String> {
     return lines;
 }
 
-/// Registers the line-splitting edge-case and fail-closed tests (sidecar, lint-exempt).
+/// Registers the line-splitting edge-case and fail-closed tests (sidecar,
+///  lint-exempt).
 #[cfg(test)]
 #[path = "frx_scan_tests.rs"]
 mod tests;

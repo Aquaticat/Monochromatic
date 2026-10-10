@@ -2,7 +2,8 @@
 
 /// Private transport fields let tests model an exited worker without panicking a real thread.
 use super::{QueuedRead, ReloadReply, ReloadWorker};
-/// Use actual bounded channel disconnection, not a mocked try_recv return value.
+/// Use actual bounded channel disconnection,
+///  not a mocked try_recv return value.
 use std::sync::mpsc::sync_channel;
 
 /// Test-only construction is shared with the file-opener failure-liveness test.

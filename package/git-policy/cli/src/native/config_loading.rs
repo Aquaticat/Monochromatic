@@ -1,5 +1,9 @@
-//! What: Policy-configuration loading decisions before expensive policy initialization.
-//! Why: Known inspection forms keep the fast path; mutations, aliases and ambiguous options require configuration.
+//! What:
+//!  Policy-configuration loading decisions before expensive policy initialization.
+//! Why:
+//!  Known inspection forms keep the fast path;
+//!  mutations,
+//!  aliases and ambiguous options require configuration.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -211,7 +215,9 @@ fn is_equals(byte: &u8) -> bool {
     return *byte == b'=';
 }
 
-/// Decide configuration ownership without changing argv, resolving aliases, or reading executable configuration.
+/// Decide configuration ownership without changing argv,
+///  resolving aliases,
+///  or reading executable configuration.
 pub fn classify_config_loading(arguments: &[OsString]) -> ConfigLoading {
     let layout = global_layout(arguments);
     if layout.outcome == GlobalOutcome::Query

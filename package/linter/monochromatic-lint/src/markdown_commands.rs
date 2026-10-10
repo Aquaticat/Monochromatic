@@ -1,15 +1,23 @@
-//! What: Remove shell prompts from prompt-only top-level fenced examples.
-//! Why: Commands without shown output should be copyable, while output-bearing and indented examples remain unchanged.
+//! What:
+//!  Remove shell prompts from prompt-only top-level fenced examples.
+//! Why:
+//!  Commands without shown output should be copyable,
+//!  while output-bearing and indented examples remain unchanged.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Check decoded code content, then remove only actual authored '$ ' prefixes using byte edits.
 //! ```
 
+/// Import the diagnostic and severity types that command-example checks report through.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the edit and fix types that a command-example repair is expressed as.
 use crate::edits::{Edit, Fix};
+/// Import the fence lookup that finds where a command block's closing marker ends.
 use crate::markdown_code::fence_marker_end;
+/// Import the finding constructor that wraps a command-example problem as a diagnostic.
 use crate::markdown_finding::finding;
+/// Import the parsed Markdown source that command blocks are read from.
 use crate::markdown_source::MarkdownSource;
 /// Import native code payloads and shared diagnostics/fixes.
 use satteri_ast::mdast::{MdastNodeType, decode_code_data};
@@ -30,8 +38,12 @@ fn all_prompts(value: &str) -> bool {
     return seen;
 }
 
-/// What: Find authored prompt prefixes without replacing normalized code-node content.
-/// Why: LF, CRLF and bare CR remain byte-identical; opening and closing fences cannot begin with a shell prompt.
+/// What:
+///  Find authored prompt prefixes without replacing normalized code-node content.
+/// Why:
+///  LF,
+///  CRLF and bare CR remain byte-identical;
+///  opening and closing fences cannot begin with a shell prompt.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

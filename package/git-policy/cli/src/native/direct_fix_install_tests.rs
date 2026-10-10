@@ -1,7 +1,15 @@
-//! What: Controls for installing corrections: all files replaced with their modes and the
-//!       index untouched, or no file changed, whichever step fails.
-//! Why: A fix that left half its files replaced, a stray sibling file, or a changed index
-//!      would damage the worktree it was asked to tidy. Every failure is provoked for real
+//! What:
+//!  Controls for installing corrections:
+//!  all files replaced with their modes and the
+//!       index untouched,
+//!  or no file changed,
+//!  whichever step fails.
+//! Why:
+//!  A fix that left half its files replaced,
+//!  a stray sibling file,
+//!  or a changed index
+//!      would damage the worktree it was asked to tidy.
+//!  Every failure is provoked for real
 //!      on a disposable directory.
 //!
 //! In TS you'd write (pseudocode):
@@ -21,9 +29,12 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-/// A worktree with a regular file at the top, an executable one below, and an index file.
+/// A worktree with a regular file at the top,
+///  an executable one below,
+///  and an index file.
 struct Tree {
-    /// The disposable fixture, removed at the end.
+    /// The disposable fixture,
+    ///  removed at the end.
     root: PathBuf,
     /// The worktree's top level.
     top: PathBuf,
@@ -87,7 +98,8 @@ fn siblings(directory: &Path) -> Vec<String> {
     return found;
 }
 
-/// The two worktree files' bytes, in a fixed order.
+/// The two worktree files' bytes,
+///  in a fixed order.
 fn contents(top: &Path) -> (Vec<u8>, Vec<u8>) {
     return (
         std::fs::read(top.join("a.txt")).expect("a"),
@@ -100,7 +112,9 @@ fn untouched() -> (Vec<u8>, Vec<u8>) {
     return (b"a".to_vec(), b"#!/bin/sh".to_vec());
 }
 
-/// Every file is replaced with its mode, the index is the same, and nothing is left beside them.
+/// Every file is replaced with its mode,
+///  the index is the same,
+///  and nothing is left beside them.
 #[test]
 fn corrections_are_installed_with_their_modes() {
     let fixture_tree: Tree = tree("install-ok");
@@ -153,8 +167,11 @@ fn corrections_are_installed_with_their_modes() {
     remove(fixture_tree.root.as_path());
 }
 
-/// A file that changed under the fix, is missing, or has no name stops the fix before
-/// any file changes, and leaves nothing beside the files.
+/// A file that changed under the fix,
+///  is missing,
+///  or has no name stops the fix before
+/// any file changes,
+///  and leaves nothing beside the files.
 #[test]
 fn a_file_that_is_not_as_read_stops_before_any_change() {
     let fixture_tree: Tree = tree("install-stale");
@@ -225,7 +242,9 @@ fn an_unwritable_directory_stops_before_any_change() {
     remove(fixture_tree.root.as_path());
 }
 
-/// An index that changed, cannot be read again, or cannot be read at all restores every file.
+/// An index that changed,
+///  cannot be read again,
+///  or cannot be read at all restores every file.
 #[test]
 fn an_index_that_is_not_as_read_restores_every_file() {
     let fixture_tree: Tree = tree("install-index");
@@ -272,7 +291,8 @@ fn an_index_that_is_not_as_read_restores_every_file() {
     remove(fixture_tree.root.as_path());
 }
 
-/// A rename that fails restores the files already replaced; a restore that fails keeps
+/// A rename that fails restores the files already replaced;
+///  a restore that fails keeps
 /// the backup it needs and says so.
 #[test]
 fn a_failed_replacement_restores_and_a_failed_restore_keeps_its_backup() {
@@ -325,7 +345,8 @@ fn a_failed_replacement_restores_and_a_failed_restore_keeps_its_backup() {
     remove(fixture_tree.root.as_path());
 }
 
-/// The backup the fix wrote beside the top-level file, if any.
+/// The backup the fix wrote beside the top-level file,
+///  if any.
 fn top_backup(directory: &Path) -> Option<PathBuf> {
     for entry in std::fs::read_dir(directory).expect("directory") {
         let path: PathBuf = entry.expect("entry").path();

@@ -1,5 +1,8 @@
-//! What: Raw and generated argument vectors through the global-argument layout invariants.
-//! Why: Raw bytes cover arbitrary argument content; generated tokens reach every option form.
+//! What:
+//!  Raw and generated argument vectors through the global-argument layout invariants.
+//! Why:
+//!  Raw bytes cover arbitrary argument content;
+//!  generated tokens reach every option form.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

@@ -1,5 +1,7 @@
-//! What: Native pathname bytes and redacted protocol-safe component spelling.
-//! Why: Candidate scanning must not require every operating-system pathname to be UTF-8.
+//! What:
+//!  Native pathname bytes and redacted protocol-safe component spelling.
+//! Why:
+//!  Candidate scanning must not require every operating-system pathname to be UTF-8.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -42,7 +44,8 @@ pub(crate) fn prefix_parts(path: &Path) -> usize {
 
 /// Count all parts of an already identified native volume prefix without requiring that platform's Path parser.
 ///
-/// A part is a non-empty byte run between `/` or `\` separators, whatever its bytes,
+/// A part is a non-empty byte run between `/` or `\` separators,
+///  whatever its bytes,
 /// so the `.` of `\\.\COM1` and a `..` share name each count once.
 /// The pathname scan consumes exactly this many non-empty components before classifying navigation markers.
 /// Windows's parser ends every prefix at a separator or the end of input,
@@ -68,8 +71,10 @@ pub(crate) fn is_slash(byte: &u8) -> bool {
     return *byte == b'/';
 }
 
-/// What: Encode an unmatched component for the existing single-line display protocol.
-/// Why: Invalid UTF-8 bytes remain distinguishable and cannot be discarded before matching.
+/// What:
+///  Encode an unmatched component for the existing single-line display protocol.
+/// Why:
+///  Invalid UTF-8 bytes remain distinguishable and cannot be discarded before matching.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

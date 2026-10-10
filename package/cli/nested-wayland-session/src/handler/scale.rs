@@ -1,8 +1,14 @@
-//! wp_fractional_scale_v1 and wp_viewporter handlers: a new surface learns the output scale.
+//! wp_fractional_scale_v1 and wp_viewporter handlers:
+//!  a new surface learns the output scale.
 
-/// What:     Grouped `use` of the two delegate macros, the surface type, the per-surface state
-///           accessor, and the fractional-scale handler trait and accessor.
-/// Why:      The impl and the dispatch glue below reference exactly these.
+/// What:
+///      Grouped `use` of the two delegate macros,
+///  the surface type,
+///  the per-surface state
+///           accessor,
+///  and the fractional-scale handler trait and accessor.
+/// Why:
+///       The impl and the dispatch glue below reference exactly these.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,21 +23,35 @@ use smithay::{
     },
 };
 
-/// What:     `use crate::state::Compositor;`. Our state type.
-/// Why:      The handler is `impl FractionalScaleHandler for Compositor`.
+/// What:
+///      `use crate::state::Compositor;`.
+///  Our state type.
+/// Why:
+///       The handler is `impl FractionalScaleHandler for Compositor`.
 use crate::state::Compositor;
 
 /// Tell each new fractional-scale object the current output scale at once.
 ///
-/// What:     `impl FractionalScaleHandler for Compositor { ... }`. Smithay calls
+/// What:
+///      `impl FractionalScaleHandler for Compositor { ... }`.
+///  Smithay calls
 ///           `new_fractional_scale` when a client asks for a surface's fractional-scale object.
-/// Why:      winit asks for it when it creates a window, before the first configure, and
+/// Why:
+///       winit asks for it when it creates a window,
+///  before the first configure,
+///  and
 ///           expects the scale before that configure so its first buffer already has the right
-///           size. Smithay only replays a scale stored earlier, so a fresh surface needs it here.
+///           size.
+///  Smithay only replays a scale stored earlier,
+///  so a fresh surface needs it here.
 impl FractionalScaleHandler for Compositor {
-    /// What:     `fn new_fractional_scale(&mut self, surface: WlSurface)`. Receives the surface
-    ///           by value (an owned, cheap handle).
-    /// Why:      Store and send the current scale for this surface.
+    /// What:
+    ///      `fn new_fractional_scale(&mut self, surface: WlSurface)`.
+    ///  Receives the surface
+    ///           by value (an owned,
+    ///  cheap handle).
+    /// Why:
+    ///       Store and send the current scale for this surface.
     fn new_fractional_scale(&mut self, surface: WlSurface) {
         // Read the factor first so the closures below borrow nothing from `self`.
         let factor = self.screen.geometry.scale.factor();

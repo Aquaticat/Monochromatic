@@ -1,8 +1,14 @@
 //! Runtime rule-cache module.
 //!
-//! Its interface hides content hashing, platform-root resolution, envelope
-//! validation, warning classification, and atomic publication. Scan callers receive
-//! compiled rules plus redacted warnings; compile-command callers receive only
+//! Its interface hides content hashing,
+//!  platform-root resolution,
+//!  envelope
+//! validation,
+//!  warning classification,
+//!  and atomic publication.
+//!  Scan callers receive
+//! compiled rules plus redacted warnings;
+//!  compile-command callers receive only
 //! success or a redacted fatal error.
 
 /// Registers scanner-owned envelope codec.

@@ -1,4 +1,5 @@
-//! Clip selected foreground at character geometry, even when one glyph spans several characters.
+//! Clip selected foreground at character geometry,
+//!  even when one glyph spans several characters.
 
 /// Return the portion of a physical pixel covered by non-overlapping selection intervals.
 /// Fractional origins retain coverage instead of snapping source during smooth scrolling.
@@ -25,7 +26,8 @@ fn masked(mut color: [u8; 4], alpha: u8) -> [u8; 4] {
     return color;
 }
 
-/// Blend foregrounds by clipped pixel area, not by the first character's glyph brush.
+/// Blend foregrounds by clipped pixel area,
+///  not by the first character's glyph brush.
 /// Alpha-weighted color interpolation keeps partially transparent theme colors coherent.
 pub(crate) fn ink(ordinary: [u8; 4], selected: [u8; 4], coverage: f32, mask: u8) -> [u8; 4] {
     if coverage <= 0.0 {
@@ -56,7 +58,9 @@ mod tests {
     /// Test the production pixel helpers directly.
     use super::{coverage, ink};
 
-    /// Empty, whole, and fractional coverage remain bounded at a pixel edge.
+    /// Empty,
+    ///  whole,
+    ///  and fractional coverage remain bounded at a pixel edge.
     #[test]
     fn fractional_selection_coverage_is_bounded() {
         assert_eq!(coverage(0, &[]), 0.0);

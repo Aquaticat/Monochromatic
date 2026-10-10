@@ -210,7 +210,9 @@ pub fn detach_keeper(cgroup_dir: &Path) -> io::Result<()> {
     return remove_state(&identity);
 }
 
-/// Child entry loads all links, waits for durable parent transition, then holds descriptors.
+/// Child entry loads all links,
+///  waits for durable parent transition,
+///  then holds descriptors.
 pub fn run_holder(mark: u32, cgroup_dir: &Path) -> io::Result<()> {
     let identity: PathBuf = cgroup_identity_path(cgroup_dir)?;
     let cgroup = std::fs::File::open(&identity)?;

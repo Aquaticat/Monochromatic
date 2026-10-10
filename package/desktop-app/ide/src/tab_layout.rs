@@ -1,18 +1,25 @@
 //! Shape one projected line so that every tab ends on a pixel tab stop.
 //!
-//! The shaping engine has no tab stops. Each tab is shaped as one space,
+//! The shaping engine has no tab stops.
+//!  Each tab is shaped as one space,
 //! and that space's advance is corrected through letter spacing on its single byte.
-//! A line whose tabs follow other text is shaped twice: once to measure where each tab starts,
-//! once with the corrections. A line whose tabs are all leading needs no measuring pass.
+//! A line whose tabs follow other text is shaped twice:
+//!  once to measure where each tab starts,
+//! once with the corrections.
+//!  A line whose tabs are all leading needs no measuring pass.
 
-/// The shaper owns fonts and scratch space; this module only decides tab corrections.
+/// The shaper owns fonts and scratch space;
+///  this module only decides tab corrections.
 use crate::shaped_text::TextShaper;
-/// Pixel tab-stop arithmetic, independent of fonts.
+/// Pixel tab-stop arithmetic,
+///  independent of fonts.
 use crate::tab_stop::tab_spacings;
 /// The projection marks which display bytes stand in for source tabs.
 use crate::text_projection::Projection;
-/// What: Import the shaping engine's paragraph and caret types.
-/// Why: A caret's position before a tab is exactly where that tab starts.
+/// What:
+///  Import the shaping engine's paragraph and caret types.
+/// Why:
+///  A caret's position before a tab is exactly where that tab starts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,7 +45,8 @@ fn x_before(layout: &Layout<u32>, byte: usize) -> f32 {
     return cursor.geometry(layout, 1.0).x0 as f32;
 }
 
-/// Shape `projection` at `scale` with syntax `roles`, widening each tab to its stop.
+/// Shape `projection` at `scale` with syntax `roles`,
+///  widening each tab to its stop.
 ///
 /// Measurements come back in physical pixels while letter spacing is given in logical pixels,
 /// so each correction is divided by `scale` before it is handed to the shaper.

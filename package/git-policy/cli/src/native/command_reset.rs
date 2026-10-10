@@ -1,7 +1,13 @@
-//! What: The complete `git reset` option table of Git 2.56.0 and the mode read from it.
-//! Why: The linked-worktree policy guards resets that rewrite worktree files: `--hard`,
-//!      `--merge` and `--keep`. The five mode options write one variable, so only the
-//!      last one counts, in any abbreviation Git accepts.
+//! What:
+//!  The complete `git reset` option table of Git 2.56.0 and the mode read from it.
+//! Why:
+//!  The linked-worktree policy guards resets that rewrite worktree files:
+//!  `--hard`,
+//!      `--merge` and `--keep`.
+//!  The five mode options write one variable,
+//!  so only the
+//!      last one counts,
+//!  in any abbreviation Git accepts.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,9 +18,13 @@ use super::command_options::{
     Arity, DEFAULT_MODE, OptionError, OptionSpec, ParsedOptions, UNREAD, parse_options, row,
 };
 use super::command_options_query::{WrapperFlags, split_wrapper_flags};
-/// What: Bring the shared hatch spelling, the tokenizer, its table builder and its
+/// What:
+///  Bring the shared hatch spelling,
+///  the tokenizer,
+///  its table builder and its
 ///       questions into this file.
-/// Why:  This module only declares Git's table and interprets what the tokenizer found.
+/// Why:
+///   This module only declares Git's table and interprets what the tokenizer found.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,10 +45,15 @@ pub const MERGE: u16 = 4;
 /// `--keep`.
 pub const KEEP: u16 = 5;
 
-/// What: Rows of `options[]` in `cmd_reset` (builtin/reset.c:350-382), in source order.
+/// What:
+///  Rows of `options[]` in `cmd_reset` (builtin/reset.c:350-382),
+///  in source order.
 ///       `&[OptionSpec]` is a borrowed table baked into the program.
-/// Why:  The five modes are `PARSE_OPT_NONEG`; `--recurse-submodules` takes an optional
-///       value, so a token after it is a revision or path.
+/// Why:
+///   The five modes are `PARSE_OPT_NONEG`;
+///  `--recurse-submodules` takes an optional
+///       value,
+///  so a token after it is a revision or path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,8 +95,13 @@ pub const RESET_TABLE: &[OptionSpec] = &[
     row(UNREAD, None, Some("pathspec-file-nul"), Arity::None, true),
 ];
 
-/// What: The reset mode Git ends up with. An `enum` is a closed set of named alternatives.
-/// Why:  `Hard`, `Merge` and `Keep` rewrite worktree files; `Mixed` and `Soft` do not.
+/// What:
+///  The reset mode Git ends up with.
+///  An `enum` is a closed set of named alternatives.
+/// Why:
+///   `Hard`,
+///  `Merge` and `Keep` rewrite worktree files;
+///  `Mixed` and `Soft` do not.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -93,16 +113,23 @@ pub enum ResetMode {
     Mixed,
     /// Reset only `HEAD`.
     Soft,
-    /// Reset `HEAD`, the index and the working tree.
+    /// Reset `HEAD`,
+    ///  the index and the working tree.
     Hard,
-    /// Reset `HEAD`, the index and the working tree, keeping unmerged local changes.
+    /// Reset `HEAD`,
+    ///  the index and the working tree,
+    ///  keeping unmerged local changes.
     Merge,
     /// Reset `HEAD` but keep local changes.
     Keep,
 }
 
-/// What: Facts of one `git reset` region. `Option<ResetMode>` is "a mode or none stated".
-/// Why:  With no mode option Git uses mixed, which leaves worktree files alone.
+/// What:
+///  Facts of one `git reset` region.
+///  `Option<ResetMode>` is "a mode or none stated".
+/// Why:
+///   With no mode option Git uses mixed,
+///  which leaves worktree files alone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,14 +137,19 @@ pub enum ResetMode {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ResetRegion {
-    /// The last mode option written, when any was.
+    /// The last mode option written,
+    ///  when any was.
     pub mode: Option<ResetMode>,
-    /// Wrapper-only flags in option position; `escape` is `--no-enforce-worktree`.
+    /// Wrapper-only flags in option position;
+    ///  `escape` is `--no-enforce-worktree`.
     pub wrapper: WrapperFlags,
 }
 
-/// What: The mode a table identifier stands for, or nothing for other rows.
-/// Why:  One loop over the occurrences can then keep the last mode.
+/// What:
+///  The mode a table identifier stands for,
+///  or nothing for other rows.
+/// Why:
+///   One loop over the occurrences can then keep the last mode.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -144,8 +176,12 @@ fn mode_of(id: u16) -> Option<ResetMode> {
     return None;
 }
 
-/// What: Parse the region after `reset`. `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  A region Git itself would refuse yields the refusal; Git then resets nothing.
+/// What:
+///  Parse the region after `reset`.
+///  `Result<A, B>` is "either success `A` or failure `B`".
+/// Why:
+///   A region Git itself would refuse yields the refusal;
+///  Git then resets nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -179,9 +215,14 @@ pub fn parse_reset_region(
     });
 }
 
-/// What: Whether the reset can rewrite worktree files. `&ResetRegion` borrows the facts.
-/// Why:  Only these three modes set `opts.update`, which lets Git write worktree files
-///       (`reset_index`, builtin/reset.c:79-95).
+/// What:
+///  Whether the reset can rewrite worktree files.
+///  `&ResetRegion` borrows the facts.
+/// Why:
+///   Only these three modes set `opts.update`,
+///  which lets Git write worktree files
+///       (`reset_index`,
+///  builtin/reset.c:79-95).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -193,7 +234,8 @@ pub fn reset_changes_worktree(region: &ResetRegion) -> bool {
         || region.mode == Some(ResetMode::Keep);
 }
 
-/// Modes in every accepted spelling, and real-Git controls of the table and of last-wins.
+/// Modes in every accepted spelling,
+///  and real-Git controls of the table and of last-wins.
 #[cfg(test)]
 #[path = "command_reset_tests.rs"]
 mod tests;

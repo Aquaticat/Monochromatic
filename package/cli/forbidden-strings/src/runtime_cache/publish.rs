@@ -1,8 +1,11 @@
 //! Reads and atomically publishes sensitive runtime cache artifacts.
 //!
-//! Readers load complete bytes and close the handle before validation, so Windows
-//! replacement is not blocked by a lingering reader. Writers flush a private
-//! same-directory temporary file before `rename`, and remove it on failure.
+//! Readers load complete bytes and close the handle before validation,
+//!  so Windows
+//! replacement is not blocked by a lingering reader.
+//!  Writers flush a private
+//! same-directory temporary file before `rename`,
+//!  and remove it on failure.
 
 /// Imports filesystem primitives for complete reads and atomic publication.
 use std::fs::{self, File, OpenOptions};
@@ -104,7 +107,9 @@ fn temporary_path(artifact_path: &Path) -> Result<PathBuf, PublishError> {
     )))
 }
 
-/// Writes, flushes, and atomically renames one complete artifact.
+/// Writes,
+///  flushes,
+///  and atomically renames one complete artifact.
 pub(super) fn publish_artifact(
     location: &CacheLocation,
     bytes: &[u8],
@@ -149,7 +154,9 @@ fn sync_parent_best_effort(artifact_path: &Path) {
     let _ = directory.sync_all();
 }
 
-/// Registers complete-read, private-mode, and replacement tests.
+/// Registers complete-read,
+///  private-mode,
+///  and replacement tests.
 #[cfg(test)]
 #[path = "publish_tests.rs"]
 mod tests;

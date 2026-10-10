@@ -1,7 +1,15 @@
-//! What: The lifecycle of a wrapped command from scripted facts: what is forwarded, what
-//!       stops, in which order, and which repository facts were asked for.
-//! Why: The order of refusals, configuration and policies decides which message a person
-//!      sees, and a fact asked for needlessly is a Git process on every command.
+//! What:
+//!  The lifecycle of a wrapped command from scripted facts:
+//!  what is forwarded,
+//!  what
+//!       stops,
+//!  in which order,
+//!  and which repository facts were asked for.
+//! Why:
+//!  The order of refusals,
+//!  configuration and policies decides which message a person
+//!      sees,
+//!  and a fact asked for needlessly is a Git process on every command.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -9,7 +17,8 @@
 //! ```
 #![cfg(unix)]
 
-/// The lifecycle under test, its inputs and the scripted facts.
+/// The lifecycle under test,
+///  its inputs and the scripted facts.
 use super::{WrappedOutcome, run_wrapped_command};
 use crate::command_test_support::os_arguments;
 use crate::config_file::CONFIG_FILE_NAME;
@@ -31,7 +40,9 @@ use crate::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-/// Run the lifecycle of one command, written as text, and return its ending with the facts asked for.
+/// Run the lifecycle of one command,
+///  written as text,
+///  and return its ending with the facts asked for.
 fn run(
     values: &[&str],
     facts: ScriptedFacts,
@@ -128,12 +139,14 @@ fn unprepared_final_newline() -> PolicyEvent {
     };
 }
 
-/// The location question, then the candidates of `git add`.
+/// The location question,
+///  then the candidates of `git add`.
 fn location_and_candidates() -> Vec<String> {
     return vec![String::from("location"), String::from("candidates")];
 }
 
-/// A fixture directory used as a worktree top level, with this configuration text.
+/// A fixture directory used as a worktree top level,
+///  with this configuration text.
 fn configured(name: &str, configuration: &str) -> PathBuf {
     let root: PathBuf = fixture(name);
     std::fs::write(root.join(CONFIG_FILE_NAME), configuration).expect("configuration");
@@ -175,7 +188,8 @@ fn invocations_without_a_subcommand_are_forwarded_untouched() {
     }
 }
 
-/// A read-only command reads no configuration, checks no leftover state and ignores leases.
+/// A read-only command reads no configuration,
+///  checks no leftover state and ignores leases.
 #[test]
 fn read_only_commands_skip_configuration_and_refusals() {
     // The configuration is invalid and a transaction is registered: neither is looked at.
@@ -248,7 +262,12 @@ fn read_only_commands_skip_configuration_and_refusals() {
     remove(root.as_path());
 }
 
-/// Preparation order: lease, location, leftover state, configuration, then the command itself.
+/// Preparation order:
+///  lease,
+///  location,
+///  leftover state,
+///  configuration,
+///  then the command itself.
 #[test]
 fn a_guarded_command_is_prepared_in_order() {
     let root: PathBuf = configured("wrapped-order", "this is not JSONC");
@@ -317,7 +336,8 @@ fn a_guarded_command_is_prepared_in_order() {
     remove(root.as_path());
 }
 
-/// A dry-run commit goes through the pass: commit-only applies and may reject.
+/// A dry-run commit goes through the pass:
+///  commit-only applies and may reject.
 #[test]
 fn a_dry_run_commit_is_checked_and_forwarded() {
     assert_eq!(
@@ -359,8 +379,10 @@ fn a_dry_run_commit_is_checked_and_forwarded() {
     );
 }
 
-/// `git add` is checked by add-explicit first, then its candidates are read by the first
-/// content policy that is on; candidates that cannot be prepared stop it with exit 2.
+/// `git add` is checked by add-explicit first,
+///  then its candidates are read by the first
+/// content policy that is on;
+///  candidates that cannot be prepared stop it with exit 2.
 #[test]
 fn add_reads_its_candidates_after_add_explicit() {
     assert_eq!(
@@ -487,7 +509,8 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
     remove(root.as_path());
 }
 
-/// A real push is stopped at the manual-push gate; a dry run and an ungated push are forwarded.
+/// A real push is stopped at the manual-push gate;
+///  a dry run and an ungated push are forwarded.
 #[test]
 fn a_real_push_must_clear_the_manual_push_gate() {
     for values in [
@@ -585,7 +608,8 @@ fn worktree_policies_read_the_location() {
     }
 }
 
-/// From a linked worktree, creating a worktree and running a possible alias are refused.
+/// From a linked worktree,
+///  creating a worktree and running a possible alias are refused.
 #[test]
 fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
     let linked: RepositoryLocation = linked_worktree("/r", "/w");
@@ -641,8 +665,11 @@ fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
     );
 }
 
-/// Findings of `git add` come from what it would stage: a warning lets it through, an
-/// error stops it, and the real index is left for Git to change.
+/// Findings of `git add` come from what it would stage:
+///  a warning lets it through,
+///  an
+/// error stops it,
+///  and the real index is left for Git to change.
 #[test]
 fn add_findings_come_from_what_the_add_would_stage() {
     let root: PathBuf = fixture("wrapped-add-content");

@@ -1,7 +1,13 @@
-//! What: Rejection controls for the structure of a configuration document.
-//! Why: Non-object documents, unknown and retired keys, duplicates and nulls must each
-//!      fail with a message naming the key. Acceptance controls live in
-//!      `config_parse_acceptance_tests.rs`, invalid-value controls in
+//! What:
+//!  Rejection controls for the structure of a configuration document.
+//! Why:
+//!  Non-object documents,
+//!  unknown and retired keys,
+//!  duplicates and nulls must each
+//!      fail with a message naming the key.
+//!  Acceptance controls live in
+//!      `config_parse_acceptance_tests.rs`,
+//!  invalid-value controls in
 //!      `config_parse_value_tests.rs`.
 //!
 //! In TS you'd write (pseudocode):
@@ -12,8 +18,11 @@
 /// Import the parser under test.
 use super::parse_config;
 
-/// What: Return the rejection message of one document; an accepted document fails the test.
-/// Why: `pub(super)` lets the sibling invalid-value controls reuse it instead of copying it.
+/// What:
+///  Return the rejection message of one document;
+///  an accepted document fails the test.
+/// Why:
+///  `pub(super)` lets the sibling invalid-value controls reuse it instead of copying it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,7 +68,8 @@ fn non_object_documents_and_syntax_errors_are_rejected() {
     ]);
 }
 
-/// Unknown and retired top-level keys are named, including near misses and executable-era keys.
+/// Unknown and retired top-level keys are named,
+///  including near misses and executable-era keys.
 #[test]
 fn unknown_and_retired_top_level_keys_are_named() {
     assert_rejections(&[
@@ -107,7 +117,9 @@ fn unknown_and_retired_top_level_keys_are_named() {
     ]);
 }
 
-/// A key defined twice, literally or through an escape alias, is rejected at every level.
+/// A key defined twice,
+///  literally or through an escape alias,
+///  is rejected at every level.
 #[test]
 fn ambiguous_duplicate_settings_are_rejected() {
     assert_rejections(&[

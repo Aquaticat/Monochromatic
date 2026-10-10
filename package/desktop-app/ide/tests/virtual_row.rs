@@ -1,8 +1,14 @@
-//! The rows a line shows above its code row, without fonts or a window: how messages become rows, how a pile
-//! of them is capped, and how tall a block is.
+//! The rows a line shows above its code row,
+//!  without fonts or a window:
+//!  how messages become rows,
+//!  how a pile
+//! of them is capped,
+//!  and how tall a block is.
 
-/// What: Import the production row rules and the diagnostic records they consume.
-/// Why: The vertical mapping and every frame take row counts from exactly these functions.
+/// What:
+///  Import the production row rules and the diagnostic records they consume.
+/// Why:
+///  The vertical mapping and every frame take row counts from exactly these functions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,8 +23,11 @@ use ide_app::{
     },
 };
 
-/// What: One diagnostic of `severity` starting at character `start`; `&str` lends the message.
-/// Why: Rows are derived from problems exactly as the annotation store indexes them.
+/// What:
+///  One diagnostic of `severity` starting at character `start`;
+///  `&str` lends the message.
+/// Why:
+///  Rows are derived from problems exactly as the annotation store indexes them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,7 +47,8 @@ fn problem(start: usize, severity: Severity, message: &str) -> Problem {
     };
 }
 
-/// The texts of `rows`, in order.
+/// The texts of `rows`,
+///  in order.
 fn texts(rows: &[MessageRow]) -> Vec<&str> {
     let mut result = Vec::new();
     for row in rows {
@@ -47,7 +57,9 @@ fn texts(rows: &[MessageRow]) -> Vec<&str> {
     return result;
 }
 
-/// A short message is one row that starts with the severity word, the code, and the source.
+/// A short message is one row that starts with the severity word,
+///  the code,
+///  and the source.
 #[test]
 fn a_message_row_starts_with_severity_code_and_source() {
     let found = problem(7, Severity::Error, "mismatched types");
@@ -58,7 +70,10 @@ fn a_message_row_starts_with_severity_code_and_source() {
     assert_eq!(rows[0].severity, Severity::Error);
 }
 
-/// Line breaks in a message start new rows, blank lines are dropped, indentation is kept, and every row after
+/// Line breaks in a message start new rows,
+///  blank lines are dropped,
+///  indentation is kept,
+///  and every row after
 /// the first is marked as continued.
 #[test]
 fn line_breaks_start_rows_and_indentation_is_kept() {
@@ -80,7 +95,9 @@ fn line_breaks_start_rows_and_indentation_is_kept() {
     assert_eq!(continued, [false, true, true]);
 }
 
-/// A long line wraps at blanks to the column limit; a word longer than a row is cut; wide characters count two.
+/// A long line wraps at blanks to the column limit;
+///  a word longer than a row is cut;
+///  wide characters count two.
 #[test]
 fn long_lines_wrap_at_the_column_limit() {
     assert_eq!(wrap("one two three", 7), ["one two", "three"]);
@@ -151,8 +168,11 @@ fn a_runaway_message_is_cut_and_counts_what_is_left_out() {
     );
 }
 
-/// Past the cap on messages per line, one row counts the rest and names their worst severity; given worst
-/// first, the cap therefore never hides an error behind a milder problem.
+/// Past the cap on messages per line,
+///  one row counts the rest and names their worst severity;
+///  given worst
+/// first,
+///  the cap therefore never hides an error behind a milder problem.
 #[test]
 fn a_pile_of_messages_is_capped_with_a_count() {
     let mut pile = Vec::new();
@@ -177,8 +197,11 @@ fn a_pile_of_messages_is_capped_with_a_count() {
     assert_eq!(message_rows(&fitting).len(), LINE_MESSAGES);
 }
 
-/// A block is its gap plus its rows; held space counts where it is taller than the rows; rows are stacked
-/// upwards from the code row, messages below hints.
+/// A block is its gap plus its rows;
+///  held space counts where it is taller than the rows;
+///  rows are stacked
+/// upwards from the code row,
+///  messages below hints.
 #[test]
 fn block_height_and_row_positions() {
     let row = |text: &str| {

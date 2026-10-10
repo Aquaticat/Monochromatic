@@ -1,6 +1,11 @@
-//! What: Decide what one `git cli-git ...` invocation does.
-//! Why: Help, refusals and retired commands need no repository; `check` and `fix`
-//!      validate their policy selection and configuration, then run one policy pass over
+//! What:
+//!  Decide what one `git cli-git ...` invocation does.
+//! Why:
+//!  Help,
+//!  refusals and retired commands need no repository;
+//!  `check` and `fix`
+//!      validate their policy selection and configuration,
+//!  then run one policy pass over
 //!      the selected repository and report its events on standard output.
 //!
 //! In TS you'd write (pseudocode):
@@ -17,7 +22,9 @@ use super::config_error::ConfigError;
 use super::config_file::LoadedConfig;
 /// A scope that cannot be projected is a `transaction-failed` engine failure.
 use super::diagnostics::EngineFailureCode;
-/// The direct fix: converge corrections in memory, then install them.
+/// The direct fix:
+///  converge corrections in memory,
+///  then install them.
 use super::direct_fix::run_direct_fix;
 use super::invocation_config::{config_invalid_event, legacy_warning_events, load_identity_config};
 use super::management_arguments::{
@@ -41,12 +48,15 @@ use super::repository_location::RepositoryLocation;
 /// The variable that names the forbidden-strings rules file.
 use super::scanner_selection::RULES_VARIABLE;
 use super::unported::{unported_from_unavailable, unported_notice};
-/// The worktree's top level, where a fix installs corrected files.
+/// The worktree's top level,
+///  where a fix installs corrected files.
 use super::worktree_identity::worktree_root;
 use super::wrapper_controls::Controls;
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  Arguments and environment values are never decoded.
+/// Why:
+///   Arguments and environment values are never decoded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -56,9 +66,11 @@ use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path of raw OS bytes.
 use std::path::{Path, PathBuf};
 
-/// What: The command word of a direct command.
+/// What:
+///  The command word of a direct command.
 ///       `&'static str` borrows text compiled into the executable for its whole run.
-/// Why:  Messages name the command the caller typed.
+/// Why:
+///   Messages name the command the caller typed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -71,9 +83,11 @@ fn direct_name(fix: bool) -> &'static str {
     return "check";
 }
 
-/// What: The words of a direct command as the caller typed them after `git`.
+/// What:
+///  The words of a direct command as the caller typed them after `git`.
 ///       `String` is owned UTF-8 text.
-/// Why:  A refusal names the command that was not run.
+/// Why:
+///   A refusal names the command that was not run.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -84,8 +98,10 @@ fn direct_command(fix: bool) -> String {
     return format!("cli-git {}", direct_name(fix));
 }
 
-/// What: The command word of a retired command.
-/// Why:  The explanation names the command the caller typed.
+/// What:
+///  The command word of a retired command.
+/// Why:
+///   The explanation names the command the caller typed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,10 +116,16 @@ fn retired_name(command: RetiredCommand) -> &'static str {
     }
 }
 
-/// What: Explain that a trust command is retired.
-///       `String` is the owned, line-terminated explanation.
-/// Why:  Trust existed to approve executing a repository's configuration code. JSONC
-///       configuration is data, so there is nothing to approve, revoke or report.
+/// What:
+///  Explain that a trust command is retired.
+///       `String` is the owned,
+///  line-terminated explanation.
+/// Why:
+///   Trust existed to approve executing a repository's configuration code.
+///  JSONC
+///       configuration is data,
+///  so there is nothing to approve,
+///  revoke or report.
 ///       Old trust records are neither read nor deleted.
 ///
 /// In TS you'd write (pseudocode):
@@ -120,8 +142,12 @@ pub fn retired_explanation(command: RetiredCommand) -> String {
     );
 }
 
-/// What: Turn a refusal into its usage action: text on standard error, exit status 2.
-/// Why:  A malformed management invocation must never fall through to Git.
+/// What:
+///  Turn a refusal into its usage action:
+///  text on standard error,
+///  exit status 2.
+/// Why:
+///   A malformed management invocation must never fall through to Git.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -148,8 +174,11 @@ fn refusal(reason: ManagementRefusal) -> Action {
     };
 }
 
-/// What: Stop a direct command with a `config-invalid` event on standard output.
-/// Why:  Direct commands report policy events on standard output, and an invalid
+/// What:
+///  Stop a direct command with a `config-invalid` event on standard output.
+/// Why:
+///   Direct commands report policy events on standard output,
+///  and an invalid
 ///       configuration or an unknown selected policy exits 2 before any policy runs.
 ///
 /// In TS you'd write (pseudocode):
@@ -164,9 +193,14 @@ fn direct_config_failure(error: &ConfigError) -> Action {
     };
 }
 
-/// What: The pathspecs of a direct command's scope. `all` is `--all`; `Vec<OsString>`
+/// What:
+///  The pathspecs of a direct command's scope.
+///  `all` is `--all`;
+///  `Vec<OsString>`
 ///       is the owned list of pathspecs written after `--`.
-/// Why:  `--all` selects the whole worktree from its top level, which Git spells `:/`,
+/// Why:
+///   `--all` selects the whole worktree from its top level,
+///  which Git spells `:/`,
 ///       as the installed wrapper does.
 ///
 /// In TS you'd write (pseudocode):
@@ -181,10 +215,14 @@ fn scope_pathspecs(all: bool, pathspecs: Vec<OsString>) -> Vec<OsString> {
     return pathspecs;
 }
 
-/// What: Turn the selected policy names into policy identities.
-///       `Result<Vec<PolicyId>, ConfigError>` is the identities, or the error naming the
+/// What:
+///  Turn the selected policy names into policy identities.
+///       `Result<Vec<PolicyId>, ConfigError>` is the identities,
+///  or the error naming the
 ///       first name no shipped policy has.
-/// Why:  `--policy` selects among shipped policies only; a mistyped ID must stop the
+/// Why:
+///   `--policy` selects among shipped policies only;
+///  a mistyped ID must stop the
 ///       command instead of selecting nothing.
 ///
 /// In TS you'd write (pseudocode):
@@ -218,13 +256,19 @@ fn selected_policies(names: &[String]) -> Result<Vec<PolicyId>, ConfigError> {
     return Ok(selected);
 }
 
-/// What: Run the policy pass of one direct command and build its action.
-///       `&LoadedConfig` borrows the accepted configuration; `&mut ShippedChecks<GitFacts>`
+/// What:
+///  Run the policy pass of one direct command and build its action.
+///       `&LoadedConfig` borrows the accepted configuration;
+///  `&mut ShippedChecks<GitFacts>`
 ///       lends the shipped policies over real Git for writing.
-/// Why:  Direct commands report every event on standard output. `check` first reports a
-///       legacy file left beside the JSONC file, and policy events continue its numbering.
+/// Why:
+///   Direct commands report every event on standard output.
+///  `check` first reports a
+///       legacy file left beside the JSONC file,
+///  and policy events continue its numbering.
 ///       A policy that cannot be evaluated here stops the command with exit status 2 and
-///       a notice on standard error, after the events gathered so far.
+///       a notice on standard error,
+///  after the events gathered so far.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -312,12 +356,21 @@ fn run_direct_command(
     };
 }
 
-/// What: Decide the action for the arguments after `git cli-git`.
-///       `&[OsString]` borrows argument lists; `&Controls` borrows what the wrapper
-///       controls written before `cli-git` asked for; `&ResolutionInputs` borrows process facts.
-/// Why:  Help, refusals and retired commands answer without resolving Git or reading
-///       any repository. A direct command validates its selection, asks Git once where it
-///       runs, refuses beside commit transactions it cannot recover, loads that
+/// What:
+///  Decide the action for the arguments after `git cli-git`.
+///       `&[OsString]` borrows argument lists;
+///  `&Controls` borrows what the wrapper
+///       controls written before `cli-git` asked for;
+///  `&ResolutionInputs` borrows process facts.
+/// Why:
+///   Help,
+///  refusals and retired commands answer without resolving Git or reading
+///       any repository.
+///  A direct command validates its selection,
+///  asks Git once where it
+///       runs,
+///  refuses beside commit transactions it cannot recover,
+///  loads that
 ///       worktree's configuration and runs one policy pass.
 ///
 /// In TS you'd write (pseudocode):

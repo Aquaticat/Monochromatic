@@ -1,7 +1,10 @@
-//! What: Raw and generated `git ls-files --stage -z` listings through the listing parser
+//! What:
+//!  Raw and generated `git ls-files --stage -z` listings through the listing parser
 //!       and the staged delta a `git add` prediction computes from two of them.
-//! Why: Listing pathnames are chosen by whoever writes the repository and may hold tabs,
-//!      spaces and bytes that are not UTF-8; the delta decides which files the content
+//! Why:
+//!  Listing pathnames are chosen by whoever writes the repository and may hold tabs,
+//!      spaces and bytes that are not UTF-8;
+//!  the delta decides which files the content
 //!      policies read.
 //!
 //! In TS you'd write (pseudocode):

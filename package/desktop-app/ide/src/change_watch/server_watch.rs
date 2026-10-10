@@ -1,14 +1,29 @@
-//! Watches for the language servers: every source folder of the project, after the tree and the displayed
-//! file, sharing the one inotify instance and its limit.
+//! Watches for the language servers:
+//!  every source folder of the project,
+//!  after the tree and the displayed
+//! file,
+//!  sharing the one inotify instance and its limit.
 //!
-//! A folder can be wanted by the tree and by the servers at once, and inotify keeps one watch per folder,
-//! so neither side removes a watch the other still holds. When the watch limit refuses a watch the tree
-//! wants, a watch held only for the servers is given up to make room: what the user sees comes first.
+//! A folder can be wanted by the tree and by the servers at once,
+//!  and inotify keeps one watch per folder,
+//! so neither side removes a watch the other still holds.
+//!  When the watch limit refuses a watch the tree
+//! wants,
+//!  a watch held only for the servers is given up to make room:
+//!  what the user sees comes first.
 
-/// The kernel calls, why an add failed, and the limit backoff, shared with the tree's watches.
+/// The kernel calls,
+///  why an add failed,
+///  and the limit backoff,
+///  shared with the tree's watches.
 use super::{limit::LimitBackoff, reconcile::Kernel, watch_ops::WatchFailure};
-/// What: ordered sets of owned paths; `Path` borrows a path; `Instant` is a monotonic time point.
-/// Why: Watches are keyed by folder, and the backoff runs on the monotonic clock.
+/// What:
+///  ordered sets of owned paths;
+///  `Path` borrows a path;
+///  `Instant` is a monotonic time point.
+/// Why:
+///  Watches are keyed by folder,
+///  and the backoff runs on the monotonic clock.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,21 +35,32 @@ use std::{
     time::Instant,
 };
 
-/// The servers' watch bookkeeping, owned by the watch thread alone.
+/// The servers' watch bookkeeping,
+///  owned by the watch thread alone.
 #[derive(Debug, Default)]
 pub struct ServerWatches {
-    /// Folders the latest scans found: source folders and empty folders watched provisionally.
+    /// Folders the latest scans found:
+    ///  source folders and empty folders watched provisionally.
     pub desired: BTreeSet<PathBuf>,
-    /// Empty folders among `desired`; their first change asks to classify them.
+    /// Empty folders among `desired`;
+    ///  their first change asks to classify them.
     pub provisional: BTreeSet<PathBuf>,
-    /// Folders the servers hold a watch on, alone or together with the tree.
+    /// Folders the servers hold a watch on,
+    ///  alone or together with the tree.
     pub active: BTreeSet<PathBuf>,
     /// Desired folders without a watch because the inotify watch limit is reached or the tree needed it.
     pub limited: BTreeSet<PathBuf>,
-    /// Desired folders whose watch failed for another reason (vanished, refused); not retried until rescanned.
+    /// Desired folders whose watch failed for another reason (vanished,
+    ///  refused);
+    ///  not retried until rescanned.
     pub failed: BTreeSet<PathBuf>,
-    /// What: `Option<LimitBackoff>` is the backoff while some desired folder waits on the limit, or `None`.
-    /// Why: The servers' limit is its own state: logged once on entry and once on exit, retried with backoff.
+    /// What:
+    ///  `Option<LimitBackoff>` is the backoff while some desired folder waits on the limit,
+    ///  or `None`.
+    /// Why:
+    ///  The servers' limit is its own state:
+    ///  logged once on entry and once on exit,
+    ///  retried with backoff.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -43,12 +69,15 @@ pub struct ServerWatches {
     pub limit: Option<LimitBackoff>,
 }
 
-/// What a pass may do, taken from the wake.
+/// What a pass may do,
+///  taken from the wake.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ServerRequest {
-    /// A scan changed the desired folders: limited folders are tried at once.
+    /// A scan changed the desired folders:
+    ///  limited folders are tried at once.
     pub desired_changed: bool,
-    /// Some folder the tree or the displayed file wants waits on the limit: the servers add nothing.
+    /// Some folder the tree or the displayed file wants waits on the limit:
+    ///  the servers add nothing.
     pub tree_limited: bool,
 }
 
@@ -64,8 +93,10 @@ pub(super) fn forget_below(set: &mut BTreeSet<PathBuf>, base: &Path) {
     set.retain(|path| return !path.starts_with(base));
 }
 
-/// Remove the watches the servers no longer want, then add the desired ones this pass allows.
-/// `tree_active` names the folders the tree holds; their kernel watch exists already and must stay.
+/// Remove the watches the servers no longer want,
+///  then add the desired ones this pass allows.
+/// `tree_active` names the folders the tree holds;
+///  their kernel watch exists already and must stay.
 /// Returns the folders that got a watch for the servers.
 pub fn reconcile_servers(
     servers: &mut ServerWatches,
@@ -156,8 +187,12 @@ pub fn reconcile_servers(
     return established;
 }
 
-/// Enter, keep, or leave the servers' limit state; each change of state is logged once.
-/// `retried_in_vain` says a backoff retry met the limit again, which lengthens the wait.
+/// Enter,
+///  keep,
+///  or leave the servers' limit state;
+///  each change of state is logged once.
+/// `retried_in_vain` says a backoff retry met the limit again,
+///  which lengthens the wait.
 fn update_limit(servers: &mut ServerWatches, retried_in_vain: bool, now: Instant) {
     if servers.limited.is_empty() {
         if servers.limit.take().is_some() {
@@ -190,26 +225,35 @@ fn update_limit(servers: &mut ServerWatches, retried_in_vain: bool, now: Instant
     servers.limit = Some(backoff);
 }
 
-/// The tree's kernel while the servers hold watches too: a folder both want keeps its one watch, and a
+/// The tree's kernel while the servers hold watches too:
+///  a folder both want keeps its one watch,
+///  and a
 /// watch held only for the servers is given up when the limit refuses one the tree wants.
 pub struct TreeFirst<'a> {
-    /// What: `&'a mut dyn Kernel` lends the real kernel calls for as long as `'a`.
-    /// Why: The watch thread owns the watcher; a wake only borrows it.
+    /// What:
+    ///  `&'a mut dyn Kernel` lends the real kernel calls for as long as `'a`.
+    /// Why:
+    ///  The watch thread owns the watcher;
+    ///  a wake only borrows it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// inner: Kernel;
     /// ```
     pub inner: &'a mut dyn Kernel,
-    /// The servers' bookkeeping, changed when one of their watches is given up.
+    /// The servers' bookkeeping,
+    ///  changed when one of their watches is given up.
     pub servers: &'a mut ServerWatches,
-    /// Folders the tree held before this wake or got a watch for during it; never given up.
+    /// Folders the tree held before this wake or got a watch for during it;
+    ///  never given up.
     pub tree_held: BTreeSet<PathBuf>,
 }
 
-/// Share watches with the servers, and take one of theirs when the limit refuses the tree.
+/// Share watches with the servers,
+///  and take one of theirs when the limit refuses the tree.
 impl Kernel for TreeFirst<'_> {
-    /// Watch a folder for the tree, unless the servers' watch already covers it.
+    /// Watch a folder for the tree,
+    ///  unless the servers' watch already covers it.
     fn add(&mut self, path: &Path) -> Result<(), WatchFailure> {
         if self.servers.active.contains(path) {
             self.tree_held.insert(path.to_path_buf());
@@ -255,7 +299,8 @@ impl Kernel for TreeFirst<'_> {
         }
     }
 
-    /// Stop the tree's watch, unless the servers still hold the folder.
+    /// Stop the tree's watch,
+    ///  unless the servers still hold the folder.
     fn remove(&mut self, path: &Path) {
         self.tree_held.remove(path);
         if self.servers.active.contains(path) {
@@ -265,7 +310,9 @@ impl Kernel for TreeFirst<'_> {
     }
 }
 
-/// Sharing, yielding, and the servers' limit state with fake kernel calls.
+/// Sharing,
+///  yielding,
+///  and the servers' limit state with fake kernel calls.
 #[cfg(test)]
 #[path = "server_watch_tests.rs"]
 mod tests;

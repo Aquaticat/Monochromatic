@@ -1,6 +1,7 @@
 //! Ripgrep decoding preserves native names and fails visibly on invalid protocol or escaped project paths.
 
-/// Standard encoding constructs byte-valued wire fixtures; assertions compare the original bytes.
+/// Standard encoding constructs byte-valued wire fixtures;
+///  assertions compare the original bytes.
 use base64::{Engine, engine::general_purpose::STANDARD};
 /// Production result types and decoders are exercised without a native window.
 use ide_app::{
@@ -8,7 +9,9 @@ use ide_app::{
     search_protocol::{content, filename},
     search_query::PathQuery,
 };
-/// Typed JSON fixture construction escapes quotes, separators, and newlines at the protocol boundary.
+/// Typed JSON fixture construction escapes quotes,
+///  separators,
+///  and newlines at the protocol boundary.
 use serde_json::{Value, json};
 /// Native filename bytes remain distinct from their lossy display representation.
 use std::{os::unix::ffi::OsStrExt, path::Path};
@@ -119,7 +122,8 @@ fn preview_limit_preserves_combining_and_joined_graphemes() {
     );
 }
 
-/// Known protocol metadata is ignored; unknown events are not silently treated as no matches.
+/// Known protocol metadata is ignored;
+///  unknown events are not silently treated as no matches.
 #[test]
 fn metadata_and_unknown_event_types_remain_distinct() {
     for kind in ["begin", "end", "context", "summary"] {
@@ -141,7 +145,10 @@ fn metadata_and_unknown_event_types_remain_distinct() {
     assert!(content(Path::new("/project"), b"not JSON").is_err());
 }
 
-/// Ambiguous payloads, invalid base64, duplicate fields, and missing line metadata fail visibly.
+/// Ambiguous payloads,
+///  invalid base64,
+///  duplicate fields,
+///  and missing line metadata fail visibly.
 #[test]
 fn malformed_matches_are_errors_not_empty_results() {
     let root = Path::new("/project");
@@ -180,7 +187,10 @@ fn malformed_matches_are_errors_not_empty_results() {
     );
 }
 
-/// Root siblings, traversal components, missing names, and embedded NUL bytes are rejected before UI activation.
+/// Root siblings,
+///  traversal components,
+///  missing names,
+///  and embedded NUL bytes are rejected before UI activation.
 #[test]
 fn decoded_paths_must_be_project_children() {
     let root = Path::new("/project");
@@ -206,7 +216,8 @@ fn decoded_paths_must_be_project_children() {
     }
 }
 
-/// Filename patterns are smart-case substrings, including Unicode case and literal regex punctuation.
+/// Filename patterns are smart-case substrings,
+///  including Unicode case and literal regex punctuation.
 #[test]
 fn filename_queries_match_editord_smart_case_semantics() {
     assert!(PathQuery::new("source").matches(Path::new("SRC/Source.ts")));

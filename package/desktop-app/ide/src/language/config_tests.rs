@@ -1,4 +1,7 @@
-//! Registry assembly on disposable project roots: overrides, availability, and the launch seam.
+//! Registry assembly on disposable project roots:
+//!  overrides,
+//!  availability,
+//!  and the launch seam.
 
 use super::{LanguageSetup, Languages, Unavailable, typescript};
 use crate::language::launch::{LaunchRequest, ServerLaunch, launch_directly};
@@ -8,7 +11,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// A scripted language whose server program is `/bin/sh`, which exists wherever tests run.
+/// A scripted language whose server program is `/bin/sh`,
+///  which exists wherever tests run.
 const SCRIPTED: &str = r#"
 [language-server.scripted-ls]
 command = "sh"
@@ -52,7 +56,8 @@ fn scripted_setup() -> LanguageSetup {
     };
 }
 
-/// Server names Helix would start for a file, read from the registry Helix itself uses.
+/// Server names Helix would start for a file,
+///  read from the registry Helix itself uses.
 fn startable(languages: &Languages, file: &str) -> Vec<String> {
     let loader = languages.loader.load();
     let language = loader
@@ -180,7 +185,8 @@ fn missing_program_is_reported_and_never_handed_to_helix() {
     );
 }
 
-/// A policy that wraps the server, as a confining launcher would.
+/// A policy that wraps the server,
+///  as a confining launcher would.
 fn wrapping_policy(request: &LaunchRequest) -> Result<ServerLaunch, String> {
     let mut launch = launch_directly(request)?;
     let mut args = vec![

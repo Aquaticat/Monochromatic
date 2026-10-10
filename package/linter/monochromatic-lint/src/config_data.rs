@@ -1,5 +1,7 @@
-//! What: Validation shared by configuration blocks and their rule options.
-//! Why: Generic JSONC permits nulls and duplicate members that the linter deliberately rejects.
+//! What:
+//!  Validation shared by configuration blocks and their rule options.
+//! Why:
+//!  Generic JSONC permits nulls and duplicate members that the linter deliberately rejects.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,16 +10,21 @@
 
 /// Import the linter's typed setup failure.
 use crate::config_error::ConfigError;
-/// What: Import the actual JSONC model and string decoder.
-/// Why: Schema validation must preserve the parser's exact representation.
+/// What:
+///  Import the actual JSONC model and string decoder.
+/// Why:
+///  Schema validation must preserve the parser's exact representation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { unitsToString } from 'jsonc-edit';
 /// ```
 use monochromatic_jsonc_edit::{JsoncKind, JsoncValue, units_to_string};
-/// What: Import a set for decoded object-property identities.
-/// Why: Duplicate detection must compare string values, not their different JSON escape spellings.
+/// What:
+///  Import a set for decoded object-property identities.
+/// Why:
+///  Duplicate detection must compare string values,
+///  not their different JSON escape spellings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,8 +32,11 @@ use monochromatic_jsonc_edit::{JsoncKind, JsoncValue, units_to_string};
 /// ```
 use std::collections::BTreeSet;
 
-/// What: Reject nulls and duplicate decoded keys throughout a configuration tree.
-/// Why: The merge layer only receives unambiguous settings; nested options have the same requirement.
+/// What:
+///  Reject nulls and duplicate decoded keys throughout a configuration tree.
+/// Why:
+///  The merge layer only receives unambiguous settings;
+///  nested options have the same requirement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -97,8 +107,11 @@ pub(crate) fn validate_data(root: &JsoncValue) -> Result<(), ConfigError> {
     return Ok(());
 }
 
-/// What: Decode one property name into Rust's owned UTF-8 string.
-/// Why: Rule IDs and schema keys are text, not arbitrary unpaired UTF-16 code units.
+/// What:
+///  Decode one property name into Rust's owned UTF-8 string.
+/// Why:
+///  Rule IDs and schema keys are text,
+///  not arbitrary unpaired UTF-16 code units.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -122,8 +135,11 @@ pub(crate) fn key_text(units: &[u16]) -> Result<String, ConfigError> {
     }
 }
 
-/// What: Require one textual field and preserve its decoded value.
-/// Why: Schema callers name the field, so failure messages identify the affected input.
+/// What:
+///  Require one textual field and preserve its decoded value.
+/// Why:
+///  Schema callers name the field,
+///  so failure messages identify the affected input.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -139,8 +155,10 @@ pub(crate) fn text(value: &JsoncValue, field: &str) -> Result<String, ConfigErro
     ));
 }
 
-/// What: Require an array containing only decoded strings.
-/// Why: File patterns and exclusions must not coerce booleans or numbers into path text.
+/// What:
+///  Require an array containing only decoded strings.
+/// Why:
+///  File patterns and exclusions must not coerce booleans or numbers into path text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

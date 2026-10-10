@@ -1,6 +1,14 @@
-//! What: An immutable candidate version: the paths one Git state changes, each with its identity, mode and object.
-//! Why: Every policy of one pass must judge the same files. A version is listed once and
-//!      then only read, so path metadata is shared instead of re-queried, and a later
+//! What:
+//!  An immutable candidate version:
+//!  the paths one Git state changes,
+//!  each with its identity,
+//!  mode and object.
+//! Why:
+//!  Every policy of one pass must judge the same files.
+//!  A version is listed once and
+//!      then only read,
+//!  so path metadata is shared instead of re-queried,
+//!  and a later
 //!      fix or replay produces a new version instead of altering this one.
 //!
 //! In TS you'd write (pseudocode):
@@ -12,9 +20,14 @@
 use super::candidate_object::{CandidateMode, ObjectId};
 /// Import the parsed listing records and their change kinds.
 use super::candidate_record::{CandidateChange, CandidateRecord};
-/// What: `HashMap<K, V>` is a key-to-value table (siblings: `BTreeMap`, which keeps keys
-///       sorted, and `Vec` of pairs).
-/// Why:  Candidates are found by pathname without scanning the whole list.
+/// What:
+///  `HashMap<K, V>` is a key-to-value table (siblings:
+///  `BTreeMap`,
+///  which keeps keys
+///       sorted,
+///  and `Vec` of pairs).
+/// Why:
+///   Candidates are found by pathname without scanning the whole list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,10 +35,16 @@ use super::candidate_record::{CandidateChange, CandidateRecord};
 /// ```
 use std::collections::HashMap;
 
-/// What: Which Git state a version lists, and what it is compared with.
-///       `#[derive(...)]` generates cloning, debug printing and `==`.
-/// Why:  A commit being prepared is judged by what is staged; a landed commit by what
-///       it changed. Naming the comparison makes the version reproducible.
+/// What:
+///  Which Git state a version lists,
+///  and what it is compared with.
+///       `#[derive(...)]` generates cloning,
+///  debug printing and `==`.
+/// Why:
+///   A commit being prepared is judged by what is staged;
+///  a landed commit by what
+///       it changed.
+///  Naming the comparison makes the version reproducible.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,21 +52,32 @@ use std::collections::HashMap;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum CandidateSource {
-    /// The index compared with `HEAD`; every index entry when no commit exists yet.
+    /// The index compared with `HEAD`;
+    ///  every index entry when no commit exists yet.
     StagedAgainstHead,
-    /// The index compared with one named commit, such as a transaction's recorded base.
+    /// The index compared with one named commit,
+    ///  such as a transaction's recorded base.
     StagedAgainstCommit(ObjectId),
-    /// One commit compared with each of its parents; every entry of a root commit.
+    /// One commit compared with each of its parents;
+    ///  every entry of a root commit.
     Committed(ObjectId),
 }
 
-/// What: The identity of one candidate within one invocation.
-///       `u64` is an unsigned 64-bit counter (siblings `u32`, `usize`); `usize` is the
+/// What:
+///  The identity of one candidate within one invocation.
+///       `u64` is an unsigned 64-bit counter (siblings `u32`,
+///  `usize`);
+///  `usize` is the
 ///       unsigned integer every index uses.
-/// Why:  Identity must not be derived from the pathname, which the scanner may mask.
+/// Why:
+///   Identity must not be derived from the pathname,
+///  which the scanner may mask.
 ///       The generation tells a candidate of an invalidated version from a current
-///       one; `u64` cannot run out within a process. The index is the candidate's
-///       position in its version, and `usize` is what indexing and the scanner take.
+///       one;
+///  `u64` cannot run out within a process.
+///  The index is the candidate's
+///       position in its version,
+///  and `usize` is what indexing and the scanner take.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,17 +85,22 @@ pub enum CandidateSource {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct CandidateIdentity {
-    /// Counts invalidations: candidates of an earlier generation are stale.
+    /// Counts invalidations:
+    ///  candidates of an earlier generation are stale.
     pub generation: u64,
     /// Zero-based position in the version's candidate list.
     pub index: usize,
 }
 
-/// What: One changed path of a version.
+/// What:
+///  One changed path of a version.
 ///       `Vec<u8>` is an owned byte list (sibling `String` would require UTF-8).
 ///       `Option<ObjectId>` is "an object name or nothing".
-/// Why:  Git pathnames are arbitrary bytes on Unix and are kept exactly. A deleted
-///       path has no object, which the type states.
+/// Why:
+///   Git pathnames are arbitrary bytes on Unix and are kept exactly.
+///  A deleted
+///       path has no object,
+///  which the type states.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -73,21 +108,29 @@ pub struct CandidateIdentity {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Candidate {
-    /// Invocation-local identity, independent of the pathname.
+    /// Invocation-local identity,
+    ///  independent of the pathname.
     pub identity: CandidateIdentity,
-    /// Repository-relative pathname with `/` separators, exactly as Git stores it.
+    /// Repository-relative pathname with `/` separators,
+    ///  exactly as Git stores it.
     pub path: Vec<u8>,
-    /// Mode in the candidate state, or the baseline's mode for a deleted path.
+    /// Mode in the candidate state,
+    ///  or the baseline's mode for a deleted path.
     pub mode: CandidateMode,
     /// Change against the baseline.
     pub change: CandidateChange,
-    /// Object in the candidate state; absent for a deleted path.
+    /// Object in the candidate state;
+    ///  absent for a deleted path.
     pub object: Option<ObjectId>,
 }
 
-/// What: The candidates of one listed state. Fields are private: a version is built
+/// What:
+///  The candidates of one listed state.
+///  Fields are private:
+///  a version is built
 ///       once by `build_version` and never changed.
-/// Why:  Immutability is what lets several policies share one listing safely.
+/// Why:
+///   Immutability is what lets several policies share one listing safely.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,11 +144,18 @@ pub struct CandidateVersion {
     by_path: HashMap<Vec<u8>, usize>,
 }
 
-/// What: Build a version from listing records, keeping the first record of each pathname.
-///       `Vec<CandidateRecord>` is taken by value: the records' bytes move into the
+/// What:
+///  Build a version from listing records,
+///  keeping the first record of each pathname.
+///       `Vec<CandidateRecord>` is taken by value:
+///  the records' bytes move into the
 ///       version without being copied.
-/// Why:  A merge commit lists one comparison per parent, so a pathname can appear more
-///       than once; the first appearance decides, as it did in the TypeScript wrapper.
+/// Why:
+///   A merge commit lists one comparison per parent,
+///  so a pathname can appear more
+///       than once;
+///  the first appearance decides,
+///  as it did in the TypeScript wrapper.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -137,16 +187,23 @@ pub fn build_version(generation: u64, records: Vec<CandidateRecord>) -> Candidat
     };
 }
 
-/// What: `impl CandidateVersion { ... }` attaches read-only accessors, like class getters.
-/// Why:  Callers can read a version and cannot change it.
+/// What:
+///  `impl CandidateVersion { ... }` attaches read-only accessors,
+///  like class getters.
+/// Why:
+///   Callers can read a version and cannot change it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class CandidateVersion { get candidates() {} candidateAtPath(path) {} }
 /// ```
 impl CandidateVersion {
-    /// What: Every candidate, in listing order. `&[Candidate]` borrows the list read-only.
-    /// Why:  A candidate's `identity.index` is its position in this list.
+    /// What:
+    ///  Every candidate,
+    ///  in listing order.
+    ///  `&[Candidate]` borrows the list read-only.
+    /// Why:
+    ///   A candidate's `identity.index` is its position in this list.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -156,9 +213,13 @@ impl CandidateVersion {
         return self.candidates.as_slice();
     }
 
-    /// What: The candidate at an exact pathname, if this version changes it.
+    /// What:
+    ///  The candidate at an exact pathname,
+    ///  if this version changes it.
     ///       `Option<&Candidate>` is "a borrowed candidate or nothing".
-    /// Why:  A policy that cares about specific files (a manifest, a rules file) asks by
+    /// Why:
+    ///   A policy that cares about specific files (a manifest,
+    ///  a rules file) asks by
     ///       name instead of scanning the list or asking Git again.
     ///
     /// In TS you'd write (pseudocode):

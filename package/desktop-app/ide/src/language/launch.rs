@@ -1,21 +1,33 @@
-//! The launch seam: what the application knows about a server, and what is actually spawned.
+//! The launch seam:
+//!  what the application knows about a server,
+//!  and what is actually spawned.
 //!
-//! Every server definition passes through one `LaunchPolicy` before Helix sees it. The default
-//! policy spawns the resolved server program unchanged. A confining policy returns a wrapper
-//! command instead; if it cannot, it returns an error and the server is reported as refused.
+//! Every server definition passes through one `LaunchPolicy` before Helix sees it.
+//!  The default
+//! policy spawns the resolved server program unchanged.
+//!  A confining policy returns a wrapper
+//! command instead;
+//!  if it cannot,
+//!  it returns an error and the server is reported as refused.
 //! There is no fallback to an unconfined launch.
 
-/// What: `Value` is any JSON value.
-/// Why: A server's settings table travels as JSON and a policy may override entries in it.
+/// What:
+///  `Value` is any JSON value.
+/// Why:
+///  A server's settings table travels as JSON and a policy may override entries in it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Value = unknown;
 /// ```
 use serde_json::Value;
-/// What: `HashMap` is a key-value table; `PermissionsExt` adds Unix permission bits to file
-///       metadata; `Path` is a borrowed filesystem path and `PathBuf` its owned sibling.
-/// Why: Executables are found by walking `PATH` and checking the execute permission.
+/// What:
+///  `HashMap` is a key-value table;
+///  `PermissionsExt` adds Unix permission bits to file
+///       metadata;
+///  `Path` is a borrowed filesystem path and `PathBuf` its owned sibling.
+/// Why:
+///  Executables are found by walking `PATH` and checking the execute permission.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,11 +39,18 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// What: Everything the application knows about one server before launch. `String` and
-///       `PathBuf` own their data; `Vec<String>` is a growable list; `Option<...>` is "a value,
+/// What:
+///  Everything the application knows about one server before launch.
+///  `String` and
+///       `PathBuf` own their data;
+///  `Vec<String>` is a growable list;
+///  `Option<...>` is "a value,
 ///       or nothing".
-/// Why: A policy needs the real program (already resolved to an absolute path), the project
-///      it must not write to, and the private directory it may write to instead.
+/// Why:
+///  A policy needs the real program (already resolved to an absolute path),
+///  the project
+///      it must not write to,
+///  and the private directory it may write to instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -41,7 +60,8 @@ use std::{
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct LaunchRequest {
-    /// Name of the server definition, for example `rust-analyzer`.
+    /// Name of the server definition,
+    ///  for example `rust-analyzer`.
     pub server: String,
     /// Absolute path of the server's own program.
     pub executable: PathBuf,
@@ -49,14 +69,17 @@ pub struct LaunchRequest {
     pub args: Vec<String>,
     /// Environment variables the definition adds for the server.
     pub environment: HashMap<String, String>,
-    /// The server's settings table, sent as initialization options and configuration.
+    /// The server's settings table,
+    ///  sent as initialization options and configuration.
     pub settings: Option<Value>,
     /// Canonical project root.
     pub project_root: PathBuf,
-    /// Other spellings of the project root that servers are given, such as the one Helix derives
+    /// Other spellings of the project root that servers are given,
+    ///  such as the one Helix derives
     /// from `PWD` when the project was reached through a symbolic link.
     pub project_spellings: Vec<PathBuf>,
-    /// Private application state directory outside the project, when the application has one.
+    /// Private application state directory outside the project,
+    ///  when the application has one.
     pub state_root: Option<PathBuf>,
 }
 
@@ -69,24 +92,35 @@ pub struct LaunchRequest {
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct ServerLaunch {
-    /// Program to spawn: the server itself, or a wrapper that runs it.
+    /// Program to spawn:
+    ///  the server itself,
+    ///  or a wrapper that runs it.
     pub command: String,
-    /// Arguments of that program; a wrapper's recipe comes first, then the server and its arguments.
+    /// Arguments of that program;
+    ///  a wrapper's recipe comes first,
+    ///  then the server and its arguments.
     pub args: Vec<String>,
     /// Environment variables added for the spawned program.
     pub environment: HashMap<String, String>,
     /// Settings table after the policy's overrides.
     pub settings: Option<Value>,
-    /// Directories that must exist before every launch; created by the worker below the private state
-    /// root, which lies inside the project only when the home folder is opened.
+    /// Directories that must exist before every launch;
+    ///  created by the worker below the private state
+    /// root,
+    ///  which lies inside the project only when the home folder is opened.
     pub directories: Vec<PathBuf>,
-    /// Directories emptied before every launch, such as a private temporary directory.
+    /// Directories emptied before every launch,
+    ///  such as a private temporary directory.
     pub scratch: Vec<PathBuf>,
 }
 
-/// What: `fn(...) -> ...` as a type is a plain function pointer: a value that is a function.
+/// What:
+///  `fn(...) -> ...` as a type is a plain function pointer:
+///  a value that is a function.
 ///       `Result<ServerLaunch, String>` is either a launch (`Ok`) or a refusal reason (`Err`).
-/// Why: One explicit function decides how every server starts, so write confinement can be
+/// Why:
+///  One explicit function decides how every server starts,
+///  so write confinement can be
 ///      added without touching the worker.
 ///
 /// In TS you'd write (pseudocode):
@@ -95,9 +129,15 @@ pub struct ServerLaunch {
 /// ```
 pub type LaunchPolicy = fn(&LaunchRequest) -> Result<ServerLaunch, String>;
 
-/// What: The default policy: spawn the resolved server program itself, unchanged.
-/// Why: It keeps the seam explicit while no confinement is wired in. Servers launched this way
-///      can write to the project, so real servers may only be pointed at disposable projects.
+/// What:
+///  The default policy:
+///  spawn the resolved server program itself,
+///  unchanged.
+/// Why:
+///  It keeps the seam explicit while no confinement is wired in.
+///  Servers launched this way
+///      can write to the project,
+///  so real servers may only be pointed at disposable projects.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -146,9 +186,14 @@ fn is_executable(path: &Path) -> bool {
         .is_ok_and(|found| return found.is_file() && found.permissions().mode() & 0o111 != 0);
 }
 
-/// What: Find the absolute path of a server program, or nothing. A command containing a path
-///       separator is taken relative to the project root; a bare name is searched on `PATH`.
-/// Why: A wrapper in front of the server would hide a missing server from Helix's own lookup,
+/// What:
+///  Find the absolute path of a server program,
+///  or nothing.
+///  A command containing a path
+///       separator is taken relative to the project root;
+///  a bare name is searched on `PATH`.
+/// Why:
+///  A wrapper in front of the server would hide a missing server from Helix's own lookup,
 ///      and a confining wrapper needs an absolute path after its `--`.
 ///
 /// In TS you'd write (pseudocode):
@@ -181,10 +226,17 @@ pub fn resolve_executable(command: &str, root: &Path) -> Option<PathBuf> {
     return None;
 }
 
-/// What: Resolve as much of a path as exists. `canonicalize` fails for a missing path, so the
+/// What:
+///  Resolve as much of a path as exists.
+///  `canonicalize` fails for a missing path,
+///  so the
 ///       nearest existing ancestor is resolved and the missing tail is appended again.
-/// Why: A state directory that does not exist yet must still be compared, and bound inside a
-///      sandbox, by its real location, even when a variable spells it through a symbolic link.
+/// Why:
+///  A state directory that does not exist yet must still be compared,
+///  and bound inside a
+///      sandbox,
+///  by its real location,
+///  even when a variable spells it through a symbolic link.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -215,13 +267,21 @@ pub fn resolve_existing(path: &Path) -> PathBuf {
     }
 }
 
-/// What: Check that a directory a policy wants written does not contain the project.
-///       `Result<(), String>` is success without a value, or the reason for refusal.
-/// Why: A state directory that contains (or is) the project would make the project writable
-///      through it (measured in `doc/planning/slint-ide-write-confinement.md`). A state directory
-///      strictly inside the project is allowed: it is the application's own cache, which lies inside
-///      the project when the home folder is opened (`~/.cache/monochromatic-ide`), and the sandbox
-///      binds it writable after the read-only project bind, so only that directory is writable.
+/// What:
+///  Check that a directory a policy wants written does not contain the project.
+///       `Result<(), String>` is success without a value,
+///  or the reason for refusal.
+/// Why:
+///  A state directory that contains (or is) the project would make the project writable
+///      through it (measured in `doc/planning/slint-ide-write-confinement.md`).
+///  A state directory
+///      strictly inside the project is allowed:
+///  it is the application's own cache,
+///  which lies inside
+///      the project when the home folder is opened (`~/.cache/monochromatic-ide`),
+///  and the sandbox
+///      binds it writable after the read-only project bind,
+///  so only that directory is writable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -252,8 +312,11 @@ pub fn check_state_directory(directory: &Path, project_root: &Path) -> Result<()
     return Ok(());
 }
 
-/// What: Check that a directory lies strictly below the private state root.
-/// Why: Scratch directories are emptied, so a policy mistake must never reach beyond the one
+/// What:
+///  Check that a directory lies strictly below the private state root.
+/// Why:
+///  Scratch directories are emptied,
+///  so a policy mistake must never reach beyond the one
 ///      directory the application owns.
 ///
 /// In TS you'd write (pseudocode):
@@ -273,11 +336,20 @@ fn check_below_state(directory: &Path, state_root: &Path) -> Result<(), String> 
     return Ok(());
 }
 
-/// What: Create a launch's directories and empty its scratch directories. `Option<&Path>` is
-///       "a borrowed path, or nothing": the application's private state root.
-/// Why: A wrapper refuses to start when its bind sources are missing, and a private temporary
-///      directory must not carry files from an earlier session. Every directory must be below
-///      the state root, and the state root must not contain the project; anything else is refused.
+/// What:
+///  Create a launch's directories and empty its scratch directories.
+///  `Option<&Path>` is
+///       "a borrowed path,
+///  or nothing":
+///  the application's private state root.
+/// Why:
+///  A wrapper refuses to start when its bind sources are missing,
+///  and a private temporary
+///      directory must not carry files from an earlier session.
+///  Every directory must be below
+///      the state root,
+///  and the state root must not contain the project;
+///  anything else is refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -330,7 +402,10 @@ pub fn prepare(
     return Ok(());
 }
 
-/// Executable lookup, the default policy, and state-directory containment, on disposable directories.
+/// Executable lookup,
+///  the default policy,
+///  and state-directory containment,
+///  on disposable directories.
 #[cfg(test)]
 #[path = "launch_tests.rs"]
 mod tests;

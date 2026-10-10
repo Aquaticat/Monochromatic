@@ -1,19 +1,32 @@
-//! What: Remove every wrapper control from one invocation, before and after the subcommand,
+//! What:
+//!  Remove every wrapper control from one invocation,
+//!  before and after the subcommand,
 //!       and say how the command's own arguments were read.
-//! Why: Detecting a control and removing it must be one act. This module is the only place
-//!      that removes wrapper tokens: positions come from Git's own option table of the
-//!      command where one is ported, and are deleted by position, so a control never
-//!      reaches Git and a message, value or path that spells a control is never removed.
+//! Why:
+//!  Detecting a control and removing it must be one act.
+//!  This module is the only place
+//!      that removes wrapper tokens:
+//!  positions come from Git's own option table of the
+//!      command where one is ported,
+//!  and are deleted by position,
+//!  so a control never
+//!      reaches Git and a message,
+//!  value or path that spells a control is never removed.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const { args, controls, reading } = stripWrapperControls(rawArgs);
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  Each command module reads its region with Git's table and reports where wrapper
-///       tokens sat; this module only collects those positions and deletes them.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   Each command module reads its region with Git's table and reports where wrapper
+///       tokens sat;
+///  this module only collects those positions and deletes them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,9 +51,14 @@ use super::wrapper_controls::{
     CONTROL_SPELLINGS, ControlMeaning, Controls, control_flags, control_meaning, no_controls,
     record_control, strip_global_controls,
 };
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  Arguments may hold bytes that are not UTF-8 and are forwarded unchanged.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Arguments may hold bytes that are not UTF-8 and are forwarded unchanged.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,11 +66,19 @@ use super::wrapper_controls::{
 /// ```
 use std::ffi::OsString;
 
-/// What: How the tokens after the subcommand were read. An `enum` is a closed set of named
-///       alternatives; `Refused` carries Git's refusal. `#[derive(...)]` asks the compiler
-///       to generate copying, debug printing and `==`.
-/// Why:  The caller must know whether controls were found with Git's own grammar, only at
-///       the start of the region, or not at all because Git refuses the command.
+/// What:
+///  How the tokens after the subcommand were read.
+///  An `enum` is a closed set of named
+///       alternatives;
+///  `Refused` carries Git's refusal.
+///  `#[derive(...)]` asks the compiler
+///       to generate copying,
+///  debug printing and `==`.
+/// Why:
+///   The caller must know whether controls were found with Git's own grammar,
+///  only at
+///       the start of the region,
+///  or not at all because Git refuses the command.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,20 +86,30 @@ use std::ffi::OsString;
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RegionReading {
-    /// Git runs no subcommand, so there is no region.
+    /// Git runs no subcommand,
+    ///  so there is no region.
     NoCommand,
     /// The command's Git 2.56.0 option table read the whole region.
     Table,
-    /// No table is ported for this command: only the tokens directly after the subcommand
-    /// word, which no option can claim as its value, were examined.
+    /// No table is ported for this command:
+    ///  only the tokens directly after the subcommand
+    /// word,
+    ///  which no option can claim as its value,
+    ///  were examined.
     LeadingOnly,
-    /// Git 2.56.0 itself refuses the region; only leading tokens were examined.
+    /// Git 2.56.0 itself refuses the region;
+    ///  only leading tokens were examined.
     Refused(OptionError),
 }
 
-/// What: One invocation with its wrapper controls taken out. A `struct` is a record with
-///       named fields; `Vec<OsString>` is an owned argument list.
-/// Why:  Every later stage reads these arguments, which hold nothing Git does not know,
+/// What:
+///  One invocation with its wrapper controls taken out.
+///  A `struct` is a record with
+///       named fields;
+///  `Vec<OsString>` is an owned argument list.
+/// Why:
+///   Every later stage reads these arguments,
+///  which hold nothing Git does not know,
 ///       and reads the controls' effect from `controls`.
 ///
 /// In TS you'd write (pseudocode):
@@ -82,7 +118,8 @@ pub enum RegionReading {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct StrippedInvocation {
-    /// The arguments Git may receive: no wrapper control in option position remains.
+    /// The arguments Git may receive:
+    ///  no wrapper control in option position remains.
     pub arguments: Vec<OsString>,
     /// Where the subcommand of `arguments` sits and what Git does with the prefix.
     pub layout: GlobalLayout,
@@ -92,10 +129,16 @@ pub struct StrippedInvocation {
     pub reading: RegionReading,
 }
 
-/// What: What a command's own escape hatch means, the hatch being the first entry of the
+/// What:
+///  What a command's own escape hatch means,
+///  the hatch being the first entry of the
 ///       flag list its module builds.
-/// Why:  `git commit` has a hatch for a fixed transform, not for a policy; the other
-///       commands' hatches escape a policy; some commands have none.
+/// Why:
+///   `git commit` has a hatch for a fixed transform,
+///  not for a policy;
+///  the other
+///       commands' hatches escape a policy;
+///  some commands have none.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -111,8 +154,11 @@ enum OwnHatch {
     Policy(PolicyId),
 }
 
-/// What: Wrapper tokens one table reading found, and what the command's own hatch means.
-/// Why:  The positions are deleted and the meanings recorded by one shared function.
+/// What:
+///  Wrapper tokens one table reading found,
+///  and what the command's own hatch means.
+/// Why:
+///   The positions are deleted and the meanings recorded by one shared function.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -120,16 +166,21 @@ enum OwnHatch {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct TableControls {
-    /// Own-hatch positions and every other control, by region token index.
+    /// Own-hatch positions and every other control,
+    ///  by region token index.
     flags: WrapperFlags,
     /// The meaning of the own-hatch positions.
     own: OwnHatch,
 }
 
-/// What: Wrap the occurrences of a module that declares no hatch of its own.
+/// What:
+///  Wrap the occurrences of a module that declares no hatch of its own.
 ///       `Vec::<usize>::new()` is an empty owned list (`usize` is the list index type).
-/// Why:  `push`, `status` and `config` report every wrapper token with the caller's own
-///       list index, so nothing is an own hatch.
+/// Why:
+///   `push`,
+///  `status` and `config` report every wrapper token with the caller's own
+///       list index,
+///  so nothing is an own hatch.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -145,11 +196,20 @@ fn without_own_hatch(other: Vec<WrapperOccurrence>) -> TableControls {
     };
 }
 
-/// What: Read the region with the command's Git table, when one is ported. `&[u8]` borrows
-///       the subcommand word's bytes; `&[&[u8]]` borrows the control spellings.
-///       `Result<Option<T>, E>` is "Git's refusal, or a reading, or no table for this word".
-/// Why:  Only Git's grammar knows which token is an option and which is an option's value.
-/// Gotcha: A trailing `?` returns Git's refusal to our caller, or unwraps the reading.
+/// What:
+///  Read the region with the command's Git table,
+///  when one is ported.
+///  `&[u8]` borrows
+///       the subcommand word's bytes;
+///  `&[&[u8]]` borrows the control spellings.
+///       `Result<Option<T>, E>` is "Git's refusal,
+///  or a reading,
+///  or no table for this word".
+/// Why:
+///   Only Git's grammar knows which token is an option and which is an option's value.
+/// Gotcha:
+///  A trailing `?` returns Git's refusal to our caller,
+///  or unwraps the reading.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -217,9 +277,12 @@ fn read_table(
     return Ok(None);
 }
 
-/// What: Record what a table reading found and return the region positions to delete.
+/// What:
+///  Record what a table reading found and return the region positions to delete.
 ///       `&mut Controls` lends the record for writing.
-/// Why:  An own hatch and a general control are deleted the same way; only their recorded
+/// Why:
+///   An own hatch and a general control are deleted the same way;
+///  only their recorded
 ///       effect differs.
 ///
 /// In TS you'd write (pseudocode):
@@ -245,10 +308,18 @@ fn record_table_controls(found: &TableControls, controls: &mut Controls) -> Vec<
     return positions;
 }
 
-/// What: Record and return the positions of the controls directly after the subcommand.
-/// Why:  The first token after the subcommand word, and each token after a control, cannot
-///       be the value of an option, whatever the command's grammar is. Further on, only a
-///       ported table can tell an option from a value, so the scan stops at the first
+/// What:
+///  Record and return the positions of the controls directly after the subcommand.
+/// Why:
+///   The first token after the subcommand word,
+///  and each token after a control,
+///  cannot
+///       be the value of an option,
+///  whatever the command's grammar is.
+///  Further on,
+///  only a
+///       ported table can tell an option from a value,
+///  so the scan stops at the first
 ///       token that is not a control.
 ///
 /// In TS you'd write (pseudocode):
@@ -269,10 +340,16 @@ fn leading_controls(region: &[OsString], controls: &mut Controls) -> Vec<usize> 
     return positions;
 }
 
-/// What: Record and return the control positions of a command that has no ported table.
-/// Why:  `git worktree add` and `git worktree move` take the worktree-copy opt-out, which
-///       callers write after the second word. That word is a subcommand, so the token
-///       after it cannot be an option's value either, and the same leading scan applies.
+/// What:
+///  Record and return the control positions of a command that has no ported table.
+/// Why:
+///   `git worktree add` and `git worktree move` take the worktree-copy opt-out,
+///  which
+///       callers write after the second word.
+///  That word is a subcommand,
+///  so the token
+///       after it cannot be an option's value either,
+///  and the same leading scan applies.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -292,12 +369,19 @@ fn untabled_controls(word: &[u8], region: &[OsString], controls: &mut Controls) 
     return positions;
 }
 
-/// What: Remove every wrapper control from one invocation. `&[OsString]` borrows the
+/// What:
+///  Remove every wrapper control from one invocation.
+///  `&[OsString]` borrows the
 ///       arguments after the program name.
-/// Why:  Controls before the subcommand go first, because Git's global-option reader
+/// Why:
+///   Controls before the subcommand go first,
+///  because Git's global-option reader
 ///       would otherwise report them as unknown options and every policy decision built
-///       on it would leave the command alone. Then the command's own table, when ported
-///       and when Git accepts the region, says where the remaining controls sit.
+///       on it would leave the command alone.
+///  Then the command's own table,
+///  when ported
+///       and when Git accepts the region,
+///  says where the remaining controls sit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -349,10 +433,16 @@ pub fn strip_wrapper_controls(arguments: &[OsString]) -> StrippedInvocation {
     };
 }
 
-/// What: The raw bytes of the command word of an invocation that names a command.
-///       `&StrippedInvocation` borrows the invocation; `&[u8]` borrows the word's bytes.
-/// Why:  Every later decision starts from the command word, read in one place.
-/// Gotcha: The caller must have seen that the invocation names a command; without one
+/// What:
+///  The raw bytes of the command word of an invocation that names a command.
+///       `&StrippedInvocation` borrows the invocation;
+///  `&[u8]` borrows the word's bytes.
+/// Why:
+///   Every later decision starts from the command word,
+///  read in one place.
+/// Gotcha:
+///  The caller must have seen that the invocation names a command;
+///  without one
 ///         there is no word and this function panics.
 ///
 /// In TS you'd write (pseudocode):
@@ -364,9 +454,11 @@ pub fn command_word(stripped: &StrippedInvocation) -> &[u8] {
     return stripped.arguments[stripped.layout.prefix_len].as_encoded_bytes();
 }
 
-/// What: The tokens after the command word of an invocation that names a command.
+/// What:
+///  The tokens after the command word of an invocation that names a command.
 ///       `&[OsString]` borrows those tokens.
-/// Why:  The refusal frontier and the push gate both read the command's own options;
+/// Why:
+///   The refusal frontier and the push gate both read the command's own options;
 ///       taking the region from one function keeps the two from reading different tokens.
 ///
 /// In TS you'd write (pseudocode):
@@ -378,7 +470,8 @@ pub fn command_region(stripped: &StrippedInvocation) -> &[OsString] {
     return &stripped.arguments[stripped.layout.prefix_len + 1..];
 }
 
-/// Position, value and separator controls stay out of the release executable.
+/// Position,
+///  value and separator controls stay out of the release executable.
 #[cfg(test)]
 #[path = "wrapper_invocation_tests.rs"]
 mod tests;

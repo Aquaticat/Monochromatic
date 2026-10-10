@@ -1,5 +1,8 @@
-//! What: Complete validated rule settings after ordered block merging.
-//! Why: Partial blocks can supply options independently, but execution requires an explicit severity.
+//! What:
+//!  Complete validated rule settings after ordered block merging.
+//! Why:
+//!  Partial blocks can supply options independently,
+//!  but execution requires an explicit severity.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,12 +11,15 @@
 
 /// Import schema readers and typed setup failures.
 use crate::config_data::{key_text, text};
+/// Import the configuration error type returned when completed rules fail validation.
 use crate::config_error::ConfigError;
 /// Import the same exact JSONC representation used by parsing and merging.
 use monochromatic_jsonc_edit::{JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
 
-/// What: Fill defaults only for rules already present in the merged record.
-/// Why: No compiled-in preset may turn on a rule the configuration did not select.
+/// What:
+///  Fill defaults only for rules already present in the merged record.
+/// Why:
+///  No compiled-in preset may turn on a rule the configuration did not select.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

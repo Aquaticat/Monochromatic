@@ -878,6 +878,30 @@ State found on 2026-10-10:
   Landing still needs the choreography below: the installed commit wrapper hardcodes
   `package/cli/markdown-lint/src/cli.ts`, so after the deletion lands every commit with a Markdown file fails in
   `markdown/autofix` until the wrapper's `dist` is rebuilt from the landed source.
+- Linter cutover landed on 2026-10-10 as `b111c0ca39` (fast-forward, pushed); evidence in
+  `doc/handover/unified-linter-cutover.md`.
+  The five incumbent linter packages are deleted, `cli-git.config.ts` takes the Markdown policy defaults,
+  `monochromatic-lint` 0.1.1 is pinned in `mise.no-env.toml` and installed, and the wrapper `dist` in the main checkout was replaced
+  by the one built from the landed source.
+  The user approved `git cli-git trust --yes` for the changed config and committing the two uncommitted files
+  (`pnpm-lock.yaml`, `package/config/pnpr/config.yaml`) that blocked the fast-forward.
+  Open from it: the new linter reports 123 `semantic-line-breaks` findings on `///` lines inside fenced Rust blocks
+  (the incumbent treated fences as code), which needs a linter fix and a 0.1.2;
+  about 56,000 shared Markdown findings remain (step 8), and the old Markdown gate was already red on main.
+- Delegate reports of 2026-10-10 (all pushed feature branches by auto-push, which is fine):
+  Markdown autofix with `pathBytes` passes the container gate (633 unit, 43 binary, 1 consumer) and fuzz,
+  and its mutation campaign left one real survivor in `markdown_exclude.rs:95:39` that needs a test;
+  the two `event_path.rs:173` base64 survivors are equivalent.
+  Dependent-version wiring passes (680 unit, 43 binary, 1 consumer; release-bump differential identical in four scenarios)
+  with one survivor, `policy_dependent_version.rs:255:66`, in a filter no probe could reach with a deleted candidate.
+  The user corrected the gate on 2026-10-10: it requires every mutant to be caught or justified as impossible to catch,
+  not exactly zero missed.
+  A justification must rest on code (the call chain that makes the mutant equivalent), not on failed probes,
+  so the delegate was told to trace every producer of the filtered list and either write that proof or kill the mutant with a test.
+  The commit path finished slice 3's leaf modules (829 library tests, planted controls, fuzz) and keeps going.
+- Landing order decided on 2026-10-10: Markdown autofix first, then dependent-version wiring (both edit
+  `src/native/policy_checks.rs`; each needs a gate rerun on the merge with main, because the cutover changed
+  `package/git-policy`), then the commit path.
 - Delegates relaunched on 2026-10-10 on the Haiku model, as the user asked: dependent-version wiring, Markdown autofix
   with `pathBytes`, the commit path from slice 3, and the consumer differential.
 - Commit path: slices 0 to 2 committed (HEAD `4397a98c8`), seven untracked files of the next slice.

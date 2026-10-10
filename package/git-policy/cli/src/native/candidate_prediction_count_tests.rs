@@ -1,6 +1,10 @@
-//! What: Count the Git processes both private-index sources start, by a mechanism outside them.
-//! Why: Predicting `git add` and projecting a direct scope must not start a process per
-//!      file. A counting stand-in that every Git start passes through records each start,
+//! What:
+//!  Count the Git processes both private-index sources start,
+//!  by a mechanism outside them.
+//! Why:
+//!  Predicting `git add` and projecting a direct scope must not start a process per
+//!      file.
+//!  A counting stand-in that every Git start passes through records each start,
 //!      and a deliberately per-file reader through the same stand-in shows it sees growth.
 //!
 //! In TS you'd write (pseudocode):
@@ -18,10 +22,18 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::rc::Rc;
 
-/// What: The Git processes predicting one `git add` may start, however many files it
-///       stages: the index path query, the listing before and after the replay, the
-///       replay, one baseline listing and the long-lived object reader.
-/// Why:  The bound is a constant; anything per file would make it grow.
+/// What:
+///  The Git processes predicting one `git add` may start,
+///  however many files it
+///       stages:
+///  the index path query,
+///  the listing before and after the replay,
+///  the
+///       replay,
+///  one baseline listing and the long-lived object reader.
+/// Why:
+///   The bound is a constant;
+///  anything per file would make it grow.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -29,10 +41,16 @@ use std::rc::Rc;
 /// ```
 const ADD_PROCESS_BOUND: usize = 6;
 
-/// What: The Git processes projecting one direct scope may start: the index path query,
-///       the private `git add --all`, the scope listing, one baseline listing and the
+/// What:
+///  The Git processes projecting one direct scope may start:
+///  the index path query,
+///       the private `git add --all`,
+///  the scope listing,
+///  one baseline listing and the
 ///       object reader.
-/// Why:  As for `git add`, a constant.
+/// Why:
+///   As for `git add`,
+///  a constant.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,7 +58,8 @@ const ADD_PROCESS_BOUND: usize = 6;
 /// ```
 const DIRECT_PROCESS_BOUND: usize = 5;
 
-/// A counting `git` that appends one line per start, then becomes real Git.
+/// A counting `git` that appends one line per start,
+///  then becomes real Git.
 fn counting_git(root: &Path) -> (PathBuf, PathBuf) {
     let directory: PathBuf = root.join("counting-bin");
     std::fs::create_dir(&directory).expect("counting directory");
@@ -105,7 +124,8 @@ fn prepare_and_read(program: &Path, repo: &Path, request: &CandidateRequest, fil
     }
 }
 
-/// One, twenty and two hundred files are predicted and read with the same number of processes.
+/// One,
+///  twenty and two hundred files are predicted and read with the same number of processes.
 #[test]
 fn both_sources_start_a_fixed_number_of_processes() {
     let root: PathBuf = fixture("prediction-count");
@@ -137,7 +157,8 @@ fn both_sources_start_a_fixed_number_of_processes() {
     remove(root.as_path());
 }
 
-/// More changed paths than one baseline listing takes cost exactly one more listing, and every path is still classified.
+/// More changed paths than one baseline listing takes cost exactly one more listing,
+///  and every path is still classified.
 #[test]
 fn a_second_baseline_listing_starts_after_two_thousand_and_forty_eight_paths() {
     let root: PathBuf = fixture("prediction-count-chunks");
@@ -165,7 +186,8 @@ fn a_second_baseline_listing_starts_after_two_thousand_and_forty_eight_paths() {
     remove(root.as_path());
 }
 
-/// Positive control: reading the same candidates one `git cat-file` per file through the same stand-in is counted once per file.
+/// Positive control:
+///  reading the same candidates one `git cat-file` per file through the same stand-in is counted once per file.
 #[test]
 fn a_per_file_reader_through_the_stand_in_grows_with_the_files() {
     let root: PathBuf = fixture("prediction-count-control");

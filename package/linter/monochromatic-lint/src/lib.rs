@@ -1,5 +1,7 @@
-//! What: Internal implementation library for the native unified linter.
-//! Why: The executable and its verification drivers must exercise the same implementation.
+//! What:
+//!  Internal implementation library for the native unified linter.
+//! Why:
+//!  The executable and its verification drivers must exercise the same implementation.
 //! This is not a supported public linter API.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,9 +9,13 @@
 //! // Internal implementation entry imported by the executable and tests.
 //! ```
 
-/// What: The configuration-value merge module, visible to artifact and fuzz consumers.
-/// Why: Verification must exercise the exact implementation rather than a copied model.
-/// Its visibility is internal integration plumbing, not a stable user-facing library contract.
+/// What:
+///  The configuration-value merge module,
+///  visible to artifact and fuzz consumers.
+/// Why:
+///  Verification must exercise the exact implementation rather than a copied model.
+/// Its visibility is internal integration plumbing,
+///  not a stable user-facing library contract.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,7 +27,8 @@ pub mod config_merge;
 /// Accepted command grammar with native path values.
 #[doc(hidden)]
 pub mod cli_options;
-/// Internal data-shape checks, including duplicate decoded keys.
+/// Internal data-shape checks,
+///  including duplicate decoded keys.
 mod config_data;
 /// Internal typed configuration errors shared by the executable and verification drivers.
 #[doc(hidden)]
@@ -62,7 +69,8 @@ pub mod markdown_commands;
 /// Used and unique reference definitions with localized removal fixes.
 #[doc(hidden)]
 pub mod markdown_definitions;
-/// Selected Markdown rules over one shared parse, in registry order.
+/// Selected Markdown rules over one shared parse,
+///  in registry order.
 #[doc(hidden)]
 pub mod markdown_dispatch;
 /// Duplicate headings scoped by their textual ancestor path.
@@ -110,7 +118,8 @@ pub mod markdown_punctuation;
 /// Typed Markdown rule selection from validated merged JSONC.
 #[doc(hidden)]
 pub mod markdown_rule_settings;
-/// Add-only prose line breaks with token, delimiter and block guards.
+/// Add-only prose line breaks with token,
+///  delimiter and block guards.
 #[doc(hidden)]
 pub mod markdown_semantic_breaks;
 /// Internal native Markdown/MDX parser interface.
@@ -138,10 +147,12 @@ pub mod run_command;
 /// Core processing-failure and refused-fix findings.
 #[doc(hidden)]
 pub mod run_failure;
-/// Per-file read, bounded fix loop and atomic rewrite.
+/// Per-file read,
+///  bounded fix loop and atomic rewrite.
 #[doc(hidden)]
 pub mod run_file;
-/// Output controls, debug notes and semantic-engine creation shared by every lint mode.
+/// Output controls,
+///  debug notes and semantic-engine creation shared by every lint mode.
 #[doc(hidden)]
 pub mod run_finish;
 /// Strict JSON rendering of an effective configuration.
@@ -150,19 +161,24 @@ pub mod run_json;
 /// Per-run sharing of LFS repository facts.
 #[doc(hidden)]
 pub mod run_lfs;
-/// Rule listing, starter configuration and effective-configuration printing.
+/// Rule listing,
+///  starter configuration and effective-configuration printing.
 #[doc(hidden)]
 pub mod run_modes;
-/// JSONL routing, stdin-fix source output and exit-status accounting.
+/// JSONL routing,
+///  stdin-fix source output and exit-status accounting.
 #[doc(hidden)]
 pub mod run_output;
-/// Absolute, display and configuration-relative names, and language by extension.
+/// Absolute,
+///  display and configuration-relative names,
+///  and language by extension.
 #[doc(hidden)]
 pub mod run_paths;
 /// Memoized configuration lookup and per-file plans.
 #[doc(hidden)]
 pub mod run_plan;
-/// Real arguments, streams and exit status.
+/// Real arguments,
+///  streams and exit status.
 #[doc(hidden)]
 pub mod run_process;
 /// Standard-input linting and fixing.
@@ -224,18 +240,22 @@ pub mod rust_workspace;
 #[cfg(test)]
 mod test_fs;
 
-/// Shared orchestration fixtures: disposable trees, parsed command lines and JSONL decoding.
+/// Shared orchestration fixtures:
+///  disposable trees,
+///  parsed command lines and JSONL decoding.
 #[cfg(test)]
 mod run_test_support;
 
-/// Full semantic annotation controls, including source-overlay cache changes.
+/// Full semantic annotation controls,
+///  including source-overlay cache changes.
 #[cfg(test)]
 mod rust_explicit_types_tests;
 /// Disposable Cargo-backed contexts for the semantic rule's conformance suite.
 #[cfg(test)]
 mod rust_semantic_test_support;
 
-/// Production Cargo discovery, generated-source and failure boundary controls.
+/// Production Cargo discovery,
+///  generated-source and failure boundary controls.
 #[cfg(test)]
 mod rust_workspace_tests;
 

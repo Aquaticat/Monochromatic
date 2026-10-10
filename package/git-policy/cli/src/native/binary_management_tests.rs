@@ -1,6 +1,11 @@
-//! What: `git cli-git` controls through the built executable.
-//! Why: The management namespace belongs to the wrapper: help and retired commands
-//!      answer without Git, malformed scopes exit 2, and nothing in the namespace is
+//! What:
+//!  `git cli-git` controls through the built executable.
+//! Why:
+//!  The management namespace belongs to the wrapper:
+//!  help and retired commands
+//!      answer without Git,
+//!  malformed scopes exit 2,
+//!  and nothing in the namespace is
 //!      ever handed to real Git.
 //!
 //! In TS you'd write (pseudocode):
@@ -32,7 +37,8 @@ fn stdout_text(observed: &Observed) -> String {
     return String::from_utf8_lossy(&observed.stdout).into_owned();
 }
 
-/// Help is printed on standard output with exit status 0, even when PATH holds no Git at all.
+/// Help is printed on standard output with exit status 0,
+///  even when PATH holds no Git at all.
 #[test]
 fn help_needs_neither_git_nor_a_repository() {
     let fixture: Fixture = fixture("management-help");
@@ -122,7 +128,9 @@ fn malformed_invocations_exit_two() {
     remove(&fixture);
 }
 
-/// Retired trust commands explain the retirement, exit 0, and neither read nor write trust records.
+/// Retired trust commands explain the retirement,
+///  exit 0,
+///  and neither read nor write trust records.
 #[test]
 fn retired_trust_commands_explain_and_change_nothing() {
     let fixture: Fixture = fixture("management-retired");
@@ -166,15 +174,18 @@ fn retired_trust_commands_explain_and_change_nothing() {
     remove(&fixture);
 }
 
-/// The final-newline warning of a direct check about `file.txt`, as event number `sequence`.
+/// The final-newline warning of a direct check about `file.txt`,
+///  as event number `sequence`.
 fn direct_warning(sequence: u64) -> String {
     return format!(
         "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"file.txt\",\"fix\":\"none\"}}\n"
     );
 }
 
-/// A direct command reports configuration problems as events on standard output, runs the
-/// ported policies over the selected worktree files, and refuses what it cannot do yet.
+/// A direct command reports configuration problems as events on standard output,
+///  runs the
+/// ported policies over the selected worktree files,
+///  and refuses what it cannot do yet.
 #[test]
 fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
     let fixture: Fixture = fixture("management-direct");
@@ -370,7 +381,8 @@ fn direct_commands_validate_run_ported_policies_and_refuse_the_rest() {
     remove(&fixture);
 }
 
-/// The namespace word is only a command in the subcommand position; elsewhere it is an ordinary argument.
+/// The namespace word is only a command in the subcommand position;
+///  elsewhere it is an ordinary argument.
 #[test]
 fn namespace_word_elsewhere_is_an_ordinary_argument() {
     let fixture: Fixture = fixture("management-word");

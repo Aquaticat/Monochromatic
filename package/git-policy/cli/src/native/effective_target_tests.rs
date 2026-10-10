@@ -1,5 +1,7 @@
-//! What: Controls for worktree target classification and the tool-cache allowlist.
-//! Why: An exemption must match whole path segments through symbolic links and must
+//! What:
+//!  Controls for worktree target classification and the tool-cache allowlist.
+//! Why:
+//!  An exemption must match whole path segments through symbolic links and must
 //!      never widen to sibling directories.
 //!
 //! In TS you'd write (pseudocode):
@@ -27,7 +29,11 @@ fn environment(pairs: &[(&str, &str)]) -> Vec<(OsString, OsString)> {
     return result;
 }
 
-/// uv's own precedence applies: explicit directory, then XDG cache, then the home cache; empty is unset.
+/// uv's own precedence applies:
+///  explicit directory,
+///  then XDG cache,
+///  then the home cache;
+///  empty is unset.
 #[test]
 fn uv_cache_directory_follows_uv_precedence() {
     let home: Option<&Path> = Some(Path::new("/home/fixture"));
@@ -74,7 +80,8 @@ fn uv_cache_directory_follows_uv_precedence() {
     );
 }
 
-/// Containment is by whole segments through resolved links; missing allowed directories drop out.
+/// Containment is by whole segments through resolved links;
+///  missing allowed directories drop out.
 #[test]
 fn allowlist_matches_whole_segments_through_links() {
     let root: PathBuf = fixture("allowlist");
@@ -104,7 +111,8 @@ fn allowlist_matches_whole_segments_through_links() {
     remove(root.as_path());
 }
 
-/// Each identity maps to its target, and an allowlisted Git directory exempts main and linked worktrees.
+/// Each identity maps to its target,
+///  and an allowlisted Git directory exempts main and linked worktrees.
 #[test]
 fn identities_map_to_targets() {
     let root: PathBuf = fixture("targets");

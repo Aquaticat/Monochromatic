@@ -1,13 +1,17 @@
-//! What: Value-consumption cases for every arity, with a real-Git control for the arity
+//! What:
+//!  Value-consumption cases for every arity,
+//!  with a real-Git control for the arity
 //!       `git rev-parse --parseopt` cannot express.
-//! Why: Whether the next token is a value decides whether it is a pathspec.
+//! Why:
+//!  Whether the next token is a value decides whether it is a pathspec.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(parseOptions(['--contains', '-v']).occurrences[0].value).toBeDefined();
 //! ```
 
-/// Tokenizer types, the shared synthetic table and the real-Git fixture helpers.
+/// Tokenizer types,
+///  the shared synthetic table and the real-Git fixture helpers.
 use crate::command_options::{
     Occurrence, OptionError, OptionErrorKind, OptionValue, ParsedOptions,
 };
@@ -32,7 +36,8 @@ fn refuses_unexpected_values() {
     }
 }
 
-/// A negated value option reads no value, so the next token stays positional.
+/// A negated value option reads no value,
+///  so the next token stays positional.
 #[test]
 fn a_negated_value_option_reads_no_value() {
     let unset: ParsedOptions = parse_synthetic(&["--no-message", "x"]).expect("valid");
@@ -59,7 +64,8 @@ fn an_optional_long_value_never_takes_the_next_token() {
     assert_eq!(joined.leading, vec![1]);
 }
 
-/// A required value takes the next token whatever it looks like, and is refused without one.
+/// A required value takes the next token whatever it looks like,
+///  and is refused without one.
 #[test]
 fn a_required_value_takes_any_next_token() {
     for value in ["--", "-a", "--all", "", "-"] {
@@ -81,7 +87,8 @@ fn a_required_value_takes_any_next_token() {
     );
 }
 
-/// `PARSE_OPT_LASTARG_DEFAULT`: a value unless the option ends the region.
+/// `PARSE_OPT_LASTARG_DEFAULT`:
+///  a value unless the option ends the region.
 #[test]
 fn reads_last_argument_default_options() {
     let last: ParsedOptions = parse_synthetic(&["--contains"]).expect("valid");
@@ -108,7 +115,8 @@ fn reads_last_argument_default_options() {
     assert_eq!(joined.leading, vec![1]);
 }
 
-/// `PARSE_OPT_LASTARG_DEFAULT` has no `--parseopt` spelling, so `git branch --contains`
+/// `PARSE_OPT_LASTARG_DEFAULT` has no `--parseopt` spelling,
+///  so `git branch --contains`
 /// (parse-options.h:615-625) is observed directly.
 #[test]
 fn last_argument_default_matches_git_branch_contains() {

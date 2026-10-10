@@ -1,5 +1,8 @@
-//! What:    Counting-NFA search loop under unanchored matching.
-//! Why:     This file is the Rust module that groups the run implementation, so the
+//! What:
+//!     Counting-NFA search loop under unanchored matching.
+//! Why:
+//!      This file is the Rust module that groups the run implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,11 @@
 //! // module run: see exported functions and types below.
 //! ```
 
-/// What:    Imports the counting NFA being run.
-/// Why:     The code below uses `CountingNfa` directly; importing from `crate/counting/nfa`
+/// What:
+///     Imports the counting NFA being run.
+/// Why:
+///      The code below uses `CountingNfa` directly;
+///  importing from `crate/counting/nfa`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +23,13 @@
 /// ```
 use crate::counting::nfa::CountingNfa;
 
-/// What:    Imports the shared simulation core.
-/// Why:     The code below uses `State`, `boundary_ctx`, `closure`, `step_into` directly;
+/// What:
+///     Imports the shared simulation core.
+/// Why:
+///      The code below uses `State`,
+///  `boundary_ctx`,
+///  `closure`,
+///  `step_into` directly;
 ///          importing from `crate/counting/sim` keeps each call site focused on the matcher
 ///          logic instead of the full Rust path.
 ///
@@ -33,12 +44,20 @@ use crate::counting::nfa::CountingNfa;
 /// ```
 use crate::counting::sim::{State, boundary_ctx, closure, step_into};
 
-/// Runs the NFA across every boundary, returning true on first acceptance.
+/// Runs the NFA across every boundary,
+///  returning true on first acceptance.
 ///
-/// What: at each boundary seed the start positions afresh (the `Σ*` search prefix),
-/// take the zero-width closure, test acceptance, then consume the next byte into the
-/// spare buffer and swap. Why: a match may start at any position and end at any
-/// boundary, so both seeding and the accept test happen at every boundary; the two
+/// What:
+///  at each boundary seed the start positions afresh (the `Σ*` search prefix),
+/// take the zero-width closure,
+///  test acceptance,
+///  then consume the next byte into the
+/// spare buffer and swap.
+///  Why:
+///  a match may start at any position and end at any
+/// boundary,
+///  so both seeding and the accept test happen at every boundary;
+///  the two
 /// buffers are reused so the byte step never allocates.
 ///
 /// In TS you'd write (pseudocode):
@@ -75,8 +94,11 @@ pub(crate) fn run(nfa: &CountingNfa, line: &[u8]) -> bool {
 
 /// Differential tests against the eager DFA plus a serialized-size proof.
 ///
-/// What: lives in a separate `*_tests.rs` file (exempt from the line and rustdoc
-/// budgets). Why: keeps the simulation file within its budget while still proving
+/// What:
+///  lives in a separate `*_tests.rs` file (exempt from the line and rustdoc
+/// budgets).
+///  Why:
+///  keeps the simulation file within its budget while still proving
 /// the counting back-end against the trusted oracle.
 ///
 /// In TS you'd write (pseudocode):

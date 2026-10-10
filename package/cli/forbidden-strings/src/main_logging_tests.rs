@@ -1,5 +1,7 @@
-//! What: Process-isolated controls for configured logging filters and the startup fallback.
-//! Why: Replacing the startup filter with its default must be observable rather than survive mutation testing.
+//! What:
+//!  Process-isolated controls for configured logging filters and the startup fallback.
+//! Why:
+//!  Replacing the startup filter with its default must be observable rather than survive mutation testing.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -19,7 +21,8 @@ fn logging_filter_probe() {
     assert_eq!(logging_filter().to_string(), expected);
 }
 
-/// Missing/invalid configuration preserves the info fallback; valid configuration preserves the selected directives.
+/// Missing/invalid configuration preserves the info fallback;
+///  valid configuration preserves the selected directives.
 #[test]
 fn configured_filters_and_fallback_are_observable() {
     // Option<&str> represents absent or borrowed environment text, rather than copying each literal into String.

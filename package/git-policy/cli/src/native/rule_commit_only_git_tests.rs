@@ -1,14 +1,20 @@
-//! What: Real Git 2.56.0 controls for the Git behavior the commit-only decision relies on.
-//! Why: The decision inserts `-o`, refuses a pathless amend over a dirty index and lets a
-//!      pathless commit conclude a merge. Each rests on what Git does with the rewritten
-//!      command line, so the rewritten arguments are run in a disposable repository.
+//! What:
+//!  Real Git 2.56.0 controls for the Git behavior the commit-only decision relies on.
+//! Why:
+//!  The decision inserts `-o`,
+//!  refuses a pathless amend over a dirty index and lets a
+//!      pathless commit conclude a merge.
+//!  Each rests on what Git does with the rewritten
+//!      command line,
+//!  so the rewritten arguments are run in a disposable repository.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // await git(repo, await commitOnly(['commit', '-m', 'x', '--', 'a.txt']));
 //! ```
 
-/// The decision, the fact mappings and the real-Git fixture helpers.
+/// The decision,
+///  the fact mappings and the real-Git fixture helpers.
 use crate::command_test_support::{
     git, git_output, git_status, os_arguments, output_text, remove, repository_with_tracked_file,
     start_conflicted_merge,
@@ -58,8 +64,10 @@ fn injected_only_commits_just_the_named_path() {
     remove(directory.as_path());
 }
 
-/// A pathless `-o --amend` reuses `HEAD`'s tree: the staged change stays staged without any
-/// warning. This is why the decision refuses the injection while the index differs.
+/// A pathless `-o --amend` reuses `HEAD`'s tree:
+///  the staged change stays staged without any
+/// warning.
+///  This is why the decision refuses the injection while the index differs.
 #[test]
 fn a_pathless_only_amend_ignores_the_staged_change_in_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("only-amend");
@@ -96,8 +104,10 @@ fn a_pathless_only_amend_ignores_the_staged_change_in_git() {
     remove(directory.as_path());
 }
 
-/// During a merge Git forbids a partial commit, so the injected form fails and the
-/// pathless form concludes the merge. This is why the decision passes it through.
+/// During a merge Git forbids a partial commit,
+///  so the injected form fails and the
+/// pathless form concludes the merge.
+///  This is why the decision passes it through.
 #[test]
 fn a_pathless_commit_concludes_a_merge_in_git() {
     let (directory, root): (PathBuf, PathBuf) = repository_with_tracked_file("only-merge");

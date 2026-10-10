@@ -1,11 +1,19 @@
-//! Add and remove one inotify watch, and describe why adding one failed.
-//! Only the watch thread calls these, because adding a watch blocks until notify's loop replies.
+//! Add and remove one inotify watch,
+//!  and describe why adding one failed.
+//! Only the watch thread calls these,
+//!  because adding a watch blocks until notify's loop replies.
 
 /// Containment uses the same canonical check as every project read.
 use crate::workspace::Workspace;
-/// What: notify's inotify backend, its error kinds, the non-recursive mode, and the `Watcher` trait
-///       whose methods (`watch`, `unwatch`) the backend implements.
-/// Why: Naming `INotifyWatcher` (not `RecommendedWatcher`) keeps a polling backend from ever being chosen.
+/// What:
+///  notify's inotify backend,
+///  its error kinds,
+///  the non-recursive mode,
+///  and the `Watcher` trait
+///       whose methods (`watch`,
+///  `unwatch`) the backend implements.
+/// Why:
+///  Naming `INotifyWatcher` (not `RecommendedWatcher`) keeps a polling backend from ever being chosen.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,9 +25,12 @@ use std::path::Path;
 
 /// Why adding one watch failed.
 ///
-/// What: an `enum` with a payload-free `Limit` variant and an `Other` variant carrying a message,
+/// What:
+///  an `enum` with a payload-free `Limit` variant and an `Other` variant carrying a message,
 ///       like a TS union `{ kind: 'limit' } | { kind: 'other'; message: string }`.
-/// Why: The watch limit is one state shared by every directory, logged once and retried with backoff;
+/// Why:
+///  The watch limit is one state shared by every directory,
+///  logged once and retried with backoff;
 ///      every other failure belongs to its own directory and keeps its own message.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,11 +38,14 @@ use std::path::Path;
 /// type WatchFailure = { kind: 'limit' } | { kind: 'other'; message: string };
 /// ```
 pub(super) enum WatchFailure {
-    /// `inotify_add_watch` answered `ENOSPC`: this user's inotify watch limit is reached.
+    /// `inotify_add_watch` answered `ENOSPC`:
+    ///  this user's inotify watch limit is reached.
     Limit,
-    /// Refused (outside the root, a symbolic-link alias) or failed for another reason.
+    /// Refused (outside the root,
+    ///  a symbolic-link alias) or failed for another reason.
     Other(
-        /// The failure, naming the directory.
+        /// The failure,
+        ///  naming the directory.
         String,
     ),
 }
@@ -79,7 +93,8 @@ pub(super) fn add(
     return Ok(());
 }
 
-/// Name the directory; the watch limit (`ENOSPC` from `inotify_add_watch`) gets the sysctl that sets it.
+/// Name the directory;
+///  the watch limit (`ENOSPC` from `inotify_add_watch`) gets the sysctl that sets it.
 pub(super) fn describe(error: &notify::Error, path: &Path) -> String {
     if let ErrorKind::MaxFilesWatch = error.kind {
         return format!(
@@ -95,7 +110,8 @@ pub(super) fn describe(error: &notify::Error, path: &Path) -> String {
 #[path = "watch_ops_tests.rs"]
 mod tests;
 
-/// Remove one watch; a watch the kernel already dropped (removed directory) is expected and only logged.
+/// Remove one watch;
+///  a watch the kernel already dropped (removed directory) is expected and only logged.
 pub(super) fn remove(watcher: &mut INotifyWatcher, path: &Path) {
     if let Err(error) = watcher.unwatch(path) {
         tracing::debug!(path = %path.display(), %error, "watch was already gone");

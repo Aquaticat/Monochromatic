@@ -1,7 +1,13 @@
-//! What: The pre-forward built-in policies and the fixed transforms through the built
-//!       executable, each with the command it stops and the neighbouring command it lets run.
-//! Why: These are the rules a person meets on ordinary commands. Each must stop exactly
-//!      what it names, leave the repository untouched when it does, and let Git run
+//! What:
+//!  The pre-forward built-in policies and the fixed transforms through the built
+//!       executable,
+//!  each with the command it stops and the neighbouring command it lets run.
+//! Why:
+//!  These are the rules a person meets on ordinary commands.
+//!  Each must stop exactly
+//!      what it names,
+//!  leave the repository untouched when it does,
+//!  and let Git run
 //!      unchanged otherwise.
 //!
 //! In TS you'd write (pseudocode):
@@ -36,7 +42,8 @@ fn assert_rejected_by(observed: &Observed, policy: &str, context: &str) {
     assert_eq!(stderr.matches('\n').count(), 1, "{context}: {stderr}");
 }
 
-/// Every local branch of a repository, one name per line.
+/// Every local branch of a repository,
+///  one name per line.
 fn branches(fixture: &Fixture, repo: &Path) -> String {
     let output: std::process::Output = git(
         fixture,
@@ -46,7 +53,8 @@ fn branches(fixture: &Fixture, repo: &Path) -> String {
     return String::from_utf8_lossy(&output.stdout).into_owned();
 }
 
-/// require-root reads the directory Git works in after every `-C`, not the caller's directory.
+/// require-root reads the directory Git works in after every `-C`,
+///  not the caller's directory.
 #[test]
 fn require_root_reads_the_directory_git_works_in() {
     let fixture: Fixture = fixture("builtin-root");
@@ -207,7 +215,8 @@ fn a_tool_cache_checkout_is_exempt_from_the_linked_worktree_rule() {
     remove(&fixture);
 }
 
-/// branch-worktree-only stops branch creation, including the branch Git would guess from a remote.
+/// branch-worktree-only stops branch creation,
+///  including the branch Git would guess from a remote.
 #[test]
 fn branch_creation_is_rejected_in_the_current_worktree() {
     let fixture: Fixture = fixture("builtin-branch");
@@ -308,7 +317,10 @@ fn bulk_staging_is_rejected() {
     remove(&fixture);
 }
 
-/// The first error stops the pass; keep-going reports every finding, numbered in order, and still blocks.
+/// The first error stops the pass;
+///  keep-going reports every finding,
+///  numbered in order,
+///  and still blocks.
 #[test]
 fn keep_going_reports_every_finding_and_still_blocks() {
     let fixture: Fixture = fixture("builtin-keep-going");
@@ -342,7 +354,8 @@ fn keep_going_reports_every_finding_and_still_blocks() {
     remove(&fixture);
 }
 
-/// A policy set to `warn` reports on standard error and lets Git run; commit-only rejects on its own.
+/// A policy set to `warn` reports on standard error and lets Git run;
+///  commit-only rejects on its own.
 #[test]
 fn warnings_let_git_run_and_commit_only_rejects() {
     let fixture: Fixture = fixture("builtin-warn");

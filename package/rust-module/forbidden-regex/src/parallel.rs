@@ -1,9 +1,16 @@
-//! What:    Builds every rule of a ruleset across worker threads, handing results back
+//! What:
+//!     Builds every rule of a ruleset across worker threads,
+//!  handing results back
 //!          in input order.
-//! Why:     Rule construction is independent per rule and dominates `RegexSet::new`, so
+//! Why:
+//!      Rule construction is independent per rule and dominates `RegexSet::new`,
+//!  so
 //!          spreading it over the machine's cores shortens both the forbidden-strings
 //!          build-time baseline compile and runtime compiles of large rule files.
-//! Gotcha:  The TS analogy is loose. These are real OS threads sharing memory, like
+//! Gotcha:
+//!   The TS analogy is loose.
+//!  These are real OS threads sharing memory,
+//!  like
 //!          `worker_threads` that can read the caller's arrays directly without copying,
 //!          not `async` tasks taking turns on one event loop.
 //!
@@ -12,9 +19,13 @@
 //! // module parallel: build_rules(patterns, stopOnError) => outcomes sorted by index.
 //! ```
 
-/// What:    Imports `NonZeroUsize`, an unsigned integer type the compiler guarantees is
+/// What:
+///     Imports `NonZeroUsize`,
+///  an unsigned integer type the compiler guarantees is
 ///          never zero.
-/// Why:     `available_parallelism` reports the core count as a `NonZeroUsize`, and the
+/// Why:
+///      `available_parallelism` reports the core count as a `NonZeroUsize`,
+///  and the
 ///          code below turns it back into a plain `usize` with `NonZeroUsize::get`.
 ///
 /// In TS you'd write (pseudocode):
@@ -23,11 +34,17 @@
 /// ```
 use std::num::NonZeroUsize;
 
-/// What:    Imports `AtomicUsize`, an integer that many threads may read and update at
-///          once without a lock, and `Ordering`, the consistency level for each read or
+/// What:
+///     Imports `AtomicUsize`,
+///  an integer that many threads may read and update at
+///          once without a lock,
+///  and `Ordering`,
+///  the consistency level for each read or
 ///          write.
-/// Why:     The workers share a "next rule to build" counter and a "lowest failing rule"
-///          marker; atomics keep both correct when threads touch them simultaneously.
+/// Why:
+///      The workers share a "next rule to build" counter and a "lowest failing rule"
+///          marker;
+///  atomics keep both correct when threads touch them simultaneously.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,9 +52,13 @@ use std::num::NonZeroUsize;
 /// ```
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-/// What:    Imports `OnceLock<T>`, a slot that starts empty and is written at most once, safely
+/// What:
+///     Imports `OnceLock<T>`,
+///  a slot that starts empty and is written at most once,
+///  safely
 ///          across threads.
-/// Why:     Caches the process's core count after the first lookup.
+/// Why:
+///      Caches the process's core count after the first lookup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,8 +66,12 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 /// ```
 use std::sync::OnceLock;
 
-/// What:    Imports the standard library thread module (spawning, scopes, core count).
-/// Why:     The workers run on OS threads created from this module.
+/// What:
+///     Imports the standard library thread module (spawning,
+///  scopes,
+///  core count).
+/// Why:
+///      The workers run on OS threads created from this module.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,8 +79,10 @@ use std::sync::OnceLock;
 /// ```
 use std::thread;
 
-/// What:    Imports one built rule's record and the per-rule builder.
-/// Why:     Each worker turns a parsed pattern into a `BuiltRule` with `build_rule`.
+/// What:
+///     Imports one built rule's record and the per-rule builder.
+/// Why:
+///      Each worker turns a parsed pattern into a `BuiltRule` with `build_rule`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -63,8 +90,10 @@ use std::thread;
 /// ```
 use crate::build::{BuiltRule, build_rule};
 
-/// What:    Imports the error type.
-/// Why:     A rule that fails to parse or build reports a `CompileError`.
+/// What:
+///     Imports the error type.
+/// Why:
+///      A rule that fails to parse or build reports a `CompileError`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,8 +101,10 @@ use crate::build::{BuiltRule, build_rule};
 /// ```
 use crate::error::CompileError;
 
-/// What:    Imports the parser entry point.
-/// Why:     Each worker parses its pattern text before building it.
+/// What:
+///     Imports the parser entry point.
+/// Why:
+///      Each worker parses its pattern text before building it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -81,14 +112,29 @@ use crate::error::CompileError;
 /// ```
 use crate::parse::parse;
 
-/// What:    Stack size, in bytes, for each worker thread: 64 MiB of address space.
-/// Why:     Parsing recurses once per group nesting level. A thread spawned with Rust's
-///          default 2 MiB stack overflows on patterns (three thousand nested groups, measured
-///          in a release build) that compile on a main thread, where rules were built before
-///          this module existed. A main thread's stack comes from `ulimit -s`, commonly 8 or
-///          16 MiB, so workers reserve more than that. The operating system commits stack
-///          pages only when touched, so unused reservation costs no memory.
-/// Gotcha:  A stack overflow aborts the whole process; it is not a catchable panic.
+/// What:
+///     Stack size,
+///  in bytes,
+///  for each worker thread:
+///  64 MiB of address space.
+/// Why:
+///      Parsing recurses once per group nesting level.
+///  A thread spawned with Rust's
+///          default 2 MiB stack overflows on patterns (three thousand nested groups,
+///  measured
+///          in a release build) that compile on a main thread,
+///  where rules were built before
+///          this module existed.
+///  A main thread's stack comes from `ulimit -s`,
+///  commonly 8 or
+///          16 MiB,
+///  so workers reserve more than that.
+///  The operating system commits stack
+///          pages only when touched,
+///  so unused reservation costs no memory.
+/// Gotcha:
+///   A stack overflow aborts the whole process;
+///  it is not a catchable panic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -96,12 +142,21 @@ use crate::parse::parse;
 /// ```
 const WORKER_STACK_BYTES: usize = 64 * 1024 * 1024;
 
-/// What:    One rule's result paired with its input index: `(usize, Result<...>)` is a
-///          two-element tuple. `usize` is the platform-width unsigned integer (siblings:
-///          `u32`, `u64`, `i64`). `Result<BuiltRule, CompileError>` is either `Ok` with the
+/// What:
+///     One rule's result paired with its input index:
+///  `(usize, Result<...>)` is a
+///          two-element tuple.
+///  `usize` is the platform-width unsigned integer (siblings:
+///          `u32`,
+///  `u64`,
+///  `i64`).
+///  `Result<BuiltRule, CompileError>` is either `Ok` with the
 ///          built rule or `Err` with the reason it failed.
-/// Why:     Workers finish rules in any order, so each result carries its index for the
-///          final sort. `usize` (not `u32`/`u64`) because slice indexing requires it.
+/// Why:
+///      Workers finish rules in any order,
+///  so each result carries its index for the
+///          final sort.
+///  `usize` (not `u32`/`u64`) because slice indexing requires it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -109,12 +164,20 @@ const WORKER_STACK_BYTES: usize = 64 * 1024 * 1024;
 /// ```
 pub(crate) type RuleOutcome = (usize, Result<BuiltRule, CompileError>);
 
-/// What:    `fn(&str) -> Result<BuiltRule, CompileError>` is a function-pointer type: any plain
+/// What:
+///     `fn(&str) -> Result<BuiltRule, CompileError>` is a function-pointer type:
+///  any plain
 ///          named function that takes a borrowed pattern string and returns a built rule or
-///          an error. Siblings: a generic closure parameter `impl Fn(&str) -> ...` and a boxed
+///          an error.
+///  Siblings:
+///  a generic closure parameter `impl Fn(&str) -> ...` and a boxed
 ///          closure `Box<dyn Fn(&str) -> ...>`.
-/// Why:     Production passes [`build_pattern`]; tests pass a builder that panics, to prove a
-///          worker panic reaches the caller. A function pointer (not a closure type) needs no
+/// Why:
+///      Production passes [`build_pattern`];
+///  tests pass a builder that panics,
+///  to prove a
+///          worker panic reaches the caller.
+///  A function pointer (not a closure type) needs no
 ///          generic parameter and can be copied into every worker thread as-is.
 ///
 /// In TS you'd write (pseudocode):
@@ -125,8 +188,11 @@ pub(crate) type RuleBuilder = fn(&str) -> Result<BuiltRule, CompileError>;
 
 /// Parses and builds one pattern into a rule.
 ///
-/// What:    Runs the parser, then the rule builder on the parsed node.
-/// Why:     The production [`RuleBuilder`] every worker runs per claimed index.
+/// What:
+///     Runs the parser,
+///  then the rule builder on the parsed node.
+/// Why:
+///      The production [`RuleBuilder`] every worker runs per claimed index.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -147,11 +213,18 @@ pub(crate) fn build_pattern(pattern: &str) -> Result<BuiltRule, CompileError> {
     return parse(pattern).and_then(build_rule)
 }
 
-/// What:    A process-wide slot holding the core count once computed. `static` means one
-///          value for the whole program; `OnceLock<usize>` starts empty and is filled at
-///          most once, even when threads race to fill it.
-/// Why:     On Linux `available_parallelism` re-reads cgroup files on every call, measured
-///          at 64 microseconds, which more than doubled a single-rule `RegexSet::new`.
+/// What:
+///     A process-wide slot holding the core count once computed.
+///  `static` means one
+///          value for the whole program;
+///  `OnceLock<usize>` starts empty and is filled at
+///          most once,
+///  even when threads race to fill it.
+/// Why:
+///      On Linux `available_parallelism` re-reads cgroup files on every call,
+///  measured
+///          at 64 microseconds,
+///  which more than doubled a single-rule `RegexSet::new`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,10 +232,13 @@ pub(crate) fn build_pattern(pattern: &str) -> Result<BuiltRule, CompileError> {
 /// ```
 static CORE_COUNT: OnceLock<usize> = OnceLock::new();
 
-/// Returns how many cores this process may use, computed once per process.
+/// Returns how many cores this process may use,
+///  computed once per process.
 ///
-/// What:    Fills [`CORE_COUNT`] on the first call and reads it afterwards.
-/// Why:     Keeps the per-compile cost of choosing a worker count to one memory read.
+/// What:
+///     Fills [`CORE_COUNT`] on the first call and reads it afterwards.
+/// Why:
+///      Keeps the per-compile cost of choosing a worker count to one memory read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -190,10 +266,17 @@ fn core_count() -> usize {
 
 /// Builds every pattern into a rule on as many threads as the machine has cores.
 ///
-/// What:    Picks the worker count (the core count, capped at the pattern count) and
-///          delegates to [`build_rules_with`]. With `stop_on_error`, rules after the
-///          lowest-index failure may be skipped; without it, every rule is built.
-/// Why:     The single entry point both `RegexSet::new` (strict) and
+/// What:
+///     Picks the worker count (the core count,
+///  capped at the pattern count) and
+///          delegates to [`build_rules_with`].
+///  With `stop_on_error`,
+///  rules after the
+///          lowest-index failure may be skipped;
+///  without it,
+///  every rule is built.
+/// Why:
+///      The single entry point both `RegexSet::new` (strict) and
 ///          `RegexSet::compile_lenient` (keep what compiles) share.
 ///
 /// In TS you'd write (pseudocode):
@@ -223,13 +306,21 @@ pub(crate) fn build_rules(patterns: &[&str], stop_on_error: bool) -> Vec<RuleOut
     return build_rules_with(patterns, stop_on_error, worker_count, WORKER_STACK_BYTES, build_pattern)
 }
 
-/// Builds every pattern into a rule with explicit workers, stacks, and builder, sorted by index.
+/// Builds every pattern into a rule with explicit workers,
+///  stacks,
+///  and builder,
+///  sorted by index.
 ///
-/// What:    Runs the claim-and-build loop on the calling thread for one worker or fewer,
-///          else on spawned workers with `stack_bytes` stacks running `build`, then sorts the
+/// What:
+///     Runs the claim-and-build loop on the calling thread for one worker or fewer,
+///          else on spawned workers with `stack_bytes` stacks running `build`,
+///  then sorts the
 ///          outcomes by index.
-/// Why:     Separated from [`build_rules`] so tests can force the threaded path on any
-///          machine, force every spawn to fail with an impossible stack size, and inject a
+/// Why:
+///      Separated from [`build_rules`] so tests can force the threaded path on any
+///          machine,
+///  force every spawn to fail with an impossible stack size,
+///  and inject a
 ///          panicking builder.
 ///
 /// In TS you'd write (pseudocode):
@@ -296,10 +387,17 @@ pub(crate) fn build_rules_with(
 
 /// Runs the claim-and-build loop on spawned worker threads and gathers their outcomes.
 ///
-/// What:    Spawns up to `worker_count` workers with `stack_bytes` stacks inside a thread
-///          scope, joins them, and concatenates their outcomes. When no worker can be
-///          spawned, the calling thread runs the loop itself.
-/// Why:     A scope guarantees every worker finishes before this function returns, so the
+/// What:
+///     Spawns up to `worker_count` workers with `stack_bytes` stacks inside a thread
+///          scope,
+///  joins them,
+///  and concatenates their outcomes.
+///  When no worker can be
+///          spawned,
+///  the calling thread runs the loop itself.
+/// Why:
+///      A scope guarantees every worker finishes before this function returns,
+///  so the
 ///          workers may borrow the caller's pattern slice and counters directly.
 ///
 /// In TS you'd write (pseudocode):
@@ -407,12 +505,20 @@ fn drain_on_workers(
 
 /// Claims rule indices from the shared counter and builds each until none remain.
 ///
-/// What:    Repeatedly takes the next unclaimed index, runs `build` on that pattern, and
-///          records the outcome; in strict mode it stops once its index is past the lowest
+/// What:
+///     Repeatedly takes the next unclaimed index,
+///  runs `build` on that pattern,
+///  and
+///          records the outcome;
+///  in strict mode it stops once its index is past the lowest
 ///          failure seen so far.
-/// Why:     The same loop serves the calling thread and every worker. An index below the
-///          lowest real failure is never skipped, so that failure and every rule before it
-///          are always built, which is what strict callers report.
+/// Why:
+///      The same loop serves the calling thread and every worker.
+///  An index below the
+///          lowest real failure is never skipped,
+///  so that failure and every rule before it
+///          are always built,
+///  which is what strict callers report.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -475,8 +581,11 @@ fn drain(
     }
 }
 
-/// What:    Unit tests for the threaded rule builder, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for the threaded rule builder,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

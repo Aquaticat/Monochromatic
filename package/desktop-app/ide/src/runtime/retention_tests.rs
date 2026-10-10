@@ -1,4 +1,5 @@
-//! Removal of unused key folders on disposable cache folders, with injected times.
+//! Removal of unused key folders on disposable cache folders,
+//!  with injected times.
 
 use super::{MARKER, Sweep, UNUSED_LIMIT, mark_used, remove_unused, unpack_marked};
 use std::{
@@ -16,13 +17,16 @@ fn days(count: u64) -> Duration {
     return Duration::from_secs(count * 86_400);
 }
 
-/// Set the modification time of a file or folder, without following a link at `path`'s end.
+/// Set the modification time of a file or folder,
+///  without following a link at `path`'s end.
 fn set_time(path: &Path, time: SystemTime) {
     let handle = fs::File::open(path).expect("open to set its time");
     handle.set_modified(time).expect("set modification time");
 }
 
-/// A key folder holding a cached library, with its marker last renewed at `used`, or no marker.
+/// A key folder holding a cached library,
+///  with its marker last renewed at `used`,
+///  or no marker.
 fn key_folder(runtime: &Path, key: &str, used: Option<SystemTime>) {
     let folder = runtime.join(key);
     fs::create_dir_all(folder.join("grammars")).expect("key folder");
@@ -33,7 +37,8 @@ fn key_folder(runtime: &Path, key: &str, used: Option<SystemTime>) {
     }
 }
 
-/// Entry names below `runtime`, sorted.
+/// Entry names below `runtime`,
+///  sorted.
 fn names(runtime: &Path) -> Vec<String> {
     let mut found: Vec<String> = fs::read_dir(runtime)
         .expect("runtime folder")
@@ -49,7 +54,8 @@ fn names(runtime: &Path) -> Vec<String> {
     return found;
 }
 
-/// Sorted copy of a list of names, for comparing sweeps regardless of listing order.
+/// Sorted copy of a list of names,
+///  for comparing sweeps regardless of listing order.
 fn sorted(list: &[String]) -> Vec<String> {
     let mut copy = list.to_vec();
     copy.sort();
@@ -112,12 +118,35 @@ fn the_current_key_is_never_removed_however_long_unused() {
     );
 }
 
+/// What:
+///  The current time as the filesystem stamps it:
+///  the modification time of a file written now.
+/// Why:
+///  The kernel stamps file times from a coarse clock,
+///  and `SystemTime::now` reads a finer one,
+///      so a file written right after `SystemTime::now` can carry an earlier time.
+///  A start time
+///      taken from the same file clock is never later than a file written after it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function fileClockNow(directory: string): Date { writeFileSync(probe, ''); return statSync(probe).mtime; }
+/// ```
+fn file_clock_now(directory: &Path) -> SystemTime {
+    let probe = directory.join("file-clock");
+    fs::write(&probe, b"").expect("file clock probe");
+    return fs::metadata(&probe)
+        .expect("file clock probe")
+        .modified()
+        .expect("file clock time");
+}
+
 #[test]
 fn a_marker_renewed_by_a_running_copy_keeps_its_folder() {
     let base = tempfile::tempdir().expect("disposable cache");
     let runtime = base.path().join("runtime");
     let older = "00000000000000a1";
-    let started = SystemTime::now();
+    let started = file_clock_now(base.path());
     key_folder(&runtime, older, Some(started - days(31)));
     // The older copy loads a parser: the marker is renewed before the library is compared.
     let library = unpack_marked(&runtime.join(older), "sql", b"library").expect("parser load");

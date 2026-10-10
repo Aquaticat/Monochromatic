@@ -1,12 +1,21 @@
-//! Quiet lifetime: what a clean open, one request, close, and shutdown leave in the application
-//! log and in the process table; and what a server that crashes or fails to start leaves there,
+//! Quiet lifetime:
+//!  what a clean open,
+//!  one request,
+//!  close,
+//!  and shutdown leave in the application
+//! log and in the process table;
+//!  and what a server that crashes or fails to start leaves there,
 //! with the last lines it wrote to standard error.
 //!
-//! The log is captured through the application's own pipeline (`ide_app::logging::install`): the
-//! same subscriber and the same bridge that re-labels helix-lsp's `log` records. Only the writer is
-//! replaced, and the level is set here, because these tests read records below the default.
+//! The log is captured through the application's own pipeline (`ide_app::logging::install`):
+//!  the
+//! same subscriber and the same bridge that re-labels helix-lsp's `log` records.
+//!  Only the writer is
+//! replaced,
+//!  and the level is set here,
+//!  because these tests read records below the default.
 
-use crate::support::{self, Probe, SERVER};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
     reply::{RequestKind, RequestOutcome},
     status::{DocumentState, ServerState},
@@ -19,7 +28,8 @@ use std::{
 };
 use tracing_subscriber::{EnvFilter, fmt::MakeWriter};
 
-/// A log writer that keeps every byte in memory, shared with the test that reads it.
+/// A log writer that keeps every byte in memory,
+///  shared with the test that reads it.
 #[derive(Clone, Default)]
 struct Capture(Arc<Mutex<Vec<u8>>>);
 
@@ -49,7 +59,10 @@ impl Capture {
 }
 
 /// Install the application's log pipeline with every worker record and every helix-lsp record
-/// visible, writing into a capture. Once per process, so each test runs in its own child.
+/// visible,
+///  writing into a capture.
+///  Once per process,
+///  so each test runs in its own child.
 fn capture_the_log() -> Capture {
     let capture = Capture::default();
     let filter = EnvFilter::builder()
@@ -58,7 +71,10 @@ fn capture_the_log() -> Capture {
     return capture;
 }
 
-/// The records of one level, whole lines. A record starts with its time, then its level.
+/// The records of one level,
+///  whole lines.
+///  A record starts with its time,
+///  then its level.
 fn records_at(text: &str, level: &str) -> Vec<String> {
     let mut found = Vec::new();
     for line in text.lines() {
@@ -95,10 +111,17 @@ fn assert_record(text: &str, level: &str, ending: &str) {
 }
 
 /// One clean lifetime in which the server produces all three record shapes helix-lsp logs at ERROR
-/// for a healthy server: a line on standard error at shutdown, as TypeScript 7's server writes
-/// `context canceled`; a `-32801` answer that the worker asks again for; and the end of standard
-/// error when the process ends. The server also writes a line at its start, so the worker holds
-/// kept lines that a clean shutdown must not report. Returns the whole log.
+/// for a healthy server:
+///  a line on standard error at shutdown,
+///  as TypeScript 7's server writes
+/// `context canceled`;
+///  a `-32801` answer that the worker asks again for;
+///  and the end of standard
+/// error when the process ends.
+///  The server also writes a line at its start,
+///  so the worker holds
+/// kept lines that a clean shutdown must not report.
+///  Returns the whole log.
 fn log_of_a_clean_lifetime(root: &Path) -> String {
     let capture = capture_the_log();
     let variables = [
@@ -106,7 +129,7 @@ fn log_of_a_clean_lifetime(root: &Path) -> String {
         ("STDERR", "context canceled"),
         ("HOVER", "modified-once"),
     ];
-    let mut probe = Probe::new(root, support::scripted(root, &variables, 3));
+    let mut probe = Probe::new(root, support::scripted(root, &variables, PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
     assert_eq!(support::children().len(), 1);
@@ -139,8 +162,11 @@ fn log_of_a_clean_lifetime(root: &Path) -> String {
     return text;
 }
 
-/// A clean lifetime leaves no child process and no ERROR record, and each healthy-server record
-/// is still in the log, whole, at the level that says what it is.
+/// A clean lifetime leaves no child process and no ERROR record,
+///  and each healthy-server record
+/// is still in the log,
+///  whole,
+///  at the level that says what it is.
 #[test]
 fn clean_lifetime_logs_no_error_level_record() {
     let Some(root) = support::child_root() else {
@@ -184,7 +210,8 @@ fn clean_lifetime_logs_no_error_level_record() {
     );
 }
 
-/// helix-lsp records the bridge does not know keep ERROR: here a server that refuses `initialize`,
+/// helix-lsp records the bridge does not know keep ERROR:
+///  here a server that refuses `initialize`,
 /// which helix-lsp logs as an error answer with code `-32603` and as a failed initialization.
 #[test]
 fn unknown_helix_error_records_keep_their_level() {
@@ -216,9 +243,13 @@ fn unknown_helix_error_records_keep_their_level() {
     );
 }
 
-/// A server that writes a line at its start and another right before it exits with status 7, in
-/// the middle of a hover request: one warning names the server and holds both lines, oldest first.
-/// The last line arrives just before the end, so the record waits for it.
+/// A server that writes a line at its start and another right before it exits with status 7,
+///  in
+/// the middle of a hover request:
+///  one warning names the server and holds both lines,
+///  oldest first.
+/// The last line arrives just before the end,
+///  so the record waits for it.
 #[test]
 fn a_crashed_server_is_logged_with_its_last_stderr_lines() {
     let Some(root) = support::child_root() else {
@@ -234,7 +265,7 @@ fn a_crashed_server_is_logged_with_its_last_stderr_lines() {
         ("STDERR", "panicked at the hover request"),
         ("HOVER", "crash"),
     ];
-    let mut probe = Probe::new(&root, support::scripted(&root, &variables, 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &variables, PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
     let _crashing = probe.request(RequestKind::Hover, 1);
@@ -256,7 +287,8 @@ fn a_crashed_server_is_logged_with_its_last_stderr_lines() {
     );
 }
 
-/// A server that writes a line and exits with status 3 when `initialize` arrives: the warning
+/// A server that writes a line and exits with status 3 when `initialize` arrives:
+///  the warning
 /// says it never finished starting and holds the line.
 #[test]
 fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
@@ -272,7 +304,7 @@ fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
         ("STDERR_AT_START", "cannot read the configuration"),
         ("INIT", "exit"),
     ];
-    let mut probe = Probe::new(&root, support::scripted(&root, &variables, 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &variables, PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until("the failed-start state", |seen| {
         return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
@@ -291,8 +323,11 @@ fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
     );
 }
 
-/// A server that writes a line and never answers `initialize`: the start-deadline error is followed
-/// by a warning that holds the line; the worker stopped the server itself, so there is no
+/// A server that writes a line and never answers `initialize`:
+///  the start-deadline error is followed
+/// by a warning that holds the line;
+///  the worker stopped the server itself,
+///  so there is no
 /// ended-server record and nothing it writes while it is stopped is reported.
 #[test]
 fn a_timed_out_start_is_logged_with_its_stderr_lines() {
@@ -309,18 +344,25 @@ fn a_timed_out_start_is_logged_with_its_stderr_lines() {
         ("STDERR", "asked to stop"),
         ("INIT", "hang"),
     ];
+    // A request timeout of 1 s gives a start allowance of three request timeouts, 3 s.
     let mut probe = Probe::new(&root, support::scripted(&root, &variables, 1));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until("the failed-start state", |seen| {
         return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
     });
+    assert_eq!(
+        probe.state(SERVER),
+        Some(&ServerState::FailedToStart {
+            reason: "scripted-ls did not answer initialize within 3 seconds".to_string()
+        })
+    );
     drop(probe);
     support::children_until_none();
     let text = capture.text();
     assert_record(
         &text,
         "ERROR",
-        "language server did not answer initialize in time and is stopped server=scripted-ls seconds=1",
+        "language server did not answer initialize in time and is stopped server=scripted-ls seconds=3",
     );
     assert_record(
         &text,

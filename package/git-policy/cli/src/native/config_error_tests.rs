@@ -1,6 +1,11 @@
-//! What: Controls for the configuration error value.
-//! Why: The message is the whole diagnostic, so constructing and printing the error must
-//!      carry it byte for byte, including quotes, newlines and non-ASCII text.
+//! What:
+//!  Controls for the configuration error value.
+//! Why:
+//!  The message is the whole diagnostic,
+//!  so constructing and printing the error must
+//!      carry it byte for byte,
+//!  including quotes,
+//!  newlines and non-ASCII text.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,7 +15,8 @@
 /// Import the error under test.
 use super::ConfigError;
 
-/// Printing yields exactly the stored message; an empty message prints nothing.
+/// Printing yields exactly the stored message;
+///  an empty message prints nothing.
 #[test]
 fn display_prints_exactly_the_message() {
     for message in [
@@ -27,7 +33,8 @@ fn display_prints_exactly_the_message() {
     }
 }
 
-/// Errors compare by message, and the standard error interface reports no underlying cause.
+/// Errors compare by message,
+///  and the standard error interface reports no underlying cause.
 #[test]
 fn errors_compare_by_message_and_have_no_source() {
     assert_eq!(ConfigError::new("a"), ConfigError::new("a"));

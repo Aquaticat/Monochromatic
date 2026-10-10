@@ -1,15 +1,23 @@
 //! US-QWERTY character/key-name to Linux evdev keycode tables.
 //!
 //! Synthetic keyboard input is expressed as evdev keycodes (the values in
-//! `linux/input-event-codes.h`). The compositor's keyboard uses the default US xkb
-//! layout, so mapping a character to the keycode-plus-shift that produces it under that
-//! layout is a fixed table. This is display-independent and unit-tested directly.
+//! `linux/input-event-codes.h`).
+//!  The compositor's keyboard uses the default US xkb
+//! layout,
+//!  so mapping a character to the keycode-plus-shift that produces it under that
+//! layout is a fixed table.
+//!  This is display-independent and unit-tested directly.
 
 /// Evdev keycode of the left Shift modifier (`KEY_LEFTSHIFT`).
 ///
-/// What:     `pub const LEFT_SHIFT: u32 = 42;`. Unsigned 32-bit; the raw evdev code.
-/// Why:      Typing an uppercase or shifted character wraps the key tap in a Shift
-///           press/release, and the input layer needs this code.
+/// What:
+///      `pub const LEFT_SHIFT: u32 = 42;`.
+///  Unsigned 32-bit;
+///  the raw evdev code.
+/// Why:
+///       Typing an uppercase or shifted character wraps the key tap in a Shift
+///           press/release,
+///  and the input layer needs this code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,10 +27,15 @@ pub const LEFT_SHIFT: u32 = 42;
 
 /// Map a character to `(evdev_keycode, needs_shift)` under the US layout.
 ///
-/// What:     `pub fn char_to_key(character: char) -> Option<(u32, bool)>`. Returns the
-///           keycode and whether Shift must be held, or `None` for characters not on a
+/// What:
+///      `pub fn char_to_key(character: char) -> Option<(u32, bool)>`.
+///  Returns the
+///           keycode and whether Shift must be held,
+///  or `None` for characters not on a
 ///           US keyboard (which the caller skips).
-/// Why:      `type <text>` turns each character into a key tap; this is the lookup.
+/// Why:
+///       `type <text>` turns each character into a key tap;
+///  this is the lookup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -103,9 +116,12 @@ pub fn char_to_key(character: char) -> Option<(u32, bool)> {
 
 /// Map a lowercase ASCII letter to its evdev keycode.
 ///
-/// What:     `fn letter_code(letter: char) -> Option<u32>`. Private helper covering
+/// What:
+///      `fn letter_code(letter: char) -> Option<u32>`.
+///  Private helper covering
 ///           `a`..=`z`.
-/// Why:      Keep the 26-entry letter table out of `char_to_key`'s symbol match.
+/// Why:
+///       Keep the 26-entry letter table out of `char_to_key`'s symbol match.
 fn letter_code(letter: char) -> Option<u32> {
     // What:     `match letter { 'a' => Some(30), ... }`. The QWERTY letter-to-code table.
     // Why:      One authoritative place for letter keycodes.
@@ -140,12 +156,21 @@ fn letter_code(letter: char) -> Option<u32> {
     }
 }
 
-/// Map a key name (`enter`, `space`, or a single character) to its evdev keycode.
+/// Map a key name (`enter`,
+///  `space`,
+///  or a single character) to its evdev keycode.
 ///
-/// What:     `pub fn named_key(name: &str) -> Option<u32>`. Returns the code for a named
-///           key, or for a one-character name delegates to `char_to_key` (dropping the
-///           Shift flag, since `key` presses a raw key). `None` for unknown names.
-/// Why:      The `key <name>` command presses named keys (Enter, arrows) and single
+/// What:
+///      `pub fn named_key(name: &str) -> Option<u32>`.
+///  Returns the code for a named
+///           key,
+///  or for a one-character name delegates to `char_to_key` (dropping the
+///           Shift flag,
+///  since `key` presses a raw key).
+///  `None` for unknown names.
+/// Why:
+///       The `key <name>` command presses named keys (Enter,
+///  arrows) and single
 ///           characters alike.
 ///
 /// In TS you'd write (pseudocode):
@@ -207,9 +232,12 @@ pub fn named_key(name: &str) -> Option<u32> {
     }
 }
 
-/// What:     `#[cfg(test)] #[path = "keymap_tests.rs"] mod tests;`. Declares the keymap
+/// What:
+///      `#[cfg(test)] #[path = "keymap_tests.rs"] mod tests;`.
+///  Declares the keymap
 ///           unit test module from the sibling file.
-/// Why:      Keep the keycode-table tests beside the tables.
+/// Why:
+///       Keep the keycode-table tests beside the tables.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

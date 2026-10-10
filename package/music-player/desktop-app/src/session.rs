@@ -1,4 +1,6 @@
-//! Desktop session persistence. Current JSON stores one `playback_mode`; former
+//! Desktop session persistence.
+//!  Current JSON stores one `playback_mode`;
+//!  former
 //! `shuffle` and `repeat_track` fields exist only in the private read model used
 //! during migration.
 
@@ -80,7 +82,8 @@ impl PageControlStyle {
 pub struct Session {
     /// Opened directory whose scan produces the queue.
     pub source_root: Option<PathBuf>,
-    /// Selected track path, or no selection.
+    /// Selected track path,
+    ///  or no selection.
     pub selected: Option<PathBuf>,
     /// Resume position in seconds.
     pub position_secs: f64,
@@ -106,9 +109,11 @@ struct StoredSession {
     volume: f32,
     /// Current wire text when it is a string.
     playback_mode: Option<String>,
-    /// Former shuffle enum text, used only when `playback_mode` is absent.
+    /// Former shuffle enum text,
+    ///  used only when `playback_mode` is absent.
     shuffle: Option<String>,
-    /// Former independent repeat flag, including whether the key was present.
+    /// Former independent repeat flag,
+    ///  including whether the key was present.
     repeat_track: Option<bool>,
     /// Current page-control preference.
     page_control_style: PageControlStyle,
@@ -146,7 +151,9 @@ impl Default for Session {
     }
 }
 
-/// Loads, migrates, and saves sessions.
+/// Loads,
+///  migrates,
+///  and saves sessions.
 impl Session {
     /// Converts permissive input into current state and reports whether to rewrite.
     fn from_stored(stored: StoredSession, has_current_mode: bool) -> (Session, bool) {
@@ -200,7 +207,10 @@ impl Session {
         return Ok(Session::from_stored(stored, has_current_mode).0);
     }
 
-    /// Reads the session file, returning defaults after any path, I/O, or parse failure.
+    /// Reads the session file,
+    ///  returning defaults after any path,
+    ///  I/O,
+    ///  or parse failure.
     pub fn load() -> Session {
         let Some(path) = session_path() else {
             return Session::default();

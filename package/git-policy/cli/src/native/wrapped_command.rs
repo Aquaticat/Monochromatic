@@ -1,9 +1,18 @@
-//! What: Decide what one wrapped Git command does once real Git is known: forward it,
-//!       possibly rewritten, or stop with policy events or a refusal.
-//! Why: This is the whole lifecycle of a forwarded command in one place and in the
-//!      installed wrapper's order: unported work is refused, configuration is loaded only
-//!      for commands that need it, the policy pass runs, and a real push is stopped until
-//!      its own lifecycle exists. A read-only command never reads configuration and asks
+//! What:
+//!  Decide what one wrapped Git command does once real Git is known:
+//!  forward it,
+//!       possibly rewritten,
+//!  or stop with policy events or a refusal.
+//! Why:
+//!  This is the whole lifecycle of a forwarded command in one place and in the
+//!      installed wrapper's order:
+//!  unported work is refused,
+//!  configuration is loaded only
+//!      for commands that need it,
+//!  the policy pass runs,
+//!  and a real push is stopped until
+//!      its own lifecycle exists.
+//!  A read-only command never reads configuration and asks
 //!      Git at most where it runs.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,9 +20,15 @@
 //! // const outcome = await runWrappedCommand(stripped, environment, checks);
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  The lifecycle joins control stripping, the frontier, configuration and the pass.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   The lifecycle joins control stripping,
+///  the frontier,
+///  configuration and the pass.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,9 +60,14 @@ use super::repository_location::RepositoryLocation;
 use super::unported::{Unported, unported_from_unavailable, unported_notice};
 use super::worktree_identity::worktree_root;
 use super::wrapper_invocation::{StrippedInvocation, command_region, command_word};
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  Arguments and environment values are never decoded.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Arguments and environment values are never decoded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,10 +75,16 @@ use super::wrapper_invocation::{StrippedInvocation, command_region, command_word
 /// ```
 use std::ffi::OsString;
 
-/// What: How the lifecycle of one wrapped command ended. An `enum` is a closed set of named
-///       alternatives; each carries the values its ending needs. `#[derive(...)]` asks the
-///       compiler to generate copying, debug printing and `==`.
-/// Why:  The caller either becomes Git with these arguments or exits with this code;
+/// What:
+///  How the lifecycle of one wrapped command ended.
+///  An `enum` is a closed set of named
+///       alternatives;
+///  each carries the values its ending needs.
+///  `#[derive(...)]` asks the
+///       compiler to generate copying,
+///  debug printing and `==`.
+/// Why:
+///   The caller either becomes Git with these arguments or exits with this code;
 ///       both may first print event lines on standard error.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,24 +95,36 @@ use std::ffi::OsString;
 pub enum WrappedOutcome {
     /// Run real Git with these arguments.
     Forward {
-        /// The arguments for Git: no wrapper control, fixed transforms applied.
+        /// The arguments for Git:
+        ///  no wrapper control,
+        ///  fixed transforms applied.
         arguments: Vec<OsString>,
-        /// Complete event lines for standard error, written before Git starts.
+        /// Complete event lines for standard error,
+        ///  written before Git starts.
         stderr: String,
     },
     /// Stop without running Git.
     Exit {
-        /// Process exit code: 1 for a policy rejection, 2 for a failure or a refusal.
+        /// Process exit code:
+        ///  1 for a policy rejection,
+        ///  2 for a failure or a refusal.
         code: i32,
         /// Complete text for standard error.
         stderr: String,
     },
 }
 
-/// What: The ending for a command that needs unported work: events so far, then the notice.
-///       `String` is the owned event text; `&Unported` borrows the reason; `&str` borrows
+/// What:
+///  The ending for a command that needs unported work:
+///  events so far,
+///  then the notice.
+///       `String` is the owned event text;
+///  `&Unported` borrows the reason;
+///  `&str` borrows
 ///       the command word.
-/// Why:  Every refusal exits 2, whether it was found before or inside the policy pass.
+/// Why:
+///   Every refusal exits 2,
+///  whether it was found before or inside the policy pass.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -103,11 +141,20 @@ fn refused(events: String, what: &Unported, command: &str) -> WrappedOutcome {
     };
 }
 
-/// What: The ending of a stage that did not let the command proceed, or nothing when it
-///       did. `&[PolicyEvent]` borrows every event so far; `Option<WrappedOutcome>` is "an
+/// What:
+///  The ending of a stage that did not let the command proceed,
+///  or nothing when it
+///       did.
+///  `&[PolicyEvent]` borrows every event so far;
+///  `Option<WrappedOutcome>` is "an
 ///       ending or nothing".
-/// Why:  The pre-forward pass and the push gate end the same way: an unavailable stage is
-///       a refusal, a failed one exits 2, and an error finding exits 1, each after the
+/// Why:
+///   The pre-forward pass and the push gate end the same way:
+///  an unavailable stage is
+///       a refusal,
+///  a failed one exits 2,
+///  and an error finding exits 1,
+///  each after the
 ///       events gathered so far.
 ///
 /// In TS you'd write (pseudocode):
@@ -136,10 +183,15 @@ fn stage_ending(events: &[PolicyEvent], end: StageEnd, command: &str) -> Option<
     });
 }
 
-/// What: Whether Git's own option table reads the tokens after `push` as a dry run.
-///       `&[OsString]` borrows those tokens, already free of wrapper controls.
-/// Why:  Only a dry run publishes nothing. A region the table refuses is not known to be
-///       a dry run, so it is treated as a real push.
+/// What:
+///  Whether Git's own option table reads the tokens after `push` as a dry run.
+///       `&[OsString]` borrows those tokens,
+///  already free of wrapper controls.
+/// Why:
+///   Only a dry run publishes nothing.
+///  A region the table refuses is not known to be
+///       a dry run,
+///  so it is treated as a real push.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -155,8 +207,13 @@ fn push_is_dry_run(region: &[OsString]) -> bool {
     }
 }
 
-/// What: Every shipped policy in registry order: the built-in ones, then the optional ones.
-/// Why:  The push gate asks all of them at once, as the installed wrapper does.
+/// What:
+///  Every shipped policy in registry order:
+///  the built-in ones,
+///  then the optional ones.
+/// Why:
+///   The push gate asks all of them at once,
+///  as the installed wrapper does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -169,12 +226,22 @@ fn every_policy() -> Vec<PolicyId> {
     return policies;
 }
 
-/// What: Prepare a command that loads configuration: refuse unported work, read the
-///       configuration of the worktree Git reports, and say what a content policy may
-///       read. Returns the effective policy settings, or the ending that stops the command.
-///       `Result<PolicyConfig, WrappedOutcome>` is "settings, or an ending".
-/// Why:  The order is the installed wrapper's: leases and leftover state come before
-///       configuration, and a commit is refused only after its configuration was accepted,
+/// What:
+///  Prepare a command that loads configuration:
+///  refuse unported work,
+///  read the
+///       configuration of the worktree Git reports,
+///  and say what a content policy may
+///       read.
+///  Returns the effective policy settings,
+///  or the ending that stops the command.
+///       `Result<PolicyConfig, WrappedOutcome>` is "settings,
+///  or an ending".
+/// Why:
+///   The order is the installed wrapper's:
+///  leases and leftover state come before
+///       configuration,
+///  and a commit is refused only after its configuration was accepted,
 ///       so an invalid file is always reported as such.
 ///
 /// In TS you'd write (pseudocode):
@@ -236,12 +303,20 @@ fn prepare_guarded_command<F: RepositoryFacts>(
     return Ok(policies);
 }
 
-/// What: Run the lifecycle of one wrapped command. `&StrippedInvocation` borrows the
-///       invocation without its wrapper controls; `&mut ShippedChecks<F>` lends the shipped
+/// What:
+///  Run the lifecycle of one wrapped command.
+///  `&StrippedInvocation` borrows the
+///       invocation without its wrapper controls;
+///  `&mut ShippedChecks<F>` lends the shipped
 ///       policies and their facts provider `F` for writing.
-/// Why:  A command Git does not run as a subcommand is forwarded as it is. A read-only
-///       command skips configuration and every refusal check, and uses the default
-///       settings. Every other command is prepared first. Then one pre-forward pass runs,
+/// Why:
+///   A command Git does not run as a subcommand is forwarded as it is.
+///  A read-only
+///       command skips configuration and every refusal check,
+///  and uses the default
+///       settings.
+///  Every other command is prepared first.
+///  Then one pre-forward pass runs,
 ///       and a real push must also clear the manual-push gate.
 ///
 /// In TS you'd write (pseudocode):
@@ -309,7 +384,8 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     };
 }
 
-/// Lifecycle order, fact use and every ending stay out of the release executable.
+/// Lifecycle order,
+///  fact use and every ending stay out of the release executable.
 #[cfg(test)]
 #[path = "wrapped_command_tests.rs"]
 mod tests;

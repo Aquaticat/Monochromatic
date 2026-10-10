@@ -1,9 +1,19 @@
-//! What: The refusal frontier through the built executable: every command that needs work
-//!       this executable does not do stops with exit status 2, names what is missing and
+//! What:
+//!  The refusal frontier through the built executable:
+//!  every command that needs work
+//!       this executable does not do stops with exit status 2,
+//!  names what is missing and
 //!       leaves the repository untouched.
-//! Why: A commit, a `git add` an unported content policy should check, a real push, a worktree copy or a command beside
+//! Why:
+//!  A commit,
+//!  a `git add` an unported content policy should check,
+//!  a real push,
+//!  a worktree copy or a command beside
 //!      a landing transaction that reached Git would run without the installed wrapper's
-//!      protection, and nothing would show it. Each refusal has a positive control: the
+//!      protection,
+//!  and nothing would show it.
+//!  Each refusal has a positive control:
+//!  the
 //!      neighbouring command that is forwarded really changes the repository.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,7 +21,8 @@
 //! // expect(run(wrappedGit, ['commit', '-m', 'x']).status).toBe(2); expect(head()).toBe(before);
 //! ```
 
-/// Import the shared fixtures, the bounded process helpers and the refusal texts.
+/// Import the shared fixtures,
+///  the bounded process helpers and the refusal texts.
 use super::support::{
     Fixture, Observed, fixture, git, observe, porcelain, remove, repository, run_direct,
     run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
@@ -24,13 +35,15 @@ use git_policy_cli::unported::{Unported, unported_notice};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
-/// The commit `HEAD` names, as text.
+/// The commit `HEAD` names,
+///  as text.
 fn head(fixture: &Fixture, repo: &Path) -> String {
     let output: std::process::Output = git(fixture, repo, &["rev-parse", "HEAD"]);
     return String::from_utf8_lossy(&output.stdout).into_owned();
 }
 
-/// Every ref of a repository, one name per line.
+/// Every ref of a repository,
+///  one name per line.
 fn refs(fixture: &Fixture, repo: &Path) -> String {
     let output: std::process::Output = git(fixture, repo, &["for-each-ref", "--format=%(refname)"]);
     return String::from_utf8_lossy(&output.stdout).into_owned();
@@ -48,7 +61,8 @@ fn repository_with_linked_worktree(fixture: &Fixture) -> (PathBuf, PathBuf) {
     return (repo, linked);
 }
 
-/// Every `git commit` except a dry run is refused; the index and `HEAD` stay as they were.
+/// Every `git commit` except a dry run is refused;
+///  the index and `HEAD` stay as they were.
 #[test]
 fn a_real_commit_is_refused() {
     let fixture: Fixture = fixture("frontier-commit");
@@ -130,7 +144,8 @@ const FILE_WARNING: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"findi
 /// The forbidden-root-context error of `git add` about the top-level `CONTEXT.md`.
 const CONTEXT_ERROR: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n";
 
-/// `git add` runs the ported content policies over what it would stage, and is refused
+/// `git add` runs the ported content policies over what it would stage,
+///  and is refused
 /// while an unported content policy is on.
 #[test]
 fn add_runs_ported_content_policies_and_refuses_unported_ones() {
@@ -216,7 +231,8 @@ fn add_runs_ported_content_policies_and_refuses_unported_ones() {
     remove(&fixture);
 }
 
-/// A real push stops at the manual-push gate; a dry run is forwarded with `--atomic`.
+/// A real push stops at the manual-push gate;
+///  a dry run is forwarded with `--atomic`.
 #[test]
 fn a_real_push_is_refused_at_the_manual_push_gate() {
     let fixture: Fixture = fixture("frontier-push");
@@ -281,7 +297,8 @@ fn a_real_push_is_refused_at_the_manual_push_gate() {
     remove(&fixture);
 }
 
-/// From a linked worktree, creating a worktree and running a possible alias are refused.
+/// From a linked worktree,
+///  creating a worktree and running a possible alias are refused.
 #[test]
 fn worktree_creation_and_aliases_are_refused_from_a_linked_worktree() {
     let fixture: Fixture = fixture("frontier-worktree");
@@ -352,7 +369,8 @@ fn worktree_creation_and_aliases_are_refused_from_a_linked_worktree() {
     remove(&fixture);
 }
 
-/// Registered transactions, an interrupted worktree copy and an inherited lease stop a guarded command.
+/// Registered transactions,
+///  an interrupted worktree copy and an inherited lease stop a guarded command.
 #[test]
 fn leftover_state_and_leases_refuse_guarded_commands() {
     let fixture: Fixture = fixture("frontier-state");

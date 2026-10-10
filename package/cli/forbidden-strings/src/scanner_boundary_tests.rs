@@ -1,12 +1,15 @@
-//! What: Exact binary-prefix boundaries and matcher reuse after a real caught bounds panic.
-//! Why: Prefix truncation and fresh per-call scratch must remain observable at the embedding boundary.
+//! What:
+//!  Exact binary-prefix boundaries and matcher reuse after a real caught bounds panic.
+//! Why:
+//!  Prefix truncation and fresh per-call scratch must remain observable at the embedding boundary.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Test bytes on either side of the probe limit, then compare scanner results before and after an injected fault.
 //! ```
 
-/// Import the owning scanner and closed findings, with native path rather than lossy pathname text.
+/// Import the owning scanner and closed findings,
+///  with native path rather than lossy pathname text.
 use super::{CandidateScan, Scanner};
 use crate::{BIN_PROBE_SIZE, ScanFinding};
 use std::path::Path;
@@ -32,7 +35,8 @@ fn empty_and_short_binary_snapshots_preserve_contract() {
     assert_eq!(short.findings, vec![ScanFinding::Content { line: 1, rule: String::from("0") }]);
 }
 
-/// A NUL at the final probe byte truncates; a NUL at the first tail byte does not.
+/// A NUL at the final probe byte truncates;
+///  a NUL at the first tail byte does not.
 #[test]
 fn nul_on_either_side_of_probe_boundary_selects_exact_snapshot() {
     let scanner: Scanner = scanner();

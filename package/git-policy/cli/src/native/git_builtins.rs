@@ -1,8 +1,16 @@
-//! What: The names of the commands built into Git 2.56.0, and the test "is this word one
+//! What:
+//!  The names of the commands built into Git 2.56.0,
+//!  and the test "is this word one
 //!       of them".
-//! Why: Git never expands an alias whose name is a built-in command, so a built-in word
-//!      is the command that runs. Any other word may be an alias for anything, including
-//!      `worktree add`, and resolving aliases is not ported; the caller needs to know
+//! Why:
+//!  Git never expands an alias whose name is a built-in command,
+//!  so a built-in word
+//!      is the command that runs.
+//!  Any other word may be an alias for anything,
+//!  including
+//!      `worktree add`,
+//!  and resolving aliases is not ported;
+//!  the caller needs to know
 //!      which of the two it is looking at without starting Git.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,11 +18,19 @@
 //! // GIT_BUILTIN_COMMANDS.has('status') === true; GIT_BUILTIN_COMMANDS.has('st') === false
 //! ```
 
-/// What: Every name `git --list-cmds=builtins` prints for Git 2.56.0, in that order.
-///       `&[&[u8]]` is a borrowed list of byte spellings baked into the program. Sibling
-///       the reader might expect: `&[&str]`, a list of UTF-8 texts.
-/// Why:  Command words arrive as raw bytes and are compared without decoding, so the
-///       table holds bytes. A test compares the whole table with real Git's own answer.
+/// What:
+///  Every name `git --list-cmds=builtins` prints for Git 2.56.0,
+///  in that order.
+///       `&[&[u8]]` is a borrowed list of byte spellings baked into the program.
+///  Sibling
+///       the reader might expect:
+///  `&[&str]`,
+///  a list of UTF-8 texts.
+/// Why:
+///   Command words arrive as raw bytes and are compared without decoding,
+///  so the
+///       table holds bytes.
+///  A test compares the whole table with real Git's own answer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -172,9 +188,14 @@ pub const GIT_BUILTIN_COMMANDS: &[&[u8]] = &[
     b"write-tree",
 ];
 
-/// What: Whether `word` is a command built into Git 2.56.0. `&[u8]` borrows the word's
-///       raw bytes; `bool` is true or false.
-/// Why:  A built-in word cannot be an alias, so what the word says is what Git runs.
+/// What:
+///  Whether `word` is a command built into Git 2.56.0.
+///  `&[u8]` borrows the word's
+///       raw bytes;
+///  `bool` is true or false.
+/// Why:
+///   A built-in word cannot be an alias,
+///  so what the word says is what Git runs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,12 +1,22 @@
-//! What:    Counting back-end: a small structural matcher that keeps bounded-repetition counts
-//!          in runtime counter-sets instead of unrolled DFA states. The eager DFA unrolls
-//!          `{n,m}`, which explodes when a repeated class overlaps a literal prefix under
-//!          unanchored search (an `AKIA[A-Z2-7]{16}` key is exactly that shape). This module
+//! What:
+//!     Counting back-end:
+//!  a small structural matcher that keeps bounded-repetition counts
+//!          in runtime counter-sets instead of unrolled DFA states.
+//!  The eager DFA unrolls
+//!          `{n,m}`,
+//!  which explodes when a repeated class overlaps a literal prefix under
+//!          unanchored search (an `AKIA[A-Z2-7]{16}` key is exactly that shape).
+//!  This module
 //!          keeps such a pattern as a [`CountingNfa`] of positions and matches it with a
-//!          counting-set simulation whose serialized size is linear in the pattern, never in
-//!          the repetition bound; alternation costs only follow edges, and intersection with
+//!          counting-set simulation whose serialized size is linear in the pattern,
+//!  never in
+//!          the repetition bound;
+//!  alternation costs only follow edges,
+//!  and intersection with
 //!          complement runs as a synchronized [`ProductProgram`].
-//! Why:     This file is the Rust module that groups the counting implementation, so the
+//! Why:
+//!      This file is the Rust module that groups the counting implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -14,8 +24,10 @@
 //! // module counting: see exported functions and types below.
 //! ```
 
-/// What:    The element leaf type and its decode-time validation.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The element leaf type and its decode-time validation.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -24,8 +36,10 @@
 /// ```
 mod element;
 
-/// What:    The bounded count bitset used by the simulation state.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The bounded count bitset used by the simulation state.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -34,8 +48,10 @@ mod element;
 /// ```
 mod countset;
 
-/// What:    The required-literal prefilter derived from a counting NFA.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The required-literal prefilter derived from a counting NFA.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -44,8 +60,10 @@ mod countset;
 /// ```
 mod prefilter;
 
-/// What:    The shared counting-NFA simulation core.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The shared counting-NFA simulation core.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -54,8 +72,10 @@ mod prefilter;
 /// ```
 mod sim;
 
-/// What:    The serializable counting NFA.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The serializable counting NFA.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -64,8 +84,10 @@ mod sim;
 /// ```
 mod nfa;
 
-/// What:    The Glushkov-style NFA builder.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The Glushkov-style NFA builder.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -74,8 +96,10 @@ mod nfa;
 /// ```
 mod build;
 
-/// What:    The single-pattern counting-NFA search loop.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The single-pattern counting-NFA search loop.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -84,8 +108,10 @@ mod build;
 /// ```
 mod run;
 
-/// What:    The synchronized-product back-end for `&` and `~`.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The synchronized-product back-end for `&` and `~`.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -94,8 +120,10 @@ mod run;
 /// ```
 mod product;
 
-/// What:    Re-exports the counting NFA and its builder for the engine and compiler.
-/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+/// What:
+///     Re-exports the counting NFA and its builder for the engine and compiler.
+/// Why:
+///      The surrounding function uses this step to keep the matcher behavior correct at
 ///          this point.
 ///
 /// In TS you'd write (pseudocode):
@@ -104,8 +132,10 @@ mod product;
 /// ```
 pub use build::build_nfa;
 
-/// What:    Re-exports the counting NFA type for the engine.
-/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+/// What:
+///     Re-exports the counting NFA type for the engine.
+/// Why:
+///      The surrounding function uses this step to keep the matcher behavior correct at
 ///          this point.
 ///
 /// In TS you'd write (pseudocode):
@@ -114,8 +144,10 @@ pub use build::build_nfa;
 /// ```
 pub use nfa::CountingNfa;
 
-/// What:    Re-exports the product program and its builder for the engine and compiler.
-/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+/// What:
+///     Re-exports the product program and its builder for the engine and compiler.
+/// Why:
+///      The surrounding function uses this step to keep the matcher behavior correct at
 ///          this point.
 ///
 /// In TS you'd write (pseudocode):
@@ -124,8 +156,12 @@ pub use nfa::CountingNfa;
 /// ```
 pub use product::{ProductProgram, build_product};
 
-/// What:    Re-exports the prefilter, seed extractors, and leading-seed probes for the engine.
-/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+/// What:
+///     Re-exports the prefilter,
+///  seed extractors,
+///  and leading-seed probes for the engine.
+/// Why:
+///      The surrounding function uses this step to keep the matcher behavior correct at
 ///          this point.
 ///
 /// In TS you'd write (pseudocode):

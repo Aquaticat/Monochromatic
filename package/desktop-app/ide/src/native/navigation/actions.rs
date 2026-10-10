@@ -9,7 +9,8 @@ use slint::{ComponentHandle, SharedString};
 /// UI callbacks share state without any cross-thread mutable ownership.
 use std::{cell::RefCell, rc::Rc};
 
-/// Activate the current native row identity, never reconstructing a path from its display label.
+/// Activate the current native row identity,
+///  never reconstructing a path from its display label.
 fn activate(
     window: &AppWindow,
     source: &Rc<RefCell<State>>,
@@ -50,7 +51,8 @@ fn activate(
     }
 }
 
-/// Right expands or enters a directory; left collapses or focuses its visible parent.
+/// Right expands or enters a directory;
+///  left collapses or focuses its visible parent.
 fn navigate(
     window: &AppWindow,
     source: &Rc<RefCell<State>>,
@@ -88,7 +90,8 @@ fn navigate(
     }
 }
 
-/// Bind callbacks once; history remains session-local and promotes only after successful source installation.
+/// Bind callbacks once;
+///  history remains session-local and promotes only after successful source installation.
 pub(super) fn bind(
     owner: &AppWindow,
     shared_source: &Rc<RefCell<State>>,

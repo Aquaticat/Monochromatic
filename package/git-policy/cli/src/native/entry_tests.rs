@@ -1,7 +1,12 @@
-//! What: Decision controls for one wrapper invocation against real Git.
-//! Why: Inspection commands must be forwarded without reading configuration, every
-//!      other command must validate configuration and pass its policies or stop, and
-//!      the management namespace must never reach Git. The invocations that stop before
+//! What:
+//!  Decision controls for one wrapper invocation against real Git.
+//! Why:
+//!  Inspection commands must be forwarded without reading configuration,
+//!  every
+//!      other command must validate configuration and pass its policies or stop,
+//!  and
+//!      the management namespace must never reach Git.
+//!  The invocations that stop before
 //!      a Git is trusted are controlled in `entry_stop_tests.rs`.
 //!
 //! In TS you'd write (pseudocode):
@@ -22,8 +27,11 @@ use crate::unported::{Unported, unported_notice};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-/// What: Inputs selecting the image's real Git, with a fixture file standing in for this wrapper.
-/// Why: `pub(super)` lets the sibling stop controls in `entry_stop_tests.rs` reuse these helpers.
+/// What:
+///  Inputs selecting the image's real Git,
+///  with a fixture file standing in for this wrapper.
+/// Why:
+///  `pub(super)` lets the sibling stop controls in `entry_stop_tests.rs` reuse these helpers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,7 +67,9 @@ fn in_directory(directory: &Path, rest: &[&str]) -> Vec<OsString> {
     return result;
 }
 
-/// The forward action for these fixtures: real Git, the lock-PID overlay and no warning.
+/// The forward action for these fixtures:
+///  real Git,
+///  the lock-PID overlay and no warning.
 pub(super) fn forward(arguments: Vec<OsString>) -> Action {
     return Action::Forward {
         real_git: PathBuf::from(REAL_GIT),
@@ -80,7 +90,8 @@ pub(super) fn forward(arguments: Vec<OsString>) -> Action {
     };
 }
 
-/// Return the stderr of a stop action with exit code 2 and empty stdout; a forward fails the test.
+/// Return the stderr of a stop action with exit code 2 and empty stdout;
+///  a forward fails the test.
 pub(super) fn stopped(action: Action) -> String {
     match action {
         Action::Exit {
@@ -96,7 +107,8 @@ pub(super) fn stopped(action: Action) -> String {
     }
 }
 
-/// The forward action of `forward`, with these warning events written first.
+/// The forward action of `forward`,
+///  with these warning events written first.
 fn forward_after(arguments: Vec<OsString>, warnings: &str) -> Action {
     // `match` takes the plain forward apart and rebuilds it with the warnings.
     match forward(arguments) {
@@ -120,7 +132,8 @@ fn forward_after(arguments: Vec<OsString>, warnings: &str) -> Action {
 /// The final-newline warning of `git add` about `file`.
 const FILE_WARNING: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"file\",\"fix\":\"none\"}\n";
 
-/// Native queries, option errors and a bare `git` are forwarded exactly as written.
+/// Native queries,
+///  option errors and a bare `git` are forwarded exactly as written.
 #[test]
 fn invocations_git_answers_itself_are_forwarded_unchanged() {
     let root: PathBuf = fixture("entry-forward");
@@ -143,7 +156,8 @@ fn invocations_git_answers_itself_are_forwarded_unchanged() {
     remove(root.as_path());
 }
 
-/// Inspection commands are forwarded with their fixed transform, and controls never reach Git.
+/// Inspection commands are forwarded with their fixed transform,
+///  and controls never reach Git.
 #[test]
 fn inspection_commands_are_forwarded_without_wrapper_controls() {
     let root: PathBuf = fixture("entry-inspection");
@@ -209,7 +223,9 @@ fn inspection_commands_are_forwarded_without_wrapper_controls() {
     remove(root.as_path());
 }
 
-/// `git cli-git ...` is answered by the wrapper, also behind global options, and never forwarded.
+/// `git cli-git ...` is answered by the wrapper,
+///  also behind global options,
+///  and never forwarded.
 #[test]
 fn management_namespace_is_answered_by_the_wrapper() {
     let root: PathBuf = fixture("entry-management");
@@ -280,7 +296,8 @@ fn management_namespace_is_answered_by_the_wrapper() {
     remove(root.as_path());
 }
 
-/// An inspection command never reads repository configuration, even when it is invalid.
+/// An inspection command never reads repository configuration,
+///  even when it is invalid.
 #[test]
 fn inspection_commands_do_not_load_configuration() {
     let root: PathBuf = fixture("entry-skip-config");
@@ -306,7 +323,8 @@ fn inspection_commands_do_not_load_configuration() {
     remove(root.as_path());
 }
 
-/// A configuration-requiring command validates configuration, then runs its policies.
+/// A configuration-requiring command validates configuration,
+///  then runs its policies.
 #[test]
 fn policy_commands_validate_configuration_then_run_policies() {
     let root: PathBuf = fixture("entry-required");
@@ -362,7 +380,8 @@ fn policy_commands_validate_configuration_then_run_policies() {
     remove(root.as_path());
 }
 
-/// Outside a worktree there is no configuration file: the defaults apply and Git answers.
+/// Outside a worktree there is no configuration file:
+///  the defaults apply and Git answers.
 #[test]
 fn policy_commands_outside_a_worktree_use_defaults() {
     let root: PathBuf = fixture("entry-outside");

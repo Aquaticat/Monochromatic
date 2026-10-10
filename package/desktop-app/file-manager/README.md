@@ -87,7 +87,6 @@ Other tasks:
  `lint` (cargo check),
  `lint:clippy` (clippy,
  warnings denied),
-`lint:rust` (max-lines + require-rustdoc),
  `test` (cargo nextest).
 
 ## Platform notes

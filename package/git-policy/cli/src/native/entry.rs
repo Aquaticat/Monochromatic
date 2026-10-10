@@ -1,6 +1,13 @@
-//! What: Decide what one `git` invocation of the native wrapper does, and perform it.
-//! Why: The executable stays thin: it gathers process facts, asks this module for an
-//!      action, and performs it. The decision itself is testable without replacing
+//! What:
+//!  Decide what one `git` invocation of the native wrapper does,
+//!  and perform it.
+//! Why:
+//!  The executable stays thin:
+//!  it gathers process facts,
+//!  asks this module for an
+//!      action,
+//!  and performs it.
+//!  The decision itself is testable without replacing
 //!      the test process.
 //!
 //! In TS you'd write (pseudocode):
@@ -29,9 +36,11 @@ use super::scanner_selection::RULES_VARIABLE;
 use super::wrapped_command::{WrappedOutcome, run_wrapped_command};
 use super::wrapper_controls::{Controls, no_controls, strip_global_controls};
 use super::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  Arguments and environment values are never decoded.
+/// Why:
+///   Arguments and environment values are never decoded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,12 +52,17 @@ use std::io::Write;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
 use std::path::{Path, PathBuf};
 
-/// The management namespace: `git cli-git ...` is handled by the wrapper, never by Git.
+/// The management namespace:
+///  `git cli-git ...` is handled by the wrapper,
+///  never by Git.
 pub const MANAGEMENT_COMMAND: &str = "cli-git";
 
-/// What: Explain that another cli-git wrapper selected this executable as real Git.
+/// What:
+///  Explain that another cli-git wrapper selected this executable as real Git.
 ///       `&Path` borrows this executable's path for the message.
-/// Why:  Forwarding again would bounce between the two wrappers forever; stopping
+/// Why:
+///   Forwarding again would bounce between the two wrappers forever;
+///  stopping
 ///       names this executable so the user can fix PATH.
 ///
 /// In TS you'd write (pseudocode):
@@ -68,10 +82,15 @@ fn forwarded_to_self(own_executable: &Path) -> Action {
     );
 }
 
-/// What: The caller's home directory from the environment, if it names one.
+/// What:
+///  The caller's home directory from the environment,
+///  if it names one.
 ///       `Option<PathBuf>` is "an owned path or nothing".
-/// Why:  The tool caches exempt from linked-worktree enforcement live under the home
-///       directory; it comes from the injected environment, never from a fixed path.
+/// Why:
+///   The tool caches exempt from linked-worktree enforcement live under the home
+///       directory;
+///  it comes from the injected environment,
+///  never from a fixed path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -89,13 +108,20 @@ fn home_directory(environment: &[(OsString, OsString)]) -> Option<PathBuf> {
     return None;
 }
 
-/// What: Decide the action for one invocation from injected process facts.
+/// What:
+///  Decide the action for one invocation from injected process facts.
 ///       `&[OsString]` borrows the arguments after the program name;
 ///       `&[(OsString, OsString)]` borrows the environment as name/value pairs.
-/// Why:  Order matters. The recursion check runs before anything else. Wrapper controls
-///       written before the subcommand are removed first, because Git's own reading of
+/// Why:
+///   Order matters.
+///  The recursion check runs before anything else.
+///  Wrapper controls
+///       written before the subcommand are removed first,
+///  because Git's own reading of
 ///       the arguments stops at them and would hide the subcommand from every later
-///       decision. The management namespace is answered by the wrapper. Every other
+///       decision.
+///  The management namespace is answered by the wrapper.
+///  Every other
 ///       command goes through the wrapped-command lifecycle with real Git behind it.
 ///
 /// In TS you'd write (pseudocode):
@@ -191,10 +217,15 @@ pub fn plan_invocation(
     }
 }
 
-/// What: Run one invocation with the real process facts and return its exit code.
-///       `i32` is a signed 32-bit integer, the type of process exit codes.
-///       Returns only when Git was not started; a forwarded command never returns.
-/// Why:  This is everything the executable's `main` does; keeping it in the library
+/// What:
+///  Run one invocation with the real process facts and return its exit code.
+///       `i32` is a signed 32-bit integer,
+///  the type of process exit codes.
+///       Returns only when Git was not started;
+///  a forwarded command never returns.
+/// Why:
+///   This is everything the executable's `main` does;
+///  keeping it in the library
 ///       lets the same code be measured by tests and mutation runs.
 ///
 /// In TS you'd write (pseudocode):
@@ -246,10 +277,15 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
     }
 }
 
-/// What: Write text to an output stream, ignoring a closed stream.
+/// What:
+///  Write text to an output stream,
+///  ignoring a closed stream.
 ///       `&mut dyn Write` lends "any writable stream" (`dyn` means the concrete type is
-///       chosen at run time, like a TS interface value).
-/// Why:  The exit code already carries the result; a reader that went away must not
+///       chosen at run time,
+///  like a TS interface value).
+/// Why:
+///   The exit code already carries the result;
+///  a reader that went away must not
 ///       turn a diagnostic into a panic.
 ///
 /// In TS you'd write (pseudocode):
@@ -267,7 +303,8 @@ fn write_stream(stream: &mut dyn Write, text: &str) {
     let _ = stream.write_all(text.as_bytes());
 }
 
-/// Stop controls for a looping, missing or uninterpretable real Git.
+/// Stop controls for a looping,
+///  missing or uninterpretable real Git.
 #[cfg(test)]
 #[path = "entry_stop_tests.rs"]
 mod stop_tests;

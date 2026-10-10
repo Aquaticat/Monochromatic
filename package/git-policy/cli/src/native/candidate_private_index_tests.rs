@@ -1,7 +1,15 @@
-//! What: Controls for the private index copy: where it is made, what it holds, its times,
-//!       its permissions, and that it is removed on every path.
-//! Why: A copy with a fresh time would let a prediction miss a same-second edit, a copy in
-//!      a shared directory would expose staged entries, and a leftover directory would
+//! What:
+//!  Controls for the private index copy:
+//!  where it is made,
+//!  what it holds,
+//!  its times,
+//!       its permissions,
+//!  and that it is removed on every path.
+//! Why:
+//!  A copy with a fresh time would let a prediction miss a same-second edit,
+//!  a copy in
+//!      a shared directory would expose staged entries,
+//!  and a leftover directory would
 //!      accumulate in the Git directory.
 //!
 //! In TS you'd write (pseudocode):
@@ -18,7 +26,8 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-/// The entries of a directory, sorted by name.
+/// The entries of a directory,
+///  sorted by name.
 fn entries(directory: &Path) -> Vec<String> {
     let mut names: Vec<String> = Vec::new();
     for entry in std::fs::read_dir(directory).expect("readable directory") {
@@ -34,7 +43,8 @@ fn entries(directory: &Path) -> Vec<String> {
     return names;
 }
 
-/// The failure `create` returned, which the control requires.
+/// The failure `create` returned,
+///  which the control requires.
 fn creation_failure(real_index: &Path) -> CandidateError {
     match PrivateIndex::create(real_index) {
         Ok(created) => panic!("expected a failure, got {created:?}"),
@@ -42,8 +52,10 @@ fn creation_failure(real_index: &Path) -> CandidateError {
     }
 }
 
-/// The copy sits in a fresh private directory beside the real index, holds its bytes and
-/// times, and disappears with everything in it when dropped.
+/// The copy sits in a fresh private directory beside the real index,
+///  holds its bytes and
+/// times,
+///  and disappears with everything in it when dropped.
 #[test]
 fn the_copy_keeps_bytes_and_times_and_is_removed_on_drop() {
     let root: PathBuf = fixture("private-index-copy");
@@ -112,7 +124,8 @@ fn a_missing_real_index_needs_no_copy() {
     remove(root.as_path());
 }
 
-/// Every step that cannot be done is a private-index failure, and no directory is left behind.
+/// Every step that cannot be done is a private-index failure,
+///  and no directory is left behind.
 #[test]
 fn failures_leave_nothing_behind() {
     let root: PathBuf = fixture("private-index-failures");

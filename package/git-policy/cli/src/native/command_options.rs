@@ -1,6 +1,10 @@
-//! What: Read one Git command's arguments the way Git 2.56.0 `parse-options.c` reads them.
-//! Why: A policy that guesses which token is an option, a value or a path can be bypassed by a
-//!      spelling Git accepts. Every per-command module declares Git's own option table and
+//! What:
+//!  Read one Git command's arguments the way Git 2.56.0 `parse-options.c` reads them.
+//! Why:
+//!  A policy that guesses which token is an option,
+//!  a value or a path can be bypassed by a
+//!      spelling Git accepts.
+//!  Every per-command module declares Git's own option table and
 //!      this module walks the arguments exactly once with Git's rules.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,9 +12,14 @@
 //! // parseOptions({ args, table, mode, wrapperFlags }): ParsedOptions  (throws OptionError)
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", which is where every sibling file of this crate is declared.
-/// Why:  Long and short spellings follow different Git functions, so each lives in its own file.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  which is where every sibling file of this crate is declared.
+/// Why:
+///   Long and short spellings follow different Git functions,
+///  so each lives in its own file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,9 +28,15 @@
 /// ```
 use super::command_options_long::scan_long_option;
 use super::command_options_short::scan_short_cluster;
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  File names and messages may hold bytes that are not UTF-8; `String` would reject them.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   File names and messages may hold bytes that are not UTF-8;
+///  `String` would reject them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -29,10 +44,16 @@ use super::command_options_short::scan_short_cluster;
 /// ```
 use std::ffi::OsString;
 
-/// What: `enum Arity` lists how an option relates to a value. An `enum` is a closed set of
-///       named alternatives. `#[derive(...)]` asks the compiler to generate copying (`Clone`,
-///       `Copy`), debug printing (`Debug`) and `==` (`Eq`, `PartialEq`).
-/// Why:  Value consumption decides whether the next token is a path or an option value.
+/// What:
+///  `enum Arity` lists how an option relates to a value.
+///  An `enum` is a closed set of
+///       named alternatives.
+///  `#[derive(...)]` asks the compiler to generate copying (`Clone`,
+///       `Copy`),
+///  debug printing (`Debug`) and `==` (`Eq`,
+///  `PartialEq`).
+/// Why:
+///   Value consumption decides whether the next token is a path or an option value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,21 +61,37 @@ use std::ffi::OsString;
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Arity {
-    /// `PARSE_OPT_NOARG`: never takes a value; `--name=value` is an error.
+    /// `PARSE_OPT_NOARG`:
+    ///  never takes a value;
+    ///  `--name=value` is an error.
     None,
-    /// Takes the attached value, otherwise the next token (`get_arg`, parse-options.c:47-62).
+    /// Takes the attached value,
+    ///  otherwise the next token (`get_arg`,
+    ///  parse-options.c:47-62).
     Required,
-    /// `PARSE_OPT_OPTARG`: takes an attached value only, never the next token (203-204).
+    /// `PARSE_OPT_OPTARG`:
+    ///  takes an attached value only,
+    ///  never the next token (203-204).
     Optional,
-    /// `PARSE_OPT_LASTARG_DEFAULT`: like `Required`, but valid without a value when last (54-55).
+    /// `PARSE_OPT_LASTARG_DEFAULT`:
+    ///  like `Required`,
+    ///  but valid without a value when last (54-55).
     LastArgDefault,
 }
 
-/// What: `struct OptionSpec` is one row of a Git option table.
-///       `u16` is an unsigned 16-bit integer (siblings: `u8`, `u32`, `usize`).
-///       `Option<u8>` is "a byte or nothing"; `&'static str` is text baked into the program.
-/// Why:  `id` lets a command module ask about an option by a named constant instead of by
-///       table position. `u16` (not `usize`) keeps rows small; no table has 65 thousand rows.
+/// What:
+///  `struct OptionSpec` is one row of a Git option table.
+///       `u16` is an unsigned 16-bit integer (siblings:
+///  `u8`,
+///  `u32`,
+///  `usize`).
+///       `Option<u8>` is "a byte or nothing";
+///  `&'static str` is text baked into the program.
+/// Why:
+///   `id` lets a command module ask about an option by a named constant instead of by
+///       table position.
+///  `u16` (not `usize`) keeps rows small;
+///  no table has 65 thousand rows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -62,11 +99,15 @@ pub enum Arity {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct OptionSpec {
-    /// Identifier chosen by the command module; `UNREAD` when no fact reads the option.
+    /// Identifier chosen by the command module;
+    ///  `UNREAD` when no fact reads the option.
     pub id: u16,
-    /// Git `short_name`: the single letter after one dash.
+    /// Git `short_name`:
+    ///  the single letter after one dash.
     pub short: Option<u8>,
-    /// Git `long_name`: the spelling after two dashes; it may itself start with `no-`.
+    /// Git `long_name`:
+    ///  the spelling after two dashes;
+    ///  it may itself start with `no-`.
     pub long: Option<&'static str>,
     /// Value relationship.
     pub arity: Arity,
@@ -74,11 +115,14 @@ pub struct OptionSpec {
     pub negatable: bool,
 }
 
-/// Identifier of every row no command fact reads; such rows only supply arity.
+/// Identifier of every row no command fact reads;
+///  such rows only supply arity.
 pub const UNREAD: u16 = 0;
 
-/// What: `const fn` is a function the compiler can run while building a `const` table.
-/// Why:  One short call per row keeps each Git table readable beside the C source.
+/// What:
+///  `const fn` is a function the compiler can run while building a `const` table.
+/// Why:
+///   One short call per row keeps each Git table readable beside the C source.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,9 +144,15 @@ pub const fn row(
     };
 }
 
-/// What: Per-call switches matching Git's `enum parse_opt_flags`. `bool` is true or false.
-/// Why:  `git stash` keeps unknown options and stops at the first non-option; most commands
-///       do neither. `PARSE_OPT_KEEP_DASHDASH` needs no switch: the `--` index is always reported.
+/// What:
+///  Per-call switches matching Git's `enum parse_opt_flags`.
+///  `bool` is true or false.
+/// Why:
+///   `git stash` keeps unknown options and stops at the first non-option;
+///  most commands
+///       do neither.
+///  `PARSE_OPT_KEEP_DASHDASH` needs no switch:
+///  the `--` index is always reported.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,21 +160,36 @@ pub const fn row(
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ParseMode {
-    /// `PARSE_OPT_KEEP_UNKNOWN_OPT`: unknown options are kept, abbreviations are disabled.
+    /// `PARSE_OPT_KEEP_UNKNOWN_OPT`:
+    ///  unknown options are kept,
+    ///  abbreviations are disabled.
     pub keep_unknown: bool,
-    /// `PARSE_OPT_STOP_AT_NON_OPTION`: the first non-option ends option parsing.
+    /// `PARSE_OPT_STOP_AT_NON_OPTION`:
+    ///  the first non-option ends option parsing.
     pub stop_at_non_option: bool,
 }
 
-/// Flags `0`, the mode of `commit`, `add`, `push`, `clean`, `branch` and `status`.
+/// Flags `0`,
+///  the mode of `commit`,
+///  `add`,
+///  `push`,
+///  `clean`,
+///  `branch` and `status`.
 pub const DEFAULT_MODE: ParseMode = ParseMode {
     keep_unknown: false,
     stop_at_non_option: false,
 };
 
-/// What: Where an option's value sits. `usize` is the index type of lists (siblings: `u32`,
-///       `u64`); every standard list API indexes with `usize`.
-/// Why:  A value is reported by position, never copied, so its bytes stay exactly as given.
+/// What:
+///  Where an option's value sits.
+///  `usize` is the index type of lists (siblings:
+///  `u32`,
+///       `u64`);
+///  every standard list API indexes with `usize`.
+/// Why:
+///   A value is reported by position,
+///  never copied,
+///  so its bytes stay exactly as given.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -132,14 +197,19 @@ pub const DEFAULT_MODE: ParseMode = ParseMode {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum OptionValue {
-    /// `-mvalue` or `--message=value`: the value starts at byte `offset` of `token`.
+    /// `-mvalue` or `--message=value`:
+    ///  the value starts at byte `offset` of `token`.
     Attached { token: usize, offset: usize },
-    /// `-m value`: the whole following token is the value.
+    /// `-m value`:
+    ///  the whole following token is the value.
     Detached { token: usize },
 }
 
-/// What: One accepted use of a declared option.
-/// Why:  Git lets the last use win, so order and negation are kept for the command module.
+/// What:
+///  One accepted use of a declared option.
+/// Why:
+///   Git lets the last use win,
+///  so order and negation are kept for the command module.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -151,14 +221,18 @@ pub struct Occurrence {
     pub id: u16,
     /// True for a `--no-` form.
     pub negated: bool,
-    /// Position of the value, when one was taken.
+    /// Position of the value,
+    ///  when one was taken.
     pub value: Option<OptionValue>,
     /// Index of the token that spelled the option.
     pub token: usize,
 }
 
-/// What: One wrapper-only flag found where Git would have looked for an option.
-/// Why:  Only such positions may be removed before forwarding; values and paths stay.
+/// What:
+///  One wrapper-only flag found where Git would have looked for an option.
+/// Why:
+///   Only such positions may be removed before forwarding;
+///  values and paths stay.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -172,8 +246,12 @@ pub struct WrapperOccurrence {
     pub token: usize,
 }
 
-/// What: How option parsing ended; each variant holds the index of the ending token.
-/// Why:  Tokens after the boundary are never options, and commands treat `--` specially.
+/// What:
+///  How option parsing ended;
+///  each variant holds the index of the ending token.
+/// Why:
+///   Tokens after the boundary are never options,
+///  and commands treat `--` specially.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -187,13 +265,23 @@ pub enum Boundary {
     DashDash(usize),
     /// `--end-of-options` at this index (1119-1125).
     EndOfOptions(usize),
-    /// First non-option at this index, under `stop_at_non_option` (1015-1016).
+    /// First non-option at this index,
+    ///  under `stop_at_non_option` (1015-1016).
     NonOption(usize),
 }
 
-/// What: Everything learned from one argument region. `Vec<T>` is an owned, growable list
-///       (siblings: `&[T]`, a borrowed view, and `[T; N]`, a fixed-size array).
-/// Why:  The result outlives the scan and its lengths are unknown beforehand, so it owns lists.
+/// What:
+///  Everything learned from one argument region.
+///  `Vec<T>` is an owned,
+///  growable list
+///       (siblings:
+///  `&[T]`,
+///  a borrowed view,
+///  and `[T; N]`,
+///  a fixed-size array).
+/// Why:
+///   The result outlives the scan and its lengths are unknown beforehand,
+///  so it owns lists.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -206,7 +294,8 @@ pub struct ParsedOptions {
     pub occurrences: Vec<Occurrence>,
     /// Wrapper-only flags found in option position.
     pub wrapper: Vec<WrapperOccurrence>,
-    /// Tokens holding an undeclared option, only under `keep_unknown`.
+    /// Tokens holding an undeclared option,
+    ///  only under `keep_unknown`.
     pub unknown: Vec<usize>,
     /// Non-option tokens before the boundary.
     pub leading: Vec<usize>,
@@ -214,8 +303,11 @@ pub struct ParsedOptions {
     pub boundary: Boundary,
 }
 
-/// What: Why Git would refuse the region before running the command.
-/// Why:  The caller reports or forwards such a command line; it must never guess its facts.
+/// What:
+///  Why Git would refuse the region before running the command.
+/// Why:
+///   The caller reports or forwards such a command line;
+///  it must never guess its facts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -232,14 +324,22 @@ pub enum OptionErrorKind {
     MissingValue,
     /// `--flag=value` or `--no-option=value` (138-143).
     UnexpectedValue,
-    /// `-amend`: letters that spell a long option; Git asks about two dashes (622-640).
+    /// `-amend`:
+    ///  letters that spell a long option;
+    ///  Git asks about two dashes (622-640).
     SingleDashLongOption,
-    /// `-h`, `--help`, `--help-all` or a lone completion helper: Git prints and exits 0.
+    /// `-h`,
+    ///  `--help`,
+    ///  `--help-all` or a lone completion helper:
+    ///  Git prints and exits 0.
     HelpRequested,
 }
 
-/// What: One refusal, with the index of the token that caused it.
-/// Why:  A diagnostic can name the exact argument without this module rendering text for it.
+/// What:
+///  One refusal,
+///  with the index of the token that caused it.
+/// Why:
+///   A diagnostic can name the exact argument without this module rendering text for it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -253,15 +353,18 @@ pub struct OptionError {
     pub token: usize,
 }
 
-/// What: `impl std::fmt::Display for OptionError` supplies Rust's "print me" interface.
-/// Why:  Callers can show the refusal with ordinary formatting.
+/// What:
+///  `impl std::fmt::Display for OptionError` supplies Rust's "print me" interface.
+/// Why:
+///   Callers can show the refusal with ordinary formatting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// toString(): string { return `${kind} at argument ${token}`; }
 /// ```
 impl std::fmt::Display for OptionError {
-    /// `&self` borrows the error read-only; `&mut` lends the formatter for writing.
+    /// `&self` borrows the error read-only;
+    ///  `&mut` lends the formatter for writing.
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // `write!` is the standard formatting macro; `{:?}` prints the variant name.
         return write!(
@@ -275,9 +378,14 @@ impl std::fmt::Display for OptionError {
 /// An empty `impl` marks the type as a standard error value for generic handling.
 impl std::error::Error for OptionError {}
 
-/// What: Find a wrapper-only flag by exact byte spelling. `&[u8]` borrows bytes; `&[&[u8]]`
-///       borrows a list of byte spellings. The result is its list index or nothing.
-/// Why:  Wrapper flags are never abbreviated and never carry `=value`.
+/// What:
+///  Find a wrapper-only flag by exact byte spelling.
+///  `&[u8]` borrows bytes;
+///  `&[&[u8]]`
+///       borrows a list of byte spellings.
+///  The result is its list index or nothing.
+/// Why:
+///   Wrapper flags are never abbreviated and never carry `=value`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -296,10 +404,15 @@ fn wrapper_flag_index(token: &[u8], wrapper_flags: &[&[u8]]) -> Option<usize> {
     return None;
 }
 
-/// What: Tokenize one region in a single forward pass (`parse_options_step`,
-///       parse-options.c:995-1169). `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  One faithful scan replaces per-command guesses about option arity.
-/// Gotcha: Indexes in the result are relative to `arguments`, the region after the subcommand.
+/// What:
+///  Tokenize one region in a single forward pass (`parse_options_step`,
+///       parse-options.c:995-1169).
+///  `Result<A, B>` is "either success `A` or failure `B`".
+/// Why:
+///   One faithful scan replaces per-command guesses about option arity.
+/// Gotcha:
+///  Indexes in the result are relative to `arguments`,
+///  the region after the subcommand.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -386,7 +499,8 @@ pub fn parse_options(
     return Ok(parsed);
 }
 
-/// Synthetic-table cases, ported incumbent cases and typed refusals.
+/// Synthetic-table cases,
+///  ported incumbent cases and typed refusals.
 #[cfg(test)]
 #[path = "command_options_tests.rs"]
 mod tests;

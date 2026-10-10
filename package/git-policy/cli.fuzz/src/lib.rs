@@ -1,5 +1,8 @@
-//! What: Generators and invariants for the native cli-git wrapper's pure boundaries.
-//! Why: Fuzz targets and their generator controls call the same checks, so a property
+//! What:
+//!  Generators and invariants for the native cli-git wrapper's pure boundaries.
+//! Why:
+//!  Fuzz targets and their generator controls call the same checks,
+//!  so a property
 //!      proven to be reached by the controls is the property the fuzzer explores.
 //!
 //! In TS you'd write (pseudocode):
@@ -26,5 +29,8 @@ pub mod controls;
 /// Generated `git cat-file --batch` replies and the reply-reading invariants.
 pub mod batch;
 
-/// Index listings, staged deltas, `rulesFile` values and final-newline bytes, with their invariants.
+/// Index listings,
+///  staged deltas,
+///  `rulesFile` values and final-newline bytes,
+///  with their invariants.
 pub mod content;

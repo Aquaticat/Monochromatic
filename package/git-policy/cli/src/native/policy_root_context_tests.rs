@@ -1,6 +1,10 @@
-//! What: Controls for the root-context check over real candidates.
-//! Why: Only a top-level `CONTEXT.md` that enters the index is forbidden; a nested one and
-//!      a removal must pass, and unreadable candidates must fail rather than pass.
+//! What:
+//!  Controls for the root-context check over real candidates.
+//! Why:
+//!  Only a top-level `CONTEXT.md` that enters the index is forbidden;
+//!  a nested one and
+//!      a removal must pass,
+//!  and unreadable candidates must fail rather than pass.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -34,7 +38,9 @@ fn add_outcome(repo: &Path, values: &[&str]) -> PolicyOutcome {
     );
 }
 
-/// A top-level `CONTEXT.md` that is added or changed is one finding; a nested one, a
+/// A top-level `CONTEXT.md` that is added or changed is one finding;
+///  a nested one,
+///  a
 /// removal and other files are not.
 #[test]
 fn only_a_top_level_context_file_entering_the_index_is_forbidden() {

@@ -1,8 +1,11 @@
 //! Controlled watch slots prove generation filtering independently of subprocess scheduling luck.
 
-/// Private fields expose only an in-memory worker fixture, never an application debug callback.
+/// Private fields expose only an in-memory worker fixture,
+///  never an application debug callback.
 use super::{SearchReply, SearchWorker};
-/// Empty successful streams make reply identity, rather than filesystem content, the variable under test.
+/// Empty successful streams make reply identity,
+///  rather than filesystem content,
+///  the variable under test.
 use crate::search::SearchResults;
 /// Shared immutable replies keep their allocation alive across the watch-slot handoff.
 use std::{path::PathBuf, sync::Arc};
@@ -22,7 +25,8 @@ fn reply(generation: u64) -> Arc<SearchReply> {
     });
 }
 
-/// A queued old reply is consumed but rejected; an otherwise identical current reply is accepted.
+/// A queued old reply is consumed but rejected;
+///  an otherwise identical current reply is accepted.
 #[test]
 fn unread_reply_identity_must_equal_the_current_generation() {
     // What: each watch pair separates a publisher from its latest-value receiver.

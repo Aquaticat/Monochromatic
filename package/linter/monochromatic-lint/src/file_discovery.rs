@@ -1,17 +1,23 @@
-//! What: Discover supported source files from explicit native file/directory paths.
-//! Why: Ignore sources, hidden directories and I/O failures must be handled before language/configuration dispatch.
+//! What:
+//!  Discover supported source files from explicit native file/directory paths.
+//! Why:
+//!  Ignore sources,
+//!  hidden directories and I/O failures must be handled before language/configuration dispatch.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Walk one literal input root; glob expansion and per-file configuration matching are separate boundaries.
 //! ```
 
+/// Import the glob override builder that layers the crate's exclusions over ignore files.
 use ignore::overrides::{Override, OverrideBuilder};
 /// Import gitignore-aware traversal and its override-pattern compiler.
 use ignore::{DirEntry, WalkBuilder};
 /// Import deterministic path deduplication and native filesystem types.
 use std::collections::BTreeSet;
+/// Import the OS string type for file names that may not be valid UTF-8.
 use std::ffi::OsStr;
+/// Import the path types used to walk and compare filesystem locations.
 use std::path::{Path, PathBuf};
 
 /// Owned discovery failure rather than an unreadable path silently disappearing from the result.
@@ -32,11 +38,14 @@ impl std::fmt::Display for FileDiscoveryError {
 /// Integrate typed discovery failures with application error handling.
 impl std::error::Error for FileDiscoveryError {}
 
-/// Explicit controls for a literal-path walk, with no executable or callback configuration.
+/// Explicit controls for a literal-path walk,
+///  with no executable or callback configuration.
 pub struct DiscoveryOptions {
-    /// Invocation's absolute directory, used for relative ignore patterns.
+    /// Invocation's absolute directory,
+    ///  used for relative ignore patterns.
     pub cwd: PathBuf,
-    /// Disable user/repository ignores, but never walk Git's metadata directory.
+    /// Disable user/repository ignores,
+    ///  but never walk Git's metadata directory.
     pub no_ignore: bool,
     /// Extra exclusion globs supplied on the command line.
     pub ignore_patterns: Vec<String>,
@@ -44,7 +53,8 @@ pub struct DiscoveryOptions {
     pub ignore_paths: Vec<PathBuf>,
 }
 
-/// Check extension bytes through native OsStr equality, without lossy path conversion.
+/// Check extension bytes through native OsStr equality,
+///  without lossy path conversion.
 pub fn supported_source(path: &Path) -> bool {
     let extension: Option<&OsStr> = path.extension();
     return extension == Some(OsStr::new("rs"))
@@ -52,7 +62,8 @@ pub fn supported_source(path: &Path) -> bool {
         || extension == Some(OsStr::new("mdx"));
 }
 
-/// Git metadata is never source, even when user ignore files are disabled.
+/// Git metadata is never source,
+///  even when user ignore files are disabled.
 fn not_git_metadata(entry: &DirEntry) -> bool {
     return entry.file_name() != OsStr::new(".git");
 }
@@ -84,7 +95,8 @@ fn overrides(options: &DiscoveryOptions) -> Result<Override, FileDiscoveryError>
     }
 }
 
-/// Read supported files from an explicit file or directory, preserving native path bytes and stable ordering.
+/// Read supported files from an explicit file or directory,
+///  preserving native path bytes and stable ordering.
 pub fn discover_literal_path(
     path: &Path,
     options: &DiscoveryOptions,

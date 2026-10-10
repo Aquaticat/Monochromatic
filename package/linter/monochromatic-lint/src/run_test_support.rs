@@ -1,13 +1,19 @@
-//! What: Shared fixtures for the orchestration tests.
-//! Why: Every `run_*` test drives the production path over a disposable directory tree; building
-//! that tree, planning a file and decoding JSONL are the same few steps each time.
+//! What:
+//!  Shared fixtures for the orchestration tests.
+//! Why:
+//!  Every `run_*` test drives the production path over a disposable directory tree;
+//!  building
+//! that tree,
+//!  planning a file and decoding JSONL are the same few steps each time.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // write(root, 'doc/a.md', text); const output = run(root, ['--fix', 'doc'], '');
 //! ```
 
-/// Import the production command grammar, runner, planner and output model.
+/// Import the production command grammar,
+///  runner,
+///  planner and output model.
 use crate::{
     cli_options::CliOptions,
     run_command::run_command,
@@ -22,7 +28,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// The configuration file name, repeated here so fixtures do not depend on lookup internals.
+/// The configuration file name,
+///  repeated here so fixtures do not depend on lookup internals.
 pub(crate) const CONFIG: &str = "monochromatic-lint.config.jsonc";
 
 /// A configuration selecting every syntax-only Rust rule and every Markdown rule except the LFS rule.
@@ -48,7 +55,8 @@ pub(crate) const ALL_RULES: &str = r#"[
   } }
 ]"#;
 
-/// Write one file below a root, creating its parent directories.
+/// Write one file below a root,
+///  creating its parent directories.
 pub(crate) fn write(root: &Path, relative: &str, contents: &str) -> PathBuf {
     let path: PathBuf = root.join(relative);
     if let Some(parent) = path.parent() {
@@ -80,7 +88,8 @@ pub(crate) fn run(cwd: &Path, arguments: &[&str], stdin: &str) -> RunOutput {
     return run_command(&parsed, cwd, &mut input);
 }
 
-/// Decode JSONL into one value per non-empty line; a non-JSON line fails the test.
+/// Decode JSONL into one value per non-empty line;
+///  a non-JSON line fails the test.
 pub(crate) fn records(text: &str) -> Vec<serde_json::Value> {
     let mut values: Vec<serde_json::Value> = Vec::<serde_json::Value>::new();
     for line in text.lines() {
@@ -94,7 +103,8 @@ pub(crate) fn records(text: &str) -> Vec<serde_json::Value> {
     return values;
 }
 
-/// The `code` of every record, in output order.
+/// The `code` of every record,
+///  in output order.
 pub(crate) fn codes(text: &str) -> Vec<String> {
     let mut found: Vec<String> = Vec::<String>::new();
     for record in records(text) {
@@ -103,7 +113,8 @@ pub(crate) fn codes(text: &str) -> Vec<String> {
     return found;
 }
 
-/// Plan one file through the production store, with nearest-file lookup from the working directory.
+/// Plan one file through the production store,
+///  with nearest-file lookup from the working directory.
 pub(crate) fn plan(cwd: &Path, relative: &str) -> FilePlan {
     let mut store: ConfigStore = ConfigStore::new(cwd, None).expect("store");
     match store.plan(Path::new(relative)).expect("planning succeeds") {

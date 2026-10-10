@@ -1,7 +1,9 @@
 //! Native image updates and source reading-state presentation.
 
-/// What: Child modules can borrow their parent's private state and generated UI.
-/// Why: Keep one document owner while separating input from rendering.
+/// What:
+///  Child modules can borrow their parent's private state and generated UI.
+/// Why:
+///  Keep one document owner while separating input from rendering.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -14,9 +16,11 @@ use ide_app::annotation_layout::lay_out;
 use ide_app::find_navigation::paint_ranges;
 /// Only matches inside the materialized rows and horizontal tile become native rectangles.
 use ide_app::find_paint::rectangles;
-/// Selected-text ink is chosen from the selection fill, not from the color scheme.
+/// Selected-text ink is chosen from the selection fill,
+///  not from the color scheme.
 use ide_app::selection_ink::{legible_ink, luminance};
-/// Physical viewport description for shared shaping, and the rectangles a frame hands to the window.
+/// Physical viewport description for shared shaping,
+///  and the rectangles a frame hands to the window.
 use ide_app::shaped_text::{ReadingRect, Viewport};
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
@@ -27,8 +31,12 @@ use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 /// UI callbacks share state without cross-thread synchronization.
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
-/// What: `const` names a compile-time value; `f32` is a 32-bit float of logical pixels (sibling `f64`).
-/// Why: The scrollable width ends this far after the widest line, so a caret at that line's end
+/// What:
+///  `const` names a compile-time value;
+///  `f32` is a 32-bit float of logical pixels (sibling `f64`).
+/// Why:
+///  The scrollable width ends this far after the widest line,
+///  so a caret at that line's end
 /// is inside the view instead of being cut off at its right edge.
 ///
 /// In TS you'd write (pseudocode):
@@ -42,10 +50,21 @@ fn rgba(color: slint::Color) -> [u8; 4] {
     return [color.red(), color.green(), color.blue(), color.alpha()];
 }
 
-/// What: `[u8; 4]` is a fixed array of four bytes, red, green, blue, alpha (siblings `Vec<u8>`, growable,
-/// and `&[u8]`, borrowed); `Color::from_argb_u8` builds a toolkit color from them, alpha first, and
+/// What:
+///  `[u8; 4]` is a fixed array of four bytes,
+///  red,
+///  green,
+///  blue,
+///  alpha (siblings `Vec<u8>`,
+///  growable,
+/// and `&[u8]`,
+///  borrowed);
+///  `Color::from_argb_u8` builds a toolkit color from them,
+///  alpha first,
+///  and
 /// `Brush::from` wraps it as the fill type window properties hold.
-/// Why: Inks chosen by native code are handed to the markup as window properties.
+/// Why:
+///  Inks chosen by native code are handed to the markup as window properties.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,8 +76,11 @@ fn brush(color: [u8; 4]) -> slint::Brush {
     ));
 }
 
-/// What: Copy a frame's rectangles into the window's row type; `&[ReadingRect]` lends the list.
-/// Why: Selection and find rectangles reach the markup as model rows.
+/// What:
+///  Copy a frame's rectangles into the window's row type;
+///  `&[ReadingRect]` lends the list.
+/// Why:
+///  Selection and find rectangles reach the markup as model rows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -77,7 +99,8 @@ fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
     return rows;
 }
 
-/// Render shared shaped rows, releasing state before any Slint setter can reenter.
+/// Render shared shaped rows,
+///  releasing state before any Slint setter can reenter.
 pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let factor = window.window().scale_factor();
     // The palette's selection ink follows the color scheme while its selection fill does not,

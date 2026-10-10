@@ -1,14 +1,19 @@
-//! What: Real Git 2.56.0 controls for the three copied tables and a differential of the
+//! What:
+//!  Real Git 2.56.0 controls for the three copied tables and a differential of the
 //!       `git branch` creation fact against what the binary does to a repository.
-//! Why: Whether `git branch` creates depends on a count of action options that no test
-//!      written by hand covers; here Git itself decides every case.
+//! Why:
+//!  Whether `git branch` creates depends on a count of action options that no test
+//!      written by hand covers;
+//!  here Git itself decides every case.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // for (const args of cases) expect(parse(args).createsBranch).toBe(await gitCreatedABranch(args));
 //! ```
 
-/// The parser, the tables, the oracles and the real-Git fixture helpers.
+/// The parser,
+///  the tables,
+///  the oracles and the real-Git fixture helpers.
 use super::BranchCreationCommand::Branch;
 use super::{BranchCreationRegion, parse_branch_creation_region};
 use crate::command_branch_table::BRANCH_TABLE;
@@ -22,8 +27,11 @@ use crate::command_test_support::{
 use std::path::{Path, PathBuf};
 use std::process::Output;
 
-/// One entry per `;`: no option, every `git branch` option in a representative spelling,
-/// and three spellings Git refuses. A space separates an option from its detached value.
+/// One entry per `;`:
+///  no option,
+///  every `git branch` option in a representative spelling,
+/// and three spellings Git refuses.
+///  A space separates an option from its detached value.
 const OPTIONS: &str = ";-v;-q;-t;--track=inherit;--no-track;--set-upstream;--no-set-upstream;\
     -u main;--set-upstream-to=main;--no-set-upstream-to;--unset-upstream;--color;\
     --color=never;-r;-a;--contains;--contains=main;--no-contains=main;--with=main;\
@@ -33,21 +41,28 @@ const OPTIONS: &str = ";-v;-q;-t;--track=inherit;--no-track;--set-upstream;--no-
     --no-merged=main;--forked=main;--column;--sort=refname;--points-at=main;--no-points-at;\
     -i;--recurse-submodules;--no-recurse-submodules;--format=x;--bogus;--no-remotes;-x";
 
-/// Entries also compared with zero and with three names, where the name count decides.
+/// Entries also compared with zero and with three names,
+///  where the name count decides.
 const EVERY_COUNT: &str = ";-q;-t;-f;-c;-C;-l;-d;-m;--show-current";
 
-/// Options that select an action, write a variable another option writes, or clear one.
+/// Options that select an action,
+///  write a variable another option writes,
+///  or clear one.
 const INTERACTING: &str = "-t;--no-track;--set-upstream;--no-set-upstream;-u main;\
     --no-set-upstream-to;-r;-a;--contains=main;-d;-D;--no-delete;-m;--no-move;-c;-C;\
     --no-copy;-l;--no-list;--show-current;--edit-description;--unset-upstream;\
     --delete-merged=nomatch;--dry-run;--no-dry-run;-f;--points-at=main;--no-points-at;\
     --recurse-submodules;--no-recurse-submodules;-x";
 
-/// Options whose effect depends on a second option: each is paired with every entry of
-/// `INTERACTING`, in both orders.
+/// Options whose effect depends on a second option:
+///  each is paired with every entry of
+/// `INTERACTING`,
+///  in both orders.
 const PARTNERS: &str = "-c;-a;--set-upstream;--dry-run;--recurse-submodules";
 
-/// How many argument lists were compared, created a branch, and were refused.
+/// How many argument lists were compared,
+///  created a branch,
+///  and were refused.
 struct Tally {
     runs: usize,
     created: usize,
@@ -74,7 +89,8 @@ fn tables_match_git() {
     remove(directory.as_path());
 }
 
-/// Names of the branches stored as loose refs, sorted.
+/// Names of the branches stored as loose refs,
+///  sorted.
 fn heads(root: &Path) -> Vec<String> {
     let mut names: Vec<String> = Vec::<String>::new();
     for entry in std::fs::read_dir(root.join(".git/refs/heads")).expect("branch directory") {
@@ -85,7 +101,9 @@ fn heads(root: &Path) -> Vec<String> {
     return names;
 }
 
-/// A repository on `main` with an older branch `other`. Returns the fixture directory, the
+/// A repository on `main` with an older branch `other`.
+///  Returns the fixture directory,
+///  the
 /// repository root and the `git update-ref --stdin` lines that put both branches back.
 fn branch_fixture(name: &str) -> (PathBuf, PathBuf, String) {
     let directory: PathBuf = fixture(name);
@@ -110,8 +128,10 @@ fn branch_fixture(name: &str) -> (PathBuf, PathBuf, String) {
     return (directory, root, restore);
 }
 
-/// Run `git branch <arguments>`. Report whether a branch appeared beside `main` and `other`
-/// (a rename or a deletion removes one of them) and Git's exit code, then put both back.
+/// Run `git branch <arguments>`.
+///  Report whether a branch appeared beside `main` and `other`
+/// (a rename or a deletion removes one of them) and Git's exit code,
+///  then put both back.
 fn observe(root: &Path, restore: &str, arguments: &[&str]) -> (bool, Option<i32>) {
     let mut full: Vec<&str> = vec!["branch"];
     full.extend_from_slice(arguments);
@@ -178,8 +198,11 @@ fn compare(root: &Path, restore: &str, arguments: &[&str], tally: &mut Tally) {
     check(arguments, created, code, tally);
 }
 
-/// Compare one option list followed by two names. A creation takes `<new> <start>` and a
-/// copy takes `<old> <new>`, so Git creates in one of the two orders; the parser reads
+/// Compare one option list followed by two names.
+///  A creation takes `<new> <start>` and a
+/// copy takes `<old> <new>`,
+///  so Git creates in one of the two orders;
+///  the parser reads
 /// counts and must give both orders that same answer.
 fn compare_two_names(root: &Path, restore: &str, options: &[&str], tally: &mut Tally) {
     let forward: Vec<&str> = joined(options, &["fresh", "other"]);
@@ -193,8 +216,11 @@ fn compare_two_names(root: &Path, restore: &str, options: &[&str], tally: &mut T
     check(backward.as_slice(), created, code_backward, tally);
 }
 
-/// Every option alone, before and after one name and before two names, and the options
-/// where the count decides with zero and three names, creates exactly when the parser says.
+/// Every option alone,
+///  before and after one name and before two names,
+///  and the options
+/// where the count decides with zero and three names,
+///  creates exactly when the parser says.
 #[test]
 fn single_branch_options_match_git() {
     let (directory, root, restore): (PathBuf, PathBuf, String) = branch_fixture("branch-single");
@@ -250,7 +276,9 @@ fn single_branch_options_match_git() {
     remove(directory.as_path());
 }
 
-/// Every partner with every interacting option, in both orders, before one name.
+/// Every partner with every interacting option,
+///  in both orders,
+///  before one name.
 #[test]
 fn paired_branch_options_match_git() {
     let (directory, root, restore): (PathBuf, PathBuf, String) = branch_fixture("branch-paired");

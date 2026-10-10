@@ -1,5 +1,9 @@
-//! What: The exact notice of every refusal, and the mapping from the engine's answer.
-//! Why: The notice is the only thing telling a person why their command did not run; a
+//! What:
+//!  The exact notice of every refusal,
+//!  and the mapping from the engine's answer.
+//! Why:
+//!  The notice is the only thing telling a person why their command did not run;
+//!  a
 //!      wrong or empty subject would send them looking in the wrong place.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,7 +11,8 @@
 //! // expect(unportedNotice({ kind: 'commit-transaction' }, 'commit')).toBe('cli-git: the commit transaction ...\n');
 //! ```
 
-/// The refusal list, its notice and the engine answer it is built from.
+/// The refusal list,
+///  its notice and the engine answer it is built from.
 use super::{Unported, unported_from_unavailable, unported_notice};
 use crate::policy_engine::Unavailable;
 use crate::policy_registry::PolicyId;
@@ -21,7 +26,8 @@ fn notice(subject: &str, command: &str) -> String {
     );
 }
 
-/// Each reason has its own subject, and the command is named as typed.
+/// Each reason has its own subject,
+///  and the command is named as typed.
 #[test]
 fn every_reason_names_what_is_missing() {
     for (what, command, subject) in [

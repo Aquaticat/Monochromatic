@@ -1,5 +1,8 @@
-//! What: JSONL stream routing and exit status for completed lint findings.
-//! Why: Quiet/silent output must not change failure accounting, and stdin fixing has its established source-output exception.
+//! What:
+//!  JSONL stream routing and exit status for completed lint findings.
+//! Why:
+//!  Quiet/silent output must not change failure accounting,
+//!  and stdin fixing has its established source-output exception.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,18 +19,23 @@ pub struct OutputOptions {
     pub quiet: bool,
     /// Hide all diagnostic records without changing exit status.
     pub silent: bool,
-    /// Optional limit on warnings, including ones hidden by quiet/silent.
+    /// Optional limit on warnings,
+    ///  including ones hidden by quiet/silent.
     pub max_warnings: Option<usize>,
 }
 
 /// Exact output bytes and process status returned to the executable boundary.
 #[derive(Debug, Eq, PartialEq)]
 pub struct RunOutput {
-    /// Ordinary JSONL, or fixed input text for stdin-fix mode.
+    /// Ordinary JSONL,
+    ///  or fixed input text for stdin-fix mode.
     pub stdout: String,
-    /// JSONL findings in stdin-fix mode; ordinary finding output leaves this empty.
+    /// JSONL findings in stdin-fix mode;
+    ///  ordinary finding output leaves this empty.
     pub stderr: String,
-    /// 0 for an accepted run, 1 for failed policy findings, 2 for incomplete processing.
+    /// 0 for an accepted run,
+    ///  1 for failed policy findings,
+    ///  2 for incomplete processing.
     pub exit_code: u8,
 }
 

@@ -1,16 +1,27 @@
-//! The watch thread's part for the language servers on each wake: the feed being set or cleared, removed
-//! folders, finished scans, and starting the next scan on its own thread.
+//! The watch thread's part for the language servers on each wake:
+//!  the feed being set or cleared,
+//!  removed
+//! folders,
+//!  finished scans,
+//!  and starting the next scan on its own thread.
 
-/// The record and wake of the event handler, the scan, the servers' bookkeeping, and the shared state.
+/// The record and wake of the event handler,
+///  the scan,
+///  the servers' bookkeeping,
+///  and the shared state.
 use super::{
     record::wake,
     server_scan::{Scan, bases, scan},
     server_watch::{ServerWatches, forget_below},
     shared::{ServerChange, ServerChangeKind, ServerRequests, Shared, lock},
 };
-/// What: ordered sets of owned paths; `Arc`/`Mutex` share the state; `SyncSender` wakes the watch thread;
+/// What:
+///  ordered sets of owned paths;
+///  `Arc`/`Mutex` share the state;
+///  `SyncSender` wakes the watch thread;
 ///       `JoinHandle` joins the scan thread.
-/// Why: Scans run on their own thread and hand their results back through the shared state.
+/// Why:
+///  Scans run on their own thread and hand their results back through the shared state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,35 +33,48 @@ use std::{
     sync::{Arc, Mutex, mpsc::SyncSender},
     thread::{self, JoinHandle},
 };
-/// The queue into the language worker, for the creations a newly watched folder may have missed.
+/// The queue into the language worker,
+///  for the creations a newly watched folder may have missed.
 use tokio::sync::mpsc::UnboundedSender;
 
 /// Everything the watch thread keeps for the language servers between wakes.
 #[derive(Default)]
 pub(super) struct Servers {
-    /// Desired, live, and waiting folders.
+    /// Desired,
+    ///  live,
+    ///  and waiting folders.
     pub(super) watches: ServerWatches,
-    /// Some server registered file watchers, so folders are watched and changes forwarded.
+    /// Some server registered file watchers,
+    ///  so folders are watched and changes forwarded.
     active: bool,
-    /// The next scan starts watching: its files are not reported as created.
+    /// The next scan starts watching:
+    ///  its files are not reported as created.
     initial: bool,
-    /// Which period of watching the next scan belongs to; clearing the feed starts a new one.
+    /// Which period of watching the next scan belongs to;
+    ///  clearing the feed starts a new one.
     generation: u64,
-    /// What: `Option<JoinHandle<()>>` is the running scan thread, or `None`.
-    /// Why: One scan runs at a time; requests that arrive meanwhile wait for the next one.
+    /// What:
+    ///  `Option<JoinHandle<()>>` is the running scan thread,
+    ///  or `None`.
+    /// Why:
+    ///  One scan runs at a time;
+    ///  requests that arrive meanwhile wait for the next one.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// scanning?: Thread;
     /// ```
     scanning: Option<JoinHandle<()>>,
-    /// Paths that may be new folders, waiting for the next scan.
+    /// Paths that may be new folders,
+    ///  waiting for the next scan.
     candidates: BTreeSet<PathBuf>,
-    /// Folders to scan again, waiting for the next scan.
+    /// Folders to scan again,
+    ///  waiting for the next scan.
     rescans: BTreeSet<PathBuf>,
 }
 
-/// Run the scans of `bases` on their own thread, because ripgrep can take a while on a large project,
+/// Run the scans of `bases` on their own thread,
+///  because ripgrep can take a while on a large project,
 /// and hand the results back through the shared state.
 fn spawn_scan(
     root: PathBuf,
@@ -96,9 +120,13 @@ fn spawn_scan(
     }
 }
 
-/// Replace what was known below the scanned folder with what the scan found. Files in folders that had
-/// no watch before, or only a provisional one whose events were held back, appeared without any event
-/// the servers heard, so they hear about them as created.
+/// Replace what was known below the scanned folder with what the scan found.
+///  Files in folders that had
+/// no watch before,
+///  or only a provisional one whose events were held back,
+///  appeared without any event
+/// the servers heard,
+///  so they hear about them as created.
 fn apply_scan(
     servers: &mut ServerWatches,
     found: Scan,
@@ -148,9 +176,15 @@ fn apply_scan(
     }
 }
 
-/// What: Apply what arrived for the servers since the last wake: the feed set or cleared, removed folders,
-///       and finished scans. Returns true when the desired folders changed.
-/// Why: The servers' watches are reconciled right after the tree's, from these desired folders.
+/// What:
+///  Apply what arrived for the servers since the last wake:
+///  the feed set or cleared,
+///  removed folders,
+///       and finished scans.
+///  Returns true when the desired folders changed.
+/// Why:
+///  The servers' watches are reconciled right after the tree's,
+///  from these desired folders.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -203,7 +237,8 @@ pub(super) fn prepare(
     return desired_changed;
 }
 
-/// One scan at a time: requests that arrived during the running one start the next.
+/// One scan at a time:
+///  requests that arrived during the running one start the next.
 pub(super) fn start_scan(
     servers: &mut Servers,
     root: &Path,
@@ -238,7 +273,8 @@ pub(super) fn start_scan(
 
 /// Joining the scan thread.
 impl Servers {
-    /// Join a finished or still running scan; it ends on its own once ripgrep finishes.
+    /// Join a finished or still running scan;
+    ///  it ends on its own once ripgrep finishes.
     pub(super) fn finish(&mut self) {
         if let Some(handle) = self.scanning.take()
             && handle.join().is_err()

@@ -1,12 +1,22 @@
-//! What: The form and file scope of a `git config` region, read as Git 2.56.0 reads it.
-//! Why: The require-root policy exempts `git config` when it works on the per-user or
-//!      system file, or lists. Whether `--global` is that option or a value being stored
-//!      depends on the form: `git config user.name --global` writes the text `--global`
+//! What:
+//!  The form and file scope of a `git config` region,
+//!  read as Git 2.56.0 reads it.
+//! Why:
+//!  The require-root policy exempts `git config` when it works on the per-user or
+//!      system file,
+//!  or lists.
+//!  Whether `--global` is that option or a value being stored
+//!      depends on the form:
+//!  `git config user.name --global` writes the text `--global`
 //!      into the repository's own configuration.
 //!
-//! Gotcha: Git also refuses two different actions of the form without a subcommand word
-//!         (`--list --get`); that conflict is not modeled, so such a region still reports
-//!         its listing. Git then runs nothing.
+//! Gotcha:
+//!  Git also refuses two different actions of the form without a subcommand word
+//!         (`--list --get`);
+//!  that conflict is not modeled,
+//!  so such a region still reports
+//!         its listing.
+//!  Git then runs nothing.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -14,8 +24,11 @@
 //! // parseConfigRegion(['user.name', '--global']).global === false
 //! ```
 
-/// What: Bring the option groups, the tokenizer and its questions into this file.
-/// Why:  This module only picks the form's groups and interprets what the tokenizer found.
+/// What:
+///  Bring the option groups,
+///  the tokenizer and its questions into this file.
+/// Why:
+///   This module only picks the form's groups and interprets what the tokenizer found.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,9 +47,13 @@ use super::command_options_query::{is_enabled, is_stated};
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: The form `cmd_config` dispatches to (builtin/config.c:1633-1660). An `enum` is a
+/// What:
+///  The form `cmd_config` dispatches to (builtin/config.c:1633-1660).
+///  An `enum` is a
 ///       closed set of named alternatives.
-/// Why:  `Legacy` is the form without a subcommand word, where actions are options such as
+/// Why:
+///   `Legacy` is the form without a subcommand word,
+///  where actions are options such as
 ///       `--list` and `--get`.
 ///
 /// In TS you'd write (pseudocode):
@@ -59,13 +76,18 @@ pub enum ConfigForm {
     RemoveSection,
     /// `git config edit`.
     Edit,
-    /// No subcommand word: the action is an option or implied by the argument count.
+    /// No subcommand word:
+    ///  the action is an option or implied by the argument count.
     Legacy,
 }
 
-/// What: Facts of one `git config` region. `Vec<WrapperOccurrence>` is an owned growable
+/// What:
+///  Facts of one `git config` region.
+///  `Vec<WrapperOccurrence>` is an owned growable
 ///       list of wrapper-only flags.
-/// Why:  The require-root decision reads the scope and the listing action; the caller
+/// Why:
+///   The require-root decision reads the scope and the listing action;
+///  the caller
 ///       removes its wrapper-only flags by the positions reported here.
 ///
 /// In TS you'd write (pseudocode):
@@ -80,15 +102,23 @@ pub struct ConfigRegion {
     pub global: bool,
     /// `--system` is on after every use was applied.
     pub system: bool,
-    /// The command lists variables: `git config list`, or `-l`/`--list` without a
+    /// The command lists variables:
+    ///  `git config list`,
+    ///  or `-l`/`--list` without a
     /// subcommand word.
     pub lists: bool,
-    /// Wrapper-only flags in option position; `token` indexes the region.
+    /// Wrapper-only flags in option position;
+    ///  `token` indexes the region.
     pub wrapper: Vec<WrapperOccurrence>,
 }
 
-/// What: The form a first region token selects, or nothing. `&[u8]` borrows the token.
-/// Why:  Git matches the seven words exactly, without abbreviation (parse-options.c
+/// What:
+///  The form a first region token selects,
+///  or nothing.
+///  `&[u8]` borrows the token.
+/// Why:
+///   Git matches the seven words exactly,
+///  without abbreviation (parse-options.c
 ///       `parse_subcommand`).
 ///
 /// In TS you'd write (pseudocode):
@@ -116,9 +146,14 @@ fn form_of_word(word: &[u8]) -> Option<ConfigForm> {
     return None;
 }
 
-/// What: The complete option table of one form, assembled from Git's groups in Git's
-///       order. `Vec<OptionSpec>` is an owned list, built once per parse.
-/// Why:  The completion control compares each assembled table with the binary's.
+/// What:
+///  The complete option table of one form,
+///  assembled from Git's groups in Git's
+///       order.
+///  `Vec<OptionSpec>` is an owned list,
+///  built once per parse.
+/// Why:
+///   The completion control compares each assembled table with the binary's.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -156,13 +191,23 @@ pub fn config_table(form: ConfigForm) -> Vec<OptionSpec> {
     return table;
 }
 
-/// What: Parse the region after `git config`. `Result<A, B>` is "either success `A` or
-///       failure `B`"; `wrapper_flags` are the caller's wrapper-only spellings.
-/// Why:  Git looks at the first token only to pick the form. A subcommand word selects its
-///       table; a leading `--` is dropped by that first look, so the form without a
-///       subcommand then reads the rest as options again (config.c:1643-1660). Leading
-///       wrapper flags are skipped first, because the wrapper removes them before Git
-///       runs: `git config --cli-git-keep-going list` reaches Git as `git config list`.
+/// What:
+///  Parse the region after `git config`.
+///  `Result<A, B>` is "either success `A` or
+///       failure `B`";
+///  `wrapper_flags` are the caller's wrapper-only spellings.
+/// Why:
+///   Git looks at the first token only to pick the form.
+///  A subcommand word selects its
+///       table;
+///  a leading `--` is dropped by that first look,
+///  so the form without a
+///       subcommand then reads the rest as options again (config.c:1643-1660).
+///  Leading
+///       wrapper flags are skipped first,
+///  because the wrapper removes them before Git
+///       runs:
+///  `git config --cli-git-keep-going list` reaches Git as `git config list`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -237,7 +282,9 @@ pub fn parse_config_region(
     });
 }
 
-/// Forms, scopes and option positions, with real Git 2.56.0 controls.
+/// Forms,
+///  scopes and option positions,
+///  with real Git 2.56.0 controls.
 #[cfg(test)]
 #[path = "command_config_tests.rs"]
 mod tests;

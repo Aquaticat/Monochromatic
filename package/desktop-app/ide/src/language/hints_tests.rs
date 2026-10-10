@@ -1,4 +1,5 @@
-//! Inlay request ranges and label shaping, without a server.
+//! Inlay request ranges and label shaping,
+//!  without a server.
 
 use super::{HintKind, HintWindow, request_lines, shape};
 use crate::language::identity::ServerIdentity;

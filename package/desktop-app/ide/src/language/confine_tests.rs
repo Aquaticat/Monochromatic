@@ -1,4 +1,7 @@
-//! The confined launch's exact command lines, settings overrides, state naming, and refusals.
+//! The confined launch's exact command lines,
+//!  settings overrides,
+//!  state naming,
+//!  and refusals.
 
 use super::recipe::{confined_settings, recipe};
 use super::{confine_with, private_state, state_directory};

@@ -1,10 +1,18 @@
-//! Inlay placement probe: how far inline hint text would move source glyphs, tab ends, and vertical caret
-//! targets, measured with the production shaper on the hints real servers returned for the inspection fixtures.
+//! Inlay placement probe:
+//!  how far inline hint text would move source glyphs,
+//!  tab ends,
+//!  and vertical caret
+//! targets,
+//!  measured with the production shaper on the hints real servers returned for the inspection fixtures.
 //!
 //! Inline placement is simulated by splicing each label into the line at its position and shaping the result,
-//! which is what a widened line looks like. Run with `--nocapture` to print the measurements the README cites.
+//! which is what a widened line looks like.
+//!  Run with `--nocapture` to print the measurements the README cites.
 
-/// Canonical source, the production shaper, its tab stops, and the production vertical movement.
+/// Canonical source,
+///  the production shaper,
+///  its tab stops,
+///  and the production vertical movement.
 use ide_app::{
     document::{Document, ReadingPosition},
     shaped_text::TextShaper,
@@ -12,16 +20,24 @@ use ide_app::{
     vertical_motion::vertical,
 };
 
-/// What: One hint as the inspection run recorded it: the line text before it, its label, and its right padding.
-///       `&'static str` is text baked into the test binary (sibling: owned `String`).
-/// Why: The real hints come from `inspect:language` evidence; keeping them as data keeps the probe honest.
+/// What:
+///  One hint as the inspection run recorded it:
+///  the line text before it,
+///  its label,
+///  and its right padding.
+///       `&'static str` is text baked into the test binary (sibling:
+///  owned `String`).
+/// Why:
+///  The real hints come from `inspect:language` evidence;
+///  keeping them as data keeps the probe honest.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type RecordedHint = { before: string; label: string; paddingRight: boolean };
 /// ```
 struct RecordedHint {
-    /// Line text in front of the hint, as recorded in the event log.
+    /// Line text in front of the hint,
+    ///  as recorded in the event log.
     before: &'static str,
     /// Label as the server sent it.
     label: &'static str,
@@ -29,10 +45,19 @@ struct RecordedHint {
     padding_right: bool,
 }
 
-/// What: Splice the labels into `line` at their positions, returning the widened text and, for every source
-///       character boundary of `line`, its character index in the widened text. `Vec<usize>` is a growable list
-///       of indices (siblings: fixed `[usize; N]`, borrowed `&[usize]`).
-/// Why: Inline virtual text is shaped as part of the line; the map finds each source character in it.
+/// What:
+///  Splice the labels into `line` at their positions,
+///  returning the widened text and,
+///  for every source
+///       character boundary of `line`,
+///  its character index in the widened text.
+///  `Vec<usize>` is a growable list
+///       of indices (siblings:
+///  fixed `[usize; N]`,
+///  borrowed `&[usize]`).
+/// Why:
+///  Inline virtual text is shaped as part of the line;
+///  the map finds each source character in it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,7 +105,8 @@ fn splice(line: &str, hints: &[RecordedHint]) -> (String, Vec<usize>) {
     return (widened, map);
 }
 
-/// Logical x of every source boundary of one line, shaped alone with the production shaper.
+/// Logical x of every source boundary of one line,
+///  shaped alone with the production shaper.
 fn boundaries(shaper: &mut TextShaper, text: &str, map: &[usize]) -> Vec<f32> {
     let document = Document::new(text);
     let row = shaper.row(&document, 0, 1.0);
@@ -91,9 +117,15 @@ fn boundaries(shaper: &mut TextShaper, text: &str, map: &[usize]) -> Vec<f32> {
     return result;
 }
 
-/// What: Largest horizontal movement of any source boundary when the labels are spliced in, and the movement
-///       of the line end. The answer is a pair (tuple) of logical pixel distances.
-/// Why: A late hint snapshot, or one dropped as stale on reload, moves every glyph after its first hint by this much.
+/// What:
+///  Largest horizontal movement of any source boundary when the labels are spliced in,
+///  and the movement
+///       of the line end.
+///  The answer is a pair (tuple) of logical pixel distances.
+/// Why:
+///  A late hint snapshot,
+///  or one dropped as stale on reload,
+///  moves every glyph after its first hint by this much.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

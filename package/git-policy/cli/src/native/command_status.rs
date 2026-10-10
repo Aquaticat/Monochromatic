@@ -1,6 +1,11 @@
-//! What: The complete `git status` option table of Git 2.56.0, the machine-readable fact
-//!       read from it, and the reading of `advice.statusHints` set before the subcommand.
-//! Why: The status-hints transform must not override an explicit caller choice, and the
+//! What:
+//!  The complete `git status` option table of Git 2.56.0,
+//!  the machine-readable fact
+//!       read from it,
+//!  and the reading of `advice.statusHints` set before the subcommand.
+//! Why:
+//!  The status-hints transform must not override an explicit caller choice,
+//!  and the
 //!      wrapper adds no note to output a program will parse.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,9 +13,14 @@
 //! // parseStatusPreRegion(pre).hasStatusHintsOverride; parseStatusPostRegion(post).isMachineReadable
 //! ```
 
-/// What: Bring the tokenizer, its table builder, its questions and the list of global
+/// What:
+///  Bring the tokenizer,
+///  its table builder,
+///  its questions and the list of global
 ///       options that take a separate value into this file.
-/// Why:  The post-subcommand region uses Git's status table; the pre-subcommand region is
+/// Why:
+///   The post-subcommand region uses Git's status table;
+///  the pre-subcommand region is
 ///       walked with Git's global option arity.
 ///
 /// In TS you'd write (pseudocode):
@@ -26,19 +36,26 @@ use super::global_arguments::VALUE_OPTIONS;
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// `-s`, `--short`.
+/// `-s`,
+///  `--short`.
 pub const SHORT: u16 = 1;
 /// `--porcelain[=<version>]`.
 pub const PORCELAIN: u16 = 2;
 /// `--long`.
 pub const LONG: u16 = 3;
-/// `-z`, `--null`.
+/// `-z`,
+///  `--null`.
 pub const NULL: u16 = 4;
 
-/// What: Rows of `builtin_status_options` (builtin/commit.c:1548-1599), in source order.
+/// What:
+///  Rows of `builtin_status_options` (builtin/commit.c:1548-1599),
+///  in source order.
 ///       `&[OptionSpec]` is a borrowed table baked into the program.
-/// Why:  Four rows take an optional value (`PARSE_OPT_OPTARG`), so a token after them is a
-///       pathspec, not their value.
+/// Why:
+///   Four rows take an optional value (`PARSE_OPT_OPTARG`),
+///  so a token after them is a
+///       pathspec,
+///  not their value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,11 +97,17 @@ pub const STATUS_TABLE: &[OptionSpec] = &[
     ),
 ];
 
-/// Config key, lower-cased, whose explicit setting the transform respects.
+/// Config key,
+///  lower-cased,
+///  whose explicit setting the transform respects.
 const ADVICE_KEY: &[u8] = b"advice.statushints";
 
-/// What: Facts of the region after `status`. `bool` is true or false.
-/// Why:  Short, porcelain and NUL-terminated output is parsed by programs.
+/// What:
+///  Facts of the region after `status`.
+///  `bool` is true or false.
+/// Why:
+///   Short,
+///  porcelain and NUL-terminated output is parsed by programs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -92,15 +115,22 @@ const ADVICE_KEY: &[u8] = b"advice.statushints";
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct StatusRegion {
-    /// The final format is short or porcelain, or `-z` is on.
+    /// The final format is short or porcelain,
+    ///  or `-z` is on.
     pub machine_readable: bool,
-    /// Wrapper-only flags in option position; `flag` indexes the caller's list.
+    /// Wrapper-only flags in option position;
+    ///  `flag` indexes the caller's list.
     pub wrapper: Vec<WrapperOccurrence>,
 }
 
-/// What: Whether the final status format is short or porcelain.
-/// Why:  `--short`, `--porcelain` and `--long` write one shared variable, so only the last
-///       counts; `--long` and every negated form select human-readable output.
+/// What:
+///  Whether the final status format is short or porcelain.
+/// Why:
+///   `--short`,
+///  `--porcelain` and `--long` write one shared variable,
+///  so only the last
+///       counts;
+///  `--long` and every negated form select human-readable output.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -120,8 +150,12 @@ fn has_machine_format(parsed: &ParsedOptions) -> bool {
     return machine;
 }
 
-/// What: Parse the region after `status`. `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  A region Git itself would refuse yields the refusal, never a guessed fact.
+/// What:
+///  Parse the region after `status`.
+///  `Result<A, B>` is "either success `A` or failure `B`".
+/// Why:
+///   A region Git itself would refuse yields the refusal,
+///  never a guessed fact.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -140,8 +174,12 @@ pub fn parse_status_region(
     });
 }
 
-/// What: Whether `key` names `advice.statusHints`. `&[u8]` borrows the key bytes.
-/// Why:  Git compares section and variable names without regard to ASCII case, and the
+/// What:
+///  Whether `key` names `advice.statusHints`.
+///  `&[u8]` borrows the key bytes.
+/// Why:
+///   Git compares section and variable names without regard to ASCII case,
+///  and the
 ///       comparison must not decode bytes that may not be UTF-8.
 ///
 /// In TS you'd write (pseudocode):
@@ -152,9 +190,12 @@ fn is_advice_key(key: &[u8]) -> bool {
     return key.eq_ignore_ascii_case(ADVICE_KEY);
 }
 
-/// What: Byte index of the first (`last == false`) or last (`last == true`) `=` in `bytes`.
+/// What:
+///  Byte index of the first (`last == false`) or last (`last == true`) `=` in `bytes`.
 ///       `Option<usize>` is "an index or nothing".
-/// Why:  `-c name=value` splits at the first `=` (config.c:495); `--config-env=name=var`
+/// Why:
+///   `-c name=value` splits at the first `=` (config.c:495);
+///  `--config-env=name=var`
 ///       splits at the last (config.c:511).
 ///
 /// In TS you'd write (pseudocode):
@@ -177,10 +218,14 @@ fn equals_index(bytes: &[u8], last: bool) -> Option<usize> {
     return found;
 }
 
-/// What: Whether one configuration parameter sets `advice.statusHints`. `parameter` is the
+/// What:
+///  Whether one configuration parameter sets `advice.statusHints`.
+///  `parameter` is the
 ///       text after `-c` or after `--config-env`.
-/// Why:  A bare `-c advice.statusHints` is Git's boolean-true spelling and is as explicit
-///       as the valued form; `--config-env` always needs `=<variable>`.
+/// Why:
+///   A bare `-c advice.statusHints` is Git's boolean-true spelling and is as explicit
+///       as the valued form;
+///  `--config-env` always needs `=<variable>`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -195,11 +240,17 @@ fn sets_advice_key(parameter: &[u8], from_environment: bool) -> bool {
     return !from_environment && is_advice_key(parameter);
 }
 
-/// What: Whether the caller configured `advice.statusHints` in the global options before
-///       the subcommand. `global_prefix` is exactly those tokens.
-/// Why:  `git -c advice.statusHints=true status` keeps Git's hints; the wrapper neither
+/// What:
+///  Whether the caller configured `advice.statusHints` in the global options before
+///       the subcommand.
+///  `global_prefix` is exactly those tokens.
+/// Why:
+///   `git -c advice.statusHints=true status` keeps Git's hints;
+///  the wrapper neither
 ///       overrides the choice nor adds its own note.
-/// Gotcha: Divergence from the incumbent: `--config-env` sets the same key and counts too.
+/// Gotcha:
+///  Divergence from the incumbent:
+///  `--config-env` sets the same key and counts too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -241,7 +292,8 @@ pub fn has_status_hints_override(global_prefix: &[OsString]) -> bool {
     return false;
 }
 
-/// Facts in every accepted spelling, and real-Git controls of the table.
+/// Facts in every accepted spelling,
+///  and real-Git controls of the table.
 #[cfg(test)]
 #[path = "command_status_tests.rs"]
 mod tests;

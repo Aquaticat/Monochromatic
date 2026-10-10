@@ -1,7 +1,12 @@
-//! What: Controls for the final-newline rule, its preserved paths and its check over real
+//! What:
+//!  Controls for the final-newline rule,
+//!  its preserved paths and its check over real
 //!       candidates.
-//! Why: The rule decides which bytes a fix writes; a wrong normalization would rewrite
-//!      binary or fixture files, and a missed candidate kind would let a file through.
+//! Why:
+//!  The rule decides which bytes a fix writes;
+//!  a wrong normalization would rewrite
+//!      binary or fixture files,
+//!  and a missed candidate kind would let a file through.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -27,8 +32,12 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-/// Missing and extra final LF bytes are corrected; empty, NUL-holding, non-UTF-8 and
-/// canonical bytes are left alone; interior bytes are never touched.
+/// Missing and extra final LF bytes are corrected;
+///  empty,
+///  NUL-holding,
+///  non-UTF-8 and
+/// canonical bytes are left alone;
+///  interior bytes are never touched.
 #[test]
 fn the_rule_requires_exactly_one_final_line_feed() {
     let unchanged: [&[u8]; 7] = [
@@ -64,7 +73,8 @@ fn the_rule_requires_exactly_one_final_line_feed() {
     }
 }
 
-/// The five preserved path families, each with its depth condition and a near miss.
+/// The five preserved path families,
+///  each with its depth condition and a near miss.
 #[test]
 fn preserved_paths_keep_their_bytes() {
     for path in [
@@ -97,7 +107,8 @@ fn preserved_paths_keep_their_bytes() {
     }
 }
 
-/// The finding about the file at `path`, offering a fix or not.
+/// The finding about the file at `path`,
+///  offering a fix or not.
 fn finding_with(path: &str, fix_available: bool) -> PolicyFinding {
     return PolicyFinding {
         code: FINAL_NEWLINE_CODE,
@@ -124,7 +135,8 @@ fn correction(path: &str, mode: CandidateMode, before: &[u8], after: &[u8]) -> C
 }
 
 /// The check reports every regular or executable candidate whose bytes are not canonical,
-/// in candidate order, and nothing else.
+/// in candidate order,
+///  and nothing else.
 #[test]
 fn the_check_reports_each_noncanonical_text_file() {
     let root: PathBuf = fixture("final-newline-check");

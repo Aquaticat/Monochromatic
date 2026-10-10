@@ -1,6 +1,11 @@
-//! What: Disposable-repository controls for committed versions, invalidation and listing failures.
-//! Why: A landed commit is judged by what it changed, a fix or replay must retire earlier
-//!      listings, and a listing that cannot be trusted must fail instead of shrinking.
+//! What:
+//!  Disposable-repository controls for committed versions,
+//!  invalidation and listing failures.
+//! Why:
+//!  A landed commit is judged by what it changed,
+//!  a fix or replay must retire earlier
+//!      listings,
+//!  and a listing that cannot be trusted must fail instead of shrinking.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,7 +13,8 @@
 //! ```
 #![cfg(unix)]
 
-/// Import the store under test, its sibling fixtures and shared fixtures.
+/// Import the store under test,
+///  its sibling fixtures and shared fixtures.
 use super::CandidateStore;
 use super::tests::{at, paths, rev_parse, staged_changes, store, write};
 use crate::candidate_error::{CandidateError, CandidateFailure};
@@ -19,7 +25,9 @@ use crate::test_support::{fixture, git, remove, repository};
 use std::path::PathBuf;
 use std::rc::Rc;
 
-/// A committed version lists what the commit changed: against its parent, against nothing for a root commit.
+/// A committed version lists what the commit changed:
+///  against its parent,
+///  against nothing for a root commit.
 #[test]
 fn committed_version_lists_the_commit_delta() {
     let root: PathBuf = fixture("store-committed");
@@ -59,7 +67,8 @@ fn committed_version_lists_the_commit_delta() {
     remove(root.as_path());
 }
 
-/// A root commit lists all of its entries, and a merge lists each parent's comparison with the first record winning.
+/// A root commit lists all of its entries,
+///  and a merge lists each parent's comparison with the first record winning.
 #[test]
 fn root_and_merge_commits_are_listed() {
     let root: PathBuf = fixture("store-merge");
@@ -109,7 +118,8 @@ fn root_and_merge_commits_are_listed() {
     remove(root.as_path());
 }
 
-/// Within a generation a version is listed once; after `invalidate` it is listed again and earlier candidates are refused.
+/// Within a generation a version is listed once;
+///  after `invalidate` it is listed again and earlier candidates are refused.
 #[test]
 fn invalidation_retires_versions_and_their_candidates() {
     let root: PathBuf = fixture("store-invalidate");
@@ -181,7 +191,8 @@ fn invalidation_retires_versions_and_their_candidates() {
     remove(root.as_path());
 }
 
-/// Different sources are kept apart: each is listed for itself and returned again on request.
+/// Different sources are kept apart:
+///  each is listed for itself and returned again on request.
 #[test]
 fn versions_are_kept_per_source() {
     let root: PathBuf = fixture("store-sources");

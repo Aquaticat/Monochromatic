@@ -1,9 +1,19 @@
-//! What:     This Rust module adds batch methods to [`Regex`] and [`RegexSet`]. A Rust
-//!           module is closest to a private TypeScript file inside a package. The public
-//!           methods return `Vec<bool>` values (owned growable arrays of booleans, not
-//!           borrowed `&[bool]` slices or fixed `[bool; N]` arrays), and the hidden hooks
-//!           let the benchmark force scalar, interleaved, tight, and Sheng layouts.
-//! Why:     This file is the Rust module that groups the batch implementation, so the
+//! What:
+//!      This Rust module adds batch methods to [`Regex`] and [`RegexSet`].
+//!  A Rust
+//!           module is closest to a private TypeScript file inside a package.
+//!  The public
+//!           methods return `Vec<bool>` values (owned growable arrays of booleans,
+//!  not
+//!           borrowed `&[bool]` slices or fixed `[bool; N]` arrays),
+//!  and the hidden hooks
+//!           let the benchmark force scalar,
+//!  interleaved,
+//!  tight,
+//!  and Sheng layouts.
+//! Why:
+//!      This file is the Rust module that groups the batch implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,8 +21,13 @@
 //! // module batch: see exported functions and types below.
 //! ```
 
-/// What:    Imports the public matcher types this module extends.
-/// Why:     The code below uses `CheckedFull`, `Regex`, `RegexSet` directly; importing from
+/// What:
+///     Imports the public matcher types this module extends.
+/// Why:
+///      The code below uses `CheckedFull`,
+///  `Regex`,
+///  `RegexSet` directly;
+///  importing from
 ///          `./super` keeps each call site focused on the matcher logic instead of the full Rust
 ///          path.
 ///
@@ -22,8 +37,11 @@
 /// ```
 use super::{CheckedFull, Regex, RegexSet};
 
-/// What:    Imports the anchored line-start match used by the per-line resolution.
-/// Why:     The code below uses `line_start_match` directly; importing from `crate/build` keeps
+/// What:
+///     Imports the anchored line-start match used by the per-line resolution.
+/// Why:
+///      The code below uses `line_start_match` directly;
+///  importing from `crate/build` keeps
 ///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -34,9 +52,15 @@ use crate::build::line_start_match;
 
 /// Lines advanced together per exact-length bucket in [`Regex::is_match_batch_bucketed`].
 ///
-/// What: the bucket width, thirty-two. Why: the cross-arch sweep found 32 the sweet
-/// spot, enough independent transition chains to saturate memory-level parallelism while
-/// the per-column bookkeeping stays small; 16 is slightly behind and 64 regresses.
+/// What:
+///  the bucket width,
+///  thirty-two.
+///  Why:
+///  the cross-arch sweep found 32 the sweet
+/// spot,
+///  enough independent transition chains to saturate memory-level parallelism while
+/// the per-column bookkeeping stays small;
+///  16 is slightly behind and 64 regresses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,8 +68,10 @@ use crate::build::line_start_match;
 /// ```
 const BATCH_BUCKET: usize = 32;
 
-/// What:    Many-lines matching for a single compiled pattern.
-/// Why:     The program attaches these functions to the named Rust type so callers can use
+/// What:
+///     Many-lines matching for a single compiled pattern.
+/// Why:
+///      The program attaches these functions to the named Rust type so callers can use
 ///          method syntax.
 ///
 /// In TS you'd write (pseudocode):
@@ -53,11 +79,18 @@ const BATCH_BUCKET: usize = 32;
 /// // Methods are written inside a class or as functions that take the value.
 /// ```
 impl Regex {
-    /// Reports, per line, whether the pattern matches a substring of that line.
+    /// Reports,
+    ///  per line,
+    ///  whether the pattern matches a substring of that line.
     ///
-    /// What: returns one verdict per input line. Why: the batch face of
-    /// [`Regex::is_match`]; a table-backed pattern with no required literal over a large
-    /// batch runs the Sheng permute kernel, every other shape loops the per-line match.
+    /// What:
+    ///  returns one verdict per input line.
+    ///  Why:
+    ///  the batch face of
+    /// [`Regex::is_match`];
+    ///  a table-backed pattern with no required literal over a large
+    /// batch runs the Sheng permute kernel,
+    ///  every other shape loops the per-line match.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -68,7 +101,7 @@ impl Regex {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
     /// let re = forbidden_regex::compile("AKIA[A-Z2-7]{4}").unwrap();
     /// let lines: &[&[u8]] = &[b"AKIA2345", b"nope"];
     /// assert_eq!(re.is_match_batch(lines), vec![true, false]);
@@ -79,17 +112,31 @@ impl Regex {
         return out
     }
 
-    /// Reports per line, grouping equal-length lines so the DFA advances many at once.
+    /// Reports per line,
+    ///  grouping equal-length lines so the DFA advances many at once.
     ///
-    /// What: for a table-backed pattern, sorts the line indices by length, runs the
+    /// What:
+    ///  for a table-backed pattern,
+    ///  sorts the line indices by length,
+    ///  runs the
     /// branchless equal-length kernel over each exact-length bucket [`BATCH_BUCKET`] lines
-    /// at a time, and scatters verdicts back to input order; other back-ends fall through
-    /// to the per-line loop. Why: a single full-scan DFA is latency-bound per line, but a
+    /// at a time,
+    ///  and scatters verdicts back to input order;
+    ///  other back-ends fall through
+    /// to the per-line loop.
+    ///  Why:
+    ///  a single full-scan DFA is latency-bound per line,
+    ///  but a
     /// bucket of equal-length lines exposes independent transition chains the core
-    /// overlaps. Measured 1.04x-1.09x on x86 and 1.32x-1.37x on arm64 over the per-line
-    /// loop in the low-match regime a secret scanner sees; it does not help when most
-    /// lines match (the per-line loop early-exits) so it is opt-in, not the default. The
-    /// internal sort is near-linear on already length-sorted input, so a caller that
+    /// overlaps.
+    ///  Measured 1.04x-1.09x on x86 and 1.32x-1.37x on arm64 over the per-line
+    /// loop in the low-match regime a secret scanner sees;
+    ///  it does not help when most
+    /// lines match (the per-line loop early-exits) so it is opt-in,
+    ///  not the default.
+    ///  The
+    /// internal sort is near-linear on already length-sorted input,
+    ///  so a caller that
     /// pre-buckets pays almost nothing for it.
     ///
     /// In TS you'd write (pseudocode):
@@ -101,7 +148,7 @@ impl Regex {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
     /// let re = forbidden_regex::compile("[0-9a-f]{32}").unwrap();
     /// let lines: &[&[u8]] = &[b"deadbeefdeadbeefdeadbeefdeadbeef", b"short", b"nope"];
     /// assert_eq!(re.is_match_batch_bucketed(lines), re.is_match_batch(lines));
@@ -132,10 +179,17 @@ impl Regex {
         return out
     }
 
-    /// Benchmark hook: forces the scalar per-line kernel.
+    /// Benchmark hook:
+    ///  forces the scalar per-line kernel.
     ///
-    /// What: runs the scalar batch on the table back-end, else the ordinary per-line
-    /// loop. Why: the baseline the interleaved, tight, and Sheng kernels are timed against.
+    /// What:
+    ///  runs the scalar batch on the table back-end,
+    ///  else the ordinary per-line
+    /// loop.
+    ///  Why:
+    ///  the baseline the interleaved,
+    ///  tight,
+    ///  and Sheng kernels are timed against.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -153,10 +207,14 @@ impl Regex {
         return out
     }
 
-    /// Benchmark hook: forces the interleaved-scalar kernel.
+    /// Benchmark hook:
+    ///  forces the interleaved-scalar kernel.
     ///
-    /// What: runs the interleaved batch on the table back-end, else the per-line loop.
-    /// Why: measures the memory-level parallelism of N independent scalar transition chains
+    /// What:
+    ///  runs the interleaved batch on the table back-end,
+    ///  else the per-line loop.
+    /// Why:
+    ///  measures the memory-level parallelism of N independent scalar transition chains
     /// against the scalar baseline.
     ///
     /// In TS you'd write (pseudocode):
@@ -175,10 +233,15 @@ impl Regex {
         return out
     }
 
-    /// Benchmark hook: reports whether this pattern compiled to the table DFA back-end.
+    /// Benchmark hook:
+    ///  reports whether this pattern compiled to the table DFA back-end.
     ///
-    /// What: true when the engine is `EngineKind::Table`. Why: the batch kernels only
-    /// diverge on a table back-end, so the benchmark confirms a microbench pattern is
+    /// What:
+    ///  true when the engine is `EngineKind::Table`.
+    ///  Why:
+    ///  the batch kernels only
+    /// diverge on a table back-end,
+    ///  so the benchmark confirms a microbench pattern is
     /// one before trusting its kernel-versus-kernel numbers.
     ///
     /// In TS you'd write (pseudocode):
@@ -192,10 +255,15 @@ impl Regex {
         return self.engine.table_dfa().is_some()
     }
 
-    /// Benchmark hook: interleaved-scalar kernel at an explicit bucket width `N`.
+    /// Benchmark hook:
+    ///  interleaved-scalar kernel at an explicit bucket width `N`.
     ///
-    /// What: forces the interleaved batch at `N` lanes on the table back-end, else the
-    /// per-line loop. Why: sweeps how bucket size trades memory-level parallelism against
+    /// What:
+    ///  forces the interleaved batch at `N` lanes on the table back-end,
+    ///  else the
+    /// per-line loop.
+    ///  Why:
+    ///  sweeps how bucket size trades memory-level parallelism against
     /// per-chunk overhead.
     ///
     /// In TS you'd write (pseudocode):
@@ -214,10 +282,15 @@ impl Regex {
         return out
     }
 
-    /// Benchmark hook: branchless equal-length kernel at bucket width `N`.
+    /// Benchmark hook:
+    ///  branchless equal-length kernel at bucket width `N`.
     ///
-    /// What: forces the tight batch at `N` lanes on the table back-end; `lines` must all
-    /// share one byte length (an exact-length bucket). Why: measures the MLP ceiling once
+    /// What:
+    ///  forces the tight batch at `N` lanes on the table back-end;
+    ///  `lines` must all
+    /// share one byte length (an exact-length bucket).
+    ///  Why:
+    ///  measures the MLP ceiling once
     /// the per-lane early-exit branches are removed.
     ///
     /// In TS you'd write (pseudocode):
@@ -236,11 +309,17 @@ impl Regex {
         return out
     }
 
-    /// Benchmark hook: Sheng in-register transition kernel (no bucketing needed).
+    /// Benchmark hook:
+    ///  Sheng in-register transition kernel (no bucketing needed).
     ///
-    /// What: forces the Sheng per-line scan on a table back-end of at most 64 states, else
-    /// the per-line loop. Why: measures the permute-transition path that attacks per-byte
-    /// latency directly, a different axis from the across-lines bucketed kernels.
+    /// What:
+    ///  forces the Sheng per-line scan on a table back-end of at most 64 states,
+    ///  else
+    /// the per-line loop.
+    ///  Why:
+    ///  measures the permute-transition path that attacks per-byte
+    /// latency directly,
+    ///  a different axis from the across-lines bucketed kernels.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -258,11 +337,16 @@ impl Regex {
         return out
     }
 
-    /// Benchmark hook: two-byte composed Sheng kernel.
+    /// Benchmark hook:
+    ///  two-byte composed Sheng kernel.
     ///
-    /// What: forces the two-byte Sheng scan on a qualifying table back-end (position-
-    /// independent acceptance, at most 64 states and 16 classes), else the scalar batch.
-    /// Why: measures whether one permute per two bytes beats the one-byte Sheng.
+    /// What:
+    ///  forces the two-byte Sheng scan on a qualifying table back-end (position-
+    /// independent acceptance,
+    ///  at most 64 states and 16 classes),
+    ///  else the scalar batch.
+    /// Why:
+    ///  measures whether one permute per two bytes beats the one-byte Sheng.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -281,8 +365,10 @@ impl Regex {
     }
 }
 
-/// What:    Many-lines matching for a whole ruleset.
-/// Why:     The program attaches these functions to the named Rust type so callers can use
+/// What:
+///     Many-lines matching for a whole ruleset.
+/// Why:
+///      The program attaches these functions to the named Rust type so callers can use
 ///          method syntax.
 ///
 /// In TS you'd write (pseudocode):
@@ -290,10 +376,17 @@ impl Regex {
 /// // Methods are written inside a class or as functions that take the value.
 /// ```
 impl RegexSet {
-    /// Reports, per line, whether any rule matches a substring of that line.
+    /// Reports,
+    ///  per line,
+    ///  whether any rule matches a substring of that line.
     ///
-    /// What: one verdict per input line, equal to calling [`RegexSet::is_match`] on
-    /// each. Why: the batch face of the set matcher; the consumer scans a file by
+    /// What:
+    ///  one verdict per input line,
+    ///  equal to calling [`RegexSet::is_match`] on
+    /// each.
+    ///  Why:
+    ///  the batch face of the set matcher;
+    ///  the consumer scans a file by
     /// handing every line at once.
     ///
     /// In TS you'd write (pseudocode):
@@ -305,7 +398,7 @@ impl RegexSet {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
     /// let set = forbidden_regex::RegexSet::new(&["AKIA[A-Z2-7]{4}", "secret"]).unwrap();
     /// let lines: &[&[u8]] = &[b"AKIA2345", b"all clear", b"a secret here"];
     /// assert_eq!(set.is_match_batch(lines), vec![true, false, true]);
@@ -316,28 +409,48 @@ impl RegexSet {
 
     /// Returns the `(line index, rule index)` pairs the lines in `buf` match.
     ///
-    /// What: one full-width SIMD prefilter sweep over `buf` marks which lines
-    /// hold a seeded literal, then each line's byte range from its `starts`
-    /// offset to the next offset (or `buf`'s end for the last line), with the
-    /// trailing newline and one trailing carriage return excluded, is resolved:
-    /// the seeded-rule gate runs only on a swept-candidate line, while the
+    /// What:
+    ///  one full-width SIMD prefilter sweep over `buf` marks which lines
+    /// hold a seeded literal,
+    ///  then each line's byte range from its `starts`
+    /// offset to the next offset (or `buf`'s end for the last line),
+    ///  with the
+    /// trailing newline and one trailing carriage return excluded,
+    ///  is resolved:
+    /// the seeded-rule gate runs only on a swept-candidate line,
+    ///  while the
     /// line-start-anchored and literal-free rules run on every non-empty line,
-    /// giving the same ids [`RegexSet::matches`] would. Every matching rule id
-    /// becomes a pair, an empty line (after that exclusion) yields none, and
+    /// giving the same ids [`RegexSet::matches`] would.
+    ///  Every matching rule id
+    /// becomes a pair,
+    ///  an empty line (after that exclusion) yields none,
+    ///  and
     /// pairs are emitted in ascending line index with each line's ids in
-    /// `matches()` order. The line index is the 0-based position in `starts`,
-    /// which the scanner maps to its own 1-based output. Why: the negative-line
-    /// cost is the per-line gate scan, and short lines starve the SIMD prefilter;
+    /// `matches()` order.
+    ///  The line index is the 0-based position in `starts`,
+    /// which the scanner maps to its own 1-based output.
+    ///  Why:
+    ///  the negative-line
+    /// cost is the per-line gate scan,
+    ///  and short lines starve the SIMD prefilter;
     /// one long-buffer sweep runs it at full width and skips the gate on every
-    /// line with no seed. The newline separators sitting in `buf` between lines
-    /// keep a seed from matching across a line boundary, so the sweep never
-    /// attributes a cross-line hit. The reference oracle is a per-line `matches()`
-    /// loop, kept in the batch tests.
+    /// line with no seed.
+    ///  The newline separators sitting in `buf` between lines
+    /// keep a seed from matching across a line boundary,
+    ///  so the sweep never
+    /// attributes a cross-line hit.
+    ///  The reference oracle is a per-line `matches()`
+    /// loop,
+    ///  kept in the batch tests.
     ///
     /// # Preconditions
     ///
-    /// `starts` ascends, its first offset is 0, and every offset indexes within
-    /// `buf`. The caller guarantees this, so it is not checked at runtime.
+    /// `starts` ascends,
+    ///  its first offset is 0,
+    ///  and every offset indexes within
+    /// `buf`.
+    ///  The caller guarantees this,
+    ///  so it is not checked at runtime.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -348,7 +461,7 @@ impl RegexSet {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
     /// let set = forbidden_regex::RegexSet::new(&["AKIA[A-Z2-7]{4}", "secret"]).unwrap();
     /// let buf = b"AKIA2345\nall clear\na secret here";
     /// let starts = [0usize, 9, 19];
@@ -407,13 +520,21 @@ impl RegexSet {
         return hits
     }
 
-    /// Benchmark hook: batch via one concatenated-buffer gate sweep.
+    /// Benchmark hook:
+    ///  batch via one concatenated-buffer gate sweep.
     ///
-    /// What: joins the lines with `\n` separators, sweeps the SIMD prefilter once over
-    /// the whole buffer to mark which lines hold a seed, then resolves each line. Why:
-    /// the negative-line cost is the per-line prefilter, and short lines starve Teddy's
-    /// SIMD; one long-buffer sweep runs it at full width and skips the per-line gate on
-    /// every line with no seed. Equivalent to [`RegexSet::is_match_batch`] line for line.
+    /// What:
+    ///  joins the lines with `\n` separators,
+    ///  sweeps the SIMD prefilter once over
+    /// the whole buffer to mark which lines hold a seed,
+    ///  then resolves each line.
+    ///  Why:
+    /// the negative-line cost is the per-line prefilter,
+    ///  and short lines starve Teddy's
+    /// SIMD;
+    ///  one long-buffer sweep runs it at full width and skips the per-line gate on
+    /// every line with no seed.
+    ///  Equivalent to [`RegexSet::is_match_batch`] line for line.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -444,11 +565,18 @@ impl RegexSet {
             .collect()
     }
 
-    /// Marks, by one prefilter sweep over `buf`, which lines contain a seeded literal.
+    /// Marks,
+    ///  by one prefilter sweep over `buf`,
+    ///  which lines contain a seeded literal.
     ///
-    /// What: walks the prefilter from hit to hit, attributing each to its line and
-    /// jumping to the next line start. Why: one SIMD pass replaces a per-line prefilter
-    /// call, and jumping past a flagged line keeps the sweep over the negative gaps.
+    /// What:
+    ///  walks the prefilter from hit to hit,
+    ///  attributing each to its line and
+    /// jumping to the next line start.
+    ///  Why:
+    ///  one SIMD pass replaces a per-line prefilter
+    /// call,
+    ///  and jumping past a flagged line keeps the sweep over the negative gaps.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -472,10 +600,16 @@ impl RegexSet {
 
     /// Resolves one line's verdict given whether the sweep found a seed in it.
     ///
-    /// What: runs the seeded-rule gate only when a seed is present, then the line-start
-    /// rules and the literal-free groups, mirroring [`RegexSet::is_match`]. Why: skipping
+    /// What:
+    ///  runs the seeded-rule gate only when a seed is present,
+    ///  then the line-start
+    /// rules and the literal-free groups,
+    ///  mirroring [`RegexSet::is_match`].
+    ///  Why:
+    ///  skipping
     /// the gate on a seedless line is exactly what the prefilter would have done per
-    /// line, so the verdict is unchanged.
+    /// line,
+    ///  so the verdict is unchanged.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -504,12 +638,20 @@ impl RegexSet {
     /// Collects one line's matching rule ids given whether the sweep found a seed
     /// in it.
     ///
-    /// What: runs the seeded-rule gate only when a seed is present, then the
-    /// line-start rules and the literal-free rules, returning each matching rule
-    /// id in ascending, deduplicated order; equal to [`RegexSet::matches`] line
-    /// for line, and the attribution twin of the boolean `resolve_line`. Why:
+    /// What:
+    ///  runs the seeded-rule gate only when a seed is present,
+    ///  then the
+    /// line-start rules and the literal-free rules,
+    ///  returning each matching rule
+    /// id in ascending,
+    ///  deduplicated order;
+    ///  equal to [`RegexSet::matches`] line
+    /// for line,
+    ///  and the attribution twin of the boolean `resolve_line`.
+    ///  Why:
     /// skipping the gate on a seedless line is exactly what the prefilter would
-    /// have done per line, so the rule ids are unchanged.
+    /// have done per line,
+    ///  so the rule ids are unchanged.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -545,8 +687,11 @@ impl RegexSet {
     }
 }
 
-/// What:    Unit tests for the batch API, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for the batch API,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

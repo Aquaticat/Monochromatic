@@ -1,23 +1,40 @@
-//! Caret, hit testing, selection, and copy agree at CJK, combining, astral, tab, ligature, CRLF,
-//! and end-of-text boundaries, for every grapheme boundary of every fixture line.
+//! Caret,
+//!  hit testing,
+//!  selection,
+//!  and copy agree at CJK,
+//!  combining,
+//!  astral,
+//!  tab,
+//!  ligature,
+//!  CRLF,
+//! and end-of-text boundaries,
+//!  for every grapheme boundary of every fixture line.
 
-/// What: Helix's grapheme walk over the document rope.
-/// Why: The expected caret positions are the grapheme boundaries, computed independently of the shaper.
+/// What:
+///  Helix's grapheme walk over the document rope.
+/// Why:
+///  The expected caret positions are the grapheme boundaries,
+///  computed independently of the shaper.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { ensureGraphemeBoundaryNext, nextGraphemeBoundary } from 'helix-core/graphemes';
 /// ```
 use helix_core::graphemes::{ensure_grapheme_boundary_next, next_grapheme_boundary};
-/// Canonical source, line ends, and the production shaped geometry.
+/// Canonical source,
+///  line ends,
+///  and the production shaped geometry.
 use ide_app::{
     caret_motion::line_end,
     document::{Document, ReadingPosition},
     shaped_text::{ShapedView, TERMINATOR_MARK, TextShaper, Viewport},
 };
 
-/// What: `const` names a compile-time list; `[(&str, &str); 9]` is a fixed array of nine name and text pairs.
-/// Why: Every boundary class the reader must handle is checked by the same properties.
+/// What:
+///  `const` names a compile-time list;
+///  `[(&str, &str); 9]` is a fixed array of nine name and text pairs.
+/// Why:
+///  Every boundary class the reader must handle is checked by the same properties.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -56,9 +73,13 @@ fn shaped(source: &str) -> (Document, ShapedView) {
     return (document, view);
 }
 
-/// What: Every grapheme boundary of one row from its start to the end of its visible text;
-/// `Vec<usize>` is a growable list of character positions (siblings: `[usize; N]`, `&[usize]`).
-/// Why: These are exactly the positions a caret may take on that row.
+/// What:
+///  Every grapheme boundary of one row from its start to the end of its visible text;
+/// `Vec<usize>` is a growable list of character positions (siblings:
+///  `[usize; N]`,
+///  `&[usize]`).
+/// Why:
+///  These are exactly the positions a caret may take on that row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,7 +122,8 @@ fn caret_positions_are_ordered_and_hit_testing_returns_to_them() {
     }
 }
 
-/// Every pixel of every row resolves to the nearest grapheme boundary, never to the inside of a sequence.
+/// Every pixel of every row resolves to the nearest grapheme boundary,
+///  never to the inside of a sequence.
 #[test]
 fn every_pixel_hits_the_nearest_grapheme_boundary() {
     for (name, source) in FIXTURES {
@@ -154,7 +176,8 @@ fn every_pixel_hits_the_nearest_grapheme_boundary() {
     }
 }
 
-/// Each grapheme's selection rectangle spans exactly between its two caret positions, and copy yields its source.
+/// Each grapheme's selection rectangle spans exactly between its two caret positions,
+///  and copy yields its source.
 #[test]
 fn each_grapheme_selects_its_own_extent_and_copies_its_source_characters() {
     for (name, source) in FIXTURES {

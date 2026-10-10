@@ -1,6 +1,10 @@
-//! What: Explicit creation and the remote-guess candidate of `git checkout` and `git switch`
-//!       regions, for every argument shape Git 2.56.0 distinguishes.
-//! Why: `git checkout topic` silently creates a branch when one remote has `topic`; the
+//! What:
+//!  Explicit creation and the remote-guess candidate of `git checkout` and `git switch`
+//!       regions,
+//!  for every argument shape Git 2.56.0 distinguishes.
+//! Why:
+//!  `git checkout topic` silently creates a branch when one remote has `topic`;
+//!  the
 //!      policy can only probe the remote for the token this parser names.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,12 +12,14 @@
 //! // expect(parseBranchCreationRegion({ subcommand: 'checkout', postSubcommandArgs: ['topic'] }).implicitCreationTarget).toBe('topic');
 //! ```
 
-/// The parser, the command names and the argument builders.
+/// The parser,
+///  the command names and the argument builders.
 use super::BranchCreationCommand::{Checkout, Switch};
 use super::{BranchCreationCommand, BranchCreationRegion, parse_branch_creation_region};
 use crate::command_test_support::os_arguments;
 
-/// Parse a space-separated region Git accepts, with no other wrapper flags.
+/// Parse a space-separated region Git accepts,
+///  with no other wrapper flags.
 fn region(command: BranchCreationCommand, line: &str) -> BranchCreationRegion {
     let values: Vec<&str> = line.split_whitespace().collect();
     return parse_branch_creation_region(command, os_arguments(values.as_slice()).as_slice(), &[])
@@ -32,7 +38,8 @@ fn assert_targets(command: BranchCreationCommand, cases: &[(&str, Option<usize>)
     }
 }
 
-/// Require explicit creation, which leaves no candidate to probe.
+/// Require explicit creation,
+///  which leaves no candidate to probe.
 fn assert_creates(command: BranchCreationCommand, lines: &[&str]) {
     for line in lines {
         let found: BranchCreationRegion = region(command, line);
@@ -71,7 +78,8 @@ fn checkout_names_the_single_reference_argument() {
     );
 }
 
-/// Without `--` a glob character makes the argument a pathspec; with `--` it is a name.
+/// Without `--` a glob character makes the argument a pathspec;
+///  with `--` it is a name.
 #[test]
 fn checkout_does_not_guess_for_an_unseparated_wildcard() {
     assert_targets(
@@ -87,7 +95,8 @@ fn checkout_does_not_guess_for_an_unseparated_wildcard() {
     );
 }
 
-/// The options that switch guessing off, by final state where Git keeps a final state.
+/// The options that switch guessing off,
+///  by final state where Git keeps a final state.
 #[test]
 fn checkout_options_stop_guessing() {
     assert_targets(
@@ -114,7 +123,8 @@ fn checkout_options_stop_guessing() {
     );
 }
 
-/// Divergence: a pathspec file does not stop Git from guessing.
+/// Divergence:
+///  a pathspec file does not stop Git from guessing.
 #[test]
 fn checkout_still_guesses_with_a_pathspec_file() {
     assert_targets(
@@ -126,7 +136,8 @@ fn checkout_still_guesses_with_a_pathspec_file() {
     );
 }
 
-/// Every spelling of explicit creation; `--no-track` also names a new branch.
+/// Every spelling of explicit creation;
+///  `--no-track` also names a new branch.
 #[test]
 fn checkout_creates_explicitly() {
     assert_creates(
@@ -153,7 +164,8 @@ fn checkout_creates_explicitly() {
     assert_targets(Checkout, &[("--orphan new --no-orphan topic", Some(3))]);
 }
 
-/// `git switch` takes one reference and no paths, so `--` does not change the candidate.
+/// `git switch` takes one reference and no paths,
+///  so `--` does not change the candidate.
 #[test]
 fn switch_names_the_single_reference_argument() {
     assert_targets(
@@ -203,7 +215,8 @@ fn switch_creates_explicitly() {
     );
 }
 
-/// Names are read as bytes: a non-UTF-8 name is a candidate like any other.
+/// Names are read as bytes:
+///  a non-UTF-8 name is a candidate like any other.
 #[cfg(unix)]
 #[test]
 fn names_a_non_utf8_candidate() {

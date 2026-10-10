@@ -1,5 +1,7 @@
-//! What: Rustdoc hidden-line preparation with explicitly unmapped synthetic main text.
-//! Why: Fragments parse as function bodies without reporting or counting generated scaffolding.
+//! What:
+//!  Rustdoc hidden-line preparation with explicitly unmapped synthetic main text.
+//! Why:
+//!  Fragments parse as function bodies without reporting or counting generated scaffolding.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,12 +14,14 @@ use crate::processors_lines::{copy_line, physical_lines};
 use crate::processors_model::{Guard, Mapping, ProcessorLanguage};
 /// Detect a real top-level main declaration through native Rust syntax.
 use crate::rust_source::RustSource;
-/// Native node kinds avoid matches in strings, comments or nested functions.
+/// Native node kinds avoid matches in strings,
+///  comments or nested functions.
 use ra_ap_syntax::SyntaxKind;
 /// Reuse immutable source snapshots.
 use std::sync::Arc;
 
-/// Detect top-level authored main, not a main-shaped substring.
+/// Detect top-level authored main,
+///  not a main-shaped substring.
 fn has_main(source: &Mapping) -> bool {
     let parsed: RustSource = RustSource::new(source.filename.clone(), source.text.clone());
     for node in parsed.syntax().children() {
@@ -73,7 +77,8 @@ pub(crate) fn hidden(parent: &Arc<Mapping>) -> Mapping {
     return result;
 }
 
-/// Wrap stripped fragments but leave leading //! comments outside the generated function.
+/// Wrap stripped fragments but leave leading //!
+///  comments outside the generated function.
 pub(crate) fn wrap(parent: &Arc<Mapping>) -> Mapping {
     let mut result: Mapping = crate::processors::child(
         parent,
@@ -122,7 +127,8 @@ pub(crate) fn wrap(parent: &Arc<Mapping>) -> Mapping {
     return result;
 }
 
-/// A preparation layer's exact re-extraction behavior, chosen from its immutable parent relationship.
+/// A preparation layer's exact re-extraction behavior,
+///  chosen from its immutable parent relationship.
 pub(crate) fn prepared_text(parent: &Arc<Mapping>) -> String {
     // A wrapping layer has a hidden-stripping layer as its direct parent.
     if matches!(parent.guard, Guard::Prepared) {

@@ -1,5 +1,9 @@
-//! What: Disposable-repository controls for listings that must be refused.
-//! Why: A conflicted index, a command that fails, a program that cannot start and output
+//! What:
+//!  Disposable-repository controls for listings that must be refused.
+//! Why:
+//!  A conflicted index,
+//!  a command that fails,
+//!  a program that cannot start and output
 //!      that is not an object name each leave paths unchecked if they are tolerated.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +12,8 @@
 //! ```
 #![cfg(unix)]
 
-/// Import the store under test, its sibling fixtures and shared fixtures.
+/// Import the store under test,
+///  its sibling fixtures and shared fixtures.
 use super::CandidateStore;
 use super::tests::{rev_parse, store, store_with, write};
 use crate::candidate_error::{CandidateError, CandidateFailure};
@@ -48,7 +53,10 @@ fn unmerged_index_is_refused() {
     remove(root.as_path());
 }
 
-/// Listing failures are typed: an unstartable program, a failing command, and a location that is no repository.
+/// Listing failures are typed:
+///  an unstartable program,
+///  a failing command,
+///  and a location that is no repository.
 #[test]
 fn listing_failures_are_typed() {
     let root: PathBuf = fixture("store-failures");

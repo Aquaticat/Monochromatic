@@ -1,4 +1,5 @@
-//! Read-only project boundary and lazy directory snapshots; no mutation operations are exposed.
+//! Read-only project boundary and lazy directory snapshots;
+//!  no mutation operations are exposed.
 
 /// Every failure identifies the operation and affected input.
 use anyhow::{Context, Result, bail};
@@ -16,7 +17,8 @@ pub struct DirectoryEntry {
     pub name: OsString,
     /// Absolute path formed from the contained directory and native entry name.
     pub path: PathBuf,
-    /// Dirent directory status, without recursively following symbolic links.
+    /// Dirent directory status,
+    ///  without recursively following symbolic links.
     pub is_directory: bool,
 }
 
@@ -49,7 +51,8 @@ impl Workspace {
         return &self.root;
     }
 
-    /// Resolve relative names from the explicit project root, never ambient process cwd.
+    /// Resolve relative names from the explicit project root,
+    ///  never ambient process cwd.
     /// Symlinks resolving outside the root are rejected for tree/project-search operations.
     pub fn resolve(&self, path: &Path) -> Result<PathBuf> {
         let candidate = self.root.join(path);
@@ -66,7 +69,8 @@ impl Workspace {
         return Ok(resolved);
     }
 
-    /// Read only the requested directory; hidden entries remain visible as in editord.
+    /// Read only the requested directory;
+    ///  hidden entries remain visible as in editord.
     pub fn list(&self, path: &Path) -> Result<Vec<DirectoryEntry>> {
         let directory = self.resolve(path)?;
         let entries = fs::read_dir(&directory).with_context(|| {

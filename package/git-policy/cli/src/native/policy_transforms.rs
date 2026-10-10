@@ -1,9 +1,20 @@
-//! What: The fixed argument transforms of a forwarded command, in their fixed order:
-//!       atomic push, commit-only, status hints off.
-//! Why: These are not policies: they have no severity and cannot be configured. They add
-//!      `--atomic` to `git push`, `-o` to `git commit` and `-c advice.statusHints=false`
-//!      before `git status`, and the commit-only transform can reject a commit. The
-//!      decisions belong to the pure rule cores; this module runs them in order and
+//! What:
+//!  The fixed argument transforms of a forwarded command,
+//!  in their fixed order:
+//!       atomic push,
+//!  commit-only,
+//!  status hints off.
+//! Why:
+//!  These are not policies:
+//!  they have no severity and cannot be configured.
+//!  They add
+//!      `--atomic` to `git push`,
+//!  `-o` to `git commit` and `-c advice.statusHints=false`
+//!      before `git status`,
+//!  and the commit-only transform can reject a commit.
+//!  The
+//!      decisions belong to the pure rule cores;
+//!  this module runs them in order and
 //!      fetches the two repository facts commit-only may ask for.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,9 +22,14 @@
 //! // const { args, events, complete } = await applyFixedTransforms({ args, rawArgs, sequence });
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  Each transform is one rule core; the facts interface answers what a core asks.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   Each transform is one rule core;
+///  the facts interface answers what a core asks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,9 +46,14 @@ use super::rule_commit_only::{
     violation_code_text,
 };
 use super::rule_status_hints::status_hints_off;
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  Arguments are forwarded with their exact bytes.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Arguments are forwarded with their exact bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,9 +61,12 @@ use super::rule_status_hints::status_hints_off;
 /// ```
 use std::ffi::OsString;
 
-/// What: The identifier of the commit-only transform in its events. `&str` is borrowed
+/// What:
+///  The identifier of the commit-only transform in its events.
+///  `&str` is borrowed
 ///       text baked into the program.
-/// Why:  A fixed-transform rejection names its transform where a finding names its policy.
+/// Why:
+///   A fixed-transform rejection names its transform where a finding names its policy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,10 +74,16 @@ use std::ffi::OsString;
 /// ```
 pub const COMMIT_ONLY_CORE: &str = "commit-only";
 
-/// What: What the transform stage produced. A `struct` is a record with named fields;
-///       `Vec<T>` is an owned list; `bool` is true or false. `#[derive(...)]` asks the
-///       compiler to generate cloning, debug printing and `==`.
-/// Why:  The caller forwards `arguments` only when no event blocks and `complete` is true.
+/// What:
+///  What the transform stage produced.
+///  A `struct` is a record with named fields;
+///       `Vec<T>` is an owned list;
+///  `bool` is true or false.
+///  `#[derive(...)]` asks the
+///       compiler to generate cloning,
+///  debug printing and `==`.
+/// Why:
+///   The caller forwards `arguments` only when no event blocks and `complete` is true.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,17 +91,24 @@ pub const COMMIT_ONLY_CORE: &str = "commit-only";
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TransformResult {
-    /// The arguments to forward; the stage's input when a transform rejected or failed.
+    /// The arguments to forward;
+    ///  the stage's input when a transform rejected or failed.
     pub arguments: Vec<OsString>,
-    /// Nothing, one rejection, or one engine failure.
+    /// Nothing,
+    ///  one rejection,
+    ///  or one engine failure.
     pub events: Vec<PolicyEvent>,
     /// False when a transform could not decide.
     pub complete: bool,
 }
 
-/// What: The result of a transform that could not read a fact. `&[OsString]` borrows the
-///       stage's input; `String` is the owned explanation.
-/// Why:  A transform that cannot decide stops the command with an engine failure.
+/// What:
+///  The result of a transform that could not read a fact.
+///  `&[OsString]` borrows the
+///       stage's input;
+///  `String` is the owned explanation.
+/// Why:
+///   A transform that cannot decide stops the command with an engine failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -94,10 +131,15 @@ fn incomplete(arguments: &[OsString], message: String) -> TransformResult {
     };
 }
 
-/// What: Ask for the repository fact a commit-only decision still needs, and finish the
-///       decision. `&mut dyn RepositoryFacts` lends "any facts provider" for writing;
+/// What:
+///  Ask for the repository fact a commit-only decision still needs,
+///  and finish the
+///       decision.
+///  `&mut dyn RepositoryFacts` lends "any facts provider" for writing;
 ///       `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  Most commits are decided from their arguments; only a pathless commit asks
+/// Why:
+///   Most commits are decided from their arguments;
+///  only a pathless commit asks
 ///       whether an operation awaits its conclusion or whether the index is dirty.
 ///
 /// In TS you'd write (pseudocode):
@@ -127,9 +169,14 @@ fn settle_commit_only(
     }
 }
 
-/// What: Run the commit-only transform. `bool` says whether `--no-enforce-only` was given.
-/// Why:  The hatch skips the transform entirely; its token is already gone from the
-///       arguments. A region Git itself refuses is left to Git.
+/// What:
+///  Run the commit-only transform.
+///  `bool` says whether `--no-enforce-only` was given.
+/// Why:
+///   The hatch skips the transform entirely;
+///  its token is already gone from the
+///       arguments.
+///  A region Git itself refuses is left to Git.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -192,9 +239,17 @@ fn commit_only_stage(
     }
 }
 
-/// What: Apply the three transforms in order. `&[OsString]` borrows the arguments, already
+/// What:
+///  Apply the three transforms in order.
+///  `&[OsString]` borrows the arguments,
+///  already
 ///       free of wrapper controls.
-/// Why:  The order is the incumbent's: atomic push, commit-only, status hints. A rejection
+/// Why:
+///   The order is the incumbent's:
+///  atomic push,
+///  commit-only,
+///  status hints.
+///  A rejection
 ///       or failure of commit-only ends the stage with the stage's input unchanged.
 ///
 /// In TS you'd write (pseudocode):
@@ -232,7 +287,8 @@ pub fn apply_fixed_transforms(
     };
 }
 
-/// Order, rejection and failure controls stay out of the release executable.
+/// Order,
+///  rejection and failure controls stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_transforms_tests.rs"]
 mod tests;

@@ -1,5 +1,8 @@
-//! What: Consumer-seam controls using real native Rust and Markdown parses.
-//! Why: Fixtures prove extraction identities and synthetic-main policy, not copied regex expectations.
+//! What:
+//!  Consumer-seam controls using real native Rust and Markdown parses.
+//! Why:
+//!  Fixtures prove extraction identities and synthetic-main policy,
+//!  not copied regex expectations.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,7 +15,8 @@ use super::{ProcessorLanguage, VirtualSource, extract};
 use crate::diagnostic::{Diagnostic, Severity};
 /// Fix application is always the production grouped edit implementation.
 use crate::edits::{Edit, Fix, apply_fixes};
-/// Exercise selected rule behavior, including the authored code-line budget.
+/// Exercise selected rule behavior,
+///  including the authored code-line budget.
 use crate::rust_rule_settings::{LineBudget, RustRuleSettings};
 
 /// Load one committed fixture field without touching shared files during verification.
@@ -53,7 +57,9 @@ pub(super) fn fixed(host: &str, input: &VirtualSource, fix: Fix) -> String {
         .source;
 }
 
-/// Rustdoc attributes, nested containers, Unicode and CRLF retain logical paths and original bytes.
+/// Rustdoc attributes,
+///  nested containers,
+///  Unicode and CRLF retain logical paths and original bytes.
 #[test]
 fn processors_extract_native_fences_with_attributes_and_container_prefixes() {
     let source: String = fixture("fences");
@@ -85,7 +91,8 @@ fn processors_extract_native_fences_with_attributes_and_container_prefixes() {
     assert_eq!(mapped.labels[0].span.column, 5);
 }
 
-/// Native comment classification excludes doc attributes and lookalikes; unlabeled doctests are Rust.
+/// Native comment classification excludes doc attributes and lookalikes;
+///  unlabeled doctests are Rust.
 #[test]
 fn processors_extract_authored_doc_runs_blocks_and_unlabeled_doctests() {
     let source: String = fixture("docs");
@@ -115,7 +122,8 @@ fn processors_extract_authored_doc_runs_blocks_and_unlabeled_doctests() {
     assert!(virtuals[1].is_rustdoc());
 }
 
-/// Each Rust-fence nesting consumes depth; no processor walks beyond the agreed second Rust embedding.
+/// Each Rust-fence nesting consumes depth;
+///  no processor walks beyond the agreed second Rust embedding.
 #[test]
 fn processors_bound_nested_doctests_and_preserve_virtual_names() {
     let virtuals: Vec<VirtualSource> = inputs(fixture("nested").as_str(), ProcessorLanguage::Rust);
@@ -131,7 +139,8 @@ fn processors_bound_nested_doctests_and_preserve_virtual_names() {
     );
 }
 
-/// The agreed second Rust embedding is an intentional stop, not an unbounded processor recursion.
+/// The agreed second Rust embedding is an intentional stop,
+///  not an unbounded processor recursion.
 #[test]
 fn processors_stop_before_a_third_nested_rust_fence() {
     let source: &str = "/// `````rust\n/// //! Level one.\n/// /// ````rust\n/// /// //! Level two.\n/// /// /// ```rust\n/// /// /// //! Level three.\n/// /// /// let deepest: u32 = 1;\n/// /// /// ```\n/// /// fn second() {}\n/// /// ````\n/// fn first() {}\n/// `````\nfn root() {}\n";
@@ -166,7 +175,8 @@ fn processors_discover_native_mdx_fences() {
     );
 }
 
-/// Synthetic main is neither a finding nor a budget line, and file documentation still applies.
+/// Synthetic main is neither a finding nor a budget line,
+///  and file documentation still applies.
 #[test]
 fn processors_check_authored_counts_and_missing_file_docs_without_synthetic_findings() {
     let virtuals: Vec<VirtualSource> = inputs(
@@ -217,27 +227,34 @@ fn processors_refuse_semantic_guessing_even_for_a_valid_virtual_method_call() {
     assert_eq!(findings[0].filename, "host");
 }
 
-/// Adversarial/native failure, fuzz and synthetic-main controls.
+/// Adversarial/native failure,
+///  fuzz and synthetic-main controls.
 #[path = "processors_controls_tests.rs"]
 mod controls;
-/// Exact Rustdoc margin, blank-line and block-body extraction controls.
+/// Exact Rustdoc margin,
+///  blank-line and block-body extraction controls.
 #[path = "processors_docs_tests.rs"]
 mod docs;
-/// Endpoint, Unicode and allowed-depth positive controls.
+/// Endpoint,
+///  Unicode and allowed-depth positive controls.
 #[path = "processors_edge_tests.rs"]
 mod edges;
 /// Bounded randomized native extraction/projection verification.
 #[path = "processors_fuzz_tests.rs"]
 mod fuzz;
-/// Exact prepared doctest text for hidden markers, helpers and Rustdoc identity.
+/// Exact prepared doctest text for hidden markers,
+///  helpers and Rustdoc identity.
 #[path = "processors_prepare_tests.rs"]
 mod prepare;
 /// Fix projection controls are split to keep each source module inspectable.
 #[path = "processors_projection_tests.rs"]
 mod projection;
-/// Atomic-group validation, whole-line envelopes and container refusal reasons.
+/// Atomic-group validation,
+///  whole-line envelopes and container refusal reasons.
 #[path = "processors_rewrite_tests.rs"]
 mod rewrite;
-/// Exact host positions for points, ranges, anchors and rendered refusals.
+/// Exact host positions for points,
+///  ranges,
+///  anchors and rendered refusals.
 #[path = "processors_spans_tests.rs"]
 mod spans;

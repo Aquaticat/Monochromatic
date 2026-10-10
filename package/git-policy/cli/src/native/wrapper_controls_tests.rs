@@ -1,6 +1,12 @@
-//! What: Control spellings, their meanings, and removal from the arguments before the subcommand.
-//! Why: A control left before the subcommand makes Git's global-option reader report an
-//!      unknown option, after which every policy leaves the command alone; a control
+//! What:
+//!  Control spellings,
+//!  their meanings,
+//!  and removal from the arguments before the subcommand.
+//! Why:
+//!  A control left before the subcommand makes Git's global-option reader report an
+//!      unknown option,
+//!  after which every policy leaves the command alone;
+//!  a control
 //!      removed from a value position would change what Git is asked to do.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +14,8 @@
 //! // expect(stripGlobalControls(['--cli-git-keep-going', 'status'], controls)).toEqual(['status']);
 //! ```
 
-/// The table, the scan and the argument builder.
+/// The table,
+///  the scan and the argument builder.
 use super::{
     CONTROL_SPELLINGS, ControlMeaning, Controls, KEEP_GOING_FLAG, control_flags, control_meaning,
     is_escaped, no_controls, record_control, strip_global_controls,
@@ -32,7 +39,8 @@ fn escaping(policies: &[PolicyId]) -> Controls {
     return controls;
 }
 
-/// Every shipped policy is escaped by `--no-enforce-` followed by its registry name, and by nothing shorter or longer.
+/// Every shipped policy is escaped by `--no-enforce-` followed by its registry name,
+///  and by nothing shorter or longer.
 #[test]
 fn every_shipped_policy_has_its_enforce_spelling() {
     for descriptor in POLICY_REGISTRY {
@@ -53,7 +61,8 @@ fn every_shipped_policy_has_its_enforce_spelling() {
     assert_eq!(CONTROL_SPELLINGS.len(), POLICY_REGISTRY.len() + 5);
 }
 
-/// The older spellings, the keep-going flag and the worktree-copy opt-out keep their exact meanings.
+/// The older spellings,
+///  the keep-going flag and the worktree-copy opt-out keep their exact meanings.
 #[test]
 fn fixed_spellings_have_their_meaning() {
     for (flag, meaning) in [
@@ -100,7 +109,9 @@ fn control_flags_follow_the_table() {
     }
 }
 
-/// Each meaning sets its own field; a repeated escape lists its policy once, in first-use order.
+/// Each meaning sets its own field;
+///  a repeated escape lists its policy once,
+///  in first-use order.
 #[test]
 fn recorded_controls_are_set_once() {
     let mut controls: Controls = no_controls();
@@ -133,7 +144,8 @@ fn recorded_controls_are_set_once() {
     assert!(!copy.keep_going);
 }
 
-/// Controls before the subcommand are removed and recorded, between and after Git's own global options.
+/// Controls before the subcommand are removed and recorded,
+///  between and after Git's own global options.
 #[test]
 fn controls_before_the_subcommand_are_removed() {
     let mut keep_going: Controls = no_controls();
@@ -182,7 +194,9 @@ fn controls_before_the_subcommand_are_removed() {
     }
 }
 
-/// A control-looking value, a control after the subcommand, and anything behind an option Git refuses stay.
+/// A control-looking value,
+///  a control after the subcommand,
+///  and anything behind an option Git refuses stay.
 #[test]
 fn tokens_outside_global_option_position_are_kept() {
     for values in [

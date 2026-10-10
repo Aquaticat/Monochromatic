@@ -1,5 +1,8 @@
-//! What: Actual command-grammar controls without filesystem or workspace initialization.
-//! Why: Invalid modes, missing values and native path bytes must be resolved before linting starts.
+//! What:
+//!  Actual command-grammar controls without filesystem or workspace initialization.
+//! Why:
+//!  Invalid modes,
+//!  missing values and native path bytes must be resolved before linting starts.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -109,7 +112,8 @@ fn inconsistent_modes_and_invalid_values_are_rejected() {
     );
 }
 
-/// Help and version are parser-controlled terminal outcomes, not lint runs.
+/// Help and version are parser-controlled terminal outcomes,
+///  not lint runs.
 #[test]
 fn help_and_version_remain_available_without_setup() {
     let help: clap::Error = parse(&["--help"]).expect_err("help request");

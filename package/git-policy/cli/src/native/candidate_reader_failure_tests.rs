@@ -1,6 +1,12 @@
-//! What: Failure controls for the object reader, using stand-in programs that misbehave on purpose.
-//! Why: A reply that is cut short, names another object, or never arrives must be a typed
-//!      failure that closes the reader, so that no later request can be answered from a
+//! What:
+//!  Failure controls for the object reader,
+//!  using stand-in programs that misbehave on purpose.
+//! Why:
+//!  A reply that is cut short,
+//!  names another object,
+//!  or never arrives must be a typed
+//!      failure that closes the reader,
+//!  so that no later request can be answered from a
 //!      stream that is out of step.
 //!
 //! In TS you'd write (pseudocode):
@@ -16,7 +22,9 @@ use crate::candidate_object::{ObjectId, parse_object_id};
 use crate::test_support::{executable, fixture, remove};
 use std::path::{Path, PathBuf};
 
-/// A stand-in `git` that waits for one request line, answers with fixed bytes, and exits.
+/// A stand-in `git` that waits for one request line,
+///  answers with fixed bytes,
+///  and exits.
 /// Waiting first keeps the request write from racing the stand-in's exit.
 fn stand_in(root: &Path, name: &str, reply: &str) -> PathBuf {
     let path: PathBuf = root.join(name);
@@ -27,7 +35,9 @@ fn stand_in(root: &Path, name: &str, reply: &str) -> PathBuf {
     return path;
 }
 
-/// Wait, within a bound, until a child has exited and is waiting to be collected.
+/// Wait,
+///  within a bound,
+///  until a child has exited and is waiting to be collected.
 fn wait_until_exited(process: u32) {
     for _attempt in 0..500 {
         let stat: String =
@@ -63,7 +73,8 @@ fn head_that_is_not_a_commit_is_refused() {
     remove(root.as_path());
 }
 
-/// A process that dies in the middle of a reply produces a typed failure, and the reader refuses every later request.
+/// A process that dies in the middle of a reply produces a typed failure,
+///  and the reader refuses every later request.
 #[test]
 fn reply_cut_short_by_a_dying_process_closes_the_reader() {
     let root: PathBuf = fixture("reader-dies");
@@ -92,7 +103,8 @@ fn reply_cut_short_by_a_dying_process_closes_the_reader() {
     remove(root.as_path());
 }
 
-/// A reply naming another object is refused and closes the reader, so its bytes are never attributed.
+/// A reply naming another object is refused and closes the reader,
+///  so its bytes are never attributed.
 #[test]
 fn reply_for_another_object_closes_the_reader() {
     let root: PathBuf = fixture("reader-mismatch");
@@ -159,7 +171,8 @@ fn request_to_an_exited_process_is_a_reader_failure() {
     remove(root.as_path());
 }
 
-/// A program that cannot be started is its own failure, naming the operation.
+/// A program that cannot be started is its own failure,
+///  naming the operation.
 #[test]
 fn unstartable_git_is_reported() {
     let error: CandidateError =

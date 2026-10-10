@@ -1,11 +1,21 @@
 //! Keyboard caret movement over source characters that needs no pixel geometry.
 //!
-//! Positions are Unicode scalar indices into the rope, the unit of selection and copying.
-//! Every result lies on a grapheme boundary, so a caret never lands inside a combining sequence,
-//! a surrogate-free astral character, or a CRLF pair.
+//! Positions are Unicode scalar indices into the rope,
+//!  the unit of selection and copying.
+//! Every result lies on a grapheme boundary,
+//!  so a caret never lands inside a combining sequence,
+//! a surrogate-free astral character,
+//!  or a CRLF pair.
 
-/// What: Import Helix's borrowed rope view, character classes, grapheme steps, and line-end lookup.
-/// Why: The document is a Helix rope; reusing its Unicode tables avoids a second, different notion of a character.
+/// What:
+///  Import Helix's borrowed rope view,
+///  character classes,
+///  grapheme steps,
+///  and line-end lookup.
+/// Why:
+///  The document is a Helix rope;
+///  reusing its Unicode tables avoids a second,
+///  different notion of a character.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +28,11 @@ use helix_core::{
     line_ending::line_end_char_index,
 };
 
-/// What: `enum` lists the allowed movements as named variants; `derive` generates copying and comparison.
-/// Why: The key handler names a movement once and the same function serves the plain and the Shift form.
+/// What:
+///  `enum` lists the allowed movements as named variants;
+///  `derive` generates copying and comparison.
+/// Why:
+///  The key handler names a movement once and the same function serves the plain and the Shift form.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,7 +51,8 @@ pub enum Motion {
     WordRight,
     /// To the first character of the line.
     LineStart,
-    /// To the end of the line, before its terminator.
+    /// To the end of the line,
+    ///  before its terminator.
     LineEnd,
     /// To the first character of the text.
     DocumentStart,
@@ -46,8 +60,12 @@ pub enum Motion {
     DocumentEnd,
 }
 
-/// What: The classes a word movement distinguishes; a run of one class is one stop.
-/// Why: Line terminators and blanks are skipped together, so they share one class here.
+/// What:
+///  The classes a word movement distinguishes;
+///  a run of one class is one stop.
+/// Why:
+///  Line terminators and blanks are skipped together,
+///  so they share one class here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,17 +73,23 @@ pub enum Motion {
 /// ```
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Class {
-    /// Spaces, tabs, and line terminators.
+    /// Spaces,
+    ///  tabs,
+    ///  and line terminators.
     Blank,
-    /// Letters of any script, digits, and underscore.
+    /// Letters of any script,
+    ///  digits,
+    ///  and underscore.
     Word,
     /// Punctuation and operators.
     Punctuation,
-    /// Everything else, such as emoji.
+    /// Everything else,
+    ///  such as emoji.
     Other,
 }
 
-/// Class of the grapheme that starts at `position`, decided by its first character.
+/// Class of the grapheme that starts at `position`,
+///  decided by its first character.
 /// A combining mark therefore belongs to the class of its base letter.
 ///
 /// In TS you'd write (pseudocode):
@@ -96,7 +120,8 @@ pub fn line_start(text: RopeSlice, position: usize) -> usize {
     return text.line_to_char(text.char_to_line(position.min(text.len_chars())));
 }
 
-/// Position after the last visible character of the line containing `position`, before LF or CRLF.
+/// Position after the last visible character of the line containing `position`,
+///  before LF or CRLF.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -114,7 +139,9 @@ pub fn line_end(text: RopeSlice, position: usize) -> usize {
     return line_end_char_index(&text, row);
 }
 
-/// End of the word at or after `position`: skip blanks, then one run of a single class.
+/// End of the word at or after `position`:
+///  skip blanks,
+///  then one run of a single class.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -136,7 +163,9 @@ pub fn word_right(text: RopeSlice, position: usize) -> usize {
     return index;
 }
 
-/// Start of the word at or before `position`: skip blanks backwards, then one run of a single class.
+/// Start of the word at or before `position`:
+///  skip blanks backwards,
+///  then one run of a single class.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -189,11 +218,18 @@ pub fn moved(text: RopeSlice, head: usize, motion: Motion) -> usize {
     return text.len_chars();
 }
 
-/// The word, punctuation run, or blank run around `position`, limited to the visible text of its line.
+/// The word,
+///  punctuation run,
+///  or blank run around `position`,
+///  limited to the visible text of its line.
 ///
-/// `position` is a caret boundary, so it touches two characters. A word character on either side wins,
-/// the following one first; otherwise the run of the following character is used,
-/// or the preceding one at the end of a line. An empty line yields an empty range.
+/// `position` is a caret boundary,
+///  so it touches two characters.
+///  A word character on either side wins,
+/// the following one first;
+///  otherwise the run of the following character is used,
+/// or the preceding one at the end of a line.
+///  An empty line yields an empty range.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -229,7 +265,8 @@ pub fn word_range(text: RopeSlice, position: usize) -> (usize, usize) {
     return (start, end);
 }
 
-/// The whole line containing `position`, including its terminator when it has one.
+/// The whole line containing `position`,
+///  including its terminator when it has one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

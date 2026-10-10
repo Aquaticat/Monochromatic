@@ -1,5 +1,9 @@
-//! What: Deterministic bounded fuzzing of native extraction and grouped projection.
-//! Why: Randomized delimiter, prefix, newline and Unicode combinations exercise the same consumer seam.
+//! What:
+//!  Deterministic bounded fuzzing of native extraction and grouped projection.
+//! Why:
+//!  Randomized delimiter,
+//!  prefix,
+//!  newline and Unicode combinations exercise the same consumer seam.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,7 +14,8 @@
 use super::finding;
 /// Import the actual processor and production host edit implementation.
 use super::{Edit, Fix, ProcessorLanguage};
-/// Exercise exact original-host application, not a test-owned replacement algorithm.
+/// Exercise exact original-host application,
+///  not a test-owned replacement algorithm.
 use crate::edits::apply_fixes;
 
 /// Advance a fixed-size unsigned seed without arithmetic overflow panics.
