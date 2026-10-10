@@ -464,6 +464,10 @@ pub mod capture_records;
 ///  repository layout, symbolic `HEAD`, conclusion kind, ref backend and base.
 pub mod capture_invocation;
 
+/// The capture under capture order:
+///  the capture lock, the store identity, the sequence and `captured.json`.
+pub mod capture_order;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
