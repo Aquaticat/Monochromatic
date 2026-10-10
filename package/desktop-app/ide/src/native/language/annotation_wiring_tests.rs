@@ -5,8 +5,8 @@
 
 /// Fixtures, the scripted server, and real key and pointer events.
 use super::test_support::{
-    LanguageReader, TEXT_TOP, above, address, caret, caret_x, control_click, definitions,
-    eventually, hover, idle, location, move_to, point, popup, project, reader, ready, rows,
+    TEXT_TOP, above, address, caret, caret_x, control_click, definitions, eventually, hover, idle,
+    location, move_to, point, popup, project, reader, ready, rows,
 };
 /// The stamp of the displayed text and the production repaint.
 use crate::native::{annotate::displayed, render};
@@ -15,8 +15,8 @@ use ide_app::language::{
     hints::{HintKind, HintsSnapshot, InlayHint},
     identity::ServerIdentity,
 };
-/// Snapshots arrive behind shared pointers.
-use std::sync::Arc;
+/// Snapshots arrive behind shared pointers; a scroll has a moment.
+use std::{sync::Arc, time::Instant};
 
 /// Two lines. The scripted server warns about the first character of the first line
 /// and returns one hint after `alpha`.
@@ -45,24 +45,6 @@ fn tall() -> String {
     return text;
 }
 
-/// What: Whether the store holds hints and whether it holds diagnostics for the displayed text.
-///       A pair of booleans (tuple).
-/// Why: A snapshot the poll stored is held here before any frame shows it, so a test can tell
-///      "stored" from "painted" at the same moment.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function stored(reader: LanguageReader): [hints: boolean, diagnostics: boolean];
-/// ```
-fn stored(reader: &LanguageReader) -> (bool, bool) {
-    let source = reader.source.borrow();
-    let stamp = displayed(&source);
-    return (
-        source.annotations.hints(stamp).is_some(),
-        source.annotations.diagnostics(stamp).is_some(),
-    );
-}
-
 /// The server's hints and diagnostics appear with no key, pointer, scroll, reload, or highlighting
 /// answer after them: the poll that stores a snapshot also repaints the source.
 #[test]
@@ -88,26 +70,22 @@ fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
         "the delayed server answered before highlighting settled; the repaints cannot be told apart"
     );
     ready(&reader);
-    // What: Every check of the wait compares what the store holds with what the frame shows.
-    // Why: The source refresh timer also repaints a store that holds rows no frame shows yet, within
-    //      one 20 ms tick (`rows::due`), so a poll that stored without repainting would still be
-    //      painted a tick later. The poll runs right after that timer in the same pass, and nothing
-    //      else runs in between, so a snapshot that is held but not drawn at a check means the poll
-    //      did not repaint what it stored.
+    // What: `Some(Instant::now())` records the reader as having scrolled this moment, which the repaints
+    //       on the source refresh timer wait out for 200 ms. The wait below renews it at every check.
+    // Why: Since `rows::due`, that timer also paints a store that holds rows no frame shows yet, a tick
+    //      after the store changed. Left running it would paint what a poll stored without repainting,
+    //      and removing the poll's repaint would go unnoticed. The poll's own repaint is not held back:
+    //      the view is at the top, so the rows move nothing visible.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // await eventually(() => { if (storedHints && shownHints === 0) throw new Error(...); ... });
+    // await eventually(() => { source.current.scrolledAt = now(); return hints > 0 && messages > 0; });
     // ```
     eventually(
         "accepted hints and diagnostics were stored but never painted",
         || {
+            reader.source.borrow_mut().scrolled_at = Some(Instant::now());
             let (hints, messages) = rows(&reader);
-            let (held_hints, held_diagnostics) = stored(&reader);
-            assert!(
-                (hints > 0 || !held_hints) && (messages > 0 || !held_diagnostics),
-                "accepted hints and diagnostics were stored but never painted by the poll that stored them: held {held_hints}/{held_diagnostics}, shown {hints}/{messages}"
-            );
             return hints > 0 && messages > 0;
         },
     );
