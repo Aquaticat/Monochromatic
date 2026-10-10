@@ -478,6 +478,12 @@ pub mod replay_capture_order;
 /// Replay: the starvation reservation of the next landing slot (`replay_reservation`).
 pub mod replay_reservation;
 
+/// Replay: the shadow-repository Git runner that every replay step uses (`replay_shadow`).
+pub mod replay_shadow;
+
+/// Replay: shared paths of the landed history and the prepared commit, with their three entries (`replay_shared_paths`).
+pub mod replay_shared_paths;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
