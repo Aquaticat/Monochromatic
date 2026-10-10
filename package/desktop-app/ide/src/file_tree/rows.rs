@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 /// Visible traversal and lazy loading have the same expansion boundary.
 impl FileTree {
-    /// Flatten visible rows in filesystem order;
+    /// Flatten visible rows in listing order;
     ///  the implicit root is not a duplicate visible row.
     pub fn rows(&self) -> Vec<TreeRow> {
         // What: Vec owns a growable list; unlike a fixed array its size follows expanded snapshots.
@@ -34,7 +34,7 @@ impl FileTree {
             }
         }
         // What: while-let pops (entry, depth) tuples until the optional stack result is absent.
-        // Why: Reverse pushes preserve filesystem order while avoiding recursion on deep directory trees.
+        // Why: Reverse pushes preserve listing order while avoiding recursion on deep directory trees.
         //
         // In TS you'd write (pseudocode):
         // ```ts

@@ -127,6 +127,9 @@ mod selection_paint;
 ///  not the color scheme.
 pub mod selection_ink;
 
+/// Sibling names in the file tree sort mixed, case folded, with numbers compared by value.
+pub mod name_order;
+
 /// One local project boundary exposes directory snapshots without mutation operations.
 pub mod workspace;
 

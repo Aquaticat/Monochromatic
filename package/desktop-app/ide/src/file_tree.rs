@@ -1,7 +1,7 @@
 //! Lazy,
 //!  filesystem-free tree presentation over read-only directory snapshots.
 
-/// Directory metadata retains native filenames and filesystem enumeration order.
+/// Directory metadata retains native filenames and the order of the listing it was given.
 use crate::workspace::DirectoryEntry;
 /// Invalid tree operations report affected paths instead of silently changing unrelated rows.
 use anyhow::{Result, bail};
@@ -75,7 +75,7 @@ pub struct FileTree {
     /// Canonical root supplied by Workspace;
     ///  this model is not an OS write-confinement boundary.
     root: PathBuf,
-    /// Native directory names map to snapshots retaining filesystem order.
+    /// Native directory names map to snapshots retaining listing order.
     directories: BTreeMap<PathBuf, Vec<DirectoryEntry>>,
     /// Collapsing an ancestor retains descendant expansion until that subtree is removed.
     expanded: BTreeSet<PathBuf>,
