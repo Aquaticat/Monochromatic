@@ -472,6 +472,9 @@ pub mod replay_containment;
 /// Replay: raw commit objects as bytes, the unsigned rewrite and signed-rebuild inputs (`replay_object`).
 pub mod replay_object;
 
+/// Replay: capture order over the landed first-parent history and the per-path decision (`replay_capture_order`).
+pub mod replay_capture_order;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
