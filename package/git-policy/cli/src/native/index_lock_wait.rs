@@ -1,8 +1,15 @@
-//! What: Waiting for a foreign `index.lock` under the classification rules: a proven-alive owner
-//!       is waited for without limit, a dead or evidence-free owner is retried on Git's backoff
+//! What:
+//!  Waiting for a foreign `index.lock` under the classification rules:
+//!  a proven-alive owner
+//!       is waited for without limit,
+//!  a dead or evidence-free owner is retried on Git's backoff
 //!       schedule until the unproven budget runs out.
-//! Why: An index writer must not run beside a landing, and a lock nobody can prove alive must
-//!      not block forever. Nothing here deletes a lock; the caller decides what the failure means
+//! Why:
+//!  An index writer must not run beside a landing,
+//!  and a lock nobody can prove alive must
+//!      not block forever.
+//!  Nothing here deletes a lock;
+//!  the caller decides what the failure means
 //!      (`src/index-lock/index-lock-wait.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -15,7 +22,8 @@ use super::index_lock_evidence::{
     Evidence, Verdict, classify_index_lock, describe_index_lock_evidence, proven_holder_line,
 };
 
-/// Git's `BACKOFF_MAX_MULTIPLIER`: the backoff stops growing here.
+/// Git's `BACKOFF_MAX_MULTIPLIER`:
+///  the backoff stops growing here.
 pub const BACKOFF_MAX_MULTIPLIER: u64 = 1_000;
 
 /// Git's jitter floor in thousandths of the backoff.
@@ -27,15 +35,22 @@ const JITTER_SPAN_PERMILLE: u64 = 500;
 /// Thousandths per whole.
 const PERMILLE: u64 = 1_000;
 
-/// Longest single poll while a PID file proves the owner alive, so its release is noticed promptly.
+/// Longest single poll while a PID file proves the owner alive,
+///  so its release is noticed promptly.
 pub const PROVEN_BY_PID_FILE_POLL_CAP_MS: u64 = 100;
 
-/// Longest single poll while only an open descriptor proves the owner alive; each poll repeats the
-/// open-holder scan, so it polls less often.
+/// Longest single poll while only an open descriptor proves the owner alive;
+///  each poll repeats the
+/// open-holder scan,
+///  so it polls less often.
 pub const PROVEN_BY_DESCRIPTOR_POLL_CAP_MS: u64 = 500;
 
-/// What: Git's backoff position: `step` is Git's `n`, `multiplier` the wait base in milliseconds.
-/// Why:  `BackoffState` in the incumbent.
+/// What:
+///  Git's backoff position:
+///  `step` is Git's `n`,
+///  `multiplier` the wait base in milliseconds.
+/// Why:
+///   `BackoffState` in the incumbent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,7 +60,8 @@ pub const PROVEN_BY_DESCRIPTOR_POLL_CAP_MS: u64 = 500;
 pub struct BackoffState {
     /// Git's `n`.
     pub step: u64,
-    /// Git's `multiplier`, the current backoff in milliseconds.
+    /// Git's `multiplier`,
+    ///  the current backoff in milliseconds.
     pub multiplier: u64,
 }
 
@@ -55,8 +71,12 @@ pub const INITIAL_BACKOFF: BackoffState = BackoffState {
     multiplier: 1,
 };
 
-/// What: One jittered wait from Git's formula `(750 + rand() % 500) * backoff / 1000`, rounded down.
-/// Why:  Jitter spreads retrying processes apart; `random` is a value in `[0, 1)`.
+/// What:
+///  One jittered wait from Git's formula `(750 + rand() % 500) * backoff / 1000`,
+///  rounded down.
+/// Why:
+///   Jitter spreads retrying processes apart;
+///  `random` is a value in `[0, 1)`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,8 +87,13 @@ pub fn jittered_wait(state: BackoffState, random: f64) -> u64 {
     return (JITTER_FLOOR_PERMILLE + span) * state.multiplier / PERMILLE;
 }
 
-/// What: The next backoff: `multiplier += 2n + 1`, capped at `BACKOFF_MAX_MULTIPLIER`.
-/// Why:  Adding `2n + 1` makes the multiplier the square of the step, which is Git's schedule.
+/// What:
+///  The next backoff:
+///  `multiplier += 2n + 1`,
+///  capped at `BACKOFF_MAX_MULTIPLIER`.
+/// Why:
+///   Adding `2n + 1` makes the multiplier the square of the step,
+///  which is Git's schedule.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,8 +113,12 @@ pub fn next_backoff(state: BackoffState) -> BackoffState {
     };
 }
 
-/// What: What one attempt found, or why the wait ended without a result.
-/// Why:  The caller reports the owner and the consequence; the attempt itself is the lock check.
+/// What:
+///  What one attempt found,
+///  or why the wait ended without a result.
+/// Why:
+///   The caller reports the owner and the consequence;
+///  the attempt itself is the lock check.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,9 +130,11 @@ pub enum WaitFailure {
     UnprovenOwner {
         /// Last attempt's evidence.
         evidence: Box<Evidence>,
-        /// Last verdict, which is never proven alive.
+        /// Last verdict,
+        ///  which is never proven alive.
         verdict: Verdict,
-        /// Budget that ran out, in milliseconds.
+        /// Budget that ran out,
+        ///  in milliseconds.
         timeout_ms: u64,
         /// What cli-git therefore did not do.
         consequence: String,
@@ -112,8 +143,12 @@ pub enum WaitFailure {
     Read(String),
 }
 
-/// What: The side effects of a wait, injected so tests can drive a fake clock and fake holders.
-/// Why:  The host implementation reads `/proc`, sleeps and writes standard error;
+/// What:
+///  The side effects of a wait,
+///  injected so tests can drive a fake clock and fake holders.
+/// Why:
+///   The host implementation reads `/proc`,
+///  sleeps and writes standard error;
 ///       tests script each step.
 ///
 /// In TS you'd write (pseudocode):
@@ -123,7 +158,8 @@ pub enum WaitFailure {
 pub trait WaitEffects {
     /// Whether the lock currently exists (the attempt).
     fn lock_present(&mut self) -> Result<bool, String>;
-    /// This attempt's evidence, or nothing when the lock was released meanwhile.
+    /// This attempt's evidence,
+    ///  or nothing when the lock was released meanwhile.
     fn gather(&mut self) -> Result<Option<Evidence>, String>;
     /// Sleeps for `ms` milliseconds.
     fn sleep(&mut self, ms: u64);
@@ -135,8 +171,13 @@ pub trait WaitEffects {
     fn report(&mut self, line: &str);
 }
 
-/// What: The per-wait loop state: backoff, time spent unproven, and whether the holder line was written.
-/// Why:  `state` in `waitForIndexLock`.
+/// What:
+///  The per-wait loop state:
+///  backoff,
+///  time spent unproven,
+///  and whether the holder line was written.
+/// Why:
+///   `state` in `waitForIndexLock`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -152,8 +193,12 @@ struct LoopState {
     reported: bool,
 }
 
-/// What: Wait until the lock is gone, or fail once a dead or unproven owner outlasts `timeout_ms`.
-/// Why:  A live holder gets an unbounded wait with one diagnostic; other holders get the budget,
+/// What:
+///  Wait until the lock is gone,
+///  or fail once a dead or unproven owner outlasts `timeout_ms`.
+/// Why:
+///   A live holder gets an unbounded wait with one diagnostic;
+///  other holders get the budget,
 ///       which includes the evidence gathering because a `/proc` scan is not free.
 ///
 /// In TS you'd write (pseudocode):
@@ -229,8 +274,14 @@ pub fn wait_for_index_lock(
     }
 }
 
-/// What: The diagnostic text of an unproven-owner failure.
-/// Why:  The person needs the lock path, the owner state, the budget, what was not done, and the evidence.
+/// What:
+///  The diagnostic text of an unproven-owner failure.
+/// Why:
+///   The person needs the lock path,
+///  the owner state,
+///  the budget,
+///  what was not done,
+///  and the evidence.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

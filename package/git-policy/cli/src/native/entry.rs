@@ -285,10 +285,13 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
 }
 
 /// What:
-///  Run a coordinated forward: print its failure, run Git under the landing lock,
+///  Run a coordinated forward:
+///  print its failure,
+///  run Git under the landing lock,
 ///  or replace the process when no coordination applies after all.
 /// Why:
-///   The lock must outlive Git, so only a run that takes no lock may replace the process.
+///   The lock must outlive Git,
+///  so only a run that takes no lock may replace the process.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -317,9 +320,12 @@ fn run_coordinated_action(forward: &CoordinatedForward) -> i32 {
 }
 
 /// What:
-///  Choose how a forwarded command runs: plainly, or under the landing lock when it writes the real index.
+///  Choose how a forwarded command runs:
+///  plainly,
+///  or under the landing lock when it writes the real index.
 /// Why:
-///   Only index writers inside a repository coordinate, with the configured patience.
+///   Only index writers inside a repository coordinate,
+///  with the configured patience.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -370,7 +376,7 @@ fn forward_action(
         }
     };
     return Action::ForwardCoordinated {
-        forward: CoordinatedForward {
+        forward: Box::new(CoordinatedForward {
             real_git,
             arguments,
             overlay,
@@ -378,7 +384,7 @@ fn forward_action(
             command,
             environment: environment.to_vec(),
             timeout_ms: loaded.config.concurrency.index_lock.unproven_owner_timeout_ms,
-        },
+        }),
         stderr,
     };
 }

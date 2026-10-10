@@ -109,37 +109,15 @@ pub(super) fn stopped(action: Action) -> String {
     }
 }
 
-/// The forward action of `forward`,
-///  with these warning events written first.
-fn forward_after(arguments: Vec<OsString>, warnings: &str) -> Action {
-    // `match` takes the plain forward apart and rebuilds it with the warnings.
-    match forward(arguments) {
-        Action::Forward {
-            real_git,
-            arguments: forwarded,
-            overlay,
-            ..
-        } => {
-            return Action::Forward {
-                real_git,
-                arguments: forwarded,
-                overlay,
-                stderr: String::from(warnings),
-            };
-        }
-        Action::Exit { .. } => panic!("the plain forward is a forward"),
-        Action::ForwardCoordinated { forward, .. } => {
-            return Action::ForwardCoordinated {
-                forward,
-                stderr: String::from(warnings),
-            };
-        }
-    }
-}
-
-/// What: Check that a planned `git add` in a repository is coordinated, with the given arguments,
-///  warnings, real Git and lock-PID overlay, and the default unproven-owner budget.
-/// Why:  The identity and the lease are the repository's own, so only the fixed fields are compared.
+/// What:
+///  Check that a planned `git add` in a repository is coordinated,
+///  with the given arguments,
+///  warnings,
+///  real Git and lock-PID overlay,
+///  and the default unproven-owner budget.
+/// Why:
+///   The identity and the lease are the repository's own,
+///  so only the fixed fields are compared.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,6 +1,11 @@
-//! What: The host side effects of the index-lock wait: `/proc` and Git-free lock reads, real sleeps,
+//! What:
+//!  The host side effects of the index-lock wait:
+//!  `/proc` and Git-free lock reads,
+//!  real sleeps,
 //!       operating-system randomness and standard error.
-//! Why: `WaitEffects` is the seam the controls replace; this is what the executable runs.
+//! Why:
+//!  `WaitEffects` is the seam the controls replace;
+//!  this is what the executable runs.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,22 +21,28 @@ use std::path::{Path, PathBuf};
 /// `Instant` is a monotonic clock reading.
 use std::time::{Duration, Instant};
 
-/// What: The host effects for one wait on one real index.
-/// Why:  The clock starts when the wait does, so `now_ms` measures the wait's own time.
+/// What:
+///  The host effects for one wait on one real index.
+/// Why:
+///   The clock starts when the wait does,
+///  so `now_ms` measures the wait's own time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const effects = { ...HOST_WAIT_EFFECTS, now: () => performance.now() - start };
 /// ```
 pub struct HostWaitEffects {
-    /// The worktree's real index; the lock is `<real index>.lock`.
+    /// The worktree's real index;
+    ///  the lock is `<real index>.lock`.
     pub real_index: PathBuf,
     /// When the wait started.
     pub started: Instant,
 }
 
-/// What: Turn an I/O error into the text the wait reports.
-/// Why:  A named function keeps the conversion free of closures.
+/// What:
+///  Turn an I/O error into the text the wait reports.
+/// Why:
+///   A named function keeps the conversion free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -41,8 +52,10 @@ fn io_text(error: std::io::Error) -> String {
     return error.to_string();
 }
 
-/// What: The lock path of a real index.
-/// Why:  Git names the lock `<index>.lock` beside the index.
+/// What:
+///  The lock path of a real index.
+/// Why:
+///   Git names the lock `<index>.lock` beside the index.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

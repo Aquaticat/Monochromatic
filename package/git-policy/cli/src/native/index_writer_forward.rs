@@ -1,7 +1,14 @@
-//! What: Running a forwarded index writer under its landing lock: coordinate, run real Git as a child
-//!       that inherits the landing lease, release the lock once Git returns.
-//! Why: Replacing the process would drop the lock with the process image, so a coordinated writer
-//!      waits for Git instead. The nested wrappers Git starts see the lease and do not wait on it
+//! What:
+//!  Running a forwarded index writer under its landing lock:
+//!  coordinate,
+//!  run real Git as a child
+//!       that inherits the landing lease,
+//!  release the lock once Git returns.
+//! Why:
+//!  Replacing the process would drop the lock with the process image,
+//!  so a coordinated writer
+//!      waits for Git instead.
+//!  The nested wrappers Git starts see the lease and do not wait on it
 //!      (`src/forward-real-git.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -23,8 +30,13 @@ use std::ffi::OsString;
 /// `Path` and `PathBuf` are borrowed and owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// What: Everything a coordinated forward needs, owned, so the planned action can carry it.
-/// Why:  The plan decides that coordination is needed; the run performs it.
+/// What:
+///  Everything a coordinated forward needs,
+///  owned,
+///  so the planned action can carry it.
+/// Why:
+///   The plan decides that coordination is needed;
+///  the run performs it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,22 +46,27 @@ use std::path::{Path, PathBuf};
 pub struct CoordinatedForward {
     /// Real Git executable.
     pub real_git: PathBuf,
-    /// Arguments Git receives, as the caller gave them.
+    /// Arguments Git receives,
+    ///  as the caller gave them.
     pub arguments: Vec<OsString>,
     /// Environment variables added to Git's inherited environment.
     pub overlay: Vec<(OsString, OsString)>,
     /// Repository shape of the invocation.
     pub identity: WorktreeIdentity,
-    /// The command after alias expansion, which decides the coordination.
+    /// The command after alias expansion,
+    ///  which decides the coordination.
     pub command: ResolvedCommand,
-    /// The environment the invocation inherited, which may carry an ancestor's lease.
+    /// The environment the invocation inherited,
+    ///  which may carry an ancestor's lease.
     pub environment: Vec<(OsString, OsString)>,
     /// `indexLock.unprovenOwnerTimeoutMs`.
     pub timeout_ms: u64,
 }
 
-/// What: How a coordinated forward ended.
-/// Why:  Only a run that was not coordinated may replace the process.
+/// What:
+///  How a coordinated forward ended.
+/// Why:
+///   Only a run that was not coordinated may replace the process.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,11 +74,13 @@ pub struct CoordinatedForward {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum CoordinatedRun {
-    /// No coordination applies; the caller replaces its process with Git.
+    /// No coordination applies;
+    ///  the caller replaces its process with Git.
     NotCoordinated,
     /// Git ran under the landing lock and exited with this status.
     Ran(i32),
-    /// The command did not run; its standard error and exit status.
+    /// The command did not run;
+    ///  its standard error and exit status.
     Failed {
         /// Text for standard error.
         stderr: String,
@@ -70,8 +89,14 @@ pub enum CoordinatedRun {
     },
 }
 
-/// What: Coordinate, run Git as a child with the lease, release the lock, and report the status.
-/// Why:  `forwardToRealGit`: the lock is held until real Git returns.
+/// What:
+///  Coordinate,
+///  run Git as a child with the lease,
+///  release the lock,
+///  and report the status.
+/// Why:
+///   `forwardToRealGit`:
+///  the lock is held until real Git returns.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -104,8 +129,11 @@ pub fn run_coordinated_forward(forward: &CoordinatedForward) -> CoordinatedRun {
     return finish(outcome, released, forward.real_git.as_path());
 }
 
-/// What: The run's result once Git returned and the lock was released.
-/// Why:  Git's status is the answer unless the lock could not be released, which is reported.
+/// What:
+///  The run's result once Git returned and the lock was released.
+/// Why:
+///   Git's status is the answer unless the lock could not be released,
+///  which is reported.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -130,8 +158,10 @@ fn finish(outcome: std::io::Result<ChildOutcome>, released: Result<(), String>, 
     return CoordinatedRun::Ran(exit_code(child));
 }
 
-/// What: The engine failure a refused coordination reports.
-/// Why:  The unproven owner and read failures each keep their own event.
+/// What:
+///  The engine failure a refused coordination reports.
+/// Why:
+///   The unproven owner and read failures each keep their own event.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

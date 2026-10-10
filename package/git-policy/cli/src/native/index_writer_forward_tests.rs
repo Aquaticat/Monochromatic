@@ -1,5 +1,8 @@
-//! Controls for the coordinated forward: a plain writer outside a repository runs unlocked, a
-//! writer inside one runs as a child that holds the landing lock and hands over the lease, and a
+//! Controls for the coordinated forward:
+//!  a plain writer outside a repository runs unlocked,
+//!  a
+//! writer inside one runs as a child that holds the landing lock and hands over the lease,
+//!  and a
 //! failed coordination never runs Git.
 
 use super::*;
@@ -9,7 +12,8 @@ use crate::test_support::{REAL_GIT, fixture, isolated_overlay, remove, repositor
 use crate::action::ENGINE_FAILURE_EXIT_CODE;
 use crate::worktree_identity::resolve_worktree_identity;
 
-/// The forward for `git add <path>` in a repository, with a short unproven budget.
+/// The forward for `git add <path>` in a repository,
+///  with a short unproven budget.
 fn add_forward(repo: &Path) -> CoordinatedForward {
     let prefix: Vec<OsString> = vec![OsString::from("-C"), repo.as_os_str().to_owned()];
     let identity: WorktreeIdentity = resolve_worktree_identity(
@@ -41,7 +45,8 @@ fn add_forward(repo: &Path) -> CoordinatedForward {
     };
 }
 
-/// A writer with a free landing lock runs real Git under the lock, which is free again afterwards.
+/// A writer with a free landing lock runs real Git under the lock,
+///  which is free again afterwards.
 #[test]
 fn a_coordinated_add_runs_git_and_releases_the_lock() {
     let root: PathBuf = fixture("forward-add");
@@ -60,7 +65,8 @@ fn a_coordinated_add_runs_git_and_releases_the_lock() {
     remove(root.as_path());
 }
 
-/// A command whose coordination fails does not run Git: the failure is the result.
+/// A command whose coordination fails does not run Git:
+///  the failure is the result.
 #[test]
 fn a_failed_coordination_does_not_run_git() {
     let root: PathBuf = fixture("forward-refused");

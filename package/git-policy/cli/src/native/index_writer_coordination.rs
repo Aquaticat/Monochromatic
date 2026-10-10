@@ -1,7 +1,13 @@
-//! What: Coordination of a forwarded index writer with concurrent landings: the landing lock is taken
-//!       after recovery, a foreign `index.lock` is waited for under the classification rules, and the
+//! What:
+//!  Coordination of a forwarded index writer with concurrent landings:
+//!  the landing lock is taken
+//!       after recovery,
+//!  a foreign `index.lock` is waited for under the classification rules,
+//!  and the
 //!       lock is handed to real Git through the landing lease until Git returns.
-//! Why: An index writer must not interleave with a landing commit, and a nested wrapper invoked by the
+//! Why:
+//!  An index writer must not interleave with a landing commit,
+//!  and a nested wrapper invoked by the
 //!      coordinated Git (for example `git rebase --exec 'git add'`) must not wait on the lock its
 //!      ancestor holds (`src/index-lock/index-writer-coordination.ts`).
 //!
@@ -18,7 +24,8 @@ use super::index_lock_wait_host::HostWaitEffects;
 use super::index_writer_commands::is_index_writer;
 /// The landing-location query.
 use super::landing_location::{LandingLocation, resolve_landing_location};
-/// The engine failure event, rendered for standard error.
+/// The engine failure event,
+///  rendered for standard error.
 use super::diagnostics::{EngineFailureCode, render_engine_failure};
 /// Startup recovery run before the landing lock is taken.
 use super::transaction_gate::{Gate, recover_for_command};
@@ -40,22 +47,29 @@ use std::ffi::OsString;
 use std::time::Instant;
 use std::path::Path;
 
-/// What: The landing lock held by an index writer, and the lease real Git inherits.
-/// Why:  The lock is released after Git returns; the lease tells nested wrappers the ancestor holds it.
+/// What:
+///  The landing lock held by an index writer,
+///  and the lease real Git inherits.
+/// Why:
+///   The lock is released after Git returns;
+///  the lease tells nested wrappers the ancestor holds it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type IndexWriterCoordination = AsyncDisposable & { environment: Record<string, string> };
 /// ```
 pub struct Coordination {
-    /// The landing lock, released when the coordination ends.
+    /// The landing lock,
+    ///  released when the coordination ends.
     lock: OwnerLock,
     /// The lease variable and its value.
     pub lease: (OsString, OsString),
 }
 
-/// What: Why a coordinated command must not run.
-/// Why:  Each case has its own stderr event and exit status.
+/// What:
+///  Why a coordinated command must not run.
+/// Why:
+///   Each case has its own stderr event and exit status.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -70,8 +84,11 @@ pub enum CoordinationFailure {
 }
 
 impl CoordinationFailure {
-    /// What: The engine failure event for this failure, as standard error.
-    /// Why:  The incumbent reports both as engine failures with exit status 2.
+    /// What:
+    ///  The engine failure event for this failure,
+    ///  as standard error.
+    /// Why:
+    ///   The incumbent reports both as engine failures with exit status 2.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -89,8 +106,10 @@ impl CoordinationFailure {
     }
 }
 
-/// What: The inputs of one coordination.
-/// Why:  Named fields keep the call readable and satisfy the parameter-object rule.
+/// What:
+///  The inputs of one coordination.
+/// Why:
+///   Named fields keep the call readable and satisfy the parameter-object rule.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -103,14 +122,19 @@ pub struct CoordinationInput<'a> {
     pub identity: &'a WorktreeIdentity,
     /// The resolved forwarded command.
     pub command: &'a ResolvedCommand,
-    /// The environment the invocation inherited, carrying any lease.
+    /// The environment the invocation inherited,
+    ///  carrying any lease.
     pub environment: &'a [(OsString, OsString)],
     /// `indexLock.unprovenOwnerTimeoutMs`.
     pub timeout_ms: u64,
 }
 
-/// What: Whether the command's index is the real index, and where its landing lock lives.
-/// Why:  `coordinateIndexWriter` coordinates only with the real index, and only outside an ancestor's lease.
+/// What:
+///  Whether the command's index is the real index,
+///  and where its landing lock lives.
+/// Why:
+///   `coordinateIndexWriter` coordinates only with the real index,
+///  and only outside an ancestor's lease.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -137,8 +161,11 @@ fn coordinated_location(
     return Ok(Some(location));
 }
 
-/// What: Take the landing lock, waiting while a live landing holds it.
-/// Why:  Recovery runs before the acquisition because the native recovery takes the landing lock itself.
+/// What:
+///  Take the landing lock,
+///  waiting while a live landing holds it.
+/// Why:
+///   Recovery runs before the acquisition because the native recovery takes the landing lock itself.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -161,8 +188,12 @@ fn acquire_landing(context: &GitContext, identity: &WorktreeIdentity, location: 
     }
 }
 
-/// What: Wait for any foreign `index.lock` to clear, under the classification rules.
-/// Why:  The lock is held meanwhile, so no landing starts beside the index writer.
+/// What:
+///  Wait for any foreign `index.lock` to clear,
+///  under the classification rules.
+/// Why:
+///   The lock is held meanwhile,
+///  so no landing starts beside the index writer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -197,9 +228,14 @@ fn wait_for_lock(
     }
 }
 
-/// What: Coordinate one forwarded command: nothing for a non-writer, otherwise hold the landing lock
+/// What:
+///  Coordinate one forwarded command:
+///  nothing for a non-writer,
+///  otherwise hold the landing lock
 ///       and return the lease real Git inherits.
-/// Why:  `coordinateIndexWriter`; the lock is released by the caller after Git returns.
+/// Why:
+///   `coordinateIndexWriter`;
+///  the lock is released by the caller after Git returns.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -232,8 +268,11 @@ pub fn coordinate_index_writer(input: &CoordinationInput<'_>) -> Result<Option<C
     }));
 }
 
-/// What: The subcommand's name as text, for the diagnostics.
-/// Why:  A message names the command the wrapper did not run.
+/// What:
+///  The subcommand's name as text,
+///  for the diagnostics.
+/// Why:
+///   A message names the command the wrapper did not run.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -243,8 +282,11 @@ fn command_name(command: &ResolvedCommand) -> String {
     return String::from_utf8_lossy(command.word()).into_owned();
 }
 
-/// What: Release a lock whose failure cannot be reported further.
-/// Why:  A release error after a failed wait is dropped; the wait's failure is the one that matters.
+/// What:
+///  Release a lock whose failure cannot be reported further.
+/// Why:
+///   A release error after a failed wait is dropped;
+///  the wait's failure is the one that matters.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -255,8 +297,10 @@ fn release_quietly(lock: OwnerLock) {
 }
 
 impl Coordination {
-    /// What: Release the landing lock after real Git returned.
-    /// Why:  Releasing reports a failure the caller may still print.
+    /// What:
+    ///  Release the landing lock after real Git returned.
+    /// Why:
+    ///   Releasing reports a failure the caller may still print.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

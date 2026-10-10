@@ -108,6 +108,27 @@ const plantedControls = [
     failing: 'index_lock_evidence::tests::classification_prefers_a_descriptor_then_the_pid_file',
   },
   {
+    name: 'coordinated Git does not inherit the landing lease',
+    file: 'src/native/index_writer_forward.rs',
+    from: 'child_overlay.push(coordination.lease.clone());',
+    to: 'let _ = coordination.lease.clone();',
+    failing: 'coordination::a_nested_git_add_inside_rebase_does_not_deadlock',
+  },
+  {
+    name: 'a proven holder is polled without the poll cap',
+    file: 'src/native/index_lock_wait.rs',
+    from: 'effects.sleep(backoff_ms.min(cap));',
+    to: 'effects.sleep(backoff_ms);',
+    failing: 'index_lock_wait::tests::a_proven_pid_file_owner_is_waited_for_without_limit',
+  },
+  {
+    name: 'evidence gathering is not counted toward the unproven budget',
+    file: 'src/native/index_lock_wait.rs',
+    from: 'state.unproven_ms += effects.now_ms() - iteration_started;',
+    to: 'state.unproven_ms += 0.0;',
+    failing: 'index_lock_wait::tests::gathering_evidence_counts_toward_the_budget',
+  },
+  {
     name: 'safe-integer bound on process start ticks',
     file: 'src/native/process_start.rs',
     from: 'if ticks > super::json_record::MAX_SAFE_INTEGER {',

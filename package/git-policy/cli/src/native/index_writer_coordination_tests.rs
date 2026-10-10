@@ -1,5 +1,8 @@
-//! Controls for index-writer coordination against real repositories: which commands coordinate,
-//! the lease a held lock produces, waiting behind a live landing, and the unproven-owner failure.
+//! Controls for index-writer coordination against real repositories:
+//!  which commands coordinate,
+//! the lease a held lock produces,
+//!  waiting behind a live landing,
+//!  and the unproven-owner failure.
 
 use super::*;
 use crate::forwarded_command::{ResolvedCommand, Route};
@@ -30,14 +33,16 @@ fn context() -> GitContext {
     return git_context();
 }
 
-/// The identity of a repository, resolved with real Git.
+/// The identity of a repository,
+///  resolved with real Git.
 fn identity_of(repo: &Path) -> WorktreeIdentity {
     let prefix: Vec<OsString> = vec![OsString::from("-C"), repo.as_os_str().to_owned()];
     return resolve_worktree_identity(Path::new(REAL_GIT), prefix.as_slice(), isolated_overlay().as_slice())
         .expect("identity of the fixture repository");
 }
 
-/// A fixture repository with one commit, and the registry directory beside its git directory.
+/// A fixture repository with one commit,
+///  and the registry directory beside its git directory.
 fn scene(name: &str) -> (PathBuf, PathBuf) {
     let root: PathBuf = fixture(name);
     let repo: PathBuf = repository(root.as_path(), "repo");
@@ -86,7 +91,9 @@ fn a_writer_outside_a_repository_takes_no_coordination() {
     remove(root.as_path());
 }
 
-/// An index other than the real one, selected by `GIT_INDEX_FILE`, takes no coordination.
+/// An index other than the real one,
+///  selected by `GIT_INDEX_FILE`,
+///  takes no coordination.
 #[test]
 fn an_alternate_index_takes_no_coordination() {
     let (root, repo): (PathBuf, PathBuf) = scene("coordination-alternate");
@@ -138,7 +145,8 @@ fn an_inherited_lease_takes_no_coordination() {
     remove(root.as_path());
 }
 
-/// A writer with a free landing lock takes it and hands real Git a lease naming it; releasing frees it.
+/// A writer with a free landing lock takes it and hands real Git a lease naming it;
+///  releasing frees it.
 #[test]
 fn a_writer_takes_the_landing_lock_and_hands_over_a_lease() {
     let (root, repo): (PathBuf, PathBuf) = scene("coordination-free");
@@ -172,10 +180,12 @@ fn a_writer_takes_the_landing_lock_and_hands_over_a_lease() {
     remove(root.as_path());
 }
 
-/// The repository the waiter thread coordinates in; set once by the test that starts it.
+/// The repository the waiter thread coordinates in;
+///  set once by the test that starts it.
 static WAITER_REPO: OnceLock<PathBuf> = OnceLock::new();
 
-/// The waiter thread's body: one coordination in the repository the test named.
+/// The waiter thread's body:
+///  one coordination in the repository the test named.
 fn wait_in_thread() -> Result<bool, CoordinationFailure> {
     let repo: PathBuf = match WAITER_REPO.get() {
         Some(path) => path.clone(),
@@ -189,10 +199,8 @@ fn wait_in_thread() -> Result<bool, CoordinationFailure> {
         environment: &[],
         timeout_ms: 100,
     };
-    match coordinate_index_writer(&input) {
-        Ok(found) => return Ok(found.is_some()),
-        Err(failure) => return Err(failure),
-    }
+    let found: Option<Coordination> = coordinate_index_writer(&input)?;
+    return Ok(found.is_some());
 }
 
 /// A writer waits behind a live landing and takes the lock when it is released.

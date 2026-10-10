@@ -1,5 +1,9 @@
-//! Controls for the landing-location query: the layout parser's refusals, and the answers real Git
-//! gives inside a repository, outside one, and with an alternate index.
+//! Controls for the landing-location query:
+//!  the layout parser's refusals,
+//!  and the answers real Git
+//! gives inside a repository,
+//!  outside one,
+//!  and with an alternate index.
 
 use super::*;
 use crate::test_support::{REAL_GIT, fixture, git_context, isolated_overlay, remove, repository};
@@ -17,7 +21,8 @@ fn a_complete_layout_is_parsed_in_order() {
     assert_eq!(location.registry_root, PathBuf::from("/r/.git/cli-git-transactions"));
 }
 
-/// A missing or empty line would point the lock somewhere else, so the parser refuses it.
+/// A missing or empty line would point the lock somewhere else,
+///  so the parser refuses it.
 #[test]
 fn an_incomplete_layout_is_refused() {
     assert!(parse_layout(b"").is_err());
@@ -25,7 +30,8 @@ fn an_incomplete_layout_is_refused() {
     assert!(parse_layout(b"/r/.git\n\n/r/.git/cli-git-transactions\n").is_err());
 }
 
-/// Inside a repository the query answers with the git directory, the index and the registry.
+/// Inside a repository the query answers with the git directory,
+///  the index and the registry.
 #[test]
 fn the_query_answers_inside_a_repository() {
     let root: PathBuf = fixture("landing-location-inside");
@@ -40,7 +46,8 @@ fn the_query_answers_inside_a_repository() {
     remove(root.as_path());
 }
 
-/// Outside a repository the answer is nothing, not an error.
+/// Outside a repository the answer is nothing,
+///  not an error.
 #[test]
 fn the_query_answers_nothing_outside_a_repository() {
     let root: PathBuf = fixture("landing-location-outside");
@@ -52,7 +59,8 @@ fn the_query_answers_nothing_outside_a_repository() {
     remove(root.as_path());
 }
 
-/// With `GIT_INDEX_FILE` set, the index Git writes differs from the real one and the answer says so.
+/// With `GIT_INDEX_FILE` set,
+///  the index Git writes differs from the real one and the answer says so.
 #[test]
 fn an_alternate_index_is_reported_apart_from_the_real_one() {
     let root: PathBuf = fixture("landing-location-alternate");

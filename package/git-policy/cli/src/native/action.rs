@@ -72,10 +72,13 @@ pub enum Action {
         ///  written to standard error before Git starts.
         stderr: String,
     },
-    /// Forward an index writer under its landing lock: coordinate, run Git as a child, release.
+    /// Forward an index writer under its landing lock:
+    ///  coordinate,
+    ///  run Git as a child,
+    ///  release.
     ForwardCoordinated {
         /// What the coordinated run needs.
-        forward: CoordinatedForward,
+        forward: Box<CoordinatedForward>,
         /// Warning events written to standard error before the coordination starts.
         stderr: String,
     },
