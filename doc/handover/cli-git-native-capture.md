@@ -66,3 +66,22 @@ so the acceptance tests drive this lane's public API in-process against the cont
 ## Choices open to veto
 
 None yet.
+
+## Progress
+
+- `802a5e907c` inventory (this file).
+- `b08758d` `capture_invocation.rs`: layout, symbolic `HEAD`, conclusion, ref format and base.
+  Reuses the journal's `Base`, `SymbolicHead`, `Conclusion` and `RefFormat`.
+  Tests were written in the same commit as the implementation, not before it.
+  The brief asked for tests first, so this is a deviation.
+- `4726c5f985` `capture_order.rs`: capture lock, store identity, sequence write, staged-path listing,
+  `captured.json` writer.
+  Tests were again written alongside the implementation.
+
+## Git versions
+
+The host `/usr/bin/git` is 2.55.0, and the lane's tests run against it.
+The coordinator's decision lowers the native minimum to 2.55.0,
+so the tests here run against 2.55.0 as well as the container's 2.56.0.
+Host runs so far (13 capture-order tests and 8 invocation tests) pass on 2.55.0.
+Shadow, index and pathspec-file behavior are probed against both versions before they are recorded as matching.
