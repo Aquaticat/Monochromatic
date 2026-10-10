@@ -230,3 +230,47 @@ fn add_of_a_raised_manifest_is_not_refused() {
     );
     remove(&fixture);
 }
+
+/// A staged deletion of an unrelated file does not stop `check --all` from reporting both
+/// dependents of a raised manifest: the check reports them and exits 1, as it does without it.
+#[test]
+fn a_staged_deletion_does_not_block_the_check() {
+    let fixture: Fixture = fixture("dependent-version-deletion");
+    let repo: PathBuf = workspace(&fixture);
+    write(repo.as_path(), "package/module/old/notes.txt", "retired\n");
+    git(
+        &fixture,
+        repo.as_path(),
+        &["add", "--", "package/module/old/notes.txt"],
+    );
+    git(
+        &fixture,
+        repo.as_path(),
+        &[
+            "commit",
+            "--quiet",
+            "--message=notes",
+            "--",
+            "package/module/old/notes.txt",
+        ],
+    );
+    git(
+        &fixture,
+        repo.as_path(),
+        &["rm", "--quiet", "--", "package/module/old/notes.txt"],
+    );
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["cli-git", "check", "--all"]),
+        Observed {
+            code: Some(1),
+            stdout: format!(
+                "{}{}",
+                stale(0, "b", "2.0.0", "2.0.1"),
+                stale(1, "c", "3.0.0", "3.0.1")
+            )
+            .into_bytes(),
+            stderr: Vec::new(),
+        }
+    );
+    remove(&fixture);
+}
