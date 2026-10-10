@@ -329,6 +329,7 @@ fn native_tree(repo: &Path, indexes: &CaptureIndexes, choice: &IndexSelection) -
 #[test]
 fn private_index_trees_match_the_incumbent_for_each_selection() {
     let root: PathBuf = fixture("commit-index-incumbent-explicit");
+    {
     let (repo, indexes, base) = differential_state(root.join("p").as_path(), &[]);
     let pathspecs: Vec<String> = vec![String::from("a.txt")];
     assert_eq!(
@@ -336,6 +337,7 @@ fn private_index_trees_match_the_incumbent_for_each_selection() {
         INCUMBENT_ONE_FILE_TREE,
         "explicit-path"
     );
+    }
     remove(root.as_path());
 }
 
@@ -345,6 +347,7 @@ fn index_mode_trees_match_the_incumbent() {
     let root: PathBuf = fixture("commit-index-incumbent-index");
     let none: Vec<String> = Vec::new();
 
+    {
     let (repo, indexes, base) = differential_state(root.join("plain").as_path(), &["a.txt"]);
     assert_eq!(
         native_tree(&repo, &indexes, &selection(TransactionMode::Index, &none, &base)),
@@ -352,16 +355,21 @@ fn index_mode_trees_match_the_incumbent() {
         "index-plain"
     );
 
+    }
+    {
     let (repo, indexes, base) = differential_state(root.join("tracked").as_path(), &[]);
     let mut tracked: IndexSelection = selection(TransactionMode::Index, &none, &base);
     tracked.stage_tracked_changes = true;
     assert_eq!(native_tree(&repo, &indexes, &tracked), INCUMBENT_TWO_FILE_TREE, "tracked-all");
 
+    }
+    {
     let (repo, indexes, base) = differential_state(root.join("include").as_path(), &["a.txt"]);
     let include_paths: Vec<String> = vec![String::from("b.txt")];
     let mut include: IndexSelection = selection(TransactionMode::Index, &include_paths, &base);
     include.stage_into_index = true;
     assert_eq!(native_tree(&repo, &indexes, &include), INCUMBENT_TWO_FILE_TREE, "include");
+    }
     remove(root.as_path());
 }
 
@@ -371,6 +379,7 @@ fn pathspec_file_trees_match_the_incumbent() {
     let root: PathBuf = fixture("commit-index-incumbent-files");
     let none: Vec<String> = Vec::new();
 
+    {
     let (repo, indexes, base) = differential_state(root.join("newline").as_path(), &[]);
     let list: PathBuf = root.join("newline.list");
     std::fs::write(&list, "a.txt\n").expect("list");
@@ -378,6 +387,8 @@ fn pathspec_file_trees_match_the_incumbent() {
     newline.pathspec_file = Some(list.as_path());
     assert_eq!(native_tree(&repo, &indexes, &newline), INCUMBENT_ONE_FILE_TREE, "newline file");
 
+    }
+    {
     let (repo, indexes, base) = differential_state(root.join("nul").as_path(), &[]);
     let list: PathBuf = root.join("nul.list");
     std::fs::write(&list, b"a.txt\0b.txt\0").expect("nul list");
@@ -386,6 +397,8 @@ fn pathspec_file_trees_match_the_incumbent() {
     nul.pathspec_file_nul = true;
     assert_eq!(native_tree(&repo, &indexes, &nul), INCUMBENT_TWO_FILE_TREE, "nul file");
 
+    }
+    {
     let (repo, indexes, base) = differential_state(root.join("stdin").as_path(), &[]);
     let mut input: &[u8] = b"a.txt\n";
     let stdin_path: PathBuf = materialize_pathspec_file(indexes.commit_index.parent().expect("transaction"), &repo, Some("-"), &mut input)
@@ -394,5 +407,6 @@ fn pathspec_file_trees_match_the_incumbent() {
     let mut from_stdin: IndexSelection = selection(TransactionMode::ExplicitPath, &none, &base);
     from_stdin.pathspec_file = Some(stdin_path.as_path());
     assert_eq!(native_tree(&repo, &indexes, &from_stdin), INCUMBENT_ONE_FILE_TREE, "stdin");
+    }
     remove(root.as_path());
 }
