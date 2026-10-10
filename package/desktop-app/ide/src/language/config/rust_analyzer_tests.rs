@@ -1,9 +1,12 @@
-//! rust-analyzer is told to watch through the IDE, and merged definitions keep their other settings.
+//! rust-analyzer is told to watch through the IDE,
+//!  and merged definitions keep their other settings.
 
 /// The registry under test and its unconfined setup.
 use super::super::{LanguageSetup, Languages};
-/// What: `json!` builds a JSON value from literal syntax.
-/// Why: The expected settings are written as JSON.
+/// What:
+///  `json!` builds a JSON value from literal syntax.
+/// Why:
+///  The expected settings are written as JSON.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,14 +27,17 @@ fn settings(setup: LanguageSetup) -> serde_json::Value {
     return definition.config.clone().expect("rust-analyzer settings");
 }
 
-/// Helix's own definition asks for server-side watching; the IDE replaces it with client-side watching.
+/// Helix's own definition asks for server-side watching;
+///  the IDE replaces it with client-side watching.
 #[test]
 fn rust_analyzer_watches_through_the_client() {
     let found = settings(LanguageSetup::unconfined());
     assert_eq!(found["files"]["watcher"], json!("client"));
 }
 
-/// A merged definition replaces the whole `files` table; the watcher is still set, and its siblings stay.
+/// A merged definition replaces the whole `files` table;
+///  the watcher is still set,
+///  and its siblings stay.
 #[test]
 fn merged_file_settings_keep_their_other_keys() {
     let setup = LanguageSetup {

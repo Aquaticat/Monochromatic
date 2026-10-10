@@ -1,13 +1,21 @@
-//! Watch exactly what the window shows, and turn change notifications into due rereads.
-//! Notifications never carry listings or text: the existing readers reread and fence their replies.
+//! Watch exactly what the window shows,
+//!  and turn change notifications into due rereads.
+//! Notifications never carry listings or text:
+//!  the existing readers reread and fence their replies.
 
-/// Navigation owns the watcher and the directory schedule; the source state owns its own schedule.
+/// Navigation owns the watcher and the directory schedule;
+///  the source state owns its own schedule.
 use super::{AppWindow, Navigation, State};
-/// A full reread asks for a reread of the displayed file once it has been quiet; the servers' changes go to
+/// A full reread asks for a reread of the displayed file once it has been quiet;
+///  the servers' changes go to
 /// the language worker.
 use ide_app::change_watch::{ServerChange, SourceChange};
-/// What: `Rc<RefCell<State>>` is the UI-thread shared source state; `BTreeSet` is an ordered set.
-/// Why: The watcher compares whole sets, so an unchanged tree sends nothing to the watch thread.
+/// What:
+///  `Rc<RefCell<State>>` is the UI-thread shared source state;
+///  `BTreeSet` is an ordered set.
+/// Why:
+///  The watcher compares whole sets,
+///  so an unchanged tree sends nothing to the watch thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,8 +28,10 @@ use std::{
     rc::Rc,
     time::{Duration, Instant},
 };
-/// What: `UnboundedSender` is the sending end of the language worker's queue without a size limit.
-/// Why: The change watcher sends from notify's thread and never waits.
+/// What:
+///  `UnboundedSender` is the sending end of the language worker's queue without a size limit.
+/// Why:
+///  The change watcher sends from notify's thread and never waits.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -29,9 +39,15 @@ use std::{
 /// ```
 use tokio::sync::mpsc::UnboundedSender;
 
-/// What: Watch the project's source folders for the language servers and send their changes to `feed`, or,
-///       with `None`, release those watches. `UnboundedSender<ServerChange>` is the language worker's queue.
-/// Why: The language worker says whether some server registered file watchers; the watcher lives here.
+/// What:
+///  Watch the project's source folders for the language servers and send their changes to `feed`,
+///  or,
+///       with `None`,
+///  release those watches.
+///  `UnboundedSender<ServerChange>` is the language worker's queue.
+/// Why:
+///  The language worker says whether some server registered file watchers;
+///  the watcher lives here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,8 +63,11 @@ pub(in crate::native) fn feed_servers(
 /// Shortest time between two watch retries asked for by scrolling.
 const SCROLL_RETRY_GAP: Duration = Duration::from_secs(1);
 
-/// The user scrolling the tree is a moment to retry watches that wait on the inotify limit, without the
-/// backoff; while every shown folder is watched, scrolling asks for nothing.
+/// The user scrolling the tree is a moment to retry watches that wait on the inotify limit,
+///  without the
+/// backoff;
+///  while every shown folder is watched,
+///  scrolling asks for nothing.
 pub(super) fn scrolled(window: &AppWindow, navigation: &mut Navigation, now: Instant) {
     let offset = window.get_tree_scroll_y();
     // What: `f32` comparison of the toolkit's scroll offset with the previous tick's.
@@ -80,7 +99,9 @@ pub(super) fn scrolled(window: &AppWindow, navigation: &mut Navigation, now: Ins
 }
 
 /// Recompute the shown directories from the visible rows and send them with the displayed file.
-/// Collapsed folders drop out, so their watches are removed; descendants of collapsed folders are not shown.
+/// Collapsed folders drop out,
+///  so their watches are removed;
+///  descendants of collapsed folders are not shown.
 pub(super) fn show(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     // `to_path_buf` copies the canonical root; it is always shown, even before its first listing.
     let mut shown = vec![navigation.workspace.root().to_path_buf()];
@@ -102,7 +123,8 @@ pub(super) fn show(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     navigation.shown = shown;
 }
 
-/// Apply notifications: notified shown directories and the displayed file become due for a reread.
+/// Apply notifications:
+///  notified shown directories and the displayed file become due for a reread.
 pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     let changes = navigation.watcher.take();
     let now = Instant::now();

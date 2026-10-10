@@ -1,15 +1,26 @@
-//! Watches for the language servers with a fake kernel: shared with the tree, given up for the tree under
-//! the limit, their own limit state logged once, and retried after the backoff.
+//! Watches for the language servers with a fake kernel:
+//!  shared with the tree,
+//!  given up for the tree under
+//! the limit,
+//!  their own limit state logged once,
+//!  and retried after the backoff.
 
 /// The decisions under test.
 use super::{ServerRequest, ServerWatches, TreeFirst, reconcile_servers};
-/// The tree's decisions, run through the sharing kernel.
+/// The tree's decisions,
+///  run through the sharing kernel.
 use crate::change_watch::reconcile::{Kernel, Request, Watches, reconcile};
-/// The backoff's first wait, and why an add failed.
+/// The backoff's first wait,
+///  and why an add failed.
 use crate::change_watch::{limit::FIRST_LIMIT_RETRY, watch_ops::WatchFailure};
-/// What: ordered path sets; `Path`/`PathBuf` are a borrowed and an owned path; `Duration`/`Instant`
+/// What:
+///  ordered path sets;
+///  `Path`/`PathBuf` are a borrowed and an owned path;
+///  `Duration`/`Instant`
 ///       a time span and a monotonic time point.
-/// Why: Every wake gets a time the test chooses, so the backoff is checked without waiting.
+/// Why:
+///  Every wake gets a time the test chooses,
+///  so the backoff is checked without waiting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,19 +32,22 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// A kernel with `free` watches left before it answers with the limit, holding the live watches.
+/// A kernel with `free` watches left before it answers with the limit,
+///  holding the live watches.
 struct Fake {
     /// Watches that can still be added before the limit answers.
     free: usize,
     /// Folders with a live kernel watch.
     live: BTreeSet<PathBuf>,
-    /// Every add attempted, in order.
+    /// Every add attempted,
+    ///  in order.
     adds: Vec<PathBuf>,
 }
 
 /// Count calls and play the limit.
 impl Kernel for Fake {
-    /// Succeed while watches are free, then answer with the limit.
+    /// Succeed while watches are free,
+    ///  then answer with the limit.
     fn add(&mut self, path: &Path) -> Result<(), WatchFailure> {
         self.adds.push(path.to_path_buf());
         assert!(
@@ -60,7 +74,8 @@ impl Kernel for Fake {
     }
 }
 
-/// The paths `/p/<name>` for each name, plus `/p`.
+/// The paths `/p/<name>` for each name,
+///  plus `/p`.
 fn folders(names: &[&str]) -> BTreeSet<PathBuf> {
     let mut paths = BTreeSet::from([PathBuf::from("/p")]);
     for name in names {
@@ -78,7 +93,8 @@ fn kernel(free: usize) -> Fake {
     };
 }
 
-/// A folder the tree and the servers both want keeps one kernel watch, and collapsing it in the tree
+/// A folder the tree and the servers both want keeps one kernel watch,
+///  and collapsing it in the tree
 /// does not remove the servers' watch.
 #[test]
 fn a_folder_both_want_keeps_one_watch() {
@@ -127,7 +143,8 @@ fn a_folder_both_want_keeps_one_watch() {
     );
 }
 
-/// A folder the servers already watch is shared when the tree shows it: no second kernel watch is added,
+/// A folder the servers already watch is shared when the tree shows it:
+///  no second kernel watch is added,
 /// and collapsing it in the tree leaves the servers' watch in place.
 #[test]
 fn a_folder_the_servers_watch_is_shared_with_the_tree() {
@@ -180,8 +197,12 @@ fn a_folder_the_servers_watch_is_shared_with_the_tree() {
     );
 }
 
-/// Under the limit, the tree gets the watches: one held only for the servers is given up, the servers
-/// enter their own limit state once, and they retry only after the backoff.
+/// Under the limit,
+///  the tree gets the watches:
+///  one held only for the servers is given up,
+///  the servers
+/// enter their own limit state once,
+///  and they retry only after the backoff.
 #[test]
 fn the_tree_comes_first_under_the_limit() {
     let start = Instant::now();
@@ -268,7 +289,8 @@ fn the_tree_comes_first_under_the_limit() {
     );
 }
 
-/// While the tree waits on the limit, the servers add nothing at all.
+/// While the tree waits on the limit,
+///  the servers add nothing at all.
 #[test]
 fn the_servers_wait_while_the_tree_waits() {
     let now = Instant::now();
@@ -306,7 +328,8 @@ fn the_servers_wait_while_the_tree_waits() {
     );
 }
 
-/// Folders no scan wants any more lose their watch, unless the tree holds them.
+/// Folders no scan wants any more lose their watch,
+///  unless the tree holds them.
 #[test]
 fn unwanted_folders_lose_only_the_servers_watch() {
     let now = Instant::now();

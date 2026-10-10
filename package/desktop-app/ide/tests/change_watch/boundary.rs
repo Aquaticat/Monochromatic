@@ -150,7 +150,11 @@ fn dropping_the_watcher_removes_its_kernel_watches() {
 }
 
 /// A displayed file outside the root (a go-to-definition target in the standard library) is not a
-/// watch failure: its folder is never asked for, so nothing is refused, logged, or reread in full.
+/// watch failure:
+///  its folder is never asked for,
+///  so nothing is refused,
+///  logged,
+///  or reread in full.
 #[test]
 fn a_displayed_file_outside_the_root_is_not_watched_and_not_a_failure() {
     let fixture = tempfile::tempdir().expect("disposable project");

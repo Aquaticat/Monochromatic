@@ -1,16 +1,27 @@
-//! The watch limit with a fake kernel: entered once, no further adds in the same wake, sweep retries
-//! only after the backoff, an immediate retry when what is shown changes, and one line when it is left.
+//! The watch limit with a fake kernel:
+//!  entered once,
+//!  no further adds in the same wake,
+//!  sweep retries
+//! only after the backoff,
+//!  an immediate retry when what is shown changes,
+//!  and one line when it is left.
 
 /// The decisions under test and the interface the fake implements.
 use super::{Kernel, Request, Watches, reconcile};
-/// The backoff's first and longest waits, and why an add failed.
+/// The backoff's first and longest waits,
+///  and why an add failed.
 use crate::change_watch::{
     limit::{FIRST_LIMIT_RETRY, LONGEST_LIMIT_RETRY},
     watch_ops::WatchFailure,
 };
-/// What: ordered path sets; `Path`/`PathBuf` are a borrowed and an owned path; `Duration`/`Instant`
+/// What:
+///  ordered path sets;
+///  `Path`/`PathBuf` are a borrowed and an owned path;
+///  `Duration`/`Instant`
 ///       a time span and a monotonic time point.
-/// Why: Every wake gets a time the test chooses, so the backoff is checked without waiting.
+/// Why:
+///  Every wake gets a time the test chooses,
+///  so the backoff is checked without waiting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,17 +33,20 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// A kernel with `free` watches left before it answers with the limit, recording every call.
+/// A kernel with `free` watches left before it answers with the limit,
+///  recording every call.
 struct Fake {
     /// Watches that can still be added before the limit answers.
     free: usize,
-    /// Every directory an add was attempted for, in order.
+    /// Every directory an add was attempted for,
+    ///  in order.
     adds: Vec<PathBuf>,
 }
 
 /// Count calls and play the limit.
 impl Kernel for Fake {
-    /// Succeed while watches are free, then answer with the limit.
+    /// Succeed while watches are free,
+    ///  then answer with the limit.
     fn add(&mut self, path: &Path) -> Result<(), WatchFailure> {
         self.adds.push(path.to_path_buf());
         if self.free == 0 {
@@ -65,7 +79,8 @@ fn shown(names: &[&str]) -> BTreeSet<PathBuf> {
     return paths;
 }
 
-/// A wake that brings a new desired set, as an expansion does.
+/// A wake that brings a new desired set,
+///  as an expansion does.
 fn expanded(names: &[&str]) -> Request {
     return Request {
         desired: Some(shown(names)),
@@ -73,7 +88,8 @@ fn expanded(names: &[&str]) -> Request {
     };
 }
 
-/// A wake that only asks for a retry, as the safety sweep does while something lacks a watch.
+/// A wake that only asks for a retry,
+///  as the safety sweep does while something lacks a watch.
 fn sweep() -> Request {
     return Request {
         retry: true,
@@ -81,8 +97,10 @@ fn sweep() -> Request {
     };
 }
 
-/// The first limit failure enters the state once and stops adding in that wake; sweeps then retry only
-/// after a doubling wait, while a change of what is shown retries at once and does not lengthen the wait.
+/// The first limit failure enters the state once and stops adding in that wake;
+///  sweeps then retry only
+/// after a doubling wait,
+///  while a change of what is shown retries at once and does not lengthen the wait.
 #[test]
 fn the_watch_limit_is_one_state_with_backoff() {
     let start = Instant::now();
@@ -175,7 +193,8 @@ fn the_watch_limit_is_one_state_with_backoff() {
     assert_eq!(kernel.adds.len(), 6, "the doubled wait was not honored");
 }
 
-/// When watches become free, the next allowed retry watches everything and leaves the state.
+/// When watches become free,
+///  the next allowed retry watches everything and leaves the state.
 #[test]
 fn freed_watches_end_the_limit_state() {
     let start = Instant::now();
@@ -209,7 +228,8 @@ fn freed_watches_end_the_limit_state() {
     assert!(!restored.everything, "leaving the limit reread everything");
 }
 
-/// The displayed file's folder is tried first, so with one watch left the source stays watched.
+/// The displayed file's folder is tried first,
+///  so with one watch left the source stays watched.
 #[test]
 fn the_displayed_files_folder_is_watched_first() {
     let start = Instant::now();
@@ -251,7 +271,8 @@ fn the_backoff_is_capped() {
     assert!(backoff.may_retry(now + LONGEST_LIMIT_RETRY));
 }
 
-/// Scrolling the tree retries a watch waiting on the limit at once, without waiting for the backoff,
+/// Scrolling the tree retries a watch waiting on the limit at once,
+///  without waiting for the backoff,
 /// and a failed user retry does not lengthen the backoff.
 #[test]
 fn a_user_retry_skips_the_backoff() {

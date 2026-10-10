@@ -1,10 +1,18 @@
 //! Decide which watches to add and remove for one wake of the watch thread.
-//! The watch calls are passed in, so tests drive this with failures they choose, the watch limit included.
+//! The watch calls are passed in,
+//!  so tests drive this with failures they choose,
+//!  the watch limit included.
 
-/// The watch-limit backoff, and why an add failed.
+/// The watch-limit backoff,
+///  and why an add failed.
 use super::{limit::LimitBackoff, watch_ops::WatchFailure};
-/// What: ordered sets and maps of owned paths; `Path` borrows a path; `Instant` is a monotonic time point.
-/// Why: Watches are keyed by directory, and the limit backoff runs on the monotonic clock.
+/// What:
+///  ordered sets and maps of owned paths;
+///  `Path` borrows a path;
+///  `Instant` is a monotonic time point.
+/// Why:
+///  Watches are keyed by directory,
+///  and the limit backoff runs on the monotonic clock.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +26,13 @@ use std::{
 
 /// The kernel calls a wake makes.
 ///
-/// What: a `trait` is an interface: any type with these two methods can be passed where a `Kernel` is expected.
-/// Why: The watch thread passes real inotify calls; tests pass fakes that fail on purpose, the limit included.
+/// What:
+///  a `trait` is an interface:
+///  any type with these two methods can be passed where a `Kernel` is expected.
+/// Why:
+///  The watch thread passes real inotify calls;
+///  tests pass fakes that fail on purpose,
+///  the limit included.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,10 +50,16 @@ pub trait Kernel {
 pub struct Watches {
     /// Directories with a live watch.
     pub active: BTreeSet<PathBuf>,
-    /// What: `BTreeMap<PathBuf, String>` maps each directory whose last watch attempt failed to that
-    ///       failure's text (`BTreeSet`, the sibling, would hold the directories without their text).
-    /// Why: Failed directories are retried only on request, and a retry that fails with the same text
-    ///      is neither logged nor reported again, so a retry every sweep does not repeat itself.
+    /// What:
+    ///  `BTreeMap<PathBuf, String>` maps each directory whose last watch attempt failed to that
+    ///       failure's text (`BTreeSet`,
+    ///  the sibling,
+    ///  would hold the directories without their text).
+    /// Why:
+    ///  Failed directories are retried only on request,
+    ///  and a retry that fails with the same text
+    ///      is neither logged nor reported again,
+    ///  so a retry every sweep does not repeat itself.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -49,8 +68,13 @@ pub struct Watches {
     pub failed: BTreeMap<PathBuf, String>,
     /// Directories without a watch because the inotify watch limit is reached.
     pub limited: BTreeSet<PathBuf>,
-    /// What: `Option<LimitBackoff>` is the backoff while the limit is reached, or `None` (`LimitBackoff | undefined`).
-    /// Why: The limit is one state: entering and leaving it are logged once, and sweep retries back off.
+    /// What:
+    ///  `Option<LimitBackoff>` is the backoff while the limit is reached,
+    ///  or `None` (`LimitBackoff | undefined`).
+    /// Why:
+    ///  The limit is one state:
+    ///  entering and leaving it are logged once,
+    ///  and sweep retries back off.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -59,18 +83,24 @@ pub struct Watches {
     pub limit: Option<LimitBackoff>,
     /// The UI's latest desired set.
     pub desired: BTreeSet<PathBuf>,
-    /// The displayed file as of the previous wake, to notice a switch to another file.
+    /// The displayed file as of the previous wake,
+    ///  to notice a switch to another file.
     pub file: Option<PathBuf>,
 }
 
-/// One wake's requests, taken from the shared state.
+/// One wake's requests,
+///  taken from the shared state.
 #[derive(Debug, Default)]
 pub struct Request {
-    /// A new desired set: the user expanded, collapsed, or switched files.
+    /// A new desired set:
+    ///  the user expanded,
+    ///  collapsed,
+    ///  or switched files.
     pub desired: Option<BTreeSet<PathBuf>>,
     /// The safety sweep asked to retry watches that failed.
     pub retry: bool,
-    /// The user acted on the tree; watches waiting on the limit are tried without the backoff.
+    /// The user acted on the tree;
+    ///  watches waiting on the limit are tried without the backoff.
     pub user_retry: bool,
     /// Live watches whose directory was removed or renamed.
     pub stale: BTreeSet<PathBuf>,
@@ -78,12 +108,16 @@ pub struct Request {
     pub file: Option<PathBuf>,
 }
 
-/// What one wake changed, for the UI.
+/// What one wake changed,
+///  for the UI.
 #[derive(Debug, Default)]
 pub struct Outcome {
-    /// Directories that got a watch; each is read once more.
+    /// Directories that got a watch;
+    ///  each is read once more.
     pub established: BTreeSet<PathBuf>,
-    /// Reread everything shown once: a directory failed anew, or the watch limit was just reached.
+    /// Reread everything shown once:
+    ///  a directory failed anew,
+    ///  or the watch limit was just reached.
     pub everything: bool,
     /// The displayed file changed to another one.
     pub switched: bool,
@@ -93,7 +127,9 @@ pub struct Outcome {
 struct Allowed {
     /// The UI asked to retry directories that failed for another reason than the limit.
     failed: bool,
-    /// Directories waiting on the limit may be tried: what is shown changed, or the backoff allows a sweep retry.
+    /// Directories waiting on the limit may be tried:
+    ///  what is shown changed,
+    ///  or the backoff allows a sweep retry.
     limited: bool,
 }
 
@@ -108,8 +144,12 @@ struct Pass {
     limit_hit: bool,
 }
 
-/// Desired directories in the order to try them: the displayed file's folder first, then by path,
-/// so the root precedes its descendants. With only a few watches left, the source stays watched.
+/// Desired directories in the order to try them:
+///  the displayed file's folder first,
+///  then by path,
+/// so the root precedes its descendants.
+///  With only a few watches left,
+///  the source stays watched.
 fn attempt_order(desired: &BTreeSet<PathBuf>, file: Option<&Path>) -> Vec<PathBuf> {
     let mut order = Vec::new();
     // What: `and_then(Path::parent)` takes the optional file's folder; `filter` keeps it only when desired.
@@ -134,7 +174,8 @@ fn attempt_order(desired: &BTreeSet<PathBuf>, file: Option<&Path>) -> Vec<PathBu
 }
 
 /// Try every desired directory that lacks a watch and that this wake allows.
-/// After the first limit failure, the rest wait on the limit without another failing call,
+/// After the first limit failure,
+///  the rest wait on the limit without another failing call,
 /// because the limit counts everything this user runs and the next add would fail the same way.
 fn try_watches(watches: &mut Watches, allowed: &Allowed, kernel: &mut dyn Kernel) -> Pass {
     let mut pass = Pass::default();
@@ -193,7 +234,10 @@ fn try_watches(watches: &mut Watches, allowed: &Allowed, kernel: &mut dyn Kernel
     return pass;
 }
 
-/// Enter, keep, or leave the watch-limit state after a pass; true when it was just entered.
+/// Enter,
+///  keep,
+///  or leave the watch-limit state after a pass;
+///  true when it was just entered.
 /// `sweep_retry` says the pass retried limited directories because the backoff allowed it.
 fn update_limit(watches: &mut Watches, pass: &Pass, sweep_retry: bool, now: Instant) -> bool {
     if pass.limit_hit {
@@ -227,8 +271,11 @@ fn update_limit(watches: &mut Watches, pass: &Pass, sweep_retry: bool, now: Inst
     return false;
 }
 
-/// Apply one wake: forget stale and hidden watches first, which frees watches under the limit,
-/// then add what is shown and allowed. `&mut dyn Kernel` lends any value implementing `Kernel`.
+/// Apply one wake:
+///  forget stale and hidden watches first,
+///  which frees watches under the limit,
+/// then add what is shown and allowed.
+///  `&mut dyn Kernel` lends any value implementing `Kernel`.
 pub fn reconcile(
     watches: &mut Watches,
     request: Request,
@@ -294,7 +341,9 @@ pub fn reconcile(
     };
 }
 
-/// Fake watch calls drive the limit, retries, and failures with chosen times.
+/// Fake watch calls drive the limit,
+///  retries,
+///  and failures with chosen times.
 #[cfg(test)]
 #[path = "reconcile_tests.rs"]
 mod tests;

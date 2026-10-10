@@ -1,5 +1,7 @@
-//! Send gathered file changes to the servers that asked for them, as `workspace/didChangeWatchedFiles`,
-//! and ask those servers for the displayed file's diagnostics again, since another file may have changed them.
+//! Send gathered file changes to the servers that asked for them,
+//!  as `workspace/didChangeWatchedFiles`,
+//! and ask those servers for the displayed file's diagnostics again,
+//!  since another file may have changed them.
 
 /// Pulling diagnostics again after a server heard about changes.
 use super::request;
@@ -9,8 +11,11 @@ use super::root::RootView;
 use super::worker::{Internal, Worker};
 /// The changes the change watcher forwards.
 use crate::change_watch::ServerChange;
-/// What: `Path`/`PathBuf` are a borrowed and an owned path; `Instant` is a monotonic time point.
-/// Why: Changes carry resolved paths and are sent after a quiet period.
+/// What:
+///  `Path`/`PathBuf` are a borrowed and an owned path;
+///  `Instant` is a monotonic time point.
+/// Why:
+///  Changes carry resolved paths and are sent after a quiet period.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,8 +26,13 @@ use std::{
     time::Instant,
 };
 
-/// What: Gather one change and, for the first of a burst, schedule sending.
-/// Why: Bursts become one notification per server; the interface thread is never involved.
+/// What:
+///  Gather one change and,
+///  for the first of a burst,
+///  schedule sending.
+/// Why:
+///  Bursts become one notification per server;
+///  the interface thread is never involved.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,8 +46,13 @@ pub(super) fn receive(worker: &mut Worker, change: ServerChange) {
     }
 }
 
-/// What: The scheduled time came: send the burst if it is due, or wait for the rest of it.
-/// Why: A burst still being written is sent once it pauses, or at the latest after its limit.
+/// What:
+///  The scheduled time came:
+///  send the burst if it is due,
+///  or wait for the rest of it.
+/// Why:
+///  A burst still being written is sent once it pauses,
+///  or at the latest after its limit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -63,7 +78,8 @@ pub(super) fn due(worker: &mut Worker) {
     send(worker);
 }
 
-/// Send every server its share of the burst, then pull the displayed file's diagnostics from each one
+/// Send every server its share of the burst,
+///  then pull the displayed file's diagnostics from each one
 /// that holds it open.
 fn send(worker: &mut Worker) {
     // What: `match` on the root view: a view respells resolved paths the way servers spell the root.

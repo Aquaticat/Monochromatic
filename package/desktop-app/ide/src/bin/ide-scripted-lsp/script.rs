@@ -182,7 +182,8 @@ pub struct Script {
     /// server's last words;
     ///  nothing when absent.
     pub stderr_at_shutdown: Option<String>,
-    /// File watchers registered with the client after `initialized`, as the protocol's JSON array.
+    /// File watchers registered with the client after `initialized`,
+    ///  as the protocol's JSON array.
     pub watchers: Option<Value>,
 }
 

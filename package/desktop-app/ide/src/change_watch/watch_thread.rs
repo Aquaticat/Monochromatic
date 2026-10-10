@@ -1,7 +1,14 @@
-//! The thread that owns the inotify watcher and applies the UI's desired directory set, then the language
-//! servers' folders. Adding a watch blocks until notify's loop replies, so it must never run on the UI thread.
+//! The thread that owns the inotify watcher and applies the UI's desired directory set,
+//!  then the language
+//! servers' folders.
+//!  Adding a watch blocks until notify's loop replies,
+//!  so it must never run on the UI thread.
 
-/// The wake's decisions, classified invalidations, the shared state, the servers' part, and the kernel calls.
+/// The wake's decisions,
+///  classified invalidations,
+///  the shared state,
+///  the servers' part,
+///  and the kernel calls.
 use super::{
     reconcile::{Kernel, Request, Watches, reconcile},
     record::record,
@@ -12,18 +19,28 @@ use super::{
 };
 /// Containment uses the same canonical check as every project read.
 use crate::workspace::Workspace;
-/// What: notify's inotify backend, its configuration, and the `Watcher` trait that provides `new`.
-/// Why: Naming `INotifyWatcher` (not `RecommendedWatcher`) keeps a polling backend from ever being chosen.
+/// What:
+///  notify's inotify backend,
+///  its configuration,
+///  and the `Watcher` trait that provides `new`.
+/// Why:
+///  Naming `INotifyWatcher` (not `RecommendedWatcher`) keeps a polling backend from ever being chosen.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { INotifyWatcher, Config } from 'notify';
 /// ```
 use notify::{Config, INotifyWatcher, Watcher};
-/// What: `Arc` shares the state across threads; `Receiver`/`SyncSender` are the bounded wake channel's ends;
-///       `RecvTimeoutError` says why a timed wait ended; `Duration` and `Instant` are a time span and a
+/// What:
+///  `Arc` shares the state across threads;
+///  `Receiver`/`SyncSender` are the bounded wake channel's ends;
+///       `RecvTimeoutError` says why a timed wait ended;
+///  `Duration` and `Instant` are a time span and a
 ///       monotonic time point for the watch-limit backoff.
-/// Why: The handler and the UI wake this thread; it sleeps in `recv` otherwise, or until a backoff ends.
+/// Why:
+///  The handler and the UI wake this thread;
+///  it sleeps in `recv` otherwise,
+///  or until a backoff ends.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,13 +55,19 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Shortest sleep while waiting for the servers' backoff, so a wait that just ended does not spin.
+/// Shortest sleep while waiting for the servers' backoff,
+///  so a wait that just ended does not spin.
 const SHORTEST_BACKOFF_SLEEP: Duration = Duration::from_millis(50);
 
-/// The real kernel calls: one borrowed watcher and the project boundary its watches must stay inside.
+/// The real kernel calls:
+///  one borrowed watcher and the project boundary its watches must stay inside.
 struct Inotify<'a> {
-    /// What: `&'a mut INotifyWatcher` lends the watcher for as long as `'a`, the life of this value.
-    /// Why: The watch thread keeps owning the watcher; a wake only borrows it.
+    /// What:
+    ///  `&'a mut INotifyWatcher` lends the watcher for as long as `'a`,
+    ///  the life of this value.
+    /// Why:
+    ///  The watch thread keeps owning the watcher;
+    ///  a wake only borrows it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -55,20 +78,23 @@ struct Inotify<'a> {
     workspace: &'a Workspace,
 }
 
-/// Pass each call to notify, after the containment check for adds.
+/// Pass each call to notify,
+///  after the containment check for adds.
 impl Kernel for Inotify<'_> {
     /// Add one non-recursive watch inside the root.
     fn add(&mut self, path: &Path) -> Result<(), WatchFailure> {
         return add(self.watcher, self.workspace, path);
     }
 
-    /// Remove one watch; one the kernel already dropped is only logged.
+    /// Remove one watch;
+    ///  one the kernel already dropped is only logged.
     fn remove(&mut self, path: &Path) {
         remove(self.watcher, path);
     }
 }
 
-/// Apply one wake's worth of requests; returns false when the UI handle is closing.
+/// Apply one wake's worth of requests;
+///  returns false when the UI handle is closing.
 fn apply(
     watcher: &mut INotifyWatcher,
     workspace: &Workspace,
@@ -154,7 +180,9 @@ fn apply(
     return true;
 }
 
-/// Thread body: create the watcher, then apply requests on every wake until the UI handle closes.
+/// Thread body:
+///  create the watcher,
+///  then apply requests on every wake until the UI handle closes.
 pub(super) fn run(
     workspace: Workspace,
     shared: Arc<Mutex<Shared>>,

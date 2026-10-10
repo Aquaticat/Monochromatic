@@ -1,4 +1,8 @@
-//! License and notice selection, headings, crate entries, and damage, on small tables sorted as the
+//! License and notice selection,
+//!  headings,
+//!  crate entries,
+//!  and damage,
+//!  on small tables sorted as the
 //! build writes them.
 
 use super::{collect, is_notice, write};
@@ -7,12 +11,14 @@ use crate::{
     runtime::embedded::{EmbeddedFile, EmbeddedRuntime},
 };
 
-/// A crate license list with one entry, as the `notices` task writes it.
+/// A crate license list with one entry,
+///  as the `notices` task writes it.
 const CRATES: &[u8] = br#"{"licenses": [
 {"id": "MIT", "name": "MIT License", "source": "/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anyhow-1.0.104/LICENSE-MIT", "crates": [{"name": "anyhow", "version": "1.0.104"}], "text": "Copyright (c) The anyhow authors\n"}
 ]}"#;
 
-/// One file of each kind the executable embeds, sorted by path.
+/// One file of each kind the executable embeds,
+///  sorted by path.
 static FILES: [EmbeddedFile; 10] = [
     EmbeddedFile {
         path: "LICENSES/LGPL-3.0-or-later.txt",

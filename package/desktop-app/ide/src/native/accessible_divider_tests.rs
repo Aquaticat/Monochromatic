@@ -1,17 +1,30 @@
-//! The sidebar divider as an assistive tool reaches it through Slint's element handles: a horizontal
-//! slider named "Sidebar width" with its value, bounds, and step, whose increment, decrement, and
+//! The sidebar divider as an assistive tool reaches it through Slint's element handles:
+//!  a horizontal
+//! slider named "Sidebar width" with its value,
+//!  bounds,
+//!  and step,
+//!  whose increment,
+//!  decrement,
+//!  and
 //! set-value actions and arrow keys change the width it reports.
 
 /// Finding exactly one element by its accessible label.
 use super::accessible_box_tests::only;
 /// One key press and release through the window.
 use super::find_tests::key;
-/// The 1100 by 660 sidebar fixture, its layout constants, and settled layout.
+/// The 1100 by 660 sidebar fixture,
+///  its layout constants,
+///  and settled layout.
 use super::sidebar_tests::{DIVIDER, SOURCE_MINIMUM, fixture, settle};
-/// What: `AccessibleRole` is the toolkit's enum of accessible roles; `Orientation` is its enum of
-/// `Horizontal` and `Vertical`; `ElementHandle` is Slint's test-only handle on one element.
-/// Why: The role and orientation are what tell an assistive tool that the element adjusts a width.
-/// Gotcha: The crate is internal to Slint and must have exactly the resolved Slint version.
+/// What:
+///  `AccessibleRole` is the toolkit's enum of accessible roles;
+///  `Orientation` is its enum of
+/// `Horizontal` and `Vertical`;
+///  `ElementHandle` is Slint's test-only handle on one element.
+/// Why:
+///  The role and orientation are what tell an assistive tool that the element adjusts a width.
+/// Gotcha:
+///  The crate is internal to Slint and must have exactly the resolved Slint version.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,9 +34,15 @@ use i_slint_backend_testing::{AccessibleRole, ElementHandle, Orientation};
 /// Window ownership and the toolkit's key names.
 use slint::{ComponentHandle, platform::Key};
 
-/// What: `divider: &ElementHandle` lends the handle; `expected: f32` is a width in logical pixels (a 32-bit
-/// float; sibling `f64`); `action` names what was just done, for messages.
-/// Why: After every action the reported value and the window's own width must agree.
+/// What:
+///  `divider: &ElementHandle` lends the handle;
+///  `expected: f32` is a width in logical pixels (a 32-bit
+/// float;
+///  sibling `f64`);
+///  `action` names what was just done,
+///  for messages.
+/// Why:
+///  After every action the reported value and the window's own width must agree.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -51,9 +70,14 @@ fn assert_width(window: &super::AppWindow, divider: &ElementHandle, expected: f3
     );
 }
 
-/// The divider is a horizontal slider named "Sidebar width" with its value, its bounds, and a 16px step.
-/// The increment and decrement actions step it, the set-value action sets it within the bounds,
-/// and with keyboard focus the arrow keys, Home, and End change the value it reports.
+/// The divider is a horizontal slider named "Sidebar width" with its value,
+///  its bounds,
+///  and a 16px step.
+/// The increment and decrement actions step it,
+///  the set-value action sets it within the bounds,
+/// and with keyboard focus the arrow keys,
+///  Home,
+///  and End change the value it reports.
 #[test]
 fn divider_is_a_slider_with_value_bounds_step_actions_and_keys() {
     let shared = fixture(6);

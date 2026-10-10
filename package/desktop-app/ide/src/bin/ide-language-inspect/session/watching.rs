@@ -1,5 +1,8 @@
-//! The inspection session's part in watching folders for the servers: the relay the application's tick
-//! performs, writing a file as another program would, and waiting for the watched folders.
+//! The inspection session's part in watching folders for the servers:
+//!  the relay the application's tick
+//! performs,
+//!  writing a file as another program would,
+//!  and waiting for the watched folders.
 
 /// The session these steps belong to.
 use super::Session;
@@ -7,8 +10,12 @@ use super::Session;
 use anyhow::{Context, Result};
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
-/// What: `Path` is a borrowed path; `Duration` a time span.
-/// Why: Files are named relative to the project, and every wait is bounded.
+/// What:
+///  `Path` is a borrowed path;
+///  `Duration` a time span.
+/// Why:
+///  Files are named relative to the project,
+///  and every wait is bounded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,9 +25,13 @@ use std::{path::Path, time::Duration};
 
 /// Folder watching steps.
 impl Session {
-    /// What: The application's tick: the watcher feeds the worker while some server wants file changes.
+    /// What:
+    ///  The application's tick:
+    ///  the watcher feeds the worker while some server wants file changes.
     ///       `then` makes the sender only when it is wanted.
-    /// Why: Without this relay no folder is watched for the servers, which is the positive control.
+    /// Why:
+    ///  Without this relay no folder is watched for the servers,
+    ///  which is the positive control.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -39,7 +50,8 @@ impl Session {
         let _tree = watcher.take();
     }
 
-    /// Write a file of the project as another program would; the displayed document is not touched.
+    /// Write a file of the project as another program would;
+    ///  the displayed document is not touched.
     pub(super) fn write(&mut self, file: &Path, text: &str) -> Result<Value> {
         let path = self.project.join(file);
         std::fs::write(&path, text)
@@ -47,7 +59,8 @@ impl Session {
         return Ok(json!({ "written": path.display().to_string() }));
     }
 
-    /// Wait until at least `minimum` folders are watched for the servers; report whether that happened.
+    /// Wait until at least `minimum` folders are watched for the servers;
+    ///  report whether that happened.
     pub(super) fn folders(&mut self, minimum: usize, seconds: u64) -> Result<Value> {
         // What: a closure that reads the watcher's folder count, or false without a watcher.
         // Why: `until` polls with any such test.

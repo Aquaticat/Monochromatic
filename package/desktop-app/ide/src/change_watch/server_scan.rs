@@ -1,20 +1,42 @@
-//! Find the project folders whose changes the language servers hear about, with the search's ignore rules.
+//! Find the project folders whose changes the language servers hear about,
+//!  with the search's ignore rules.
 //!
-//! ripgrep lists the files the search would see (`src/search_process.rs`): it honours `.gitignore`, `.ignore`,
-//! `.rgignore`, and skips hidden names. Every folder holding such a file is a source folder. `node_modules`,
-//! `target`, and `.git` are never watched, even where no ignore file names them.
+//! ripgrep lists the files the search would see (`src/search_process.rs`):
+//!  it honours `.gitignore`,
+//!  `.ignore`,
+//! `.rgignore`,
+//!  and skips hidden names.
+//!  Every folder holding such a file is a source folder.
+//!  `node_modules`,
+//! `target`,
+//!  and `.git` are never watched,
+//!  even where no ignore file names them.
 //!
-//! Two properties of ripgrep decide how folders are rescanned (probed with ripgrep 15.2.0): a directory
-//! given on the command line is listed even when an ignore rule names it, but ignore files of its parents
-//! still apply to everything below it. So a new folder is classified by scanning its parent again, never by
-//! scanning the folder itself. A folder with no entries at all cannot be classified by a file list; it is
-//! watched while empty (provisionally), and its first change asks for its parent to be scanned again.
+//! Two properties of ripgrep decide how folders are rescanned (probed with ripgrep 15.2.0):
+//!  a directory
+//! given on the command line is listed even when an ignore rule names it,
+//!  but ignore files of its parents
+//! still apply to everything below it.
+//!  So a new folder is classified by scanning its parent again,
+//!  never by
+//! scanning the folder itself.
+//!  A folder with no entries at all cannot be classified by a file list;
+//!  it is
+//! watched while empty (provisionally),
+//!  and its first change asks for its parent to be scanned again.
 
-/// The ripgrep settings the search uses, so both apply the same ignore rules.
+/// The ripgrep settings the search uses,
+///  so both apply the same ignore rules.
 use crate::search_process::RIPGREP_SETTINGS;
-/// What: `BTreeSet` is an ordered set of owned paths; `OsStr` is a native filename slice; `OsStrExt` turns
-///       raw bytes into one on Unix; `Command`/`Stdio` start a child process with chosen pipes.
-/// Why: ripgrep separates paths with NUL bytes, and paths keep their native bytes.
+/// What:
+///  `BTreeSet` is an ordered set of owned paths;
+///  `OsStr` is a native filename slice;
+///  `OsStrExt` turns
+///       raw bytes into one on Unix;
+///  `Command`/`Stdio` start a child process with chosen pipes.
+/// Why:
+///  ripgrep separates paths with NUL bytes,
+///  and paths keep their native bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -29,23 +51,34 @@ use std::{
     process::{Command, Stdio},
 };
 
-/// Folder names never watched for the servers: dependencies, build output, and version-control data.
+/// Folder names never watched for the servers:
+///  dependencies,
+///  build output,
+///  and version-control data.
 pub(super) const PRUNED: [&str; 3] = ["node_modules", "target", ".git"];
 
 /// What one scan of a folder found.
 #[derive(Debug, Default)]
 pub(super) struct Scan {
-    /// The folder scanned; everything the scan reports lies inside it.
+    /// The folder scanned;
+    ///  everything the scan reports lies inside it.
     pub(super) base: PathBuf,
-    /// Folders holding a file ripgrep lists, the base included.
+    /// Folders holding a file ripgrep lists,
+    ///  the base included.
     pub(super) directories: BTreeSet<PathBuf>,
-    /// Folders with no entries, inside a source folder, not hidden and not pruned.
+    /// Folders with no entries,
+    ///  inside a source folder,
+    ///  not hidden and not pruned.
     pub(super) provisional: BTreeSet<PathBuf>,
-    /// The files ripgrep listed, for the creations a newly watched folder may have missed.
+    /// The files ripgrep listed,
+    ///  for the creations a newly watched folder may have missed.
     pub(super) files: Vec<PathBuf>,
-    /// The scan that starts watching for the servers: its files existed before, so none is reported.
+    /// The scan that starts watching for the servers:
+    ///  its files existed before,
+    ///  so none is reported.
     pub(super) initial: bool,
-    /// Which period of watching for the servers asked for it; a scan from before the feed was cleared is dropped.
+    /// Which period of watching for the servers asked for it;
+    ///  a scan from before the feed was cleared is dropped.
     pub(super) generation: u64,
 }
 
@@ -63,7 +96,8 @@ fn skipped_name(name: &OsStr) -> bool {
     return hidden || pruned;
 }
 
-/// True when some folder between `base` and `file` is never watched, so the file does not count.
+/// True when some folder between `base` and `file` is never watched,
+///  so the file does not count.
 fn under_pruned(base: &Path, file: &Path) -> bool {
     // What: `strip_prefix` gives the path relative to `base`, or an error when it is not inside it.
     // Why: Only the folders below the base decide; the base itself was chosen as a source folder.
@@ -86,9 +120,14 @@ fn under_pruned(base: &Path, file: &Path) -> bool {
     });
 }
 
-/// What: List the files below `base` exactly as the search would, NUL-separated, or `None` when ripgrep
-///       could not run. `Option<Vec<PathBuf>>` is a list or nothing.
-/// Why: Running the same program with the same settings is the only way to agree with the search.
+/// What:
+///  List the files below `base` exactly as the search would,
+///  NUL-separated,
+///  or `None` when ripgrep
+///       could not run.
+///  `Option<Vec<PathBuf>>` is a list or nothing.
+/// Why:
+///  Running the same program with the same settings is the only way to agree with the search.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -138,8 +177,11 @@ fn list_files(root: &Path, base: &Path) -> Option<Vec<PathBuf>> {
     return Some(files);
 }
 
-/// Every folder below `base` that is neither hidden nor pruned, as the source folders when ripgrep
-/// cannot run: no ignore file is honoured then, which may watch more than the search shows.
+/// Every folder below `base` that is neither hidden nor pruned,
+///  as the source folders when ripgrep
+/// cannot run:
+///  no ignore file is honoured then,
+///  which may watch more than the search shows.
 fn walk_all(base: &Path) -> BTreeSet<PathBuf> {
     let mut found = BTreeSet::new();
     // What: `vec![...]` makes a list used as a stack of folders still to read.
@@ -180,7 +222,9 @@ fn is_empty_directory(directory: &Path) -> bool {
     return fs::read_dir(directory).is_ok_and(|mut entries| return entries.next().is_none());
 }
 
-/// Empty folders directly inside the source folders: no file list can classify them, so they are
+/// Empty folders directly inside the source folders:
+///  no file list can classify them,
+///  so they are
 /// watched until their first change.
 fn empty_children(directories: &BTreeSet<PathBuf>) -> BTreeSet<PathBuf> {
     let mut empty = BTreeSet::new();
@@ -202,9 +246,16 @@ fn empty_children(directories: &BTreeSet<PathBuf>) -> BTreeSet<PathBuf> {
     return empty;
 }
 
-/// What: Scan one folder: its source folders, its empty folders, and its files. `initial` marks the
-///       scan that starts watching, whose files are not reported as created.
-/// Why: The watch thread replaces everything it knew below `base` with this result.
+/// What:
+///  Scan one folder:
+///  its source folders,
+///  its empty folders,
+///  and its files.
+///  `initial` marks the
+///       scan that starts watching,
+///  whose files are not reported as created.
+/// Why:
+///  The watch thread replaces everything it knew below `base` with this result.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -252,10 +303,18 @@ pub(super) fn scan(root: &Path, base: &Path, initial: bool) -> Scan {
     return result;
 }
 
-/// What: The folders to scan for a batch of requests: each path that is now a folder (not hidden, not
-///       pruned, not a symbolic link) asks for its parent, and each explicit rescan asks for itself.
-///       Folders inside another requested folder are dropped, since that scan covers them.
-/// Why: A new folder is classified by its parent's ignore rules, which a scan of the folder itself skips.
+/// What:
+///  The folders to scan for a batch of requests:
+///  each path that is now a folder (not hidden,
+///  not
+///       pruned,
+///  not a symbolic link) asks for its parent,
+///  and each explicit rescan asks for itself.
+///       Folders inside another requested folder are dropped,
+///  since that scan covers them.
+/// Why:
+///  A new folder is classified by its parent's ignore rules,
+///  which a scan of the folder itself skips.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -298,7 +357,10 @@ pub(super) fn bases(
     return kept;
 }
 
-/// The folder walk, the classification of new folders, and the ignore rules, on disposable projects.
+/// The folder walk,
+///  the classification of new folders,
+///  and the ignore rules,
+///  on disposable projects.
 #[cfg(test)]
 #[path = "server_scan_tests.rs"]
 mod tests;

@@ -1,11 +1,23 @@
-//! The find box, the search box, and their clear controls as an assistive tool reaches them: through
-//! Slint's element handles, which read the accessible role, label, value, placeholder, and description,
-//! and invoke the accessible set-value and default actions, the same properties and actions the
+//! The find box,
+//!  the search box,
+//!  and their clear controls as an assistive tool reaches them:
+//!  through
+//! Slint's element handles,
+//!  which read the accessible role,
+//!  label,
+//!  value,
+//!  placeholder,
+//!  and description,
+//! and invoke the accessible set-value and default actions,
+//!  the same properties and actions the
 //! platform accessibility bridge exposes.
 
-/// The find fixture with the bar open and focused, and the wait for the find count.
+/// The find fixture with the bar open and focused,
+///  and the wait for the find count.
 use super::find_clear_tests::opened;
-/// Typing into whatever has keyboard focus, one key press, and the bounded wait for a condition.
+/// Typing into whatever has keyboard focus,
+///  one key press,
+///  and the bounded wait for a condition.
 use super::find_tests::{eventually, key, type_text};
 /// The bounded wait for native navigation state and the tree-row lookup.
 use super::navigation_tests::{row, wait_until};
@@ -15,25 +27,41 @@ use super::search_tests::{open, reader};
 use super::sidebar_tests::{resize, settle};
 /// The window type generated from the shipped markup.
 use super::AppWindow;
-/// What: `ElementHandle` is Slint's test-only handle on one element of a live window; `AccessibleRole`
-/// is the toolkit's enum of accessible roles (`TextInput`, `Button`, `Slider`, `List`, and so on).
-/// Why: Searching by accessible label and reading roles and values is what an assistive tool does,
-/// so these tests check what such a tool would find, not the window's private properties.
-/// Gotcha: The crate is internal to Slint and must have exactly the resolved Slint version.
+/// What:
+///  `ElementHandle` is Slint's test-only handle on one element of a live window;
+///  `AccessibleRole`
+/// is the toolkit's enum of accessible roles (`TextInput`,
+///  `Button`,
+///  `Slider`,
+///  `List`,
+///  and so on).
+/// Why:
+///  Searching by accessible label and reading roles and values is what an assistive tool does,
+/// so these tests check what such a tool would find,
+///  not the window's private properties.
+/// Gotcha:
+///  The crate is internal to Slint and must have exactly the resolved Slint version.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { ElementHandle, AccessibleRole } from 'slint-testing';
 /// ```
 use i_slint_backend_testing::{AccessibleRole, ElementHandle};
-/// Window ownership, row counts of the result model, and the toolkit's key names.
+/// Window ownership,
+///  row counts of the result model,
+///  and the toolkit's key names.
 use slint::{ComponentHandle, Model, platform::Key};
 /// Fixture files for the disposable search project.
 use std::fs;
 
-/// What: `window: &AppWindow` lends the window; `label: &str` borrows the label text; the answer is an
+/// What:
+///  `window: &AppWindow` lends the window;
+///  `label: &str` borrows the label text;
+///  the answer is an
 /// owned `ElementHandle`.
-/// Why: Every check starts by finding exactly one element with a given accessible label; a second
+/// Why:
+///  Every check starts by finding exactly one element with a given accessible label;
+///  a second
 /// element with the same label would leave an assistive tool with two indistinguishable targets.
 ///
 /// In TS you'd write (pseudocode):
@@ -77,13 +105,18 @@ pub(super) fn only(window: &AppWindow, label: &str) -> ElementHandle {
     return first;
 }
 
-/// The number of visible elements with this accessible label; hidden elements are not offered.
+/// The number of visible elements with this accessible label;
+///  hidden elements are not offered.
 pub(super) fn count(window: &AppWindow, label: &str) -> usize {
     return ElementHandle::find_by_accessible_label(window, label).count();
 }
 
-/// What: `element: &ElementHandle` lends the handle; `name` labels messages.
-/// Why: A clear control is a button an assistive tool can find, of at least the 48px by 48px target size.
+/// What:
+///  `element: &ElementHandle` lends the handle;
+///  `name` labels messages.
+/// Why:
+///  A clear control is a button an assistive tool can find,
+///  of at least the 48px by 48px target size.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -112,9 +145,14 @@ fn assert_clear_button(element: &ElementHandle, name: &str) {
     );
 }
 
-/// The find box is a text input labelled "Find text" with its placeholder, value, and the match count as
-/// its description; setting its value runs find. The clear control is a 48px button labelled
-/// "Clear find text" that exists only while there is text, and its default action clears and keeps focus.
+/// The find box is a text input labelled "Find text" with its placeholder,
+///  value,
+///  and the match count as
+/// its description;
+///  setting its value runs find.
+///  The clear control is a 48px button labelled
+/// "Clear find text" that exists only while there is text,
+///  and its default action clears and keeps focus.
 #[test]
 fn find_box_and_clear_control_expose_role_label_value_and_actions() {
     // `_fixture` keeps the directory alive until the test ends.
@@ -200,8 +238,11 @@ fn find_box_and_clear_control_expose_role_label_value_and_actions() {
     window.hide().expect("close accessible find window");
 }
 
-/// The search box is a text input labelled "Search query" with its placeholder and value; setting its
-/// value searches. The clear control is a 48px button labelled "Clear search query"; its default action
+/// The search box is a text input labelled "Search query" with its placeholder and value;
+///  setting its
+/// value searches.
+///  The clear control is a 48px button labelled "Clear search query";
+///  its default action
 /// clears the query and the results and keeps keyboard focus in the box.
 #[test]
 fn search_box_and_clear_control_expose_role_label_value_and_actions() {
@@ -293,8 +334,11 @@ fn search_box_and_clear_control_expose_role_label_value_and_actions() {
     window.hide().expect("close accessible search window");
 }
 
-/// What: `field` lends the search box's handle; `expected` is the description it must report.
-/// Why: Every step of the description test reads the same property and names it in the failure.
+/// What:
+///  `field` lends the search box's handle;
+///  `expected` is the description it must report.
+/// Why:
+///  Every step of the description test reads the same property and names it in the failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -316,9 +360,14 @@ fn described(field: &ElementHandle, expected: &str, after: &str) {
     );
 }
 
-/// The search box's description counts the results for assistive tools, worded like the find box's match
-/// count: nothing without a query, "Searching" while results are pending, "Result 1 of N" for the selected
-/// row and following it, and "No results" when nothing matches.
+/// The search box's description counts the results for assistive tools,
+///  worded like the find box's match
+/// count:
+///  nothing without a query,
+///  "Searching" while results are pending,
+///  "Result 1 of N" for the selected
+/// row and following it,
+///  and "No results" when nothing matches.
 #[test]
 fn search_box_description_counts_the_results() {
     let fixture = tempfile::tempdir().expect("disposable search-count project");

@@ -127,7 +127,8 @@ pub enum Step {
         /// Milliseconds to keep polling afterwards.
         settle: u64,
     },
-    /// Write a file of the project as another program would; the displayed document is not touched.
+    /// Write a file of the project as another program would;
+    ///  the displayed document is not touched.
     Write {
         /// Path relative to the project root.
         file: PathBuf,
@@ -150,7 +151,8 @@ pub enum Step {
     Close,
 }
 
-/// The application forwards file changes, so a plan does too unless it says otherwise.
+/// The application forwards file changes,
+///  so a plan does too unless it says otherwise.
 fn forward_by_default() -> bool {
     return true;
 }
@@ -168,7 +170,9 @@ struct Plan {
     ///  for example probe variables.
     #[serde(default)]
     extra_languages: Option<String>,
-    /// Watch the project's folders for the servers and forward changes, as the application does; false
+    /// Watch the project's folders for the servers and forward changes,
+    ///  as the application does;
+    ///  false
     /// is the positive control in which servers hear about no change made outside the IDE.
     #[serde(default = "forward_by_default")]
     forward_file_changes: bool,

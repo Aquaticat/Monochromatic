@@ -58,7 +58,9 @@ fn firefox_nightly_service_name_stays_channel_specific() {
     ));
 }
 
-/// Accepts exact ChatGPT, Interpreter, and Qure desktop services without matching lookalikes.
+/// Accepts exact ChatGPT,
+///  Interpreter,
+///  and Qure desktop services without matching lookalikes.
 #[test]
 fn agent_service_names_use_desktop_entry_identifiers() {
     assert!(is_chatgpt_service_name(
@@ -381,7 +383,9 @@ fn scan_discovers_chatgpt_and_interpreter_cgroups() -> io::Result<()> {
     return Ok(());
 }
 
-/// Discovers Qure's desktop service, its AppImage family, and the agents its CLI wrappers exec.
+/// Discovers Qure's desktop service,
+///  its AppImage family,
+///  and the agents its CLI wrappers exec.
 #[test]
 fn scan_discovers_qure_cgroups() -> io::Result<()> {
     let scratch = std::env::temp_dir().join(format!(

@@ -4,7 +4,14 @@
 //! `detach <cgroup-dir>...` removes only exact links persisted for each canonical cgroup path.
 //! Link pins survive loader exit under `/sys/fs/bpf/wg-quicker-exempt/`.
 
-/// Discovers Ghostty, Steam, Helium, Pale Moon, Firefox Nightly, ChatGPT, Interpreter, and Qure cgroup targets.
+/// Discovers Ghostty,
+///  Steam,
+///  Helium,
+///  Pale Moon,
+///  Firefox Nightly,
+///  ChatGPT,
+///  Interpreter,
+///  and Qure cgroup targets.
 mod application_targets;
 /// Retains links while watching application cgroup lifecycle.
 mod application_watch;

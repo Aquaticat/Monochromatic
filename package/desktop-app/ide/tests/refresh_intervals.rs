@@ -193,7 +193,8 @@ fn unwatched_timer_shortens_the_sweep_interval_only_for_few_folders() {
     }
 }
 
-/// A displayed file outside the project has no watch on purpose, so the safety sweep rereads it,
+/// A displayed file outside the project has no watch on purpose,
+///  so the safety sweep rereads it,
 /// not the 250 ms timer that stands in for a watch that failed.
 #[test]
 fn a_file_outside_the_project_is_reread_on_the_sweep() {

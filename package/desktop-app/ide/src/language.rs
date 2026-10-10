@@ -113,7 +113,8 @@ mod request;
 mod forward;
 /// Server-to-client traffic.
 mod traffic;
-/// The file watchers servers registered, and the changes gathered for them.
+/// The file watchers servers registered,
+///  and the changes gathered for them.
 mod watched_files;
 
 /// The wait until every server process the worker started has been reaped.

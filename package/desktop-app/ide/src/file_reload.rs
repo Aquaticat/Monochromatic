@@ -4,10 +4,18 @@
 use crate::document::{Document, Reload};
 /// I/O failures retain their affected input and operation context.
 use anyhow::{Context, Result, bail};
-/// What: `Read` provides `read_to_string` on an open `File`; `Path` borrows a filesystem name, unlike
-///       the owned `PathBuf` sibling; `Duration` is a time span and `SystemTime` a wall-clock time,
-///       the clock file modification times use (`Instant`, the monotonic sibling, has no file times).
-/// Why: A read operation need not copy or retain the caller's path, and the quiet check compares the
+/// What:
+///  `Read` provides `read_to_string` on an open `File`;
+///  `Path` borrows a filesystem name,
+///  unlike
+///       the owned `PathBuf` sibling;
+///  `Duration` is a time span and `SystemTime` a wall-clock time,
+///       the clock file modification times use (`Instant`,
+///  the monotonic sibling,
+///  has no file times).
+/// Why:
+///  A read operation need not copy or retain the caller's path,
+///  and the quiet check compares the
 ///      open file's modification time with the wall-clock time the read began.
 ///
 /// In TS you'd write (pseudocode):
@@ -23,28 +31,41 @@ use std::{
 
 /// Outcome of a read that is accepted only when the file has been quiet for a while.
 ///
-/// What: an `enum` whose `Read` variant carries the usual read result and whose `RecentlyWritten`
-///       variant carries nothing, like a TS union `{ kind: 'read'; reload?: Reload } | { kind: 'recent' }`.
-/// Why: A read that no change notification asked for (the safety sweep, a timer, a highlighting retry)
-///      can meet a save in progress, and its bytes must then not replace the displayed text.
+/// What:
+///  an `enum` whose `Read` variant carries the usual read result and whose `RecentlyWritten`
+///       variant carries nothing,
+///  like a TS union `{ kind: 'read'; reload?: Reload } | { kind: 'recent' }`.
+/// Why:
+///  A read that no change notification asked for (the safety sweep,
+///  a timer,
+///  a highlighting retry)
+///      can meet a save in progress,
+///  and its bytes must then not replace the displayed text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type QuietRead = { kind: 'read'; reload: Reload | undefined } | { kind: 'recentlyWritten' };
 /// ```
 pub enum QuietRead {
-    /// The file was last modified at least the quiet period before the read began, so the bytes
+    /// The file was last modified at least the quiet period before the read began,
+    ///  so the bytes
     /// are a finished state.
     Read(
-        /// The prepared change, or `None` when the bytes equal the displayed text.
+        /// The prepared change,
+        ///  or `None` when the bytes equal the displayed text.
         Option<Reload>,
     ),
-    /// The file was modified within the quiet period before the read began, or during the read,
-    /// or its modification time lies in the future: a save may be in progress, so the bytes are dropped.
+    /// The file was modified within the quiet period before the read began,
+    ///  or during the read,
+    /// or its modification time lies in the future:
+    ///  a save may be in progress,
+    ///  so the bytes are dropped.
     RecentlyWritten,
 }
 
-/// Open a regular file, read it as UTF-8, and return the text with the still-open handle.
+/// Open a regular file,
+///  read it as UTF-8,
+///  and return the text with the still-open handle.
 fn read_regular(path: &Path) -> Result<(String, File)> {
     // What: ? propagates failure; the closure supplies the affected path lazily.
     // Why: A read failure must not silently replace visible source with empty text.
@@ -123,9 +144,13 @@ pub fn read_reload(snapshot: &Document, path: &Path) -> Result<Option<Reload>> {
     return Ok(compare(snapshot, path, &source));
 }
 
-/// Read like `read_reload`, but drop the bytes when the open file was modified less than `quiet` before
-/// the read began, or during it. A save in progress keeps writing and moving the modification time,
-/// so its truncated or half-written state is never returned, whatever order notifications arrive in.
+/// Read like `read_reload`,
+///  but drop the bytes when the open file was modified less than `quiet` before
+/// the read began,
+///  or during it.
+///  A save in progress keeps writing and moving the modification time,
+/// so its truncated or half-written state is never returned,
+///  whatever order notifications arrive in.
 /// A writer that pauses longer than `quiet` mid-save is read like any finished file.
 pub fn read_reload_if_quiet(
     snapshot: &Document,

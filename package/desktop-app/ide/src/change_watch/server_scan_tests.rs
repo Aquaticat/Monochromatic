@@ -1,9 +1,14 @@
-//! The servers' folder scan agrees with the search's ignore rules, on disposable projects.
+//! The servers' folder scan agrees with the search's ignore rules,
+//!  on disposable projects.
 
 /// The functions under test.
 use super::{bases, scan};
-/// What: `BTreeSet` is an ordered set; `fs` creates the fixture; `PathBuf` is an owned path.
-/// Why: Results are compared as sets of folders.
+/// What:
+///  `BTreeSet` is an ordered set;
+///  `fs` creates the fixture;
+///  `PathBuf` is an owned path.
+/// Why:
+///  Results are compared as sets of folders.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -11,9 +16,16 @@ use super::{bases, scan};
 /// ```
 use std::{collections::BTreeSet, fs, path::PathBuf};
 
-/// What: A disposable project inside a git work tree: a `.git` folder makes ripgrep honour `.gitignore`.
+/// What:
+///  A disposable project inside a git work tree:
+///  a `.git` folder makes ripgrep honour `.gitignore`.
 ///       Returns the temporary directory (removed when dropped) and the canonical root.
-/// Why: Every test needs ignored, pruned, hidden, empty, and source folders side by side.
+/// Why:
+///  Every test needs ignored,
+///  pruned,
+///  hidden,
+///  empty,
+///  and source folders side by side.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,7 +62,10 @@ fn project() -> (tempfile::TempDir, PathBuf) {
     return (directory, root);
 }
 
-/// Source folders are the ones the search lists files from; ignored, pruned, and hidden ones are left out,
+/// Source folders are the ones the search lists files from;
+///  ignored,
+///  pruned,
+///  and hidden ones are left out,
 /// and an empty folder is watched provisionally.
 #[test]
 fn source_folders_follow_the_search_ignore_rules() {
@@ -75,7 +90,8 @@ fn source_folders_follow_the_search_ignore_rules() {
     );
 }
 
-/// A folder ripgrep lists files from is still not watched below `node_modules` or `target`, even when no
+/// A folder ripgrep lists files from is still not watched below `node_modules` or `target`,
+///  even when no
 /// ignore file names them.
 #[test]
 fn pruned_folders_are_left_out_without_an_ignore_file() {
@@ -93,7 +109,9 @@ fn pruned_folders_are_left_out_without_an_ignore_file() {
     );
 }
 
-/// A new folder asks for its parent to be scanned, a new file asks for nothing, and a request inside
+/// A new folder asks for its parent to be scanned,
+///  a new file asks for nothing,
+///  and a request inside
 /// another requested folder is covered by that one.
 #[test]
 fn new_folders_are_classified_by_their_parent() {
@@ -116,7 +134,9 @@ fn new_folders_are_classified_by_their_parent() {
     );
 }
 
-/// Scanning an ignored folder's parent leaves it out; scanning the folder itself would not, which is
+/// Scanning an ignored folder's parent leaves it out;
+///  scanning the folder itself would not,
+///  which is
 /// why new folders are classified by their parent.
 #[test]
 fn an_ignored_folder_is_left_out_when_its_parent_is_scanned() {

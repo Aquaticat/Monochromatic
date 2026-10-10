@@ -1,34 +1,58 @@
-//! The tree rows, the search results, and the location list as an assistive tool reaches them through
-//! Slint's element handles: each container's role, name, and item count, and each row's role, name,
-//! index, and selected state, which must follow the open file and the arrow keys.
+//! The tree rows,
+//!  the search results,
+//!  and the location list as an assistive tool reaches them through
+//! Slint's element handles:
+//!  each container's role,
+//!  name,
+//!  and item count,
+//!  and each row's role,
+//!  name,
+//! index,
+//!  and selected state,
+//!  which must follow the open file and the arrow keys.
 
-/// Finding exactly one element by its accessible label, and counting the elements with one label.
+/// Finding exactly one element by its accessible label,
+///  and counting the elements with one label.
 use super::accessible_box_tests::{count, only};
-/// One key press and release through the window, and a bounded wait that names what did not happen.
+/// One key press and release through the window,
+///  and a bounded wait that names what did not happen.
 use super::find_tests::{eventually, key};
 /// The bounded wait for native navigation state and the tree-row lookup.
 use super::navigation_tests::{row, wait_until};
 /// The search overlay's double-Shift opening.
 use super::search_tests::open;
-/// The 1100 by 660 sidebar fixture, an exact window size, and settled layout.
+/// The 1100 by 660 sidebar fixture,
+///  an exact window size,
+///  and settled layout.
 use super::sidebar_tests::{fixture, resize, settle};
 /// The window type and the location row type generated from the shipped markup.
 use super::{AppWindow, find_tests, search_tests, ui::ReferenceEntry};
-/// What: `AccessibleRole` is the toolkit's enum of accessible roles; `ElementHandle` is Slint's test-only
-/// handle on one element; `ElementQuery` filters the elements below a window step by step.
-/// Why: Rows are found by role and name together, as an assistive tool lists the items of a list.
-/// Gotcha: The crate is internal to Slint and must have exactly the resolved Slint version.
+/// What:
+///  `AccessibleRole` is the toolkit's enum of accessible roles;
+///  `ElementHandle` is Slint's test-only
+/// handle on one element;
+///  `ElementQuery` filters the elements below a window step by step.
+/// Why:
+///  Rows are found by role and name together,
+///  as an assistive tool lists the items of a list.
+/// Gotcha:
+///  The crate is internal to Slint and must have exactly the resolved Slint version.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { AccessibleRole, ElementHandle, ElementQuery } from 'slint-testing';
 /// ```
 use i_slint_backend_testing::{AccessibleRole, ElementHandle, ElementQuery};
-/// Window ownership, toolkit models, and key names.
+/// Window ownership,
+///  toolkit models,
+///  and key names.
 use slint::{ComponentHandle, Model, ModelRc, VecModel, platform::Key};
-/// What: `Rc` is a shared pointer for one thread (sibling `Arc` works across threads); `Cell` holds a small
+/// What:
+///  `Rc` is a shared pointer for one thread (sibling `Arc` works across threads);
+///  `Cell` holds a small
 /// copied value that can change behind a shared pointer.
-/// Why: The location list's choose callback records an index that the test body reads.
+/// Why:
+///  The location list's choose callback records an index that the test body reads.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,10 +60,16 @@ use slint::{ComponentHandle, Model, ModelRc, VecModel, platform::Key};
 /// ```
 use std::{cell::Cell, fs, rc::Rc};
 
-/// What: `query` is an element query already narrowed to a window or to one list; `role` and `label` are
-/// the wanted accessible role and name; the answer is the one element that has both.
-/// Why: A row's text is also an element with the row's name, and the tree and the search results can list
-/// the same file name, so a row is found by its role inside its own list.
+/// What:
+///  `query` is an element query already narrowed to a window or to one list;
+///  `role` and `label` are
+/// the wanted accessible role and name;
+///  the answer is the one element that has both.
+/// Why:
+///  A row's text is also an element with the row's name,
+///  and the tree and the search results can list
+/// the same file name,
+///  so a row is found by its role inside its own list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -87,8 +117,11 @@ fn matching(query: ElementQuery, role: AccessibleRole, label: &str) -> ElementHa
     return found[0].clone();
 }
 
-/// What: `list: &ElementHandle` lends the list or tree; `label` names one of its rows.
-/// Why: Rows are list items inside their own container.
+/// What:
+///  `list: &ElementHandle` lends the list or tree;
+///  `label` names one of its rows.
+/// Why:
+///  Rows are list items inside their own container.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -105,8 +138,11 @@ fn item(list: &ElementHandle, label: &str) -> ElementHandle {
     return matching(list.query_descendants(), AccessibleRole::ListItem, label);
 }
 
-/// What: `label` names a row of `list`; `selected` and `index` are what it must report.
-/// Why: Every row of every list reports the same item properties.
+/// What:
+///  `label` names a row of `list`;
+///  `selected` and `index` are what it must report.
+/// Why:
+///  Every row of every list reports the same item properties.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,9 +195,16 @@ fn assert_row(list: &ElementHandle, label: &str, selected: bool, index: usize) {
     );
 }
 
-/// What: `role` and `label` name a list or tree; `rows` is how many items it must report; the answer is
-/// the container, for finding its rows.
-/// Why: The container's role, name, and item count tell an assistive tool what it is moving through.
+/// What:
+///  `role` and `label` name a list or tree;
+///  `rows` is how many items it must report;
+///  the answer is
+/// the container,
+///  for finding its rows.
+/// Why:
+///  The container's role,
+///  name,
+///  and item count tell an assistive tool what it is moving through.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -184,9 +227,13 @@ fn container(window: &AppWindow, role: AccessibleRole, label: &str, rows: usize)
     return found;
 }
 
-/// The tree is named and counts its rows; each row is a list item with its file name, its position, and
+/// The tree is named and counts its rows;
+///  each row is a list item with its file name,
+///  its position,
+///  and
 /// a selected state that marks the open file and moves when another file is opened through the row's
-/// default action. A directory row is expandable and its expand action expands it.
+/// default action.
+///  A directory row is expandable and its expand action expands it.
 #[test]
 fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     // What: `tempfile::tempdir()` makes a disposable directory removed when the value is dropped.
@@ -281,8 +328,10 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     window.hide().expect("close accessible tree window");
 }
 
-/// The search results are a named list that counts its rows; each result is a list item with its path and
-/// position, and the selected state follows Down and Up.
+/// The search results are a named list that counts its rows;
+///  each result is a list item with its path and
+/// position,
+///  and the selected state follows Down and Up.
 #[test]
 fn search_results_report_role_name_position_and_the_selected_result() {
     let fixture = tempfile::tempdir().expect("disposable accessible search project");
@@ -331,8 +380,11 @@ fn search_results_report_role_name_position_and_the_selected_result() {
     window.hide().expect("close accessible search list window");
 }
 
-/// The location list is a list named by its title that counts its rows; each location is a list item with
-/// its label and position, the selected state follows Down, and a row's default action chooses it.
+/// The location list is a list named by its title that counts its rows;
+///  each location is a list item with
+/// its label and position,
+///  the selected state follows Down,
+///  and a row's default action chooses it.
 #[test]
 fn location_list_reports_role_name_position_and_the_selected_location() {
     let shared = fixture(6);

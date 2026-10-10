@@ -1,4 +1,6 @@
-//! An ignored measurement: the inotify watches the window holds with many expanded folders, and how
+//! An ignored measurement:
+//!  the inotify watches the window holds with many expanded folders,
+//!  and how
 //! stale a folder that changed while scrolled out of view is at the moment it is scrolled back in.
 //! `inspect:watch-scope` runs it for the shipped scope (every expanded folder is watched) and for a
 //! disposable copy that watches only the folders in the tree's viewport.
@@ -10,8 +12,12 @@ use super::watch_tests::open;
 /// Real headless timers drive the same refresh timers as the shipped event loop;
 /// `ComponentHandle` provides `hide` on the generated window and `Model` the tree's row count.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
-/// What: `fs` reads `/proc` and writes fixtures; `Duration`/`Instant` are a time span and a monotonic time.
-/// Why: The watch count comes from this process's own inotify descriptors, as the kernel counts them.
+/// What:
+///  `fs` reads `/proc` and writes fixtures;
+///  `Duration`/`Instant` are a time span and a monotonic time.
+/// Why:
+///  The watch count comes from this process's own inotify descriptors,
+///  as the kernel counts them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,13 +28,16 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Expanded folders in the fixture; with three files each they fill several screens of the tree.
+/// Expanded folders in the fixture;
+///  with three files each they fill several screens of the tree.
 const FOLDERS: usize = 60;
 
-/// Time between the change and scrolling its folder into view, longer than a notified reread takes.
+/// Time between the change and scrolling its folder into view,
+///  longer than a notified reread takes.
 const DELAY: Duration = Duration::from_millis(300);
 
-/// Count this process's inotify watches: one `inotify wd:` line per watch in each inotify descriptor's fdinfo.
+/// Count this process's inotify watches:
+///  one `inotify wd:` line per watch in each inotify descriptor's fdinfo.
 fn kernel_watches() -> usize {
     let mut total = 0;
     // What: `read_dir` lists `/proc/self/fd`; `flatten` skips entries that could not be read.
@@ -65,8 +74,13 @@ fn run_for(span: Duration) {
     }
 }
 
-/// For each trial: scroll a folder out of view, create a file in it, wait `DELAY`, scroll it back,
-/// and time until the new row is in the tree; zero means it was already there when the folder came into view.
+/// For each trial:
+///  scroll a folder out of view,
+///  create a file in it,
+///  wait `DELAY`,
+///  scroll it back,
+/// and time until the new row is in the tree;
+///  zero means it was already there when the folder came into view.
 #[test]
 #[ignore = "measurement; run through inspect:watch-scope"]
 fn watch_scope_reveal_staleness() {

@@ -1,4 +1,5 @@
-//! Resolve project opens on the reader thread, then prepare source correspondence and classifications.
+//! Resolve project opens on the reader thread,
+//!  then prepare source correspondence and classifications.
 
 /// Existing source reads retain regular-file and UTF-8 validation before producing a prepared change.
 use crate::{
@@ -31,10 +32,19 @@ fn classify(engine: &Result<SyntaxEngine>, path: &Path, text: &Rope, revision: u
     return SyntaxReply { revision, result };
 }
 
-/// What: The highlighting result when the engine could not start. `Ok(None)` is plain text; `Err` is
-///       the initialization failure, shown and logged as a warning by the caller.
-/// Why: A file no language applies to, such as plain text, loses nothing, so it is not a failure;
-///      a file some language applies to loses its highlighting, which stays a visible failure.
+/// What:
+///  The highlighting result when the engine could not start.
+///  `Ok(None)` is plain text;
+///  `Err` is
+///       the initialization failure,
+///  shown and logged as a warning by the caller.
+/// Why:
+///  A file no language applies to,
+///  such as plain text,
+///  loses nothing,
+///  so it is not a failure;
+///      a file some language applies to loses its highlighting,
+///  which stays a visible failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -71,7 +81,8 @@ fn unstarted(error: &anyhow::Error, path: &Path, text: &Rope) -> Result<Option<S
     }
 }
 
-/// Project opens resolve within the explicit root; ordinary refreshes retain their already accepted target.
+/// Project opens resolve within the explicit root;
+///  ordinary refreshes retain their already accepted target.
 pub(crate) fn prepare(
     request: ReloadRequest,
     workspace: Option<Workspace>,
@@ -157,7 +168,8 @@ pub(crate) fn prepare(
     };
 }
 
-/// The highlighting result when the engine could not start, for plain text and for a language file.
+/// The highlighting result when the engine could not start,
+///  for plain text and for a language file.
 #[cfg(test)]
 #[path = "reload_read_tests.rs"]
 mod tests;

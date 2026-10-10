@@ -1,16 +1,25 @@
 //! rust-analyzer hears about file changes from the IDE instead of watching the project itself.
 //!
-//! Helix's built-in definition sets `files.watcher = "server"`, because Helix watches no files for its
-//! servers. rust-analyzer then asks notify for a recursive watch of every workspace package folder, which
-//! watches every folder below it, `node_modules` included, whatever `files.excludeDirs` says (measured:
-//! 3081 watches on a 40-crate workspace with one 2001-folder `node_modules`). The IDE watches the
-//! project's source folders for every server and forwards changes, so rust-analyzer is told to register
+//! Helix's built-in definition sets `files.watcher = "server"`,
+//!  because Helix watches no files for its
+//! servers.
+//!  rust-analyzer then asks notify for a recursive watch of every workspace package folder,
+//!  which
+//! watches every folder below it,
+//!  `node_modules` included,
+//!  whatever `files.excludeDirs` says (measured:
+//! 3081 watches on a 40-crate workspace with one 2001-folder `node_modules`).
+//!  The IDE watches the
+//! project's source folders for every server and forwards changes,
+//!  so rust-analyzer is told to register
 //! watchers with the client (`files.watcher = "client"`) and takes no watches of its own.
 
 /// Helix's typed configuration.
 use helix_core::syntax::config::Configuration;
-/// What: `json!` builds a JSON value from literal syntax.
-/// Why: The server's settings table is JSON.
+/// What:
+///  `json!` builds a JSON value from literal syntax.
+/// Why:
+///  The server's settings table is JSON.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,9 +30,14 @@ use serde_json::json;
 /// Name of Helix's rust-analyzer definition.
 const SERVER: &str = "rust-analyzer";
 
-/// What: Set `files.watcher = "client"` in rust-analyzer's settings, keeping every other key.
-/// Why: Set in code after the definitions are merged, because a merged `files` table replaces the whole
-///      table, so a key set only in TOML could be lost together with its siblings.
+/// What:
+///  Set `files.watcher = "client"` in rust-analyzer's settings,
+///  keeping every other key.
+/// Why:
+///  Set in code after the definitions are merged,
+///  because a merged `files` table replaces the whole
+///      table,
+///  so a key set only in TOML could be lost together with its siblings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,7 +75,8 @@ pub(super) fn watch_through_client(configuration: &mut Configuration) {
     settings["files"]["watcher"] = json!("client");
 }
 
-/// The setting rust-analyzer is given, with and without merged definitions.
+/// The setting rust-analyzer is given,
+///  with and without merged definitions.
 #[cfg(test)]
 #[path = "rust_analyzer_tests.rs"]
 mod tests;

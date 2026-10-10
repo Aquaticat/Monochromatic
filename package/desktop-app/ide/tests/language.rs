@@ -62,6 +62,7 @@ mod quiet;
 #[path = "language/roots.rs"]
 mod roots;
 
-/// File changes made outside the IDE, forwarded to servers that registered file watchers.
+/// File changes made outside the IDE,
+///  forwarded to servers that registered file watchers.
 #[path = "language/watched.rs"]
 mod watched;

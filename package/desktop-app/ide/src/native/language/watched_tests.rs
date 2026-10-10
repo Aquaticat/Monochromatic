@@ -1,7 +1,11 @@
-//! The application's language tick hands the worker's file-change queue to the change watcher, so a file
+//! The application's language tick hands the worker's file-change queue to the change watcher,
+//!  so a file
 //! changed outside the IDE reaches the scripted server that registered a watcher for it.
 
-/// Fixtures, the scripted server's definitions, bounded waiting, and the readiness wait.
+/// Fixtures,
+///  the scripted server's definitions,
+///  bounded waiting,
+///  and the readiness wait.
 use super::test_support::{address, definitions, eventually, project, reader, ready};
 /// External writes and the server's report.
 use std::fs;
