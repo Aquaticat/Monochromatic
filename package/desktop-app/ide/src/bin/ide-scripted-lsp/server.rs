@@ -355,6 +355,18 @@ impl Session {
             self.publish(uri, version);
         } else if method == "textDocument/didClose" {
             self.documents.remove(uri);
+        } else if method == "initialized"
+            && let Some(watchers) = self.script.watchers.clone()
+        {
+            // Registered from its own thread, because the reply arrives through this read loop.
+            let wire = Arc::clone(&self.wire);
+            thread::spawn(move || {
+                let reply = wire.ask(
+                    "client/registerCapability",
+                    json!({ "registrations": [{ "id": "scripted-watchers", "method": "workspace/didChangeWatchedFiles", "registerOptions": { "watchers": watchers } }] }),
+                );
+                wire.record(json!({ "registered-watchers": reply }));
+            });
         }
     }
 }

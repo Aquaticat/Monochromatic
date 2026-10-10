@@ -1,29 +1,21 @@
-//! An ignored measurement:
-//!  how often a save that begins when the safety sweep comes due is read
-//! unfinished,
-//!  because the sweep read is not asked for by the save's notification.
+//! An ignored measurement: how often a save that begins when the safety sweep comes due is read
+//! unfinished, because the sweep read is not asked for by the save's notification.
 
 /// Shipped window setup shared with the watch tests.
 use super::watch_tests::open;
 /// The slow-writer helpers and texts of the asserting write-wait tests.
 use super::write_wait_tests::{NEW, OLD, PAUSE, baseline, until_text, watch_texts};
-/// The bounded wait for startup state,
-///  and the renderer that shows a new selection.
+/// The bounded wait for startup state, and the renderer that shows a new selection.
 use super::{navigation_tests::wait_until, render};
-/// Reading positions,
-///  and the shipped intervals named in the measurement output.
+/// Reading positions, and the shipped intervals named in the measurement output.
 use ide_app::{
     document::ReadingPosition,
     refresh_policy::{SAFETY_SWEEP, WRITE_QUIET},
 };
 /// `ComponentHandle` provides `hide` on the generated window.
 use slint::ComponentHandle;
-/// What:
-///  `OpenOptions` opens a file with chosen flags;
-///  `Write` provides `write_all`;
-///  `Duration` is a time span.
-/// Why:
-///  The measurement plays a slow writer whose save begins at a chosen time.
+/// What: `OpenOptions` opens a file with chosen flags; `Write` provides `write_all`; `Duration` is a time span.
+/// Why: The measurement plays a slow writer whose save begins at a chosen time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,15 +27,13 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Each trial starts an in-place save,
-///  unfinished for `PAUSE`,
-///  at a pseudo-random time within the
-/// 400 ms that contain the next sweep read.
-///  The write wait cannot hold that read back until the
-/// save's notification has reached the schedule.
-///  The share of trials that showed the truncated file,
-/// times 400 ms,
-///  is the time before each sweep read in which a beginning save is read unfinished.
+/// Each trial starts an in-place save, unfinished for `PAUSE`, at a pseudo-random time within the
+/// 400 ms that contain the next sweep read. The write wait cannot hold that read back until the
+/// save's notification has reached the schedule. The share of trials that showed the truncated file,
+/// times 400 ms, is the time before each sweep read in which a beginning save is read unfinished.
+/// A trial counts only when the file stayed truncated for less than the quiet period in real time: on a
+/// loaded host the test thread itself can stall mid-save, which makes the save a long one that any read may
+/// show by design. Such stretched trials are repeated, up to 60 times, and reported separately.
 #[test]
 #[ignore = "measurement; run through inspect:refresh-latency with the filter write_wait_timer"]
 fn write_wait_timer_coincidence() {
@@ -58,6 +48,9 @@ fn write_wait_timer_coincidence() {
     let span_ms = 400_u32;
     let mut truncated_shown = 0;
     let mut shown_wait_ms = Vec::new();
+    let mut counted = 0;
+    let mut stretched = 0;
+    let mut shown_when_stretched = 0;
     // The slowest setup; about 400 ms is usual, and far more means the host stalled during the run.
     let mut slowest_setup = Duration::ZERO;
     // What: xorshift, a three-step shift-and-xor generator over a `u32` (unsigned 32-bit integer).
@@ -68,7 +61,7 @@ fn write_wait_timer_coincidence() {
     // seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
     // ```
     let mut seed = 0x9E37_79B9_u32;
-    for _ in 0..trials {
+    while counted < trials && stretched < 60 {
         let begun = Instant::now();
         baseline(&window, &displayed);
         slowest_setup = slowest_setup.max(begun.elapsed());
@@ -93,12 +86,15 @@ fn write_wait_timer_coincidence() {
         });
         render(&window, &state);
         let mut seen = Vec::new();
+        let truncated_at = Instant::now();
         let mut file = OpenOptions::new()
             .write(true)
             .truncate(true)
             .open(&displayed)
             .expect("open for an in-place save");
         watch_texts(&window, PAUSE, &mut seen);
+        // How long the file really stayed truncated, open syscall included.
+        let held = truncated_at.elapsed();
         file.write_all(NEW.as_bytes())
             .expect("write after the pause");
         drop(file);
@@ -110,13 +106,22 @@ fn write_wait_timer_coincidence() {
         // ```ts
         // if (seen.some(text => text === '')) { truncatedShown += 1; shownWaitMs.push(waitMs); }
         // ```
-        if seen.iter().any(String::is_empty) {
+        let shown = seen.iter().any(String::is_empty);
+        if held >= WRITE_QUIET {
+            stretched += 1;
+            if shown {
+                shown_when_stretched += 1;
+            }
+            continue;
+        }
+        counted += 1;
+        if shown {
             truncated_shown += 1;
             shown_wait_ms.push(wait_ms);
         }
     }
     println!(
-        "{{\"case\":\"write-wait-timer\",\"sweep_ms\":{},\"quiet_ms\":{},\"span_ms\":{span_ms},\"pause_ms\":{},\"trials\":{trials},\"truncated_shown\":{truncated_shown},\"shown_wait_ms\":{shown_wait_ms:?},\"slowest_setup_ms\":{}}}",
+        "{{\"case\":\"write-wait-timer\",\"sweep_ms\":{},\"quiet_ms\":{},\"span_ms\":{span_ms},\"pause_ms\":{},\"trials\":{counted},\"truncated_shown\":{truncated_shown},\"shown_wait_ms\":{shown_wait_ms:?},\"stretched_trials\":{stretched},\"shown_when_stretched\":{shown_when_stretched},\"slowest_setup_ms\":{}}}",
         SAFETY_SWEEP.as_millis(),
         WRITE_QUIET.as_millis(),
         PAUSE.as_millis(),

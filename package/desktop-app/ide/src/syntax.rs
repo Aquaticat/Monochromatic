@@ -1,16 +1,13 @@
-//! Helix language recognition and tree-house highlighting,
-//!  independent of native widgets.
+//! Helix language recognition and tree-house highlighting, independent of native widgets.
 //!
 //! Language files come only from the application's own runtime ([`crate::runtime`]) through
-//! [`crate::syntax_loader::OwnLoader`];
-//!  Helix's runtime directory search is never consulted.
+//! [`crate::syntax_loader::OwnLoader`]; Helix's runtime directory search is never consulted.
 
 /// Source paint spans remain unrelated to native pixel coordinates.
 use crate::source_style::{SourceStyles, StyleSpan};
 /// The upstream error enum needs explicit conversion and operation-specific remedies.
 use crate::syntax_error::parser_failure;
-/// Reuse Helix's built-in language table for recognition;
-///  grammars and queries come from the own loader.
+/// Reuse Helix's built-in language table for recognition; grammars and queries come from the own loader.
 use crate::{runtime, syntax_loader::OwnLoader};
 /// Errors distinguish unavailable parsers/rules from a successful plain-text language.
 use anyhow::{Context, Result, anyhow, bail};
@@ -21,14 +18,9 @@ use helix_core::{
 };
 /// Decode the bundled manifest into a typed record instead of probing untyped JSON.
 use serde::Deserialize;
-/// What:
-///  Paths identify the source language;
-///  Rope retains scalar/byte conversion boundaries.
-///       `HashSet` is a set of unique values;
-///  `fs` reads the bundled manifest file.
-/// Why:
-///  Syntax positions must map to canonical source characters,
-///  not rendered columns,
+/// What: Paths identify the source language; Rope retains scalar/byte conversion boundaries.
+///       `HashSet` is a set of unique values; `fs` reads the bundled manifest file.
+/// Why: Syntax positions must map to canonical source characters, not rendered columns,
 ///      and provisioned-grammar lookup needs membership tests rather than ordered scans.
 ///
 /// In TS you'd write (pseudocode):
@@ -37,18 +29,11 @@ use serde::Deserialize;
 /// import { type Path, Rope, LanguageLoader, Syntax } from './helix';
 /// ```
 use std::{collections::HashSet, fs, path::Path, time::Duration};
-/// The parser library Helix builds on,
-///  driven here with the application's own loader.
+/// The parser library Helix builds on, driven here with the application's own loader.
 use tree_house::{Syntax, highlighter::Highlighter};
 
-/// What:
-///  How long one parse may take;
-///  `Duration` is a span of time (sibling:
-///  `Instant`,
-///  a moment).
-/// Why:
-///  The same half-second limit as Helix's `PARSE_TIMEOUT` in `helix-core/src/syntax.rs`,
-///  which
+/// What: How long one parse may take; `Duration` is a span of time (sibling: `Instant`, a moment).
+/// Why: The same half-second limit as Helix's `PARSE_TIMEOUT` in `helix-core/src/syntax.rs`, which
 ///      the engine used before it drove the parser library directly.
 ///
 /// In TS you'd write (pseudocode):
@@ -57,8 +42,7 @@ use tree_house::{Syntax, highlighter::Highlighter};
 /// ```
 const PARSE_TIMEOUT: Duration = Duration::from_millis(500);
 
-/// Ordered palette roles;
-///  role zero stays ordinary source and 64 stays selection ink.
+/// Ordered palette roles; role zero stays ordinary source and 64 stays selection ink.
 const SCOPES: &[&str] = &[
     "keyword",
     "string",
@@ -75,16 +59,11 @@ const SCOPES: &[&str] = &[
     "special",
 ];
 
-/// What:
-///  `#[derive(Deserialize)]` asks the serde library to generate this record's JSON decoder
-///       at compile time;
-///  `struct Manifest` is the record the package runtime task writes as
+/// What: `#[derive(Deserialize)]` asks the serde library to generate this record's JSON decoder
+///       at compile time; `struct Manifest` is the record the package runtime task writes as
 ///       `manifest.json` beside the grammars.
-/// Why:
-///   A typed record rejects a malformed manifest instead of guessing which grammars exist.
-///       Keys this reader does not name,
-///  such as `helixRevision`,
-///  are ignored.
+/// Why:  A typed record rejects a malformed manifest instead of guessing which grammars exist.
+///       Keys this reader does not name, such as `helixRevision`, are ignored.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -92,16 +71,9 @@ const SCOPES: &[&str] = &[
 /// ```
 #[derive(Deserialize)]
 struct Manifest {
-    /// What:
-    ///  `Vec<String>` is a growable list of owned text values,
-    ///  one shared-object file name
-    ///       per grammar.
-    ///  Siblings:
-    ///  `&[&str]` (borrowed,
-    ///  fixed) and `[String; N]` (fixed length).
-    /// Why:
-    ///   The count comes from the file,
-    ///  and the decoded names must outlive the file buffer.
+    /// What: `Vec<String>` is a growable list of owned text values, one shared-object file name
+    ///       per grammar. Siblings: `&[&str]` (borrowed, fixed) and `[String; N]` (fixed length).
+    /// Why:  The count comes from the file, and the decoded names must outlive the file buffer.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -110,18 +82,12 @@ struct Manifest {
     grammars: Vec<String>,
 }
 
-/// What:
-///  `fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>>` reads a manifest file
-///       from a prepared runtime directory and returns the grammar ids it lists,
-///  or an error.
-///       `&Path` borrows the path (the caller keeps ownership).
-///  Siblings of `HashSet<String>`:
-///       `Vec<String>` (ordered,
-///  linear lookup) and `HashSet<&str>` (borrowed names that could not
+/// What: `fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>>` reads a manifest file
+///       from a prepared runtime directory and returns the grammar ids it lists, or an error.
+///       `&Path` borrows the path (the caller keeps ownership). Siblings of `HashSet<String>`:
+///       `Vec<String>` (ordered, linear lookup) and `HashSet<&str>` (borrowed names that could not
 ///       outlive the decoded file).
-/// Why:
-///   Tests and development tools check a runtime directory directly;
-///  the application reads its
+/// Why:  Tests and development tools check a runtime directory directly; the application reads its
 ///       embedded manifest through [`provisioned_grammars_from`] instead.
 ///
 /// In TS you'd write (pseudocode):
@@ -154,16 +120,10 @@ pub fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>> {
     return provisioned_grammars_from(&encoded, &manifest.display().to_string(), remedy);
 }
 
-/// What:
-///  Decode manifest text into the set of grammar ids it lists.
-///  `location` names where the text
-///       came from and `remedy` what the reader should do,
-///  both only for error messages.
-/// Why:
-///   The manifest names exactly the grammars this build ships.
-///  A language outside it is
-///       unsupported and stays plain text;
-///  a listed grammar that then fails to load is a
+/// What: Decode manifest text into the set of grammar ids it lists. `location` names where the text
+///       came from and `remedy` what the reader should do, both only for error messages.
+/// Why:  The manifest names exactly the grammars this build ships. A language outside it is
+///       unsupported and stays plain text; a listed grammar that then fails to load is a
 ///       broken installation and stays a visible failure.
 ///
 /// In TS you'd write (pseudocode):
@@ -214,8 +174,7 @@ pub fn provisioned_grammars_from(
     return Ok(names);
 }
 
-/// Merge touching intervals with identical paint roles,
-///  not unrelated syntax nodes.
+/// Merge touching intervals with identical paint roles, not unrelated syntax nodes.
 fn append_span(spans: &mut Vec<StyleSpan>, incoming: StyleSpan) {
     // last_mut lends only the final owned interval; source text remains immutable.
     // Extract a present interval only when its paint role and boundary both match.
@@ -239,8 +198,7 @@ pub struct SyntaxEngine {
 /// Translate pinned language recognition and highlighting into source-character paint ranges.
 impl SyntaxEngine {
     /// Initialize language recognition from the manifest of the process's language runtime
-    /// (embedded in the application binary;
-    ///  a directory for tests and tools) without starting
+    /// (embedded in the application binary; a directory for tests and tools) without starting
     /// servers or downloading assets.
     pub fn new() -> Result<Self> {
         // The trailing `?` returns the "no runtime" error when this program has none.
@@ -253,8 +211,7 @@ impl SyntaxEngine {
     }
 
     /// Initialize language recognition for an explicit set of bundled grammar ids.
-    /// `new` passes the manifest's set;
-    ///  tests pass sets the manifest would not produce.
+    /// `new` passes the manifest's set; tests pass sets the manifest would not produce.
     pub fn with_provisioned(provisioned: HashSet<String>) -> Result<Self> {
         // What: try_into deserializes the pinned loader's TOML value into its own config type.
         // Why: Keep parser configuration aligned with the selected Helix revision.
@@ -275,8 +232,36 @@ impl SyntaxEngine {
         });
     }
 
-    /// Recognize a bundled language by filename,
-    ///  then by shebang.
+    /// What: Say whether the built-in language rules name a language for this file, by filename or
+    ///       shebang, without reading the bundled manifest or any grammar. `Result<bool>` is the answer
+    ///       or the error of decoding the compiled-in rules.
+    /// Why: When highlighting cannot start, a file no language applies to loses nothing, so that is
+    ///      not a failure worth a warning; a file some language applies to loses its highlighting.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static namesALanguage(path: string, text: Rope): boolean
+    /// ```
+    pub fn names_a_language(path: &Path, text: &Rope) -> Result<bool> {
+        // An empty grammar set: only the compiled-in filename and shebang rules are consulted.
+        let rules = Self::with_provisioned(HashSet::new())?;
+        // What: `or_else` tries the shebang only when the filename named nothing; `is_some` asks
+        //       whether either found a language.
+        // Why: The same order `recognize` uses, without its check for a bundled grammar.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return (byFilename(path) ?? byShebang(text)) !== undefined;
+        // ```
+        let found = rules
+            .loader
+            .helix
+            .language_for_filename(path)
+            .or_else(|| return rules.loader.helix.language_for_shebang(text.slice(..)));
+        return Ok(found.is_some());
+    }
+
+    /// Recognize a bundled language by filename, then by shebang.
     /// None means the registry does not know the file or this build does not ship its grammar.
     fn recognize(&self, path: &Path, text: &Rope) -> Option<Language> {
         // What: the trailing `?` on an `Option` returns `None` from this function when the
@@ -318,11 +303,8 @@ impl SyntaxEngine {
         return Some(language);
     }
 
-    /// Name the bundled Helix language a file is read as,
-    ///  such as `jsonc` for `tsconfig.json`.
-    /// None means plain text:
-    ///  an unknown file,
-    ///  or a language this build does not ship.
+    /// Name the bundled Helix language a file is read as, such as `jsonc` for `tsconfig.json`.
+    /// None means plain text: an unknown file, or a language this build does not ship.
     pub fn language_id(&self, path: &Path, text: &Rope) -> Option<String> {
         let language = self.recognize(path, text)?;
         // What: `.clone()` duplicates the registry's owned id into a new `String`.
@@ -344,8 +326,7 @@ impl SyntaxEngine {
     }
 
     /// Load the grammar and compile the highlighting rules of one registry language by id,
-    /// reporting why it fails.
-    ///  Ok(false) means the id is unknown or its grammar is not bundled.
+    /// reporting why it fails. Ok(false) means the id is unknown or its grammar is not bundled.
     /// Checks of a runtime use this to prove every bundled language compiles.
     pub fn compile_language(&self, language_id: &str) -> Result<bool> {
         // What: `language_for_name(language_id.to_string())` looks the id up in Helix's table.
@@ -378,12 +359,8 @@ impl SyntaxEngine {
 
     /// Return None when the registry does not recognize the filename or shebang,
     /// or when this build does not ship the recognized language's grammar.
-    /// Bundled languages with missing,
-    ///  damaged,
-    ///  or incompatible assets return a visible failure.
-    /// Returned intervals are sorted,
-    ///  non-overlapping,
-    ///  and merge adjacent identical paint roles.
+    /// Bundled languages with missing, damaged, or incompatible assets return a visible failure.
+    /// Returned intervals are sorted, non-overlapping, and merge adjacent identical paint roles.
     pub fn highlight(&self, path: &Path, text: &Rope) -> Result<Option<SourceStyles>> {
         let Some(language) = self.recognize(path, text) else {
             return Ok(None);

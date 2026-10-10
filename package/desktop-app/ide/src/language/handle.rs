@@ -1,6 +1,4 @@
-//! The interface thread's handle:
-//!  non-blocking commands in,
-//!  polled and fenced results out.
+//! The interface thread's handle: non-blocking commands in, polled and fenced results out.
 
 /// Setup of the language registry and the launch seam.
 use super::config::LanguageSetup;
@@ -16,30 +14,22 @@ use super::{
     sync::{DocumentOpen, DocumentReload},
     worker::{self, Command, Outputs},
 };
-/// Failures are reported as user-facing errors,
-///  never as empty results.
+/// The changes the change watcher forwards to servers.
+use crate::change_watch::ServerChange;
+/// Failures are reported as user-facing errors, never as empty results.
 use anyhow::{Context, Result, anyhow};
-/// What:
-///  `Path` is a borrowed filesystem path;
-///  `Arc` is a thread-safe shared pointer;
+/// What: `Path` is a borrowed filesystem path; `Arc` is a thread-safe shared pointer;
 ///       `JoinHandle` lets the owner wait for a thread to end.
-/// Why:
-///  Published values are shared and immutable;
-///  the worker thread is joined,
-///  never detached.
+/// Why: Published values are shared and immutable; the worker thread is joined, never detached.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const worker = new Worker('language');
 /// ```
 use std::{path::Path, sync::Arc, thread::JoinHandle};
-/// What:
-///  `mpsc` is a bounded queue;
-///  `watch` is a single-slot latest-value cell.
-///  `TryRecvError`
+/// What: `mpsc` is a bounded queue; `watch` is a single-slot latest-value cell. `TryRecvError`
 ///       and `TrySendError` say why a non-blocking receive or send did not succeed.
-/// Why:
-///  Nothing on the interface thread may wait for the worker.
+/// Why: Nothing on the interface thread may wait for the worker.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,22 +40,15 @@ use tokio::sync::{
     watch,
 };
 
-/// Commands that may wait in the queue;
-///  a full queue is reported,
-///  never waited on.
+/// Commands that may wait in the queue; a full queue is reported, never waited on.
 const COMMAND_CAPACITY: usize = 64;
 
 /// One-shot replies that may wait to be polled.
 const REPLY_CAPACITY: usize = 64;
 
-/// What:
-///  The interface thread's end of the Language module.
-///  `Option<...>` fields are "a value,
-///       or nothing";
-///  they become nothing when the worker is closed.
-/// Why:
-///  No Slint handle and no mutable document crosses this boundary;
-///  only owned messages do.
+/// What: The interface thread's end of the Language module. `Option<...>` fields are "a value,
+///       or nothing"; they become nothing when the worker is closed.
+/// Why: No Slint handle and no mutable document crosses this boundary; only owned messages do.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -73,8 +56,7 @@ const REPLY_CAPACITY: usize = 64;
 ///                        tryTakeStatus(); tryTakeReply(); tryTakeDiagnostics(); tryTakeHints(); }
 /// ```
 pub struct LanguageWorker {
-    /// Dropping this sender ends the worker loop,
-    ///  which then stops every server.
+    /// Dropping this sender ends the worker loop, which then stops every server.
     commands: Option<mpsc::Sender<Command>>,
     /// One-shot replies to position requests.
     replies: mpsc::Receiver<LanguageReply>,
@@ -84,17 +66,17 @@ pub struct LanguageWorker {
     diagnostics: watch::Receiver<Option<Arc<DiagnosticsSnapshot>>>,
     /// Latest hints.
     hints: watch::Receiver<Option<Arc<HintsSnapshot>>>,
-    /// Drops results for another file,
-    ///  revision,
-    ///  or server process.
+    /// The queue the change watcher sends file changes into; the worker reads it.
+    file_changes: mpsc::UnboundedSender<ServerChange>,
+    /// Whether some server registered file watchers.
+    watching: watch::Receiver<bool>,
+    /// Drops results for another file, revision, or server process.
     fence: Fence,
-    /// Number given to the next position request.
-    ///  `u64` never wraps in practice.
+    /// Number given to the next position request. `u64` never wraps in practice.
     next_request: u64,
     /// Joined on shutdown.
     thread: Option<JoinHandle<()>>,
-    /// Why the worker stopped,
-    ///  once that was observed.
+    /// Why the worker stopped, once that was observed.
     failure: Option<String>,
 }
 
@@ -116,26 +98,17 @@ fn panic_text(payload: &(dyn std::any::Any + Send)) -> String {
     return "unknown failure".to_string();
 }
 
-/// Commands,
-///  polling,
-///  and shutdown.
+/// Commands, polling, and shutdown.
 impl LanguageWorker {
-    /// Start the worker for one project root with the production setup.
-    ///  No server is started
+    /// Start the worker for one project root with the production setup. No server is started
     /// until a file is displayed.
     pub fn new(project_root: &Path) -> Result<Self> {
         return Self::with_setup(project_root, LanguageSetup::default());
     }
 
-    /// What:
-    ///  Start the worker with an explicit setup.
-    ///  `Result<Self>` is the handle or a start error.
-    /// Why:
-    ///  The launch policy,
-    ///  the private state directory,
-    ///  and application-supplied definitions
-    ///      are chosen by the caller;
-    ///  the language registry itself is built on the worker thread.
+    /// What: Start the worker with an explicit setup. `Result<Self>` is the handle or a start error.
+    /// Why: The launch policy, the private state directory, and application-supplied definitions
+    ///      are chosen by the caller; the language registry itself is built on the worker thread.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -161,13 +134,23 @@ impl LanguageWorker {
         let (status_sender, status_receiver) = watch::channel(Arc::new(LanguageStatus::closed()));
         let (diagnostics_sender, diagnostics_receiver) = watch::channel(None);
         let (hints_sender, hints_receiver) = watch::channel(None);
+        let (watching_sender, watching_receiver) = watch::channel(false);
+        // What: `unbounded_channel` makes a queue without a size limit.
+        // Why: The change watcher sends from notify's thread and must never wait for the worker.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const fileChanges = new Queue<ServerChange>();
+        // ```
+        let (change_sender, change_receiver) = mpsc::unbounded_channel();
         let outputs = Outputs {
             replies: reply_sender,
             status: status_sender,
             diagnostics: diagnostics_sender,
             hints: hints_sender,
+            watching: watching_sender,
         };
-        let thread = worker::spawn(root, setup, command_receiver, outputs)?;
+        let thread = worker::spawn(root, setup, command_receiver, change_receiver, outputs)?;
         // `Ok(...)` is the success variant of `Result`.
         return Ok(Self {
             commands: Some(command_sender),
@@ -175,6 +158,8 @@ impl LanguageWorker {
             status: status_receiver,
             diagnostics: diagnostics_receiver,
             hints: hints_receiver,
+            file_changes: change_sender,
+            watching: watching_receiver,
             fence: Fence::default(),
             next_request: 0,
             thread: Some(thread),
@@ -182,12 +167,8 @@ impl LanguageWorker {
         });
     }
 
-    /// What:
-    ///  Build the error for a worker that is gone,
-    ///  joining its thread once to learn why.
-    /// Why:
-    ///  A worker panic is a reported failure of the Language module;
-    ///  the window keeps working.
+    /// What: Build the error for a worker that is gone, joining its thread once to learn why.
+    /// Why: A worker panic is a reported failure of the Language module; the window keeps working.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -211,14 +192,31 @@ impl LanguageWorker {
         );
     }
 
-    /// What:
-    ///  Queue one command without waiting.
-    ///  `Ok(false)` means the queue is full and nothing
-    ///       was sent;
-    ///  `Err` means the worker is gone.
-    /// Why:
-    ///  The interface thread never blocks;
-    ///  a full queue is retried at the next poll.
+    /// What: A sender for the change watcher's file changes; `clone` makes another handle to one queue.
+    /// Why: The change watcher feeds the worker directly, without the interface thread in between.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// fileChangeSender(): Queue<ServerChange>
+    /// ```
+    pub fn file_change_sender(&self) -> mpsc::UnboundedSender<ServerChange> {
+        return self.file_changes.clone();
+    }
+
+    /// What: Whether some server registered file watchers; `borrow` reads the latest value without waiting.
+    /// Why: The project's folders are watched for servers only while one asked.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// wantsFileChanges(): boolean
+    /// ```
+    pub fn wants_file_changes(&self) -> bool {
+        return *self.watching.borrow();
+    }
+
+    /// What: Queue one command without waiting. `Ok(false)` means the queue is full and nothing
+    ///       was sent; `Err` means the worker is gone.
+    /// Why: The interface thread never blocks; a full queue is retried at the next poll.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -239,8 +237,7 @@ impl LanguageWorker {
         };
     }
 
-    /// A file was displayed.
-    ///  From now on only results for `open.stamp` are handed out.
+    /// A file was displayed. From now on only results for `open.stamp` are handed out.
     pub fn open(&mut self, open: DocumentOpen) -> Result<bool> {
         let stamp = open.stamp;
         let sent = self.send(Command::Open(open))?;
@@ -251,8 +248,7 @@ impl LanguageWorker {
         return Ok(sent);
     }
 
-    /// The displayed file was reloaded.
-    ///  Results for the previous revision are dropped from now on.
+    /// The displayed file was reloaded. Results for the previous revision are dropped from now on.
     pub fn reload(&mut self, reload: DocumentReload) -> Result<bool> {
         let stamp = DocumentStamp {
             file: reload.file,
@@ -265,8 +261,7 @@ impl LanguageWorker {
         return Ok(sent);
     }
 
-    /// No file is displayed.
-    ///  Every pending result is dropped from now on.
+    /// No file is displayed. Every pending result is dropped from now on.
     pub fn close(&mut self) -> Result<bool> {
         let sent = self.send(Command::Close)?;
         if sent {
@@ -276,16 +271,9 @@ impl LanguageWorker {
         return Ok(sent);
     }
 
-    /// What:
-    ///  Ask for a definition,
-    ///  references,
-    ///  or hover.
-    ///  Returns the request number its replies
-    ///       carry,
-    ///  or nothing when the queue is full.
-    /// Why:
-    ///  Each asked server replies separately;
-    ///  the number ties the replies together.
+    /// What: Ask for a definition, references, or hover. Returns the request number its replies
+    ///       carry, or nothing when the queue is full.
+    /// Why: Each asked server replies separately; the number ties the replies together.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -301,16 +289,13 @@ impl LanguageWorker {
         return Ok(Some(number));
     }
 
-    /// Report the visible lines;
-    ///  hints for them arrive through `try_take_hints`.
+    /// Report the visible lines; hints for them arrive through `try_take_hints`.
     pub fn request_hints(&mut self, stamp: DocumentStamp, window: HintWindow) -> Result<bool> {
         return self.send(Command::Hints { stamp, window });
     }
 
-    /// What:
-    ///  Copy the current server processes from the latest status into the fence.
-    /// Why:
-    ///  A result from a process that was since replaced must not be mixed with the new one's.
+    /// What: Copy the current server processes from the latest status into the fence.
+    /// Why: A result from a process that was since replaced must not be mixed with the new one's.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -329,11 +314,8 @@ impl LanguageWorker {
         self.fence.set_servers(servers);
     }
 
-    /// What:
-    ///  Take the latest status if it changed since the last call.
-    ///  `Ok(None)` means no change.
-    /// Why:
-    ///  Polling from a timer keeps all interface state on the interface thread.
+    /// What: Take the latest status if it changed since the last call. `Ok(None)` means no change.
+    /// Why: Polling from a timer keeps all interface state on the interface thread.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -351,13 +333,9 @@ impl LanguageWorker {
         return Ok(Some(status));
     }
 
-    /// What:
-    ///  Take the next reply that is still about the displayed text and a current server
-    ///       process.
-    ///  Stale replies are consumed and never returned.
-    /// Why:
-    ///  The fence is applied when a reply is read,
-    ///  so a reload or file switch that happened
+    /// What: Take the next reply that is still about the displayed text and a current server
+    ///       process. Stale replies are consumed and never returned.
+    /// Why: The fence is applied when a reply is read, so a reload or file switch that happened
     ///      while it waited in the queue is taken into account.
     ///
     /// In TS you'd write (pseudocode):
@@ -413,18 +391,14 @@ impl LanguageWorker {
         return Ok(Some(snapshot));
     }
 
-    /// How many results the fence accepted and dropped,
-    ///  per reason.
+    /// How many results the fence accepted and dropped, per reason.
     pub fn fence_counts(&self) -> FenceCounts {
         return self.fence.counts();
     }
 }
 
-/// What:
-///  `impl Drop` runs when the handle goes out of scope.
-/// Why:
-///  Closing the command queue makes the worker stop every server;
-///  joining guarantees no
+/// What: `impl Drop` runs when the handle goes out of scope.
+/// Why: Closing the command queue makes the worker stop every server; joining guarantees no
 ///      server process outlives the window through this module.
 ///
 /// In TS you'd write (pseudocode):
@@ -432,8 +406,7 @@ impl LanguageWorker {
 /// [Symbol.dispose]() { this.commands.close(); this.thread.join(); }
 /// ```
 impl Drop for LanguageWorker {
-    /// Close the queue,
-    ///  then wait for the worker to finish its shutdown.
+    /// Close the queue, then wait for the worker to finish its shutdown.
     fn drop(&mut self) {
         self.commands.take();
         let Some(thread) = self.thread.take() else {

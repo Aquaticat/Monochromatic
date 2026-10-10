@@ -135,8 +135,8 @@ impl StripController {
         crate::keys::install_strip_keys(&inner);
         let observer = Rc::downgrade(&inner);
         inner.layout.set_on_scroll(Box::new(move || {
-            if let Some(inner) = observer.upgrade() {
-                write_state(&inner);
+            if let Some(upgraded) = observer.upgrade() {
+                write_state(&upgraded);
             }
         }));
         inner.layout.scroll_to_pane(root_id);
@@ -282,8 +282,8 @@ fn build_pane_widget(inner: &Rc<StripInner>, id: PaneId) -> Widget {
         Some(PaneLocation::Preview(path)) => {
             let close_weak = Rc::downgrade(inner);
             return build_preview_pane(&path, move || {
-                if let Some(inner) = close_weak.upgrade() {
-                    close_pane(&inner, id);
+                if let Some(upgraded) = close_weak.upgrade() {
+                    close_pane(&upgraded, id);
                 }
             })
             .upcast::<Widget>()
@@ -308,13 +308,13 @@ fn build_directory_pane(inner: &Rc<StripInner>, id: PaneId, path: &Path) -> Widg
             return build_listing_pane(
                 &snapshot,
                 move |entry, force_dup| {
-                    if let Some(inner) = spawn_weak.upgrade() {
-                        spawn_from(&inner, id, entry, force_dup);
+                    if let Some(upgraded) = spawn_weak.upgrade() {
+                        spawn_from(&upgraded, id, entry, force_dup);
                     }
                 },
                 move || {
-                    if let Some(inner) = close_weak.upgrade() {
-                        close_pane(&inner, id);
+                    if let Some(upgraded) = close_weak.upgrade() {
+                        close_pane(&upgraded, id);
                     }
                 },
             )

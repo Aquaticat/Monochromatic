@@ -50,12 +50,12 @@ pub(crate) fn install_column_nav(inner: &Rc<StripInner>) {
     keys.set_propagation_phase(PropagationPhase::Capture);
     let weak = Rc::downgrade(inner);
     keys.connect_key_pressed(move |_, key, _, _| {
-        let Some(inner) = weak.upgrade() else {
+        let Some(upgraded) = weak.upgrade() else {
             return glib::Propagation::Proceed;
         };
         match key {
-            Key::Left => return focus_relative_column(&inner, -1),
-            Key::Right => return focus_relative_column(&inner, 1),
+            Key::Left => return focus_relative_column(&upgraded, -1),
+            Key::Right => return focus_relative_column(&upgraded, 1),
             _ => return glib::Propagation::Proceed,
         }
     });
@@ -76,14 +76,16 @@ fn focus_relative_column(inner: &Rc<StripInner>, delta: i32) -> glib::Propagatio
     if target < 0 || target >= columns {
         return glib::Propagation::Proceed;
     }
-    let target = target as usize;
-    let first = inner.state.borrow().first_pane_in_column(target);
+    // The checked offset becomes a named column index so the `usize` never
+    // shadows the `i32` it was cast from.
+    let target_column = target as usize;
+    let first = inner.state.borrow().first_pane_in_column(target_column);
     let Some(id) = first else {
         return glib::Propagation::Proceed;
     };
     if !inner.layout.focus_widget(id) {
         return glib::Propagation::Proceed;
     }
-    inner.layout.set_focused_column(target);
+    inner.layout.set_focused_column(target_column);
     return glib::Propagation::Stop
 }

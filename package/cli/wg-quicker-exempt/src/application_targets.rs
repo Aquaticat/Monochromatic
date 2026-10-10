@@ -1,7 +1,4 @@
-//! Discovers named Ghostty,
-//!  Steam,
-//!  Helium,
-//!  and Firefox Nightly cgroups plus executable-owned application cgroups.
+//! Discovers named Ghostty, Steam, Helium, and Firefox Nightly cgroups plus executable-owned application cgroups.
 
 /// Filesystem and process-race failures.
 use std::io;
@@ -12,12 +9,9 @@ use std::path::{Path, PathBuf};
 const GHOSTTY_SERVICE_PREFIX: &str = "app-com.mitchellh.ghostty@";
 /// Ghostty terminal surface scope prefix.
 const GHOSTTY_SURFACE_PREFIX: &str = "app-ghostty-surface-transient-";
-/// What:
-///      `STEAM_SERVICE_PREFIX` is immutable process-lifetime text borrowed from binary storage.
-///           Rust spells that borrowed text type `&str`;
-///  sibling `String` would allocate owned text.
-/// Why:
-///       Exact stable prefix identifies Steam's systemd service without allocating or matching unrelated names.
+/// What:     `STEAM_SERVICE_PREFIX` is immutable process-lifetime text borrowed from binary storage.
+///           Rust spells that borrowed text type `&str`; sibling `String` would allocate owned text.
+/// Why:      Exact stable prefix identifies Steam's systemd service without allocating or matching unrelated names.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,6 +31,10 @@ const CHATGPT_SERVICE_PREFIX: &str = "app-chatgpt@";
 const INTERPRETER_EXECUTABLE_PREFIX: &str = "interpreter";
 /// Interpreter desktop service prefix observed from its desktop-entry identifier.
 const INTERPRETER_SERVICE_PREFIX: &str = "app-interpreter@";
+/// Qure executable family prefix shared by its AppImage file and mounted Electron image.
+const QURE_EXECUTABLE_PREFIX: &str = "qure";
+/// Qure desktop service prefix observed from its desktop-entry identifier.
+const QURE_SERVICE_PREFIX: &str = "app-qure@";
 
 /// Roots make process and cgroup discovery testable without real host state.
 pub struct ScanRoots<'a> {
@@ -54,12 +52,9 @@ pub fn is_ghostty_cgroup_name(name: &str) -> bool {
         || (name.starts_with(GHOSTTY_SURFACE_PREFIX) && name.ends_with(".scope"));
 }
 
-/// What:
-///      `is_steam_service_name` borrows candidate text as `&str` and returns primitive `bool`.
-///           Borrowing avoids ownership transfer;
-///  sibling `String` would require caller-owned allocation.
-/// Why:
-///       Watcher must select Steam's complete service cgroup while rejecting similarly named scopes and services.
+/// What:     `is_steam_service_name` borrows candidate text as `&str` and returns primitive `bool`.
+///           Borrowing avoids ownership transfer; sibling `String` would require caller-owned allocation.
+/// Why:      Watcher must select Steam's complete service cgroup while rejecting similarly named scopes and services.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -87,11 +82,16 @@ pub fn is_chatgpt_service_name(name: &str) -> bool {
     return name.starts_with(CHATGPT_SERVICE_PREFIX) && name.ends_with(".service");
 }
 
-/// Reports Interpreter desktop-integration service name,
-///  leaving the application's
+/// Reports Interpreter desktop-integration service name, leaving the application's
 /// own executable-named scope to executable discovery.
 pub fn is_interpreter_service_name(name: &str) -> bool {
     return name.starts_with(INTERPRETER_SERVICE_PREFIX) && name.ends_with(".service");
+}
+
+/// Reports Qure desktop-integration service name, leaving the application's
+/// own executable-named scope to executable discovery.
+pub fn is_qure_service_name(name: &str) -> bool {
+    return name.starts_with(QURE_SERVICE_PREFIX) && name.ends_with(".service");
 }
 
 /// Reports numeric procfs directory name without regular expression parsing.
@@ -99,17 +99,10 @@ fn is_process_id(name: &str) -> bool {
     return !name.is_empty() && name.bytes().all(|byte| return byte.is_ascii_digit());
 }
 
-/// What:
-///      `is_exempt_application_executable` borrows executable path as `&Path` and returns primitive `bool`.
-///           Borrowing avoids ownership transfer;
-///  sibling `PathBuf` would require caller-owned allocation.
-/// Why:
-///       Process scan must recognize Helium,
-///  Pale Moon,
-///  Firefox Nightly,
-///  ChatGPT,
-///  and Interpreter
-///           without matching other Firefox channels or unrelated install trees.
+/// What:     `is_exempt_application_executable` borrows executable path as `&Path` and returns primitive `bool`.
+///           Borrowing avoids ownership transfer; sibling `PathBuf` would require caller-owned allocation.
+/// Why:      Process scan must recognize Helium, Pale Moon, Firefox Nightly, ChatGPT, Interpreter,
+///           and Qure without matching other Firefox channels or unrelated install trees.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -123,7 +116,8 @@ fn is_process_id(name: &str) -> bool {
 ///     || name === 'palemoon-bin'
 ///     || isFirefoxNightly
 ///     || isChatGpt
-///     || name.startsWith('interpreter');
+///     || name.startsWith('interpreter')
+///     || name.startsWith('qure');
 /// }
 /// ```
 fn is_exempt_application_executable(path: &Path) -> bool {
@@ -182,12 +176,18 @@ fn is_exempt_application_executable(path: &Path) -> bool {
     // so a capitalized lookalike stays tunnel-routed, while a renamed AppImage file still matches
     // through the lowercase inner binary it mounts.
     let is_interpreter = name_text.starts_with(INTERPRETER_EXECUTABLE_PREFIX);
+    // Qure's AppImage runtime file, its mounted Electron image, its bundled pytest runner,
+    // and every CLI wrapper it spawns all exec an image whose name begins with `qure`.
+    // Its Chromium-generic helpers, such as `chrome_crashpad_handler`, carry no such name and
+    // stay tunnel-routed on their own; they bypass only while sharing a Qure cgroup.
+    let is_qure = name_text.starts_with(QURE_EXECUTABLE_PREFIX);
     return normalized_helium_name.starts_with("helium")
         || name_text == "palemoon"
         || name_text == "palemoon-bin"
         || is_firefox_nightly
         || is_chatgpt
-        || is_interpreter;
+        || is_interpreter
+        || is_qure;
 }
 
 /// Extracts unified cgroup path from one procfs cgroup file.
@@ -207,12 +207,8 @@ fn push_unique(paths: &mut Vec<PathBuf>, path: PathBuf) {
     }
 }
 
-/// Scans direct app slice entries identifying Ghostty,
-///  Steam,
-///  Helium,
-///  Firefox Nightly,
-/// ChatGPT,
-///  or Interpreter services.
+/// Scans direct app slice entries identifying Ghostty, Steam, Helium, Firefox Nightly,
+/// ChatGPT, Interpreter, or Qure services.
 fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::Result<()> {
     for entry_result in std::fs::read_dir(roots.app_slice)? {
         let entry = entry_result?;
@@ -229,6 +225,7 @@ fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::
             || is_firefox_nightly_service_name(name_text)
             || is_chatgpt_service_name(name_text)
             || is_interpreter_service_name(name_text)
+            || is_qure_service_name(name_text)
         {
             push_unique(targets, entry.path());
         }
@@ -264,16 +261,10 @@ fn read_process_executable(path: &Path) -> io::Result<Option<PathBuf>> {
     }
 }
 
-/// What:
-///      `scan_exempt_application_processes` borrows scan roots and mutable target list,
-///           then returns `io::Result<()>`,
-///  Rust's success-or-I/O-error wrapper with no success payload.
-/// Why:
-///       Live executables identify Helium,
-///  Pale Moon,
-///  Firefox Nightly,
-///  ChatGPT,
-///           and Interpreter cgroups beyond named-service coverage.
+/// What:     `scan_exempt_application_processes` borrows scan roots and mutable target list,
+///           then returns `io::Result<()>`, Rust's success-or-I/O-error wrapper with no success payload.
+/// Why:      Live executables identify Helium, Pale Moon, Firefox Nightly, ChatGPT,
+///           Interpreter, and Qure cgroups beyond named-service coverage.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

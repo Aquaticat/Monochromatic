@@ -1,24 +1,26 @@
 {
   "schema": 2,
   "scope": "Authored debug-native first-run source states, not production discovery, permission evaluation, recovery, analysis, matching or native accessibility acceptance.",
-  "supersedes": "The study of prototype a534bf5ac985e091cc93d6c663c24d72ad82a91c, whose explanation ended with a choice to analyse that D84 withdrew.",
-  "prototypeCommit": "61e2cf7764f627d40a77bdf6039143e229ad36ea",
-  "apkSha256": "c6d6e9b38faee5895881b87cf055343d9904f4ab4d9b765aeecfdbd10f68521b",
+  "supersedes": "The rebuild after D84 of prototype 61e2cf7764f627d40a77bdf6039143e229ad36ea: four states, among them one with no source open, which D95 removed, and a declined state that asked to choose a folder.",
+  "prototypeCommit": "7a2ea6888cce59c9db23d556a520f4c60f8824c6",
+  "apkSha256": "060ab216713c070c928e9ce2982748f84c3174b0d4f0dfe3beb79e43979a0c4c",
   "provenanceNote": "The commit and APK digest say what produced the captures. Nothing is checked against them (D88).",
   "analysisText": "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.",
   "counts": {
-    "initial": 32,
-    "scrolled": 0
+    "initial": 24,
+    "scrolled": 4
   },
   "privacy": "Only inspected app-area crops; status strips removed, navigation retained. Raw hierarchies, logs and screenshots stay private.",
   "capture": {
     "visits": [
-      "runtime-ninth",
-      "runtime-tenth"
+      "runtime-calm-a",
+      "runtime-calm-b",
+      "runtime-quietbaagcbbb-b",
+      "runtime-quietbaagcbbb-c"
     ],
     "renderer": "Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))",
     "containerImageId": "4b8805002ee369c81b7826b941afc52c0c9678a0d0e427a0fefd1684b78b5f94",
-    "systemDialogsAnswered": 0,
+    "systemDialogsAnswered": 3,
     "note": "Views were collected over more than one emulator boot when a boot ended early; each view names its visit. Every view was captured from the same installed APK and checked in its own environment."
   },
   "lifecycle": {
@@ -42,8 +44,7 @@
     "Native buttons are debug callbacks only; not picker, Settings or permission-recovery acceptance.",
     "Hierarchy rectangles are not native action or ink bounds.",
     "The explanation of analysis is study copy that no decision chose; D84 decides only that analysis is automatic and not optional. When analysis runs is undecided.",
-    "No view moved when dragged, and no hierarchy reported a scrollable container. The superseded study's one state that moved did report one, so the absence is a reading the hierarchy can give.",
-    "One view, first-run-access-inner-declined-light-s100.png, shows no gesture handle in the navigation strip. It was the first capture of its visit; the cause was not established.",
+    "Views that moved when dragged, each with a kept end view: first-run-access-inner-declined-light-s200-end.png, first-run-access-inner-declined-dark-s200-end.png, first-run-access-cover-declined-light-s200-end.png, first-run-access-cover-declined-dark-s200-end.png. Every other first view did not move, and its hierarchy reported no scrollable container.",
     "TalkBack, focus order, speech and contrast were not exercised."
   ],
   "witnesses": [
@@ -70,74 +71,24 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791240886162-690f88ad4ffa18.xml",
+          "remotePath": "/sdcard/settings-pane-1791319796529-c572ee0102f92.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791240886162-690f88ad4ffa18.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791319796529-c572ee0102f92.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-a",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
       "scrollableContainerReported": false,
       "texts": [
-        "Choose a music folder",
-        "Device-wide music access was not granted. You can choose a folder instead.",
-        "Open a folder",
-        "Settings",
-        "About true-peak analysis",
-        "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
-      ],
-      "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
-      },
-      "inspection": "Complete published app-area region inspected in a light and dark pair. No gesture handle is drawn in the navigation strip of this view; the cause was not established."
-    },
-    {
-      "file": "first-run-access-inner-not-opened-light-s100.png",
-      "panel": "inner",
-      "scene": "not-opened",
-      "scheme": "light",
-      "fontScale": 1,
-      "position": "initial",
-      "physicalPixels": [
-        2076,
-        2152
-      ],
-      "cropPixels": {
-        "x": 0,
-        "y": 136,
-        "width": 2076,
-        "height": 2016
-      },
-      "densityDpi": 390,
-      "keyboardClosed": true,
-      "stableAppFrames": true,
-      "freshHierarchyValidated": true,
-      "hierarchyDumpAttempts": [
-        {
-          "remotePath": "/sdcard/settings-pane-1791240909879-2d70e418d0dc1.xml",
-          "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791240909879-2d70e418d0dc1.xml\n",
-          "stderr": ""
-        }
-      ],
-      "launchAttempts": 1,
-      "sceneAttempt": 1,
-      "visit": "runtime-ninth",
-      "productionServicesObserved": false,
-      "exactRetainedRgb": true,
-      "opaque": true,
-      "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
-      "texts": [
-        "Choose a music folder",
-        "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
@@ -172,15 +123,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791240937166-e3bf83bf3c6db.xml",
+          "remotePath": "/sdcard/settings-pane-1791319832941-bc873b12e67538.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791240937166-e3bf83bf3c6db.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791319832941-bc873b12e67538.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-a",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -221,15 +172,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791240962812-cdd301aef905f8.xml",
+          "remotePath": "/sdcard/settings-pane-1791320277088-c030a75f04a8f8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791240962812-cdd301aef905f8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320277088-c030a75f04a8f8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -270,74 +221,24 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791240999835-b9d2e59f80d568.xml",
+          "remotePath": "/sdcard/settings-pane-1791320345095-8034c161aa93c8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791240999835-b9d2e59f80d568.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320345095-8034c161aa93c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
       "scrollableContainerReported": false,
       "texts": [
-        "Choose a music folder",
-        "Device-wide music access was not granted. You can choose a folder instead.",
-        "Open a folder",
-        "Settings",
-        "About true-peak analysis",
-        "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
-      ],
-      "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
-      },
-      "inspection": "Complete published app-area region inspected in a light and dark pair."
-    },
-    {
-      "file": "first-run-access-inner-not-opened-dark-s100.png",
-      "panel": "inner",
-      "scene": "not-opened",
-      "scheme": "dark",
-      "fontScale": 1,
-      "position": "initial",
-      "physicalPixels": [
-        2076,
-        2152
-      ],
-      "cropPixels": {
-        "x": 0,
-        "y": 136,
-        "width": 2076,
-        "height": 2016
-      },
-      "densityDpi": 390,
-      "keyboardClosed": true,
-      "stableAppFrames": true,
-      "freshHierarchyValidated": true,
-      "hierarchyDumpAttempts": [
-        {
-          "remotePath": "/sdcard/settings-pane-1791241038795-3557c0134fa4d8.xml",
-          "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791241038795-3557c0134fa4d8.xml\n",
-          "stderr": ""
-        }
-      ],
-      "launchAttempts": 1,
-      "sceneAttempt": 1,
-      "visit": "runtime-ninth",
-      "productionServicesObserved": false,
-      "exactRetainedRgb": true,
-      "opaque": true,
-      "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
-      "texts": [
-        "Choose a music folder",
-        "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
@@ -372,15 +273,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791241083833-4eb1d922257dc8.xml",
+          "remotePath": "/sdcard/settings-pane-1791320399780-6d2610a6c437d8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791241083833-4eb1d922257dc8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320399780-6d2610a6c437d8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -421,15 +322,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791241108079-5675ae7ab9019.xml",
+          "remotePath": "/sdcard/settings-pane-1791320436617-9fcda85bd6c0c8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791241108079-5675ae7ab9019.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320436617-9fcda85bd6c0c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -470,41 +371,42 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791241149868-d109dbb34d33b.xml",
+          "remotePath": "/sdcard/settings-pane-1791320480219-ef9af179e678f8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791241149868-d109dbb34d33b.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320480219-ef9af179e678f8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
+      "scrollableContainerReported": true,
       "texts": [
-        "Choose a music folder",
-        "Device-wide music access was not granted. You can choose a folder instead.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
       ],
       "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
+        "movedAppPixels": true,
+        "dragsUntilRest": 1
       },
       "inspection": "Complete published app-area region inspected in a light and dark pair."
     },
     {
-      "file": "first-run-access-inner-not-opened-light-s200.png",
+      "file": "first-run-access-inner-declined-light-s200-end.png",
       "panel": "inner",
-      "scene": "not-opened",
+      "scene": "declined",
       "scheme": "light",
       "fontScale": 2,
-      "position": "initial",
+      "position": "scrolled",
       "physicalPixels": [
         2076,
         2152
@@ -521,31 +423,45 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791241177356-51d6399c84639.xml",
+          "remotePath": "/sdcard/settings-pane-1791320497321-1f24769d6e0b.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791241177356-51d6399c84639.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320497321-1f24769d6e0b.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
+      "scrollableContainerReported": true,
       "texts": [
-        "Choose a music folder",
-        "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
       ],
-      "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
+      "dragsToRest": 1,
+      "scrollProof": {
+        "bodyText": "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.",
+        "beforeBounds": [
+          1097,
+          1794,
+          2017,
+          2074
+        ],
+        "afterBounds": [
+          1097,
+          1397,
+          2017,
+          2015
+        ],
+        "verticalDisplacement": -397,
+        "appRgbChanged": true
       },
       "inspection": "Complete published app-area region inspected in a light and dark pair."
     },
@@ -572,15 +488,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791241207702-132bf322bf6a6.xml",
+          "remotePath": "/sdcard/settings-pane-1791320524663-70e31981d35998.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791241207702-132bf322bf6a6.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320524663-70e31981d35998.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -621,15 +537,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791241236764-a6a181fab7ef48.xml",
+          "remotePath": "/sdcard/settings-pane-1791320550778-af99ecc3c9a0c.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791241236764-a6a181fab7ef48.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320550778-af99ecc3c9a0c.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-ninth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -670,41 +586,42 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242185535-fc0a8c444589d.xml",
+          "remotePath": "/sdcard/settings-pane-1791320584532-6ec0b2601480c8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242185535-fc0a8c444589d.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320584532-6ec0b2601480c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
+      "scrollableContainerReported": true,
       "texts": [
-        "Choose a music folder",
-        "Device-wide music access was not granted. You can choose a folder instead.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
       ],
       "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
+        "movedAppPixels": true,
+        "dragsUntilRest": 1
       },
       "inspection": "Complete published app-area region inspected in a light and dark pair."
     },
     {
-      "file": "first-run-access-inner-not-opened-dark-s200.png",
+      "file": "first-run-access-inner-declined-dark-s200-end.png",
       "panel": "inner",
-      "scene": "not-opened",
+      "scene": "declined",
       "scheme": "dark",
       "fontScale": 2,
-      "position": "initial",
+      "position": "scrolled",
       "physicalPixels": [
         2076,
         2152
@@ -721,31 +638,45 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242210584-aaf6080d31fbf8.xml",
+          "remotePath": "/sdcard/settings-pane-1791320614718-9bcb81cbb757.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242210584-aaf6080d31fbf8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320614718-9bcb81cbb757.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
+      "scrollableContainerReported": true,
       "texts": [
-        "Choose a music folder",
-        "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
       ],
-      "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
+      "dragsToRest": 1,
+      "scrollProof": {
+        "bodyText": "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.",
+        "beforeBounds": [
+          1097,
+          1794,
+          2017,
+          2074
+        ],
+        "afterBounds": [
+          1097,
+          1397,
+          2017,
+          2015
+        ],
+        "verticalDisplacement": -397,
+        "appRgbChanged": true
       },
       "inspection": "Complete published app-area region inspected in a light and dark pair."
     },
@@ -772,15 +703,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242232546-f617e44e5fc42.xml",
+          "remotePath": "/sdcard/settings-pane-1791320633311-e23da52666af5.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242232546-f617e44e5fc42.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320633311-e23da52666af5.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -821,15 +752,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242259054-eeb94e2931e168.xml",
+          "remotePath": "/sdcard/settings-pane-1791320657410-ade4e2b116bb5.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242259054-eeb94e2931e168.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320657410-ade4e2b116bb5.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -870,74 +801,24 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242288181-d8169286e6b458.xml",
+          "remotePath": "/sdcard/settings-pane-1791320683649-b93d57fb2bff68.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242288181-d8169286e6b458.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320683649-b93d57fb2bff68.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
       "scrollableContainerReported": false,
       "texts": [
-        "Choose a music folder",
-        "Device-wide music access was not granted. You can choose a folder instead.",
-        "Open a folder",
-        "Settings",
-        "About true-peak analysis",
-        "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
-      ],
-      "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
-      },
-      "inspection": "Complete published app-area region inspected in a light and dark pair."
-    },
-    {
-      "file": "first-run-access-cover-not-opened-light-s100.png",
-      "panel": "cover",
-      "scene": "not-opened",
-      "scheme": "light",
-      "fontScale": 1,
-      "position": "initial",
-      "physicalPixels": [
-        1080,
-        2424
-      ],
-      "cropPixels": {
-        "x": 0,
-        "y": 152,
-        "width": 1080,
-        "height": 2272
-      },
-      "densityDpi": 390,
-      "keyboardClosed": true,
-      "stableAppFrames": true,
-      "freshHierarchyValidated": true,
-      "hierarchyDumpAttempts": [
-        {
-          "remotePath": "/sdcard/settings-pane-1791242310088-af548d746f746.xml",
-          "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242310088-af548d746f746.xml\n",
-          "stderr": ""
-        }
-      ],
-      "launchAttempts": 1,
-      "sceneAttempt": 1,
-      "visit": "runtime-tenth",
-      "productionServicesObserved": false,
-      "exactRetainedRgb": true,
-      "opaque": true,
-      "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
-      "texts": [
-        "Choose a music folder",
-        "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
@@ -972,15 +853,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242334843-ac3c666a04bdd8.xml",
+          "remotePath": "/sdcard/settings-pane-1791320702541-bac65c9e1c24a.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242334843-ac3c666a04bdd8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320702541-bac65c9e1c24a.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -1021,15 +902,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242359526-26812c4bba9ad.xml",
+          "remotePath": "/sdcard/settings-pane-1791320734909-6765e6033ac68.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242359526-26812c4bba9ad.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791320734909-6765e6033ac68.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-calm-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -1070,74 +951,24 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242381996-39ecbaa5506d58.xml",
+          "remotePath": "/sdcard/settings-pane-1791322285902-137a20d05ae6c8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242381996-39ecbaa5506d58.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322285902-137a20d05ae6c8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
       "scrollableContainerReported": false,
       "texts": [
-        "Choose a music folder",
-        "Device-wide music access was not granted. You can choose a folder instead.",
-        "Open a folder",
-        "Settings",
-        "About true-peak analysis",
-        "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
-      ],
-      "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
-      },
-      "inspection": "Complete published app-area region inspected in a light and dark pair."
-    },
-    {
-      "file": "first-run-access-cover-not-opened-dark-s100.png",
-      "panel": "cover",
-      "scene": "not-opened",
-      "scheme": "dark",
-      "fontScale": 1,
-      "position": "initial",
-      "physicalPixels": [
-        1080,
-        2424
-      ],
-      "cropPixels": {
-        "x": 0,
-        "y": 152,
-        "width": 1080,
-        "height": 2272
-      },
-      "densityDpi": 390,
-      "keyboardClosed": true,
-      "stableAppFrames": true,
-      "freshHierarchyValidated": true,
-      "hierarchyDumpAttempts": [
-        {
-          "remotePath": "/sdcard/settings-pane-1791242400494-f13e9f3c566b2.xml",
-          "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242400494-f13e9f3c566b2.xml\n",
-          "stderr": ""
-        }
-      ],
-      "launchAttempts": 1,
-      "sceneAttempt": 1,
-      "visit": "runtime-tenth",
-      "productionServicesObserved": false,
-      "exactRetainedRgb": true,
-      "opaque": true,
-      "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
-      "texts": [
-        "Choose a music folder",
-        "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
@@ -1172,15 +1003,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242453896-04c8ad2511ba.xml",
+          "remotePath": "/sdcard/settings-pane-1791322302748-3561b620a2ac68.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242453896-04c8ad2511ba.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322302748-3561b620a2ac68.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -1221,15 +1052,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242473687-9a95fd06074e5.xml",
+          "remotePath": "/sdcard/settings-pane-1791322320108-53a4b66375db98.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242473687-9a95fd06074e5.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322320108-53a4b66375db98.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -1270,41 +1101,42 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242503913-79b26a1865213.xml",
+          "remotePath": "/sdcard/settings-pane-1791322339949-2c94f455eaf5b8.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242503913-79b26a1865213.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322339949-2c94f455eaf5b8.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
+      "scrollableContainerReported": true,
       "texts": [
-        "Choose a music folder",
-        "Device-wide music access was not granted. You can choose a folder instead.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
       ],
       "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
+        "movedAppPixels": true,
+        "dragsUntilRest": 1
       },
       "inspection": "Complete published app-area region inspected in a light and dark pair."
     },
     {
-      "file": "first-run-access-cover-not-opened-light-s200.png",
+      "file": "first-run-access-cover-declined-light-s200-end.png",
       "panel": "cover",
-      "scene": "not-opened",
+      "scene": "declined",
       "scheme": "light",
       "fontScale": 2,
-      "position": "initial",
+      "position": "scrolled",
       "physicalPixels": [
         1080,
         2424
@@ -1321,31 +1153,46 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242526119-f4ffb7bdb649.xml",
+          "remotePath": "/sdcard/settings-pane-1791322349501-73b109ba8160f.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242526119-f4ffb7bdb649.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322349501-73b109ba8160f.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
+      "scrollableContainerReported": true,
       "texts": [
-        "Choose a music folder",
-        "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
       ],
-      "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
+      "dragsToRest": 1,
+      "scrollProof": {
+        "bodyText": "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.",
+        "beforeBounds": [
+          59,
+          1810,
+          1021,
+          2325
+        ],
+        "afterBounds": [
+          59,
+          1791,
+          1021,
+          2306
+        ],
+        "verticalDisplacement": -19,
+        "appRgbChanged": true
       },
       "inspection": "Complete published app-area region inspected in a light and dark pair."
     },
@@ -1372,15 +1219,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242550019-37b5287b2fcdb.xml",
+          "remotePath": "/sdcard/settings-pane-1791322364076-bedfdaf1784db.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242550019-37b5287b2fcdb.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322364076-bedfdaf1784db.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -1421,15 +1268,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242573573-f05b25a3dc0d5.xml",
+          "remotePath": "/sdcard/settings-pane-1791322382376-5d36b5dbf0841.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242573573-f05b25a3dc0d5.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322382376-5d36b5dbf0841.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-b",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -1470,41 +1317,42 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242598554-9ecbf87433a098.xml",
+          "remotePath": "/sdcard/settings-pane-1791322746525-2dcd56a1073f1.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242598554-9ecbf87433a098.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322746525-2dcd56a1073f1.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-c",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
+      "scrollableContainerReported": true,
       "texts": [
-        "Choose a music folder",
-        "Device-wide music access was not granted. You can choose a folder instead.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
       ],
       "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
+        "movedAppPixels": true,
+        "dragsUntilRest": 1
       },
       "inspection": "Complete published app-area region inspected in a light and dark pair."
     },
     {
-      "file": "first-run-access-cover-not-opened-dark-s200.png",
+      "file": "first-run-access-cover-declined-dark-s200-end.png",
       "panel": "cover",
-      "scene": "not-opened",
+      "scene": "declined",
       "scheme": "dark",
       "fontScale": 2,
-      "position": "initial",
+      "position": "scrolled",
       "physicalPixels": [
         1080,
         2424
@@ -1521,31 +1369,46 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242628122-75d2e9f12b7c98.xml",
+          "remotePath": "/sdcard/settings-pane-1791322758497-1a38c955530ae.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242628122-75d2e9f12b7c98.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322758497-1a38c955530ae.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-c",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
       "essentialPngChunksOnly": true,
-      "scrollableContainerReported": false,
+      "scrollableContainerReported": true,
       "texts": [
-        "Choose a music folder",
-        "No music source is open. Choose a folder containing music; its subfolders become the folder browser.",
+        "The device music library can't be read",
+        "It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.",
+        "Allow access",
         "Open a folder",
         "Settings",
         "About true-peak analysis",
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
       ],
-      "dragTest": {
-        "movedAppPixels": false,
-        "dragsUntilRest": 0
+      "dragsToRest": 1,
+      "scrollProof": {
+        "bodyText": "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs.",
+        "beforeBounds": [
+          59,
+          1810,
+          1021,
+          2325
+        ],
+        "afterBounds": [
+          59,
+          1791,
+          1021,
+          2306
+        ],
+        "verticalDisplacement": -19,
+        "appRgbChanged": true
       },
       "inspection": "Complete published app-area region inspected in a light and dark pair."
     },
@@ -1572,15 +1435,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242650862-6dfde2e9edecd.xml",
+          "remotePath": "/sdcard/settings-pane-1791322772497-2d28f57d7b2778.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242650862-6dfde2e9edecd.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322772497-2d28f57d7b2778.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-c",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,
@@ -1621,15 +1484,15 @@
       "freshHierarchyValidated": true,
       "hierarchyDumpAttempts": [
         {
-          "remotePath": "/sdcard/settings-pane-1791242674306-0e15afcc214eb8.xml",
+          "remotePath": "/sdcard/settings-pane-1791322790902-dc73f28d09844.xml",
           "status": 0,
-          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791242674306-0e15afcc214eb8.xml\n",
+          "stdout": "UI hierchary dumped to: /sdcard/settings-pane-1791322790902-dc73f28d09844.xml\n",
           "stderr": ""
         }
       ],
       "launchAttempts": 1,
       "sceneAttempt": 1,
-      "visit": "runtime-tenth",
+      "visit": "runtime-quietbaagcbbb-c",
       "productionServicesObserved": false,
       "exactRetainedRgb": true,
       "opaque": true,

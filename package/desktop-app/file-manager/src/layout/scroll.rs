@@ -98,8 +98,8 @@ impl StripLayout {
                 let vertical = layout.reveal_lane_member(placement);
                 attempts.set(attempts.get() + 1);
                 if (horizontal && vertical) || attempts.get() >= MAX_REVEAL_ATTEMPTS {
-                    if let Some(pane) = &pane {
-                        pane.grab_focus();
+                    if let Some(focus_target) = &pane {
+                        focus_target.grab_focus();
                     }
                     return glib::ControlFlow::Break;
                 }

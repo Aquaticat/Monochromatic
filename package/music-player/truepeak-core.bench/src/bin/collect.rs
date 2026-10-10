@@ -232,15 +232,17 @@ fn main() -> Result<()> {
     let (sender, receiver) = mpsc::channel::<Result<TrackMetrics>>();
     // Each worker pops a path, measures it, and sends the result or an error string.
     for _ in 0..workers {
-        let queue = Arc::clone(&queue);
-        let sender = sender.clone();
+        // Per-worker clones get their own names so neither shadows the shared
+        // originals the loop keeps cloning from.
+        let worker_queue = Arc::clone(&queue);
+        let worker_sender = sender.clone();
         thread::spawn(move || {
             loop {
-                let path = queue.lock().expect("queue poisoned").pop_front();
-                let Some(path) = path else { break };
+                let popped = worker_queue.lock().expect("queue poisoned").pop_front();
+                let Some(path) = popped else { break };
                 let message = measure(&path, bin_seconds)
                     .map_err(|error| anyhow!("{}: {error}", path.to_string_lossy()));
-                if sender.send(message).is_err() {
+                if worker_sender.send(message).is_err() {
                     break;
                 }
             }

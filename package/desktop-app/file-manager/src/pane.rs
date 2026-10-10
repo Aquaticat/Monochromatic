@@ -174,8 +174,8 @@ where
     });
     list.add_controller(keys);
 
-    list.connect_activate(move |list, position| {
-        let Some(model) = list.model() else {
+    list.connect_activate(move |activated_list, position| {
+        let Some(model) = activated_list.model() else {
             return;
         };
         let Some(boxed) = model.item(position).and_downcast::<BoxedAnyObject>() else {
@@ -279,17 +279,17 @@ fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
 fn build_row_factory() -> SignalListItemFactory {
     let factory = SignalListItemFactory::new();
     factory.connect_setup(|_, item| {
-        let item = item.downcast_ref::<ListItem>().expect("list item");
+        let list_item = item.downcast_ref::<ListItem>().expect("list item");
         let row = GtkBox::new(Orientation::Horizontal, ROW_SPACING);
         row.append(&Image::new());
         row.append(&Label::builder().xalign(0.0).build());
-        item.set_child(Some(&row));
+        list_item.set_child(Some(&row));
     });
     factory.connect_bind(|_, item| {
-        let item = item.downcast_ref::<ListItem>().expect("list item");
-        let boxed = item.item().and_downcast::<BoxedAnyObject>().expect("boxed entry");
+        let list_item = item.downcast_ref::<ListItem>().expect("list item");
+        let boxed = list_item.item().and_downcast::<BoxedAnyObject>().expect("boxed entry");
         let entry = boxed.borrow::<FileEntry>();
-        let row = item.child().and_downcast::<GtkBox>().expect("row box");
+        let row = list_item.child().and_downcast::<GtkBox>().expect("row box");
         let icon = row.first_child().and_downcast::<Image>().expect("row icon");
         let label = icon
             .next_sibling()

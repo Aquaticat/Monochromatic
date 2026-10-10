@@ -1,5 +1,239 @@
 # Batched axioms with a three-call assessment ceiling
 
+## Accepted next policy-consumer slice
+
+The user accepted this slice on 2026-10-08.
+The bounded native-program checkpoint is verified.
+The next work is the missing policy consumer,
+not another runtime ownership matrix or provider trial.
+Acceptance does not authorize installed activation or adopt semantic thresholds.
+
+The standalone private `contract/integration/action-policy/evaluate.mjs#evaluateBoundPolicy`
+remains unconfigured and withholds execution.
+The new fixed-bootstrap evaluator can consume original typed estimates
+and produce nonempty rule inputs through the canonical native reviewer.
+Independent source/delegation and operation coverage remain unresolved.
+Execution fixtures that separately authorize inert programs do not establish those missing premises.
+
+- [x] Establish the per-clause consumption contract from existing definitions and evidence.
+  Retain original clause identity,
+  authority,
+  scope,
+  conditions,
+  and whole-operation binding.
+  Separate permissions,
+  prohibitions,
+  and authorization prerequisites.
+  Identify exactly which estimates can support which conclusions;
+  unsupported meanings and missing qualification remain unresolved.
+- [ ] Compute decision-relevant missing premises from the existing source and operation owners.
+  The configured compiler now replaces the unconditional empty rule program with supported inputs;
+  sufficient decision-specific coverage is still unfinished.
+  Unknown coverage is not absence,
+  and potentially outcome-changing instructions cannot be ignored.
+  Preserve the accepted use of qualified inspected-form estimates;
+  do not replace it with a universal code-proof-only requirement.
+- [ ] Exercise the canonical native handler without injecting final decisions.
+  Cover denial,
+  approval where justified,
+  eligible incumbent approval requests,
+  unresolved premises,
+  and unspecified policy.
+  Deterministic transport doubles can verify wiring,
+  but cannot establish model accuracy.
+  Preserve the original deadline,
+  evidence closure,
+  currentness,
+  cancellation,
+  and Allow/Deny/Stop behavior.
+
+The immediate deliverable is an explicit mapping from the current clause/effect evidence
+to the existing resolver's supported inputs,
+with regression cases for misleading lowerings and missing premises.
+If existing evidence cannot justify an operative branch,
+record its exact missing premise rather than inventing a cutoff,
+default permission,
+or automatic approval request.
+Installation remains a later step.
+
+### Existing source-association consumer
+
+Already-owned context-source association is authorized implementation,
+not another source-inventory grant.
+The actual SDK 1.1.0 serializer control failed `proc_6ab2` because the canonical reviewer had no source-use consumer.
+The original run,
+manager-copy,
+context-clone,
+and request-observation owners now carry that association.
+The canonical consumer can account for a specific contribution without resolving the global request domain.
+Expanded local matrix `proc_2731` passed 15 modes.
+Identity omission `proc_92e5` and payload-custody omission `proc_7738` failed as intended.
+Both guards are restored.
+Context-handler parity passed `proc_3ece`;
+full native `proc_c4d5` and action `proc_2fa4` passed on SDK 1.1.0.
+
+- [x] Preserve the original context carrier through actual native serialization.
+- [x] Consume its particular association without assigning composite authority or complete governing coverage.
+- [x] Finish guard sensitivity and full restored regression.
+- [ ] Continue remaining decision-specific domain and delegation consumption.
+  No production semantic policy,
+  new provider trial,
+  or installed activation is adopted by these mechanisms.
+
+The user accepted express same-source incorporation in
+[scoped incorporation of quoted policy text](pi-auto-mode-quoted-unit-incorporation.md).
+The original pair producer and canonical scope consumer are now implemented privately.
+The target still needs its separate admitted conditional-effect estimate;
+incorporation adds no permission or authority enlargement.
+Initial actual-serializer control passed `proc_d760`;
+expanded native controls passed `proc_84c5` and `proc_7c37`.
+Original selection and request-scope controls passed `proc_8f62`.
+Guard sensitivity is verified and every omission is restored.
+Full native `proc_3c3a` passed with 36 incorporation scenarios;
+full action `proc_0b25` also passed.
+The original binding segment preserves full-policy dependency-check bounds without caching across an `await`.
+
+The rendered-input consumers now also cover retained host,
+append,
+context,
+run-replacement,
+forced,
+and custom-section inputs.
+Forced projection identity passed restored native `proc_38d6` and action `proc_3eaf`.
+Custom-section controls passed `proc_49c5` and `proc_73fc` before deliberate omissions;
+both the source-membership and native shadowing omissions failed and are restored.
+Full restored native `proc_744b`,
+action `proc_09ee`,
+and ten-document render `proc_fed3` passed.
+These contributions are partial lineage,
+not governing-domain completeness or new source-authority grants.
+See [original rendered prompt-input contributions](../handover/pi-auto-mode-current-frontier.md#original-rendered-prompt-input-contributions).
+
+### Clause consumption contract
+
+The lowering operation consumes an operation-bound relationship already admitted by trusted code policy,
+not a wire answer or probability vector.
+It remains a pure operation,
+like the existing resolver,
+not an evidence-authentication endpoint.
+Authored established relationships and admitted estimates share this mapping;
+neither form turns the lowerer into an empirical qualification producer.
+The native evaluator must obtain any operative relationship through the original owners;
+callers cannot provide an interpreter,
+qualification flag,
+or completeness callback to make one appear.
+
+- `permission` produces an applicable `permit` directive with code-established priority.
+- `prohibition` produces an applicable `prohibit` directive with code-established priority.
+- `prerequisite` produces an applicable authorization requirement,
+   never a directive permission or legacy `require-approval` effect.
+  Satisfaction and channel sufficiency require separate code-established inputs.
+  Missing inputs remain unresolved.
+  Valid scope and any waivers must already be resolved before this lowering.
+- `none` contributes no operative directive or requirement.
+  It does not grant permission or establish complete governing coverage.
+- `unknown` and `unsupported` retain an interpretation gap.
+  They cannot become the kernel's bounded `effect: 'unresolved'` merely by changing the label.
+
+Original clause handles and source occurrences authenticate associations.
+Generated clause identifiers only correlate resolver output with those handles.
+Unregistered sources retain unknown authority;
+there is no user-tier default.
+A priority value in an authored unit fixture is not native authority evidence.
+
+The current relation owner marks every captured estimate as semantically unqualified.
+That describes the owner's transport guarantee,
+not a prohibition on implementing a downstream configured consumer.
+The fixed-bootstrap compiler now authenticates the original batch and reported model,
+then applies the captured synchronous admission function before lowering.
+The function cannot return completeness,
+source authority,
+authorization satisfaction,
+or an action verdict.
+No default production policy or probability threshold is supplied.
+The rule index does not interpret its clauses.
+Current source views do not establish exhaustive governing/delegation coverage,
+and the current native-read fact does not establish whole-operation coverage.
+The first implementation must preserve these limits rather than promote their metadata into proofs.
+It may therefore derive the same unresolved outcome while identifying the particular missing premises.
+Do not send an assessment request that has no admissible consumer under the current contract.
+Unconfigured or out-of-profile native operations still skip assessment.
+Configured local controls exercise admitted relationships,
+not provider accuracy or production policy adoption.
+
+Implementation `f172216`,
+canonical control `proc_b9d8`,
+action `proc_83cd`,
+and expanded full native `proc_daa0` verify the connected compiler mechanism.
+Restored full native `proc_d5a8` and action `proc_059a` passed after model-match and abstention sensitivity checks.
+The canonical fixture outcomes remain unresolved because the independent coverage producers are unfinished.
+
+Positive lowering and approval-composition tests may use authored established relationships.
+Canonical native tests must separately show that raw estimates,
+missing source coverage,
+and member-only facts do not gain that status.
+Passing those tests verifies consumption logic,
+not semantic-model quality.
+
+## Proposed expansion of request-source accounting
+
+The authorization requirement in the initial proposal is withdrawn for the narrow whole-request consumer.
+Independent review and the existing observer source confirmed that exact complete request bytes are already owned.
+Selecting and consuming that input through the same owner adds no source origin or parallel inventory.
+Treating that missing consumer as a new authorization requirement was an incorrect scope reading.
+
+The configured compiler now consumes original tagged,
+untagged,
+and orphan-heading candidates.
+It derives source-local interpretation,
+authority,
+and inspected-operation uses rather than demanding blanket premises.
+The remaining request-domain boundary is different:
+ordinary request material is retained in the original terminal request
+but is not associated with the current governing-source set.
+
+The authorized next step is original whole-request-material selection and actual assessment
+through the existing request and judgment owners.
+It does not reconstruct messages,
+assign authority to transport roles,
+or establish request-wide governing sufficiency.
+The exact original request body must remain authoritative as an observation,
+not as instruction authority.
+Reuse its existing JSON-format validation if structured access is actually needed;
+do not add a raw-span parser,
+re-encode the request,
+construct a parallel message inventory,
+or infer authority from transport roles or equal text.
+Host authority registration remains the accepted mechanism;
+this proposal does not change its tier/scope policy or make registration prove coverage.
+
+The initial proposal incorrectly treated any additional governing-input accounting as source-inventory expansion.
+That restriction does not block a consumer of the already-retained whole request.
+A broader addition of origins,
+persisted provenance,
+a parallel message inventory,
+or unaccepted authority or closed-world policy remains a separate proposal.
+A model-generated completeness statement is not a substitute for code-established input scope.
+Production admission profiles,
+semantic cutoffs,
+additional paid trials,
+and installed activation remain outside this proposal.
+Contextual-heading meaning and valid delegation remain separate obligations,
+not facts granted by scope approval.
+
+The consumer must retain an original assessment associated with the complete unchanged request,
+including whitespace,
+escaped text,
+and structured message content.
+Equal bytes from an independent request cannot substitute for its capability.
+An authored operative answer cannot produce a request-wide priority or directive.
+An authored `none` answer concerns only this bounded semantic use;
+origin association,
+contextual-heading meaning,
+delegation,
+and request-wide governing sufficiency remain independent obligations.
+No additional grant is awaited for that implementation.
+
 ## Incremental rule-relevance cache direction
 
 The user refined the rule-indexed proposal:

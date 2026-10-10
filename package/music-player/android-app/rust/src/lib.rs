@@ -559,23 +559,22 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSym
 /// export function nativeDecodeBenchmark(env: JNIEnv, _class: JClass, path: JString): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeBenchmark<'local>(
-    env: JNIEnv<'local>,
+    mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     path: JString<'local>,
 ) -> jdouble {
-    // What:     `let mut env = env;` rebinds the incoming `env` parameter to a NEW
-    //           mutable local also named `env` (this is "shadowing": same name, new
-    //           binding). `mut` is needed because `get_string` below takes `&mut self`.
-    // Why:      The `jni` API mutates the env to read a string, so we need a mutable
-    //           binding; the parameter itself arrived immutable.
-    // Gotcha:   This is NOT a copy of the JVM env; it rebinds the same handle so we can
-    //           call its `&mut self` methods.
+    // What:     The `env` parameter is declared `mut` right in the signature, so the
+    //           `get_string` call below (which takes `&mut self`) can borrow it mutably.
+    // Why:      The `jni` API mutates the env to read a string. Declaring the parameter
+    //           mutable carries that need directly instead of rebinding `env` to a new
+    //           mutable local of the same name.
+    // Gotcha:   `mut` here is NOT a copy of the JVM env; the function still holds the same
+    //           handle, merely allowed to call its `&mut self` methods.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // // (no-op in TS; env is already reassignable)
     // ```
-    let mut env = env;
     // What:     `let path_str: String = match env.get_string(&path) { ... };`. We call
     //           `env.get_string(&path)` to pull the Java string into Rust; `&path`
     //           BORROWS the `JString` handle (read-only loan, no ownership transfer).

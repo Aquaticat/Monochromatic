@@ -29,21 +29,24 @@ Read these files in order:
 The first-run/no-library study is in
 [`evidence/first-run-access-boundaries.md`](evidence/first-run-access-boundaries.md).
 Its [verified offline review](questions/first-run-access.html) presents
-32 first views,
+24 first views and 4 end views,
 not a policy ballot.
 The study was rebuilt on 2026-10-05 after D84 made true-peak analysis
-automatic:
-its explanation no longer ends with a choice to analyse,
-and with the shorter text nothing scrolls,
-so it has no second views.
+automatic,
+and again on 2026-10-06 for D100:
+a library is always open,
+so the declined state shows the device music library as open but unreadable,
+with `Allow access` and `Open a folder`,
+and the state with no source opened is gone.
+That state's wording and layout were approved as built (D101).
 The source states are authored inputs,
 not production permission/discovery evaluation or recovery acceptance.
 The owned native runtime was stopped after restoring its recorded fields.
 
 D82 accepts Android's standard media-notification presentation;
 no special notification design remains.
-The [whole-map keyboard proposal](questions/keyboard-map.prototype.html)
-is now browser-verified,
+The [whole-map keyboard design](questions/keyboard-map.prototype.html)
+was browser-verified and accepted as built (D102),
 with editing and focused-control ownership preserved.
 [Its boundary record](evidence/keyboard-map-boundaries.md) distinguishes
 proposal,
@@ -387,8 +390,7 @@ the Fold visual choices even if its own proportions would suggest a different la
 The rejected command review remains at `questions/archive/command-igr-rejected.html`.
 D21's configurable global hotkey and extra Settings row belonged to the command bar;
 they do not silently move to Search.
- D25's Ctrl+F reservation remains pending the
-whole keyboard-map pass.
+ D25's Ctrl+F reservation is part of the keyboard map D102 accepted.
  Result actions and status truth conditions are settled design goals under
 D69 to D74.
 Exact cause-specific recovery needs a future source-status owner;

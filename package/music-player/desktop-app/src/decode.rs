@@ -787,25 +787,25 @@ pub(crate) fn seek_format(
     // ```
     let mut target_ts: Timestamp = start_ts.saturating_add(Duration::new(offset_frames));
 
-    // What:     `if let Some(n_frames) = n_frames { ... }`. Run the block only when the total
-    //           length is known, binding the inner `u64` to `n_frames`.
+    // What:     `if let Some(total_frames) = n_frames { ... }`. Run the block only when the
+    //           total length is known, binding the inner `u64` to `total_frames`.
     // Why:      Only clamp when we actually know where the end is.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (nFrames != null) { ... }
     // ```
-    if let Some(n_frames) = n_frames {
-        // What:     `let max_ts = start_ts.saturating_add(Duration::new(n_frames));`. The last
-        //           valid absolute frame is the start plus the audible length;
-        //           `Duration::new(n_frames)` wraps the `u64` count as a `Duration`.
+    if let Some(total_frames) = n_frames {
+        // What:     `let max_ts = start_ts.saturating_add(Duration::new(total_frames));`. The
+        //           last valid absolute frame is the start plus the audible length;
+        //           `Duration::new(total_frames)` wraps the `u64` count as a `Duration`.
         // Why:      Compute the upper bound the demuxer will accept.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const maxTs = startTs + nFrames;
         // ```
-        let max_ts = start_ts.saturating_add(Duration::new(n_frames));
+        let max_ts = start_ts.saturating_add(Duration::new(total_frames));
 
         // What:     `if target_ts > max_ts { target_ts = max_ts; }`. `Timestamp` derives
         //           `Ord`, so `>` compares the wrapped `i64`s directly. Pull the target back

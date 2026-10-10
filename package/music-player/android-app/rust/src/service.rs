@@ -534,23 +534,24 @@ async fn open_cache(db_path: &str) -> Option<DecisionCache> {
 /// async function get(cache, identity, fingerprint) { ... }
 /// ```
 async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint: u64) -> Option<Decision> {
-    // What:     `let cache = cache?;`. Degraded run has no cache.
+    // What:     `let decision_cache = cache?;`. Degraded run has no cache. The unwrapped
+    //           reference gets its own name so it never shadows the `Option` parameter.
     // Why:      Answer a miss without a database.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (!cache) return null;
     // ```
-    let cache = cache?;
-    // What:     `cache.get(fingerprint, identity).await.ok().flatten()`. Read; any error
-    //           collapses to a miss. Tail -> return.
+    let decision_cache = cache?;
+    // What:     `decision_cache.get(fingerprint, identity).await.ok().flatten()`. Read; any
+    //           error collapses to a miss. Tail -> return.
     // Why:      Degrade to a miss, never propagate a crash across JNI.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // try { return await cache.get(fingerprint, identity); } catch { return null; }
     // ```
-    return cache.get(fingerprint, identity).await.ok().flatten()
+    return decision_cache.get(fingerprint, identity).await.ok().flatten()
 }
 
 /// What:
@@ -567,24 +568,27 @@ async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint
 /// async function put(cache, identity, request) { ... }
 /// ```
 async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Write) {
-    // What:     `let Some(cache) = cache else { return; };`. Degraded run drops the write.
+    // What:     `let Some(decision_cache) = cache else { return; };`. Degraded run drops the
+    //           write. The unwrapped reference gets its own name so it never shadows the
+    //           `Option` parameter.
     // Why:      Nothing to persist to.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (!cache) return;
     // ```
-    let Some(cache) = cache else {
+    let Some(decision_cache) = cache else {
         return;
     };
-    // What:     `if let Err(error) = cache.put(...).await { ... }`. Upsert; log on error.
+    // What:     `if let Err(error) = decision_cache.put(...).await { ... }`. Upsert; log on
+    //           error.
     // Why:      One bad write must not stall the actor.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // try { await cache.put(request.fingerprint, identity, request.decision); } catch (e) { warn(e); }
     // ```
-    if let Err(error) = cache.put(request.fingerprint, identity, &request.decision).await {
+    if let Err(error) = decision_cache.put(request.fingerprint, identity, &request.decision).await {
         tracing::warn!(error = %error, "cache put failed; write dropped");
     }
 }

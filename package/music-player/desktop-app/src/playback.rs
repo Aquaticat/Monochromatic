@@ -589,9 +589,10 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         // ```
         out.extend(files);
 
-        // What:     `for dir in subdirs.into_iter().rev() { stack.push(dir); }`. Push
+        // What:     `for subdir in subdirs.into_iter().rev() { stack.push(subdir); }`. Push
         //           subfolders in REVERSE sorted order. `into_iter()` consumes the vec
-        //           by value; `.rev()` reverses the iteration.
+        //           by value; `.rev()` reverses the iteration. The loop name differs from
+        //           the popped `dir` so it never shadows the walk's current directory.
         // Why:      The stack pops last-in-first-out, so reversing here makes the
         //           subfolders pop back out in sorted (ascending) order.
         //
@@ -599,8 +600,8 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
         // ```ts
         // for (const dir of [...subdirs].reverse()) stack.push(dir);
         // ```
-        for dir in subdirs.into_iter().rev() {
-            stack.push(dir);
+        for subdir in subdirs.into_iter().rev() {
+            stack.push(subdir);
         }
     }
 

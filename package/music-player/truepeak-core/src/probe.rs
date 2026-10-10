@@ -159,15 +159,17 @@ pub(crate) fn zoom_probe(
     }
     // Phase two: the even pass, endpoints included, over whatever budget remains.
     let even_count = ((plan.even_coverage_fraction * bin_count as f64).round() as usize).max(1);
-    let span = bin_count - 1;
+    // The index range the even pass spreads over; named apart from the tracing
+    // `span` above so neither binding shadows.
+    let even_span = bin_count - 1;
     for step in 0..even_count {
         if frontier.used >= budget {
             break;
         }
         let index = if even_count <= 1 {
-            span / 2
+            even_span / 2
         } else {
-            ((step as f64 / (even_count - 1) as f64) * span as f64).round() as usize
+            ((step as f64 / (even_count - 1) as f64) * even_span as f64).round() as usize
         };
         if !frontier.measured[index] {
             measure_bin(source, channels, plan, &mut frontier, index)?;

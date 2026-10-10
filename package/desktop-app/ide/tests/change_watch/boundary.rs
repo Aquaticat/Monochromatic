@@ -148,3 +148,38 @@ fn dropping_the_watcher_removes_its_kernel_watches() {
         std::thread::sleep(Duration::from_millis(5));
     }
 }
+
+/// A displayed file outside the root (a go-to-definition target in the standard library) is not a
+/// watch failure: its folder is never asked for, so nothing is refused, logged, or reread in full.
+#[test]
+fn a_displayed_file_outside_the_root_is_not_watched_and_not_a_failure() {
+    let fixture = tempfile::tempdir().expect("disposable project");
+    let elsewhere = tempfile::tempdir().expect("disposable outside folder");
+    let (mut watcher, workspace) = start(fixture.path());
+    let root = workspace.root().to_path_buf();
+    let outside = elsewhere
+        .path()
+        .canonicalize()
+        .expect("canonical outside folder");
+    let file = outside.join("vec.rs");
+    fs::write(&file, "pub struct Vec;\n").expect("outside file");
+    watcher.watch_only(&set(&[&root]), Some(&file));
+    let first = arrive(&mut watcher, "the root's watch", |record| {
+        return watching(record, &root);
+    });
+    let later = quiet(&mut watcher);
+    assert!(
+        !first.everything && !later.everything,
+        "the outside file's folder was treated as a failed watch: {first:?} {later:?}"
+    );
+    assert!(
+        !kernel_watches(&outside),
+        "the outside file's folder has a kernel watch"
+    );
+    watcher.retry();
+    let retried = quiet(&mut watcher);
+    assert!(
+        !retried.everything && retried.watched.is_none(),
+        "a retry reported the outside folder: {retried:?}"
+    );
+}

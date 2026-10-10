@@ -78,7 +78,7 @@ pub fn nullable(node: &Node, ctx: Ctx) -> bool {
         Node::Concat(parts) | Node::Inter(parts) => return parts.iter().all(|p| return nullable(p, ctx)),
         Node::Alt(parts) => return parts.iter().any(|p| return nullable(p, ctx)),
         Node::Comp(inner) => return !nullable(inner, ctx),
-        Node::Repeat { node, min, .. } => return *min == 0 || nullable(node, ctx),
+        Node::Repeat { node: body, min, .. } => return *min == 0 || nullable(body, ctx),
         Node::LineStart => return ctx.line_start,
         Node::LineEnd => return ctx.line_end,
         Node::WordBoundary => return ctx.word_before != ctx.word_after,

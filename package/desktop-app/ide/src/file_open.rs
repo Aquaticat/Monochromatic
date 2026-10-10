@@ -208,6 +208,8 @@ impl FileOpener {
             snapshot: Document::new(""),
             generation: self.generation,
             highlight_unchanged: true,
+            // Opening shows what is on disk now, as it always has.
+            require_quiet: None,
         };
         // An outside target is not resolved against the project, which would refuse it.
         let submitted = if self.pending_outside {

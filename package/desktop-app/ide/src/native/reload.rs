@@ -12,8 +12,12 @@
 use super::{AppWindow, State, render, rows};
 /// Worker creation failure must surface rather than silently disabling external refresh.
 use anyhow::Result;
+/// A dropped timer read counts as a write still in progress.
+use ide_app::change_watch::SourceChange;
 /// An accepted reload is copied for the Language module before the document consumes it.
 use ide_app::language::sync::DocumentReload;
+/// The quiet period a timer read requires before it accepts the file's bytes.
+use ide_app::refresh_policy::WRITE_QUIET;
 /// Background replies retain the file generation and source base revision.
 use ide_app::reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxReply};
 /// Reset source classifications without mutating a snapshot shared with the previous frame.
@@ -76,6 +80,15 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
             generation = reply.generation,
             "discarding reload for a previously displayed file"
         );
+        return;
+    }
+    // A timer read met a file written within the quiet period: wait for the writer like a notification would.
+    if reply.recent_write {
+        tracing::debug!("timer read met a recent write; waiting for the writer to go quiet");
+        state
+            .borrow_mut()
+            .refresh
+            .changed(SourceChange::Unsettled, Instant::now());
         return;
     }
     let update = match reply.result {
@@ -185,11 +198,25 @@ pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Ti
         if !current.refresh.due(now, highlight) {
             return;
         }
+        // What: `if ... { None } else { Some(WRITE_QUIET) }` is an expression choosing the quiet requirement.
+        // Why: A read no notification asked for can start in the middle of a save, before that save's
+        //      notification arrives, whatever the order of timers; it accepts only a file quiet for 50 ms.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const requireQuiet = refresh.hasUnreadChange() ? undefined : WRITE_QUIET;
+        // ```
+        let require_quiet = if current.refresh.has_unread_change() {
+            None
+        } else {
+            Some(WRITE_QUIET)
+        };
         let requested = worker.request(ReloadRequest {
             path: path.clone(),
             snapshot: current.document.clone(),
             generation: current.file_generation,
             highlight_unchanged: highlight,
+            require_quiet,
         });
         drop(current);
         match requested {

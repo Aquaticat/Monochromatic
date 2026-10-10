@@ -1,17 +1,11 @@
-//! Entry changes invalidate the watched directory that lists them;
-//!  collapse removes the kernel watch.
+//! Entry changes invalidate the watched directory that lists them; collapse removes the kernel watch.
 
-/// Waits,
-///  kernel probes,
-///  and fixture helpers shared by this crate.
+/// Waits, kernel probes, and fixture helpers shared by this crate.
 use super::support::{arrive, kernel_watches, not_watching, quiet, set, settle, start, watching};
-/// The watcher under test.
-use ide_app::change_watch::ChangeWatcher;
-/// What:
-///  `PermissionsExt` adds `from_mode`,
-///  the Unix way to build permission bits from an octal number.
-/// Why:
-///  A mode change on a watched folder is one of the reported changes.
+/// The watcher under test, and how it classifies the displayed file's changes.
+use ide_app::change_watch::{ChangeWatcher, SourceChange};
+/// What: `PermissionsExt` adds `from_mode`, the Unix way to build permission bits from an octal number.
+/// Why: A mode change on a watched folder is one of the reported changes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,15 +15,10 @@ use std::os::unix::fs::PermissionsExt;
 /// Fixture writes and renames happen through the ordinary filesystem API.
 use std::{fs, path::Path};
 
-/// Drain earlier notifications,
-///  run `change`,
-///  and require a report for `folder` without a full reread.
+/// Drain earlier notifications, run `change`, and require a report for `folder` without a full reread.
 ///
-/// What:
-///  `change: impl FnOnce()` accepts any closure called once,
-///  like a TS `() => void` parameter.
-/// Why:
-///  Each filesystem step is checked in isolation from the notifications of the previous step.
+/// What: `change: impl FnOnce()` accepts any closure called once, like a TS `() => void` parameter.
+/// Why: Each filesystem step is checked in isolation from the notifications of the previous step.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,9 +36,7 @@ fn expect_report(watcher: &mut ChangeWatcher, folder: &Path, name: &str, change:
     );
 }
 
-/// Create,
-///  rename,
-///  and remove inside a watched folder each report that folder.
+/// Create, rename, and remove inside a watched folder each report that folder.
 #[test]
 fn created_renamed_and_removed_entries_invalidate_their_folder() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -73,8 +60,7 @@ fn created_renamed_and_removed_entries_invalidate_their_folder() {
     });
 }
 
-/// A permission change on a watched folder reports that folder,
-///  because it decides whether it can be listed.
+/// A permission change on a watched folder reports that folder, because it decides whether it can be listed.
 #[test]
 fn a_permission_change_on_a_watched_folder_reports_it() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -126,8 +112,7 @@ fn moves_into_and_out_of_a_watched_folder_report_both_folders() {
     );
 }
 
-/// A new watch reports its folder once,
-///  so a change made before the watch existed is reread.
+/// A new watch reports its folder once, so a change made before the watch existed is reread.
 /// The displayed file's directory also reports the displayed file as changed.
 #[test]
 fn a_new_watch_reports_its_folder_and_the_displayed_file_once() {
@@ -169,9 +154,15 @@ fn a_newly_displayed_file_in_a_watched_folder_is_reported_once() {
     watcher.watch_only(&set(&[&root]), Some(&first));
     settle(&mut watcher, &[&root]);
     watcher.watch_only(&set(&[&root]), Some(&second));
-    arrive(&mut watcher, "the newly displayed file", |record| {
+    let switched = arrive(&mut watcher, "the newly displayed file", |record| {
         return record.source.is_some();
     });
+    // No write was seen, so the read it asks for must accept only a file that has been quiet.
+    assert_eq!(
+        switched.source,
+        Some(SourceChange::Reread),
+        "the newly displayed file was reported as a finished write"
+    );
     // Positive control for the silence that follows: nothing else reports the file again.
     let silent = quiet(&mut watcher);
     assert_eq!(
@@ -209,8 +200,7 @@ fn a_displayed_file_is_reported_when_its_retried_folder_watch_starts() {
     );
 }
 
-/// Collapsing a folder removes its kernel watch;
-///  showing it again adds one back.
+/// Collapsing a folder removes its kernel watch; showing it again adds one back.
 #[test]
 fn collapsing_a_folder_removes_its_kernel_watch() {
     let fixture = tempfile::tempdir().expect("disposable project");

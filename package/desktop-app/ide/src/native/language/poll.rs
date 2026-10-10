@@ -1,29 +1,18 @@
-//! One language tick:
-//!  synchronize,
-//!  read status,
-//!  send due requests,
-//!  apply replies,
-//!  store snapshots,
+//! One language tick: synchronize, read status, send due requests, apply replies, store snapshots,
 //! and repaint the source when a snapshot was stored.
 
-/// The state,
-///  the request record,
-///  and the steps of a tick.
+/// The state, the request record, and the steps of a tick.
 use super::{Action, Language, Pending, guard, message, outcome, surface, sync};
-/// The window,
-///  the source,
-///  the navigation that opens other files,
-///  and the source repaint.
-use crate::native::{AppWindow, State, navigation::Navigation, render};
+/// The window, the source, the navigation that opens other files, and the source repaint.
+use crate::native::{
+    AppWindow, State,
+    navigation::{Navigation, feed_servers},
+    render,
+};
 /// The identity of the displayed text and the requests the worker takes.
 use ide_app::language::{identity::DocumentStamp, reply::PositionRequest};
-/// What:
-///  `Rc<RefCell<T>>` is the window's shared,
-///  borrow-checked state.
-/// Why:
-///  A tick reads the displayed document and changes the popup,
-///  the list,
-///  and the caret.
+/// What: `Rc<RefCell<T>>` is the window's shared, borrow-checked state.
+/// Why: A tick reads the displayed document and changes the popup, the list, and the caret.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,12 +20,8 @@ use ide_app::language::{identity::DocumentStamp, reply::PositionRequest};
 /// ```
 use std::{cell::RefCell, rc::Rc};
 
-/// What:
-///  Turn language support off after the worker stopped,
-///  keeping the reason for later notes.
-/// Why:
-///  A stopped worker must never take the window down;
-///  a waiting explicit action is
+/// What: Turn language support off after the worker stopped, keeping the reason for later notes.
+/// Why: A stopped worker must never take the window down; a waiting explicit action is
 ///      answered with the reason at once.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,13 +54,9 @@ pub(super) fn stop(
     }
 }
 
-/// What:
-///  Send a request that is not queued yet.
-///  `Ok(())` also when the queue was full;
-///  it is
+/// What: Send a request that is not queued yet. `Ok(())` also when the queue was full; it is
 ///       sent again next tick.
-/// Why:
-///  Requests go out only for the text the worker holds.
+/// Why: Requests go out only for the text the worker holds.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -112,11 +93,8 @@ fn send(language: &mut Language, hover: bool, displayed: DocumentStamp) -> anyho
     return Ok(());
 }
 
-/// What:
-///  Drop a waiting request whose text is no longer displayed.
-/// Why:
-///  The worker drops it too and never replies;
-///  a reload of the same file is explained,
+/// What: Drop a waiting request whose text is no longer displayed.
+/// Why: The worker drops it too and never replies; a reload of the same file is explained,
 ///      because the user is still looking at the place they asked about.
 ///
 /// In TS you'd write (pseudocode):
@@ -150,11 +128,8 @@ fn cancel_stale(
     }
 }
 
-/// What:
-///  Read every reply now waiting and attach the admitted ones to their requests.
-/// Why:
-///  All replies are drained before any request is finished,
-///  because answers needing no
+/// What: Read every reply now waiting and attach the admitted ones to their requests.
+/// Why: All replies are drained before any request is finished, because answers needing no
 ///      server traffic arrive together.
 ///
 /// In TS you'd write (pseudocode):
@@ -209,15 +184,9 @@ fn finish(
     }
 }
 
-/// What:
-///  Store new hints and diagnostics that describe the displayed text,
-///  and answer whether
-///       either was stored.
-///  `anyhow::Result<bool>` is "yes or no,
-///  or the worker's error".
-/// Why:
-///  Storing draws nothing:
-///  the source renderer reads the store from `State` when it runs,
+/// What: Store new hints and diagnostics that describe the displayed text, and answer whether
+///       either was stored. `anyhow::Result<bool>` is "yes or no, or the worker's error".
+/// Why: Storing draws nothing: the source renderer reads the store from `State` when it runs,
 ///      so the tick repaints once when this answers yes.
 ///
 /// In TS you'd write (pseudocode):
@@ -279,12 +248,8 @@ fn snapshots(
     return Ok(accepted);
 }
 
-/// What:
-///  Ask for hover information where the pointer has rested long enough.
-/// Why:
-///  Nothing is asked while the list,
-///  the search overlay,
-///  or a note is shown.
+/// What: Ask for hover information where the pointer has rested long enough.
+/// Why: Nothing is asked while the list, the search overlay, or a note is shown.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -330,12 +295,25 @@ fn rest(
     });
 }
 
-/// What:
-///  One tick.
-///  Every worker error turns language support off for the rest of the session.
-/// Why:
-///  Order matters:
-///  the worker is told about the displayed text before anything is asked,
+/// What: Watch the project's source folders for the servers while one registered file watchers, and stop
+///       when none does or language support stopped. `then` makes the sender only when it is wanted.
+/// Why: The change watcher sends changes straight to the worker; this thread only says whether to.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function relayWatching(language, navigation) { feedServers(navigation, worker?.wantsFileChanges() ? worker.fileChangeSender() : undefined); }
+/// ```
+fn relay_watching(language: &Language, navigation: &Rc<RefCell<Navigation>>) {
+    let feed = language.worker.as_ref().and_then(|worker| {
+        return worker
+            .wants_file_changes()
+            .then(|| return worker.file_change_sender());
+    });
+    feed_servers(&mut navigation.borrow_mut(), feed);
+}
+
+/// What: One tick. Every worker error turns language support off for the rest of the session.
+/// Why: Order matters: the worker is told about the displayed text before anything is asked,
 ///      and status is read before replies so a reply's explanation sees the newest states.
 ///
 /// In TS you'd write (pseudocode):
@@ -348,6 +326,7 @@ pub(super) fn tick(
     navigation: &Rc<RefCell<Navigation>>,
     language: &mut Language,
 ) {
+    relay_watching(language, navigation);
     if language.worker.is_none() {
         // Nothing will send the record; dropping it keeps the source state small.
         source.borrow_mut().language_reload = None;

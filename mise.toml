@@ -924,9 +924,12 @@ run = "{{vars.fanout_packages}}"
 
 # Applies monochromatic-lint fixes (e.g. no-pipe-tables converting pipe tables to
 # HTML, semantic-line-breaks inserting breaks in Markdown and in rustdoc) over the
-# whole tree or the given paths. dprint handles markdown *formatting*; this is for
-# lint fixes dprint cannot do. In the root `format` task it runs after dprint
-# (sequential), so it sees already-formatted files.
+# whole tree or the given paths. This is the only markdown gate: dprint's markdown
+# plugin is disabled in package/config/dprint/index.json ("Formats ordered list
+# markers wrongly"), so `dprint fmt` leaves .md files untouched and no separate
+# markdown formatting pass exists. In the root `format` task it still runs after
+# dprint (sequential), which matters only for the file types dprint does
+# format.
 [tasks."format:monochromatic-lint"]
 hide = true
 description = "Apply monochromatic-lint fixes to Rust, Markdown and MDX, optionally restricted to specific paths"
@@ -1240,27 +1243,17 @@ _.file = [{ path = ".env.local.json", redact = true }]
 # instead, which would make it stable across environments.
 _.path = [
   "node_modules/.bin",
-  "package/claude-code-plugin/bash-output-filter/node_modules/.bin",
-  "package/claude-code-plugin/claude-spawn/node_modules/.bin",
-  "package/claude-code-plugin/correction-reminder/node_modules/.bin",
-  "package/claude-code-plugin/guardrail/node_modules/.bin",
-  "package/claude-code-plugin/prompt-time/node_modules/.bin",
-  "package/claude-code-plugin/session-start-housekeeping/node_modules/.bin",
-  "package/claude-code-plugin/stop-reminder/node_modules/.bin",
-  "package/claude-code-plugin/terminal-title/node_modules/.bin",
+  "package/agent-harness-shared/search-fetch/node_modules/.bin",
+  "package/agent-harness-shared/truncate/node_modules/.bin",
   "package/cli/unused-export/node_modules/.bin",
   "package/config/pnpr/node_modules/.bin",
   "package/desktop-app/electron-counter/node_modules/.bin",
   "package/desktop-app/electron-infra/node_modules/.bin",
   "package/desktop-app/file-manager-electron/node_modules/.bin",
   "package/dev-script/deps-update/node_modules/.bin",
-  "package/dev-script/file-enforcer/node_modules/.bin",
-  "package/git-policy/cli/node_modules/.bin",
   "package/kwin/key-helper/node_modules/.bin",
-  "package/mcp/mvm/node_modules/.bin",
   "package/module/conf-fork.fuzz/node_modules/.bin",
   "package/module/conf-fork/node_modules/.bin",
-  "package/module/css-edit.bench/node_modules/.bin",
   "package/module/pnpm-workspace-catalog/node_modules/.bin",
   "package/module/token-count/node_modules/.bin",
   "package/pi-plugin/advisor/node_modules/.bin",
@@ -1282,9 +1275,7 @@ _.path = [
   "package/pi-shared/model-review/node_modules/.bin",
   "package/pi-shared/model-selection/node_modules/.bin",
   "package/ssg/aquati.cat/node_modules/.bin",
-  "package/stub/throwing/node_modules/.bin",
   "package/typeface/aquaticat/node_modules/.bin",
-  "package/webapp-productivity/done-postcss/node_modules/.bin",
   "package/webapp-productivity/wc/node_modules/.bin",
 ]
 

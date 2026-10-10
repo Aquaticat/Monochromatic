@@ -931,11 +931,11 @@ impl Queue {
             self.sequential_start = 0;
             return;
         }
-        // What:     `let anchor = match anchor { Some(a) => a, None => { ...; return; } };`.
+        // What:     `let anchor_index = match anchor { Some(a) => a, None => { ...; return; } };`.
         //           Turn the `Option<usize>` parameter into a plain `usize`, but treat a
         //           `None` anchor as "NO current track": clear the order and cursor and RETURN
         //           early (handled in the `None` arm below). `Some(a) => a` keeps a real index.
-        //           (This SHADOWS the parameter `anchor` with the new `usize` binding.)
+        //           (The unwrapped index gets its own name; it never shadows the parameter.)
         // Why:      `set_tracks` anchors `Some(0)`, but `clear_selection` (and toggling shuffle
         //           while nothing is selected) passes `None` to DESELECT, so a freshly opened
         //           library highlights and loads nothing until the user picks a track.
@@ -945,7 +945,7 @@ impl Queue {
         // if (anchor === null) { this.order = []; this.pos = null; return; }
         // const a0 = anchor;
         // ```
-        let anchor = match anchor {
+        let anchor_index = match anchor {
             // What:     `Some(a) => a`. Unwrap a present anchor to its `usize` index.
             // Why:      We have a real track to centre the scope on.
             //
@@ -971,15 +971,16 @@ impl Queue {
                 return;
             }
         };
-        // What:     `let anchor = anchor.min(self.tracks.len() - 1);`. Clamp the anchor into
-        //           range. `.min(x)` returns the smaller of the two. (Shadows again.)
+        // What:     `let clamped_anchor = anchor_index.min(self.tracks.len() - 1);`. Clamp the
+        //           anchor into range. `.min(x)` returns the smaller of the two. (The clamped
+        //           value gets its own name too.)
         // Why:      Defensive: a stale index must not point past the tracks.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const a = Math.min(a0, this.tracks.length - 1);
         // ```
-        let anchor = anchor.min(self.tracks.len() - 1);
+        let clamped_anchor = anchor_index.min(self.tracks.len() - 1);
         // What:     `if self.mode == PlaybackMode::InOrder || self.mode == PlaybackMode::Repeat { ... } else { ... }`. Off builds the
         //           full sequential scope order; the shuffle modes start a fresh play history.
         // Why:      Off is a deterministic in-order walk of the scope, while shuffle picks just
@@ -990,24 +991,24 @@ impl Queue {
         // if (this.shuffle === "off") { /* full sequential scope */ } else { /* [anchor] */ }
         // ```
         if self.mode == PlaybackMode::InOrder || self.mode == PlaybackMode::Repeat {
-            // What:     `let scope = self.scope_indices(anchor);`. The scope's indices in
-            //           ascending load order.
+            // What:     `let scope = self.scope_indices(clamped_anchor);`. The scope's indices
+            //           in ascending load order.
             // Why:      Off plays the scope in load order.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // const scope = this.scopeIndices(anchor);
             // ```
-            let scope = self.scope_indices(anchor);
-            // What:     `let pos = scope.iter().position(|&x| x == anchor);`. The anchor's slot
-            //           in the scope.
+            let scope = self.scope_indices(clamped_anchor);
+            // What:     `let pos = scope.iter().position(|&x| x == clamped_anchor);`. The
+            //           anchor's slot in the scope.
             // Why:      The cursor must point at the anchor after the rebuild.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // const p = scope.indexOf(anchor);
             // ```
-            let pos = scope.iter().position(|&x| return x == anchor);
+            let pos = scope.iter().position(|&x| return x == clamped_anchor);
             // What:     `self.order = scope; self.pos = pos.or(Some(0));`. Adopt the sequential
             //           order and point the cursor at the anchor (or the start).
             // Why:      Off's `order` is the full scope, walked sequentially with looping.
@@ -1021,13 +1022,13 @@ impl Queue {
                 self.pos = Some(position);
                 self.sequential_start = 0;
             } else {
-                self.order = vec![anchor];
+                self.order = vec![clamped_anchor];
                 self.order.extend(scope);
                 self.pos = Some(0);
                 self.sequential_start = 1;
             }
         } else {
-            // What:     `self.order = vec![anchor]; self.pos = Some(0); self.cycle_start = 0;`.
+            // What:     `self.order = vec![clamped_anchor]; self.pos = Some(0); self.cycle_start = 0;`.
             //           Begin the play history with just the anchor and open a fresh cycle.
             // Why:      Shuffle does not precompute a permutation; `advance` appends each
             //           just-in-time pick to `order`, and the anchor is the first track played.
@@ -1036,7 +1037,7 @@ impl Queue {
             // ```ts
             // this.order = [anchor]; this.pos = 0; this.cycleStart = 0;
             // ```
-            self.order = vec![anchor];
+            self.order = vec![clamped_anchor];
             self.pos = Some(0);
             self.cycle_start = 0;
             self.sequential_start = 0;

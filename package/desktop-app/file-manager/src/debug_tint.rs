@@ -174,8 +174,8 @@ fn base_badge(region: DebugRegion, detail: Option<&str>) -> Label {
 ///  while details distinguish columns and panes.
 fn label_text(region: DebugRegion, detail: Option<&str>) -> String {
     let prefix = format!("{} {}", region.code, region.description);
-    if let Some(detail) = detail {
-        return format!("{prefix} {detail}");
+    if let Some(detail_text) = detail {
+        return format!("{prefix} {detail_text}");
     }
     return prefix
 }

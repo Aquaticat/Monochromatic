@@ -100,7 +100,9 @@ Each state is marked by more than color:
   the cursor and three columns in full ink;
 - with keyboard focus,
   three columns in the accent color
-  and a 5 px by 48 px handle in the same color in the middle of the line.
+  and a 5 px by 96 px handle in the same color in the middle of the line,
+  never taller than the divider
+  (the user chose the 96 px handle on 2026-10-06).
 
 ### Divider hit area
 
@@ -209,6 +211,7 @@ and the rendered columns of every state.
 each edge of the zone,
 and each keyboard-focus mark in a disposable copy
 and checks that its named test fails.
+The divider's accessible slider is tested under [Accessibility checks](#accessibility-checks).
 
 ## Combined search
 
@@ -436,6 +439,14 @@ a cell 16 px wide whose width cannot be set from outside
 `widgets/common/lineedit-base.slint` lines 189 to 196).
 The user decided on 2026-10-05 to keep the control and give it a click target of at least 48 px by 48 px.
 
+The box also differs in the ink of selected text.
+The toolkit box draws the palette's accent ink,
+which is black in the dark scheme and white in the light one.
+Both boxes here take the ink of every other selection,
+which native code chooses from the selection fill
+(the user's choice of 2026-10-06);
+see [Selected text ink](#selected-text-ink).
+
 ### Clear control
 
 The x at the trailing end of the box empties the text.
@@ -470,6 +481,24 @@ Each pointer state has two marks:
 - pressed,
   a stronger fill and a 2 px boundary.
 
+The plate covers the whole 48 px cell,
+so it shows the click target's real extent
+(the user's choice of 2026-10-06).
+Its fill and boundary are the foreground ink at reduced opacity:
+the fill at 10 percent under the pointer and 24 percent pressed,
+the boundary at 50 percent and 80 percent.
+On the cell's top,
+right,
+and bottom edges the boundary lies on the box's border.
+The border is composited under it but shifts its color by only 2 to 8 gray levels,
+so while the plate shows,
+the boundary takes the border's place there.
+The focus line is drawn after the plate,
+so it keeps its color in every state;
+its contrast against the plate's fill is at least 3.5:1 in both schemes.
+The measured colors are in `design/README.md`,
+under "Applied frames of the 2026-10-06 UI batch 3b".
+
 Accessibility tools see a `button` named `Clear find text` or `Clear search query`
 whose default action clears.
 The toolkit's control is not exposed to them at all.
@@ -479,10 +508,9 @@ The toolkit's control is not exposed to them at all.
 Read from `widgets/common/lineedit-base.slint` and `widgets/fluent/lineedit.slint` of Slint 1.18.1:
 
 - The placeholder shows while the text and any input-method composition are both empty.
-- Selected text has the palette's selection fill and the palette's accent ink,
-  which is black in the dark scheme and white in the light one.
-  The source view and selected rows choose their ink from the fill instead;
-  see [Selected text ink](#selected-text-ink).
+- Selected text has the palette's selection fill;
+  its ink is not the toolkit's,
+  as described under [Find and search text box](#find-and-search-text-box).
 - A text wider than the box scrolls with the caret:
   while the caret moves through the text it stays 24 px inside the text area,
   and the end of the text reaches the area's edge.
@@ -538,12 +566,124 @@ its whole-cell click target,
 its edit report,
 and each half of its shown rule in a disposable copy
 and check that the named tests fail.
+They also put the toolkit's accent ink back on selected text
+(`box-selected-ink`)
+or drop it where the window and the panels pass the chosen ink on
+(`find-box-ink-passed`,
+`find-bar-ink-passed`,
+`search-box-ink-passed`),
+shrink the plate to 32 px
+(`plate-whole-cell`),
+and make its boundary opaque
+(`plate-translucent`).
 Input-method composition was not exercised:
 the toolkit's public window events carry no composition event,
 and the nested compositor provides no input method.
-Accessible properties were read from the running application
-through the toolkit's inspection server during the native frame captures;
-see `design/README.md`.
+The role,
+label,
+value,
+placeholder,
+and actions of both boxes and both clear controls are tested under [Accessibility checks](#accessibility-checks).
+
+## Accessibility checks
+
+`test:native` reads what assistive tools are given through Slint's element handles
+(`ElementHandle` of the test-only dependency `i-slint-backend-testing`),
+the same accessible properties and actions the toolkit hands to the platform accessibility bridge.
+The user allowed the dependency on 2026-10-06.
+It is internal to Slint and has no semver guarantee,
+so `Cargo.toml` requires exactly `=1.18.1`,
+the resolved `slint` version;
+both must be raised together.
+It was already in `Cargo.lock` through `slint`,
+so adding it added no package.
+
+An element is found by its accessible label,
+and exactly one element may carry it.
+A row is found by its role and label inside its own list,
+because the tree and the search results can list the same file name.
+The texts inside tree,
+search,
+and location rows,
+and the location list's title,
+are not accessibility elements
+(the user's choice of 2026-10-06):
+the row or the list carries the name,
+so a screen reader reads it once.
+A tree row's slot badge is one of those texts,
+so the row's description names its shortcut,
+as in `Source file, Ctrl+3`.
+A handle does not keep its element alive,
+so a row is looked up again after the list changes.
+
+- `src/native/accessible_box_tests.rs`:
+  the find box and the search box are `text-input` elements with their label,
+  placeholder,
+  and value,
+  and the find box's description is the match count (`Match 1 of 2`);
+  setting the value runs find or search as typing does.
+  The search box's description counts the results in the same words:
+  empty without a query,
+  `Searching` while a search runs,
+  `Result 1 of 2` for the selected row,
+  `No results` when nothing matches,
+  the error text when the search failed,
+  and `2 results, none selected` while no row is selected.
+  Each clear control is a `button` of at least 48 px by 48 px that is offered only while the box has text,
+  and its default action empties the box,
+  removes the count or the results,
+  and keeps keyboard focus in the box.
+- `src/native/accessible_divider_tests.rs`:
+  the divider is a horizontal `slider` named `Sidebar width`
+  that reports the width,
+  160 px and the widest width as its bounds,
+  and a 16 px step.
+  The increment,
+  decrement,
+  and set-value actions,
+  and Left,
+  Right,
+  Home,
+  and End with keyboard focus,
+  change the value it reports;
+  a set value above the widest width reports the widest.
+- `src/native/accessible_list_tests.rs`:
+  the tree,
+  the search results,
+  and the location list report their role,
+  name,
+  and row count.
+  Every row is a selectable `list-item` with its name and position.
+  In the tree the open file's row is the selected one,
+  and opening another file through its row's default action moves the selection;
+  a directory row is expandable,
+  and its expand action expands it.
+  In the search results and the location list the selected row follows Down and Up,
+  and a location row's default action chooses it.
+  In every list exactly one element carries a row's name,
+  and only the location list carries its title;
+  a tree row's description is `Directory`,
+  or `Source file` followed by the shortcut of its slot badge.
+
+Each test has a guard-removal control,
+run in a disposable copy,
+that was observed to fail with its guard removed:
+`a11y-set-value-edits` and `a11y-clear-role` in `inspect:find-guards`,
+`a11y-clear-default-action` and `a11y-result-selected` in `inspect:search-guards`,
+`a11y-divider-increment` and `a11y-tree-row-selected` in `inspect:sidebar-guards`,
+and `a11y-location-selected` in `inspect:language-navigation-guards`.
+The hidden texts and the search count have their own:
+`a11y-result-text-hidden` and `a11y-search-count` in `inspect:search-guards`,
+`a11y-tree-row-text-hidden` and `a11y-tree-badge-shortcut` in `inspect:sidebar-guards`,
+and `a11y-location-text-hidden` and `a11y-location-title-hidden` in `inspect:language-navigation-guards`.
+
+What these checks do not cover:
+
+- The platform bridge itself (AT-SPI on Linux) and a screen reader's speech:
+  element handles read the toolkit's side of the bridge.
+- Whether a screen reader announces the search box's new description as results arrive:
+  element handles read the property,
+  not the change events the bridge sends.
 
 ## Language module
 
@@ -1562,6 +1702,9 @@ The last line needs no terminator.
 
 Selected text is drawn in white while white reaches a contrast ratio of 3:1 against the selection fill,
 and in black on a lighter fill.
+The same ink is used in the source view,
+on selected rows,
+and for selected text in the find and search boxes.
 The toolkit's fluent palette keeps the fill `#0078D4` in both color schemes
 but pairs it with black ink in the dark scheme.
 Black on that fill has a WCAG 2 ratio of 4.64 and white of 4.53,
@@ -1623,12 +1766,18 @@ The concrete caret and replacement-selection cases in the accepted scope pass th
 
 The tree and the displayed file follow external changes through Linux inotify,
 using the `notify` crate 8.2.0 (`INotifyWatcher` by name, default features off, no polling backend).
+The same inotify instance also watches the project's source folders for the language servers;
+see [Watching for the language servers](#watching-for-the-language-servers).
 Only what is shown is watched,
 each directory non-recursively:
 the project root,
 every visible expanded folder,
 and the displayed file's folder,
 even when the tree does not show that folder.
+A displayed file outside the project,
+opened from a language target such as a standard-library source,
+is not watched and is not a watch failure:
+the safety sweep rereads it.
 Collapsing a folder removes its watch;
 folders inside a collapsed folder stay expanded in the tree but are not watched.
 A folder is watched only at its own canonical path inside the project root,
@@ -1671,8 +1820,24 @@ The latest notification decides,
 so a save that deletes and rewrites the file waits for the rewrite.
 A writer that leaves the file unfinished for longer than the quiet period is read mid-write,
 and read again when it closes the file.
-A sweep read can also meet a save that began within the last timer tick;
+
+A read that no write notification asked for accepts the file only when it has been quiet:
+the safety sweep,
+the timer of an unwatched file,
+a highlighting retry,
+the first read,
+and the reread after a new watch,
+a newly displayed file,
+or lost events.
+The reader asks the open file for its modification time after reading;
+when that time lies less than 50 ms before the read began,
+or during the read,
+or after the current time,
+the bytes are dropped and the file waits like an unfinished write.
+The check depends on the file alone,
+so no order of timers and notifications lets such a read show a save in progress;
 see [Measured write wait](#measured-write-wait).
+A file system that keeps modification times in whole seconds can let a save through this check.
 
 ### Recovery and timers
 
@@ -1681,9 +1846,9 @@ an inotify queue overflow (`IN_Q_OVERFLOW`),
 an error from the notification stream,
 a watched folder that is removed or renamed,
 a watch that cannot be added,
-including at the `fs.inotify.max_user_watches` limit,
+reaching the `fs.inotify.max_user_watches` limit,
 and a watcher that cannot start or stops.
-Each is logged.
+Each is logged once.
 A renamed folder's watch is removed,
 because inotify keeps following the moved directory under its old name.
 
@@ -1695,6 +1860,25 @@ while anything shown lacks a watch.
 A failure is logged and followed by the full reread once,
 and again only when its error text changes;
 a watch that works again is logged once.
+
+The watch limit counts the watches of every program the user runs,
+so reaching it is one state rather than one failure per folder.
+The first refused watch logs one warning that names the sysctl,
+rereads everything shown once,
+and stops adding watches in that pass.
+The safety sweep then retries after 2 s,
+doubling the wait after each refused retry up to 64 s.
+Expanding,
+collapsing,
+switching files,
+and scrolling the tree (at most once a second) retry at once
+without lengthening the wait.
+The displayed file's folder is tried first.
+When every shown folder has a watch again,
+one line says so.
+Folders without a watch keep the timers and the sweep meanwhile.
+See [Watch counts and the watch limit](#watch-counts-and-the-watch-limit).
+Folders watched for the language servers come after these and have their own limit state.
 
 Every second,
 every shown folder and the displayed file are reread anyway,
@@ -1724,6 +1908,169 @@ and the sweep's 1 s from four
 (`tests/refresh_intervals.rs` prints these from the shipped schedule).
 The 250 ms timer for an unwatched displayed file stays four times as frequent as the sweep.
 Both timers are kept.
+
+### Watch counts and the watch limit
+
+The IDE holds one watch per shown folder:
+2 with one expanded folder,
+13 with 12,
+and 101 with 100,
+counted from its inotify descriptors in `/proc` (`inspect:idle-cost`).
+Watching only the folders in the tree's viewport was measured as the alternative
+(`inspect:watch-scope`, 60 expanded folders, three runs each):
+it held 5 watches instead of 61,
+but in 48 of 60 trials a folder changed while out of view showed its old listing
+for a median of 61 to 85 ms per run,
+at most 148 ms,
+after it scrolled into view;
+watching every expanded folder showed the change at once in 59 of 60 trials,
+1 ms late in the other.
+The IDE keeps watching every expanded folder.
+
+The language servers count against the same limit;
+see [Watching for the language servers](#watching-for-the-language-servers).
+
+The IDE's own podman tasks run their containers with `--network=none`,
+except `fetch` and `runtime`, which download;
+podman's default network starts a pasta helper per container,
+which holds an inotify watch and warns when the limit is reached.
+
+A positive control runs the IDE in a disposable user namespace whose own watch limit is 4
+(`inspect:watch-limit`, 12 expanded folders, the host limit untouched):
+in each of two runs,
+one warning,
+no per-folder warning,
+4 and 3 refused watch calls in 60 s with 59 and 60 sweeps,
+a file created in an unwatched folder listed after 629 and 751 ms,
+and one line 63.8 and 61.3 s after the namespace limit was raised,
+the backoff's longest wait.
+In the second run,
+Home in the tree scrolled it and retried the watches 43 ms later,
+with no watch call in the 1.5 s before.
+
+### Watching for the language servers
+
+Language servers learn about changes made outside the editor through `workspace/didChangeWatchedFiles`.
+Helix watches no files for its servers,
+so its built-in rust-analyzer definition sets `files.watcher = "server"`,
+and rust-analyzer then asks notify for a recursive watch of each workspace package's folder (`vfs-notify`),
+which watches every folder below it,
+`node_modules` included,
+whatever `files.excludeDirs` says.
+The TypeScript 7 server watches nothing itself:
+Helix declares client-side watching,
+which TypeScript 7.0.2 then relies on (`internal/lsp/server.go`),
+and before this change nothing told it about other files,
+so the displayed file's diagnostics did not follow a change of a file it imports.
+
+The IDE watches for the servers.
+While some server has registered file watchers (`client/registerCapability`),
+the change watcher watches every source folder of the project,
+each non-recursively,
+on its one inotify instance,
+and sends every change in them to the language worker,
+without passing through the interface thread.
+When no server has watchers any more,
+those watches are released.
+Source folders are the folders ripgrep lists files from with the search's settings (`src/search_process.rs`),
+so the search and the servers agree on `.gitignore`,
+`.ignore`,
+`.rgignore`,
+and hidden names;
+hidden folders such as `.cargo` are skipped as the search skips them.
+`node_modules`,
+`target`,
+and `.git` are never watched,
+even where no ignore file names them.
+ripgrep lists a folder named on its command line even when an ignore rule names it,
+but applies the ignore files of its parents below it (ripgrep 15.2.0),
+so a new folder is classified by scanning its parent again.
+An empty folder cannot be classified by a list of files:
+it is watched until its first change,
+which is held back until its parent has been scanned again;
+the files that scan lists in it are then sent as created,
+and a new ignored folder,
+such as a build's `dist`,
+never reaches a server.
+Scans run on their own thread.
+
+The language worker keeps each server's registrations itself.
+helix-lsp's own handler (`helix-lsp/src/file_event.rs` at the pinned revision) keeps only string patterns,
+ignores the kinds a watcher asks for,
+and always sends "changed",
+while both rust-analyzer and the TypeScript 7 server register relative patterns.
+Glob patterns follow the protocol:
+`*` and `?` stay inside one path segment,
+`**` spans segments,
+and `{}` and `[]` group.
+A watcher's kind decides which of created,
+changed,
+and deleted it hears,
+and a server that registered nothing gets nothing.
+Changes are gathered per path with the kind of its final state on disk
+(a deletion after a creation stays a deletion),
+and a burst is sent once it pauses for 50 ms,
+or 500 ms after it began,
+as one notification per server.
+Each server that heard about changes is then asked for the displayed file's diagnostics again,
+since another file may have changed them.
+A reload of the displayed file reaches the servers the same way.
+rust-analyzer is given `files.watcher = "client"`,
+set in code after the definitions are merged,
+because a merged `files` table replaces the whole table;
+it then registers watchers and takes no watches of its own.
+
+The tree and the displayed file come first under the watch limit.
+A folder both want keeps one watch,
+and collapsing it in the tree keeps the servers' watch.
+When the limit refuses a watch the tree wants,
+a watch held only for the servers is given up for it,
+and while the tree waits on the limit,
+the servers add nothing.
+The servers' limit is its own state:
+one warning naming `fs.inotify.max_user_watches`,
+one line when every source folder is watched again,
+and retries after the same growing wait (2 s doubling to 64 s),
+which the watch thread schedules itself.
+
+`inspect:server-watches` measured both on disposable projects,
+with the servers confined as in production,
+on a quiet host,
+two runs of each case in one session
+(`~/temp/agent/ide-server-watches-5jAwxc`).
+The Rust workspace has 40 crates,
+1080 source folders,
+a `target` of 6000 folders,
+a `.git` of 257,
+and a `node_modules` of 2001 folders inside its first crate,
+9345 folders in all.
+The displayed file calls a function another file defines,
+and the other file is changed outside the IDE to give it a parameter,
+which rust-analyzer's own analysis reports;
+`cargo check` is turned off (`checkOnSave = false`) so it cannot report the change instead.
+The TypeScript project has 1000 source files,
+3000 dependency packages,
+12328 folders in all,
+and its displayed file imports a constant whose export is removed outside the IDE.
+
+#### Before: the build at `45db45d02`
+
+- rust-analyzer watched by itself: 3081 watches in both runs, 1080 for sources and 2001 for `node_modules`.
+- TypeScript: no watches at all.
+
+#### After: the IDE watches for the servers
+
+- Rust: 1082 watches in both runs, all held by the IDE and all on source folders; rust-analyzer held none.
+  The displayed file's diagnostic appeared 2008 and 745 ms after the write.
+- TypeScript: 42 watches in both runs, all held by the IDE; the diagnostic appeared after 102 and 60 ms.
+
+#### Positive control: the same build without forwarding
+
+- Rust and TypeScript: no watches, and the diagnostics stayed unchanged for 60 s in both runs of each.
+
+On this repository,
+ripgrep lists files in 1549 folders,
+the count the IDE would watch for a server with the repository as its project.
 
 ### Threading and shutdown
 
@@ -1798,15 +2145,18 @@ whose save began about 200 ms after a read had restarted the sweep clock.
 The filter `write_wait_timer` starts the same save,
 unfinished for 40 ms,
 at a pseudo-random time within the 400 ms that contain the next sweep read,
-120 trials per run.
-5 to 8 of 120 trials showed the truncated file across four runs,
-which is 17 to 27 ms before each sweep read.
-The sweep read is not asked for by the save's notification,
-so the write wait holds it back only once that notification has reached the schedule.
-The source timer is bound before the timer that receives notifications (`src/native.rs`),
-which fits a window of about one 20 ms tick.
-For a save that stays unfinished that long this is about 2 to 3 in 100 saves at the 1 s sweep;
-a save that is finished within a millisecond is exposed for that millisecond.
+until 120 trials have counted.
+A trial counts only when the file stayed truncated for less than the quiet period in real time;
+on a loaded host the test thread itself can stall mid-save,
+which makes the save a long one that any read may show by design.
+Before the quiet check (`45db45d02`) 4,
+6,
+and 8 of 120 trials showed the truncated file in three runs.
+With it,
+none of 120 did in any of three runs,
+alternating with the earlier build in one session at a load average of 63 to 99 on 16 processors.
+Of the trials the stalls stretched past the quiet period,
+6 of 30 showed the truncated file before the check and 1 of 41 with it.
 
 ### Measured idle cost
 
@@ -1924,8 +2274,47 @@ and the unwatched timer never makes a folder staler than the sweep alone.
 `native::watch_tests` checks the shipped tree and source in the headless window.
 `native::write_wait_tests` plays a slow writer against that window:
 an in-place save and a delete-then-rewrite are shown only when finished.
+`native::quiet_read_tests` does the same for a file outside the project,
+whose reads no write notification ever asks for.
+`tests/quiet_read.rs` checks the reader's quiet requirement with chosen modification times
+and the reread classification.
+The library tests in `change_watch/reconcile_tests.rs` drive the watch limit with a fake kernel:
+one state,
+no further adds,
+the backoff and its cap,
+immediate retries,
+and the displayed file's folder first.
+`change_watch/server_watch_tests.rs` drives the servers' watches with a fake kernel:
+one watch for a folder both want,
+a server watch given up for the tree,
+the servers waiting while the tree waits,
+and their own limit state.
+`change_watch/server_scan_tests.rs` checks the scan's ignore rules,
+pruned and empty folders,
+and new folders classified by their parent.
+`language/watched_files_tests.rs` checks the merge rule,
+glob patterns per the protocol,
+kinds,
+bursts,
+and servers that stopped.
+`tests/language/watched.rs` drives the worker and a change watcher with the scripted server,
+which registers watchers from `IDE_SCRIPTED_WATCHERS`:
+changes by glob and kind,
+the diagnostics pull after them,
+ignored,
+dependency,
+and unmatched files left out,
+a burst of 500 changes in a few notifications,
+new folders followed,
+a new ignored folder never sent,
+and nothing for a server without watchers.
+`native::language::watched_tests` checks the same through the shipped window's language tick.
 `inspect:watch-guards` removes each guard in a disposable copy and requires its named test to fail.
-`inspect:idle-cost` and `inspect:refresh-latency` produce the measurements in this section.
+`inspect:idle-cost`,
+`inspect:refresh-latency`,
+`inspect:watch-scope`,
+`inspect:server-watches`,
+and `inspect:watch-limit` produce the measurements in this section.
 In the nested compositor,
 dark and light,
 external create,
@@ -2107,6 +2496,7 @@ runtime/licenses/<grammar>/      license notice of each bundled grammar
 runtime/Helix-LICENSE            MPL-2.0 text for the Helix query files and the Helix crates in the binary
 LICENSES/                        LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
 LICENSES/font/                   SIL Open Font License notices of Inter and JetBrains Mono
+LICENSES/crates.json             license texts of the Rust crates, collected by cargo-about
 ```
 
 On 2026-10-06 that was 1,254 files and 34,659,293 bytes:
@@ -2123,7 +2513,7 @@ Inter and JetBrains Mono themselves are compiled in through Slint, as before.
 every file below `LICENSES/` and `runtime/licenses/`,
 and every other file whose name contains `LICENSE` or `LICENCE` or starts with `COPYING` or `NOTICE`,
 which adds `runtime/Helix-LICENSE` and `runtime/queries/snakemake/LICENSE`;
-34 texts and 117,354 bytes of output on 2026-10-06.
+34 files on 2026-10-06.
 The two read-me files among the queries (`ecma/README.md`, a description of query inheritance,
 and `ripple/readme.md`, a source link) are not license terms and are left out.
 Each text comes in full under a framed heading that names its component and its embedded path,
@@ -2131,10 +2521,131 @@ for example `Language grammar rust: LICENSE` above `Embedded as runtime/licenses
 Every text is digest-checked before anything is printed,
 so a damaged executable prints the damage message and exits with status 1 instead of a partial list;
 a reader that closes the pipe early (`| head`) ends the listing with status 0.
-The executable still holds no collected license notices of the Rust crates compiled into it,
-which the listing's second line says;
-that remains an open question for the user.
+After these files the listing prints the license texts of the Rust crates,
+one entry per distinct text
+(see [Rust crate license texts](#rust-crate-license-texts));
+with them it counted 231 texts and 581,919 bytes on 2026-10-06.
 The table's key (`c47e913b79bf6a42` for that runtime) is a digest of every path and file digest.
+
+### Rust crate license texts
+
+The user decided on 2026-10-06 to collect every Rust crate's license text with a notice generator,
+and narrowed the choice the same day: "No need to consider any alternatives. Just it." (cargo-about).
+
+#### What was established before wiring it in
+
+- Version:
+  cargo-about 0.9.2, the latest release (2026-08-18).
+  Its crates.io archive (sha256 `0cd19d99696eb83f0a2d6ab7a347b14968d2980416c8cca827ded220e6e9c4bb`)
+  names commit `f7394d5c8f618623573072caadf6594821c789b6` in `.cargo_vcs_info.json`,
+  and its files equal that tag's apart from Cargo's normalized manifest.
+  The command needs the `cli` feature:
+  `cargo install --locked --features cli --version 0.9.2 cargo-about`
+  (without `--features cli` the install compiles for minutes and then installs nothing).
+  Its book documents `-L, --log-level`; 0.9.2 accepts only `-L`.
+- License:
+  cargo-about is MIT OR Apache-2.0 and runs only while building;
+  none of its code is compiled into the executable.
+  What the executable gains is each crate's own license file,
+  or, when a crate ships none that cargo-about recognizes,
+  the standard text of the chosen license from the SPDX License List data compiled into cargo-about
+  (`spdx` 0.13.4).
+- Offline:
+  with `--frozen` (`--locked` plus `--offline`) cargo-about creates no HTTP client
+  (`src/cargo-about/generate.rs`, the `client` binding after "gathered {} crates"),
+  so license files that a configuration would fetch from a crate's git repository are not used,
+  and Cargo resolves the graph from the local registry.
+  Its license store is compiled in (`Store::load_inline` in `src/licenses.rs`).
+  The crate sources come from the `ide-cargo` volume that the `fetch` task fills.
+  Installing the tool is the one step that needs the network,
+  so it belongs to the image build (`Containerfile`), as `rustfmt` already does.
+  The trial ran with `--network=none`,
+  the package and `ide-cargo` mounted read-only,
+  and exited with status 0.
+- Trial against the IDE at commit `4b8b03663`
+  (target `x86_64-unknown-linux-gnu`, build and dev dependencies ignored, the unpublished package itself ignored):
+  - 424 crates, 6 of them Helix crates from git.
+    `cargo tree --edges normal,no-proc-macro` names 369 crates besides the IDE linked into the executable,
+    all among them;
+    the other 55 are procedural-macro crates and their dependencies, which run only while compiling.
+    The 187 registry crates whose source paths appear inside that release executable are all among them too.
+  - 29 distinct license expressions.
+    The most common: `MIT OR Apache-2.0` (188 crates), `MIT` (82), `Apache-2.0 OR MIT` (47),
+    `Unicode-3.0` (25), `Apache-2.0` (15),
+    Slint's `GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0` (10),
+    and `MPL-2.0` (9).
+    Unusual spellings parse as well:
+    fnv's `Apache-2.0  OR  MIT`,
+    smartstring's deprecated `MPL-2.0+`,
+    and unicode-ident's `(MIT OR Apache-2.0) AND Unicode-3.0`.
+  - No crate it could not resolve:
+    `--fail` exited with status 0.
+    As a positive control,
+    the same run without `GPL-3.0-only` among the accepted licenses failed with status 1,
+    naming all ten Slint crates.
+  - Two runs gave byte-identical output; one took 55.7 s on 2 CPUs.
+  - cargo-about reads no NOTICE files.
+    In the fetched registry only `cfg_aliases` ships one (`NOTICES.md`),
+    and it is a build dependency outside the graph.
+
+#### How the build carries them
+
+- `Containerfile` installs cargo-about 0.9.2 into the build image
+  (`mise run //package/desktop-app/ide:image`).
+  The `notices` task first checks `cargo-about --version` and,
+  in an image built before this change,
+  stops and names the `image` task.
+- `notices` runs after `fetch`:
+  cargo-about's `generate` with `--frozen`, `--fail`, `--config about.toml`,
+  and `--output-file target/crate-licenses.json`, on the template `about.json.hbs`.
+  It keeps the file while a SHA-256 over `Cargo.lock`, `Cargo.toml`, `about.toml`, `about.json.hbs`,
+  and the cargo-about version is unchanged (`target/crate-licenses.inputs`).
+  Every task that builds the application binary with the `gui` feature depends on it;
+  `build.rs` embeds the file as `LICENSES/crates.json`
+  and stops with a message naming the task when it is missing.
+- `about.json.hbs` writes one entry per distinct license text:
+  its SPDX identifier,
+  its name,
+  the crate file it came from (null for a standard text),
+  the crates it covers,
+  and the text.
+  `src/runtime/crate_licenses.rs` reads the list,
+  and `--licenses` prints every entry after the license files,
+  under a framed heading such as `Rust crates under MIT License (MIT): 18 crates`,
+  then the crates by name and version wrapped to 78 columns,
+  then `Text from the crate file annotate-snippets-0.12.16/LICENSE-MIT`
+  or `Text: the standard text of this license (no crate file was recognized)`.
+- `about.toml` accepts, in this order of preference for crates offered under several licenses:
+  MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause, Zlib, Unicode-3.0, MPL-2.0, CC0-1.0, Unlicense, GPL-3.0-only.
+  A dependency under any other license stops the task until it is reviewed.
+- On 2026-10-06 the list held 197 texts for 424 crates,
+  193 of them read from the crates' own files,
+  402,423 bytes of text in a 461,974-byte file.
+  Standard texts cover 12 MIT crates, 5 Apache-2.0 crates,
+  the ten Slint crates (GPL-3.0-only; the `slint` crate keeps that text in a `LICENSES/` folder,
+  which cargo-about did not pick),
+  and five Helix crates (MPL-2.0; Helix keeps its license file only at its repository root,
+  which `runtime/Helix-LICENSE` already carries).
+  Preferring Apache-2.0 over MIT gave 117 texts of 621,736 bytes, 66 crates on the standard Apache-2.0 text;
+  preferring BSD-3-Clause over Apache-2.0 gave 224 texts,
+  because cargo-about then took every BSD header among the source files of moxcms and pxfm as its own text.
+  The task took 99 s with its `fetch` step.
+  On the release executable of commit `9d476f838` (83,362,368 bytes),
+  the `crate-licenses` bundle check found all 369 linked crates
+  and all 291 registry crates whose source paths the executable contains among the crates printed.
+- The `linked-crates` task writes `target/linked-crates.txt`
+  from `cargo tree --frozen --edges normal,no-proc-macro --target x86_64-unknown-linux-gnu`
+  for the bundle checks.
+
+#### Choices made by default and open to veto
+
+- MIT ahead of Apache-2.0 in the accepted list,
+  because the crates' MIT files carry the copyright lines that license asks to reproduce,
+  and the list is smaller.
+- Slint under `GPL-3.0-only`,
+  whose text the executable already carries,
+  rather than the royalty-free license,
+  which asks for Slint's attribution (the `AboutSlint` widget in an About screen, or a badge on a public page).
 
 ### Where language files come from
 
@@ -2171,6 +2682,11 @@ and reads grammars and queries through `src/runtime.rs`:
   ("The file runtime/grammars/sql.so embedded in … is damaged …"),
   the file stays readable as plain text,
   and nothing is unpacked for it.
+- When the highlighting engine cannot start at all,
+  a file no language applies to, such as a `.txt` file,
+  is plain text without a message or a warning;
+  whether a language applies is decided by the compiled-in filename and shebang rules,
+  which need no runtime.
 - A write goes to a private file named after the process and a counter,
   then is renamed over the final name.
   The rename replaces the directory entry in one step,
@@ -2392,6 +2908,11 @@ without changing either:
   keeps the second,
   and renews its own folder's marker,
   before its display connection fails on purpose.
+- `crate-licenses`:
+  `--licenses` prints one section per entry of `target/crate-licenses.json`,
+  with the same license, the same crates in the same order, and the text in full;
+  every crate in `target/linked-crates.txt` (the `linked-crates` task, which both bundle tasks run first)
+  and every registry crate whose source path the executable itself contains is among the crates printed.
 
 The other startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`;
 SQL is the sample because it has a bundled grammar and no configured language server.
@@ -2412,10 +2933,21 @@ the SQL parser,
 a grammar notice,
 a font notice,
 an application license,
-and Helix's license.
+Helix's license,
+and the Rust crate license list.
 `license-texts` fails on every one of these but the SQL cases:
 a copy without its executable bit cannot run `--licenses`,
-and a copy with a damaged text exits with status 1 and the damage message naming that text.
+and a copy with a damaged text exits with status 1 and the damage message naming that text;
+on the damaged crate list `crate-licenses` fails the same way.
+A damaged file cannot show that `crate-licenses` notices a crate missing from an intact list,
+so that was checked on an altered build (on 2026-10-06):
+with `ignore-transitive-dependencies = true` added to `about.toml`,
+the list held 21 crates,
+and `crate-licenses` failed on the rebuilt debug executable
+("348 of 369 linked crates have no license text").
+In the same disposable copy,
+a debug build without `target/crate-licenses.json` stopped with status 101
+and the message naming the `notices` task.
 
 Behavior cannot be removed from a finished file,
 so the run-time checks were also run on an altered debug build (on 2026-10-06):

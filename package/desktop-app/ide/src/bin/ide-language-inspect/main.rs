@@ -127,6 +127,20 @@ pub enum Step {
         /// Milliseconds to keep polling afterwards.
         settle: u64,
     },
+    /// Write a file of the project as another program would; the displayed document is not touched.
+    Write {
+        /// Path relative to the project root.
+        file: PathBuf,
+        /// The new content.
+        text: String,
+    },
+    /// Wait until at least `minimum` folders are watched for the servers.
+    Folders {
+        /// Fewest folders that end the wait.
+        minimum: usize,
+        /// Longest wait.
+        seconds: u64,
+    },
     /// Keep polling for a fixed time.
     Sleep {
         /// How long.
@@ -134,6 +148,11 @@ pub enum Step {
     },
     /// Stop displaying the file.
     Close,
+}
+
+/// The application forwards file changes, so a plan does too unless it says otherwise.
+fn forward_by_default() -> bool {
+    return true;
 }
 
 /// A whole plan.
@@ -149,6 +168,10 @@ struct Plan {
     ///  for example probe variables.
     #[serde(default)]
     extra_languages: Option<String>,
+    /// Watch the project's folders for the servers and forward changes, as the application does; false
+    /// is the positive control in which servers hear about no change made outside the IDE.
+    #[serde(default = "forward_by_default")]
+    forward_file_changes: bool,
     /// Steps in order.
     steps: Vec<Step>,
 }
@@ -205,7 +228,7 @@ fn main() -> Result<()> {
         LanguageSetup::default()
     };
     setup.extra_languages = plan.extra_languages.clone();
-    let mut session = session::Session::new(&project, setup)?;
+    let mut session = session::Session::new(&project, setup, plan.forward_file_changes)?;
     // `enumerate` pairs each step with its position, for the printed record.
     for (number, step) in plan.steps.iter().enumerate() {
         session.run(number, step)?;

@@ -43,6 +43,8 @@ use std::{
 /// Unpack parser libraries into the private cache,
 ///  compared byte for byte on every load.
 pub mod cache;
+/// The license texts of the Rust crates the executable is built from, as cargo-about collected them.
+pub mod crate_licenses;
 /// The table of files the build script compiled into the application binary.
 pub mod embedded;
 /// The embedded license and notice texts,

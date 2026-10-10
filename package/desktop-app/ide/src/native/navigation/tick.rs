@@ -135,6 +135,7 @@ pub(super) fn update(
         present::update(window, source, &mut navigation);
     }
     watch::update(source, &mut navigation);
+    watch::scrolled(window, &mut navigation, Instant::now());
     if let Err(error) = schedule(&mut navigation) {
         tracing::warn!(%error, "cannot schedule project directory read");
         navigation.reader_available = false;

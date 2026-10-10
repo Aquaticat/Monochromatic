@@ -120,23 +120,16 @@ async fn on_request(
                 request::pull_diagnostics(worker, index, 0);
             }
         }
+        // The registrations are kept here, not in helix-lsp's handler, which drops relative patterns
+        // and kinds (`watched_files.rs`).
         Effect::RegisterWatchers(watchers) => {
             for (identifier, options) in watchers {
-                // `Arc::downgrade` makes a weak pointer that does not keep the client alive.
-                worker.registry.file_event_handler.register(
-                    server,
-                    Arc::downgrade(client),
-                    identifier,
-                    options,
-                );
+                worker.watched.register(server, identifier, options);
             }
         }
         Effect::UnregisterWatchers(identifiers) => {
             for identifier in identifiers {
-                worker
-                    .registry
-                    .file_event_handler
-                    .unregister(server, identifier);
+                worker.watched.unregister(server, &identifier);
             }
         }
     }

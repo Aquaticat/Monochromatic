@@ -95,7 +95,8 @@ fn worker_bounds_requests_and_maps_the_latest_caret() {
                 path: path.clone(),
                 snapshot: document.clone(),
                 generation: 41,
-                highlight_unchanged: false
+                highlight_unchanged: false,
+                require_quiet: None
             })
             .expect("first request")
     );
@@ -105,7 +106,8 @@ fn worker_bounds_requests_and_maps_the_latest_caret() {
                 path,
                 snapshot: document.clone(),
                 generation: 42,
-                highlight_unchanged: false
+                highlight_unchanged: false,
+                require_quiet: None
             })
             .expect("bounded second request")
     );
@@ -145,7 +147,8 @@ fn worker_recovers_after_source_reappears() {
                 path: path.clone(),
                 snapshot: document.clone(),
                 generation: 7,
-                highlight_unchanged: false
+                highlight_unchanged: false,
+                require_quiet: None
             })
             .expect("missing-file request")
     );
@@ -159,7 +162,8 @@ fn worker_recovers_after_source_reappears() {
                 path,
                 snapshot: document,
                 generation: 7,
-                highlight_unchanged: false
+                highlight_unchanged: false,
+                require_quiet: None
             })
             .expect("recovered-file request")
     );
@@ -182,6 +186,7 @@ fn worker_classifies_initial_and_changed_source_revisions() {
                 snapshot: document.clone(),
                 generation: 1,
                 highlight_unchanged: true,
+                require_quiet: None,
             })
             .expect("initial syntax request")
     );
@@ -203,6 +208,7 @@ fn worker_classifies_initial_and_changed_source_revisions() {
                 snapshot: document.clone(),
                 generation: 1,
                 highlight_unchanged: false,
+                require_quiet: None,
             })
             .expect("unchanged poll")
     );
@@ -215,6 +221,7 @@ fn worker_classifies_initial_and_changed_source_revisions() {
                 snapshot: document.clone(),
                 generation: 1,
                 highlight_unchanged: false,
+                require_quiet: None,
             })
             .expect("changed source poll")
     );
@@ -251,7 +258,8 @@ fn worker_shutdown_does_not_require_consuming_the_last_reply() {
                 path,
                 snapshot: Document::new("old source"),
                 generation: 1,
-                highlight_unchanged: false
+                highlight_unchanged: false,
+                require_quiet: None
             })
             .expect("last request")
     );

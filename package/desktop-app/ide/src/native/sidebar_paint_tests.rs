@@ -1,25 +1,14 @@
-//! Rendered pixels:
-//!  divider states by weight and ink,
-//!  and tree painting inside the narrowest sidebar.
+//! Rendered pixels: divider states by weight and ink, and tree painting inside the narrowest sidebar.
 
-/// Real key events through the window,
-///  shared with the find tests.
+/// Real key events through the window, shared with the find tests.
 use super::find_tests::key;
-/// Shared window fixture,
-///  pointer helpers,
-///  and the pinned layout measurements.
+/// Shared window fixture, pointer helpers, and the pinned layout measurements.
 use super::sidebar_tests::{HEADER, MINIMUM, drag_to, fixture, motion, press, release, settle};
 /// Generated window and tree row types from the shipped markup.
 use super::{AppWindow, ui::TreeEntry};
-/// What:
-///  `Rgba8Pixel` is one pixel of four bytes;
-///  `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
-/// (the `<...>` names the element type,
-///  like `Array<Pixel>`).
-/// Why:
-///  Line weight,
-///  ink,
-///  and painting outside the sidebar exist only in rendered pixels.
+/// What: `Rgba8Pixel` is one pixel of four bytes; `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
+/// (the `<...>` names the element type, like `Array<Pixel>`).
+/// Why: Line weight, ink, and painting outside the sidebar exist only in rendered pixels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,24 +21,21 @@ use slint::{
 /// The replacement tree model is shared with the window like the fixture's own model.
 use std::rc::Rc;
 
-/// Pixel row used for divider state checks,
-///  inside the tree rows and the source lines,
+/// Pixel row used for divider state checks, inside the tree rows and the source lines,
 /// above the handle that keyboard focus draws in the middle of the line.
-const ROW: usize = 300;
-/// Pixel row through the middle of that handle,
-///  which is 48px tall and centered in the 660px window.
+const ROW: usize = 260;
+/// Pixel row through the middle of that handle, which is 96px tall and centered in the 660px window,
+/// so it spans rows 282 to 377.
 const HANDLE_ROW: usize = 330;
+/// Rows 3px inside the handle's ends, clear of its rounded corners.
+const HANDLE_ENDS: [usize; 2] = [285, 374];
+/// Rows 3px outside the handle's ends, where the focused line is three columns again.
+const BEYOND_HANDLE: [usize; 2] = [279, 380];
 
-/// What:
-///  `&SharedPixelBuffer<Rgba8Pixel>` lends the frame;
-///  the four `usize` bounds are whole pixels
-/// (`usize` is the index type,
-///  siblings `u32` and `i32`);
-///  the answer is `true` when any pixel inside
+/// What: `&SharedPixelBuffer<Rgba8Pixel>` lends the frame; the four `usize` bounds are whole pixels
+/// (`usize` is the index type, siblings `u32` and `i32`); the answer is `true` when any pixel inside
 /// the bounds differs from `background`.
-/// Why:
-///  Text and badges are "something painted here";
-///  an untouched region is "nothing painted here".
+/// Why: Text and badges are "something painted here"; an untouched region is "nothing painted here".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -84,15 +70,10 @@ pub(super) fn pixel(frame: &SharedPixelBuffer<Rgba8Pixel>, x: usize, y: usize) -
     return frame.as_slice()[y * frame.width() as usize + x];
 }
 
-/// What:
-///  The answer is a growable array (`Vec<usize>`,
-///  sibling fixed array `[usize; N]`) of the pixel
+/// What: The answer is a growable array (`Vec<usize>`, sibling fixed array `[usize; N]`) of the pixel
 /// columns from 248 up to 264 on `row` that differ from `background`.
-/// Why:
-///  The divider's line weight is the number of adjacent painted columns.
-///  At the default width the
-/// line is column 256,
-///  so this span holds the five-column zone and five untouched columns on each side.
+/// Why: The divider's line weight is the number of adjacent painted columns. At the default width the
+/// line is column 256, so this span holds the five-column zone and five untouched columns on each side.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -119,8 +100,7 @@ fn columns(
     return found;
 }
 
-/// Render the window and return the frame;
-///  the headless window renders one pixel per logical pixel.
+/// Render the window and return the frame; the headless window renders one pixel per logical pixel.
 pub(super) fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
     settle(window);
     // What: `expect` returns the rendered frame or fails the test with this message.
@@ -139,10 +119,8 @@ pub(super) fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
     return rendered;
 }
 
-/// Idle is one faint column;
-///  hover and drag are three columns in stronger ink;
-///  keyboard focus is three
-/// columns in another color with a five-column handle in the middle of the line.
+/// Idle is one faint column; hover and drag are three columns in stronger ink; keyboard focus is three
+/// columns in another color with a five-column, 96px handle in the middle of the line.
 #[test]
 fn divider_states_change_line_weight_and_ink() {
     let shared = fixture(6);
@@ -224,6 +202,27 @@ fn divider_states_change_line_weight_and_ink() {
         focus_ink,
         "the keyboard-focus handle does not use the focus color"
     );
+    // What: `for row in HANDLE_ENDS` walks the fixed array of two row numbers.
+    // Why: The handle reaches both ends of its 96px and no further.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const row of HANDLE_ENDS) { ... }
+    // ```
+    for row in HANDLE_ENDS {
+        assert_eq!(
+            columns(&focused, row, background),
+            [254, 255, 256, 257, 258],
+            "the keyboard-focus handle does not reach row {row}, so it is shorter than 96px"
+        );
+    }
+    for row in BEYOND_HANDLE {
+        assert_eq!(
+            columns(&focused, row, background),
+            [255, 256, 257],
+            "the keyboard-focus handle reaches row {row}, so it is longer than 96px"
+        );
+    }
     key(window, Key::Tab);
     assert_eq!(
         columns(&frame(window), HANDLE_ROW, background),
@@ -233,8 +232,7 @@ fn divider_states_change_line_weight_and_ink() {
     window.hide().expect("close sidebar window");
 }
 
-/// At the narrowest sidebar a long name and a slot badge still paint,
-///  and nothing paints over the divider.
+/// At the narrowest sidebar a long name and a slot badge still paint, and nothing paints over the divider.
 #[test]
 fn long_names_and_slot_badges_stay_inside_the_narrowest_sidebar() {
     let shared = fixture(6);

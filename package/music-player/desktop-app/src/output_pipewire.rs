@@ -817,7 +817,7 @@ impl Output {
         )
         .map_err(|e| return PlayerError::Audio(format!("stream new: {e:?}")))?;
 
-        // What:     `let listener = stream.add_local_listener_with_user_data(process_data).process(|stream, pd| { ... }).register().map_err(...)?`.
+        // What:     `let listener = stream.add_local_listener_with_user_data(process_data).process(|stream_ref, pd| { ... }).register().map_err(...)?`.
         //           Attach our state as the callback's user data, set the `process`
         //           callback, and register it (returns an owned `StreamListener`). The
         //           closure receives `&StreamRef` and `&mut ProcessData`.
@@ -829,17 +829,19 @@ impl Output {
         // ```
         let listener = stream
             .add_local_listener_with_user_data(process_data)
-            // What:     `.process(|stream, pd| { ... })`. Register the realtime callback.
-            //           `|stream, pd|` is the closure's parameter list. This runs on
-            //           PipeWire's thread; it must not block/allocate.
+            // What:     `.process(|stream_ref, pd| { ... })`. Register the realtime callback.
+            //           `|stream_ref, pd|` is the closure's parameter list; the callback's
+            //           stream reference keeps its own name so it never shadows the `stream`
+            //           being built here. This runs on PipeWire's thread; it must not
+            //           block/allocate.
             // Why:      Feed the hardware buffer from our ring buffer.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // (stream, pd) => { ... }
             // ```
-            .process(|stream, pd| {
-                // What:     `match stream.dequeue_buffer() { ... }`. Ask the stream for a
+            .process(|stream_ref, pd| {
+                // What:     `match stream_ref.dequeue_buffer() { ... }`. Ask the stream for a
                 //           buffer to fill. Returns `Option<Buffer>`: `Some(buffer)` if one
                 //           is available, else `None`.
                 // Why:      We can only write when PipeWire gives us a buffer.
@@ -848,7 +850,7 @@ impl Output {
                 // ```ts
                 // const buffer = stream.dequeueBuffer(); if (!buffer) return;
                 // ```
-                match stream.dequeue_buffer() {
+                match stream_ref.dequeue_buffer() {
                     // What:     `None => {}`. No buffer right now: do nothing.
                     // Why:      Skip this cycle.
                     //

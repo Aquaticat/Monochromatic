@@ -75,11 +75,11 @@ pub fn load_tracks(path: &Path) -> Result<Vec<Track>> {
     // Parse each non-empty line into a Track, collecting failures into the error channel.
     let mut tracks = Vec::new();
     for line in reader.lines() {
-        let line = line?;
-        if line.trim().is_empty() {
+        let text = line?;
+        if text.trim().is_empty() {
             continue;
         }
-        let track: Track = serde_json::from_str(&line)?;
+        let track: Track = serde_json::from_str(&text)?;
         tracks.push(track);
     }
     return Ok(tracks)
@@ -116,11 +116,11 @@ pub fn load_safe_paths(path: &Path) -> Result<HashSet<String>> {
     let reader = BufReader::new(file);
     let mut safe = HashSet::new();
     for line in reader.lines() {
-        let line = line?;
-        if line.trim().is_empty() {
+        let text = line?;
+        if text.trim().is_empty() {
             continue;
         }
-        let row: MetaRow = serde_json::from_str(&line)?;
+        let row: MetaRow = serde_json::from_str(&text)?;
         if row.lossless || row.ytdlp {
             safe.insert(row.path);
         }

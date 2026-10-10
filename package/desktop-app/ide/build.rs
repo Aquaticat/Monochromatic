@@ -1,13 +1,9 @@
-//! Validate UI declarations,
-//!  require embedded resources in the native procedural-macro compilation,
+//! Validate UI declarations, require embedded resources in the native procedural-macro compilation,
 //! and generate the table of language files the application binary carries inside itself.
 
-/// What:
-///  Include the shared digest function from the application's sources (`#[path]` names the
-///       file;
-///  `mod` makes it a module of this build script).
-/// Why:
-///  The digest recorded here must be computed exactly as the application recomputes it.
+/// What: Include the shared digest function from the application's sources (`#[path]` names the
+///       file; `mod` makes it a module of this build script).
+/// Why: The digest recorded here must be computed exactly as the application recomputes it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -16,12 +12,8 @@
 #[path = "src/content_digest.rs"]
 mod content_digest;
 
-/// What:
-///  File system access and path types.
-///  `Path` borrows a path,
-///  `PathBuf` owns one.
-/// Why:
-///  The generator walks the prepared runtime and writes one generated source file.
+/// What: File system access and path types. `Path` borrows a path, `PathBuf` owns one.
+/// Why: The generator walks the prepared runtime and writes one generated source file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,10 +25,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// What:
-///  The generated file's name below Cargo's `OUT_DIR`.
-/// Why:
-///  `src/main.rs` includes it by this name.
+/// What: The generated file's name below Cargo's `OUT_DIR`.
+/// Why: `src/main.rs` includes it by this name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,15 +34,9 @@ use std::{
 /// ```
 const GENERATED: &str = "embedded_runtime.rs";
 
-/// What:
-///  Every regular file below `root`,
-///  as (path relative to `root`,
-///  absolute path) pairs.
-///       `Vec<(String, PathBuf)>` is a growable list of pairs;
-///  a work list replaces recursion.
-/// Why:
-///  Query and notice directories are nested;
-///  a work list walks them without growing the stack.
+/// What: Every regular file below `root`, as (path relative to `root`, absolute path) pairs.
+///       `Vec<(String, PathBuf)>` is a growable list of pairs; a work list replaces recursion.
+/// Why: Query and notice directories are nested; a work list walks them without growing the stack.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -115,17 +99,10 @@ fn files_below(root: &Path) -> Vec<(String, PathBuf)> {
     return found;
 }
 
-/// What:
-///  The grammar file names `manifest.json` lists,
-///  such as `sql.so`.
-///  `Vec<String>` owns them.
-/// Why:
-///  The runtime directory may still hold libraries of an earlier selection;
-///  only listed ones ship.
-///      The manifest is the runtime task's own `JSON.stringify` output,
-///  so its `grammars` array is read
-///      directly;
-///  any entry that is not a plain `<name>.so` stops the build.
+/// What: The grammar file names `manifest.json` lists, such as `sql.so`. `Vec<String>` owns them.
+/// Why: The runtime directory may still hold libraries of an earlier selection; only listed ones ship.
+///      The manifest is the runtime task's own `JSON.stringify` output, so its `grammars` array is read
+///      directly; any entry that is not a plain `<name>.so` stops the build.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -174,20 +151,16 @@ fn listed_grammars(manifest: &str, location: &Path) -> Vec<String> {
     return names;
 }
 
-/// What:
-///  Collect every file the application binary embeds,
-///  as (path in the former application
-///       directory layout,
-///  absolute source path) pairs,
-///  sorted by path.
-/// Why:
-///  One list feeds both the generated table and the build's change tracking.
+/// What: Collect every file the application binary embeds, as (path in the former application
+///       directory layout, absolute source path) pairs, sorted by path. `crate_licenses` is the list
+///       the `notices` task writes with cargo-about.
+/// Why: One list feeds both the generated table and the build's change tracking.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function embeddedFiles(runtime: string, packageRoot: string): Array<[string, string]>
+/// function embeddedFiles(runtime: string, packageRoot: string, crateLicenses: string): Array<[string, string]>
 /// ```
-fn embedded_files(runtime: &Path, package: &Path) -> Vec<(String, PathBuf)> {
+fn embedded_files(runtime: &Path, package: &Path, crate_licenses: &Path) -> Vec<(String, PathBuf)> {
     let manifest = runtime.join("manifest.json");
     let text = fs::read_to_string(&manifest).unwrap_or_else(|error| {
         panic!(
@@ -236,6 +209,23 @@ fn embedded_files(runtime: &Path, package: &Path) -> Vec<(String, PathBuf)> {
             package.join("asset/font").join(notice),
         ));
     }
+    // What: `is_file()` tests that the crate license list exists before it is embedded.
+    // Why: Without it the executable would carry no crate's terms; the build stops and names the task.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (!isFile(crateLicenses)) throw new Error('... run the notices task ...');
+    // ```
+    if !crate_licenses.is_file() {
+        panic!(
+            "The application binary embeds the license texts of its Rust crates, but {} is missing. Write it with `mise run //package/desktop-app/ide:notices` (the build, build:debug, lint, and test:cli tasks run it first), or copy it into this target directory, then build again.",
+            crate_licenses.display()
+        );
+    }
+    files.push((
+        "LICENSES/crates.json".to_string(),
+        crate_licenses.to_path_buf(),
+    ));
     // What: `sort_by(|left, right| left.0.cmp(&right.0))` orders pairs by their first element.
     // Why: The application finds files by halving this sorted list.
     //
@@ -247,10 +237,8 @@ fn embedded_files(runtime: &Path, package: &Path) -> Vec<(String, PathBuf)> {
     return files;
 }
 
-/// What:
-///  Write the Rust source of the embedded table into `OUT_DIR` and tell Cargo what to watch.
-/// Why:
-///  `include_bytes!` in the generated file copies each file into the executable at compile time.
+/// What: Write the Rust source of the embedded table into `OUT_DIR` and tell Cargo what to watch.
+/// Why: `include_bytes!` in the generated file copies each file into the executable at compile time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -271,7 +259,19 @@ fn generate_embedded_runtime(out_directory: &Path, package: &Path) {
         )
     });
     let runtime = profile.join("runtime");
+    // What: `parent()` climbs from `target/<profile>` to `target`, where the `notices` task writes.
+    // Why: The crate license list is the same for every profile.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const crateLicenses = path.join(path.dirname(profileDirectory), 'crate-licenses.json');
+    // ```
+    let crate_licenses = profile
+        .parent()
+        .unwrap_or(profile)
+        .join("crate-licenses.json");
     println!("cargo:rerun-if-changed={}", runtime.display());
+    println!("cargo:rerun-if-changed={}", crate_licenses.display());
     println!(
         "cargo:rerun-if-changed={}",
         package.join("LICENSES").display()
@@ -280,7 +280,7 @@ fn generate_embedded_runtime(out_directory: &Path, package: &Path) {
         "cargo:rerun-if-changed={}",
         package.join("asset/font").display()
     );
-    let files = embedded_files(&runtime, package);
+    let files = embedded_files(&runtime, package, &crate_licenses);
     let mut table = String::new();
     // What: `let mut key: u64` starts the digest over all paths and file digests.
     // Why: The key names the cache directory, so it changes whenever any embedded file changes.
@@ -330,11 +330,8 @@ fn generate_embedded_runtime(out_directory: &Path, package: &Path) {
         .unwrap_or_else(|error| panic!("Cannot write {}: {error}", output.display()));
 }
 
-/// What:
-///  Build entry point invoked by Cargo,
-///  separate from application main.
-/// Why:
-///  The non-GUI tests can exercise document logic without opening a window or embedding files.
+/// What: Build entry point invoked by Cargo, separate from application main.
+/// Why: The non-GUI tests can exercise document logic without opening a window or embedding files.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

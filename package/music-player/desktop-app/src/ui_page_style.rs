@@ -87,14 +87,16 @@ pub(crate) fn apply(app: &AppWindow) {
     let weak = app.as_weak();
     app.on_set_page_control_style(move |style| {
         let requested = PageControlStyle::from_int(style);
-        let resolved = resolve_style(StyleResolution { requested, catalog: &BUILD_STYLES })
+        // The callback's resolution binds apart from the startup `resolved`, and the
+        // upgraded window apart from the borrowed `app` parameter.
+        let effective = resolve_style(StyleResolution { requested, catalog: &BUILD_STYLES })
             .expect("at least one BUILD_STYLES entry must set included: true");
-        if resolved != requested
-            && let Some(app) = weak.upgrade() {
-                app.set_page_control_style(resolved.to_int());
+        if effective != requested
+            && let Some(window) = weak.upgrade() {
+                window.set_page_control_style(effective.to_int());
             }
         let mut session = Session::load();
-        session.page_control_style = resolved;
+        session.page_control_style = effective;
         if let Err(error) = session.save() {
             tracing::warn!(%error, "page-control style save failed");
         }

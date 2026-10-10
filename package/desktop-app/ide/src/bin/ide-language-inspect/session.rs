@@ -1,7 +1,4 @@
-//! One inspection session:
-//!  the worker handle,
-//!  the document as the application holds it,
-//!  and
+//! One inspection session: the worker handle, the document as the application holds it, and
 //! the polling loop every step waits in.
 
 /// Plan steps.
@@ -10,8 +7,6 @@ use crate::Step;
 use crate::render;
 /// Failures name the operation that failed.
 use anyhow::{Context, Result, bail};
-/// The application's own document and reload path.
-use ide_app::document::Document;
 /// The handle and the types it exchanges.
 use ide_app::language::{
     LanguageWorker,
@@ -23,16 +18,13 @@ use ide_app::language::{
     status::{LanguageStatus, ServerState},
     sync::{DocumentOpen, DocumentReload},
 };
+/// The application's own document and reload path, and its change watcher and project boundary.
+use ide_app::{change_watch::ChangeWatcher, document::Document, workspace::Workspace};
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
-/// What:
-///  `Path`/`PathBuf` are borrowed and owned filesystem paths;
-///  `Arc` is a thread-safe shared
-///       pointer;
-///  `Duration` and `Instant` measure time.
-/// Why:
-///  Every wait is bounded,
-///  so a missing answer ends the step instead of hanging it.
+/// What: `Path`/`PathBuf` are borrowed and owned filesystem paths; `Arc` is a thread-safe shared
+///       pointer; `Duration` and `Instant` measure time.
+/// Why: Every wait is bounded, so a missing answer ends the step instead of hanging it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,8 +36,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Pause between polls,
-///  as the application's timer polls its workers.
+/// The steps about folders watched for the servers, and the relay the application's tick performs.
+mod watching;
+
+/// Pause between polls, as the application's timer polls its workers.
 const POLL: Duration = Duration::from_millis(20);
 
 /// Pause before a position request is repeated while a server warms up.
@@ -55,14 +49,21 @@ const REPEAT: Duration = Duration::from_millis(500);
 pub struct Session {
     /// The handle under inspection.
     worker: LanguageWorker,
+    /// What: `Option<ChangeWatcher>` is the project's change watcher, or `None` in the positive control.
+    /// Why: The application watches folders for the servers; the control shows what happens without it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// watcher?: ChangeWatcher;
+    /// ```
+    watcher: Option<ChangeWatcher>,
     /// Resolved project root.
     project: PathBuf,
     /// Path of the displayed file.
     path: PathBuf,
     /// The displayed document.
     document: Document,
-    /// File-open generation.
-    ///  `u64` is an unsigned 64-bit counter.
+    /// File-open generation. `u64` is an unsigned 64-bit counter.
     file: u64,
     /// Latest status seen.
     status: Arc<LanguageStatus>,
@@ -72,8 +73,7 @@ pub struct Session {
     diagnostics: Option<Arc<DiagnosticsSnapshot>>,
     /// Latest hints seen.
     hints: Option<Arc<HintsSnapshot>>,
-    /// When the session started,
-    ///  for timestamps.
+    /// When the session started, for timestamps.
     started: Instant,
 }
 
@@ -85,14 +85,19 @@ fn emit(started: Instant, mut record: Value) {
 
 /// Session steps.
 impl Session {
-    /// Start the worker for a project;
-    ///  no server starts until a file is opened.
-    pub fn new(project: &Path, setup: LanguageSetup) -> Result<Self> {
+    /// Start the worker for a project; no server starts until a file is opened.
+    pub fn new(project: &Path, setup: LanguageSetup, forward: bool) -> Result<Self> {
         // The trailing `?` returns the start error to the caller.
         let worker = LanguageWorker::with_setup(project, setup)?;
+        let watcher = if forward {
+            Some(ChangeWatcher::new(Workspace::new(project)?)?)
+        } else {
+            None
+        };
         // `Ok(...)` is the success variant of `Result`.
         return Ok(Self {
             worker,
+            watcher,
             project: project.to_path_buf(),
             path: PathBuf::new(),
             document: Document::new(""),
@@ -113,21 +118,16 @@ impl Session {
         };
     }
 
-    /// What:
-    ///  Take everything the worker published,
-    ///  printing each change.
-    ///  `&mut self` allows
+    /// What: Take everything the worker published, printing each change. `&mut self` allows
     ///       storing what was taken.
-    /// Why:
-    ///  This is the application's polling contract:
-    ///  nothing blocks,
-    ///  stale results never appear.
+    /// Why: This is the application's polling contract: nothing blocks, stale results never appear.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// poll() { for (const change of worker.takeAll()) { record(change); } }
     /// ```
     fn poll(&mut self) -> Result<()> {
+        self.relay_file_changes();
         // `if let Some(x) = ...?` runs the block only when something new was published.
         if let Some(status) = self.worker.try_take_status()? {
             emit(self.started, json!({ "status": render::status(&status) }));
@@ -156,13 +156,9 @@ impl Session {
         return Ok(());
     }
 
-    /// What:
-    ///  Poll until `done` accepts the session or the time is up;
-    ///  returns whether it did.
+    /// What: Poll until `done` accepts the session or the time is up; returns whether it did.
     ///       `&dyn Fn(&Session) -> bool` borrows any function or closure with that signature.
-    /// Why:
-    ///  Real servers answer after an unknown warm-up;
-    ///  every step states its own limit.
+    /// Why: Real servers answer after an unknown warm-up; every step states its own limit.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -182,8 +178,7 @@ impl Session {
         }
     }
 
-    /// Send one position request;
-    ///  nothing is returned when the command queue is full.
+    /// Send one position request; nothing is returned when the command queue is full.
     fn ask(&mut self, kind: RequestKind, at: usize) -> Result<Option<u64>> {
         let request = PositionRequest {
             stamp: self.stamp(),
@@ -208,11 +203,8 @@ impl Session {
         return Ok(());
     }
 
-    /// What:
-    ///  Repeat a position request until its outcome is the wanted kind or time is up.
-    /// Why:
-    ///  A server that is still loading answers `null` or "content modified";
-    ///  the record
+    /// What: Repeat a position request until its outcome is the wanted kind or time is up.
+    /// Why: A server that is still loading answers `null` or "content modified"; the record
     ///      keeps every attempt so the warm-up is visible.
     ///
     /// In TS you'd write (pseudocode):
@@ -268,11 +260,8 @@ impl Session {
         }
     }
 
-    /// What:
-    ///  Run one plan step and print its result.
-    /// Why:
-    ///  A step that does not reach its goal is recorded as such;
-    ///  only a broken session is an error.
+    /// What: Run one plan step and print its result.
+    /// Why: A step that does not reach its goal is recorded as such; only a broken session is an error.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -377,6 +366,8 @@ impl Session {
                     "droppedStaleRevision": after.stale_revision - before.stale_revision,
                 })
             }
+            Step::Write { file, text } => self.write(file, text)?,
+            Step::Folders { minimum, seconds } => self.folders(*minimum, *seconds)?,
             Step::Sleep { milliseconds } => {
                 let never = |_: &Session| return false;
                 self.until(Duration::from_millis(*milliseconds), &never)?;
@@ -391,8 +382,7 @@ impl Session {
         return Ok(());
     }
 
-    /// Print the final counters;
-    ///  dropping the session then stops every server.
+    /// Print the final counters; dropping the session then stops every server.
     pub fn finish(self) {
         let counts = self.worker.fence_counts();
         emit(

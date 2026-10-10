@@ -1,22 +1,16 @@
-//! The Language worker:
-//!  one named thread that owns a single-thread async runtime,
-//!  helix-lsp's
-//! registry,
-//!  and the session.
-//!  The interface thread only exchanges owned messages with it.
+//! The Language worker: one named thread that owns a single-thread async runtime, helix-lsp's
+//! registry, and the session. The interface thread only exchanges owned messages with it.
 //!
-//! Language servers are spawned from this thread and nowhere else.
-//!  It lives as long as the
-//! handle,
-//!  which matters for a confining launcher that ends its server when the spawning thread
+//! Language servers are spawned from this thread and nowhere else. It lives as long as the
+//! handle, which matters for a confining launcher that ends its server when the spawning thread
 //! ends (`doc/planning/slint-ide-write-confinement.md`).
 
-/// The registry is assembled in code on this thread,
-///  never from project or user configuration.
+/// The registry is assembled in code on this thread, never from project or user configuration.
 use super::config::{LanguageSetup, Languages};
-/// The steps a command or event is dispatched to,
-///  and the wait that ends the thread.
-use super::{attach, lifecycle, reap, request, session::Session, traffic};
+/// The file watchers servers registered, and the changes waiting for them.
+use super::watched_files::WatchedFiles;
+/// The steps a command or event is dispatched to, and the wait that ends the thread.
+use super::{attach, forward, lifecycle, reap, request, session::Session, traffic};
 /// Latest-value results the worker publishes.
 use super::{diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, status::LanguageStatus};
 /// Commands and one-shot replies.
@@ -26,18 +20,14 @@ use super::{
     reply::{LanguageReply, PositionRequest},
     sync::{DocumentOpen, DocumentReload},
 };
+/// The changes the change watcher forwards.
+use crate::change_watch::ServerChange;
 /// Start failures name the operation that failed.
 use anyhow::{Context, Result};
-/// What:
-///  `StreamExt` adds `.next()` to streams,
-///  which are sequences of values that arrive over
-///       time;
-///  `FuturesUnordered` is a set of pending futures (promises) that is itself a stream
-///       of their results,
-///  in completion order.
-/// Why:
-///  `Registry::incoming` is a stream of server-to-client messages,
-///  and the loop awaits its
+/// What: `StreamExt` adds `.next()` to streams, which are sequences of values that arrive over
+///       time; `FuturesUnordered` is a set of pending futures (promises) that is itself a stream
+///       of their results, in completion order.
+/// Why: `Registry::incoming` is a stream of server-to-client messages, and the loop awaits its
 ///      own pending requests the same way instead of handing them to helper tasks.
 ///
 /// In TS you'd write (pseudocode):
@@ -47,15 +37,9 @@ use anyhow::{Context, Result};
 use futures_util::{StreamExt, stream::FuturesUnordered};
 /// helix-lsp's server table and its key type.
 use helix_lsp::{LanguageServerId, Registry};
-/// What:
-///  `PathBuf` is an owned filesystem path;
-///  `Arc` is a thread-safe shared pointer;
-///       `JoinHandle` lets the owner wait for the thread to end;
-///  `Duration` is a time span.
-/// Why:
-///  Published values are shared,
-///  immutable,
-///  and cheap to hand to the interface thread.
+/// What: `PathBuf` is an owned filesystem path; `Arc` is a thread-safe shared pointer;
+///       `JoinHandle` lets the owner wait for the thread to end; `Duration` is a time span.
+/// Why: Published values are shared, immutable, and cheap to hand to the interface thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,20 +51,10 @@ use std::{
     thread::{self, JoinHandle},
     time::Duration,
 };
-/// What:
-///  `mpsc` is a multi-producer queue with an awaitable receiver;
-///  `watch` is a single-slot
-///       latest-value cell.
-///  Both are channels:
-///  they move owned messages between threads.
-/// Why:
-///  Commands and replies are queued and bounded;
-///  status,
-///  diagnostics,
-///  and hints replace
-///      themselves,
-///  so only the latest value is kept.
-///  This follows `search_worker.rs`.
+/// What: `mpsc` is a multi-producer queue with an awaitable receiver; `watch` is a single-slot
+///       latest-value cell. Both are channels: they move owned messages between threads.
+/// Why: Commands and replies are queued and bounded; status, diagnostics, and hints replace
+///      themselves, so only the latest value is kept. This follows `search_worker.rs`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,29 +62,18 @@ use std::{
 /// ```
 use tokio::sync::{mpsc, watch};
 
-/// Longest wait for servers to exit after `shutdown` and `exit` were sent,
-///  as Helix allows on quit.
+/// Longest wait for servers to exit after `shutdown` and `exit` were sent, as Helix allows on quit.
 const SHUTDOWN_GRACE: Duration = Duration::from_secs(1);
 
-/// Longest wait,
-///  after every remaining server was killed,
-///  until the kernel has ended and the
-/// thread has reaped them.
-///  The wait ends as soon as none is left,
-///  which is at once when every
-/// server ended by itself.
-///  Measured with sixteen sessions sharing two processors:
-///  a killed
-/// server took up to 1.5 s to be gone,
-///  and the fixed 50 ms pause this replaces was too short in
+/// Longest wait, after every remaining server was killed, until the kernel has ended and the
+/// thread has reaped them. The wait ends as soon as none is left, which is at once when every
+/// server ended by itself. Measured with sixteen sessions sharing two processors: a killed
+/// server took up to 1.5 s to be gone, and the fixed 50 ms pause this replaces was too short in
 /// 81 of 1200 shutdowns.
 const REAP_GRACE: Duration = Duration::from_secs(2);
 
-/// What:
-///  Everything the interface thread can ask for.
-///  An `enum` with data is a tagged union.
-/// Why:
-///  One queue of owned messages is the only thing that crosses the thread boundary inward.
+/// What: Everything the interface thread can ask for. An `enum` with data is a tagged union.
+/// Why: One queue of owned messages is the only thing that crosses the thread boundary inward.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,9 +84,7 @@ const REAP_GRACE: Duration = Duration::from_secs(2);
 pub(super) enum Command {
     /// A file was displayed.
     Open(
-        /// Path,
-        ///  text,
-        ///  and stamp of the displayed file.
+        /// Path, text, and stamp of the displayed file.
         DocumentOpen,
     ),
     /// The displayed file was reloaded from disk.
@@ -140,8 +101,7 @@ pub(super) enum Command {
         /// What is asked.
         request: PositionRequest,
     },
-    /// The visible lines changed;
-    ///  hints are wanted for them.
+    /// The visible lines changed; hints are wanted for them.
     Hints {
         /// The text the lines belong to.
         stamp: DocumentStamp,
@@ -150,13 +110,9 @@ pub(super) enum Command {
     },
 }
 
-/// What:
-///  Events the worker sends to itself from timer tasks.
-/// Why:
-///  A task that waits for a timer never touches worker state;
-///  it hands the event back to
-///      the loop,
-///  so all state changes happen in one place.
+/// What: Events the worker sends to itself from timer tasks.
+/// Why: A task that waits for a timer never touches worker state; it hands the event back to
+///      the loop, so all state changes happen in one place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -174,14 +130,14 @@ pub(super) enum Internal {
         /// Number of the reload that opened the hold.
         u64,
     ),
-    /// A superseded request should be sent again.
-    ///  `Box` stores the large value on the heap so
+    /// A superseded request should be sent again. `Box` stores the large value on the heap so
     /// every variant stays small.
     Retry(
-        /// The request to send again,
-        ///  with its attempt count already raised.
+        /// The request to send again, with its attempt count already raised.
         Box<request::Ticket>,
     ),
+    /// Gathered file changes may be due for sending.
+    ForwardFiles,
 }
 
 /// The sending ends of every channel the interface thread polls.
@@ -190,22 +146,19 @@ pub(super) struct Outputs {
     pub(super) replies: mpsc::Sender<LanguageReply>,
     /// Latest status.
     pub(super) status: watch::Sender<Arc<LanguageStatus>>,
-    /// Latest diagnostics;
-    ///  nothing while no file is displayed.
+    /// Latest diagnostics; nothing while no file is displayed.
     pub(super) diagnostics: watch::Sender<Option<Arc<DiagnosticsSnapshot>>>,
-    /// Latest hints;
-    ///  nothing until a server answered for the displayed text.
+    /// Latest hints; nothing until a server answered for the displayed text.
     pub(super) hints: watch::Sender<Option<Arc<HintsSnapshot>>>,
+    /// Whether some server registered file watchers, so the project's folders are worth watching.
+    pub(super) watching: watch::Sender<bool>,
 }
 
 /// Publishing.
 impl Outputs {
-    /// What:
-    ///  Queue one reply without waiting.
-    ///  `try_send` returns `Err` when the queue is full or
+    /// What: Queue one reply without waiting. `try_send` returns `Err` when the queue is full or
     ///       the handle is gone.
-    /// Why:
-    ///  The worker must never block on an interface thread that stopped polling.
+    /// Why: The worker must never block on an interface thread that stopped polling.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -232,22 +185,19 @@ pub(super) struct Worker {
     pub(super) outputs: Outputs,
     /// Sender for events the worker's timer tasks hand back to the loop.
     pub(super) internal: mpsc::UnboundedSender<Internal>,
-    /// Requests sent to servers and not yet answered;
-    ///  the loop awaits them itself.
+    /// Requests sent to servers and not yet answered; the loop awaits them itself.
     pub(super) requests: FuturesUnordered<request::AnswerFuture>,
+    /// File watchers servers registered, and the changes waiting to be sent to them.
+    pub(super) watched: WatchedFiles<LanguageServerId>,
+    /// A send of gathered file changes is scheduled.
+    pub(super) forward_scheduled: bool,
 }
 
 /// Dispatch and publishing.
 impl Worker {
-    /// What:
-    ///  Publish status,
-    ///  diagnostics,
-    ///  and hints,
-    ///  each only when its value changed.
+    /// What: Publish status, diagnostics, and hints, each only when its value changed.
     ///       `&self` borrows the worker read-only.
-    /// Why:
-    ///  Latest-value slots wake the interface only for real changes;
-    ///  hundreds of progress
+    /// Why: Latest-value slots wake the interface only for real changes; hundreds of progress
     ///      notifications collapse into the few that alter what is shown.
     ///
     /// In TS you'd write (pseudocode):
@@ -293,17 +243,19 @@ impl Worker {
             *current = hints.map(Arc::new);
             return true;
         });
+        let watching = self.watched.wanted();
+        self.outputs.watching.send_if_modified(|current| {
+            if *current == watching {
+                return false;
+            }
+            *current = watching;
+            return true;
+        });
     }
 
-    /// What:
-    ///  Deliver `event` to the loop after `delay`.
-    ///  `tokio::spawn` starts an independent task
-    ///       on this thread's runtime;
-    ///  `async move` moves the captured values into it.
-    /// Why:
-    ///  Start deadlines,
-    ///  hold expiry,
-    ///  and retries are timers that must not block the loop.
+    /// What: Deliver `event` to the loop after `delay`. `tokio::spawn` starts an independent task
+    ///       on this thread's runtime; `async move` moves the captured values into it.
+    /// Why: Start deadlines, hold expiry, and retries are timers that must not block the loop.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -346,28 +298,18 @@ impl Worker {
             }
             // `*ticket` moves the value out of its heap box.
             Internal::Retry(ticket) => request::retry(self, *ticket),
+            Internal::ForwardFiles => forward::due(self),
         }
         self.publish();
     }
 
-    /// What:
-    ///  Stop every server:
-    ///  send `shutdown` and `exit` without waiting for answers,
-    ///  wait up
-    ///       to `SHUTDOWN_GRACE` for the processes to end,
-    ///  then drop the registry,
-    ///  which kills
-    ///       the servers it still held.
-    ///  `mut self` takes the worker by value,
-    ///  so it is gone
+    /// What: Stop every server: send `shutdown` and `exit` without waiting for answers, wait up
+    ///       to `SHUTDOWN_GRACE` for the processes to end, then drop the registry, which kills
+    ///       the servers it still held. `mut self` takes the worker by value, so it is gone
     ///       afterwards.
-    /// Why:
-    ///  Waiting for the synthetic `exit` of each server lets well-behaved servers end by
-    ///      themselves;
-    ///  a slow or stuck server cannot hold the window open.
-    ///  Reaping what was
-    ///      killed is the thread's last step,
-    ///  after this runtime is gone (`reap.rs`).
+    /// Why: Waiting for the synthetic `exit` of each server lets well-behaved servers end by
+    ///      themselves; a slow or stuck server cannot hold the window open. Reaping what was
+    ///      killed is the thread's last step, after this runtime is gone (`reap.rs`).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -414,30 +356,16 @@ impl Worker {
     }
 }
 
-/// What:
-///  The worker loop.
-///  `tokio::select!` is a macro that waits on several futures (promises)
-///       at once and runs the block of whichever finishes first;
-///  a branch whose pattern does not
-///       match is disabled for that round.
-///  `biased;` makes it check the branches in the order
+/// What: The worker loop. `tokio::select!` is a macro that waits on several futures (promises)
+///       at once and runs the block of whichever finishes first; a branch whose pattern does not
+///       match is disabled for that round. `biased;` makes it check the branches in the order
 ///       they are written instead of a random order.
-/// Why:
-///  Server-to-client traffic must be drained continuously,
-///  because an unanswered server
-///      request stalls the server,
-///  while commands and timer events must not wait behind it.
-///      Answers are checked before other server traffic on purpose:
-///  helix-lsp delivers an answer
-///      before a notification the server sent after it,
-///  and the diagnostics hold relies on
-///      seeing them in that order.
-///  With no pending request,
-///  or no server,
-///  the corresponding
-///      stream yields `None` at once,
-///  which disables its branch.
-///  `search_process.rs` uses the
+/// Why: Server-to-client traffic must be drained continuously, because an unanswered server
+///      request stalls the server, while commands and timer events must not wait behind it.
+///      Answers are checked before other server traffic on purpose: helix-lsp delivers an answer
+///      before a notification the server sent after it, and the diagnostics hold relies on
+///      seeing them in that order. With no pending request, or no server, the corresponding
+///      stream yields `None` at once, which disables its branch. `search_process.rs` uses the
 ///      same macro.
 ///
 /// In TS you'd write (pseudocode):
@@ -453,6 +381,7 @@ async fn run(
     mut worker: Worker,
     mut commands: mpsc::Receiver<Command>,
     mut internal: mpsc::UnboundedReceiver<Internal>,
+    mut file_changes: mpsc::UnboundedReceiver<ServerChange>,
 ) {
     loop {
         tokio::select! {
@@ -475,19 +404,27 @@ async fn run(
                 traffic::on_call(&mut worker, server, call).await;
                 worker.publish();
             }
+            Some(change) = file_changes.recv() => {
+                forward::receive(&mut worker, change);
+                // What: `try_recv` takes what is already queued without waiting; `Ok` is one more change.
+                // Why: A burst is gathered in one go instead of one loop round per change.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // for (let more = queue.poll(); more; more = queue.poll()) receive(worker, more);
+                // ```
+                while let Ok(more) = file_changes.try_recv() {
+                    forward::receive(&mut worker, more);
+                }
+            }
         }
     }
     worker.shutdown().await;
 }
 
-/// What:
-///  Start the worker thread.
-///  `Result<JoinHandle<()>>` is the thread handle or a start error.
-/// Why:
-///  `Registry::new` and every server start spawn tasks,
-///  so they must run inside the runtime;
-///      building the language registry takes a noticeable fraction of a second,
-///  so it happens on
+/// What: Start the worker thread. `Result<JoinHandle<()>>` is the thread handle or a start error.
+/// Why: `Registry::new` and every server start spawn tasks, so they must run inside the runtime;
+///      building the language registry takes a noticeable fraction of a second, so it happens on
 ///      this thread and not on the interface thread.
 ///
 /// In TS you'd write (pseudocode):
@@ -498,6 +435,7 @@ pub(super) fn spawn(
     root: PathBuf,
     setup: LanguageSetup,
     commands: mpsc::Receiver<Command>,
+    file_changes: mpsc::UnboundedReceiver<ServerChange>,
     outputs: Outputs,
 ) -> Result<JoinHandle<()>> {
     // What: A current-thread runtime drives every task on the thread that calls `block_on`;
@@ -539,8 +477,10 @@ pub(super) fn spawn(
                     outputs,
                     internal: internal_sender,
                     requests: FuturesUnordered::new(),
+                    watched: WatchedFiles::default(),
+                    forward_scheduled: false,
                 };
-                run(worker, commands, internal_receiver).await;
+                run(worker, commands, internal_receiver, file_changes).await;
             });
             // What: `drop` ends the runtime now: every task still on it is dropped, and with the
             //       tasks the last handles of server processes, which kills those processes.

@@ -275,7 +275,7 @@ fn collect_sets(node: &Node, out: &mut Vec<ByteSet>) {
             }
         }
         Node::Comp(inner) => collect_sets(inner, out),
-        Node::Repeat { node, .. } => collect_sets(node, out),
+        Node::Repeat { node: body, .. } => collect_sets(body, out),
         Node::Empty | Node::Fail | Node::Top | Node::LineStart | Node::LineEnd | Node::WordBoundary => {}
     }
 }

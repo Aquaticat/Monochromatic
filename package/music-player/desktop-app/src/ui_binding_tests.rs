@@ -553,8 +553,8 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     app.on_select_page({
         let weak = app.as_weak();
         move |page| {
-            if let Some(app) = weak.upgrade() {
-                app.set_selected_page(page);
+            if let Some(window) = weak.upgrade() {
+                window.set_selected_page(page);
             }
         }
     });

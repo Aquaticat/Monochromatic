@@ -7,6 +7,7 @@ use crate::application_targets::{
     is_ghostty_cgroup_name,
     is_helium_service_name,
     is_interpreter_service_name,
+    is_qure_service_name,
     scan_application_targets,
     ScanRoots,
 };
@@ -57,7 +58,7 @@ fn firefox_nightly_service_name_stays_channel_specific() {
     ));
 }
 
-/// Accepts exact ChatGPT and Interpreter desktop services without matching lookalikes.
+/// Accepts exact ChatGPT, Interpreter, and Qure desktop services without matching lookalikes.
 #[test]
 fn agent_service_names_use_desktop_entry_identifiers() {
     assert!(is_chatgpt_service_name(
@@ -71,6 +72,13 @@ fn agent_service_names_use_desktop_entry_identifiers() {
     assert!(!is_interpreter_service_name("app-interpreter@abc.scope"));
     // The application's own executable-named scope stays executable discovery's job.
     assert!(!is_interpreter_service_name("app-interpreter-19784.scope"));
+    assert!(is_qure_service_name(
+        "app-qure@5f0d0f4b6c9d4a4d9d0a83b4b62f2f7c.service"
+    ));
+    assert!(!is_qure_service_name("app-qure-wrapper@abc.service"));
+    assert!(!is_qure_service_name("app-qure@abc.scope"));
+    // Qure's AppImage scope is named after the executable, not the desktop entry.
+    assert!(!is_qure_service_name("app-qure-3862005.scope"));
 }
 
 /// Creates one fake proc process with executable target and unified cgroup path.
@@ -366,6 +374,109 @@ fn scan_discovers_chatgpt_and_interpreter_cgroups() -> io::Result<()> {
         interpreter_application,
         interpreter_agent,
         interpreter_cli,
+    ];
+    expected.sort();
+    assert_eq!(targets, expected);
+    std::fs::remove_dir_all(&scratch)?;
+    return Ok(());
+}
+
+/// Discovers Qure's desktop service, its AppImage family, and the agents its CLI wrappers exec.
+#[test]
+fn scan_discovers_qure_cgroups() -> io::Result<()> {
+    let scratch = std::env::temp_dir().join(format!(
+        "wg-quicker-application-targets-qure-{}",
+        std::process::id()
+    ));
+    let cgroup_root = scratch.join("cgroup");
+    let app_slice = cgroup_root.join("users/app.slice");
+    let proc_root = scratch.join("proc");
+    std::fs::create_dir_all(&app_slice)?;
+    std::fs::create_dir(&proc_root)?;
+    let qure_service = app_slice.join("app-qure@abc.service");
+    let qure_runtime = app_slice.join("app-qure-runtime-65.scope");
+    let qure_chromium = app_slice.join("app-org.chromium.Chromium-66.scope");
+    let qure_wrapper_agent = app_slice.join("app-qure-browser-use-67.scope");
+    let qure_pytest = app_slice.join("app-qure-pytest-68.scope");
+    let unrelated = app_slice.join("app-org.example.Other.scope");
+    for path in [
+        &qure_service,
+        &qure_runtime,
+        &qure_chromium,
+        &qure_wrapper_agent,
+        &qure_pytest,
+        &unrelated,
+    ] {
+        std::fs::create_dir(path)?;
+    }
+    // Qure's AppImage runtime file is itself a live executable image.
+    create_process(
+        &proc_root,
+        "65",
+        "/home/user/AppImages/qure.appimage",
+        "0::/users/app.slice/app-qure-runtime-65.scope\n",
+    )?;
+    // The mounted Electron image keeps its exemption after Electron moves itself to its own scope.
+    create_process(
+        &proc_root,
+        "66",
+        "/tmp/.mount_qure.anGojH1/qure-ai-assistant",
+        "0::/users/app.slice/app-org.chromium.Chromium-66.scope\n",
+    )?;
+    // Qure's bundled CLI wrappers exec that same mounted image,
+    // so a browser agent in a cgroup of its own still matches by executable name.
+    create_process(
+        &proc_root,
+        "67",
+        "/tmp/.mount_qure.anGojH1/qure-ai-assistant",
+        "0::/users/app.slice/app-qure-browser-use-67.scope\n",
+    )?;
+    // Qure's bundled pytest runner extends the family prefix without a rename.
+    create_process(
+        &proc_root,
+        "68",
+        "/tmp/.mount_qure.anGojH1/resources/qure_pytest/qure_pytest",
+        "0::/users/app.slice/app-qure-pytest-68.scope\n",
+    )?;
+    // Qure's crash reporter carries a Chromium-generic name,
+    // so alone it stays tunnel-routed and bypasses only while sharing a matched cgroup.
+    create_process(
+        &proc_root,
+        "69",
+        "/tmp/.mount_qure.anGojH1/chrome_crashpad_handler",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    // A shorter stem, a prefixed lookalike, and a capitalized name stay tunnel-routed,
+    // while the family prefix deliberately accepts suffixes such as `qure-ai-assistant`.
+    create_process(
+        &proc_root,
+        "70",
+        "/usr/bin/quer",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    create_process(
+        &proc_root,
+        "71",
+        "/usr/bin/myqure",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    create_process(
+        &proc_root,
+        "72",
+        "/usr/bin/Qure",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    let targets = scan_application_targets(&ScanRoots {
+        app_slice: &app_slice,
+        proc_root: &proc_root,
+        cgroup_root: &cgroup_root,
+    })?;
+    let mut expected = vec![
+        qure_service,
+        qure_runtime,
+        qure_chromium,
+        qure_wrapper_agent,
+        qure_pytest,
     ];
     expected.sort();
     assert_eq!(targets, expected);
