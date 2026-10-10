@@ -91,6 +91,7 @@ import androidx.activity.enableEdgeToEdge
 // ```
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Pause
@@ -268,6 +269,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -1144,6 +1146,8 @@ private fun CoverPickerStudy(candidate: String, palette: CandidatePalette) {
         .substringBefore("-s")
     val triggerIsField = variant == "p1" || variant == "p2"
     val containerIsMenu = variant == "p1" || variant == "p3"
+    // P5 is P4 with the trigger showing that the picker is open.
+    val triggerShowsOpen = variant == "p5"
     val panelSurface = if (candidate.endsWith("-light")) {
         MaterialTheme.colorScheme.surfaceContainerHigh
     } else {
@@ -1154,6 +1158,7 @@ private fun CoverPickerStudy(candidate: String, palette: CandidatePalette) {
             CoverPickerTopRow(
                 palette = palette,
                 triggerIsField = triggerIsField,
+                triggerShowsOpen = triggerShowsOpen,
             )
             if (palette.railDivider) {
                 Box(
@@ -1212,6 +1217,7 @@ private fun CoverPickerTopRow(
     triggerIsField: Boolean,
     onToggle: (() -> Unit)? = null,
     pickerOpen: Boolean = true,
+    triggerShowsOpen: Boolean = false,
     triggerModifier: Modifier = Modifier,
     onSearch: (() -> Unit)? = null,
 ) {
@@ -1269,6 +1275,8 @@ private fun CoverPickerTopRow(
                 )
             }
         } else {
+            // What: While open, the title sits in a tonal container and its caret points up.
+            // Why: The open state shows by container and by caret direction, so it never rests on color alone.
             Row(
                 modifier = Modifier
                     .weight(1f)
@@ -1284,16 +1292,31 @@ private fun CoverPickerTopRow(
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = CURRENT_SUBDIRECTORY,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = null,
-                )
+                val showsOpen = triggerShowsOpen
+                Row(
+                    modifier = Modifier
+                        .heightIn(min = 48.dp)
+                        .then(
+                            if (showsOpen) Modifier.background(
+                                MaterialTheme.colorScheme.secondaryContainer,
+                                RoundedCornerShape(24.dp),
+                            ).padding(start = 16.dp, end = 8.dp) else Modifier,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = CURRENT_SUBDIRECTORY,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (showsOpen) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Icon(
+                        imageVector = if (showsOpen) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        tint = if (showsOpen) MaterialTheme.colorScheme.onSecondaryContainer else LocalContentColor.current,
+                    )
+                }
             }
         }
         if (onSearch != null) {
