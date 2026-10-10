@@ -372,7 +372,7 @@ function readCharacter(
   /**
    Character read here.
    */
-  const character = line[index] ?? '';
+  const character = line.charAt(index,);
   /**
    Count this character opens, if any, under the grammar.
    */

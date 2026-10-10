@@ -114,11 +114,21 @@ export function footnoteGraphFindings(
     },);
 
   /**
+   Keys more than one definition carries, read off the counts so no
+   definition needs a count looked up again.
+   */
+  const repeatedKeys = new Set<string>();
+  for (const [key, count,] of definitionCounts) {
+    if (count > 1)
+      repeatedKeys.add(key,);
+  }
+
+  /**
    Duplicate definitions: identifier defined more than once.
    */
   const duplicates = definitions
     .filter(function definedTwice(definition,): boolean {
-      return (definitionCounts.get(graphKey(definition,),) ?? 0) > 1;
+      return repeatedKeys.has(graphKey(definition,),);
     },)
     .map(function toFinding(definition,): FootnoteGraphFinding {
       return {

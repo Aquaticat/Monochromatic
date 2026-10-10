@@ -409,40 +409,25 @@ function movePositionPastDropped(
 }
 
 /**
- The position a parsed value carries, when it carries one.
+ What a tree walk follows from one node: its children and its attributes,
+ never its `data`, which holds the expression syntax trees that carry their
+ own coordinates.
 
- @param node - parsed value of unknown shape
+ NOT AN ATTRIBUTE'S VALUE. The one value that is an object, an expression,
+ is built with its type, its text and its `data` alone (`mdast-util-mdx-jsx`
+ 3.2.0, `exitMdxJsxTagAttributeValueExpression`), so it holds no position to
+ move and nothing else to visit.
 
- @returns Its `position`, absent where it has none
-
- @example
- ```ts
- const position = positionOfNode({ node: root.children[0], },);
- ```
- */
-function positionOfNode({ node, }: { readonly node: unknown; },): unknown {
-  if (!isJsonRecord(node,))
-    return undefined;
-  return node.position;
-}
-
-/**
- What a tree walk follows from one node: its children, its attributes and its
- value, wherever they are objects, never its `data`, which holds the
- expression syntax trees that carry their own coordinates.
-
- @param node - parsed node of unknown shape
+ @param node - parsed node or attribute
 
  @returns Members of the node still to visit
 
  @example
  ```ts
- const next = membersOf({ node: root.children[0], },);
+ const next = membersOf({ node: { children: [], }, },);
  ```
  */
-function membersOf({ node, }: { readonly node: unknown; },): readonly unknown[] {
-  if (!isJsonRecord(node,))
-    return [];
+function membersOf({ node, }: { readonly node: Readonly<Record<string, unknown>>; },): readonly unknown[] {
   /**
    Members found so far.
    */
@@ -459,12 +444,6 @@ function membersOf({ node, }: { readonly node: unknown; },): readonly unknown[] 
       for (const member of list)
         members.push(member,);
   }
-  /**
-   An attribute's value, which is an object where it is an expression.
-   */
-  const { value, } = node;
-  if (isJsonRecord(value,))
-    members.push(value,);
   return members;
 }
 
@@ -481,8 +460,11 @@ function membersOf({ node, }: { readonly node: unknown; },): readonly unknown[] 
 
  @param body - body the tree was parsed from
 
- @throws {@link Error} when a node of the tree carries no position, which the
- parser sets on every node it builds
+ @throws {@link Error} when the root carries no position, which the parser
+ sets on every node it builds, when the walk reaches a member that is no
+ object, and when a position is no object or a point of it lacks a numeric
+ line, column or offset; a node the autolink-literal transform built carries
+ no position and is passed over, since it holds none to move
 
  @example
  ```ts
@@ -516,10 +498,15 @@ function countDropped(
    */
   const pending: unknown[] = [...root.children,];
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (!isJsonRecord(node,))
+      throw new Error(
+        'unreachable: the walk reached a member that is no object, though it visits only the nodes of a parsed tree '
+          + 'and their attributes, and the parser builds each as an object',
+      );
     /**
-     The node's position, absent on a value that is no node.
+     The node's position, absent on a node the autolink-literal transform built.
      */
-    const position = positionOfNode({ node, },);
+    const { position, } = node;
     if (position !== undefined)
       movePositionPastDropped({
         position,

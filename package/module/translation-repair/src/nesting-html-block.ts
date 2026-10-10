@@ -95,7 +95,7 @@ function htmlBlockOpenedBy({ rest, }: { readonly rest: string; },): HtmlBlock {
    */
   const nameEnds = (nameEnd === lowered.length)
     || isOneOf({
-      character: lowered[nameEnd] ?? '',
+      character: lowered.charAt(nameEnd,),
       set: '> \t',
     },);
   if (RAW_TEXT_NAMES.has(lowered.slice(

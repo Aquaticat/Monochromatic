@@ -129,7 +129,7 @@ export function blanksEnd(
   },
 ): number {
   for (let index = from; index < line.length; index++) {
-    if (!isBlank({ character: line[index] ?? '', },))
+    if (!isBlank({ character: line.charAt(index,), },))
       return index;
   }
   return line.length;
@@ -165,7 +165,7 @@ export function characterRunEnd(
 ): number {
   for (let index = from; index < line.length; index++) {
     if (!isOneOf({
-      character: line[index] ?? '',
+      character: line.charAt(index,),
       set,
     },))
       return index;
@@ -217,10 +217,14 @@ export function indentationOf({ line, }: { readonly line: string; },): Indentati
 
  @param line - one line, without its newline
 
- @param index - where the marker may begin
+ @param index - where the marker may begin, at a digit, the one place
+ `markerEndOf` reads an ordered marker
 
  @returns Index after the digits, the delimiter and its blank, zero when no
  ordered marker begins there
+
+ @throws {@link Error} when no digit stands at the index, which its one
+ caller has already read
 
  @example
  ```ts
@@ -246,7 +250,7 @@ function orderedMarkerEnd(
     set: DIGITS,
   },);
   if (digitsEnd === index)
-    return 0;
+    throw new Error('unreachable: an ordered list marker was read where no digit stands, though markerEndOf reads one only at a digit',);
   if (!isOneOf({
     character: line[digitsEnd] ?? '',
     set: '.)',
@@ -258,7 +262,7 @@ function orderedMarkerEnd(
   const afterDelimiter = digitsEnd + 1;
   if (afterDelimiter === line.length)
     return afterDelimiter;
-  return isBlank({ character: line[afterDelimiter] ?? '', },) ? afterDelimiter : 0;
+  return isBlank({ character: line.charAt(afterDelimiter,), },) ? afterDelimiter : 0;
 }
 
 /**
@@ -291,7 +295,7 @@ function labelMarkerEnd(
     /**
      Character read inside the label.
      */
-    const character = line[cursor] ?? '';
+    const character = line.charAt(cursor,);
     if (character === ']')
       return (line[cursor + 1] === ':') ? (cursor + 2) : 0;
     if (isBlank({ character, },))
@@ -338,7 +342,7 @@ function markerEndOf(
     /**
      Whether the bullet ends the line or a blank follows it.
      */
-    const endsItem = ((index + 1) >= line.length) || isBlank({ character: line[index + 1] ?? '', },);
+    const endsItem = ((index + 1) >= line.length) || isBlank({ character: line.charAt(index + 1,), },);
     return endsItem ? (index + 1) : 0;
   }
   if (isOneOf({

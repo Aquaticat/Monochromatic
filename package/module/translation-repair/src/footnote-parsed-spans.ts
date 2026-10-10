@@ -86,8 +86,11 @@ export type ParsedSpan = {
 
  @param bounds - the link's own span
 
- @returns Spans in source order, the whole link when its label is empty, none
- when a label child carries no span of its own
+ @returns Spans in source order, the whole link when its label is empty
+
+ @throws {@link Error} when a label child carries no span of its own, which
+ no parse builds: only the autolink-literal transform builds a node without
+ one, and it never splits text inside a link or a link reference
 
  @example
  ```ts
@@ -117,9 +120,10 @@ function outsideLabelSpans(
      */
     const childBounds = nodeBounds(child,);
     if (childBounds === NO_NODE_BOUNDS)
-      // A label child the parser kept no position for cannot be told from
-      // the label's markup, so nothing in this link is skipped.
-      return [];
+      throw new Error(
+        'unreachable: a label child of a positioned link carries no position, though only the autolink-literal '
+          + 'transform builds a node without one, and it never splits text inside a link or a link reference',
+      );
     spans.push({
       start: from,
       end: childBounds.start,
@@ -615,6 +619,9 @@ export type FragmentReading = {
 
  @throws FootnoteRewriteError of the `position` kind when an unpositioned run
  cannot be placed in the raw text, a tree shape no input is known to build
+
+ @throws {@link Error} when a label child of a positioned link carries no
+ position, which no parse builds
 
  @example
  ```ts
