@@ -1535,6 +1535,16 @@ that is verification, not a decision for the user.
   and the remaining serial slices (6 preparation policies, 7 landing, 9 integration) follow.
   Heavy gates run through `~/temp/agent/gate-slot.ts` (four host-wide slots).
   At most five delegates run at once.
+- [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
+  the Windows checks and the release-artifact performance gates;
+  the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);
+  the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
+  mutation campaigns on non-core modules (hooks plumbing, auto-push, automatic maintenance, signals);
+  and the `pathBytes` field for non-UTF-8 paths in events.
+  Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
+  keep full mutation gating.
+  Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
+  Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).
