@@ -78,7 +78,7 @@ fn include_if_onbranch_reads_the_shadow_head() {
         .open(repo.join(".git").join("config"))
         .and_then(|mut file| {
             use std::io::Write;
-            file.write_all(b"[includeIf \"onbranch:main\"]\n\tpath = branch.config\n")
+            return file.write_all(b"[includeIf \"onbranch:main\"]\n\tpath = branch.config\n");
         })
         .expect("append include");
     let (shadow, _transaction, _capture) = create(repo.as_path(), root.as_path(), TRANSACTION);
@@ -167,7 +167,7 @@ fn sha256_and_reftable_repositories_get_matching_shadows() {
     git(sha256.as_path(), &["init", "--quiet", "--object-format=sha256", "--initial-branch=main"]);
     git(sha256.as_path(), &["commit", "--quiet", "--allow-empty", "--message=initial"]);
     let sha256_head: String = git_text(sha256.as_path(), &["rev-parse", "HEAD"]);
-    let (shadow, _transaction, capture) = create(sha256.as_path(), sha256.parent().unwrap(), "11111111-1111-4111-8111-111111111111");
+    let (shadow, _transaction, capture) = create(sha256.as_path(), sha256.parent().expect("fixture"), "11111111-1111-4111-8111-111111111111");
     assert_eq!(capture.layout.object_format, "sha256");
     assert_eq!(shadow_text(shadow.as_path(), &["rev-parse", "HEAD"]), sha256_head);
 
@@ -176,8 +176,8 @@ fn sha256_and_reftable_repositories_get_matching_shadows() {
     git(reftable.as_path(), &["init", "--quiet", "--ref-format=reftable", "--initial-branch=main"]);
     git(reftable.as_path(), &["commit", "--quiet", "--allow-empty", "--message=initial"]);
     let reftable_head: String = git_text(reftable.as_path(), &["rev-parse", "HEAD"]);
-    let (shadow, _transaction, capture) = create(reftable.as_path(), reftable.parent().unwrap(), "22222222-2222-4222-8222-222222222222");
-    assert_eq!(capture.layout.ref_format, RefFormat::Reftable);
-    assert_eq!(shadow_text(shadow.as_path(), &["rev-parse", "HEAD"]), reftable_head);
+    let (reftable_shadow, _reftable_transaction, reftable_capture) = create(reftable.as_path(), reftable.parent().expect("fixture"), "22222222-2222-4222-8222-222222222222");
+    assert_eq!(reftable_capture.layout.ref_format, RefFormat::Reftable);
+    assert_eq!(shadow_text(reftable_shadow.as_path(), &["rev-parse", "HEAD"]), reftable_head);
     remove(root.as_path());
 }

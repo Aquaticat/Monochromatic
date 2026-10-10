@@ -192,7 +192,7 @@ pub fn run_native_commit(
         command.env_remove(name);
     }
     let status: std::process::ExitStatus = command.status().map_err(|error| {
-        PreparationError::Git(GitFailure(format!("git commit could not start: {error}")))
+        return PreparationError::Git(GitFailure(format!("git commit could not start: {error}")));
     })?;
     return Ok(status.code().unwrap_or(1));
 }
@@ -220,17 +220,17 @@ pub fn read_prepared_commit(context: &GitContext, shadow: &Path) -> Result<Prepa
     .stdout;
     let header_end: usize = raw
         .windows(2)
-        .position(|window| window == b"\n\n")
+        .position(|window| { return window == b"\n\n"; })
         .unwrap_or(raw.len());
     let header: String = String::from_utf8_lossy(&raw[..header_end]).into_owned();
     let tree_oid: String = header
         .lines()
-        .find_map(|line| line.strip_prefix("tree "))
+        .find_map(|line| { return line.strip_prefix("tree "); })
         .unwrap_or("")
         .to_string();
     let signed: bool = header
         .lines()
-        .any(|line| line.starts_with("gpgsig ") || line.starts_with("gpgsig-sha256 "));
+        .any(|line| { return line.starts_with("gpgsig ") || line.starts_with("gpgsig-sha256 "); });
     return Ok(PreparedCommit {
         oid,
         tree_oid,
@@ -253,7 +253,7 @@ pub fn write_prepared_record(directory: &Path, record: &PreparedRecord) -> Resul
         directory.join(PREPARED_FILENAME).as_path(),
         encode_prepared(record).as_bytes(),
     )
-    .map_err(|error| PreparationError::Write(format!("writing {PREPARED_FILENAME} failed: {error}")));
+    .map_err(|error| { return PreparationError::Write(format!("writing {PREPARED_FILENAME} failed: {error}")); });
 }
 
 /// What:

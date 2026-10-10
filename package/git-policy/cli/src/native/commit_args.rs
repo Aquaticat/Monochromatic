@@ -79,8 +79,8 @@ const OPTIONAL_VALUE_LETTERS: [char; 2] = ['S', 'u'];
 /// findValueOptionIndex(token)
 /// ```
 fn find_value_option_index(letters: &[char]) -> Option<usize> {
-    for index in 1..letters.len() {
-        let option: String = format!("-{}", letters[index]);
+    for (index, letter) in letters.iter().enumerate().skip(1) {
+        let option: String = format!("-{letter}");
         if SHORT_VALUE_OPTIONS.contains(&option.as_str()) {
             return Some(index);
         }
@@ -127,14 +127,14 @@ fn normalise_inline_short(token: &str) -> Vec<String> {
 /// normaliseCommitArgs(['-amhello', 'file.ts']); // ['-a', '-m', 'hello', 'file.ts']
 /// ```
 pub fn normalise_commit_args(args: &[String]) -> Vec<String> {
-    let separator: Option<usize> = args.iter().position(|token| token == PATHSPEC_SEPARATOR);
+    let separator: Option<usize> = args.iter().position(|token| { return token == PATHSPEC_SEPARATOR; });
     let (region, tail): (&[String], &[String]) = match separator {
         Some(index) => (&args[..index], &args[index..]),
         None => (args, &[]),
     };
     let mut normalised: Vec<String> = region
         .iter()
-        .flat_map(|token| normalise_inline_short(token))
+        .flat_map(|token| { return normalise_inline_short(token); })
         .collect();
     normalised.extend(tail.iter().cloned());
     return normalised;
@@ -213,13 +213,13 @@ pub fn without_all_flag(commit_args: &[String]) -> Vec<String> {
             let letters: Vec<char> = token[1..].chars().collect();
             let value_start: Option<usize> = letters
                 .iter()
-                .position(|letter| OPTIONAL_VALUE_LETTERS.contains(letter));
+                .position(|letter| { return OPTIONAL_VALUE_LETTERS.contains(letter); });
             let flags: &[char] = match value_start {
                 Some(index) => &letters[..index],
                 None => &letters[..],
             };
             let mut cluster: String = String::from("-");
-            for letter in flags.iter().filter(|letter| **letter != 'a') {
+            for letter in flags.iter().filter(|letter| { return **letter != 'a'; }) {
                 cluster.push(*letter);
             }
             if let Some(index) = value_start {
@@ -268,13 +268,13 @@ pub fn private_explicit_commit_args(args: &[String], pathspecs: &[String]) -> Ve
         index += 1;
     }
     for pathspec in pathspecs.iter().rev() {
-        if let Some(position) = without_file.iter().rposition(|token| token == pathspec) {
+        if let Some(position) = without_file.iter().rposition(|token| { return token == pathspec; }) {
             without_file.remove(position);
         }
     }
     return without_file
         .into_iter()
-        .filter(|token| token != "--" && token != "-o" && token != "--only")
+        .filter(|token| { return token != "--" && token != "-o" && token != "--only"; })
         .collect();
 }
 
@@ -290,7 +290,7 @@ pub fn private_explicit_commit_args(args: &[String], pathspecs: &[String]) -> Ve
 pub fn private_selection_commit_args(args: &[String], pathspecs: &[String]) -> Vec<String> {
     return private_explicit_commit_args(args, pathspecs)
         .into_iter()
-        .filter(|token| !["-i", "-p", "--include", "--interactive", "--patch"].contains(&token.as_str()))
+        .filter(|token| { return !["-i", "-p", "--include", "--interactive", "--patch"].contains(&token.as_str()); })
         .collect();
 }
 

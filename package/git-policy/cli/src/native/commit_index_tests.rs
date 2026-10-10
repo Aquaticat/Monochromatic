@@ -67,7 +67,7 @@ fn copy_keeps_the_source_modification_time() {
     std::fs::File::options()
         .write(true)
         .open(&source)
-        .and_then(|file| file.set_times(FileTimes::new().set_modified(past)))
+        .and_then(|file| { return file.set_times(FileTimes::new().set_modified(past)); })
         .expect("age the source");
     let destination: PathBuf = root.join("copy");
     copy_index_with_timestamps(source.as_path(), destination.as_path()).expect("copy");

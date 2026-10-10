@@ -16,7 +16,7 @@ fn bare_shadow(root: &Path, ref_format: &str, real_objects: &Path) -> PathBuf {
             "--quiet",
             "--template=",
             format_argument.as_str(),
-            shadow.to_str().unwrap(),
+            shadow.to_str().expect("fixture"),
         ],
     );
     std::fs::write(shadow.join("objects").join("info").join("alternates"), format!("{}\n", real_objects.display())).expect("alternates");
@@ -65,11 +65,11 @@ fn real_refs_sort_by_bytes_and_mark_symbolic_refs() {
     let root: PathBuf = fixture("shadow-refs-list");
     let (repo, _head) = decorated_repository(root.as_path());
     let refs: Vec<RefSnapshotEntry> = list_real_refs(&git_context(), repo.as_path()).expect("refs");
-    let names: Vec<&str> = refs.iter().map(|entry| entry.name.as_str()).collect();
-    let zeta: usize = names.iter().position(|name| *name == "refs/heads/Zeta").expect("Zeta");
-    let main: usize = names.iter().position(|name| *name == "refs/heads/main").expect("main");
+    let names: Vec<&str> = refs.iter().map(|entry| { return entry.name.as_str(); }).collect();
+    let zeta: usize = names.iter().position(|name| { return *name == "refs/heads/Zeta"; }).expect("Zeta");
+    let main: usize = names.iter().position(|name| { return *name == "refs/heads/main"; }).expect("main");
     assert!(zeta < main, "{names:?}");
-    let alias = refs.iter().find(|entry| entry.name == "refs/heads/alias").expect("alias");
+    let alias = refs.iter().find(|entry| { return entry.name == "refs/heads/alias"; }).expect("alias");
     assert_eq!(alias.symref, "refs/heads/main");
     remove(root.as_path());
 }

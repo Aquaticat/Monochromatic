@@ -65,9 +65,9 @@ pub fn list_real_refs(context: &GitContext, cwd: &Path) -> Result<Vec<RefSnapsho
     request.without_prefix = true;
     let output: GitOutput = run_git_checked(context, &request)?;
     let text: &str = std::str::from_utf8(output.stdout.as_slice())
-        .map_err(|_| GitFailure(String::from("git for-each-ref returned non-UTF-8 output.")))?;
+        .map_err(|_| { return GitFailure(String::from("git for-each-ref returned non-UTF-8 output.")); })?;
     let mut refs: Vec<RefSnapshotEntry> = Vec::new();
-    for line in text.split('\n').filter(|line| !line.is_empty()) {
+    for line in text.split('\n').filter(|line| { return !line.is_empty(); }) {
         let fields: Vec<&str> = line.split('\0').collect();
         let [name, oid, symref] = fields.as_slice() else {
             return Err(GitFailure(format!(
@@ -80,7 +80,7 @@ pub fn list_real_refs(context: &GitContext, cwd: &Path) -> Result<Vec<RefSnapsho
             symref: String::from(*symref),
         });
     }
-    refs.sort_by(|left, right| left.name.as_bytes().cmp(right.name.as_bytes()));
+    refs.sort_by(|left, right| { return left.name.as_bytes().cmp(right.name.as_bytes()); });
     return Ok(refs);
 }
 
@@ -97,7 +97,7 @@ pub fn format_packed_refs(refs: &[RefSnapshotEntry], target_ref: &str) -> String
     let mut text: String = String::from(PACKED_REFS_HEADER);
     for entry in refs
         .iter()
-        .filter(|entry| entry.symref.is_empty() && entry.name != target_ref)
+        .filter(|entry| { return entry.symref.is_empty() && entry.name != target_ref; })
     {
         text.push_str(format!("{} {}\n", entry.oid, entry.name).as_str());
     }
@@ -176,13 +176,13 @@ pub fn write_shadow_refs(
                 PathBuf::from(shadow).join("packed-refs").as_path(),
                 format_packed_refs(&refs, target_ref).as_bytes(),
             )
-            .map_err(|error| GitFailure(format!("writing packed-refs failed: {error}")))?;
+            .map_err(|error| { return GitFailure(format!("writing packed-refs failed: {error}")); })?;
         }
         RefFormat::Reftable => {
             let mut lines: String = String::new();
             for entry in refs
                 .iter()
-                .filter(|entry| entry.symref.is_empty() && entry.name != target_ref)
+                .filter(|entry| { return entry.symref.is_empty() && entry.name != target_ref; })
             {
                 lines.push_str(format!("create {} {}\n", entry.name, entry.oid).as_str());
             }
@@ -191,7 +191,7 @@ pub fn write_shadow_refs(
             run_git_checked(context, &request)?;
         }
     }
-    for entry in refs.iter().filter(|entry| !entry.symref.is_empty()) {
+    for entry in refs.iter().filter(|entry| { return !entry.symref.is_empty(); }) {
         run_git_checked(
             context,
             &shadow_request(shadow, shadow, &["symbolic-ref", entry.name.as_str(), entry.symref.as_str()]),

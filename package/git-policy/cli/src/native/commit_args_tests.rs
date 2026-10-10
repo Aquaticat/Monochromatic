@@ -4,7 +4,7 @@ use super::*;
 
 /// Builds owned argument lists from string literals.
 fn args(items: &[&str]) -> Vec<String> {
-    return items.iter().map(|item| String::from(*item)).collect();
+    return items.iter().map(|item| { return String::from(*item); }).collect();
 }
 
 /// A cluster carrying a value is split into flags and the value token; a pathspec tail is kept verbatim.

@@ -41,7 +41,7 @@ fn captures_take_increasing_sequences_under_one_identity() {
         std::fs::read_dir(&store)
             .expect("store")
             .filter_map(Result::ok)
-            .filter(|entry| entry.file_name().to_string_lossy().ends_with(".tmp"))
+            .filter(|entry| { return entry.file_name().to_string_lossy().ends_with(".tmp"); })
             .count(),
         0,
         "no temporary sequence file is left behind"
@@ -56,7 +56,7 @@ fn a_failing_capture_releases_the_lock() {
     let repo: PathBuf = repository(root.as_path(), "repo");
     let git_dir: PathBuf = repo.join(".git");
     let failed: Result<(CaptureStamp, ()), CaptureOrderError> = capture_in_order(git_dir.as_path(), || {
-        Err(CaptureOrderError::Write(String::from("boom")))
+        return Err(CaptureOrderError::Write(String::from("boom")));
     });
     assert!(matches!(failed, Err(CaptureOrderError::Write(text)) if text == "boom"));
     assert!(!git_dir.join(CAPTURE_STORE_NAME).join(CAPTURE_LOCK_NAME).exists());

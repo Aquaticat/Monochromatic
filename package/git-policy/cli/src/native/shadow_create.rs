@@ -85,10 +85,8 @@ fn set_private_file(_path: &Path) -> std::io::Result<()> {
 /// ```
 fn create_parent(shadow: &Path) -> std::io::Result<()> {
     let parent: &Path = shadow.parent().unwrap_or(shadow);
-    if let Some(grandparent) = parent.parent() {
-        if !grandparent.exists() {
-            std::fs::create_dir_all(grandparent)?;
-        }
+    if let Some(grandparent) = parent.parent().filter(|grandparent| { return !grandparent.exists(); }) {
+        std::fs::create_dir_all(grandparent)?;
     }
     if !parent.exists() {
         create_private_directory(parent)?;
@@ -116,7 +114,7 @@ pub fn create_shadow_repository(
     let layout = &capture.layout;
     let shadow: PathBuf = shadow_repository_path(layout.common_dir.as_path(), transaction_id);
     create_parent(shadow.as_path())
-        .map_err(|error| GitFailure(format!("creating {} failed: {error}", shadow.display())))?;
+        .map_err(|error| { return GitFailure(format!("creating {} failed: {error}", shadow.display())); })?;
     let format_argument: String = format!("--object-format={}", layout.object_format);
     let mut arguments: Vec<String> = vec![
         String::from("init"),
@@ -131,22 +129,22 @@ pub fn create_shadow_repository(
     arguments.push(shadow.display().to_string());
     let mut init: GitRequest = GitRequest::new(layout.common_dir.as_path(), &arguments);
     init.without_prefix = true;
-    init.unset = REPOSITORY_REDIRECT_VARIABLES.iter().map(|name| OsString::from(*name)).collect();
+    init.unset = REPOSITORY_REDIRECT_VARIABLES.iter().map(|name| { return OsString::from(*name); }).collect();
     run_git_checked(context, &init)?;
     set_private_directory_mode(shadow.as_path())
-        .map_err(|error| GitFailure(format!("protecting {} failed: {error}", shadow.display())))?;
+        .map_err(|error| { return GitFailure(format!("protecting {} failed: {error}", shadow.display())); })?;
     let format = read_repository_format(context, layout.common_dir.as_path())?;
     let config_text: String =
         format_shadow_config(&format, layout.common_dir.as_path(), layout.repository_root.as_path());
     overwrite_private(shadow.join("config").as_path(), config_text.as_bytes())
-        .map_err(|error| GitFailure(format!("writing the shadow config failed: {error}")))?;
+        .map_err(|error| { return GitFailure(format!("writing the shadow config failed: {error}")); })?;
     overwrite_private(
         shadow.join("objects").join("info").join("alternates").as_path(),
         format!("{}\n", layout.object_directory.display()).as_bytes(),
     )
-    .map_err(|error| GitFailure(format!("writing the shadow alternates failed: {error}")))?;
+    .map_err(|error| { return GitFailure(format!("writing the shadow alternates failed: {error}")); })?;
     link_shadow_entries(shadow.as_path(), layout.common_dir.as_path(), layout.git_dir.as_path())
-        .map_err(|error| GitFailure(format!("linking the shadow entries failed: {error}")))?;
+        .map_err(|error| { return GitFailure(format!("linking the shadow entries failed: {error}")); })?;
     copy_conclusion_state(
         context,
         cwd,

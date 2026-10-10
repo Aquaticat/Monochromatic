@@ -113,8 +113,8 @@ fn link_directory_entries(
     shadow_directory: &Path,
     skip: impl Fn(&str) -> bool,
 ) -> std::io::Result<()> {
-    for entry in std::fs::read_dir(source_directory)? {
-        let entry: std::fs::DirEntry = entry?;
+    for entry_result in std::fs::read_dir(source_directory)? {
+        let entry: std::fs::DirEntry = entry_result?;
         let name: String = entry.file_name().to_string_lossy().into_owned();
         if skip(name.as_str()) {
             continue;
@@ -163,7 +163,7 @@ pub fn link_shadow_entries(shadow: &Path, common_dir: &Path, git_dir: &Path) -> 
     let mixed_info: bool =
         git_dir != common_dir && regular_file_exists(per_worktree_sparse.as_path())?;
     link_directory_entries(common_dir, shadow, |name| {
-        is_private_shadow_entry(name) || (mixed_info && name == "info")
+        return is_private_shadow_entry(name) || (mixed_info && name == "info");
     })?;
     let worktree_config: PathBuf = git_dir.join("config.worktree");
     if regular_file_exists(worktree_config.as_path())? {
@@ -178,7 +178,7 @@ pub fn link_shadow_entries(shadow: &Path, common_dir: &Path, git_dir: &Path) -> 
     set_private_directory(shadow_info.as_path())?;
     let shared_info: PathBuf = common_dir.join("info");
     match link_directory_entries(shared_info.as_path(), shadow_info.as_path(), |name| {
-        name == "sparse-checkout"
+        return name == "sparse-checkout";
     }) {
         Ok(()) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}

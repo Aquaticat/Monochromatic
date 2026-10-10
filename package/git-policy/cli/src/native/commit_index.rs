@@ -157,7 +157,7 @@ pub fn initialize_commit_index(
     indexes: &CaptureIndexes,
     selection: &IndexSelection,
 ) -> Result<(), GitFailure> {
-    let copy_failure = |error: std::io::Error| GitFailure(format!("copying the index failed: {error}"));
+    let copy_failure = |error: std::io::Error| { return GitFailure(format!("copying the index failed: {error}")); };
     copy_index_with_timestamps(real_index, indexes.captured_index.as_path()).map_err(copy_failure)?;
     if selection.mode == TransactionMode::Index {
         copy_index_with_timestamps(indexes.captured_index.as_path(), indexes.commit_index.as_path())
@@ -219,7 +219,7 @@ pub fn write_private_tree(
         &[String::from("write-tree")],
     )?;
     let text: &str = std::str::from_utf8(output.stdout.as_slice())
-        .map_err(|_| GitFailure(String::from("Git returned non-UTF-8 output.")))?;
+        .map_err(|_| { return GitFailure(String::from("Git returned non-UTF-8 output.")); })?;
     let oid: &str = text.trim();
     if oid.is_empty() {
         return Err(GitFailure(String::from("Git returned empty private tree identity.")));
@@ -246,7 +246,7 @@ pub fn list_unmerged_index_paths(
         &indexed_request(cwd, &["ls-files", "--unmerged", "-z"], Some(commit_index), None),
     )?;
     let text: &str = std::str::from_utf8(output.stdout.as_slice())
-        .map_err(|_| GitFailure(String::from("Git returned non-UTF-8 output.")))?;
+        .map_err(|_| { return GitFailure(String::from("Git returned non-UTF-8 output.")); })?;
     let mut paths: Vec<String> = Vec::new();
     for record in text.split('\0') {
         let Some(tab) = record.find('\t') else {
@@ -286,10 +286,10 @@ pub fn list_changed_index_paths(
         ),
     )?;
     let text: &str = std::str::from_utf8(output.stdout.as_slice())
-        .map_err(|_| GitFailure(String::from("Git returned non-UTF-8 output.")))?;
+        .map_err(|_| { return GitFailure(String::from("Git returned non-UTF-8 output.")); })?;
     return Ok(text
         .split('\0')
-        .filter(|path| !path.is_empty())
+        .filter(|path| { return !path.is_empty(); })
         .map(String::from)
         .collect());
 }
@@ -356,12 +356,12 @@ pub fn prepare_interactive_selection(
         .env("GIT_OBJECT_DIRECTORY", object_directory);
     let status: std::process::ExitStatus = command
         .status()
-        .map_err(|error| GitFailure(format!("git {} could not start: {error}", arguments.join(" "))))?;
+        .map_err(|error| { return GitFailure(format!("git {} could not start: {error}", arguments.join(" "))); })?;
     if !status.success() {
         return Err(GitFailure(format!(
             "git {} exited {}",
             arguments.join(" "),
-            status.code().map_or_else(|| String::from("by signal"), |code| code.to_string())
+            status.code().map_or_else(|| { return String::from("by signal"); }, |code| { return code.to_string(); })
         )));
     }
     return Ok(());

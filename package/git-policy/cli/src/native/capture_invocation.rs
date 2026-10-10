@@ -107,7 +107,7 @@ pub struct InvocationCapture {
 fn decoded_trimmed(output: &GitOutput) -> Result<String, GitFailure> {
     // `from_utf8` reports invalid bytes instead of replacing them.
     let text: &str = std::str::from_utf8(output.stdout.as_slice())
-        .map_err(|_| GitFailure(String::from("Git returned non-UTF-8 output.")))?;
+        .map_err(|_| { return GitFailure(String::from("Git returned non-UTF-8 output.")); })?;
     return Ok(String::from(trim_javascript(text)));
 }
 
@@ -346,7 +346,7 @@ pub fn capture_invocation_layout(
     };
     let empty_tree: GitOutput = required(context, cwd, &["hash-object", "-t", "tree", "--stdin"])?;
     let repository_root: PathBuf = std::fs::canonicalize(absolute_reported(cwd, &lines, 0)?)
-        .map_err(|error| GitFailure(format!("repository root is unreadable: {error}")))?;
+        .map_err(|error| { return GitFailure(format!("repository root is unreadable: {error}")); })?;
     return Ok(InvocationLayout {
         symbolic_head,
         target_ref,

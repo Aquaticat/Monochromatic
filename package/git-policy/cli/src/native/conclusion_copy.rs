@@ -43,8 +43,8 @@ use std::path::{Path, PathBuf};
 /// ```
 fn copy_tree(source: &Path, destination: &Path) -> std::io::Result<()> {
     create_private_directory(destination)?;
-    for entry in std::fs::read_dir(source)? {
-        let entry: std::fs::DirEntry = entry?;
+    for entry_result in std::fs::read_dir(source)? {
+        let entry: std::fs::DirEntry = entry_result?;
         let target: PathBuf = destination.join(entry.file_name());
         let kind: std::fs::FileType = entry.file_type()?;
         if kind.is_dir() {
@@ -93,9 +93,9 @@ pub fn copy_conclusion_state(
     transaction_directory: &Path,
     ref_format: RefFormat,
 ) -> Result<(), GitFailure> {
-    let io = |step: &str, error: std::io::Error| GitFailure(format!("{step} failed: {error}"));
+    let io = |step: &str, error: std::io::Error| { return GitFailure(format!("{step} failed: {error}")); };
     let copies: PathBuf = transaction_directory.join(CONCLUSION_COPY_DIRECTORY);
-    create_private_directory(copies.as_path()).map_err(|error| io("creating the conclusion copies", error))?;
+    create_private_directory(copies.as_path()).map_err(|error| { return io("creating the conclusion copies", error); })?;
     // Store-held values in the order of the copied names, as the incumbent's JSON record lists them.
     let mut store_held: ObjectWriter = ObjectWriter::new();
     for name in CONCLUSION_STATE_FILES {
@@ -110,27 +110,27 @@ pub fn copy_conclusion_state(
             continue;
         }
         let Some(bytes) = read_optional(git_dir.join(name).as_path())
-            .map_err(|error| GitFailure(error.0))?
+            .map_err(|error| { return GitFailure(error.0); })?
         else {
             continue;
         };
         write_private_file(shadow.join(name).as_path(), bytes.as_slice())
-            .map_err(|error| io("copying a conclusion entry into the shadow", error))?;
+            .map_err(|error| { return io("copying a conclusion entry into the shadow", error); })?;
         write_private_file(copies.join(name).as_path(), bytes.as_slice())
-            .map_err(|error| io("copying a conclusion entry for comparison", error))?;
+            .map_err(|error| { return io("copying a conclusion entry for comparison", error); })?;
     }
     let record: String = store_held.finish();
     write_private_file(
         copies.join(STORE_RECORD_FILENAME).as_path(),
         format!("{record}\n").as_bytes(),
     )
-    .map_err(|error| io("writing the store-held record", error))?;
+    .map_err(|error| { return io("writing the store-held record", error); })?;
     let sequencer: PathBuf = git_dir.join(SEQUENCER_DIRECTORY);
-    if path_present(sequencer.as_path()).map_err(|error| GitFailure(error.0))? {
+    if path_present(sequencer.as_path()).map_err(|error| { return GitFailure(error.0); })? {
         copy_tree(sequencer.as_path(), shadow.join(SEQUENCER_DIRECTORY).as_path())
-            .map_err(|error| io("copying the sequencer into the shadow", error))?;
+            .map_err(|error| { return io("copying the sequencer into the shadow", error); })?;
         copy_tree(sequencer.as_path(), copies.join(SEQUENCER_DIRECTORY).as_path())
-            .map_err(|error| io("copying the sequencer for comparison", error))?;
+            .map_err(|error| { return io("copying the sequencer for comparison", error); })?;
     }
     return Ok(());
 }

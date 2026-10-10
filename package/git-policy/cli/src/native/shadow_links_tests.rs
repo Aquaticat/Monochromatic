@@ -40,7 +40,7 @@ fn linked_worktree_copies_its_per_worktree_entries() {
     let linked: PathBuf = root.join("linked");
     git(
         repo.as_path(),
-        &["worktree", "add", "--quiet", "-b", "feature", linked.to_str().unwrap()],
+        &["worktree", "add", "--quiet", "-b", "feature", linked.to_str().expect("fixture")],
     );
     let common: PathBuf = repo.join(".git");
     let git_dir: PathBuf = common.join("worktrees").join("linked");

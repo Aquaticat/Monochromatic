@@ -93,7 +93,7 @@ fn valueless_extension_reads_as_true_and_other_keys_are_skipped() {
         .open(common.join("config"))
         .and_then(|mut file| {
             use std::io::Write;
-            file.write_all(b"[extensions]\n\tworktreeConfig\n[user]\n\tname = Someone\n")
+            return file.write_all(b"[extensions]\n\tworktreeConfig\n[user]\n\tname = Someone\n");
         })
         .expect("append");
     let format: RepositoryFormat =
@@ -101,6 +101,6 @@ fn valueless_extension_reads_as_true_and_other_keys_are_skipped() {
     assert!(format
         .extensions
         .contains(&(String::from("worktreeconfig"), String::from("true"))));
-    assert!(format.extensions.iter().all(|(name, _)| !name.starts_with("user")));
+    assert!(format.extensions.iter().all(|(name, _)| { return !name.starts_with("user"); }));
     remove(root.as_path());
 }

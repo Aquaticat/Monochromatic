@@ -23,7 +23,7 @@ fn branch_layout_names_the_branch_and_the_store() {
     assert_eq!(layout.ref_format, RefFormat::Files);
     assert_eq!(layout.object_format, "sha1");
     assert_eq!(layout.empty_tree_oid, SHA1_EMPTY_TREE);
-    assert_eq!(layout.repository_root, std::fs::canonicalize(&repo).unwrap());
+    assert_eq!(layout.repository_root, std::fs::canonicalize(&repo).expect("fixture"));
     assert_eq!(layout.git_dir, repo.join(".git"));
     assert_eq!(layout.common_dir, repo.join(".git"));
     assert_eq!(layout.real_index_path, repo.join(".git").join("index"));
@@ -60,19 +60,19 @@ fn conclusion_markers_decide_the_kind() {
         resolve_conclusion_kind(&context, repo.as_path(), true),
         Ok(Conclusion::Amend)
     );
-    std::fs::write(repo.join(".git").join("MERGE_HEAD"), format!("{head}\n")).unwrap();
+    std::fs::write(repo.join(".git").join("MERGE_HEAD"), format!("{head}\n")).expect("fixture");
     assert_eq!(
         resolve_conclusion_kind(&context, repo.as_path(), false),
         Ok(Conclusion::Merge)
     );
-    std::fs::remove_file(repo.join(".git").join("MERGE_HEAD")).unwrap();
-    std::fs::write(repo.join(".git").join("CHERRY_PICK_HEAD"), format!("{head}\n")).unwrap();
+    std::fs::remove_file(repo.join(".git").join("MERGE_HEAD")).expect("fixture");
+    std::fs::write(repo.join(".git").join("CHERRY_PICK_HEAD"), format!("{head}\n")).expect("fixture");
     assert_eq!(
         resolve_conclusion_kind(&context, repo.as_path(), false),
         Ok(Conclusion::CherryPick)
     );
-    std::fs::remove_file(repo.join(".git").join("CHERRY_PICK_HEAD")).unwrap();
-    std::fs::write(repo.join(".git").join("REVERT_HEAD"), format!("{head}\n")).unwrap();
+    std::fs::remove_file(repo.join(".git").join("CHERRY_PICK_HEAD")).expect("fixture");
+    std::fs::write(repo.join(".git").join("REVERT_HEAD"), format!("{head}\n")).expect("fixture");
     assert_eq!(
         resolve_conclusion_kind(&context, repo.as_path(), false),
         Ok(Conclusion::Revert)
@@ -85,7 +85,7 @@ fn conclusion_markers_decide_the_kind() {
 fn garbage_marker_is_not_a_conclusion() {
     let root: PathBuf = fixture("capture-invocation-garbage-marker");
     let repo: PathBuf = repository(root.as_path(), "repo");
-    std::fs::write(repo.join(".git").join("MERGE_HEAD"), "not-an-object\n").unwrap();
+    std::fs::write(repo.join(".git").join("MERGE_HEAD"), "not-an-object\n").expect("fixture");
     assert_eq!(
         resolve_conclusion_kind(&git_context(), repo.as_path(), false),
         Ok(Conclusion::None)
@@ -133,14 +133,14 @@ fn linked_worktree_separates_git_dir_from_common_dir() {
             "--quiet",
             "-b",
             "feature",
-            linked.to_str().unwrap(),
+            linked.to_str().expect("fixture"),
         ],
     );
     let layout: InvocationLayout =
         capture_invocation_layout(&git_context(), linked.as_path(), false).expect("layout");
     assert_eq!(layout.common_dir, repo.join(".git"));
     assert_eq!(layout.git_dir, repo.join(".git").join("worktrees").join("linked"));
-    assert_eq!(layout.repository_root, std::fs::canonicalize(&linked).unwrap());
+    assert_eq!(layout.repository_root, std::fs::canonicalize(&linked).expect("fixture"));
     assert_ne!(layout.git_dir, layout.common_dir);
     remove(root.as_path());
 }

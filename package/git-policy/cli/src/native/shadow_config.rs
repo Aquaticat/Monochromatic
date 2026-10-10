@@ -83,9 +83,9 @@ pub fn read_repository_format(
     let output = run_git_checked(context, &request)?;
     let mut version: Option<String> = None;
     let mut extensions: Vec<(String, String)> = Vec::new();
-    for entry in output.stdout.split(|byte| *byte == 0).filter(|entry| !entry.is_empty()) {
+    for entry in output.stdout.split(|byte| { return *byte == 0; }).filter(|entry| { return !entry.is_empty(); }) {
         // A key without a value line is a valueless boolean, which reads as `true`.
-        let (key, value): (&[u8], &[u8]) = match entry.iter().position(|byte| *byte == b'\n') {
+        let (key, value): (&[u8], &[u8]) = match entry.iter().position(|byte| { return *byte == b'\n'; }) {
             Some(newline) => (&entry[..newline], &entry[newline + 1..]),
             None => (entry, &b"true"[..]),
         };
@@ -99,7 +99,7 @@ pub fn read_repository_format(
         }
     }
     return Ok(RepositoryFormat {
-        version: version.unwrap_or_else(|| String::from("0")),
+        version: version.unwrap_or_else(|| { return String::from("0"); }),
         extensions,
     });
 }

@@ -131,11 +131,11 @@ fn ensure_worktree_id(store: &Path) -> Result<String, CaptureError> {
         }
         return Ok(String::from(recorded));
     }
-    let identity: String = random_uuid().map_err(|error| CaptureError(error.0))?;
+    let identity: String = random_uuid().map_err(|error| { return CaptureError(error.0); })?;
     write_private_file(path.as_path(), format!("{identity}\n").as_bytes())
-        .map_err(|error| CaptureError(format!("writing {} failed: {error}", path.display())))?;
+        .map_err(|error| { return CaptureError(format!("writing {} failed: {error}", path.display())); })?;
     sync_directory(store)
-        .map_err(|error| CaptureError(format!("syncing {} failed: {error}", store.display())))?;
+        .map_err(|error| { return CaptureError(format!("syncing {} failed: {error}", store.display())); })?;
     return Ok(identity);
 }
 
@@ -152,17 +152,17 @@ fn ensure_worktree_id(store: &Path) -> Result<String, CaptureError> {
 pub fn write_sequence(store: &Path, sequence: i64) -> Result<(), CaptureError> {
     let temporary: PathBuf = store.join(format!(
         "{SEQUENCE_FILENAME}.{}.tmp",
-        random_uuid().map_err(|error| CaptureError(error.0))?
+        random_uuid().map_err(|error| { return CaptureError(error.0); })?
     ));
     let written: Result<(), CaptureError> = write_private_file(
         temporary.as_path(),
         format!("{sequence}\n").as_bytes(),
     )
-    .map_err(|error| CaptureError(format!("writing {} failed: {error}", temporary.display())))
+    .map_err(|error| { return CaptureError(format!("writing {} failed: {error}", temporary.display())); })
     .and_then(|()| {
-        std::fs::rename(&temporary, store.join(SEQUENCE_FILENAME)).map_err(|error| {
-            CaptureError(format!("renaming {} failed: {error}", temporary.display()))
-        })
+        return std::fs::rename(&temporary, store.join(SEQUENCE_FILENAME)).map_err(|error| {
+            return CaptureError(format!("renaming {} failed: {error}", temporary.display()));
+        });
     });
     if let Err(error) = written {
         // Removing the temporary file is best effort; the original failure is the answer.
@@ -170,7 +170,7 @@ pub fn write_sequence(store: &Path, sequence: i64) -> Result<(), CaptureError> {
         return Err(error);
     }
     return sync_directory(store)
-        .map_err(|error| CaptureError(format!("syncing {} failed: {error}", store.display())));
+        .map_err(|error| { return CaptureError(format!("syncing {} failed: {error}", store.display())); });
 }
 
 /// What:
@@ -240,10 +240,10 @@ pub fn write_captured_record(directory: &Path, record: &CapturedRecord) -> Resul
         encode_captured_record(record).as_bytes(),
     )
     .map_err(|error| {
-        CaptureOrderError::Write(format!(
+        return CaptureOrderError::Write(format!(
             "writing {} failed: {error}",
             directory.join(CAPTURED_FILENAME).display()
-        ))
+        ));
     });
 }
 
@@ -259,7 +259,7 @@ pub fn write_captured_record(directory: &Path, record: &CapturedRecord) -> Resul
 /// decodeLatin1(bytes)
 /// ```
 fn latin1(bytes: &[u8]) -> String {
-    return bytes.iter().map(|byte| char::from(*byte)).collect();
+    return bytes.iter().map(|byte| { return char::from(*byte); }).collect();
 }
 
 /// What:
@@ -273,8 +273,8 @@ fn latin1(bytes: &[u8]) -> String {
 /// ```
 fn nul_records(output: &[u8]) -> Vec<&[u8]> {
     return output
-        .split(|byte| *byte == 0)
-        .filter(|record| !record.is_empty())
+        .split(|byte| { return *byte == 0; })
+        .filter(|record| { return !record.is_empty(); })
         .collect();
 }
 
@@ -343,7 +343,7 @@ fn staged_entries(
     let mut entries: BTreeMap<Vec<u8>, String> = BTreeMap::new();
     for record in nul_records(output.stdout.as_slice()) {
         // Git always separates the entry from its path with a tab, so a missing tab cannot come from Git.
-        let Some(tab) = record.iter().position(|byte| *byte == b'\t') else {
+        let Some(tab) = record.iter().position(|byte| { return *byte == b'\t'; }) else {
             return Err(GitFailure(String::from("git ls-files --stage returned an unparsable record.")));
         };
         let staged: &mut String = entries.entry(record[tab + 1..].to_vec()).or_default();
@@ -409,7 +409,7 @@ pub fn list_worktree_captured_paths(
             changed.insert(path.clone());
         }
     }
-    return Ok(changed.iter().map(|path| latin1(path.as_slice())).collect());
+    return Ok(changed.iter().map(|path| { return latin1(path.as_slice()); }).collect());
 }
 
 /// What:

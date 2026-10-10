@@ -53,7 +53,7 @@ fn prepared_fixture(root: &Path, hook_script: Option<(&str, &str)>) -> Fixture {
         .open(repo.join(".git").join("config"))
         .and_then(|mut file| {
             use std::io::Write;
-            file.write_all(b"[includeIf \"onbranch:main\"]\n\tpath = branch.config\n")
+            return file.write_all(b"[includeIf \"onbranch:main\"]\n\tpath = branch.config\n");
         })
         .expect("include config");
     std::fs::write(repo.join("a.txt"), "changed\n").expect("change a");
@@ -110,9 +110,9 @@ fn prepared_fixture(root: &Path, hook_script: Option<(&str, &str)>) -> Fixture {
 fn prepare(fixture: &Fixture, commit_args: &[&str]) -> Result<PreparedCommit, PreparationError> {
     let hooks: PreparationHooks = PreparationHooks {
         directory: fixture.transaction.join("hooks"),
-        silenced_events: INCUMBENT_SILENCED_EVENTS.iter().map(|event| String::from(*event)).collect(),
+        silenced_events: INCUMBENT_SILENCED_EVENTS.iter().map(|event| { return String::from(*event); }).collect(),
     };
-    let commit_arguments: Vec<String> = commit_args.iter().map(|arg| String::from(*arg)).collect();
+    let commit_arguments: Vec<String> = commit_args.iter().map(|arg| { return String::from(*arg); }).collect();
     let request: PreparationRequest = PreparationRequest {
         capture: &fixture.capture,
         shadow: fixture.shadow.as_path(),
