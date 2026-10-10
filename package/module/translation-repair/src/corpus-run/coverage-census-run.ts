@@ -291,7 +291,7 @@ export async function runCoverageCensus(
   // A CLEAN EXIT WITH NO PASS MARKER RAN NO TEST, whatever kept it from
   // starting one. Counted, it printed a census beside "0 passes" whose every
   // line is about a suite that never ran; until 2026-10-10 it was counted
-  // (ledger B313).
+  // (ledger B384).
   if (suite.passes === 0)
     throw new StatedRefusalError({
       says: `the suite printed no PASS marker, so it ran no test; its log is ${logPath}; a census of a suite `

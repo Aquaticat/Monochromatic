@@ -75,7 +75,7 @@ export type FidelityProbeSink = {
  reference read from the clone fails its reviewed hashes, so it is restated
  here, at the one site where it is the operator's, with its own sentence and
  itself as the cause. Until 2026-10-10 it printed as a fault of the command at
- exit 5, under frames (ledger B313). One refusal under the same operation is
+ exit 5, under frames (ledger B382). One refusal under the same operation is
  not the operator's: an empty checked-in manifest, or one repeating an id,
  which `selectReviewedFidelitySpecs` refuses as well and this restates too.
 
