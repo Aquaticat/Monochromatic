@@ -490,6 +490,9 @@ pub mod replay_subsumption_text;
 /// Replay: subsumption rules and the synthetic merge base (`replay_subsumption`).
 pub mod replay_subsumption;
 
+/// Replay: capture-order history and the per-path decisions from the transaction's and landed records (`replay_capture_history`).
+pub mod replay_capture_history;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
