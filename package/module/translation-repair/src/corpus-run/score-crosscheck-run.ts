@@ -1,4 +1,5 @@
 import { artifactsDirOf, } from './artifact-file-name.ts';
+import type { PoolPolicy, } from './artifact-pool.ts';
 import { gatherAttributionEntries, } from './attribution-read.ts';
 import {
   buildCrosscheckCensus,
@@ -34,21 +35,26 @@ import {
 
  @param roster - models available to judge, which decides who may judge each claim
 
+ @param policy - generation policy the entry read from its environment
+ (`readPoolPolicy`), handed to the pool
+
  @throws {@link StatedRefusalError} when the runs directory holds no readable
  `artifacts` directory, after the first line has named it
 
  @example
  ```ts
- await printCrosscheck({ runsDir, roster: RUN_MODELS.judgeModelIds, },);
+ await printCrosscheck({ runsDir, roster: RUN_MODELS.judgeModelIds, policy, },);
  ```
  */
 export async function printCrosscheck(
   {
     runsDir,
     roster,
+    policy,
   }: {
     readonly runsDir: string;
     readonly roster: readonly RosterModelId[];
+    readonly policy: PoolPolicy;
   },
 ): Promise<void> {
   /**
@@ -71,7 +77,10 @@ export async function printCrosscheck(
   const {
     entries,
     malformed,
-  } = await gatherAttributionEntries({ artifactsDir, },);
+  } = await gatherAttributionEntries({
+    artifactsDir,
+    policy,
+  },);
 
   printCrosscheckMalformed({ malformed, },);
 

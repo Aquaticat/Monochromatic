@@ -15,6 +15,7 @@ import {
   poolLines,
   wroteLine,
 } from './damage-sample-lines.ts';
+import type { PoolPolicy, } from './artifact-pool.ts';
 import { collectShippedRegions, } from './damage-sample-pool.ts';
 import {
   formatVerifyManifest,
@@ -55,6 +56,9 @@ import { writeSheetPair, } from './sheet-write.ts';
 
  @param l - logger the probe's lines are written to, tagged here
 
+ @param policy - generation policy the entry read from its environment
+ (`readPoolPolicy`), handed to the pool
+
  @throws {@link StatedRefusalError} When the settled entries ship no replacement
  over an archive wording to draw from, or no prober answered for any region
  drawn, since a sheet with no item would be kept and refuse the next run; and
@@ -62,7 +66,7 @@ import { writeSheetPair, } from './sheet-write.ts';
 
  @example
  ```ts
- await sampleDamage({ runsDir, seed: 'damage-round-one', openClient: createRunClient, proberModelIds, perCallTimeoutMs: 360_000, l, },);
+ await sampleDamage({ runsDir, seed: 'damage-round-one', openClient: createRunClient, proberModelIds, perCallTimeoutMs: 360_000, l, policy, },);
  ```
  */
 export async function sampleDamage(
@@ -73,6 +77,7 @@ export async function sampleDamage(
     proberModelIds,
     perCallTimeoutMs,
     l,
+    policy,
   }: {
     readonly runsDir: string;
     readonly seed: string;
@@ -80,6 +85,7 @@ export async function sampleDamage(
     readonly proberModelIds: readonly RosterModelId[];
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly policy: PoolPolicy;
   },
 ): Promise<void> {
   /**
@@ -88,7 +94,10 @@ export async function sampleDamage(
   const {
     regions: pool,
     filledWithoutIncumbent,
-  } = await collectShippedRegions({ runsDir, },);
+  } = await collectShippedRegions({
+    runsDir,
+    policy,
+  },);
   if (pool.length === 0) {
     // AN EMPTY SHEET IS KEPT: both files are refused for as long as either
     // stands, so a sheet of no item would stop the draw that follows a pass

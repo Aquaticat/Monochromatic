@@ -93,28 +93,35 @@ export async function probeDisplacement(
    */
   const carves = await allInInputOrder({
     members: entryIds.map(async function toCarve(entryId,): Promise<EntryCarve> {
-      /**
-       Slicing the lanes saw.
-       */
-      const entryCarve = await carve(entryId,);
-      if (entryCarve.kind !== 'settled')
-        log.info(`${entryId}: skipped, ${entryCarve.kind} artifact records no recipe`,);
-      // A CARVE THAT MOVED IS STILL MEASURED, and said to be: the readings then
-      // describe slices the run did not see.
-      if (entryCarve.kind === 'settled') {
-        /**
-         Whether the re-carve is the run's own.
-         */
-        const { reproduction, } = entryCarve;
-        if (reproduction.kind === 'moved')
-          log.warn(`${entryId}: re-carve is not the run's (${reproduction.detail}); its readings measure other slices`,);
-      }
       return {
         entryId,
-        carve: entryCarve,
+        carve: await carve(entryId,),
       };
     },),
   },);
+
+  // SAID IN THE ORDER THE ENTRIES ARE LISTED, once every carve has ended, so
+  // two walks over one archive log the same lines; until 2026-10-10 each
+  // carve logged as it ended, in whichever order that was.
+  for (
+    const {
+      entryId,
+      carve: entryCarve,
+    } of carves
+  ) {
+    if (entryCarve.kind !== 'settled')
+      log.info(`${entryId}: skipped, ${entryCarve.kind} artifact records no recipe`,);
+    // A CARVE THAT MOVED IS STILL MEASURED, and said to be: the readings then
+    // describe slices the run did not see.
+    if (entryCarve.kind === 'settled') {
+      /**
+       Whether the re-carve is the run's own.
+       */
+      const { reproduction, } = entryCarve;
+      if (reproduction.kind === 'moved')
+        log.warn(`${entryId}: re-carve is not the run's (${reproduction.detail}); its readings measure other slices`,);
+    }
+  }
 
   /**
    Readings for every settled entry.

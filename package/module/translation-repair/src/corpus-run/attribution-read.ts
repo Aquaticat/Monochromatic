@@ -23,6 +23,7 @@ import type {
 } from './attribution-report.ts';
 import {
   keepEligible,
+  type PoolPolicy,
   resolvePool,
 } from './artifact-pool.ts';
 import {
@@ -475,18 +476,23 @@ export type AttributionGather = {
 
  @param artifactsDir - directory the pass writes entries into
 
+ @param policy - generation policy the entry read from its environment, which
+ decides which generations the pool admits (`readPoolPolicy`)
+
  @returns Entries that parsed, and the artifacts that did not
 
  @example
  ```ts
- const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
+ const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, policy, },);
  ```
  */
 export async function gatherAttributionEntries(
   {
     artifactsDir,
+    policy,
   }: {
     readonly artifactsDir: string;
+    readonly policy: PoolPolicy;
   },
 ): Promise<AttributionGather> {
   /**
@@ -506,6 +512,7 @@ export async function gatherAttributionEntries(
     eligible: await resolvePool({
       artifactsDir,
       names: listed,
+      policy,
     },),
   },);
 

@@ -8,7 +8,6 @@ import {
   type WidthDraw,
   type WidthRow,
 } from './editor-width-model.ts';
-import { resolveRunsDir, } from './run-config.ts';
 
 //region Editor width report
 // What the draw is allowed to say, written where the run's other artifacts go.
@@ -79,6 +78,10 @@ function renderRow(row: WidthRow,): string {
 
  @internal
 
+ @param runsDir - runs directory the report is written under, which the entry
+ resolves from its environment and hands down; until 2026-10-10 this read the
+ environment itself
+
  @param rows - every slice that reached a comparison
 
  @param skipped - slices that carried no work, by refusal
@@ -100,11 +103,12 @@ function renderRow(row: WidthRow,): string {
 
  @example
  ```ts
- const path = await writeWidthReport({ rows, skipped, headSha, narrowEditorIds, wideEditorIds, judgeModelIds, controlHeld, draw, },);
+ const path = await writeWidthReport({ runsDir, rows, skipped, headSha, narrowEditorIds, wideEditorIds, judgeModelIds, controlHeld, draw, },);
  ```
  */
 export async function writeWidthReport(
   {
+    runsDir,
     rows,
     skipped,
     headSha,
@@ -114,6 +118,7 @@ export async function writeWidthReport(
     controlHeld,
     draw,
   }: {
+    readonly runsDir: string;
     readonly rows: readonly WidthRow[];
     readonly skipped: Readonly<Record<string, number>>;
     readonly headSha: string;
@@ -128,11 +133,6 @@ export async function writeWidthReport(
    Counts the decision reads.
    */
   const summary = summarizeWidths({ rows, },);
-
-  /**
-   Directory this run may write to.
-   */
-  const runsDir = await resolveRunsDir();
 
   /**
    Where the report lands.

@@ -1,4 +1,5 @@
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { reportMeters, } from './meter-report-run.ts';
 
 //region Meter report
@@ -24,12 +25,26 @@ import { reportMeters, } from './meter-report-run.ts';
 // `meter-report-provider.ts` one provider's report, `meter-report-level.ts` what
 // its meter read and `meter-report-text.ts` the spans, instants and outages.
 
+/**
+ Reports the named logs and leaves the exit code the report returns.
+
+ @param line - the report's command line, read whole by `reportingRefusals`
+
+ @example
+ ```ts
+ await main({ line, },);
+ ```
+ */
+async function main({ line, }: { readonly line: CommandLineOf<'meter-report'>; },): Promise<void> {
+  process.exitCode = await reportMeters({ line, },);
+}
+
 if (import.meta.main)
   await reportingRefusals({
     what: 'meter-report',
     argv: process.argv,
     env: process.env,
-    run: reportMeters,
+    run: main,
   },);
 
 //endregion Meter report

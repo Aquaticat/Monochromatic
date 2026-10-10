@@ -1,3 +1,4 @@
+import { readPoolPolicy, } from './artifact-pool.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import {
   resolveRunsDir,
@@ -6,8 +7,8 @@ import {
 import { printCrosscheck, } from './score-crosscheck-run.ts';
 
 //region Score crosscheck
-// Wiring only: the runs directory and the judge roster are named here, and the
-// report itself is `score-crosscheck-run.ts`.
+// Wiring only: the runs directory, the judge roster and the pool's generation
+// policy are named here, and the report itself is `score-crosscheck-run.ts`.
 
 /**
  Reads a run's artifacts and prints the crosscheck population.
@@ -21,6 +22,7 @@ async function main(): Promise<void> {
   await printCrosscheck({
     runsDir: await resolveRunsDir(),
     roster: RUN_MODELS.judgeModelIds,
+    policy: readPoolPolicy({ env: process.env, },),
   },);
 }
 

@@ -5,6 +5,7 @@ import {
 import { artifactsDirOf, } from './artifact-file-name.ts';
 import {
   keepEligible,
+  type PoolPolicy,
   resolvePool,
 } from './artifact-pool.ts';
 import { listSettledNames, } from './sample-artifact-names.ts';
@@ -23,6 +24,9 @@ import { listSettledNames, } from './sample-artifact-names.ts';
 
  @param runsDir - runs directory holding the artifacts
 
+ @param policy - generation policy the entry read from its environment, which
+ decides which generations the pool admits (`readPoolPolicy`)
+
  @returns Regions the damage question can be asked about, and how many rows
  filled a passage that had no incumbent wording
 
@@ -31,11 +35,17 @@ import { listSettledNames, } from './sample-artifact-names.ts';
 
  @example
  ```ts
- const { regions, } = await collectShippedRegions({ runsDir, },);
+ const { regions, } = await collectShippedRegions({ runsDir, policy, },);
  ```
  */
 export async function collectShippedRegions(
-  { runsDir, }: { readonly runsDir: string; },
+  {
+    runsDir,
+    policy,
+  }: {
+    readonly runsDir: string;
+    readonly policy: PoolPolicy;
+  },
 ): Promise<ShippedRegionCensus> {
   /**
    Directory the settled artifacts sit in, named once so the listing, the
@@ -59,6 +69,7 @@ export async function collectShippedRegions(
       eligible: await resolvePool({
         artifactsDir,
         names: listed,
+        policy,
       },),
     },),
   },);

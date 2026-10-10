@@ -83,6 +83,9 @@ const SLICES_A_DRAW_NEEDS: Readonly<Record<WidthDraw, number>> = {
 
  @param writeReport - writes the report into the runs directory
 
+ @param runsDir - runs directory the report is written under, which the entry
+ resolves from its environment
+
  @throws {@link StatedRefusalError} when the panel fails the positive control,
  since every number the draw would produce is unreadable once that happens
 
@@ -90,7 +93,7 @@ const SLICES_A_DRAW_NEEDS: Readonly<Record<WidthDraw, number>> = {
 
  @example
  ```ts
- await runEditorWidthProbe({ line, client, drawSample, pin, readHeadSha, controlHolds, gather, runSlice, writeReport, },);
+ await runEditorWidthProbe({ line, client, drawSample, pin, readHeadSha, controlHolds, gather, runSlice, writeReport, runsDir, },);
  ```
  */
 export async function runEditorWidthProbe(
@@ -104,6 +107,7 @@ export async function runEditorWidthProbe(
     gather,
     runSlice,
     writeReport,
+    runsDir,
   }: {
     readonly line: CommandLineOf<'editor-width-probe'>;
     readonly client: SyntheticClient;
@@ -114,6 +118,7 @@ export async function runEditorWidthProbe(
     readonly gather: typeof gatherWidthInput;
     readonly runSlice: typeof runWidthSlice;
     readonly writeReport: typeof writeWidthReport;
+    readonly runsDir: string;
   },
 ): Promise<void> {
   /**
@@ -251,6 +256,7 @@ export async function runEditorWidthProbe(
     gather,
     runSlice,
     writeReport,
+    runsDir,
   },);
 }
 

@@ -167,7 +167,7 @@ export async function readBaselines(
 
  @throws StatedRefusalError where --source is named with no --baseline, the
  build directory cannot be listed, holds no bundle or no source map, or is
- minified, or the suite failed
+ minified, or the suite failed or printed no pass marker
 
  @throws CensusBaselineError where a baseline named does not read as a census
  this command wrote
@@ -287,6 +287,15 @@ export async function runCoverageCensus(
         },)
       }); its log is `
         + `${logPath}; a census of a failing suite would count code its failing tests skipped`,
+    },);
+  // A CLEAN EXIT WITH NO PASS MARKER RAN NO TEST, whatever kept it from
+  // starting one. Counted, it printed a census beside "0 passes" whose every
+  // line is about a suite that never ran; until 2026-10-10 it was counted
+  // (ledger B313).
+  if (suite.passes === 0)
+    throw new StatedRefusalError({
+      says: `the suite printed no PASS marker, so it ran no test; its log is ${logPath}; a census of a suite `
+        + 'that ran nothing would count every line of the package as code no test ran',
     },);
   await reportCensus({
     asked,

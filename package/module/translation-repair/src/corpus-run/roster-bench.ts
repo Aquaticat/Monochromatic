@@ -9,6 +9,7 @@ import { runRosterBench, } from './roster-bench-run.ts';
 import {
   createRunClient,
   readHeadSha,
+  resolveRunsDir,
   RUN_CORPUS_PIN,
   RUN_ROSTER,
 } from './run-config.ts';
@@ -42,7 +43,8 @@ function drawPinned({ count, }: { readonly count: number; },): Promise<readonly 
 }
 
 /**
- Hands the real process's client, corpus, roster and clock to the bench.
+ Hands the real process's client, corpus, roster, clock and runs directory to
+ the bench.
 
  @param line - the bench's command line, read whole by `reportingRefusals`
 
@@ -51,8 +53,8 @@ function drawPinned({ count, }: { readonly count: number; },): Promise<readonly 
  await main({ line, },);
  ```
  */
-function main({ line, }: { readonly line: CommandLineOf<'roster-bench'>; },): Promise<void> {
-  return runRosterBench({
+async function main({ line, }: { readonly line: CommandLineOf<'roster-bench'>; },): Promise<void> {
+  await runRosterBench({
     line,
     roster: RUN_ROSTER,
     newClient: createRunClient,
@@ -60,6 +62,7 @@ function main({ line, }: { readonly line: CommandLineOf<'roster-bench'>; },): Pr
     readHead: readHeadSha,
     writeReport: writeBenchReport,
     clock: performance,
+    runsDir: await resolveRunsDir(),
   },);
 }
 

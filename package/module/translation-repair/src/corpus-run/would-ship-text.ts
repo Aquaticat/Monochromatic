@@ -259,25 +259,41 @@ export type WouldShipSlice = {
  such a slice as though the lanes agreed would pick one lane's wording with
  nothing behind it, so it is refused instead.
 
+ MARKED, AND BUILT FROM THE SLICE'S INDEX, so a `TALLY` line and a command's
+ refusal line say which slice, as they say the sentence of every sibling
+ refusal that stops an entry. Until 2026-10-10 it forwarded a finished
+ message and was unmarked, so `refusalText` printed its class alone.
+
  @example
  ```ts
- throw new UnansweredContestSliceError({ message: 'slice 3 differs across lanes and the contest names it nowhere', },);
+ throw new UnansweredContestSliceError({ sliceIndex: 3, },);
  ```
  */
 export class UnansweredContestSliceError extends Error {
   /**
+   Message contains a slice index only.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Slice whose lanes differ and which the contest record skipped.
+   */
+  readonly sliceIndex: number;
+
+  /**
    Builds the failure naming the slice the contest record skipped.
 
-   @param message - which slice differs and what the record says about it
+   @param sliceIndex - slice whose lanes differ
 
    @example
    ```ts
-   throw new UnansweredContestSliceError({ message: 'slice 3 differs across lanes and the contest names it nowhere', },);
+   throw new UnansweredContestSliceError({ sliceIndex: 3, },);
    ```
    */
-  public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  public constructor({ sliceIndex, }: { readonly sliceIndex: number; },) {
+    super(`slice ${String(sliceIndex,)} differs across lanes and the contest names it nowhere`,);
     this.name = 'UnansweredContestSliceError';
+    this.sliceIndex = sliceIndex;
   }
 }
 
@@ -503,9 +519,7 @@ function lanesAgreedOn(
   { row, }: { readonly row: ArtifactComparisonRow; },
 ): WouldShipReading {
   if (row.repairText !== row.translateText)
-    throw new UnansweredContestSliceError({
-      message: `slice ${String(row.sliceIndex,)} differs across lanes and the contest names it nowhere`,
-    },);
+    throw new UnansweredContestSliceError({ sliceIndex: row.sliceIndex, },);
 
   // AN AGREED EMPTY STRING IS A DECISION, not an absence to be filled from the
   // archive. It covers a gap neither lane wrote into and text both lanes

@@ -19,9 +19,15 @@ import {
 // SPLIT OUT OF `meter-report.ts` so the entry holds only the wiring.
 
 /**
- Exit code left behind when the logs held no reading at all.
+ Exit code returned when the logs held no reading at all.
  */
 const NOTHING_RECORDED = 1;
+
+/**
+ Exit code returned when the logs held a reading and every provider was
+ reported over it.
+ */
+const REPORTED = 0;
 
 /**
  Merges what every log held into one list of readings in time order.
@@ -73,18 +79,22 @@ export function mergeSamples({ readings, }: { readonly readings: readonly MeterL
 /**
  Reads every named log and reports both providers.
 
- Returns nothing: the report on stdout and the exit code ARE the output.
+ The report on stdout and the returned exit code ARE the output; the entry
+ file sets the code on the process, so a case reads it without starting one.
 
  @param line - the report's command line, read whole by `reportingRefusals`,
  which refuses it when no log is named: any log a pass, probe or sample wrote
  will do, and passing several merges them into one record
 
+ @returns The exit code the command leaves: 1 when the logs held no reading,
+ 0 once every provider was reported
+
  @example
  ```ts
- await reportMeters({ line, },);
+ process.exitCode = await reportMeters({ line, },);
  ```
  */
-export async function reportMeters({ line, }: { readonly line: CommandLineOf<'meter-report'>; },): Promise<void> {
+export async function reportMeters({ line, }: { readonly line: CommandLineOf<'meter-report'>; },): Promise<number> {
   /**
    Logs to read, named on the command line.
    */
@@ -138,8 +148,7 @@ export async function reportMeters({ line, }: { readonly line: CommandLineOf<'me
         + 'reading was promoted out of debug level have none, so read a log from a pass or a '
         + '`budget-sample` taken after that landed.',
     );
-    process.exitCode = NOTHING_RECORDED;
-    return;
+    return NOTHING_RECORDED;
   }
 
   console.log(
@@ -159,6 +168,7 @@ export async function reportMeters({ line, }: { readonly line: CommandLineOf<'me
       provider,
     },);
   }
+  return REPORTED;
 }
 
 //endregion Meter report run

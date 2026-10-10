@@ -21,7 +21,8 @@ import {
 /**
  Rebuilds every damaged-region case and probes each under both conditions.
 
- @param dir - runs directory holding the sample manifest
+ @param dir - runs directory holding the sample manifest and the settled
+ artifacts the gatherers read
 
  @param pin - corpus commit the regions' pages are read at
 
@@ -69,6 +70,7 @@ export async function runProbeRelabel(
   const cases = await gather.damaged({
     manifestPath,
     pin,
+    runsDir: dir,
   },);
   console.log(relabelRebuilt({ count: cases.length, },),);
 
@@ -84,6 +86,7 @@ export async function runProbeRelabel(
     manifestPath,
     damaged: cases,
     pin,
+    runsDir: dir,
   },);
   console.log(relabelGathered({ count: controls.length, },),);
 

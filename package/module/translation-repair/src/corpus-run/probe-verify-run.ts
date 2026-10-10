@@ -113,7 +113,8 @@ export const VERIFY_BLIND_NOTE: string = 'NOTE the sheet is blind and its manife
 /**
  Builds the blind verification sheet and its scoring manifest.
 
- @param dir - runs directory holding the sample manifest and receiving the pair
+ @param dir - runs directory holding the sample manifest and the settled
+ artifacts the gatherers read, and receiving the pair
 
  @param pin - corpus commit the regions' pages are read at
 
@@ -168,6 +169,7 @@ export async function runProbeVerify(
   const damaged = await gather.damaged({
     manifestPath,
     pin,
+    runsDir: dir,
   },);
 
   /**
@@ -177,6 +179,7 @@ export async function runProbeVerify(
     manifestPath,
     damaged,
     pin,
+    runsDir: dir,
   },);
   console.log(verifyOpening({
     damaged,

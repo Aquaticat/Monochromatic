@@ -1,5 +1,6 @@
 import { logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { readPoolPolicy, } from './artifact-pool.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { sampleDamage, } from './damage-sample-run.ts';
 import { textSettingOf, } from './env-text-setting.ts';
@@ -17,7 +18,8 @@ import {
 // procedure.
 
 /**
- Samples damage over the runs directory and the draw seed of the environment.
+ Samples damage over the runs directory, the draw seed and the pool's
+ generation policy of the environment.
 
  @example
  ```ts
@@ -38,6 +40,7 @@ async function sampleOverTheEnvironment(): Promise<void> {
     proberModelIds: RUN_MODELS.checkerModelIds,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: logger,
+    policy: readPoolPolicy({ env: process.env, },),
   },);
 }
 

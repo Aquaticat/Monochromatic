@@ -21,12 +21,12 @@ import {
 // operator's runs.
 
 /**
- Exit code left behind when there is no ledger to read.
+ Exit code returned when there is no ledger to read.
  */
 const NOTHING_TO_READ = 1;
 
 /**
- Exit code left behind when the ledger was read but not all of it.
+ Exit code returned when the ledger was read but not all of it.
 
  SEPARATE FROM AN ABSENT LEDGER, on the same grounds `verify-published.ts`
  separates its two: a run that recorded nothing and a run whose record is
@@ -36,18 +36,27 @@ const NOTHING_TO_READ = 1;
 const LEDGER_INCOMPLETE = 2;
 
 /**
+ Exit code returned when every ledger file read.
+ */
+const LEDGER_READ = 0;
+
+/**
  Reads a run's ledger and reports what it holds.
 
- Returns nothing: the report on stdout and the exit code ARE the output.
+ The report on stdout and the returned exit code ARE the output; the entry
+ file sets the code on the process, so a case reads it without starting one.
 
  @param line - the report's command line, read whole by `reportingRefusals`
 
  @param runsDir - run directory to read, which the entry takes from the
  environment or the house default so this never reads either
 
+ @returns The exit code the command leaves: 1 for a run that wrote no ledger,
+ 2 when a ledger file would not read, whatever else did, and 0 otherwise
+
  @example
  ```ts
- await reportLedger({ line, runsDir, },);
+ process.exitCode = await reportLedger({ line, runsDir, },);
  ```
  */
 export async function reportLedger(
@@ -58,7 +67,7 @@ export async function reportLedger(
     readonly line: CommandLineOf<'ledger-report'>;
     readonly runsDir: string;
   },
-): Promise<void> {
+): Promise<number> {
   // A FLAG WITH NOTHING AFTER IT IS REFUSED rather than ignored, before this
   // runs. Falling through to the summary would answer a question nobody asked,
   // and the summary looks exactly like a successful run to anything reading the
@@ -96,8 +105,10 @@ export async function reportLedger(
   } under ${runsDir}`,);
   printRefusals({ reading, },);
 
-  if (refused.length > 0)
-    process.exitCode = LEDGER_INCOMPLETE;
+  /**
+   Code of a run whose ledger was read: incomplete when a file refused.
+   */
+  const readCode = (refused.length > 0) ? LEDGER_INCOMPLETE : LEDGER_READ;
 
   if (rounds.length === 0) {
     if (refused.length === 0) {
@@ -106,13 +117,13 @@ export async function reportLedger(
           + 'wrote nothing: every run started before candidate-ledger.ts landed has none, and so does '
           + 'any run launched without TRANSLATION_REPAIR_RUNS_DIR set.',
       );
-      process.exitCode = NOTHING_TO_READ;
-    } else
-      console.log(
-        'NOTHING COUNTED. Every ledger file this run wrote refused to read, so this is a run whose '
-          + 'record was lost rather than a run that recorded nothing.',
-      );
-    return;
+      return NOTHING_TO_READ;
+    }
+    console.log(
+      'NOTHING COUNTED. Every ledger file this run wrote refused to read, so this is a run whose '
+        + 'record was lost rather than a run that recorded nothing.',
+    );
+    return readCode;
   }
 
   if (seat.kind === 'written') {
@@ -120,10 +131,11 @@ export async function reportLedger(
       reading,
       wanted: seat.value,
     },);
-    return;
+    return readCode;
   }
 
   printSummary({ reading, },);
+  return readCode;
 }
 
 //endregion Ledger report run

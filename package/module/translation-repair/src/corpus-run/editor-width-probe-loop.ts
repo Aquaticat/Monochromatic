@@ -50,9 +50,12 @@ import type { runWidthSlice, } from './editor-width-slice.ts';
 
  @param writeReport - writes the report over the rows so far
 
+ @param runsDir - runs directory the report is written under, which the entry
+ resolves from its environment
+
  @example
  ```ts
- await runWidthDraw({ client, drawn, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, controlHeld, draw, headSha, gather, runSlice, writeReport, },);
+ await runWidthDraw({ client, drawn, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, controlHeld, draw, headSha, gather, runSlice, writeReport, runsDir, },);
  ```
  */
 export async function runWidthDraw(
@@ -70,6 +73,7 @@ export async function runWidthDraw(
     gather,
     runSlice,
     writeReport,
+    runsDir,
   }: {
     readonly client: SyntheticClient;
     readonly drawn: readonly BenchSlice[];
@@ -84,6 +88,7 @@ export async function runWidthDraw(
     readonly gather: typeof gatherWidthInput;
     readonly runSlice: typeof runWidthSlice;
     readonly writeReport: typeof writeWidthReport;
+    readonly runsDir: string;
   },
 ): Promise<void> {
   /**
@@ -110,6 +115,7 @@ export async function runWidthDraw(
    */
   async function publish(): Promise<string> {
     return await writeReport({
+      runsDir,
       rows,
       skipped: Object.fromEntries(skipped,),
       headSha,

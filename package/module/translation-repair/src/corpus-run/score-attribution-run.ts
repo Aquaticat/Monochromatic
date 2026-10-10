@@ -1,4 +1,5 @@
 import { artifactsDirOf, } from './artifact-file-name.ts';
+import type { PoolPolicy, } from './artifact-pool.ts';
 import { gatherAttributionEntries, } from './attribution-read.ts';
 import { buildAttributionReport, } from './attribution-report.ts';
 import { requireArtifactsDir, } from './score-artifacts-dir.ts';
@@ -26,15 +27,26 @@ import {
  @param runsDir - runs directory the report describes, which the first line
  names
 
+ @param policy - generation policy the entry read from its environment
+ (`readPoolPolicy`), handed to the pool
+
  @throws {@link StatedRefusalError} when the runs directory holds no readable
  `artifacts` directory, after the first line has named it
 
  @example
  ```ts
- await printAttribution({ runsDir, },);
+ await printAttribution({ runsDir, policy, },);
  ```
  */
-export async function printAttribution({ runsDir, }: { readonly runsDir: string; },): Promise<void> {
+export async function printAttribution(
+  {
+    runsDir,
+    policy,
+  }: {
+    readonly runsDir: string;
+    readonly policy: PoolPolicy;
+  },
+): Promise<void> {
   /**
    Directory this run wrote artifacts into.
    */
@@ -55,7 +67,10 @@ export async function printAttribution({ runsDir, }: { readonly runsDir: string;
   const {
     entries,
     malformed,
-  } = await gatherAttributionEntries({ artifactsDir, },);
+  } = await gatherAttributionEntries({
+    artifactsDir,
+    policy,
+  },);
 
   /**
    Report over every settled artifact.

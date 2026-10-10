@@ -9,11 +9,13 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { CorpusPin, } from '../corpus-source.ts';
 import { hashContent, } from '../document-node.ts';
+import { FidelityReferenceError, } from '../fidelity-reference-error.ts';
 import type {
   FidelityReferenceSpec,
   ReviewedFidelityReference,
 } from '../fidelity-reference-model.ts';
 import { reviewedFidelityRequest, } from '../fidelity-reference-request.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { reviewedFidelityTrials, } from '../fidelity-reference-trials.ts';
 import { runFidelityTrial, } from '../judge-fidelity.ts';
 import { mapOverlapped, } from '../overlapped-map.ts';
@@ -63,6 +65,49 @@ export type FidelityProbeSink = {
 };
 
 /**
+ Checks what the command line asked for against the reviewed references, and
+ restates a refusal as the operator's.
+
+ THE OPERATOR'S TO MEND, SO STATED. The inputs `reviewedFidelityRequest`
+ checks are ones the operator typed or set: an entry filter, `--context`, the
+ cap, the judges named, the damage families, and the corpus pin the
+ environment can move. `FidelityReferenceError` is a fault elsewhere, where a
+ reference read from the clone fails its reviewed hashes, so it is restated
+ here, at the one site where it is the operator's, with its own sentence and
+ itself as the cause. Until 2026-10-10 it printed as a fault of the command at
+ exit 5, under frames (ledger B313). One refusal under the same operation is
+ not the operator's: an empty checked-in manifest, or one repeating an id,
+ which `selectReviewedFidelitySpecs` refuses as well and this restates too.
+
+ @param request - what `reviewedFidelityRequest` checks
+
+ @returns The selected reviewed specifications
+
+ @throws StatedRefusalError when the request is refused, its sentence the
+ reviewed reference's own
+
+ @example
+ ```ts
+ const specs = requestedSpecs({ request: { corpusSha, onlyEntryIds: [], damageKinds, judgeModelIds, cap: 0, withContext: false, }, },);
+ ```
+ */
+function requestedSpecs(
+  { request, }: { readonly request: Parameters<typeof reviewedFidelityRequest>[0]; },
+): readonly FidelityReferenceSpec[] {
+  try {
+    return reviewedFidelityRequest(request,);
+  } catch (error) {
+    if (error instanceof FidelityReferenceError) {
+      throw new StatedRefusalError({
+        says: error.message,
+        cause: error,
+      },);
+    }
+    throw error;
+  }
+}
+
+/**
  Runs only source-reviewed, hash-locked comparisons through the production
  selector. Individual ballots are retained; a singleton judge's underweight
  merged verdict is not a quality score. This never changes role admission itself.
@@ -92,9 +137,10 @@ export type FidelityProbeSink = {
 
  @param out - where the rows document is written
 
- @throws {@link FidelityReferenceError} for unreviewed requests or reference drift
+ @throws {@link FidelityReferenceError} for reference drift in what the clone holds
 
- @throws StatedRefusalError when the command line asks for something the probe does not run
+ @throws StatedRefusalError when the command line asks for something the probe does not run, or
+ for a request the reviewed references refuse
 
  @example
  ```ts
@@ -152,19 +198,29 @@ export async function runFidelityProbe(
   /**
    Request and authorship checks precede all corpus and provider activity.
    */
-  const specs = reviewedFidelityRequest({
-    corpusSha: pin.commitSha,
-    onlyEntryIds: onlyIds,
-    damageKinds,
-    judgeModelIds,
-    cap,
-    withContext,
+  const specs = requestedSpecs({
+    request: {
+      corpusSha: pin.commitSha,
+      onlyEntryIds: onlyIds,
+      damageKinds,
+      judgeModelIds,
+      cap,
+      withContext,
+    },
   },);
   log.info(`judges: ${judgeModelIds.join(', ',)}`,);
   if (cap === 0) {
     log.info(fidelityPreflightLine({ selected: specs.length, },),);
     return;
   }
+  /**
+   When the run began, read before its first work, the corpus read, so the plan
+   and the kept run date the whole run, as the sibling probes read theirs
+   (`coverage-probe-run.ts`, `recall-benchmark-run.ts`,
+   `rendering-audit-settled-drive.ts`); until 2026-10-10 it was read after the
+   references and the run directory, so their time was left out.
+   */
+  const startedAt = now();
   /**
    Exact source and locally reviewed reference, never a newly discovered long archive block.
    */
@@ -225,7 +281,7 @@ export async function runFidelityProbe(
    A durable plan cannot be mistaken for a completed result if execution is interrupted.
    */
   const plan = fidelityPlan({
-    startedAt: now(),
+    startedAt,
     pipelineDigest,
     runnerClosure,
     referenceManifestDigest: hashContent({ content: JSON.stringify(specs,), },),

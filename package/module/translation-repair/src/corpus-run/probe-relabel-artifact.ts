@@ -22,7 +22,6 @@ import {
   artifactFileNameOf,
   artifactsDirOf,
 } from './artifact-file-name.ts';
-import { resolveRunsDir, } from './run-config.ts';
 
 //region Probe relabel artifact reading
 // Reads a settled artifact back into the shapes a prober call needs.
@@ -448,6 +447,10 @@ function rootIssues(
 /**
  Reads one artifact into the records a rebuild needs.
 
+ @param runsDir - runs directory the artifact is read from, the one its
+ caller reads the manifest from; until 2026-10-10 this read the environment
+ itself, whatever directory the caller was reading
+
  @param entryId - corpus entry id
 
  @returns Settled records carrying issues, regions, and recorded tallies
@@ -456,23 +459,24 @@ function rootIssues(
 
  @example
  ```ts
- const records = await readArtifactRecords({ entryId: 'Acheron', },);
+ const records = await readArtifactRecords({ runsDir, entryId: 'Acheron', },);
  ```
  */
 export async function readArtifactRecords(
-  { entryId, }: { readonly entryId: string; },
+  {
+    runsDir,
+    entryId,
+  }: {
+    readonly runsDir: string;
+    readonly entryId: string;
+  },
 ): Promise<readonly ArtifactRecord[]> {
-  /**
-   Run artifact root for this checkout.
-   */
-  const dir = await resolveRunsDir();
-
   /**
    Whole artifact as written, read once and dispatched by generation.
    */
   const artifactValue = await readRunJson({
     path: join(
-      artifactsDirOf({ runsDir: dir, },),
+      artifactsDirOf({ runsDir, },),
       artifactFileNameOf({ entryId, },),
     ),
   },);

@@ -36,6 +36,8 @@ export {
 } from './corpus-run/artifact-eligible.ts';
 export {
   keepEligible,
+  type PoolPolicy,
+  readPoolPolicy,
   resolvePool,
 } from './corpus-run/artifact-pool.ts';
 export {

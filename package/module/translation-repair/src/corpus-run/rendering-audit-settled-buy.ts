@@ -3,6 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { allInInputOrder, } from '../all-in-input-order.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { citedReferenceUrlsOf, } from '../cited-reference-scan.ts';
+import { codePointLength, } from '../code-points.ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
 import { RenderingAuditInvariantError, } from '../rendering-audit-invariant.ts';
 import { askedAmong, } from './command-flags.ts';
@@ -41,7 +42,8 @@ import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
  Audits one slice and keeps what the roster said, whole.
 
  Exported through the barrel so the built bundle's tests can hand it a
- scripted client; `main` is its only caller.
+ scripted client; `runSettledAudit` (`rendering-audit-settled-drive.ts`) is
+ its only caller.
 
  @internal
 
@@ -174,8 +176,8 @@ export type CitedSubject = {
  run's, because a unit test that forgot it would read the environment's
  key and buy a real web read (ledger X19).
 
- Exported through the barrel for the built bundle's tests; `main` is its
- only caller.
+ Exported through the barrel for the built bundle's tests;
+ `runSettledAudit` (`rendering-audit-settled-drive.ts`) is its only caller.
 
  @internal
 
@@ -234,10 +236,11 @@ export async function withCitedReferences(
       async function readPage([
         pageSourceText,
         entryId,
-      ],): Promise<readonly [
-        string,
-        SettledReferences,
-      ]> {
+      ],): Promise<{
+        readonly pageSourceText: string;
+        readonly entryId: string;
+        readonly references: SettledReferences;
+      }> {
         /**
          What this page's links say, empty where there are none or none
          could be read.
@@ -248,14 +251,14 @@ export async function withCitedReferences(
           l,
         },);
         if (read !== '') {
-          l.info(`CITED REFERENCES entry=${entryId} cited, characters=${String(read.length,)}`,);
-          return [
+          return {
             pageSourceText,
-            {
+            entryId,
+            references: {
               kind: 'cited',
               context: read,
             },
-          ];
+          };
         }
 
         /**
@@ -264,34 +267,64 @@ export async function withCitedReferences(
          */
         const links = citedReferenceUrlsOf({ text: pageSourceText, },)
           .length;
-        if (links === 0) {
-          l.info(`CITED REFERENCES entry=${entryId} none: the page links nowhere`,);
-          return [
-            pageSourceText,
-            { kind: 'none', },
-          ];
-        }
-        l.warn(
-          `CITED REFERENCES entry=${entryId} UNREAD: the page links ${String(links,)} page(s) and the read`
-            + ` returned nothing, so its slices are audited without them and their rows record unread;`
-            + ` the reference reader returns nothing for linked pages when ${EXA_API_KEY_VAR} is not set,`
-            + ' so set it and audit again, or read these rows as audited without the references',
-        );
-        return [
+        return {
           pageSourceText,
-          {
-            kind: 'unread',
-            links,
-          },
-        ];
+          entryId,
+          references: (links === 0)
+            ? { kind: 'none', }
+            : {
+              kind: 'unread',
+              links,
+            },
+        };
       },
     ),
   },);
 
+  // SAID IN BUYING ORDER, once every read has ended, so two runs over one
+  // archive log the same lines; until 2026-10-10 each read logged as it
+  // ended, in whichever order that was.
+  for (
+    const {
+      entryId,
+      references,
+    } of readPages
+  ) {
+    if (references.kind === 'cited') {
+      // IN CHARACTERS, counted as code points as the package counts a page's
+      // characters (`codePointLength`); until 2026-10-10 the line printed the
+      // text's UTF-16 length under the same name.
+      l.info(`CITED REFERENCES entry=${entryId} cited, characters=${
+        String(codePointLength({ text: references.context, },),)
+      }`,);
+    }
+    if (references.kind === 'none')
+      l.info(`CITED REFERENCES entry=${entryId} none: the page links nowhere`,);
+    if (references.kind === 'unread') {
+      l.warn(
+        `CITED REFERENCES entry=${entryId} UNREAD: the page links ${String(references.links,)} page(s) and the read`
+          + ` returned nothing, so its slices are audited without them and their rows record unread;`
+          + ` the reference reader returns nothing for linked pages when ${EXA_API_KEY_VAR} is not set,`
+          + ' so set it and audit again, or read these rows as audited without the references',
+      );
+    }
+  }
+
   /**
    What each page cites, by its whole text.
    */
-  const cited = new Map<string, SettledReferences>(readPages,);
+  const cited = new Map<string, SettledReferences>(readPages.map(function byPageText({
+    pageSourceText,
+    references,
+  },): readonly [
+    string,
+    SettledReferences,
+  ] {
+    return [
+      pageSourceText,
+      references,
+    ];
+  },),);
 
   return subjects.map(function paired(subject,): CitedSubject {
     /**
@@ -325,8 +358,8 @@ export async function withCitedReferences(
  `--only` left 30 selectable overstates what was skipped and understates the
  coverage bought, and the line alone gives a reader no way to tell.
 
- Exported through the barrel for the built bundle's tests; `main` is its
- only caller.
+ Exported through the barrel for the built bundle's tests;
+ `runSettledAudit` (`rendering-audit-settled-drive.ts`) is its only caller.
 
  @internal
 
@@ -373,9 +406,11 @@ export function eligibleSubjects(
 /**
  Takes the prefix a cap allows.
 
- Exported through the barrel for the built bundle's tests; `main` is its
- only caller. A negative cap reaches here only as the args module's own
- "every subject" sentinel, since `readCap` refuses a typed one.
+ Exported through the barrel for the built bundle's tests;
+ `runSettledAudit` (`rendering-audit-settled-drive.ts`) is its only caller. A
+ negative cap reaches here only as the args module's own "every subject"
+ sentinel, since `readAuditArguments` (`rendering-audit-settled-args.ts`)
+ reads `--cap` through `wholeNumberFlag`, which refuses a typed sign.
 
  @internal
 
@@ -410,8 +445,8 @@ export function capped(
 /**
  Reports what the archive holds, before anything is bought.
 
- Exported through the barrel for the built bundle's tests; `main` is its
- only caller.
+ Exported through the barrel for the built bundle's tests;
+ `runSettledAudit` (`rendering-audit-settled-drive.ts`) is its only caller.
 
  @internal
 

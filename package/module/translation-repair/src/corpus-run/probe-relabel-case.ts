@@ -301,6 +301,9 @@ export function locateSlice(
  throwaway clone in a test. REQUIRED: a default read the clone for any caller
  that left it out (ledger M43, X24)
 
+ @param runsDir - runs directory the entries' settled artifacts are read from,
+ the one the procedure was handed
+
  @returns One case per distinct region, in sample order
 
  @throws {@link ArtifactParseError} when a manifest, artifact, or slice lookup
@@ -308,16 +311,18 @@ export function locateSlice(
 
  @example
  ```ts
- const cases = await gatherRelabelCases({ manifestPath, pin: RUN_CORPUS_PIN, },);
+ const cases = await gatherRelabelCases({ manifestPath, pin: RUN_CORPUS_PIN, runsDir, },);
  ```
  */
 export async function gatherRelabelCases(
   {
     manifestPath,
     pin,
+    runsDir,
   }: {
     readonly manifestPath: string;
     readonly pin: CorpusPin;
+    readonly runsDir: string;
   },
 ): Promise<readonly RelabelCase[]> {
   /**
@@ -344,7 +349,10 @@ export async function gatherRelabelCases(
     /**
      Settled records of the entry this item was drawn from.
      */
-    const records = await readArtifactRecords({ entryId: item.entryId, },);
+    const records = await readArtifactRecords({
+      runsDir,
+      entryId: item.entryId,
+    },);
 
     /**
      Record carrying the drawn issue.

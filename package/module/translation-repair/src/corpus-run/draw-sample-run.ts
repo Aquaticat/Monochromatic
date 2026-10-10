@@ -10,6 +10,7 @@ import {
   DEFAULT_SAMPLE_SIZE,
 } from '../sample-grading.ts';
 import { drawStratifiedSample, } from '../sample-draw.ts';
+import type { PoolPolicy, } from './artifact-pool.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import { poolBandLines, } from './draw-sample-bands.ts';
 import { readDrawPool, } from './draw-sample-pool.ts';
@@ -43,13 +44,16 @@ import { writeDrawSheets, } from './draw-sample-sheets.ts';
 
  @param readSource - reads a corpus file at the pin: `readCorpusFile` in a run
 
+ @param policy - generation policy the entry read from its environment
+ (`readPoolPolicy`), handed to the pool
+
  @throws {@link StatedRefusalError} When a final draw's sample is empty, or
  carries issues with no recorded repair, the count of them named, and for what
  the pool and the sheet paths refuse with
 
  @example
  ```ts
- await drawGradingSample({ line, runsDir, pin: RUN_CORPUS_PIN, readSource: readCorpusFile, },);
+ await drawGradingSample({ line, runsDir, pin: RUN_CORPUS_PIN, readSource: readCorpusFile, policy, },);
  ```
  */
 export async function drawGradingSample(
@@ -58,11 +62,13 @@ export async function drawGradingSample(
     runsDir,
     pin,
     readSource,
+    policy,
   }: {
     readonly line: CommandLineOf<'draw-sample'>;
     readonly runsDir: string;
     readonly pin: CorpusPin;
     readonly readSource: typeof readCorpusFile;
+    readonly policy: PoolPolicy;
   },
 ): Promise<void> {
   /**
@@ -97,6 +103,7 @@ export async function drawGradingSample(
   } = await readDrawPool({
     runsDir,
     readSource,
+    policy,
   },);
 
   for (const bandLine of poolBandLines({ entries, },))

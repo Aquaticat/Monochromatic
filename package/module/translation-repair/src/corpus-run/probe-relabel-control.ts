@@ -129,6 +129,9 @@ function byLengthDistance<Region extends { readonly before: string; },>(
  throwaway clone in a test. REQUIRED: a default read the clone for any caller
  that left it out (ledger M43, X24)
 
+ @param runsDir - runs directory the entries' settled artifacts are read from,
+ the one the procedure was handed
+
  @returns Control cases, at most {@link CONTROL_REGIONS_PER_ENTRY} per entry
 
  @throws {@link ArtifactParseError} when an artifact or manifest is malformed,
@@ -137,7 +140,7 @@ function byLengthDistance<Region extends { readonly before: string; },>(
 
  @example
  ```ts
- const controls = await gatherControlCases({ manifestPath, damaged, pin: RUN_CORPUS_PIN, },);
+ const controls = await gatherControlCases({ manifestPath, damaged, pin: RUN_CORPUS_PIN, runsDir, },);
  ```
  */
 export async function gatherControlCases(
@@ -145,10 +148,12 @@ export async function gatherControlCases(
     manifestPath,
     damaged,
     pin,
+    runsDir,
   }: {
     readonly manifestPath: string;
     readonly damaged: readonly RelabelCase[];
     readonly pin: CorpusPin;
+    readonly runsDir: string;
   },
 ): Promise<readonly RelabelCase[]> {
   /**
@@ -194,7 +199,10 @@ export async function gatherControlCases(
     /**
      Settled records of this entry.
      */
-    const records = await readArtifactRecords({ entryId, },);
+    const records = await readArtifactRecords({
+      runsDir,
+      entryId,
+    },);
 
     /**
      Original document at the pinned commit.

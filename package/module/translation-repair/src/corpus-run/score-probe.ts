@@ -1,11 +1,12 @@
+import { readPoolPolicy, } from './artifact-pool.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import { resolveRunsDir, } from './run-config.ts';
 import { printProbeScore, } from './score-probe-run.ts';
 
 //region Score probe
-// Wiring only: the runs directory comes from the environment here, and the
-// report itself is `score-probe-run.ts`.
+// Wiring only: the runs directory and the pool's generation policy come from
+// the environment here, and the report itself is `score-probe-run.ts`.
 
 /**
  Reads a run's artifacts and prints the probe summary.
@@ -21,6 +22,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'score-probe'>; },
   await printProbeScore({
     runsDir: await resolveRunsDir(),
     line,
+    policy: readPoolPolicy({ env: process.env, },),
   },);
 }
 

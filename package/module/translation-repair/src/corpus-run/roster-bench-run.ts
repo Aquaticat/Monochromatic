@@ -54,6 +54,9 @@ const DEFAULT_SLICES = 10;
 
  @param clock - source of the instants each row's duration is read from
 
+ @param runsDir - runs directory the report is written under, which the entry
+ resolves from its environment
+
  @throws {@link StatedRefusalError} when the slice count is not a count of at
  least one, and its subclass `BenchReportError` when the roster is too narrow
  to vary, both before the corpus is drawn; and whatever building a row's
@@ -61,7 +64,7 @@ const DEFAULT_SLICES = 10;
 
  @example
  ```ts
- await runRosterBench({ line, roster, newClient: createRunClient, drawSlices, readHead, writeReport: writeBenchReport, clock: performance, },);
+ await runRosterBench({ line, roster, newClient: createRunClient, drawSlices, readHead, writeReport: writeBenchReport, clock: performance, runsDir, },);
  ```
  */
 export async function runRosterBench(
@@ -73,6 +76,7 @@ export async function runRosterBench(
     readHead,
     writeReport,
     clock,
+    runsDir,
   }: {
     readonly line: CommandLineOf<'roster-bench'>;
     readonly roster: readonly RosterModelId[];
@@ -81,6 +85,7 @@ export async function runRosterBench(
     readonly readHead: () => Promise<string>;
     readonly writeReport: typeof writeBenchReport;
     readonly clock: { readonly now: () => number; };
+    readonly runsDir: string;
   },
 ): Promise<void> {
   /**
@@ -181,6 +186,7 @@ export async function runRosterBench(
       }, ${String(Math.round(row.ms,),)}ms`,
     );
     await writeReport({
+      runsDir,
       rows,
       headSha,
       widths,

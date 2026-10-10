@@ -8,7 +8,6 @@ import type {
   BenchCall,
   CallTokens,
 } from './bench-record.ts';
-import { resolveRunsDir, } from './run-config.ts';
 import { wordForCount, } from '../count-word.ts';
 import { describeSelfPreference, } from '../self-preference-line.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
@@ -176,6 +175,10 @@ export function benchWidths(
  Rewritten after every row rather than once at the end: a bench that spends
  hours of quota and is then killed must leave everything it already bought.
 
+ @param runsDir - runs directory the report is written under, which the entry
+ resolves from its environment and hands down; until 2026-10-10 this read the
+ environment itself
+
  @param rows - rows accumulated so far
 
  @param headSha - pipeline commit these rows were produced by
@@ -188,17 +191,19 @@ export function benchWidths(
 
  @example
  ```ts
- await writeBenchReport({ rows, headSha, widths, repeated, roster, },);
+ await writeBenchReport({ runsDir, rows, headSha, widths, repeated, roster, },);
  ```
  */
 export async function writeBenchReport(
   {
+    runsDir,
     rows,
     headSha,
     widths,
     repeated,
     roster,
   }: {
+    readonly runsDir: string;
     readonly rows: readonly BenchRow[];
     readonly headSha: string;
     readonly widths: readonly number[];
@@ -206,11 +211,6 @@ export async function writeBenchReport(
     readonly roster: readonly string[];
   },
 ): Promise<void> {
-  /**
-   Directory this run may write to.
-   */
-  const runsDir = await resolveRunsDir();
-
   /**
    Where bench reports live, beside the run's other artifacts.
    */

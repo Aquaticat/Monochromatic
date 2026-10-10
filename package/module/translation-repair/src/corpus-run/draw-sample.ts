@@ -1,4 +1,5 @@
 import { readCorpusFile, } from '../corpus-source.ts';
+import { readPoolPolicy, } from './artifact-pool.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import { drawGradingSample, } from './draw-sample-run.ts';
@@ -14,7 +15,8 @@ import {
 // the three files and `draw-sample-run.ts` is the procedure.
 
 /**
- Draws over the runs directory of the environment and the pinned corpus.
+ Draws over the runs directory and the pool's generation policy of the
+ environment, and the pinned corpus.
 
  @param line - the draw's command line, read whole by `reportingRefusals`
 
@@ -29,6 +31,7 @@ async function drawSample({ line, }: { readonly line: CommandLineOf<'draw-sample
     runsDir: await resolveRunsDir(),
     pin: RUN_CORPUS_PIN,
     readSource: readCorpusFile,
+    policy: readPoolPolicy({ env: process.env, },),
   },);
 }
 

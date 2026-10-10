@@ -1,10 +1,11 @@
+import { readPoolPolicy, } from './artifact-pool.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { resolveRunsDir, } from './run-config.ts';
 import { printAttribution, } from './score-attribution-run.ts';
 
 //region Score attribution
-// Wiring only: the runs directory comes from the environment here, and the
-// report itself is `score-attribution-run.ts`.
+// Wiring only: the runs directory and the pool's generation policy come from
+// the environment here, and the report itself is `score-attribution-run.ts`.
 
 /**
  Reads a run's artifacts and prints per-critic calibration.
@@ -15,7 +16,10 @@ import { printAttribution, } from './score-attribution-run.ts';
  ```
  */
 async function main(): Promise<void> {
-  await printAttribution({ runsDir: await resolveRunsDir(), },);
+  await printAttribution({
+    runsDir: await resolveRunsDir(),
+    policy: readPoolPolicy({ env: process.env, },),
+  },);
 }
 
 // Guarded so this runs only when INVOKED. Unguarded it ran on IMPORT, so

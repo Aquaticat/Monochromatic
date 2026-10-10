@@ -1,4 +1,5 @@
 import { artifactsDirOf, } from './artifact-file-name.ts';
+import type { PoolPolicy, } from './artifact-pool.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { scoreProbeAgainstGrades, } from '../probe-agreement.ts';
 import {
@@ -41,22 +42,27 @@ import { readSheetText, } from './score-sheet-text.ts';
 
  @param line - the probe's command line, read whole by `reportingRefusals`
 
+ @param policy - generation policy the entry read from its environment
+ (`readPoolPolicy`), handed to the pool
+
  @throws {@link StatedRefusalError} when only one of `--repair-sheet` and `--manifest`
  is named, when the runs directory holds no readable `artifacts` directory, when
  the repair sheet cannot be read, or when the sheet and the manifest differ in length
 
  @example
  ```ts
- await printProbeScore({ runsDir, line, },);
+ await printProbeScore({ runsDir, line, policy, },);
  ```
  */
 export async function printProbeScore(
   {
     runsDir,
     line,
+    policy,
   }: {
     readonly runsDir: string;
     readonly line: CommandLineOf<'score-probe'>;
+    readonly policy: PoolPolicy;
   },
 ): Promise<void> {
   /**
@@ -94,7 +100,10 @@ export async function printProbeScore(
   /**
    Readings across every settled artifact.
    */
-  const gathered = await gatherProbeReadings({ artifactsDir, },);
+  const gathered = await gatherProbeReadings({
+    artifactsDir,
+    policy,
+  },);
 
   reportProbeTelemetry({ gathered, },);
   if ((sheet.kind === 'unwritten') || (manifestFile.kind === 'unwritten')) {

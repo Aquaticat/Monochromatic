@@ -10,6 +10,7 @@ import {
   censusByGeneration,
   resolveCommit,
 } from './artifact-generation.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 
 //region Artifact pool
@@ -23,7 +24,10 @@ import { digestPipeline, } from './pipeline-digest.ts';
 //
 // The policy comes from the environment rather than from a flag on each script,
 // because these are operational runners invoked by hand and the alternative is
-// remembering to pass the same value to four of them.
+// remembering to pass the same value to four of them. The ENTRY reads it
+// (`readPoolPolicy`) and hands it down as a value, so no library caller of
+// `resolvePool` pools under whatever the shell running it exported; until
+// 2026-10-10 `resolvePool` read the environment itself.
 
 /**
  Environment variable naming the commit an eligible pipeline must contain.
@@ -42,6 +46,60 @@ const POOL_ALL_VAR = 'TRANSLATION_REPAIR_POOL_ALL';
 const POOL_ALL_VALUE = 'yes';
 
 /**
+ Generation policy the invoker set, read by an entry file and handed to every
+ reader that pools settled artifacts into a rate.
+
+ @example
+ ```ts
+ const policy: PoolPolicy = { requiredCommit: '', poolAll: false, };
+ ```
+ */
+export type PoolPolicy = {
+  /**
+   Commit an eligible entry's pipeline must contain, as the invoker wrote it;
+   empty where none was set.
+   */
+  readonly requiredCommit: string;
+
+  /**
+   Whether the invoker asked for every generation at once.
+   */
+  readonly poolAll: boolean;
+};
+
+/**
+ Reads the generation policy out of the environment an entry runs in.
+
+ An exported-but-empty required commit is an ordinary shell accident, so it
+ is folded together with absence rather than read as a requirement nobody
+ can satisfy; the pool-all request is its one accepted value, spelled out so
+ a stray `0` or empty string cannot silently disable the guard.
+
+ @param env - environment of the process the entry runs in
+
+ @returns The policy, read and not yet checked for a contradiction, which
+ `resolvePool` refuses
+
+ @example
+ ```ts
+ const policy = readPoolPolicy({ env: process.env, },);
+ ```
+ */
+export function readPoolPolicy({ env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },): PoolPolicy {
+  /**
+   Both variables as the invoker set them.
+   */
+  const {
+    [REQUIRED_COMMIT_VAR]: requiredCommit,
+    [POOL_ALL_VAR]: poolAll,
+  } = env;
+  return {
+    requiredCommit: requiredCommit ?? '',
+    poolAll: poolAll === POOL_ALL_VALUE,
+  };
+}
+
+/**
  Resolves which settled entries this reader may pool, and prints the census.
 
  Printing is not optional and not the caller's choice. A rate over a filtered
@@ -50,7 +108,15 @@ const POOL_ALL_VALUE = 'yes';
 
  @param artifactsDir - directory holding one JSON per settled entry
 
+ @param names - the caller's own listing of that directory, censused in
+ place of a second listing where given
+
+ @param policy - generation policy the entry read (`readPoolPolicy`)
+
  @returns Eligible entries, what was excluded, and the printed report
+
+ @throws StatedRefusalError when the policy requires a commit and asks for
+ every generation at once
 
  @throws MixedGenerationError when the directory spans pipeline generations
  and neither `TRANSLATION_REPAIR_REQUIRED_COMMIT` nor
@@ -58,7 +124,7 @@ const POOL_ALL_VALUE = 'yes';
 
  @example
  ```ts
- const pool = await resolvePool({ artifactsDir, },);
+ const pool = await resolvePool({ artifactsDir, policy: readPoolPolicy({ env: process.env, },), },);
  ```
 
  @internal
@@ -67,39 +133,31 @@ export async function resolvePool(
   {
     artifactsDir,
     names,
+    policy,
   }: {
     readonly artifactsDir: string;
     readonly names?: readonly ArtifactFileName[];
+    readonly policy: PoolPolicy;
   },
 ): Promise<EligibleEntries> {
   /**
-   Generation policy as the invoker set it.
+   Required commit as the invoker wrote it, empty when none was set.
    */
-  const {
-    [REQUIRED_COMMIT_VAR]: requiredCommit,
-    [POOL_ALL_VAR]: poolAll,
-  } = process.env;
-
-  /**
-   Required commit as a plain string, empty when none was set.
-
-   An exported-but-empty variable is an ordinary shell accident, so it is
-   folded together with absence rather than read as a requirement nobody can
-   satisfy.
-   */
-  const required = requiredCommit ?? '';
+  const required = policy.requiredCommit;
 
   // Two different pools asked for at once. Preferring either silently records a
   // policy nobody chose, and the report printed above the resulting number
-  // would name that policy as though it had been requested.
-  if ((required !== '') && (poolAll === POOL_ALL_VALUE))
-    throw new Error(
-      `${REQUIRED_COMMIT_VAR} and ${POOL_ALL_VAR} are both set, which asks for `
+  // would name that policy as though it had been requested. The operator's to
+  // mend, so stated: as a plain `Error` it printed as a fault of the command,
+  // its message dropped, until 2026-10-10.
+  if ((required !== '') && policy.poolAll)
+    throw new StatedRefusalError({
+      says: `${REQUIRED_COMMIT_VAR} and ${POOL_ALL_VAR} are both set, which asks for `
         + 'a filtered pool and an unfiltered one at the same time.\n'
         + 'Unset whichever was not meant. A required commit selects entries '
         + 'whose pipeline contains it; pooling all takes every generation and '
         + 'says so above the number.',
-    );
+    },);
 
   /**
    Settled entries partitioned by the built pipeline each recorded.
@@ -135,7 +193,7 @@ export async function resolvePool(
   const eligible = await selectEligible({
     census,
     ...((commit === '') ? {} : { requiredCommit: commit, }),
-    pooledDeliberately: poolAll === POOL_ALL_VALUE,
+    pooledDeliberately: policy.poolAll,
   },);
 
   // The reader's OWN identity, which the artifacts cannot carry. Every artifact

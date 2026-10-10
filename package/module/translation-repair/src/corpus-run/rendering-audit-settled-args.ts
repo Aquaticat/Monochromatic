@@ -161,7 +161,7 @@ export function readAuditArguments(
       naming: 'entry id',
     },),
     // A CAP THAT IS NOT A NUMBER USED TO BUY NOTHING IN SILENCE: `capped` in
-    // `rendering-audit-settled.ts` returns every subject for a negative cap
+    // `rendering-audit-settled-buy.ts` returns every subject for a negative cap
     // and `slice(0, cap)` otherwise, and `Number('once')` is `NaN`, so a
     // mistyped cap audited zero subjects and reported a clean run. A typed
     // sign is refused too, rather than reaching the `NO_CAP` sentinel and

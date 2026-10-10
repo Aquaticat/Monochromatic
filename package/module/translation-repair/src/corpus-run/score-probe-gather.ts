@@ -11,6 +11,7 @@ import { readRunJson, } from '../run-json-read.ts';
 import { summarizeStageRoster, } from '../stage-roster.ts';
 import {
   keepEligible,
+  type PoolPolicy,
   resolvePool,
 } from './artifact-pool.ts';
 import { listArtifactFiles, } from './artifact-file-name.ts';
@@ -33,6 +34,9 @@ type NamedProbeReading = {
 
  @param artifactsDir - directory the pass writes entries into
 
+ @param policy - generation policy the entry read from its environment, which
+ decides which generations the pool admits (`readPoolPolicy`)
+
  @returns Readings and coverage counts across every artifact
 
  @throws {@link ArtifactParseError} when a present probe field is malformed,
@@ -40,11 +44,17 @@ type NamedProbeReading = {
 
  @example
  ```ts
- const gathered = await gatherProbeReadings({ artifactsDir, },);
+ const gathered = await gatherProbeReadings({ artifactsDir, policy, },);
  ```
  */
 export async function gatherProbeReadings(
-  { artifactsDir, }: { readonly artifactsDir: string; },
+  {
+    artifactsDir,
+    policy,
+  }: {
+    readonly artifactsDir: string;
+    readonly policy: PoolPolicy;
+  },
 ): Promise<GatheredProbe> {
   /**
    One directory listing, shared with the census.
@@ -63,6 +73,7 @@ export async function gatherProbeReadings(
     eligible: await resolvePool({
       artifactsDir,
       names: listed,
+      policy,
     },),
   },);
 

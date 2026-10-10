@@ -27,7 +27,8 @@ import { resolveRunsDir, } from './run-config.ts';
 // `ledger-report-print.ts` the printers.
 
 /**
- Reads the runs directory this process was pointed at and reports its ledger.
+ Reads the runs directory this process was pointed at, reports its ledger and
+ leaves the exit code the report returns.
 
  @param line - the report's command line, read whole by `reportingRefusals`
 
@@ -37,7 +38,7 @@ import { resolveRunsDir, } from './run-config.ts';
  ```
  */
 async function main({ line, }: { readonly line: CommandLineOf<'ledger-report'>; },): Promise<void> {
-  await reportLedger({
+  process.exitCode = await reportLedger({
     line,
     runsDir: await resolveRunsDir(),
   },);

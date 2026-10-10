@@ -9,6 +9,7 @@ import {
 } from './artifact-file-name.ts';
 import {
   keepEligible,
+  type PoolPolicy,
   resolvePool,
 } from './artifact-pool.ts';
 import {
@@ -53,6 +54,9 @@ export type DrawPool = {
 
  @param readSource - reads a corpus file at the pin: `readCorpusFile` in a run
 
+ @param policy - generation policy the entry read from its environment, which
+ decides which generations the pool admits (`readPoolPolicy`)
+
  @returns The admitted entries and their pool
 
  @throws {@link StatedRefusalError} When the runs directory holds no artifacts
@@ -60,16 +64,18 @@ export type DrawPool = {
 
  @example
  ```ts
- const { entries, pool, } = await readDrawPool({ runsDir, readSource: readCorpusFile, },);
+ const { entries, pool, } = await readDrawPool({ runsDir, readSource: readCorpusFile, policy, },);
  ```
  */
 export async function readDrawPool(
   {
     runsDir,
     readSource,
+    policy,
   }: {
     readonly runsDir: string;
     readonly readSource: typeof readCorpusFile;
+    readonly policy: PoolPolicy;
   },
 ): Promise<DrawPool> {
   /**
@@ -94,6 +100,7 @@ export async function readDrawPool(
   const eligible = await resolvePool({
     artifactsDir,
     names: listed,
+    policy,
   },);
 
   /**

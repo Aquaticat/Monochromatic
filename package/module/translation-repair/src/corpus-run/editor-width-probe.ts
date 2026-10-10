@@ -9,6 +9,7 @@ import { runWidthSlice, } from './editor-width-slice.ts';
 import {
   createRunClient,
   readHeadSha,
+  resolveRunsDir,
   RUN_CORPUS_PIN,
 } from './run-config.ts';
 
@@ -22,8 +23,8 @@ import {
 
 /**
  Hands the run what only a real process has: the client, the pinned corpus,
- the commit read and the stages that ask a model or write to the runs
- directory.
+ the commit read, the stages that ask a model or write a report, and the runs
+ directory the environment names.
 
  @param line - the probe's command line, read whole by `reportingRefusals`
 
@@ -32,8 +33,8 @@ import {
  await main({ line, },);
  ```
  */
-function main({ line, }: { readonly line: CommandLineOf<'editor-width-probe'>; },): Promise<void> {
-  return runEditorWidthProbe({
+async function main({ line, }: { readonly line: CommandLineOf<'editor-width-probe'>; },): Promise<void> {
+  await runEditorWidthProbe({
     line,
     client: createRunClient(),
     drawSample: sampleBenchSlices,
@@ -43,6 +44,7 @@ function main({ line, }: { readonly line: CommandLineOf<'editor-width-probe'>; }
     gather: gatherWidthInput,
     runSlice: runWidthSlice,
     writeReport: writeWidthReport,
+    runsDir: await resolveRunsDir(),
   },);
 }
 
