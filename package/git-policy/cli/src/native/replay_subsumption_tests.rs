@@ -173,3 +173,54 @@ fn no_settled_path_keeps_the_preparation_base() {
     assert!(outcome.subsumed_paths.is_empty() && outcome.kept_landed_paths.is_empty());
     remove(root.as_path());
 }
+
+/// Identical gitlinks and identical binary blobs are subsumed; a different gitlink and a different binary blob are not.
+#[test]
+fn identical_gitlinks_and_binary_blobs_are_subsumed_only_when_identical() {
+    let root: PathBuf = fixture("replay-subsumption-gitlink-binary");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let gitlink = |path: &str, sha: &str| {
+        let cacheinfo: String = format!("160000,{sha},{path}");
+        git(repo.as_path(), &["update-index", "--add", "--cacheinfo", cacheinfo.as_str()]);
+    };
+    std::fs::write(repo.join("bin1.dat"), b"a\0b\n").expect("bin1");
+    std::fs::write(repo.join("bin2.dat"), b"a\0b\n").expect("bin2");
+    gitlink("sub1", "3333333333333333333333333333333333333333");
+    gitlink("sub2", "3333333333333333333333333333333333333333");
+    git(repo.as_path(), &["add", "bin1.dat", "bin2.dat"]);
+    git(repo.as_path(), &["commit", "--quiet", "--message=base"]);
+    let base: String = rev(repo.as_path(), "HEAD");
+    git(repo.as_path(), &["checkout", "--quiet", "-b", "prepared"]);
+    std::fs::write(repo.join("bin1.dat"), b"x\0L\n").expect("prepared bin1");
+    std::fs::write(repo.join("bin2.dat"), b"x\0P\n").expect("prepared bin2");
+    gitlink("sub1", "1111111111111111111111111111111111111111");
+    gitlink("sub2", "2222222222222222222222222222222222222222");
+    git(repo.as_path(), &["add", "bin1.dat", "bin2.dat"]);
+    git(repo.as_path(), &["commit", "--quiet", "--message=prepared"]);
+    let prepared: String = rev(repo.as_path(), "HEAD");
+    git(repo.as_path(), &["checkout", "--quiet", "main"]);
+    std::fs::write(repo.join("bin1.dat"), b"x\0L\n").expect("landed bin1");
+    std::fs::write(repo.join("bin2.dat"), b"x\0L\n").expect("landed bin2");
+    gitlink("sub1", "1111111111111111111111111111111111111111");
+    gitlink("sub2", "1111111111111111111111111111111111111111");
+    git(repo.as_path(), &["add", "bin1.dat", "bin2.dat"]);
+    git(repo.as_path(), &["commit", "--quiet", "--message=landed"]);
+    let current: String = rev(repo.as_path(), "HEAD");
+    let scratch: PathBuf = root.join("scratch");
+    std::fs::create_dir(&scratch).expect("scratch");
+    let outcome: SubsumptionBase = subsume_landed_changes(
+        &git_context(),
+        repo.join(".git").as_path(),
+        repo.join(".git").join("objects").as_path(),
+        repo.as_path(),
+        scratch.as_path(),
+        1,
+        base.as_str(),
+        current.as_str(),
+        prepared.as_str(),
+        &BTreeMap::new(),
+    )
+    .expect("subsumption");
+    assert_eq!(outcome.subsumed_paths, vec!["bin1.dat", "sub1"]);
+    remove(root.as_path());
+}

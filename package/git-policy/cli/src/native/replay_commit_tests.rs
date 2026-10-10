@@ -228,3 +228,120 @@ fn the_reservation_is_granted_after_the_configured_lost_races() {
     reservation.release().expect("released");
     remove(fixtures.root.as_path());
 }
+
+/// A repository whose base has `c.txt` with the given bytes; `prepared` and `landed` each mutate the tree by a closure
+///  run inside the repository on its own branch, and the scene's IDs are returned.
+fn custom_scene(name: &str, base_bytes: &[u8], prepared_step: &dyn Fn(&Path), landed_step: &dyn Fn(&Path)) -> Scene {
+    let root: PathBuf = fixture(name);
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    std::fs::write(repo.join("c.txt"), base_bytes).expect("base");
+    git(repo.as_path(), &["add", "--all"]);
+    git(repo.as_path(), &["commit", "--quiet", "--message=base"]);
+    let base: String = rev(repo.as_path(), "HEAD");
+    git(repo.as_path(), &["checkout", "--quiet", "-b", "prepared"]);
+    prepared_step(repo.as_path());
+    git(repo.as_path(), &["commit", "--quiet", "--message=prepared"]);
+    let prepared: String = rev(repo.as_path(), "HEAD");
+    git(repo.as_path(), &["checkout", "--quiet", "main"]);
+    landed_step(repo.as_path());
+    git(repo.as_path(), &["commit", "--quiet", "--message=landed"]);
+    let current: String = rev(repo.as_path(), "HEAD");
+    let git_dir: PathBuf = repo.join(".git");
+    let objects: PathBuf = git_dir.join("objects");
+    return Scene {
+        root,
+        repo,
+        base,
+        current,
+        prepared,
+        git_dir,
+        objects,
+    };
+}
+
+/// Replays a custom scene and returns the outcome.
+fn replay_scene(fixtures: &Scene) -> ReplayOutcome {
+    let transaction: PathBuf = transaction_directory(fixtures.repo.as_path(), "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10");
+    let context = git_context();
+    let globals: Vec<String> = Vec::new();
+    return replay_commit(&request(&context, fixtures, transaction.as_path(), &globals)).expect("replay");
+}
+
+/// An edit next to the landed edit, without the landed edit itself, is not subsumed and the merge conflicts.
+#[test]
+fn an_adjacent_edit_without_the_landed_edit_conflicts() {
+    let fixtures = scene(
+        "replay-commit-adjacent-conflict",
+        &file("LANDED", "line 3", "line 11"),
+        &file("line 2", "OWN3", "line 11"),
+    );
+    let ReplayOutcome::Conflict(conflict) = replay_scene(&fixtures) else {
+        panic!("expected a conflict");
+    };
+    assert_eq!(conflict.paths, vec![String::from("c.txt")]);
+    remove(fixtures.root.as_path());
+}
+
+/// A landed mode change with prepared content merges three-way: the mode lands, and so does the content.
+#[test]
+fn a_landed_mode_change_merges_three_way_even_when_the_content_is_subsumed() {
+    let fixtures = custom_scene(
+        "replay-commit-mode",
+        b"line 1\nline 2\n",
+        &|repo: &Path| {
+            std::fs::write(repo.join("c.txt"), b"line 1\nPREPARED\n").expect("prepared content");
+            git(repo, &["add", "c.txt"]);
+        },
+        &|repo: &Path| {
+            git(repo, &["update-index", "--chmod=+x", "c.txt"]);
+        },
+    );
+    let ReplayOutcome::Replayed(replayed) = replay_scene(&fixtures) else {
+        panic!("expected a clean replay");
+    };
+    let listing: String = git_text(fixtures.repo.as_path(), &["ls-tree", replayed.tree.as_str(), "c.txt"]);
+    assert!(listing.starts_with("100755 blob "), "{listing}");
+    let spec: String = format!("{}:c.txt", replayed.tree);
+    assert_eq!(git_text(fixtures.repo.as_path(), &["cat-file", "-p", spec.as_str()]), "line 1\nPREPARED");
+    remove(fixtures.root.as_path());
+}
+
+/// A landed modification against a prepared deletion conflicts, and a landed deletion against a prepared modification conflicts.
+#[test]
+fn delete_against_modify_conflicts_either_way_round() {
+    let modify = |repo: &Path| {
+        std::fs::write(repo.join("c.txt"), b"line 1\nMODIFIED\n").expect("modified");
+        git(repo, &["add", "c.txt"]);
+    };
+    let delete = |repo: &Path| {
+        git(repo, &["rm", "--quiet", "c.txt"]);
+    };
+    let landed_modifies = custom_scene("replay-commit-delete-prepared", b"line 1\nline 2\n", &delete, &modify);
+    let ReplayOutcome::Conflict(first) = replay_scene(&landed_modifies) else {
+        panic!("a prepared deletion against a landed modification must conflict");
+    };
+    assert_eq!(first.paths, vec![String::from("c.txt")]);
+    remove(landed_modifies.root.as_path());
+    let landed_deletes = custom_scene("replay-commit-delete-landed", b"line 1\nline 2\n", &modify, &delete);
+    let ReplayOutcome::Conflict(second) = replay_scene(&landed_deletes) else {
+        panic!("a landed deletion against a prepared modification must conflict");
+    };
+    assert_eq!(second.paths, vec![String::from("c.txt")]);
+    remove(landed_deletes.root.as_path());
+}
+
+/// A path both sides deleted is subsumed: the replayed tree does not hold it.
+#[test]
+fn a_deletion_on_both_sides_is_subsumed() {
+    let delete = |repo: &Path| {
+        git(repo, &["rm", "--quiet", "c.txt"]);
+    };
+    let fixtures = custom_scene("replay-commit-delete-both", b"line 1\nline 2\n", &delete, &delete);
+    let ReplayOutcome::Replayed(replayed) = replay_scene(&fixtures) else {
+        panic!("expected a clean replay");
+    };
+    assert_eq!(replayed.subsumed_paths, vec![String::from("c.txt")]);
+    let listing: String = git_text(fixtures.repo.as_path(), &["ls-tree", replayed.tree.as_str(), "c.txt"]);
+    assert!(listing.is_empty(), "{listing}");
+    remove(fixtures.root.as_path());
+}
