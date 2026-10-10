@@ -91,6 +91,7 @@ import androidx.compose.foundation.layout.height
 // ```ts
 // import { MaterialTheme } from "material3";
 // ```
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 
 // What:     `import androidx.compose.runtime.Composable` marks functions that emit UI.
@@ -101,6 +102,7 @@ import androidx.compose.material3.MaterialTheme
 // import type { Composable } from "compose/runtime";
 // ```
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 // What:     `import androidx.compose.ui.Modifier` is the chain that sizes, paints, and places each pane.
 // Why:      Every composable here takes a modifier, and the panes set their size and background through it.
@@ -238,11 +240,15 @@ fun playerContent(
     val dark: Boolean = isSystemInDarkTheme()
     /** Canvas painted behind every pane of the screen. */
     val canvas: Color = canvasColor(dark = dark)
-    BoxWithConstraints(modifier = modifier.fillMaxSize().background(color = canvas)) {
-        if (isCoverLayout(maxWidth.value)) {
-            coverLayout(model = model, pickerOpen = pickerOpen, actions = actions, dark = dark)
-        } else {
-            unfoldedLayout(model = model, actions = actions, canvas = canvas)
+    // Text and icons that set no color of their own read LocalContentColor, which is black unless a Surface or
+    // Scaffold provides one; the screen paints its own canvas, so it provides the theme's on-surface color itself.
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+        BoxWithConstraints(modifier = modifier.fillMaxSize().background(color = canvas)) {
+            if (isCoverLayout(maxWidth.value)) {
+                coverLayout(model = model, pickerOpen = pickerOpen, actions = actions, dark = dark)
+            } else {
+                unfoldedLayout(model = model, actions = actions, canvas = canvas)
+            }
         }
     }
 }
