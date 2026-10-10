@@ -48,6 +48,7 @@ import {
   TARGET_TEXT,
 } from './editor-candidate-envelope.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the selection under test.
@@ -220,7 +221,7 @@ await describe({
               sourceText: '猫猫喜欢追蝴蝶。',
               targetText: TARGET_TEXT,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect({

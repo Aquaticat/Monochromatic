@@ -46,6 +46,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the lane writes its progress to.
@@ -349,8 +350,8 @@ async function settleWith(
       translatorModelIds: TRANSLATORS,
       judgeModelIds: JUDGES,
     },
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }

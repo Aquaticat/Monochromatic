@@ -57,6 +57,7 @@ import {
 import { replyWith, } from '../scripted-reply-outcome.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Both judges the cases run alone, written the way the flag takes them.
@@ -303,7 +304,7 @@ async function probeIn(
       },
       pipelineDigest: DIGEST,
       runnerClosure: CLOSURE,
-      perCallTimeoutMs: 1_000,
+      perCallTimeoutMs: HANG_STOP_MS,
       log: logged.logger,
       out: {
         write: function keep(text: string,): void {

@@ -22,6 +22,7 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_OPENROUTER_ONLY,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /** Asked seats matching the live failure's provider-independent shape. */
 const ROSTER = [
@@ -80,9 +81,9 @@ function requestFor(client: SyntheticClient,): Parameters<typeof reviewAbsoluteN
     modelIds: ROSTER,
     quorumOver: WIDE_BENCH,
     subject: { lineStructured: false, sourceText: '猫睡在窗台上。', candidateText: TEXT, paragraphs: [TEXT,], },
-    signal: AbortSignal.timeout(5_000,),
-    exchangeTimeoutMs: 5_000,
-    graceMs: 0,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    exchangeTimeoutMs: HANG_STOP_MS,
+    graceMs: HANG_STOP_MS,
     fanOut: 'whole-bench',
     l: tagged({ tag: 'naturalness-quorum-roundtrip', },),
   };

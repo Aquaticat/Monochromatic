@@ -47,6 +47,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /** Four-seat review and selection roster. */
 const ROSTER = [
@@ -248,7 +249,7 @@ async function reviewsAsked(
     },),),
     blocks,
     signal: new AbortController().signal,
-    exchangeTimeoutMs: 5_000,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
     ...(alternating
       ? {
@@ -312,7 +313,7 @@ async function reviewPrompts(
     sourceContexts,
     blocks: [block,],
     signal: new AbortController().signal,
-    exchangeTimeoutMs: 5_000,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return prompts;
@@ -512,7 +513,7 @@ await describe({
               sourceContexts,
               blocks,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -550,7 +551,7 @@ await describe({
               sourceContexts,
               blocks,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -587,7 +588,7 @@ await describe({
               sourceContexts,
               blocks,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -677,7 +678,7 @@ await describe({
               sourceContexts,
               blocks,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l: levelCapturingLogger({ lines, },),
             },);
             /** The page as the later block's revision leaves it. */
@@ -735,7 +736,7 @@ await describe({
               sourceText: 'Cats nap.',
               targetText: 'Cats nap.\n\nAside A',
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
               outsideReads: NO_OUTSIDE_READS,
             },);

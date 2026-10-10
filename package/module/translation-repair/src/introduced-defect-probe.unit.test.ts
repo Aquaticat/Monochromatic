@@ -28,6 +28,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the probes under test.
@@ -158,7 +159,7 @@ await describe({
           issues: [],
           identityContext: '',
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(prompts,).toHaveLength(0,);
@@ -180,7 +181,7 @@ await describe({
           issues: [],
           identityContext: '',
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(report.heardProbers,).toBe(2,);
@@ -204,7 +205,7 @@ await describe({
           issues: [],
           identityContext: '',
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(report.findings,).toEqual([`${SEAT_HYPER_OPENROUTER_UNMEASURED}: duplicate-check (1)`,],);
@@ -229,7 +230,7 @@ await describe({
           issues: [],
           identityContext: '',
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(report.regions[0]
@@ -258,7 +259,7 @@ await describe({
           issues: [],
           identityContext: '',
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -289,7 +290,7 @@ await describe({
           identityContext: '',
           disclosure: 'rendered',
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 

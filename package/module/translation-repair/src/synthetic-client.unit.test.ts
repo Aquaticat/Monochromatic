@@ -50,15 +50,17 @@ const SETTLE_MS = 10;
 const EXPECTED_DEFAULT_WIDTH = 5;
 
 /**
- Delay of the deliberately slow test transport.
+ How long the first of two same-model calls holds the one slot, so the second
+ waits in the queue past its own deadline.
  */
-const SLOW_TRANSPORT_MS = 150;
+const QUEUE_HOLD_MS = 300;
 
 /**
- Headroom granted past one slow-transport delay:
- enough for one exchange, far short of queue wait plus exchange.
+ The queued call's deadline: shorter than its wait in the queue, so the call
+ survives only when the deadline leaves queue wait out, and longer than
+ nothing that follows the slot opening, since that exchange answers at once.
  */
-const DEADLINE_MARGIN_MS = 70;
+const QUEUED_DEADLINE_MS = 100;
 
 /**
  Single user message reused across exchanges.
@@ -564,37 +566,56 @@ await describe({
           name: 'arms the exchange deadline inside the slot, not at dispatch',
           fn: async () => {
             /**
-             Transport answering after a fixed delay.
+             Exchanges the transport has served.
+             */
+            const served = { count: 0, };
+
+            /**
+             Transport holding the first exchange, answering every later one
+             at once, and refusing an exchange whose signal has aborted.
 
              @param exchange - request under attempt
 
-             @returns Success reply after the delay
+             @returns Success reply, after the hold for the first exchange
+
+             @throws The exchange signal's abort reason, when it has aborted
 
              @example
              ```ts
-             await slowReply(exchange,);
+             await holdFirstReply(exchange,);
              ```
              */
-            async function slowReply(
+            async function holdFirstReply(
               exchange: ForeignBorrowed<TransportExchange>,
             ): Promise<TransportReply> {
-              // The exchange signal is unused: this transport never hangs.
-              void exchange;
-              await wait(SLOW_TRANSPORT_MS,);
+              served.count += 1;
+              // THE FIRST CALL HOLDS THE SLOT past the second call's deadline,
+              // and the second answers at once: once its slot opens, no timer
+              // can end before its reply on any machine. Each call slept 150 ms
+              // against a deadline of 220 ms here, with a stall of 70 ms between
+              // the two enough to reverse them.
+              if (served.count === 1)
+                await wait(QUEUE_HOLD_MS,);
+              // REFUSES AN ABORTED EXCHANGE, as a fetch on its signal would, so a
+              // deadline that counted the queue, and fired while the second call
+              // waited there, fails the call. The sleeping transport here ignored
+              // its signal, and the case passed whichever way the deadline was
+              // armed.
+              if (exchange.signal.aborted)
+                throw exchange.signal.reason;
               return { status: 200, bodyText: COMPLETION_BODY, };
             }
 
             /** Client with one slot so the second call queues locally. */
             const client = createSyntheticClient({
               apiKey: 'test-key',
-              transport: slowReply,
+              transport: holdFirstReply,
               perModelConcurrency: 1,
             },);
             /**
-             Two same-model calls race for one slot; the second waits a full
-             transport delay in the queue, then needs another full delay for
-             its own exchange. Its deadline covers one delay but not two, so
-             it only survives when the deadline excludes queue wait.
+             Two same-model calls race for one slot; the second waits in the
+             queue longer than its own deadline, then answers at once. It only
+             survives when the deadline excludes queue wait.
              */
             const replies = await Promise.all([
               client.chatText({
@@ -606,7 +627,7 @@ await describe({
                 modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
                 messages: MESSAGES,
                 signal: new AbortController().signal,
-                exchangeTimeoutMs: SLOW_TRANSPORT_MS + DEADLINE_MARGIN_MS,
+                exchangeTimeoutMs: QUEUED_DEADLINE_MS,
               },),
             ],);
             expect(replies[0]?.text,).toBe('{"verdict":"pass"}',);

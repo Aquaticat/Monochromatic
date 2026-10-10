@@ -21,6 +21,7 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Guard accepting any string, so a quoted JSON string is a usable answer and
@@ -45,7 +46,7 @@ function isStringAnswer(value: unknown,): value is string {
 const REQUEST: ChatTextRequest = {
   modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
   messages: [{ role: 'user', content: 'Judge this one cat sentence.', },],
-  signal: AbortSignal.timeout(5_000,),
+  signal: AbortSignal.timeout(HANG_STOP_MS,),
 };
 
 await describe({

@@ -1067,11 +1067,36 @@ and passed in every other run of the whole suite (ledger B340).
 Its bound is 60,000 ms,
 documented as a stop for a hang that no case waits for.
 
+The census that followed, on 2026-10-06 (UTC), read every bound the tests and fixtures set on the real clock,
+948 of them outside seven files deferred to the changes in flight on them.
+The bounds that only stopped a hang now share one constant;
+the bounds a case reaches bound work that cannot end before them;
+a seat that slept past a window,
+a head start that ordered two slices,
+and a ceiling on elapsed time gave way to gates and to what the case can read off the abort;
+a parse's time limit moved to the process's CPU clock.
+It also found that a per-call deadline handed to a stage over a hand-scripted client is never armed,
+since the provider clients arm it:
+what fires in a test is a signal,
+a cap,
+a window
+or a stream bound
+that the test arms itself or hands to production code that arms it.
+
 The rule:
 a real-clock case asserts only bounds that load can widen and not break;
 a case that needs a caller asleep uses a window no stall outlasts;
 a grace window a case relies on is one the round never reaches,
 and the case is shown failing at a window of 0;
+a bound that only stops a hang is `HANG_STOP_MS` of `hang-stop.test-fixture.ts`,
+60,000 ms,
+never a number of its own;
+a bound a case means to reach bounds work that cannot end before it on any machine,
+work that ends only on its own abort or a sleep armed after the bound and longer than it;
+a meter or a sleep that must overlap or order other work is shown in place within one turn of the event loop,
+or gives way to a gate the case opens;
+elapsed time is asserted only as a lower bound,
+and synchronous work is timed on the process's CPU clock;
 a new timing case counts as passing only once the whole suite has run it.
 A bound on scripted work is a stop for a hang,
 which no case waits for,
@@ -1082,6 +1107,11 @@ A case that needs a run stopped brings its own controller,
 so the stop for a hang never doubles as the stop a case asserts.
 
 What enforces it:
+`real-clock-bounds.unit.test.ts`,
+among the source scans,
+fails a bound a test or fixture sets on the real clock other than the shared hang stop
+unless it is listed with its class and reason,
+and fails a listed bound or a deferred file the source no longer holds;
 the whole unit suite run before a batch's work is called done.
 Open:
 the same shape stands at 604 sites in 138 test files (ledger B340),

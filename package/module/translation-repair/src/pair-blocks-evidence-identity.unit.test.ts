@@ -15,6 +15,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_OPENROUTER_VISION_EDITOR,] as const;
 const l = tagged({ tag: 'pairing-evidence-identity-test', },);
@@ -80,7 +81,7 @@ await describe({
         try {
           await pairBlocksWithRoster({ client, modelIds: test.modelIds, sourceBlocks: [{ index: 0, text: '猫睡了。', },],
             targetBlocks: [{ index: 0, text: 'The cat slept.', },], signal: new AbortController().signal,
-            exchangeTimeoutMs: 5_000, l, fanOut: 'whole-bench', },);
+            exchangeTimeoutMs: HANG_STOP_MS, l, fanOut: 'whole-bench', },);
         }
         catch (error) {
           caught = error;

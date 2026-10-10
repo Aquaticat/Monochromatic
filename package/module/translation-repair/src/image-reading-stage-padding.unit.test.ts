@@ -23,6 +23,7 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.
@@ -71,8 +72,8 @@ await describe({
           modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
           bytes: new Uint8Array(64,).fill(7,),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 

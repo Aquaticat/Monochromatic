@@ -18,6 +18,7 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 await describe({
   name: confirmAbsoluteNaturalness.name,
@@ -61,8 +62,8 @@ await describe({
             candidateText: 'The cat is sleeping.',
             paragraphs: ['The cat is sleeping.',],
           },
-          signal: AbortSignal.timeout(5_000,),
-          exchangeTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'absolute-confirmation-test', },),
         },);
         expect(confirmed.review.verdict,).toBe('acceptable',);

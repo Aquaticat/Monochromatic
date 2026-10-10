@@ -36,6 +36,7 @@ import {
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
 import { sliceOf, } from './content-slice-of.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the trial writes its progress to.
@@ -203,8 +204,8 @@ async function sheetsFor(
       cleanFirst: true,
     },
     judgeModelIds: ROSTER,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return {

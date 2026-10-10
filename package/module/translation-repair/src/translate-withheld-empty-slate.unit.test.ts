@@ -30,6 +30,7 @@ import {
   type SyntheticClient,
   TranslationRepairInterruptedError,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -150,8 +151,8 @@ async function stageOver({ heard, }: { readonly heard: boolean; },): Promise<unk
     incumbentText: ARCHIVE,
     incumbentKind: 'present',
     lineStructured: false,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }

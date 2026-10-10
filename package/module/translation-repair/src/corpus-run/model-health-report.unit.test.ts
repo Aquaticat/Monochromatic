@@ -31,6 +31,7 @@ import {
   modelReplyScriptedClient,
   type ScriptedModelReply,
 } from './model-reply-scripted-client.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  First model of every roster.
@@ -41,11 +42,6 @@ const TABBY = 'hf:openai/gpt-oss-120b' as const;
  Second model of every roster.
  */
 const MOUSER = 'minimax-m3' as const;
-
-/**
- Timeout every case hands the walk.
- */
-const TIMEOUT_MS = 4_321;
 
 /**
  Reply in the shape asked for.
@@ -87,7 +83,7 @@ async function walkWith(
         modelId,
       );
     },),
-    timeoutMs: TIMEOUT_MS,
+    timeoutMs: HANG_STOP_MS,
     l: levelCapturingLogger({ lines, },),
   },);
   return {
@@ -238,7 +234,7 @@ await describe({
             status: 401,
           },),
           roster: [TABBY,],
-          timeoutMs: TIMEOUT_MS,
+          timeoutMs: HANG_STOP_MS,
           l: levelCapturingLogger({ lines, },),
         },);
 

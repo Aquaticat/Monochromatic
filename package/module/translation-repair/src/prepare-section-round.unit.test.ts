@@ -36,6 +36,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Original with three sections, headed in Chinese.
@@ -150,11 +151,6 @@ const OTHER_ROSTER = [
  Logger for the round under test.
  */
 const l = tagged({ tag: 'prepare-section-round-test', },);
-
-/**
- Per-call bound, generous because the transport answers instantly.
- */
-const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
  Pairing both canned voices return, leaving the third original out.
@@ -284,7 +280,7 @@ async function runRound(
     source: parseDocument({ text: sourceText, },),
     target: parseDocument({ text: targetText, },),
     signal: new AbortController().signal,
-    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l: logger,
     sectionCache: {
       resumed,

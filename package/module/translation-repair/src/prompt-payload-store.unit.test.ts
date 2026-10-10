@@ -29,6 +29,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Exact request replayed across separate client instances.
@@ -36,7 +37,7 @@ import { scratchDir, } from './scratch-dir.test-fixture.ts';
 const REQUEST: ChatTextRequest = {
   modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
   messages: [{ role: 'user', content: 'Read one cat sentence.', },],
-  signal: AbortSignal.timeout(5_000,),
+  signal: AbortSignal.timeout(HANG_STOP_MS,),
 };
 
 /**

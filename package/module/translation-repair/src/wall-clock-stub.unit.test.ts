@@ -27,18 +27,12 @@ import {
   stubWallClock,
   WALL_START_MS,
 } from './wall-clock-stub.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  The reading the stepping case holds while its sibling reads.
  */
 const STEPPED_MS = WALL_START_MS - HOUR_MS;
-
-/**
- How long either case of the pair waits for the other. They meet within a
- turn of the event loop when the suite runs them side by side; the bound turns
- a suite that ran them one after the other into a failure rather than a hang.
- */
-const PAIR_PATIENCE_MS = 10_000;
 
 /**
  Settles once the stepping case has set its clock, so its sibling reads while
@@ -76,7 +70,11 @@ await describe({
       children: [
         it({
           name: 'HOLDS THE STEPPED READING while a sibling case reads the clock',
-          timeout: PAIR_PATIENCE_MS,
+          // How long either case of the pair waits for the other. They meet
+          // within a turn of the event loop when the suite runs them side by
+          // side; the bound turns a suite that ran them one after the other
+          // into a failure rather than a hang.
+          timeout: HANG_STOP_MS,
           fn: async ctx => {
             const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
             wall.step({ byMs: -HOUR_MS, },);
@@ -88,7 +86,7 @@ await describe({
         it({
           name: 'READS THE REAL CLOCK while a sibling case holds a stepped one, where a stub replacing Date.now for '
             + 'the whole process answered every case its reading',
-          timeout: PAIR_PATIENCE_MS,
+          timeout: HANG_STOP_MS,
           fn: async () => {
             await clockSet.promise;
             /**

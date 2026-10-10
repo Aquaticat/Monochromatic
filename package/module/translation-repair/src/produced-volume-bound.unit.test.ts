@@ -27,11 +27,7 @@ import {
   producedVolumeBound,
   StreamOverrunError,
 } from '../dist/final/node/index.mjs';
-
-/**
- Roomy silence window, so nothing here trips the other guard.
- */
-const ROOMY_MS = 600_000;
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Answer characters the fixture carries, comfortably under the module default
@@ -218,7 +214,7 @@ await describe({
             credentials: [],
             response: streamOf({ raw: bodyOf(), },),
             guard,
-            callerSignal: AbortSignal.timeout(ROOMY_MS,),
+            callerSignal: AbortSignal.timeout(HANG_STOP_MS,),
             label: 'bowl',
             maxAnswerChars: TIGHT_BOUND,
           },);
@@ -243,7 +239,7 @@ await describe({
           credentials: [],
           response: streamOf({ raw: bodyOf(), },),
           guard,
-          callerSignal: AbortSignal.timeout(ROOMY_MS,),
+          callerSignal: AbortSignal.timeout(HANG_STOP_MS,),
           label: 'bowl',
         },);
 

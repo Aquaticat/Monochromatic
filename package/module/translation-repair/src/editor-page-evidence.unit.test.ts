@@ -39,6 +39,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  English the editors repair.
@@ -182,7 +183,7 @@ await describe({
           identityContext: IDENTITY,
           referenceContext: REFERENCES,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'editor-page-evidence-test', },),
         },);
         expect(editorSheets.length,).toBeGreaterThan(0,);

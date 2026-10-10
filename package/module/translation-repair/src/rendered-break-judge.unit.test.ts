@@ -22,6 +22,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /** Faithful rendered structure, regardless of rotated ballot position. */
 const KEPT = '> The cat wakes.<br/>The bird sings.';
@@ -76,7 +77,7 @@ await describe({
           incumbentKind: 'absent',
           lineStructured: false,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'rendered-break-judge-test', },),
         },);
         expect(result.text,).toBe(KEPT,);

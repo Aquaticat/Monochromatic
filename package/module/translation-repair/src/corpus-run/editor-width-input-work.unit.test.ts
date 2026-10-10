@@ -33,6 +33,7 @@ import {
 
 import { envelopeSpansOf, } from '../envelope-span.test-fixture.ts';
 import { scriptedClient, } from './scripted-width-client.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger for the probe under test.
@@ -102,7 +103,7 @@ async function gathered(
       },
     },),
     slice: SLICE,
-    signal: AbortSignal.timeout(120_000,),
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
     l,
   },);
 }

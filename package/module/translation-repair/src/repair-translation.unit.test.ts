@@ -37,12 +37,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { proposerIdsOf, } from './claim-attribution-proposer-ids.test-fixture.ts';
-
-/**
- Deadline per exchange: the driver's former default, which every call here ran
- under before the driver stopped defaulting it, so no case's timing moved.
- */
-const CALL_TIMEOUT_MS = 300_000;
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Original document of the fixture pair.
@@ -480,7 +475,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(result.status,).toBe('repaired',);
         expect(result.repairedText,).toContain('The cat also loves chasing butterflies.',);
@@ -507,7 +502,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         expect(result.sliceCritics.length,).toBeGreaterThan(0,);
@@ -544,7 +539,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         /** Chunk indexes in recorded order. */
@@ -603,7 +598,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         // The assertion is vacuous unless attribution actually exists, so this
@@ -664,7 +659,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         /** Record of the issue no envelope could serve. */
@@ -698,7 +693,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         /** Record of the issue an applied operation served. */
@@ -742,7 +737,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         /** Record of the issue an applied operation served. */
@@ -774,7 +769,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         /** Record of the issue an applied operation served. */
@@ -802,7 +797,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(result.status,).toBe('unchanged',);
         expect(result.repairedText,).toBe(TARGET_TEXT,);
@@ -822,7 +817,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(result.status,).toBe('unchanged',);
         expect(result.repairedText,).toBe(TARGET_TEXT,);
@@ -863,7 +858,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(result.status,).not
           .toBe('blocked-non-translation',);
@@ -934,7 +929,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(result.status,).not.toBe('blocked-non-translation',);
         expect(result.findings
@@ -997,7 +992,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed: new Map<string, ChunkRepairOutcome>(),
             persist: async ({
@@ -1036,7 +1031,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed,
             persist: async () => {
@@ -1109,7 +1104,7 @@ Meow meow meow meow.
           targetText: targetTwoSections,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(result.status,).toBe('repaired',);
         // THE STANDING REGION IS REPAIRED NOW RATHER THAN SHIPPED UNCHANGED.
@@ -1158,7 +1153,7 @@ Meow meow meow meow.
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           overlap: 1,
         },);
         await repairTranslation({
@@ -1172,7 +1167,7 @@ Meow meow meow meow.
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           overlap: 2,
         },);
         expect(serial.peak,).toBe(MODELS.criticModelIds
@@ -1211,7 +1206,7 @@ Meow meow meow meow.
           targetText: `${TARGET_LONG_SECTION}\n${TARGET_LONG_SECTION}`,
           models: refiningModels,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           overlap: 1,
         },);
 
@@ -1233,7 +1228,7 @@ Meow meow meow meow.
           targetText: `${TARGET_LONG_SECTION}\n${TARGET_LONG_SECTION}`,
           models: refiningModels,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           overlap: 2,
         },);
         expect(serial.peak,).toBe(1,);
@@ -1255,7 +1250,7 @@ Meow meow meow meow.
           prepared,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           beforeSlice: async (): Promise<RepairSliceSeating> => {
             before.calls += 1;
             return {};
@@ -1303,7 +1298,7 @@ Meow meow meow meow.
           prepared,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           beforeSlice: async (): Promise<RepairSliceSeating> => ({ repairModels: reseated, }),
         },);
         expect(asked.length,).toBeGreaterThan(0,);
@@ -1354,7 +1349,7 @@ Meow meow meow meow.
           prepared,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           beforeSlice: async (): Promise<RepairSliceSeating> => {
             hook.calls += 1;
             return (hook.calls === 1) ? {} : { repairModels: reseated, };
@@ -1390,7 +1385,7 @@ Meow meow meow meow.
           prepared,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         /**
@@ -1402,7 +1397,7 @@ Meow meow meow meow.
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(fromPrepared.status,).toBe('repaired',);
         expect(fromPrepared.repairedText,).toBe(fromTexts.repairedText,);
@@ -1504,7 +1499,7 @@ Meow meow meow meow.
           prepared,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
 
         /**
@@ -1515,7 +1510,7 @@ Meow meow meow meow.
           prepared: withAnchor,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         // NOT ONE MORE EXCHANGE for the extra slice, which is the whole point:
         // an anchor is answered rather than asked about.
@@ -1591,7 +1586,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           targetText: targetWithNote,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         // The document keeps the archive's text, marker and all.
         expect(result.repairedText,).toContain('The cat hates butterflies[^1].',);
@@ -1650,7 +1645,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: controller.signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed: new Map<string, ChunkRepairOutcome>(),
             persist: async ({
@@ -1695,7 +1690,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: controller.signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           overlap: 2,
         },),)
           .rejects
@@ -1742,7 +1737,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           targetText: TARGET_LONG_SECTION,
           models: refining,
           signal: controller.signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },),)
           .rejects
           .toBe(ENTRY_DEADLINE_FAILURE,);
@@ -1769,7 +1764,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed: new Map<string, ChunkRepairOutcome>(),
             persist: async ({
@@ -1817,7 +1812,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: spent.signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed,
             persist: async () => {
@@ -1861,7 +1856,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             targetText: RENDERED,
             models: MODELS,
             signal: new AbortController().signal,
-            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            perCallTimeoutMs: HANG_STOP_MS,
             overlap,
           },);
 
@@ -1880,7 +1875,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             targetText: `${RENDERED}\n${RENDERED}`,
             models: MODELS,
             signal: new AbortController().signal,
-            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            perCallTimeoutMs: HANG_STOP_MS,
             overlap,
             sliceCache: {
               resumed: new Map<string, ChunkRepairOutcome>(),
@@ -1950,7 +1945,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             targetText: RENDERED,
             models: MODELS,
             signal: new AbortController().signal,
-            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            perCallTimeoutMs: HANG_STOP_MS,
             overlap,
           },);
 
@@ -1974,7 +1969,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             targetText: `${RENDERED}\n${RENDERED}`,
             models: MODELS,
             signal: new AbortController().signal,
-            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            perCallTimeoutMs: HANG_STOP_MS,
             overlap,
             sliceCache: {
               resumed: new Map<string, ChunkRepairOutcome>(),
@@ -2022,7 +2017,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed: new Map<string, ChunkRepairOutcome>(),
             persist: async ({
@@ -2063,7 +2058,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed: new Map<string, ChunkRepairOutcome>(),
             persist: async ({
@@ -2109,7 +2104,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed: misfiled,
             persist: async () => {
@@ -2148,7 +2143,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed: new Map<string, ChunkRepairOutcome>(),
             persist: async ({
@@ -2198,7 +2193,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: TARGET_TWO_SECTIONS,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           sliceCache: {
             resumed: contradicted,
             persist: async ({
@@ -2243,7 +2238,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             refinerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
           },
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },),).rejects.toBeInstanceOf(CheckerIndependenceError,);
       },
     },),
@@ -2273,7 +2268,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             refinerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
           },
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },),).rejects.toBeInstanceOf(CheckerIndependenceError,);
       },
     },),
@@ -2295,7 +2290,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(result.status,).toBe('unchanged',);
 
@@ -2359,7 +2354,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect(result.status,).toBe('unchanged',);
 
@@ -2437,7 +2432,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             targetText,
             models: MODELS,
             signal: new AbortController().signal,
-            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            perCallTimeoutMs: HANG_STOP_MS,
           },);
           return ballots;
         }
@@ -2483,7 +2478,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           prepared,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
           overlap: 2,
           parentLogger: {
             debug: function keep(message: string,): void {

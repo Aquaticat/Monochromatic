@@ -49,6 +49,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 //region Fixtures
 
@@ -250,8 +251,8 @@ async function settle(
       judgeModelIds: JUDGES,
     },
     ...((archiveDispute === undefined) ? {} : { archiveDispute, }),
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages: said, },),
   },);
   return {

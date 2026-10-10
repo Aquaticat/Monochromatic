@@ -37,6 +37,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Invented original.
@@ -170,7 +171,7 @@ await describe({
           ],
           authorship: UNATTRIBUTED_TEXT,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
         },);
         expect(namesVoice({ lines, irregularity: 'duplicate-check (1)', },),).toBe(true,);
@@ -189,7 +190,7 @@ await describe({
           targetText: TARGET_TEXT,
           clusters: aggregateClaims({ claims: [CLAIM,], },).clusters,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
         },);
         expect(namesVoice({ lines, irregularity: 'duplicate-verdict (1)', },),).toBe(true,);

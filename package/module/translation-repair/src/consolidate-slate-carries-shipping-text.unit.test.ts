@@ -46,6 +46,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { ballot, } from './structural-ballot.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stage writes through, whose output is not under test.
@@ -66,11 +67,6 @@ const ROSTER = [
  the provider catalogue does not carry.
  */
 type FixtureModelId = (typeof ROSTER)[number];
-
-/**
- Per-call bound, generous because the transport answers instantly.
- */
-const CALL_TIMEOUT_MS = 5_000;
 
 /**
  Phrase separating the gate's sheet from the selector's, taken from the sheet
@@ -354,8 +350,8 @@ async function settleWith(
     },),
     producedFindings: [],
     standingText,
-    signal: AbortSignal.timeout(CALL_TIMEOUT_MS * 8,),
-    perCallTimeoutMs: CALL_TIMEOUT_MS,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     lineStructured,
     l,
   },);

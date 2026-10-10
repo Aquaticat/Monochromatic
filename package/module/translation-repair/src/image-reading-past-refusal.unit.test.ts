@@ -38,6 +38,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Reader used by every case that asks a model which reads images.
@@ -172,8 +173,8 @@ await describe({
           modelId: READER,
           bytes: pictureBytes(),
           assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -201,8 +202,8 @@ await describe({
           modelId: READER,
           bytes: pictureBytes(),
           assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -228,8 +229,8 @@ await describe({
           modelId: READER,
           bytes: pictureBytes(),
           assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -255,8 +256,8 @@ await describe({
           modelId: READER,
           bytes: pictureBytes(),
           assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -281,8 +282,8 @@ await describe({
           modelId: READER,
           bytes: pictureBytes(),
           assetName: 'ships.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -308,8 +309,8 @@ await describe({
           modelId: TEXT_ONLY,
           bytes: pictureBytes(),
           assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -359,7 +360,7 @@ await describe({
             bytes: pictureBytes(),
             assetName: 'noticeboard.webp',
             signal: stopped.signal,
-            perCallTimeoutMs: 30_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l,
           },);
           escaped = `returned ${reading.kind}`;

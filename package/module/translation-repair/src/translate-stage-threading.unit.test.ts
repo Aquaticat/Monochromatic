@@ -34,6 +34,7 @@ import {
   runTranslateStage,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -173,8 +174,8 @@ await describe({
           referenceContext: REFERENCES,
           attestedLines: [ATTESTED,],
           lineStructured: false,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(result.text,).toBe(RENDERING,);
@@ -227,7 +228,7 @@ await describe({
               incumbentKind: 'absent',
               lineStructured: false,
               signal: controller.signal,
-              perCallTimeoutMs: 5_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
           }

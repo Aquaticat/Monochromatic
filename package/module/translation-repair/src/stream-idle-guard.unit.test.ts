@@ -19,6 +19,7 @@ import {
   stubWallClock,
   WALL_START_MS,
 } from './wall-clock-stub.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 //region Fixtures
 // Cat-themed invention throughout: no corpus text ever reaches a committed
@@ -28,12 +29,6 @@ import {
  Tiny window so a stall test finishes in milliseconds rather than minutes.
  */
 const TINY_MS = 20;
-
-/**
- Window long enough that it never trips during a test that is not about
- tripping.
- */
-const ROOMY_MS = 10_000;
 
 /**
  Waits for a stall to trip, by polling the guard's own signal rather than
@@ -149,7 +144,7 @@ await describe({
             using guard = armIdleGuard({
               label: 'hf:whiskers',
               firstByteMs: TINY_MS,
-              idleMs: ROOMY_MS,
+              idleMs: HANG_STOP_MS,
             },);
             await untilAborted(guard.signal,);
             expect(guard.signal.aborted,).toBe(true,);
@@ -165,7 +160,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
               idleMs: TINY_MS,
             },);
             guard.notify(5,);
@@ -179,8 +174,8 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
             guard.notify(3,);
             guard.notify(4,);
@@ -197,8 +192,8 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
             expect(guard.progress().firstByteMs,).toBeLessThan(0,);
             expect(guard.progress().chars,).toBe(0,);
@@ -210,8 +205,8 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
             guard.notify(7,);
             guard.notify(11,);
@@ -229,8 +224,8 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
 
             // A real span, so first byte lands at a measurable offset rather
@@ -259,8 +254,8 @@ await describe({
             const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
             wall.step({ byMs: -HOUR_MS, },);
             guard.notify(3,);
@@ -315,8 +310,8 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
             const encoder = new TextEncoder();
             const bodyText = await drainBody({
@@ -339,8 +334,8 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
             // U+732B in UTF-8 is e7 8c ab; splitting it proves the decoder is
             // incremental rather than per-chunk.
@@ -363,8 +358,8 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
             const bodyText = await drainBody({
               credentials: [],
@@ -432,8 +427,8 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: ROOMY_MS,
-              idleMs: ROOMY_MS,
+              firstByteMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
             },);
 
             /**

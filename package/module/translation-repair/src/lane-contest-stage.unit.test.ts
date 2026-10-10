@@ -43,6 +43,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { ballot, } from './structural-ballot.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  One contested slice, standing in for a corpus passage.
@@ -88,15 +89,11 @@ const SIX_SEAT_ROSTER = [
 const l = tagged({ tag: 'lane-contest-stage-test', },);
 
 /**
- Per-call bound, generous because the transport answers instantly.
- */
-const EXCHANGE_TIMEOUT_MS = 5_000;
-
-/**
  Delay of a seat that never answers inside a round: past the exchange
- bound, and cut when the round abandons the call, so no timer outlives it.
+ bound, the shared hang stop, and cut when the round abandons the call, so no
+ timer outlives it.
  */
-const NEVER_ANSWERS_MS = EXCHANGE_TIMEOUT_MS * 2;
+const NEVER_ANSWERS_MS = HANG_STOP_MS * 2;
 
 /**
  Builds a client whose models reply in roster order.
@@ -238,8 +235,8 @@ async function contest(
     client: cannedClient({ replyByModel, },),
     modelIds: ROSTER,
     subject: SUBJECT,
-    signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }
@@ -300,8 +297,8 @@ async function contestWithNoArchive(
       ...SUBJECT,
       incumbentText: '',
     },
-    signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }
@@ -375,8 +372,8 @@ await describe({
                 ...SUBJECT,
                 ineligibleCandidates: ['repair',],
               },
-              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              exchangeTimeoutMs: HANG_STOP_MS,
               graceMs: 0,
               l,
             },);
@@ -416,12 +413,12 @@ await describe({
                 ...SUBJECT,
                 ineligibleCandidates: ['repair',],
               },
-              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              exchangeTimeoutMs: HANG_STOP_MS,
               // FAR LONGER THAN THE DELAYS, since the round ends when every voice
               // has answered and so never waits this long. A window a loaded
               // machine can outrun would fail the case on a slow timer alone.
-              graceMs: 60_000,
+              graceMs: HANG_STOP_MS,
               l,
             },);
             expect(outcome.usable,).toBe(4,);
@@ -525,8 +522,8 @@ await describe({
               },),
               modelIds: SIX_SEAT_ROSTER,
               subject: SUBJECT,
-              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(outcome.choice,).toBe('repair',);

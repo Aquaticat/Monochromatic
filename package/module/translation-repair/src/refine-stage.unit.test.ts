@@ -40,6 +40,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -296,7 +297,7 @@ async function runFixture(
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l: logger,
   },);
 }
@@ -592,7 +593,7 @@ await describe({
               envelopes: slice.envelopes,
               definitions: slice.definitions,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(result.changed,).toBe(false,);
@@ -698,7 +699,7 @@ await describe({
               envelopes: slice.envelopes,
               definitions: slice.definitions,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(result.changed,).toBe(false,);
@@ -747,7 +748,7 @@ await describe({
               envelopes: slice.envelopes,
               definitions: slice.definitions,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(result.changed,).toBe(true,);
@@ -785,7 +786,7 @@ await describe({
               envelopes: slice.envelopes,
               definitions: slice.definitions,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(result.changed,).toBe(false,);
@@ -846,7 +847,7 @@ await describe({
               envelopes: slice.envelopes,
               definitions: slice.definitions,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(result.changed,).toBe(false,);
@@ -881,7 +882,7 @@ await describe({
                 envelopes: slice.envelopes,
                 definitions: slice.definitions,
                 signal: new AbortController().signal,
-                perCallTimeoutMs: 1_000,
+                perCallTimeoutMs: HANG_STOP_MS,
                 l,
               },),
             ).rejects.toThrow(ProducerRosterError,);

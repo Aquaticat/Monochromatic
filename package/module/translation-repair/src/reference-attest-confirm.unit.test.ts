@@ -26,6 +26,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Test logger.
@@ -183,7 +184,7 @@ await describe({
               archiveText: ARCHIVE_TEXT,
               referenceContext: REFERENCE_CONTEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(prompts.some(function isConfirm(sheet,) {
@@ -213,7 +214,7 @@ await describe({
               archiveText: ARCHIVE_TEXT,
               referenceContext: REFERENCE_CONTEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(attestation.details,).toHaveLength(0,);
@@ -238,7 +239,7 @@ await describe({
               archiveText: ARCHIVE_TEXT,
               referenceContext: REFERENCE_CONTEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(prompts.some(function isConfirm(sheet,) {
@@ -346,7 +347,7 @@ await describe({
               archiveText: ARCHIVE_TEXT,
               referenceContext: REFERENCE_CONTEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(attestation.details,).toHaveLength(0,);
@@ -376,7 +377,7 @@ await describe({
               archiveText: ARCHIVE_TEXT,
               referenceContext: REFERENCE_CONTEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(attestation.details.map(function quoteOf(detail,): string {

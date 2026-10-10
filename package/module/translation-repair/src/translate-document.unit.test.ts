@@ -49,6 +49,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the driver under test.
@@ -515,7 +516,7 @@ async function runDriver(
     models: MODELS,
     ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
     signal: controller.signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     overlap,
     ...((insertionAdmission === undefined) ? {} : { insertionAdmission, }),
     ...((beforeSlice === undefined) ? {} : { beforeSlice, }),
@@ -685,7 +686,7 @@ await describe({
               judgeModelIds: [],
             },
             signal: new AbortController().signal,
-            perCallTimeoutMs: 1_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l,
           },);
         }

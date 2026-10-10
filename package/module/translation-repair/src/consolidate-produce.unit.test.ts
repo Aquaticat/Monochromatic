@@ -25,6 +25,7 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the producers under test.
@@ -154,7 +155,7 @@ async function producedUnder(
     subject,
     standingText: subject.incumbentText,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 5_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return {

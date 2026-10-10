@@ -40,6 +40,7 @@ import {
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Words the judges' sheet carries when the slice has no existing translation.
@@ -269,8 +270,8 @@ await describe({
           ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -299,8 +300,8 @@ await describe({
           ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -331,8 +332,8 @@ await describe({
           ledgerPath,
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -366,8 +367,8 @@ await describe({
               TRIAL_ARMS.wide,],
           },),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -400,8 +401,8 @@ await describe({
               TRIAL_ARMS.narrowSecond,],
           },),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -435,8 +436,8 @@ await describe({
           ledgerPath,
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -457,8 +458,8 @@ await describe({
             protocol: 'protocol-one',
           },),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -485,8 +486,8 @@ await describe({
           ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -516,8 +517,8 @@ await describe({
           ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         /**
@@ -556,8 +557,8 @@ await describe({
             ledgerPath: freshLedger({ dir: scratch.path, },),
             done: new Set<string>(),
             models: MODELS,
-            signal: AbortSignal.timeout(30_000,),
-            perCallTimeoutMs: 5_000,
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
+            perCallTimeoutMs: HANG_STOP_MS,
             l,
           },);
         },);
@@ -599,8 +600,8 @@ await describe({
           ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         /**
@@ -627,8 +628,8 @@ await describe({
           ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(present.translateSheets

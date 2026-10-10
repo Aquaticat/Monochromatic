@@ -39,6 +39,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 //region Deep reply tests
 
@@ -212,7 +213,7 @@ async function runDeepVoiceStage(
     incumbentKind: 'present',
     lineStructured: false,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages, },),
   },);
   return {

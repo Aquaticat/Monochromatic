@@ -60,6 +60,7 @@ import {
   SUNBATHING_ISSUE,
   sunbathingOutcome,
 } from './sunbathing-recheck.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the recheck under test.
@@ -357,8 +358,8 @@ async function recheck(
     refineContributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
     sourceText: SOURCE_TEXT,
     refinedText: REWRITTEN_TEXT,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 1_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return verdict;

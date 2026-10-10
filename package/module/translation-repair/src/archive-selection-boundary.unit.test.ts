@@ -19,6 +19,7 @@ import {
   ARCHIVE_TEST_ROSTER,
   ARCHIVE_TEST_SOURCE,
 } from './archive-selection.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Runs the real stage with a caller-local source/target pair and no provider access.
@@ -35,8 +36,8 @@ async function runFixture(fixture: ReturnType<typeof archiveSelectionFixture>,):
     blockText: ARCHIVE_TEST_BLOCK,
     blockOffset: ARCHIVE_TEST_PAGE.indexOf(ARCHIVE_TEST_BLOCK,),
     priorFindings: [],
-    signal: AbortSignal.timeout(5_000,),
-    exchangeTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    exchangeTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'archive-selection-boundary', },),
   },);
 }
@@ -140,7 +141,7 @@ await describe({
           sourceText: ARCHIVE_TEST_SOURCE, targetText: ARCHIVE_TEST_PAGE, blockText: ARCHIVE_TEST_BLOCK,
           blockOffset: ARCHIVE_TEST_PAGE.indexOf(ARCHIVE_TEST_BLOCK,),
           priorFindings: ['Earlier independent concern.',],
-          signal: AbortSignal.timeout(5_000,), exchangeTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,), exchangeTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'archive-prior-evidence-test', },),
         },);
         const message = fixture.selections[0] ?? '';

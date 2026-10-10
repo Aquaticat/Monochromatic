@@ -32,6 +32,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Two blocks standing in for an original side.
@@ -85,11 +86,6 @@ const FIVE_SEAT_ROSTER = [
  */
 const l = tagged({ tag: 'pair-blocks-stage-test', },);
 
-/**
- Per-call bound, generous because the transport answers instantly.
- */
-const EXCHANGE_TIMEOUT_MS = 5_000;
-
 await describe({
   name: pairBlocksWithRoster.name,
   children: [
@@ -109,7 +105,7 @@ await describe({
           sourceBlocks: SOURCE,
           targetBlocks: TARGET,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.pairs,).toEqual([{ source: 0, target: 0, }, { source: 1, target: 1, },],);
@@ -133,7 +129,7 @@ await describe({
           sourceBlocks: SOURCE,
           targetBlocks: TARGET,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.pairs,).toEqual([
@@ -158,7 +154,7 @@ await describe({
           sourceBlocks: SOURCE,
           targetBlocks: TARGET,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.pairs,).toEqual([
@@ -185,7 +181,7 @@ await describe({
           sourceBlocks: SOURCE,
           targetBlocks: TARGET,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.usable,).toBe(3,);
@@ -209,7 +205,7 @@ await describe({
           sourceBlocks: SOURCE,
           targetBlocks: TARGET,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.pairs.length,).toBe(1,);
@@ -232,7 +228,7 @@ await describe({
           sourceBlocks: SOURCE,
           targetBlocks: TARGET,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.pairs.length,).toBe(0,);
@@ -255,7 +251,7 @@ await describe({
           sourceBlocks: SOURCE,
           targetBlocks: TARGET,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.pairs,).toEqual([],);
@@ -292,7 +288,7 @@ await describe({
           sourceBlocks: SOURCE,
           targetBlocks: TARGET,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.usable,).toBe(MIN_STAGE_VOICES,);

@@ -39,6 +39,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  One chat completion chunk as the endpoint sends it.
@@ -123,10 +124,13 @@ const SIGNAL = new AbortController().signal;
 const TEST_BOUND_MS = 300;
 
 /**
- How long each attempt in the bound cases takes: inside the bound on its
- own, past it with a second attempt added.
+ Retry backoff base in the case on a bound per attempt. The first backoff
+ sleeps at least half of it, longer than the stream bound, so a bound armed
+ once around the retry ladder has run out before the retry starts, while each
+ attempt itself answers at once and so ends before its own bound on any
+ machine.
  */
-const ATTEMPT_MS = 200;
+const BACKOFF_BASE_MS = 1_000;
 
 /**
  Asks the Gemma route once and reads the outcome as data.
@@ -546,7 +550,7 @@ await describe({
               signal: SIGNAL,
               maxTokens: 64,
               maxAnswerChars: 2_000,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
             },);
 
             /**
@@ -607,8 +611,9 @@ await describe({
         },),
 
         it({
-          name: 'GIVES EACH ATTEMPT THE WHOLE STREAM BOUND, so a retry after a slow transient failure is not cut by '
-            + 'the time the failed attempt spent (ledger P13: the bound was armed once around the retry ladder)',
+          name: 'GIVES EACH ATTEMPT THE WHOLE STREAM BOUND, so a retry after a transient failure is not cut by '
+            + 'the time spent before it, in the failed attempt or the backoff (ledger P13: the bound was armed once '
+            + 'around the retry ladder)',
           fn: async () => {
             /**
              Attempts the transport saw.
@@ -618,13 +623,12 @@ await describe({
               apiKey: 'test-key',
               ledger: memoryLedger({},).ledger,
               baseUrl: 'https://mantle.invalid',
-              transport: async function slowFailureThenWhole(exchange,) {
+              // BOTH ATTEMPTS ANSWER AT ONCE and the time passes in the backoff
+              // between them, so no attempt races its own bound: each attempt
+              // slept 200 ms against a bound of 300 ms here, which a stall of
+              // 100 ms between arming the bound and the sleep would have cut.
+              transport: async function failureThenWhole() {
                 calls.count += 1;
-                await sleepFor(
-                  ATTEMPT_MS,
-                  undefined,
-                  { signal: exchange.signal, },
-                );
                 return (calls.count === 1)
                   ? {
                     status: 503,
@@ -637,7 +641,7 @@ await describe({
               },
               retryPolicy: {
                 limit: 1,
-                baseMs: 1,
+                baseMs: BACKOFF_BASE_MS,
               },
               streamBoundMsOverride: TEST_BOUND_MS,
             },);

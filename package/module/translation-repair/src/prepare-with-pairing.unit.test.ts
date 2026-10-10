@@ -44,6 +44,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Original side, two blocks so the section is worth a question.
@@ -67,11 +68,6 @@ const ROSTER = [
  Logger for the shell under test.
  */
 const l = tagged({ tag: 'prepare-with-pairing-test', },);
-
-/**
- Per-call bound, generous because the transport answers instantly.
- */
-const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
  Builds client that fails if cache path buys any exchange.
@@ -261,7 +257,7 @@ async function roundsAsked(
     sourceText: SECTIONED_SOURCE,
     targetText: SECTIONED_TARGET,
     signal: new AbortController().signal,
-    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
     ...(alternating
       ? {
@@ -304,7 +300,7 @@ async function targetSlicesUnder(
     sourceText: SOURCE_TEXT,
     targetText: TARGET_TEXT,
     signal: new AbortController().signal,
-    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
     ...((sliceCharBudget === undefined) ? {} : { sliceCharBudget, }),
   },);
@@ -339,7 +335,7 @@ await describe({
               sourceText: SOURCE_TEXT,
               targetText: TARGET_TEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(prepared.blockPairing,).toEqual([{
@@ -412,7 +408,7 @@ await describe({
               sourceText,
               targetText,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache,
             },);
@@ -422,7 +418,7 @@ await describe({
               sourceText,
               targetText,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache,
             },);
@@ -470,7 +466,7 @@ await describe({
               sourceText,
               targetText,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache,
             },);
@@ -490,7 +486,7 @@ await describe({
               sourceText,
               targetText,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache,
             },);
@@ -519,7 +515,7 @@ await describe({
               sourceText: '猫睡着了。',
               targetText: 'The cat slept.\n\nAn archive-only aside.',
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache: memoryPairingCache({ stored, },),
             },);
@@ -546,7 +542,7 @@ await describe({
               sourceText: SOURCE_TEXT,
               targetText: TARGET_TEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -577,7 +573,7 @@ await describe({
               sourceText: SOURCE_TEXT,
               targetText: TARGET_TEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(prepared.blockPairing,).toEqual([],);
@@ -616,7 +612,7 @@ await describe({
               sourceText: SOURCE_TEXT,
               targetText: TARGET_TEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               pairingCache: memoryPairingCache({ stored, },),
               l,
             },);
@@ -644,7 +640,7 @@ await describe({
               sourceText: SOURCE_TEXT,
               targetText: TARGET_TEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               pairingCache: memoryPairingCache({ stored, },),
               l,
             },);

@@ -52,6 +52,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the driver under test.
@@ -193,8 +194,8 @@ async function criticSheets(
     models: MODELS,
     declaredNames: [],
     ...beside,
-    signal: AbortSignal.timeout(120_000,),
-    perCallTimeoutMs: 30_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 

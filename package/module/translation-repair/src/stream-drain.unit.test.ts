@@ -44,12 +44,7 @@ import {
   frameOf,
   longVariedStream,
 } from './sse-frame.test-fixture.ts';
-
-/**
- Roomy window, so nothing in these tests trips the silence guard: what is
- under test here is the other guard entirely.
- */
-const ROOMY_MS = 600_000;
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Characters in each piece `streamOf` hands over; every fixture here is ASCII,
@@ -461,8 +456,8 @@ async function progressLineOf(
   };
   using guard = armIdleGuard({
     label: CREDENTIAL_LABEL,
-    firstByteMs: ROOMY_MS,
-    idleMs: ROOMY_MS,
+    firstByteMs: HANG_STOP_MS,
+    idleMs: HANG_STOP_MS,
   },);
   /**
    What the drain did, which these cases do not read: the line it logged is
@@ -564,8 +559,8 @@ await describe({
 
         using overrunGuard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         /**
@@ -602,8 +597,8 @@ await describe({
 
         using degenerateGuard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         /**
@@ -647,8 +642,8 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         /**
@@ -697,8 +692,8 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         const {
@@ -747,8 +742,8 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         const {
@@ -824,8 +819,8 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         /**
@@ -944,8 +939,8 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:mittens',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         /**
@@ -974,8 +969,8 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:sable',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         /**
@@ -1016,8 +1011,8 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:sable',
-          firstByteMs: ROOMY_MS,
-          idleMs: ROOMY_MS,
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
         },);
 
         const outcome = await drainOutcome({

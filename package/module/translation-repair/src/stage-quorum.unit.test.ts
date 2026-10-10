@@ -14,8 +14,6 @@
  @module
  */
 
-import { setTimeout as abortableWait, } from 'node:timers/promises';
-
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
@@ -53,29 +51,12 @@ import {
   MEOW_FORMAT,
   untilAborted,
 } from './stage-trivial-reply.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Grace the stalling case gives a re-ask before abandoning it.
  */
 const RECOVERY_GRACE_MS = 60;
-
-/**
- Exchange deadline the stalling case sets, far above its grace.
-
- The gap is the measurement: a recovery round that waited for its voices
- would take this, and one bounded by the grace takes a fraction of it.
- */
-const STALLING_DEADLINE_MS = 4_000;
-
-/**
- How long the stalling model holds its second call, past every deadline here.
- */
-const STALL_MS = 30_000;
-
-/**
- Ceiling the stalling case allows, which only the grace bound can meet.
- */
-const BOUNDED_ENOUGH_MS = 1_000;
 
 /**
  Logger for the gathers under test.
@@ -251,20 +232,25 @@ const DRY_SEVEN: readonly RosterModelId[] = [
 
  @param calls - shared call log the test asserts on
 
+ @param cuts - what aborted each hung call, as text, so a case can say the
+ round's own cut ended it without timing anything
+
  @returns Client honouring that script
 
  @example
  ```ts
- const client = stallingClient({ stallingModel: SEAT_SYNTHETIC_VISION_WITHHELD, calls, },);
+ const client = stallingClient({ stallingModel: SEAT_SYNTHETIC_VISION_WITHHELD, calls, cuts, },);
  ```
  */
 function stallingClient(
   {
     stallingModel,
     calls,
+    cuts,
   }: {
     readonly stallingModel: string;
     readonly calls: Record<string, number>;
+    readonly cuts: string[];
   },
 ): SyntheticClient {
   return {
@@ -285,14 +271,15 @@ function stallingClient(
           };
         }
 
-        // Longer than any deadline this suite sets, so the round's own bound is
-        // the only thing that can end it. ABORTABLE since 2026-09-27 (ledger
-        // T5): a plain timer kept every suite run alive 30 s past the case.
-        await abortableWait(
-          STALL_MS,
-          undefined,
-          { signal: request.signal, },
-        );
+        // NEVER ANSWERS ON ITS OWN: the call ends only when it is aborted, and
+        // this scripted client arms no exchange deadline (a provider client
+        // arms that), so only the round's own cut can end it, on any machine.
+        // A recovery round that waited for it would never end, and the case
+        // would fail rather than pass. A 30 s sleep stood here, which let such
+        // a round end after 30 s.
+        await untilAborted({ signal: request.signal, },);
+        cuts.push(String(request.signal.reason,),);
+        throw request.signal.reason;
       }
 
       /**
@@ -389,7 +376,8 @@ function flakyClient(
 
  @param hangingModelId - model that does not answer with the others
 
- @param cut - flag the hung call sets when its abort arrives
+ @param cut - flag the hung call sets when its abort arrives, with the abort's
+ reason as text, which says the round's own cut ended it
 
  @param lateMs - delay after which it answers anyway; omitted means it never
  answers on its own and waits to be abandoned
@@ -408,7 +396,10 @@ function hangingClient(
     lateMs,
   }: {
     readonly hangingModelId: RosterModelId;
-    readonly cut: { aborted: boolean; };
+    readonly cut: {
+      aborted: boolean;
+      reason: string;
+    };
     readonly lateMs?: number;
   },
 ): SyntheticClient {
@@ -442,6 +433,7 @@ function hangingClient(
       }
       await untilAborted({ signal: request.signal, },);
       cut.aborted = true;
+      cut.reason = String(request.signal.reason,);
       return {
         kind: 'schema-mismatch',
         rawText: '',
@@ -468,7 +460,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'critic',
@@ -494,7 +486,7 @@ await describe({
             modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             messages: [{ role: 'user', content: 'meow', },],
             signal: new AbortController().signal,
-            exchangeTimeoutMs: 1_000,
+            exchangeTimeoutMs: HANG_STOP_MS,
             responseFormat: MEOW_FORMAT,
             validate: isMeowReply,
             stage: 'panel',
@@ -529,7 +521,7 @@ await describe({
             ],
             messages: [{ role: 'user', content: 'meow', },],
             signal: new AbortController().signal,
-            exchangeTimeoutMs: 1_000,
+            exchangeTimeoutMs: HANG_STOP_MS,
             responseFormat: MEOW_FORMAT,
             validate: isMeowReply,
             stage: 'page-title',
@@ -562,7 +554,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_ONLY,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'select',
@@ -595,7 +587,7 @@ await describe({
           modelIds: [...ELEVEN_SEATS,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'archive-block-review',
@@ -631,7 +623,7 @@ await describe({
             modelIds: [...ELEVEN_SEATS,],
             messages: [{ role: 'user', content: 'meow', },],
             signal: new AbortController().signal,
-            exchangeTimeoutMs: 1_000,
+            exchangeTimeoutMs: HANG_STOP_MS,
             responseFormat: MEOW_FORMAT,
             validate: isMeowReply,
             stage: 'archive-block-review',
@@ -673,7 +665,7 @@ await describe({
           modelIds: [SEAT_HYPER_ONLY, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'archive-block-review',
@@ -701,7 +693,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'panel',
@@ -781,7 +773,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'panel',
@@ -843,7 +835,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'panel',
@@ -877,7 +869,7 @@ await describe({
           ],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'panel',
@@ -923,7 +915,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'critic',
@@ -947,7 +939,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'critic',
@@ -980,7 +972,7 @@ await describe({
           ],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'panel',
@@ -1022,7 +1014,7 @@ await describe({
           modelIds: roster,
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'critic',
@@ -1070,7 +1062,7 @@ await describe({
           modelIds: roster,
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'critic',
@@ -1102,7 +1094,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'checker',
@@ -1136,7 +1128,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'critic',
@@ -1170,7 +1162,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'panel',
@@ -1242,12 +1234,12 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, recovering, silent,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'gate',
           l,
-          graceMs: RECOVERY_GRACE_MS,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices.map(function seatOf(voice,): string {
           return voice.modelId;
@@ -1315,12 +1307,12 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, cutShort, offShape,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'gate',
           l,
-          graceMs: RECOVERY_GRACE_MS,
+          graceMs: HANG_STOP_MS,
         },);
         expect({
           heard: gather.voices.length,
@@ -1355,7 +1347,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'panel',
@@ -1379,19 +1371,20 @@ await describe({
         /** Call log shared with the scripted client. */
         const calls: Record<string, number> = {};
 
-        /** Instant the gather began, for the only figure this case reads. */
-        const startedAt = performance.now();
+        /** What ended the hung re-ask, the only figure this case reads. */
+        const cuts: string[] = [];
 
         /** Two answer at once; the third answers unusably, then hangs. */
         const gather = await gatherStageVoices({
           client: stallingClient({
             stallingModel: SEAT_SYNTHETIC_VISION_WITHHELD,
             calls,
+            cuts,
           },),
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: STALLING_DEADLINE_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'panel',
@@ -1399,17 +1392,17 @@ await describe({
           graceMs: RECOVERY_GRACE_MS,
         },);
 
-        /** What the whole gather cost, recovery round included. */
-        const spentMs = performance.now() - startedAt;
-
         // The re-ask happened and never came back, so the roster is still two.
         expect(calls[SEAT_SYNTHETIC_VISION_WITHHELD],).toBe(2,);
         expect(gather.voices,).toHaveLength(2,);
 
-        // THE FIGURE THIS CASE EXISTS FOR. Waiting on the re-ask would cost the
-        // exchange deadline; the grace bound costs a fraction of it, and the
-        // ceiling sits far below the deadline so no clock jitter decides it.
-        expect(spentMs,).toBeLessThan(BOUNDED_ENOUGH_MS,);
+        // THE FIGURE THIS CASE EXISTS FOR. The hung re-ask ends only when
+        // something aborts it, and this client arms no exchange deadline, so a
+        // recovery round that waited for it would never end; the case ending,
+        // with the re-ask aborted once by the round's own cut, is the bound. A
+        // ceiling on the elapsed time stood here, which a loaded machine could
+        // outlast (`mistake-prevention.md`, "Tests on the real clock").
+        expect(cuts,).toEqual(['AbortError: This operation was aborted',],);
       },
     },),
 
@@ -1428,7 +1421,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'editor',
@@ -1447,11 +1440,11 @@ await describe({
         + 'only when aborted, so this passes only if the cut actually reached '
         + 'the call',
       fn: async () => {
-        /** Whether the hung call saw its abort. */
-        const cut = { aborted: false, };
-
-        /** When the gather returned, for the delay this rule is about. */
-        const started = performance.now();
+        /** Whether the hung call saw its abort, and what the abort said. */
+        const cut = {
+          aborted: false,
+          reason: '',
+        };
 
         /** Gather where one model never answers on its own. */
         const gather = await gatherStageVoices({
@@ -1462,22 +1455,25 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          // Far longer than the grace, so a gather that waited for the call
-          // rather than for the window would be visible in the elapsed time.
-          exchangeTimeoutMs: 60_000,
+          // Never armed by this scripted client (a provider client arms its
+          // deadline), so the window is the only bound that can end the call.
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'critic',
           l,
           graceMs: 50,
         },);
-
-        /** Time the gather took. */
-        const elapsed = performance.now() - started;
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
-        expect(cut.aborted,).toBe(true,);
-        expect(elapsed < 5_000,).toBe(true,);
+        // THE ROUND'S OWN CUT ended the hung call: a gather that waited for it
+        // rather than for the window would never end. Read off the abort rather
+        // than the elapsed time, which a loaded machine could stretch past any
+        // ceiling a case sets.
+        expect(cut,).toEqual({
+          aborted: true,
+          reason: 'AbortError: This operation was aborted',
+        },);
         expect(gather.findings,).toContain('stage-voice-lost (critic hf:moonshotai/Kimi-K3)',);
       },
     },),
@@ -1489,7 +1485,10 @@ await describe({
         + 'nearly every gather',
       fn: async () => {
         /** Unused here; the late model answers on its own. */
-        const cut = { aborted: false, };
+        const cut = {
+          aborted: false,
+          reason: '',
+        };
 
         /** Gather where the third voice is late but well inside the window. */
         const gather = await gatherStageVoices({
@@ -1501,12 +1500,17 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 60_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'critic',
           l,
-          graceMs: 2_000,
+          // FAR LONGER THAN THE 20 ms DELAY, since the gather ends when every
+          // voice has answered and so never waits this long; a 2,000 ms window
+          // stood here, which a loaded machine could outrun. At `graceMs: 0` the
+          // late voice is cut and this case fails, which shows the window is
+          // what keeps it.
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(3,);
         expect(gather.findings,).toHaveLength(0,);

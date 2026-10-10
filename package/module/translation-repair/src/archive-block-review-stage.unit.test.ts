@@ -35,6 +35,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /** Four seats let two producers receive disinterested selection ballots. */
 const ROSTER = [
@@ -380,7 +381,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -429,7 +430,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.kind,).toBe('retained',);
@@ -467,7 +468,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(asked.size,).toBe(ROSTER.length,);
@@ -505,7 +506,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         // The review gather itself counted every refusal.
@@ -556,7 +557,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.kind,).toBe('retained',);
@@ -593,7 +594,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.kind,).toBe('revised',);
@@ -630,7 +631,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.kind,).toBe('revised',);
@@ -666,7 +667,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -719,7 +720,7 @@ await describe({
           blockOffset: `${label}\n\n> Good evening.`.indexOf(label,),
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -763,7 +764,7 @@ await describe({
           blockOffset: `At the Cat Café[^1], we sat down to wait.\n\n${note}`.indexOf(note,),
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -825,7 +826,7 @@ await describe({
             blockOffset: `The cat sleeps by the window.\n\n${award}`.indexOf(award,),
             priorFindings: [],
             signal: new AbortController().signal,
-            exchangeTimeoutMs: 5_000,
+            exchangeTimeoutMs: HANG_STOP_MS,
             l,
           },);
           return {
@@ -891,7 +892,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         // Every candidate dropped the authoritative identity, so the slate is
@@ -932,7 +933,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -981,7 +982,7 @@ await describe({
             blockOffset: 0,
             priorFindings: [],
             signal: new AbortController().signal,
-            exchangeTimeoutMs: 5_000,
+            exchangeTimeoutMs: HANG_STOP_MS,
             l,
           },);
           expect(outcome.kind,).toBe('retained',);
@@ -1040,7 +1041,7 @@ await describe({
           blockOffset: 0,
           priorFindings: [],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         // Archive wording is the shipping default; the decline is recorded
@@ -1083,7 +1084,7 @@ await describe({
           identityContext: IDENTITY_CONTEXT,
           referenceContext: REFERENCE_CONTEXT,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         /** Prompts of the review round. */
@@ -1133,7 +1134,7 @@ await describe({
           identityContext: IDENTITY_CONTEXT,
           referenceContext: REFERENCE_CONTEXT,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.kind,).toBe('retained',);
@@ -1177,7 +1178,7 @@ await describe({
               identityContext: IDENTITY_CONTEXT,
               referenceContext: REFERENCE_CONTEXT,
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
           },),);

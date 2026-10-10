@@ -38,6 +38,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger the round writes to, whose lines are not under test.
@@ -153,7 +154,7 @@ async function attestationAsked(
     archiveText: 'The cat sat by the stove.',
     referenceLines,
     signal: new AbortController().signal,
-    exchangeTimeoutMs: 5_000,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return {
@@ -247,7 +248,7 @@ async function preparationAsked(
     sourceText: '猫在炉边坐着。\n\n它睡着了。',
     targetText: 'The cat sat by the stove.\n\nShe fell asleep.\n\nThe cat won an award.',
     signal: new AbortController().signal,
-    exchangeTimeoutMs: 5_000,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
     beforeItem,
     outsideReads: {

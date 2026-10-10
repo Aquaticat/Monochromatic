@@ -34,6 +34,7 @@ import {
   isMeowReply,
   MEOW_FORMAT,
 } from './stage-trivial-reply.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Six-seat bench in roster order.
@@ -188,7 +189,7 @@ async function runBench(
     fanOut,
     quorumOver,
     maxAnswerChars,
-    graceMs = 50,
+    graceMs = HANG_STOP_MS,
     productionGrace = false,
   }: {
     readonly script: Parameters<typeof scriptedClient>[0];
@@ -209,7 +210,7 @@ async function runBench(
     modelIds: BENCH,
     messages: [{ role: 'user', content: 'meow?', },],
     signal: new AbortController().signal,
-    exchangeTimeoutMs: 1_000,
+    exchangeTimeoutMs: HANG_STOP_MS,
     responseFormat: MEOW_FORMAT,
     validate: isMeowReply,
     stage: 'meow',

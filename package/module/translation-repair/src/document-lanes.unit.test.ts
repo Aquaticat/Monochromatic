@@ -44,16 +44,12 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the driver under test.
  */
 const l = tagged({ tag: 'document-lanes-test', },);
-
-/**
- Deadline per exchange, short because nothing here reaches a provider.
- */
-const CALL_TIMEOUT_MS = 50;
 
 /**
  Original document: two sections, each one paragraph.
@@ -412,7 +408,7 @@ async function runLanes(
     repairModels: REPAIR_MODELS,
     translateModels: TRANSLATE_MODELS,
     signal: controller.signal,
-    perCallTimeoutMs: CALL_TIMEOUT_MS,
+    perCallTimeoutMs: HANG_STOP_MS,
     overlap,
     ...((repairSliceCache === undefined)
       ? {}
@@ -980,7 +976,7 @@ await describe({
               translatorModelIds: [],
             },
             signal: new AbortController().signal,
-            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            perCallTimeoutMs: HANG_STOP_MS,
             l,
           },);
         }
@@ -1030,7 +1026,7 @@ await describe({
             },
             translateModels: TRANSLATE_MODELS,
             signal: new AbortController().signal,
-            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            perCallTimeoutMs: HANG_STOP_MS,
             l,
           },);
         }

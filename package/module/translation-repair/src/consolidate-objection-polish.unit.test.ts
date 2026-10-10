@@ -32,6 +32,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stage writes through, whose output is not under test.
@@ -46,11 +47,6 @@ const ROSTER = [
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
-
-/**
- Per-call bound, generous because the client answers at once.
- */
-const CALL_TIMEOUT_MS = 5_000;
 
 /**
  Invented original: the cat slept by the window and woke at four.
@@ -277,8 +273,8 @@ async function settle(
     standingMayShip: standingEligible,
     standingEligible,
     ...(standingEligible ? {} : { standingRefusal: 'the pronoun is left untranslated', }),
-    signal: AbortSignal.timeout(CALL_TIMEOUT_MS * 8,),
-    perCallTimeoutMs: CALL_TIMEOUT_MS,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }

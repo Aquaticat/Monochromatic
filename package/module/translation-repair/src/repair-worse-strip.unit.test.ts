@@ -34,12 +34,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
-
-/**
- Deadline per exchange: the driver's former default, which every call here ran
- under before the driver stopped defaulting it.
- */
-const CALL_TIMEOUT_MS = 300_000;
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Original with two paragraphs, one mistranslated sentence each.
@@ -295,7 +290,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect({
           sunRepaired: result.repairedText.includes(SUN_REPAIR,),
@@ -328,7 +323,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect({
           sunRepaired: result.repairedText.includes(SUN_REPAIR,),
@@ -362,7 +357,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          perCallTimeoutMs: HANG_STOP_MS,
         },);
         expect({
           flyKept: result.repairedText.includes(FLY_REPAIR,),

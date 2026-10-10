@@ -48,6 +48,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { ARCHIVE_NAP, catRow, } from './two-lane-comparison-row.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Roster of three, the smallest that can produce a two-to-one split.
@@ -64,22 +65,22 @@ const ROSTER = [
 const l = tagged({ tag: 'lane-contest-driver-test', },);
 
 /**
- Per-call bound, generous because the transport answers instantly.
- */
-const PER_CALL_TIMEOUT_MS = 5_000;
-
-/**
  Exact caller abort reason used by driver guard case.
  */
 const CONTEST_ABORT = new Error('caller stopped lane contest',);
 
 /**
- Successful contest calls in flight and peak observed by fixture.
+ Successful contest calls in flight and peak observed by fixture, the start
+ positions in the order their calls finished, and, where a case supplies one,
+ the gate the first slice's calls wait on until every call of the second
+ slice has finished.
  */
 type ContestConcurrency = {
   now: number;
   peak: number;
   started: number;
+  readonly finished: number[];
+  readonly secondFinished?: PromiseWithResolvers<undefined>;
 };
 
 /**
@@ -528,8 +529,22 @@ async function drive(
           activity.peak,
           activity.now,
         );
-        await wait(startPosition < ROSTER.length ? 20 : 5,);
+        // ORDERED BY A GATE where the case supplies one, as in the
+        // consolidation driver's twin of this fixture: the head start alone (20
+        // ms against 5) let a stall of 15 ms between the two slices' asks end
+        // the first slice first, and the case passed without the order its
+        // name states. A driver that never overlaps leaves the first slice's
+        // calls held, and the file fails on the unsettled wait rather than
+        // passing.
+        await (((startPosition < ROSTER.length) && (activity.secondFinished !== undefined))
+          ? activity.secondFinished.promise
+          : wait(startPosition < ROSTER.length ? 20 : 5,));
         activity.now -= 1;
+        activity.finished.push(startPosition,);
+        if (activity.finished.filter(function ofSecondSlice(position,): boolean {
+          return position >= ROSTER.length;
+        },).length === ROSTER.length)
+          activity.secondFinished?.resolve(undefined,);
       }
       return await inner.chatJson(request,);
     },
@@ -552,9 +567,9 @@ async function drive(
     lineStructuredSlices,
     cache,
     signal: (abortOnCall === undefined)
-      ? AbortSignal.timeout(30_000,)
+      ? AbortSignal.timeout(HANG_STOP_MS,)
       : controller.signal,
-    perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
+    perCallTimeoutMs: HANG_STOP_MS,
     overlap,
     l,
     // Whole bench, one round: these cases count the calls a memo saves, over
@@ -672,8 +687,8 @@ async function contestOneSlice(
       resumed: recordedMiss as unknown as ReadonlyMap<string, LaneContestOutcome>,
       persist: async function keepNothing(): Promise<void> {},
     },
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
     fanOut: 'whole-bench',
     ...((beforeSlice === undefined) ? {} : { beforeSlice, }),
@@ -786,6 +801,7 @@ await describe({
               now: 0,
               peak: 0,
               started: 0,
+              finished: [],
             };
             await drive({
               pairs,
@@ -795,12 +811,14 @@ await describe({
             },);
 
             /**
-             Two-slice activity.
+             Two-slice activity, gated so the second slice finishes first.
              */
             const overlapped: ContestConcurrency = {
               now: 0,
               peak: 0,
               started: 0,
+              finished: [],
+              secondFinished: Promise.withResolvers<undefined>(),
             };
             const rig = await drive({
               pairs,
@@ -810,6 +828,19 @@ await describe({
             },);
             expect(serial.peak,).toBe(ROSTER.length,);
             expect(overlapped.peak,).toBe(ROSTER.length * 2,);
+            // THE SECOND SLICE DID FINISH FIRST: every call of the second slice
+            // ended before any call of the first, so the check that the records
+            // come back in comparison order is exercised.
+            expect(overlapped.finished.map(function sliceOf(position,): number {
+              return (position < ROSTER.length) ? 0 : 1;
+            },),).toEqual([
+              ...ROSTER.map(function second(): number {
+                return 1;
+              },),
+              ...ROSTER.map(function first(): number {
+                return 0;
+              },),
+            ],);
             expect(rig.slices.map(function toIndex(slice,) {
               return slice.sliceIndex;
             },),).toEqual([
@@ -1430,8 +1461,8 @@ await describe({
               },
               damageClaimsBySlice: new Map([[0, [DAMAGE_CLAIM,],],],),
               disputeNotesBySlice: new Map([[0, DISPUTE_NOTE,],],),
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l: capturingLogger({ messages, },),
               fanOut: 'whole-bench',
             },);

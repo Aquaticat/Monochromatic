@@ -42,6 +42,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { criticClient, } from './critic-scripted-client.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the phases under test.
@@ -150,7 +151,7 @@ async function runPhase(
     documents: DOCUMENTS,
     sliceIndex: 0,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
     // THE WHOLE BENCH, since these cases count votes over every scripted
     // critic; production asks the window of quorum plus one, pinned in

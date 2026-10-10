@@ -44,10 +44,12 @@ import {
 
 /**
  Longest either entry may take to parse a text the scan passes, in
- milliseconds. Over three runs of the whole family on a machine shared with
- other builds, the slowest parse of a passed text took 6.5, 54.8 and 6.1
- milliseconds, the high one while other builds ran, so the limit is eighteen
- times the slowest ever seen.
+ milliseconds of the process's CPU time. Over three runs of the whole family
+ on a machine shared with other builds, the slowest parse of a passed text
+ took 6.5, 54.8 and 6.1 milliseconds of real time, the high one while other
+ builds ran, so the limit is eighteen times the slowest ever seen; on the CPU
+ clock, which a process taken off the CPU does not advance, a parse takes no
+ longer than on the real one.
  */
 const PARSE_TIME_LIMIT_MS = 1_000;
 
@@ -357,17 +359,43 @@ function timedParse({ run, }: { readonly run: () => unknown; },): {
   readonly milliseconds: number;
   readonly refusals: readonly unknown[];
 } {
+  // ON THE PROCESS'S CPU CLOCK, not the real one: a parse is synchronous
+  // work, and the CPU time it took is what grows with the text, while a
+  // loaded machine that takes the process off the CPU mid-parse stretches the
+  // real time without bound (`mistake-prevention.md`, "Tests on the real
+  // clock"). `process.cpuUsage` counts microseconds spent on the CPU, user and
+  // system together.
   /**
-   Clock reading before the parse.
+   CPU reading before the parse.
    */
-  const started = performance.now();
+  const started = process.cpuUsage();
   try {
     run();
-    return { milliseconds: performance.now() - started, refusals: [], };
+    return { milliseconds: cpuMillisecondsSince({ started, },), refusals: [], };
   }
   catch (error) {
-    return { milliseconds: performance.now() - started, refusals: [error,], };
+    return { milliseconds: cpuMillisecondsSince({ started, },), refusals: [error,], };
   }
+}
+
+/**
+ Milliseconds of CPU the process has spent since a reading.
+
+ @param started - reading taken before the work measured
+
+ @returns User and system time together, in milliseconds
+
+ @example
+ ```ts
+ const spent = cpuMillisecondsSince({ started: process.cpuUsage(), },);
+ ```
+ */
+function cpuMillisecondsSince({ started, }: { readonly started: NodeJS.CpuUsage; },): number {
+  /**
+   CPU spent since the reading, in microseconds.
+   */
+  const spent = process.cpuUsage(started,);
+  return (spent.user + spent.system) / 1_000;
 }
 
 /**

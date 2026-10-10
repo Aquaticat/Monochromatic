@@ -43,6 +43,7 @@ import {
 } from '../provider-status-failure.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Each provider's key environment name.
@@ -195,7 +196,7 @@ await describe({
                 required: [],
                 env: {},
                 transport: unreachedTransport,
-                signal: AbortSignal.timeout(5_000,),
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
               },);
             },),).toBe('passed',);
           },
@@ -211,7 +212,7 @@ await describe({
                 required: ['synthetic', 'hyper',],
                 env: { [KEY_NAMES.hyper]: 'test-hyper', },
                 transport: unreachedTransport,
-                signal: AbortSignal.timeout(5_000,),
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
               },);
             },);
             expect(refusal,).toBeInstanceOf(RequiredProviderError,);
@@ -237,7 +238,7 @@ await describe({
                   return { status: 200, bodyText: '{"data":{"total_credits":1913,"total_usage":1855.38}}', };
                 return { status: 200, bodyText: WET_SYNTHETIC_BODY, };
               },
-              signal: AbortSignal.timeout(5_000,),
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
             },);
             expect(urls,).toHaveLength(3,);
             expect(urls,).toContain(HYPER_CREDITS_URL,);
@@ -261,7 +262,7 @@ await describe({
                 transport: async function transport() {
                   return { status: 200, bodyText: '{"data":{"total_credits":10,"total_usage":10}}', };
                 },
-                signal: AbortSignal.timeout(5_000,),
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
               },);
             },);
             expect(refusal,).toBeInstanceOf(RequiredProviderError,);
@@ -298,7 +299,7 @@ await describe({
                   await wait(0,);
                   return { status: 401, bodyText: 'no such cat', };
                 },
-                signal: AbortSignal.timeout(5_000,),
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
               },);
             },);
             expect(refusal,).toBeInstanceOf(RequiredProviderError,);
@@ -320,7 +321,7 @@ await describe({
                 transport: async function transport() {
                   return { status: 401, bodyText: 'no such cat', };
                 },
-                signal: AbortSignal.timeout(5_000,),
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
               },);
             },);
             expect(refusal,).toBeInstanceOf(RequiredProviderError,);
@@ -343,7 +344,7 @@ await describe({
                     required: ['hyper',],
                     env: { [KEY_NAMES.hyper]: ECHOED_KEY, },
                     transport: fetchTransport,
-                    signal: AbortSignal.timeout(5_000,),
+                    signal: AbortSignal.timeout(HANG_STOP_MS,),
                   },);
                 },);
               },
@@ -381,7 +382,7 @@ await describe({
                     [BEDROCK_CREDIT_USD_VAR]: creditUsd,
                   },
                   transport: unreachedTransport,
-                  signal: AbortSignal.timeout(5_000,),
+                  signal: AbortSignal.timeout(HANG_STOP_MS,),
                 },);
               },);
             }

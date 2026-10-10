@@ -24,6 +24,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from './capturing-logger.test-fixture.ts';
 import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.
@@ -107,8 +108,8 @@ function clientWith(
 const SHARED = {
   modelId: SEAT_OPENROUTER_DECISIONS,
   messages: [{ role: 'user' as const, content: 'the sheet a decision seat never sees', },],
-  signal: AbortSignal.timeout(5_000,),
-  exchangeTimeoutMs: 5_000,
+  signal: AbortSignal.timeout(HANG_STOP_MS,),
+  exchangeTimeoutMs: HANG_STOP_MS,
   responseFormat: {
     type: 'json_schema' as const,
     json_schema: { name: 'ballot', schema: { type: 'object', }, },

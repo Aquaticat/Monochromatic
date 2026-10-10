@@ -48,6 +48,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.
@@ -289,8 +290,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -338,8 +339,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -379,8 +380,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -407,8 +408,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -447,8 +448,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'ships.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -482,8 +483,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'destroyer.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -514,8 +515,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'ships.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -551,8 +552,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -584,8 +585,8 @@ await describe({
               readerModelIds: [LARGER_READER,],
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -623,8 +624,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l: levelCapturingLogger({ lines, },),
             },);
 
@@ -677,8 +678,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -715,8 +716,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l: levelCapturingLogger({ lines, },),
             },);
 
@@ -756,8 +757,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l: levelCapturingLogger({ lines, },),
             },);
 
@@ -792,8 +793,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -845,7 +846,7 @@ await describe({
                 bytes: bytesOf({ length: 64, },),
                 assetName: 'noticeboard.webp',
                 signal: stopping.signal,
-                perCallTimeoutMs: 30_000,
+                perCallTimeoutMs: HANG_STOP_MS,
                 l,
               },);
               escaped = `returned ${paired.kind}`;
@@ -894,7 +895,7 @@ await describe({
                 bytes: bytesOf({ length: 64, },),
                 assetName: 'noticeboard.webp',
                 signal: stopped.signal,
-                perCallTimeoutMs: 30_000,
+                perCallTimeoutMs: HANG_STOP_MS,
                 l,
               },);
               escaped = `returned ${paired.kind}`;
@@ -968,7 +969,7 @@ await describe({
                 bytes: bytesOf({ length: 64, },),
                 assetName: 'noticeboard.webp',
                 signal: stopped.signal,
-                perCallTimeoutMs: 30_000,
+                perCallTimeoutMs: HANG_STOP_MS,
                 l,
               },);
               escaped = `returned ${paired.kind}`;
@@ -1003,8 +1004,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -1039,8 +1040,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -1073,8 +1074,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l: levelCapturingLogger({ lines: counted, },),
             },);
 
@@ -1092,8 +1093,8 @@ await describe({
               readerModelIds: READERS,
               bytes: bytesOf({ length: 64, },),
               assetName: 'noticeboard.webp',
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l: levelCapturingLogger({ lines: unread, },),
             },);
 

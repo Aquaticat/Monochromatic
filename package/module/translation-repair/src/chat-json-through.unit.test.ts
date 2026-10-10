@@ -19,6 +19,7 @@ import {
   chatJsonThrough,
   perModelLimiter,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Whether a parsed answer names a cat.
@@ -61,7 +62,7 @@ await describe({
             const outcome = await chatJson({
               modelId: 'minimax-m3',
               messages: [{ role: 'user', content: 'Name the cat.', },],
-              signal: AbortSignal.timeout(60_000,),
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
               maxTokens: 64,
               otherThan: 'synthetic',
               validate: namesCat,

@@ -39,6 +39,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.
@@ -159,8 +160,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -223,8 +224,8 @@ await describe({
           modelId: TEXT_ONLY,
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -250,8 +251,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.heic',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -280,8 +281,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: OVERSIZED_BYTES, },),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -311,8 +312,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: PAST_THE_NEW_CEILING_ONLY, },),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -339,8 +340,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -370,8 +371,8 @@ await describe({
                 modelId: READER,
                 bytes: bytesOf({ length: 64, },),
                 assetName: 'mittens.webp',
-                signal: AbortSignal.timeout(30_000,),
-                perCallTimeoutMs: 30_000,
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
+                perCallTimeoutMs: HANG_STOP_MS,
                 l: capturingLogger({ messages: lines, },),
               },);
               return lines;
@@ -405,8 +406,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -432,8 +433,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -460,8 +461,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -486,8 +487,8 @@ await describe({
           modelId: READER,
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.jpg',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 

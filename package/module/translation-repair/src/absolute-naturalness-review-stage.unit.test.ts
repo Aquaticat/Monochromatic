@@ -31,6 +31,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Invented reviewer roster.
@@ -223,8 +224,8 @@ async function runReview(
       candidateText: 'The cat sleeps on the windowsill.',
       paragraphs: ['The cat sleeps on the windowsill.',],
     },
-    signal: AbortSignal.timeout(5_000,),
-    exchangeTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    exchangeTimeoutMs: HANG_STOP_MS,
     graceMs,
     l: (messages === undefined)
       ? tagged({ tag: 'absolute-review-test', },)
@@ -304,7 +305,7 @@ await describe({
           // can outrun would fail the case on a slow timer alone. At `graceMs: 0`
           // the late rejection is cut and this case fails, which shows the window
           // is what keeps it.
-          graceMs: 60_000,
+          graceMs: HANG_STOP_MS,
         },);
         expect(review.verdict,).toBe('unacceptable',);
         expect(review.usable,).toBe(3,);

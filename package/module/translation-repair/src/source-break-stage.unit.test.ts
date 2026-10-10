@@ -20,6 +20,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /** Source remains raw Markdown throughout canonical pipeline state. */
 const SOURCE = '> 猫醒了。  \n> 鸟唱了。';
@@ -73,7 +74,7 @@ await describe({
           incumbentKind: 'absent',
           lineStructured: false,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'source-break-stage-test', },),
         },);
         expect(seen.writers,).toBe(2,);

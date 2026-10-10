@@ -48,6 +48,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger the seams write to, whose lines are not under test.
@@ -306,7 +307,7 @@ async function contestAsked({ later, }: { readonly later: BudgetView; },): Promi
     lineStructuredSlices: new Set(),
     entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
-    signal: AbortSignal.timeout(30_000,),
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
     overlap: 1,
     l,
   },);
@@ -360,7 +361,7 @@ async function consolidationAsked({ later, }: { readonly later: BudgetView; },):
     pictureReadings: new Map(),
     entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
-    signal: AbortSignal.timeout(30_000,),
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
     overlap: 1,
     l,
   },);
@@ -452,7 +453,7 @@ async function admissionAsked({ later, }: { readonly later: BudgetView; },): Pro
     prepared: GAP,
     modelIds: judgeSeatsFor({ dry: ALL_WET, },).roster,
     overlap: 1,
-    signal: AbortSignal.timeout(30_000,),
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
     entryId: 'CatEntry',
   },);
   return asked;
@@ -489,7 +490,7 @@ async function preparationAsked({ later, }: { readonly later: BudgetView; },): P
     readPictures: async () => new Map(),
     sourceText: `${SOURCE}\n\n它梦见了鱼。`,
     targetText: `${ARCHIVE}\n\nIt dreamed of fish.`,
-    signal: AbortSignal.timeout(30_000,),
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
     outsideReads: NO_OUTSIDE_READS,
   },);
   return asked;
@@ -532,7 +533,7 @@ async function archiveReviewAsked({ later, }: { readonly later: BudgetView; },):
     readPictures: async () => new Map(),
     sourceText: `${SOURCE}\n\n它梦见了鱼。`,
     targetText: `${ARCHIVE}\n\nIt dreamed of fish.\n\nThe cat won an award.`,
-    signal: AbortSignal.timeout(30_000,),
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
     outsideReads: NO_OUTSIDE_READS,
   },);
   return reviewed;
@@ -616,7 +617,7 @@ async function lanesAsked({ later, }: { readonly later: BudgetView; },): Promise
   /**
    Entry abort the readings and the lanes honour.
    */
-  const signal = AbortSignal.timeout(30_000,);
+  const signal = AbortSignal.timeout(HANG_STOP_MS,);
   await runPassLanes({
     client,
     prepared: prepareDocumentPair({
@@ -720,7 +721,7 @@ async function picturesAsked(
   /**
    Entry abort the readings honour.
    */
-  const signal = AbortSignal.timeout(30_000,);
+  const signal = AbortSignal.timeout(HANG_STOP_MS,);
   /**
    The entry's picture reader over stand-in sources.
    */

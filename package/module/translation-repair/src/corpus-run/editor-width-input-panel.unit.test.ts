@@ -36,6 +36,7 @@ import {
   gatherWidthInput,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger for the probe under test.
@@ -146,7 +147,7 @@ await describe({
         const outcome = await gatherWidthInput({
           client: CLIENT,
           slice: SLICE,
-          signal: AbortSignal.timeout(120_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 

@@ -38,12 +38,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
-
-/**
- Deadline per exchange: the driver's former default, which this case ran under
- before the driver stopped defaulting it.
- */
-const CALL_TIMEOUT_MS = 300_000;
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Markers no other section uses, so a sheet can be attributed to the slice it
@@ -227,8 +222,8 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
       judgeModelIds: JUDGES,
       checkerModelIds: CHECKERS,
     },
-    signal: AbortSignal.timeout(120_000,),
-    perCallTimeoutMs: CALL_TIMEOUT_MS,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
   },);
 
   return asked.map(function split(sheet,): SplitSheet {

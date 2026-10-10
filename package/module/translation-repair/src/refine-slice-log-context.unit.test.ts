@@ -39,6 +39,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Slice the phase refines. Zero, since a slice's index is its position; a
@@ -216,7 +217,7 @@ await describe({
           outcomes: [OUTCOME,],
           models: MODELS,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           // A logger reading the log context, as `repairPreparedDocument` passes it.
           l: sliceTagged({ l: logger, },),
         },);

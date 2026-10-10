@@ -72,6 +72,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the driver writes through, whose output is not under test.
@@ -90,16 +91,6 @@ const WIDE_ROSTER = [
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
-
-/**
- Per-call bound, and the bound on a whole drive when a case passes no signal
- of its own: a stop for a hang, which no case waits for, since every scripted
- client answers at once. At 5,000 ms a loaded machine outran it, and the case
- that drives two slices serially and then two at once failed with a
- `TimeoutError` its name never states (`mistake-prevention.md`, "Tests on the
- real clock"). A case that needs the run stopped brings its own controller.
- */
-const CALL_TIMEOUT_MS = 60_000;
 
 /**
  What a picture near a slice was read to say, offered to the driver in the
@@ -667,7 +658,12 @@ async function driveWith(
     activity,
     messages,
     writes,
-    signal = AbortSignal.timeout(CALL_TIMEOUT_MS,),
+    // The bound on a whole drive when a case passes no signal of its own. At
+    // 5,000 ms a loaded machine outran it, and the case that drives two slices
+    // serially and then two at once failed with a `TimeoutError` its name never
+    // states (commit `5086b6c6f`). A case that needs the run stopped brings its
+    // own controller.
+    signal = AbortSignal.timeout(HANG_STOP_MS,),
     archiveDisputes,
     referenceContext,
   }: {
@@ -757,7 +753,7 @@ async function driveWith(
     frontMatterSlices,
     cache,
     signal,
-    perCallTimeoutMs: CALL_TIMEOUT_MS,
+    perCallTimeoutMs: HANG_STOP_MS,
     overlap,
     ...((beforeSlice === undefined) ? {} : { beforeSlice, }),
     lineStructuredSlices,

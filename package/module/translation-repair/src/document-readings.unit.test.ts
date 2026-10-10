@@ -46,6 +46,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { sliceOf, } from './content-slice-of.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the gather writes its progress to.
@@ -347,8 +348,8 @@ async function readOnePicture(
       resumed: recordedMiss as unknown as ReadonlyMap<string, PairedReading>,
       persist: async function keepNothing(): Promise<void> {},
     },
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 30_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
     ...((beforePicture === undefined) ? {} : { beforePicture, }),
   },);
@@ -394,8 +395,8 @@ await describe({
               assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
               readerModelIds: READERS,
               cache: transientCache.cache,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(failing.asked.length,).toBe(2,);
@@ -416,8 +417,8 @@ await describe({
               assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
               readerModelIds: READERS,
               cache: stableCache.cache,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(disagreed.get('noticeboard.webp',)?.kind,).toBe('unavailable',);
@@ -451,8 +452,8 @@ await describe({
               assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
               readerModelIds: READERS,
               cache,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -493,8 +494,8 @@ await describe({
               assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
               readerModelIds: READERS,
               cache,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -523,7 +524,7 @@ await describe({
             /** Shared reader inputs independent of slice boundaries. */
             const input = {
               client, readOcr: sawText, assets, readerModelIds: READERS, cache,
-              signal: new AbortController().signal, perCallTimeoutMs: 5_000, l,
+              signal: new AbortController().signal, perCallTimeoutMs: HANG_STOP_MS, l,
             };
             /** Completed evidence from the archive-review preparation. */
             const priorReadings = await readDocumentPictures({ ...input, slices: firstSlices, },);
@@ -569,7 +570,7 @@ await describe({
                 cache,
                 priorReadings: new Map([['chat.webp', prior,],]),
                 signal: new AbortController().signal,
-                perCallTimeoutMs: 5_000,
+                perCallTimeoutMs: HANG_STOP_MS,
                 l,
               },);
               expect(asked,).toEqual(kind === 'no-text' ? [] : READERS,);
@@ -611,8 +612,8 @@ await describe({
               assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
               readerModelIds: READERS,
               cache: learning.cache,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -645,8 +646,8 @@ await describe({
               assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
               readerModelIds: READERS,
               cache,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -680,8 +681,8 @@ await describe({
                 assets: new Map([['noticeboard.webp', bytesOf({ seed, },),],],),
                 readerModelIds: READERS,
                 cache,
-                signal: AbortSignal.timeout(30_000,),
-                perCallTimeoutMs: 30_000,
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
+                perCallTimeoutMs: HANG_STOP_MS,
                 l,
               },);
               return persisted[0] ?? '';
@@ -712,8 +713,8 @@ await describe({
               assets: new Map(),
               readerModelIds: READERS,
               cache,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -743,8 +744,8 @@ await describe({
               assets: new Map(),
               readerModelIds: READERS,
               cache,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 

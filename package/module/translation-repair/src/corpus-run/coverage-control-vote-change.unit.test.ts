@@ -63,6 +63,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger for the control under test.
@@ -260,8 +261,8 @@ await describe({
           client: BLIND_CLIENT,
           cases: CASES,
           modelIds: [...MODEL_IDS,],
-          signal: AbortSignal.timeout(120_000,),
-          exchangeTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -319,8 +320,8 @@ await describe({
           client: denying,
           cases: CASES,
           modelIds: [...MODEL_IDS,],
-          signal: AbortSignal.timeout(120_000,),
-          exchangeTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(control,).toEqual({
@@ -358,8 +359,8 @@ await describe({
           client: coverageControlClient({ quote: TRANSLATION, },),
           cases: whole,
           modelIds: [...MODEL_IDS,],
-          signal: AbortSignal.timeout(120_000,),
-          exchangeTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(control,).toEqual({
@@ -393,8 +394,8 @@ await describe({
             translationText: TIGHT_TRANSLATION,
           },),
           modelIds: [...MODEL_IDS,],
-          signal: AbortSignal.timeout(120_000,),
-          exchangeTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(control,).toEqual({
@@ -430,8 +431,8 @@ await describe({
           client: MOVING_CLIENT,
           cases: TIGHT_CASES,
           modelIds: [...MODEL_IDS,],
-          signal: AbortSignal.timeout(120_000,),
-          exchangeTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -488,8 +489,8 @@ await describe({
             ),
           ],
           modelIds: [...MODEL_IDS,],
-          signal: AbortSignal.timeout(120_000,),
-          exchangeTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -543,8 +544,8 @@ await describe({
           client: MOVING_CLIENT,
           cases: CASES,
           modelIds: [...MODEL_IDS,],
-          signal: AbortSignal.timeout(120_000,),
-          exchangeTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(control,).toEqual({

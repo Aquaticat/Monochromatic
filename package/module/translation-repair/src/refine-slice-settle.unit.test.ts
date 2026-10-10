@@ -72,6 +72,7 @@ import {
   SUNBATHING_ISSUE,
   sunbathingOutcome,
 } from './sunbathing-recheck.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the settler under test.
@@ -459,8 +460,8 @@ async function settleWith(
     ...(neighbouringIncumbentText === undefined ? {} : { neighbouringIncumbentText, }),
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 1_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }

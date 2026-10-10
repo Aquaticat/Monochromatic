@@ -61,6 +61,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the driver under test.
@@ -424,7 +425,7 @@ async function runDocument(
     models: MODELS,
     ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 

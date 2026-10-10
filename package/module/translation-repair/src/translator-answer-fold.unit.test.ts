@@ -48,6 +48,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from './roster-seats.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the lanes under test write their progress to.
@@ -350,8 +351,8 @@ await describe({
               sourceText: SOURCE_TEXT,
               incumbentText: PAGE_TEXT,
               lineStructured: false,
-              signal: AbortSignal.timeout(20_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -404,8 +405,8 @@ await describe({
                 },
               ],
               lineStructured: false,
-              signal: AbortSignal.timeout(20_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(slate.candidates
@@ -446,8 +447,8 @@ await describe({
               roster: TRANSLATORS,
               subject,
               standingText: PAGE_TEXT,
-              signal: AbortSignal.timeout(20_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(produced.validityBefore
@@ -493,8 +494,8 @@ await describe({
               incumbentText: PAGE_TEXT,
               lineStructured: false,
               priorMessages: plan.messages,
-              signal: AbortSignal.timeout(20_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             // THE REVISION IS NOT TAKEN: it fails the rule as it ships, so the

@@ -25,6 +25,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { recordedTransport, } from '../recorded-transport.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Listing URL every case asks.
@@ -93,7 +94,7 @@ async function readReplying(
     url: LISTING,
     apiKey: KEY,
     transport,
-    timeoutMs: 5_000,
+    timeoutMs: HANG_STOP_MS,
     statusRefusal,
   },);
   return {

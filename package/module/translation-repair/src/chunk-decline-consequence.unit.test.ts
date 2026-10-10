@@ -47,6 +47,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { chunkCandidate, } from './whole-chunk-candidate.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the selection under test.
@@ -162,7 +163,7 @@ async function select({ named, }: { readonly named: readonly RosterModelId[]; },
       rejected: [],
     },
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return {

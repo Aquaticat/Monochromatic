@@ -40,6 +40,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Production-shaped test roster.
@@ -240,7 +241,7 @@ async function runAdmission(
     modelIds: ROSTER,
     overlap: 1,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }
@@ -699,7 +700,7 @@ async function deficitAdmission(
     modelIds: ROSTER,
     overlap: 1,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages, },),
   },);
   return {
@@ -797,7 +798,7 @@ async function coverageSeatsAsked(
     modelIds: ROSTER,
     overlap: 1,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
     ...((beforeCandidate === undefined) ? {} : { beforeCandidate, }),
   },);
@@ -945,7 +946,7 @@ await describe({
               modelIds: ROSTER,
               overlap: 1,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect([...admission.positions,].toSorted(function ascending(
@@ -981,7 +982,7 @@ await describe({
               modelIds: ROSTER,
               overlap: 1,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect([...admission.positions,],).toEqual([],);
@@ -1058,7 +1059,7 @@ await describe({
               modelIds: ROSTER,
               overlap: 1,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect([...admission.positions,].toSorted(function ascending(
@@ -1092,7 +1093,7 @@ await describe({
               modelIds: ROSTER,
               overlap: 1,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect([...admission.positions,],).toEqual([0,],);
@@ -1121,7 +1122,7 @@ await describe({
               modelIds: ROSTER,
               overlap: 1,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect([...admission.positions,],).toEqual([1,],);
@@ -1143,7 +1144,7 @@ await describe({
               modelIds: ROSTER,
               overlap: 1,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect([...admission.positions,],).toEqual([],);

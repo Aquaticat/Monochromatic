@@ -23,6 +23,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Invented-size roster for every polish role.
@@ -140,8 +141,8 @@ await describe({
             lineStructured: false,
             sliceIndex: 1,
             eligible: true,
-            signal: AbortSignal.timeout(5_000,),
-            perCallTimeoutMs: 5_000,
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
+            perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'contributor-baseline-floor-test', },),
           },);
         }
@@ -185,8 +186,8 @@ await describe({
             definitions: '',
           },
           eligible: true,
-          signal: AbortSignal.timeout(20_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'polish-dispute-note-test', },),
         },);
         expect(gateSheets.length,).toBeGreaterThan(0,);
@@ -233,8 +234,8 @@ await describe({
             definitions: '',
           },
           eligible: true,
-          signal: AbortSignal.timeout(20_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'polish-disputed-wording-test', },),
         },);
         expect(final.text,).toBe(base,);
@@ -274,8 +275,8 @@ await describe({
             definitions: '',
           },
           eligible: true,
-          signal: AbortSignal.timeout(20_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'polish-references-test', },),
         },);
         /**
@@ -355,8 +356,8 @@ await describe({
               ...((declaredNamePairs === undefined) ? {} : { declaredNamePairs, }),
             },
             eligible: true,
-            signal: AbortSignal.timeout(20_000,),
-            perCallTimeoutMs: 5_000,
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
+            perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'polish-declared-pairs-test', },),
           },);
           return {

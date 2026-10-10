@@ -43,6 +43,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stages write through, whose output is not under test.
@@ -276,8 +277,8 @@ async function judgedRejecting(
     sourceText: SOURCE,
     incumbentText: '',
     lineStructured: false,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   /**
@@ -306,8 +307,8 @@ async function judgedRejecting(
       incumbentKind: 'absent',
       lineStructured: false,
       ...((withheldStanding === undefined) ? {} : { withheldStanding, }),
-      signal: AbortSignal.timeout(30_000,),
-      perCallTimeoutMs: 5_000,
+      signal: AbortSignal.timeout(HANG_STOP_MS,),
+      perCallTimeoutMs: HANG_STOP_MS,
       l,
     },
   },);
@@ -373,8 +374,8 @@ async function settleRejected(
     standingMayShip: false,
     standingEligible: false,
     standingRefusal: 'the pronoun is left untranslated',
-    signal: AbortSignal.timeout(40_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }
@@ -524,8 +525,8 @@ await describe({
           incumbentText: SOURCE,
           incumbentKind: 'present',
           lineStructured: false,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(RENDERINGS.includes(result.text,),).toBe(true,);

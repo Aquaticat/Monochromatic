@@ -28,6 +28,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /** Original English identifies what was already carried, not which model authored a repair. */
 const TARGET = 'She greeted her friend.';
@@ -107,7 +108,7 @@ await describe({
         };
         let caught: unknown;
         try {
-          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,], judgeModelIds: JUDGES, checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,], }, signal: controller.signal, perCallTimeoutMs: 5_000, });
+          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,], judgeModelIds: JUDGES, checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,], }, signal: controller.signal, perCallTimeoutMs: HANG_STOP_MS, });
         }
         catch (error) {
           caught = error;
@@ -127,7 +128,7 @@ await describe({
           if (!request.validate(value)) throw new Error('Invalid fixture editor reply');
           return { kind: 'ok', value, rawText: JSON.stringify(value), };
         }, };
-        const input = { client, editorModelIds: JUDGES.slice(0, 2), judgeModelIds: JUDGES, sourceText: '猫笑了。', targetText: TARGET, envelopes: [ENVELOPE,], issues: [], neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER', signal: new AbortController().signal, perCallTimeoutMs: 5_000, l: tagged({ tag: 'repair-evidence-test', }), };
+        const input = { client, editorModelIds: JUDGES.slice(0, 2), judgeModelIds: JUDGES, sourceText: '猫笑了。', targetText: TARGET, envelopes: [ENVELOPE,], issues: [], neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER', signal: new AbortController().signal, perCallTimeoutMs: HANG_STOP_MS, l: tagged({ tag: 'repair-evidence-test', }), };
         const result = await runEditorStage(input);
         expect(result.patch.patchedText).toBe('Her friend greeted her.');
         expect(fixture.prompts.length).toBeGreaterThan(0);
@@ -155,7 +156,7 @@ await describe({
         const input = {
           client: fixture.client, candidates: CANDIDATES, envelopes: [ENVELOPE,], judgeModelIds: JUDGES,
           sourceText: '猫笑了。', targetText: TARGET, neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER',
-          signal: new AbortController().signal, perCallTimeoutMs: 5_000, l: tagged({ tag: 'repair-evidence-test', }),
+          signal: new AbortController().signal, perCallTimeoutMs: HANG_STOP_MS, l: tagged({ tag: 'repair-evidence-test', }),
         };
         const selected = await selectPerEnvelope(input);
         expect(selected.operations[0]?.newText).toBe('Her friend greeted her.');
@@ -173,7 +174,7 @@ await describe({
           client: fixture.client, candidates: offered, judgeModelIds: JUDGES, sourceText: '猫笑了。',
           neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER',
           indecisionFallback: fallback, rejectionFallback: { patchedText: TARGET, applied: [], rejected: [], },
-          signal: new AbortController().signal, perCallTimeoutMs: 5_000, l: tagged({ tag: 'repair-evidence-test', }),
+          signal: new AbortController().signal, perCallTimeoutMs: HANG_STOP_MS, l: tagged({ tag: 'repair-evidence-test', }),
         };
         const selected = await selectChunkPatch(input);
         expect(selected.patch.patchedText).toBe('Her friend greeted her.');

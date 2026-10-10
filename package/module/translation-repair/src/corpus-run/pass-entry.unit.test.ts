@@ -55,6 +55,7 @@ import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { NO_PICTURE_SOURCES, } from './pass-picture-sources.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Built pipeline these fixtures claim to have run under.
@@ -1193,7 +1194,7 @@ await describe({
             pipelineDigest: DIGEST,
             outsideReads: NO_OUTSIDE_READS,
             pictureSources: NO_PICTURE_SOURCES,
-            hardCapMs: 60_000,
+            hardCapMs: HANG_STOP_MS,
             baseSignal: new AbortController().signal,
           },);
         }
@@ -1222,7 +1223,7 @@ await describe({
             pipelineDigest: DIGEST,
             outsideReads: NO_OUTSIDE_READS,
             pictureSources: NO_PICTURE_SOURCES,
-            hardCapMs: 60_000,
+            hardCapMs: HANG_STOP_MS,
             baseSignal: new AbortController().signal,
           },);
         }
@@ -1270,7 +1271,7 @@ await describe({
                   return new Map();
                 },
               },
-              hardCapMs: 60_000,
+              hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
             },);
           },
@@ -1316,7 +1317,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
           visualEvidenceReader: async function pictureEvidence() {
             reads.push('missing.webp',);
@@ -1361,7 +1362,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
           visualEvidenceReader: async function reviewedVisualEvidence() {
             return new Map([[
@@ -1405,7 +1406,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual(['CatEntry1.json',],);
@@ -1579,7 +1580,7 @@ await describe({
             },
           },
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -1621,7 +1622,7 @@ await describe({
             },
           },
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -1686,7 +1687,7 @@ await describe({
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
               pictureSources: NO_PICTURE_SOURCES,
-              hardCapMs: 60_000,
+              hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
             },);
           },
@@ -1772,7 +1773,7 @@ await describe({
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
               pictureSources: NO_PICTURE_SOURCES,
-              hardCapMs: 60_000,
+              hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
             },);
           },
@@ -1858,7 +1859,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         /**
@@ -1928,7 +1929,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -1962,7 +1963,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         /** Serialized artifact text for absence proof. */
@@ -2022,7 +2023,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         const page = await readFile(fixedPagePath({
@@ -2059,7 +2060,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -2115,7 +2116,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         expect(outcome,).toEqual({ kind: 'settled', },);
@@ -2161,7 +2162,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         expect(outcome,).toEqual({ kind: 'settled', },);
@@ -2190,7 +2191,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -2241,7 +2242,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -2287,7 +2288,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -2332,7 +2333,7 @@ await describe({
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
               pictureSources: NO_PICTURE_SOURCES,
-              hardCapMs: 60_000,
+              hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
             },);
           },
@@ -2370,7 +2371,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -2406,7 +2407,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -2440,7 +2441,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 
@@ -2492,7 +2493,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         expect(served.length,).toBeGreaterThan(0,);
@@ -2524,7 +2525,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual(['CatEntry1.json',],);
@@ -2598,7 +2599,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         expect(bought.length,).toBeGreaterThan(0,);
@@ -2625,7 +2626,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: controller.signal,
         },);
 
@@ -2675,7 +2676,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
         expect(await artifactNames({ artifactsDir: dirs.sliceCacheDir, },),).toEqual([CLEANUP_ENTRY.id,],);
@@ -2708,7 +2709,7 @@ await describe({
               pipelineDigest: DIGEST,
               outsideReads: NO_OUTSIDE_READS,
               pictureSources: NO_PICTURE_SOURCES,
-              hardCapMs: 60_000,
+              hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
             },);
           },
@@ -2812,7 +2813,7 @@ await describe({
           pipelineDigest: DIGEST,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: 60_000,
+          hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
         },);
 

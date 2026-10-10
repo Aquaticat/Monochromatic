@@ -18,6 +18,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 //region Coverage control cut
 // What the absence control actually deletes.
@@ -154,8 +155,8 @@ await describe({
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             SEAT_SYNTHETIC_VISION_WITHHELD,
           ],
-          signal: AbortSignal.timeout(120_000,),
-          exchangeTimeoutMs: 30_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'coverage-control-test', },),
         },),).toEqual({
           held: false,

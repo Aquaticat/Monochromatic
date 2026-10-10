@@ -26,6 +26,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -190,7 +191,7 @@ await describe({
               repairedText: 'The cat chases butterflies. The bowl is full.',
               references: REFERENCES,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             // restored/partial/absent sorts to absent<partial<restored; lower median is partial.
@@ -217,7 +218,7 @@ await describe({
               repairedText: 'The cat chases butterflies. The bowl is full.',
               references: REFERENCES,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             // Two heard is still quorum over three; lower median of [absent, restored] is absent.
@@ -240,7 +241,7 @@ await describe({
               repairedText: 'The cat chases butterflies. The bowl is full.',
               references: REFERENCES,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(judgments['seed/omission-0']?.judged,).toBe(false,);
@@ -259,7 +260,7 @@ await describe({
               repairedText: 'cat',
               references: [],
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(Object.keys(judgments,),).toHaveLength(0,);
@@ -287,7 +288,7 @@ await describe({
               repairedText: 'The cat chases butterflies. The bowl is full.',
               references: REFERENCES,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(judgments,).toEqual({

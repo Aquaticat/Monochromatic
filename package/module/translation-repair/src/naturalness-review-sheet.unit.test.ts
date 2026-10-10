@@ -35,6 +35,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Invented-size roster for every polish role.
@@ -159,8 +160,8 @@ await describe({
             declaredNames: [],
             definitions: '',
           },
-          signal: AbortSignal.timeout(20_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'naturalness-review-sheet-test', },),
         },);
         expect(reviewSheets.length,).toBeGreaterThan(0,);

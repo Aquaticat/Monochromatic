@@ -20,6 +20,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 const roster = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER] as const;
 const l = tagged({ tag: 'pass-footnote-lifecycle-test' });
@@ -74,7 +75,7 @@ await describe({
         const generation = `sha256-tree-v1:${'f'.repeat(64)}`;
         assertPipelineDigest(generation);
         const input = { client, entryId: 'invented-footnote-entry', entryCacheDir, pipelineDigest: generation,
-          modelIds: roster, sourceText, targetText: archiveText, signal: new AbortController().signal, exchangeTimeoutMs: 5_000, l,
+          modelIds: roster, sourceText, targetText: archiveText, signal: new AbortController().signal, exchangeTimeoutMs: HANG_STOP_MS, l,
           outsideReads: NO_OUTSIDE_READS };
         const cold = await preparePassEntry(input);
         expect(cold.prepared.targetText).toBe(expectedText);
@@ -134,6 +135,6 @@ await describe({
         expect(warm.prepared).toEqual(cold.prepared);
         expect(warm.footnoteDefinitionPairs).toEqual(cold.footnoteDefinitionPairs);
       },
-      timeout: 30_000,
+      timeout: HANG_STOP_MS,
     })),
 });

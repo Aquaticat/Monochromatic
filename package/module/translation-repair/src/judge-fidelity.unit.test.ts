@@ -27,6 +27,7 @@ import {
   type SyntheticClient,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the trial writes its progress to.
@@ -226,8 +227,8 @@ async function runScripted(
       cleanFirst,
     },
     judgeModelIds: ROSTER,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }

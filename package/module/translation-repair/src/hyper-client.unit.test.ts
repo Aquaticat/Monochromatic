@@ -34,6 +34,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { recordedTransport, } from './recorded-transport.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Delay of the deliberately slow test transport.
@@ -868,7 +869,7 @@ await describe({
           messages: MESSAGES,
           signal: callerSignal,
           responseFormat: RESPONSE_FORMAT,
-          exchangeTimeoutMs: 1_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           maxAnswerChars: 500,
         },);
         expect(knobbed.exchanges.length,).toBe(1,);

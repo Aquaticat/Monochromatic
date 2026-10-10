@@ -42,6 +42,7 @@ import {
   type WidthProbeInput,
 } from '../../dist/final/node/index.mjs';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger for the comparison under test.
@@ -183,7 +184,7 @@ async function ballotSheets(): Promise<readonly string[]> {
     narrow: armShipping({ text: NARROW_TEXT, },),
     wide: armShipping({ text: WIDE_TEXT, },),
     judgeModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-    signal: AbortSignal.timeout(120_000,),
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
     l,
   },);
 

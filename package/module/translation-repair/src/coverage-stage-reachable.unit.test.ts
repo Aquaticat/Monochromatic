@@ -24,6 +24,7 @@ import {
   runCoverageStage,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.
@@ -155,8 +156,8 @@ await describe({
           fanOut: 'whole-bench',
           sourcePassage: '小猫中午在垫子上打盹。',
           translation: TARGET,
-          signal: AbortSignal.timeout(30_000,),
-          exchangeTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(answer.verdict

@@ -43,6 +43,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the phase under test.
@@ -521,7 +522,7 @@ async function runPhase(
     outcomes: [settledOutcome({ resolvedIssueIds, authorship, unresolvedIssues, },),],
     models,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }
@@ -625,7 +626,7 @@ async function runCachedPhase(
     models: MODELS,
     refineCache: memoryRefineCache({ stored, },),
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return {
@@ -719,7 +720,7 @@ async function runReseatedPhase(
     models: MODELS,
     reseat,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return {
@@ -1135,7 +1136,7 @@ await describe({
               },),],
               models: laneOff,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               overlap: 0,
               l,
             },),)
@@ -1208,7 +1209,7 @@ await describe({
               outcomes,
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               overlap: 1,
               l,
             },);
@@ -1234,7 +1235,7 @@ await describe({
               outcomes,
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               overlap: 2,
               l,
             },);
@@ -1308,7 +1309,7 @@ await describe({
               ],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               overlap: 2,
               l,
             },);
@@ -1367,7 +1368,7 @@ await describe({
               outcomes: [accuracy,],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
@@ -1404,7 +1405,7 @@ await describe({
               ],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },),).rejects.toThrow(UnpreparedSliceError,);
             expect(calls.count,).toBe(0,);
@@ -1448,7 +1449,7 @@ await describe({
               models: MODELS,
               refineCache: memoryRefineCache({ stored, },),
               signal: controller.signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },),).rejects.toThrow(Error,);
             expect(stored.size,).toBe(0,);
@@ -1533,7 +1534,7 @@ await describe({
               models: MODELS,
               refineCache: memoryRefineCache({ stored, },),
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               overlap: 2,
               l,
             },);

@@ -29,6 +29,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Source metadata under translation.
@@ -118,7 +119,7 @@ await describe({
             judgeModelIds: ROSTER,
           },
           signal: new AbortController().signal,
-          perCallTimeoutMs: 100,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'front-matter-translate-test', },),
         },);
 

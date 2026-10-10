@@ -37,6 +37,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Gate bench of three.
@@ -164,8 +165,8 @@ async function gateWith(
     client,
     modelIds,
     subject: SUBJECT,
-    signal: AbortSignal.timeout(20_000,),
-    exchangeTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    exchangeTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'consolidation-polish-gate-stage-test', },),
   },);
   return {

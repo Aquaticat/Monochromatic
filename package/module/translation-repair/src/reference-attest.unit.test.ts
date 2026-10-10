@@ -45,6 +45,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the stage.
@@ -692,7 +693,7 @@ await describe({
           archiveText: ARCHIVE_TEXT,
           referenceContext: REFERENCE_CONTEXT,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(prompts.length >= 2,).toBe(true,);

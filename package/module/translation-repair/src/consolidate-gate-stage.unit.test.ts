@@ -38,6 +38,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { ballot, } from './structural-ballot.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  One gated slice, standing in for a corpus passage.
@@ -63,11 +64,6 @@ const ROSTER = [
  Logger for the stage under test.
  */
 const l = tagged({ tag: 'consolidate-gate-stage-test', },);
-
-/**
- Per-call bound, generous because the transport answers instantly.
- */
-const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
  Five seats, so three refused leave a bench short of its quorum of three.
@@ -146,8 +142,8 @@ async function gate(
     client: cannedClient({ replyByModel, },),
     modelIds: ROSTER,
     subject: SUBJECT,
-    signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }
@@ -182,8 +178,8 @@ await describe({
                 standingText: '---\nname: Maomao\n---\n',
                 syntax: 'front-matter',
               },
-              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(outcome.choice,).toBe('consolidated',);
@@ -305,8 +301,8 @@ await describe({
               client: refusingClient({ refused: FIVE_SEATS.slice(0, 3,), },),
               modelIds: FIVE_SEATS,
               subject: SUBJECT,
-              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              exchangeTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(outcome.ships,).toBe('consolidated',);

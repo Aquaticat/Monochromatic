@@ -14,6 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { armCallDeadline, } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Deadline short enough to expire inside a test.
@@ -50,7 +51,7 @@ await describe({
         const caller = new AbortController();
         using deadline = armCallDeadline({
           signal: caller.signal,
-          timeoutMs: PAST_DEADLINE_MS * 100,
+          timeoutMs: HANG_STOP_MS,
           label: 'cat-model',
         },);
         caller.abort(new Error('user steered away',),);
@@ -65,7 +66,7 @@ await describe({
         caller.abort(new Error('aborted before arming',),);
         using deadline = armCallDeadline({
           signal: caller.signal,
-          timeoutMs: PAST_DEADLINE_MS * 100,
+          timeoutMs: HANG_STOP_MS,
           label: 'cat-model',
         },);
         expect(deadline.callSignal.aborted,).toBe(true,);

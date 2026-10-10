@@ -33,6 +33,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Roster with the naturalness lane off, checkers apart from the editors.
@@ -110,7 +111,7 @@ await describe({
             neighbouringSourceText: '',
             documentSourceText: '',
             signal: stop.signal,
-            perCallTimeoutMs: 30_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({
               tag: 'repair-slice-buy-test',
               l: levelCapturingLogger({ lines, },),

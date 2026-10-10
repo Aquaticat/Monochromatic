@@ -8,6 +8,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import { WHISKER_KEY, } from './quoting-failure.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 //region Provider status failure
 // A PROVIDER STATUS FAILURE AS A RUN MEETS IT, built by running the real client
@@ -55,11 +56,6 @@ const CHARACTERS_PER_GROUP = 4;
  */
 const PREFIX_CHARACTERS = (CHARACTERS_PER_GROUP * Math.floor(PAIR_PREFIX.length / BYTES_PER_GROUP,))
   + (PAIR_PREFIX.length % BYTES_PER_GROUP);
-
-/**
- Deadline of the one exchange the fixture asks for, far beyond its stubbed answer.
- */
-const EXCHANGE_DEADLINE_MS = 5_000;
 
 /**
  The pair as the invented provider echoes it, written in base64.
@@ -215,7 +211,7 @@ export async function statusFailureOf(
         role: 'user',
         content: 'purr',
       },],
-      signal: AbortSignal.timeout(EXCHANGE_DEADLINE_MS,),
+      signal: AbortSignal.timeout(HANG_STOP_MS,),
     },);
   }
   catch (error) {

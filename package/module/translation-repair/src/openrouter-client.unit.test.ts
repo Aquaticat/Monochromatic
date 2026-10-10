@@ -39,6 +39,7 @@ import {
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  One chat completion chunk as the gateway sends it.
@@ -580,7 +581,7 @@ await describe({
                 },
               ],
               signal: SIGNAL,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               maxAnswerChars: 1_000,
             },);
 

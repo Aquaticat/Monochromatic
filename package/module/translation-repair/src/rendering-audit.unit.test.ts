@@ -30,6 +30,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the audits under test.
@@ -55,11 +56,6 @@ const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头，�
  */
 const CANDIDATE_TEXT = 'Three cats live in the attic of the bookshop. They eat canned food, '
   + 'and every evening they drink one bowl of warm milk.';
-
-/**
- Deadline every fixture call runs under.
- */
-const CALL_TIMEOUT_MS = 4_000;
 
 /**
  What one scripted auditor answers.
@@ -192,8 +188,8 @@ async function auditWith(
       candidateText: CANDIDATE_TEXT,
     },
     modelIds: AUDITORS,
-    signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
-    perCallTimeoutMs: CALL_TIMEOUT_MS,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }

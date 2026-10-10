@@ -42,11 +42,7 @@ import {
   WALL_START_MS,
 } from './wall-clock-stub.test-fixture.ts';
 import { sliceCoversApplication, } from './slice-covers-application.test-fixture.ts';
-
-/**
- Deadline per exchange; the scripted repair and judge seams never wait on it.
- */
-const CALL_TIMEOUT_MS = 300_000;
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Clean fixture translation the seed deletes from.
@@ -847,7 +843,7 @@ await describe({
               ],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              perCallTimeoutMs: HANG_STOP_MS,
               repair: restoringRepair,
               judge: restoringJudge,
             },);
@@ -880,7 +876,7 @@ await describe({
               ],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              perCallTimeoutMs: HANG_STOP_MS,
               runBudgetMs: 0,
               repair: throwingRepair,
               judge: restoringJudge,
@@ -901,7 +897,7 @@ await describe({
               ],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              perCallTimeoutMs: HANG_STOP_MS,
               repair: throwingRepair,
               judge: restoringJudge,
             },);
@@ -928,7 +924,7 @@ await describe({
               entries: [entry,],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              perCallTimeoutMs: HANG_STOP_MS,
               repair: async () => {
                 throw quotingFailure();
               },
@@ -941,7 +937,7 @@ await describe({
               entries: [entry,],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              perCallTimeoutMs: HANG_STOP_MS,
               repair: async () => {
                 throw new SyntheticHttpError({
                   status: 429,
@@ -974,7 +970,7 @@ await describe({
                   ],
                   models: MODELS,
                   signal: new AbortController().signal,
-                  perCallTimeoutMs: CALL_TIMEOUT_MS,
+                  perCallTimeoutMs: HANG_STOP_MS,
                   repair: async () => {
                     throw new SyntheticHttpError({ status: 429, bodyText: 'the cat is over its weekly credit', },);
                   },
@@ -1096,7 +1092,7 @@ await describe({
               ],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              perCallTimeoutMs: HANG_STOP_MS,
               repair: reportingRepair,
               judge: restoringJudge,
             },);
@@ -1133,7 +1129,7 @@ await describe({
               ],
               models: MODELS,
               signal: controller.signal,
-              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              perCallTimeoutMs: HANG_STOP_MS,
               repair: abortedRepair,
               judge: restoringJudge,
             },),).rejects.toBe(stop,);
@@ -1176,7 +1172,7 @@ await describe({
               ],
               models: MODELS,
               signal: new AbortController().signal,
-              perCallTimeoutMs: CALL_TIMEOUT_MS,
+              perCallTimeoutMs: HANG_STOP_MS,
               runBudgetMs: HOUR_MS,
               repair: steppingRepair,
               judge: restoringJudge,

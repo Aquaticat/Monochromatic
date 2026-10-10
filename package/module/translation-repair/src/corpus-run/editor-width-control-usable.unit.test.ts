@@ -54,6 +54,7 @@ import {
 
 import { candidateNumber, } from '../archive-selection.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger for the control under test.
@@ -201,7 +202,7 @@ await describe({
               ALSO_ONE_SENTENCE,
             ],
             judgeModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-            signal: AbortSignal.timeout(120_000,),
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
             l,
           },);
         },);
@@ -242,7 +243,7 @@ await describe({
               SEAT_SYNTHETIC_TEXT_EVERYWHERE,
               SEAT_HYPER_VISION,
             ],
-            signal: AbortSignal.timeout(120_000,),
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
             l,
           },);
         }

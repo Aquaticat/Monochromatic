@@ -12,6 +12,7 @@ import {
   type AuditWireReport,
   auditScriptedClient,
 } from './audit-scripted-client.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 //region Audit report
 // A REAL RENDERING AUDIT REPORT OVER A SCRIPTED ROSTER, for the cases that
@@ -66,7 +67,7 @@ export async function auditReportOver(
     },
     modelIds: RUN_MODELS.checkerModelIds,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'audit-report-fixture', },),
   },);
 }

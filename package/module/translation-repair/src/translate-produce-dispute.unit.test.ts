@@ -25,6 +25,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the producer writes its progress to.
@@ -99,8 +100,8 @@ await describe({
           incumbentText: 'The cat climbed the drainpipe and napped on the windowsill.',
           archiveDisputeNote: DISPUTE_NOTE,
           lineStructured: false,
-          signal: AbortSignal.timeout(20_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(sheets.length,).toBe(TRANSLATORS.length,);

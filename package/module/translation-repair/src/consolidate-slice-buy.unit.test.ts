@@ -33,6 +33,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Writers and judges of the empty-standing cases.
@@ -183,8 +184,8 @@ async function buyOverEmptyStanding(
     standingMayShip: false,
     standingEligible: false,
     laneTexts,
-    signal: AbortSignal.timeout(20_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'consolidate-slice-buy-test', },),
   },);
 }

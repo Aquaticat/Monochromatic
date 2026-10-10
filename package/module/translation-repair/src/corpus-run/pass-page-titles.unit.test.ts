@@ -40,6 +40,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger the round writes to, whose lines are not under test.
@@ -210,7 +211,7 @@ async function lexiconRun(
     identityContext: '',
     cache: memoryCache({ resumed, persisted, },),
     signal: new AbortController().signal,
-    exchangeTimeoutMs: 5_000,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return {

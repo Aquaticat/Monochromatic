@@ -26,6 +26,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -207,7 +208,7 @@ await describe({
               sourceText: '猫猫黎明追蝴蝶。碗是满的。',
               references: REFERENCES,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             // Odd count: the median of not<partially<derivable is partially-derivable.
@@ -233,7 +234,7 @@ await describe({
               sourceText: '猫猫黎明追蝴蝶。碗是满的。',
               references: REFERENCES,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             // Upper median of [not-derivable, derivable] is derivable: the
@@ -256,7 +257,7 @@ await describe({
               sourceText: '猫猫黎明追蝴蝶。碗是满的。',
               references: REFERENCES,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             // Unjudged defaults to derivable so a lost probe never excuses.
@@ -282,7 +283,7 @@ await describe({
               sourceText: '猫猫黎明追蝴蝶。碗是满的。',
               references: REFERENCES,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(derivability,).toEqual({
@@ -310,7 +311,7 @@ await describe({
               sourceText: '猫',
               references: [],
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(Object.keys(derivability,),).toHaveLength(0,);

@@ -39,6 +39,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the repairs under test.
@@ -226,7 +227,7 @@ async function runRepair(
     ...((syntax === undefined) ? {} : { syntax, }),
     priorMessages: PRIOR_MESSAGES,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l: (said === undefined) ? l : capturingLogger({ messages: said, },),
   },);
   return {
@@ -313,7 +314,7 @@ await describe({
             pageText: HEADED_PAGE,
             priorMessages: PRIOR_MESSAGES,
             signal: stop.signal,
-            perCallTimeoutMs: 1_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l,
           },),
         },);
@@ -405,8 +406,8 @@ await describe({
           sourceText: '本条目贡献者：雪猫',
           incumbentText: archive,
           priorMessages: PRIOR_MESSAGES,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         const built = buildTranslateCandidates({
@@ -707,7 +708,7 @@ await describe({
             incumbentText: '',
             priorMessages: PRIOR_MESSAGES,
             signal: new AbortController().signal,
-            perCallTimeoutMs: 1_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l,
           },);
         }

@@ -20,6 +20,7 @@ import {
   StreamBoundError,
   StreamCutShortError,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  A bound short enough for a test to wait out.
@@ -54,7 +55,7 @@ await describe({
             const caller = new AbortController();
             using bound = armStreamBound({
               signal: caller.signal,
-              boundMs: SHORT_BOUND_MS * 1_000,
+              boundMs: HANG_STOP_MS,
               label: 'cats/whisker-1',
             },);
             caller.abort(new Error('the cat left the room',),);
@@ -71,7 +72,7 @@ await describe({
             caller.abort(new Error('the cat left before the call',),);
             using bound = armStreamBound({
               signal: caller.signal,
-              boundMs: SHORT_BOUND_MS * 1_000,
+              boundMs: HANG_STOP_MS,
               label: 'cats/whisker-1',
             },);
             expect(bound.callSignal.aborted,).toBe(true,);

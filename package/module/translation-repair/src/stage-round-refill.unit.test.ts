@@ -13,8 +13,6 @@
  @module
  */
 
-import { setTimeout as abortableWait, } from 'node:timers/promises';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -42,23 +40,14 @@ import {
 import {
   isPurrReply,
   PURR_FORMAT,
+  untilAborted,
 } from './stage-trivial-reply.test-fixture.ts';
-
-/**
- How long the slow seat takes to answer, far past the grace window, so a
- round that waited for it is told apart from one that closed on the others.
- */
-const SLOW_MS = 1_500;
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Straggler window after quorum, short so the test's wall clock stays small.
  */
 const GRACE_MS = 20;
-
-/**
- Exchange deadline, above the slow seat's answer so it is not cut by it.
- */
-const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
  Logger for the rounds under test.
@@ -88,8 +77,9 @@ const SIX_SEATS: readonly RosterModelId[] = [
 type SeatRole = 'refused' | 'slow' | 'fast' | 'failing';
 
 /**
- Client scripted per seat: refused by the router, answering late, answering
- at once, or failing in transport on a wet provider; records every call.
+ Client scripted per seat: refused by the router, answering only when the
+ round cuts it, answering at once, or failing in transport on a wet
+ provider; records every call.
 
  @param roles - behaviour per seat
 
@@ -131,14 +121,15 @@ function scriptedClient(
       }
       if (role === 'failing')
         throw new Error('scripted transport failure',);
-      // ABORTABLE, so the slow seat stops waiting when the round cuts it;
-      // `wait` from module-async-time takes no signal.
+      // THE SLOW SEAT NEVER ANSWERS ON ITS OWN: it waits until the round cuts
+      // it, and this scripted client arms no exchange deadline, so a round that
+      // waited for it rather than closing on the others would never end, and
+      // no stall can bring its answer inside the grace window. A 1,500 ms
+      // sleep stood here, which a stall of that length between asking it and
+      // quorum would have let in.
       if (role === 'slow') {
-        await abortableWait(
-          SLOW_MS,
-          undefined,
-          { signal: request.signal, },
-        );
+        await untilAborted({ signal: request.signal, },);
+        throw request.signal.reason;
       }
 
       /**
@@ -250,7 +241,7 @@ await describe({
           modelIds: SIX_SEATS,
           messages: MESSAGES,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: PURR_FORMAT,
           validate: isPurrReply,
           stage: 'critic',
@@ -300,7 +291,7 @@ await describe({
           modelIds: SIX_SEATS,
           messages: MESSAGES,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: PURR_FORMAT,
           validate: isPurrReply,
           stage: 'lane-contest',
@@ -347,7 +338,7 @@ await describe({
           modelIds: [...roles.keys(),],
           messages: MESSAGES,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          exchangeTimeoutMs: HANG_STOP_MS,
           responseFormat: PURR_FORMAT,
           validate: isPurrReply,
           stage: 'consolidate-gate',

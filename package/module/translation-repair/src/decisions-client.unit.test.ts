@@ -23,6 +23,7 @@ import {
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Retry pacing that never waits, so a refused status returns at once.
@@ -146,8 +147,8 @@ await describe({
               instructions: 'Is the notice urgent?',
             },
           },
-          signal: AbortSignal.timeout(5_000,),
-          exchangeTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
         },);
         expect(rig.sent.urls,).toEqual(['https://openrouter.ai/api/alpha/decisions',],);
         /**
@@ -219,7 +220,7 @@ await describe({
             modelId: SEAT_OPENROUTER_DECISIONS,
             state: 'a cat',
             questions: { urgent: { type: 'noul', instructions: 'Is the notice urgent?', }, },
-            signal: AbortSignal.timeout(5_000,),
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
           },);
         }
         /**
@@ -255,7 +256,7 @@ await describe({
           modelId: SEAT_OPENROUTER_DECISIONS,
           state: 'a cat',
           questions: { asleep: { type: 'noul', instructions: 'Asleep?', }, },
-          signal: AbortSignal.timeout(5_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
         },),).rejects.toBeInstanceOf(SyntheticHttpError,);
 
         const malformed = createDecisionsClient({
@@ -270,7 +271,7 @@ await describe({
           modelId: SEAT_OPENROUTER_DECISIONS,
           state: 'a cat',
           questions: { asleep: { type: 'noul', instructions: 'Asleep?', }, },
-          signal: AbortSignal.timeout(5_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
         },),).rejects.toBeInstanceOf(DecisionReplyShapeError,);
       },
     },),
@@ -295,7 +296,7 @@ await describe({
           modelId: SEAT_OPENROUTER_DECISIONS,
           state: 'a cat',
           questions: { best: { type: 'choice', instructions: 'Which cat?', criteria: { '2': 'Mittens', }, }, },
-          signal: AbortSignal.timeout(5_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
         },),).rejects.toBeInstanceOf(DecisionReplyShapeError,);
       },
     },),

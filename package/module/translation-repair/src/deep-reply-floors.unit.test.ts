@@ -47,6 +47,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 //region Deep reply floor tests
 
@@ -181,7 +182,7 @@ await describe({
               mode: { kind: 'comparative', },
               sliceIndex: 1,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 5_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l: capturingLogger({ messages, },),
             },);
 
@@ -234,7 +235,7 @@ await describe({
                 definitions: '',
               },
               signal: new AbortController().signal,
-              perCallTimeoutMs: 5_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'deep-reply-floors-test', },),
             },);
 
@@ -285,7 +286,7 @@ await describe({
               },
               standingText: page,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 5_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'deep-reply-floors-test', },),
             },);
 
@@ -350,7 +351,7 @@ await describe({
               blockOffset: 0,
               priorFindings: [],
               signal: new AbortController().signal,
-              exchangeTimeoutMs: 5_000,
+              exchangeTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'deep-reply-floors-test', },),
             },);
 

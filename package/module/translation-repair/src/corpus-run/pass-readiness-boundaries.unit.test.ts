@@ -38,6 +38,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Pairing roster accepted by canned client.
@@ -254,7 +255,7 @@ await describe({
           sourceText: 'Cats nap.',
           targetText: 'Cats nap.\n\nTranslator: Cat Friend.',
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
           outsideReads: NO_OUTSIDE_READS,
         },);
@@ -289,7 +290,7 @@ await describe({
           sourceText,
           targetText: `${sourceText}\n\n${translation}`,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
           outsideReads: NO_OUTSIDE_READS,
           readPictures: async ({ slices, },) => {

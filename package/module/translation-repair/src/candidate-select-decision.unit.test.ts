@@ -28,6 +28,7 @@ import {
   TYPED_BALLOT_REASON,
 } from '../dist/final/node/index.mjs';
 import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.
@@ -193,8 +194,8 @@ await describe({
           task: 'Pick the best rendering.',
           criteria: ['faithful to the original',],
           evidence: [{ label: 'ORIGINAL (Chinese)', text: '猫在窗台上打盹。', },],
-          signal: AbortSignal.timeout(10_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(outcome.kind,).toBe('selected',);

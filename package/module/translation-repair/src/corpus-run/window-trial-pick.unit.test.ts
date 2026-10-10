@@ -37,6 +37,7 @@ import {
 } from '../provider-status-failure.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger the pick writes to.
@@ -139,8 +140,8 @@ await describe({
           ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -166,8 +167,8 @@ await describe({
           ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: warningRecordingLogger({ base: l, warnings, },),
         },);
 
@@ -232,7 +233,7 @@ await describe({
           done: new Set<string>(),
           models: MODELS,
           signal: stop.signal,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: warningRecordingLogger({ base: l, warnings, },),
         },);
 
@@ -269,8 +270,8 @@ await describe({
             }, },);
           },),),
           models: MODELS,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 

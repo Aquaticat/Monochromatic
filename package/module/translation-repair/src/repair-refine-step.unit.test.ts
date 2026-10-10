@@ -46,6 +46,7 @@ import {
   SOURCE_TEXT,
   sunbathingOutcome,
 } from './sunbathing-recheck.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the step under test.
@@ -140,7 +141,7 @@ await describe({
           models: LANE_OFF,
           declaredNames: [],
           signal: new AbortController().signal,
-          perCallTimeoutMs: 30_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },),).rejects.toBeInstanceOf(UnpreparedSliceError,);
       },
@@ -160,7 +161,7 @@ await describe({
           },
           declaredNames: [],
           signal: new AbortController().signal,
-          perCallTimeoutMs: 30_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },),).rejects.toBeInstanceOf(CheckerIndependenceError,);
       },
@@ -207,7 +208,7 @@ await describe({
             models: LANE_ON,
             declaredNames: [],
             signal: stop.signal,
-            perCallTimeoutMs: 30_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l: levelCapturingLogger({ lines, },),
           },);
         },);

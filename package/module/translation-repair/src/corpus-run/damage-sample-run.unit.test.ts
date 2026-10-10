@@ -45,6 +45,7 @@ import {
   type ScriptedModelReply,
 } from './model-reply-scripted-client.test-fixture.ts';
 import { writeSettledV2, } from './settled-v2-pool.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Probers every case asks.
@@ -149,7 +150,7 @@ async function drawWith(
       };
     },
     proberModelIds: PROBERS,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'damage-sample-test', },),
   },);
   return {
@@ -297,7 +298,7 @@ await describe({
               throw new Error('a refused draw opened a client',);
             },
             proberModelIds: PROBERS,
-            perCallTimeoutMs: 1_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'damage-sample-test', },),
           },);
         },);

@@ -53,6 +53,7 @@ import {
   ENVELOPE,
   TARGET_TEXT,
 } from './editor-candidate-envelope.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the stages under test.
@@ -306,7 +307,7 @@ async function runSelection(
       },
     ],
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l: logger,
   },);
   return {
@@ -393,7 +394,7 @@ async function runCollapsedSelection(
         },
       ],
       signal: new AbortController().signal,
-      perCallTimeoutMs: 1_000,
+      perCallTimeoutMs: HANG_STOP_MS,
       l,
     },),
     calls: counter.calls,
@@ -462,7 +463,7 @@ async function runShortBench(
       },
     ],
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }
@@ -793,7 +794,7 @@ await describe({
                 },
               ],
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             await expect(refused,).rejects.toBeInstanceOf(ProducerRosterError,);
@@ -848,7 +849,7 @@ await describe({
               sourceText: SOURCE_TEXT,
               targetText: TARGET_TEXT,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(counter.calls,).toBe(0,);
@@ -897,7 +898,7 @@ await describe({
               sourceText: SOURCE_TEXT,
               targetText: TARGET_TEXT,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(counter.calls,).toBeGreaterThan(0,);
@@ -954,7 +955,7 @@ await describe({
               indecisionFallback,
               rejectionFallback,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(patch.patchedText,).toContain('The cat chases butterflies.',);
@@ -1007,7 +1008,7 @@ await describe({
               indecisionFallback,
               rejectionFallback,
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(patch.patchedText,).toBe(TARGET_TEXT,);
@@ -1060,7 +1061,7 @@ await describe({
                 rejected: [],
               },
               signal: new AbortController().signal,
-              perCallTimeoutMs: 1_000,
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(counter.calls,).toBe(0,);

@@ -44,6 +44,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { replyWith, } from './scripted-reply-outcome.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the stages under test.
@@ -193,7 +194,7 @@ await describe({
             envelopes: ENVELOPES,
             issues: ISSUES,
             signal: new AbortController().signal,
-            perCallTimeoutMs: 1_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l,
           },),
         ).rejects.toThrow(ProducerRosterError,);
@@ -225,7 +226,7 @@ await describe({
           envelopes: ENVELOPES,
           issues: ISSUES,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -270,7 +271,7 @@ await describe({
           envelopes: ENVELOPES,
           issues: ISSUES,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -305,7 +306,7 @@ await describe({
           envelopes: ENVELOPES,
           issues: ISSUES,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 
@@ -469,7 +470,7 @@ await describe({
           envelopes,
           issues,
           signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
 

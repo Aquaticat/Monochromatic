@@ -40,6 +40,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 //region Deep edit tests
 
@@ -415,8 +416,8 @@ async function runChunkWithDeepEdit(
     lineStructured: false,
     models: MODELS,
     declaredNames: [],
-    signal: AbortSignal.timeout(120_000,),
-    perCallTimeoutMs: 30_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages, },),
   },);
   return {
@@ -455,8 +456,8 @@ async function runLongDocumentWithDeepRewrite(
       ...MODELS,
       refinerModelIds: [REWRITER,],
     },
-    signal: AbortSignal.timeout(120_000,),
-    perCallTimeoutMs: 30_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
   },);
 }
 
@@ -482,8 +483,8 @@ async function runDocumentWithDeepEdit(
       targetText: DOCUMENT_TARGET_TEXT,
     },),
     models: MODELS,
-    signal: AbortSignal.timeout(120_000,),
-    perCallTimeoutMs: 30_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
   },);
 }
 
@@ -570,8 +571,8 @@ await describe({
                 targetText: DOCUMENT_TARGET_TEXT,
               },),
               models: MODELS,
-              signal: AbortSignal.timeout(120_000,),
-              perCallTimeoutMs: 30_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
             },);
 
             expect(result.repairedText,).toBe(

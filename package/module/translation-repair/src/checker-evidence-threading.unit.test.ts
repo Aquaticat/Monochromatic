@@ -49,6 +49,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger for the drivers under test.
@@ -317,7 +318,7 @@ async function stageSheets({ evidence, }: { readonly evidence: Evidence; },): Pr
     authorship: UNATTRIBUTED_TEXT,
     ...evidence,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return checkerSheets;
@@ -350,7 +351,7 @@ async function repairLaneSheets({ evidence, }: { readonly evidence: Evidence; },
     },),
     models: MODELS,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
   },);
   return checkerSheets;
 }
@@ -453,7 +454,7 @@ async function refineSheets({ evidence, }: { readonly evidence: Evidence; },): P
     },
     ...evidence,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
   return checkerSheets;

@@ -42,6 +42,7 @@ import {
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 //region Produced volume threading
 
@@ -194,7 +195,7 @@ async function produceOnce(): Promise<readonly SeenRequest[]> {
     incumbentText: '',
     lineStructured: false,
     signal: new AbortController().signal,
-    perCallTimeoutMs: 1_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 

@@ -37,6 +37,7 @@ import {
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Logger the halves write their progress to.
@@ -233,8 +234,8 @@ async function judgeSheetFor(
     sourceText: SOURCE_TEXT,
     incumbentText: INCUMBENT_TEXT,
     lineStructured,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 
@@ -254,8 +255,8 @@ async function judgeSheetFor(
     incumbentKind: 'present',
     ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     lineStructured,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 
@@ -332,8 +333,8 @@ async function refusalOverAnchor(
       incumbentText: '',
       incumbentKind: 'absent',
       lineStructured: false,
-      signal: AbortSignal.timeout(30_000,),
-      perCallTimeoutMs: 5_000,
+      signal: AbortSignal.timeout(HANG_STOP_MS,),
+      perCallTimeoutMs: HANG_STOP_MS,
       l,
     },);
     return undefined;
@@ -367,8 +368,8 @@ async function keptOverBlank(
     incumbentText: '   ',
     incumbentKind: 'present',
     lineStructured: false,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
+    perCallTimeoutMs: HANG_STOP_MS,
     l,
   },);
 }
@@ -533,8 +534,8 @@ await describe({
               sourceText: SOURCE_TEXT,
               incumbentText: INCUMBENT_TEXT,
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             expect(produced.candidates
@@ -553,8 +554,8 @@ await describe({
               incumbentText: INCUMBENT_TEXT,
               incumbentKind: 'present',
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -571,8 +572,8 @@ await describe({
               incumbentText: INCUMBENT_TEXT,
               incumbentKind: 'present',
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -614,8 +615,8 @@ await describe({
               sourceText: SOURCE_TEXT,
               incumbentText: INCUMBENT_TEXT,
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -628,8 +629,8 @@ await describe({
               incumbentText: INCUMBENT_TEXT,
               incumbentKind: 'present',
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             const betweenArms = rig.judgeSheets.length;
@@ -643,8 +644,8 @@ await describe({
               incumbentKind: 'present',
               neighbouringSourceText: '傍晚她回到炉火旁，炉子里的火已经快灭了。',
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -681,8 +682,8 @@ await describe({
               sourceText: SOURCE_TEXT,
               incumbentText: INCUMBENT_TEXT,
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -695,8 +696,8 @@ await describe({
               incumbentText: INCUMBENT_TEXT,
               incumbentKind: 'present',
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
             const betweenArms = rig.judgeSheets.length;
@@ -710,8 +711,8 @@ await describe({
               incumbentKind: 'present',
               referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -750,8 +751,8 @@ await describe({
               sourceText: SOURCE_TEXT,
               incumbentText: INCUMBENT_TEXT,
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -767,8 +768,8 @@ await describe({
               incumbentText: INCUMBENT_TEXT,
               incumbentKind: 'present',
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -785,8 +786,8 @@ await describe({
               incumbentKind: 'present',
               neighbouringIncumbentText: 'By evening she was back beside the stove, whose fire had almost gone out.',
               lineStructured: false,
-              signal: AbortSignal.timeout(30_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l,
             },);
 
@@ -907,8 +908,8 @@ await describe({
                 incumbentText: INCUMBENT_TEXT,
                 incumbentKind: 'present',
                 lineStructured: false,
-                signal: AbortSignal.timeout(30_000,),
-                perCallTimeoutMs: 5_000,
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
+                perCallTimeoutMs: HANG_STOP_MS,
                 l,
               },);
             }

@@ -34,12 +34,7 @@ import {
   MEOW_FORMAT,
   type MeowReply,
 } from './stage-trivial-reply.test-fixture.ts';
-
-/**
- Grace each recovery round gives its re-asks, short because every scripted
- seat answers at once.
- */
-const RECOVERY_GRACE_MS = 60;
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Text the stage's own prompt carries.
@@ -191,12 +186,12 @@ async function recoverOver(
       },),
       messages: [{ role: 'user', content: STAGE_PROMPT, },],
       signal: new AbortController().signal,
-      exchangeTimeoutMs: 1_000,
+      exchangeTimeoutMs: HANG_STOP_MS,
       responseFormat: MEOW_FORMAT,
       validate: isMeowReply,
       stage: 'gate',
       l: levelCapturingLogger({ lines, },),
-      graceMs: RECOVERY_GRACE_MS,
+      graceMs: HANG_STOP_MS,
     },
     unreadable,
     causeOf,

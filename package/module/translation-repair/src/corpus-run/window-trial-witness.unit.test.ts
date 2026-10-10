@@ -30,6 +30,7 @@ import {
   WindowEvidenceError,
   witnessSheets,
 } from '../../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Client answering everything, recording what it was asked.
@@ -98,7 +99,7 @@ function sheetOf(
       role: 'user',
       content,
     },],
-    signal: AbortSignal.timeout(30_000,),
+    signal: AbortSignal.timeout(HANG_STOP_MS,),
     validate: function accepts(value: unknown,): value is unknown {
       return value !== undefined;
     },

@@ -13,6 +13,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 const sourceText = `## 猫\n\n${'猫在暖和的房间里睡觉。'.repeat(12)} [回来](https://example.test/cat)`;
 const paragraph = 'The cat slept in the warm room, where the cat could rest all afternoon.'.repeat(2);
@@ -40,7 +41,7 @@ await describe({
           return { status: 200, bodyText: `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: JSON.stringify({ pairs: relations }) } }] })}\n\ndata: [DONE]\n\n` };
         } });
         const acquired = await prepareBlockPairing({ client, modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER],
-          pair, pairIndex: 0, targetContainers: target.containers, signal: new AbortController().signal, exchangeTimeoutMs: 5_000, l });
+          pair, pairIndex: 0, targetContainers: target.containers, signal: new AbortController().signal, exchangeTimeoutMs: HANG_STOP_MS, l });
         expect(calls).toBe(2);
         if (acquired.kind !== 'paired') throw new Error('fixture requires current acquired relations');
         expect(acquired.findings.join(' ')).toContain('from 2 usable voices of 2 heard');

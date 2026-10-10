@@ -36,6 +36,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Active invented-size roster for every synthetic role.
@@ -407,8 +408,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
         },);
         expect(polish.kind,).toBe('settled',);
@@ -486,8 +487,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-wrap-test', },),
         },);
         expect(wrapped.kind,).toBe('settled',);
@@ -513,8 +514,8 @@ await describe({
           lineStructured: true,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-governed-test', },),
         },);
         expect(governed.kind,).toBe('settled',);
@@ -532,8 +533,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-rewrap-test', },),
         },);
         expect(rewrapOnly.kind,).toBe('settled',);
@@ -562,8 +563,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-soft-break-test', },),
         },);
         expect(softOnly.kind,).toBe('settled',);
@@ -586,8 +587,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 2,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
         },);
         expect(polish.kind,).toBe('settled',);
@@ -606,8 +607,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-contributor-test', },),
         },);
         expect(polish.kind,).toBe('settled',);
@@ -629,8 +630,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-rejection-test', },),
         },);
         // The reviewer verdict is evidence, not authority: the gated text
@@ -671,8 +672,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-confirmation-test', },),
         },);
         // Discovery accepted, the acceptance challenge rejected: the decisive
@@ -710,8 +711,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-quorum-test', },),
         },);
         expect(polish.kind,).toBe('settled',);
@@ -750,8 +751,8 @@ await describe({
             lineStructured: false,
             sliceIndex: 1,
             config: CONFIG,
-            signal: AbortSignal.timeout(5_000,),
-            perCallTimeoutMs: 5_000,
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
+            perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'consolidation-polish-roundtrip-rejection-test', },),
           },),
           polishConsolidation({
@@ -762,8 +763,8 @@ await describe({
             lineStructured: false,
             sliceIndex: 1,
             config: CONFIG,
-            signal: AbortSignal.timeout(5_000,),
-            perCallTimeoutMs: 5_000,
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
+            perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'consolidation-polish-roundtrip-quorum-test', },),
           },),
         ],);
@@ -981,8 +982,8 @@ await describe({
           lineStructured: true,
           sliceIndex: 1,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-blockquote-test', },),
         },);
         expect(polish.kind,).toBe('settled',);
@@ -1009,8 +1010,8 @@ await describe({
           syntax: 'front-matter',
           lineStructured: false,
           sliceIndex: 0,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
         },);
         expect(polish,).toEqual({
@@ -1042,8 +1043,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 0,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
         },);
         if (polish.kind !== 'settled')
@@ -1079,8 +1080,8 @@ await describe({
           lineStructured: false,
           sliceIndex: 0,
           config: CONFIG,
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
         },);
         if (polish.kind !== 'settled')
@@ -1127,8 +1128,8 @@ await describe({
               sliceIndex: 0,
               config: CONFIG,
               mode,
-              signal: AbortSignal.timeout(5_000,),
-              perCallTimeoutMs: 5_000,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              perCallTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'consolidation-polish-test', },),
             },);
             if (polish.kind !== 'settled')

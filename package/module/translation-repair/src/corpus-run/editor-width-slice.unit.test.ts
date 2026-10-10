@@ -55,6 +55,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 //region Editor width slice tests
 
@@ -431,7 +432,7 @@ await describe({
           narrowEditorIds: NARROW_EDITORS,
           wideEditorIds: WIDE_EDITORS,
           judgeModelIds: JUDGES,
-          signal: AbortSignal.timeout(30_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 
@@ -465,7 +466,7 @@ await describe({
           narrowEditorIds: NARROW_EDITORS,
           wideEditorIds: WIDE_EDITORS,
           judgeModelIds: JUDGES,
-          signal: AbortSignal.timeout(30_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 
@@ -491,7 +492,7 @@ await describe({
           narrowEditorIds: NARROW_EDITORS,
           wideEditorIds: WIDE_EDITORS,
           judgeModelIds: JUDGES,
-          signal: AbortSignal.timeout(30_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 
@@ -519,7 +520,7 @@ await describe({
           narrowEditorIds: NARROW_EDITORS,
           wideEditorIds: WIDE_EDITORS,
           judgeModelIds: JUDGES,
-          signal: AbortSignal.timeout(30_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 
@@ -554,7 +555,7 @@ await describe({
           narrowEditorIds: NARROW_EDITORS,
           wideEditorIds: WIDE_EDITORS,
           judgeModelIds: JUDGES,
-          signal: AbortSignal.timeout(30_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 
@@ -578,7 +579,7 @@ await describe({
           narrowEditorIds: NARROW_EDITORS,
           wideEditorIds: WIDE_EDITORS,
           judgeModelIds: JUDGES,
-          signal: AbortSignal.timeout(30_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 
@@ -601,7 +602,7 @@ await describe({
           narrowEditorIds: NARROW_EDITORS,
           wideEditorIds: WIDE_EDITORS,
           judgeModelIds: JUDGES,
-          signal: AbortSignal.timeout(30_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 
@@ -627,7 +628,7 @@ await describe({
           narrowEditorIds: NARROW_EDITORS,
           wideEditorIds: WIDE_EDITORS,
           judgeModelIds: JUDGES,
-          signal: AbortSignal.timeout(30_000,),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
         },);
 

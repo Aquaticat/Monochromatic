@@ -36,6 +36,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger the preparation writes to, whose lines are not under test.
@@ -144,7 +145,7 @@ await describe({
           sourceText: SOURCE,
           targetText: ARCHIVE,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
           outsideReads: {
             ...NO_OUTSIDE_READS,
@@ -175,7 +176,7 @@ await describe({
           sourceText: `---\nname: 咪咪\n---\n\n${SOURCE}\n`,
           targetText: `---\nname: Mittens\n---\n\n${ARCHIVE}\n`,
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
+          exchangeTimeoutMs: HANG_STOP_MS,
           l,
           outsideReads: {
             ...NO_OUTSIDE_READS,

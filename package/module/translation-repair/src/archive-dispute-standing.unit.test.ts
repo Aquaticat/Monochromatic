@@ -39,6 +39,7 @@ import {
   translateSliceKey,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Picture marker the archive carries on its own line, which lets a trailing
@@ -342,8 +343,8 @@ await describe({
             text: ARCHIVE,
             reason: 'the archive rendering the adjudicators disputed',
           },],
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 5_000,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
           l,
         },);
         expect(result.text,).toBe(FRESH,);

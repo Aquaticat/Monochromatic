@@ -23,6 +23,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /** Fixture electorate remains unchanged across packets. */
 const MODELS: readonly RosterModelId[] = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION, SEAT_HYPER_TEXT_BEDROCK,];
@@ -87,7 +88,7 @@ function panelInput(client: SyntheticClient) {
     neighbouringIncumbentText: 'Her friend returned.',
     documentSourceText: '# Full source\n\n猫睡了。\n\n朋友回来了。',
     signal: new AbortController().signal,
-    perCallTimeoutMs: 5_000,
+    perCallTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'panel-cluster-test', }),
   };
 }

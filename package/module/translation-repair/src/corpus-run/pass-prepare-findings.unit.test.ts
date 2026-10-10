@@ -42,6 +42,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 
 /**
  Logger the preparation writes to, whose lines are not under test.
@@ -211,7 +212,7 @@ async function prepared(
     sourceText: SOURCE,
     targetText,
     signal: new AbortController().signal,
-    exchangeTimeoutMs: 5_000,
+    exchangeTimeoutMs: HANG_STOP_MS,
     l,
     outsideReads: {
       ...NO_OUTSIDE_READS,
