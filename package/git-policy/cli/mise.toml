@@ -40,11 +40,6 @@ description = "Type-check and lint the native wrapper library for x86_64-pc-wind
 # The Linux gate never compiles the `#[cfg(not(unix))]` blocks; this is the only check that does.
 run = "cargo clippy --locked --offline --lib --target x86_64-pc-windows-gnu -- -D warnings"
 
-[tasks."native:lint:rust"]
-description = "Run monochromatic-rust-linter (code-line budget and required rustdoc) over the native wrapper source"
-# The linter is a separate host crate; `-- <paths>` after the task name are passed on in place of `src/native`.
-run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml --"
-
 [tasks."native:test:host"]
 description = "Run native unit tests matching `-- <filter>...` on the host while iterating; tests that start Git need the gate's Git 2.56.0"
 run = "cargo test --locked --offline --lib --"

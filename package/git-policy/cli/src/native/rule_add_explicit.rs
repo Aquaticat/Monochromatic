@@ -1,7 +1,16 @@
-//! What: Pure decision of the add-explicit policy: `git add` names the paths it stages.
-//! Why: `git add .`, `git add -A` and `git add -u` sweep up every changed path, including
-//!      ones the caller never looked at, so one commit stops describing one change. The
-//!      policy rejects those forms. This file decides from the arguments alone; it reads
+//! What:
+//!  Pure decision of the add-explicit policy:
+//!  `git add` names the paths it stages.
+//! Why:
+//!  `git add .`,
+//!  `git add -A` and `git add -u` sweep up every changed path,
+//!  including
+//!      ones the caller never looked at,
+//!  so one commit stops describing one change.
+//!  The
+//!      policy rejects those forms.
+//!  This file decides from the arguments alone;
+//!  it reads
 //!      no file and starts no process.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,9 +18,13 @@
 //! // decideAddExplicit(['add', '.']) => 'cli-git: git add rejects bulk-staging patterns (.) ...'
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  Which tokens stage in bulk comes from Git's own option table of `git add`.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   Which tokens stage in bulk comes from Git's own option table of `git add`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,9 +33,15 @@
 use super::command_add::{ADD_ESCAPE_HATCH, AddRegion, parse_add_region};
 use super::command_options::OptionError;
 use super::global_arguments::command_tokens;
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  Arguments are compared as bytes; only the rejection text renders them.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Arguments are compared as bytes;
+///  only the rejection text renders them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,9 +49,12 @@ use super::global_arguments::command_tokens;
 /// ```
 use std::ffi::OsString;
 
-/// What: The finding code of an add-explicit rejection. `&str` is borrowed text baked into
+/// What:
+///  The finding code of an add-explicit rejection.
+///  `&str` is borrowed text baked into
 ///       the program.
-/// Why:  Callers identify the finding by this stable code.
+/// Why:
+///   Callers identify the finding by this stable code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,11 +62,20 @@ use std::ffi::OsString;
 /// ```
 pub const BULK_ADD_CODE: &str = "bulk-add-rejected";
 
-/// What: Decide from the argument list: the rejection text, or nothing to let the command
-///       through. `&[OsString]` borrows the arguments, already free of wrapper controls;
+/// What:
+///  Decide from the argument list:
+///  the rejection text,
+///  or nothing to let the command
+///       through.
+///  `&[OsString]` borrows the arguments,
+///  already free of wrapper controls;
 ///       `Option<String>` is "owned text or nothing".
-/// Why:  Only `git add` is judged, and only when Git accepts its options. The text quotes
-///       the caller's own tokens, so `-vA` is named as written.
+/// Why:
+///   Only `git add` is judged,
+///  and only when Git accepts its options.
+///  The text quotes
+///       the caller's own tokens,
+///  so `-vA` is named as written.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -93,7 +124,8 @@ pub fn decide_add_explicit(arguments: &[OsString]) -> Option<String> {
     ));
 }
 
-/// Bulk forms, explicit forms and the rejection text.
+/// Bulk forms,
+///  explicit forms and the rejection text.
 #[cfg(test)]
 #[path = "rule_add_explicit_tests.rs"]
 mod tests;

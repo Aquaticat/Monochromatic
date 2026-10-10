@@ -1,18 +1,30 @@
 //! Builds a counting NFA from a node tree by a Glushkov-style position walk.
 //!
-//! What: [`build_nfa`] turns a concatenation/alternation of classes, class
-//! repetitions, and anchors into positions plus follow sets; it returns `None` for
-//! intersection, complement, or `Top`, which the product or eager DFA handle. Why:
+//! What:
+//!  [`build_nfa`] turns a concatenation/alternation of classes,
+//!  class
+//! repetitions,
+//!  and anchors into positions plus follow sets;
+//!  it returns `None` for
+//! intersection,
+//!  complement,
+//!  or `Top`,
+//!  which the product or eager DFA handle.
+//!  Why:
 //! computing first/last/follow per subexpression yields an epsilon-free position
-//! automaton whose alternation is just extra edges, so `{n,m}` never unrolls.
+//! automaton whose alternation is just extra edges,
+//!  so `{n,m}` never unrolls.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // module build: see exported functions and types below.
 //! ```
 
-/// What:    Imports the node algebra the builder reads.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra the builder reads.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -21,8 +33,11 @@
 /// ```
 use crate::ast::node::Node;
 
-/// What:    Imports the position kind emitted per leaf.
-/// Why:     The code below uses `Element` directly; importing from `crate/counting/element`
+/// What:
+///     Imports the position kind emitted per leaf.
+/// Why:
+///      The code below uses `Element` directly;
+///  importing from `crate/counting/element`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -31,8 +46,11 @@ use crate::ast::node::Node;
 /// ```
 use crate::counting::element::Element;
 
-/// What:    Imports the counting NFA being built.
-/// Why:     The code below uses `CountingNfa` directly; importing from `crate/counting/nfa`
+/// What:
+///     Imports the counting NFA being built.
+/// Why:
+///      The code below uses `CountingNfa` directly;
+///  importing from `crate/counting/nfa`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -43,9 +61,14 @@ use crate::counting::nfa::CountingNfa;
 
 /// Largest bound for which a non-class repetition is unrolled into copies.
 ///
-/// What: a ceiling on `max` when a repeated body is not a single class. Why: a small
-/// repeated group (an optional `(?:labs)?`) is cheaply copied, but a large bound
-/// would multiply positions, so it falls back to the general engine instead.
+/// What:
+///  a ceiling on `max` when a repeated body is not a single class.
+///  Why:
+///  a small
+/// repeated group (an optional `(?:labs)?`) is cheaply copied,
+///  but a large bound
+/// would multiply positions,
+///  so it falls back to the general engine instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,8 +78,13 @@ const REPEAT_UNROLL_LIMIT: usize = 64;
 
 /// The first/last/nullable summary of one subexpression's positions.
 ///
-/// What: `first` are positions that may start it, `last` those that may end it, and
-/// `nullable` whether it can be skipped entirely. Why: these are exactly what the
+/// What:
+///  `first` are positions that may start it,
+///  `last` those that may end it,
+///  and
+/// `nullable` whether it can be skipped entirely.
+///  Why:
+///  these are exactly what the
 /// Glushkov concat and alternation rules combine to wire follow edges.
 ///
 /// In TS you'd write (pseudocode):
@@ -66,9 +94,12 @@ const REPEAT_UNROLL_LIMIT: usize = 64;
 /// };
 /// ```
 struct Frag {
-    /// What:    Whether the subexpression can match without consuming a position.
-    /// Why:     `nullable` stores whether the subexpression can match without consuming a
-    ///          position, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     Whether the subexpression can match without consuming a position.
+    /// Why:
+    ///      `nullable` stores whether the subexpression can match without consuming a
+    ///          position,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -76,8 +107,11 @@ struct Frag {
     /// nullable: boolean;
     /// ```
     nullable: bool,
-    /// What:    Positions that may be entered first.
-    /// Why:     `first` stores positions that may be entered first, so matcher code reads that
+    /// What:
+    ///     Positions that may be entered first.
+    /// Why:
+    ///      `first` stores positions that may be entered first,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -85,8 +119,11 @@ struct Frag {
     /// first: number[];
     /// ```
     first: Vec<u32>,
-    /// What:    Positions that may be the last completed.
-    /// Why:     `last` stores positions that may be the last completed, so matcher code reads
+    /// What:
+    ///     Positions that may be the last completed.
+    /// Why:
+    ///      `last` stores positions that may be the last completed,
+    ///  so matcher code reads
     ///          that precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -98,8 +135,11 @@ struct Frag {
 
 /// Accumulates positions and follow edges while walking the node tree.
 ///
-/// What: `elements` collects position kinds and `follow` their successor lists,
-/// grown in lockstep. Why: a single mutable sink keeps position ids stable as the
+/// What:
+///  `elements` collects position kinds and `follow` their successor lists,
+/// grown in lockstep.
+///  Why:
+///  a single mutable sink keeps position ids stable as the
 /// recursion emits leaves.
 ///
 /// In TS you'd write (pseudocode):
@@ -109,8 +149,11 @@ struct Frag {
 /// };
 /// ```
 struct Builder {
-    /// What:    Position kinds in emission order.
-    /// Why:     `elements` stores position kinds in emission order, so matcher code reads that
+    /// What:
+    ///     Position kinds in emission order.
+    /// Why:
+    ///      `elements` stores position kinds in emission order,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -118,8 +161,13 @@ struct Builder {
     /// elements: Element[];
     /// ```
     elements: Vec<Element>,
-    /// What:    Successor ids per position, grown alongside `elements`.
-    /// Why:     `follow` stores successor ids per position, grown alongside `elements`, so
+    /// What:
+    ///     Successor ids per position,
+    ///  grown alongside `elements`.
+    /// Why:
+    ///      `follow` stores successor ids per position,
+    ///  grown alongside `elements`,
+    ///  so
     ///          matcher code reads that precomputed state by name instead of recomputing or
     ///          passing it separately.
     ///
@@ -130,8 +178,10 @@ struct Builder {
     follow: Vec<Vec<u32>>,
 }
 
-/// What:    Construction over the node tree into positions and follow edges.
-/// Why:     The program attaches these functions to the named Rust type so callers can use
+/// What:
+///     Construction over the node tree into positions and follow edges.
+/// Why:
+///      The program attaches these functions to the named Rust type so callers can use
 ///          method syntax.
 ///
 /// In TS you'd write (pseudocode):
@@ -141,8 +191,12 @@ struct Builder {
 impl Builder {
     /// Emits one leaf position and returns its single-position fragment.
     ///
-    /// What: pushes the element with an empty follow list. Why: leaves are the
-    /// positions; their edges are added later by the combinators.
+    /// What:
+    ///  pushes the element with an empty follow list.
+    ///  Why:
+    ///  leaves are the
+    /// positions;
+    ///  their edges are added later by the combinators.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -163,7 +217,10 @@ impl Builder {
 
     /// Adds a follow edge from every `from` position to every `to` position.
     ///
-    /// What: a deduped cross product into the follow lists. Why: concatenation wires
+    /// What:
+    ///  a deduped cross product into the follow lists.
+    ///  Why:
+    ///  concatenation wires
     /// each left-end to each right-start.
     ///
     /// In TS you'd write (pseudocode):
@@ -182,10 +239,16 @@ impl Builder {
         }
     }
 
-    /// Builds the fragment for one node, or `None` if it is not NFA-expressible.
+    /// Builds the fragment for one node,
+    ///  or `None` if it is not NFA-expressible.
     ///
-    /// What: structural recursion over the tree, emitting leaves and combining
-    /// children. Why: a bounded AST walk, the only recursion this engine permits.
+    /// What:
+    ///  structural recursion over the tree,
+    ///  emitting leaves and combining
+    /// children.
+    ///  Why:
+    ///  a bounded AST walk,
+    ///  the only recursion this engine permits.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -207,12 +270,18 @@ impl Builder {
         }
     }
 
-    /// Builds a counted position, or unrolls a small non-class repetition.
+    /// Builds a counted position,
+    ///  or unrolls a small non-class repetition.
     ///
-    /// What: a class body becomes one `Counted` position (nullable when `min` is 0);
+    /// What:
+    ///  a class body becomes one `Counted` position (nullable when `min` is 0);
     /// any other body is unrolled into `min` mandatory copies and `max - min`
-    /// optional copies when the bound is small, else fails. Why: only class
-    /// repetitions get the counter treatment, but a small repeated group (an optional
+    /// optional copies when the bound is small,
+    ///  else fails.
+    ///  Why:
+    ///  only class
+    /// repetitions get the counter treatment,
+    ///  but a small repeated group (an optional
     /// `(?:labs)?`) is cheaply expressible by copying its sub-NFA.
     ///
     /// In TS you'd write (pseudocode):
@@ -249,9 +318,13 @@ impl Builder {
         return Some(acc)
     }
 
-    /// Builds a concatenation, wiring each part's ends to the next part's starts.
+    /// Builds a concatenation,
+    ///  wiring each part's ends to the next part's starts.
     ///
-    /// What: folds the parts with [`Builder::link_frags`]. Why: concatenation is the
+    /// What:
+    ///  folds the parts with [`Builder::link_frags`].
+    ///  Why:
+    ///  concatenation is the
     /// linear backbone the follow edges thread.
     ///
     /// In TS you'd write (pseudocode):
@@ -271,8 +344,11 @@ impl Builder {
 
     /// Links two fragments in sequence by the Glushkov concatenation rule.
     ///
-    /// What: wires `acc`'s ends to `next`'s starts and combines first/last/nullable
-    /// across the nullable gap. Why: shared by concatenation and repeat-unrolling.
+    /// What:
+    ///  wires `acc`'s ends to `next`'s starts and combines first/last/nullable
+    /// across the nullable gap.
+    ///  Why:
+    ///  shared by concatenation and repeat-unrolling.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -293,8 +369,14 @@ impl Builder {
 
     /// Builds an alternation by unioning the branches' fragments.
     ///
-    /// What: collects first, last, and nullability across branches with no new
-    /// edges. Why: branches are independent, so the union is the whole structure.
+    /// What:
+    ///  collects first,
+    ///  last,
+    ///  and nullability across branches with no new
+    /// edges.
+    ///  Why:
+    ///  branches are independent,
+    ///  so the union is the whole structure.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -320,9 +402,13 @@ impl Builder {
 
 /// Attempts to express `node` as a counting NFA.
 ///
-/// What: walks the tree into positions and follow sets, then wires the accept sink
+/// What:
+///  walks the tree into positions and follow sets,
+///  then wires the accept sink
 /// from the root's last positions (and into `start` when the root is nullable);
-/// returns `None` for an empty or non-NFA shape. Why: this is the entry the engine
+/// returns `None` for an empty or non-NFA shape.
+///  Why:
+///  this is the entry the engine
 /// selector tries before the eager DFA.
 ///
 /// In TS you'd write (pseudocode):
@@ -355,7 +441,10 @@ pub fn build_nfa(node: &Node) -> Option<CountingNfa> {
 
 /// Builds the fragment for an empty (epsilon) subexpression.
 ///
-/// What: nullable with no positions. Why: the identity for concatenation folds.
+/// What:
+///  nullable with no positions.
+///  Why:
+///  the identity for concatenation folds.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -371,9 +460,13 @@ fn empty_frag() -> Frag {
     }
 }
 
-/// Returns `base` extended by `extra` when `cond` holds, else `base` cloned.
+/// Returns `base` extended by `extra` when `cond` holds,
+///  else `base` cloned.
 ///
-/// What: a deduped conditional union. Why: the Glushkov first/last rules add the
+/// What:
+///  a deduped conditional union.
+///  Why:
+///  the Glushkov first/last rules add the
 /// other side only across a nullable gap.
 ///
 /// In TS you'd write (pseudocode):
@@ -392,7 +485,10 @@ fn extend_if(cond: bool, base: &[u32], extra: &[u32]) -> Vec<u32> {
 
 /// Appends each id of `extra` to `out` if not already present.
 ///
-/// What: an order-preserving set union. Why: first/last sets must stay deduped so
+/// What:
+///  an order-preserving set union.
+///  Why:
+///  first/last sets must stay deduped so
 /// follow edges and the start set carry no repeats.
 ///
 /// In TS you'd write (pseudocode):
@@ -409,8 +505,11 @@ fn push_unique(out: &mut Vec<u32>, extra: &[u32]) {
     }
 }
 
-/// What:    Unit tests for the counting-NFA builder, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for the counting-NFA builder,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

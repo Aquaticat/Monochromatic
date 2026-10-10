@@ -1,9 +1,12 @@
-//! The server's own copy of each open document, edited by the client's change notifications.
+//! The server's own copy of each open document,
+//!  edited by the client's change notifications.
 
 /// Positions are interpreted in the unit the server announced.
 use crate::script::Unit;
-/// What: `Value` is any JSON value.
-/// Why: Change events are read straight from the notification's parameters.
+/// What:
+///  `Value` is any JSON value.
+/// Why:
+///  Change events are read straight from the notification's parameters.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -11,9 +14,14 @@ use crate::script::Unit;
 /// ```
 use serde_json::Value;
 
-/// What: Width of one character in the given column unit. `char` is one Unicode scalar value;
-///       `usize` is the address-sized unsigned integer (siblings: `u32`, `u64`).
-/// Why: The same character advances the column by a different amount in each unit.
+/// What:
+///  Width of one character in the given column unit.
+///  `char` is one Unicode scalar value;
+///       `usize` is the address-sized unsigned integer (siblings:
+///  `u32`,
+///  `u64`).
+/// Why:
+///  The same character advances the column by a different amount in each unit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,10 +36,16 @@ fn width(character: char, unit: Unit) -> usize {
     };
 }
 
-/// What: Convert a protocol position into a byte offset of `text`. `&str` borrows the text;
+/// What:
+///  Convert a protocol position into a byte offset of `text`.
+///  `&str` borrows the text;
 ///       `u64` holds the protocol's unsigned line and column numbers.
-/// Why: Rust strings are indexed by byte, while the client sends columns in the announced unit.
-///      Lines are split at line feeds only; a carriage return stays part of its line, and the
+/// Why:
+///  Rust strings are indexed by byte,
+///  while the client sends columns in the announced unit.
+///      Lines are split at line feeds only;
+///  a carriage return stays part of its line,
+///  and the
 ///      client never sends a column past it.
 ///
 /// In TS you'd write (pseudocode):
@@ -76,15 +90,20 @@ pub fn offset_at(text: &str, line: u64, character: u64, unit: Unit) -> usize {
     return offset;
 }
 
-/// Read one coordinate of a position object, treating a missing number as zero.
+/// Read one coordinate of a position object,
+///  treating a missing number as zero.
 fn coordinate(position: &Value, name: &str) -> u64 {
     // `as_u64` returns `Option<u64>`; `unwrap_or(0)` substitutes zero for a missing or wrong field.
     return position[name].as_u64().unwrap_or(0);
 }
 
-/// What: Apply one `contentChanges` entry to the stored text. `&mut String` lends the text for
+/// What:
+///  Apply one `contentChanges` entry to the stored text.
+///  `&mut String` lends the text for
 ///       modification.
-/// Why: An entry without a range replaces everything (full synchronization); one with a range
+/// Why:
+///  An entry without a range replaces everything (full synchronization);
+///  one with a range
 ///      replaces that range (incremental synchronization).
 ///
 /// In TS you'd write (pseudocode):
@@ -119,7 +138,8 @@ pub fn apply_change(text: &mut String, change: &Value, unit: Unit) {
     text.replace_range(start..end.max(start), replacement);
 }
 
-/// The line containing `offset`, without its line break.
+/// The line containing `offset`,
+///  without its line break.
 pub fn line_at(text: &str, offset: usize) -> &str {
     // What: `rfind` searches backwards and `find` forwards; both return `Option<usize>`.
     //       `map_or(a, f)` yields `a` for "nothing" and `f(value)` otherwise.

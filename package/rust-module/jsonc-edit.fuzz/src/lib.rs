@@ -1,12 +1,19 @@
-//! What:     Shared support for the `monochromatic-jsonc-edit` fuzz sidecar.
-//! Why:      Every target needs the same structured generator and the same invariant checks, so they
+//! What:
+//!      Shared support for the `monochromatic-jsonc-edit` fuzz sidecar.
+//! Why:
+//!       Every target needs the same structured generator and the same invariant checks,
+//!  so they
 //!           live here once instead of being copied into each harness.
 //!
-//! Raw bytes almost never form valid JSONC, so the generator builds documents from unstructured
+//! Raw bytes almost never form valid JSONC,
+//!  so the generator builds documents from unstructured
 //! input and the targets assert properties over the result rather than hoping for lucky parses.
 
-/// What:     Structured document and path generators built on `arbitrary`.
-/// Why:      Coverage comes from valid and near-valid JSONC shapes, not from random noise.
+/// What:
+///      Structured document and path generators built on `arbitrary`.
+/// Why:
+///       Coverage comes from valid and near-valid JSONC shapes,
+///  not from random noise.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -14,8 +21,10 @@
 /// ```
 pub mod generators;
 
-/// What:     Property checks shared by every fuzz target.
-/// Why:      One implementation of "canonical emission is stable" keeps the targets honest about
+/// What:
+///      Property checks shared by every fuzz target.
+/// Why:
+///       One implementation of "canonical emission is stable" keeps the targets honest about
 ///           asserting the same contract the unit and fixture suites assert.
 ///
 /// In TS you'd write (pseudocode):
@@ -24,8 +33,11 @@ pub mod generators;
 /// ```
 pub mod invariants;
 
-/// What:     Address selection over a parsed document.
-/// Why:      Edit targets must address members that exist, chosen by the fuzzer rather than guessed.
+/// What:
+///      Address selection over a parsed document.
+/// Why:
+///       Edit targets must address members that exist,
+///  chosen by the fuzzer rather than guessed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,8 +45,10 @@ pub mod invariants;
 /// ```
 pub mod path_pick;
 
-/// What:     Re-export the generated document type.
-/// Why:      Targets import one name instead of reaching into the module.
+/// What:
+///      Re-export the generated document type.
+/// Why:
+///       Targets import one name instead of reaching into the module.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -42,8 +56,10 @@ pub mod path_pick;
 /// ```
 pub use generators::GeneratedDocument;
 
-/// What:     Re-export the shared invariant checks.
-/// Why:      Targets read as a list of properties rather than a list of module paths.
+/// What:
+///      Re-export the shared invariant checks.
+/// Why:
+///       Targets read as a list of properties rather than a list of module paths.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,8 +70,10 @@ pub use invariants::{
     collect_comments,
 };
 
-/// What:     Re-export address selection.
-/// Why:      Edit targets need it and nothing else from that module.
+/// What:
+///      Re-export address selection.
+/// Why:
+///       Edit targets need it and nothing else from that module.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -63,8 +81,10 @@ pub use invariants::{
 /// ```
 pub use path_pick::random_path;
 
-/// What:     Generator unit tests.
-/// Why:      A campaign is only as trustworthy as the documents its generator produces.
+/// What:
+///      Generator unit tests.
+/// Why:
+///       A campaign is only as trustworthy as the documents its generator produces.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -73,8 +93,11 @@ pub use path_pick::random_path;
 #[cfg(test)]
 mod generators_tests;
 
-/// What:     Invariant unit tests, including the negative controls that prove each check can fail.
-/// Why:      An invariant that cannot fail turns a clean campaign into silence rather than evidence.
+/// What:
+///      Invariant unit tests,
+///  including the negative controls that prove each check can fail.
+/// Why:
+///       An invariant that cannot fail turns a clean campaign into silence rather than evidence.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -83,8 +106,10 @@ mod generators_tests;
 #[cfg(test)]
 mod invariants_tests;
 
-/// What:     Address-selection unit tests.
-/// Why:      The edit campaign depends on drawn addresses resolving.
+/// What:
+///      Address-selection unit tests.
+/// Why:
+///       The edit campaign depends on drawn addresses resolving.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,13 +1,20 @@
-//! What: Encode authored Markdown cell text for a raw HTML text boundary.
-//! Why: HTML-sensitive escapes must become literal characters before HTML encoding, never active markup.
+//! What:
+//!  Encode authored Markdown cell text for a raw HTML text boundary.
+//! Why:
+//!  HTML-sensitive escapes must become literal characters before HTML encoding,
+//!  never active markup.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Normalize only the incumbent's HTML-sensitive Markdown escapes, then encode at interpolation.
 //! ```
 
-/// What: JavaScript trim's whitespace set, including BOM and excluding NEXT LINE.
-/// Why: The incumbent trims cell padding with String.trim, not Rust's different Unicode White_Space set.
+/// What:
+///  JavaScript trim's whitespace set,
+///  including BOM and excluding NEXT LINE.
+/// Why:
+///  The incumbent trims cell padding with String.trim,
+///  not Rust's different Unicode White_Space set.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,6 +22,7 @@
 /// ```
 pub(crate) fn trim_space(character: char) -> bool {
     // These scalar values are the ECMAScript trim characters; u32 conversion is unnecessary for membership.
+    /// Scalar values that ECMAScript treats as whitespace when trimming table cell text.
     const CHARACTERS: &[char] = &[
         '\u{0009}', '\u{000a}', '\u{000b}', '\u{000c}', '\u{000d}', '\u{0020}', '\u{00a0}',
         '\u{1680}', '\u{2000}', '\u{2001}', '\u{2002}', '\u{2003}', '\u{2004}', '\u{2005}',
@@ -54,8 +62,11 @@ fn append_text(output: &mut String, character: char, mdx: bool) {
     }
 }
 
-/// What: Convert raw cell content while preserving nonspecial Markdown spelling.
-/// Why: Code markers and emphasis remain literal; angle brackets and quotes cannot inject HTML.
+/// What:
+///  Convert raw cell content while preserving nonspecial Markdown spelling.
+/// Why:
+///  Code markers and emphasis remain literal;
+///  angle brackets and quotes cannot inject HTML.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

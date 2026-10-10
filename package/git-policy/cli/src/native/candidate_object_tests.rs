@@ -1,5 +1,7 @@
-//! What: Controls for object-name validation and mode mapping.
-//! Why: An accepted object name is written into the reader's request stream unescaped,
+//! What:
+//!  Controls for object-name validation and mode mapping.
+//! Why:
+//!  An accepted object name is written into the reader's request stream unescaped,
 //!      so every rejection here is a request-injection guard.
 //!
 //! In TS you'd write (pseudocode):
@@ -28,7 +30,9 @@ fn complete_lowercase_names_are_accepted() {
     }
 }
 
-/// Every other length, digit case and character is refused, including the bytes next to each accepted range.
+/// Every other length,
+///  digit case and character is refused,
+///  including the bytes next to each accepted range.
 #[test]
 fn everything_else_is_refused() {
     let valid: &str = "0123456789abcdef0123456789abcdef01234567";
@@ -56,7 +60,8 @@ fn everything_else_is_refused() {
     assert_eq!(parse_object_id(bytes.as_slice()), None);
 }
 
-/// Names compare and hash by their text, so one object has one key.
+/// Names compare and hash by their text,
+///  so one object has one key.
 #[test]
 fn names_are_usable_as_map_keys() {
     let first: ObjectId = parse_object_id(&[b'a'; 40]).expect("name");
@@ -71,7 +76,9 @@ fn names_are_usable_as_map_keys() {
     assert_eq!(seen.len(), 2);
 }
 
-/// The four candidate modes map exactly; directories, the absent side and near misses do not.
+/// The four candidate modes map exactly;
+///  directories,
+///  the absent side and near misses do not.
 #[test]
 fn modes_map_exactly() {
     assert_eq!(mode_from_git(b"100644"), Some(CandidateMode::Regular));

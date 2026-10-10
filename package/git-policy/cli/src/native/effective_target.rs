@@ -1,5 +1,8 @@
-//! What: Classify the worktree an invocation targets for worktree-enforcing policies.
-//! Why: Linked-worktree safeguards discipline a person's repositories, not the
+//! What:
+//!  Classify the worktree an invocation targets for worktree-enforcing policies.
+//! Why:
+//!  Linked-worktree safeguards discipline a person's repositories,
+//!  not the
 //!      disposable clones a tool keeps in its own cache.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,9 +13,11 @@
 /// Import getenv-style lookup and the resolved repository identity.
 use super::child_environment::environment_value;
 use super::worktree_identity::WorktreeIdentity;
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  Cache directories come from environment values that need not be UTF-8.
+/// Why:
+///   Cache directories come from environment values that need not be UTF-8.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,10 +27,15 @@ use std::ffi::OsString;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
 use std::path::{Path, PathBuf};
 
-/// What: The four targets worktree policies distinguish.
-///       `#[derive(...)]` generates copying, debug printing and `==`.
-/// Why:  A bare repository or no repository has no worktree to protect; an
-///       allowlisted tool cache is exempt; main versus linked decides enforcement.
+/// What:
+///  The four targets worktree policies distinguish.
+///       `#[derive(...)]` generates copying,
+///  debug printing and `==`.
+/// Why:
+///   A bare repository or no repository has no worktree to protect;
+///  an
+///       allowlisted tool cache is exempt;
+///  main versus linked decides enforcement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,7 +43,9 @@ use std::path::{Path, PathBuf};
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum EffectiveTarget {
-    /// No worktree: outside any repository, or a bare repository.
+    /// No worktree:
+    ///  outside any repository,
+    ///  or a bare repository.
     OutsideWorktree,
     /// The repository's main worktree.
     MainWorktree,
@@ -43,11 +55,18 @@ pub enum EffectiveTarget {
     Allowlisted,
 }
 
-/// What: Resolve uv's cache directory the way uv does: `UV_CACHE_DIR`, then
-///       `XDG_CACHE_HOME/uv`, then `HOME/.cache/uv`; an empty value counts as unset.
+/// What:
+///  Resolve uv's cache directory the way uv does:
+///  `UV_CACHE_DIR`,
+///  then
+///       `XDG_CACHE_HOME/uv`,
+///  then `HOME/.cache/uv`;
+///  an empty value counts as unset.
 ///       `Option<&Path>` is "a borrowed home directory or nothing";
 ///       `Option<PathBuf>` is "an owned path or nothing".
-/// Why:  uv runs destructive Git inside throwaway clones it owns there. The home
+/// Why:
+///   uv runs destructive Git inside throwaway clones it owns there.
+///  The home
 ///       directory is injected so tests never read the real one.
 ///
 /// In TS you'd write (pseudocode):
@@ -83,9 +102,13 @@ pub fn uv_cache_dir(environment: &[(OsString, OsString)], home: Option<&Path>) -
     return Some(home_directory.join(".cache").join("uv"));
 }
 
-/// What: The tool-cache directories exempt from worktree enforcement on this machine.
+/// What:
+///  The tool-cache directories exempt from worktree enforcement on this machine.
 ///       `Vec<PathBuf>` is an owned list of owned paths.
-/// Why:  The set is a property of installed tooling, not of any repository, so it is
+/// Why:
+///   The set is a property of installed tooling,
+///  not of any repository,
+///  so it is
 ///       compiled in rather than configured.
 ///
 /// In TS you'd write (pseudocode):
@@ -104,10 +127,16 @@ pub fn default_allowed_worktree_dirs(
     return directories;
 }
 
-/// What: Report whether the canonical `candidate` lies inside any allowed directory.
-/// Why:  Each allowed directory is resolved through symbolic links first, so a home
-///       reached through a link still matches; a directory that does not exist drops
-///       out. `Path::starts_with` compares whole segments, so `/a/b` does not contain
+/// What:
+///  Report whether the canonical `candidate` lies inside any allowed directory.
+/// Why:
+///   Each allowed directory is resolved through symbolic links first,
+///  so a home
+///       reached through a link still matches;
+///  a directory that does not exist drops
+///       out.
+///  `Path::starts_with` compares whole segments,
+///  so `/a/b` does not contain
 ///       `/a/bc`.
 ///
 /// In TS you'd write (pseudocode):
@@ -134,8 +163,11 @@ pub fn is_allowed_worktree_dir(candidate: &Path, allowed_dirs: &[PathBuf]) -> bo
     return false;
 }
 
-/// What: Map a repository identity to the target worktree policies act on.
-/// Why:  Bare and absent repositories have no worktree; a repository whose Git
+/// What:
+///  Map a repository identity to the target worktree policies act on.
+/// Why:
+///   Bare and absent repositories have no worktree;
+///  a repository whose Git
 ///       directory sits under an allowed tool cache is exempt before main/linked matters.
 ///
 /// In TS you'd write (pseudocode):

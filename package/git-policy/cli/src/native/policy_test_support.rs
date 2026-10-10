@@ -1,7 +1,12 @@
-//! What: A scripted provider of repository facts for unit tests of checks, transforms and
+//! What:
+//!  A scripted provider of repository facts for unit tests of checks,
+//!  transforms and
 //!       lifecycles.
-//! Why: Those modules decide from facts; a script supplies each fact directly and logs
-//!      which ones were asked for, so a test can prove a command asked for nothing.
+//! Why:
+//!  Those modules decide from facts;
+//!  a script supplies each fact directly and logs
+//!      which ones were asked for,
+//!  so a test can prove a command asked for nothing.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,7 +15,8 @@
 
 /// The facts interface and the fact types the script answers with.
 use super::candidate_error::{CandidateError, CandidateFailure};
-/// Real preparation, for scripted facts given a repository.
+/// Real preparation,
+///  for scripted facts given a repository.
 use super::candidate_prediction::{CandidateRequest, PreparedCandidates, prepare_candidates};
 use super::config_schema::PolicyConfig;
 use super::policy_registry::{PolicyId, Severity};
@@ -18,7 +24,8 @@ use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 use super::rule_commit_index::IndexVsHead;
 use super::rule_commit_sequencer::SequencerState;
-/// The image's real Git, which prepares candidates for scripted facts.
+/// The image's real Git,
+///  which prepares candidates for scripted facts.
 use super::test_support::REAL_GIT;
 use super::worktree_identity::WorktreeIdentity;
 /// Branch names and global options are operating-system text.
@@ -37,10 +44,14 @@ pub(crate) struct ScriptedFacts {
     pub(crate) sequencer: Result<SequencerState, String>,
     /// The answer to `remote_guess_creates_branch`.
     pub(crate) remote_guess: Result<bool, String>,
-    /// Every fact asked for, in call order; the location is logged once, and a remote
+    /// Every fact asked for,
+    ///  in call order;
+    ///  the location is logged once,
+    ///  and a remote
     /// guess with its target.
     pub(crate) asked: Vec<String>,
-    /// The repository real Git prepares candidates in; none makes preparation fail.
+    /// The repository real Git prepares candidates in;
+    ///  none makes preparation fail.
     pub(crate) candidates_repository: Option<PathBuf>,
 }
 
@@ -71,7 +82,9 @@ impl RepositoryFacts for ScriptedFacts {
         return self.remote_guess.clone();
     }
 
-    /// Log the question, then prepare with real Git in the scripted repository, or fail.
+    /// Log the question,
+    ///  then prepare with real Git in the scripted repository,
+    ///  or fail.
     fn candidates(
         &mut self,
         request: &CandidateRequest,
@@ -97,7 +110,8 @@ impl RepositoryFacts for ScriptedFacts {
     }
 }
 
-/// The location of a command run in the main worktree rooted at `root`, `prefix` below its top level.
+/// The location of a command run in the main worktree rooted at `root`,
+///  `prefix` below its top level.
 pub(crate) fn main_worktree(root: &str, prefix: &str) -> RepositoryLocation {
     return RepositoryLocation {
         identity: WorktreeIdentity::MainWorktree {
@@ -129,7 +143,10 @@ pub(crate) fn outside_worktree() -> RepositoryLocation {
     };
 }
 
-/// A script for the top level of the main worktree at `/r`: clean index, no operation in progress, no remote guess.
+/// A script for the top level of the main worktree at `/r`:
+///  clean index,
+///  no operation in progress,
+///  no remote guess.
 pub(crate) fn scripted_facts() -> ScriptedFacts {
     return ScriptedFacts {
         location: Ok(main_worktree("/r", "")),

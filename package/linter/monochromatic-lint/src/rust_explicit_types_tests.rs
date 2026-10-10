@@ -1,5 +1,7 @@
-//! What: Real semantic conformance cases for explicit Rust declarations and generic arguments.
-//! Why: Passing a typed example is not evidence that omitted arguments or nameable inference holes are rejected.
+//! What:
+//!  Real semantic conformance cases for explicit Rust declarations and generic arguments.
+//! Why:
+//!  Passing a typed example is not evidence that omitted arguments or nameable inference holes are rejected.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,11 +10,14 @@
 
 /// Import actual findings and severities.
 use crate::diagnostic::{Diagnostic, Severity};
-/// Import the disposable Cargo-backed fixture, not a test-only implementation of the rule.
+/// Import the disposable Cargo-backed fixture,
+///  not a test-only implementation of the rule.
 use crate::rust_semantic_test_support::SemanticFixture;
 
-/// What: Authored source and independently expected policy-finding count.
-/// Why: The expectation does not depend on the production rule's traversal or resolver output.
+/// What:
+///  Authored source and independently expected policy-finding count.
+/// Why:
+///  The expectation does not depend on the production rule's traversal or resolver output.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,11 +28,13 @@ struct Case {
     name: &'static str,
     /// Complete standalone Rust input for the owned fixture.
     source: &'static str,
-    /// Expected ordinary findings, with semantic-processing errors prohibited separately.
+    /// Expected ordinary findings,
+    ///  with semantic-processing errors prohibited separately.
     count: usize,
 }
 
-/// Check exact finding counts, severity and the distinction from unavailable semantic information.
+/// Check exact finding counts,
+///  severity and the distinction from unavailable semantic information.
 fn assert_case(fixture: &mut SemanticFixture, case: &Case) {
     let findings: Vec<Diagnostic> = fixture.check(case.source, Severity::Warn);
     assert_eq!(findings.len(), case.count, "{}: {findings:?}", case.name);
@@ -39,7 +46,10 @@ fn assert_case(fixture: &mut SemanticFixture, case: &Case) {
     }
 }
 
-/// Declaration requirements, genuine generic arity, aliases, constructors and unnameable exceptions work together.
+/// Declaration requirements,
+///  genuine generic arity,
+///  aliases,
+///  constructors and unnameable exceptions work together.
 #[test]
 fn semantic_conformance_and_source_overlay_controls() {
     let mut fixture: SemanticFixture = SemanticFixture::new();

@@ -1,8 +1,11 @@
 //! Cross-platform cache-root and content-key tests.
 //!
-//! The Windows target branch validates paths byte-explicitly, so its assertions run on every host.
-//! The XDG and macOS branches validate with the host's `Path::is_absolute`, which follows Windows rules on a Windows host;
-//! production never selects those branches there, so their assertions run on Unix hosts only.
+//! The Windows target branch validates paths byte-explicitly,
+//!  so its assertions run on every host.
+//! The XDG and macOS branches validate with the host's `Path::is_absolute`,
+//!  which follows Windows rules on a Windows host;
+//! production never selects those branches there,
+//!  so their assertions run on Unix hosts only.
 
 use super::{
     cache_location, resolve_cache_root, source_digest, CacheEnvironment, CacheRootError, HostPlatform,
@@ -12,8 +15,11 @@ use std::path::{Component, Path, PathBuf};
 
 /// Explicit absolute override wins under Unix target semantics.
 ///
-/// What: `#[cfg(unix)]` compiles this test only for Unix hosts.
-/// Why: `/private/cache` is absolute only under Unix path rules, which the Unix branches borrow from the host.
+/// What:
+///  `#[cfg(unix)]` compiles this test only for Unix hosts.
+/// Why:
+///  `/private/cache` is absolute only under Unix path rules,
+///  which the Unix branches borrow from the host.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,7 +67,8 @@ fn relative_override_is_rejected() {
     );
 }
 
-/// XDG absolute value wins and relative value falls back to absolute HOME cache, under Unix host path rules.
+/// XDG absolute value wins and relative value falls back to absolute HOME cache,
+///  under Unix host path rules.
 #[cfg(unix)]
 #[test]
 fn xdg_resolution_follows_base_directory_spec() {
@@ -86,7 +93,8 @@ fn xdg_resolution_follows_base_directory_spec() {
     );
 }
 
-/// macOS uses the selected HOME root, under Unix host path rules.
+/// macOS uses the selected HOME root,
+///  under Unix host path rules.
 #[cfg(unix)]
 #[test]
 fn macos_native_root_is_derived() {
@@ -101,7 +109,8 @@ fn macos_native_root_is_derived() {
     );
 }
 
-/// Windows uses the selected local application-data root on every host, ignoring HOME.
+/// Windows uses the selected local application-data root on every host,
+///  ignoring HOME.
 #[test]
 fn windows_native_root_is_derived() {
     let environment = CacheEnvironment {
@@ -124,8 +133,12 @@ fn missing_native_root_is_unavailable() {
     );
 }
 
-/// What: Returns the UTF-8 text of one normal path component, or fails the test for any other component kind.
-/// Why: The artifact layout is asserted as a component sequence, so the host's separator spelling never matters.
+/// What:
+///  Returns the UTF-8 text of one normal path component,
+///  or fails the test for any other component kind.
+/// Why:
+///  The artifact layout is asserted as a component sequence,
+///  so the host's separator spelling never matters.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

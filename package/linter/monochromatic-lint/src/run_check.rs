@@ -1,6 +1,12 @@
-//! What: Check one exact snapshot of a host file: its own rules, then every embedded virtual file.
-//! Why: Processors are always on. Each virtual file is matched against configuration by its own
-//! logical path, and every finding and fix is mapped back to the host before it leaves this module,
+//! What:
+//!  Check one exact snapshot of a host file:
+//!  its own rules,
+//!  then every embedded virtual file.
+//! Why:
+//!  Processors are always on.
+//!  Each virtual file is matched against configuration by its own
+//! logical path,
+//!  and every finding and fix is mapped back to the host before it leaves this module,
 //! so the fix loop and the output only ever see host coordinates.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,9 +15,12 @@
 //! ```
 
 /// Import the configuration outcome for virtual paths and the finding and fix models.
-/// Import Markdown parsing, typed selection and dispatch.
-/// Import the processor seam; virtual findings arrive or are projected in host coordinates.
-/// Import Rust syntax dispatch, the semantic engine and typed selection.
+/// Import Markdown parsing,
+///  typed selection and dispatch.
+/// Import the processor seam;
+///  virtual findings arrive or are projected in host coordinates.
+/// Import Rust syntax dispatch,
+///  the semantic engine and typed selection.
 use crate::{
     config_match::FileConfiguration,
     diagnostic::Diagnostic,
@@ -36,10 +45,16 @@ use monochromatic_jsonc_edit::JsoncValue;
 /// Import owned native paths for virtual logical names.
 use std::path::PathBuf;
 
-/// What: A per-file checking session the fix loop can call once per source snapshot.
-/// Why: The plan is fixed for the file; only the source text changes between fix passes, and
+/// What:
+///  A per-file checking session the fix loop can call once per source snapshot.
+/// Why:
+///  The plan is fixed for the file;
+///  only the source text changes between fix passes,
+///  and
 /// virtual files are re-extracted from each new snapshot.
-/// `'run` is a lifetime: these borrowed values must outlive the checker, which the caller guarantees.
+/// `'run` is a lifetime:
+///  these borrowed values must outlive the checker,
+///  which the caller guarantees.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,14 +65,19 @@ pub struct HostChecker<'run> {
     plan: &'run FilePlan,
     /// Shared LFS repository facts for this run.
     lfs: &'run LfsRepos,
-    /// The semantic engine, present only on the thread that owns it.
+    /// The semantic engine,
+    ///  present only on the thread that owns it.
     engine: Option<&'run mut RustFileEngine>,
-    /// Debug explanations collected while checking, such as a fix that could not be mapped.
+    /// Debug explanations collected while checking,
+    ///  such as a fix that could not be mapped.
     pub notes: Vec<String>,
 }
 
-/// What: Construct the session and run each stage of a check.
-/// Why: Every stage appends host-coordinate findings to one list; a stage that cannot run appends
+/// What:
+///  Construct the session and run each stage of a check.
+/// Why:
+///  Every stage appends host-coordinate findings to one list;
+///  a stage that cannot run appends
 /// a processing failure instead of returning early with a clean-looking result.
 ///
 /// In TS you'd write (pseudocode):
@@ -79,8 +99,12 @@ impl<'run> HostChecker<'run> {
         };
     }
 
-    /// What: Run the host's Rust rules.
-    /// Why: Syntax rules need no workspace. When the semantic rule is selected but cannot run, the
+    /// What:
+    ///  Run the host's Rust rules.
+    /// Why:
+    ///  Syntax rules need no workspace.
+    ///  When the semantic rule is selected but cannot run,
+    ///  the
     /// syntax rules still report and the unavailable coverage becomes a processing failure.
     ///
     /// In TS you'd write (pseudocode):
@@ -128,8 +152,12 @@ impl<'run> HostChecker<'run> {
         findings.extend(check_syntax_rules(&parsed, settings));
     }
 
-    /// What: Prepare the LFS rule's context for a parsed document, when that rule is selected.
-    /// Why: A repository whose facts cannot be read is a processing failure for this file; the
+    /// What:
+    ///  Prepare the LFS rule's context for a parsed document,
+    ///  when that rule is selected.
+    /// Why:
+    ///  A repository whose facts cannot be read is a processing failure for this file;
+    ///  the
     /// other Markdown rules still run.
     ///
     /// In TS you'd write (pseudocode):
@@ -157,8 +185,12 @@ impl<'run> HostChecker<'run> {
         }
     }
 
-    /// What: Run the host's Markdown or MDX rules; returns false when the host did not parse.
-    /// Why: A parse failure or MDX error is one processing finding; extraction would only repeat it.
+    /// What:
+    ///  Run the host's Markdown or MDX rules;
+    ///  returns false when the host did not parse.
+    /// Why:
+    ///  A parse failure or MDX error is one processing finding;
+    ///  extraction would only repeat it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -193,8 +225,12 @@ impl<'run> HostChecker<'run> {
         return true;
     }
 
-    /// What: Map one virtual Markdown finding to the host, keeping it when only its fix cannot be mapped.
-    /// Why: A fix the processor refuses to project is unavailable, not a reason to hide the finding;
+    /// What:
+    ///  Map one virtual Markdown finding to the host,
+    ///  keeping it when only its fix cannot be mapped.
+    /// Why:
+    ///  A fix the processor refuses to project is unavailable,
+    ///  not a reason to hide the finding;
     /// a finding whose position cannot be mapped at all is a processing failure.
     ///
     /// In TS you'd write (pseudocode):
@@ -241,8 +277,12 @@ impl<'run> HostChecker<'run> {
         }
     }
 
-    /// What: Check one virtual Markdown file (a rustdoc comment) under its own resolved rules.
-    /// Why: Rustdoc is Markdown, never MDX; its unlabeled fences are doc tests.
+    /// What:
+    ///  Check one virtual Markdown file (a rustdoc comment) under its own resolved rules.
+    /// Why:
+    ///  Rustdoc is Markdown,
+    ///  never MDX;
+    ///  its unlabeled fences are doc tests.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -279,9 +319,12 @@ impl<'run> HostChecker<'run> {
         }
     }
 
-    /// What: Check one virtual file under the rules its logical path resolves to.
-    /// Why: `**/*.rs` reaches fenced Rust and `**/*.md` reaches rustdoc unless a block's `ignores`
-    /// says otherwise; an unconfigured or ignored virtual path is simply not checked.
+    /// What:
+    ///  Check one virtual file under the rules its logical path resolves to.
+    /// Why:
+    ///  `**/*.rs` reaches fenced Rust and `**/*.md` reaches rustdoc unless a block's `ignores`
+    /// says otherwise;
+    ///  an unconfigured or ignored virtual path is simply not checked.
     /// `Err` carries the reason the virtual file's rules could not be determined.
     ///
     /// In TS you'd write (pseudocode):
@@ -323,8 +366,12 @@ impl<'run> HostChecker<'run> {
         return Ok(());
     }
 
-    /// What: Check one virtual file, turning an unresolvable rule selection into a processing failure.
-    /// Why: A virtual file whose rules cannot be determined was not checked, and the run must say so.
+    /// What:
+    ///  Check one virtual file,
+    ///  turning an unresolvable rule selection into a processing failure.
+    /// Why:
+    ///  A virtual file whose rules cannot be determined was not checked,
+    ///  and the run must say so.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -346,8 +393,13 @@ impl<'run> HostChecker<'run> {
     }
 }
 
-/// What: The complete check of one snapshot, which cannot itself fail.
-/// Why: Inability to check is carried as processing-failure findings, never as an empty list, so
+/// What:
+///  The complete check of one snapshot,
+///  which cannot itself fail.
+/// Why:
+///  Inability to check is carried as processing-failure findings,
+///  never as an empty list,
+///  so
 /// lint mode reports it and fix mode refuses to publish edits.
 ///
 /// In TS you'd write (pseudocode):
@@ -355,7 +407,8 @@ impl<'run> HostChecker<'run> {
 /// checkSnapshot(source: string): Diagnostic[]
 /// ```
 impl HostChecker<'_> {
-    /// Check the host's own rules, then every virtual file extracted from this snapshot.
+    /// Check the host's own rules,
+    ///  then every virtual file extracted from this snapshot.
     pub fn check_snapshot(&mut self, source: &str) -> Vec<Diagnostic> {
         let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
         let plan: &FilePlan = self.plan;
@@ -390,8 +443,11 @@ impl HostChecker<'_> {
     }
 }
 
-/// What: The fix loop's view of a host file.
-/// Why: The loop's interface allows a checker to refuse; this checker reports refusals as findings instead.
+/// What:
+///  The fix loop's view of a host file.
+/// Why:
+///  The loop's interface allows a checker to refuse;
+///  this checker reports refusals as findings instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

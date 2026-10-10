@@ -1,6 +1,9 @@
-//! What: Controls proving the content generators reach every outcome and the invariants
+//! What:
+//!  Controls proving the content generators reach every outcome and the invariants
 //!       hold on fixed hard cases.
-//! Why: An invariant that is never reached proves nothing; these controls count what the
+//! Why:
+//!  An invariant that is never reached proves nothing;
+//!  these controls count what the
 //!      generators produce and run the same checks the fuzz targets run.
 //!
 //! In TS you'd write (pseudocode):
@@ -18,7 +21,9 @@ use git_policy_cli::candidate_stage::{StageRecord, parse_stage_records, staged_d
 use git_policy_cli::config_rules_file::{RulesFileRefusal, check_rules_file};
 use git_policy_cli::policy_final_newline::normalized_final_newline;
 
-/// Every input of two bytes, then a sample of longer ones, as fuzz inputs.
+/// Every input of two bytes,
+///  then a sample of longer ones,
+///  as fuzz inputs.
 fn inputs() -> Vec<Vec<u8>> {
     let mut all: Vec<Vec<u8>> = Vec::new();
     for first in 0..=255_u8 {
@@ -51,8 +56,12 @@ fn inputs() -> Vec<Vec<u8>> {
     return all;
 }
 
-/// Generated listings reach equal, changed, removed and new paths, conflict stages and
-/// every mode, and the delta invariant holds on all of them.
+/// Generated listings reach equal,
+///  changed,
+///  removed and new paths,
+///  conflict stages and
+/// every mode,
+///  and the delta invariant holds on all of them.
 #[test]
 fn generated_listings_reach_every_delta_kind() {
     let mut changed: usize = 0;
@@ -110,7 +119,9 @@ fn changed_path(path: git_policy_cli::candidate_stage::ChangedPath) -> Vec<u8> {
     return path.path;
 }
 
-/// Raw listings: accepted renderings, and each malformed shape refused with its cause.
+/// Raw listings:
+///  accepted renderings,
+///  and each malformed shape refused with its cause.
 #[test]
 fn raw_listings_hold_on_fixed_hard_cases() {
     let name: &str = "0123456789abcdef0123456789abcdef01234567";
@@ -216,7 +227,8 @@ fn generated_rules_files_reach_every_refusal() {
     }
 }
 
-/// Generated text reaches every final-newline outcome, and raw bytes reach the others.
+/// Generated text reaches every final-newline outcome,
+///  and raw bytes reach the others.
 #[test]
 fn generated_text_reaches_every_final_newline_outcome() {
     let mut missing: usize = 0;

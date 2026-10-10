@@ -1,5 +1,11 @@
-//! What: Short-option cluster cases: arity inside a cluster, the typo check and `h`.
-//! Why: `-am`, `-ma` and `-ua` differ only by which letter takes a value; a wrong reading
+//! What:
+//!  Short-option cluster cases:
+//!  arity inside a cluster,
+//!  the typo check and `h`.
+//! Why:
+//!  `-am`,
+//!  `-ma` and `-ua` differ only by which letter takes a value;
+//!  a wrong reading
 //!      hides `--all` from a policy or invents it.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,7 +13,8 @@
 //! // expect(parseOptions(['-am', 'msg'])).toEqual(...)
 //! ```
 
-/// Tokenizer result types, queries and the shared synthetic table.
+/// Tokenizer result types,
+///  queries and the shared synthetic table.
 use crate::command_options::{
     Arity, DEFAULT_MODE, Occurrence, OptionError, OptionErrorKind, OptionSpec, OptionValue,
     ParsedOptions, parse_options, row,
@@ -59,7 +66,8 @@ fn a_required_value_letter_takes_the_rest_or_the_next_token() {
     assert!(is_enabled(&value_letter, MESSAGE));
 }
 
-/// An optional-value letter takes attached bytes only, never the next token.
+/// An optional-value letter takes attached bytes only,
+///  never the next token.
 #[test]
 fn an_optional_value_letter_never_takes_the_next_token() {
     let attached: ParsedOptions = parse_synthetic(&["-ua", "x"]).expect("valid");
@@ -86,7 +94,8 @@ fn flag_letters_combine() {
     assert!(is_enabled(&flags, NO_VERIFY) && is_enabled(&flags, ALL));
 }
 
-/// Git refuses letters that spell a long option (`check_typos`, parse-options.c:622-640).
+/// Git refuses letters that spell a long option (`check_typos`,
+///  parse-options.c:622-640).
 #[test]
 fn refuses_single_dash_long_spellings() {
     for values in [
@@ -107,7 +116,8 @@ fn refuses_single_dash_long_spellings() {
     assert!(parse_synthetic(&["-uall"]).is_ok());
 }
 
-/// A lone `-h` asks for usage even when a row declares `h`; with other arguments the
+/// A lone `-h` asks for usage even when a row declares `h`;
+///  with other arguments the
 /// declared row is used (parse-options.c:1049-1051).
 #[test]
 fn a_lone_h_is_help_even_when_declared() {
@@ -127,7 +137,8 @@ fn a_lone_h_is_help_even_when_declared() {
     assert_eq!(declared.leading, vec![1]);
 }
 
-/// An undeclared `h` is a usage request; any other undeclared letter is refused.
+/// An undeclared `h` is a usage request;
+///  any other undeclared letter is refused.
 #[test]
 fn reads_help_and_refuses_unknown_letters() {
     for values in [vec!["-h"], vec!["-ah"], vec!["-h", "x"]] {

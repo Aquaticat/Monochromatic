@@ -1,6 +1,11 @@
-//! What: Forms, file scopes and option positions of `git config` regions, with real Git
+//! What:
+//!  Forms,
+//!  file scopes and option positions of `git config` regions,
+//!  with real Git
 //!       2.56.0 controls for every table and for the positions the incumbent misread.
-//! Why: `--global` after a variable name is a value Git stores in the repository; reading
+//! Why:
+//!  `--global` after a variable name is a value Git stores in the repository;
+//!  reading
 //!      it as the scope option would exempt a command that needs the repository root.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +13,9 @@
 //! // expect(parseConfigRegion(['user.name', '--global']).global).toBe(false);
 //! ```
 
-/// The parser, its tables, the oracles and the real-Git fixture helpers.
+/// The parser,
+///  its tables,
+///  the oracles and the real-Git fixture helpers.
 use super::ConfigForm::{Edit, Get, Legacy, List, RemoveSection, RenameSection, Set, Unset};
 use super::{ConfigForm, ConfigRegion, config_table, parse_config_region};
 use crate::command_options::OptionErrorKind::{
@@ -23,7 +30,8 @@ use crate::command_test_support::{
 use std::path::PathBuf;
 use std::process::Output;
 
-/// Parse a space-separated region Git accepts, with no wrapper flags.
+/// Parse a space-separated region Git accepts,
+///  with no wrapper flags.
 fn region(line: &str) -> ConfigRegion {
     let values: Vec<&str> = line.split_whitespace().collect();
     return parse_config_region(os_arguments(values.as_slice()).as_slice(), &[])
@@ -36,7 +44,8 @@ fn facts(line: &str) -> (ConfigForm, bool, bool, bool) {
     return (found.form, found.global, found.system, found.lists);
 }
 
-/// Only an exact first word selects a subcommand form; anything else is the legacy form.
+/// Only an exact first word selects a subcommand form;
+///  anything else is the legacy form.
 #[test]
 fn picks_the_form_from_the_first_token() {
     for (line, form) in [
@@ -62,7 +71,8 @@ fn picks_the_form_from_the_first_token() {
     }
 }
 
-/// The scope options and the legacy listing action, in every spelling Git accepts.
+/// The scope options and the legacy listing action,
+///  in every spelling Git accepts.
 #[test]
 fn reads_scope_and_listing_in_option_position() {
     for (line, expected) in [
@@ -99,7 +109,8 @@ fn reads_scope_and_listing_in_option_position() {
     }
 }
 
-/// Git applies options in order: a later `--no-global` switches the scope back off.
+/// Git applies options in order:
+///  a later `--no-global` switches the scope back off.
 #[test]
 fn scope_is_the_final_state() {
     assert_eq!(
@@ -116,7 +127,10 @@ fn scope_is_the_final_state() {
     );
 }
 
-/// Divergence: after the first name, and in a value position, the spellings are data.
+/// Divergence:
+///  after the first name,
+///  and in a value position,
+///  the spellings are data.
 #[test]
 fn spellings_outside_option_position_are_data() {
     for line in [
@@ -146,7 +160,8 @@ fn spellings_outside_option_position_are_data() {
     }
 }
 
-/// `list` and `edit` read options after a name too; the other forms stop at the first name.
+/// `list` and `edit` read options after a name too;
+///  the other forms stop at the first name.
 #[test]
 fn only_list_and_edit_read_options_after_a_name() {
     assert!(region("list extra --global").global);
@@ -156,7 +171,8 @@ fn only_list_and_edit_read_options_after_a_name() {
     assert!(!region("remove-section a --system").system);
 }
 
-/// Wrapper-only flags count in option position, with region token indexes.
+/// Wrapper-only flags count in option position,
+///  with region token indexes.
 #[test]
 fn reports_wrapper_flags_by_region_position() {
     let flags: [&[u8]; 1] = [b"--no-enforce-require-root"];
@@ -229,7 +245,8 @@ fn reports_wrapper_flags_by_region_position() {
     assert_eq!((refused.kind, refused.token), (UnknownOption, 2));
 }
 
-/// A region Git refuses is reported as refused, at its region token index.
+/// A region Git refuses is reported as refused,
+///  at its region token index.
 #[test]
 fn reports_what_git_refuses() {
     for (line, kind, token) in [
@@ -287,8 +304,11 @@ fn tables_match_git() {
     remove(directory.as_path());
 }
 
-/// Real Git stores, reads and lists exactly where the parser says the scope applies. The
-/// fixture's per-user file does not exist, so a per-user read prints nothing and fails.
+/// Real Git stores,
+///  reads and lists exactly where the parser says the scope applies.
+///  The
+/// fixture's per-user file does not exist,
+///  so a per-user read prints nothing and fails.
 #[test]
 fn scope_positions_match_git() {
     let directory: PathBuf = fixture("config-scope");

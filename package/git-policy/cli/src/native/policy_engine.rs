@@ -1,8 +1,16 @@
-//! What: Run shipped policies in registry order for one lifecycle point and settle the
-//!       outcome: which events were produced and whether the command may proceed.
-//! Why: Every lifecycle shares one execution contract: a policy runs only for the triggers
-//!      it declares, at the configured severity, unless it is filtered out, escaped or off;
-//!      the first error finding stops the pass unless the caller asked to keep going; and a
+//! What:
+//!  Run shipped policies in registry order for one lifecycle point and settle the
+//!       outcome:
+//!  which events were produced and whether the command may proceed.
+//! Why:
+//!  Every lifecycle shares one execution contract:
+//!  a policy runs only for the triggers
+//!      it declares,
+//!  at the configured severity,
+//!  unless it is filtered out,
+//!  escaped or off;
+//!      the first error finding stops the pass unless the caller asked to keep going;
+//!  and a
 //!      policy or lifecycle this executable cannot evaluate is reported as unavailable,
 //!      never as clean.
 //!
@@ -11,9 +19,15 @@
 //! // const stage = await runPolicyStage({ policies, context, trigger, severities, selectedPolicyIds, escapedPolicyIds, keepGoing });
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  The stage combines configuration, controls, the registry and the event types.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   The stage combines configuration,
+///  controls,
+///  the registry and the event types.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,9 +41,12 @@ use super::policy_registry::{PolicyId, Severity, policy_descriptor};
 use super::policy_trigger::{Trigger, policy_runs_on, trigger_is_ported};
 use super::wrapper_controls::{Controls, is_escaped};
 
-/// What: Exit code when a pass ends with an error finding or a fixed-transform rejection.
-///       `i32` is a signed 32-bit integer, the type of process exit codes.
-/// Why:  Callers branch on 1 for "policy said no" and on 2 for "could not decide".
+/// What:
+///  Exit code when a pass ends with an error finding or a fixed-transform rejection.
+///       `i32` is a signed 32-bit integer,
+///  the type of process exit codes.
+/// Why:
+///   Callers branch on 1 for "policy said no" and on 2 for "could not decide".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,10 +54,18 @@ use super::wrapper_controls::{Controls, is_escaped};
 /// ```
 pub const BLOCKED_EXIT_CODE: i32 = 1;
 
-/// What: One thing a policy reports. A `struct` is a record with named fields; `String` is
-///       owned UTF-8 text; `Option<T>` is "a value or nothing"; `&'static str` is text
+/// What:
+///  One thing a policy reports.
+///  A `struct` is a record with named fields;
+///  `String` is
+///       owned UTF-8 text;
+///  `Option<T>` is "a value or nothing";
+///  `&'static str` is text
 ///       baked into the program.
-/// Why:  A policy describes what it found; the engine adds the trigger, the policy name
+/// Why:
+///   A policy describes what it found;
+///  the engine adds the trigger,
+///  the policy name
 ///       and the configured severity when it turns the finding into an event.
 ///
 /// In TS you'd write (pseudocode):
@@ -49,25 +74,35 @@ pub const BLOCKED_EXIT_CODE: i32 = 1;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PolicyFinding {
-    /// The policy-local code, lower-case words joined by hyphens.
+    /// The policy-local code,
+    ///  lower-case words joined by hyphens.
     pub code: &'static str,
     /// The explanation for the person who ran the command.
     pub message: String,
-    /// The repository path the finding is about, when it has one.
+    /// The repository path the finding is about,
+    ///  when it has one.
     pub path: Option<String>,
-    /// The byte range the finding is about, when it has one.
+    /// The byte range the finding is about,
+    ///  when it has one.
     pub location: Option<FindingLocation>,
     /// Whether the policy proposed a correction for this finding.
     pub fix_available: bool,
 }
 
-/// What: What one policy check returned. An `enum` is a closed set of named alternatives;
+/// What:
+///  What one policy check returned.
+///  An `enum` is a closed set of named alternatives;
 ///       `Failed { code, message }` carries named fields.
-/// Why:  "Nothing found", "cannot be evaluated here" and "could not finish" are three
-///       different answers; folding the last two into an empty finding list would let an
-///       unchecked command through. A policy that could not finish names its cause:
+/// Why:
+///   "Nothing found",
+///  "cannot be evaluated here" and "could not finish" are three
+///       different answers;
+///  folding the last two into an empty finding list would let an
+///       unchecked command through.
+///  A policy that could not finish names its cause:
 ///       `content-unavailable` when candidate bytes or a repository fact could not be
-///       read, `policy-incomplete` when its own machinery failed.
+///       read,
+///  `policy-incomplete` when its own machinery failed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -75,24 +110,38 @@ pub struct PolicyFinding {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum PolicyOutcome {
-    /// The policy was evaluated; an empty list means it found nothing.
+    /// The policy was evaluated;
+    ///  an empty list means it found nothing.
     Findings(Vec<PolicyFinding>),
-    /// The policy needs something this executable does not implement yet; the text names it.
+    /// The policy needs something this executable does not implement yet;
+    ///  the text names it.
     Unavailable(&'static str),
     /// The policy could not finish.
     Failed {
-        /// The cause, as the engine-failure event reports it.
+        /// The cause,
+        ///  as the engine-failure event reports it.
         code: EngineFailureCode,
-        /// What failed, for the person who ran the command; never a candidate's pathname.
+        /// What failed,
+        ///  for the person who ran the command;
+        ///  never a candidate's pathname.
         message: String,
     },
 }
 
-/// What: The policies behind the stage. A `trait` is a named set of methods a type promises
-///       to provide, like a TS `interface`; `&mut self` lends the provider for writing,
+/// What:
+///  The policies behind the stage.
+///  A `trait` is a named set of methods a type promises
+///       to provide,
+///  like a TS `interface`;
+///  `&mut self` lends the provider for writing,
 ///       because a check may cache repository facts.
-/// Why:  The stage owns order, severity and stopping; this seam owns what each policy
-///       reads. Tests drive the stage with a scripted provider, the executable with real Git.
+/// Why:
+///   The stage owns order,
+///  severity and stopping;
+///  this seam owns what each policy
+///       reads.
+///  Tests drive the stage with a scripted provider,
+///  the executable with real Git.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -103,9 +152,14 @@ pub trait PolicyChecks {
     fn check(&mut self, policy: PolicyId, trigger: Trigger) -> PolicyOutcome;
 }
 
-/// What: The settings of one stage. A `struct` that owns its values: `PolicyConfig`,
+/// What:
+///  The settings of one stage.
+///  A `struct` that owns its values:
+///  `PolicyConfig`,
 ///       `Controls` and `Vec<PolicyId>` are copies made once per invocation.
-/// Why:  Owning small copies keeps the record free of borrowing rules, so it can be
+/// Why:
+///   Owning small copies keeps the record free of borrowing rules,
+///  so it can be
 ///       handed to every stage of an invocation as one plain value.
 ///
 /// In TS you'd write (pseudocode):
@@ -120,12 +174,15 @@ pub struct StageRequest {
     pub config: PolicyConfig,
     /// Keep-going and per-invocation escapes.
     pub controls: Controls,
-    /// The `--policy` filter of a direct command; empty selects every policy.
+    /// The `--policy` filter of a direct command;
+    ///  empty selects every policy.
     pub selected: Vec<PolicyId>,
 }
 
-/// What: Why a pass could not be evaluated by this executable.
-/// Why:  The refusal names either a whole lifecycle or one policy and what it needs.
+/// What:
+///  Why a pass could not be evaluated by this executable.
+/// Why:
+///   The refusal names either a whole lifecycle or one policy and what it needs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -139,13 +196,17 @@ pub enum Unavailable {
     Policy {
         /// The policy that could not be evaluated.
         policy: PolicyId,
-        /// What it needs, in words for the refusal notice.
+        /// What it needs,
+        ///  in words for the refusal notice.
         needs: &'static str,
     },
 }
 
-/// What: How a stage ended.
-/// Why:  The caller continues only after `Completed`; each other ending has its own exit code.
+/// What:
+///  How a stage ended.
+/// Why:
+///   The caller continues only after `Completed`;
+///  each other ending has its own exit code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -157,16 +218,21 @@ pub enum StageEnd {
     Completed,
     /// An error finding stopped the pass.
     Stopped,
-    /// A policy proposed a correction, so the pass ends and restarts on corrected content.
+    /// A policy proposed a correction,
+    ///  so the pass ends and restarts on corrected content.
     Proposed,
-    /// A policy could not finish; the last event is the engine failure naming its cause.
+    /// A policy could not finish;
+    ///  the last event is the engine failure naming its cause.
     Failed,
     /// A policy or the lifecycle cannot be evaluated by this executable.
     Unavailable(Unavailable),
 }
 
-/// What: The events of one stage and how it ended. `Vec<PolicyEvent>` is an owned list.
-/// Why:  Events gathered before a stop are still reported.
+/// What:
+///  The events of one stage and how it ended.
+///  `Vec<PolicyEvent>` is an owned list.
+/// Why:
+///   Events gathered before a stop are still reported.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -180,9 +246,15 @@ pub struct StageResult {
     pub end: StageEnd,
 }
 
-/// What: Whether the stage evaluates this policy. `&StageRequest` borrows the settings.
-/// Why:  The order of the tests is the incumbent's: trigger, direct-command filter,
-///       escape, then severity.
+/// What:
+///  Whether the stage evaluates this policy.
+///  `&StageRequest` borrows the settings.
+/// Why:
+///   The order of the tests is the incumbent's:
+///  trigger,
+///  direct-command filter,
+///       escape,
+///  then severity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -202,9 +274,12 @@ fn policy_applies(request: &StageRequest, policy: PolicyId) -> bool {
     return request.config.setting(policy).severity != Severity::Off;
 }
 
-/// What: Whether any of `policies` would be evaluated for this request.
-/// Why:  A lifecycle that only exists for its policies (manual push) is not applicable
-///       when none is enabled, and the caller must know that before asking the stage.
+/// What:
+///  Whether any of `policies` would be evaluated for this request.
+/// Why:
+///   A lifecycle that only exists for its policies (manual push) is not applicable
+///       when none is enabled,
+///  and the caller must know that before asking the stage.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -220,11 +295,18 @@ pub fn any_policy_applies(request: &StageRequest, policies: &[PolicyId]) -> bool
     return false;
 }
 
-/// What: Run `policies` in the given order. `&mut dyn PolicyChecks` lends "any provider of
-///       checks" for writing (`dyn` means the concrete type is chosen at run time, like a
+/// What:
+///  Run `policies` in the given order.
+///  `&mut dyn PolicyChecks` lends "any provider of
+///       checks" for writing (`dyn` means the concrete type is chosen at run time,
+///  like a
 ///       TS interface value).
-/// Why:  One policy at a time, in registry order, so findings and their numbers are
-///       reproducible. A trigger whose lifecycle is not ported ends the stage before any
+/// Why:
+///   One policy at a time,
+///  in registry order,
+///  so findings and their numbers are
+///       reproducible.
+///  A trigger whose lifecycle is not ported ends the stage before any
 ///       policy runs.
 ///
 /// In TS you'd write (pseudocode):
@@ -324,10 +406,16 @@ pub fn run_policy_stage(
     };
 }
 
-/// What: The exit code of a pass that did not reach Git, from its events and its ending.
+/// What:
+///  The exit code of a pass that did not reach Git,
+///  from its events and its ending.
 ///       `&[PolicyEvent]` borrows the events of every stage of the pass.
-/// Why:  0 means clean or warnings only, 1 means an error finding, a fixed-transform
-///       rejection or a pending correction, and 2 means the pass could not decide.
+/// Why:
+///   0 means clean or warnings only,
+///  1 means an error finding,
+///  a fixed-transform
+///       rejection or a pending correction,
+///  and 2 means the pass could not decide.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -348,7 +436,9 @@ pub fn pass_exit_code(events: &[PolicyEvent], end: StageEnd) -> i32 {
     return 0;
 }
 
-/// Order, severity, stopping and unavailability controls stay out of the release executable.
+/// Order,
+///  severity,
+///  stopping and unavailability controls stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_engine_tests.rs"]
 mod tests;

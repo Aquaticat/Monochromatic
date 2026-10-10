@@ -1,12 +1,16 @@
-//! What: Pattern-selection and merged-setting regressions.
-//! Why: Matching must distinguish ignored, unmatched and configured files without changing rule precedence.
+//! What:
+//!  Pattern-selection and merged-setting regressions.
+//! Why:
+//!  Matching must distinguish ignored,
+//!  unmatched and configured files without changing rule precedence.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! describe('configuration matching', () => { /* glob and precedence controls */ });
 //! ```
 
-/// Import production parsing, preparation and result types.
+/// Import production parsing,
+///  preparation and result types.
 use super::{FileConfiguration, PreparedConfiguration, prepare_configuration};
 use crate::config_lookup::{CONFIG_NAME, ConfigurationSource};
 use crate::configuration::parse_configuration;
@@ -56,7 +60,8 @@ fn file_globs_preserve_directory_boundaries() {
     ));
 }
 
-/// Trailing-slash expansion is limited to directory exclusions, not every pattern.
+/// Trailing-slash expansion is limited to directory exclusions,
+///  not every pattern.
 #[test]
 fn file_and_ignore_patterns_do_not_gain_unrequested_wildcards() {
     let files = prepare(r#"[{"files":["src/"],"rules":{}}]"#);
@@ -117,7 +122,8 @@ fn local_exclusions_leave_other_blocks_available() {
     assert_eq!(actual, expected);
 }
 
-/// Later severities retain earlier options, and arrays concatenate in matching-block order.
+/// Later severities retain earlier options,
+///  and arrays concatenate in matching-block order.
 #[test]
 fn ordered_blocks_merge_before_defaults_are_filled() {
     let config = prepare(
@@ -131,7 +137,8 @@ fn ordered_blocks_merge_before_defaults_are_filled() {
     assert_eq!(actual, expected);
 }
 
-/// Defaults fill selected rules only; an empty matching rules record enables nothing.
+/// Defaults fill selected rules only;
+///  an empty matching rules record enables nothing.
 #[test]
 fn rule_defaults_do_not_enable_absent_rules() {
     let empty = prepare(r#"[{"files":["**/*"],"rules":{}}]"#);
@@ -159,7 +166,8 @@ fn unresolved_severity_is_a_configuration_error() {
     assert!(error.message.contains("needs severity"));
 }
 
-/// Virtual paths participate in the same matching, including exclusion of snippet descendants.
+/// Virtual paths participate in the same matching,
+///  including exclusion of snippet descendants.
 #[test]
 fn virtual_paths_keep_their_host_suffixes() {
     let config = prepare(r#"[{"files":["**/*.rs"],"ignores":["**/*.md/**"],"rules":{}}]"#);
@@ -175,7 +183,8 @@ fn virtual_paths_keep_their_host_suffixes() {
     ));
 }
 
-/// Explicit parent-relative names can match, while passing an absolute name is a caller error.
+/// Explicit parent-relative names can match,
+///  while passing an absolute name is a caller error.
 #[test]
 fn relative_parent_selection_is_not_silently_rebased() {
     let config = prepare(r#"[{"files":["../external/*.rs"],"rules":{}}]"#);

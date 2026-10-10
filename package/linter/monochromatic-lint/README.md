@@ -1,11 +1,12 @@
 # monochromatic-lint
 
 Rust replacement for the repository's Rust and Markdown/MDX linters.
-The `monochromatic-lint` executable exists and is verified in containers.
-It is not published,
-installed,
-or wired into any repository task;
-the existing tools remain active until consumer verification and cutover.
+The `monochromatic-lint` executable is verified in containers
+and published to crates.io with prebuilt release binaries,
+so `cargo binstall monochromatic-lint` installs it without compiling.
+In the Monochromatic repository it replaces `package/linter/rust` and `package/cli/markdown-lint`;
+the switch of every repository task and the Git wrapper's Markdown policy is recorded in
+`doc/handover/unified-linter-cutover.md`.
 
 The crate's Rust visibility supports its executable and verification drivers.
 There is no supported public linter library interface.
@@ -16,7 +17,7 @@ Execution:
 `doc/handover/cli-git-rust-implementation.md`.
 Executable evidence,
 open decisions,
-and the comparison with both existing linters:
+and the comparison with both earlier linters:
 `doc/handover/unified-linter-executable.md`.
 
 ## Command line

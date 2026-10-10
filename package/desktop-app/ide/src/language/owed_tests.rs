@@ -1,4 +1,6 @@
-//! The catch-up rule without a server: what is asked again, and when asking stops.
+//! The catch-up rule without a server:
+//!  what is asked again,
+//!  and when asking stops.
 
 use super::{MAX_CATCH_UPS, Owed};
 

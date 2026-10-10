@@ -1,5 +1,8 @@
-//! What: Controls for the invocations that must stop before any Git process is chosen or trusted.
-//! Why: A wrapper selected as real Git, a missing real Git and uninterpretable identity
+//! What:
+//!  Controls for the invocations that must stop before any Git process is chosen or trusted.
+//! Why:
+//!  A wrapper selected as real Git,
+//!  a missing real Git and uninterpretable identity
 //!      output must each stop with their evidence instead of forwarding or guessing.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +11,8 @@
 //! ```
 #![cfg(unix)]
 
-/// Import the decision under test, the fixtures and the helpers shared with the forwarding controls.
+/// Import the decision under test,
+///  the fixtures and the helpers shared with the forwarding controls.
 use super::plan_invocation;
 use super::tests::{forward, inputs, stopped, text};
 use crate::child_environment::FORWARD_TARGET_VARIABLE;
@@ -17,7 +21,8 @@ use crate::test_support::{REAL_GIT, executable, fixture, remove};
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-/// A wrapper named as the forward target by another wrapper refuses to forward; other targets do not trigger.
+/// A wrapper named as the forward target by another wrapper refuses to forward;
+///  other targets do not trigger.
 #[test]
 fn forward_target_naming_this_executable_stops() {
     let root: PathBuf = fixture("entry-handshake");

@@ -1,14 +1,20 @@
-//! What: Which commands the frontier stops, at which kind of location, and which lease
+//! What:
+//!  Which commands the frontier stops,
+//!  at which kind of location,
+//!  and which lease
 //!       variables count.
-//! Why: Every case that returns "nothing" here is a command this executable will forward;
-//!      a commit, a worktree creation or an alias slipping through would run unguarded.
+//! Why:
+//!  Every case that returns "nothing" here is a command this executable will forward;
+//!      a commit,
+//!  a worktree creation or an alias slipping through would run unguarded.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(commandFrontier(strip(['commit', '-m', 'x']), main)).toEqual({ kind: 'commit-transaction' });
 //! ```
 
-/// The frontier under test, its inputs and the argument builders.
+/// The frontier under test,
+///  its inputs and the argument builders.
 use super::{LEASE_VARIABLES, command_frontier, inherited_lease};
 use crate::command_test_support::{byte_argument, os_arguments};
 use crate::unported::Unported;
@@ -17,7 +23,12 @@ use crate::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-/// The four kinds of location, in the order: outside, bare, main, linked.
+/// The four kinds of location,
+///  in the order:
+///  outside,
+///  bare,
+///  main,
+///  linked.
 fn locations() -> [WorktreeIdentity; 4] {
     return [
         WorktreeIdentity::OutsideWorktree,
@@ -38,7 +49,9 @@ fn locations() -> [WorktreeIdentity; 4] {
     ];
 }
 
-/// The frontier's answer for one invocation, written as text, at one location.
+/// The frontier's answer for one invocation,
+///  written as text,
+///  at one location.
 fn frontier(values: &[&str], identity: &WorktreeIdentity) -> Option<Unported> {
     let stripped: StrippedInvocation = strip_wrapper_controls(os_arguments(values).as_slice());
     return command_frontier(&stripped, identity);
@@ -138,7 +151,8 @@ fn worktree_creation_needs_the_copy_from_a_linked_worktree_or_a_bare_repository(
     }
 }
 
-/// A word Git does not build in may be an alias for anything, where copies are synchronized.
+/// A word Git does not build in may be an alias for anything,
+///  where copies are synchronized.
 #[test]
 fn a_possible_alias_needs_resolution_from_a_linked_worktree_or_a_bare_repository() {
     let [outside, bare, main, linked]: [WorktreeIdentity; 4] = locations();
@@ -197,7 +211,9 @@ fn a_possible_alias_needs_resolution_from_a_linked_worktree_or_a_bare_repository
     }
 }
 
-/// Each lease variable alone is found, even when empty; the first in table order is named.
+/// Each lease variable alone is found,
+///  even when empty;
+///  the first in table order is named.
 #[test]
 fn an_inherited_lease_is_found_by_name() {
     assert_eq!(

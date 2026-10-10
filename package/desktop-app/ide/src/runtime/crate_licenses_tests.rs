@@ -1,4 +1,8 @@
-//! The crate license list on small inputs: parsing, headings, wrapped crate names, and source paths.
+//! The crate license list on small inputs:
+//!  parsing,
+//!  headings,
+//!  wrapped crate names,
+//!  and source paths.
 
 use super::{crate_relative, parse, wrap};
 

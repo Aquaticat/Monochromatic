@@ -1,8 +1,11 @@
 //! Lossless source mapping for the rendered representation of one code line.
 
-/// What: Helix's borrowed rope view and its grapheme walk.
-/// Why: The shaping engine lets a pointer land between the characters of one multi-character cluster,
-/// such as a letter and its combining mark; the caret may only stand on the boundaries Helix reports.
+/// What:
+///  Helix's borrowed rope view and its grapheme walk.
+/// Why:
+///  The shaping engine lets a pointer land between the characters of one multi-character cluster,
+/// such as a letter and its combining mark;
+///  the caret may only stand on the boundaries Helix reports.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -10,31 +13,40 @@
 /// ```
 use helix_core::{RopeSlice, graphemes::next_grapheme_boundary};
 
-/// What: Own display text and maps between its bytes and source characters;
-/// `Vec<usize>` is a growable list of address-sized indices (siblings: `u32`, `u64`).
-/// Why: A tab is shaped as one space whose advance the shaper widens to the next tab stop,
+/// What:
+///  Own display text and maps between its bytes and source characters;
+/// `Vec<usize>` is a growable list of address-sized indices (siblings:
+///  `u32`,
+///  `u64`).
+/// Why:
+///  A tab is shaped as one space whose advance the shaper widens to the next tab stop,
 /// while copying and language requests keep the source tab and its offset.
-/// `usize` is what string and rope indexing take, so no conversion is needed.
+/// `usize` is what string and rope indexing take,
+///  so no conversion is needed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Projection = { text: string; sourceToByte: number[]; byteToSource: number[]; tabs: number[] };
 /// ```
 pub struct Projection {
-    /// Text passed to the shaper, with each tab replaced by one space and terminators excluded.
+    /// Text passed to the shaper,
+    ///  with each tab replaced by one space and terminators excluded.
     pub text: String,
     /// Display byte position for each source character boundary.
     pub source_to_byte: Vec<usize>,
     /// Source character position for each display byte boundary.
     pub byte_to_source: Vec<usize>,
-    /// Display byte position of the space standing in for each source tab, in reading order.
+    /// Display byte position of the space standing in for each source tab,
+    ///  in reading order.
     pub tabs: Vec<usize>,
-    /// Source character positions a caret may take on this line, in ascending order:
+    /// Source character positions a caret may take on this line,
+    ///  in ascending order:
     /// the grapheme boundaries from the line start to the end of its visible text.
     pub stops: Vec<usize>,
 }
 
-/// Grapheme boundaries of `source` up to `visible` characters, the line's text without its terminator.
+/// Grapheme boundaries of `source` up to `visible` characters,
+///  the line's text without its terminator.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,7 +71,8 @@ fn caret_stops(source: &str, visible: usize) -> Vec<usize> {
     return stops;
 }
 
-/// Build the projection in one pass; input is one logical source line.
+/// Build the projection in one pass;
+///  input is one logical source line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

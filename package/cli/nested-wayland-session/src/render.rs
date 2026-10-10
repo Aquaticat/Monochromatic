@@ -1,12 +1,21 @@
 //! Rendering the hosted window into the nested winit framebuffer.
 //!
-//! One `redraw` call binds the winit backend's framebuffer, composites the space
-//! (the one hosted window) into it with Smithay's `render_output` helper, submits the
-//! frame, and sends frame-callbacks so the client draws its next frame.
+//! One `redraw` call binds the winit backend's framebuffer,
+//!  composites the space
+//! (the one hosted window) into it with Smithay's `render_output` helper,
+//!  submits the
+//! frame,
+//!  and sends frame-callbacks so the client draws its next frame.
 
-/// What:     `use std::time::{Duration, Instant};`. `Duration` is a span of time; `Instant` is
-///           a monotonic timestamp (sibling: the adjustable wall clock `SystemTime`).
-/// Why:      Frame callbacks report elapsed time; `Duration::ZERO` is the throttle hint.
+/// What:
+///      `use std::time::{Duration, Instant};`.
+///  `Duration` is a span of time;
+///  `Instant` is
+///           a monotonic timestamp (sibling:
+///  the adjustable wall clock `SystemTime`).
+/// Why:
+///       Frame callbacks report elapsed time;
+///  `Duration::ZERO` is the throttle hint.
 ///           Each presentation to the parent is timestamped for stall detection.
 ///
 /// In TS you'd write (pseudocode):
@@ -15,9 +24,14 @@
 /// ```
 use std::time::{Duration, Instant};
 
-/// What:     Grouped `use` of the render-element type, the GLES renderer, the
-///           `render_output` helper, and the `Rectangle` geometry type.
-/// Why:      Everything `redraw` references.
+/// What:
+///      Grouped `use` of the render-element type,
+///  the GLES renderer,
+///  the
+///           `render_output` helper,
+///  and the `Rectangle` geometry type.
+/// Why:
+///       Everything `redraw` references.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -29,8 +43,11 @@ use smithay::{
     utils::Rectangle,
 };
 
-/// What:     `use crate::state::Compositor;`. Our state type.
-/// Why:      `redraw` operates on `&mut Compositor`.
+/// What:
+///      `use crate::state::Compositor;`.
+///  Our state type.
+/// Why:
+///       `redraw` operates on `&mut Compositor`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,13 +55,23 @@ use smithay::{
 /// ```
 use crate::state::Compositor;
 
-/// Dark grey clear colour (RGBA, 0..=1) behind the hosted window.
+/// Dark grey clear colour (RGBA,
+///  0..=1) behind the hosted window.
 ///
-/// What:     `const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];`. A fixed-size array
-///           of four 32-bit floats (`f32`; sibling `f64` is 64-bit). Order is
-///           red, green, blue, alpha.
-/// Why:      A neutral background makes the hosted window's own drawing obvious in
-///           screenshots; the app is fullscreen so it is usually fully covered anyway.
+/// What:
+///      `const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];`.
+///  A fixed-size array
+///           of four 32-bit floats (`f32`;
+///  sibling `f64` is 64-bit).
+///  Order is
+///           red,
+///  green,
+///  blue,
+///  alpha.
+/// Why:
+///       A neutral background makes the hosted window's own drawing obvious in
+///           screenshots;
+///  the app is fullscreen so it is usually fully covered anyway.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,11 +81,17 @@ pub const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
 
 /// Composite the hosted window into the nested framebuffer and present one frame.
 ///
-/// What:     `pub fn redraw(state: &mut Compositor)`. Mutably borrows the whole state;
-///           internally it borrows several disjoint fields (backend, output, space,
-///           damage tracker) at once, which Rust allows because they are distinct
+/// What:
+///      `pub fn redraw(state: &mut Compositor)`.
+///  Mutably borrows the whole state;
+///           internally it borrows several disjoint fields (backend,
+///  output,
+///  space,
+///           damage tracker) at once,
+///  which Rust allows because they are distinct
 ///           fields.
-/// Why:      The single place that turns committed client buffers into a presented
+/// Why:
+///       The single place that turns committed client buffers into a presented
 ///           frame and asks the client for its next one.
 ///
 /// In TS you'd write (pseudocode):
@@ -169,10 +202,15 @@ pub fn redraw(state: &mut Compositor) {
 
 /// Send frame callbacks to every mapped window and refresh space/popup bookkeeping.
 ///
-/// What:     `pub fn send_frame_callbacks(state: &mut Compositor)`. Tells each window its
-///           last frame was presented (so it draws the next one), then refreshes the space
+/// What:
+///      `pub fn send_frame_callbacks(state: &mut Compositor)`.
+///  Tells each window its
+///           last frame was presented (so it draws the next one),
+///  then refreshes the space
 ///           and cleans up dead popups.
-/// Why:      Shared by the live redraw and the 60fps recorder: both must keep an animating
+/// Why:
+///       Shared by the live redraw and the 60fps recorder:
+///  both must keep an animating
 ///           client producing frames at the intended rate.
 ///
 /// In TS you'd write (pseudocode):

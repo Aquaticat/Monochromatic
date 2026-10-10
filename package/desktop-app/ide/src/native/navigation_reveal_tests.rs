@@ -1,4 +1,5 @@
-//! Reveal intent must not continuously replace unchanged models, and canonical aliases retain reading state.
+//! Reveal intent must not continuously replace unchanged models,
+//!  and canonical aliases retain reading state.
 
 /// Share production bindings and native polling helpers without adding test interfaces to the shipped binary.
 use super::{
@@ -8,7 +9,8 @@ use super::{
 };
 /// Canonical project identity and source positions are the same types used in navigation.
 use ide_app::{document::ReadingPosition, workspace::Workspace};
-/// ModelRc equality compares underlying model identity, not only equal row values.
+/// ModelRc equality compares underlying model identity,
+///  not only equal row values.
 use slint::{ComponentHandle, Model, SharedString};
 /// Native symlinks and file replacement live only in disposable directories.
 use std::{

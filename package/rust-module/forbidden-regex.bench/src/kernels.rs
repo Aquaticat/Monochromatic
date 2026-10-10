@@ -1,10 +1,21 @@
-//! Batch-kernel sweep: bucket width and sorting strategy for the single-DFA kernels.
+//! Batch-kernel sweep:
+//!  bucket width and sorting strategy for the single-DFA kernels.
 //!
-//! What: races the scalar per-line loop against the interleaved batch kernel at bucket
-//! widths 8/16/32/64 on length-sorted input, the branchless tight kernel on exact-length
-//! buckets, the bucketed public API, and the one- and two-byte Sheng permute kernels, and
-//! reports the sort cost. Why: the scalar single-line scan is latency-bound on the
-//! dependent transition load; this finds which layout beats it, and by how much, in the
+//! What:
+//!  races the scalar per-line loop against the interleaved batch kernel at bucket
+//! widths 8/16/32/64 on length-sorted input,
+//!  the branchless tight kernel on exact-length
+//! buckets,
+//!  the bucketed public API,
+//!  and the one- and two-byte Sheng permute kernels,
+//!  and
+//! reports the sort cost.
+//!  Why:
+//!  the scalar single-line scan is latency-bound on the
+//! dependent transition load;
+//!  this finds which layout beats it,
+//!  and by how much,
+//!  in the
 //! realistic low-match regime a secret scanner sees.
 
 /// Imports the optimization barrier so verdicts are not elided.
@@ -19,10 +30,12 @@ use std::time::Instant;
 /// Wall-clock budget timed per kernel configuration.
 const BUDGET_SECS: f64 = 4.0;
 
-/// Patterns whose DFA runs on every line, spanning the realistic low-match regime.
+/// Patterns whose DFA runs on every line,
+///  spanning the realistic low-match regime.
 const PATTERNS: [&str; 3] = ["[A-Za-z0-9]{8}", "[A-Za-z0-9_+/=.-]{20}", "[0-9a-f]{32}"];
 
-/// Times one whole-corpus batch closure for the budget, returning lines/s.
+/// Times one whole-corpus batch closure for the budget,
+///  returning lines/s.
 fn rate(refs: &[&[u8]], run: impl Fn(&[&[u8]]) -> Vec<bool>) -> f64 {
     let start = Instant::now();
     let mut scanned = 0u64;
@@ -33,7 +46,8 @@ fn rate(refs: &[&[u8]], run: impl Fn(&[&[u8]]) -> Vec<bool>) -> f64 {
     return scanned as f64 / start.elapsed().as_secs_f64()
 }
 
-/// Times a kernel run over pre-grouped exact-length buckets, returning lines/s.
+/// Times a kernel run over pre-grouped exact-length buckets,
+///  returning lines/s.
 fn bucket_rate(buckets: &[Vec<&[u8]>], run: impl Fn(&[&[u8]]) -> Vec<bool>) -> f64 {
     let lines: u64 = buckets.iter().map(|bucket| return bucket.len() as u64).sum();
     let start = Instant::now();
@@ -58,10 +72,20 @@ fn exact_buckets<'a>(refs: &[&'a [u8]]) -> Vec<Vec<&'a [u8]>> {
 
 /// Runs the bucket-width and sorting-strategy sweep over the corpus.
 ///
-/// What: for each pattern, prints scalar lines/s and the ratios of the interleaved kernel
-/// (four bucket widths, length-sorted), the tight kernel (exact buckets), the bucketed
-/// public API, and the one- and two-byte Sheng kernels, plus the sort cost. Why: answers
-/// whether a length-bucketed batch and the permute kernels beat the per-line loop, and how.
+/// What:
+///  for each pattern,
+///  prints scalar lines/s and the ratios of the interleaved kernel
+/// (four bucket widths,
+///  length-sorted),
+///  the tight kernel (exact buckets),
+///  the bucketed
+/// public API,
+///  and the one- and two-byte Sheng kernels,
+///  plus the sort cost.
+///  Why:
+///  answers
+/// whether a length-bucketed batch and the permute kernels beat the per-line loop,
+///  and how.
 pub fn bench_buckets(corpus: &[Vec<u8>], avg_len: f64) {
     let refs: Vec<&[u8]> = corpus.iter().map(Vec::as_slice).collect();
     let mut sorted = refs.clone();
@@ -130,9 +154,14 @@ pub fn bench_buckets(corpus: &[Vec<u8>], avg_len: f64) {
 
 /// Compares the set-level batch layouts on the real ruleset over the corpus.
 ///
-/// What: confirms the concatenated-buffer gate sweep agrees with the per-line loop, then
-/// times both single-threaded. Why: the set pipeline's real cost is the per-line
-/// prefilter on short lines; one long-buffer sweep is the approach that can beat it.
+/// What:
+///  confirms the concatenated-buffer gate sweep agrees with the per-line loop,
+///  then
+/// times both single-threaded.
+///  Why:
+///  the set pipeline's real cost is the per-line
+/// prefilter on short lines;
+///  one long-buffer sweep is the approach that can beat it.
 pub fn bench_set_batch(set: &forbidden_regex::RegexSet, corpus: &[Vec<u8>]) {
     let refs: Vec<&[u8]> = corpus.iter().map(Vec::as_slice).collect();
     let oracle = set.is_match_batch(&refs);
@@ -150,8 +179,13 @@ pub fn bench_set_batch(set: &forbidden_regex::RegexSet, corpus: &[Vec<u8>]) {
 /// Times a per-line closure returning `(line index, rule index)` pairs for the budget,
 /// returning lines/s.
 ///
-/// What: the pair-returning twin of [`rate`]. Why: [`RegexSet::matches`] and
-/// [`RegexSet::line_matches`] carry attribution (which rule, on which line), so their
+/// What:
+///  the pair-returning twin of [`rate`].
+///  Why:
+///  [`RegexSet::matches`] and
+/// [`RegexSet::line_matches`] carry attribution (which rule,
+///  on which line),
+///  so their
 /// closures return `Vec<(usize, usize)>` rather than `Vec<bool>`.
 fn pair_rate(refs: &[&[u8]], run: impl Fn(&[&[u8]]) -> Vec<(usize, usize)>) -> f64 {
     let start = Instant::now();
@@ -163,12 +197,19 @@ fn pair_rate(refs: &[&[u8]], run: impl Fn(&[&[u8]]) -> Vec<(usize, usize)>) -> f
     return scanned as f64 / start.elapsed().as_secs_f64()
 }
 
-/// Times [`RegexSet::line_matches`] itself for the budget, returning lines/s.
+/// Times [`RegexSet::line_matches`] itself for the budget,
+///  returning lines/s.
 ///
-/// What: calls the closure with `buf`/`starts` directly (its own signature, not the
-/// per-line-slice shape [`rate`] and [`pair_rate`] use), so no per-iteration buffer
-/// rebuild inflates its measured cost. Why: `line_matches` takes one whole-buffer
-/// argument pair, and the benchmark must time exactly the call the sidecar's own
+/// What:
+///  calls the closure with `buf`/`starts` directly (its own signature,
+///  not the
+/// per-line-slice shape [`rate`] and [`pair_rate`] use),
+///  so no per-iteration buffer
+/// rebuild inflates its measured cost.
+///  Why:
+///  `line_matches` takes one whole-buffer
+/// argument pair,
+///  and the benchmark must time exactly the call the sidecar's own
 /// [`RegexSet::is_match_batch_concat`] hook already races.
 fn buf_rate(buf: &[u8], starts: &[usize], line_count: usize, run: impl Fn(&[u8], &[usize]) -> Vec<(usize, usize)>) -> f64 {
     let start = Instant::now();
@@ -181,11 +222,17 @@ fn buf_rate(buf: &[u8], starts: &[usize], line_count: usize, run: impl Fn(&[u8],
 }
 
 /// Flattens every line's [`RegexSet::matches`] ids into `(line index, rule index)`
-/// pairs, in ascending line order.
+/// pairs,
+///  in ascending line order.
 ///
-/// What: the naive per-line loop itself, shared by the oracle below and the timed
-/// per-line-loop arm in [`bench_line_matches`]. Why: the oracle and the timed
-/// per-line arm must run the exact same call, or a divergence there (not a real
+/// What:
+///  the naive per-line loop itself,
+///  shared by the oracle below and the timed
+/// per-line-loop arm in [`bench_line_matches`].
+///  Why:
+///  the oracle and the timed
+/// per-line arm must run the exact same call,
+///  or a divergence there (not a real
 /// batch-vs-loop difference) could masquerade as a false speedup.
 fn per_line_matches(set: &forbidden_regex::RegexSet, refs: &[&[u8]]) -> Vec<(usize, usize)> {
     return refs
@@ -197,17 +244,30 @@ fn per_line_matches(set: &forbidden_regex::RegexSet, refs: &[&[u8]]) -> Vec<(usi
         .collect();
 }
 
-/// Compares the per-line `matches()` loop, the boolean concat-sweep hook, and the
+/// Compares the per-line `matches()` loop,
+///  the boolean concat-sweep hook,
+///  and the
 /// line-indexed buffer-batch path on the real ruleset over the corpus.
 ///
-/// What: builds the same concatenated buffer and line-start offsets
-/// [`RegexSet::is_match_batch_concat`] builds internally, confirms
+/// What:
+///  builds the same concatenated buffer and line-start offsets
+/// [`RegexSet::is_match_batch_concat`] builds internally,
+///  confirms
 /// [`RegexSet::line_matches`] agrees with the flattened per-line [`RegexSet::matches`]
-/// oracle, then times all three: the naive per-line loop, the existing boolean-only
-/// concat-sweep hook (attribution-free, already benched by [`bench_set_batch`]), and
-/// the new buffer-batch path. Why: #381 decides whether to route the seedless and
-/// line-start rule groups through a batch sweep too; these numbers are the evidence
-/// for that call, so all three sit in one report.
+/// oracle,
+///  then times all three:
+///  the naive per-line loop,
+///  the existing boolean-only
+/// concat-sweep hook (attribution-free,
+///  already benched by [`bench_set_batch`]),
+///  and
+/// the new buffer-batch path.
+///  Why:
+///  #381 decides whether to route the seedless and
+/// line-start rule groups through a batch sweep too;
+///  these numbers are the evidence
+/// for that call,
+///  so all three sit in one report.
 pub fn bench_line_matches(set: &forbidden_regex::RegexSet, corpus: &[Vec<u8>]) {
     let refs: Vec<&[u8]> = corpus.iter().map(Vec::as_slice).collect();
     // What:    Joins the lines with `\n` separators into one buffer, recording each

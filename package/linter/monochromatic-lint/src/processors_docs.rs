@@ -1,5 +1,7 @@
-//! What: Authored Rustdoc tokens grouped into exact virtual Markdown inputs.
-//! Why: String literals and #[doc] attributes must not become comment processors.
+//! What:
+//!  Authored Rustdoc tokens grouped into exact virtual Markdown inputs.
+//! Why:
+//!  String literals and #[doc] attributes must not become comment processors.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -14,18 +16,21 @@ use crate::processors_model::{Guard, Mapping, ProcessorError, ProcessorLanguage}
 use crate::rust_source::RustSource;
 /// Comment classification distinguishes /// from //// and /** from /***.
 use ra_ap_syntax::ast::Comment;
-/// AstToken casts only real comment tokens, not comment-looking strings.
+/// AstToken casts only real comment tokens,
+///  not comment-looking strings.
 use ra_ap_syntax::{AstToken, NodeOrToken, SyntaxKind};
 /// Share the parent snapshot between documented items.
 use std::sync::Arc;
 
-/// Native comment coordinates, owned so no parser borrow escapes extraction.
+/// Native comment coordinates,
+///  owned so no parser borrow escapes extraction.
 struct DocToken {
     /// Inclusive byte start of the comment token.
     start: usize,
     /// Exclusive byte end of the comment token.
     end: usize,
-    /// Native comment prefix, including inner/outer placement.
+    /// Native comment prefix,
+    ///  including inner/outer placement.
     prefix: String,
 }
 
@@ -66,7 +71,8 @@ fn line_start(source: &str, offset: usize) -> usize {
     return 0;
 }
 
-/// Copy a line-doc token, excluding conventional spacing and its run's common margin.
+/// Copy a line-doc token,
+///  excluding conventional spacing and its run's common margin.
 fn line_doc(child: &mut Mapping, source: &str, token: &DocToken, margin: usize) {
     let physical: usize = line_start(source, token.start);
     let mut payload: usize = token.start + 3;
@@ -172,9 +178,15 @@ fn block_doc(child: &mut Mapping, source: &str, token: &DocToken) -> Result<(), 
     return Ok(());
 }
 
-/// What: Decide whether `next` continues the line-comment run that `previous` belongs to.
-/// Why: A run is one virtual Markdown file, so the same prefix, a whitespace-only gap and exactly one
-/// line ending must all hold; block comments never join anything, because each block is its own file.
+/// What:
+///  Decide whether `next` continues the line-comment run that `previous` belongs to.
+/// Why:
+///  A run is one virtual Markdown file,
+///  so the same prefix,
+///  a whitespace-only gap and exactly one
+/// line ending must all hold;
+///  block comments never join anything,
+///  because each block is its own file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -201,10 +213,15 @@ fn joins_run(source: &str, previous: &DocToken, next: &DocToken) -> bool {
     return endings == 1;
 }
 
-/// What: Split the comments into extraction units: each block comment alone, each line-comment run together.
-/// Why: A fixed `for` range closes a unit wherever the next comment does not join it,
+/// What:
+///  Split the comments into extraction units:
+///  each block comment alone,
+///  each line-comment run together.
+/// Why:
+///  A fixed `for` range closes a unit wherever the next comment does not join it,
 /// so no mutation of an index step can make the grouping loop forever.
-/// `'tokens` says every returned slice borrows from `comments`, like a view that must not outlive its array.
+/// `'tokens` says every returned slice borrows from `comments`,
+///  like a view that must not outlive its array.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -227,7 +244,8 @@ fn units<'tokens>(source: &str, comments: &'tokens [DocToken]) -> Vec<&'tokens [
     return result;
 }
 
-/// Extract adjacent line runs and individual authored blocks; ordinary gaps split runs.
+/// Extract adjacent line runs and individual authored blocks;
+///  ordinary gaps split runs.
 pub(crate) fn docs(parent: &Arc<Mapping>) -> Result<Vec<Mapping>, ProcessorError> {
     let comments: Vec<DocToken> = tokens(parent);
     let mut result: Vec<Mapping> = Vec::new();

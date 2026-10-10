@@ -1,7 +1,11 @@
-//! Pixel tab-stop arithmetic and the one-byte tab projection, independent of fonts.
+//! Pixel tab-stop arithmetic and the one-byte tab projection,
+//!  independent of fonts.
 
-/// What: Import the production tab arithmetic and projection through the library's public interface.
-/// Why: The shaper calls exactly these functions; the tests must not use a copy.
+/// What:
+///  Import the production tab arithmetic and projection through the library's public interface.
+/// Why:
+///  The shaper calls exactly these functions;
+///  the tests must not use a copy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,8 +17,12 @@ use ide_app::{
     text_projection::project_line,
 };
 
-/// What: `const` names a compile-time value; `f32` is a 32-bit float (sibling `f64`).
-/// Why: Nine pixels is the space advance of the 15 px source font; any positive value exercises the rule.
+/// What:
+///  `const` names a compile-time value;
+///  `f32` is a 32-bit float (sibling `f64`).
+/// Why:
+///  Nine pixels is the space advance of the 15 px source font;
+///  any positive value exercises the rule.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,7 +30,8 @@ use ide_app::{
 /// ```
 const SPACE: f32 = 9.0;
 
-/// Stops lie two space advances apart, matching the reference's `tab-size: 2`.
+/// Stops lie two space advances apart,
+///  matching the reference's `tab-size: 2`.
 #[test]
 fn stops_are_two_space_advances_apart() {
     assert_eq!(TAB_SPACES, 2.0);
@@ -59,7 +68,10 @@ fn tab_narrower_than_half_a_space_uses_the_following_stop() {
     );
 }
 
-/// Positions measured in pixels, not columns, decide the stop: mixed-script prefixes share stops.
+/// Positions measured in pixels,
+///  not columns,
+///  decide the stop:
+///  mixed-script prefixes share stops.
 #[test]
 fn different_prefix_widths_reach_the_same_stop() {
     // Two Latin letters (18 px), one 15 px CJK glyph, and a 15 px glyph plus a Latin letter (24 px).
@@ -69,7 +81,9 @@ fn different_prefix_widths_reach_the_same_stop() {
     }
 }
 
-/// A space advance that is zero, negative, or not a number has no stops and cannot loop or divide by zero.
+/// A space advance that is zero,
+///  negative,
+///  or not a number has no stops and cannot loop or divide by zero.
 #[test]
 fn unusable_space_advance_keeps_one_space_width() {
     assert_eq!(tab_advance(5.0, 0.0), 0.0);
@@ -79,7 +93,8 @@ fn unusable_space_advance_keeps_one_space_width() {
     assert_eq!(tab_spacings(&[0.0, 9.0], 0.0), [0.0, 0.0]);
 }
 
-/// Widening an earlier tab moves the later ones, so corrections accumulate from left to right.
+/// Widening an earlier tab moves the later ones,
+///  so corrections accumulate from left to right.
 #[test]
 fn corrections_accumulate_across_the_tabs_of_one_line() {
     // "\t\tx": drawn as spaces the tabs start at 0 and 9; each must become 18 px wide.
@@ -93,7 +108,8 @@ fn corrections_accumulate_across_the_tabs_of_one_line() {
     assert!(tab_spacings(&[], SPACE).is_empty());
 }
 
-/// Each source tab is one display space; the maps stay exact around wide and astral characters.
+/// Each source tab is one display space;
+///  the maps stay exact around wide and astral characters.
 #[test]
 fn projection_gives_each_tab_one_display_byte() {
     let projection = project_line("\ta\t猫\t𝒳\tb\r\n");
@@ -115,7 +131,8 @@ fn projection_gives_each_tab_one_display_byte() {
     assert_eq!(plain.text, "no tabs");
 }
 
-/// Caret stops are grapheme boundaries of the visible text: no stop inside a sequence or a terminator.
+/// Caret stops are grapheme boundaries of the visible text:
+///  no stop inside a sequence or a terminator.
 #[test]
 fn projection_lists_grapheme_boundaries_as_caret_stops() {
     // e + acute (0..2), x (2), a joined family of five characters (3..8), a two-character flag (8..10), CRLF.

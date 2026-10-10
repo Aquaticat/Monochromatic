@@ -5,7 +5,9 @@ use helix_lsp::lsp;
 use std::{fs, path::PathBuf};
 use tempfile::TempDir;
 
-/// A project with one source file, and an outside directory with one file, both canonical.
+/// A project with one source file,
+///  and an outside directory with one file,
+///  both canonical.
 struct Fixture {
     /// Keeps the project directory alive for the test.
     _project: TempDir,

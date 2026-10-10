@@ -1,5 +1,8 @@
-//! What:    Recursive-descent grammar with single-atom operands for `&` and `|`.
-//! Why:     This file is the Rust module that groups the grammar implementation, so the
+//! What:
+//!     Recursive-descent grammar with single-atom operands for `&` and `|`.
+//! Why:
+//!      This file is the Rust module that groups the grammar implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,12 @@
 //! // module grammar: see exported functions and types below.
 //! ```
 
-/// What:    Imports the byte-set helpers for `.` and literal bytes.
-/// Why:     The code below uses `dot_set`, `singleton` directly; importing from `crate/charset`
+/// What:
+///     Imports the byte-set helpers for `.` and literal bytes.
+/// Why:
+///      The code below uses `dot_set`,
+///  `singleton` directly;
+///  importing from `crate/charset`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +24,11 @@
 /// ```
 use crate::charset::{dot_set, singleton};
 
-/// What:    Imports the node algebra and constructors.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra and constructors.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,8 +37,15 @@ use crate::charset::{dot_set, singleton};
 /// ```
 use crate::ast::node::Node;
 
-/// What:    Imports the set-algebra and class constructors.
-/// Why:     The code below uses `alt`, `class`, `comp`, `concat`, `inter`, `optional` directly;
+/// What:
+///     Imports the set-algebra and class constructors.
+/// Why:
+///      The code below uses `alt`,
+///  `class`,
+///  `comp`,
+///  `concat`,
+///  `inter`,
+///  `optional` directly;
 ///          importing from `crate/ast/smart` keeps each call site focused on the matcher logic
 ///          instead of the full Rust path.
 ///
@@ -45,8 +62,11 @@ use crate::ast::node::Node;
 /// ```
 use crate::ast::smart::{alt, class, comp, concat, inter, optional};
 
-/// What:    Imports the error type.
-/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+/// What:
+///     Imports the error type.
+/// Why:
+///      The code below uses `CompileError` directly;
+///  importing from `crate/error` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -55,8 +75,11 @@ use crate::ast::smart::{alt, class, comp, concat, inter, optional};
 /// ```
 use crate::error::CompileError;
 
-/// What:    Imports the cursor.
-/// Why:     The code below uses `Cursor` directly; importing from `crate/parse/cursor` keeps
+/// What:
+///     Imports the cursor.
+/// Why:
+///      The code below uses `Cursor` directly;
+///  importing from `crate/parse/cursor` keeps
 ///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -65,8 +88,11 @@ use crate::error::CompileError;
 /// ```
 use crate::parse::cursor::Cursor;
 
-/// What:    Imports the atom-position escape parser.
-/// Why:     The code below uses `parse_escape_atom` directly; importing from
+/// What:
+///     Imports the atom-position escape parser.
+/// Why:
+///      The code below uses `parse_escape_atom` directly;
+///  importing from
 ///          `crate/parse/escape` keeps each call site focused on the matcher logic instead of
 ///          the full Rust path.
 ///
@@ -76,8 +102,11 @@ use crate::parse::cursor::Cursor;
 /// ```
 use crate::parse::escape::parse_escape_atom;
 
-/// What:    Imports the character-class parser.
-/// Why:     The code below uses `parse_class` directly; importing from `crate/parse/class` keeps
+/// What:
+///     Imports the character-class parser.
+/// Why:
+///      The code below uses `parse_class` directly;
+///  importing from `crate/parse/class` keeps
 ///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -86,8 +115,11 @@ use crate::parse::escape::parse_escape_atom;
 /// ```
 use crate::parse::class::parse_class;
 
-/// What:    Imports the repetition parser.
-/// Why:     The code below uses `parse_repeat` directly; importing from `crate/parse/repeat`
+/// What:
+///     Imports the repetition parser.
+/// Why:
+///      The code below uses `parse_repeat` directly;
+///  importing from `crate/parse/repeat`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -96,11 +128,19 @@ use crate::parse::class::parse_class;
 /// ```
 use crate::parse::repeat::parse_repeat;
 
-/// Parses a full expression at one nesting level, up to `close` or end.
+/// Parses a full expression at one nesting level,
+///  up to `close` or end.
 ///
-/// What: reads a concatenation, then, if `&` or `|` follows, switches to the
-/// set-algebra form where every operand must be exactly one atom. Why: this is
-/// the chosen grammar with no operator precedence; operators never mix with
+/// What:
+///  reads a concatenation,
+///  then,
+///  if `&` or `|` follows,
+///  switches to the
+/// set-algebra form where every operand must be exactly one atom.
+///  Why:
+///  this is
+/// the chosen grammar with no operator precedence;
+///  operators never mix with
 /// concatenation at one level without explicit `(?:...)` grouping.
 ///
 /// In TS you'd write (pseudocode):
@@ -127,8 +167,13 @@ pub fn parse_setexpr(cur: &mut Cursor, close: Option<u8>) -> Result<Node, Compil
 
 /// Parses a chain of single-atom operands joined by one operator.
 ///
-/// What: requires the left side to be a single atom, then reads each further
-/// operand as a single atom, rejecting any mix of `&` and `|`. Why: enforces the
+/// What:
+///  requires the left side to be a single atom,
+///  then reads each further
+/// operand as a single atom,
+///  rejecting any mix of `&` and `|`.
+///  Why:
+///  enforces the
 /// fully-wrapped-operand rule that removes precedence.
 ///
 /// In TS you'd write (pseudocode):
@@ -181,9 +226,13 @@ fn parse_set_algebra(
     }
 }
 
-/// Returns the sole node of `units`, or errors if it is not exactly one atom.
+/// Returns the sole node of `units`,
+///  or errors if it is not exactly one atom.
 ///
-/// What: an operand of `&`/`|` must be a single atom. Why: a bare concatenation
+/// What:
+///  an operand of `&`/`|` must be a single atom.
+///  Why:
+///  a bare concatenation
 /// (or empty) operand is rejected so the author wraps it in `(?:...)`.
 ///
 /// In TS you'd write (pseudocode):
@@ -205,7 +254,11 @@ fn single_atom(units: Vec<Node>, pos: usize) -> Result<Node, CompileError> {
 
 /// Reads zero or more postfix atoms forming a concatenation.
 ///
-/// What: stops at end, the closing delimiter, or a set-algebra operator. Why:
+/// What:
+///  stops at end,
+///  the closing delimiter,
+///  or a set-algebra operator.
+///  Why:
 /// the caller decides whether the run is a plain concatenation or one operand of
 /// an operator chain.
 ///
@@ -231,8 +284,15 @@ fn parse_concat_units(cur: &mut Cursor, close: Option<u8>) -> Result<Vec<Node>, 
 
 /// Parses one atom and an optional single quantifier.
 ///
-/// What: applies `?`, `{n}`, or `{n,m}`, rejects `*`/`+`, and forbids a stacked
-/// second quantifier. Why: one quantifier per atom keeps the grammar simple and
+/// What:
+///  applies `?`,
+///  `{n}`,
+///  or `{n,m}`,
+///  rejects `*`/`+`,
+///  and forbids a stacked
+/// second quantifier.
+///  Why:
+///  one quantifier per atom keeps the grammar simple and
 /// the language finite.
 ///
 /// In TS you'd write (pseudocode):
@@ -276,7 +336,11 @@ fn parse_postfix(cur: &mut Cursor) -> Result<Node, CompileError> {
 
 /// Rejects a second quantifier directly following the first.
 ///
-/// What: after one quantifier, another `?`/`{`/`*`/`+` is an error. Why: stacked
+/// What:
+///  after one quantifier,
+///  another `?`/`{`/`*`/`+` is an error.
+///  Why:
+///  stacked
 /// quantifiers are ambiguous and unsupported.
 ///
 /// In TS you'd write (pseudocode):
@@ -298,8 +362,17 @@ fn reject_stacked(cur: &mut Cursor) -> Result<(), CompileError> {
 
 /// Parses a single atom.
 ///
-/// What: groups, complements, classes, `.`, anchors, escapes, or a literal byte;
-/// every other metacharacter in atom position is an error. Why: atoms are the
+/// What:
+///  groups,
+///  complements,
+///  classes,
+///  `.`,
+///  anchors,
+///  escapes,
+///  or a literal byte;
+/// every other metacharacter in atom position is an error.
+///  Why:
+///  atoms are the
 /// leaves the rest of the grammar combines.
 ///
 /// In TS you'd write (pseudocode):
@@ -357,8 +430,13 @@ fn parse_atom(cur: &mut Cursor) -> Result<Node, CompileError> {
 
 /// Parses a `(?:...)` non-capturing group.
 ///
-/// What: requires the `(?:` prefix and rejects capturing groups, lookaround, and
-/// inline flags. Why: only non-capturing grouping is supported.
+/// What:
+///  requires the `(?:` prefix and rejects capturing groups,
+///  lookaround,
+///  and
+/// inline flags.
+///  Why:
+///  only non-capturing grouping is supported.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -397,7 +475,10 @@ fn parse_group(cur: &mut Cursor) -> Result<Node, CompileError> {
 
 /// Parses a `~(...)` complement.
 ///
-/// What: requires `~(` then a full subexpression then `)`. Why: complement is
+/// What:
+///  requires `~(` then a full subexpression then `)`.
+///  Why:
+///  complement is
 /// always explicitly parenthesized per the engine's grammar.
 ///
 /// In TS you'd write (pseudocode):
@@ -424,7 +505,10 @@ fn parse_complement(cur: &mut Cursor) -> Result<Node, CompileError> {
 
 /// Consumes the closing `)` of a group or complement.
 ///
-/// What: skips verbose noise then requires `)`. Why: a missing close is an
+/// What:
+///  skips verbose noise then requires `)`.
+///  Why:
+///  a missing close is an
 /// unbalanced-parenthesis error reported at the opener.
 ///
 /// In TS you'd write (pseudocode):

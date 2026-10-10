@@ -1,16 +1,24 @@
-//! What: The complete option table of `git commit` in Git 2.56.0.
-//! Why: Declaring every option Git accepts removes the guess about whether an undeclared
-//!      option consumes the next token. Rows follow `builtin_commit_options`
-//!      (builtin/commit.c:1705-1785) in source order, which the completion control compares.
+//! What:
+//!  The complete option table of `git commit` in Git 2.56.0.
+//! Why:
+//!  Declaring every option Git accepts removes the guess about whether an undeclared
+//!      option consumes the next token.
+//!  Rows follow `builtin_commit_options`
+//!      (builtin/commit.c:1705-1785) in source order,
+//!  which the completion control compares.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // export const COMMIT_TABLE: readonly OptionSpec[] = [ ... ];
 //! ```
 
-/// What: Bring the row type, its builder and the arity names into this file. `UNREAD` is the
+/// What:
+///  Bring the row type,
+///  its builder and the arity names into this file.
+///  `UNREAD` is the
 ///       identifier of rows no commit fact reads.
-/// Why:  The table is data for the shared tokenizer.
+/// Why:
+///   The table is data for the shared tokenizer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,29 +26,47 @@
 /// ```
 use super::command_options::{Arity, OptionSpec, UNREAD, row};
 
-/// `-a`, `--all`: stage every tracked modification before committing.
+/// `-a`,
+///  `--all`:
+///  stage every tracked modification before committing.
 pub const ALL: u16 = 1;
-/// `-o`, `--only`: commit only the named paths.
+/// `-o`,
+///  `--only`:
+///  commit only the named paths.
 pub const ONLY: u16 = 2;
-/// `-i`, `--include`: add the named paths to the index for this commit.
+/// `-i`,
+///  `--include`:
+///  add the named paths to the index for this commit.
 pub const INCLUDE: u16 = 3;
-/// `--interactive`: choose content interactively.
+/// `--interactive`:
+///  choose content interactively.
 pub const INTERACTIVE: u16 = 4;
-/// `-p`, `--patch`: choose hunks interactively.
+/// `-p`,
+///  `--patch`:
+///  choose hunks interactively.
 pub const PATCH: u16 = 5;
-/// `--dry-run`: show what would be committed.
+/// `--dry-run`:
+///  show what would be committed.
 pub const DRY_RUN: u16 = 6;
-/// `--short`: status format that implies a dry run.
+/// `--short`:
+///  status format that implies a dry run.
 pub const SHORT: u16 = 7;
-/// `--porcelain`: status format that implies a dry run.
+/// `--porcelain`:
+///  status format that implies a dry run.
 pub const PORCELAIN: u16 = 8;
-/// `--long`: status format that implies a dry run.
+/// `--long`:
+///  status format that implies a dry run.
 pub const LONG: u16 = 9;
-/// `-z`, `--null`: NUL-terminated status output, which implies a dry run.
+/// `-z`,
+///  `--null`:
+///  NUL-terminated status output,
+///  which implies a dry run.
 pub const NULL: u16 = 10;
-/// `--amend`: replace the tip commit.
+/// `--amend`:
+///  replace the tip commit.
 pub const AMEND: u16 = 11;
-/// `--allow-empty`: permit a commit that records no change.
+/// `--allow-empty`:
+///  permit a commit that records no change.
 pub const ALLOW_EMPTY: u16 = 12;
 /// `--fixup=[(amend|reword):]<commit>`.
 pub const FIXUP: u16 = 13;
@@ -49,9 +75,16 @@ pub const PATHSPEC_FROM_FILE: u16 = 14;
 /// `--pathspec-file-nul`.
 pub const PATHSPEC_FILE_NUL: u16 = 15;
 
-/// What: `pub const NAME: &[OptionSpec] = &[...]` is a table baked into the program.
-///       `&[T]` is a borrowed list; `Some(b'q')` is "the byte `q`"; `None` is "no letter".
-/// Why:  Each row copies one Git declaration: letter, name, value arity and whether
+/// What:
+///  `pub const NAME: &[OptionSpec] = &[...]` is a table baked into the program.
+///       `&[T]` is a borrowed list;
+///  `Some(b'q')` is "the byte `q`";
+///  `None` is "no letter".
+/// Why:
+///   Each row copies one Git declaration:
+///  letter,
+///  name,
+///  value arity and whether
 ///       `--no-<name>` is accepted (false only for `PARSE_OPT_NONEG`).
 ///
 /// In TS you'd write (pseudocode):

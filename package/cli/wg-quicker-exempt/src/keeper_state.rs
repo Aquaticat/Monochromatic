@@ -29,9 +29,11 @@ pub struct KeeperProcess {
 
 /// State can describe one active holder or in-flight old-to-new replacement.
 pub struct KeeperState {
-    /// Prior committed process, absent during first attach.
+    /// Prior committed process,
+    ///  absent during first attach.
     pub active: Option<KeeperProcess>,
-    /// Candidate process, present until replacement commit settles.
+    /// Candidate process,
+    ///  present until replacement commit settles.
     pub candidate: Option<KeeperProcess>,
 }
 
@@ -89,7 +91,9 @@ fn parse_process(value: &str) -> io::Result<Option<KeeperProcess>> {
     }));
 }
 
-/// Parses strict line schema and rejects unknown, missing, or duplicate fields.
+/// Parses strict line schema and rejects unknown,
+///  missing,
+///  or duplicate fields.
 fn parse_state(text: &str) -> io::Result<KeeperState> {
     let mut version: Option<&str> = None;
     let mut active: Option<Option<KeeperProcess>> = None;

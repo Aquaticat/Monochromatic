@@ -1,11 +1,16 @@
 //! Drive the headless Language module through a scripted plan and print what it observed.
 //!
 //! The package task `inspect:language` builds this program in the bounded container and runs it
-//! on the host against disposable projects with real language servers. It reads one JSON plan,
+//! on the host against disposable projects with real language servers.
+//!  It reads one JSON plan,
 //! makes the plan's project root the working directory exactly as the application does at
-//! startup, and prints one JSON object per observation on standard output.
+//! startup,
+//!  and prints one JSON object per observation on standard output.
 
-/// JSON rendering of replies, status, diagnostics, and hints.
+/// JSON rendering of replies,
+///  status,
+///  diagnostics,
+///  and hints.
 mod render;
 /// Execution of plan steps against the worker handle.
 mod session;
@@ -14,16 +19,21 @@ mod session;
 use anyhow::{Context, Result, bail};
 /// The production setup and the unconfined control setup.
 use ide_app::language::config::LanguageSetup;
-/// What: `Deserialize` lets the serde library decode JSON into these records.
-/// Why: A typed plan rejects a malformed step instead of guessing.
+/// What:
+///  `Deserialize` lets the serde library decode JSON into these records.
+/// Why:
+///  A typed plan rejects a malformed step instead of guessing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Plan = { project: string; steps: Step[] };
 /// ```
 use serde::Deserialize;
-/// What: `PathBuf` is an owned filesystem path (sibling: borrowed `&Path`).
-/// Why: Paths come from the decoded plan and outlive it.
+/// What:
+///  `PathBuf` is an owned filesystem path (sibling:
+///  borrowed `&Path`).
+/// Why:
+///  Paths come from the decoded plan and outlive it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,10 +41,17 @@ use serde::Deserialize;
 /// ```
 use std::path::PathBuf;
 
-/// What: One instruction of a plan. `#[serde(tag = "do")]` selects the variant by the JSON
-///       member `do`; `usize` is the address-sized index type and `u64` an unsigned 64-bit count.
-/// Why: The same few steps express every real-server check: all five feature paths, the
-///      reload, and the stale-reply case.
+/// What:
+///  One instruction of a plan.
+///  `#[serde(tag = "do")]` selects the variant by the JSON
+///       member `do`;
+///  `usize` is the address-sized index type and `u64` an unsigned 64-bit count.
+/// Why:
+///  The same few steps express every real-server check:
+///  all five feature paths,
+///  the
+///      reload,
+///  and the stale-reply case.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,7 +60,8 @@ use std::path::PathBuf;
 #[derive(Debug, Deserialize)]
 #[serde(tag = "do", rename_all = "lowercase")]
 pub enum Step {
-    /// Display a file of the project, read from disk.
+    /// Display a file of the project,
+    ///  read from disk.
     Open {
         /// Path relative to the project root.
         file: PathBuf,
@@ -53,13 +71,20 @@ pub enum Step {
         /// Longest wait.
         seconds: u64,
     },
-    /// Send a position request, repeating it until the wanted outcome appears.
+    /// Send a position request,
+    ///  repeating it until the wanted outcome appears.
     Request {
-        /// `definition`, `references`, or `hover`.
+        /// `definition`,
+        ///  `references`,
+        ///  or `hover`.
         kind: String,
         /// Character offset in the displayed text.
         at: usize,
-        /// Outcome to wait for: `hover`, `locations`, `empty`, or empty text for the first answer.
+        /// Outcome to wait for:
+        ///  `hover`,
+        ///  `locations`,
+        ///  `empty`,
+        ///  or empty text for the first answer.
         #[serde(default)]
         until: String,
         /// Longest wait.
@@ -85,12 +110,15 @@ pub enum Step {
         /// Longest wait.
         seconds: u64,
     },
-    /// Write new content to the displayed file, as an external editor would, and apply the reload.
+    /// Write new content to the displayed file,
+    ///  as an external editor would,
+    ///  and apply the reload.
     Reload {
         /// The new content.
         text: String,
     },
-    /// Send a hover request and reload at once, then report whether its reply was dropped.
+    /// Send a hover request and reload at once,
+    ///  then report whether its reply was dropped.
     Stale {
         /// Character offset of the hover.
         at: usize,
@@ -99,7 +127,8 @@ pub enum Step {
         /// Milliseconds to keep polling afterwards.
         settle: u64,
     },
-    /// Write a file of the project as another program would; the displayed document is not touched.
+    /// Write a file of the project as another program would;
+    ///  the displayed document is not touched.
     Write {
         /// Path relative to the project root.
         file: PathBuf,
@@ -122,7 +151,8 @@ pub enum Step {
     Close,
 }
 
-/// The application forwards file changes, so a plan does too unless it says otherwise.
+/// The application forwards file changes,
+///  so a plan does too unless it says otherwise.
 fn forward_by_default() -> bool {
     return true;
 }
@@ -132,13 +162,17 @@ fn forward_by_default() -> bool {
 struct Plan {
     /// Root of a disposable project.
     project: PathBuf,
-    /// Run servers without confinement; only for guard controls on disposable projects.
+    /// Run servers without confinement;
+    ///  only for guard controls on disposable projects.
     #[serde(default)]
     unconfined: bool,
-    /// Extra definitions in Helix `languages.toml` syntax, for example probe variables.
+    /// Extra definitions in Helix `languages.toml` syntax,
+    ///  for example probe variables.
     #[serde(default)]
     extra_languages: Option<String>,
-    /// Watch the project's folders for the servers and forward changes, as the application does; false
+    /// Watch the project's folders for the servers and forward changes,
+    ///  as the application does;
+    ///  false
     /// is the positive control in which servers hear about no change made outside the IDE.
     #[serde(default = "forward_by_default")]
     forward_file_changes: bool,
@@ -146,9 +180,15 @@ struct Plan {
     steps: Vec<Step>,
 }
 
-/// What: The program entry point. `Result<()>` is success without a value, or an error that is
+/// What:
+///  The program entry point.
+///  `Result<()>` is success without a value,
+///  or an error that is
 ///       printed and turns into a failure exit status.
-/// Why: The working directory is set before anything else, as the application must do, because
+/// Why:
+///  The working directory is set before anything else,
+///  as the application must do,
+///  because
 ///      Helix reads it once and roots every server from it.
 ///
 /// In TS you'd write (pseudocode):

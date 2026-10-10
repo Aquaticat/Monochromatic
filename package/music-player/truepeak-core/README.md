@@ -151,8 +151,6 @@ Run these with `mise run //package/music-player/truepeak-core:<task>`.
    `cargo check`.
 - `lint:clippy`:
    clippy with warnings denied.
-- `lint:rust`:
-   the repo's max-lines and require-rustdoc linter.
 - `test`,
    `test:debug`:
    the unit tests.

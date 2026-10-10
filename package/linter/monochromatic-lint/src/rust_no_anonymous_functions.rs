@@ -1,13 +1,18 @@
-//! What: Reject Rust closure expressions in the parsed source tree.
-//! Why: Callbacks must point to named functions or methods, not anonymous function bodies.
+//! What:
+//!  Reject Rust closure expressions in the parsed source tree.
+//! Why:
+//!  Callbacks must point to named functions or methods,
+//!  not anonymous function bodies.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Report every ArrowFunction or unnamed FunctionExpression in the parsed tree.
 //! ```
 
-/// What: Import the shared finding model and retained Rust parse.
-/// Why: This rule reuses the existing parse and byte-coordinate convention.
+/// What:
+///  Import the shared finding model and retained Rust parse.
+/// Why:
+///  This rule reuses the existing parse and byte-coordinate convention.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -16,12 +21,19 @@
 use crate::diagnostic::{Diagnostic, Severity, Span};
 /// Import the owned source containing the already parsed syntax tree.
 use crate::rust_source::RustSource;
-/// Import parser node kinds and byte ranges, not a text-pattern approximation.
+/// Import parser node kinds and byte ranges,
+///  not a text-pattern approximation.
 use ra_ap_syntax::{SyntaxKind, TextRange};
 
-/// What: Report each parsed closure, including nested, bound, move and async closures.
-/// Why: Naming a variable holding a closure does not give the function itself a declaration name.
-/// No fix is emitted: captured state can require changing the callback's surrounding API usage.
+/// What:
+///  Report each parsed closure,
+///  including nested,
+///  bound,
+///  move and async closures.
+/// Why:
+///  Naming a variable holding a closure does not give the function itself a declaration name.
+/// No fix is emitted:
+///  captured state can require changing the callback's surrounding API usage.
 /// Macro token trees are not expanded by this syntax-only frontend.
 ///
 /// In TS you'd write (pseudocode):

@@ -17,8 +17,12 @@ use crate::text_raster::CodeColors;
 /// Pointer equality avoids walking unchanged classifications on caret-only updates.
 use std::sync::Arc;
 
-/// What: Retain every input affecting source pixels, independent of caret position.
-/// Why: Reusing an image requires exact paint identity, not a lossy hash.
+/// What:
+///  Retain every input affecting source pixels,
+///  independent of caret position.
+/// Why:
+///  Reusing an image requires exact paint identity,
+///  not a lossy hash.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,9 +31,12 @@ use std::sync::Arc;
 pub struct FrameStamp {
     /// Content change sequence within the displayed document.
     revision: u64,
-    /// Normalized range; all collapsed carets share an empty paint selection.
+    /// Normalized range;
+    ///  all collapsed carets share an empty paint selection.
     selection: (usize, usize),
-    /// Materialized rows, physical scale, and tile width.
+    /// Materialized rows,
+    ///  physical scale,
+    ///  and tile width.
     viewport: Viewport,
     /// Horizontal tile origin affects subpixel glyph positions.
     horizontal: f32,
@@ -37,18 +44,25 @@ pub struct FrameStamp {
     colors: CodeColors,
     /// Shared immutable classifications prevent copying the whole span list on each caret step.
     styles: SourceStyles,
-    /// Shared immutable in-file find ranges; empty while the find bar shows nothing.
+    /// Shared immutable in-file find ranges;
+    ///  empty while the find bar shows nothing.
     matches: FindRanges,
-    /// What: `Arc<Visible>` shares the hint labels and diagnostic marks of the materialized rows only.
-    /// Why: A snapshot change outside the materialized rows changes no pixel, so it must not repaint.
+    /// What:
+    ///  `Arc<Visible>` shares the hint labels and diagnostic marks of the materialized rows only.
+    /// Why:
+    ///  A snapshot change outside the materialized rows changes no pixel,
+    ///  so it must not repaint.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// annotations: Readonly<Visible>;
     /// ```
     annotations: Arc<Visible>,
-    /// What: `Option<AnnotationColors>` is the annotation inks, or nothing for a frame without annotations.
-    /// Why: A scheme change re-tints hints and underlines.
+    /// What:
+    ///  `Option<AnnotationColors>` is the annotation inks,
+    ///  or nothing for a frame without annotations.
+    /// Why:
+    ///  A scheme change re-tints hints and underlines.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -57,7 +71,8 @@ pub struct FrameStamp {
     annotation_colors: Option<AnnotationColors>,
 }
 
-/// Compare exact paint inputs, using shared snapshot identity before comparing new span contents.
+/// Compare exact paint inputs,
+///  using shared snapshot identity before comparing new span contents.
 impl PartialEq for FrameStamp {
     /// Unchanged source classifications require no per-span equality scan.
     fn eq(&self, other: &Self) -> bool {
@@ -107,14 +122,16 @@ impl FrameStamp {
         };
     }
 
-    /// Replace the in-file find ranges of this stamp; a different match list is a different frame.
+    /// Replace the in-file find ranges of this stamp;
+    ///  a different match list is a different frame.
     /// The stamp is consumed and returned so existing callers without matches stay unchanged.
     pub fn with_matches(mut self, matches: FindRanges) -> Self {
         self.matches = matches;
         return self;
     }
 
-    /// Replace the visible hint labels and diagnostic marks and their inks; any difference is a different frame.
+    /// Replace the visible hint labels and diagnostic marks and their inks;
+    ///  any difference is a different frame.
     /// The stamp is consumed and returned so existing callers without annotations stay unchanged.
     pub fn with_annotations(mut self, annotations: Arc<Visible>, colors: AnnotationColors) -> Self {
         self.annotations = annotations;

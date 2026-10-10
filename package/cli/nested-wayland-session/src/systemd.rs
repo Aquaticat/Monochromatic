@@ -1,27 +1,45 @@
-//! systemd-based CPU isolation for the hosted app, with graceful degradation.
+//! systemd-based CPU isolation for the hosted app,
+//!  with graceful degradation.
 //!
-//! To keep a steady 60fps capture even when the hosted app is CPU-greedy, the app can be
+//! To keep a steady 60fps capture even when the hosted app is CPU-greedy,
+//!  the app can be
 //! launched inside a transient systemd user scope with a `CPUQuota` (a hard cap on total
-//! CPU time) and a low `CPUWeight` (so it yields to the compositor under contention). That
-//! reserves headroom for the render thread and encoder pool. When systemd is unavailable
-//! (no `systemd-run`, or no running user manager) the app is launched directly instead,
-//! with a warning: isolation is a robustness enhancement, never a hard requirement.
+//! CPU time) and a low `CPUWeight` (so it yields to the compositor under contention).
+//!  That
+//! reserves headroom for the render thread and encoder pool.
+//!  When systemd is unavailable
+//! (no `systemd-run`,
+//!  or no running user manager) the app is launched directly instead,
+//! with a warning:
+//!  isolation is a robustness enhancement,
+//!  never a hard requirement.
 
-/// What:     `use std::process::Command;`. The process-spawn builder.
-/// Why:      This module builds the `Command` (either `systemd-run ...` or the app directly).
+/// What:
+///      `use std::process::Command;`.
+///  The process-spawn builder.
+/// Why:
+///       This module builds the `Command` (either `systemd-run ...` or the app directly).
 use std::process::Command;
 
-/// What:     `use tracing::{info, warn};`. Log macros.
-/// Why:      Announce the isolation applied, or warn when degrading.
+/// What:
+///      `use tracing::{info, warn};`.
+///  Log macros.
+/// Why:
+///       Announce the isolation applied,
+///  or warn when degrading.
 use tracing::{info, warn};
 
 /// CPU-isolation settings for the hosted app.
 ///
-/// What:     `pub struct Isolation { pub enabled: bool, pub cpu_quota_percent: Option<u32>,
-///           pub cpu_weight: Option<u32> }`. `cpu_quota_percent` is a percent of ONE core
-///           (so `800` means eight cores' worth); `cpu_weight` is systemd's 1..=10000
+/// What:
+///      `pub struct Isolation { pub enabled: bool, pub cpu_quota_percent: Option<u32>,
+///           pub cpu_weight: Option<u32> }`.
+///  `cpu_quota_percent` is a percent of ONE core
+///           (so `800` means eight cores' worth);
+///  `cpu_weight` is systemd's 1..=10000
 ///           relative share.
-/// Why:      One value describing how the app should be constrained.
+/// Why:
+///       One value describing how the app should be constrained.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,37 +48,52 @@ use tracing::{info, warn};
 pub struct Isolation {
     /// Whether to launch the app inside a resource-controlled systemd scope.
     pub enabled: bool,
-    /// Optional hard CPU cap, in percent of a single core (`800` = 8 cores).
+    /// Optional hard CPU cap,
+    ///  in percent of a single core (`800` = 8 cores).
     pub cpu_quota_percent: Option<u32>,
-    /// Optional relative CPU share (systemd `CPUWeight`, 1..=10000).
+    /// Optional relative CPU share (systemd `CPUWeight`,
+    ///  1..=10000).
     pub cpu_weight: Option<u32>,
 }
 
 /// Cores to leave free for the compositor when computing a default CPU quota.
 ///
-/// What:     `const RESERVED_FRACTION: usize = 4;`. The default quota reserves `cores /
+/// What:
+///      `const RESERVED_FRACTION: usize = 4;`.
+///  The default quota reserves `cores /
 ///           RESERVED_FRACTION` cores (at least one) for the render thread and encoders.
-/// Why:      A quarter of the machine is a safe reservation for capture at 60fps.
+/// Why:
+///       A quarter of the machine is a safe reservation for capture at 60fps.
 const RESERVED_FRACTION: usize = 4;
 
 /// Default app `CPUWeight` when isolation is enabled without an explicit weight.
 ///
-/// What:     `const DEFAULT_APP_WEIGHT: u32 = 20;`. Well below the default 100, so under
+/// What:
+///      `const DEFAULT_APP_WEIGHT: u32 = 20;`.
+///  Well below the default 100,
+///  so under
 ///           contention the app yields CPU to the compositor.
-/// Why:      Bias the scheduler toward the capture pipeline.
+/// Why:
+///       Bias the scheduler toward the capture pipeline.
 const DEFAULT_APP_WEIGHT: u32 = 20;
 
 /// Percent-per-core multiplier for building a `CPUQuota` string.
 ///
-/// What:     `const PERCENT_PER_CORE: usize = 100;`. One core is `100%`.
-/// Why:      Convert a reserved-core count into a quota percentage.
+/// What:
+///      `const PERCENT_PER_CORE: usize = 100;`.
+///  One core is `100%`.
+/// Why:
+///       Convert a reserved-core count into a quota percentage.
 const PERCENT_PER_CORE: usize = 100;
 
 /// Compute the default app CPU quota (percent) for this machine.
 ///
-/// What:     `pub fn default_quota_percent() -> u32`. Reserves `cores / RESERVED_FRACTION`
+/// What:
+///      `pub fn default_quota_percent() -> u32`.
+///  Reserves `cores / RESERVED_FRACTION`
 ///           cores for the compositor and returns the rest as a percentage.
-/// Why:      A sensible cap that leaves capture headroom without an explicit flag.
+/// Why:
+///       A sensible cap that leaves capture headroom without an explicit flag.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -92,9 +125,13 @@ pub fn default_quota_percent() -> u32 {
 
 /// Whether `systemd-run` and a user manager are usable here.
 ///
-/// What:     `pub fn available() -> bool`. Runs `systemd-run --user --version`; success
+/// What:
+///      `pub fn available() -> bool`.
+///  Runs `systemd-run --user --version`;
+///  success
 ///           means both the binary and a reachable user manager exist.
-/// Why:      Decide whether to isolate or degrade.
+/// Why:
+///       Decide whether to isolate or degrade.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,13 +154,20 @@ pub fn available() -> bool {
         .unwrap_or(false)
 }
 
-/// Build the `Command` that launches the hosted app, isolated when possible.
+/// Build the `Command` that launches the hosted app,
+///  isolated when possible.
 ///
-/// What:     `pub fn build_child_command(program: &str, args: &[String], isolation:
-///           &Isolation) -> Command`. Returns either a `systemd-run --user --scope ...`
-///           command wrapping the app, or the app command directly. The caller sets the
+/// What:
+///      `pub fn build_child_command(program: &str, args: &[String], isolation:
+///           &Isolation) -> Command`.
+///  Returns either a `systemd-run --user --scope ...`
+///           command wrapping the app,
+///  or the app command directly.
+///  The caller sets the
 ///           Wayland environment on the returned command before spawning.
-/// Why:      One place that decides between isolated and direct launch, degrading cleanly.
+/// Why:
+///       One place that decides between isolated and direct launch,
+///  degrading cleanly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -201,9 +245,12 @@ pub fn build_child_command(program: &str, args: &[String], isolation: &Isolation
 
 /// Build a direct (un-isolated) command for the app.
 ///
-/// What:     `fn direct(program: &str, args: &[String]) -> Command`. The plain
+/// What:
+///      `fn direct(program: &str, args: &[String]) -> Command`.
+///  The plain
 ///           `Command::new(program).args(args)` path.
-/// Why:      Shared by the disabled and the degraded branches.
+/// Why:
+///       Shared by the disabled and the degraded branches.
 fn direct(program: &str, args: &[String]) -> Command {
     // What:     `let mut cmd = Command::new(program);`. Build the app command.
     // Why:      Launch the app itself.

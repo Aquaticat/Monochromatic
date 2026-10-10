@@ -1,9 +1,16 @@
-//! What: The optional `mono/forbidden-root-context` policy: a `CONTEXT.md` file at the
+//! What:
+//!  The optional `mono/forbidden-root-context` policy:
+//!  a `CONTEXT.md` file at the
 //!       repository's top level must not enter the index or be checked.
-//! Why: This repository keeps no context files; agents read the source on every probe
-//!      (`doc/agent/domain.md`). The rule and its finding are the installed wrapper's
-//!      (`package/git-policy/repository/src/index.ts`): only the top-level pathname
-//!      counts, and removing the file is always allowed.
+//! Why:
+//!  This repository keeps no context files;
+//!  agents read the source on every probe
+//!      (`doc/agent/domain.md`).
+//!  The rule and its finding are the installed wrapper's
+//!      (`package/git-policy/repository/src/index.ts`):
+//!  only the top-level pathname
+//!      counts,
+//!  and removing the file is always allowed.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -20,21 +27,28 @@ use super::policy_content::{ContentState, LifecycleContent};
 use super::policy_engine::{PolicyFinding, PolicyOutcome};
 /// Import the facts interface that prepares candidates.
 use super::repository_facts::RepositoryFacts;
-/// `Rc<T>` is a shared, read-only handle.
+/// `Rc<T>` is a shared,
+///  read-only handle.
 use std::rc::Rc;
 
-/// The one pathname the policy forbids, relative to the repository's top level.
+/// The one pathname the policy forbids,
+///  relative to the repository's top level.
 pub const ROOT_CONTEXT_PATH: &str = "CONTEXT.md";
 
 /// The policy-local code of the finding.
 pub const ROOT_CONTEXT_CODE: &str = "root-context-forbidden";
 
-/// The message of the finding, as the installed wrapper words it.
+/// The message of the finding,
+///  as the installed wrapper words it.
 pub const ROOT_CONTEXT_MESSAGE: &str = "Root CONTEXT.md is forbidden; read source code directly.";
 
-/// What: Check the lifecycle's candidates for a top-level `CONTEXT.md` that is not a deletion.
+/// What:
+///  Check the lifecycle's candidates for a top-level `CONTEXT.md` that is not a deletion.
 ///       `<F: RepositoryFacts>` accepts any facts provider.
-/// Why:  Only pathnames and change kinds are read, never content; at most one finding.
+/// Why:
+///   Only pathnames and change kinds are read,
+///  never content;
+///  at most one finding.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

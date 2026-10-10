@@ -1,5 +1,9 @@
-//! What: Exact original-host positions for points, ranges, container anchors and refusals.
-//! Why: Position arithmetic is pinned only where every layer strips a prefix and no expected offset is zero or one.
+//! What:
+//!  Exact original-host positions for points,
+//!  ranges,
+//!  container anchors and refusals.
+//! Why:
+//!  Position arithmetic is pinned only where every layer strips a prefix and no expected offset is zero or one.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -15,10 +19,12 @@ use crate::processors::ProcessorError;
 /// Reach the empty-snippet and semantic-refusal anchors through real rule selection.
 use crate::rust_rule_settings::RustRuleSettings;
 
-/// Two documented lines after ordinary code, so no authored position is byte zero or one.
+/// Two documented lines after ordinary code,
+///  so no authored position is byte zero or one.
 const DOC_HOST: &str = "fn before() {}\n/// Alpha.\n/// Beta.\nfn item() {}\n";
 
-/// A doctest whose fence, comment and hidden-line layers each remove a different prefix.
+/// A doctest whose fence,
+///  comment and hidden-line layers each remove a different prefix.
 const NESTED_HOST: &str = "fn before() {}\n/// ```rust\n/// //! Example.\n/// # let value: u32 = 1;\n/// value;\n/// ```\nfn item() {}\n";
 
 /// Find authored host text or fail the control loudly instead of comparing against a sentinel.
@@ -48,7 +54,8 @@ fn rust_input(virtuals: &[VirtualSource]) -> &VirtualSource {
     panic!("host has no Rust virtual input");
 }
 
-/// Zero-width labels map to the line that owns them, preferring the following line at a shared boundary.
+/// Zero-width labels map to the line that owns them,
+///  preferring the following line at a shared boundary.
 #[test]
 fn processors_map_zero_width_labels_at_line_starts_interiors_and_virtual_end() {
     let virtuals: Vec<VirtualSource> = inputs(DOC_HOST, ProcessorLanguage::Rust);
@@ -88,7 +95,8 @@ fn processors_map_ranges_ending_at_line_boundaries_without_the_next_prefix() {
     assert_eq!(mapped(doc, 7, 6), (at(DOC_HOST, "Beta."), "Beta.\n".len()));
 }
 
-/// An emptied block body keeps its authored payload position; only a bodiless comment uses the anchor.
+/// An emptied block body keeps its authored payload position;
+///  only a bodiless comment uses the anchor.
 #[test]
 fn processors_map_empty_block_doc_payloads_separately_from_container_anchors() {
     let spaced: &str = "fn before() {}\n/** */\nfn item() {}\n";
@@ -101,7 +109,9 @@ fn processors_map_empty_block_doc_payloads_separately_from_container_anchors() {
     assert_eq!(mapped(&empty[0], 0, 0), (at(bodiless, "/*!"), 0));
 }
 
-/// Labels through fence, comment, hidden-line and wrapper layers add every stripped prefix once.
+/// Labels through fence,
+///  comment,
+///  hidden-line and wrapper layers add every stripped prefix once.
 #[test]
 fn processors_map_points_through_every_nested_layer() {
     let virtuals: Vec<VirtualSource> = inputs(NESTED_HOST, ProcessorLanguage::Rust);
@@ -129,7 +139,9 @@ fn processors_map_points_through_every_nested_layer() {
     );
 }
 
-/// Refusals report the authored container, and the rendered error names host, byte and reason.
+/// Refusals report the authored container,
+///  and the rendered error names host,
+///  byte and reason.
 #[test]
 fn processors_anchor_refusals_at_authored_containers_and_render_them() {
     let virtuals: Vec<VirtualSource> = inputs(DOC_HOST, ProcessorLanguage::Rust);
@@ -235,7 +247,8 @@ fn processors_anchor_processing_failures_and_empty_snippets_at_authored_bytes() 
     );
 }
 
-/// A label with exactly one endpoint inside a UTF-8 character is an explicit failure, not an absent finding.
+/// A label with exactly one endpoint inside a UTF-8 character is an explicit failure,
+///  not an absent finding.
 #[test]
 fn processors_refuse_labels_with_one_endpoint_inside_a_character() {
     let virtuals: Vec<VirtualSource> = inputs(
@@ -258,8 +271,10 @@ fn processors_refuse_labels_with_one_endpoint_inside_a_character() {
     assert_eq!(mapped(doc, 2, 4), (21, 4));
 }
 
-/// The mapping seam itself returns absence for reversed, split or out-of-range spans.
-/// No `VirtualSource` caller produces such a span, so this control calls the crate seam directly.
+/// The mapping seam itself returns absence for reversed,
+///  split or out-of-range spans.
+/// No `VirtualSource` caller produces such a span,
+///  so this control calls the crate seam directly.
 #[test]
 fn processors_host_range_seam_refuses_malformed_spans() {
     let virtuals: Vec<VirtualSource> = inputs(

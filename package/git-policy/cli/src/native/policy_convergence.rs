@@ -1,19 +1,35 @@
-//! What: The bounded loop that repeats a whole policy pass after corrections changed the
-//!       candidate content, until the content is stable or the loop gives up.
-//! Why: A correction by one policy can create a finding for another, so every changed
-//!      state restarts the complete order. The loop must end: at most eight passes may
-//!      change the content, and returning to an earlier state is a cycle. This module owns
-//!      only that control flow; running policies, applying corrections and storing exact
-//!      states stay behind a small interface, so the loop is testable without Git.
+//! What:
+//!  The bounded loop that repeats a whole policy pass after corrections changed the
+//!       candidate content,
+//!  until the content is stable or the loop gives up.
+//! Why:
+//!  A correction by one policy can create a finding for another,
+//!  so every changed
+//!      state restarts the complete order.
+//!  The loop must end:
+//!  at most eight passes may
+//!      change the content,
+//!  and returning to an earlier state is a cycle.
+//!  This module owns
+//!      only that control flow;
+//!  running policies,
+//!  applying corrections and storing exact
+//!      states stay behind a small interface,
+//!  so the loop is testable without Git.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const convergence = await convergeCommitPolicies({ firstPass, firstSnapshot, ... });
 //! ```
 
-/// What: The most passes that may change candidate content. `usize` is the unsigned
-///       integer of list positions and counts (siblings `u32`, `u64`).
-/// Why:  The incumbent stops after eight changed passes; `usize` is the type the snapshot
+/// What:
+///  The most passes that may change candidate content.
+///  `usize` is the unsigned
+///       integer of list positions and counts (siblings `u32`,
+///  `u64`).
+/// Why:
+///   The incumbent stops after eight changed passes;
+///  `usize` is the type the snapshot
 ///       numbers below are counted in.
 ///
 /// In TS you'd write (pseudocode):
@@ -29,10 +45,14 @@ pub const FIX_PASS_LIMIT_MESSAGE: &str =
 /// The engine-failure message of corrections that returned to an earlier state.
 pub const FIX_CYCLE_MESSAGE: &str = "Policy patches repeated an exact prior candidate state.";
 
-/// What: What one whole policy pass over the current state ended in. An `enum` is a closed
-///       set of named alternatives. `#[derive(...)]` asks the compiler to generate copying,
+/// What:
+///  What one whole policy pass over the current state ended in.
+///  An `enum` is a closed
+///       set of named alternatives.
+///  `#[derive(...)]` asks the compiler to generate copying,
 ///       debug printing and `==`.
-/// Why:  Only a pass that proposes corrections continues the loop.
+/// Why:
+///   Only a pass that proposes corrections continues the loop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,7 +60,8 @@ pub const FIX_CYCLE_MESSAGE: &str = "Policy patches repeated an exact prior cand
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PassResult {
-    /// No policy proposed a correction: the findings of this pass are final.
+    /// No policy proposed a correction:
+    ///  the findings of this pass are final.
     Stable,
     /// At least one policy proposed a correction.
     Proposed,
@@ -48,19 +69,28 @@ pub enum PassResult {
     Failed,
 }
 
-/// What: The work the loop drives. A `trait` is a named set of methods a type promises to
-///       provide, like a TS `interface`; `&mut self` lends the implementer for writing.
-/// Why:  Exact candidate states can be large, so the implementer stores them (the
-///       incumbent used private files) and answers equality by snapshot number; the loop
+/// What:
+///  The work the loop drives.
+///  A `trait` is a named set of methods a type promises to
+///       provide,
+///  like a TS `interface`;
+///  `&mut self` lends the implementer for writing.
+/// Why:
+///   Exact candidate states can be large,
+///  so the implementer stores them (the
+///       incumbent used private files) and answers equality by snapshot number;
+///  the loop
 ///       never holds content.
-/// Gotcha: Snapshot 0 is the state before the first pass and must exist before the loop starts.
+/// Gotcha:
+///  Snapshot 0 is the state before the first pass and must exist before the loop starts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// interface FixPasses { runPass(version: number): PassResult; apply(snapshot: number): boolean; snapshotsEqual(a: number, b: number): boolean }
 /// ```
 pub trait FixPasses {
-    /// Run every policy against the current state; `candidate_version` counts earlier changes.
+    /// Run every policy against the current state;
+    ///  `candidate_version` counts earlier changes.
     fn run_pass(&mut self, candidate_version: usize) -> PassResult;
     /// Apply the last pass's corrections and store the new exact state under `snapshot`.
     /// Returns false when the corrections could not be applied.
@@ -69,8 +99,12 @@ pub trait FixPasses {
     fn snapshots_equal(&mut self, left: usize, right: usize) -> bool;
 }
 
-/// What: How the loop ended. `Settled` carries the number of passes that changed content.
-/// Why:  The caller reports the stable pass, or one engine failure for each other ending.
+/// What:
+///  How the loop ended.
+///  `Settled` carries the number of passes that changed content.
+/// Why:
+///   The caller reports the stable pass,
+///  or one engine failure for each other ending.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,12 +112,14 @@ pub trait FixPasses {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Convergence {
-    /// The last pass proposed nothing, or its corrections left the state exactly as it was.
+    /// The last pass proposed nothing,
+    ///  or its corrections left the state exactly as it was.
     Settled {
         /// Passes whose corrections changed the state.
         changed_passes: usize,
     },
-    /// A pass failed, or its corrections could not be applied.
+    /// A pass failed,
+    ///  or its corrections could not be applied.
     Blocked,
     /// Corrections reproduced a state from before the preceding one.
     FixCycle,
@@ -91,12 +127,20 @@ pub enum Convergence {
     FixPassLimit,
 }
 
-/// What: The ending forced by the state just stored under `snapshot`, or nothing when it
-///       differs from every earlier state. `&mut dyn FixPasses` lends "any implementer" for
-///       writing (`dyn` means the concrete type is chosen at run time, like a TS interface
-///       value); `Option<Convergence>` is "an ending or nothing".
-/// Why:  Which earlier state the new one equals decides the ending: the preceding state
-///       means "nothing changed", an older one means the corrections are going in circles.
+/// What:
+///  The ending forced by the state just stored under `snapshot`,
+///  or nothing when it
+///       differs from every earlier state.
+///  `&mut dyn FixPasses` lends "any implementer" for
+///       writing (`dyn` means the concrete type is chosen at run time,
+///  like a TS interface
+///       value);
+///  `Option<Convergence>` is "an ending or nothing".
+/// Why:
+///   Which earlier state the new one equals decides the ending:
+///  the preceding state
+///       means "nothing changed",
+///  an older one means the corrections are going in circles.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,9 +165,14 @@ fn repeated_state_ending(passes: &mut dyn FixPasses, snapshot: usize) -> Option<
     return None;
 }
 
-/// What: Drive passes until the state is stable or the loop must give up.
-/// Why:  The bound is structural: the `for` loop runs at most eight times, each round
-///       ending or storing exactly one new state, and one last pass may only confirm
+/// What:
+///  Drive passes until the state is stable or the loop must give up.
+/// Why:
+///   The bound is structural:
+///  the `for` loop runs at most eight times,
+///  each round
+///       ending or storing exactly one new state,
+///  and one last pass may only confirm
 ///       stability.
 ///
 /// In TS you'd write (pseudocode):
@@ -159,7 +208,8 @@ pub fn converge(passes: &mut dyn FixPasses) -> Convergence {
     }
 }
 
-/// Stability, limit and cycle controls stay out of the release executable.
+/// Stability,
+///  limit and cycle controls stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_convergence_tests.rs"]
 mod tests;

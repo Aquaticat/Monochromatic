@@ -1,5 +1,8 @@
-//! What: Remove trailing periods/colons from a heading's final text node.
-//! Why: The edit must preserve inline markup and consume complete source escapes/entities, not only decoded character counts.
+//! What:
+//!  Remove trailing periods/colons from a heading's final text node.
+//! Why:
+//!  The edit must preserve inline markup and consume complete source escapes/entities,
+//!  not only decoded character counts.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,8 +11,11 @@
 
 /// Import the existing diagnostic and localized edit boundaries.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the edit type that a punctuation repair is written as.
 use crate::edits::Edit;
+/// Import the finding constructors for punctuation problems and unreadable documents.
 use crate::markdown_finding::{finding, structure_failure};
+/// Import the parsed Markdown source whose punctuation is inspected.
 use crate::markdown_source::MarkdownSource;
 /// Import native text decoding and heading kinds.
 use satteri_ast::mdast::{MdastNodeType, decode_string_ref_data};
@@ -48,8 +54,10 @@ fn punctuation_entity(entity: &str) -> bool {
 }
 
 /// Locate the authored suffix without leaving a dangling escape or half an entity.
-/// Each successful step consumes the suffix it scanned; the first failed scan returns immediately.
-/// Therefore source bytes are scanned a bounded number of times, including backslash runs.
+/// Each successful step consumes the suffix it scanned;
+///  the first failed scan returns immediately.
+/// Therefore source bytes are scanned a bounded number of times,
+///  including backslash runs.
 fn suffix_start(written: &str, count: usize) -> Option<usize> {
     let bytes: &[u8] = written.as_bytes();
     let mut end: usize = bytes.len();
@@ -93,8 +101,10 @@ fn suffix_start(written: &str, count: usize) -> Option<usize> {
     return Some(end);
 }
 
-/// What: Build one optional deletion after finding its complete authored suffix.
-/// Why: Unmappable spellings keep their diagnostic but never receive a guessed edit.
+/// What:
+///  Build one optional deletion after finding its complete authored suffix.
+/// Why:
+///  Unmappable spellings keep their diagnostic but never receive a guessed edit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

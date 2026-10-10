@@ -1,5 +1,9 @@
-//! What: Run a read-only real-Git query and capture its output as raw bytes.
-//! Why: Repository facts (top level, Git directory) come from Git itself, and the
+//! What:
+//!  Run a read-only real-Git query and capture its output as raw bytes.
+//! Why:
+//!  Repository facts (top level,
+//!  Git directory) come from Git itself,
+//!  and the
 //!      paths it prints need not be UTF-8.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,9 +13,11 @@
 
 /// Import the shared child-command builder.
 use super::forwarding::git_command;
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  Query arguments include the caller's unchanged global options.
+/// Why:
+///   Query arguments include the caller's unchanged global options.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,11 +29,16 @@ use std::path::{Path, PathBuf};
 /// `Stdio` selects where a child's stream is connected.
 use std::process::Stdio;
 
-/// What: What one metadata query produced.
-///       `Vec<u8>` is an owned byte list (`u8` is one byte); sibling `String` would
+/// What:
+///  What one metadata query produced.
+///       `Vec<u8>` is an owned byte list (`u8` is one byte);
+///  sibling `String` would
 ///       require UTF-8.
-/// Why:  Git prints paths as raw bytes, and a failed query is an ordinary answer
-///       ("not a repository"), not an error.
+/// Why:
+///   Git prints paths as raw bytes,
+///  and a failed query is an ordinary answer
+///       ("not a repository"),
+///  not an error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,18 +48,23 @@ use std::process::Stdio;
 pub struct MetadataOutput {
     /// Whether Git exited with status zero.
     pub success: bool,
-    /// Git's exit code, or nothing when a signal ended it. Some queries answer through
+    /// Git's exit code,
+    ///  or nothing when a signal ended it.
+    ///  Some queries answer through
     /// their exit code alone (`git diff-index --quiet` exits 1 for "differs").
     pub code: Option<i32>,
-    /// Exact bytes Git wrote to standard output, including what it printed before failing.
+    /// Exact bytes Git wrote to standard output,
+    ///  including what it printed before failing.
     pub stdout: Vec<u8>,
     /// Exact bytes Git wrote to standard error.
     pub stderr: Vec<u8>,
 }
 
-/// What: Run real Git with captured output and no standard input.
+/// What:
+///  Run real Git with captured output and no standard input.
 ///       `std::io::Result<T>` is `Result<T, std::io::Error>`.
-/// Why:  A query must never consume the caller's stdin (which belongs to the
+/// Why:
+///   A query must never consume the caller's stdin (which belongs to the
 ///       forwarded command) or write to the caller's streams.
 ///
 /// In TS you'd write (pseudocode):
@@ -80,10 +96,15 @@ pub fn run_metadata_git(
     });
 }
 
-/// What: Remove exactly one final line break (`\n` or `\r\n`) from Git output.
-///       `&[u8]` borrows bytes; the result borrows a shorter view of the same bytes.
-/// Why:  Git terminates each printed value with one line break; anything before it,
-///       including other line breaks, is part of the value.
+/// What:
+///  Remove exactly one final line break (`\n` or `\r\n`) from Git output.
+///       `&[u8]` borrows bytes;
+///  the result borrows a shorter view of the same bytes.
+/// Why:
+///   Git terminates each printed value with one line break;
+///  anything before it,
+///       including other line breaks,
+///  is part of the value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -106,11 +127,17 @@ pub fn strip_git_line(output: &[u8]) -> &[u8] {
     return output;
 }
 
-/// What: Turn path bytes printed by Git into a path, without decoding on Unix.
-///       `Option<PathBuf>` is "an owned path or nothing". `#[cfg(unix)]` and
+/// What:
+///  Turn path bytes printed by Git into a path,
+///  without decoding on Unix.
+///       `Option<PathBuf>` is "an owned path or nothing".
+///  `#[cfg(unix)]` and
 ///       `#[cfg(not(unix))]` each compile one of the two inner blocks.
-/// Why:  Unix paths are arbitrary bytes and must round-trip exactly; other systems can
-///       only build a path from valid UTF-8. An empty value is never a path anywhere.
+/// Why:
+///   Unix paths are arbitrary bytes and must round-trip exactly;
+///  other systems can
+///       only build a path from valid UTF-8.
+///  An empty value is never a path anywhere.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

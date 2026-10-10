@@ -1,11 +1,23 @@
-//! What: The optional `security/forbidden-strings` policy: scan every candidate's exact
-//!       bytes and pathname through the linked scanner and report each match, redacted.
-//! Why: The installed wrapper wrote candidate bytes to temporary files, started the
-//!      scanner executable and parsed its standard error. Here the same scanner is a
-//!      library: rules are loaded once per invocation, only when a candidate can be
-//!      scanned, and each finding carries the scanner's masked display path and an
-//!      opaque rule name, never the matched text. A scan that could not complete ends
-//!      the policy with the code of its cause, never as a clean result.
+//! What:
+//!  The optional `security/forbidden-strings` policy:
+//!  scan every candidate's exact
+//!       bytes and pathname through the linked scanner and report each match,
+//!  redacted.
+//! Why:
+//!  The installed wrapper wrote candidate bytes to temporary files,
+//!  started the
+//!      scanner executable and parsed its standard error.
+//!  Here the same scanner is a
+//!      library:
+//!  rules are loaded once per invocation,
+//!  only when a candidate can be
+//!      scanned,
+//!  and each finding carries the scanner's masked display path and an
+//!      opaque rule name,
+//!  never the matched text.
+//!  A scan that could not complete ends
+//!      the policy with the code of its cause,
+//!  never as a clean result.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -38,9 +50,11 @@ use super::scanner_selection::{is_scannable, rules_candidate_path, rules_source}
 use super::worktree_identity::worktree_root;
 /// The scanner library's per-candidate result and per-match finding.
 use forbidden_strings::{CandidateScan, ScanFinding};
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  The variable's value is a path and need not be UTF-8.
+/// Why:
+///   The variable's value is a path and need not be UTF-8.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,7 +63,8 @@ use forbidden_strings::{CandidateScan, ScanFinding};
 use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path.
 use std::path::PathBuf;
-/// `Rc<T>` is a shared, read-only handle.
+/// `Rc<T>` is a shared,
+///  read-only handle.
 use std::rc::Rc;
 
 /// The policy-local code of a match.
@@ -61,9 +76,13 @@ pub const ENGINE_ERROR_MESSAGE: &str = "The forbidden-strings scanner reported a
 /// The engine-failure message of a pathname the line-based scanner cannot inspect.
 pub const LINE_BREAK_MESSAGE: &str = "The forbidden-strings scanner cannot inspect a candidate pathname that contains a line break, so the scan is incomplete.";
 
-/// What: Where the rules come from: the policy's options and the value of
+/// What:
+///  Where the rules come from:
+///  the policy's options and the value of
 ///       `FORBIDDEN_STRINGS_RULES` in the invocation's environment.
-/// Why:  The lifecycle reads both once; the check resolves them against the repository
+/// Why:
+///   The lifecycle reads both once;
+///  the check resolves them against the repository
 ///       root only when it scans.
 ///
 /// In TS you'd write (pseudocode):
@@ -72,14 +91,18 @@ pub const LINE_BREAK_MESSAGE: &str = "The forbidden-strings scanner cannot inspe
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ScannerSettings {
-    /// The policy's validated options; defaults until the configuration is loaded.
+    /// The policy's validated options;
+    ///  defaults until the configuration is loaded.
     pub options: ForbiddenStringsOptions,
-    /// The value of `FORBIDDEN_STRINGS_RULES`, when the variable is set.
+    /// The value of `FORBIDDEN_STRINGS_RULES`,
+    ///  when the variable is set.
     pub rules_variable: Option<OsString>,
 }
 
-/// What: Settings with the default options and no variable.
-/// Why:  A lifecycle that loads no configuration and has no candidates never scans.
+/// What:
+///  Settings with the default options and no variable.
+/// Why:
+///   A lifecycle that loads no configuration and has no candidates never scans.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -92,20 +115,27 @@ pub fn default_scanner_settings() -> ScannerSettings {
     };
 }
 
-/// What: The scanner of one invocation, loaded on first use, or the remembered failure.
-/// Why:  Rules are loaded once per invocation and only when a candidate needs scanning.
+/// What:
+///  The scanner of one invocation,
+///  loaded on first use,
+///  or the remembered failure.
+/// Why:
+///   Rules are loaded once per invocation and only when a candidate needs scanning.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ScannerState { #loaded?: CandidateScanner | ScannerError }
 /// ```
 pub struct ScannerState {
-    /// The loaded scanner, or the failure of the one attempt to load it.
+    /// The loaded scanner,
+    ///  or the failure of the one attempt to load it.
     loaded: Option<Result<CandidateScanner, ScannerError>>,
 }
 
-/// What: A state that has loaded nothing.
-/// Why:  Loading waits until a candidate can be scanned.
+/// What:
+///  A state that has loaded nothing.
+/// Why:
+///   Loading waits until a candidate can be scanned.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -116,8 +146,11 @@ pub fn unloaded_scanner() -> ScannerState {
     return ScannerState { loaded: None };
 }
 
-/// What: The outcome of a check that could not finish. `&str` is borrowed message text.
-/// Why:  Every failure of this policy names its cause through its code.
+/// What:
+///  The outcome of a check that could not finish.
+///  `&str` is borrowed message text.
+/// Why:
+///   Every failure of this policy names its cause through its code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -130,10 +163,15 @@ fn failed(code: EngineFailureCode, message: &str) -> PolicyOutcome {
     };
 }
 
-/// What: The failure a scan result carries, or nothing when its findings are all matches.
+/// What:
+///  The failure a scan result carries,
+///  or nothing when its findings are all matches.
 ///       `&CandidateScan` borrows one candidate's result.
-/// Why:  The scanner reports a failed matcher and an uninspectable pathname inside an
-///       otherwise successful result; either makes the whole scan incomplete, so it is
+/// Why:
+///   The scanner reports a failed matcher and an uninspectable pathname inside an
+///       otherwise successful result;
+///  either makes the whole scan incomplete,
+///  so it is
 ///       found before any match is reported.
 ///
 /// In TS you'd write (pseudocode):
@@ -155,8 +193,13 @@ fn incomplete_scan(scan: &CandidateScan) -> Option<PolicyOutcome> {
     return None;
 }
 
-/// What: The finding for one match in one scan, or nothing for a finding that is not a match.
-/// Why:  The words, the code and the masked path are the installed wrapper's, so a match
+/// What:
+///  The finding for one match in one scan,
+///  or nothing for a finding that is not a match.
+/// Why:
+///   The words,
+///  the code and the masked path are the installed wrapper's,
+///  so a match
 ///       is reported the same way by both wrappers and never shows the matched text.
 ///
 /// In TS you'd write (pseudocode):
@@ -182,17 +225,25 @@ fn match_finding(finding: &ScanFinding, display_path: &str) -> Option<PolicyFind
     });
 }
 
-/// What: `impl ScannerState { ... }` attaches the one way to get the loaded scanner.
-/// Why:  Loading and its remembered failure stay behind one owner.
+/// What:
+///  `impl ScannerState { ... }` attaches the one way to get the loaded scanner.
+/// Why:
+///   Loading and its remembered failure stay behind one owner.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ScannerState { load(rules, builtinRules): CandidateScanner }
 /// ```
 impl ScannerState {
-    /// What: The scanner, loaded from `rules` on first use. `Result<&CandidateScanner, ..>`
-    ///       lends the loaded scanner, or returns the outcome the policy reports.
-    /// Why:  A second call in the same invocation reuses the loaded rules, and a failure
+    /// What:
+    ///  The scanner,
+    ///  loaded from `rules` on first use.
+    ///  `Result<&CandidateScanner, ..>`
+    ///       lends the loaded scanner,
+    ///  or returns the outcome the policy reports.
+    /// Why:
+    ///   A second call in the same invocation reuses the loaded rules,
+    ///  and a failure
     ///       is not retried.
     ///
     /// In TS you'd write (pseudocode):
@@ -226,8 +277,12 @@ impl ScannerState {
     }
 }
 
-/// What: The repository's top level, from Git's answer about where the command runs.
-/// Why:  The rules file is named relative to it, as the scanner child's working
+/// What:
+///  The repository's top level,
+///  from Git's answer about where the command runs.
+/// Why:
+///   The rules file is named relative to it,
+///  as the scanner child's working
 ///       directory was under the installed wrapper.
 ///
 /// In TS you'd write (pseudocode):
@@ -255,11 +310,17 @@ fn repository_root<F: RepositoryFacts>(facts: &mut F) -> Result<PathBuf, PolicyO
     }
 }
 
-/// What: Scan every candidate the scanner is given and report each match.
-///       `&ScannerSettings` borrows where the rules come from; `&mut ScannerState` lends
+/// What:
+///  Scan every candidate the scanner is given and report each match.
+///       `&ScannerSettings` borrows where the rules come from;
+///  `&mut ScannerState` lends
 ///       the invocation's scanner.
-/// Why:  Deleted candidates, the rule sources and the rules file itself are not scanned,
-///       as the installed wrapper skips them. When nothing is left, no rules are loaded,
+/// Why:
+///   Deleted candidates,
+///  the rule sources and the rules file itself are not scanned,
+///       as the installed wrapper skips them.
+///  When nothing is left,
+///  no rules are loaded,
 ///       so a missing rules file stops nothing that would not have been scanned.
 ///
 /// In TS you'd write (pseudocode):
@@ -326,7 +387,8 @@ pub fn check_forbidden_strings<F: RepositoryFacts>(
     return PolicyOutcome::Findings(findings);
 }
 
-/// Rules, scan and redaction controls stay out of the release executable.
+/// Rules,
+///  scan and redaction controls stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_forbidden_strings_tests.rs"]
 mod tests;

@@ -1,5 +1,7 @@
-//! What: Native Git argument boundaries and opaque-value preservation.
-//! Why: A wrapper cannot locate commands by splitting strings or treating option values as flags.
+//! What:
+//!  Native Git argument boundaries and opaque-value preservation.
+//! Why:
+//!  A wrapper cannot locate commands by splitting strings or treating option values as flags.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -20,7 +22,8 @@ fn arguments(values: &[&str]) -> Vec<OsString> {
     return result;
 }
 
-/// Separated values, inline forms and post-command flags have different boundaries.
+/// Separated values,
+///  inline forms and post-command flags have different boundaries.
 #[test]
 fn preserves_complete_global_prefixes_and_values() {
     for (values, expected) in [
@@ -98,7 +101,8 @@ fn query_and_missing_value_boundaries_are_distinct() {
     );
 }
 
-/// Old or invented global spellings are left to Git, not accepted through compatibility heuristics.
+/// Old or invented global spellings are left to Git,
+///  not accepted through compatibility heuristics.
 #[test]
 fn unsupported_globals_do_not_gain_a_wrapper_interpretation() {
     for flag in [
@@ -159,7 +163,8 @@ fn native_non_utf8_values_remain_opaque() {
     assert_eq!(input, snapshot);
 }
 
-/// The command word and the tokens after it are split after the global options; without a command there is no split.
+/// The command word and the tokens after it are split after the global options;
+///  without a command there is no split.
 #[test]
 fn command_tokens_split_after_the_global_options() {
     for (values, word, region) in [

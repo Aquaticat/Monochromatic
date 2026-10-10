@@ -1,15 +1,26 @@
-//! Pointer selection through real window pointer events: caret, word, line, Shift+click, and drags.
+//! Pointer selection through real window pointer events:
+//!  caret,
+//!  word,
+//!  line,
+//!  Shift+click,
+//!  and drags.
 
 /// The production window that receives the pointer events.
 use super::AppWindow;
-/// Anchor and head of the reading selection, shared with the keyboard tests.
+/// Anchor and head of the reading selection,
+///  shared with the keyboard tests.
 use super::caret_tests::position;
 /// The complete reader fixture shared with the find tests.
 use super::find_tests::{Reader, reader};
 /// The mark drawn for a selected line terminator.
 use ide_app::shaped_text::TERMINATOR_MARK;
-/// What: Window events as a seat delivers them, and a point in logical window pixels.
-/// Why: Presses, moves, and releases go through the real `TouchArea` and `Flickable` event handling.
+/// What:
+///  Window events as a seat delivers them,
+///  and a point in logical window pixels.
+/// Why:
+///  Presses,
+///  moves,
+///  and releases go through the real `TouchArea` and `Flickable` event handling.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,8 +30,11 @@ use slint::{
     ComponentHandle, LogicalPosition, Model,
     platform::{Key, PointerEventButton, WindowEvent},
 };
-/// What: Disposable project files, and a pause longer than the multi-click interval.
-/// Why: A slow second press must be a new single click.
+/// What:
+///  Disposable project files,
+///  and a pause longer than the multi-click interval.
+/// Why:
+///  A slow second press must be a new single click.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,14 +42,19 @@ use slint::{
 /// ```
 use std::{fs, thread::sleep, time::Duration};
 
-/// Where source text starts in the window, derived in `sidebar_tests` from the tree, divider, and gutter widths.
+/// Where source text starts in the window,
+///  derived in `sidebar_tests` from the tree,
+///  divider,
+///  and gutter widths.
 /// The first assertion of every test is a positive control for this origin and `TEXT_TOP`.
 use super::sidebar_tests::TEXT_LEFT;
 
 /// Source rows start below the 32 px file label.
 const TEXT_TOP: f32 = 32.0;
 
-/// Window point over source row `row`, `x` logical pixels into the text, in the middle of the line.
+/// Window point over source row `row`,
+///  `x` logical pixels into the text,
+///  in the middle of the line.
 fn point(window: &AppWindow, row: usize, x: f32) -> LogicalPosition {
     return LogicalPosition::new(
         TEXT_LEFT + x + window.get_scroll_x(),
@@ -75,7 +94,12 @@ fn caret_x(reader: &Reader, head: usize) -> f32 {
     return view.rows[row - view.viewport.first].caret_x(head, view.viewport.scale);
 }
 
-/// One, two, and three quick presses select a caret, a word, and a line; a fourth starts over.
+/// One,
+///  two,
+///  and three quick presses select a caret,
+///  a word,
+///  and a line;
+///  a fourth starts over.
 #[test]
 fn click_count_selects_caret_word_and_line() {
     let fixture = tempfile::tempdir().expect("disposable pointer project");
@@ -193,7 +217,8 @@ fn shift_click_extends_the_selection_from_its_anchor() {
     window.hide().expect("close pointer window");
 }
 
-/// A mouse drag selects text instead of panning the view, and after a double click it extends by words.
+/// A mouse drag selects text instead of panning the view,
+///  and after a double click it extends by words.
 #[test]
 fn drag_selects_text_by_characters_and_by_words_without_panning() {
     let fixture = tempfile::tempdir().expect("disposable pointer project");

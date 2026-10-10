@@ -1,8 +1,16 @@
-//! What: Argument vectors built around wrapper controls, and the invariants of removing
+//! What:
+//!  Argument vectors built around wrapper controls,
+//!  and the invariants of removing
 //!       them and of the refusal frontier behind them.
-//! Why: A wrapper control must leave the arguments only where it is an option of its own,
-//!      never as a message, a value or a path, and what it asked for must be recorded.
-//!      Behind the removal, a commit, a publishing push, an unchecked `git add` and a
+//! Why:
+//!  A wrapper control must leave the arguments only where it is an option of its own,
+//!      never as a message,
+//!  a value or a path,
+//!  and what it asked for must be recorded.
+//!      Behind the removal,
+//!  a commit,
+//!  a publishing push,
+//!  an unchecked `git add` and a
 //!      worktree creation from a linked worktree must never be forwarded.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,9 +18,12 @@
 //! // checkControlRemoval(controlArguments(data)); checkFrontier(controlArguments(data), data[0]);
 //! ```
 
-/// What: `use` brings names from other files into this file; `crate::` is this package and
+/// What:
+///  `use` brings names from other files into this file;
+///  `crate::` is this package and
 ///       `git_policy_cli::` is the wrapper under test.
-/// Why:  The checks call the subject's public functions and compare with tables restated here.
+/// Why:
+///   The checks call the subject's public functions and compare with tables restated here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,9 +46,13 @@ use git_policy_cli::wrapper_controls::{
     ControlMeaning, Controls, control_meaning, is_escaped, no_controls,
 };
 use git_policy_cli::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
-/// What: `OsStr`/`OsString` are borrowed/owned operating-system text of raw bytes.
-///       Sibling the reader might expect: `&str`/`String`, which must be valid UTF-8.
-/// Why:  Git arguments are arbitrary bytes and are compared without decoding.
+/// What:
+///  `OsStr`/`OsString` are borrowed/owned operating-system text of raw bytes.
+///       Sibling the reader might expect:
+///  `&str`/`String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Git arguments are arbitrary bytes and are compared without decoding.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,9 +64,14 @@ use std::os::unix::ffi::OsStringExt;
 /// `PathBuf` is an owned filesystem path of raw bytes.
 use std::path::PathBuf;
 
-/// What: The spelling of the `git commit` hatch, restated here. `&[u8]` is a borrowed byte
+/// What:
+///  The spelling of the `git commit` hatch,
+///  restated here.
+///  `&[u8]` is a borrowed byte
 ///       string baked into the program.
-/// Why:  It is the only wrapper token outside the general control table, and restating it
+/// Why:
+///   It is the only wrapper token outside the general control table,
+///  and restating it
 ///       keeps the check independent of the subject's constant.
 ///
 /// In TS you'd write (pseudocode):
@@ -60,11 +80,14 @@ use std::path::PathBuf;
 /// ```
 const COMMIT_HATCH: &[u8] = b"--no-enforce-only";
 
-/// The longest generated argument list, matching the other generators of this package.
+/// The longest generated argument list,
+///  matching the other generators of this package.
 pub const MAX_CONTROL_ARGUMENTS: usize = 48;
 
-/// What: The byte that ends the option part of a separated argument list.
-/// Why:  One fixed value lets the fuzzer place the `--` separator wherever it likes.
+/// What:
+///  The byte that ends the option part of a separated argument list.
+/// Why:
+///   One fixed value lets the fuzzer place the `--` separator wherever it likes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,8 +95,11 @@ pub const MAX_CONTROL_ARGUMENTS: usize = 48;
 /// ```
 pub const SEPARATOR_MARK: u8 = 0xff;
 
-/// What: Build one argument from raw bytes. `OsString` is the owned result.
-/// Why:  Every generator here produces byte-valued arguments.
+/// What:
+///  Build one argument from raw bytes.
+///  `OsString` is the owned result.
+/// Why:
+///   Every generator here produces byte-valued arguments.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -84,10 +110,16 @@ fn argument(bytes: &[u8]) -> OsString {
     return OsString::from_vec(bytes.to_vec());
 }
 
-/// What: Map each fuzz byte to one token of the control table. `Vec<OsString>` is the
+/// What:
+///  Map each fuzz byte to one token of the control table.
+///  `Vec<OsString>` is the
 ///       owned argument list.
-/// Why:  Random bytes almost never spell a control; drawing whole tokens lets the fuzzer
-///       place controls, hatches, values and separators in every order.
+/// Why:
+///   Random bytes almost never spell a control;
+///  drawing whole tokens lets the fuzzer
+///       place controls,
+///  hatches,
+///  values and separators in every order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -109,11 +141,17 @@ pub fn control_arguments(data: &[u8]) -> Vec<OsString> {
     return result;
 }
 
-/// What: Build `<command> <valueless options...> -- <any tokens...>` and say where the
-///       `--` sits. `Option<(Vec<OsString>, usize)>` is "the list and the separator's
-///       index, or nothing" for empty input.
-/// Why:  When no token before `--` takes a separate value, the `--` is certainly Git's
-///       separator, so everything from it on is paths and must survive untouched.
+/// What:
+///  Build `<command> <valueless options...> -- <any tokens...>` and say where the
+///       `--` sits.
+///  `Option<(Vec<OsString>, usize)>` is "the list and the separator's
+///       index,
+///  or nothing" for empty input.
+/// Why:
+///   When no token before `--` takes a separate value,
+///  the `--` is certainly Git's
+///       separator,
+///  so everything from it on is paths and must survive untouched.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -163,10 +201,17 @@ pub fn separated_arguments(data: &[u8]) -> Option<(Vec<OsString>, usize)> {
     return Some((result, at));
 }
 
-/// What: The tokens of `before` that are missing from `after`, when `after` is `before`
-///       with some tokens taken out. `Option<Vec<OsString>>` is "the missing tokens, or
+/// What:
+///  The tokens of `before` that are missing from `after`,
+///  when `after` is `before`
+///       with some tokens taken out.
+///  `Option<Vec<OsString>>` is "the missing tokens,
+///  or
 ///       nothing" when `after` is not such a list.
-/// Why:  Removal may only delete whole tokens; it may never reorder, rewrite or add one.
+/// Why:
+///   Removal may only delete whole tokens;
+///  it may never reorder,
+///  rewrite or add one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -191,8 +236,11 @@ pub fn removed_tokens(before: &[OsString], after: &[OsString]) -> Option<Vec<OsS
     return Some(removed);
 }
 
-/// What: Whether a token spells something the wrapper may remove. `&OsStr` borrows it.
-/// Why:  Only a general control or the commit hatch may ever leave the arguments.
+/// What:
+///  Whether a token spells something the wrapper may remove.
+///  `&OsStr` borrows it.
+/// Why:
+///   Only a general control or the commit hatch may ever leave the arguments.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -204,8 +252,10 @@ fn is_wrapper_token(token: &OsStr) -> bool {
     return control_meaning(bytes).is_some() || bytes == COMMIT_HATCH;
 }
 
-/// What: Whether any token of a list has this meaning as a general control.
-/// Why:  Every effect the removal records must have a removed token that asked for it.
+/// What:
+///  Whether any token of a list has this meaning as a general control.
+/// Why:
+///   Every effect the removal records must have a removed token that asked for it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -220,8 +270,10 @@ fn any_asks(tokens: &[OsString], meaning: ControlMeaning) -> bool {
     return false;
 }
 
-/// What: Whether any token of a list is exactly these bytes.
-/// Why:  Several frontier rules ask "did the caller write this token anywhere".
+/// What:
+///  Whether any token of a list is exactly these bytes.
+/// Why:
+///   Several frontier rules ask "did the caller write this token anywhere".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -236,9 +288,15 @@ fn has_token(tokens: &[OsString], bytes: &[u8]) -> bool {
     return false;
 }
 
-/// What: Check every invariant of control removal for one argument list. Panics, which is
-///       how a fuzz target reports a failure, when one does not hold.
-/// Why:  The properties are stated without Git's option tables, so a mistake in a table
+/// What:
+///  Check every invariant of control removal for one argument list.
+///  Panics,
+///  which is
+///       how a fuzz target reports a failure,
+///  when one does not hold.
+/// Why:
+///   The properties are stated without Git's option tables,
+///  so a mistake in a table
 ///       cannot hide behind the same mistake in the check.
 ///
 /// In TS you'd write (pseudocode):
@@ -318,8 +376,11 @@ pub fn check_control_removal(arguments: &[OsString]) {
     );
 }
 
-/// What: Check that everything from the `--` at `separator` on survives removal.
-/// Why:  After Git's separator every token is a path, whatever it spells.
+/// What:
+///  Check that everything from the `--` at `separator` on survives removal.
+/// Why:
+///   After Git's separator every token is a path,
+///  whatever it spells.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -336,8 +397,12 @@ pub fn check_separator(arguments: &[OsString], separator: usize) {
     );
 }
 
-/// What: A facts provider with fixed answers. A `struct` is a record with named fields.
-/// Why:  The frontier is a decision from arguments and location; fixed answers let the
+/// What:
+///  A facts provider with fixed answers.
+///  A `struct` is a record with named fields.
+/// Why:
+///   The frontier is a decision from arguments and location;
+///  fixed answers let the
 ///       fuzzer drive it without Git or a repository.
 ///
 /// In TS you'd write (pseudocode):
@@ -356,9 +421,12 @@ pub struct FixedFacts {
     pub remote_guess: bool,
 }
 
-/// What: `impl RepositoryFacts for FixedFacts` provides the subject's facts interface.
-///       `Result<T, String>` is "a value or an error text"; `Ok(x)` is the success case.
-/// Why:  The lifecycle under test asks for facts only through this interface.
+/// What:
+///  `impl RepositoryFacts for FixedFacts` provides the subject's facts interface.
+///       `Result<T, String>` is "a value or an error text";
+///  `Ok(x)` is the success case.
+/// Why:
+///   The lifecycle under test asks for facts only through this interface.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -382,9 +450,14 @@ impl RepositoryFacts for FixedFacts {
         return Ok(self.remote_guess);
     }
 
-    /// What: Refuse to prepare candidates, as Git that cannot start would.
-    /// Why:  The fuzz lifecycle starts no Git, so a content policy can never read a
-    ///       candidate here, and must then stop the command rather than pass it.
+    /// What:
+    ///  Refuse to prepare candidates,
+    ///  as Git that cannot start would.
+    /// Why:
+    ///   The fuzz lifecycle starts no Git,
+    ///  so a content policy can never read a
+    ///       candidate here,
+    ///  and must then stop the command rather than pass it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -401,8 +474,11 @@ impl RepositoryFacts for FixedFacts {
     }
 }
 
-/// What: Whether `mode` selects the linked worktree. `bool` is true or false.
-/// Why:  One bit of the fuzz input chooses between the two locations.
+/// What:
+///  Whether `mode` selects the linked worktree.
+///  `bool` is true or false.
+/// Why:
+///   One bit of the fuzz input chooses between the two locations.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -412,10 +488,16 @@ pub fn mode_is_linked(mode: u8) -> bool {
     return mode & 1 == 1;
 }
 
-/// What: Fixed facts chosen by one byte: a linked worktree or no repository, and the
+/// What:
+///  Fixed facts chosen by one byte:
+///  a linked worktree or no repository,
+///  and the
 ///       three other answers from its higher bits.
-/// Why:  Neither location exists on disk, so no configuration and no leftover state is
-///       found and the defaults apply: the built-in content policy is on.
+/// Why:
+///   Neither location exists on disk,
+///  so no configuration and no leftover state is
+///       found and the defaults apply:
+///  the built-in content policy is on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -451,10 +533,18 @@ pub fn fixed_facts(mode: u8) -> FixedFacts {
     };
 }
 
-/// What: The starts of the `git commit` long options that make it a dry run, and the
-///       letter of the short one. `&[&[u8]]` is a borrowed list of byte strings.
-/// Why:  Git 2.56.0 `builtin/commit.c` turns `--dry-run` on by itself for every status
-///       format option: `--short`, `--porcelain`, `--long` and `-z`/`--null`. Each start is
+/// What:
+///  The starts of the `git commit` long options that make it a dry run,
+///  and the
+///       letter of the short one.
+///  `&[&[u8]]` is a borrowed list of byte strings.
+/// Why:
+///   Git 2.56.0 `builtin/commit.c` turns `--dry-run` on by itself for every status
+///       format option:
+///  `--short`,
+///  `--porcelain`,
+///  `--long` and `-z`/`--null`.
+///  Each start is
 ///       the shortest abbreviation Git accepts for that option.
 ///
 /// In TS you'd write (pseudocode):
@@ -463,18 +553,24 @@ pub fn fixed_facts(mode: u8) -> FixedFacts {
 /// ```
 const COMMIT_DRY_RUN_STARTS: &[&[u8]] = &[b"--dr", b"--sh", b"--po", b"--lo", b"--nu"];
 
-/// The short option of `git commit` that implies a dry run: `-z`.
+/// The short option of `git commit` that implies a dry run:
+///  `-z`.
 const COMMIT_DRY_RUN_LETTER: u8 = b'z';
 
 /// The start of the one `git push` long option that makes it a dry run.
 const PUSH_DRY_RUN_STARTS: &[&[u8]] = &[b"--dr"];
 
-/// The short option of `git push` for a dry run: `-n`.
+/// The short option of `git push` for a dry run:
+///  `-n`.
 const PUSH_DRY_RUN_LETTER: u8 = b'n';
 
-/// What: Whether some token could make Git treat a command as a dry run: a long option
-///       with one of the given starts, or a short cluster containing the given letter.
-/// Why:  This is a deliberately loose restatement that does not use the subject's tables.
+/// What:
+///  Whether some token could make Git treat a command as a dry run:
+///  a long option
+///       with one of the given starts,
+///  or a short cluster containing the given letter.
+/// Why:
+///   This is a deliberately loose restatement that does not use the subject's tables.
 ///       A forwarded commit or publishing push without any such token is certainly real.
 ///
 /// In TS you'd write (pseudocode):
@@ -497,10 +593,15 @@ fn may_be_dry_run(region: &[OsString], starts: &[&[u8]], letter: u8) -> bool {
     return false;
 }
 
-/// What: How the lifecycle ended for one checked argument list. An `enum` is a closed set
-///       of named alternatives. `#[derive(...)]` asks the compiler to generate copying,
+/// What:
+///  How the lifecycle ended for one checked argument list.
+///  An `enum` is a closed set
+///       of named alternatives.
+///  `#[derive(...)]` asks the compiler to generate copying,
 ///       debug printing and `==`.
-/// Why:  The generator controls count these, so a frontier rule that is never reached
+/// Why:
+///   The generator controls count these,
+///  so a frontier rule that is never reached
 ///       cannot pass unnoticed.
 ///
 /// In TS you'd write (pseudocode):
@@ -517,10 +618,16 @@ pub enum FrontierSeen {
     Refused,
 }
 
-/// What: Check the refusal frontier for one argument list at the location `mode` selects,
+/// What:
+///  Check the refusal frontier for one argument list at the location `mode` selects,
 ///       and say how the lifecycle ended.
-/// Why:  Whatever the arguments, a forwarded command must not be a real commit, a
-///       publishing push with a policy on, an unchecked `git add`, or a worktree creation
+/// Why:
+///   Whatever the arguments,
+///  a forwarded command must not be a real commit,
+///  a
+///       publishing push with a policy on,
+///  an unchecked `git add`,
+///  or a worktree creation
 ///       or possible alias run from a linked worktree without the opt-out.
 ///
 /// In TS you'd write (pseudocode):
@@ -598,8 +705,11 @@ pub fn check_frontier(arguments: &[OsString], mode: u8) -> FrontierSeen {
     return FrontierSeen::Forwarded;
 }
 
-/// What: Whether a token is `add` or `move`, the `git worktree` actions that register a path.
-/// Why:  Restated here so the check does not lean on the subject's own list.
+/// What:
+///  Whether a token is `add` or `move`,
+///  the `git worktree` actions that register a path.
+/// Why:
+///   Restated here so the check does not lean on the subject's own list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

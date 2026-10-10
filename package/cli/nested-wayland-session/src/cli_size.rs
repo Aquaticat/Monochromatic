@@ -1,7 +1,9 @@
 //! Size validation shared by clap and parser tests.
 
-/// What: Import application errors and context for numeric parsing.
-/// Why: Keep dimension failures explicit instead of accepting malformed geometry.
+/// What:
+///  Import application errors and context for numeric parsing.
+/// Why:
+///  Keep dimension failures explicit instead of accepting malformed geometry.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -11,10 +13,15 @@ use anyhow::{bail, Context, Result};
 
 /// Parse a `WIDTHxHEIGHT` string into a positive `(width, height)` pair.
 ///
-/// What:     `pub(super) fn parse_size(spec: &str) -> Result<(i32, i32)>`. Private helper
-///           shared only with the parser module. Borrows the spec string and returns two `i32`s or
-///           an error. `(i32, i32)` is an anonymous two-field tuple.
-/// Why:      Isolate the split-and-validate logic so both parsing and tests can
+/// What:
+///      `pub(super) fn parse_size(spec: &str) -> Result<(i32, i32)>`.
+///  Private helper
+///           shared only with the parser module.
+///  Borrows the spec string and returns two `i32`s or
+///           an error.
+///  `(i32, i32)` is an anonymous two-field tuple.
+/// Why:
+///       Isolate the split-and-validate logic so both parsing and tests can
 ///           exercise it directly.
 ///
 /// In TS you'd write (pseudocode):

@@ -1,4 +1,6 @@
-//! Starts, validates, and stops detached application-cgroup watcher processes.
+//! Starts,
+//!  validates,
+//!  and stops detached application-cgroup watcher processes.
 
 /// Watch loop preparation and execution.
 use crate::application_watch::{prepare_application_watch, run_application_watch};

@@ -1,17 +1,24 @@
 //! Native scrolling retains fractional offsets between raster tile updates.
 
-/// Parent state owns the document and the currently displayed tile; `rows` holds the map-based scroll rules.
+/// Parent state owns the document and the currently displayed tile;
+///  `rows` holds the map-based scroll rules.
 use super::{AppWindow, State, render, rows};
-/// Height of one code row: the least a line can take, which bounds how many lines a view can show.
+/// Height of one code row:
+///  the least a line can take,
+///  which bounds how many lines a view can show.
 use ide_app::row_map::CODE_ROW;
 /// ComponentHandle supplies weak references for callback lifetimes.
 use slint::ComponentHandle;
-/// Checked shared ownership remains confined to the UI thread; `Instant` times the reader's scrolling.
+/// Checked shared ownership remains confined to the UI thread;
+///  `Instant` times the reader's scrolling.
 use std::{cell::RefCell, rc::Rc, time::Instant};
 
-/// What: `&mut State` lends the source state mutably; `f32` is a 32-bit float of logical pixels;
+/// What:
+///  `&mut State` lends the source state mutably;
+///  `f32` is a 32-bit float of logical pixels;
 /// the `bool` answer says whether the materialized tile changed.
-/// Why: Native scrolling and programmatic reveal must agree on which rows and columns are materialized.
+/// Why:
+///  Native scrolling and programmatic reveal must agree on which rows and columns are materialized.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,7 +66,8 @@ pub(super) fn place(
     return true;
 }
 
-/// Retain pixel scrolling; update the raster only at viewport tile boundaries.
+/// Retain pixel scrolling;
+///  update the raster only at viewport tile boundaries.
 pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     // What: `Rc::clone` copies the pointer to the shared state; `as_weak` does not keep the window alive.
     // Why: The stored callback outlives this binding function.
@@ -111,10 +119,15 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
 
 /// Render after a keyboard caret movement and keep the caret visible with the smallest possible scroll.
 ///
-/// `paged` first moves the view by that many logical pixels, so a page key keeps the caret's place on screen.
-/// A caret above the view becomes the top line, one below the bottom line; a visible caret keeps the offsets.
+/// `paged` first moves the view by that many logical pixels,
+///  so a page key keeps the caret's place on screen.
+/// A caret above the view becomes the top line,
+///  one below the bottom line;
+///  a visible caret keeps the offsets.
 /// Horizontally the caret gets up to 48 px of room on the side it left the view.
-/// Offsets are assigned directly, like other programmatic reveals; native wheel easing is unaffected.
+/// Offsets are assigned directly,
+///  like other programmatic reveals;
+///  native wheel easing is unaffected.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -171,8 +184,12 @@ pub(super) fn follow(window: &AppWindow, state: &Rc<RefCell<State>>, paged: f32)
 }
 
 /// Scroll a source character range into view and render it.
-/// A visible range keeps its offsets; a hidden row is centered; a hidden column starts 48 px from the left.
-/// Offsets are assigned directly, like other programmatic reveals; native wheel easing is unaffected.
+/// A visible range keeps its offsets;
+///  a hidden row is centered;
+///  a hidden column starts 48 px from the left.
+/// Offsets are assigned directly,
+///  like other programmatic reveals;
+///  native wheel easing is unaffected.
 pub(super) fn reveal(window: &AppWindow, state: &Rc<RefCell<State>>, start: usize, end: usize) {
     let height = window.get_viewport_height();
     let width = window.get_viewport_width();

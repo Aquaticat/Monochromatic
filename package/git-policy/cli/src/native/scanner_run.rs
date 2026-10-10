@@ -1,7 +1,14 @@
-//! What: Scan every eligible candidate of one version through the loaded scanner.
-//! Why: This is the whole forbidden-strings check of one policy pass: candidate bytes
-//!      come from the candidate store (staged or committed, never the worktree), go to
-//!      the scanner in memory, and the scanner's own results come back. No temporary
+//! What:
+//!  Scan every eligible candidate of one version through the loaded scanner.
+//! Why:
+//!  This is the whole forbidden-strings check of one policy pass:
+//!  candidate bytes
+//!      come from the candidate store (staged or committed,
+//!  never the worktree),
+//!  go to
+//!      the scanner in memory,
+//!  and the scanner's own results come back.
+//!  No temporary
 //!      file is written and no process is started per file.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,7 +16,8 @@
 //! // const scans = await scanVersion(scanner, store, version, rulesPath);
 //! ```
 
-/// Import the candidate layer's failure, store and version.
+/// Import the candidate layer's failure,
+///  store and version.
 use super::candidate_error::CandidateError;
 use super::candidate_store::CandidateStore;
 use super::candidate_version::{Candidate, CandidateVersion};
@@ -17,14 +25,23 @@ use super::candidate_version::{Candidate, CandidateVersion};
 use super::scanner_adapter::{CandidateScanner, ScannerError};
 /// Import the eligibility decision.
 use super::scanner_selection::is_scannable;
-/// The scanner library's per-candidate result, returned unchanged.
+/// The scanner library's per-candidate result,
+///  returned unchanged.
 use forbidden_strings::CandidateScan;
-/// `Rc<T>` is a shared, read-only handle to one heap value (siblings `Box<T>`, `Arc<T>`).
+/// `Rc<T>` is a shared,
+///  read-only handle to one heap value (siblings `Box<T>`,
+///  `Arc<T>`).
 use std::rc::Rc;
 
-/// What: Why a scan pass stopped: the candidate layer failed, or the scanner did.
+/// What:
+///  Why a scan pass stopped:
+///  the candidate layer failed,
+///  or the scanner did.
 ///       Each variant carries the original typed failure.
-/// Why:  Either way some file was not checked, so the pass has no result. Keeping the
+/// Why:
+///   Either way some file was not checked,
+///  so the pass has no result.
+///  Keeping the
 ///       original failure lets the caller report its own cause.
 ///
 /// In TS you'd write (pseudocode):
@@ -39,15 +56,19 @@ pub enum ScanRunError {
     Scanner(ScannerError),
 }
 
-/// What: `impl std::fmt::Display for ScanRunError` supplies Rust's "print me" interface.
-/// Why:  The message is the wrapped failure's own, unchanged.
+/// What:
+///  `impl std::fmt::Display for ScanRunError` supplies Rust's "print me" interface.
+/// Why:
+///   The message is the wrapped failure's own,
+///  unchanged.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// toString(): string { return this.error.message; }
 /// ```
 impl std::fmt::Display for ScanRunError {
-    /// `&self` borrows this error read-only; `&mut` lends the formatter for writing.
+    /// `&self` borrows this error read-only;
+    ///  `&mut` lends the formatter for writing.
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // `match self` reads the variant; each arm prints the message of the failure it carries.
         match self {
@@ -60,9 +81,14 @@ impl std::fmt::Display for ScanRunError {
 /// An empty `impl` marks the type as a standard error value.
 impl std::error::Error for ScanRunError {}
 
-/// What: Where a scan pass reads candidate bytes. A `trait` is an interface.
-/// Why:  The candidate store reads the version's objects; a direct fix reads the same
-///       objects with its in-memory corrections laid over them, and its later passes
+/// What:
+///  Where a scan pass reads candidate bytes.
+///  A `trait` is an interface.
+/// Why:
+///   The candidate store reads the version's objects;
+///  a direct fix reads the same
+///       objects with its in-memory corrections laid over them,
+///  and its later passes
 ///       must scan the corrected bytes.
 ///
 /// In TS you'd write (pseudocode):
@@ -70,7 +96,10 @@ impl std::error::Error for ScanRunError {}
 /// interface CandidateBytes { bytes(candidate: Candidate): Promise<Uint8Array> }
 /// ```
 pub trait CandidateBytes {
-    /// What: The bytes the candidate holds for this reader. Why: the scan's only input.
+    /// What:
+    ///  The bytes the candidate holds for this reader.
+    ///  Why:
+    ///  the scan's only input.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -79,15 +108,20 @@ pub trait CandidateBytes {
     fn candidate_bytes(&mut self, candidate: &Candidate) -> Result<Rc<[u8]>, CandidateError>;
 }
 
-/// What: `impl CandidateBytes for CandidateStore` reads through the store itself.
-/// Why:  Without corrections the store's objects are the bytes to scan.
+/// What:
+///  `impl CandidateBytes for CandidateStore` reads through the store itself.
+/// Why:
+///   Without corrections the store's objects are the bytes to scan.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class CandidateStore implements CandidateBytes {}
 /// ```
 impl CandidateBytes for CandidateStore {
-    /// What: The store's bytes for the candidate. Why: `CandidateStore::bytes` is the read.
+    /// What:
+    ///  The store's bytes for the candidate.
+    ///  Why:
+    ///  `CandidateStore::bytes` is the read.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -98,13 +132,18 @@ impl CandidateBytes for CandidateStore {
     }
 }
 
-/// What: Scan each eligible candidate and return the scanner's result for every one scanned.
+/// What:
+///  Scan each eligible candidate and return the scanner's result for every one scanned.
 ///       `&mut dyn CandidateBytes` lends any byte reader for changing (it may read objects);
 ///       `Option<&[u8]>` is "the rules file's candidate pathname or nothing";
 ///       `Result<T, E>` is "a value or a failure".
-/// Why:  Results are returned for clean candidates too, so the caller can tell
-///       "scanned and clean" from "not scanned". The first failure ends the pass with
-///       no partial result, because a partial result would look like a clean pass.
+/// Why:
+///   Results are returned for clean candidates too,
+///  so the caller can tell
+///       "scanned and clean" from "not scanned".
+///  The first failure ends the pass with
+///       no partial result,
+///  because a partial result would look like a clean pass.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -143,7 +182,8 @@ pub fn scan_version(
 #[path = "scanner_run_tests.rs"]
 mod tests;
 
-/// Which candidates a pass skips, and how a pass ends on failure.
+/// Which candidates a pass skips,
+///  and how a pass ends on failure.
 #[cfg(test)]
 #[path = "scanner_run_selection_tests.rs"]
 mod selection_tests;

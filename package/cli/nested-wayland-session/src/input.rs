@@ -1,13 +1,24 @@
 //! Synthetic pointer and keyboard input injected through the compositor's own seat.
 //!
-//! Because the fixture owns the seat, injecting input is a direct in-process call into
-//! the seat's pointer and keyboard handles: no `/dev/uinput`, no global input, and the
-//! events reach only the hosted client. Coordinates are logical; keys are evdev codes
+//! Because the fixture owns the seat,
+//!  injecting input is a direct in-process call into
+//! the seat's pointer and keyboard handles:
+//!  no `/dev/uinput`,
+//!  no global input,
+//!  and the
+//! events reach only the hosted client.
+//!  Coordinates are logical;
+//!  keys are evdev codes
 //! (translated to the xkb keycode system by adding the 8-offset winit also applies).
 
-/// What:     Grouped `use` of the input state enums, keyboard focus/keycode types, the
-///           pointer event structs, and the coordinate/serial utilities.
-/// Why:      Everything the injection functions reference.
+/// What:
+///      Grouped `use` of the input state enums,
+///  keyboard focus/keycode types,
+///  the
+///           pointer event structs,
+///  and the coordinate/serial utilities.
+/// Why:
+///       Everything the injection functions reference.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,8 +33,10 @@ use smithay::{
     utils::{Logical, Point, SERIAL_COUNTER},
 };
 
-/// What:     `use crate::{keymap, protocol::{KeyAction, PointerButton}, state::Compositor};`.
-/// Why:      Injection reads the keymap tables and the protocol's button/action enums,
+/// What:
+///      `use crate::{keymap, protocol::{KeyAction, PointerButton}, state::Compositor};`.
+/// Why:
+///       Injection reads the keymap tables and the protocol's button/action enums,
 ///           and operates on the compositor state.
 ///
 /// In TS you'd write (pseudocode):
@@ -38,12 +51,20 @@ use crate::{
     state::Compositor,
 };
 
-/// Milliseconds since program start, used as the event timestamp.
+/// Milliseconds since program start,
+///  used as the event timestamp.
 ///
-/// What:     `fn event_time(state: &Compositor) -> u32`. Read-only borrow; returns a
-///           32-bit millisecond count. `.as_millis()` yields a 128-bit integer, cast to
-///           `u32` (Wayland event times are 32-bit and wrap, which clients tolerate).
-/// Why:      Every synthetic event needs a monotonic-ish timestamp.
+/// What:
+///      `fn event_time(state: &Compositor) -> u32`.
+///  Read-only borrow;
+///  returns a
+///           32-bit millisecond count.
+///  `.as_millis()` yields a 128-bit integer,
+///  cast to
+///           `u32` (Wayland event times are 32-bit and wrap,
+///  which clients tolerate).
+/// Why:
+///       Every synthetic event needs a monotonic-ish timestamp.
 fn event_time(state: &Compositor) -> u32 {
     // What:     `state.start_time.elapsed().as_millis() as u32`. Elapsed time, in ms,
     //           narrowed to `u32`. Tail expression.
@@ -51,12 +72,19 @@ fn event_time(state: &Compositor) -> u32 {
     return state.start_time.elapsed().as_millis() as u32
 }
 
-/// Click a button at a logical point: move the pointer there, press, and release.
+/// Click a button at a logical point:
+///  move the pointer there,
+///  press,
+///  and release.
 ///
-/// What:     `pub fn click(state: &mut Compositor, x: f64, y: f64, button:
-///           PointerButton)`. Mutably borrows the state; `x`/`y` are logical
+/// What:
+///      `pub fn click(state: &mut Compositor, x: f64, y: f64, button:
+///           PointerButton)`.
+///  Mutably borrows the state;
+///  `x`/`y` are logical
 ///           coordinates.
-/// Why:      The `click` control command lands a full press+release at a spot.
+/// Why:
+///       The `click` control command lands a full press+release at a spot.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -146,10 +174,15 @@ pub fn click(state: &mut Compositor, x: f64, y: f64, button: PointerButton) {
     pointer.frame(state);
 }
 
-/// Perform a press, release, or tap of a named key given its evdev code.
+/// Perform a press,
+///  release,
+///  or tap of a named key given its evdev code.
 ///
-/// What:     `pub fn key(state: &mut Compositor, evdev: u32, action: KeyAction)`.
-/// Why:      The `key` control command maps a key name to an evdev code, then calls this.
+/// What:
+///      `pub fn key(state: &mut Compositor, evdev: u32, action: KeyAction)`.
+/// Why:
+///       The `key` control command maps a key name to an evdev code,
+///  then calls this.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -171,11 +204,16 @@ pub fn key(state: &mut Compositor, evdev: u32, action: KeyAction) {
     }
 }
 
-/// Type a run of text as a sequence of key taps, holding Shift where needed.
+/// Type a run of text as a sequence of key taps,
+///  holding Shift where needed.
 ///
-/// What:     `pub fn type_text(state: &mut Compositor, text: &str)`. Iterates the
-///           characters and taps each; characters not on a US keyboard are skipped.
-/// Why:      The `type` control command feeds a string into the focused input.
+/// What:
+///      `pub fn type_text(state: &mut Compositor, text: &str)`.
+///  Iterates the
+///           characters and taps each;
+///  characters not on a US keyboard are skipped.
+/// Why:
+///       The `type` control command feeds a string into the focused input.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -221,9 +259,11 @@ pub fn type_text(state: &mut Compositor, text: &str) {
 
 /// Send one keyboard key event (press or release) through the seat's keyboard.
 ///
-/// What:     `fn send_key(state: &mut Compositor, evdev: u32, key_state: KeyState)`.
+/// What:
+///      `fn send_key(state: &mut Compositor, evdev: u32, key_state: KeyState)`.
 ///           Private helper.
-/// Why:      Both `key` and `type_text` funnel through one place that does the 8-offset
+/// Why:
+///       Both `key` and `type_text` funnel through one place that does the 8-offset
 ///           and the seat call.
 fn send_key(state: &mut Compositor, evdev: u32, key_state: KeyState) {
     // What:     `let keyboard = state.seat.get_keyboard().unwrap();`. The keyboard handle

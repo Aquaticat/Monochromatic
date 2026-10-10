@@ -1,5 +1,9 @@
-//! What: Native snapshot scanning against an independent fixed-rule byte oracle.
-//! Why: Lossy paths, prefix truncation, identity collisions and matcher reuse belong to the public embedding boundary.
+//! What:
+//!  Native snapshot scanning against an independent fixed-rule byte oracle.
+//! Why:
+//!  Lossy paths,
+//!  prefix truncation,
+//!  identity collisions and matcher reuse belong to the public embedding boundary.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,20 +12,25 @@
 
 #![no_main]
 
-/// Import the existing fuzz harness, public findings and cache-free production hybrid construction path.
+/// Import the existing fuzz harness,
+///  public findings and cache-free production hybrid construction path.
 use libfuzzer_sys::fuzz_target;
 use forbidden_strings::{CandidateScan, Scanner, ScanFinding};
 use forbidden_strings::fuzz_api::scanner_from_text_for_fuzzing;
-/// OnceLock builds a fixture once, unlike Mutex/RwLock which would permit mutation on each scan.
+/// OnceLock builds a fixture once,
+///  unlike Mutex/RwLock which would permit mutation on each scan.
 use std::sync::OnceLock;
-/// Native Unix path construction preserves every byte, rather than String's UTF-8 restriction.
+/// Native Unix path construction preserves every byte,
+///  rather than String's UTF-8 restriction.
 use std::ffi::OsString;
 use std::os::unix::ffi::OsStringExt;
 use std::path::{Path, PathBuf};
 
-/// The probe limit is part of the inherited standalone contract, not a fuzzer-specific cap.
+/// The probe limit is part of the inherited standalone contract,
+///  not a fuzzer-specific cap.
 const PROBE: usize = 8192;
-/// One immutable compiled hybrid set, shared by sequential fuzz iterations to exercise reuse.
+/// One immutable compiled hybrid set,
+///  shared by sequential fuzz iterations to exercise reuse.
 static SCANNER: OnceLock<Scanner> = OnceLock::new();
 
 /// Initialize both production matcher subsets with stable non-secret names.
@@ -31,7 +40,8 @@ fn scanner() -> Scanner {
         .expect("fixed embedding rules compile");
 }
 
-/// Collect expected content records without calling any matcher, splitter or renderer from the scanner.
+/// Collect expected content records without calling any matcher,
+///  splitter or renderer from the scanner.
 fn expected(bytes: &[u8]) -> Vec<ScanFinding> {
     // Vec owns a variable number of records, rather than borrowed &[ScanFinding] or a fixed array.
     let mut findings: Vec<ScanFinding> = Vec::new();
@@ -64,7 +74,8 @@ fn content_findings(report: &CandidateScan) -> Vec<ScanFinding> {
     return records;
 }
 
-/// Independently enumerate native Unix pathname findings, rejecting failures for these valid fixed matchers.
+/// Independently enumerate native Unix pathname findings,
+///  rejecting failures for these valid fixed matchers.
 fn name_findings(input: &[u8]) -> Vec<ScanFinding> {
     // Line-breaking names intentionally fail closed before any component matching occurs.
     if input.contains(&b'\n') || input.contains(&b'\r') {
@@ -87,7 +98,10 @@ fn name_findings(input: &[u8]) -> Vec<ScanFinding> {
     return findings;
 }
 
-/// Exercise public scan, native bytes, redaction, independent content semantics and state reuse.
+/// Exercise public scan,
+///  native bytes,
+///  redaction,
+///  independent content semantics and state reuse.
 fn verify(input: &[u8]) {
     let scanner: &Scanner = SCANNER.get_or_init(scanner);
     // Independent positive controls prove both oracle branches can report real matches.

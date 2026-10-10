@@ -1,5 +1,8 @@
-//! What: Expand native literal inputs and explicit path globs into supported source files.
-//! Why: Glob syntax must not reinterpret an existing filename, and unmatched inputs must remain distinguishable from an empty directory.
+//! What:
+//!  Expand native literal inputs and explicit path globs into supported source files.
+//! Why:
+//!  Glob syntax must not reinterpret an existing filename,
+//!  and unmatched inputs must remain distinguishable from an empty directory.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,10 +15,13 @@ use crate::file_discovery::{DiscoveryOptions, FileDiscoveryError, discover_liter
 use globset::{GlobBuilder, GlobMatcher};
 /// Import native path collection and I/O error classification.
 use std::collections::BTreeSet;
+/// Import the I/O error kind so a missing path can be told apart from other failures.
 use std::io::ErrorKind;
+/// Import the path component and path types used to normalise caller-supplied paths.
 use std::path::{Component, Path, PathBuf};
 
-/// Determine whether a path token contains glob punctuation; existing files are tested before calling this.
+/// Determine whether a path token contains glob punctuation;
+///  existing files are tested before calling this.
 fn has_glob(text: &str) -> bool {
     for character in text.chars() {
         if character == '*' || character == '?' || character == '[' || character == '{' {
@@ -112,7 +118,8 @@ fn expand_glob(
     return Ok(matched);
 }
 
-/// Collect explicit input tokens, defaulting to cwd only when the caller supplies no paths.
+/// Collect explicit input tokens,
+///  defaulting to cwd only when the caller supplies no paths.
 pub fn collect_inputs(
     inputs: &[PathBuf],
     options: &DiscoveryOptions,

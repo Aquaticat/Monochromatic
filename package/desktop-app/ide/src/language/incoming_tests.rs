@@ -1,4 +1,5 @@
-//! Exact replies of the server-request policy, without a server.
+//! Exact replies of the server-request policy,
+//!  without a server.
 
 use super::{ClientView, Decision, EDIT_REFUSAL, Effect, configuration_section, decide};
 use helix_lsp::{jsonrpc, lsp};
@@ -29,7 +30,8 @@ fn decided(method: &str, value: Value) -> Decision {
     return decide(method, params(value), &client);
 }
 
-/// The reply as it appears on the wire, without the envelope helix-lsp adds.
+/// The reply as it appears on the wire,
+///  without the envelope helix-lsp adds.
 fn wire(decision: &Decision) -> Value {
     return match &decision.reply {
         Ok(result) => json!({ "result": result }),

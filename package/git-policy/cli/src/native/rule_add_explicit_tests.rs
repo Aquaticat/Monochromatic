@@ -1,13 +1,19 @@
-//! What: Which `git add` invocations the add-explicit policy rejects, and the exact text.
-//! Why: The text names the caller's own tokens; a bulk form read as explicit stages the
-//!      whole worktree, and an explicit form read as bulk blocks ordinary staging.
+//! What:
+//!  Which `git add` invocations the add-explicit policy rejects,
+//!  and the exact text.
+//! Why:
+//!  The text names the caller's own tokens;
+//!  a bulk form read as explicit stages the
+//!      whole worktree,
+//!  and an explicit form read as bulk blocks ordinary staging.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(decideAddExplicit(['add', 'file.ts'])).toBeUndefined();
 //! ```
 
-/// The decision, its code and the argument builders.
+/// The decision,
+///  its code and the argument builders.
 use super::{BULK_ADD_CODE, decide_add_explicit};
 use crate::command_test_support::{byte_argument, os_arguments};
 use std::ffi::OsString;
@@ -27,7 +33,9 @@ fn decide(values: &[&str]) -> Option<String> {
     return decide_add_explicit(os_arguments(values).as_slice());
 }
 
-/// Bulk tokens are rejected and named as the caller wrote them, in argument order, each once.
+/// Bulk tokens are rejected and named as the caller wrote them,
+///  in argument order,
+///  each once.
 #[test]
 fn bulk_forms_are_rejected_and_named() {
     assert_eq!(BULK_ADD_CODE, "bulk-add-rejected");
@@ -49,7 +57,9 @@ fn bulk_forms_are_rejected_and_named() {
     }
 }
 
-/// Explicit paths, other commands, option values spelling a bulk token and regions Git refuses pass.
+/// Explicit paths,
+///  other commands,
+///  option values spelling a bulk token and regions Git refuses pass.
 #[test]
 fn explicit_forms_pass() {
     for values in [

@@ -1,14 +1,21 @@
-//! What: The fixed registry of policies compiled into the native wrapper.
-//! Why: Repository JSONC can only tune shipped policies; it can never name code to run.
+//! What:
+//!  The fixed registry of policies compiled into the native wrapper.
+//! Why:
+//!  Repository JSONC can only tune shipped policies;
+//!  it can never name code to run.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const POLICY_REGISTRY = [{ name: 'require-root', defaultSeverity: 'error', ... }] as const;
 //! ```
 
-/// What: `enum Severity` is a closed set of three named values.
-///       `#[derive(...)]` asks the compiler to generate copying, printing and `==`.
-/// Why:  A closed set makes an unhandled severity a compile error, unlike a free string.
+/// What:
+///  `enum Severity` is a closed set of three named values.
+///       `#[derive(...)]` asks the compiler to generate copying,
+///  printing and `==`.
+/// Why:
+///   A closed set makes an unhandled severity a compile error,
+///  unlike a free string.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,8 +31,11 @@ pub enum Severity {
     Error,
 }
 
-/// What: One variant per shipped policy; the variant is the policy's identity in Rust.
-/// Why:  Typed identities let options and settings be looked up without string comparison.
+/// What:
+///  One variant per shipped policy;
+///  the variant is the policy's identity in Rust.
+/// Why:
+///   Typed identities let options and settings be looked up without string comparison.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,31 +43,47 @@ pub enum Severity {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PolicyId {
-    /// `require-root`: repository-root working directory requirement.
+    /// `require-root`:
+    ///  repository-root working directory requirement.
     RequireRoot,
-    /// `linked-worktree-only`: destructive commands stay in linked worktrees.
+    /// `linked-worktree-only`:
+    ///  destructive commands stay in linked worktrees.
     LinkedWorktreeOnly,
-    /// `branch-worktree-only`: branch creation goes through `git worktree add`.
+    /// `branch-worktree-only`:
+    ///  branch creation goes through `git worktree add`.
     BranchWorktreeOnly,
-    /// `add-explicit`: bulk staging patterns are rejected.
+    /// `add-explicit`:
+    ///  bulk staging patterns are rejected.
     AddExplicit,
-    /// `final-newline`: text candidates end with one line feed.
+    /// `final-newline`:
+    ///  text candidates end with one line feed.
     FinalNewline,
-    /// `markdown/autofix`: commit-time Markdown normalization.
+    /// `markdown/autofix`:
+    ///  commit-time Markdown normalization.
     MarkdownAutofix,
-    /// `mono/forbidden-root-context`: no root `CONTEXT.md` enters a commit.
+    /// `mono/forbidden-root-context`:
+    ///  no root `CONTEXT.md` enters a commit.
     ForbiddenRootContext,
-    /// `mono/dependent-version-bump`: dependent package versions follow a bumped package.
+    /// `mono/dependent-version-bump`:
+    ///  dependent package versions follow a bumped package.
     DependentVersionBump,
-    /// `security/forbidden-strings`: candidate bytes are scanned by the bundled scanner.
+    /// `security/forbidden-strings`:
+    ///  candidate bytes are scanned by the bundled scanner.
     ForbiddenStrings,
 }
 
-/// What: `struct PolicyDescriptor` is one registry row.
+/// What:
+///  `struct PolicyDescriptor` is one registry row.
 ///       `&'static str` is a borrowed string baked into the executable for its whole run
-///       (`'static` is that "lives forever" lifetime). Sibling: `String`, an owned copy.
-///       `bool` is `true`/`false`, exactly TS `boolean`.
-/// Why:  Registry text is compiled in and never changes, so borrowing forever is free,
+///       (`'static` is that "lives forever" lifetime).
+///  Sibling:
+///  `String`,
+///  an owned copy.
+///       `bool` is `true`/`false`,
+///  exactly TS `boolean`.
+/// Why:
+///   Registry text is compiled in and never changes,
+///  so borrowing forever is free,
 ///       while `String` would allocate at startup for no gain.
 ///
 /// In TS you'd write (pseudocode):
@@ -71,27 +97,37 @@ pub struct PolicyDescriptor {
     pub id: PolicyId,
     /// Stable configuration key and JSONL `policyId`.
     pub name: &'static str,
-    /// The incumbent policy definition's `defaultSeverity`. A built-in policy the
+    /// The incumbent policy definition's `defaultSeverity`.
+    ///  A built-in policy the
     /// repository configuration does not name runs at this severity.
     pub default_severity: Severity,
     /// Whether `warn` keeps the policy's protection (an unsafe `warn` earns a warning event).
     pub warn_safe: bool,
     /// Whether the `["severity", { ... }]` form is accepted for this policy.
     pub accepts_options: bool,
-    /// Whether the policy runs only where `cli-git.config.jsonc` names it. The four
-    /// policies that plugins used to provide are off everywhere else, with or without
+    /// Whether the policy runs only where `cli-git.config.jsonc` names it.
+    ///  The four
+    /// policies that plugins used to provide are off everywhere else,
+    ///  with or without
     /// a configuration file (decided 2026-10-05).
     pub off_unless_listed: bool,
 }
 
-/// What: `pub const POLICY_REGISTRY: &[PolicyDescriptor]` is a compiled-in, read-only list.
-///       `&[T]` is a borrowed view of an array; siblings are `Vec<T>` (owned, growable)
+/// What:
+///  `pub const POLICY_REGISTRY: &[PolicyDescriptor]` is a compiled-in,
+///  read-only list.
+///       `&[T]` is a borrowed view of an array;
+///  siblings are `Vec<T>` (owned,
+///  growable)
 ///       and `[T; N]` (fixed length in the type).
-/// Why:  Execution and configuration order must be identical on every run; a borrowed
+/// Why:
+///   Execution and configuration order must be identical on every run;
+///  a borrowed
 ///       constant needs no allocation and cannot be reordered at runtime.
 ///       Every default is the incumbent policy definition's own `defaultSeverity`.
 ///       The four formerly plugin-provided policies are additionally off unless the
-///       repository configuration names them, because the incumbent only ran them in
+///       repository configuration names them,
+///  because the incumbent only ran them in
 ///       repositories whose configuration registered their plugin.
 ///
 /// In TS you'd write (pseudocode):
@@ -173,10 +209,14 @@ pub const POLICY_REGISTRY: &[PolicyDescriptor] = &[
     },
 ];
 
-/// What: Find a registry row by its configuration key.
-///       `Option<T>` is Rust's "value or nothing": `Some(row)` or `None`.
+/// What:
+///  Find a registry row by its configuration key.
+///       `Option<T>` is Rust's "value or nothing":
+///  `Some(row)` or `None`.
 ///       `&'static PolicyDescriptor` borrows a row that lives as long as the program.
-/// Why:  An unknown policy ID must be reported, never treated as a new policy.
+/// Why:
+///   An unknown policy ID must be reported,
+///  never treated as a new policy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -211,8 +251,11 @@ pub fn policy_by_name(name: &str) -> Option<&'static PolicyDescriptor> {
     return None;
 }
 
-/// What: Find the registry row for a typed identity.
-/// Why:  Callers holding a `PolicyId` need its name, default and warn-safety.
+/// What:
+///  Find the registry row for a typed identity.
+/// Why:
+///   Callers holding a `PolicyId` need its name,
+///  default and warn-safety.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -238,8 +281,11 @@ pub fn policy_descriptor(id: PolicyId) -> &'static PolicyDescriptor {
     unreachable!("every PolicyId variant has a POLICY_REGISTRY row");
 }
 
-/// What: Translate a configuration word into a typed severity.
-/// Why:  Only the three documented spellings are settings; anything else is an error
+/// What:
+///  Translate a configuration word into a typed severity.
+/// Why:
+///   Only the three documented spellings are settings;
+///  anything else is an error
 ///       the caller reports with the offending key.
 ///
 /// In TS you'd write (pseudocode):
@@ -259,8 +305,10 @@ pub fn severity_from_name(name: &str) -> Option<Severity> {
     return None;
 }
 
-/// What: Translate a typed severity back to its configuration and JSONL spelling.
-/// Why:  Events and diagnostics print the same words the configuration accepts.
+/// What:
+///  Translate a typed severity back to its configuration and JSONL spelling.
+/// Why:
+///   Events and diagnostics print the same words the configuration accepts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -276,9 +324,11 @@ pub fn severity_name(severity: Severity) -> &'static str {
     return "error";
 }
 
-/// What: `#[cfg(test)]` compiles the next item only for `cargo test`;
+/// What:
+///  `#[cfg(test)]` compiles the next item only for `cargo test`;
 ///       `#[path = "..."]` names the sibling file holding the module body.
-/// Why:  Registry controls stay out of the release executable.
+/// Why:
+///   Registry controls stay out of the release executable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

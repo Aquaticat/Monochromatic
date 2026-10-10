@@ -1,5 +1,7 @@
-//! What: Declaration-site portion of the explicit Rust type policy.
-//! Why: Missing annotation syntax is checked separately from resolving generic calls and written inference holes.
+//! What:
+//!  Declaration-site portion of the explicit Rust type policy.
+//! Why:
+//!  Missing annotation syntax is checked separately from resolving generic calls and written inference holes.
 //! This module alone is not the complete rust/require-explicit-types rule.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +9,10 @@
 //! // Check variable and anonymous-function annotations, then run semantic checks separately.
 //! ```
 
-/// What: Import the shared owned finding and borrowed source interfaces.
-/// Why: Declaration checks reuse the same parse and byte-coordinate convention as the other Rust rules.
+/// What:
+///  Import the shared owned finding and borrowed source interfaces.
+/// Why:
+///  Declaration checks reuse the same parse and byte-coordinate convention as the other Rust rules.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,12 +26,16 @@ use crate::rust_type_diagnostic::type_finding;
 /// Import typed syntax accessors and source-node references.
 use ra_ap_syntax::{AstNode, ast};
 
-/// What: Require annotations on let statements and anonymous-function parameters/results.
-/// Why: These are declaration positions where valid Rust otherwise infers a type.
+/// What:
+///  Require annotations on let statements and anonymous-function parameters/results.
+/// Why:
+///  These are declaration positions where valid Rust otherwise infers a type.
 /// Named function parameters and non-unit results are already mandatory in Rust;
 /// omitted named-function results declare unit rather than inferring a result.
 /// Loop and conditional patterns have no equivalent annotation slot and are not rewritten.
-/// Existing annotations, including `_`, are left for the semantic half to validate.
+/// Existing annotations,
+///  including `_`,
+///  are left for the semantic half to validate.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,7 +1,16 @@
-//! What: Controls for the lifecycle's candidates: prepared once, shared, failures remembered
-//!       and coded by cause, and no read before preparation.
-//! Why: A second preparation would double the Git work; a retried failure could report
-//!      two different answers; a read before preparation must fail, never look clean.
+//! What:
+//!  Controls for the lifecycle's candidates:
+//!  prepared once,
+//!  shared,
+//!  failures remembered
+//!       and coded by cause,
+//!  and no read before preparation.
+//! Why:
+//!  A second preparation would double the Git work;
+//!  a retried failure could report
+//!      two different answers;
+//!  a read before preparation must fail,
+//!  never look clean.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -65,7 +74,8 @@ fn no_candidates_prepare_nothing() {
     assert_eq!(facts.asked, Vec::<String>::new());
 }
 
-/// Candidates are prepared once and the same version is shared; bytes come through its store.
+/// Candidates are prepared once and the same version is shared;
+///  bytes come through its store.
 #[test]
 fn candidates_are_prepared_once_and_shared() {
     let root: PathBuf = fixture("content-shared");
@@ -130,7 +140,9 @@ fn candidates_are_prepared_once_and_shared() {
     remove(root.as_path());
 }
 
-/// A failure to prepare is remembered: reported the same way to every reader, never retried.
+/// A failure to prepare is remembered:
+///  reported the same way to every reader,
+///  never retried.
 #[test]
 fn a_failed_preparation_is_remembered() {
     let mut facts: ScriptedFacts = scripted_facts();
@@ -212,8 +224,11 @@ fn change(path: &str, original: &[u8], replacement: &[u8]) -> InstallChange {
     };
 }
 
-/// Corrections wait until taken, apply in order over the first original, disappear when
-/// they restore it, and are read by every later byte read and listed in byte order.
+/// Corrections wait until taken,
+///  apply in order over the first original,
+///  disappear when
+/// they restore it,
+///  and are read by every later byte read and listed in byte order.
 #[test]
 fn corrections_overlay_the_prepared_bytes() {
     let root: PathBuf = fixture("content-corrections");
@@ -277,7 +292,8 @@ fn corrections_overlay_the_prepared_bytes() {
     remove(root.as_path());
 }
 
-/// The scan reads corrected bytes: a match that only a correction removes is not reported.
+/// The scan reads corrected bytes:
+///  a match that only a correction removes is not reported.
 #[test]
 fn the_scan_reads_corrected_bytes() {
     run_isolated(

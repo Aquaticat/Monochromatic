@@ -1,4 +1,5 @@
-//! Native notched-wheel injection through the nested seat, not a client test API.
+//! Native notched-wheel injection through the nested seat,
+//!  not a client test API.
 
 /// Application diagnostics describe malformed or currently unmapped input.
 use anyhow::{bail, Context, Result};
@@ -11,10 +12,13 @@ use smithay::{
 /// Only the nested compositor's seat is touched.
 use crate::state::Compositor;
 
-/// Inject wheel notches at logical coordinates; positive means down/right.
+/// Inject wheel notches at logical coordinates;
+///  positive means down/right.
 ///
-/// What: Each notch becomes 120 discrete Wayland units plus its logical delta.
-/// Why: Clients can distinguish a physical wheel from cancelled/programmatic scroll.
+/// What:
+///  Each notch becomes 120 discrete Wayland units plus its logical delta.
+/// Why:
+///  Clients can distinguish a physical wheel from cancelled/programmatic scroll.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

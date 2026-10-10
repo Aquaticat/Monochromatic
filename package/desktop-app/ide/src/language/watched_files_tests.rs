@@ -1,5 +1,9 @@
-//! Registered file watchers without a server: the merge rule, glob matching per the protocol, kinds,
-//! bursts, and servers that stopped.
+//! Registered file watchers without a server:
+//!  the merge rule,
+//!  glob matching per the protocol,
+//!  kinds,
+//! bursts,
+//!  and servers that stopped.
 
 /// The registry and the merge rule under test.
 use super::{FORWARD_LIMIT, FORWARD_QUIET, WatchedFiles, merge};
@@ -7,8 +11,11 @@ use super::{FORWARD_LIMIT, FORWARD_QUIET, WatchedFiles, merge};
 use crate::change_watch::{ServerChange, ServerChangeKind};
 /// The protocol's data types.
 use helix_lsp::lsp;
-/// What: `json!` builds a JSON value from literal syntax; `from_value` decodes it into a typed record.
-/// Why: Registrations are written exactly as a server sends them.
+/// What:
+///  `json!` builds a JSON value from literal syntax;
+///  `from_value` decodes it into a typed record.
+/// Why:
+///  Registrations are written exactly as a server sends them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,7 +51,9 @@ fn running(_server: u32) -> bool {
     return true;
 }
 
-/// The (address, kind number) pairs of one batch, for comparison.
+/// The (address,
+///  kind number) pairs of one batch,
+///  for comparison.
 fn pairs(events: &[lsp::FileEvent]) -> Vec<(String, i32)> {
     return events
         .iter()
@@ -61,7 +70,9 @@ fn pairs(events: &[lsp::FileEvent]) -> Vec<(String, i32)> {
         .collect();
 }
 
-/// The final state on disk decides: a deletion after a creation stays a deletion, and a replaced file changed.
+/// The final state on disk decides:
+///  a deletion after a creation stays a deletion,
+///  and a replaced file changed.
 #[test]
 fn the_merged_kind_matches_the_final_state() {
     use ServerChangeKind::{Changed, Created, Deleted};
@@ -75,8 +86,11 @@ fn the_merged_kind_matches_the_final_state() {
     assert_eq!(merge(None, Changed), Changed);
 }
 
-/// Relative and string patterns follow the protocol: `*` stays in one segment, `**` spans segments,
-/// `{}` groups, and a relative pattern only matches below its base.
+/// Relative and string patterns follow the protocol:
+///  `*` stays in one segment,
+///  `**` spans segments,
+/// `{}` groups,
+///  and a relative pattern only matches below its base.
 #[test]
 fn glob_patterns_follow_the_protocol() {
     let mut watched: WatchedFiles<u32> = WatchedFiles::default();
@@ -126,7 +140,8 @@ fn glob_patterns_follow_the_protocol() {
     );
 }
 
-/// A watcher's kind limits what it hears; with no kind it hears all three.
+/// A watcher's kind limits what it hears;
+///  with no kind it hears all three.
 #[test]
 fn kinds_limit_what_a_watcher_hears() {
     let mut watched: WatchedFiles<u32> = WatchedFiles::default();
@@ -147,7 +162,9 @@ fn kinds_limit_what_a_watcher_hears() {
     );
 }
 
-/// A burst is sent once quiet, or at the latest after the limit, with each path once.
+/// A burst is sent once quiet,
+///  or at the latest after the limit,
+///  with each path once.
 #[test]
 fn a_burst_is_sent_once_with_each_path_once() {
     let mut watched: WatchedFiles<u32> = WatchedFiles::default();
@@ -189,7 +206,8 @@ fn a_burst_is_sent_once_with_each_path_once() {
     );
 }
 
-/// Servers that registered nothing get nothing, and a stopped server's watchers are forgotten.
+/// Servers that registered nothing get nothing,
+///  and a stopped server's watchers are forgotten.
 #[test]
 fn only_running_servers_with_watchers_hear_anything() {
     let mut watched: WatchedFiles<u32> = WatchedFiles::default();

@@ -1,5 +1,8 @@
-//! What: ASAN coverage-guided entry for native Markdown rules and original-source edits.
-//! Why: The shared assertions run in unit controls and in a resource-bounded, mount-free fuzz process.
+//! What:
+//!  ASAN coverage-guided entry for native Markdown rules and original-source edits.
+//! Why:
+//!  The shared assertions run in unit controls and in a resource-bounded,
+//!  mount-free fuzz process.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

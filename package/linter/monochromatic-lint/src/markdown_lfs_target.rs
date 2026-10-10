@@ -1,7 +1,10 @@
-//! What: Pure classification of image destinations for `markdown/lfs-image-url`.
-//! Why: The rule (which decides fixes) and the context builder (which resolves every candidate path
+//! What:
+//!  Pure classification of image destinations for `markdown/lfs-image-url`.
+//! Why:
+//!  The rule (which decides fixes) and the context builder (which resolves every candidate path
 //! before the rule runs) must agree on which repository path a destination names.
-//! Nothing here reads the filesystem; paths are resolved lexically.
+//! Nothing here reads the filesystem;
+//!  paths are resolved lexically.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,11 +13,16 @@
 
 /// Import the object-id spelling check.
 use crate::markdown_lfs_oid::is_lfs_oid;
-/// Import native path components; `PathBuf` owns a path, `Path` borrows one.
+/// Import native path components;
+///  `PathBuf` owns a path,
+///  `Path` borrows one.
 use std::path::{Component, Path, PathBuf};
 
-/// What: Whether a destination carries a URL scheme such as `https:`, `mailto:` or `data:`.
-/// Why: A scheme-qualified destination never names a working-tree file.
+/// What:
+///  Whether a destination carries a URL scheme such as `https:`,
+///  `mailto:` or `data:`.
+/// Why:
+///  A scheme-qualified destination never names a working-tree file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,8 +45,11 @@ fn has_scheme(url: &str) -> bool {
     return true;
 }
 
-/// What: Whether a destination is a path inside the working tree.
-/// Why: Fragments, site-absolute paths and scheme-qualified URLs are left to other rules.
+/// What:
+///  Whether a destination is a path inside the working tree.
+/// Why:
+///  Fragments,
+///  site-absolute paths and scheme-qualified URLs are left to other rules.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,8 +59,11 @@ pub(crate) fn is_relative_path(url: &str) -> bool {
     return !url.is_empty() && !url.starts_with('#') && !url.starts_with('/') && !has_scheme(url);
 }
 
-/// What: A destination without its query and fragment.
-/// Why: Neither part names a file; the cut is at whichever delimiter comes first.
+/// What:
+///  A destination without its query and fragment.
+/// Why:
+///  Neither part names a file;
+///  the cut is at whichever delimiter comes first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -66,9 +80,13 @@ pub(crate) fn path_part(url: &str) -> &str {
     return &url[..cut];
 }
 
-/// What: Remove `.` components and resolve `..` components without touching the filesystem.
-/// Why: A path such as `cwd/../doc/a.md` must name the same directory as its resolved form before
-/// a relative destination is applied to it. `..` at the root stays at the root, as `path.resolve` does.
+/// What:
+///  Remove `.` components and resolve `..` components without touching the filesystem.
+/// Why:
+///  A path such as `cwd/../doc/a.md` must name the same directory as its resolved form before
+/// a relative destination is applied to it.
+///  `..` at the root stays at the root,
+///  as `path.resolve` does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -91,8 +109,12 @@ pub(crate) fn lexical_normal(path: &Path) -> PathBuf {
     return normal;
 }
 
-/// What: Apply forward-slash destination segments to a directory, lexically.
-/// Why: Markdown destinations use `/` on every platform; empty and `.` segments name nothing new.
+/// What:
+///  Apply forward-slash destination segments to a directory,
+///  lexically.
+/// Why:
+///  Markdown destinations use `/` on every platform;
+///  empty and `.` segments name nothing new.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -113,9 +135,14 @@ pub(crate) fn apply_segments(directory: &Path, segments: &str) -> PathBuf {
     return resolved;
 }
 
-/// What: The forward-slash path of `path` below `root`, or `None` when it is the root itself, lies
-/// outside it, or has a component that is not valid UTF-8.
-/// Why: Object URLs and gitignore patterns both address files by this repository-relative spelling,
+/// What:
+///  The forward-slash path of `path` below `root`,
+///  or `None` when it is the root itself,
+///  lies
+/// outside it,
+///  or has a component that is not valid UTF-8.
+/// Why:
+///  Object URLs and gitignore patterns both address files by this repository-relative spelling,
 /// and a destination that escapes the repository names no repository file.
 ///
 /// In TS you'd write (pseudocode):
@@ -138,9 +165,12 @@ pub(crate) fn repo_relative(root: &Path, path: &Path) -> Option<String> {
     return Some(parts.join("/"));
 }
 
-/// What: The repository-relative path a relative destination names, or `None` when the destination
+/// What:
+///  The repository-relative path a relative destination names,
+///  or `None` when the destination
 /// is not a relative path or leaves the repository.
-/// Why: This is the key the context builder resolves and the path an object URL embeds.
+/// Why:
+///  This is the key the context builder resolves and the path an object URL embeds.
 /// Both `file_path` and `repo_root` must already be absolute and lexically normal.
 ///
 /// In TS you'd write (pseudocode):
@@ -160,8 +190,10 @@ pub(crate) fn relative_target_path(
     return repo_relative(repo_root, &absolute);
 }
 
-/// What: The object id and repository path embedded in an object URL under the repository's base.
-/// Why: Only a complete `<base>/<oid>/<path>` is kept in step with the file it names.
+/// What:
+///  The object id and repository path embedded in an object URL under the repository's base.
+/// Why:
+///  Only a complete `<base>/<oid>/<path>` is kept in step with the file it names.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -169,15 +201,22 @@ pub(crate) fn relative_target_path(
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct ObjectUrlParts {
-    /// Embedded object id, 64 lowercase hexadecimal characters.
+    /// Embedded object id,
+    ///  64 lowercase hexadecimal characters.
     pub(crate) oid: String,
-    /// Embedded forward-slash path exactly as written, without query or fragment.
+    /// Embedded forward-slash path exactly as written,
+    ///  without query or fragment.
     pub(crate) repo_relative_path: String,
 }
 
-/// What: Parse `<objectBase>/<oid>/<path>`, or `None` when the destination is not under the base or
+/// What:
+///  Parse `<objectBase>/<oid>/<path>`,
+///  or `None` when the destination is not under the base or
 /// lacks a well-formed id or a path.
-/// Why: The base match is an exact string prefix, as in the incumbent; no URL is re-parsed here.
+/// Why:
+///  The base match is an exact string prefix,
+///  as in the incumbent;
+///  no URL is re-parsed here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -202,8 +241,11 @@ pub(crate) fn object_url_parts(url: &str, object_base: &str) -> Option<ObjectUrl
     });
 }
 
-/// What: The forward-slash link from one directory to a file, both absolute and lexically normal.
-/// Why: A target that left LFS returns to a relative link from the Markdown file's directory.
+/// What:
+///  The forward-slash link from one directory to a file,
+///  both absolute and lexically normal.
+/// Why:
+///  A target that left LFS returns to a relative link from the Markdown file's directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

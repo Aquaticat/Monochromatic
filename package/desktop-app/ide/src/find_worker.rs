@@ -1,13 +1,18 @@
-//! One in-file find job at a time; the newest request replaces any waiting one.
+//! One in-file find job at a time;
+//!  the newest request replaces any waiting one.
 
 /// The worker calls the same matching function the reference test pins.
 use crate::find::{FindMatches, find_in_source};
 /// Worker-start and unexpected-disconnect failures stay visible diagnostics.
 use anyhow::{Context, Result, bail};
-/// Rope clones share immutable text chunks, so a request does not copy the document.
+/// Rope clones share immutable text chunks,
+///  so a request does not copy the document.
 use helix_core::Rope;
-/// What: Channels move owned messages between threads; capacity one bounds queued work.
-/// Why: Typing stays independent of a scan over a large file.
+/// What:
+///  Channels move owned messages between threads;
+///  capacity one bounds queued work.
+/// Why:
+///  Typing stays independent of a scan over a large file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +23,14 @@ use std::{
     thread::{self, JoinHandle},
 };
 
-/// What: A copyable three-part tag; `u64` is a fixed 64-bit unsigned integer, unlike pointer-sized `usize`.
-/// Why: A reply is usable only for the same displayed file, content revision, and query text.
+/// What:
+///  A copyable three-part tag;
+///  `u64` is a fixed 64-bit unsigned integer,
+///  unlike pointer-sized `usize`.
+/// Why:
+///  A reply is usable only for the same displayed file,
+///  content revision,
+///  and query text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,17 +38,22 @@ use std::{
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FindIdentity {
-    /// File-open generation; changes on every navigation to another file.
+    /// File-open generation;
+    ///  changes on every navigation to another file.
     pub file: u64,
-    /// Content revision; changes on every accepted external reload.
+    /// Content revision;
+    ///  changes on every accepted external reload.
     pub revision: u64,
-    /// Query generation; changes on every edit of the find text.
+    /// Query generation;
+    ///  changes on every edit of the find text.
     pub query: u64,
 }
 
 /// Each component is compared separately so each has its own observed-failing regression test.
 impl FindIdentity {
-    /// True only when the reply describes the wanted file, revision, and query.
+    /// True only when the reply describes the wanted file,
+    ///  revision,
+    ///  and query.
     pub fn is_current(&self, wanted: &FindIdentity) -> bool {
         return self.file == wanted.file
             && self.revision == wanted.revision
@@ -45,7 +61,8 @@ impl FindIdentity {
     }
 }
 
-/// An owned snapshot of what to search; nothing in it borrows native state.
+/// An owned snapshot of what to search;
+///  nothing in it borrows native state.
 pub struct FindRequest {
     /// Tag copied unchanged into the reply.
     pub identity: FindIdentity,
@@ -60,12 +77,17 @@ pub struct FindRequest {
 pub struct FindReply {
     /// Tag of the request that produced this reply.
     pub identity: FindIdentity,
-    /// Bounded matches, or why this query or file cannot be searched.
+    /// Bounded matches,
+    ///  or why this query or file cannot be searched.
     pub result: Result<FindMatches>,
 }
 
-/// What: `Option<T>` holds a value or nothing; the struct owns both channel ends it uses.
-/// Why: At most one job runs and at most one newer request waits, so memory stays bounded while typing.
+/// What:
+///  `Option<T>` holds a value or nothing;
+///  the struct owns both channel ends it uses.
+/// Why:
+///  At most one job runs and at most one newer request waits,
+///  so memory stays bounded while typing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,11 +100,13 @@ pub struct FindWorker {
     replies: Receiver<FindReply>,
     /// Covers a running job and its unread reply.
     busy: bool,
-    /// Newest request not yet sent; an older waiting request is dropped unsearched.
+    /// Newest request not yet sent;
+    ///  an older waiting request is dropped unsearched.
     waiting: Option<FindRequest>,
     /// Only replies carrying this identity are returned.
     wanted: Option<FindIdentity>,
-    /// Joined on shutdown, never detached.
+    /// Joined on shutdown,
+    ///  never detached.
     thread: Option<JoinHandle<()>>,
 }
 
@@ -129,7 +153,8 @@ fn run(requests: Receiver<FindRequest>, replies: SyncSender<FindReply>) {
     }
 }
 
-/// Requests replace each other; polling returns only the reply for the newest request.
+/// Requests replace each other;
+///  polling returns only the reply for the newest request.
 impl FindWorker {
     /// Start a named worker with one request slot and one reply slot.
     pub fn new() -> Result<Self> {
@@ -172,7 +197,8 @@ impl FindWorker {
         });
     }
 
-    /// Make this the only wanted request; a job already running finishes and its reply is discarded.
+    /// Make this the only wanted request;
+    ///  a job already running finishes and its reply is discarded.
     pub fn request(&mut self, request: FindRequest) -> Result<()> {
         tracing::debug!(identity = ?request.identity, "requested in-file find");
         self.wanted = Some(request.identity);
@@ -180,14 +206,17 @@ impl FindWorker {
         return self.dispatch();
     }
 
-    /// Want nothing: drop the waiting request and discard whatever reply is still coming.
+    /// Want nothing:
+    ///  drop the waiting request and discard whatever reply is still coming.
     pub fn cancel(&mut self) {
         tracing::debug!("cancelled in-file find requests");
         self.wanted = None;
         self.waiting = None;
     }
 
-    /// True while a job runs, its reply is unread, or a request waits.
+    /// True while a job runs,
+    ///  its reply is unread,
+    ///  or a request waits.
     pub fn is_pending(&self) -> bool {
         return self.busy || self.waiting.is_some();
     }
@@ -225,7 +254,8 @@ impl FindWorker {
         return Ok(());
     }
 
-    /// Poll without blocking; a reply for anything but the wanted identity is consumed and dropped.
+    /// Poll without blocking;
+    ///  a reply for anything but the wanted identity is consumed and dropped.
     pub fn poll(&mut self) -> Result<Option<FindReply>> {
         let reply = match self.replies.try_recv() {
             Ok(reply) => reply,

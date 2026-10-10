@@ -1,9 +1,13 @@
-//! What:     Fuzzer-driven address selection over a parsed document.
-//! Why:      Edit targets must address members that actually exist;
+//! What:
+//!      Fuzzer-driven address selection over a parsed document.
+//! Why:
+//!       Edit targets must address members that actually exist;
 //!           generating paths blind would spend the whole budget on not-found errors.
 
-/// What:     Import the unstructured-input API.
-/// Why:      Each descent decision and child index comes from the fuzzer's byte budget.
+/// What:
+///      Import the unstructured-input API.
+/// Why:
+///       Each descent decision and child index comes from the fuzzer's byte budget.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -11,8 +15,10 @@
 /// ```
 use arbitrary::{Result as ArbitraryResult, Unstructured};
 
-/// What:     Import the address model and the text conversion used to name keys.
-/// Why:      A path segment names a member either by key text or by element position.
+/// What:
+///      Import the address model and the text conversion used to name keys.
+/// Why:
+///       A path segment names a member either by key text or by element position.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,13 +26,17 @@ use arbitrary::{Result as ArbitraryResult, Unstructured};
 /// ```
 use monochromatic_jsonc_edit::{units_to_string, JsoncKind, JsoncPathSegment, JsoncValue};
 
-/// What:     Cap on generated address length.
-/// Why:      Generated documents nest at most a few containers,
+/// What:
+///      Cap on generated address length.
+/// Why:
+///       Generated documents nest at most a few containers,
 ///           so a larger cap would only produce repeated not-found paths.
 const MAX_SEGMENTS: usize = 6;
 
-/// What:     Choose one address that resolves inside the given document.
-/// Why:      Edits are only meaningful where a member exists,
+/// What:
+///      Choose one address that resolves inside the given document.
+/// Why:
+///       Edits are only meaningful where a member exists,
 ///           and the fuzzer should still decide how deep to go and which child to take.
 ///           The walk stops at a key whose text cannot be represented as Rust `String`,
 ///           which happens for an escaped unpaired surrogate:

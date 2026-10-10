@@ -1,15 +1,27 @@
-//! What: Properties of the executable's per-source path: host rules, always-on processors, nested
-//! doc tests, host-mapped findings, the bounded fix loop, and adversarial grouped edits.
-//! Why: The rule and processor targets check their modules alone. This target drives the same
-//! `process_source` call the executable makes for every file, so configuration matching of
-//! virtual paths, projection to the host and fixing are exercised together.
+//! What:
+//!  Properties of the executable's per-source path:
+//!  host rules,
+//!  always-on processors,
+//!  nested
+//! doc tests,
+//!  host-mapped findings,
+//!  the bounded fix loop,
+//!  and adversarial grouped edits.
+//! Why:
+//!  The rule and processor targets check their modules alone.
+//!  This target drives the same
+//! `process_source` call the executable makes for every file,
+//!  so configuration matching of
+//! virtual paths,
+//!  projection to the host and fixing are exercised together.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const outcome = processSource(plan, source, fix); assertHostFindings(outcome, source);
 //! ```
 
-/// Import the production configuration, planning and per-source pipeline.
+/// Import the production configuration,
+///  planning and per-source pipeline.
 use monochromatic_lint::{
     config_lookup::ConfigurationSource,
     config_match::{FileConfiguration, PreparedConfiguration, prepare_configuration},
@@ -30,9 +42,14 @@ use std::{
     sync::Arc,
 };
 
-/// What: The configuration every case runs under.
-/// Why: `**/*.rs` reaches fenced Rust and doc tests, and `**/*.md` reaches rustdoc, so every
-/// virtual file of a host is checked. No rule here reads the filesystem or a Cargo workspace.
+/// What:
+///  The configuration every case runs under.
+/// Why:
+///  `**/*.rs` reaches fenced Rust and doc tests,
+///  and `**/*.md` reaches rustdoc,
+///  so every
+/// virtual file of a host is checked.
+///  No rule here reads the filesystem or a Cargo workspace.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,8 +77,13 @@ const CONFIGURATION: &str = r#"[
   } }
 ]"#;
 
-/// What: One host with the rule codes it must produce, counted by hand from the design, sorted.
-/// Why: A raw-only generator could run forever without ever reaching a nested doc test; these
+/// What:
+///  One host with the rule codes it must produce,
+///  counted by hand from the design,
+///  sorted.
+/// Why:
+///  A raw-only generator could run forever without ever reaching a nested doc test;
+///  these
 /// cases prove each processor layer is reached and reported on every draw.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,17 +91,27 @@ const CONFIGURATION: &str = r#"[
 /// type Case = { name: string; source: string; codes: string[] };
 /// ```
 pub struct Case {
-    /// Host filename; its extension chooses the language.
+    /// Host filename;
+    ///  its extension chooses the language.
     pub name: &'static str,
     /// Host source with LF line endings.
     pub source: &'static str,
-    /// Expected finding codes, sorted.
+    /// Expected finding codes,
+    ///  sorted.
     pub codes: &'static [&'static str],
 }
 
-/// What: Hosts covering rustdoc, doc tests, quoted fences, MDX and two levels of nesting.
-/// Why: Each expectation follows from the design alone: which virtual files exist, which blocks
-/// match their paths, and which rule each violates.
+/// What:
+///  Hosts covering rustdoc,
+///  doc tests,
+///  quoted fences,
+///  MDX and two levels of nesting.
+/// Why:
+///  Each expectation follows from the design alone:
+///  which virtual files exist,
+///  which blocks
+/// match their paths,
+///  and which rule each violates.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -134,8 +166,12 @@ pub const CASES: &[Case] = &[
     },
 ];
 
-/// What: The exact host text `grouped.rs` must become under `--fix`.
-/// Why: Each fix lands inside the comment, keeping its `/// ` prefix; nothing else moves.
+/// What:
+///  The exact host text `grouped.rs` must become under `--fix`.
+/// Why:
+///  Each fix lands inside the comment,
+///  keeping its `/// ` prefix;
+///  nothing else moves.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -143,8 +179,13 @@ pub const CASES: &[Case] = &[
 /// ```
 pub const GROUPED_FIXED: &str = "//! File.\n\n/// # Heading\n///\n/// See <https://example.com/a> for details.\n///\n/// ```rust\n/// //! Example.\n/// let value: u32 = 1;\n/// ```\nfn item() {}\n";
 
-/// What: Replacement texts for adversarial edits.
-/// Why: Delimiters, comment prefixes, newlines, wrapper syntax and astral text are what could
+/// What:
+///  Replacement texts for adversarial edits.
+/// Why:
+///  Delimiters,
+///  comment prefixes,
+///  newlines,
+///  wrapper syntax and astral text are what could
 /// break a container or a mapping if projection accepted them carelessly.
 ///
 /// In TS you'd write (pseudocode):
@@ -155,8 +196,12 @@ const REPLACEMENTS: [&str; 10] = [
     "", "x", "\n", "```\n", "*/", "\r\n", "🚀", "# ", "/// ", "fn main() {}",
 ];
 
-/// What: Build the plan the executable would build for a host, without touching the filesystem.
-/// Why: The fuzz process has no repository; the plan's paths are only names for matching and display.
+/// What:
+///  Build the plan the executable would build for a host,
+///  without touching the filesystem.
+/// Why:
+///  The fuzz process has no repository;
+///  the plan's paths are only names for matching and display.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -204,8 +249,11 @@ pub fn plan(name: &str) -> FilePlan {
     };
 }
 
-/// What: Assert that a finding names the host and addresses host bytes.
-/// Why: Whatever layer produced it, a finding must be usable against the host file alone.
+/// What:
+///  Assert that a finding names the host and addresses host bytes.
+/// Why:
+///  Whatever layer produced it,
+///  a finding must be usable against the host file alone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -227,8 +275,11 @@ fn assert_host_finding(finding: &Diagnostic, name: &str, source: &str) {
     }
 }
 
-/// What: Assert that one fix group applies to the host by itself, or is the deliberate empty-file refusal.
-/// Why: A group the applier rejects as out of range or self-overlapping would be a mapping defect.
+/// What:
+///  Assert that one fix group applies to the host by itself,
+///  or is the deliberate empty-file refusal.
+/// Why:
+///  A group the applier rejects as out of range or self-overlapping would be a mapping defect.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -247,8 +298,10 @@ fn assert_applies(source: &str, fix: &Fix) -> Option<String> {
     }
 }
 
-/// What: Lint and fix one host through the production path and check every outcome.
-/// Why: Returns the sorted lint codes so structured cases can compare them with their expectation.
+/// What:
+///  Lint and fix one host through the production path and check every outcome.
+/// Why:
+///  Returns the sorted lint codes so structured cases can compare them with their expectation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -298,8 +351,11 @@ pub fn check_host(name: &str, source: &str) -> Vec<String> {
     return codes;
 }
 
-/// What: Whether a debug note records that the fix loop stopped because nothing changed.
-/// Why: Only a settled result must be a fixed point; a cycle or an exhausted pass budget is a
+/// What:
+///  Whether a debug note records that the fix loop stopped because nothing changed.
+/// Why:
+///  Only a settled result must be a fixed point;
+///  a cycle or an exhausted pass budget is a
 /// documented stop that may still change on a later invocation.
 ///
 /// In TS you'd write (pseudocode):
@@ -315,8 +371,11 @@ fn settled(notes: &[String]) -> bool {
     return false;
 }
 
-/// What: How far one adversarial edit group travelled.
-/// Why: The generator control counts these, so a generator that only ever produced refused
+/// What:
+///  How far one adversarial edit group travelled.
+/// Why:
+///  The generator control counts these,
+///  so a generator that only ever produced refused
 /// groups could not pass as coverage of the apply path.
 ///
 /// In TS you'd write (pseudocode):
@@ -327,7 +386,8 @@ fn settled(notes: &[String]) -> bool {
 pub enum EditReach {
     /// The host could not be extracted or holds no virtual file to edit.
     NoVirtualFile,
-    /// Projection refused the group; the host is untouched.
+    /// Projection refused the group;
+    ///  the host is untouched.
     Refused,
     /// The projected group would have emptied a non-empty host and was refused by the applier.
     EmptyRefusal,
@@ -335,9 +395,14 @@ pub enum EditReach {
     Applied,
 }
 
-/// What: Project an adversarial edit group from one virtual file to the host and apply it.
-/// Why: Projection may refuse, but what it accepts must apply cleanly, leave a host the extractor
-/// can read again without panicking, and never empty a non-empty host silently.
+/// What:
+///  Project an adversarial edit group from one virtual file to the host and apply it.
+/// Why:
+///  Projection may refuse,
+///  but what it accepts must apply cleanly,
+///  leave a host the extractor
+/// can read again without panicking,
+///  and never empty a non-empty host silently.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -387,9 +452,14 @@ pub fn check_adversarial_edits(name: &str, source: &str, data: &[u8]) -> EditRea
     return EditReach::Applied;
 }
 
-/// What: The fuzz entry: a counted case in two newline spellings, adversarial edits against it,
+/// What:
+///  The fuzz entry:
+///  a counted case in two newline spellings,
+///  adversarial edits against it,
 /// then the raw input as a host in each language.
-/// Why: Every draw reaches nested processors, and arbitrary text still exercises recovery paths.
+/// Why:
+///  Every draw reaches nested processors,
+///  and arbitrary text still exercises recovery paths.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -489,7 +559,8 @@ fn adversarial_edit_groups_are_refused_or_applied_safely() {
     assert!(refused >= 256, "only {refused} groups were refused");
 }
 
-/// Raw Unicode, byte-order marks and mixed newlines go through every language without panicking.
+/// Raw Unicode,
+///  byte-order marks and mixed newlines go through every language without panicking.
 #[test]
 fn raw_hosts_are_processed_in_every_language() {
     for raw in [

@@ -1,14 +1,21 @@
-//! What: Find and read `cli-git.config.jsonc` at a repository root.
-//! Why: Configuration is one data file at one fixed place; legacy executable
-//!      configuration is reported for migration and never read, run or silently ignored.
+//! What:
+//!  Find and read `cli-git.config.jsonc` at a repository root.
+//! Why:
+//!  Configuration is one data file at one fixed place;
+//!  legacy executable
+//!      configuration is reported for migration and never read,
+//!  run or silently ignored.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // loadRepositoryConfig(root) returns { config, source, ignoredLegacy } or throws ConfigError.
 //! ```
 
-/// What: `use super::...` imports sibling modules of this crate.
-/// Why:  Loading combines the error type, the document parser and the typed settings.
+/// What:
+///  `use super::...` imports sibling modules of this crate.
+/// Why:
+///   Loading combines the error type,
+///  the document parser and the typed settings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,18 +24,26 @@
 use super::config_error::ConfigError;
 use super::config_parse::parse_config;
 use super::config_schema::CliGitConfig;
-/// What: Import the trait that gives files `.take(..)` and `.read_to_end(..)`.
-///       A trait is an interface; its methods exist only while it is in scope.
-/// Why:  The file is read through a byte cap instead of trusting its reported size.
+/// What:
+///  Import the trait that gives files `.take(..)` and `.read_to_end(..)`.
+///       A trait is an interface;
+///  its methods exist only while it is in scope.
+/// Why:
+///   The file is read through a byte cap instead of trusting its reported size.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { open } from 'node:fs/promises';
 /// ```
 use std::io::Read;
-/// What: `Path` is a borrowed filesystem path; `PathBuf` is its owned form.
-///       The same pair as `&str` and `String`, but holding raw OS bytes.
-/// Why:  Repository paths need not be UTF-8, so they are never converted to text
+/// What:
+///  `Path` is a borrowed filesystem path;
+///  `PathBuf` is its owned form.
+///       The same pair as `&str` and `String`,
+///  but holding raw OS bytes.
+/// Why:
+///   Repository paths need not be UTF-8,
+///  so they are never converted to text
 ///       except inside a diagnostic.
 ///
 /// In TS you'd write (pseudocode):
@@ -40,9 +55,12 @@ use std::path::{Path, PathBuf};
 /// The only configuration file the native wrapper reads.
 pub const CONFIG_FILE_NAME: &str = "cli-git.config.jsonc";
 
-/// What: Executable configuration names of the TypeScript wrapper, in its lookup order.
+/// What:
+///  Executable configuration names of the TypeScript wrapper,
+///  in its lookup order.
 ///       `&[&str]` is a borrowed list of borrowed strings compiled into the executable.
-/// Why:  Their presence must produce a migration diagnostic.
+/// Why:
+///   Their presence must produce a migration diagnostic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,9 +68,13 @@ pub const CONFIG_FILE_NAME: &str = "cli-git.config.jsonc";
 /// ```
 pub const LEGACY_CONFIG_FILE_NAMES: &[&str] = &["cli-git.config.mjs", "cli-git.config.ts"];
 
-/// What: Largest accepted configuration file, one mebibyte.
-///       `u64` is an unsigned 64-bit integer, the type of file sizes (sibling `usize`).
-/// Why:  A repository file must not control how much memory every Git command reads.
+/// What:
+///  Largest accepted configuration file,
+///  one mebibyte.
+///       `u64` is an unsigned 64-bit integer,
+///  the type of file sizes (sibling `usize`).
+/// Why:
+///   A repository file must not control how much memory every Git command reads.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,9 +82,14 @@ pub const LEGACY_CONFIG_FILE_NAMES: &[&str] = &["cli-git.config.mjs", "cli-git.c
 /// ```
 pub const MAX_CONFIG_BYTES: u64 = 1_048_576;
 
-/// What: The outcome of loading one repository's configuration.
-///       `Option<PathBuf>` is "an owned path or nothing"; `Vec<PathBuf>` is an owned list.
-/// Why:  Callers need the settings, the file they came from for diagnostics, and any
+/// What:
+///  The outcome of loading one repository's configuration.
+///       `Option<PathBuf>` is "an owned path or nothing";
+///  `Vec<PathBuf>` is an owned list.
+/// Why:
+///   Callers need the settings,
+///  the file they came from for diagnostics,
+///  and any
 ///       legacy file that was left beside an authoritative JSONC file so they can
 ///       report it instead of ignoring it silently.
 ///
@@ -72,17 +99,25 @@ pub const MAX_CONFIG_BYTES: u64 = 1_048_576;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LoadedConfig {
-    /// Validated settings; `CliGitConfig::defaults()` when the repository has no file.
+    /// Validated settings;
+    ///  `CliGitConfig::defaults()` when the repository has no file.
     pub config: CliGitConfig,
-    /// The JSONC file that was read, absent when the repository has none.
+    /// The JSONC file that was read,
+    ///  absent when the repository has none.
     pub source: Option<PathBuf>,
-    /// Legacy files present beside the JSONC file; never read, to be reported.
+    /// Legacy files present beside the JSONC file;
+    ///  never read,
+    ///  to be reported.
     pub ignored_legacy: Vec<PathBuf>,
 }
 
-/// What: Report whether a directory entry exists, without following a final symlink.
+/// What:
+///  Report whether a directory entry exists,
+///  without following a final symlink.
 ///       `Result<bool, ConfigError>` is "true/false or an error".
-/// Why:  Only "not found" means absent; any other failure (for example a permission
+/// Why:
+///   Only "not found" means absent;
+///  any other failure (for example a permission
 ///       error) must stop the command instead of pretending no file exists.
 ///
 /// In TS you'd write (pseudocode):
@@ -113,8 +148,11 @@ fn entry_exists(path: &Path) -> Result<bool, ConfigError> {
     }
 }
 
-/// What: Explain a legacy configuration file that has no JSONC replacement yet.
-/// Why:  The author needs to know it was not run, where the replacement goes and
+/// What:
+///  Explain a legacy configuration file that has no JSONC replacement yet.
+/// Why:
+///   The author needs to know it was not run,
+///  where the replacement goes and
 ///       which parts have no equivalent.
 ///
 /// In TS you'd write (pseudocode):
@@ -135,9 +173,11 @@ fn migration_required(legacy: &Path, target: &Path) -> ConfigError {
     );
 }
 
-/// What: Describe a legacy file that sits beside an authoritative JSONC file.
+/// What:
+///  Describe a legacy file that sits beside an authoritative JSONC file.
 ///       `String` is owned text returned to the caller.
-/// Why:  The executable prints this so the stale file is never ignored silently.
+/// Why:
+///   The executable prints this so the stale file is never ignored silently.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -152,9 +192,14 @@ pub fn ignored_legacy_notice(legacy: &Path, source: &Path) -> String {
     );
 }
 
-/// What: Read at most `MAX_CONFIG_BYTES` of a regular, non-symlink file as UTF-8 text.
-/// Why:  A symbolic link could point outside the repository, a directory or device is
-///       not configuration, and an oversized or non-UTF-8 file is rejected by name.
+/// What:
+///  Read at most `MAX_CONFIG_BYTES` of a regular,
+///  non-symlink file as UTF-8 text.
+/// Why:
+///   A symbolic link could point outside the repository,
+///  a directory or device is
+///       not configuration,
+///  and an oversized or non-UTF-8 file is rejected by name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -248,9 +293,14 @@ fn read_config_text(path: &Path) -> Result<String, ConfigError> {
     }
 }
 
-/// What: Load the configuration of the repository whose top level is `repository_root`.
-/// Why:  This is the single entry point for policy settings. Nothing in a repository
-///       is executed: the JSONC file is parsed as data, and legacy `.mjs`/`.ts`
+/// What:
+///  Load the configuration of the repository whose top level is `repository_root`.
+/// Why:
+///   This is the single entry point for policy settings.
+///  Nothing in a repository
+///       is executed:
+///  the JSONC file is parsed as data,
+///  and legacy `.mjs`/`.ts`
 ///       configuration is only detected by name.
 ///
 /// In TS you'd write (pseudocode):

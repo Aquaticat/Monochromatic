@@ -1,6 +1,12 @@
-//! Real pointer press, move, and release on the sidebar divider: resize, both bounds, and the drag origin.
+//! Real pointer press,
+//!  move,
+//!  and release on the sidebar divider:
+//!  resize,
+//!  both bounds,
+//!  and the drag origin.
 
-/// The shipped window and source state, with the bindings that repaint source when its width changes.
+/// The shipped window and source state,
+///  with the bindings that repaint source when its width changes.
 use super::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, render,
     ui::TreeEntry,
@@ -10,9 +16,13 @@ use slint::{
     ComponentHandle, LogicalPosition, LogicalSize, ModelRc, SharedString, VecModel,
     platform::{PointerEventButton, WindowEvent, update_timers_and_animations},
 };
-/// What: `Rc` is a shared pointer for one thread (sibling `Arc` works across threads); `RefCell` and
-/// `Cell` allow changing a value behind a shared pointer, `Cell` for small copied values such as a number.
-/// Why: The window callbacks and the test body both need the same source state and recorded row index.
+/// What:
+///  `Rc` is a shared pointer for one thread (sibling `Arc` works across threads);
+///  `RefCell` and
+/// `Cell` allow changing a value behind a shared pointer,
+///  `Cell` for small copied values such as a number.
+/// Why:
+///  The window callbacks and the test body both need the same source state and recorded row index.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,28 +33,44 @@ use std::{
     rc::Rc,
 };
 
-/// What: `pub(super) const NAME: f32` is a compile-time constant visible to sibling test modules;
-/// `f32` is a 32-bit float (sibling `f64`), the type Slint uses for logical pixels.
-/// Why: The narrowest sidebar the layout allows is a documented value the tests pin.
+/// What:
+///  `pub(super) const NAME: f32` is a compile-time constant visible to sibling test modules;
+/// `f32` is a 32-bit float (sibling `f64`),
+///  the type Slint uses for logical pixels.
+/// Why:
+///  The narrowest sidebar the layout allows is a documented value the tests pin.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// export const MINIMUM = 160;
 /// ```
 pub(super) const MINIMUM: f32 = 160.0;
-/// Width of the divider's own layout cell, which is its line.
+/// Width of the divider's own layout cell,
+///  which is its line.
 pub(super) const DIVIDER: f32 = 1.0;
 /// Pixel columns on each side of the line that also belong to the divider's pointer zone.
 pub(super) const REACH: f32 = 2.0;
-/// Narrowest source column; the widest sidebar is the window width minus this and the divider.
+/// Narrowest source column;
+///  the widest sidebar is the window width minus this and the divider.
 pub(super) const SOURCE_MINIMUM: f32 = 240.0;
 /// Width of the line-number gutter at the left edge of the source column.
 pub(super) const GUTTER: f32 = 58.0;
 /// Width of the tree column every fixture starts with.
 pub(super) const TREE: f32 = 256.0;
-/// What: Where source text starts in the window: right of the tree, the divider, and the gutter, whose 58 px for
-///       files of fewer than 1000 lines are 6 px, a 9 px letter cell, a 4 px gap, three 9 px digits, and 12 px.
-/// Why: Pointer tests aim at text positions; one derivation keeps them right when any of the three changes.
+/// What:
+///  Where source text starts in the window:
+///  right of the tree,
+///  the divider,
+///  and the gutter,
+///  whose 58 px for
+///       files of fewer than 1000 lines are 6 px,
+///  a 9 px letter cell,
+///  a 4 px gap,
+///  three 9 px digits,
+///  and 12 px.
+/// Why:
+///  Pointer tests aim at text positions;
+///  one derivation keeps them right when any of the three changes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,11 +79,16 @@ pub(super) const TREE: f32 = 256.0;
 pub(super) const TEXT_LEFT: f32 = TREE + DIVIDER + GUTTER;
 /// Height of the project and file label rows above the tree and the source.
 pub(super) const HEADER: f32 = 32.0;
-/// Vertical position used for divider drags, inside the tree rows and the source lines.
+/// Vertical position used for divider drags,
+///  inside the tree rows and the source lines.
 pub(super) const DRAG_Y: f32 = 300.0;
 
-/// What: A record owning the window, the shared source state, and the last activated tree row.
-/// Why: Every sidebar test drives one window and then reads these three things.
+/// What:
+///  A record owning the window,
+///  the shared source state,
+///  and the last activated tree row.
+/// Why:
+///  Every sidebar test drives one window and then reads these three things.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -66,15 +97,23 @@ pub(super) const DRAG_Y: f32 = 300.0;
 pub(super) struct Fixture {
     /// Native window built from the shipped markup.
     pub(super) window: AppWindow,
-    /// Source state shared with the pointer, key, and viewport bindings.
+    /// Source state shared with the pointer,
+    ///  key,
+    ///  and viewport bindings.
     pub(super) source: Rc<RefCell<State>>,
-    /// Model index of the last tree row a click activated, or -1.
+    /// Model index of the last tree row a click activated,
+    ///  or -1.
     pub(super) activated: Rc<Cell<i32>>,
 }
 
-/// What: `usize` is an unsigned index-sized integer (siblings `u32`, `i32`); `ModelRc<TreeEntry>` is the
+/// What:
+///  `usize` is an unsigned index-sized integer (siblings `u32`,
+///  `i32`);
+///  `ModelRc<TreeEntry>` is the
 /// shared list type the window accepts for tree rows.
-/// Why: Tests choose a row count that does or does not overflow the tree, which decides whether the
+/// Why:
+///  Tests choose a row count that does or does not overflow the tree,
+///  which decides whether the
 /// tree shows its scrollbar beside the divider.
 ///
 /// In TS you'd write (pseudocode):
@@ -115,8 +154,11 @@ fn entries(count: usize) -> ModelRc<TreeEntry> {
     return ModelRc::from(Rc::new(VecModel::from(rows)));
 }
 
-/// What: `&AppWindow` lends the window without giving it away; the two `f32` values are logical pixels.
-/// Why: Tests set an exact window size before measuring layout.
+/// What:
+///  `&AppWindow` lends the window without giving it away;
+///  the two `f32` values are logical pixels.
+/// Why:
+///  Tests set an exact window size before measuring layout.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -136,7 +178,9 @@ pub(super) fn resize(window: &AppWindow, width: f32, height: f32) {
     settle(window);
 }
 
-/// Run queued change handlers, force layout through a rendered frame, then run handlers the frame queued.
+/// Run queued change handlers,
+///  force layout through a rendered frame,
+///  then run handlers the frame queued.
 pub(super) fn settle(window: &AppWindow) {
     update_timers_and_animations();
     // What: `expect` returns the successful value or fails the test with this message.
@@ -161,7 +205,8 @@ pub(super) fn press(window: &AppWindow, x: f32, y: f32, button: PointerEventButt
     });
 }
 
-/// Move the pointer to a window position; a held button turns this into a drag.
+/// Move the pointer to a window position;
+///  a held button turns this into a drag.
 pub(super) fn motion(window: &AppWindow, x: f32, y: f32) {
     window.window().dispatch_event(WindowEvent::PointerMoved {
         position: LogicalPosition::new(x, y),
@@ -178,7 +223,8 @@ pub(super) fn release(window: &AppWindow, x: f32, y: f32, button: PointerEventBu
         });
 }
 
-/// Press and release the left button at one position, then let the window settle.
+/// Press and release the left button at one position,
+///  then let the window settle.
 pub(super) fn click(window: &AppWindow, x: f32, y: f32) {
     press(window, x, y, PointerEventButton::Left);
     release(window, x, y, PointerEventButton::Left);
@@ -251,7 +297,9 @@ pub(super) fn fixture(rows: usize) -> Fixture {
     };
 }
 
-/// A drag follows the pointer from its press point, stops at both bounds, and stores no width outside them.
+/// A drag follows the pointer from its press point,
+///  stops at both bounds,
+///  and stores no width outside them.
 #[test]
 fn divider_drag_resizes_and_stops_at_both_bounds() {
     let shared = fixture(60);
@@ -319,7 +367,9 @@ fn divider_drag_resizes_and_stops_at_both_bounds() {
     window.hide().expect("close sidebar window");
 }
 
-/// A click or double-click without movement, a right-button drag, and a drag while the tree has focus
+/// A click or double-click without movement,
+///  a right-button drag,
+///  and a drag while the tree has focus
 /// change nothing else.
 #[test]
 fn divider_ignores_plain_clicks_and_other_buttons_and_keeps_keyboard_focus() {
@@ -383,8 +433,11 @@ fn divider_ignores_plain_clicks_and_other_buttons_and_keeps_keyboard_focus() {
     window.hide().expect("close sidebar window");
 }
 
-/// What: `window: &AppWindow` lends the window; `start` is the logical x of the press in window pixels.
-/// Why: A short left-button drag by 10px either resizes the sidebar by 10px or leaves it alone,
+/// What:
+///  `window: &AppWindow` lends the window;
+///  `start` is the logical x of the press in window pixels.
+/// Why:
+///  A short left-button drag by 10px either resizes the sidebar by 10px or leaves it alone,
 /// which tells whether the pressed pixel column belongs to the divider.
 ///
 /// In TS you'd write (pseudocode):
@@ -398,7 +451,8 @@ fn short_drag(window: &AppWindow, start: f32) {
     settle(window);
 }
 
-/// The pointer zone is the line's column and two columns on each side: a drag starts on each of the five
+/// The pointer zone is the line's column and two columns on each side:
+///  a drag starts on each of the five
 /// and on no column beside them.
 #[test]
 fn divider_zone_takes_drags_on_five_columns_only() {

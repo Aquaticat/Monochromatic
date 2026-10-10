@@ -1,32 +1,55 @@
 //! Remove the cache folders of other builds once they have gone unused for 30 days.
 //!
-//! What: Every build unpacks its parser libraries below `<cache>/monochromatic-ide/runtime/<key>/`,
-//!       where `<key>` is a digest of its embedded files. [`mark_used`] renews `<key>/last-used`;
+//! What:
+//!  Every build unpacks its parser libraries below `<cache>/monochromatic-ide/runtime/<key>/`,
+//!       where `<key>` is a digest of its embedded files.
+//!  [`mark_used`] renews `<key>/last-used`;
 //!       [`remove_unused`] removes the other key folders whose last use lies more than
 //!       [`UNUSED_LIMIT`] back.
-//! Why: Each new build leaves a folder of about 33 MB behind. The user chose on 2026-10-06 to
-//!      "Remove after N days unused", with 30 days.
+//! Why:
+//!  Each new build leaves a folder of about 33 MB behind.
+//!  The user chose on 2026-10-06 to
+//!      "Remove after N days unused",
+//!  with 30 days.
 //!
 //! The rules:
-//! - Last use is the modification time of `<key>/last-used`. The copy using that key renews it at
-//!   every start and every parser load, so a copy that keeps running keeps its folder. A folder
+//! - Last use is the modification time of `<key>/last-used`.
+//!    The copy using that key renews it at
+//!   every start and every parser load,
+//!    so a copy that keeps running keeps its folder.
+//!    A folder
 //!   without the file (builds before this rule wrote none) is aged by its own modification time.
 //! - The current key is never removed.
-//! - Only direct children of the runtime folder are candidates, and only real folders (never
-//!   symbolic links) named by 16 lowercase hexadecimal digits; anything else is left alone. When the
-//!   runtime folder itself is a symbolic link, nothing is removed.
-//! - A folder is first renamed to `.<key>.removing-<process>-<n>`, then removed with
-//!   `fs::remove_dir_all`, which does not follow symbolic links: it removes a link itself, never what
-//!   it points to (Rust standard library documentation of `remove_dir_all`). A removal cut short
-//!   leaves only such a name, which the next start removes; the half-removed folder can never look
+//! - Only direct children of the runtime folder are candidates,
+//!    and only real folders (never
+//!   symbolic links) named by 16 lowercase hexadecimal digits;
+//!    anything else is left alone.
+//!    When the
+//!   runtime folder itself is a symbolic link,
+//!    nothing is removed.
+//! - A folder is first renamed to `.<key>.removing-<process>-<n>`,
+//!    then removed with
+//!   `fs::remove_dir_all`,
+//!    which does not follow symbolic links:
+//!    it removes a link itself,
+//!    never what
+//!   it points to (Rust standard library documentation of `remove_dir_all`).
+//!    A removal cut short
+//!   leaves only such a name,
+//!    which the next start removes;
+//!    the half-removed folder can never look
 //!   recently used.
-//! - Failures are logged and skipped: tidying the cache never stops the application.
+//! - Failures are logged and skipped:
+//!    tidying the cache never stops the application.
 
 /// The marker is written through the cache's private-file-and-rename step.
 use super::cache::{replace_atomically, unpack};
 /// Errors name the folder and the remedy.
 use anyhow::{Context, Result};
-/// Folders, metadata without following links, times, and the removal counter.
+/// Folders,
+///  metadata without following links,
+///  times,
+///  and the removal counter.
 use std::{
     fs,
     io::ErrorKind,
@@ -36,8 +59,12 @@ use std::{
     time::{Duration, Instant, SystemTime},
 };
 
-/// What: How long a key folder may go unused before it is removed. `Duration` is a span of time.
-/// Why: The user's choice of 2026-10-06: 30 days.
+/// What:
+///  How long a key folder may go unused before it is removed.
+///  `Duration` is a span of time.
+/// Why:
+///  The user's choice of 2026-10-06:
+///  30 days.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,9 +72,13 @@ use std::{
 /// ```
 pub const UNUSED_LIMIT: Duration = Duration::from_secs(30 * 24 * 60 * 60);
 
-/// What: The file name whose modification time records a key folder's last use.
-/// Why: A folder's own time changes only when entries are added or removed, not when a copy merely
-///      reads a cached library, so the copy renews this file itself.
+/// What:
+///  The file name whose modification time records a key folder's last use.
+/// Why:
+///  A folder's own time changes only when entries are added or removed,
+///  not when a copy merely
+///      reads a cached library,
+///  so the copy renews this file itself.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,8 +86,12 @@ pub const UNUSED_LIMIT: Duration = Duration::from_secs(30 * 24 * 60 * 60);
 /// ```
 pub const MARKER: &str = "last-used";
 
-/// What: The marker's text, for a person who finds the file.
-/// Why: Only the modification time matters; the text explains what it is for.
+/// What:
+///  The marker's text,
+///  for a person who finds the file.
+/// Why:
+///  Only the modification time matters;
+///  the text explains what it is for.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,8 +99,11 @@ pub const MARKER: &str = "last-used";
 /// ```
 const MARKER_TEXT: &[u8] = b"Renewed by Monochromatic IDE at every start and parser load of the build with this key.\nOther key folders unused for 30 days are removed at start.\n";
 
-/// What: A process-wide counter for removal names, incremented without a lock.
-/// Why: Two removals in one process must not pick the same temporary name.
+/// What:
+///  A process-wide counter for removal names,
+///  incremented without a lock.
+/// Why:
+///  Two removals in one process must not pick the same temporary name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -73,9 +111,14 @@ const MARKER_TEXT: &[u8] = b"Renewed by Monochromatic IDE at every start and par
 /// ```
 static NEXT_REMOVAL: AtomicU64 = AtomicU64::new(0);
 
-/// What: What one pass over the runtime folder did, by entry name. `Vec<String>` is a growable list
-///       of owned texts; `#[derive(Default)]` lets `Sweep::default()` build one with empty lists.
-/// Why: Tests and the summary log line read it.
+/// What:
+///  What one pass over the runtime folder did,
+///  by entry name.
+///  `Vec<String>` is a growable list
+///       of owned texts;
+///  `#[derive(Default)]` lets `Sweep::default()` build one with empty lists.
+/// Why:
+///  Tests and the summary log line read it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -83,17 +126,28 @@ static NEXT_REMOVAL: AtomicU64 = AtomicU64::new(0);
 /// ```
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct Sweep {
-    /// Key folders removed, and leftovers of removals cut short.
+    /// Key folders removed,
+    ///  and leftovers of removals cut short.
     pub removed: Vec<String>,
-    /// Key folders left in place: the current one, recently used ones, and ones that failed to go.
+    /// Key folders left in place:
+    ///  the current one,
+    ///  recently used ones,
+    ///  and ones that failed to go.
     pub kept: Vec<String>,
-    /// Entries that are not key folders: other names, files, and symbolic links.
+    /// Entries that are not key folders:
+    ///  other names,
+    ///  files,
+    ///  and symbolic links.
     pub ignored: Vec<String>,
 }
 
-/// What: Whether `name` has the shape of a key: exactly 16 lowercase hexadecimal digits.
-///       `bytes()` walks the text's bytes; `matches!` tests a byte against the listed ranges.
-/// Why: Only folders this application created by that rule may be removed.
+/// What:
+///  Whether `name` has the shape of a key:
+///  exactly 16 lowercase hexadecimal digits.
+///       `bytes()` walks the text's bytes;
+///  `matches!` tests a byte against the listed ranges.
+/// Why:
+///  Only folders this application created by that rule may be removed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -106,9 +160,14 @@ fn is_key(name: &str) -> bool {
             .all(|byte| return matches!(byte, b'0'..=b'9' | b'a'..=b'f'));
 }
 
-/// What: Whether `name` is the temporary name of a removal: `.<key>.removing-<digits and dashes>`.
-///       `strip_prefix` returns the rest after a prefix, or `None` without it.
-/// Why: A removal cut short leaves this name behind, and nothing else creates it.
+/// What:
+///  Whether `name` is the temporary name of a removal:
+///  `.<key>.removing-<digits and dashes>`.
+///       `strip_prefix` returns the rest after a prefix,
+///  or `None` without it.
+/// Why:
+///  A removal cut short leaves this name behind,
+///  and nothing else creates it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -136,9 +195,13 @@ fn is_leftover(name: &str) -> bool {
             .all(|byte| return byte.is_ascii_digit() || byte == b'-');
 }
 
-/// What: Create the key folder when needed (mode 0700) and write a fresh marker into it.
-/// Why: Called at start and before every parser load, so the folder of a running copy never ages.
-///      The marker is replaced through a new private file and a rename, so a symbolic link planted
+/// What:
+///  Create the key folder when needed (mode 0700) and write a fresh marker into it.
+/// Why:
+///  Called at start and before every parser load,
+///  so the folder of a running copy never ages.
+///      The marker is replaced through a new private file and a rename,
+///  so a symbolic link planted
 ///      at the marker's name is replaced itself and nothing it points to is written.
 ///
 /// In TS you'd write (pseudocode):
@@ -169,10 +232,17 @@ pub fn mark_used(key_folder: &Path) -> Result<()> {
     return Ok(());
 }
 
-/// What: Record the key folder's use, then return the path of the cached library `name`, writing
+/// What:
+///  Record the key folder's use,
+///  then return the path of the cached library `name`,
+///  writing
 ///       it first when absent or different (see [`unpack`]).
-/// Why: Every parser load renews the marker, so a long-running copy that loads a parser keeps its
-///      folder. A marker that cannot be written is logged; the unpack step reports the real problem.
+/// Why:
+///  Every parser load renews the marker,
+///  so a long-running copy that loads a parser keeps its
+///      folder.
+///  A marker that cannot be written is logged;
+///  the unpack step reports the real problem.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -185,9 +255,15 @@ pub fn unpack_marked(key_folder: &Path, name: &str, bytes: &[u8]) -> Result<Path
     return unpack(&key_folder.join("grammars"), name, bytes);
 }
 
-/// What: The last use of a key folder: its marker's modification time, or the folder's own time
-///       when there is no marker. `symlink_metadata` reads an entry without following a link.
-/// Why: See the module rules; a marker that is not a regular file is not trusted.
+/// What:
+///  The last use of a key folder:
+///  its marker's modification time,
+///  or the folder's own time
+///       when there is no marker.
+///  `symlink_metadata` reads an entry without following a link.
+/// Why:
+///  See the module rules;
+///  a marker that is not a regular file is not trusted.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -216,8 +292,12 @@ fn last_use(key_folder: &Path) -> std::io::Result<SystemTime> {
     return fs::symlink_metadata(key_folder)?.modified();
 }
 
-/// What: Rename `path` to a private temporary name in `runtime_folder`, then remove it entirely.
-/// Why: See the module rules; the rename makes a cut-short removal recognizable.
+/// What:
+///  Rename `path` to a private temporary name in `runtime_folder`,
+///  then remove it entirely.
+/// Why:
+///  See the module rules;
+///  the rename makes a cut-short removal recognizable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -230,9 +310,12 @@ fn remove_folder(runtime_folder: &Path, name: &str) -> std::io::Result<()> {
     return fs::remove_dir_all(&doomed);
 }
 
-/// What: Decide one entry of the runtime folder and record the decision in `sweep`. `&mut Sweep`
+/// What:
+///  Decide one entry of the runtime folder and record the decision in `sweep`.
+///  `&mut Sweep`
 ///       lends the record for changing.
-/// Why: Kept apart from the folder walk so each rule reads in one place.
+/// Why:
+///  Kept apart from the folder walk so each rule reads in one place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -328,9 +411,13 @@ fn decide(
     }
 }
 
-/// What: Remove every other key folder in `runtime_folder` unused for longer than `limit` at `now`.
-///       Production passes `SystemTime::now()` and [`UNUSED_LIMIT`]; tests pass their own times.
-/// Why: The module rules; the caller has already renewed the current key's marker.
+/// What:
+///  Remove every other key folder in `runtime_folder` unused for longer than `limit` at `now`.
+///       Production passes `SystemTime::now()` and [`UNUSED_LIMIT`];
+///  tests pass their own times.
+/// Why:
+///  The module rules;
+///  the caller has already renewed the current key's marker.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -388,7 +475,12 @@ pub fn remove_unused(
     return sweep;
 }
 
-/// Removal by age, the current key, links, leftovers, and marker renewal, on disposable folders.
+/// Removal by age,
+///  the current key,
+///  links,
+///  leftovers,
+///  and marker renewal,
+///  on disposable folders.
 #[cfg(test)]
 #[path = "retention_tests.rs"]
 mod tests;

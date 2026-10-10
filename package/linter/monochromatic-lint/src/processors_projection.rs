@@ -1,12 +1,15 @@
-//! What: Grouped source-fix projection with container re-extraction proofs.
-//! Why: A syntactically encodable prefix is insufficient if the edit closes a fence or Rustdoc block.
+//! What:
+//!  Grouped source-fix projection with container re-extraction proofs.
+//! Why:
+//!  A syntactically encodable prefix is insufficient if the edit closes a fence or Rustdoc block.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Encode edited newlines, project whole groups, re-extract each container, compare intended bytes.
 //! ```
 
-/// Import existing grouped edits, exact lines and immutable mapping facts.
+/// Import existing grouped edits,
+///  exact lines and immutable mapping facts.
 use crate::edits::{Edit, Fix};
 /// Preserve each affected physical line's original newline spelling.
 use crate::processors_lines::{newline, physical_lines};
@@ -17,7 +20,8 @@ use crate::processors_rewrite::rewrite;
 /// Share original snapshots while checking a disposable changed parent.
 use std::sync::Arc;
 
-/// Locate an authored edit endpoint, preferring the next line at a shared boundary.
+/// Locate an authored edit endpoint,
+///  preferring the next line at a shared boundary.
 fn endpoint(mapping: &Mapping, offset: usize) -> Result<&MappedLine, ProcessorError> {
     for line in &mapping.lines {
         if line.start <= offset && offset < line.end {
@@ -46,7 +50,8 @@ fn encoded(replacement: &str, ending: &str, prefix: &str) -> String {
     return result;
 }
 
-/// Project one validated edit, preserving whole-line deletion and detecting synthetic gaps.
+/// Project one validated edit,
+///  preserving whole-line deletion and detecting synthetic gaps.
 fn edit_to_parent(
     mapping: &Mapping,
     parent: &Mapping,
@@ -135,7 +140,8 @@ fn verify(mapping: &Mapping, parent: &Arc<Mapping>, expected: &str) -> Result<()
     return Err(mapping.error("Projected fix changes its Markdown/Rust container or hidden-line preparation. No edits in this atomic group can be applied safely."));
 }
 
-/// Project one entire fix to the original host, validating every intermediate container.
+/// Project one entire fix to the original host,
+///  validating every intermediate container.
 pub(crate) fn project(mapping: &Mapping, fix: &Fix) -> Result<Fix, ProcessorError> {
     rewrite(mapping, fix)?;
     let Some(parent) = &mapping.parent else {

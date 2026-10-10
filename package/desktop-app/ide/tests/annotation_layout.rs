@@ -1,8 +1,18 @@
-//! Annotation geometry from the production shaped rows: underline runs over tabs, CJK, combining marks,
-//! and ligatures, multi-line and point ranges, overlap order, hints packed onto rows at the exact pixel x of
-//! their positions, message rows at the x of their diagnostics, and code rows whose inner geometry never changes.
+//! Annotation geometry from the production shaped rows:
+//!  underline runs over tabs,
+//!  CJK,
+//!  combining marks,
+//! and ligatures,
+//!  multi-line and point ranges,
+//!  overlap order,
+//!  hints packed onto rows at the exact pixel x of
+//! their positions,
+//!  message rows at the x of their diagnostics,
+//!  and code rows whose inner geometry never changes.
 
-/// The production layout and packing, the records they consume, and the vertical mapping blocks feed.
+/// The production layout and packing,
+///  the records they consume,
+///  and the vertical mapping blocks feed.
 use ide_app::{
     annotation::{Label, Mark, Visible},
     annotation_layout::{AnnotationColors, AnnotationFrame, lay_out, pack},
@@ -15,7 +25,8 @@ use ide_app::{
 /// Blocks are shared between the window state and the frames that paint them.
 use std::sync::Arc;
 
-/// Inks are irrelevant to geometry; any fixed set will do.
+/// Inks are irrelevant to geometry;
+///  any fixed set will do.
 const COLORS: AnnotationColors = AnnotationColors {
     hint: [1, 2, 3, 255],
     error: [200, 0, 0, 255],
@@ -24,8 +35,13 @@ const COLORS: AnnotationColors = AnnotationColors {
     suggestion: [90, 90, 90, 255],
 };
 
-/// What: Shape `source` and lay out `visible` against it; the tuple returns the document, the view, and the frame.
-/// Why: Every assertion compares annotation positions with the geometry the window paints and hit-tests.
+/// What:
+///  Shape `source` and lay out `visible` against it;
+///  the tuple returns the document,
+///  the view,
+///  and the frame.
+/// Why:
+///  Every assertion compares annotation positions with the geometry the window paints and hit-tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,8 +61,12 @@ fn laid_out(source: &str, visible: &Visible) -> (Document, ShapedView, Annotatio
     return (document, view, frame);
 }
 
-/// What: One hint label at `position`; `&str` lends the text, which the label copies.
-/// Why: Packing takes labels exactly as the annotation store keeps them.
+/// What:
+///  One hint label at `position`;
+///  `&str` lends the text,
+///  which the label copies.
+/// Why:
+///  Packing takes labels exactly as the annotation store keeps them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,9 +89,18 @@ fn message(start: usize, continued: bool, severity: Severity, text: &str) -> Mes
     };
 }
 
-/// What: Pack `labels` above line `line` of `source`, add `messages`, and shape and lay out the whole text with
-///       that one block in the vertical mapping. The tuple returns the view, the frame, and the block.
-/// Why: This is the production path: packing against an unstyled row, then painting against the frame's rows.
+/// What:
+///  Pack `labels` above line `line` of `source`,
+///  add `messages`,
+///  and shape and lay out the whole text with
+///       that one block in the vertical mapping.
+///  The tuple returns the view,
+///  the frame,
+///  and the block.
+/// Why:
+///  This is the production path:
+///  packing against an unstyled row,
+///  then painting against the frame's rows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,7 +139,8 @@ fn with_block(
     return (view, frame, block);
 }
 
-/// Compare two pixel positions within a thousandth of a pixel; sums of floats may round differently.
+/// Compare two pixel positions within a thousandth of a pixel;
+///  sums of floats may round differently.
 fn close(actual: f32, expected: f32) -> bool {
     return (actual - expected).abs() < 0.001;
 }
@@ -124,8 +154,12 @@ fn mark(start: usize, end: usize, severity: Severity) -> Mark {
     };
 }
 
-/// Underline runs equal the selection geometry of their range: a widened tab, a CJK glyph, a letter with a
-/// combining mark, and half of a ligature.
+/// Underline runs equal the selection geometry of their range:
+///  a widened tab,
+///  a CJK glyph,
+///  a letter with a
+/// combining mark,
+///  and half of a ligature.
 #[test]
 fn underline_runs_follow_range_geometry_through_tabs_cjk_combining_marks_and_ligatures() {
     // Characters: tab(0) b(1) space(2) 猫(3) 猫(4) space(5) e(6) U+0301(7) x(8) space(9) !(10) =(11).
@@ -157,7 +191,8 @@ fn underline_runs_follow_range_geometry_through_tabs_cjk_combining_marks_and_lig
     assert!(tab > space, "tab {tab}, space {space}");
 }
 
-/// A range over several lines marks every row, and an empty line inside it gets a terminator-wide run.
+/// A range over several lines marks every row,
+///  and an empty line inside it gets a terminator-wide run.
 #[test]
 fn multi_line_range_marks_every_row_including_an_empty_line() {
     // Line starts: 0, 4, 5; the mark runs from `b` on the first line to `e` on the third.
@@ -179,7 +214,8 @@ fn multi_line_range_marks_every_row_including_an_empty_line() {
     assert_eq!(frame.underlines[3].width, last[0].width);
 }
 
-/// A point at a line end is marked after the text; a point inside a line is centered on its boundary;
+/// A point at a line end is marked after the text;
+///  a point inside a line is centered on its boundary;
 /// a point at the start of a line does not reach left of the text.
 #[test]
 fn point_ranges_get_a_terminator_wide_run() {
@@ -205,7 +241,9 @@ fn point_ranges_get_a_terminator_wide_run() {
     }
 }
 
-/// Where ranges overlap, the mildest severity is drawn first, so the worst ends on top.
+/// Where ranges overlap,
+///  the mildest severity is drawn first,
+///  so the worst ends on top.
 #[test]
 fn overlapping_ranges_draw_the_worst_severity_last() {
     let visible = Visible {
@@ -234,8 +272,13 @@ fn overlapping_ranges_draw_the_worst_severity_last() {
     );
 }
 
-/// Every hint stands at the exact pixel x of the position it annotates, also after a tab, CJK, a combining
-/// mark, and inside a ligature; its row lies above the code row by whole virtual rows.
+/// Every hint stands at the exact pixel x of the position it annotates,
+///  also after a tab,
+///  CJK,
+///  a combining
+/// mark,
+///  and inside a ligature;
+///  its row lies above the code row by whole virtual rows.
 #[test]
 fn hints_stand_at_the_exact_pixel_x_of_their_position() {
     // Characters: tab(0) l(1) e(2) t(3) space(4) 猫(5) space(6) =(7) space(8) e(9) U+0301(10) space(11) !(12) =(13).
@@ -270,8 +313,11 @@ fn hints_stand_at_the_exact_pixel_x_of_their_position() {
     assert!(frame.texts[3].x > frame.texts[2].x);
 }
 
-/// Hints are packed as the reference editor packs them, by pixels: a hint that would start less than the
-/// minimum gap after the previous hint's end starts a new row, and only the current row is considered.
+/// Hints are packed as the reference editor packs them,
+///  by pixels:
+///  a hint that would start less than the
+/// minimum gap after the previous hint's end starts a new row,
+///  and only the current row is considered.
 #[test]
 fn overlapping_hints_take_a_new_row_and_only_the_current_row_is_considered() {
     // `area(2, 3, 4)` with a hint before each argument and one after the line's last character.
@@ -327,8 +373,12 @@ fn hints_that_keep_the_gap_share_one_row() {
     assert_eq!(block.height(), BLOCK_GAP + ROW_HEIGHT);
 }
 
-/// Message rows follow the hint rows, start at the pixel x of their diagnostic, take their severity's ink, and
-/// the last one sits directly on the code row; a continued row is indented.
+/// Message rows follow the hint rows,
+///  start at the pixel x of their diagnostic,
+///  take their severity's ink,
+///  and
+/// the last one sits directly on the code row;
+///  a continued row is indented.
 #[test]
 fn message_rows_start_at_their_diagnostic_and_sit_tight_on_the_code_row() {
     let source = "first line\nlet total = area(2, 3);\nlast";
@@ -379,8 +429,13 @@ fn message_rows_start_at_their_diagnostic_and_sit_tight_on_the_code_row() {
     }
 }
 
-/// Virtual rows never change the geometry inside a code row: every caret x, hit, and range width is the same
-/// with and without a block above the line; only the row's top differs, by the block's height.
+/// Virtual rows never change the geometry inside a code row:
+///  every caret x,
+///  hit,
+///  and range width is the same
+/// with and without a block above the line;
+///  only the row's top differs,
+///  by the block's height.
 #[test]
 fn geometry_inside_a_code_row_is_unchanged_by_its_block() {
     let source = "\tlet 猫 = e\u{301} != x;\nnext";

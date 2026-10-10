@@ -1,5 +1,9 @@
-//! What: Controls for the strict JSON writer.
-//! Why: The output must be accepted by a strict JSON parser, keep every value exactly, and drop
+//! What:
+//!  Controls for the strict JSON writer.
+//! Why:
+//!  The output must be accepted by a strict JSON parser,
+//!  keep every value exactly,
+//!  and drop
 //! the comments and trailing commas JSONC allows.
 //!
 //! In TS you'd write (pseudocode):
@@ -17,7 +21,8 @@ fn rendered(source: &str) -> String {
     return strict_json(&value);
 }
 
-/// Every value kind keeps its data; comments and trailing commas are gone and the layout is fixed.
+/// Every value kind keeps its data;
+///  comments and trailing commas are gone and the layout is fixed.
 #[test]
 fn every_kind_is_rendered_exactly_and_strictly() {
     let source: &str = r#"// leading comment
@@ -45,7 +50,9 @@ fn every_kind_is_rendered_exactly_and_strictly() {
     assert!(!output.contains(",\n]"));
 }
 
-/// Text that needs escaping is re-encoded, in keys and in values, so the output stays one valid document.
+/// Text that needs escaping is re-encoded,
+///  in keys and in values,
+///  so the output stays one valid document.
 #[test]
 fn text_is_escaped_in_keys_and_values() {
     let source: &str = r#"{ "quote\" and \\ slash": "line\nbreak \u0001 tab\t 🚀 /tmp/a\"b" }"#;
@@ -62,8 +69,10 @@ fn text_is_escaped_in_keys_and_values() {
 }
 
 /// Empty and nested containers at the root are complete documents with one final newline.
-/// The JSONC parser accepts only an object or an array at the root, so scalars are checked as
-/// the single element of an array, where a number keeps its exact source token.
+/// The JSONC parser accepts only an object or an array at the root,
+///  so scalars are checked as
+/// the single element of an array,
+///  where a number keeps its exact source token.
 #[test]
 fn root_containers_are_documents_and_numbers_keep_their_token() {
     assert_eq!(rendered("[]"), "[]\n");

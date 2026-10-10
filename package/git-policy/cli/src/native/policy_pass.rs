@@ -1,7 +1,14 @@
-//! What: One complete policy pass over the shipped policies: the built-in policies, then
-//!       the fixed argument transforms of a forwarded command, then the optional policies.
-//! Why: Every lifecycle runs the same three stages in the same order, and each stage can
-//!      end the pass. Keeping the sequence in one place means a wrapped command and a
+//! What:
+//!  One complete policy pass over the shipped policies:
+//!  the built-in policies,
+//!  then
+//!       the fixed argument transforms of a forwarded command,
+//!  then the optional policies.
+//! Why:
+//!  Every lifecycle runs the same three stages in the same order,
+//!  and each stage can
+//!      end the pass.
+//!  Keeping the sequence in one place means a wrapped command and a
 //!      direct `git cli-git check` cannot drift apart in what they run or when they stop.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,9 +16,14 @@
 //! // const result = await runPolicyEngine({ args, trigger, config, selectedPolicyIds });
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  The pass joins the stage runner, the shipped checks and the fixed transforms.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   The pass joins the stage runner,
+///  the shipped checks and the fixed transforms.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,9 +36,15 @@ use super::policy_registry::{POLICY_REGISTRY, PolicyId};
 use super::policy_transforms::{TransformResult, apply_fixed_transforms};
 use super::policy_trigger::Trigger;
 use super::repository_facts::RepositoryFacts;
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  The pass hands back the arguments Git will receive, byte for byte.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   The pass hands back the arguments Git will receive,
+///  byte for byte.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,10 +52,18 @@ use super::repository_facts::RepositoryFacts;
 /// ```
 use std::ffi::OsString;
 
-/// What: What one pass produced. A `struct` is a record with named fields; `Vec<T>` is an
-///       owned list. `#[derive(...)]` asks the compiler to generate copying, debug
+/// What:
+///  What one pass produced.
+///  A `struct` is a record with named fields;
+///  `Vec<T>` is an
+///       owned list.
+///  `#[derive(...)]` asks the compiler to generate copying,
+///  debug
 ///       printing and `==`.
-/// Why:  The caller needs the arguments to forward, every event in emission order, and
+/// Why:
+///   The caller needs the arguments to forward,
+///  every event in emission order,
+///  and
 ///       how the pass ended.
 ///
 /// In TS you'd write (pseudocode):
@@ -46,19 +72,28 @@ use std::ffi::OsString;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PassResult {
-    /// The arguments after the fixed transforms; the input arguments when the pass ended
+    /// The arguments after the fixed transforms;
+    ///  the input arguments when the pass ended
     /// before or inside them.
     pub arguments: Vec<OsString>,
-    /// Every event of the pass, in emission order.
+    /// Every event of the pass,
+    ///  in emission order.
     pub events: Vec<PolicyEvent>,
     /// How the pass ended.
     pub end: StageEnd,
 }
 
-/// What: The shipped policies of one kind, in registry order. `optional` selects the
-///       policies that are off unless the configuration lists them; `Vec<PolicyId>` is the
+/// What:
+///  The shipped policies of one kind,
+///  in registry order.
+///  `optional` selects the
+///       policies that are off unless the configuration lists them;
+///  `Vec<PolicyId>` is the
 ///       owned result.
-/// Why:  The registry is the only list of policies; the two stages are its two halves, so
+/// Why:
+///   The registry is the only list of policies;
+///  the two stages are its two halves,
+///  so
 ///       a policy added there lands in exactly one stage without a second list to update.
 ///
 /// In TS you'd write (pseudocode):
@@ -77,13 +112,23 @@ pub fn policies_of_kind(optional: bool) -> Vec<PolicyId> {
     return policies;
 }
 
-/// What: Run one pass for `request` over `checks`. `<F: RepositoryFacts>` says the function
-///       works with any one facts provider `F`; `&mut ShippedChecks<F>` lends the shipped
-///       policies and their provider for writing, because checks cache repository facts.
-/// Why:  The order is the installed wrapper's. Built-in policies read the command before
-///       it is rewritten. The fixed transforms run only for a forwarded command. Optional
-///       policies run last. A stage that did not complete ends the pass with the
-///       arguments it was given, and nothing after it runs.
+/// What:
+///  Run one pass for `request` over `checks`.
+///  `<F: RepositoryFacts>` says the function
+///       works with any one facts provider `F`;
+///  `&mut ShippedChecks<F>` lends the shipped
+///       policies and their provider for writing,
+///  because checks cache repository facts.
+/// Why:
+///   The order is the installed wrapper's.
+///  Built-in policies read the command before
+///       it is rewritten.
+///  The fixed transforms run only for a forwarded command.
+///  Optional
+///       policies run last.
+///  A stage that did not complete ends the pass with the
+///       arguments it was given,
+///  and nothing after it runs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -146,7 +191,8 @@ pub fn run_policy_pass<F: RepositoryFacts>(
     };
 }
 
-/// Stage order, stopping and argument hand-over stay out of the release executable.
+/// Stage order,
+///  stopping and argument hand-over stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_pass_tests.rs"]
 mod tests;

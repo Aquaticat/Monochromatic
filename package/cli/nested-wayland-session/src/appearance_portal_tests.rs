@@ -76,9 +76,11 @@ const PLANTED_ROLE_VARIABLE: &str = "NESTED_WAYLAND_SESSION_TEST_PLANTED_ROLE";
 /// Names the service planted where a stock session bus looks for service files.
 const PLANTED_SERVICE: &str = "org.example.MonochromaticPlantedService";
 
-/// Asks the private bus to list and start services; runs only inside the re-executed process.
+/// Asks the private bus to list and start services;
+///  runs only inside the re-executed process.
 ///
-/// A client connected to the private bus is exactly what a hosted toolkit is, so these are the
+/// A client connected to the private bus is exactly what a hosted toolkit is,
+///  so these are the
 /// same requests that made the stock configuration try to execute `org.a11y.Bus`.
 fn run_planted_role() -> anyhow::Result<()> {
     let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
@@ -104,9 +106,13 @@ fn run_planted_role() -> anyhow::Result<()> {
 /// Confirms a hosted client cannot make the private bus start a service from any service file.
 ///
 /// The test re-executes itself with `XDG_DATA_HOME` and `XDG_DATA_DIRS` naming a disposable
-/// directory that holds one planted `.service` file. The stock session configuration searches
-/// exactly those directories, so it would list and try to start the planted service; that is
-/// the positive control, independent of which services this machine has installed.
+/// directory that holds one planted `.service` file.
+///  The stock session configuration searches
+/// exactly those directories,
+///  so it would list and try to start the planted service;
+///  that is
+/// the positive control,
+///  independent of which services this machine has installed.
 #[test]
 fn private_bus_never_reads_service_files() -> anyhow::Result<()> {
     if std::env::var_os(PLANTED_ROLE_VARIABLE).is_some() {
@@ -145,7 +151,8 @@ const SWITCH_ROLE_VARIABLE: &str = "NESTED_WAYLAND_SESSION_TEST_SWITCH_ROLE";
 
 /// Opens a second client connection and Settings proxy the way a hosted toolkit does.
 ///
-/// The destination is the well-known portal name, so zbus applies the same sender filter
+/// The destination is the well-known portal name,
+///  so zbus applies the same sender filter
 /// Slint's `receive_signal("SettingChanged")` subscription relies on.
 fn settings_proxy(portal: &AppearancePortal) -> anyhow::Result<zbus::blocking::Proxy<'static>> {
     let connection = zbus::blocking::connection::Builder::address(portal.bus_address())?.build()?;
@@ -158,7 +165,10 @@ fn settings_proxy(portal: &AppearancePortal) -> anyhow::Result<zbus::blocking::P
     return Ok(proxy)
 }
 
-/// Reads the color scheme through `ReadOne`, deprecated `Read`, and `ReadAll`, in that order.
+/// Reads the color scheme through `ReadOne`,
+///  deprecated `Read`,
+///  and `ReadAll`,
+///  in that order.
 fn served_values(proxy: &zbus::blocking::Proxy<'_>) -> anyhow::Result<[u32; 3]> {
     let read_one: OwnedValue = proxy.call("ReadOne", &(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY))?;
     let read: OwnedValue = proxy.call("Read", &(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY))?;
@@ -176,7 +186,8 @@ fn served_values(proxy: &zbus::blocking::Proxy<'_>) -> anyhow::Result<[u32; 3]> 
     ])
 }
 
-/// Decodes one `SettingChanged` body exactly as Slint 1.18.1 does, plus its wire signature.
+/// Decodes one `SettingChanged` body exactly as Slint 1.18.1 does,
+///  plus its wire signature.
 fn decode_setting_changed(message: &zbus::Message) -> anyhow::Result<(String, String, u32, String)> {
     let body = message.body();
     // The wire header carries the body signature without the outer tuple parentheses.
@@ -185,7 +196,8 @@ fn decode_setting_changed(message: &zbus::Message) -> anyhow::Result<(String, St
     return Ok((namespace, key, value.downcast_ref::<u32>()?, signature))
 }
 
-/// Confirms every read method serves the switched value, in both directions.
+/// Confirms every read method serves the switched value,
+///  in both directions.
 #[test]
 fn runtime_switch_changes_value_served_by_every_read_method() -> anyhow::Result<()> {
     let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
@@ -200,8 +212,10 @@ fn runtime_switch_changes_value_served_by_every_read_method() -> anyhow::Result<
 
 /// Confirms `SettingChanged` reaches a toolkit-style subscriber for real changes only.
 ///
-/// Signals arrive in emission order, so the unchanged requests are the negative control:
-/// had either emitted, its value would arrive before the value asserted next.
+/// Signals arrive in emission order,
+///  so the unchanged requests are the negative control:
+/// had either emitted,
+///  its value would arrive before the value asserted next.
 #[test]
 fn runtime_switch_emits_setting_changed_only_for_real_changes() -> anyhow::Result<()> {
     let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
@@ -248,7 +262,8 @@ fn runtime_switch_emits_setting_changed_only_for_real_changes() -> anyhow::Resul
     return Ok(())
 }
 
-/// Performs one complete private switch; runs only inside the re-executed test process.
+/// Performs one complete private switch;
+///  runs only inside the re-executed test process.
 fn run_switch_role() -> anyhow::Result<()> {
     let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
     let proxy = settings_proxy(&portal)?;
@@ -259,11 +274,17 @@ fn run_switch_role() -> anyhow::Result<()> {
 
 /// Confirms a runtime switch never connects to the session bus named by the environment.
 ///
-/// A disposable decoy bus stands in for the host session bus. This test re-executes itself
-/// with `DBUS_SESSION_BUS_ADDRESS` naming the decoy, so code that consults the environment
-/// would connect there, never to a real desktop. Every connection to a bus is announced by a
-/// `NameOwnerChanged` signal in order; the sentinel connection made afterwards is the
-/// positive control, and it must be the first connection the decoy reports.
+/// A disposable decoy bus stands in for the host session bus.
+///  This test re-executes itself
+/// with `DBUS_SESSION_BUS_ADDRESS` naming the decoy,
+///  so code that consults the environment
+/// would connect there,
+///  never to a real desktop.
+///  Every connection to a bus is announced by a
+/// `NameOwnerChanged` signal in order;
+///  the sentinel connection made afterwards is the
+/// positive control,
+///  and it must be the first connection the decoy reports.
 #[test]
 fn runtime_switch_never_contacts_environment_session_bus() -> anyhow::Result<()> {
     if std::env::var_os(SWITCH_ROLE_VARIABLE).is_some() {

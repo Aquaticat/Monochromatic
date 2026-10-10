@@ -1,5 +1,8 @@
-//! What: Compose declaration, generic-instantiation and inference-hole checks.
-//! Why: Syntax alone cannot distinguish a generic call from a nongeneric method with the same name.
+//! What:
+//!  Compose declaration,
+//!  generic-instantiation and inference-hole checks.
+//! Why:
+//!  Syntax alone cannot distinguish a generic call from a nongeneric method with the same name.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -21,9 +24,13 @@ use ra_ap_hir::Semantics;
 /// Import the database interface borrowed by the semantic view.
 use ra_ap_hir_ty::db::HirDatabase;
 
-/// What: Enforce the complete policy inside an attached semantic database scope.
-/// Why: The context must come from that scope's registered syntax root, not a separate parse.
-/// Processing-failure findings remain distinct from ordinary violations; no type or capture fixes are guessed.
+/// What:
+///  Enforce the complete policy inside an attached semantic database scope.
+/// Why:
+///  The context must come from that scope's registered syntax root,
+///  not a separate parse.
+/// Processing-failure findings remain distinct from ordinary violations;
+///  no type or capture fixes are guessed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

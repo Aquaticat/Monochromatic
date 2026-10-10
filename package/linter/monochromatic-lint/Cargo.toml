@@ -1,6 +1,6 @@
 [package]
 name = "monochromatic-lint"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Repository-owned Rust, Markdown and MDX linter."
 license = "LGPL-3.0-or-later"
@@ -9,7 +9,23 @@ repository = "https://github.com/Aquaticat/Monochromatic.git"
 include = ["src/**/*.rs", "fixtures/*.json", "Cargo.toml", "Cargo.lock", "README.md", "LICENSES/*.txt"]
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/linter/monochromatic-lint"
 
+# cargo-binstall's default URL is {repo}/releases/download/v{version}/{name}-{target}-v{version},
+# but this repository tags each crate's release monochromatic-lint-v<version> and names the archive
+# monochromatic-lint-<version>-<target>, so without this table mise falls back to compiling from source.
+# doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md has the evidence.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/{ name }-v{ version }/{ name }-{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
+
+[package.metadata.binstall.overrides.aarch64-pc-windows-msvc]
+pkg-fmt = "zip"
+
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
@@ -65,6 +81,15 @@ unicode-properties = "=0.1.4"
 satteri-pulldown-cmark = "=0.6.3"
 satteri-arena = "=0.3.1"
 satteri-ast = "=0.5.3"
+
+# Published release binaries keep the optimized profile the incumbent Rust linter shipped with;
+# development builds use the default dev profile, so they skip fat LTO and one codegen unit
+# (doc/planning/unified-linter.md, `Package layout`). Enforced by file-enforcer.
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
 
 # Standalone package, matching the repository's Cargo ownership convention.
 [workspace]

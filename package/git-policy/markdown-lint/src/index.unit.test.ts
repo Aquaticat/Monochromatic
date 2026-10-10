@@ -1,4 +1,9 @@
 import { createHash, } from 'node:crypto';
+import {
+  readFile,
+  stat,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
 
 import {
   describe,
@@ -10,6 +15,8 @@ import {
   AUTOFIX_CODE,
   createFullContentPatch,
   isMarkdownPath,
+  LFS_IMAGE_URL_RULE,
+  lintConfiguration,
   MarkdownLintPluginError,
   markdownLintPlugin,
   markdownLintPolicy,
@@ -23,7 +30,7 @@ import {
   FIXTURE_IMAGE_BYTES,
   FIXTURE_OBJECT_BASE,
   makeLfsRepo,
-  MARKDOWN_LINT_COMMAND,
+  MONOCHROMATIC_LINT_COMMAND,
 } from './markdown-lint-fixture.ts';
 
 /**
@@ -51,7 +58,7 @@ const RELATIVE_README = '# Player\n\n![shot](asset/shot.png)\n';
 /**
  Rules the fixture runs by default.
  */
-const RULES: readonly string[] = ['lfs-image-url',];
+const RULES: readonly string[] = [LFS_IMAGE_URL_RULE,];
 
 /**
  Run the adapter over candidates against a fixture repository.
@@ -66,7 +73,7 @@ const RULES: readonly string[] = ['lfs-image-url',];
 
  @param exclude - exclude patterns, defaulting to none
 
- @param command - command override, defaulting to the workspace CLI
+ @param command - command override, defaulting to monochromatic-lint on PATH
 
  @returns adapter findings
  */
@@ -76,7 +83,7 @@ async function rewrite({
   canApplyPatches = true,
   rules = RULES,
   exclude = [],
-  command = MARKDOWN_LINT_COMMAND,
+  command = MONOCHROMATIC_LINT_COMMAND,
 }: Readonly<{
   repositoryRoot: string;
   candidates: readonly FixtureCandidate[];
@@ -207,6 +214,53 @@ await describe({
       ],
     },),
     describe({
+      name: lintConfiguration.name,
+      children: [
+        it({
+          name: 'enables each rule at error, gives only the LFS rule the exclude patterns, and keeps adversarial patterns exact',
+          fn: async function configuration() {
+            /**
+             Patterns carrying JSON and comment delimiters, escapes, and a newline.
+             */
+            const patterns: readonly string[] = [
+              'package/ssg/',
+              'quote"inside',
+              String.raw`back\slash`,
+              'line\nbreak',
+              '*/ closes',
+              '// opens',
+            ];
+            /**
+             Configuration text parsed back as JSON.
+             */
+            const parsed: unknown = JSON.parse(lintConfiguration({
+              rules: [
+                LFS_IMAGE_URL_RULE,
+                'markdown/heading-increment',
+              ],
+              exclude: patterns,
+            },),);
+            expect(parsed,).toEqual([
+              {
+                name: 'cli-git-markdown-autofix',
+                files: [
+                  '**/*.md',
+                  '**/*.mdx',
+                ],
+                rules: {
+                  [LFS_IMAGE_URL_RULE]: {
+                    severity: 'error',
+                    exclude: [...patterns,],
+                  },
+                  'markdown/heading-increment': { severity: 'error', },
+                },
+              },
+            ],);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: rewriteCandidates.name,
       children: [
         it({
@@ -304,12 +358,12 @@ await describe({
             const findings = await rewrite({
               repositoryRoot: repo.path,
               candidates: [candidateOf({ path: 'pkg/README.md', bytes: ENCODER.encode('# A\n\n### B\n',), },),],
-              rules: ['MD001',],
+              rules: ['markdown/heading-increment',],
             },);
             expect(findings,).toHaveLength(1,);
             expect(findings[0]?.code,).toBe(VIOLATION_CODE,);
             expect(findings[0]?.patch,).toBeUndefined();
-            expect(findings[0]?.message.includes('MD001',),).toBe(true,);
+            expect(findings[0]?.message.includes('markdown/heading-increment',),).toBe(true,);
             expect(findings[0]?.message.includes('pkg/README.md:3:1',),).toBe(true,);
           },
         },),
@@ -328,7 +382,8 @@ await describe({
               },);
             },);
             expect(caught,).toBeInstanceOf(MarkdownLintPluginError,);
-            expect((caught as Error).message.includes('rejected its arguments',),).toBe(true,);
+            expect((caught as Error).message.includes('rejected its arguments or configuration',),).toBe(true,);
+            expect((caught as Error).message.includes('no-such-rule',),).toBe(true,);
           },
         },),
         it({
@@ -342,7 +397,7 @@ await describe({
               return await rewrite({
                 repositoryRoot: repo.path,
                 candidates: [candidateOf({ path: 'pkg/README.md', bytes: ENCODER.encode(RELATIVE_README,), },),],
-                command: ['/nonexistent/markdown-lint-binary',],
+                command: ['/nonexistent/monochromatic-lint-binary',],
               },);
             },);
             expect(caught,).toBeInstanceOf(MarkdownLintPluginError,);
@@ -364,6 +419,193 @@ await describe({
               },);
             },);
             expect(caught,).toBeInstanceOf(MarkdownLintPluginError,);
+          },
+        },),
+        it({
+          name: 'reports a processing failure without a patch and leaves the source unchanged',
+          fn: async function processingFailure() {
+            await using repo = await makeLfsRepo();
+            /**
+             Findings for an MDX candidate the parser rejects.
+             */
+            const findings = await rewrite({
+              repositoryRoot: repo.path,
+              candidates: [candidateOf({ path: 'pkg/page.mdx', bytes: ENCODER.encode('# T\n\n<div\n',), },),],
+            },);
+            expect(findings.length > 0,).toBe(true,);
+            expect(findings.every(function isViolation(finding,): boolean {
+              return (finding.code === VIOLATION_CODE) && (finding.patch === undefined);
+            },),).toBe(true,);
+            expect(findings.some(function isProcessingFailure(finding,): boolean {
+              return finding.message.startsWith('core/processing-failure at pkg/page.mdx:3:1: MDX parsing failed',);
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'passes a private one-off configuration through --config and removes it afterwards',
+          fn: async function configurationFile() {
+            await using repo = await makeLfsRepo();
+            /**
+             File the stand-in linter writes its arguments and configuration to.
+             */
+            const record = join(
+              repo.path,
+              'record.json',
+            );
+            /**
+             Stand-in linter: records what it was given, then echoes its input unchanged.
+             */
+            const script = [
+              "const fs = require('node:fs');",
+              'const args = process.argv.slice(1);',
+              "const configPath = args[args.indexOf('--config') + 1];",
+              `fs.writeFileSync(${JSON.stringify(record,)}, JSON.stringify({ args, configPath,`,
+              " mode: fs.statSync(configPath).mode & 0o777, config: fs.readFileSync(configPath, 'utf8') }));",
+              'process.stdin.pipe(process.stdout);',
+            ].join(' ',);
+            expect(await rewrite({
+              repositoryRoot: repo.path,
+              candidates: [candidateOf({ path: 'pkg/README.md', bytes: ENCODER.encode(RELATIVE_README,), },),],
+              exclude: ['package/ssg/',],
+              command: [
+                process.execPath,
+                '-e',
+                script,
+                '--',
+              ],
+            },),).toEqual([],);
+            /**
+             What the stand-in recorded.
+             */
+            const recorded = JSON.parse(await readFile(
+              record,
+              'utf8',
+            ),) as Readonly<{ args: readonly string[]; configPath: string; mode: number; config: string; }>;
+            expect(recorded.args,).toEqual([
+              '--config',
+              recorded.configPath,
+              '--stdin',
+              '--stdin-filename',
+              'pkg/README.md',
+              '--fix',
+            ],);
+            expect(recorded.mode,).toBe(0o600,);
+            /**
+             Configuration the policy is expected to have written.
+             */
+            const expected = lintConfiguration({
+              rules: RULES,
+              exclude: ['package/ssg/',],
+            },);
+            expect(JSON.parse(recorded.config,),).toEqual(JSON.parse(expected,),);
+            /**
+             Failure from reading the configuration path after the run.
+             */
+            const removed = await captureRejection(async function inspect(): Promise<unknown> {
+              return await stat(recorded.configPath,);
+            },);
+            expect((removed as NodeJS.ErrnoException).code,).toBe('ENOENT',);
+          },
+        },),
+        it({
+          name: 'raises a plugin error when a findings report is not JSON Lines',
+          fn: async function malformedReport() {
+            await using repo = await makeLfsRepo();
+            /**
+             Failure surfaced for an exit-1 run whose stderr is plain text.
+             */
+            const caught = await captureRejection(async function reject(): Promise<unknown> {
+              return await rewrite({
+                repositoryRoot: repo.path,
+                candidates: [candidateOf({ path: 'pkg/README.md', bytes: ENCODER.encode(RELATIVE_README,), },),],
+                command: [
+                  process.execPath,
+                  '-e',
+                  String.raw`process.stdin.pipe(process.stdout); process.stderr.write('not a record\n'); process.exitCode = 1;`,
+                  '--',
+                ],
+              },);
+            },);
+            expect(caught,).toBeInstanceOf(MarkdownLintPluginError,);
+            expect((caught as Error).message.includes('report could not be parsed',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'raises a plugin error for an exit status outside the linter contract',
+          fn: async function unexpectedStatus() {
+            await using repo = await makeLfsRepo();
+            /**
+             Failure surfaced for exit status 3.
+             */
+            const caught = await captureRejection(async function reject(): Promise<unknown> {
+              return await rewrite({
+                repositoryRoot: repo.path,
+                candidates: [candidateOf({ path: 'pkg/README.md', bytes: ENCODER.encode(RELATIVE_README,), },),],
+                command: [
+                  process.execPath,
+                  '-e',
+                  'process.stdin.resume(); process.stdin.on("end", function exit() { process.exit(3); });',
+                  '--',
+                ],
+              },);
+            },);
+            expect(caught,).toBeInstanceOf(MarkdownLintPluginError,);
+            expect((caught as Error).message.includes('unexpected status 3',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'raises a plugin error when the linter is killed by a signal',
+          fn: async function killed() {
+            await using repo = await makeLfsRepo();
+            /**
+             Failure surfaced for a process that ends by SIGKILL.
+             */
+            const caught = await captureRejection(async function reject(): Promise<unknown> {
+              return await rewrite({
+                repositoryRoot: repo.path,
+                candidates: [candidateOf({ path: 'pkg/README.md', bytes: ENCODER.encode(RELATIVE_README,), },),],
+                command: [
+                  process.execPath,
+                  '-e',
+                  "process.kill(process.pid, 'SIGKILL');",
+                  '--',
+                ],
+              },);
+            },);
+            expect(caught,).toBeInstanceOf(MarkdownLintPluginError,);
+            expect((caught as Error).message.includes('interrupted by SIGKILL',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'raises a plugin error when the engine has already cancelled the run',
+          fn: async function cancelled() {
+            await using repo = await makeLfsRepo();
+            /**
+             Controller aborted before the run starts.
+             */
+            const controller = new AbortController();
+            controller.abort();
+            /**
+             Failure surfaced for the cancelled run.
+             */
+            const caught = await captureRejection(async function reject(): Promise<unknown> {
+              return await rewriteCandidates({
+                command: [
+                  process.execPath,
+                  '-e',
+                  'setTimeout(function wait() {}, 10000);',
+                  '--',
+                ],
+                rules: RULES,
+                exclude: [],
+                repositoryRoot: repo.path,
+                canApplyPatches: true,
+                candidates: [candidateOf({ path: 'pkg/README.md', bytes: ENCODER.encode(RELATIVE_README,), },),],
+                signal: controller.signal,
+              },);
+            },);
+            expect(caught,).toBeInstanceOf(MarkdownLintPluginError,);
+            expect((caught as Error).message.includes('interrupted by the engine',),).toBe(true,);
           },
         },),
       ],
@@ -411,7 +653,7 @@ await describe({
                 signal: new AbortController().signal,
               },
               options: {
-                command: MARKDOWN_LINT_COMMAND,
+                command: MONOCHROMATIC_LINT_COMMAND,
                 rules: RULES,
                 exclude: [],
               },

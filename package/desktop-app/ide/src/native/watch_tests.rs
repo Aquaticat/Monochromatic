@@ -1,9 +1,12 @@
 //! The shipped tree and source bindings follow external changes through inotify notifications,
 //! faster than the safety sweep or the old polling could have produced them.
 
-/// Tree-row lookup by label, shared with the navigation tests.
+/// Tree-row lookup by label,
+///  shared with the navigation tests.
 use super::navigation_tests::row;
-/// The production window, source state, and the bindings the shipped application installs.
+/// The production window,
+///  source state,
+///  and the bindings the shipped application installs.
 use super::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, navigation, reload,
     render,
@@ -12,8 +15,12 @@ use super::{
 use ide_app::{document::ReadingPosition, workspace::Workspace};
 /// Real headless timers drive the same refresh timers as the shipped event loop.
 use slint::{ComponentHandle, Model, SharedString, Timer, platform::update_timers_and_animations};
-/// What: `Rc<RefCell<State>>` is the window's shared source state; `Path` borrows a fixture path.
-/// Why: Assertions read the model the window renders, not pixels.
+/// What:
+///  `Rc<RefCell<State>>` is the window's shared source state;
+///  `Path` borrows a fixture path.
+/// Why:
+///  Assertions read the model the window renders,
+///  not pixels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,12 +34,16 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Every observed change must arrive within this bound. Each change is made right after a reread of the
-/// same item was observed, so without a notification its next reread is the following 1 s safety sweep,
-/// about 800 ms later for five shown directories; only the first change of a test can meet a sweep by chance.
+/// Every observed change must arrive within this bound.
+///  Each change is made right after a reread of the
+/// same item was observed,
+///  so without a notification its next reread is the following 1 s safety sweep,
+/// about 800 ms later for five shown directories;
+///  only the first change of a test can meet a sweep by chance.
 const PROMPT: Duration = Duration::from_millis(400);
 
-/// Run native timers until `ready` holds; fail when it takes longer than `PROMPT`.
+/// Run native timers until `ready` holds;
+///  fail when it takes longer than `PROMPT`.
 pub(super) fn promptly(what: &str, mut ready: impl FnMut() -> bool) {
     let start = Instant::now();
     loop {
@@ -48,7 +59,9 @@ pub(super) fn promptly(what: &str, mut ready: impl FnMut() -> bool) {
     }
 }
 
-/// A shipped window over `root`, displaying `file`, with refresh and navigation timers kept alive.
+/// A shipped window over `root`,
+///  displaying `file`,
+///  with refresh and navigation timers kept alive.
 pub(super) fn open(root: &Path, file: &Path) -> (AppWindow, Rc<RefCell<State>>, [Timer; 2]) {
     let text = fs::read_to_string(file).expect("displayed source");
     let workspace = Workspace::new(root).expect("workspace");
@@ -74,7 +87,11 @@ fn depth(window: &AppWindow, label: &str) -> Option<i32> {
     return Some(entry.depth);
 }
 
-/// Create, rename, move in, move out, and delete in the last of four expanded folders all show promptly.
+/// Create,
+///  rename,
+///  move in,
+///  move out,
+///  and delete in the last of four expanded folders all show promptly.
 #[test]
 fn native_tree_follows_changes_in_one_of_several_expanded_folders() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -120,8 +137,10 @@ fn native_tree_follows_changes_in_one_of_several_expanded_folders() {
     window.hide().expect("close watch window");
 }
 
-/// Atomic replace keeps both correspondence examples; delete then recreate shows the error and recovers.
-/// The displayed file's folder is collapsed in the tree, so only its own watch can report these changes.
+/// Atomic replace keeps both correspondence examples;
+///  delete then recreate shows the error and recovers.
+/// The displayed file's folder is collapsed in the tree,
+///  so only its own watch can report these changes.
 #[test]
 fn native_source_follows_atomic_replace_and_delete_then_recreate() {
     let fixture = tempfile::tempdir().expect("disposable project");

@@ -1,9 +1,17 @@
-//! Companion grammars paint content that bundled languages embed: comments, expressions, and scripts.
-//! Each fragment below is painted differently, or not at all, when its companion grammar is absent.
+//! Companion grammars paint content that bundled languages embed:
+//!  comments,
+//!  expressions,
+//!  and scripts.
+//! Each fragment below is painted differently,
+//!  or not at all,
+//!  when its companion grammar is absent.
 
-/// What: `mod syntax_support;` compiles the sibling file `syntax_support/mod.rs` into this
+/// What:
+///  `mod syntax_support;` compiles the sibling file `syntax_support/mod.rs` into this
 ///       test program as a module named `syntax_support`.
-/// Why:  Cargo builds each file in `tests/` as its own program, so shared helpers are
+/// Why:
+///   Cargo builds each file in `tests/` as its own program,
+///  so shared helpers are
 ///       included as a module rather than imported from a package.
 ///
 /// In TS you'd write (pseudocode):
@@ -12,12 +20,17 @@
 /// ```
 mod syntax_support;
 
-/// The one shared assertion: recognized language plus one painted fragment.
+/// The one shared assertion:
+///  recognized language plus one painted fragment.
 use syntax_support::assert_reads_as;
 
-/// What: `#[test]` marks the function below as a test the harness runs; the function takes
+/// What:
+///  `#[test]` marks the function below as a test the harness runs;
+///  the function takes
 ///       nothing and passes unless it panics.
-/// Why:  The comment grammar classifies issue references; the host language alone paints the
+/// Why:
+///   The comment grammar classifies issue references;
+///  the host language alone paints the
 ///       whole comment with one role.
 ///
 /// In TS you'd write (pseudocode):
@@ -48,7 +61,8 @@ fn regex_grammar_paints_operators_inside_ecmascript_literals() {
 }
 
 /// The JSDoc grammar classifies braced types inside documentation comments.
-/// The tag name itself is painted by the comment grammar's mention rule, so it proves nothing here.
+/// The tag name itself is painted by the comment grammar's mention rule,
+///  so it proves nothing here.
 #[test]
 fn jsdoc_grammar_paints_types_inside_documentation_comments() {
     assert_reads_as(
@@ -61,7 +75,8 @@ fn jsdoc_grammar_paints_types_inside_documentation_comments() {
 }
 
 /// The format-arguments grammar classifies the format type inside Rust formatting macros.
-/// The placeholder name would prove nothing: Rust itself paints the same word at its binding.
+/// The placeholder name would prove nothing:
+///  Rust itself paints the same word at its binding.
 #[test]
 fn format_args_grammar_paints_format_types_inside_rust_macros() {
     assert_reads_as(
@@ -97,7 +112,8 @@ fn awk_grammar_paints_programs_inside_shell_commands() {
     );
 }
 
-/// HTML embeds stylesheets and scripts, both bundled languages.
+/// HTML embeds stylesheets and scripts,
+///  both bundled languages.
 #[test]
 fn html_paints_embedded_stylesheets_and_scripts() {
     assert_reads_as(

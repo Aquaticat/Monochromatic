@@ -1,6 +1,8 @@
-//! Routing of position requests to every server of the displayed document, and their retries.
+//! Routing of position requests to every server of the displayed document,
+//!  and their retries.
 
-/// Sending one request to one server, and the hint request for the window reported last.
+/// Sending one request to one server,
+///  and the hint request for the window reported last.
 use super::{Ask, Sent, Ticket, dispatch, hint_ask};
 /// Exited servers are started again by an explicit position request.
 use crate::language::attach;
@@ -11,9 +13,16 @@ use crate::language::reply::{LanguageReply, PositionRequest, RequestFailure, Req
 /// The worker whose state these steps change.
 use crate::language::worker::Worker;
 
-/// What: Route one position request to every server that serves the displayed document.
-/// Why: States that exist before any wire traffic are replied at once: no server, still
-///      starting, out of sync, unsupported. Each asked server answers on its own later.
+/// What:
+///  Route one position request to every server that serves the displayed document.
+/// Why:
+///  States that exist before any wire traffic are replied at once:
+///  no server,
+///  still
+///      starting,
+///  out of sync,
+///  unsupported.
+///  Each asked server answers on its own later.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -89,11 +98,19 @@ pub(in crate::language) async fn position(
     return;
 }
 
-/// What: Send a request again, if its text is still displayed and its server still runs: a
-///       superseded one, or one of the worker's own that timed out.
-/// Why: A server answers `-32801` or `-32800` when its own state moved under the request; the
-///      same question is then valid a moment later. A timed-out hint or diagnostics request has
-///      nobody who would ask again, so the worker does.
+/// What:
+///  Send a request again,
+///  if its text is still displayed and its server still runs:
+///  a
+///       superseded one,
+///  or one of the worker's own that timed out.
+/// Why:
+///  A server answers `-32801` or `-32800` when its own state moved under the request;
+///  the
+///      same question is then valid a moment later.
+///  A timed-out hint or diagnostics request has
+///      nobody who would ask again,
+///  so the worker does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

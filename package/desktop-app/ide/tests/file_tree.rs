@@ -21,7 +21,8 @@ fn entry(parent: &str, name: &str, is_directory: bool) -> DirectoryEntry {
     };
 }
 
-/// Initial root loading and child expansion are separate requests, preserving supplied entry order.
+/// Initial root loading and child expansion are separate requests,
+///  preserving supplied entry order.
 #[test]
 fn root_and_expanded_children_load_lazily_in_snapshot_order() {
     let root = Path::new("/project");
@@ -94,7 +95,8 @@ fn collapse_retains_descendant_expansion_but_stops_hidden_loading() {
     assert!(tree.rows()[1].expanded);
 }
 
-/// Detached subtrees lose cached data; prefix siblings and surviving directories keep their state.
+/// Detached subtrees lose cached data;
+///  prefix siblings and surviving directories keep their state.
 #[test]
 fn refresh_prunes_removed_subtrees_without_pruning_prefix_siblings() {
     let root = Path::new("/project");

@@ -1,5 +1,9 @@
-//! What: Conservative block-start detection before inserting prose line breaks.
-//! Why: An add-only newline can still turn inline text into a heading, list, quote or code block.
+//! What:
+//!  Conservative block-start detection before inserting prose line breaks.
+//! Why:
+//!  An add-only newline can still turn inline text into a heading,
+//!  list,
+//!  quote or code block.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -15,8 +19,11 @@ fn boundary(byte: Option<u8>) -> bool {
     return value == b' ' || value == b'\t' || value == b'\n' || value == b'\r';
 }
 
-/// What: Check only as far as a candidate marker requires, without rescanning every remaining line suffix.
-/// Why: Long prose lines with many punctuation characters must not force repeated full-line scans.
+/// What:
+///  Check only as far as a candidate marker requires,
+///  without rescanning every remaining line suffix.
+/// Why:
+///  Long prose lines with many punctuation characters must not force repeated full-line scans.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

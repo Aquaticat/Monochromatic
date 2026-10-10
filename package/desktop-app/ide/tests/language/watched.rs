@@ -1,6 +1,12 @@
-//! File changes made outside the IDE reach the servers that registered file watchers, through the IDE's
-//! own folder watching: glob patterns and kinds decide, bursts arrive gathered, ignored and pruned folders
-//! are skipped, new folders are followed, and a server that registered nothing hears nothing.
+//! File changes made outside the IDE reach the servers that registered file watchers,
+//!  through the IDE's
+//! own folder watching:
+//!  glob patterns and kinds decide,
+//!  bursts arrive gathered,
+//!  ignored and pruned folders
+//! are skipped,
+//!  new folders are followed,
+//!  and a server that registered nothing hears nothing.
 
 use crate::support::{self, Probe};
 use ide_app::{change_watch::ChangeWatcher, workspace::Workspace};
@@ -15,10 +21,13 @@ use std::{
 /// Longest wait for an expected change.
 const PATIENCE: Duration = Duration::from_secs(20);
 
-/// How long a change that must not arrive is waited for, after a later change already arrived.
+/// How long a change that must not arrive is waited for,
+///  after a later change already arrived.
 const SETTLE: Duration = Duration::from_millis(800);
 
-/// The worker, the change watcher, and the relay between them that the application's tick performs.
+/// The worker,
+///  the change watcher,
+///  and the relay between them that the application's tick performs.
 struct Watching {
     /// The language worker and what it published.
     probe: Probe,
@@ -27,7 +36,8 @@ struct Watching {
 }
 
 impl Watching {
-    /// Start both for `root`, with the scripted server configured by `variables` (`WATCHERS` is the JSON it
+    /// Start both for `root`,
+    ///  with the scripted server configured by `variables` (`WATCHERS` is the JSON it
     /// registers after `initialized`).
     fn new(root: &Path, variables: &[(&str, &str)]) -> Self {
         let probe = Probe::new(root, support::scripted(root, variables, 20));
@@ -36,7 +46,8 @@ impl Watching {
         return Self { probe, watcher };
     }
 
-    /// One application tick: poll the worker and hand its feed to the watcher while it wants changes.
+    /// One application tick:
+    ///  poll the worker and hand its feed to the watcher while it wants changes.
     fn relay(&mut self) {
         self.probe.poll();
         let feed = self
@@ -63,7 +74,8 @@ impl Watching {
         }
     }
 
-    /// Relay until the changes the server received satisfy `done`, and return them.
+    /// Relay until the changes the server received satisfy `done`,
+    ///  and return them.
     fn until_changes(
         &mut self,
         root: &Path,
@@ -86,7 +98,8 @@ impl Watching {
         }
     }
 
-    /// Relay for `span`, so changes that must not arrive have the chance to.
+    /// Relay for `span`,
+    ///  so changes that must not arrive have the chance to.
     fn settle(&mut self, span: Duration) {
         let start = Instant::now();
         while start.elapsed() < span {
@@ -96,9 +109,12 @@ impl Watching {
     }
 }
 
-/// Every `workspace/didChangeWatchedFiles` the server received, as (path below the root, kind number) lists.
+/// Every `workspace/didChangeWatchedFiles` the server received,
+///  as (path below the root,
+///  kind number) lists.
 struct Changes {
-    /// One list per notification, in arrival order.
+    /// One list per notification,
+    ///  in arrival order.
     notifications: Vec<Vec<(String, i64)>>,
 }
 
@@ -152,7 +168,10 @@ impl Changes {
     }
 }
 
-/// A git work tree with an ignored `dist`, a `node_modules`, and a source folder; ripgrep honours
+/// A git work tree with an ignored `dist`,
+///  a `node_modules`,
+///  and a source folder;
+///  ripgrep honours
 /// `.gitignore` once a `.git` folder exists.
 fn project(root: &Path) {
     for folder in [".git", "src", "dist", "node_modules/pkg"] {
@@ -163,8 +182,13 @@ fn project(root: &Path) {
     fs::write(root.join("node_modules/pkg/old.scripted"), "x").expect("dependency file");
 }
 
-/// Created, changed, and deleted files reach the server when a watcher's glob and kind match; files in
-/// ignored and dependency folders, and files no glob matches, do not.
+/// Created,
+///  changed,
+///  and deleted files reach the server when a watcher's glob and kind match;
+///  files in
+/// ignored and dependency folders,
+///  and files no glob matches,
+///  do not.
 #[test]
 fn changes_reach_the_server_by_glob_and_kind() {
     let Some(root) = support::child_root() else {
@@ -247,7 +271,9 @@ fn changes_reach_the_server_by_glob_and_kind() {
     );
 }
 
-/// A burst arrives in a few notifications, each path once in each, with the kind of its final state.
+/// A burst arrives in a few notifications,
+///  each path once in each,
+///  with the kind of its final state.
 #[test]
 fn a_burst_arrives_gathered_with_the_final_kinds() {
     let Some(root) = support::child_root() else {
@@ -304,7 +330,9 @@ fn a_burst_arrives_gathered_with_the_final_kinds() {
     }
 }
 
-/// A new folder is followed, its files included, while a new ignored folder's files are never sent.
+/// A new folder is followed,
+///  its files included,
+///  while a new ignored folder's files are never sent.
 #[test]
 fn new_folders_are_followed_unless_ignored() {
     let Some(root) = support::child_root() else {
@@ -346,7 +374,8 @@ fn new_folders_are_followed_unless_ignored() {
     );
 }
 
-/// A server that registered no watcher hears nothing, and no folder is watched for it.
+/// A server that registered no watcher hears nothing,
+///  and no folder is watched for it.
 #[test]
 fn a_server_without_watchers_hears_nothing() {
     let Some(root) = support::child_root() else {

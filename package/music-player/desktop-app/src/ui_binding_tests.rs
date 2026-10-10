@@ -146,7 +146,9 @@ fn volume_thumb_follows_engine_after_user_input() {
     );
 }
 
-/// Playback and transport groups expose the required order, selection, and dynamic page name.
+/// Playback and transport groups expose the required order,
+///  selection,
+///  and dynamic page name.
 #[test]
 fn playback_groups_follow_mode_page_and_transport_state() {
     setup();

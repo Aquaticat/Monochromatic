@@ -1,5 +1,9 @@
-//! What: Controls for environment lookup and `GIT_CONFIG_COUNT` parsing, checked against real Git.
-//! Why: The overlay may only append after the entries Git 2.56.0 itself would read, so the
+//! What:
+//!  Controls for environment lookup and `GIT_CONFIG_COUNT` parsing,
+//!  checked against real Git.
+//! Why:
+//!  The overlay may only append after the entries Git 2.56.0 itself would read,
+//!  so the
 //!      count must be accepted and rejected exactly where Git accepts and rejects it.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,13 +11,17 @@
 //! // expect(parseConfigCount('+1')).toBe(1n);
 //! ```
 
-/// Import the functions under test, the shared environment builder and native string types.
+/// Import the functions under test,
+///  the shared environment builder and native string types.
 use super::tests::environment;
 use super::{COUNT_VARIABLE, environment_value, parse_config_count};
 use std::ffi::{OsStr, OsString};
 use std::process::Command;
 
-/// Lookup follows `getenv`: exact name, first entry wins, absence is distinct from empty.
+/// Lookup follows `getenv`:
+///  exact name,
+///  first entry wins,
+///  absence is distinct from empty.
 #[test]
 fn environment_lookup_matches_getenv() {
     let pairs: Vec<(OsString, OsString)> = environment(&[

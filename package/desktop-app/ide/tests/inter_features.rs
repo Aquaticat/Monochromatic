@@ -1,14 +1,18 @@
 //! Audit the embedded Inter faces through the same Parley/fontique stack used by Slint.
 
-/// Slint's shared-parley shaping path uses these same family, size, and weight properties.
+/// Slint's shared-parley shaping path uses these same family,
+///  size,
+///  and weight properties.
 use parley::{
     FontContext, FontFamily, FontFeature, FontFeatures, FontStyle, FontVariation, FontVariations,
     FontWeight, Layout, LayoutContext, PositionedLayoutItem, StyleProperty, setting::Tag,
 };
-/// Owned font bytes are shared with the font collection; borrowed family text needs no allocation.
+/// Owned font bytes are shared with the font collection;
+///  borrowed family text needs no allocation.
 use std::{borrow::Cow, sync::Arc};
 
-/// Both real variable faces must be chosen from the bundled bytes, never synthesized or discovered on the host.
+/// Both real variable faces must be chosen from the bundled bytes,
+///  never synthesized or discovered on the host.
 use ide_app::font_asset::{UI_ITALIC, UI_ROMAN};
 
 /// Shape one UI label with explicit features and the registered real Inter faces.
@@ -72,7 +76,8 @@ fn glyph_ids(layout: &Layout<u32>) -> Vec<u32> {
     return ids;
 }
 
-/// Contextual alternates retain Inter's upstream default; optional discretionary ligatures stay opt-in.
+/// Contextual alternates retain Inter's upstream default;
+///  optional discretionary ligatures stay opt-in.
 #[test]
 fn inter_contextual_and_discretionary_features_keep_distinct_defaults() {
     let contextual = "3x9 12:34 3–8 +8+x -> --> => <->";
@@ -97,7 +102,8 @@ fn inter_contextual_and_discretionary_features_keep_distinct_defaults() {
     assert_ne!(glyph_ids(&normal), glyph_ids(&on));
 }
 
-/// Kerning uses a real off control, rather than inferring shaping from a font-family label.
+/// Kerning uses a real off control,
+///  rather than inferring shaping from a font-family label.
 #[test]
 fn inter_default_kerning_changes_real_advances() {
     let normal = label("AVATAR To WA", 400.0, &[]);
@@ -117,7 +123,8 @@ fn inter_default_kerning_changes_real_advances() {
     );
 }
 
-/// Intermediate weights and italics use real variable instances, not synthetic emboldening or slant.
+/// Intermediate weights and italics use real variable instances,
+///  not synthetic emboldening or slant.
 #[test]
 fn inter_weights_and_italics_choose_real_variable_faces() {
     for italic in [false, true] {
@@ -155,7 +162,8 @@ fn inter_weights_and_italics_choose_real_variable_faces() {
     }
 }
 
-/// Optical size is a genuine axis; the current toolkit default must not be mislabeled automatic sizing.
+/// Optical size is a genuine axis;
+///  the current toolkit default must not be mislabeled automatic sizing.
 #[test]
 fn inter_optical_size_changes_layout_with_an_explicit_control() {
     for italic in [false, true] {
@@ -167,7 +175,8 @@ fn inter_optical_size_changes_layout_with_an_explicit_control() {
     }
 }
 
-/// Tabular figures work as an explicit feature, while proportional figures remain distinguishable.
+/// Tabular figures work as an explicit feature,
+///  while proportional figures remain distinguishable.
 #[test]
 fn inter_tabular_numbers_have_a_proportional_control() {
     let tabular = [FontFeature::new(Tag::new(b"tnum"), 1)];

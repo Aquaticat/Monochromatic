@@ -30,9 +30,15 @@ fn app_binary() -> PathBuf {
     return manifest_dir().join("target/release/monochromatic-file-manager-gtk-sticky")
 }
 
-/// Creates the throwaway fixture tree: alpha/ (with one nested directory and one file), beta/
-/// (empty), and one root-level file, so the sorted root listing is deterministic:
-/// alpha, beta, readme.txt.
+/// Creates the throwaway fixture tree:
+///  alpha/ (with one nested directory and one file),
+///  beta/
+/// (empty),
+///  and one root-level file,
+///  so the sorted root listing is deterministic:
+/// alpha,
+///  beta,
+///  readme.txt.
 fn create_fixture_tree(root: &Path) {
     std::fs::create_dir_all(root.join("alpha/nested-one")).expect("fixture alpha/nested-one");
     std::fs::create_dir_all(root.join("beta")).expect("fixture beta");
@@ -71,7 +77,8 @@ impl ControlSocket {
     }
 }
 
-/// Polls the state file until every expected key matches, panicking past the deadline with the
+/// Polls the state file until every expected key matches,
+///  panicking past the deadline with the
 /// last observed state for diagnosis.
 fn wait_for_state(path: &Path, expected: &[(&str, Value)]) {
     let deadline = Instant::now() + DEADLINE;

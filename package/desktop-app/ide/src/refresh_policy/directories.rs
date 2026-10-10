@@ -2,9 +2,13 @@
 
 /// Intervals shared with the source schedule.
 use super::{REREAD_GAP, SAFETY_SWEEP, UNWATCHED_DIRECTORY_POLL};
-/// What: `BTreeSet<PathBuf>` is an ordered set of owned paths and `BTreeMap<PathBuf, Instant>` an ordered
-///       map from path to time (`HashMap` is the unordered sibling); `Instant` is a monotonic time point.
-/// Why: Notified directories collapse into one pending entry each, however many events arrived.
+/// What:
+///  `BTreeSet<PathBuf>` is an ordered set of owned paths and `BTreeMap<PathBuf, Instant>` an ordered
+///       map from path to time (`HashMap` is the unordered sibling);
+///  `Instant` is a monotonic time point.
+/// Why:
+///  Notified directories collapse into one pending entry each,
+///  however many events arrived.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -16,21 +20,32 @@ use std::{
     time::Instant,
 };
 
-/// Directory reread schedule; `shown` is always the root plus visible expanded folders, in visible order.
+/// Directory reread schedule;
+///  `shown` is always the root plus visible expanded folders,
+///  in visible order.
 #[derive(Clone, Debug, Default)]
 pub struct DirectoryRefresh {
-    /// Notified directories; read before anything else except first listings.
+    /// Notified directories;
+    ///  read before anything else except first listings.
     changed: BTreeSet<PathBuf>,
-    /// Remaining directories of the current safety sweep; read only when nothing else waits.
+    /// Remaining directories of the current safety sweep;
+    ///  read only when nothing else waits.
     sweep: BTreeSet<PathBuf>,
-    /// When this schedule last started a read of each directory; bounds rereads of a busy folder.
+    /// When this schedule last started a read of each directory;
+    ///  bounds rereads of a busy folder.
     started: BTreeMap<PathBuf, Instant>,
-    /// When the last sweep started; `None` until the first schedule call starts the clock.
+    /// When the last sweep started;
+    ///  `None` until the first schedule call starts the clock.
     last_sweep: Option<Instant>,
     /// When the last unwatched directory was read.
     last_unwatched: Option<Instant>,
-    /// What: `usize` is the unsigned index type (siblings `u32`, `u64`); collections index with it.
-    /// Why: Round-robin position among unwatched shown directories, as the old polling kept.
+    /// What:
+    ///  `usize` is the unsigned index type (siblings `u32`,
+    ///  `u64`);
+    ///  collections index with it.
+    /// Why:
+    ///  Round-robin position among unwatched shown directories,
+    ///  as the old polling kept.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -71,21 +86,28 @@ fn first_ready(
     return None;
 }
 
-/// Pure scheduling: callers pass `shown`, the live-watch set, and the current time.
+/// Pure scheduling:
+///  callers pass `shown`,
+///  the live-watch set,
+///  and the current time.
 impl DirectoryRefresh {
     /// A notification or a newly established watch made this directory's listing stale.
     pub fn changed(&mut self, path: PathBuf) {
         self.changed.insert(path);
     }
 
-    /// Overflow, an error, or a lost watch: every shown directory is stale.
+    /// Overflow,
+    ///  an error,
+    ///  or a lost watch:
+    ///  every shown directory is stale.
     pub fn changed_all(&mut self, shown: &[PathBuf]) {
         for path in shown {
             self.changed.insert(path.clone());
         }
     }
 
-    /// Start a safety sweep when one is due; true tells the caller to retry failed watches too.
+    /// Start a safety sweep when one is due;
+    ///  true tells the caller to retry failed watches too.
     pub fn start_sweep_if_due(&mut self, shown: &[PathBuf], now: Instant) -> bool {
         // What: `let ... else` binds the last start time or starts the clock on the first call.
         // Why: Startup already lists everything shown, so the first sweep waits one full interval.
@@ -126,7 +148,10 @@ impl DirectoryRefresh {
         return true;
     }
 
-    /// Choose without recording: notified folders, then unwatched ones on their timer, then the sweep.
+    /// Choose without recording:
+    ///  notified folders,
+    ///  then unwatched ones on their timer,
+    ///  then the sweep.
     fn pick(
         &mut self,
         shown: &[PathBuf],
@@ -164,7 +189,9 @@ impl DirectoryRefresh {
         return first_ready(&mut self.sweep, shown, &self.started, now);
     }
 
-    /// The next directory to list, or `None` when nothing is due; the caller lists it right away.
+    /// The next directory to list,
+    ///  or `None` when nothing is due;
+    ///  the caller lists it right away.
     pub fn next(
         &mut self,
         shown: &[PathBuf],

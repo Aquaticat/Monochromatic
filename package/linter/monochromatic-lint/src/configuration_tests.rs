@@ -1,5 +1,7 @@
-//! What: Consumer-level JSONC schema regressions.
-//! Why: Invalid or ambiguous documents must fail before their rule settings reach merging.
+//! What:
+//!  Consumer-level JSONC schema regressions.
+//! Why:
+//!  Invalid or ambiguous documents must fail before their rule settings reach merging.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -30,7 +32,8 @@ fn comments_and_trailing_commas_preserve_block_order() {
     assert_eq!(blocks[1].files, ["**/*.rs"]);
 }
 
-/// Empty arrays and empty files lists remain valid, but empty blocks do not.
+/// Empty arrays and empty files lists remain valid,
+///  but empty blocks do not.
 #[test]
 fn empty_configuration_and_nonmatching_blocks_are_valid() {
     assert!(parse_configuration("[]").expect("empty array").is_empty());

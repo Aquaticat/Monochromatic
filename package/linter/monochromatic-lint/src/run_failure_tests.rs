@@ -1,5 +1,7 @@
-//! What: Controls for core processing findings and host positions.
-//! Why: These findings decide exit status 2 and tell a person where processing stopped.
+//! What:
+//!  Controls for core processing findings and host positions.
+//! Why:
+//!  These findings decide exit status 2 and tell a person where processing stopped.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -51,7 +53,8 @@ fn core_findings_are_error_severity_processing_failures() {
     );
 }
 
-/// Rust positions count LF-delimited lines and byte columns; a carriage return is an ordinary byte.
+/// Rust positions count LF-delimited lines and byte columns;
+///  a carriage return is an ordinary byte.
 #[test]
 fn rust_positions_use_lf_lines_and_byte_columns() {
     let source: &str = "ab\r\né x\n\nlast";
@@ -73,7 +76,8 @@ fn rust_positions_use_lf_lines_and_byte_columns() {
     assert_eq!(clamped.length, 0);
 }
 
-/// Markdown positions treat CR, LF and CRLF as line ends and count UTF-16 columns.
+/// Markdown positions treat CR,
+///  LF and CRLF as line ends and count UTF-16 columns.
 #[test]
 fn markdown_positions_use_markdown_line_ends_and_utf16_columns() {
     let source: &str = "a\rb\r\n🚀 x\n";
@@ -86,7 +90,9 @@ fn markdown_positions_use_markdown_line_ends_and_utf16_columns() {
     assert_eq!(clamped.offset, source.len());
 }
 
-/// A processor refusal keeps its host filename, message and offset, positioned for the host language.
+/// A processor refusal keeps its host filename,
+///  message and offset,
+///  positioned for the host language.
 #[test]
 fn processor_refusals_become_positioned_failures() {
     let error: ProcessorError = ProcessorError {
@@ -103,7 +109,8 @@ fn processor_refusals_become_positioned_failures() {
     assert!(finding.processing_failure);
 }
 
-/// Text payloads are read back; any other payload is described without being dropped.
+/// Text payloads are read back;
+///  any other payload is described without being dropped.
 #[test]
 fn panic_payload_text_is_recovered() {
     let owned: Box<dyn std::any::Any + Send> = Box::new(String::from("owned text"));

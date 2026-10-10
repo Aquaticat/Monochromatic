@@ -18,7 +18,9 @@ fn child(name: &str) -> DirectoryEntry {
     };
 }
 
-/// Invalid names, duplicate keys, and mismatched paths reject the entire replacement snapshot.
+/// Invalid names,
+///  duplicate keys,
+///  and mismatched paths reject the entire replacement snapshot.
 #[test]
 fn invalid_snapshots_leave_existing_rows_unchanged() {
     let root = Path::new("/project");
@@ -71,7 +73,10 @@ fn detached_directory_replies_are_rejected() {
     assert!(tree.missing_listings().is_empty());
 }
 
-/// Real workspace snapshots retain hidden, quoted, Unicode, and non-UTF-8 names in dirent order.
+/// Real workspace snapshots retain hidden,
+///  quoted,
+///  Unicode,
+///  and non-UTF-8 names in dirent order.
 #[test]
 fn workspace_snapshots_keep_native_names_and_order() {
     let fixture = tempfile::tempdir().expect("disposable project");

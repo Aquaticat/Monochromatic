@@ -1,9 +1,13 @@
 //! Scans logical pathname components without exposing matched names.
 //!
-//! A component is one directory name or filename, not the path between them.
-//! The engine returns matching rule ids rather than match spans, so a matching
-//! component is masked in full. All findings for the file share the same masked
-//! display path, including content and read-error findings made by the caller.
+//! A component is one directory name or filename,
+//!  not the path between them.
+//! The engine returns matching rule ids rather than match spans,
+//!  so a matching
+//! component is masked in full.
+//!  All findings for the file share the same masked
+//! display path,
+//!  including content and read-error findings made by the caller.
 
 /// Imports the filesystem path type for repository-root-relative names.
 use std::path::Path;
@@ -24,7 +28,8 @@ const REDACTED: &str = "[REDACTED]";
 pub(crate) struct PathScan {
     /// Path safe for content findings and read-error diagnostics.
     pub(crate) display: String,
-    /// Distinct name findings, one for each matching component and rule.
+    /// Distinct name findings,
+    ///  one for each matching component and rule.
     pub(crate) findings: Vec<String>,
 }
 
@@ -36,10 +41,12 @@ pub(crate) struct PathScanRecords {
     pub(crate) findings: Vec<ScanFinding>,
 }
 
-/// Discovers the Git root, if cwd or an ancestor has a `.git` entry.
+/// Discovers the Git root,
+///  if cwd or an ancestor has a `.git` entry.
 ///
 /// A worktree's `.git` file counts as a root just as a main repository's
-/// `.git` directory does. A standalone invocation returns `None`.
+/// `.git` directory does.
+///  A standalone invocation returns `None`.
 pub(crate) fn repository_root() -> Option<std::path::PathBuf> {
     // `current_dir` owns an absolute path; failure leaves explicit names lexical.
     let cwd = std::env::current_dir().ok()?;
@@ -54,8 +61,12 @@ pub(crate) fn repository_root() -> Option<std::path::PathBuf> {
 /// Chooses a repository-relative name for files inside the repository.
 ///
 /// Paths outside a repository and standalone invocations retain all supplied
-/// pathname segments. Lexical normalization removes navigation markers without
-/// following symlinks: the selected link name, not its target, must be scanned.
+/// pathname segments.
+///  Lexical normalization removes navigation markers without
+/// following symlinks:
+///  the selected link name,
+///  not its target,
+///  must be scanned.
 pub(crate) fn logical_path(path: &str, root: Option<&Path>) -> String {
     let Some(repository) = root else {
         return path.to_string();
@@ -84,10 +95,13 @@ pub(crate) fn logical_path(path: &str, root: Option<&Path>) -> String {
     return path.to_string();
 }
 
-/// Matches one non-empty, single-line name component against all loaded sets.
+/// Matches one non-empty,
+///  single-line name component against all loaded sets.
 ///
-/// The engine treats a trailing CR or LF as a content-line terminator, which
-/// would change anchor semantics for a filename. Callers fail closed on those
+/// The engine treats a trailing CR or LF as a content-line terminator,
+///  which
+/// would change anchor semantics for a filename.
+///  Callers fail closed on those
 /// pathname bytes instead of misrepresenting an incomplete name as a match.
 fn matching_rules(component: &[u8], loaded: &LoadedRules) -> Result<Vec<String>, ()> {
     let mut rules: Vec<String> = Vec::new();
@@ -103,8 +117,13 @@ fn matching_rules(component: &[u8], loaded: &LoadedRules) -> Result<Vec<String>,
 
 /// Scans each logical component and masks every component with a matching rule.
 ///
-/// Component numbers are one-based and ignore the root, every native volume-prefix
-/// part, and navigation markers (`.`, `..`), which are not directory names. A matcher
+/// Component numbers are one-based and ignore the root,
+///  every native volume-prefix
+/// part,
+///  and navigation markers (`.`,
+///  `..`),
+///  which are not directory names.
+///  A matcher
 /// panic masks the entire path and returns an engine-error finding instead of printing unsafe input.
 pub(crate) fn scan_path_records(path: &Path, loaded: &LoadedRules) -> PathScanRecords {
     // Retain every non-separator native byte, including invalid UTF-8, until the matcher has inspected it.
@@ -112,10 +131,12 @@ pub(crate) fn scan_path_records(path: &Path, loaded: &LoadedRules) -> PathScanRe
     return scan_normalized_records(&normalized, prefix_parts(path), loaded);
 }
 
-/// Scan already normalized bytes and an explicitly counted native prefix, preserving one shared policy implementation.
+/// Scan already normalized bytes and an explicitly counted native prefix,
+///  preserving one shared policy implementation.
 ///
 /// The first `prefix_count` non-empty components are prefix parts whatever their bytes,
-/// so the skip agrees by construction with `count_prefix_parts`, which counts non-empty separator-delimited runs.
+/// so the skip agrees by construction with `count_prefix_parts`,
+///  which counts non-empty separator-delimited runs.
 /// Every later non-empty component other than `.` or `..` is a name.
 fn scan_normalized_records(normalized: &[u8], prefix_count: usize, loaded: &LoadedRules) -> PathScanRecords {
     // usize counts native prefix components, not bytes; the caller has already identified their boundary.
@@ -187,7 +208,8 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
 #[path = "path_scan_tests.rs"]
 mod tests;
 
-/// Target-independent Windows prefix forms drive production normalization, counting and scanning together.
+/// Target-independent Windows prefix forms drive production normalization,
+///  counting and scanning together.
 #[cfg(test)]
 #[path = "path_scan_prefix_tests.rs"]
 mod prefix_tests;

@@ -1,5 +1,8 @@
-//! What: Configuration loading and the read-only fast path through the built executable.
-//! Why: Configuration errors must stop a guarded command before Git, and a read-only
+//! What:
+//!  Configuration loading and the read-only fast path through the built executable.
+//! Why:
+//!  Configuration errors must stop a guarded command before Git,
+//!  and a read-only
 //!      command must never read configuration nor start more Git processes than the one
 //!      question of where it runs.
 //!
@@ -19,7 +22,8 @@ use std::path::{Path, PathBuf};
 /// The only configuration file the native wrapper reads.
 const CONFIG_FILE_NAME: &str = "cli-git.config.jsonc";
 
-/// The one question a command asks Git about where it runs, as the spawn log records it.
+/// The one question a command asks Git about where it runs,
+///  as the spawn log records it.
 const LOCATION_QUERY: &str = "rev-parse --path-format=absolute --is-bare-repository --git-dir --git-common-dir --show-toplevel --show-prefix";
 
 /// Run a wrapped command in a repository and return what the caller saw.
@@ -27,7 +31,8 @@ fn run_wrapped(fixture: &Fixture, repo: &Path, arguments: &[&str]) -> Observed {
     return observe(wrapped(fixture).current_dir(repo).args(arguments), b"");
 }
 
-/// Real Git's porcelain status of a repository, as raw bytes.
+/// Real Git's porcelain status of a repository,
+///  as raw bytes.
 fn status(fixture: &Fixture, repo: &Path) -> Vec<u8> {
     return git(
         fixture,
@@ -37,8 +42,11 @@ fn status(fixture: &Fixture, repo: &Path) -> Vec<u8> {
     .stdout;
 }
 
-/// Run a wrapped command whose real Git is a shim that logs every start, and return what
-/// the caller saw with the log: one line per Git process, holding its arguments.
+/// Run a wrapped command whose real Git is a shim that logs every start,
+///  and return what
+/// the caller saw with the log:
+///  one line per Git process,
+///  holding its arguments.
 fn run_counted(fixture: &Fixture, repo: &Path, arguments: &[&str]) -> (Observed, String) {
     let log: PathBuf = fixture.root.join("spawn.log");
     std::fs::write(&log, b"").expect("empty spawn log");
@@ -60,7 +68,9 @@ fn run_counted(fixture: &Fixture, repo: &Path, arguments: &[&str]) -> (Observed,
     return (observed, logged);
 }
 
-/// A read-only command starts Git once to ask where it runs, or not at all, and never reads configuration.
+/// A read-only command starts Git once to ask where it runs,
+///  or not at all,
+///  and never reads configuration.
 #[test]
 fn read_only_commands_start_at_most_the_location_query() {
     let fixture: Fixture = fixture("fast-path-count");
@@ -142,7 +152,8 @@ fn read_only_commands_start_at_most_the_location_query() {
     remove(&fixture);
 }
 
-/// Invalid, legacy and unknown-key configuration stops a changing command with the key or file named.
+/// Invalid,
+///  legacy and unknown-key configuration stops a changing command with the key or file named.
 #[test]
 fn configuration_errors_stop_before_git() {
     let fixture: Fixture = fixture("config-errors");
@@ -260,7 +271,8 @@ fn inspection_commands_never_read_configuration() {
     remove(&fixture);
 }
 
-/// A legacy file beside a valid JSONC file is reported by `git cli-git check` only: an
+/// A legacy file beside a valid JSONC file is reported by `git cli-git check` only:
+///  an
 /// ordinary configuration-loading command and `git cli-git fix` print nothing about it.
 #[test]
 fn legacy_file_beside_jsonc_is_reported_by_check_only() {
@@ -340,7 +352,8 @@ fn legacy_file_beside_jsonc_is_reported_by_check_only() {
     remove(&fixture);
 }
 
-/// The line a forbidden-strings content match prints, as event number `sequence`.
+/// The line a forbidden-strings content match prints,
+///  as event number `sequence`.
 fn forbidden_match(trigger: &str, sequence: u64, path: &str, line: u64) -> String {
     return format!(
         "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"{trigger}\",\"policyId\":\"security/forbidden-strings\",\"severity\":\"error\",\"code\":\"security/forbidden-strings/forbidden-string\",\"message\":\"Forbidden string matched at line {line} (rule 0).\",\"path\":\"{path}\",\"fix\":\"none\"}}\n"
@@ -348,8 +361,11 @@ fn forbidden_match(trigger: &str, sequence: u64, path: &str, line: u64) -> Strin
 }
 
 /// The forbidden-strings policy scans what `git add` would stage and what a direct check
-/// selects, with rules from the configuration or `FORBIDDEN_STRINGS_RULES`, and never
-/// prints the matched text; a named rules file that is missing stops the add.
+/// selects,
+///  with rules from the configuration or `FORBIDDEN_STRINGS_RULES`,
+///  and never
+/// prints the matched text;
+///  a named rules file that is missing stops the add.
 #[test]
 fn forbidden_strings_scan_candidates_from_each_rules_source() {
     let fixture: Fixture = fixture("forbidden-strings");
@@ -449,9 +465,14 @@ fn forbidden_strings_scan_candidates_from_each_rules_source() {
     remove(&fixture);
 }
 
-/// A direct fix corrects the selected worktree files, executable ones included, reads
-/// the worktree rather than the index, reports only its summary, and never changes the
-/// index; an unported policy listed for the fix refuses it before any file changes.
+/// A direct fix corrects the selected worktree files,
+///  executable ones included,
+///  reads
+/// the worktree rather than the index,
+///  reports only its summary,
+///  and never changes the
+/// index;
+///  an unported policy listed for the fix refuses it before any file changes.
 #[test]
 fn direct_fix_corrects_only_worktree_files() {
     let fixture: Fixture = fixture("direct-fix");

@@ -1,4 +1,5 @@
-//! The `color-scheme` control verb's responses, exercised without a display or the host bus.
+//! The `color-scheme` control verb's responses,
+//!  exercised without a display or the host bus.
 
 /// The same function the compositor's control dispatcher calls for this verb.
 use nested_wayland_session::{
@@ -6,7 +7,8 @@ use nested_wayland_session::{
     ColorSchemePreference,
 };
 
-/// Without `--color-scheme` there is no private bus, and the verb must not find another one.
+/// Without `--color-scheme` there is no private bus,
+///  and the verb must not find another one.
 #[test]
 fn switch_without_private_portal_is_refused_with_its_remedy() {
     let response = switch(None, ColorSchemePreference::Light);

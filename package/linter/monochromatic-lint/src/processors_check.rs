@@ -1,5 +1,8 @@
-//! What: Syntax checks over virtual Rust without synthetic-main side effects.
-//! Why: Scaffolding affects parsing, never the file's code-line budget or authored documentation policy.
+//! What:
+//!  Syntax checks over virtual Rust without synthetic-main side effects.
+//! Why:
+//!  Scaffolding affects parsing,
+//!  never the file's code-line budget or authored documentation policy.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,10 +19,12 @@ use crate::rust_no_anonymous_functions::check_no_anonymous_functions;
 use crate::rust_rule_settings::RustRuleSettings;
 /// Existing code-line and documentation checks remain the policy owners.
 use crate::rust_rules::{check_max_lines, check_rustdoc};
-/// Reuse the current native parse and rules, not copied policy implementations.
+/// Reuse the current native parse and rules,
+///  not copied policy implementations.
 use crate::rust_source::RustSource;
 
-/// Check prepared syntax and authored line counts, returning only original-host records.
+/// Check prepared syntax and authored line counts,
+///  returning only original-host records.
 pub(crate) fn check(
     input: &VirtualSource,
     settings: RustRuleSettings,

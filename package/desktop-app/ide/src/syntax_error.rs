@@ -5,7 +5,8 @@ use helix_core::syntax::HighlighterError;
 /// Paths identify the affected input in the user-facing diagnostic.
 use std::path::Path;
 
-/// Match each parser failure to its actual recovery paths, retaining raw evidence in logs.
+/// Match each parser failure to its actual recovery paths,
+///  retaining raw evidence in logs.
 pub(crate) fn parser_failure(
     path: &Path,
     language: &str,

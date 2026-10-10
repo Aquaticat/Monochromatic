@@ -1,20 +1,36 @@
-//! What: Branch-creation facts of `git branch`, `git checkout` and `git switch` regions,
+//! What:
+//!  Branch-creation facts of `git branch`,
+//!  `git checkout` and `git switch` regions,
 //!       read as Git 2.56.0 reads them.
-//! Why: The branch-worktree policy rejects creating a branch in the current worktree. It
+//! Why:
+//!  The branch-worktree policy rejects creating a branch in the current worktree.
+//!  It
 //!      needs the explicit forms and the name Git may turn into a new local branch by
-//!      matching a remote branch, for every spelling Git accepts.
-//! Gotcha: The facts read option names and argument counts only. Where Git later refuses
-//!         for an option value, a combination of options, configuration or repository
-//!         state, the answer stays "creates": it errs toward the policy seeing the command.
+//!      matching a remote branch,
+//!  for every spelling Git accepts.
+//! Gotcha:
+//!  The facts read option names and argument counts only.
+//!  Where Git later refuses
+//!         for an option value,
+//!  a combination of options,
+//!  configuration or repository
+//!         state,
+//!  the answer stays "creates":
+//!  it errs toward the policy seeing the command.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // parseBranchCreationRegion({ subcommand: 'switch', postSubcommandArgs: ['-c', 'topic'] }).createsBranch
 //! ```
 
-/// What: Bring the tables, the mode and target decisions, the shared hatch spelling, the
+/// What:
+///  Bring the tables,
+///  the mode and target decisions,
+///  the shared hatch spelling,
+///  the
 ///       tokenizer and its questions into this file.
-/// Why:  This module only selects the command's table and combines the decisions.
+/// Why:
+///   This module only selects the command's table and combines the decisions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,8 +48,11 @@ use super::escape_hatch::BRANCH_WORKTREE_ESCAPE_HATCH;
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: The guarded subcommands. An `enum` is a closed set of named alternatives.
-/// Why:  Each has its own option table and its own rule for what a positional name means.
+/// What:
+///  The guarded subcommands.
+///  An `enum` is a closed set of named alternatives.
+/// Why:
+///   Each has its own option table and its own rule for what a positional name means.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,9 +68,13 @@ pub enum BranchCreationCommand {
     Switch,
 }
 
-/// What: Facts of one guarded region. `Option<usize>` is "a token index or nothing".
-/// Why:  `implicit_creation_target` names the argument a repository probe must check
-///       against remote branches; this module never runs that probe.
+/// What:
+///  Facts of one guarded region.
+///  `Option<usize>` is "a token index or nothing".
+/// Why:
+///   `implicit_creation_target` names the argument a repository probe must check
+///       against remote branches;
+///  this module never runs that probe.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,16 +83,22 @@ pub enum BranchCreationCommand {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BranchCreationRegion {
-    /// The options ask Git to create, reset or copy a branch.
+    /// The options ask Git to create,
+    ///  reset or copy a branch.
     pub creates_branch: bool,
     /// Region token index of the name Git would create by matching one remote branch.
     pub implicit_creation_target: Option<usize>,
-    /// Wrapper-only flags in option position; `escape` is `--no-enforce-worktree-branch`.
+    /// Wrapper-only flags in option position;
+    ///  `escape` is `--no-enforce-worktree-branch`.
     pub wrapper: WrapperFlags,
 }
 
-/// What: The guarded command a subcommand word names, or nothing. `&[u8]` borrows the word.
-/// Why:  Callers hold the subcommand token as raw bytes.
+/// What:
+///  The guarded command a subcommand word names,
+///  or nothing.
+///  `&[u8]` borrows the word.
+/// Why:
+///   Callers hold the subcommand token as raw bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -90,9 +119,13 @@ pub fn branch_creation_command(word: &[u8]) -> Option<BranchCreationCommand> {
     return None;
 }
 
-/// What: Parse the region after a guarded subcommand. `Result<A, B>` is "either success `A`
+/// What:
+///  Parse the region after a guarded subcommand.
+///  `Result<A, B>` is "either success `A`
 ///       or failure `B`".
-/// Why:  A region Git itself would refuse yields the refusal; Git then creates nothing.
+/// Why:
+///   A region Git itself would refuse yields the refusal;
+///  Git then creates nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -144,7 +177,8 @@ pub fn parse_branch_creation_region(
     });
 }
 
-/// `git branch` creation, escape hatch positions and refusals.
+/// `git branch` creation,
+///  escape hatch positions and refusals.
 #[cfg(test)]
 #[path = "command_branch_create_tests.rs"]
 mod tests;
@@ -154,12 +188,14 @@ mod tests;
 #[path = "command_branch_create_target_tests.rs"]
 mod target_tests;
 
-/// Real Git 2.56.0 controls: the three tables and a differential on `git branch`.
+/// Real Git 2.56.0 controls:
+///  the three tables and a differential on `git branch`.
 #[cfg(test)]
 #[path = "command_branch_create_git_tests.rs"]
 mod git_tests;
 
-/// Real Git 2.56.0 controls: creation by `git checkout` and `git switch`.
+/// Real Git 2.56.0 controls:
+///  creation by `git checkout` and `git switch`.
 #[cfg(test)]
 #[path = "command_branch_create_guess_tests.rs"]
 mod guess_tests;

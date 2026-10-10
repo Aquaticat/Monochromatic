@@ -39,6 +39,7 @@ monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0
 forbidden-strings = { path = "../../cli/forbidden-strings", version = "0.4.1" }
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

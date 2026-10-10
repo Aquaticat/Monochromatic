@@ -1,67 +1,120 @@
-//! Directory-listing pane: a virtualized `ListView` over a `DirectorySnapshot`'s entries.
+//! Directory-listing pane:
+//!  a virtualized `ListView` over a `DirectorySnapshot`'s entries.
 //!
-//! Only visible rows are realized (`GtkListView` virtualizes the model), so a large directory
-//! stays cheap. Each row is a themed icon plus the entry name; a single click (or Enter) activates
-//! a row, which the strip turns into a spawned child pane, and holding Ctrl forces a duplicate. A
-//! close button in the header explicitly closes the pane. Real previews come with the thumbnail
+//! Only visible rows are realized (`GtkListView` virtualizes the model),
+//!  so a large directory
+//! stays cheap.
+//!  Each row is a themed icon plus the entry name;
+//!  a single click (or Enter) activates
+//! a row,
+//!  which the strip turns into a spawned child pane,
+//!  and holding Ctrl forces a duplicate.
+//!  A
+//! close button in the header explicitly closes the pane.
+//!  Real previews come with the thumbnail
 //! milestone.
 
-/// What: imports the single-slot interior-mutability cell.
-/// Why: the Ctrl-at-activation flag is shared between the click/key controllers and activation.
+/// What:
+///  imports the single-slot interior-mutability cell.
+/// Why:
+///  the Ctrl-at-activation flag is shared between the click/key controllers and activation.
 use std::cell::Cell;
-/// What: imports the reference-counted pointer.
-/// Why: that shared Ctrl flag is held by three closures on the same pane.
+/// What:
+///  imports the reference-counted pointer.
+/// Why:
+///  that shared Ctrl flag is held by three closures on the same pane.
 use std::rc::Rc;
-/// What: imports the borrowed path type.
-/// Why: a preview pane takes the previewed file path by reference.
+/// What:
+///  imports the borrowed path type.
+/// Why:
+///  a preview pane takes the previewed file path by reference.
 use std::path::Path;
 
-/// What: imports the GTK widget-extension traits (builders, controllers, list/box helpers).
-/// Why: the pane adds event controllers and presents a scrolled list, all via prelude traits.
+/// What:
+///  imports the GTK widget-extension traits (builders,
+///  controllers,
+///  list/box helpers).
+/// Why:
+///  the pane adds event controllers and presents a scrolled list,
+///  all via prelude traits.
 use gtk4::prelude::*;
-/// What: imports the key symbol and modifier-mask types.
-/// Why: activation checks whether Ctrl was held and whether a key press was an activation key.
+/// What:
+///  imports the key symbol and modifier-mask types.
+/// Why:
+///  activation checks whether Ctrl was held and whether a key press was an activation key.
 use gtk4::gdk::{Key, ModifierType};
-/// What: imports the boxed-any wrapper and the event-propagation verdict enum.
-/// Why: `FileEntry` rides a `BoxedAnyObject` through the model; the key handler returns `Propagation`.
+/// What:
+///  imports the boxed-any wrapper and the event-propagation verdict enum.
+/// Why:
+///  `FileEntry` rides a `BoxedAnyObject` through the model;
+///  the key handler returns `Propagation`.
 use gtk4::glib::{BoxedAnyObject, Propagation};
-/// What: imports the list-store model type.
-/// Why: the pane's rows live in a `ListStore` of boxed entries feeding the `ListView`.
+/// What:
+///  imports the list-store model type.
+/// Why:
+///  the pane's rows live in a `ListStore` of boxed entries feeding the `ListView`.
 use gtk4::gio::ListStore;
-/// What: imports the text-ellipsization mode enum.
-/// Why: a long directory path in the header truncates in the middle rather than widening the pane.
+/// What:
+///  imports the text-ellipsization mode enum.
+/// Why:
+///  a long directory path in the header truncates in the middle rather than widening the pane.
 use gtk4::pango::EllipsizeMode;
-/// What: imports the concrete widget, controller, and factory types the pane is built from.
-/// Why: named explicitly so construction reads without a glob import.
+/// What:
+///  imports the concrete widget,
+///  controller,
+///  and factory types the pane is built from.
+/// Why:
+///  named explicitly so construction reads without a glob import.
 use gtk4::{
     Box as GtkBox, Button, EventControllerKey, GestureClick, Image, Label, ListItem, ListView,
     Orientation, Picture, PropagationPhase, ScrolledWindow, SignalListItemFactory, SingleSelection,
     Widget,
 };
 
-/// What: imports debug-tint helpers.
-/// Why: debug runs need visible screenshot labels on pane subregions.
+/// What:
+///  imports debug-tint helpers.
+/// Why:
+///  debug runs need visible screenshot labels on pane subregions.
 use crate::debug_tint;
-/// What: imports the thumbnail service and image-detection helper.
-/// Why: a preview pane requests an off-thread thumbnail for image files.
+/// What:
+///  imports the thumbnail service and image-detection helper.
+/// Why:
+///  a preview pane requests an off-thread thumbnail for image files.
 use crate::thumbs::{Thumbnails, is_image};
-/// What: imports the snapshot, entry, and kind domain types.
-/// Why: the pane renders a `DirectorySnapshot` of `FileEntry` rows, choosing an icon per `EntryKind`.
+/// What:
+///  imports the snapshot,
+///  entry,
+///  and kind domain types.
+/// Why:
+///  the pane renders a `DirectorySnapshot` of `FileEntry` rows,
+///  choosing an icon per `EntryKind`.
 use crate::types::{DirectorySnapshot, EntryKind, FileEntry};
 
-/// What: horizontal gap in pixels between a row's icon and its name label (and header items).
-/// Why: named so the one spacing value is not a bare magic literal.
+/// What:
+///  horizontal gap in pixels between a row's icon and its name label (and header items).
+/// Why:
+///  named so the one spacing value is not a bare magic literal.
 const ROW_SPACING: i32 = 6;
 
-/// What: pixel size of the fallback icon shown for a non-image preview pane.
-/// Why: a large themed glyph stands in until richer previews (video, PDF) arrive.
+/// What:
+///  pixel size of the fallback icon shown for a non-image preview pane.
+/// Why:
+///  a large themed glyph stands in until richer previews (video,
+///  PDF) arrive.
 const PREVIEW_ICON_SIZE: i32 = 96;
 
-/// What: build a directory-listing pane from `snapshot`, calling `on_activate(entry, force_dup)`
-///       when a row is single-clicked or Enter-activated (`force_dup` true when Ctrl was held), and
+/// What:
+///  build a directory-listing pane from `snapshot`,
+///  calling `on_activate(entry, force_dup)`
+///       when a row is single-clicked or Enter-activated (`force_dup` true when Ctrl was held),
+///  and
 ///       `on_close` when the header close button is pressed.
-/// Why: single-click-activate makes selecting a row the spawn trigger; Ctrl forces a duplicate pane
-///      (doc/planning/file-manager.md). Arrow keys only move selection, so browsing never spawns.
+/// Why:
+///  single-click-activate makes selecting a row the spawn trigger;
+///  Ctrl forces a duplicate pane
+///      (doc/planning/file-manager.md).
+///  Arrow keys only move selection,
+///  so browsing never spawns.
 pub fn build_listing_pane<A, C>(snapshot: &DirectorySnapshot, on_activate: A, on_close: C) -> GtkBox
 where
     A: Fn(&FileEntry, bool) + 'static,
@@ -89,10 +142,15 @@ where
     return container
 }
 
-/// What: wire row activation to `on_activate`, tracking whether Ctrl was held via a capture-phase
+/// What:
+///  wire row activation to `on_activate`,
+///  tracking whether Ctrl was held via a capture-phase
 ///       click gesture and a key controller feeding a shared cell that activation reads and clears.
-/// Why: `connect_activate` carries no modifier state, so the last pointer/key press before it
-///      records Ctrl; both controllers run before activation (capture phase / key-pressed).
+/// Why:
+///  `connect_activate` carries no modifier state,
+///  so the last pointer/key press before it
+///      records Ctrl;
+///  both controllers run before activation (capture phase / key-pressed).
 fn install_force_duplicate_tracking<A>(list: &ListView, on_activate: A)
 where
     A: Fn(&FileEntry, bool) + 'static,
@@ -128,9 +186,14 @@ where
     });
 }
 
-/// What: build a pane header: the pane's title path (ellipsized) beside a close button.
-/// Why: the close button is the explicit-close lifecycle trigger; the title expands so the button
-///      sits at the pane's right edge. Shared by listing panes and preview panes.
+/// What:
+///  build a pane header:
+///  the pane's title path (ellipsized) beside a close button.
+/// Why:
+///  the close button is the explicit-close lifecycle trigger;
+///  the title expands so the button
+///      sits at the pane's right edge.
+///  Shared by listing panes and preview panes.
 pub(crate) fn build_pane_header<C>(path: &str, on_close: C) -> GtkBox
 where
     C: Fn() + 'static,
@@ -151,10 +214,16 @@ where
     return header
 }
 
-/// What: build a preview pane for `path`: a header (path + close) over a thumbnail (images) or a
-///       typed icon (other files), decoding off-thread through `thumbs`.
-/// Why: images get a real decoded preview from the bounded cache; other files get a cheap OS-icon
-///      stand-in. `on_close` closes the pane.
+/// What:
+///  build a preview pane for `path`:
+///  a header (path + close) over a thumbnail (images) or a
+///       typed icon (other files),
+///  decoding off-thread through `thumbs`.
+/// Why:
+///  images get a real decoded preview from the bounded cache;
+///  other files get a cheap OS-icon
+///      stand-in.
+///  `on_close` closes the pane.
 pub(crate) fn build_preview_pane<C>(thumbs: &Thumbnails, path: &Path, on_close: C) -> GtkBox
 where
     C: Fn() + 'static,
@@ -166,9 +235,15 @@ where
     return container
 }
 
-/// What: build a preview pane's body: an off-thread thumbnail `Picture` for an image, or a large
+/// What:
+///  build a preview pane's body:
+///  an off-thread thumbnail `Picture` for an image,
+///  or a large
 ///       typed icon plus filename for any other file.
-/// Why: only images request a decode; the request deduplicates and caches, so revisiting is cheap.
+/// Why:
+///  only images request a decode;
+///  the request deduplicates and caches,
+///  so revisiting is cheap.
 fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
     if is_image(path) {
         let picture = Picture::new();
@@ -194,9 +269,13 @@ fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
     return debug_tint::wrap(&body, debug_tint::B6P_PREVIEW_BODY, Some("fallback preview"))
 }
 
-/// What: build the factory that creates and binds one row (icon + name label).
-/// Why: `setup` builds an empty row once per realized slot; `bind` fills it from the row's boxed
-///      `FileEntry`, so only visible rows ever touch a `FileEntry`.
+/// What:
+///  build the factory that creates and binds one row (icon + name label).
+/// Why:
+///  `setup` builds an empty row once per realized slot;
+///  `bind` fills it from the row's boxed
+///      `FileEntry`,
+///  so only visible rows ever touch a `FileEntry`.
 fn build_row_factory() -> SignalListItemFactory {
     let factory = SignalListItemFactory::new();
     factory.connect_setup(|_, item| {
@@ -222,8 +301,11 @@ fn build_row_factory() -> SignalListItemFactory {
     return factory
 }
 
-/// What: map an `EntryKind` to a freedesktop icon-theme name.
-/// Why: uses the OS icon theme for a real, cheap glyph per kind until the thumbnail milestone adds
+/// What:
+///  map an `EntryKind` to a freedesktop icon-theme name.
+/// Why:
+///  uses the OS icon theme for a real,
+///  cheap glyph per kind until the thumbnail milestone adds
 ///      per-file previews.
 fn icon_name(kind: EntryKind) -> &'static str {
     match kind {

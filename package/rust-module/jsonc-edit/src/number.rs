@@ -1,10 +1,20 @@
-//! What:     The exact mathematical identity of one JSON number literal.
-//!           An identity stores a sign, the significant digits without zero padding, and a signed
-//!           base-ten exponent kept as decimal text (`String`, an owned growable UTF-8 buffer, not a
+//! What:
+//!      The exact mathematical identity of one JSON number literal.
+//!           An identity stores a sign,
+//!  the significant digits without zero padding,
+//!  and a signed
+//!           base-ten exponent kept as decimal text (`String`,
+//!  an owned growable UTF-8 buffer,
+//!  not a
 //!           borrowed `&str` or a fixed-width integer).
-//! Why:      `1`, `1.0` and `1e0` must compare equal while `9007199254740992` and
-//!           `9007199254740993` stay distinct, and a JSON exponent may carry more digits than
-//!           `i64`, `i128` or `isize` holds. Keeping the exponent as text compares magnitudes
+//! Why:
+//!       `1`,
+//!  `1.0` and `1e0` must compare equal while `9007199254740992` and
+//!           `9007199254740993` stay distinct,
+//!  and a JSON exponent may carry more digits than
+//!           `i64`,
+//!  `i128` or `isize` holds.
+//!  Keeping the exponent as text compares magnitudes
 //!           without ever materializing `10^exponent`.
 //!
 //! In TS you'd write (pseudocode):
@@ -12,16 +22,21 @@
 //! // module number: type JsoncNumberIdentity = { negative: boolean; digits: string; exponent: string };
 //! ```
 
-/// What:     Import the crate's number failure type.
-/// Why:      Grammar rejection and identity construction are one operation, so they share one error.
+/// What:
+///      Import the crate's number failure type.
+/// Why:
+///       Grammar rejection and identity construction are one operation,
+///  so they share one error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncNumberError } from './error';
 /// ```
 use crate::error::JsoncNumberError;
-/// What:     Import the digit-string arithmetic and the ASCII digit test.
-/// Why:      Exponent adjustment must stay exact for digit runs wider than any machine integer.
+/// What:
+///      Import the digit-string arithmetic and the ASCII digit test.
+/// Why:
+///       Exponent adjustment must stay exact for digit runs wider than any machine integer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -29,8 +44,12 @@ use crate::error::JsoncNumberError;
 /// ```
 use crate::number_scale::{is_digit, signed_sum};
 
-/// What:     One number's canonical mathematical value, independent of how it was spelled.
-/// Why:      Equality and hashing must follow the value, while the caller keeps the original token
+/// What:
+///      One number's canonical mathematical value,
+///  independent of how it was spelled.
+/// Why:
+///       Equality and hashing must follow the value,
+///  while the caller keeps the original token
 ///           separately so an unedited literal is emitted exactly as written.
 ///
 /// In TS you'd write (pseudocode):
@@ -39,8 +58,11 @@ use crate::number_scale::{is_digit, signed_sum};
 /// ```
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct JsoncNumberIdentity {
-    /// What:     Sign after every zero spelling collapses to positive zero.
-    /// Why:      `-0` and `0` denote the same mathematical value, so the sign cannot distinguish
+    /// What:
+    ///      Sign after every zero spelling collapses to positive zero.
+    /// Why:
+    ///       `-0` and `0` denote the same mathematical value,
+    ///  so the sign cannot distinguish
     ///           them.
     ///
     /// In TS you'd write (pseudocode):
@@ -48,8 +70,10 @@ pub struct JsoncNumberIdentity {
     /// negative: boolean;
     /// ```
     negative: bool,
-    /// What:     Significant digits with no leading or trailing zero padding.
-    /// Why:      Private so no caller can build a non-canonical identity that compares unequal to
+    /// What:
+    ///      Significant digits with no leading or trailing zero padding.
+    /// Why:
+    ///       Private so no caller can build a non-canonical identity that compares unequal to
     ///           an equivalent parsed value.
     ///
     /// In TS you'd write (pseudocode):
@@ -57,8 +81,11 @@ pub struct JsoncNumberIdentity {
     /// digits: string; // constructed only by from_token
     /// ```
     digits: String,
-    /// What:     Signed decimal exponent as text, never as a fixed-width integer.
-    /// Why:      Arbitrary exponent widths stay representable and comparable.
+    /// What:
+    ///      Signed decimal exponent as text,
+    ///  never as a fixed-width integer.
+    /// Why:
+    ///       Arbitrary exponent widths stay representable and comparable.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -67,8 +94,10 @@ pub struct JsoncNumberIdentity {
     exponent: String,
 }
 
-/// What:     The scanned offsets and signs of one number token's grammar parts.
-/// Why:      Passing one record instead of nine positional arguments keeps the normalization call
+/// What:
+///      The scanned offsets and signs of one number token's grammar parts.
+/// Why:
+///       Passing one record instead of nine positional arguments keeps the normalization call
 ///           readable and makes an empty range ("this part was absent") explicit.
 ///
 /// In TS you'd write (pseudocode):
@@ -78,18 +107,23 @@ pub struct JsoncNumberIdentity {
 struct NumberParts {
     /// Whether the token carried a leading minus sign.
     negative: bool,
-    /// Byte range of the integer digits; empty when the token had none.
+    /// Byte range of the integer digits;
+    ///  empty when the token had none.
     integer: std::ops::Range<usize>,
-    /// Byte range of the fraction digits; empty when the token had no decimal point.
+    /// Byte range of the fraction digits;
+    ///  empty when the token had no decimal point.
     fraction: std::ops::Range<usize>,
     /// Whether the exponent carried a minus sign.
     exponent_negative: bool,
-    /// Byte range of the exponent digits; empty when the token had no exponent marker.
+    /// Byte range of the exponent digits;
+    ///  empty when the token had no exponent marker.
     exponent: std::ops::Range<usize>,
 }
 
-/// What:     Build the canonical identity from one validated token and its scanned parts.
-/// Why:      Keeping normalization separate from grammar scanning lets each stay readable and lets
+/// What:
+///      Build the canonical identity from one validated token and its scanned parts.
+/// Why:
+///       Keeping normalization separate from grammar scanning lets each stay readable and lets
 ///           tests exercise them independently.
 ///
 /// In TS you'd write (pseudocode):
@@ -152,8 +186,11 @@ fn normalize(raw: &str, parts: &NumberParts) -> JsoncNumberIdentity {
     };
 }
 
-/// What:     The public behavior of one exact number identity.
-/// Why:      Construction is restricted to validated tokens, so callers get accessors and questions
+/// What:
+///      The public behavior of one exact number identity.
+/// Why:
+///       Construction is restricted to validated tokens,
+///  so callers get accessors and questions
 ///           instead of a way to build a non-canonical identity.
 ///
 /// In TS you'd write (pseudocode):
@@ -161,8 +198,11 @@ fn normalize(raw: &str, parts: &NumberParts) -> JsoncNumberIdentity {
 /// class JsoncNumberIdentity { static fromToken(raw: string): JsoncNumberIdentity }
 /// ```
 impl JsoncNumberIdentity {
-    /// What:     Validate one complete JSON number token and return its canonical identity.
-    /// Why:      Parsing and normalization must agree on the grammar, so a caller cannot store a
+    /// What:
+    ///      Validate one complete JSON number token and return its canonical identity.
+    /// Why:
+    ///       Parsing and normalization must agree on the grammar,
+    ///  so a caller cannot store a
     ///           token that the emitter would later be unable to compare.
     ///
     /// In TS you'd write (pseudocode):
@@ -171,7 +211,8 @@ impl JsoncNumberIdentity {
     /// ```
     ///
     /// # Errors
-    /// Returns the grammar part that the token violates, so a caller can report it precisely.
+    /// Returns the grammar part that the token violates,
+    ///  so a caller can report it precisely.
     pub fn from_token(raw: &str) -> Result<JsoncNumberIdentity, JsoncNumberError> {
         // What:     `as_bytes` borrows the token's UTF-8 bytes.
         // Why:      JSON number grammar is ASCII, so byte offsets and character offsets agree.
@@ -261,8 +302,11 @@ impl JsoncNumberIdentity {
         return Ok(normalize(raw, &parts));
     }
 
-    /// What:     Report whether this identity denotes zero.
-    /// Why:      Every zero spelling shares one canonical form, and callers that normalize output
+    /// What:
+    ///      Report whether this identity denotes zero.
+    /// Why:
+    ///       Every zero spelling shares one canonical form,
+    ///  and callers that normalize output
     ///           need to ask without re-deriving it from the digits.
     ///
     /// In TS you'd write (pseudocode):
@@ -273,8 +317,11 @@ impl JsoncNumberIdentity {
         return self.digits == "0";
     }
 
-    /// What:     Report whether this identity is negative.
-    /// Why:      Zero is never negative in this model, so the sign is meaningful only for non-zero
+    /// What:
+    ///      Report whether this identity is negative.
+    /// Why:
+    ///       Zero is never negative in this model,
+    ///  so the sign is meaningful only for non-zero
     ///           values.
     ///
     /// In TS you'd write (pseudocode):
@@ -285,8 +332,10 @@ impl JsoncNumberIdentity {
         return self.negative;
     }
 
-    /// What:     Read the significant digits without zero padding.
-    /// Why:      Diagnostic output and differential tests compare values without reaching into
+    /// What:
+    ///      Read the significant digits without zero padding.
+    /// Why:
+    ///       Diagnostic output and differential tests compare values without reaching into
     ///           private fields.
     ///
     /// In TS you'd write (pseudocode):
@@ -297,8 +346,11 @@ impl JsoncNumberIdentity {
         return self.digits.as_str();
     }
 
-    /// What:     Read the signed decimal exponent as text.
-    /// Why:      The exponent can exceed every fixed-width integer, so the accessor returns the same
+    /// What:
+    ///      Read the signed decimal exponent as text.
+    /// Why:
+    ///       The exponent can exceed every fixed-width integer,
+    ///  so the accessor returns the same
     ///           representation the identity stores.
     ///
     /// In TS you'd write (pseudocode):

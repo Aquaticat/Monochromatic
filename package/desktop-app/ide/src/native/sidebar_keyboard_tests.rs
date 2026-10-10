@@ -1,18 +1,28 @@
-//! The divider is a Tab stop between tree and source, adjusts by keys, and does not exist without a project.
+//! The divider is a Tab stop between tree and source,
+//!  adjusts by keys,
+//!  and does not exist without a project.
 
-/// Real key events through the window, shared with the find tests.
+/// Real key events through the window,
+///  shared with the find tests.
 use super::find_tests::{chord, key};
-/// Shared window fixture, pointer helpers, and the pinned layout measurements.
+/// Shared window fixture,
+///  pointer helpers,
+///  and the pinned layout measurements.
 use super::sidebar_tests::{
     DIVIDER, GUTTER, HEADER, MINIMUM, SOURCE_MINIMUM, click, fixture, resize, settle,
 };
-/// The shipped window, source state, and bindings for a window without a project.
+/// The shipped window,
+///  source state,
+///  and bindings for a window without a project.
 use super::{AppWindow, State, bind_keys, bind_pointer, bind_viewport, render};
 /// Toolkit key names and window ownership.
 use slint::{ComponentHandle, platform::Key};
-/// What: `Rc` is a shared pointer for one thread (sibling `Arc` works across threads); `RefCell` allows
+/// What:
+///  `Rc` is a shared pointer for one thread (sibling `Arc` works across threads);
+///  `RefCell` allows
 /// changing a value behind that pointer (sibling `Cell` for small copied values).
-/// Why: The shortcut callback records the forwarded key while the test keeps reading it.
+/// Why:
+///  The shortcut callback records the forwarded key while the test keeps reading it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,7 +30,11 @@ use slint::{ComponentHandle, platform::Key};
 /// ```
 use std::{cell::RefCell, rc::Rc};
 
-/// Tab order is tree, divider, source; arrows step by 16px; Home and End go to the bounds.
+/// Tab order is tree,
+///  divider,
+///  source;
+///  arrows step by 16px;
+///  Home and End go to the bounds.
 #[test]
 fn keyboard_reaches_and_adjusts_the_divider_between_tree_and_source() {
     let shared = fixture(6);
@@ -126,7 +140,9 @@ fn keyboard_reaches_and_adjusts_the_divider_between_tree_and_source() {
     window.hide().expect("close sidebar window");
 }
 
-/// Without a project the divider has no width, takes no clicks, and is not a Tab stop.
+/// Without a project the divider has no width,
+///  takes no clicks,
+///  and is not a Tab stop.
 #[test]
 fn hidden_project_has_no_divider() {
     // What: `expect` returns the window or fails the test with this message.

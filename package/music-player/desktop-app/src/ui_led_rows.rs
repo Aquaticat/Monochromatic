@@ -1,11 +1,16 @@
 //! Derives LED cap end-corner ownership from Slint's actual wrapped rows.
 //!
-//! Slint owns text shaping and wrapping. Each cap reports its final rectangle through
-//! `LedRowGeometry.report`; this module groups complete reports by measured position and
-//! returns first/last membership. The full-width plate itself stays entirely in Slint.
+//! Slint owns text shaping and wrapping.
+//!  Each cap reports its final rectangle through
+//! `LedRowGeometry.report`;
+//!  this module groups complete reports by measured position and
+//! returns first/last membership.
+//!  The full-width plate itself stays entirely in Slint.
 
-/// What:     `RefCell` provides checked interior mutability on one UI thread.
-/// Why:      Repeated geometry callbacks fill shared state before row classification.
+/// What:
+///      `RefCell` provides checked interior mutability on one UI thread.
+/// Why:
+///       Repeated geometry callbacks fill shared state before row classification.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,8 +18,10 @@
 /// ```
 use std::cell::RefCell;
 
-/// What:     `Ordering` names comparison outcomes used while sorting measured controls.
-/// Why:      Geometry reports can arrive in callback order rather than visual order.
+/// What:
+///      `Ordering` names comparison outcomes used while sorting measured controls.
+/// Why:
+///       Geometry reports can arrive in callback order rather than visual order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,8 +29,11 @@ use std::cell::RefCell;
 /// ```
 use std::cmp::Ordering;
 
-/// What:     `Rc` shares geometry state between registration scope and callbacks.
-/// Why:      Slint callbacks run on one UI thread, so atomic ownership is unnecessary.
+/// What:
+///      `Rc` shares geometry state between registration scope and callbacks.
+/// Why:
+///       Slint callbacks run on one UI thread,
+///  so atomic ownership is unnecessary.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,8 +41,10 @@ use std::cmp::Ordering;
 /// ```
 use std::rc::Rc;
 
-/// What:     Generated window and LED row-global types cross the Rust-to-Slint seam.
-/// Why:      Callback registration reads measured reports and writes row-edge models.
+/// What:
+///      Generated window and LED row-global types cross the Rust-to-Slint seam.
+/// Why:
+///       Callback registration reads measured reports and writes row-edge models.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,8 +52,10 @@ use std::rc::Rc;
 /// ```
 use crate::{AppWindow, LedRowGeometry};
 
-/// What:     Slint handle traits expose weak handles and model adapters.
-/// Why:      Geometry callbacks must not keep the window alive.
+/// What:
+///      Slint handle traits expose weak handles and model adapters.
+/// Why:
+///       Geometry callbacks must not keep the window alive.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

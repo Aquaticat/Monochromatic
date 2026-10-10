@@ -1,4 +1,5 @@
-//! In-file find beside file switching and the modal search overlay, through real window key events.
+//! In-file find beside file switching and the modal search overlay,
+//!  through real window key events.
 
 /// The complete reader fixture and key helpers of the find tests.
 use super::find_tests::{
@@ -8,8 +9,11 @@ use super::find_tests::{
 use super::navigation_tests::{row, wait_until};
 /// Real toolkit key events reach the same capture scopes as seat input.
 use slint::{ComponentHandle, Model, platform::Key};
-/// What: `fs` writes disposable fixture files; nothing here touches a real project.
-/// Why: State-changing verification must run against throwaway directories.
+/// What:
+///  `fs` writes disposable fixture files;
+///  nothing here touches a real project.
+/// Why:
+///  State-changing verification must run against throwaway directories.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,7 +92,8 @@ fn native_find_recomputes_for_a_switched_file_and_keeps_input_focus() {
     window.hide().expect("close switch window");
 }
 
-/// Escape closes only the topmost surface; Ctrl+F is ignored under the modal search overlay.
+/// Escape closes only the topmost surface;
+///  Ctrl+F is ignored under the modal search overlay.
 #[test]
 fn native_find_and_search_overlay_close_topmost_first() {
     let fixture = tempfile::tempdir().expect("disposable overlay project");
@@ -157,7 +162,8 @@ fn native_find_and_search_overlay_close_topmost_first() {
     window.hide().expect("close overlay window");
 }
 
-/// Refused find text shows its diagnostic; empty text clears highlights without claiming "No matches".
+/// Refused find text shows its diagnostic;
+///  empty text clears highlights without claiming "No matches".
 #[test]
 fn native_find_reports_refused_text_and_clears_for_empty_text() {
     let fixture = tempfile::tempdir().expect("disposable diagnostic project");

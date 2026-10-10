@@ -1,5 +1,7 @@
-//! What: Attribute-line translation and gitignore-syntax matching controls.
-//! Why: Which paths are LFS-tracked is frozen by `package/cli/markdown-lint/src/lfs-tracked.unit.test.ts`;
+//! What:
+//!  Attribute-line translation and gitignore-syntax matching controls.
+//! Why:
+//!  Which paths are LFS-tracked is frozen by `package/cli/markdown-lint/src/lfs-tracked.unit.test.ts`;
 //! the added cases cover the `exclude` option's directory patterns and excluded-parent semantics.
 //!
 //! In TS you'd write (pseudocode):
@@ -28,7 +30,9 @@ fn patterns(lines: &[&str]) -> PathPatterns {
     return PathPatterns::new(owned.as_slice()).expect("patterns compile");
 }
 
-/// Only `filter=lfs` lines select, unset lines negate, and other attribute lines contribute nothing.
+/// Only `filter=lfs` lines select,
+///  unset lines negate,
+///  and other attribute lines contribute nothing.
 #[test]
 fn attribute_lines_become_ordered_patterns() {
     assert_eq!(
@@ -50,7 +54,8 @@ fn attribute_lines_become_ordered_patterns() {
     assert!(lfs_tracked_patterns("# *.png filter=lfs\n \n").is_empty());
 }
 
-/// An extension pattern matches anywhere in the tree; lines without `filter=lfs` match nothing.
+/// An extension pattern matches anywhere in the tree;
+///  lines without `filter=lfs` match nothing.
 #[test]
 fn extension_patterns_match_at_any_depth() {
     let matcher: PathPatterns = tracked(ATTRIBUTES);
@@ -60,7 +65,8 @@ fn extension_patterns_match_at_any_depth() {
     assert!(!matcher.matches("src/index.ts"));
 }
 
-/// A pattern with a slash is anchored at the repository root, and a later unset line wins.
+/// A pattern with a slash is anchored at the repository root,
+///  and a later unset line wins.
 #[test]
 fn scoped_patterns_and_later_unsets_are_honoured() {
     let matcher: PathPatterns = tracked(ATTRIBUTES);
@@ -72,7 +78,8 @@ fn scoped_patterns_and_later_unsets_are_honoured() {
     assert!(!tracked("").matches("shot.png"));
 }
 
-/// A directory pattern selects every file below it, and a file under an excluded directory cannot be re-included.
+/// A directory pattern selects every file below it,
+///  and a file under an excluded directory cannot be re-included.
 #[test]
 fn directory_patterns_cover_descendants_and_outrank_file_negations() {
     let directory: PathPatterns = patterns(&["package/ssg/"]);
@@ -88,7 +95,9 @@ fn directory_patterns_cover_descendants_and_outrank_file_negations() {
     assert!(!patterns(&[]).matches("docs/keep.md"));
 }
 
-/// A pattern the compiler rejects is an error naming the pattern; an unclosed class is a literal, as in git.
+/// A pattern the compiler rejects is an error naming the pattern;
+///  an unclosed class is a literal,
+///  as in git.
 #[test]
 fn invalid_patterns_are_errors() {
     let error = PathPatterns::new(&[String::from("a/[z-a].png")]).expect_err("reversed range");

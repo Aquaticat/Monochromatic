@@ -1,4 +1,5 @@
-//! Integration tests for the decision cache, against a throwaway in-memory database.
+//! Integration tests for the decision cache,
+//!  against a throwaway in-memory database.
 
 use super::*;
 use crate::decision::{Decision, DecisionKind};

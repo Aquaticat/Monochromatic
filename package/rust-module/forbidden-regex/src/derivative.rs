@@ -1,5 +1,8 @@
-//! What:    Brzozowski byte derivatives over the node algebra.
-//! Why:     This file is the Rust module that groups the derivative implementation, so the
+//! What:
+//!     Brzozowski byte derivatives over the node algebra.
+//! Why:
+//!      This file is the Rust module that groups the derivative implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,11 @@
 //! // module derivative: see exported functions and types below.
 //! ```
 
-/// What:    Imports the node algebra being differentiated.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra being differentiated.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +23,15 @@
 /// ```
 use crate::ast::node::Node;
 
-/// What:    Imports the smart constructors that keep results canonical.
-/// Why:     The code below uses `alt`, `comp`, `concat`, `inter`, `repeat` directly; importing
+/// What:
+///     Imports the smart constructors that keep results canonical.
+/// Why:
+///      The code below uses `alt`,
+///  `comp`,
+///  `concat`,
+///  `inter`,
+///  `repeat` directly;
+///  importing
 ///          from `crate/ast/smart` keeps each call site focused on the matcher logic instead of
 ///          the full Rust path.
 ///
@@ -34,8 +47,11 @@ use crate::ast::node::Node;
 /// ```
 use crate::ast::smart::{alt, comp, concat, inter, repeat};
 
-/// What:    Imports the boundary context used when a sequence steps past a nullable anchor.
-/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+/// What:
+///     Imports the boundary context used when a sequence steps past a nullable anchor.
+/// Why:
+///      The code below uses `Ctx` directly;
+///  importing from `crate/context` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -44,8 +60,12 @@ use crate::ast::smart::{alt, comp, concat, inter, repeat};
 /// ```
 use crate::context::Ctx;
 
-/// What:    Imports nullability, needed by the concatenation rule.
-/// Why:     The code below uses `nullable` directly; importing from `crate/nullable` keeps each
+/// What:
+///     Imports nullability,
+///  needed by the concatenation rule.
+/// Why:
+///      The code below uses `nullable` directly;
+///  importing from `crate/nullable` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -56,10 +76,16 @@ use crate::nullable::nullable;
 
 /// Returns the derivative of `node` with respect to one `byte` at `ctx`.
 ///
-/// What: `D_b(r)` is the regex matching the remaining input after a leading `b`.
-/// Constants and anchors derive to `Fail` or `Top`; a class derives to `Empty`
-/// when it contains `b`; the boolean operators distribute; concatenation uses
-/// the nullable-prefix rule below. Why: feeding the input one byte at a time
+/// What:
+///  `D_b(r)` is the regex matching the remaining input after a leading `b`.
+/// Constants and anchors derive to `Fail` or `Top`;
+///  a class derives to `Empty`
+/// when it contains `b`;
+///  the boolean operators distribute;
+///  concatenation uses
+/// the nullable-prefix rule below.
+///  Why:
+///  feeding the input one byte at a time
 /// through this function and checking nullability at the end decides membership,
 /// and the boolean cases are what give the engine `&` and `~`.
 ///
@@ -105,12 +131,23 @@ pub fn derivative(node: &Node, byte: u8, ctx: Ctx) -> Node {
 
 /// Interim countdown derivative of a bounded repetition.
 ///
-/// What: consuming a byte spends one copy of the body, leaving `D_b(R)` followed
-/// by the decremented repetition `R{min-1, max-1}`; when the body is nullable that
-/// first copy may instead match empty, so the byte may start a later copy, adding
-/// `D_b(R{min-1, max-1})`. Why: this keeps the eager derivative path correct while
-/// the counting back-end (which carries the count in a register, not in states) is
-/// built; it still blows up under search, so it is a stepping stone, not the goal.
+/// What:
+///  consuming a byte spends one copy of the body,
+///  leaving `D_b(R)` followed
+/// by the decremented repetition `R{min-1, max-1}`;
+///  when the body is nullable that
+/// first copy may instead match empty,
+///  so the byte may start a later copy,
+///  adding
+/// `D_b(R{min-1, max-1})`.
+///  Why:
+///  this keeps the eager derivative path correct while
+/// the counting back-end (which carries the count in a register,
+///  not in states) is
+/// built;
+///  it still blows up under search,
+///  so it is a stepping stone,
+///  not the goal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,13 +196,21 @@ fn derivative_repeat(node: &Node, min: usize, max: usize, byte: u8, ctx: Ctx) ->
     }
 }
 
-/// Derivative of a concatenation, summing over its nullable prefix.
+/// Derivative of a concatenation,
+///  summing over its nullable prefix.
 ///
-/// What: for `x0 x1 ...`, the derivative is `D(x0)·x1...` plus, when `x0` is
-/// nullable here, the derivative of the tail, and so on through every leading
-/// nullable factor (so zero-width anchors at the front are stepped over). Why:
+/// What:
+///  for `x0 x1 ...`,
+///  the derivative is `D(x0)·x1...` plus,
+///  when `x0` is
+/// nullable here,
+///  the derivative of the tail,
+///  and so on through every leading
+/// nullable factor (so zero-width anchors at the front are stepped over).
+///  Why:
 /// the empty string a nullable factor matches lets the next factor also start on
-/// this same byte, which is exactly how anchors inside a sequence take effect.
+/// this same byte,
+///  which is exactly how anchors inside a sequence take effect.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -210,8 +255,11 @@ fn derivative_concat(parts: &[Node], byte: u8, ctx: Ctx) -> Node {
     return alt(branches)
 }
 
-/// What:    Unit tests for byte derivatives, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for byte derivatives,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

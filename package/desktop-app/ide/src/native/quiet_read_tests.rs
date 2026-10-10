@@ -1,6 +1,12 @@
-//! Reads that no write notification asked for do not show a save in progress. A displayed file outside
-//! the project has no watch at all, so no notification of the save ever arrives; the test asks for the
-//! reread a new watch, a newly displayed file, or a full reread after lost events asks for, mid-save.
+//! Reads that no write notification asked for do not show a save in progress.
+//!  A displayed file outside
+//! the project has no watch at all,
+//!  so no notification of the save ever arrives;
+//!  the test asks for the
+//! reread a new watch,
+//!  a newly displayed file,
+//!  or a full reread after lost events asks for,
+//!  mid-save.
 
 /// Shipped window setup shared with the watch tests.
 use super::watch_tests::open;
@@ -12,8 +18,12 @@ use ide_app::change_watch::SourceChange;
 use ide_app::refresh_policy::WRITE_QUIET;
 /// `ComponentHandle` provides `hide` on the generated window.
 use slint::ComponentHandle;
-/// What: `OpenOptions` opens a file with chosen flags; `Write` provides `write_all`; `Instant` is a monotonic time.
-/// Why: The test plays a save that truncates the file and finishes 40 ms later.
+/// What:
+///  `OpenOptions` opens a file with chosen flags;
+///  `Write` provides `write_all`;
+///  `Instant` is a monotonic time.
+/// Why:
+///  The test plays a save that truncates the file and finishes 40 ms later.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,7 +37,8 @@ use std::{
 
 /// A save in progress when a reread with no write behind it is asked for is shown only when finished.
 /// A trial in which the test thread itself stalled until the save outlasted the quiet period proves
-/// nothing, so up to five trials run until one did not stall.
+/// nothing,
+///  so up to five trials run until one did not stall.
 #[test]
 fn reads_no_notification_asked_for_do_not_show_a_save_in_progress() {
     let project = tempfile::tempdir().expect("disposable project");
