@@ -101,6 +101,7 @@ a `git diff` run from a subdirectory,
 and a count expected to be zero leading an `&&` chain it then stopped;
 and agents chained three more reads or writes with `;` (ledger M116,
 M139).
+A background command of the lead's chained the source scans and the lint with `;` (ledger M140).
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
@@ -263,6 +264,9 @@ one had a record saying every case passes without it,
 and the case that named it deleted (ledger B178);
 the other two were found by a review of the trial's cases (ledger B335).
 The bench-draw cases held three `toContain` assertions where each whole value was known (ledger B348).
+A case on arming a deadline inside a queue's slot passed whichever way the deadline was armed,
+since its transport ignored the signal the deadline aborts (ledger B362):
+a scripted transport honours the signal a case means to see fire.
 
 The rule:
 a red guard is read case by case before the fix,
@@ -605,6 +609,9 @@ and the day after TianqiChen66621's page was read,
 the current snapshot still listed reading it as a next step (M55).
 The scan B102 added gave this doc a section of its own,
 and "Copies of shared code" went on saying nothing fails on a shared module without its own test (ledger B103).
+A batch's state file listed two agents as running after the session that launched them had ended,
+their folders unwritten since 2026-10-06 (UTC) and nothing handed back,
+and four days passed before a merge showed their patches missing (ledger M140).
 
 The rule:
 a page read,
@@ -616,6 +623,11 @@ the map's "Current status" moves with them when what it states has changed.
 A status paragraph carries the date it was written,
 and points at a record by its name and date,
 not by its place in a file that grows.
+A state file's "running" line carries the check that proved it
+(an agent's id answering,
+or a folder written since);
+after a session break,
+each agent's folder times are checked before the line is trusted.
 A change that adds a guard searches this doc for sentences calling the gap open
 (`rg --line-number 'Nothing yet|is open' doc/mistake-prevention.md`,
 and the guard's subject by name)
@@ -1067,16 +1079,25 @@ and passed in every other run of the whole suite (ledger B340).
 Its bound is 60,000 ms,
 documented as a stop for a hang that no case waits for.
 
-The census that followed, on 2026-10-06 (UTC), read every bound the tests and fixtures set on the real clock,
-948 of them outside seven files deferred to the changes in flight on them.
+The census that followed,
+on 2026-10-06 (UTC),
+read every bound the tests and fixtures set on the real clock,
+948 of them outside seven files deferred to the changes in flight on them
+(ledger B358).
 The bounds that only stopped a hang now share one constant;
 the bounds a case reaches bound work that cannot end before them;
 a seat that slept past a window,
 a head start that ordered two slices,
-and a ceiling on elapsed time gave way to gates and to what the case can read off the abort;
-a parse's time limit moved to the process's CPU clock.
-It also found that a per-call deadline handed to a stage over a hand-scripted client is never armed,
-since the provider clients arm it:
+and a ceiling on elapsed time gave way to gates and to what the case can read off the abort (ledger B359,
+B360);
+an attempt that slept 200 ms under its own bound of 300 ms gave way to one that answers at once,
+the time passing in a backoff longer than the bound (ledger B361);
+a parse's time limit moved to the process's CPU clock (ledger B363).
+A case on where a deadline is armed could not fail,
+since its transport ignored the signal;
+it now holds the slot past the deadline and refuses an aborted exchange (ledger B362).
+The census also found that a per-call deadline handed to a stage over a hand-scripted client is never armed,
+since the provider clients arm it (ledger B364):
 what fires in a test is a signal,
 a cap,
 a window
@@ -1113,13 +1134,16 @@ fails a bound a test or fixture sets on the real clock other than the shared han
 unless it is listed with its class and reason,
 and fails a listed bound or a deferred file the source no longer holds;
 the whole unit suite run before a batch's work is called done.
-Open:
-the same shape stands at 604 sites in 138 test files (ledger B340),
-and a census of them is queued:
-each site is either a stop for a hang,
-moved to one documented bound,
-or a bound a case means to reach,
-kept and gated.
+Open,
+as the census merged on 2026-10-10 (UTC) left it (ledger B358):
+the seven deferred files,
+28 reads,
+wait for the changes in flight on them;
+two upper bounds on elapsed time in `stage-round.unit.test.ts`,
+which the scan does not read,
+can break under load;
+and the logger package's own sink check is bounded at 5,000 ms,
+which timed out in one suite run without failing a case.
 
 ## Copies of shared code
 
@@ -1728,6 +1752,20 @@ A fix commit that changed a doc went out without the Markdown lint,
 which then found three findings in its paragraph (ledger M133):
 the Markdown lint runs on every doc a commit touches,
 a code commit's included.
+The merge of a patch written at `f3c2bae13` ran its own files by name,
+the scans and the lint,
+and left the whole suite to the gate;
+main had since gained cases pinning the provider's words in the line a stop writes,
+which the merged change no longer writes,
+and four of them failed at the gate though each change was green at its own base (ledger M140).
+A patch whose base predates commits touching the modules it changes,
+or their consumers' cases,
+gets the whole suite on the merged tree before its fix commit,
+not only its own files by name.
+Review of the combinator scan found declarations without TSDoc
+and `@param` and `@returns` lines that said what a value is (ledger B356):
+a destructuring or a loop's binding carries TSDoc as any declaration does,
+and a parameter or a result line says why.
 
 The rule:
 read a region with the Read tool before editing it.
@@ -2500,6 +2538,11 @@ One voice's reply nested thousands of markers deep exhausted the parser's stack 
 and the engine's own error left the stage and took every other voice's candidate with it (ledger B301).
 Text one voice wrote is bounded before a parser that descends once per level reads it,
 and every reader of that parser has its refusal.
+The bench draw reports the original page's failure ahead of the English page's,
+and no case mixed a read failure with a parse failure until review asked for one (ledger B353);
+its pair step's skip line stays without a case,
+since a bounded probe over 6,000 generated pairs reached it in none of the 5,773 that passed the step.
+A precedence between a step's refusals has a case for each mix of them.
 
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
@@ -4128,11 +4171,25 @@ which hid a regression of the roster order the stage promises (ledger B328);
 a second test file did the same through `readingsInSeatOrder` (ledger B343).
 The bench draw's skip line kept a fixed-length opening of the refusal,
 cut inside the commit hash before the page was named,
-and printed the lines of several entries in the order their reads ended.
+and printed the lines of several entries in the order their reads ended (ledger B316).
 A gather round raced its asks,
 and once the caller stopped it two asks could reject with failures of their own,
 so the round reported whichever ended first
-and the other failure reached no line.
+and the other failure reached no line (ledger B352).
+Until review,
+the scan written to hold the rule passed what it was meant to fail:
+a listed reason's anchor held to the call's top-level statement,
+so any name in the same `if`,
+`for` or `try` block held it (ledger B349);
+a catch that handed its error on through an alias,
+a cast or a nested object read as quiet (ledger B350);
+`Promise` reached through `constructor`,
+a namespace or a doubled `globalThis` went unseen (ledger B351);
+and an unlisted call written before a listed one took its entry,
+the finding naming the listed call's line (ledger B354).
+Forms the scan already read were planted only then (ledger B355),
+and the section the change wrote for its own facts was folded into this one,
+rather than a second section on one rule (ledger B357).
 
 The rule:
 what a command prints,
@@ -4210,9 +4267,17 @@ The lead's first draft of the scan for them kept a span of one backslash only,
 and found a span of two,
 the JSON escape of one backslash,
 which renders as written (ledger M138).
+With that rule written,
+a checker's regex written through the Write tool held the escape for U+2028 (line separator),
+and the tool wrote the raw character,
+so the checker failed to parse;
+the notes describing the slip then wrote the same escape the same way and got the character again (ledger M140).
 
 The rule:
-an escape that must stay in a file is written through a shell edit,
+no tool parameter holds a backslash-u escape,
+a message's text and notes included:
+the code point is named in words.
+An escape that must stay in a file is written through a shell edit,
 with its backslash doubled in the edit's replacement
 (`sed` with `\\u` where the file is to hold `\u`),
 never through a tool parameter;

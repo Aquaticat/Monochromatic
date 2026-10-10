@@ -29916,6 +29916,7 @@ A bound of that kind has since been shown to fail:
 the consolidation driver test's 5,000 ms hang bound,
 outrun on a loaded machine (B340);
 whether it is the bound listed here is not established.
+In the census of B358 the meters and instruments of that kind were measured and kept.
 
 Open to the owner's veto:
 a window of 60,000 ms and no gate in the scripted clients.
@@ -30964,6 +30965,7 @@ or a bound a case means to reach,
 kept and gated.
 B318 left "a bound of 5,000 ms over about 50 ms of work" not shown to fail;
 whether that is this site is not established.
+Closed since by B358 in `4cca8c301`.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -31245,6 +31247,600 @@ and if it lands with another the one-seat refusal's expectation moves with it.
 Recurrence:
 `mistake-prevention.md`,
 "Guards that cannot fail".
+
+### B349: a listed reason's anchor was held to the call's top-level statement
+
+Red in `d1e6af41c`,
+fixed in `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass,
+before its merge.
+`promise-combinators-in-order.unit.test.ts`,
+the scan that holds every Promise combinator in production code to a listed reason,
+took a call's own statement from the top level of its function,
+so inside an `if`,
+a `for` or a `try`
+any name anywhere in that block held the anchor.
+Two calls in one `if` block,
+the first resting on a name only the second uses,
+passed,
+and the `nextSettled` entry passed with `throwIfAborted` moved into the `try`,
+where no rejection reaches it.
+By the agent's measurement,
+the scan as it stood missed the three defects planted inside an `if`,
+a `for` and a `try`
+in the case "HOLDS A NAMED ANCHOR TO THE INNERMOST STATEMENT MAKING THE CALL".
+
+The fix:
+the scan holds a name to the innermost statement making the call,
+and looks for feeding code among the statements that come before the call's own in each enclosing block,
+and in the head of a loop whose body holds the call.
+A name written as `{ inHandler }` must stand in the handler of a `try` whose block holds the call,
+and `nextSettled` now rests on that;
+the cases for that form are coverage only,
+since the old scan cannot express it.
+By the agent's measurement,
+seven edits to copies of the production source the scan reads each give exactly their finding,
+one of them moving `throwIfAborted` out of `nextSettled`'s handler into the `try`,
+and the unchanged source gives none.
+At the merge the scan's package-wide case moved onto `expectNoFindings`,
+which `scan-direct-comparisons.unit.test.ts` requires of a listed scan (B339),
+and the scan joined the source-scans task.
+
+Open to the owner's veto:
+A loop's head counts as code feeding the call.
+The readers of a settled result are taken from the first statement list at or around the call's statement.
+A call in a class field initializer has the whole class declaration as its statement.
+`Anchor` is `string | { inHandler }` rather than a new reason.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B350: a catch that handed its error on read as quiet
+
+Red in `d1e6af41c`,
+fixed in `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass.
+A `catches-own` reason in the combinator scan held when any one catch under the call was quiet.
+The handing check saw the error only as a direct argument,
+so an alias,
+a cast,
+an array,
+a nested object or a destructured parameter read as quiet,
+and one quiet `try` beside one that throws held the reason.
+By the agent's measurement,
+the scan as it stood missed six of the plants of the case
+"HOLDS A REASON RESTING ON A CATCH TO EVERY CATCH INSIDE THE CALL":
+the alias,
+the cast,
+the array,
+the object inside an argument,
+the destructured parameter
+and the quiet catch beside a throwing one.
+
+The fix:
+every catch under the call must be quiet,
+with at least one present;
+a destructured parameter is never quiet;
+and any read of the binding counts as handing it on,
+except a direct argument of `refusalText`,
+`refusalOf` or `errorName`,
+or the value of a property of an object literal that is such an argument.
+By the agent's measurement,
+each of three production edits gives one finding:
+the error handed to `describeFailure` in `attribution-read.ts`,
+the error cast inside `refusalOf` in `ledger-directory.ts`,
+and a second,
+throwing `try` in `cited-reference-lookup.ts`.
+
+Open to the owner's veto:
+A destructured catch parameter is never quiet,
+where the review would treat one as quiet when none of its names is handed on;
+by the agent's search,
+production code holds none.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B351: the combinator scan did not find `Promise` reached without its name
+
+Red in `d1e6af41c`,
+fixed in `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass.
+The scan read `Promise` by its identifier and off `globalThis`,
+so `Promise.resolve().constructor.all`,
+`globalThis.globalThis.Promise.all` and `ns.Promise.all` gave no finding,
+and its doc did not list them as out of its reach.
+By the agent's measurement,
+the scan as it stood gave none of the 13 findings expected of the case
+"FINDS PROMISE REACHED WITHOUT ITS NAME BEFORE THE COMBINATOR".
+
+The fix:
+a member named `Promise` or `constructor` read off any value is a finding,
+as is a member named like a combinator read off anything but `Promise`,
+called or not,
+save `AbortSignal.any`;
+so is each of those names destructured off a value other than `Promise` or the global object.
+The module doc names what stays out of reach:
+`eval` and `Function` text,
+a computed key that is no string literal or a reflective read off a value other than `Promise` or the global object,
+and another module's alias handed on or read by such a key.
+By the agent's search,
+production code reads no `.constructor` or `.Promise`,
+and the only combinator-named member it reads off anything but `Promise` is `AbortSignal.any`,
+in `stage-round.ts` and `synthetic-transport.ts`.
+
+Open to the owner's veto:
+`const { any, } = AbortSignal` is a finding while `AbortSignal.any` is allowed.
+The combinator-name rule reads any such member off anything but `Promise`,
+called or not.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B352: a gather round dropped an ask's own failure under the caller's stop
+
+Red in `d1e6af41c`,
+fixed in `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass.
+`nextSettled` (`stage-round.ts`) throws the caller's reason in place of whichever ask rejected first,
+and the ask's own failure,
+a deadline or a transport failure landing as the stop arrived,
+reached no line.
+The case "LOGS THE FAILURE AN ASK ENDED IN AFTER THE CALLER'S ABORT" asserts the line whole,
+and on the agent's tree before the fix it failed with `expected [] to deeply equal [ Array(1) ]`.
+
+The fix:
+where the caught value is not the caller's reason itself,
+`nextSettled` writes it through `refusalText` on a logger tagged `nextSettled`,
+then throws through `throwIfAborted()`;
+`awaitHeard` hands it the stage and the logger,
+and gains `@throws` for the logger's failure and for an ask's own failure when no abort is in play.
+The list note and the TSDoc say the asks share the signal and the catch puts its reason in place of what it caught.
+The case holding that nothing is logged when the asks end in the caller's own reason is coverage only;
+by the agent's control it fails with the identity check removed.
+The client failing two seats after the stop is extracted as `clientFailingAfterTheStop`,
+which the existing case on the rejection now uses.
+
+Open:
+by the agent's run at its base `f3c2bae13`,
+none of 21 test files that reach the round saw the new line;
+on the merged tree the gate on `ce2654b2c` failed four cases the credential work added since that base,
+each pinning the provider's words in the line a stop writes,
+in `window-trial-pick`,
+`repair-refine-step`,
+`repair-slice-buy` and `translate-slice-attempt`.
+By the lead's reading,
+the round now throws the abort reason and logs the failure it replaces through `refusalText`,
+so those words reach no line (M140).
+The same four fail at `4cca8c301`,
+and the change that fixes them is not merged there.
+
+Open to the owner's veto:
+The line is written only when the caught value is not the caller's reason,
+where the review's fix logs whenever the caller has aborted.
+The line is tagged with `nextSettled`,
+while `askOnce` writes on its logger untagged.
+Extracting `clientFailingAfterTheStop` changed the body of an existing case.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B353: the precedence of a read failure and a parse failure in the bench draw was unpinned
+
+Cases added in `d1e6af41c`,
+coverage only,
+passing before and after `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass;
+no defect.
+`sliceEntry` (`corpus-run/bench-sample.ts`) reports the original's failure,
+read or parse,
+ahead of the English page's,
+and no case mixed a read failure with a parse failure.
+Two cases in `bench-sample-draw.unit.test.ts` now pair an unparsable original with a missing English page,
+and an unreadable original with an unparsable English page.
+By the agent's control,
+swapping the two checks in `sliceEntry` turns both red,
+with three older cases.
+
+The skip line of the pair step has no case:
+by the agent's bounded probe over three fixed seeds of 2,000 generated page pairs,
+5,773 pairs passed the pair step,
+2,363 of them cut into 7,326 slices,
+and none reached that line;
+227 pages built with broken front matter each printed their parse line,
+which shows the probe reads every line the draw prints,
+and nothing controls for the pair line itself.
+`PAIR_STEP_FAILED`'s TSDoc records the probe.
+
+Open to the owner's veto:
+Hoisting two expected lines into `ORIGINAL_MISSING_LINE` and `ORIGINAL_UNPARSABLE_LINE`
+changed the bodies of existing cases.
+
+Recurrence:
+`mistake-prevention.md`,
+"Refusals inside a composed operation".
+
+### B354: a count finding of the combinator scan named the wrong call
+
+Red in `d1e6af41c`,
+fixed in `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass.
+An unlisted call written before a listed one took the entry by position,
+and the finding named the old,
+listed call's line.
+By the agent's measurement,
+the scan as it stood named only the listed call in the planted file of the case
+"COUNTS EACH SITE'S CALLS AGAINST ITS ENTRIES".
+
+The fix:
+a site whose call count differs from its entries gives one finding naming every call's place,
+and none of its entries is checked against a call it was not read against;
+the calls of an unlisted key are still reported one finding each.
+
+Open to the owner's veto:
+The finding names every call of such a site,
+where the review offered naming the first call no entry was read against;
+the agent's reason is that the scan cannot know which call an entry was read against.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B355: forms the combinator scan reads were not planted in its fixture
+
+Planted in `d1e6af41c`,
+coverage only,
+passing before and after `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass;
+no defect.
+`global`,
+`globalThis['Promise']`,
+the optional,
+non-null and parenthesized callees,
+a sequence callee,
+a cast,
+`.apply`,
+`.bind` and a tagged template are now planted in the case "FINDS EVERY WAY",
+each with its finding.
+By the agent's measurement,
+the scan before the change gave all 27 expected findings.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B356: declarations without TSDoc and parameter lines that said what, not why
+
+Changed in `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass.
+Four destructurings and a loop's binding in the combinator scan had no TSDoc,
+the example of `memberKeyOf` passed a value of another type than the node it takes,
+and `@param` and `@returns` lines in the scan and in `corpus-run/bench-sample.ts` said what rather than why.
+They now say why,
+the example passes a `TreeNode`,
+and the TSDoc of `printSkipLine` names `skippedAt` as the builder of its line.
+
+Recurrence:
+`mistake-prevention.md`,
+"Lint and edits".
+
+### B357: the prevention doc recorded neither the combinator scan nor the gather round's lost failure
+
+Changed in `ce2654b2c`.
+
+Found on 2026-10-06 (UTC) by the review of the input-order change's second pass.
+The agent's report says no section of `mistake-prevention.md` covered concurrent work,
+and it wrote a new one,
+"Outcomes decided by which call ends first",
+where "Output decided by arrival order" already held the family (B253,
+B316,
+B317).
+At the merge the lead folded the new section into the existing one:
+the bench draw's and the gather round's facts,
+the rule that a combinator call outside the helper is listed with its reason and what holds it,
+and the scan that enforces it,
+rather than a second section on one rule.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B358: bounds on the real clock across the tests, which a loaded machine could outrun
+
+Red in `1f983c322`,
+fixed in `4cca8c301`.
+
+Found on 2026-10-06 (UTC) by the census B340 left open,
+after a 5,000 ms signal on a whole drive of scripted consolidation work ran out twice under load.
+By the agent's census at its base `a7eca7f`,
+the tests and fixtures set 976 bounds on the real clock in 194 files
+(the argument of `AbortSignal.timeout`,
+the delay of a timer or a sleep under any local name,
+and twenty option keys production arms a timer with or compares elapsed time against):
+948 outside seven files deferred to the changes in flight on them,
+and 28 inside.
+The lead's search for B340 had counted 604 sites in 138 files;
+the agent could not reproduce that count,
+and its closest pattern gave 683 lines in 144 files.
+`real-clock-bounds.unit.test.ts` fails on each such bound that is not `HANG_STOP_MS` of `hang-stop.test-fixture.ts`,
+unless it is listed with its class and reason or sits in a deferred file.
+The agent's red at `a7eca7f`,
+with an empty list,
+gave 948 findings in 442 keys;
+on main at `1f983c322` the package case fails with findings differing from the list,
+which names the values the fix leaves.
+
+The fix:
+787 of the 948 bounds,
+in 152 files,
+read `HANG_STOP_MS`,
+60,000 ms:
+a stop for a case that hangs,
+never a limit a passing case approaches.
+158 stay,
+each listed with a class and a reason:
+33 a case reaches,
+86 a case reads back
+and 39 other.
+Three sleeps that stood for ordering became gates.
+The scan joins the source-scans task,
+and "Tests on the real clock" carries the census and its classes.
+By the agent's measurement,
+no describe of the moved files grew by more than 0.8 s;
+with the drive signal of `absolute-naturalness-review-stage` at the old 5,000 ms and every seat slowed by 5.1 s,
+its cases fail with `TimeoutError`,
+and at the hang stop they pass.
+The agent measured and kept the meters and instruments that wait 10 or 20 ms:
+with a hold of 1,000 microtask turns they all pass and with none they all fail,
+so the overlap they hold for is in place within one turn of the event loop.
+The holds in the budget's coalescing cases and the router's slot cases decide nothing,
+since those cases pass with no hold,
+and the windows moved to the hang stop in `stage-recovery-round`,
+`stage-windowed-rounds`,
+`naturalness-quorum-roundtrip` and two `stage-quorum` recovery cases pass at a window of 0.
+The cases whose outcome depended on the clock are B359 to B363,
+and B364 records what the census found about per-call deadlines.
+Run on the merged tree before the commit:
+lint clean,
+49 scans passing,
+and the suite at 2,027 passing with four cases failing,
+the four B352 leaves open.
+
+Open:
+the seven deferred files,
+28 reads,
+wait for the changes in flight on them,
+with each read's class in the agent's report;
+two upper bounds on elapsed time in `stage-round.unit.test.ts`,
+which the scan does not read and which load can break,
+are left for the lead to restructure;
+and the logger package's own sink verification bound of 5,000 ms timed out 34 times in the agent's suite run
+without failing a case.
+
+Open to the owner's veto:
+The name `HANG_STOP_MS`,
+and a fixture file of its own for it.
+Five drive signals of `CALL_TIMEOUT_MS * 8` collapse into one hang stop.
+Bounds of 120,000 to 600,000 ms come down to 60,000.
+The runner `timeout:` of `wall-clock-stub` rises from 10,000 and that of `pass-footnote-lifecycle` from 30,000,
+both to 60,000.
+Windows of 0,
+50 and 60 ms move to the hang stop although they decide nothing at 0,
+so a seat that ever stopped answering would hold its case for a minute.
+`stage-call` keeps its 1,000 ms,
+as a value read back.
+Files are deferred whole rather than site by site.
+Waits and overrides through environment strings are left out of the guard.
+Guard keys use the nearest named function,
+so identical forms in one function share a key and one class,
+and the key of `SHORT_BOUND_MS` in `stream-bound` covers both a bound a case reaches and a record field.
+The 150 ms pause of `gated-git` stays,
+since a slow machine can only let its case pass without exercising the order it scripts,
+never fail it.
+The upper bounds of 880 s and 10 s in `transient-retry` stay.
+The agent's report names no alternative for these choices beyond the one a "rather than" states.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
+
+### B359: stalled seats in the quorum and refill cases raced a sleep against the clock
+
+The guard's red is `1f983c322`,
+and the cases changed in `4cca8c301`;
+their red is the agent's control under a forced stall,
+since the old cases pass when nothing stalls.
+
+Found on 2026-10-06 (UTC) by the census of B358.
+In `stage-quorum.unit.test.ts` the stalling seat slept 30 s,
+and the cases "BOUNDS the recovery round" and "ABANDONS a voice" asserted elapsed time under 1,000 and 5,000 ms;
+"still hears a voice INSIDE the grace" relied on a window of 2,000 ms.
+In `stage-round-refill.unit.test.ts` the slow seat slept 1.5 s before the quorum,
+for a round that must close on the others.
+By the agent's controls,
+with a synchronous busy loop standing in for a stalled process:
+the old stalling case fails after a stall of 1.1 s,
+the old refill case after a stall of 1.6 s before the quorum,
+since the slow seat is then heard,
+and the old grace case with its voice 2.1 s late;
+each new shape passes under the same stall.
+
+The fix:
+the stalled seat waits on the abort,
+records its reason and throws it,
+and the cases assert what cut it
+(`cuts` equal to `['AbortError: This operation was aborted']`,
+and `cut` equal to `{ aborted: true, reason: 'AbortError: This operation was aborted' }`),
+not the time spent;
+the refill's slow seat waits on the abort and throws;
+and the grace case's window is the hang stop,
+which by the agent's measurement fails at a window of 0,
+so the window is what keeps the voice.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
+
+### B360: the lane-contest overlap case could pass without the finishing order it names
+
+The guard's red is `1f983c322`,
+and the case changed in `4cca8c301`;
+its red is the agent's control.
+
+Found on 2026-10-06 (UTC) by the census of B358.
+`lane-contest-driver.unit.test.ts` ordered its overlapping slices by sleeps of 20 and 5 ms,
+and asserted no finishing order.
+By the agent's control,
+a stall of 40 ms before the second slice's timer lets the first slice finish first,
+and the old case still passed without exercising its order;
+the old shape with the order assertion added fails,
+and the new shape passes.
+
+The fix:
+the first slice's calls wait on a gate the second slice opens when every one of its calls has finished,
+and the case asserts the finishing order,
+the second slice's calls ahead of the first's.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
+
+### B361: the bedrock per-attempt bound case raced each attempt against its own bound
+
+The guard's red is `1f983c322`,
+and the case changed in `4cca8c301`;
+its red is the agent's control.
+
+Found on 2026-10-06 (UTC) by the census of B358.
+In `bedrock-client.unit.test.ts`,
+"GIVES EACH ATTEMPT THE WHOLE STREAM BOUND",
+each attempt slept 200 ms under a stream bound of 300 ms.
+By the agent's control,
+a stall of 150 ms fails the old case,
+and the new one passes.
+
+The fix:
+both attempts answer at once,
+and the time passes in the backoff between them,
+whose base of 1,000 ms sleeps at least 500 ms,
+longer than the bound,
+so a bound armed once around the retry ladder has run out before the retry starts.
+The case's name now says the retry is not cut by the time spent before it,
+in the failed attempt or the backoff.
+
+Open to the owner's veto:
+The case waits in the backoff it names,
+and its name changed.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
+
+### B362: the synthetic client's case on arming the deadline inside the slot could not fail
+
+The guard's red is `1f983c322`,
+and the case changed in `4cca8c301`;
+its red is the agent's control.
+
+Found on 2026-10-06 (UTC) by the census of B358.
+In `synthetic-client.unit.test.ts`,
+"arms the exchange deadline inside the slot,
+not at dispatch",
+each of two calls slept 150 ms against a deadline of 220 ms,
+and the transport ignored its signal,
+so the case passed whichever way the deadline was armed.
+By the agent's control,
+the old case still passed with the deadline firing first.
+
+The fix:
+the first call holds the one slot for 300 ms,
+the second waits in the queue past its 100 ms deadline and answers at once,
+and the transport refuses an exchange whose signal has aborted.
+By the agent's controls,
+the new case passes,
+and fails when the deadline counts from dispatch.
+
+Open to the owner's veto:
+The case was reshaped to mend a check that could not fail,
+in a file the agent was already editing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock" and "Guards that cannot fail".
+
+### B363: the nesting differential timed its parses on the real clock
+
+The guard's red is `1f983c322`,
+and the case changed in `4cca8c301`;
+its red is the agent's control.
+
+Found on 2026-10-06 (UTC) by the census of B358.
+`nesting-fence-differential.unit.test.ts` held each parse of a text the scan passes to 1,000 ms of real time,
+which a process taken off the CPU mid-parse stretches without bound.
+By the agent's control,
+a wait of 1.1 s on `Atomics.wait` inside one parse fails the old case,
+and the new one passes.
+
+The fix:
+the parse time is read with `process.cpuUsage`,
+user and system time together,
+and the limit's TSDoc says why.
+
+Open to the owner's veto:
+The parse limit is measured on CPU time.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
+
+### B364: a per-call deadline handed to a stage over a hand-scripted client is never armed
+
+The values moved in `4cca8c301`;
+no case holds the finding.
+
+Found on 2026-10-06 (UTC) by the agent of the census of B358.
+Only the provider clients arm a per-call `exchangeTimeoutMs` or `perCallTimeoutMs`,
+through `armCallDeadline`;
+besides them,
+only the pass entry's hard cap,
+`model-health-probe`,
+`provider-listing` and `translate-probe-run` arm a timer in production.
+By the agent's controls,
+`document-lanes` at its old per-call bound of 50 ms,
+with every scripted call slowed by 60 ms,
+still passed;
+and with the deadline at 200 ms and the grace window at the hang stop,
+a case ran 60.4 s and passed on the grace alone.
+What fires in a test is a signal,
+a cap,
+a window or a stream bound that the test arms itself
+or hands to production code that arms it;
+by the agent's reading,
+the failure of B340 was the whole drive's `AbortSignal.timeout(5_000)`.
+So a per-call value a test hands to a stage over a scripted client bounds nothing.
+
+The change:
+those values moved to the hang stop anyway,
+so a stage that comes to arm them waits a minute.
+
+Open to the owner's veto:
+Per-call deadlines that are never armed moved to the hang stop anyway.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
 
 ## Process mistakes in this audit
 
@@ -33699,6 +34295,202 @@ git from the root or with `-C`,
 and a count that may be zero in a call of its own.
 `mistake-prevention.md`,
 "Claims without their evidence" and "Shell commands".
+
+### M140: the lead's own slips in the work of B349 to B364
+
+Status:
+happened from 2026-10-06 to 2026-10-10 (UTC),
+by the lead's notes for docs batch eight.
+Each was caught before the commit it would have reached,
+or touched no commit,
+except two:
+the merge of the input-order change left four cases failing on main,
+and a stale "running" line left two agents' work undone for four days.
+
+- The page of choices open to the owner's veto was published as a claude.ai Artifact,
+  with a stored database,
+  without asking.
+  The owner,
+  on 2026-10-06:
+  "Just don't use Artifacts.
+  Artifacts are uploaded to Anthropic and Anthropic can keep these forever.
+  They're not private.
+  Open the local file in my browser instead,
+  duh.
+  And delete artifacts."
+  Both artifacts were deleted:
+  the review page,
+  and an older Claude Docs page,
+  "Reading web docs:
+  which fetch tool to use",
+  whose text was first exported to a local folder.
+  Rule:
+  agent-authored HTML is a local file opened in the owner's browser,
+  and nothing is uploaded;
+  the repository's `CLAUDE.md` preamble says so since `b1a8f539c`.
+- The first local page put each whole ledger paragraph on a card,
+  the choice buried mid-text.
+  The owner:
+  "presented like a madman.
+  Use basic typography and UI/UX principles,
+  at least."
+  The page was redesigned:
+  a plain-language summary per choice,
+  written by three agents,
+  one card per decision,
+  the ledger wording behind a disclosure,
+  and a sticky progress bar.
+  Rule:
+  a page that asks the owner to decide leads each card with its choice in plain words,
+  and keeps the record's wording one step away.
+- The checker for the page's summaries was written through the Write tool
+  with a backslash-u escape for U+2028 (line separator) in a regex;
+  the tool decoded it into the raw character,
+  and the checker failed to parse.
+  A batch agent found it,
+  and it was written again through `sed` with the backslash doubled.
+  Rule:
+  the one M135 records,
+  an escape written through a shell edit,
+  and every written file searched for invisible characters before it is used.
+- The page's helper was written assuming a page opened from a file sends `Origin: null`;
+  Chromium sends `file://`,
+  and Firefox `null`.
+  The first browser test found it,
+  and the helper takes both.
+  Rule:
+  a header a browser sends is read off a real request from each browser the page will meet
+  before code depends on it.
+- The page's first drive checked the `hidden` property,
+  not what renders;
+  a `display` rule outranked `hidden`,
+  and the bulk confirm buttons always showed.
+  The screenshot found it.
+  The fix is `[hidden] { display: none !important; }`,
+  and the probe now reads the computed display,
+  with a positive control that deletes the rule.
+  Rule:
+  a drive reads the rendered state,
+  and its probe is shown failing on a page that renders wrong.
+- A drive reopened an `agent-browser` session name just closed,
+  which raced its daemon's shutdown
+  (`Could not configure browser: Failed to connect`).
+  Rule:
+  each run takes a session name of its own.
+- One background command chained the source scans and the lint with `;`.
+  Rule:
+  never `;`.
+- The first draft of the red message of `d1e6af41c` said the cases fail against main,
+  where several are coverage only;
+  it was reworded before the commit to the cases the agent showed red,
+  with its logs.
+  Rule:
+  a red message names as failing only the cases a log shows failing,
+  and calls the rest coverage.
+- uBlock Origin in the owner's Firefox profile blocked the page's calls from a file to `127.0.0.1`,
+  by the lead's inference:
+  no request reached the helper,
+  while a fresh profile's did.
+  The helper now serves the page itself at `http://127.0.0.1:47613/`.
+  Rule:
+  a local page and the helper it calls share one origin,
+  so no extension's rule on calls between origins stands between them.
+- The notes for this batch,
+  describing the U+2028 slip,
+  wrote its escape through the Write tool and got the raw character again;
+  the search for invisible characters found it,
+  and `sed` fixed it.
+  Rule,
+  tightened:
+  never type a backslash-u escape in any tool parameter
+  (Write,
+  Edit,
+  message text);
+  write it through `sed`,
+  or name the code point in words.
+- The redesigned page collapsed a kept card in place,
+  which could leave its head and its Show button under the sticky bar;
+  the drive over the full data failed its click on Show
+  (`covered by <div.bar>`),
+  where a draft with fewer cards never did.
+  A collapsing card now scrolls its head back clear of the bar,
+  and the same drive then passed 44 of 44.
+  Rule:
+  a page is driven over its full data before it is shown.
+- The page builder cut each veto paragraph at its blank line,
+  so the 23 paragraphs that end in a colon and list their calls after it
+  ("Calls made here are open to veto:")
+  showed only that lead-in as their ledger wording.
+  Spot-checking cards against the ledger found it;
+  the list now joins,
+  23 of 23 by the lead's census script.
+  Rule:
+  a page built from a record is spot-checked against the record,
+  card by card,
+  before it is shown.
+- Two summary agents each wrote a card for one decision,
+  the kept quote-loss fallback,
+  one under T8 and one under B113.
+  They were folded:
+  B113's card keeps the choice with both alternatives,
+  and T8's points at it.
+  Rule:
+  cards written by several agents are checked for one decision under two codes before the page is built.
+- The page merged the helper's saved marks after drawing the list and redrew only the counts,
+  so the "To decide" tab showed kept cards under "To decide 0".
+  Reading the phone screenshot found it,
+  which no check covered;
+  the drive now checks every shown card against the selected tab,
+  red on the unfixed build and then green.
+  Rule:
+  a drive checks every shown item against the state the page claims,
+  and a screenshot is read for what no check covers.
+- The merge of the input-order change (`ce2654b2c`) ran the named tests of the files the patch touched,
+  the scans and the lint,
+  and left the whole suite to the gate.
+  The patch was written at `f3c2bae13`,
+  and main had since gained the credential work's cases,
+  which pin the provider's words in the line a stop writes.
+  The merged `nextSettled` throws the abort reason and logs the failure it replaces through `refusalText`,
+  so by the lead's reading those words reach no line:
+  four cases failed at the gate on `ce2654b2c`,
+  in `window-trial-pick`,
+  `repair-refine-step`,
+  `repair-slice-buy` and `translate-slice-attempt`,
+  though each change was green at its own base (B352).
+  The fix went to a separate change.
+  Rule:
+  a patch whose base predates commits touching the modules it changes,
+  or their consumers' cases,
+  gets the whole suite on the merged tree before its fix commit,
+  not only its own files by name.
+- The batch's state file listed the agents porting the runner observations
+  and fixing the provider's words under a stop as running
+  after the session that launched them had ended;
+  their scratch folders had not been written since 21:33 UTC on 2026-10-06,
+  and nothing was handed back.
+  It was found on 2026-10-10 (UTC),
+  when the merge of the clock census finished and their patches were not there,
+  and both were launched again on `4cca8c301`.
+  Rule:
+  a state file's "running" line carries the check that proved it
+  (an agent's id answering,
+  or a folder written since);
+  after a session break,
+  each agent's folder times are checked before the line is trusted.
+- A waiter armed for a named run was followed by a Monitor on `echo noop` with a one-second expiry,
+  which watched nothing;
+  it had no effect on the work.
+  Rule:
+  a wait watches the thing it waits for,
+  in one command that ends at its terminal state.
+
+Prevention:
+the rule beside each slip.
+`mistake-prevention.md`,
+"Escapes and the layer that reads them",
+"Shell commands",
+"Lint and edits" and "Current-state docs".
 
 ### M79: a coverage census measuring compressed code
 
