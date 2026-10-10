@@ -506,3 +506,18 @@ pub mod forwarded_command;
 
 /// Index-writer classification and the commands that coordinate with a landing.
 pub mod index_writer_commands;
+
+/// Waiting for a foreign index.lock under the classification rules and Git's backoff schedule.
+pub mod index_lock_wait;
+
+/// The host side effects of the index-lock wait: /proc reads, sleeps, randomness and standard error.
+pub mod index_lock_wait_host;
+
+/// The landing location a forwarded index writer coordinates with: the real index and the registry.
+pub mod landing_location;
+
+/// Coordination of a forwarded index writer: the landing lock, the wait for a foreign lock and the lease.
+pub mod index_writer_coordination;
+
+/// Running a coordinated forwarded index writer: the landing lock held while real Git runs as a child.
+pub mod index_writer_forward;

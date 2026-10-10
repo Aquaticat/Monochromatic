@@ -122,6 +122,7 @@ fn projection_failed(action: Action, trigger: &str, message: &str) {
             assert_eq!(stdout.matches('\n').count(), 1, "{stdout}");
         }
         Action::Forward { .. } => panic!("a direct command is never forwarded"),
+        Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
     }
 }
 
@@ -572,6 +573,7 @@ fn direct_commands_refuse_beside_registered_transactions() {
             );
         }
         Action::Forward { .. } => panic!("a direct command never forwards"),
+        Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
     }
     remove(root.as_path());
 }
@@ -613,6 +615,7 @@ fn direct_commands_report_git_failures() {
             );
         }
         Action::Forward { .. } => panic!("a direct command is never forwarded"),
+        Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
     }
     remove(root.as_path());
 }
