@@ -149,6 +149,34 @@ const plantedControls = [
     to: 'if ticks > i64::MAX {',
     failing: 'process_start::tests::a_start_tick_beyond_the_safe_integers_is_refused',
   },
+  {
+    name: 'manual-push confirmation refuses a remote ref changed after negotiation',
+    file: 'src/native/manual_push_probe.rs',
+    from: 'if authoritative.is_none() != advertised_absent {',
+    to: 'if false {',
+    failing: 'manual_push_probe::tests::confirmation_refuses_a_remote_ref_that_changed_after_negotiation',
+  },
+  {
+    name: 'single-flight joins a live push that covered the commit',
+    file: 'src/native/auto_push_single_flight.rs',
+    from: 'LastPushedRead::Absent => true,',
+    to: 'LastPushedRead::Absent => false,',
+    failing: 'auto_push_single_flight::tests::waits_for_a_live_pusher_and_joins_its_successful_push_when_it_covers_the_commit',
+  },
+  {
+    name: 'post-commit gate blocks the backup on a blocking event',
+    file: 'src/native/post_commit.rs',
+    from: 'let blocked = pass_exit_code(events.as_slice(), end) != 0;',
+    to: 'let blocked = false;',
+    failing: 'post_commit::tests::a_blocked_landed_commit_ends_with_an_explicit_commit_landed_event',
+  },
+  {
+    name: 'manual-push scope reads the final tree when no base is published',
+    file: 'src/native/manual_push_range.rs',
+    from: '    if published.is_empty() {',
+    to: '    if published.is_empty() && false {',
+    failing: 'manual_push_range::tests::an_unknown_base_scans_the_final_tree',
+  },
 ];
 
 /**
