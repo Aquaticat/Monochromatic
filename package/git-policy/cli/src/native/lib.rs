@@ -544,3 +544,6 @@ pub mod auto_push_single_flight;
 
 /// Post-commit auto-push of a landed commit: the push argv, the surfaced output and the failure reporting.
 pub mod auto_push;
+
+/// The post-commit gate over a landed commit: its events, its blocking and the backup it allows.
+pub mod post_commit;

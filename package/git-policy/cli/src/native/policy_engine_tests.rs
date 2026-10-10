@@ -567,7 +567,7 @@ fn unported_triggers_are_unavailable_not_clean() {
     for setting in &mut all_off.settings {
         setting.severity = Severity::Off;
     }
-    for trigger in [Trigger::PostCommit, Trigger::ManualPush] {
+    for trigger in [Trigger::ManualPush] {
         for config in [&all_listed(), &all_off] {
             let (result, called) = run(trigger, config, &no_controls(), &[], vec![]);
             assert_eq!(

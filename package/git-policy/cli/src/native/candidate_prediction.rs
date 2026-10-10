@@ -27,6 +27,8 @@
 
 /// Import the layer's failure type and its closed list of causes.
 use super::candidate_error::{CandidateError, CandidateFailure};
+/// The landed commit object name a landed-delta request reads.
+use super::candidate_object::ObjectId;
 /// Import the private index copy every prediction stages into.
 use super::candidate_private_index::PrivateIndex;
 /// Import the candidate record a version is built from.
@@ -38,7 +40,7 @@ use super::candidate_stage::{
 /// Import the per-invocation owner of versions and bytes.
 use super::candidate_store::CandidateStore;
 /// Import the immutable version type.
-use super::candidate_version::CandidateVersion;
+use super::candidate_version::{CandidateSource, CandidateVersion};
 /// Import the captured-query runner and its byte helpers.
 use super::git_metadata::{MetadataOutput, path_from_git_bytes, run_metadata_git, strip_git_line};
 /// What:
@@ -108,6 +110,12 @@ pub enum CandidateRequest {
         /// The pathspecs of the scope;
         ///  `--all` is `:/`.
         Vec<OsString>,
+    ),
+    /// The paths one landed commit changed, each against every parent,
+    ///  as the post-commit gate reads them: the committed bytes and no worktree or index state.
+    Landed(
+        /// The landed commit whose tree changes are listed.
+        ObjectId,
     ),
 }
 
@@ -448,6 +456,7 @@ pub fn prepare_candidates(
     let purpose: &str = match request {
         CandidateRequest::Add(_) => "predict what git add stages",
         CandidateRequest::Direct(_) => "read the selected worktree files",
+        CandidateRequest::Landed(_) => "read the landed commit changes",
     };
     let real_index: PathBuf = real_index_path(real_git, global_prefix, overlay, purpose)?;
     let private: PrivateIndex = PrivateIndex::create(real_index.as_path())?;
@@ -457,6 +466,19 @@ pub fn prepare_candidates(
         OsString::from(INDEX_FILE_VARIABLE),
         private.path().as_os_str().to_os_string(),
     ));
+    // A landed commit lists its committed records directly; nothing is staged or predicted for it.
+    if let CandidateRequest::Landed(commit) = request {
+        let mut landed_store: CandidateStore =
+            CandidateStore::new(real_git, global_prefix, private_overlay.as_slice());
+        let version: Rc<CandidateVersion> =
+            landed_store.version(&CandidateSource::Committed(commit.clone()))?;
+        return Ok(PreparedCandidates {
+            store: landed_store,
+            version,
+            real_index,
+            _private: private,
+        });
+    }
     // `match` picks the source; each arm builds its store and its candidate records.
     // `mut store` because building the version below reads the store's generation.
     let (mut store, records): (CandidateStore, Vec<CandidateRecord>) = match request {
@@ -476,6 +498,9 @@ pub fn prepare_candidates(
                 region.as_slice(),
             )?;
             (add_store, staged)
+        }
+        CandidateRequest::Landed(_) => {
+            unreachable!("landed requests return before the staged match");
         }
         CandidateRequest::Direct(pathspecs) => {
             let mut scope_store: CandidateStore =

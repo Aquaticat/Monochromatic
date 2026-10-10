@@ -398,7 +398,7 @@ fn a_direct_check_applies_no_transform() {
 ///  never an empty clean pass.
 #[test]
 fn an_unported_lifecycle_is_unavailable() {
-    for trigger in [Trigger::PostCommit, Trigger::ManualPush] {
+    for trigger in [Trigger::ManualPush] {
         let (result, asked) = pass(
             &request(trigger, no_controls()),
             &["push"],
