@@ -851,6 +851,21 @@ and were resumed from their transcripts at 16:01,
 each told to judge its interrupted run from its evidence directory.
 No container was running then.
 
+A second weekly limit stopped the four delegates of the evening of 2026-10-06
+(linter cutover, commit path, Markdown autofix, dependent-version wiring);
+it reset on 2026-10-10 and the session continued with new delegates on a cheaper model, as the user asked.
+State found on 2026-10-10:
+
+- Linter cutover: five commits on `feat/linter-cutover`, tree clean, and `monochromatic-jsonc-edit` 0.1.1 published
+  (crates.io lists 0.1.1).
+  `monochromatic-lint` does not exist on crates.io:
+  the first publication needs a crates.io API token, which only the user can create
+  (`doc/handover/unified-linter-cutover.md`, section `Blocker`).
+  The cutover cannot land before that publication, so the linter stays out of the relaunch.
+- Commit path: slices 0 to 2 committed (HEAD `4397a98c8`), seven untracked files of the next slice.
+- Markdown autofix and `pathBytes`: committed through merge `b89b38252`, evidence file untracked.
+- Dependent-version wiring: wiring and controls committed (HEAD `cd344723a`), tree clean.
+
 #### Linter mutation close
 
 Evidence in `doc/handover/unified-linter-mutation-close.md` (`a5033325b`), section `Result`.
