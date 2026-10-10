@@ -227,12 +227,211 @@ because that file is local to the main checkout.
 
 ## Consumer differential
 
-Pending.
+Both incumbents ran read-only against this worktree,
+ without `--fix`,
+on the file set the new linter walks.
+The Markdown incumbent is `package/cli/markdown-lint/src/cli.ts` from the main checkout,
+run with `--format=json --lfs-image-exclude=package/ssg/`,
+ the flags of the `lint:markdown` task.
+The Rust incumbent is `package/linter/rust`,
+built from `main` source with `cargo build --release --locked --offline` in a scratch directory,
+because the prebuilt binary in the main checkout predates two `main` commits
+(`76b72979d` and `365a68255`);
+the fresh build and the prebuilt binary print identical findings.
+The new linter is `monochromatic-lint .` with the worktree configuration.
+
+### Totals before the configuration change
+
+- The new linter reported 56,404 errors and 3,347 warnings.
+  Of the errors,
+   397 are `rust/require-rustdoc` and 56,007 are Markdown.
+- The incumbent Markdown linter reported 55,144 findings:
+  53,448 `semantic-line-breaks`,
+  1,684 `MD034`,
+  5 `MD001`,
+  2 `MD054`,
+  2 `MD026`,
+  1 `no-pipe-tables`,
+  1 `MD053`,
+  and 1 `MD040`.
+- The incumbent Rust linter reported 651 findings:
+  646 `builtin(require-rustdoc)`
+  and 5 `builtin(max-lines)`,
+  all in `.rs` files.
+- The 402 errors from the earlier partial count are the 397 Rust rustdoc errors and the 5 `markdown/heading-increment` errors.
+  The Markdown rules that make up the rest of the count are not in that figure.
+
+### Why the incumbents did not gate the Rust findings
+
+- `package/git-policy/cli/src/native`,
+   268 errors:
+  the incumbent task `native:lint:rust` (`package/git-policy/cli/mise.toml:43` on `main`) was never reached
+  by any aggregate task.
+  The handover `doc/handover/cli-git-native-policy-engine.md`,
+   section
+  "The repository's Rust linter is not part of the gate",
+   records that decision.
+  The incumbent reports the same 268 findings when run on that path.
+- `package/linter/monochromatic-lint/src`,
+   83 errors:
+  the incumbent task `lint:rust` (`package/linter/monochromatic-lint/mise.toml:21` on `main`) exists,
+  but that package's `lint` is `cargo check` (`mise.toml:13` to `15`),
+  and the root `lint` fanout visits only `//package/` tasks (`mise.toml:335` on `main`).
+  The incumbent reports the same 83 findings when run on that path.
+- `doc/troubleshooting/slint-listview-random-seek-probe.rs`,
+   46 errors:
+  no package owns `doc/`,
+   so the root fanout (`mise.toml:335` on `main`) never reached it.
+  The incumbent reports the same 46 findings when run on that path.
+- Fuzz sidecars (`*.fuzz`) and `doc/audit/resharp-fuzz-2026-06-19`:
+  the incumbent reports 249 `require-rustdoc` and 5 `max-lines` findings there.
+  The new configuration already exempts these paths (`rust-exemptions`),
+  and none of the four fuzz packages has a `lint:rust` task on `main`.
+
+### Markdown differences
+
+- The new linter reports 662 more `semantic-line-breaks` and 201 more `no-bare-urls` than the incumbent.
+  All 201 bare-URL differences and 539 of the 662 semantic differences are prose findings in
+  10 files that contain supplementary-plane characters (emoji and similar).
+  The incumbent stops reporting some later findings after such a character.
+  Reproduction:
+   `${HOME}/temp/agent/momoa-probe/e1.md` has an emoji and a later bare URL;
+  the incumbent prints nothing for it,
+   while `e2.md` (the same text with an ASCII character) gets a finding.
+  The new linter is correct on these,
+   so the incumbent under-reports them.
+- The remaining 123 semantic differences are `///` doc-comment lines inside fenced Rust blocks
+  in 32 Markdown files.
+  The incumbent treats fenced code as code and reports nothing there;
+  the new linter reads the doc comments as prose.
+  Reproduction:
+   `${HOME}/temp/agent/momoa-probe/fence.md`.
+  The new linter is wrong on these,
+   and `monochromatic-lint --rules` lists no options for
+  `markdown/semantic-line-breaks`,
+   so no configuration key expresses the exception and they stay open.
+- Every other per-file,
+   per-rule Markdown count is identical between the two linters.
+
+### Configuration change this differential produced
+
+- A new block `old-gate-scope` in `monochromatic-lint.config.jsonc` turns `rust/require-rustdoc` off
+  for `package/git-policy/cli/src/native/**/*.rs` and `doc/troubleshooting/**/*.rs`,
+  the two paths the incumbent gate never ran.
+  Its comment cites the handover and the root `lint:rust` fanout filter.
+  No severity changed.
+- After the change,
+   errors fall from 56,404 to 56,090,
+   the 314 removed being the 268 git-policy
+  and 46 probe findings.
+  The 83 `monochromatic-lint` findings stay,
+   because the owner has to decide whether that package
+  is inside the gate (see below).
 
 ## Deleted paths
 
-Pending.
+The five incumbent packages,
+ deleted by commit `5bc05682e` on this branch:
+
+- `package/cli/markdown-lint` (71 files)
+- `package/linter/rust` (23 files)
+- `package/rust-linter-plugin/builtin` (12 files)
+- `package/rust-module/rust-linter-core` (34 files)
+- `package/rust-module/rust-linter-pattern` (13 files)
+
+The same commit also edited `package/config/pnpr` and `package/dev-script/file-enforcer`
+to drop their registrations.
+
+The sweep ran `rg --no-config --hidden --line-number --fixed-strings` over the worktree
+for each package path,
+ each crate and package name,
+and the names `rust-linter.toml` and `markdown-lint/`,
+excluding `doc/handover/**`,
+ `.git`,
+ `node_modules`,
+ `target` build output,
+ and `*.local.*` files.
+The deleted directories are absent,
+ so they need no exclusion.
+
+The sweep found one live reference:
+
+- `cli-git.config.ts:38` runs `node package/cli/markdown-lint/src/cli.ts` for the `markdown/autofix` policy.
+  This is the production commit wrapper,
+  which still calls the deleted linter until the landing step.
+  It is left for the landing choreography,
+   not changed on the branch.
+
+The sweep found references that do not run the deleted code:
+
+- Six Rust doc comments in `package/linter/monochromatic-lint/src/markdown_lfs_*_tests.rs`
+  cite deleted `*.unit.test.ts` files as provenance.
+- `package/linter/monochromatic-lint/fixtures/semantic-break-parity.json` and
+  `fixtures/lfs-url-parity.json` record hashes of the deleted sources.
+  Tests read them with `include_str!`,
+   so they stay as measured evidence.
+- `package/linter/monochromatic-lint/README.md:7` says the crate replaces the deleted packages.
+- `package/rust-module/forbidden-regex/counting-automaton.md:1155` names the old tool.
+- 199 matching lines under `doc/` (outside `doc/handover`) are historical planning,
+   audit,
+  troubleshooting,
+   and decision records.
+  Some of those lines name the unrelated `package/git-policy/markdown-lint`.
+  Records keep their text under the durable-record rules,
+   so none were edited here.
+
+The git-policy packages named `markdown-lint` (`package/git-policy/markdown-lint` and its
+`package/git-policy/cli/src/optional/markdown-lint` copy) are different packages and were not deleted.
 
 ## Left for step 8
 
-Pending.
+- Snippet warnings:
+   1,314 `rust/require-rustdoc` warnings in Rust fences inside Markdown,
+  under the `snippet-burn-down` block.
+  The plan names 905 snippet findings,
+  and this run measures a different count,
+   so step 8 has to reconcile the two.
+- `rust/no-anonymous-functions`:
+   2,033 warnings,
+   1,812 in `.rs` files and 221 in Markdown fences.
+  The rule has no incumbent counterpart,
+   and the owner decision of 2026-10-05 keeps it a warning.
+- `markdown/semantic-line-breaks` inside fenced Rust doc comments:
+   123 errors in 32 files.
+  This is the new-linter over-report described above.
+- Shared Markdown errors,
+   reported by the incumbent too (group b,
+   not fixed here):
+  53,987 prose `semantic-line-breaks`,
+   of which 539 are incumbent false negatives,
+  so 53,448 are shared;
+  1,885 `no-bare-urls`,
+   of which 1,684 are shared and 201 are incumbent false negatives;
+  5 `heading-increment`,
+   at `doc/audit/tech-monorepo-manager-vet-2026-09-16/rescreen-result-1.md:20`,
+  `screening-primary-chunk-1.md:21`,
+   `screening-primary-chunk-2.md:17`,
+  `screening-registry-chunk-1.md:17`,
+   and `screening-registry-chunk-2.md:31`;
+  and 2 `no-trailing-punctuation`,
+   2 `link-image-style`,
+   1 `no-pipe-tables`,
+  1 `link-image-reference-definitions`,
+   and 1 `fenced-code-language`,
+   identical to the incumbent.
+- `rust/require-rustdoc` errors in `package/linter/monochromatic-lint/src`:
+   83 errors,
+   unexempted.
+  The owner has to decide whether this package is inside the gate.
+  If it is,
+   the 83 items need rustdoc.
+  If it is not,
+   an `old-gate-scope` path can cover it,
+   as it does for git-policy.
+- `package/git-policy/cli/src/native`:
+   268 rustdoc errors are exempted by `old-gate-scope`,
+  and they stay real findings the owner has not fixed (the older handover counted 263).
+- `doc/troubleshooting/slint-listview-random-seek-probe.rs`:
+   46 rustdoc errors are exempted by `old-gate-scope`.
+  The probe is not a package,
+   so the exemption follows the existing `doc/audit` precedent.
