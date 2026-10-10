@@ -37,6 +37,13 @@ const ONE_KEY_REFUSAL = 'will not run in a process that holds provider keys '
   + 'set TRANSLATION_REPAIR_STARTED_BY=spend-report for that one start. '
   + 'A process that holds no provider key needs neither.';
 
+/**
+ The whole refusal for a process holding one key whose marker the refusal
+ does not repeat, since it has not the shape of a command name.
+ */
+const UNREPEATED_MARKER_REFUSAL = `${ONE_KEY_REFUSAL} ${STARTED_BY_VARIABLE} is set in this process, but not to the `
+  + 'name of a command.';
+
 await describe({
   name: '',
   concurrency: 1,
@@ -129,9 +136,35 @@ await describe({
               command: 'spend-report',
             },),).toEqual({
               allowed: false,
-              says: `${ONE_KEY_REFUSAL} ${STARTED_BY_VARIABLE} is set in this process, but not to the name of a `
-                + 'command.',
+              says: UNREPEATED_MARKER_REFUSAL,
             },);
+          },
+        },),
+
+        it({
+          name: 'REPEATS A MARKER SHAPED AS A COMMAND NAME OF 64 CHARACTERS, and repeats none of 65, nor one led by a '
+            + 'letter whose later character is no lower case letter, digit or hyphen',
+          fn: async () => {
+            /**
+             A command-shaped name at the longest the refusal repeats.
+             */
+            const longest = `purr-${'a'.repeat(59,)}`;
+            expect([
+              longest,
+              `${longest}a`,
+              'purr_report',
+            ].map((marker,) => taskRunnerVerdict({
+              env: { WHISKER_API_KEY: 'purr', TRANSLATION_REPAIR_STARTED_BY: marker, },
+              command: 'spend-report',
+            },)),).toEqual([
+              {
+                allowed: false,
+                says: `${ONE_KEY_REFUSAL} ${STARTED_BY_VARIABLE} is set in this process to ${longest}, `
+                  + 'which names another command.',
+              },
+              { allowed: false, says: UNREPEATED_MARKER_REFUSAL, },
+              { allowed: false, says: UNREPEATED_MARKER_REFUSAL, },
+            ],);
           },
         },),
 

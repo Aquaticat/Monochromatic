@@ -73,6 +73,32 @@ await describe({
       },
     },),
     it({
+      name: 'REPEATS A CODE OF TWO TO 32 CHARACTERS, and never one of one character or of 33',
+      fn: async () => {
+        /**
+         An upper-case code at the longest the reader repeats.
+         */
+        const longest = `E${'X'.repeat(31,)}`;
+        expect([
+          'EX',
+          longest,
+          'E',
+          `${longest}X`,
+        ].map((code,) => localProgramFailureOf({ error: rejectionWith({ code, },), },)),).toEqual([
+          {
+            kind: 'code',
+            code: 'EX',
+          },
+          {
+            kind: 'code',
+            code: longest,
+          },
+          { kind: 'unnamed', },
+          { kind: 'unnamed', },
+        ],);
+      },
+    },),
+    it({
       name: 'STATES EACH KIND IN AN ACCOUNT OF ITS OWN, quoting nothing the rejection wrote',
       fn: async () => {
         /**

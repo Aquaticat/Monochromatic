@@ -227,6 +227,200 @@ async function standingOverArtifact(
   return await standingOverArtifacts({ artifacts: { 'Mittens.json': artifact, }, },);
 }
 
+/**
+ The settled artifact the schema walk of 2026-10-04 mapped, recording no
+ rounds; `carrying` adds the rounds the repair lane records under its result.
+ */
+const WITHOUT_ROUNDS = {
+  artifactSchemaVersion: 3,
+  id: 'Mittens',
+  tip: 'abc',
+  pipelineDigest: `sha256-tree-v1:${'0'.repeat(64,)}`,
+  corpusSha: 'feedfacefeedfacefeedfacefeedfacefeedface',
+  callConfig: {},
+  durationMs: 1,
+  timestamp: '2026-09-28T10:00:00.000Z',
+  preparation: {
+    alignmentPairCount: 1,
+    identity: `sha256-preparation-v2:${'0'.repeat(64,)}`,
+    sliceCount: 1,
+    sourceChars: 1,
+    targetChars: 1,
+    sourceBytes: 1,
+    alignmentFindings: [],
+  },
+  lanes: {
+    repair: {
+      result: {
+        status: 'repaired',
+        sliceCount: 1,
+        changedSliceIndices: [0,],
+        withdrawnSliceIndices: [],
+        sliceTexts: [{
+          chunkIndex: 0,
+          incumbentKind: 'present',
+          incumbentText: 'x',
+          outcome: { kind: 'decided', acceptedText: 'y', },
+          text: 'y',
+        },],
+      },
+      delivery: [{
+        chunkIndex: 0,
+        sourceText: 'x',
+        incumbentKind: 'present',
+        incumbentText: 'x',
+        outcome: { kind: 'decided', acceptedText: 'y', },
+        shippedText: 'y',
+        delivery: { kind: 'replacement-shipped', },
+      },],
+    },
+    translate: {
+      result: {
+        status: 'complete',
+        sliceCount: 1,
+        changedSliceCount: 1,
+        withdrawnSliceCount: 0,
+        changedSliceIndices: [0,],
+        withdrawnSliceIndices: [],
+        sliceTexts: [{
+          chunkIndex: 0,
+          incumbentKind: 'present',
+          incumbentText: 'x',
+          outcome: { kind: 'decided', acceptedText: 'y', },
+          text: 'y',
+        },],
+      },
+      delivery: [{
+        chunkIndex: 0,
+        sourceText: 'x',
+        incumbentKind: 'present',
+        incumbentText: 'x',
+        outcome: { kind: 'decided', acceptedText: 'y', },
+        shippedText: 'y',
+        delivery: { kind: 'replacement-shipped', },
+      },],
+    },
+  },
+  comparison: [{
+    chunkIndex: 0,
+    incumbentKind: 'present',
+    incumbentText: 'x',
+    repairText: 'y',
+    translateText: 'y',
+    laneRelation: 'both-agree',
+    repairOutcome: { kind: 'decided', acceptedText: 'y', },
+    translateOutcome: { kind: 'decided', acceptedText: 'y', },
+    decisionComparison: { kind: 'comparable', verdict: 'same', },
+    repairDelivery: { kind: 'replacement-shipped', },
+    translateDelivery: { kind: 'replacement-shipped', },
+  },],
+  laneSelection: { kind: 'pending-human-decision', },
+  consolidation: { kind: 'not-run', },
+};
+
+/**
+ A round naming a model the roster no longer seats, no ballot cast over its
+ one candidate.
+ */
+const OFF_ROSTER_ROUND = {
+  stage: 'chunk-patch',
+  modelId: 'not-on-roster',
+  kind: 'selected',
+  envelopeId: 'env/1',
+  slate: [{
+    index: 1,
+    producer: { kind: 'model', modelId: 'not-on-roster', },
+    rendered: 'y',
+    hash: 'h',
+  },],
+  ballots: [],
+  tally: {
+    judgesAvailable: 1,
+    heard: 1,
+    quorum: 1,
+    probe: 1,
+    ballots: 1,
+    abstentions: 0,
+    selfVotes: 0,
+  },
+  perCandidate: [],
+  selectionReason: 'x',
+  selectedIndex: 1,
+  selectedText: 'y',
+  judgeStatements: [],
+  voteWeight: 1,
+};
+
+/**
+ The seated model's round as the repair lane records it, no ballot cast over
+ its one candidate.
+ */
+const SEATED_ROUND = {
+  ...OFF_ROSTER_ROUND,
+  modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+  slate: [{
+    index: 1,
+    producer: { kind: 'model', modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },
+    rendered: 'y',
+    hash: 'h',
+  },],
+};
+
+/**
+ The seated model's round with a ballot cast on it.
+ */
+const JUDGED_SEATED_ROUND = {
+  ...SEATED_ROUND,
+  ballots: [{
+    modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+    best: 1,
+    reason: 'x',
+    weight: 1,
+    selfVote: false,
+  },],
+};
+
+/**
+ The settled artifact whose one chunk records the rounds given.
+
+ @param rounds - rounds the artifact's one chunk records, with or without a
+ ballot as the comparison needs
+
+ @returns Artifact value written as one of the run's artifacts
+
+ @example
+ ```ts
+ const artifact = carrying({ rounds: [SEATED_ROUND,], },);
+ ```
+ */
+function carrying({ rounds, }: { readonly rounds: readonly unknown[]; },): Readonly<Record<string, unknown>> {
+  return {
+    ...WITHOUT_ROUNDS,
+    lanes: {
+      ...WITHOUT_ROUNDS.lanes,
+      repair: {
+        ...WITHOUT_ROUNDS.lanes.repair,
+        result: {
+          ...WITHOUT_ROUNDS.lanes.repair.result,
+          chunks: [{ rounds, },],
+        },
+      },
+    },
+  };
+}
+
+/**
+ The note every report prints under its summary line.
+ */
+const OBSERVATIONAL = '  OBSERVATIONAL. Only models that held a seat ever wrote a candidate, so an absent model is '
+  + 'unmeasured rather than last. Rounds inside one entry are correlated, so read the entry count, '
+  + 'not the round count. Digests are never pooled.\n';
+
+/**
+ The standing line of the seated model over the one round a ballot was cast on.
+ */
+const JUDGED_STANDING = `      ${SEAT_SYNTHETIC_VISION_WITHHELD}: 100.0% (1 of 1 disinterested ballot, over 1 candidate)\n`;
+
 await describe({
   name: STANDING_COMMAND,
   children: [
@@ -274,190 +468,15 @@ await describe({
         + 'round drew no ballot, and that round, on the summary line rather than dropping both, and names one '
         + 'off-roster artifact with the verb in the singular',
       fn: async () => {
-        // The settled artifact the schema walk of 2026-10-04 mapped, with the
-        // rounds the repair lane records under its result.
-        const withoutRounds = {
-          artifactSchemaVersion: 3,
-          id: 'Mittens',
-          tip: 'abc',
-          pipelineDigest: `sha256-tree-v1:${'0'.repeat(64,)}`,
-          corpusSha: 'feedfacefeedfacefeedfacefeedfacefeedface',
-          callConfig: {},
-          durationMs: 1,
-          timestamp: '2026-09-28T10:00:00.000Z',
-          preparation: {
-            alignmentPairCount: 1,
-            identity: `sha256-preparation-v2:${'0'.repeat(64,)}`,
-            sliceCount: 1,
-            sourceChars: 1,
-            targetChars: 1,
-            sourceBytes: 1,
-            alignmentFindings: [],
-          },
-          lanes: {
-            repair: {
-              result: {
-                status: 'repaired',
-                sliceCount: 1,
-                changedSliceIndices: [0,],
-                withdrawnSliceIndices: [],
-                sliceTexts: [{
-                  chunkIndex: 0,
-                  incumbentKind: 'present',
-                  incumbentText: 'x',
-                  outcome: { kind: 'decided', acceptedText: 'y', },
-                  text: 'y',
-                },],
-              },
-              delivery: [{
-                chunkIndex: 0,
-                sourceText: 'x',
-                incumbentKind: 'present',
-                incumbentText: 'x',
-                outcome: { kind: 'decided', acceptedText: 'y', },
-                shippedText: 'y',
-                delivery: { kind: 'replacement-shipped', },
-              },],
-            },
-            translate: {
-              result: {
-                status: 'complete',
-                sliceCount: 1,
-                changedSliceCount: 1,
-                withdrawnSliceCount: 0,
-                changedSliceIndices: [0,],
-                withdrawnSliceIndices: [],
-                sliceTexts: [{
-                  chunkIndex: 0,
-                  incumbentKind: 'present',
-                  incumbentText: 'x',
-                  outcome: { kind: 'decided', acceptedText: 'y', },
-                  text: 'y',
-                },],
-              },
-              delivery: [{
-                chunkIndex: 0,
-                sourceText: 'x',
-                incumbentKind: 'present',
-                incumbentText: 'x',
-                outcome: { kind: 'decided', acceptedText: 'y', },
-                shippedText: 'y',
-                delivery: { kind: 'replacement-shipped', },
-              },],
-            },
-          },
-          comparison: [{
-            chunkIndex: 0,
-            incumbentKind: 'present',
-            incumbentText: 'x',
-            repairText: 'y',
-            translateText: 'y',
-            laneRelation: 'both-agree',
-            repairOutcome: { kind: 'decided', acceptedText: 'y', },
-            translateOutcome: { kind: 'decided', acceptedText: 'y', },
-            decisionComparison: { kind: 'comparable', verdict: 'same', },
-            repairDelivery: { kind: 'replacement-shipped', },
-            translateDelivery: { kind: 'replacement-shipped', },
-          },],
-          laneSelection: { kind: 'pending-human-decision', },
-          consolidation: { kind: 'not-run', },
-        };
-        const round = {
-          stage: 'chunk-patch',
-          modelId: 'not-on-roster',
-          kind: 'selected',
-          envelopeId: 'env/1',
-          slate: [{
-            index: 1,
-            producer: { kind: 'model', modelId: 'not-on-roster', },
-            rendered: 'y',
-            hash: 'h',
-          },],
-          ballots: [],
-          tally: {
-            judgesAvailable: 1,
-            heard: 1,
-            quorum: 1,
-            probe: 1,
-            ballots: 1,
-            abstentions: 0,
-            selfVotes: 0,
-          },
-          perCandidate: [],
-          selectionReason: 'x',
-          selectedIndex: 1,
-          selectedText: 'y',
-          judgeStatements: [],
-          voteWeight: 1,
-        };
-
         /**
          Runs whose artifact records no chunks and one whose round names a
          model the roster dropped.
          */
-        const earlier = await standingOverArtifact({ artifact: withoutRounds, });
+        const earlier = await standingOverArtifact({ artifact: WITHOUT_ROUNDS, });
         expect(earlier.stdout.includes('earlierSchema=1',),).toBe(true,);
-        const offRoster = await standingOverArtifact({
-          artifact: {
-            ...withoutRounds,
-            lanes: {
-              ...withoutRounds.lanes,
-              repair: {
-                ...withoutRounds.lanes.repair,
-                result: {
-                  ...withoutRounds.lanes.repair.result,
-                  chunks: [{ rounds: [round,], },],
-                },
-              },
-            },
-          },
-        },);
+        const offRoster = await standingOverArtifact({ artifact: carrying({ rounds: [OFF_ROSTER_ROUND,], },), },);
         expect(offRoster.stderr.includes('not-on-roster',),).toBe(true,);
         expect(offRoster.stdout.includes('earlierRoster=1',),).toBe(true,);
-
-        /**
-         The seated model's round as the repair lane records it, no ballot
-         cast over its one candidate.
-         */
-        const seatedRound = {
-          ...round,
-          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-          slate: [{
-            index: 1,
-            producer: { kind: 'model', modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },
-            rendered: 'y',
-            hash: 'h',
-          },],
-        };
-
-        /**
-         The settled artifact carrying one seated round as its only round.
-
-         @param seatedOnly - round the artifact's one chunk records, with or
-         without a ballot as the comparison needs
-
-         @returns Artifact value written as the run's one artifact
-
-         @example
-         ```ts
-         const artifact = carrying({ seatedOnly: seatedRound, },);
-         ```
-         */
-        function carrying({ seatedOnly, }: { readonly seatedOnly: unknown; },): Readonly<Record<string, unknown>> {
-          return {
-            ...withoutRounds,
-            lanes: {
-              ...withoutRounds.lanes,
-              repair: {
-                ...withoutRounds.lanes.repair,
-                result: {
-                  ...withoutRounds.lanes.repair.result,
-                  chunks: [{ rounds: [seatedOnly,], },],
-                },
-              },
-            },
-          };
-        }
 
         /**
          Opening lines every report over the one seated artifact prints.
@@ -465,35 +484,16 @@ await describe({
         const opening = 'editor-standing-read: archives=1 artifacts=1 read=1 earlierRoster=0 earlierSchema=0 ';
 
         /**
-         The note every report prints under its summary line.
-         */
-        const observational = '  OBSERVATIONAL. Only models that held a seat ever wrote a candidate, so an absent model is '
-          + 'unmeasured rather than last. Rounds inside one entry are correlated, so read the entry count, '
-          + 'not the round count. Digests are never pooled.\n';
-
-        /**
          The artifact whose one round a ballot was cast on.
          */
-        const judged = carrying({
-          seatedOnly: {
-            ...seatedRound,
-            ballots: [{
-              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-              best: 1,
-              reason: 'x',
-              weight: 1,
-              selfVote: false,
-            },],
-          },
-        },);
+        const judged = carrying({ rounds: [JUDGED_SEATED_ROUND,], },);
 
         /**
          The report of that artifact's digest, which every run carrying it
          prints.
          */
         const judgedReport = `sha256-tree-v1:${'0'.repeat(64,)} over 1 entry\n`
-          + '  EDITOR : 1 judged round from 1 of 1 chunk\n'
-          + `      ${SEAT_SYNTHETIC_VISION_WITHHELD}: 100.0% (1 of 1 disinterested ballot, over 1 candidate)\n`
+          + `  EDITOR : 1 judged round from 1 of 1 chunk\n${JUDGED_STANDING}`
           + '  REFINER: 0 judged rounds from 0 of 1 chunk\n';
 
         /**
@@ -510,7 +510,7 @@ await describe({
           artifacts: {
             'Mittens.json': judged,
             'Tabby.json': {
-              ...carrying({ seatedOnly: seatedRound, },),
+              ...carrying({ rounds: [SEATED_ROUND,], },),
               id: 'Tabby',
               pipelineDigest: `sha256-tree-v1:${'1'.repeat(64,)}`,
             },
@@ -521,7 +521,7 @@ await describe({
          The same round with no ballot alone: no round was judged, and the
          report says so rather than rendering a standing over it.
          */
-        const unjudgedAlone = await standingOverArtifact({ artifact: carrying({ seatedOnly: seatedRound, },), },);
+        const unjudgedAlone = await standingOverArtifact({ artifact: carrying({ rounds: [SEATED_ROUND,], },), },);
 
         // Every run's streams compared at once and side by side, so a
         // difference in one never hides what the others printed; the run whose
@@ -554,18 +554,105 @@ await describe({
             '',
           ],
           judgedAlone: `${opening}digestsJudged=1 digestsUnjudged=0 unjudgedDigestRounds=0\n`
-            + `${observational}\n${judgedReport}`,
+            + `${OBSERVATIONAL}\n${judgedReport}`,
           judgedBesideUnjudged: 'editor-standing-read: archives=1 artifacts=2 read=2 earlierRoster=0 earlierSchema=0 '
-            + `digestsJudged=1 digestsUnjudged=1 unjudgedDigestRounds=1\n${observational}\n${judgedReport}`,
-          unjudgedAlone: `${opening}digestsJudged=0 digestsUnjudged=1 unjudgedDigestRounds=1\n${observational}`
+            + `digestsJudged=1 digestsUnjudged=1 unjudgedDigestRounds=1\n${OBSERVATIONAL}\n${judgedReport}`,
+          unjudgedAlone: `${opening}digestsJudged=0 digestsUnjudged=1 unjudgedDigestRounds=1\n${OBSERVATIONAL}`
             + '  NO JUDGED ROUNDS. 1 round was recorded here and drew no ballot: a slate of one candidate, which '
             + 'is what every producer proposing the same wording leaves, needs no vote, and a panel whose every '
             + 'judge abstained or failed casts none.\n',
           offRoster: 'editor-standing-read: archives=1 artifacts=1 read=0 earlierRoster=1 earlierSchema=0 '
-            + `digestsJudged=0 digestsUnjudged=0 unjudgedDigestRounds=0\n${observational}`
+            + `digestsJudged=0 digestsUnjudged=0 unjudgedDigestRounds=0\n${OBSERVATIONAL}`
             + '  NO ROUNDS UNDER THE CURRENT ROSTER. 1 of these artifacts names a model the roster no longer seats, '
             + 'so it was settled under an earlier one and is not evidence about the models seated now. This is an '
             + 'absent measurement, not a poor one.\n',
+        },);
+      },
+    },),
+
+    it({
+      name: 'COUNTS BESIDE A SEAT\'S JUDGED ROUND THE ROUNDS OF THE SAME DIGEST THAT DREW NO BALLOT, on the seat\'s '
+        + 'own line, one in the singular and two in the plural, while the standing reads the judged round alone',
+      fn: async () => {
+        /**
+         The judged artifact beside one of the same pipeline whose chunk
+         recorded the rounds given, none of them judged.
+
+         @param unjudged - rounds the second artifact's one chunk records
+
+         @returns Both streams as the command left them
+
+         @example
+         ```ts
+         const run = await besideUnjudged({ unjudged: [SEATED_ROUND,], },);
+         ```
+         */
+        async function besideUnjudged({ unjudged, }: { readonly unjudged: readonly unknown[]; },): Promise<StandingStreams> {
+          return await standingOverArtifacts({
+            artifacts: {
+              'Mittens.json': carrying({ rounds: [JUDGED_SEATED_ROUND,], },),
+              'Tabby.json': {
+                ...carrying({ rounds: unjudged, },),
+                id: 'Tabby',
+              },
+            },
+          },);
+        }
+
+        /**
+         What the command printed over one digest of two entries whose editor
+         seat drew the count of unballoted rounds given.
+
+         @param drewNoBallot - how the seat's line counts its unballoted rounds
+
+         @returns The command's whole standard output
+
+         @example
+         ```ts
+         const printed = reportOver({ drewNoBallot: '1 round', },);
+         ```
+         */
+        function reportOver({ drewNoBallot, }: { readonly drewNoBallot: string; },): string {
+          return 'editor-standing-read: archives=1 artifacts=2 read=2 earlierRoster=0 earlierSchema=0 '
+            + `digestsJudged=1 digestsUnjudged=0 unjudgedDigestRounds=0\n${OBSERVATIONAL}\n`
+            + `sha256-tree-v1:${'0'.repeat(64,)} over 2 entries\n`
+            + `  EDITOR : 1 judged round from 1 of 2 chunks; ${drewNoBallot} drew no ballot\n${JUDGED_STANDING}`
+            + '  REFINER: 0 judged rounds from 0 of 2 chunks\n';
+        }
+
+        /**
+         One unballoted round beside the judged one, and two.
+         */
+        const [
+          one,
+          two,
+        ] = await Promise.all([
+          besideUnjudged({ unjudged: [SEATED_ROUND,], },),
+          besideUnjudged({
+            unjudged: [
+              SEATED_ROUND,
+              {
+                ...SEATED_ROUND,
+                envelopeId: 'env/2',
+              },
+            ],
+          },),
+        ],);
+
+        expect({
+          one,
+          two,
+        },).toEqual({
+          one: {
+            code: 0,
+            stdout: reportOver({ drewNoBallot: '1 round', },),
+            stderr: '',
+          },
+          two: {
+            code: 0,
+            stdout: reportOver({ drewNoBallot: '2 rounds', },),
+            stderr: '',
+          },
         },);
       },
     },),

@@ -59,13 +59,68 @@ const PROBE_UNANSWERED = 'the corpus read failed, and the probe of its commit go
 const GIT_DIED_STATUS = 128;
 
 /**
+ What a read of the paired entry's original page refused with, as `String`
+ prints it, where the probe of its commit got no answer.
+
+ @param commitSha - commit the read was at
+
+ @returns The refusal's class and whole message
+
+ @example
+ ```ts
+ const says = otherReadSays({ commitSha: clone.commitSha, },);
+ ```
+ */
+function otherReadSays({ commitSha, }: { readonly commitSha: string; },): string {
+  return `CorpusReadError: corpus read failed for ${commitSha}:people/${PAIRED_ENTRY}/page.md (other); `
+    + 'the read failed another way: run the same git read in the clone by hand to see why.';
+}
+
+/**
+ How the program standing in for git ends the probe: killed by a signal, or
+ with an exit status the probe does not read, on the probe of the commit; or
+ dying on the commit as git does on one it cannot inflate, and then ending the
+ probe of the clone's git directory with a status that probe does not read.
+ */
+type FakeProbeEnd = 'signal' | 'status' | 'died-then-status';
+
+/**
+ Lines of the fake git's program that answer a `rev-parse`, by how the case
+ wants the probe to end.
+
+ @param probeEnd - how the probe ends
+
+ @returns The program's lines up to the branch that answers a read
+
+ @example
+ ```ts
+ const lines = revParseLines({ probeEnd: 'signal', },);
+ ```
+ */
+function revParseLines({ probeEnd, }: { readonly probeEnd: FakeProbeEnd; },): readonly string[] {
+  if (probeEnd === 'died-then-status') {
+    return [
+      "if (process.argv.includes('--git-dir')) {",
+      `  process.exit(${String(FAKE_PROBE_STATUS,)});`,
+      "} else if (process.argv.includes('rev-parse')) {",
+      `  process.exit(${String(GIT_DIED_STATUS,)});`,
+    ];
+  }
+  return [
+    "if (process.argv.includes('rev-parse')) {",
+    (probeEnd === 'signal')
+      ? "  process.kill(process.pid, 'SIGKILL');"
+      : `  process.exit(${String(FAKE_PROBE_STATUS,)});`,
+  ];
+}
+
+/**
  Writes a program standing in for git: every read fails as git fails a path
  absent at a commit, and asked about the commit it ends the way a case names.
 
  @param dir - scratch directory the program is written into, removed by the case
 
- @param probeEnd - how the probe ends: killed by a signal, or with an exit
- status the probe does not read, the two ways it can get no answer
+ @param probeEnd - how the probe ends, each a way it can get no answer
 
  @returns Path of the program, which a pin names as its git binary
 
@@ -80,7 +135,7 @@ async function writeFakeGit(
     probeEnd,
   }: {
     readonly dir: string;
-    readonly probeEnd: 'signal' | 'status';
+    readonly probeEnd: FakeProbeEnd;
   },
 ): Promise<string> {
   /**
@@ -94,10 +149,7 @@ async function writeFakeGit(
     path,
     [
       `#!${process.execPath}`,
-      "if (process.argv.includes('rev-parse')) {",
-      (probeEnd === 'signal')
-        ? "  process.kill(process.pid, 'SIGKILL');"
-        : `  process.exit(${String(FAKE_PROBE_STATUS,)});`,
+      ...revParseLines({ probeEnd, },),
       '} else {',
       String.raw`  process.stderr.write("fatal: path 'people/mittens/page.md' does not exist in 'HEAD'\n");`,
       `  process.exitCode = ${String(FAKE_READ_STATUS,)};`,
@@ -193,7 +245,7 @@ function probedRefusalFacts({ refusal, }: { readonly refusal: unknown; },): {
  holds, through a program standing in for git that fails the read and ends
  its probe of the commit the way a case names.
 
- @param probeEnd - how the probe ends, the two ways it can get no answer
+ @param probeEnd - how the probe ends, each a way it can get no answer
 
  @returns Commit the read was at, which the expected message names, and
  the facts of what the read refused with
@@ -204,7 +256,7 @@ function probedRefusalFacts({ refusal, }: { readonly refusal: unknown; },): {
  ```
  */
 async function readThroughFakeGit(
-  { probeEnd, }: { readonly probeEnd: 'signal' | 'status'; },
+  { probeEnd, }: { readonly probeEnd: FakeProbeEnd; },
 ): Promise<{
   readonly commitSha: string;
   readonly facts: ReturnType<typeof probedRefusalFacts>;
@@ -282,8 +334,7 @@ await describe({
           },),
         },),).toEqual({
           kind: 'other',
-          says: `CorpusReadError: corpus read failed for ${clone.commitSha}:people/${PAIRED_ENTRY}/page.md (other); `
-            + 'the read failed another way: run the same git read in the clone by hand to see why.',
+          says: otherReadSays({ commitSha: clone.commitSha, },),
           causeSays: `AggregateError: ${PROBE_UNANSWERED}`,
           failures: [
             {
@@ -319,8 +370,7 @@ await describe({
         const { commitSha, facts, } = await readThroughFakeGit({ probeEnd: 'signal', },);
         expect(facts,).toEqual({
           kind: 'other',
-          says: `CorpusReadError: corpus read failed for ${commitSha}:people/${PAIRED_ENTRY}/page.md (other); `
-            + 'the read failed another way: run the same git read in the clone by hand to see why.',
+          says: otherReadSays({ commitSha, },),
           causeSays: `AggregateError: ${PROBE_UNANSWERED}`,
           failures: [
             {
@@ -351,14 +401,50 @@ await describe({
         const { commitSha, facts, } = await readThroughFakeGit({ probeEnd: 'status', },);
         expect(facts,).toEqual({
           kind: 'other',
-          says: `CorpusReadError: corpus read failed for ${commitSha}:people/${PAIRED_ENTRY}/page.md (other); `
-            + 'the read failed another way: run the same git read in the clone by hand to see why.',
+          says: otherReadSays({ commitSha, },),
           causeSays: `AggregateError: ${PROBE_UNANSWERED}`,
           failures: [
             {
               name: 'Error',
               code: FAKE_READ_STATUS,
               exitCode: undefined,
+              signalName: undefined,
+            },
+            {
+              name: 'SubprocessError',
+              code: undefined,
+              exitCode: FAKE_PROBE_STATUS,
+              signalName: undefined,
+            },
+          ],
+        },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS BOTH PROBES\' FAILURES beside the read\'s own when git dies on the commit and the probe of the '
+        + 'clone\'s git directory then ends with an exit status it does not read, and names the kind other',
+      fn: async () => {
+        /**
+         What the read refused with when both probes ended without an answer,
+         and the commit it read at.
+         */
+        const { commitSha, facts, } = await readThroughFakeGit({ probeEnd: 'died-then-status', },);
+        expect(facts,).toEqual({
+          kind: 'other',
+          says: otherReadSays({ commitSha, },),
+          causeSays: `AggregateError: ${PROBE_UNANSWERED}`,
+          failures: [
+            {
+              name: 'Error',
+              code: FAKE_READ_STATUS,
+              exitCode: undefined,
+              signalName: undefined,
+            },
+            {
+              name: 'SubprocessError',
+              code: undefined,
+              exitCode: GIT_DIED_STATUS,
               signalName: undefined,
             },
             {

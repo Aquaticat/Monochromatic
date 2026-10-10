@@ -46,6 +46,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import { makeNamingArchive, } from './archive-naming.test-fixture.ts';
 import { runKeyless, } from './child-environment.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
@@ -193,6 +194,28 @@ await describe({
           'no-such-clone',
         );
         expect(await gitSearchCeiling({ cloneDir: absent, },),).toBe(scratch.path,);
+      },
+    },),
+    it({
+      name: 'PASSES ON UNCHANGED A FAILURE TO RESOLVE THE CLONE DIRECTORY THAT GIT WAS NOT MEASURED TO MEET AT ITS '
+        + 'OWN -C (gitSearchCeiling): a clone named longer than one directory name may be',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'translation-repair-ceiling-', },);
+        /**
+         Clone directory whose own name is longer than the 255 units a
+         directory name may hold.
+         */
+        const overlong = join(
+          scratch.path,
+          'c'.repeat(300,),
+        );
+        /**
+         What resolving it threw.
+         */
+        const thrown = await rejectionOf(async function resolvingOverlong(): Promise<unknown> {
+          return await gitSearchCeiling({ cloneDir: overlong, },);
+        },);
+        expect(String(thrown,),).toBe(`Error: ENAMETOOLONG: name too long, realpath '${overlong}'`,);
       },
     },),
     it({

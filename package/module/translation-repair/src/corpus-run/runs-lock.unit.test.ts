@@ -12,13 +12,14 @@
  @module
  */
 
-import {
+import fsPromises, {
   chmod,
   mkdir,
   readdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
+import { syncBuiltinESMExports, } from 'node:module';
 import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
@@ -30,6 +31,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runKeyless, } from '../child-environment.test-fixture.ts';
+import { warnLinesDuring, } from '../console-warn-lines.test-fixture.ts';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import {
   evictStaleLock,
   hostIdentity,
@@ -172,6 +175,50 @@ function requireEpermOnPidOne(): void {
     );
   }
   throw new Error('this case needs pid 1 to answer EPERM, and signalling it succeeded instead',);
+}
+
+/**
+ Length a runs directory is built to so that its lock file's path, ten units
+ longer, is one the system opens, and a claim's staged name, 53 units longer,
+ is not: Linux refuses a path of 4,096 units or more (`PATH_MAX` counts the
+ closing NUL) with ENAMETOOLONG.
+ */
+const CROWDED_RUNS_DIR_LENGTH = 4_060;
+
+/**
+ Units of each full directory name the crowded runs directory is built from,
+ under the 255 one name may hold.
+ */
+const CROWDED_SEGMENT_UNITS = 200;
+
+/**
+ A runs directory path of exactly `CROWDED_RUNS_DIR_LENGTH` units under a
+ root, made of directory names each short enough to create, so the lock's
+ own `mkdir` makes it.
+
+ @param root - scratch directory the path starts at
+
+ @returns The path, not yet created
+
+ @example
+ ```ts
+ const runsDir = crowdedRunsDir({ root: scratch.path, },);
+ ```
+ */
+function crowdedRunsDir({ root, }: { readonly root: string; },): string {
+  /**
+   Full names that fit while leaving one or more units for the last name.
+   */
+  const full = Math.floor((CROWDED_RUNS_DIR_LENGTH - root.length - 2) / (CROWDED_SEGMENT_UNITS + 1),);
+  /**
+   Units the last name takes to bring the path to its length exactly.
+   */
+  const last = CROWDED_RUNS_DIR_LENGTH - root.length - 1 - (full * (CROWDED_SEGMENT_UNITS + 1));
+  return join(
+    root,
+    ...Array.from({ length: full, }, () => 'c'.repeat(CROWDED_SEGMENT_UNITS,)),
+    'd'.repeat(last,),
+  );
 }
 
 /**
@@ -1115,6 +1162,185 @@ console.log('LOCK_INTERLEAVE ' + JSON.stringify({ interleaved: state.interleaved
               'utf8',
             ),);
             expect(recorded,).toMatchObject({ pid: process.pid, },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'lockRunsDir where the filesystem or the system answers otherwise',
+      concurrency: 1,
+      children: [
+        it({
+          name: 'PASSES ON UNCHANGED A LINK THE FILESYSTEM REFUSES with anything but EEXIST, as one without hard links '
+            + 'refuses it, leaving neither a lock nor the claim\'s staged text behind',
+          fn: async (ctx,) => {
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
+            /**
+             What a filesystem without hard links refuses a link with.
+             */
+            const refusal = Object.assign(
+              new Error('EPERM: operation not permitted, link',),
+              { code: 'EPERM', },
+            );
+            /**
+             `link` as it answers on that filesystem, for every call this case makes.
+             */
+            const withoutLinks = ctx.sinon.stub(
+              fsPromises,
+              'link',
+            ).callsFake(async function linkRefused(): Promise<void> {
+              throw refusal;
+            },);
+            syncBuiltinESMExports();
+            // THE ESM BINDING OF `link` FOLLOWS THE STUB ONLY WHILE IT IS SYNCED,
+            // so putting it back is a step of its own that the case's end runs.
+            using _putBack = {
+              [Symbol.dispose]: function restoreLink(): void {
+                withoutLinks.restore();
+                syncBuiltinESMExports();
+              },
+            };
+
+            /**
+             What the claim threw.
+             */
+            const thrown = await rejectionOf(async function locking(): Promise<unknown> {
+              return await lockRunsDir({ runsDir, },);
+            },);
+
+            expect(thrown,).toBe(refusal,);
+            expect(await readdir(runsDir,),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'SAYS THE CLAIM\'S STAGED TEXT STANDS ONLY IF THE CLAIM WROTE IT, where removing it fails: a runs '
+            + 'directory whose path leaves no room for the staged name refuses the claim with the system\'s own '
+            + 'error, and the removal fails the same way',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            /**
+             Runs directory whose lock file fits and whose staged name does not.
+             */
+            const runsDir = crowdedRunsDir({ root: scratch.path, },);
+            /**
+             What the claim threw, and what the lock warned meanwhile.
+             */
+            const {
+              result: thrown,
+              warned,
+            } = await warnLinesDuring({
+              run: async function locking(): Promise<unknown> {
+                return await rejectionOf(async function claiming(): Promise<unknown> {
+                  return await lockRunsDir({ runsDir, },);
+                },);
+              },
+            },);
+            /**
+             The staged name the claim tried, which ends in a random id.
+             */
+            const staged = String(Reflect.get(
+              Error.isError(thrown,) ? thrown : {},
+              'path',
+            ),);
+            /**
+             Units of the random id that ends the staged name.
+             */
+            const idUnits = 36;
+
+            expect({
+              thrown: String(thrown,),
+              stagedBeforeId: staged.slice(0, -idUnits,),
+              idGroupUnits: staged
+                .slice(-idUnits,)
+                .split('-',)
+                .map((group,) => group.length),
+              warned,
+            },).toEqual({
+              thrown: `Error: ENAMETOOLONG: name too long, open '${staged}'`,
+              stagedBeforeId: `${join(runsDir, 'pass.lock',)}.claim-`,
+              idGroupUnits: [
+                8,
+                4,
+                4,
+                4,
+                12,
+              ],
+              warned: [
+                `[runs-lock] ${staged} could not be removed after a claim (ENAMETOOLONG); it stands beside the lock `
+                + 'if the claim wrote it',
+              ],
+            },);
+          },
+        },),
+
+        it({
+          name: 'RECORDS NO IDENTITY in the lock it takes where the system answers no `/proc` file, as on a machine '
+            + 'without one, so the lock holds its process id, start and token alone',
+          fn: async (ctx,) => {
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
+            /**
+             The real `readFile`, which every other path still reaches.
+             */
+            const realReadFile = fsPromises.readFile;
+            /**
+             `readFile` as it answers on a system with no `/proc`, for every
+             file under it: the boot the host identity is read from and the
+             status line this process's start is read from.
+             */
+            const withoutProc = ctx.sinon.stub(
+              fsPromises,
+              'readFile',
+            ).callsFake(async function readFileWithNoProcFiles(path, options,) {
+              if (((typeof path) === 'string') && path.startsWith('/proc/',)) {
+                throw Object.assign(
+                  new Error(`ENOENT: no such file or directory, open '${path}'`,),
+                  { code: 'ENOENT', },
+                );
+              }
+              return await realReadFile(
+                path,
+                options,
+              );
+            },);
+            syncBuiltinESMExports();
+            // THE ESM BINDING OF `readFile` FOLLOWS THE STUB ONLY WHILE IT IS SYNCED,
+            // so putting it back is a step of its own that the case's end runs.
+            using _putBack = {
+              [Symbol.dispose]: function restoreReadFile(): void {
+                withoutProc.restore();
+                syncBuiltinESMExports();
+              },
+            };
+
+            await using _lock = await lockRunsDir({ runsDir, },);
+
+            /**
+             What the lock records.
+             */
+            const recorded: unknown = JSON.parse(await realReadFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              'utf8',
+            ),);
+            expect(isJsonRecord(recorded,)
+              ? {
+                fields: Object.keys(recorded,),
+                pid: recorded.pid,
+              }
+              : recorded,).toEqual({
+              fields: [
+                'pid',
+                'startedAt',
+                'token',
+              ],
+              pid: process.pid,
+            },);
           },
         },),
       ],

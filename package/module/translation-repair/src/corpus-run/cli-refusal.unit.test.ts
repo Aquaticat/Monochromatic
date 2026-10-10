@@ -454,6 +454,79 @@ await describe({
       },
     },),
     it({
+      name: 'NAMES NO FRAMES for a thrown value that is no Error, as a body throwing a bare text leaves, and reports '
+        + 'it as a fault at its code',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'score-verify',
+          argv: BARE_ARGV,
+          env: NO_KEYS,
+          run: async () => {
+            /**
+             What a library rejecting with a bare text rather than an Error
+             throws.
+             */
+            const bareText: unknown = FAULT_MESSAGE;
+            throw bareText;
+          },
+        },);
+
+        expect({
+          code: process.exitCode,
+          lines: printed.lines,
+        },).toEqual({
+          code: UNEXPECTED_FAULT,
+          lines: [
+            'score-verify: refused by a thrown value that is not an Error',
+            '  This is a fault in the command rather than in the run. The stack frames printed with it name the '
+            + 'built files it stopped in.',
+            '  (no frames: the thrown value is not an Error)',
+          ],
+        },);
+      },
+    },),
+    it({
+      name: 'NAMES NO FRAMES for an Error that recorded no stack, rather than printing a missing stack as frames',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'score-verify',
+          argv: BARE_ARGV,
+          env: NO_KEYS,
+          run: async () => {
+            /**
+             Fault whose stack was taken off before it was thrown, as a
+             library that strips its errors' stacks leaves them.
+             */
+            const fault = new RangeError(FAULT_MESSAGE,);
+            Reflect.deleteProperty(
+              fault,
+              'stack',
+            );
+            throw fault;
+          },
+        },);
+
+        expect({
+          code: process.exitCode,
+          lines: printed.lines,
+        },).toEqual({
+          code: UNEXPECTED_FAULT,
+          lines: [
+            'score-verify: refused by RangeError',
+            '  This is a fault in the command rather than in the run. The stack frames printed with it name the '
+            + 'built files it stopped in.',
+            '  (no frames: this error recorded no stack)',
+          ],
+        },);
+      },
+    },),
+    it({
       name: 'REPEATS a refusal stated in our own words, at its own code and with no frames',
       fn: async () => {
         using held = holdingExitCode();
