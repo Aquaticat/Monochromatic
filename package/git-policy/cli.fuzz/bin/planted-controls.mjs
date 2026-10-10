@@ -46,6 +46,16 @@ const inputs = [
  */
 const plants = [
   {
+    name: 'PID file text keeps trailing whitespace before the pid prefix is read',
+    file: 'package/git-policy/cli/src/native/index_lock_evidence.rs',
+    edits: [{ from: 'let trimmed: &str = super::js_text::trim_javascript_end(text);', to: 'let trimmed: &str = text;' }],
+  },
+  {
+    name: 'start ticks past the safe integers are accepted',
+    file: 'package/git-policy/cli/src/native/process_start.rs',
+    edits: [{ from: 'if ticks > super::json_record::MAX_SAFE_INTEGER {', to: 'if ticks > i64::MAX {' }],
+  },
+  {
     name: 'branch -d is treated as a presentation letter',
     file: 'package/git-policy/cli/src/native/config_loading.rs',
     edits: [

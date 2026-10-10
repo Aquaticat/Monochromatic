@@ -32,5 +32,8 @@ pub mod content;
 /// Generated owner records and `/proc/<pid>/stat` lines, with their parsers' invariants.
 pub mod owners;
 
+/// Generated Git PID file text and stat lines for the index-lock readers, with their invariants.
+pub mod index_lock;
+
 /// Generated journal, capture-order and sequence records, with their parsers' invariants.
 pub mod journal;

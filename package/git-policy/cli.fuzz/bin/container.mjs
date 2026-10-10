@@ -24,6 +24,7 @@ const targets = [
   { name: 'final_newline', dictionary: 'final_newline.dict' },
   { name: 'owner_records', dictionary: 'owner_records.dict' },
   { name: 'transaction_records', dictionary: 'transaction_records.dict' },
+  { name: 'index_lock_records', dictionary: 'index_lock_records.dict' },
 ];
 const secondsPerTarget = 30;
 const maxInputBytes = 4096;
