@@ -487,6 +487,9 @@ pub mod replay_shared_paths;
 /// Replay: the text half of subsumption over index-named blobs and hunks (`replay_subsumption_text`).
 pub mod replay_subsumption_text;
 
+/// Replay: subsumption rules and the synthetic merge base (`replay_subsumption`).
+pub mod replay_subsumption;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
