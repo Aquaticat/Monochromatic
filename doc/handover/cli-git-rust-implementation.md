@@ -986,8 +986,9 @@ Evidence in `doc/handover/cli-git-native-content-policies.md`.
   `final-newline`,
   `security/forbidden-strings` (with the `rulesFile` option, then `FORBIDDEN_STRINGS_RULES`, then the default file)
   and `mono/forbidden-root-context`.
-  It still refuses, with exit 2 and one line, whenever `markdown/autofix` or `mono/dependent-version-bump` is enabled
-  and there are candidates.
+  It still refuses, with exit 2 and one line, whenever `markdown/autofix` is enabled and there are candidates.
+  `mono/dependent-version-bump` no longer refuses: it is wired on `feat/cli-git-native-dependent-version`
+  (see `doc/handover/cli-git-native-dependent-version.md`, section "Wiring into the native executable").
 - `git add` costs a fixed 6 Git processes and a direct command 5, for 1, 20 or 200 files.
 - Failures carry `content-unavailable` or `policy-incomplete` by cause,
   and engine-failure events never carry a candidate pathname.
