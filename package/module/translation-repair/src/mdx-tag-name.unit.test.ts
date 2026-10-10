@@ -129,6 +129,15 @@ await describe({
     },),
 
     it({
+      name: 'READS NO PREFIXED NAME FOLLOWED BY A CHARACTER THAT NEITHER ENDS THE TAG NOR STARTS AN ATTRIBUTE, '
+        + 'where the grammar refuses the tag',
+      fn: async () => {
+        expect(grammarAcceptsDocument({ document: '<cat:nap @>\n\nA cat naps.\n\n</cat:nap>\n', },),).toBe(false,);
+        expect(readTagName({ text: '<cat:nap @>', at: 0, },),).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'READS NO NAME HOLDING A LETTER PAST U+FFFF, which the compiler hands the grammar as two units '
         + 'neither of which is a letter, in each place a name may start or go on',
       fn: async () => {

@@ -136,6 +136,53 @@ const MARKED_BODY = '\uFEFFThe cat naps.\n\nSecond cat.\n';
 const MARKED_TAG_BODY = '\uFEFF<Box tone="warm">\n\nThe cat naps.\n\n</Box>\n';
 
 /**
+ An error naming a rule and no source, a shape none of the grammar's own
+ messages take, though the refusal's constructor accepts any caught value.
+
+ @example
+ ```ts
+ const cause = new RuleOnlyError('the cat walked across the grammar',);
+ ```
+ */
+class RuleOnlyError extends Error {
+  /**
+   Class name, which the refusal reads as the place where the error names none.
+   */
+  public override readonly name = 'RuleOnlyError';
+
+  /**
+   Rule the error names, as a grammar message names its rule.
+   */
+  readonly ruleId = 'cat-on-keyboard';
+}
+
+/**
+ Body opening with a byte order mark, then a tag whose attribute value is an expression.
+ */
+const MARKED_EXPRESSION_BODY = '\uFEFF<Box tone={warm} />\n';
+
+/**
+ A node of the strict parse read for its attributes, which the MDX element
+ nodes carry and the types the parse's root declares do not name.
+ */
+type AttributeHolder = {
+  /**
+   Kind of the node.
+   */
+  readonly type: string;
+
+  /**
+   Attributes of a tag, absent on every other node.
+   */
+  readonly attributes?: readonly {
+    /**
+     Value of the attribute, an object where it is an expression.
+     */
+    readonly value?: unknown;
+  }[];
+};
+
+/**
  Position of a parsed node, read for the whole value.
 
  @param node - parsed node
@@ -198,6 +245,50 @@ await describe({
               'MDX body refused to parse at 1:1 (mdast-util-mdx-jsx/end-tag-mismatch); corpus documents compile as MDX '
                 + 'upstream, so failure signals corruption or an unsupported construct.',
             );
+          },
+        },),
+        it({
+          name: 'STATES AN UNSTATED POSITION AND NO LINE OR COLUMN for a caught value that is no error, quoting '
+            + 'none of it',
+          fn: async () => {
+            /**
+             Refusal built from a thrown value that is no error.
+             */
+            const refusal = new MdxParseError({
+              cause: 'a hairball the cat coughed into the grammar',
+              droppedColumns: 0,
+            },);
+
+            expect([refusal.message, refusal.line, refusal.column,],).toEqual([
+              `MDX body refused to parse at an unstated position${REFUSAL_ENDING}`,
+              undefined,
+              undefined,
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES THE RULE AN ERROR STATES WITHOUT A SOURCE, OR ITS CLASS WHERE IT STATES NO RULE, AND NO LINE OR '
+            + 'COLUMN, for errors the grammar\'s own messages never are, quoting none of their messages',
+          fn: async () => {
+            /**
+             Refusals built from an error naming a rule and no source, and from one naming neither.
+             */
+            const refusals = [
+              new RuleOnlyError('the cat walked across the grammar',),
+              new TypeError('the cat sat on the tokenizer',),
+            ].map(function refusalOf(cause,): MdxParseError {
+              return new MdxParseError({
+                cause,
+                droppedColumns: 0,
+              },);
+            },);
+
+            expect(refusals.map(function readingOf(refusal,): readonly unknown[] {
+              return [refusal.message, refusal.line, refusal.column,];
+            },),).toEqual([
+              [`MDX body refused to parse at RuleOnlyError (cat-on-keyboard)${REFUSAL_ENDING}`, undefined, undefined,],
+              [`MDX body refused to parse at TypeError (TypeError)${REFUSAL_ENDING}`, undefined, undefined,],
+            ],);
           },
         },),
         it({
@@ -315,6 +406,46 @@ await describe({
                 },
               },
             ],);
+          },
+        },),
+        it({
+          name: 'KEEPS the offsets of a tag and of an attribute whose value is an expression in the body as written, '
+            + 'the value itself left as the parser built it, with no position to move',
+          fn: async () => {
+            /**
+             The tag the strict grammar reads first in the marked body.
+             */
+            const [marked,]: readonly AttributeHolder[] = parseMdxBody({ body: MARKED_EXPRESSION_BODY, },).children;
+            /**
+             The same tag read from the body without the mark.
+             */
+            const [bare,]: readonly AttributeHolder[] = parseMdxBody({ body: MARKED_EXPRESSION_BODY.slice(1,), },)
+              .children;
+            /**
+             The attribute's value as the parser built it for the body without the mark.
+             */
+            const bareValue = bare?.attributes?.at(0,)?.value;
+
+            expect(((typeof bareValue) === 'object') && (bareValue !== null) ? Object.keys(bareValue,) : [],)
+              .toEqual(['type', 'value', 'data',],);
+            expect(marked,).toEqual({
+              type: 'mdxJsxFlowElement',
+              name: 'Box',
+              attributes: [{
+                type: 'mdxJsxAttribute',
+                name: 'tone',
+                value: bareValue,
+                position: {
+                  start: { line: 1, column: 7, offset: 6, },
+                  end: { line: 1, column: 18, offset: 17, },
+                },
+              },],
+              children: [],
+              position: {
+                start: { line: 1, column: 2, offset: 1, },
+                end: { line: 1, column: 21, offset: 20, },
+              },
+            },);
           },
         },),
         it({

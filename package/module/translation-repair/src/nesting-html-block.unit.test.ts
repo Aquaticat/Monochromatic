@@ -48,6 +48,13 @@ await describe({
           },
         },),
         it({
+          name: 'READS a line that is an angle bracket and an exclamation mark alone as a block that ends at a blank '
+            + 'line, since no letter follows to open a declaration',
+          fn: async () => {
+            expect(htmlBlockAfter({ before: 'none', rest: '<!', },),).toBe('blank',);
+          },
+        },),
+        it({
           name: 'READS the five kinds that end at a marker as open until the line that carries it',
           fn: async () => {
             expect(htmlBlockAfter({ before: 'none', rest: '<PRE class="cat">', },),).toBe('pre',);

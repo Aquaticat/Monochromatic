@@ -442,6 +442,56 @@ await describe({
     },),
 
     it({
+      name: 'MASKS A LONE OPENER WHOSE TAG CROSSES A LINE BREAK AND ENDS THE SLICE, no line break after its bracket',
+      fn: async () => {
+        expect(maskLoneContainerTags({ text: '<details\n  open>', },),).toEqual({
+          masked: `${' '.repeat(8,)}\n${' '.repeat(7,)}`,
+          tags: [{
+            kind: 'open',
+            name: 'details',
+            text: '<details\n  open>',
+            startOffset: 0,
+            endOffset: 16,
+          },],
+        },);
+      },
+    },),
+
+    it({
+      name: 'MASKS ONLY THE TAG LINE OF TWO OPENERS NOTHING CLOSES, leaving the inline opener, which only partners '
+        + 'a tag line',
+      fn: async () => {
+        expect(maskLoneContainerTags({ text: '<details>\n\nThe cat <details> naps.\n', },),).toEqual({
+          masked: `${' '.repeat(9,)}\n\nThe cat <details> naps.\n`,
+          tags: [{
+            kind: 'open',
+            name: 'details',
+            text: '<details>',
+            startOffset: 0,
+            endOffset: 9,
+          },],
+        },);
+      },
+    },),
+
+    it({
+      name: 'MASKS A LONE CLOSER WHOSE ONLY OPENER IS AN INLINE TAG THAT NEVER ENDS, its quoted value running to '
+        + 'the end of the slice, since that opener is no tag to partner',
+      fn: async () => {
+        expect(maskLoneContainerTags({ text: 'The cat <details title="nap\n\n</details>\n', },),).toEqual({
+          masked: `The cat <details title="nap\n\n${' '.repeat(10,)}\n`,
+          tags: [{
+            kind: 'close',
+            name: 'details',
+            text: '</details>',
+            startOffset: 29,
+            endOffset: 39,
+          },],
+        },);
+      },
+    },),
+
+    it({
       name: 'MASKS A LONE CLOSER WHOSE BRACKET STANDS ON THE NEXT LINE, and pairs an opener across lines with its closer',
       fn: async () => {
         expect(maskLoneContainerTags({ text: 'A cat naps.\n\n</details\n>\n', },),).toEqual({

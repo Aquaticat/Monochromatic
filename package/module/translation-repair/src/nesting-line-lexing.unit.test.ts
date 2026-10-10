@@ -114,6 +114,22 @@ await describe({
           },
         },),
         it({
+          name: 'READS a footnote label the line ends inside as no marker, since no bracket closes it, and keeps the '
+            + 'markers before it',
+          fn: async () => {
+            expect(containerPrefixOf({ line: '[^cat', start: 0, },),).toEqual({
+              end: 0,
+              count: 0,
+              beyondColumn: 0,
+            },);
+            expect(containerPrefixOf({ line: '> [^cat', start: 0, },),).toEqual({
+              end: 1,
+              count: 1,
+              beyondColumn: 0,
+            },);
+          },
+        },),
+        it({
           name: 'NAMES the one-based column of the 257th marker as the first past the bound, and counts them all',
           fn: async () => {
             expect(containerPrefixOf({ line: `${'>'.repeat(300,)} cat`, start: 0, },),).toEqual({

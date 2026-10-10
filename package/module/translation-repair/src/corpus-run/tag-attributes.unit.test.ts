@@ -167,6 +167,47 @@ await describe({
     },),
 
     it({
+      name: 'READS the tag and LEAVES a bare prefixed attribute out of its reading, the name the grammar reads '
+        + 'standing alone as a bare name does',
+      fn: async () => {
+        expect(grammarAttributeNames({ document: '<Paw xml:lang/>\n', },),).toEqual(['xml:lang',],);
+        expect(readTags({ text: '<Paw xml:lang/>', },),).toEqual([{
+          name: 'Paw',
+          text: '<Paw xml:lang/>',
+          start: 0,
+          end: 15,
+          attributes: [],
+        },],);
+      },
+    },),
+
+    it({
+      name: 'READS NO TAG out of one whose prefixed attribute is followed by a character no attribute starts with, '
+        + 'which the grammar refuses, keeping the readable tag before it',
+      fn: async () => {
+        expect(grammarAttributeNames({ document: '<Paw xml:lang @/>\n', },),).toEqual([],);
+        expect(readTags({ text: '<Cat n="1"/> then <Paw xml:lang @/>', },),).toEqual([CAT_READING,],);
+      },
+    },),
+
+    it({
+      name: 'READS NO TAG out of one where a quoted value is followed by a character no attribute starts with, '
+        + 'which the grammar refuses, keeping the readable tag before it',
+      fn: async () => {
+        expect(grammarAttributeNames({ document: '<Paw n="5" @/>\n', },),).toEqual([],);
+        expect(readTags({ text: '<Cat n="1"/> then <Paw n="5" @/>', },),).toEqual([CAT_READING,],);
+      },
+    },),
+
+    it({
+      name: 'READS NO TAG out of one the text ends inside, after the whitespace past its last attribute, keeping '
+        + 'the readable tag before it',
+      fn: async () => {
+        expect(readTags({ text: '<Cat n="1"/> then <Paw n="5" ', },),).toEqual([CAT_READING,],);
+      },
+    },),
+
+    it({
       name: 'READS NO TAG out of one whose attribute starts where no name may, keeping the readable tag '
         + 'before it',
       fn: async () => {
