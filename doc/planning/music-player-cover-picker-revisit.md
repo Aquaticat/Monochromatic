@@ -50,6 +50,20 @@ Larger changes were considered and not built:
 
 - [x] Study the existing P4 captures and the constraints.
 - [x] Add P5 to the debug candidate host in `prototype/music-player-cover-picker`.
-- [ ] Capture P4 and P5 side by side on the owned Fold cover in light and dark at 100% and 200% text.
-- [ ] Inspect every capture, remove the status strip, and publish a review page.
+- [x] Capture P4 and P5 side by side on the owned Fold cover in light and dark at 100% and 200% text.
+- [x] Inspect every capture, remove the status strip, and publish a review page.
 - [ ] Ask the human to approve P5, keep P4, or name a different problem, through the question tool.
+
+## Result
+
+The first P5 build moved the title 16dp to the right when the picker opened, which the first captures showed.
+The container now reaches 8dp past the title on each side, and the rebuilt captures draw the title within one pixel
+of its place in P4 at both text sizes and in both themes.
+The review is `package/music-player/design/questions/cover-picker-revisit.html`:
+eight inspected native views (P4 and P5, light and dark, 100% and 200% text) from two emulator visits of prototype
+`a61a4dd4761662acbe1adde0d64730d1d9f1ff49` on `prototype/music-player-cover-picker`.
+`verify:cover-picker:revisit` and `test:cover-picker:revisit` pass, each of the four guards fails the test when
+removed, and the page was checked in a browser in light and dark with no console errors.
+P5's honest cost is that its container shares the Open action's tonal color,
+and only its static open state was captured:
+opening, closing, Back, focus return and TalkBack were not exercised for it.

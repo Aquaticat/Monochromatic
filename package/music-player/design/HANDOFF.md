@@ -171,7 +171,9 @@ with `wait-for-unit.ts <unit> <pattern>` to wait for it.
 
 The human approved the declined state as built (D101) and added the rule on long runs to the `CLAUDE.md` preamble in `file-enforcer.config.ts`.
 The first-run page shows the declined state as approved.
-The human then accepted the whole keyboard map as built (D102).
+The human then accepted the whole keyboard map as built (D102) and closed the Search catch-all as a design item (D103).
+The D46 cover-picker revisit is built: `questions/cover-picker-revisit.html` shows P4 beside the agent's P5
+(`doc/planning/music-player-cover-picker-revisit.md`); the human's approval of P5 is the open step.
 
 Next:
 the remaining open questions in `open-questions.md`,

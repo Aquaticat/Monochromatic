@@ -134,7 +134,9 @@ new IME work and native accessibility acceptance.
   with D41/D42 dark structure and D45
   light seams.
   Selection does not authorize production work.
-- **IN PROGRESS: revisit the folded-cover picker before 1.x (D46).**
+- **AWAITING APPROVAL: revisit the folded-cover picker before 1.x (D46).**
+  The agent's P5 (P4 whose trigger shows the open state) is built and shown beside P4 in
+  `questions/cover-picker-revisit.html`; the plan is `doc/planning/music-player-cover-picker-revisit.md`.
   On 2026-10-10 the human asked for the exploration now and left the angle to the agent
   (one alternative built from the best of the agent's design judgment, then asked to approve).
   The user chose P4 while
