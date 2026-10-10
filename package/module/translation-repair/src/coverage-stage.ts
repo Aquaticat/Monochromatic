@@ -18,6 +18,7 @@ import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Coverage stage
 // Asks a roster whether a translation already carries one passage, and reports
@@ -79,11 +80,14 @@ export type CoverageAnswer = {
 
  @param l - logger of the calling driver
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Verdict plus any roster findings
 
  @example
  ```ts
- const answer = await runCoverageStage({ client, modelIds, sourcePassage, translation, signal, exchangeTimeoutMs, l, },);
+ const answer = await runCoverageStage({ client, modelIds, sourcePassage, translation, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function runCoverageStage(
@@ -99,6 +103,7 @@ export async function runCoverageStage(
     exchangeTimeoutMs,
     l,
     fanOut,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -111,6 +116,7 @@ export async function runCoverageStage(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<CoverageAnswer> {
   /**
@@ -138,6 +144,9 @@ export async function runCoverageStage(
     l,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
   /**
    Seats asked that a provider could serve. THE REACHABLE SEATS ASKED, NOT

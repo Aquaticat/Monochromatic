@@ -27,6 +27,7 @@ import {
   openNamespacedCache,
   PAGE_TITLES_NAMESPACE,
 } from './slice-cache-namespace.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Pass page titles
 // THE PREPARATION'S TITLE LEXICON (ledger H16, 2026-09-28): the titles a page
@@ -227,11 +228,14 @@ export function pageTitleKey(
 
  @param l - entry logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Lines for the identity context and the round's findings
 
  @example
  ```ts
- const { lines, findings, } = await passPageTitles({ client, modelIds, beforeItem, sourceText, targetText, identityContext: '', cache, signal, exchangeTimeoutMs, l, },);
+ const { lines, findings, } = await passPageTitles({ client, modelIds, beforeItem, sourceText, targetText, identityContext: '', cache, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function passPageTitles(
@@ -246,6 +250,7 @@ export async function passPageTitles(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -257,6 +262,7 @@ export async function passPageTitles(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<PassPageTitles> {
   /**
@@ -324,6 +330,7 @@ export async function passPageTitles(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
   // A ROUND NOBODY ANSWERED IS NOT AN ANSWER and is not stored: the bench was
   // unreachable, not undecided, and storing that would keep the page unsettled

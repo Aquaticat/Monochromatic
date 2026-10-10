@@ -18,6 +18,7 @@ import {
 } from './repair-edit-stages.ts';
 import type { runEditorStage, } from './repair-editor-stage.ts';
 import { collectRepairRegions, } from './repair-region.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Chunk proof
 // SPLIT OUT OF `repair-chunk.ts` for the file-length cap when class one
@@ -101,6 +102,9 @@ export type ChunkProof = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Checker proof, replaced regions and the probe's audit
 
  @example
@@ -125,6 +129,7 @@ export async function proveRepairedChunk(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly models: RepairModels;
@@ -141,6 +146,7 @@ export async function proveRepairedChunk(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ChunkProof> {
   /**
@@ -172,6 +178,7 @@ export async function proveRepairedChunk(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -202,6 +209,7 @@ export async function proveRepairedChunk(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   return {

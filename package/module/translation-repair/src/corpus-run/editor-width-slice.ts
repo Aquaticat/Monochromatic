@@ -10,6 +10,7 @@ import {
   classifyWidths,
   type WidthRow,
 } from './editor-width-model.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Editor width slice
 // One slice run at both editor widths, plus the rounds that say whether a
@@ -43,11 +44,14 @@ import {
 
  @param l - logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Row this slice contributed
 
  @example
  ```ts
- const row = await runWidthSlice({ client, input, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, },);
+ const row = await runWidthSlice({ client, input, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, stageSettings, },);
  ```
  */
 export async function runWidthSlice(
@@ -59,6 +63,7 @@ export async function runWidthSlice(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly input: WidthProbeInput;
@@ -67,6 +72,7 @@ export async function runWidthSlice(
     readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<WidthRow> {
   /**
@@ -79,6 +85,7 @@ export async function runWidthSlice(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   },);
 
   /**
@@ -91,6 +98,7 @@ export async function runWidthSlice(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   },);
 
   /**
@@ -103,6 +111,7 @@ export async function runWidthSlice(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   },);
 
   /**
@@ -128,6 +137,7 @@ export async function runWidthSlice(
       judgeModelIds,
       signal,
       l,
+      stageSettings,
     },)
     : {
       verdict: 'not-run' as const,

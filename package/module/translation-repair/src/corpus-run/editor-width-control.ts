@@ -7,6 +7,7 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import type { ArmOutcome, } from './editor-width-arm.ts';
 import { bothOrders, } from './editor-width-contest.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Editor width control
 // Whether the panel can see damage at all, asked before the draw spends
@@ -155,11 +156,14 @@ function asArm(
 
  @param l - logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Whether intact text won more of the tried pairs than it lost
 
  @example
  ```ts
- const held = await widthControlHolds({ client, slices, judgeModelIds, signal, l, },);
+ const held = await widthControlHolds({ client, slices, judgeModelIds, signal, l, stageSettings, },);
  ```
  */
 export async function widthControlHolds(
@@ -169,12 +173,14 @@ export async function widthControlHolds(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slices: readonly BenchSlice[];
     readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<boolean> {
   /**
@@ -239,6 +245,7 @@ export async function widthControlHolds(
       judgeModelIds,
       signal,
       l,
+      stageSettings,
     },);
     /* oxlint-enable eslint/no-await-in-loop */
 

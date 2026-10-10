@@ -21,6 +21,7 @@ import {
   RUN_MODELS,
   RUN_ROSTER,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Editor width probe run
 // The width question: does seating more EDITORS buy a better repair, with the judging panel
@@ -92,6 +93,9 @@ const SLICES_A_DRAW_NEEDS: Readonly<Record<WidthDraw, number>> = {
  @param runsDir - runs directory the report is written under, which the entry
  resolves from its environment
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link StatedRefusalError} when the panel fails the positive control,
  since every number the draw would produce is unreadable once that happens
 
@@ -105,7 +109,7 @@ const SLICES_A_DRAW_NEEDS: Readonly<Record<WidthDraw, number>> = {
 
  @example
  ```ts
- await runEditorWidthProbe({ line, newClient: createRunClient, drawSample, pin, readHeadSha, controlHolds, gather, runSlice, writeReport, runsDir, },);
+ await runEditorWidthProbe({ line, newClient: createRunClient, drawSample, pin, readHeadSha, controlHolds, gather, runSlice, writeReport, runsDir, stageSettings, },);
  ```
  */
 export async function runEditorWidthProbe(
@@ -120,6 +124,7 @@ export async function runEditorWidthProbe(
     runSlice,
     writeReport,
     runsDir,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'editor-width-probe'>;
     readonly newClient: () => SyntheticClient;
@@ -131,6 +136,7 @@ export async function runEditorWidthProbe(
     readonly runSlice: typeof runWidthSlice;
     readonly writeReport: typeof writeWidthReport;
     readonly runsDir: string;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -243,6 +249,7 @@ export async function runEditorWidthProbe(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   },);
 
   if (!controlHeld)
@@ -275,6 +282,7 @@ export async function runEditorWidthProbe(
     runSlice,
     writeReport,
     runsDir,
+    stageSettings,
   },);
 }
 

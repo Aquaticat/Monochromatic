@@ -40,6 +40,7 @@ import type {
   TranslateSliceSeating,
 } from './translate-document-contract.ts';
 import { translateDocument, } from './translate-document.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Document lanes
 // Both lanes over ONE preparation, arbitrating nothing.
@@ -251,6 +252,9 @@ function laneDelivery(
 
  @param l - logger both lanes tag under, so one entry reads as one run
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Both lane results and the preparation's alignment findings
 
  @throws Whatever either lane throws, the caller's abort reason included; a
@@ -266,6 +270,7 @@ function laneDelivery(
    signal,
    perCallTimeoutMs,
    l,
+   stageSettings,
  },);
  ```
  */
@@ -286,6 +291,7 @@ export async function runDocumentLanes(
     translateSliceCache,
     translateInsertionAdmission,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -314,6 +320,7 @@ export async function runDocumentLanes(
     readonly translateSliceCache?: SliceCache<TranslateSliceRecord>;
     readonly translateInsertionAdmission?: InsertionAdmission;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<DocumentLanesResult> {
   // BOTH rosters before EITHER lane starts, in ONE check. Each driver checks
@@ -390,6 +397,7 @@ export async function runDocumentLanes(
         },
       }),
     parentLogger: dl,
+    stageSettings,
   },);
 
   /**
@@ -451,6 +459,7 @@ export async function runDocumentLanes(
         },
       }),
     l: dl,
+    stageSettings,
   },);
   dl.info(
     `repair ${repair.status}, translate changed ${

@@ -21,6 +21,7 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Page title lexicon stage
 // ONE RENDERING PER REPEATED TITLE, ONCE PER PAGE (ledger H16, 2026-09-28).
@@ -289,11 +290,14 @@ function mostGiven(
  @param fanOut - seats the round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Settled titles, voices heard and findings
 
  @example
  ```ts
- const lexicon = await settlePageTitles({ client, modelIds, sourceText, spans, signal, exchangeTimeoutMs, l, },);
+ const lexicon = await settlePageTitles({ client, modelIds, sourceText, spans, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function settlePageTitles(
@@ -307,6 +311,7 @@ export async function settlePageTitles(
     exchangeTimeoutMs,
     l,
     fanOut,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -317,6 +322,7 @@ export async function settlePageTitles(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<PageTitleLexicon> {
   /**
@@ -354,6 +360,9 @@ export async function settlePageTitles(
     stage: 'page-title-lexicon',
     l: tl,
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
   /**
    Voices in roster order, so the earliest seat breaks a tie.

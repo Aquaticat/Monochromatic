@@ -7,6 +7,7 @@ import type { BenchSlice, } from './bench-sample.ts';
 import { recordingClient, } from './bench-record.ts';
 import type { BenchRow, } from './roster-bench-row.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Roster bench round
 // ONE SLICE AT ONE WIDTH, run and recorded.
@@ -32,11 +33,14 @@ import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 
  @param clock - source of the instants the row's duration is read from
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Row for the report
 
  @example
  ```ts
- const row = await runBenchRow({ slice, width: 3, pass: 1, roster, client, clock: performance, },);
+ const row = await runBenchRow({ slice, width: 3, pass: 1, roster, client, clock: performance, stageSettings, },);
  ```
  */
 export async function runBenchRow(
@@ -47,6 +51,7 @@ export async function runBenchRow(
     roster,
     client,
     clock,
+    stageSettings,
   }: {
     readonly slice: BenchSlice;
     readonly width: number;
@@ -54,6 +59,7 @@ export async function runBenchRow(
     readonly roster: readonly RosterModelId[];
     readonly client: SyntheticClient;
     readonly clock: { readonly now: () => number; };
+    readonly stageSettings: StageSettings;
   },
 ): Promise<BenchRow> {
   /**
@@ -97,6 +103,7 @@ export async function runBenchRow(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   return {

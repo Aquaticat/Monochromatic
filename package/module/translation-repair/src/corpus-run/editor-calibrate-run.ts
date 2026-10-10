@@ -1,3 +1,4 @@
+import type { ContestLedger, } from '../candidate-ledger.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { wordForCount, } from '../count-word.ts';
 import type { CorpusPin, } from '../corpus-source.ts';
@@ -21,10 +22,7 @@ import { runEditorLane, } from './editor-calibrate-lane.ts';
 import type { SliceRounds, } from './editor-calibrate-slice.ts';
 import { printEditorCalibrateStandings, } from './editor-calibrate-standings.ts';
 import { RUN_ROSTER, } from './run-config.ts';
-import {
-  CALIBRATION_OVERLAP,
-  type readOverlap as readOverlapFromEnvironment,
-} from './slice-overlap.ts';
+import { CALIBRATION_OVERLAP, } from './slice-overlap.ts';
 
 //region Editor calibrate run
 // WHICH OF THE ROSTER SHOULD EDIT, measured on the editor's own job.
@@ -96,6 +94,10 @@ import {
 // straggler windows and the client are each a function the entry file passes,
 // called at the point of the run where the command used to reach for it, so
 // the order of the output and of the refusals is the order the command had.
+// The two windows it reads become the `StageSettings` every slice's lane runs
+// under, beside the contest ledger the entry file read: the calibration once
+// adopted its window by writing the round variable back for its rounds to
+// read, and nothing writes the process's environment now.
 
 /**
  Slices drawn when the caller names no count.
@@ -125,18 +127,22 @@ const DEFAULT_SLICES = 6;
  after the sample is drawn and before any round, so an unreadable override
  refuses the run before it spends anything
 
- @param readWriterGrace - reads the writer rounds' own window, when a launch
- gave them one
+ @param readWriterGrace - reads both windows the lane's rounds run under, the
+ round window with the calibration's own fallback, and the writer rounds' own
+ when a launch gave them one
 
  @param newClient - builds the client every slice shares, called once and
  after the header is printed
+
+ @param contestLedger - where the launch keeps its judged contests, which the
+ entry file read
 
  @throws {@link StatedRefusalError} when the count, the overlap or a window
  is not one this run can read
 
  @example
  ```ts
- await runEditorCalibrate({ line, readOverlap, drawSample, pin, adoptGrace, readWriterGrace, newClient, },);
+ await runEditorCalibrate({ line, readOverlap, drawSample, pin, adoptGrace, readWriterGrace, newClient, contestLedger, },);
  ```
  */
 export async function runEditorCalibrate(
@@ -148,14 +154,16 @@ export async function runEditorCalibrate(
     adoptGrace,
     readWriterGrace,
     newClient,
+    contestLedger,
   }: {
     readonly line: CommandLineOf<'editor-calibrate'>;
-    readonly readOverlap: typeof readOverlapFromEnvironment;
+    readonly readOverlap: (input: { readonly fallback: number; },) => number;
     readonly drawSample: typeof sampleBenchSlices;
     readonly pin: CorpusPin;
     readonly adoptGrace: () => CalibrationGrace;
     readonly readWriterGrace: () => WriterGrace;
     readonly newClient: () => SyntheticClient;
+    readonly contestLedger: ContestLedger;
   },
 ): Promise<void> {
   /**
@@ -227,13 +235,20 @@ export async function runEditorCalibrate(
   );
 
   /**
+   Both windows the lane's rounds run under: the round window read with the
+   calibration's own fallback, so it is the window the straggler window line
+   names, and the writer rounds' own.
+   */
+  const writerGrace = readWriterGrace();
+
+  /**
    Note naming the writer rounds' window when a launch gave them their own.
 
    PRINTED because this run's editor and refiner rounds ARE writer rounds: a
    launch that set the dial changed what the standing measures, and a reader
    must be able to tell that from the log alone.
    */
-  const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
+  const writerNote = writerGraceOverrideNote({ grace: writerGrace, },);
   if (writerNote !== '')
     console.log(writerNote,);
 
@@ -262,6 +277,10 @@ export async function runEditorCalibrate(
       return runEditorLane({
         slice,
         client,
+        stageSettings: {
+          grace: writerGrace,
+          contestLedger,
+        },
       },);
     },
   },);

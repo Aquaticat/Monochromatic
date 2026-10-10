@@ -41,7 +41,7 @@ import {
 } from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import { writerRoundGraceMs, } from './writer-grace-override.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Refinement stage
 // One slice's naturalness pass over already-repaired text.
@@ -145,6 +145,9 @@ export type RefineStageResult = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Shipped text plus what decided it
 
  @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
@@ -173,6 +176,7 @@ export async function runRefineStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly refinerModelIds: readonly RosterModelId[];
@@ -189,6 +193,7 @@ export async function runRefineStage(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RefineStageResult> {
   /**
@@ -249,7 +254,9 @@ export async function runRefineStage(
     //
     // A WRITER ROUND, so the third voice is a whole candidate and waits under
     // the writer window, built in since 2026-09-06 (`writer-grace-override.ts`).
-    graceMs: writerRoundGraceMs(),
+    graceMs: stageSettings
+      .grace
+      .writerMs,
     l,
   },);
 
@@ -415,6 +422,7 @@ export async function runRefineStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    This round's ballots, recorded before any branch so a decline and a

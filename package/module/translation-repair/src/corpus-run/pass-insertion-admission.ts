@@ -25,6 +25,7 @@ import {
   type InsertionCoverageRow,
 } from './insertion-coverage-model.ts';
 import type { BenchSeating, } from '../bench-seating.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Pass insertion admission
 // Production proof for writing source-only passages into a memorial page.
@@ -57,6 +58,9 @@ import type { BenchSeating, } from '../bench-seating.ts';
  @param beforeCandidate - awaited before each candidate's coverage question,
  handing it the roster it is asked of; none keeps the given one (ledger X12)
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Admitted positions and count-only evidence for every candidate
 
  @throws {@link TranslationRepairInterruptedError}
@@ -64,7 +68,7 @@ import type { BenchSeating, } from '../bench-seating.ts';
 
  @example
  ```ts
- const admission = await decidePassInsertionAdmission({ client, prepared, modelIds, overlap: 4, signal, perCallTimeoutMs, l, },);
+ const admission = await decidePassInsertionAdmission({ client, prepared, modelIds, overlap: 4, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function decidePassInsertionAdmission(
@@ -77,6 +81,7 @@ export async function decidePassInsertionAdmission(
     perCallTimeoutMs,
     l,
     beforeCandidate,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -86,6 +91,7 @@ export async function decidePassInsertionAdmission(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
     readonly beforeCandidate?: () => Promise<BenchSeating>;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<InsertionAdmission> {
   /**
@@ -229,6 +235,7 @@ export async function decidePassInsertionAdmission(
         signal,
         exchangeTimeoutMs: perCallTimeoutMs,
         l: al,
+        stageSettings,
       },);
       /**
        Coverage result fields persisted as counts and findings.

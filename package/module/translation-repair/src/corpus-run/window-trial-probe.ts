@@ -14,6 +14,7 @@ import {
 } from './run-config.ts';
 import { runPick, } from './window-trial-pick.ts';
 import { runWindowTrial, } from './window-trial-probe-run.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Window trial probe
 // The window trial, run end to end: the wiring only. It asks models and writes
@@ -59,6 +60,7 @@ async function main(): Promise<void> {
     roster: RUN_ROSTER,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

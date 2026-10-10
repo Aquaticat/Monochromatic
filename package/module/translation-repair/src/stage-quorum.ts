@@ -209,8 +209,8 @@ type RoundsOutcome<ValueT,> = {
  defaults to {@link STAGE_RETRY_ROUNDS}
 
  @param graceMs - window a straggler gets after quorum before the round
- abandons it; defaults to `STRAGGLER_GRACE_MS` and exists so a test can bound
- its own wall time
+ abandons it: the launch's round or writer window, from the `StageSettings`
+ its entry file read
 
  @param fanOut - whether a round asks the window of quorum plus one, the
  production default, or the whole bench a fixture scripting every seat asks for
@@ -222,7 +222,7 @@ type RoundsOutcome<ValueT,> = {
 
  @example
  ```ts
- const gather = await gatherStageVoices({ ..., stage: 'critic', l, },);
+ const gather = await gatherStageVoices({ ..., stage: 'critic', l, graceMs: stageSettings.grace.roundMs, },);
  ```
  */
 export async function gatherStageVoices<ValueT,>(
@@ -253,7 +253,7 @@ export async function gatherStageVoices<ValueT,>(
     readonly stage: string;
     readonly l: Logger;
     readonly maxRetryRounds?: number;
-    readonly graceMs?: number;
+    readonly graceMs: number;
     readonly fanOut?: FanOutMode;
     readonly decision?: StageDecision;
   }>,
@@ -347,7 +347,7 @@ export async function gatherStageVoices<ValueT,>(
       validate,
       stage,
       l,
-      ...((graceMs === undefined) ? {} : { graceMs, }),
+      graceMs,
       // Conditional spread keeps the question absent instead of undefined.
       ...((decision === undefined) ? {} : { decision, }),
     };

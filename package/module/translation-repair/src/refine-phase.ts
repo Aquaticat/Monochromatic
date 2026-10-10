@@ -23,6 +23,7 @@ import { refineRunShape, } from './refine-slice-key.ts';
 import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { spliceSlices, } from './splice-slices.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Refinement phase
 // Naturalness is a second per-slice phase after every accuracy outcome settles.
@@ -103,6 +104,9 @@ export type RefinePhaseResult = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Final outcomes, ordered findings, and current-run purchase signal
 
  @throws OverlapRefusedError when overlap is fractional or below one, even
@@ -125,6 +129,7 @@ export type RefinePhaseResult = {
    perCallTimeoutMs,
    overlap: 4,
    l,
+   stageSettings,
  },);
  ```
  */
@@ -144,6 +149,7 @@ export async function runRefinePhase(
     perCallTimeoutMs,
     overlap = 1,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly targetText: string;
@@ -159,6 +165,7 @@ export async function runRefinePhase(
     readonly perCallTimeoutMs: number;
     readonly overlap?: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RefinePhaseResult> {
   // A disabled lane must not make invalid caller configuration valid.
@@ -238,6 +245,7 @@ export async function runRefinePhase(
             signal,
             perCallTimeoutMs,
             l,
+            stageSettings,
           },);
         },
       },);

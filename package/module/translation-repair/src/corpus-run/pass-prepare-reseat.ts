@@ -22,6 +22,7 @@ import {
   readJudgeSeats,
   type SeatReadingClient,
 } from './run-seats-read.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Preparation re-seating
 // THE PREPARATION'S PER-ITEM HOOK (ledger X12), beside the other phases'
@@ -130,13 +131,17 @@ export function preparationHooksFor(
  @param signal - entry deadline and caller abort
 
  @param outsideReads - what the preparation reads from outside the pipeline
- (ledger X19): the readers the corpus-pass entry builds in a run
+ (ledger X19): the readers the pass's entry file builds over its environment
+ in a run
+
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
 
  @returns Prepared slices, every finding on their `alignmentFindings`
 
  @example
  ```ts
- const paired = await runPassPreparation({ client, entryId, entryCacheDir, pipelineDigest, readPictures, sourceText, targetText, signal, outsideReads, },);
+ const paired = await runPassPreparation({ client, entryId, entryCacheDir, pipelineDigest, readPictures, sourceText, targetText, signal, outsideReads, stageSettings, },);
  ```
  */
 export async function runPassPreparation(
@@ -150,6 +155,7 @@ export async function runPassPreparation(
     targetText,
     signal,
     outsideReads,
+    stageSettings,
   }: {
     readonly client: RunClient;
     readonly entryId: string;
@@ -160,6 +166,7 @@ export async function runPassPreparation(
     readonly targetText: string;
     readonly signal: AbortSignal;
     readonly outsideReads: PassOutsideReads;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<PassPreparation> {
   /**
@@ -197,6 +204,7 @@ export async function runPassPreparation(
     },)
       .beforeItem,
     outsideReads,
+    stageSettings,
   },);
 }
 

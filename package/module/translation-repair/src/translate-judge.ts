@@ -36,6 +36,7 @@ import {
   type TranslateStageResult,
 } from './translate-stage-result.ts';
 import { translateSlateEvidence, } from './translate-slate-evidence.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate judge
 
@@ -120,6 +121,9 @@ import { translateSlateEvidence, } from './translate-slate-evidence.ts';
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Shipped text with how it was decided
 
  @throws {@link TranslateAbsenceError} when a slice with no incumbent produced
@@ -160,6 +164,7 @@ export async function judgeTranslateSlate(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly produced: ProducedSlate;
@@ -193,6 +198,7 @@ export async function judgeTranslateSlate(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateStageResult> {
   /**
@@ -427,6 +433,7 @@ export async function judgeTranslateSlate(
     signal,
     perCallTimeoutMs,
     l: tl,
+    stageSettings,
   },);
   if (outcome.kind === 'selected') {
     // UNREACHABLE while the slate is built the way it is, and here because the

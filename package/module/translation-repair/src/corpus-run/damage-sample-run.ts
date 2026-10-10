@@ -24,6 +24,7 @@ import {
 } from './probe-verify-sheet.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { writeSheetPair, } from './sheet-write.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Damage sample run
 // Draws shipped regions at random and asks a human the SAME source-anchored
@@ -63,6 +64,9 @@ import { writeSheetPair, } from './sheet-write.ts';
  recorded commit is placed against, which the entry names: the package's own
  in a run, a throwaway one in a case
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link StatedRefusalError} When the settled entries ship no replacement
  over an archive wording to draw from, or no prober answered for any region
  drawn, since a sheet with no item would be kept and refuse the next run; and
@@ -70,7 +74,7 @@ import { writeSheetPair, } from './sheet-write.ts';
 
  @example
  ```ts
- await sampleDamage({ runsDir, seed: 'damage-round-one', openClient: createRunClient, proberModelIds, perCallTimeoutMs: 360_000, l, policy, repository, },);
+ await sampleDamage({ runsDir, seed: 'damage-round-one', openClient: createRunClient, proberModelIds, perCallTimeoutMs: 360_000, l, policy, repository, stageSettings, },);
  ```
  */
 export async function sampleDamage(
@@ -83,6 +87,7 @@ export async function sampleDamage(
     l,
     policy,
     repository,
+    stageSettings,
   }: {
     readonly runsDir: string;
     readonly seed: string;
@@ -92,6 +97,7 @@ export async function sampleDamage(
     readonly l: Logger;
     readonly policy: PoolPolicy;
     readonly repository: string;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -149,6 +155,7 @@ export async function sampleDamage(
         tag: 'damage-sample',
         l,
       },),
+      stageSettings,
     },);
 
     /**

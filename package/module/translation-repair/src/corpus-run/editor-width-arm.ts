@@ -11,6 +11,7 @@ import {
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { WidthProbeInput, } from './editor-width-input.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Editor width arm
 // One editor roster's attempt at one slice.
@@ -114,11 +115,14 @@ function readArm(
 
  @param l - logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Arm reduced for comparison
 
  @example
  ```ts
- const narrow = await runArm({ client, input, editorModelIds, judgeModelIds, signal, l, },);
+ const narrow = await runArm({ client, input, editorModelIds, judgeModelIds, signal, l, stageSettings, },);
  ```
  */
 export async function runArm(
@@ -129,6 +133,7 @@ export async function runArm(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly input: WidthProbeInput;
@@ -136,6 +141,7 @@ export async function runArm(
     readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ArmOutcome> {
   /**
@@ -152,6 +158,7 @@ export async function runArm(
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   return readArm({

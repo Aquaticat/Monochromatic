@@ -48,6 +48,7 @@ import { inSliceLogContext, } from './log-context.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
 import { wordForCount, } from './count-word.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Consolidate driver
 // THE CONSOLIDATION OVER ONE DOCUMENT: which slices get a third rendering
@@ -116,6 +117,9 @@ import { wordForCount, } from './count-word.ts';
 
  @param l - logger to tag
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns One record per consolidated slice, in comparison-row order
 
  @throws Error - when a contested slice has no row in the repair ledger, which
@@ -123,7 +127,7 @@ import { wordForCount, } from './count-word.ts';
 
  @example
  ```ts
- const slices = await consolidateDocument({ client, projected, contests, modelIds, frontMatterSlices, lineStructuredSlices, pictureContextBySlice, neighbourContextBySlice, cache, signal, perCallTimeoutMs, l, },);
+ const slices = await consolidateDocument({ client, projected, contests, modelIds, frontMatterSlices, lineStructuredSlices, pictureContextBySlice, neighbourContextBySlice, cache, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function consolidateDocument(
@@ -148,6 +152,7 @@ export async function consolidateDocument(
     archiveDisputes,
     declaredNamePairs = [],
     l,
+    stageSettings,
   }: {
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanes;
@@ -185,6 +190,7 @@ export async function consolidateDocument(
      */
     readonly beforeSlice?: () => Promise<ConsolidateSliceSeating>;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<readonly ArtifactConsolidateSlice[]> {
   /**
@@ -516,6 +522,7 @@ export async function consolidateDocument(
                   l: dl,
                   tag: `slice ${String(row.sliceIndex,)}`,
                 },),
+                stageSettings,
               },);
 
               /**

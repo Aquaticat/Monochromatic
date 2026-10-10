@@ -10,6 +10,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Damage sample
 // Draws shipped regions at random and asks a human the same source-anchored
@@ -45,6 +46,7 @@ async function sampleOverTheEnvironment(): Promise<void> {
     // resolved and placed; the pool took it from its own location until
     // 2026-10-10.
     repository: import.meta.dirname,
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

@@ -8,6 +8,7 @@ import {
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { probeCorpusEntries, } from './sentinel-probe-run.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Sentinel probe
 // Runs a set of named, known-behavior corpus entries through the pipeline and
@@ -34,6 +35,7 @@ if (import.meta.main)
         models: RUN_MODELS,
         perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
         now: monotonicMs,
+        stageSettings: readStageSettings({ env: process.env, },),
       },);
     },
   },);

@@ -20,6 +20,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Audit sensitivity run
 // Audits each arm over the roster, prints what the instrument said and keeps
@@ -75,12 +76,15 @@ type AuditArmRow = {
 
  @param client - client this one audit asks through
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Arm's whole result, for the record rather than for a caller to
  branch on
 
  @example
  ```ts
- const row = await auditOne({ candidateText: FLIPPED_CANDIDATE, arm: 'flipped', expectation: 'defect', client, },);
+ const row = await auditOne({ candidateText: FLIPPED_CANDIDATE, arm: 'flipped', expectation: 'defect', client, stageSettings, },);
  ```
  */
 async function auditOne(
@@ -89,11 +93,13 @@ async function auditOne(
     arm,
     expectation,
     client,
+    stageSettings,
   }: {
     readonly candidateText: string;
     readonly arm: string;
     readonly expectation: string;
     readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<AuditArmRow> {
   /**
@@ -109,6 +115,7 @@ async function auditOne(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'audit-sensitivity', },),
+    stageSettings,
   },);
 
   /**
@@ -154,9 +161,12 @@ async function auditOne(
 
  @param runnerClosure - chunks the executing entry imports, read at the start
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await runAuditSensitivity({ arms: AUDIT_ARMS, newClient, runsDir, startedAt, now, pipelineDigest, runnerClosure, },);
+ await runAuditSensitivity({ arms: AUDIT_ARMS, newClient, runsDir, startedAt, now, pipelineDigest, runnerClosure, stageSettings, },);
  ```
  */
 export async function runAuditSensitivity(
@@ -168,6 +178,7 @@ export async function runAuditSensitivity(
     now,
     pipelineDigest,
     runnerClosure,
+    stageSettings,
   }: {
     readonly arms: readonly AuditArm[];
     readonly newClient: () => SyntheticClient;
@@ -176,6 +187,7 @@ export async function runAuditSensitivity(
     readonly now: () => string;
     readonly pipelineDigest: string;
     readonly runnerClosure: RunnerClosure;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -192,6 +204,7 @@ export async function runAuditSensitivity(
       await auditOne({
         ...arm,
         client: newClient(),
+        stageSettings,
       },),
     );
     /* oxlint-enable no-await-in-loop */

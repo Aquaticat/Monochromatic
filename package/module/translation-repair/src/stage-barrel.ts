@@ -79,13 +79,20 @@ export {
   WRITER_STAGE_LABELS,
   type WriterGrace,
   writerGraceOverrideNote,
-  writerRoundGraceMs,
 } from './writer-grace-override.ts';
 export {
   type RoundOutcome,
   runGatherRound,
   STRAGGLER_GRACE_MS,
 } from './stage-round.ts';
+export {
+  readStageSettings,
+  type StageSettings,
+} from './stage-settings.ts';
+export {
+  type ContestLedger,
+  readContestLedger,
+} from './candidate-ledger.ts';
 export {
   roundLine,
   type RoundLineQuorum,

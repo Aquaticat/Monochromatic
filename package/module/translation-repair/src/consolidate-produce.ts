@@ -18,12 +18,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import { foldTranslatorVoices, } from './translator-answer-fold.ts';
-import { writerRoundGraceMs, } from './writer-grace-override.ts';
 import {
   isTranslateReportWire,
   TRANSLATE_RESPONSE_FORMAT,
   type TranslateReportWire,
 } from './translate-wire.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Consolidate produce
 // THE PRODUCING HALF of the consolidation, kept apart from the deciding half
@@ -95,11 +95,14 @@ export type ProducedConsolidations = {
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Slate, each proposal's verdict before and after repair, and findings
 
  @example
  ```ts
- const produced = await produceConsolidations({ client, roster, subject, standingText, signal, perCallTimeoutMs, l, },);
+ const produced = await produceConsolidations({ client, roster, subject, standingText, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function produceConsolidations(
@@ -111,6 +114,7 @@ export async function produceConsolidations(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly roster: readonly RosterModelId[];
@@ -119,6 +123,7 @@ export async function produceConsolidations(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ProducedConsolidations> {
   /**
@@ -151,7 +156,9 @@ export async function produceConsolidations(
     // A WRITER ROUND: every voice the window cuts is one fewer proposal, so it
     // waits under the writer window, built in since 2026-09-06
     // (`writer-grace-override.ts`).
-    graceMs: writerRoundGraceMs(),
+    graceMs: stageSettings
+      .grace
+      .writerMs,
     l: pl,
   },);
 

@@ -20,6 +20,7 @@ import {
 import { TrialSliceRefusalError, } from './window-trial-refusal.ts';
 import { TRIAL_ARMS, } from './window-trial-report.ts';
 import { wordForCount, } from '../count-word.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Window trial slice
 // One slice's three arms, over ONE slate.
@@ -66,6 +67,9 @@ import { wordForCount, } from '../count-word.ts';
 
  @param l - run logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Rows this call appended, empty when the slice was already complete
 
  @throws {@link TrialSliceRefusalError} when the slice index is not one the prepared slices carry or its
@@ -94,6 +98,7 @@ export async function runSliceArms(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
@@ -110,6 +115,7 @@ export async function runSliceArms(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<readonly WindowTrialRow[]> {
   /**
@@ -227,6 +233,7 @@ export async function runSliceArms(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -252,6 +259,7 @@ export async function runSliceArms(
       signal,
       perCallTimeoutMs,
       l,
+      stageSettings,
     },);
     /* oxlint-enable no-await-in-loop */
 

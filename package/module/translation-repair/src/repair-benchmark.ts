@@ -37,6 +37,7 @@ import {
 } from './repair-scorecard.ts';
 import { applySeededErrors, } from './seeded-error.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Repair benchmark
 // Milestone-two exit harness: plant omission seeds into real translations,
@@ -189,6 +190,9 @@ export type RepairBenchmarkResult = {
  bench; no default, since a hand-listed one outlived the owner's cull
  (ledger P4)
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Graded attempts plus the aggregate scorecard
 
  @throws Whatever `signal.reason` carries once the caller aborts; an entry's
@@ -196,7 +200,7 @@ export type RepairBenchmarkResult = {
 
  @example
  ```ts
- const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, perCallTimeoutMs, judgeModelIds, },);
+ const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, perCallTimeoutMs, judgeModelIds, stageSettings, },);
  console.log(scorecard.seededRepairRate,);
  ```
  */
@@ -212,6 +216,7 @@ export async function runRepairBenchmark(
     judge = runRestorationJudge,
     derivability = runDerivabilityProbe,
     judgeModelIds,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entries: readonly BenchmarkEntry[];
@@ -223,6 +228,7 @@ export async function runRepairBenchmark(
     readonly judge?: typeof runRestorationJudge;
     readonly derivability?: typeof runDerivabilityProbe;
     readonly judgeModelIds: readonly RosterModelId[];
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RepairBenchmarkResult> {
   /**
@@ -288,6 +294,7 @@ export async function runRepairBenchmark(
         models,
         signal,
         perCallTimeoutMs,
+        stageSettings,
       },);
       /**
        Seeds this entry planted, as the judge and probe both address them.
@@ -312,6 +319,7 @@ export async function runRepairBenchmark(
         signal,
         perCallTimeoutMs,
         l: rl,
+        stageSettings,
       },);
 
       /**
@@ -331,6 +339,7 @@ export async function runRepairBenchmark(
         signal,
         perCallTimeoutMs,
         l: rl,
+        stageSettings,
       },);
       /* oxlint-enable no-await-in-loop */
       records.push({

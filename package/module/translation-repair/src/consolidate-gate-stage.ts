@@ -21,6 +21,7 @@ import type { FanOutMode, } from './stage-fanout-window.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Consolidate gate stage
 // DECIDES WHETHER THE RENDERING THIS RUN WROTE REPLACES THE ONE THAT WOULD SHIP.
@@ -187,11 +188,14 @@ export function settleGateBallots(
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns What the roster settled, what ships, and every usable ballot
 
  @example
  ```ts
- const outcome = await gateConsolidatedSlice({ client, modelIds, subject, signal, exchangeTimeoutMs, l, },);
+ const outcome = await gateConsolidatedSlice({ client, modelIds, subject, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function gateConsolidatedSlice(
@@ -203,6 +207,7 @@ export async function gateConsolidatedSlice(
     exchangeTimeoutMs,
     l,
     fanOut,
+    stageSettings,
   }: {
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -211,6 +216,7 @@ export async function gateConsolidatedSlice(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<ConsolidateGateOutcome> {
   /**
@@ -239,6 +245,9 @@ export async function gateConsolidatedSlice(
     l: gl,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   /**

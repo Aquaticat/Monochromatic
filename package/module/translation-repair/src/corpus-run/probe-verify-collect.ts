@@ -14,6 +14,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Probe verify collect
 // Asks the unlabelled probe about each region and keeps the ones it flagged,
@@ -51,20 +52,25 @@ export function keepAdmissible(
 
  @param client - client this one call asks through
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Admissible claims raised, empty when the probe found nothing
 
  @example
  ```ts
- const claims = await probeWithheld({ relabelCase, client, },);
+ const claims = await probeWithheld({ relabelCase, client, stageSettings, },);
  ```
  */
 async function probeWithheld(
   {
     relabelCase,
     client,
+    stageSettings,
   }: {
     readonly relabelCase: RelabelCase;
     readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<readonly ScreenedDefectClaim[]> {
   /**
@@ -81,6 +87,7 @@ async function probeWithheld(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'probe-verify', },),
+    stageSettings,
   },);
 
   /**
@@ -103,11 +110,14 @@ async function probeWithheld(
  been asked, and a region probed through a shared client could be answered from
  another region's reply
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Sheet items, one per flagged region
 
  @example
  ```ts
- const items = await collectFlagged({ cases, kind: 'control', newClient, },);
+ const items = await collectFlagged({ cases, kind: 'control', newClient, stageSettings, },);
  ```
  */
 export async function collectFlagged(
@@ -115,10 +125,12 @@ export async function collectFlagged(
     cases,
     kind,
     newClient,
+    stageSettings,
   }: {
     readonly cases: readonly RelabelCase[];
     readonly kind: 'damaged' | 'control';
     readonly newClient: () => SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<readonly VerifyItem[]> {
   /**
@@ -135,6 +147,7 @@ export async function collectFlagged(
     const claims = await probeWithheld({
       relabelCase,
       client: newClient(),
+      stageSettings,
     },);
     console.log(
       `VERIFY ${kind} ${relabelCase.entryId} ${

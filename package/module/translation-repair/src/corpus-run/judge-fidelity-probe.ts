@@ -12,6 +12,7 @@ import {
   resolveRunsDir,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Source-reviewed judge calibration
 // Wiring only: the command line, the build's identity, the corpus pin, the
@@ -55,6 +56,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'judge-fidelity-pr
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     log: tagged({ tag: 'judge-fidelity-probe', },),
     out: process.stdout,
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

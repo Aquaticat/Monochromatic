@@ -29,6 +29,7 @@ import {
   runCalibrationRound,
   type ProducerCalibrateRound,
 } from './producer-calibrate-round.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Producer calibrate run
 // WHICH OF THE ROSTER SHOULD WRITE, measured rather than assumed.
@@ -125,6 +126,9 @@ function refuseUnjudgeableRoster({ roster, }: { readonly roster: readonly Roster
 
  @param readHead - reads the pipeline commit the calibration was produced by
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link StatedRefusalError} when the slice count is not a count of at
  least one, a candidate is not seatable, the candidates are asked for alone and
  none is named, the roster could not select anything, a slice's client is
@@ -134,7 +138,7 @@ function refuseUnjudgeableRoster({ roster, }: { readonly roster: readonly Roster
 
  @example
  ```ts
- await runProducerCalibrate({ line, newClient: createRunClient, drawSlices, readHead: readHeadSha, },);
+ await runProducerCalibrate({ line, newClient: createRunClient, drawSlices, readHead: readHeadSha, stageSettings, },);
  ```
  */
 export async function runProducerCalibrate(
@@ -143,11 +147,13 @@ export async function runProducerCalibrate(
     newClient,
     drawSlices,
     readHead,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'producer-calibrate'>;
     readonly newClient: () => SyntheticClient;
     readonly drawSlices: (input: { readonly count: number; },) => Promise<readonly BenchSlice[]>;
     readonly readHead: () => Promise<string>;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -208,6 +214,7 @@ export async function runProducerCalibrate(
         slice,
         roster,
         client: newClient(),
+        stageSettings,
       },),);
       console.log(
         `  ${slice.entryId}#${String(slice.index,)}: round ${String(rounds.length,)}`

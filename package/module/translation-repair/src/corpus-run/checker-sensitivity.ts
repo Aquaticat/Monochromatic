@@ -1,6 +1,7 @@
 import { reportingRefusals, } from './cli-refusal.ts';
 import { runCheckerSensitivity, } from './checker-sensitivity-run.ts';
 import { createRunClient, } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Checker sensitivity
 // Asks whether the resolution checkers can say NO.
@@ -33,7 +34,10 @@ import { createRunClient, } from './run-config.ts';
  ```
  */
 function main(): Promise<void> {
-  return runCheckerSensitivity({ newClient: createRunClient, },);
+  return runCheckerSensitivity({
+    newClient: createRunClient,
+    stageSettings: readStageSettings({ env: process.env, },),
+  },);
 }
 
 // Guarded so this runs only when INVOKED. Unguarded it ran on IMPORT, so

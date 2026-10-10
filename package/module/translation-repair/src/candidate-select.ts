@@ -33,6 +33,7 @@ import { ProducerRosterError, } from './repair-contract.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Candidate selection stage
 // Shared by every stage that generates text rather than verdicts: the ensemble
@@ -100,6 +101,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  wins on the ballot floor under the weight minimum, since abstentions on a
  question between valid finalists answer neither (class seventy-three)
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Winner with the ballot weight it drew, or a decline carrying its
  reason; either way the round's tally and every ballot cast
 
@@ -127,6 +131,7 @@ export async function decideBestCandidate<ValueT,>(
     fanOut,
     sourceText,
     runoff = false,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly candidates: readonly Candidate<ValueT>[];
@@ -141,6 +146,7 @@ export async function decideBestCandidate<ValueT,>(
     readonly fanOut?: FanOutMode;
     readonly sourceText?: string;
     readonly runoff?: boolean;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<SelectionOutcome<ValueT>> {
   /**
@@ -278,6 +284,9 @@ export async function decideBestCandidate<ValueT,>(
       // Conditional spread keeps the request absent instead of undefined.
       ...((fanOut === undefined) ? {} : { requested: fanOut, }),
     },),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   /**

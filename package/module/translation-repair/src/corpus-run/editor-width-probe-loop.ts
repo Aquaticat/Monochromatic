@@ -10,6 +10,7 @@ import type {
 } from './editor-width-model.ts';
 import type { writeWidthReport, } from './editor-width-report.ts';
 import type { runWidthSlice, } from './editor-width-slice.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Editor width probe loop
 // SPENDS THE DRAW, one slice at a time, printing a line for each and
@@ -53,9 +54,12 @@ import type { runWidthSlice, } from './editor-width-slice.ts';
  @param runsDir - runs directory the report is written under, which the entry
  resolves from its environment
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await runWidthDraw({ client, drawn, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, controlHeld, draw, headSha, gather, runSlice, writeReport, runsDir, },);
+ await runWidthDraw({ client, drawn, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, controlHeld, draw, headSha, gather, runSlice, writeReport, runsDir, stageSettings, },);
  ```
  */
 export async function runWidthDraw(
@@ -74,6 +78,7 @@ export async function runWidthDraw(
     runSlice,
     writeReport,
     runsDir,
+    stageSettings,
   }: {
     readonly client: SyntheticClient;
     readonly drawn: readonly BenchSlice[];
@@ -89,6 +94,7 @@ export async function runWidthDraw(
     readonly runSlice: typeof runWidthSlice;
     readonly writeReport: typeof writeWidthReport;
     readonly runsDir: string;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -137,6 +143,7 @@ export async function runWidthDraw(
       slice,
       signal,
       l,
+      stageSettings,
     },);
     /* oxlint-enable eslint/no-await-in-loop */
 
@@ -165,6 +172,7 @@ export async function runWidthDraw(
       judgeModelIds,
       signal,
       l,
+      stageSettings,
     },);
     /* oxlint-enable eslint/no-await-in-loop */
 

@@ -23,6 +23,7 @@ import {
 import { unflooredFinding, } from './translate-unfloored.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import { sameWording, } from './wording-key.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region One bounded consolidation polish round
 
@@ -180,6 +181,9 @@ export function reviewParagraphsOf(
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns One bounded proposal round after structure and fidelity selection,
  or the base with nobody asked where the floor can compare nothing
 
@@ -189,7 +193,7 @@ export function reviewParagraphsOf(
 
  @example
  ```ts
- const round = await runConsolidationPolishRound({ client, sourceText, archiveText, baseText, mode: { kind: 'comparative' }, lineStructured: false, sliceIndex: 1, config, signal, perCallTimeoutMs, l, });
+ const round = await runConsolidationPolishRound({ client, sourceText, archiveText, baseText, mode: { kind: 'comparative' }, lineStructured: false, sliceIndex: 1, config, signal, perCallTimeoutMs, l, stageSettings, });
  ```
  */
 export async function runConsolidationPolishRound(
@@ -209,6 +213,7 @@ export async function runConsolidationPolishRound(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly sourceText: string;
@@ -225,6 +230,7 @@ export async function runConsolidationPolishRound(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ConsolidationPolishRoundResult> {
   /**
@@ -299,6 +305,7 @@ export async function runConsolidationPolishRound(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   if (!refined.changed) {
     return {
@@ -432,6 +439,7 @@ export async function runConsolidationPolishRound(
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    Exact text selected by comparative gate.

@@ -17,6 +17,7 @@ import {
   translateSelectionCriteria,
   TRANSLATE_SELECTION_TASK,
 } from './translate-selection-sheet.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Judge fidelity trial
 // Whether the translate lane's judges can tell a faithful rendering from one
@@ -318,6 +319,9 @@ function buildSlate(
 
  @param l - logger of the calling harness
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Which text won, whether that is right, and every ballot
 
  @throws {@link Error} when the clean text is not on the slate built from the
@@ -325,7 +329,7 @@ function buildSlate(
 
  @example
  ```ts
- const outcome = await runFidelityTrial({ client, trial, judgeModelIds, signal, perCallTimeoutMs, l, },);
+ const outcome = await runFidelityTrial({ client, trial, judgeModelIds, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function runFidelityTrial(
@@ -336,6 +340,7 @@ export async function runFidelityTrial(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly trial: FidelityTrial;
@@ -343,6 +348,7 @@ export async function runFidelityTrial(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<FidelityOutcome> {
   /**
@@ -414,6 +420,7 @@ export async function runFidelityTrial(
     signal,
     perCallTimeoutMs,
     l: fl,
+    stageSettings,
   },);
 
   /**

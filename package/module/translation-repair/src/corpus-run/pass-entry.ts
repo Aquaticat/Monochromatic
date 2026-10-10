@@ -32,9 +32,11 @@ import {
 } from './pass-entry-persist.ts';
 import { unfilledPageFindings, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
-import { readPassOverlap, } from './pass-overlap.ts';
+import { entryOverlap, } from './pass-overlap.ts';
 import { createPassPictureReader, } from './pass-seated-pictures.ts';
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
+import type { OverlapSetting, } from './slice-overlap.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 import type {
   PassPictureSources,
   PassVisualEvidenceReader,
@@ -102,6 +104,9 @@ import { runPassLanes, } from './pass-lanes.ts';
 
  @param pictureSources - where the entry's picture bytes and their OCR text come from
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch
+
  @returns Whether an artifact was written
 
  @example
@@ -126,6 +131,7 @@ async function runEntryPipeline(
     outsideReads,
     pictureSources,
     visualEvidenceReader,
+    stageSettings,
   }: {
     readonly client: RunClient;
     readonly entry: CorpusPair;
@@ -142,6 +148,7 @@ async function runEntryPipeline(
     readonly outsideReads: PassOutsideReads;
     readonly pictureSources: PassPictureSources;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<EntryOutcome> {
   /**
@@ -263,6 +270,7 @@ async function runEntryPipeline(
       targetText: entry.targetText,
       signal: deadline.callSignal,
       outsideReads,
+      stageSettings,
     },);
     /**
      Archive after preparation-stage review corrections.
@@ -303,6 +311,7 @@ async function runEntryPipeline(
       overlap,
       signal: deadline.callSignal,
       entryId: entry.id,
+      stageSettings,
     },);
 
     /**
@@ -338,6 +347,7 @@ async function runEntryPipeline(
       translateSliceCache,
       translateInsertionAdmission,
       entryId: entry.id,
+      stageSettings,
     },);
 
     // AFTER the lanes return and BEFORE anything is written, which is the only
@@ -404,6 +414,7 @@ async function runEntryPipeline(
       signal: deadline.callSignal,
       overlap,
       l: tagged({ tag: entry.id, },),
+      stageSettings,
     },);
 
     /**
@@ -424,6 +435,7 @@ async function runEntryPipeline(
       signal: deadline.callSignal,
       overlap,
       l: tagged({ tag: entry.id, },),
+      stageSettings,
     },);
 
     /**
@@ -553,7 +565,8 @@ async function runEntryPipeline(
  resolved at load supplied until 2026-10-10 (ledger B302, B381)
 
  @param outsideReads - what preparation reads from outside the pipeline:
- the readers the corpus-pass entry builds in a run, a test's own readers in a test. REQUIRED, as
+ the readers the pass's entry file builds over its environment in a run, a
+ test's own readers in a test. REQUIRED, as
  it is of the preparation (ledger X19): this driver once handed the run's
  readers down itself, so its unit test prepared every entry through the key
  the suite inherits, the real caches and the corpus clone (ledger M68)
@@ -564,14 +577,18 @@ async function runEntryPipeline(
  evidence seam would otherwise read them from the corpus through the real
  programs (ledger M70, M113)
 
- @throws StatedRefusalError before entry work when overlap environment value
- is invalid launch configuration
+ @param overlap - slices each per-slice driver may keep in flight, beside
+ where the value came from, which the pass's entry file read once
+ (`readPassOverlap`) and every entry logs on its own `OVERLAP` line
+
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`readStageSettings`)
 
  @returns Settlement, resumable operational failure, or stopped incomplete work
 
  @example
  ```ts
- const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, pin, hardCapMs, baseSignal, outsideReads, pictureSources: RUN_PICTURE_SOURCES, },);
+ const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, pin, hardCapMs, baseSignal, outsideReads, pictureSources: RUN_PICTURE_SOURCES, overlap, stageSettings, },);
  ```
  */
 export async function settleEntry(
@@ -590,6 +607,8 @@ export async function settleEntry(
     outsideReads,
     pictureSources,
     visualEvidenceReader,
+    overlap,
+    stageSettings,
   }: {
     readonly client: RunClient;
     readonly entry: CorpusPair;
@@ -605,12 +624,18 @@ export async function settleEntry(
     readonly outsideReads: PassOutsideReads;
     readonly pictureSources: PassPictureSources;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
+    readonly overlap: OverlapSetting;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<EntryOutcome> {
   /**
-   Slice overlap read once for this entry and shared by every per-slice driver.
+   Slice overlap the pass read, logged for this entry and shared by every
+   per-slice driver.
    */
-  const overlap = readPassOverlap({ entryId: entry.id, },);
+  const entrySlices = entryOverlap({
+    entryId: entry.id,
+    setting: overlap,
+  },);
 
   /**
    Per-entry slice-cache directory; earlier runs' finished slices live here so
@@ -636,9 +661,10 @@ export async function settleEntry(
     pin,
     hardCapMs,
     baseSignal,
-    overlap,
+    overlap: entrySlices,
     outsideReads,
     pictureSources,
+    stageSettings,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
   },);
   if (outcome.kind !== 'settled') {

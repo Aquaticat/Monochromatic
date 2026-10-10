@@ -27,6 +27,7 @@ import {
 } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { UnpreparedSliceError, } from './unprepared-slice.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Refine phase slice
 // Resume or buy one naturalness settlement. The document driver owns overlap
@@ -162,6 +163,9 @@ export async function persistRefinePhaseSlice(
 
  @param l - phase logger receiving cache-refusal warning
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Slice outcome and findings plus whether current run asked rewriters
 
  @throws UnpreparedSliceError when outcome index has no prepared pair
@@ -182,6 +186,7 @@ export async function persistRefinePhaseSlice(
    signal,
    perCallTimeoutMs,
    l,
+   stageSettings,
  },);
  ```
 
@@ -204,6 +209,7 @@ export async function settleRefinePhaseSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly outcome: ChunkRepairOutcome;
@@ -220,6 +226,7 @@ export async function settleRefinePhaseSlice(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RefinePhaseSliceResult> {
   /**
@@ -310,6 +317,7 @@ export async function settleRefinePhaseSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   // An abandoned exchange must never become warm-run evidence, even if a later

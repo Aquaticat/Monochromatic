@@ -25,6 +25,7 @@ import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Consolidate settle gate
 // THE SETTLEMENT'S LAST TWO STEPS, gate what won the slate and wrap what
@@ -126,13 +127,16 @@ export function gateObjectionsOf(
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns What ships, and every round that decided it; a gate keeping a
  standing the deterministic rule refused leaves the archive kept (owner,
  2026-09-27, "Keep archive, ship")
 
  @example
  ```ts
- const settled = await gateAndShip({ client, judgeModelIds, subject, decided, standingText, lineStructured, floor, verdicts, sliceIndex, standingMayShip, standingEligible, identity, signal, perCallTimeoutMs, l, },);
+ const settled = await gateAndShip({ client, judgeModelIds, subject, decided, standingText, lineStructured, floor, verdicts, sliceIndex, standingMayShip, standingEligible, identity, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function gateAndShip(
@@ -155,6 +159,7 @@ export async function gateAndShip(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly judgeModelIds: readonly RosterModelId[];
@@ -174,6 +179,7 @@ export async function gateAndShip(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ConsolidationSettlement> {
   /**
@@ -195,6 +201,7 @@ export async function gateAndShip(
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -297,6 +304,7 @@ export async function gateAndShip(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 }
 

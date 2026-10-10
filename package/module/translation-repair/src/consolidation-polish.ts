@@ -16,6 +16,7 @@ import {
 import { unpolishedBaseline, } from './consolidation-polish-skip.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 import type { RefineStageMode, } from './refine-selection-context.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 export type {
   ConsolidationNaturalnessAudit,
@@ -118,11 +119,14 @@ function objectionPolishFindings(
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Auditable polish decision and final text
 
  @example
  ```ts
- const polish = await polishConsolidation({ client, sourceText, archiveText, baseText, lineStructured: false, sliceIndex: 0, config, signal, perCallTimeoutMs, l, });
+ const polish = await polishConsolidation({ client, sourceText, archiveText, baseText, lineStructured: false, sliceIndex: 0, config, signal, perCallTimeoutMs, l, stageSettings, });
  ```
  */
 export async function polishConsolidation(
@@ -144,6 +148,7 @@ export async function polishConsolidation(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly sourceText: string;
@@ -162,6 +167,7 @@ export async function polishConsolidation(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ConsolidationPolish> {
   if ((syntax === 'front-matter') || (!eligible))
@@ -193,6 +199,7 @@ export async function polishConsolidation(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    Independent absolute review of exact initial would-ship text.
@@ -213,6 +220,7 @@ export async function polishConsolidation(
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    Decisive review after optional acceptance confirmation, recorded whatever

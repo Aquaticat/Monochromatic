@@ -35,6 +35,7 @@ import {
 import { reachableQuorum, } from './stage-reachable-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Archive block review stage
 
@@ -99,6 +100,9 @@ export type ArchiveBlockReviewOutcome = {
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Retained original or independently selected replacement
 
  @throws TranslationRepairInterruptedError when fewer seats answered at all
@@ -126,6 +130,7 @@ export async function runArchiveBlockReviewStage(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -139,6 +144,7 @@ export async function runArchiveBlockReviewStage(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ArchiveBlockReviewOutcome> {
   /**
@@ -175,6 +181,9 @@ export async function runArchiveBlockReviewStage(
     validate: isArchiveBlockReviewWire,
     stage: 'archive-block-review',
     l: reviewLog,
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
   /**
    Replies as the review reads them. A replacement that shows a reader
@@ -360,6 +369,7 @@ export async function runArchiveBlockReviewStage(
       signal,
       exchangeTimeoutMs,
       l: reviewLog,
+      stageSettings,
     },);
     return {
       kind: 'retained',
@@ -427,6 +437,7 @@ export async function runArchiveBlockReviewStage(
     signal,
     perCallTimeoutMs: exchangeTimeoutMs,
     l: reviewLog,
+    stageSettings,
   },);
   /**
    Review plus candidate-selection evidence.

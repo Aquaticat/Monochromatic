@@ -23,6 +23,7 @@ import { wordForCount, } from './count-word.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Consolidation polish gate stage
 
@@ -157,11 +158,14 @@ export function settleConsolidationPolishBallots(
 
  @param l - parent logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Panel outcome with conservative shipping choice
 
  @example
  ```ts
- const outcome = await gateConsolidationPolish({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });
+ const outcome = await gateConsolidationPolish({ client, modelIds, subject, signal, exchangeTimeoutMs, l, stageSettings, });
  ```
  */
 export async function gateConsolidationPolish(
@@ -172,6 +176,7 @@ export async function gateConsolidationPolish(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   }: {
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -179,6 +184,7 @@ export async function gateConsolidationPolish(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<ConsolidationPolishGateOutcome> {
   /**
@@ -204,6 +210,9 @@ export async function gateConsolidationPolish(
     validate: isConsolidationPolishGateWire,
     stage: 'consolidation-polish-gate',
     l: gl,
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
   /**
    Ballots read from usable voices.

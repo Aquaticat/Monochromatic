@@ -17,6 +17,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Editor width input
 // Work for the editors to do, gathered the way production gathers it.
@@ -116,11 +117,14 @@ export type WidthInputOutcome =
 
  @param l - logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Slice with its accepted issues, or why it has none
 
  @example
  ```ts
- const outcome = await gatherWidthInput({ client, slice, signal, l, },);
+ const outcome = await gatherWidthInput({ client, slice, signal, l, stageSettings, },);
  ```
 
  @internal
@@ -131,11 +135,13 @@ export async function gatherWidthInput(
     slice,
     signal,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slice: BenchSlice;
     readonly signal: AbortSignal;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<WidthInputOutcome> {
   /**
@@ -163,6 +169,7 @@ export async function gatherWidthInput(
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   /**
@@ -195,6 +202,7 @@ export async function gatherWidthInput(
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   /**

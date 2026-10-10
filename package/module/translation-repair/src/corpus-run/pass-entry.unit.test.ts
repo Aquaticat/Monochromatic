@@ -2009,6 +2009,8 @@ await describe({
             pictureSources: NO_PICTURE_SOURCES,
             hardCapMs: HANG_STOP_MS,
             baseSignal: new AbortController().signal,
+            overlap: PASS_FALLBACK_OVERLAP,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         }
         expect(await settledAtPin({ entry: ENTRY, },),).toEqual({ kind: 'settled', },);

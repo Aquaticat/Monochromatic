@@ -14,6 +14,7 @@ import type { TranslateCandidateSet, } from './translate-candidates.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
 import { judgeSlateWithRetry, } from './translate-retry.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Consolidate settle judging
 // THE SLATE JUDGING OF `consolidate-settle.ts`, split out at that file's line
@@ -185,6 +186,9 @@ export async function requireWithheldSlateDecided<const DecidedT,>(
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns The judges' decision
 
  @throws {@link WithheldSlateAbsenceError} when the judging raises an absence
@@ -194,7 +198,7 @@ export async function requireWithheldSlateDecided<const DecidedT,>(
 
  @example
  ```ts
- const decided = await judgeConsolidationSlate({ client, judgeModelIds, subject, built, survivors, producedFindings, standingEligible, incumbent, identity, evidence, lineStructured, challenged, signal, perCallTimeoutMs, l, },);
+ const decided = await judgeConsolidationSlate({ client, judgeModelIds, subject, built, survivors, producedFindings, standingEligible, incumbent, identity, evidence, lineStructured, challenged, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function judgeConsolidationSlate(
@@ -214,6 +218,7 @@ export async function judgeConsolidationSlate(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly judgeModelIds: readonly RosterModelId[];
@@ -237,6 +242,7 @@ export async function judgeConsolidationSlate(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateStageResult> {
   /**
@@ -296,6 +302,7 @@ export async function judgeConsolidationSlate(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   };
   return await requireWithheldSlateDecided({
     judged: challenged

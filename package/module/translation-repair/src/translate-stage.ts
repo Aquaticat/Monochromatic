@@ -16,6 +16,7 @@ import { runTranslateRepairs, } from './translate-stage-repair.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 import { settleUnflooredSlice, } from './translate-unfloored.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate stage
 // Every slice is translated from the ORIGINAL by several models independently,
@@ -107,6 +108,9 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Shipped text with how it was decided
 
  @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
@@ -152,6 +156,7 @@ export async function runTranslateStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly translatorModelIds: readonly RosterModelId[];
@@ -173,6 +178,7 @@ export async function runTranslateStage(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateStageResult> {
   // BOTH ROSTERS ARE CHECKED HERE and in neither half, because this is the
@@ -270,6 +276,7 @@ export async function runTranslateStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 }
 

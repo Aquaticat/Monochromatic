@@ -20,6 +20,7 @@ import {
   standingSeating,
 } from './repair-checker-reseat.ts';
 import { collectRefinedAuthors, } from './issue-authors.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Refine slice settle
 // What the naturalness lane does to ONE slice, separated from the loop that
@@ -134,6 +135,9 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Final outcome, findings, and whether a rewriter was reached
 
  @param neighbouringSourceText - original of the passages either side, handed
@@ -145,7 +149,7 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
 
  @example
  ```ts
- const settled = await settleRefinedSlice({ client, outcome, sourceText, incumbentText, definitions, models, refinerModelIds, declaredNames, signal, perCallTimeoutMs, l, },);
+ const settled = await settleRefinedSlice({ client, outcome, sourceText, incumbentText, definitions, models, refinerModelIds, declaredNames, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function settleRefinedSlice(
@@ -166,6 +170,7 @@ export async function settleRefinedSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly outcome: ChunkRepairOutcome;
@@ -183,6 +188,7 @@ export async function settleRefinedSlice(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RefinedSliceOutcome> {
   // NO STOP ON STANDING NON-TRANSLATION VOTES (ledger L15). This returned the
@@ -226,6 +232,7 @@ export async function settleRefinedSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -297,6 +304,7 @@ export async function settleRefinedSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   if (!retained.retained)
     return {
@@ -384,6 +392,7 @@ export async function settleRefinedSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**

@@ -23,6 +23,7 @@ import {
 } from './rendering-audit-screen.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Rendering audit stage
 // Asks a roster whether one rendering says what its original says, screens
@@ -136,6 +137,9 @@ export type RenderingAuditReport = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Corroborated defects, every voice's screened answer, and any
  degradation findings
 
@@ -143,7 +147,7 @@ export type RenderingAuditReport = {
 
  @example
  ```ts
- const report = await runRenderingAudit({ client, subject, modelIds, signal, perCallTimeoutMs, l, },);
+ const report = await runRenderingAudit({ client, subject, modelIds, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function runRenderingAudit(
@@ -154,6 +158,7 @@ export async function runRenderingAudit(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly subject: RenderingAuditSubject;
@@ -161,6 +166,7 @@ export async function runRenderingAudit(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RenderingAuditReport> {
   /**
@@ -176,6 +182,9 @@ export async function runRenderingAudit(
     validate: isRenderingAuditReportWire,
     stage: runRenderingAudit.name,
     l,
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   /**

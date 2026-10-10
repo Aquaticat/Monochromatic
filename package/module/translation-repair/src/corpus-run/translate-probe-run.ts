@@ -34,6 +34,7 @@ import {
   sliceHeading,
   slicesLine,
 } from './translate-probe-lines.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Translate probe run
 // PROTOTYPE for the translate-first re-design. Asks whether a translate stage
@@ -66,12 +67,15 @@ import {
 
  @param log - logger the stage logs through
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws StatedRefusalError when either page of the entry is absent at the pin, or
  when no client can be built, which names the provider keys that are unset
 
  @example
  ```ts
- await probeTranslate({ entryId: 'XingZ60', pin, newClient, editorModelIds, perCallTimeoutMs, log, },);
+ await probeTranslate({ entryId: 'XingZ60', pin, newClient, editorModelIds, perCallTimeoutMs, log, stageSettings, },);
  ```
  */
 export async function probeTranslate(
@@ -82,6 +86,7 @@ export async function probeTranslate(
     editorModelIds,
     perCallTimeoutMs,
     log,
+    stageSettings,
   }: {
     readonly entryId: string;
     readonly pin: CorpusPin;
@@ -89,6 +94,7 @@ export async function probeTranslate(
     readonly editorModelIds: readonly RosterModelId[];
     readonly perCallTimeoutMs: number;
     readonly log: Logger;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -238,6 +244,9 @@ export async function probeTranslate(
         validate: isTranslateReportWire,
         stage: 'translate-probe',
         l: log,
+        graceMs: stageSettings
+          .grace
+          .roundMs,
       },);
 
       /**

@@ -18,6 +18,7 @@ import {
   assertUnheardKeptIncumbent,
   heardNobody,
 } from './translate-unheard.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate slice buy
 // What one translate-lane slice costs when nothing can be reused: the stage
@@ -78,6 +79,9 @@ export type BoughtSlice = {
 
  @param l - lane logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Purchase, stored or not
 
  @throws Whatever `signal.reason` carries, when the caller aborted before or
@@ -104,6 +108,7 @@ export async function buyTranslateSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly archiveDispute?: ArchiveDispute;
@@ -119,6 +124,7 @@ export async function buyTranslateSlice(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<BoughtSlice> {
   /**
@@ -148,6 +154,7 @@ export async function buyTranslateSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   // A run stopped part way through a slice does NOT fail loudly on its own:

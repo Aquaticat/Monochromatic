@@ -74,6 +74,9 @@ export type OverlapSetting = {
 
  @param fallback - slices in flight when environment says nothing
 
+ @param env - environment of the launch, which the entry file hands in, so
+ the process's own variables are read there and in no driver it feeds
+
  @returns Valid overlap beside fallback or variable source
 
  @throws StatedRefusalError when variable is not a whole number written in
@@ -81,16 +84,22 @@ export type OverlapSetting = {
 
  @example
  ```ts
- const setting = readOverlapSetting({ fallback: CALIBRATION_OVERLAP, },);
+ const setting = readOverlapSetting({ fallback: CALIBRATION_OVERLAP, env: process.env, },);
  ```
  */
 export function readOverlapSetting(
-  { fallback, }: { readonly fallback: number; },
+  {
+    fallback,
+    env,
+  }: {
+    readonly fallback: number;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+  },
 ): OverlapSetting {
   /**
    Value as invoking environment wrote it, empty when unset or empty.
    */
-  const written = process.env[OVERLAP_VAR] ?? '';
+  const written = env[OVERLAP_VAR] ?? '';
   if (written.trim() === '') {
     return {
       overlap: fallback,
@@ -127,6 +136,8 @@ export function readOverlapSetting(
 
  @param fallback - slices in flight when environment says nothing
 
+ @param env - environment of the launch, which the entry file hands in
+
  @returns Valid overlap
 
  @throws StatedRefusalError when variable is not a whole number written in
@@ -134,13 +145,22 @@ export function readOverlapSetting(
 
  @example
  ```ts
- const overlap = readOverlap({ fallback: CALIBRATION_OVERLAP, },);
+ const overlap = readOverlap({ fallback: CALIBRATION_OVERLAP, env: process.env, },);
  ```
  */
 export function readOverlap(
-  { fallback, }: { readonly fallback: number; },
+  {
+    fallback,
+    env,
+  }: {
+    readonly fallback: number;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+  },
 ): number {
-  return readOverlapSetting({ fallback, },)
+  return readOverlapSetting({
+    fallback,
+    env,
+  },)
     .overlap;
 }
 

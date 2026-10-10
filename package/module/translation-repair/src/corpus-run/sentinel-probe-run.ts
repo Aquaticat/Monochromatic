@@ -12,6 +12,7 @@ import {
   type ProbedResult,
   probeResultLine,
 } from './sentinel-probe-line.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Sentinel probe run
 // Probes each corpus entry asked for through the pipeline, printing a PROBE
@@ -49,6 +50,9 @@ const DEFAULT_SENTINELS: readonly string[] = [
 
  @param now - monotonic clock in milliseconds, read for each entry's duration
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link Error} when the API key env var is unset, from `newClient`
 
  @throws StatedRefusalError when an id to probe, named or default, is no
@@ -56,7 +60,7 @@ const DEFAULT_SENTINELS: readonly string[] = [
 
  @example
  ```ts
- await probeCorpusEntries({ line, pin, newClient, repair, models, perCallTimeoutMs, now, },);
+ await probeCorpusEntries({ line, pin, newClient, repair, models, perCallTimeoutMs, now, stageSettings, },);
  ```
  */
 export async function probeCorpusEntries(
@@ -68,6 +72,7 @@ export async function probeCorpusEntries(
     models,
     perCallTimeoutMs,
     now,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'sentinel-probe'>;
     readonly pin: CorpusPin;
@@ -79,10 +84,12 @@ export async function probeCorpusEntries(
       readonly models: RepairModels;
       readonly signal: AbortSignal;
       readonly perCallTimeoutMs: number;
+      readonly stageSettings: StageSettings;
     },) => Promise<ProbedResult>;
     readonly models: RepairModels;
     readonly perCallTimeoutMs: number;
     readonly now: () => number;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -152,6 +159,7 @@ export async function probeCorpusEntries(
         models,
         signal: controller.signal,
         perCallTimeoutMs,
+        stageSettings,
       },);
       /* oxlint-enable no-await-in-loop */
       console.log(probeResultLine({

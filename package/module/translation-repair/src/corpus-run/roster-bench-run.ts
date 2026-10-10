@@ -11,6 +11,7 @@ import {
 import type { CommandLineOf, } from './command-lines.ts';
 import { runBenchRow, } from './roster-bench-round.ts';
 import type { BenchRow, } from './roster-bench-row.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Roster bench run
 // Runs the SAME slices at several producer-roster widths, to answer the one
@@ -57,6 +58,9 @@ const DEFAULT_SLICES = 10;
  @param runsDir - runs directory the report is written under, which the entry
  resolves from its environment
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link StatedRefusalError} when the slice count is not a count of at
  least one, and its subclass `BenchReportError` when the roster is too narrow
  to vary, both before the corpus is drawn; and whatever building a row's
@@ -64,7 +68,7 @@ const DEFAULT_SLICES = 10;
 
  @example
  ```ts
- await runRosterBench({ line, roster, newClient: createRunClient, drawSlices, readHead, writeReport: writeBenchReport, clock: performance, runsDir, },);
+ await runRosterBench({ line, roster, newClient: createRunClient, drawSlices, readHead, writeReport: writeBenchReport, clock: performance, runsDir, stageSettings, },);
  ```
  */
 export async function runRosterBench(
@@ -77,6 +81,7 @@ export async function runRosterBench(
     writeReport,
     clock,
     runsDir,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'roster-bench'>;
     readonly roster: readonly RosterModelId[];
@@ -86,6 +91,7 @@ export async function runRosterBench(
     readonly writeReport: typeof writeBenchReport;
     readonly clock: { readonly now: () => number; };
     readonly runsDir: string;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -166,6 +172,7 @@ export async function runRosterBench(
       roster,
       client: newClient(),
       clock,
+      stageSettings,
     },);
     rows.push(row,);
     console.log(

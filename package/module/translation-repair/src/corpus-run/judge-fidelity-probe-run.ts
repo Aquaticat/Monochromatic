@@ -39,6 +39,7 @@ import {
 } from './probe-candidates.ts';
 import { persistProbeRun, } from './probe-store.ts';
 import type { RunnerClosure, } from './runner-closure.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Judge fidelity probe run
 // Source-reviewed judge calibration, once the process has handed it the
@@ -144,6 +145,9 @@ function requestedSpecs(
 
  @param out - where the rows document is written
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link FidelityReferenceError} for reference drift in what the clone holds
 
  @throws StatedRefusalError when the command line asks for something the probe does not run, or
@@ -151,7 +155,7 @@ function requestedSpecs(
 
  @example
  ```ts
- await runFidelityProbe({ line, pin, readReferences, resolveRuns, newClient, now, pipelineDigest, runnerClosure, perCallTimeoutMs, log, out, },);
+ await runFidelityProbe({ line, pin, readReferences, resolveRuns, newClient, now, pipelineDigest, runnerClosure, perCallTimeoutMs, log, out, stageSettings, },);
  ```
  */
 export async function runFidelityProbe(
@@ -167,6 +171,7 @@ export async function runFidelityProbe(
     perCallTimeoutMs,
     log,
     out,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'judge-fidelity-probe'>;
     readonly pin: CorpusPin;
@@ -184,6 +189,7 @@ export async function runFidelityProbe(
     readonly perCallTimeoutMs: number;
     readonly log: Logger;
     readonly out: FidelityProbeSink;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -336,6 +342,7 @@ export async function runFidelityProbe(
         signal: controller.signal,
         perCallTimeoutMs,
         l: log,
+        stageSettings,
       },);
       /**
        A completed row remains readable even if a later row interrupts the invocation.

@@ -15,6 +15,7 @@ import {
 } from './restoration-judge-wire.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Derivability probe stage
 // Ensemble audit of whether deleted sentences are fully derivable from the
@@ -130,6 +131,9 @@ function upperMedianVerdict(
 
  @param l - benchmark logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Derivability per seed id
 
  @example
@@ -146,6 +150,7 @@ export async function runDerivabilityProbe(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly judgeModelIds: readonly RosterModelId[];
@@ -154,6 +159,7 @@ export async function runDerivabilityProbe(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<Readonly<Record<string, SeedDerivability>>> {
   if (references.length === 0)
@@ -180,6 +186,9 @@ export async function runDerivabilityProbe(
     validate: isRestorationJudgeWire,
     stage: 'derivability-probe',
     l,
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   /**

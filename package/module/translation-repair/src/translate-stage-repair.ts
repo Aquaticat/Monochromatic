@@ -17,6 +17,7 @@ import { judgeSlateWithRetry, } from './translate-retry.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 import type { TranslateFollowupEvidence, } from './translate-wire.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate stage repair
 // FIXED DEPTH TWO BY DESIGN: one initial round, then at most one statically
@@ -72,22 +73,27 @@ type TranslateRoundInput = ForeignBorrowed<{
 
  @param followupEvidence - located rejection evidence, absent on the initial round
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Settled text and evidence
 
  @throws {@link TranslateAbsenceError} when judging leaves an absent passage unwritten
 
  @example
  ```ts
- const result = await produceAndJudgeOnce({ input, },);
+ const result = await produceAndJudgeOnce({ input, stageSettings, },);
  ```
  */
 async function produceAndJudgeOnce(
   {
     input,
     followupEvidence,
+    stageSettings,
   }: {
     readonly input: TranslateRoundInput;
     readonly followupEvidence?: TranslateFollowupEvidence;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<{
   readonly result: TranslateStageResult;
@@ -118,6 +124,7 @@ async function produceAndJudgeOnce(
     signal: input.signal,
     perCallTimeoutMs: input.perCallTimeoutMs,
     l: input.l,
+    stageSettings,
   },);
   /**
    Rejected candidate texts in deterministic slate order, for evidence.
@@ -158,6 +165,7 @@ async function produceAndJudgeOnce(
           signal: input.signal,
           perCallTimeoutMs: input.perCallTimeoutMs,
           l: input.l,
+          stageSettings,
         },
       },),
       candidateTexts,
@@ -220,6 +228,9 @@ async function produceAndJudgeOnce(
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Settled text and evidence, the first round's findings and the
  follow-up's named before the follow-up's own where there was one (ledger B41)
 
@@ -257,6 +268,7 @@ export async function runTranslateRepairs(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly translatorModelIds: readonly RosterModelId[];
@@ -280,6 +292,7 @@ export async function runTranslateRepairs(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateStageResult> {
   /**
@@ -312,7 +325,10 @@ export async function runTranslateRepairs(
   /**
    Initial round with no rejection evidence.
    */
-  const first = await produceAndJudgeOnce({ input, },);
+  const first = await produceAndJudgeOnce({
+    input,
+    stageSettings,
+  },);
   if ('result' in first)
     return first.result;
   /**
@@ -348,6 +364,7 @@ export async function runTranslateRepairs(
       findings: first.rejection
         .findings,
     },
+    stageSettings,
   },);
   // THE FIRST ROUND'S EVIDENCE IS KEPT, then the follow-up is named, then its
   // own record follows (ledger B41): the record showed the follow-up round

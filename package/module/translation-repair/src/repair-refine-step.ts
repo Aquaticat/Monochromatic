@@ -17,6 +17,7 @@ import type {
   RepairSliceSeating,
 } from './repair-contract.ts';
 import { UnpreparedSliceError, } from './unprepared-slice.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Repair refine step
 // The naturalness lane as the DRIVER sees it: one call, plus the two abort
@@ -81,6 +82,9 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
 
  @param l - driver logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Final outcomes plus the phase's findings
 
  @throws Whatever `signal.reason` carries, once the caller aborts while this
@@ -96,7 +100,7 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
 
  @example
  ```ts
- const phase = await refineSettledSlices({ client, targetText, slices, outcomes, models, declaredNames, signal, perCallTimeoutMs, l, },);
+ const phase = await refineSettledSlices({ client, targetText, slices, outcomes, models, declaredNames, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
 
  @internal
@@ -117,6 +121,7 @@ export async function refineSettledSlices(
     perCallTimeoutMs,
     overlap = 1,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly targetText: string;
@@ -132,6 +137,7 @@ export async function refineSettledSlices(
     readonly perCallTimeoutMs: number;
     readonly overlap?: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RefinePhaseResult> {
   /**
@@ -155,6 +161,7 @@ export async function refineSettledSlices(
         perCallTimeoutMs,
         overlap,
         l,
+        stageSettings,
       },);
     }
     catch (error) {

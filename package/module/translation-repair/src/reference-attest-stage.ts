@@ -36,6 +36,7 @@ import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import { MIN_STAGE_VOICES, } from './stage-reachable-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Reference attestation stage
 // Asks the bench once per entry which archive details a cited reference
@@ -125,11 +126,14 @@ function attestationVotesNeeded({ heard, }: { readonly heard: number; },): numbe
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Details to attest and the findings of the round
 
  @example
  ```ts
- const { details, confirmFindings, } = await confirmCandidates({ client, modelIds, sourceText, archiveText, referenceContext, candidates, extracted, signal, exchangeTimeoutMs, l, },);
+ const { details, confirmFindings, } = await confirmCandidates({ client, modelIds, sourceText, archiveText, referenceContext, candidates, extracted, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
 
  @internal
@@ -147,6 +151,7 @@ async function confirmCandidates(
     exchangeTimeoutMs,
     l,
     fanOut,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -159,6 +164,7 @@ async function confirmCandidates(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<{
   readonly details: readonly AttestedDetail[];
@@ -189,6 +195,9 @@ async function confirmCandidates(
     stage: 'reference-attest-confirm',
     l,
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
   /**
    Voices heard on the confirmation.
@@ -298,11 +307,14 @@ async function confirmCandidates(
  default, or the whole bench a fixture scripting every seat asks for, since
  which seats the window picks follows a hash of the prompt (ledger X2)
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Attested details, their sheet lines and findings
 
  @example
  ```ts
- const attestation = await attestCitedReferences({ client, modelIds, sourceText, archiveText, referenceContext, signal, exchangeTimeoutMs, l, },);
+ const attestation = await attestCitedReferences({ client, modelIds, sourceText, archiveText, referenceContext, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function attestCitedReferences(
@@ -316,6 +328,7 @@ export async function attestCitedReferences(
     exchangeTimeoutMs,
     l,
     fanOut,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -326,6 +339,7 @@ export async function attestCitedReferences(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ReferenceAttestation> {
   /**
@@ -353,6 +367,9 @@ export async function attestCitedReferences(
     stage: 'reference-attest',
     l: al,
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
   /**
    Voices heard.
@@ -438,6 +455,7 @@ export async function attestCitedReferences(
     exchangeTimeoutMs,
     l: al,
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    stageSettings,
   },);
   /**
    Lines the sheets carry.

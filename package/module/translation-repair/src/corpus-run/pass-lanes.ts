@@ -16,6 +16,7 @@ import type { RunClient, } from './run-client-contract.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import type { LanesHooks, } from './pass-reseat.ts';
 import type { JudgeSeats, } from './run-seats.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Pass lanes
 // THE LANES' SEAM (ledger X14): `runPassEntry` hands both lanes their benches
@@ -69,11 +70,14 @@ export type LanesSeating = {
 
  @param entryId - entry the log lines are tagged with
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns What both lanes made of the slicing, with neither preferred
 
  @example
  ```ts
- const lanes = await runPassLanes({ client, prepared, lanesSeating, pictureReadings, signal, entryId, },);
+ const lanes = await runPassLanes({ client, prepared, lanesSeating, pictureReadings, signal, entryId, stageSettings, },);
  ```
  */
 export async function runPassLanes(
@@ -89,6 +93,7 @@ export async function runPassLanes(
     translateSliceCache,
     translateInsertionAdmission,
     entryId,
+    stageSettings,
   }: {
     readonly client: RunClient;
     readonly prepared: PreparedDocumentPair;
@@ -101,6 +106,7 @@ export async function runPassLanes(
     readonly translateSliceCache?: SliceCache<TranslateSliceRecord>;
     readonly translateInsertionAdmission?: InsertionAdmission;
     readonly entryId: string;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<DocumentLanesResult> {
   /**
@@ -134,6 +140,7 @@ export async function runPassLanes(
     ...((translateSliceCache === undefined) ? {} : { translateSliceCache, }),
     ...((translateInsertionAdmission === undefined) ? {} : { translateInsertionAdmission, }),
     l,
+    stageSettings,
   },);
 }
 

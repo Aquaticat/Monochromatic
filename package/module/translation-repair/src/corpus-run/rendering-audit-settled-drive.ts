@@ -24,6 +24,7 @@ import {
   type SettledAuditRow,
   SETTLED_AUDIT_PROBE,
 } from './rendering-audit-settled-row.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Settled audit drive
 // Reads the archive, audits what was asked for, and keeps the answers, once
@@ -125,13 +126,16 @@ export function settledBuyingLine(
 
  @param runnerClosure - chunks the executing entry imports, read when the process started
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link StatedRefusalError} when the archive holds nothing to audit,
  which means the run was pointed somewhere wrong rather than that everything
  is clean
 
  @example
  ```ts
- await runSettledAudit({ line, newClient, reader, runCloneDir, roster, resolveRuns, now, pipelineDigest, runnerClosure, },);
+ await runSettledAudit({ line, newClient, reader, runCloneDir, roster, resolveRuns, now, pipelineDigest, runnerClosure, stageSettings, },);
  ```
  */
 export async function runSettledAudit(
@@ -145,6 +149,7 @@ export async function runSettledAudit(
     now,
     pipelineDigest,
     runnerClosure,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'rendering-audit-settled'>;
     readonly newClient: () => SyntheticClient;
@@ -155,6 +160,7 @@ export async function runSettledAudit(
     readonly now: () => string;
     readonly pipelineDigest: string;
     readonly runnerClosure: RunnerClosure;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -255,6 +261,7 @@ export async function runSettledAudit(
         subject,
         references,
         client,
+        stageSettings,
       },);
       /* oxlint-enable no-await-in-loop */
       rows.push(row,);

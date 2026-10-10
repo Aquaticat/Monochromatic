@@ -13,6 +13,7 @@ import {
 } from './restoration-judge-wire.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Restoration judge stage
 // Ensemble bilingual grading of one entry's restored seeds. No single judge
@@ -127,6 +128,9 @@ function lowerMedianVerdict(
 
  @param l - benchmark logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Verdict per seed id
 
  @example
@@ -144,6 +148,7 @@ export async function runRestorationJudge(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly judgeModelIds: readonly RosterModelId[];
@@ -153,6 +158,7 @@ export async function runRestorationJudge(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<Readonly<Record<string, SeedJudgment>>> {
   if (references.length === 0)
@@ -180,6 +186,9 @@ export async function runRestorationJudge(
     validate: isRestorationJudgeWire,
     stage: 'restoration-judge',
     l,
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   /**

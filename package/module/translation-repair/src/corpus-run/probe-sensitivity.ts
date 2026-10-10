@@ -5,6 +5,7 @@ import {
 } from './probe-sensitivity-arms.ts';
 import { runSensitivity, } from './probe-sensitivity-run.ts';
 import { createRunClient, } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Probe sensitivity
 // Asks whether the introduced-defect probe can detect damage AT ALL.
@@ -44,6 +45,7 @@ function main(): Promise<void> {
     client: createRunClient(),
     arms: SENSITIVITY_ARMS,
     production: PRODUCTION_LIST,
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

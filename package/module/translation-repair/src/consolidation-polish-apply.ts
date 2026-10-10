@@ -13,6 +13,7 @@ import {
 } from './consolidation-polish.ts';
 import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
 import type { ObjectionGroup, } from './refine-selection-context.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Final consolidation polish application
 
@@ -45,11 +46,14 @@ import type { ObjectionGroup, } from './refine-selection-context.ts';
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Settlement carrying auditable final polish and final wording
 
  @example
  ```ts
- const final = await applyFinalPolish({ client, settlement, subject, lineStructured, sliceIndex, polishConfig, eligible: true, signal, perCallTimeoutMs, l, });
+ const final = await applyFinalPolish({ client, settlement, subject, lineStructured, sliceIndex, polishConfig, eligible: true, signal, perCallTimeoutMs, l, stageSettings, });
  ```
  */
 export async function applyFinalPolish(
@@ -65,6 +69,7 @@ export async function applyFinalPolish(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly settlement: ConsolidationSettlement;
@@ -77,6 +82,7 @@ export async function applyFinalPolish(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ConsolidationSettlement> {
   // FRESH PRODUCTION BASES REACH HERE THROUGH TWO EARLIER FLOORS. Lane standing
@@ -144,6 +150,7 @@ export async function applyFinalPolish(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   return {
     ...settlement,

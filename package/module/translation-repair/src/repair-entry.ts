@@ -10,6 +10,7 @@ import type { RepairTranslationResult, } from './repair-result.ts';
 import { repairPreparedDocument, } from './repair-translation.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Repair entry
 // The text-in entry point for the repair lane, kept apart from the driver it
@@ -50,6 +51,9 @@ import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
  @param overlap - most slices in flight; defaults to one, while corpus pass
  owns its environment-backed dial separately
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Repaired candidate plus adjudicated issues and completion status
 
  @example
@@ -61,6 +65,7 @@ import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
    models,
    signal,
    perCallTimeoutMs,
+   stageSettings,
  },);
  ```
  */
@@ -75,6 +80,7 @@ export async function repairTranslation(
     sliceCharBudget = SLICE_CHAR_BUDGET,
     sliceCache,
     overlap = 1,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly sourceText: string;
@@ -85,6 +91,7 @@ export async function repairTranslation(
     readonly sliceCharBudget?: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly overlap?: number;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RepairTranslationResult> {
   return await repairPreparedDocument({
@@ -99,6 +106,7 @@ export async function repairTranslation(
     perCallTimeoutMs,
     ...(sliceCache === undefined ? {} : { sliceCache, }),
     overlap,
+    stageSettings,
   },);
 }
 

@@ -15,6 +15,7 @@ import type {
   CoverageControlCase,
   CoverageControlResult,
 } from './coverage-control.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Coverage control probe run
 // Can the coverage roster vote absence at all?
@@ -52,13 +53,16 @@ import type {
 
  @param l - logger the control logs through
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws StatedRefusalError when no entry offered a single passage to ask
  about, since a run that measured nothing must not be reported as one that
  measured a null
 
  @example
  ```ts
- await runCoverageControl({ line, pin, newClient, holds, roster, exchangeTimeoutMs, l, },);
+ await runCoverageControl({ line, pin, newClient, holds, roster, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function runCoverageControl(
@@ -70,6 +74,7 @@ export async function runCoverageControl(
     roster,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'coverage-control-probe'>;
     readonly pin: CorpusPin;
@@ -81,10 +86,12 @@ export async function runCoverageControl(
       readonly signal: AbortSignal;
       readonly exchangeTimeoutMs: number;
       readonly l: Logger;
+      readonly stageSettings: StageSettings;
     },) => Promise<CoverageControlResult>;
     readonly roster: readonly RosterModelId[];
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -132,6 +139,7 @@ export async function runCoverageControl(
         signal,
         exchangeTimeoutMs,
         l,
+        stageSettings,
       },),
     },)
   )

@@ -17,6 +17,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Editor calibrate lane
 // ONE SLICE THROUGH THE WHOLE REPAIR LANE, every model editing and every model
@@ -32,20 +33,25 @@ import {
 
  @param client - client every slice of the run shares
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Rounds that slice produced, split by seat
 
  @example
  ```ts
- const rounds = await runEditorLane({ slice, client, },);
+ const rounds = await runEditorLane({ slice, client, stageSettings, },);
  ```
  */
 export async function runEditorLane(
   {
     slice,
     client,
+    stageSettings,
   }: {
     readonly slice: BenchSlice;
     readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<SliceRounds> {
   /**
@@ -87,6 +93,7 @@ export async function runEditorLane(
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   /**
@@ -106,6 +113,7 @@ export async function runEditorLane(
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   return {

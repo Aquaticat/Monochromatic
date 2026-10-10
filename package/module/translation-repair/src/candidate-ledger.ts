@@ -49,6 +49,12 @@ import {
 // run directory, which is outside this repository, and it must never be
 // committed. `TRANSLATION_REPAIR_RUNS_DIR` names that directory; with the
 // variable unset nothing is written at all, which is what unit runs want.
+//
+// READ BY THE ENTRY FILE, NOT HERE (`readContestLedger`). The recorder read
+// the variable itself under every selection, so a case chose where contests
+// landed by writing the process's environment; it now writes where the
+// `ContestLedger` it is handed says, which every stage carries down from the
+// entry inside `StageSettings`.
 
 /**
  Directory under a runs dir holding one file per judged contest.
@@ -165,12 +171,72 @@ export function isLedgerFileName({ name, }: { readonly name: string; },): boolea
 /**
  Environment variable naming the run directory, matching `run-config.ts`.
 
- READ DIRECTLY RATHER THAN THROUGH `resolveRunsDir`, because that lives in
- `corpus-run/` and this is core pipeline code. A core module reaching into the
- runner family to write telemetry would invert the dependency the rest of the
- package keeps.
+ READ AS IT STANDS RATHER THAN THROUGH `resolveRunsDir`, because that lives
+ in `corpus-run/` and this is core pipeline code, and because it falls back to
+ a default directory where this keeps nothing: a launch that named no runs
+ directory records no contest. A core module reaching into the runner family
+ to write telemetry would invert the dependency the rest of the package keeps.
  */
 const RUNS_DIR_VARIABLE = 'TRANSLATION_REPAIR_RUNS_DIR';
+
+/**
+ Where a launch keeps its judged contests: under the runs directory it named,
+ or nowhere when it named none.
+
+ @example
+ ```ts
+ const ledger: ContestLedger = { kind: 'kept', runsDir: '/srv/cattery-runs', };
+ ```
+ */
+export type ContestLedger =
+  | {
+    /**
+     The launch named no runs directory, so no contest is written.
+     */
+    readonly kind: 'unkept';
+  }
+  | {
+    /**
+     The launch named a runs directory, under which every contest is written.
+     */
+    readonly kind: 'kept';
+
+    /**
+     Runs directory the launch named.
+     */
+    readonly runsDir: string;
+  };
+
+/**
+ Reads where a launch keeps its judged contests from the environment an entry
+ file hands in.
+
+ UNSET AND EMPTY ALIKE KEEP NOTHING, as the recorder always read them: the
+ ordinary case for unit runs and for probes that set no runs directory.
+
+ @param env - environment of the launch
+
+ @returns Ledger under the named runs directory, or the unkept one
+
+ @example
+ ```ts
+ const contestLedger = readContestLedger({ env: process.env, },);
+ ```
+ */
+export function readContestLedger(
+  { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
+): ContestLedger {
+  /**
+   Run directory the launch named, empty when it named none.
+   */
+  const runsDir = env[RUNS_DIR_VARIABLE] ?? '';
+  if (runsDir === '')
+    return { kind: 'unkept', };
+  return {
+    kind: 'kept',
+    runsDir,
+  };
+}
 
 /**
  How many contests this process has recorded, used to order the files.
@@ -275,9 +341,12 @@ function producersOf(
 
  @param l - pipeline logger
 
+ @param contestLedger - where the launch keeps its contests, which the entry
+ file read (`readContestLedger`)
+
  @example
  ```ts
- await recordContest({ task, candidates, ballots, selectedIndex, l, },);
+ await recordContest({ task, candidates, ballots, selectedIndex, l, contestLedger: stageSettings.contestLedger, },);
  ```
  */
 export async function recordContest<ValueT,>(
@@ -287,23 +356,25 @@ export async function recordContest<ValueT,>(
     ballots,
     selectedIndex,
     l,
+    contestLedger,
   }: {
     readonly task: string;
     readonly candidates: readonly Candidate<ValueT>[];
     readonly ballots: readonly SelectionBallot[];
     readonly selectedIndex: number | 'declined';
     readonly l: Logger;
+    readonly contestLedger: ContestLedger;
   },
 ): Promise<void> {
-  /**
-   Run directory to write under, absent outside a run.
-   */
-  const runsDir = process.env[RUNS_DIR_VARIABLE];
-
   // NOTHING TO WRITE OUTSIDE A RUN, which is the ordinary case for unit tests
   // and for probes that set no run directory. Silent because it is not a fault.
-  if ((runsDir === undefined) || (runsDir === ''))
+  if (contestLedger.kind === 'unkept')
     return;
+
+  /**
+   Run directory to write under.
+   */
+  const { runsDir, } = contestLedger;
 
   /**
    Logger tagged with this recorder.

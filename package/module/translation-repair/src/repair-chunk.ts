@@ -1,10 +1,8 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { recordIssuesWithFilers, } from './claim-filers.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
 import { wordForCount, } from './count-word.ts';
-import type { SyntheticClient, } from './chat-contract.ts';
 import { runChunkCriticPhase, } from './chunk-critic-phase.ts';
 import {
   candidateConfirmedIssueIds,
@@ -15,11 +13,7 @@ import { buildEditorAddendum, } from './line-structure-addendum.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import { chunkEvidence, } from './repair-chunk-evidence.ts';
 import { unchangedChunkOutcome, } from './repair-unchanged-outcome.ts';
-import type {
-  ChunkRepairOutcome,
-  RepairModels,
-  RepairSliceSeating,
-} from './repair-contract.ts';
+import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import {
   assertCheckerBench,
   standingSeating,
@@ -29,8 +23,8 @@ import { runEditorStage, } from './repair-editor-stage.ts';
 import { foldStageFindings, } from './repair-stage-findings.ts';
 import { runPanelStage, } from './repair-stages.ts';
 import { screenAttestedAdditions, } from './reference-attest-claims.ts';
-import type { AttestedDetail, } from './reference-attest-match.ts';
 import { settleShippedPatch, } from './repair-chunk-settle.ts';
+import type { RepairChunkRequest, } from './repair-chunk-request.ts';
 
 //region Chunk repair
 // One chunk pair through the whole loop: critics, aggregation, panel,
@@ -98,6 +92,9 @@ import { settleShippedPatch, } from './repair-chunk-settle.ts';
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Chunk outcome with the winning text
 
  @example
@@ -124,25 +121,8 @@ export async function repairChunk(
     signal,
     perCallTimeoutMs,
     l,
-  }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
-    readonly sliceIndex: number;
-    readonly sourceText: string;
-    readonly targetText: string;
-    readonly lineStructured: boolean;
-    readonly models: RepairModels;
-    readonly reseat?: () => Promise<RepairSliceSeating>;
-    readonly identityContext?: string;
-    readonly referenceContext?: string;
-    readonly attestedDetails?: readonly AttestedDetail[];
-    readonly declaredNames: readonly string[];
-    readonly neighbouringIncumbentText?: string;
-    readonly neighbouringSourceText?: string;
-    readonly documentSourceText?: string;
-    readonly signal: AbortSignal;
-    readonly perCallTimeoutMs: number;
-    readonly l: Logger;
-  }>,
+    stageSettings,
+  }: ForeignBorrowed<RepairChunkRequest>,
 ): Promise<ChunkRepairOutcome> {
   assertCheckerBench({ models, },);
 
@@ -175,6 +155,7 @@ export async function repairChunk(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -260,6 +241,7 @@ export async function repairChunk(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -351,6 +333,7 @@ export async function repairChunk(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   if (editor.patch
     .applied
@@ -410,6 +393,7 @@ export async function repairChunk(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   if (shipped.patch
     .applied

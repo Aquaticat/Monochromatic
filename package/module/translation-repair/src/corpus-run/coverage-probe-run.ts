@@ -23,6 +23,7 @@ import {
 } from './coverage-probe-row.ts';
 import { persistProbeRun, } from './probe-store.ts';
 import type { RunnerClosure, } from './runner-closure.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Coverage probe run
 // PROTOTYPE for question 28: can a roster tell a passage the translation merged
@@ -93,12 +94,15 @@ import type { RunnerClosure, } from './runner-closure.ts';
 
  @param log - logger every progress line goes to
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws StatedRefusalError when the command line is malformed, or when an
  entry named is no entry of the corpus at the pin
 
  @example
  ```ts
- await runCoverageProbe({ line, pin, newClient, stage, roster, exchangeTimeoutMs, readDigest, readClosure, resolveRunsDir, now, log, },);
+ await runCoverageProbe({ line, pin, newClient, stage, roster, exchangeTimeoutMs, readDigest, readClosure, resolveRunsDir, now, log, stageSettings, },);
  ```
  */
 export async function runCoverageProbe(
@@ -114,6 +118,7 @@ export async function runCoverageProbe(
     resolveRunsDir,
     now,
     log,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'coverage-probe'>;
     readonly pin: CorpusPin;
@@ -126,6 +131,7 @@ export async function runCoverageProbe(
     readonly resolveRunsDir: () => Promise<string>;
     readonly now: () => string;
     readonly log: Logger;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -249,6 +255,7 @@ export async function runCoverageProbe(
           signal: controller.signal,
           exchangeTimeoutMs,
           l: log,
+          stageSettings,
         },);
         rows.push(answeredRow({
           entryId,

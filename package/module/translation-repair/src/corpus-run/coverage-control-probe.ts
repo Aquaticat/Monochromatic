@@ -9,6 +9,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Coverage control probe
 // Asks whether the coverage roster can vote absence at all: it deletes the
@@ -36,6 +37,7 @@ if (import.meta.main)
         roster: RUN_ROSTER,
         exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
         l: tagged({ tag: 'coverage-control', },),
+        stageSettings: readStageSettings({ env: process.env, },),
       },);
     },
   },);

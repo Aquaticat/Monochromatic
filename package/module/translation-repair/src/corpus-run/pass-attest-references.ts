@@ -9,6 +9,7 @@ import {
   type ReferenceAttestation,
 } from '../reference-attest-stage.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Pass reference attestation
 // THE PREPARATION'S ATTESTATION ROUND, split out of `preparePassEntry` so a
@@ -53,11 +54,14 @@ const NO_ATTESTATION: ReferenceAttestation = {
 
  @param l - entry logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Attested details, their sheet lines and the round's findings
 
  @example
  ```ts
- const attestation = await attestPassReferences({ client, modelIds, beforeItem, sourceText, archiveText, referenceLines, signal, exchangeTimeoutMs, l, },);
+ const attestation = await attestPassReferences({ client, modelIds, beforeItem, sourceText, archiveText, referenceLines, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function attestPassReferences(
@@ -71,6 +75,7 @@ export async function attestPassReferences(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -81,6 +86,7 @@ export async function attestPassReferences(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ReferenceAttestation> {
   if (referenceLines === '') {
@@ -112,6 +118,7 @@ export async function attestPassReferences(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
 }
 

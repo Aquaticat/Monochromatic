@@ -13,6 +13,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { contestHooksFor, } from './pass-contest-reseat.ts';
 import { readJudgeSeats, } from './run-seats-read.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Corpus pass lane contest
 
@@ -55,11 +56,14 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 
  @param l - entry logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Contest records in comparison order
 
  @example
  ```ts
- const contests = await runPassContest({ client, lanes, projected, frontMatterSlices, lineStructuredSlices, entryCacheDir, pipelineDigest, signal, overlap, l, },);
+ const contests = await runPassContest({ client, lanes, projected, frontMatterSlices, lineStructuredSlices, entryCacheDir, pipelineDigest, signal, overlap, l, stageSettings, },);
  ```
  */
 export async function runPassContest(
@@ -77,6 +81,7 @@ export async function runPassContest(
     signal,
     overlap,
     l,
+    stageSettings,
   }: {
     readonly client: RunClient;
     readonly lanes: DocumentLanesResult;
@@ -91,6 +96,7 @@ export async function runPassContest(
     readonly signal: AbortSignal;
     readonly overlap: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<readonly ArtifactContestSlice[]> {
   /**
@@ -141,6 +147,7 @@ export async function runPassContest(
     },)
       .beforeSlice,
     l,
+    stageSettings,
   },);
 }
 

@@ -23,6 +23,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Settled audit buying
 // What the settled rendering audit buys, in what order, what it prints before
@@ -56,11 +57,14 @@ import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
  @param client - roster client, built once per run by the caller so every
  subject counts into one seat tally
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns One row: provenance, plus the report uninterpreted
 
  @example
  ```ts
- const row = await auditOne({ subject, references, client, },);
+ const row = await auditOne({ subject, references, client, stageSettings, },);
  ```
  */
 export async function auditOne(
@@ -68,10 +72,12 @@ export async function auditOne(
     subject,
     references,
     client,
+    stageSettings,
   }: {
     readonly subject: SettledAuditSubject;
     readonly references: SettledReferences;
     readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<SettledAuditRow> {
   /**
@@ -117,6 +123,7 @@ export async function auditOne(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   return {

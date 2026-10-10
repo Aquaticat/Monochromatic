@@ -172,7 +172,8 @@ function closedOn(
  @param quorumOver - bench the quorum is taken over, when the seats asked are
  part of a wider one; the seats asked by default
 
- @param graceMs - straggler window after quorum, when a test bounds it
+ @param graceMs - straggler window after quorum: the launch's round window,
+ from the `StageSettings` its entry file read
 
  @param fanOut - window by default; whole bench once for a fixture scripting
  every seat
@@ -182,7 +183,7 @@ function closedOn(
 
  @example
  ```ts
- const { outcomes, } = await runWindowedRounds({ client, modelIds, messages, signal, exchangeTimeoutMs, responseFormat, validate, stage: 'gate', l, },);
+ const { outcomes, } = await runWindowedRounds({ client, modelIds, messages, signal, exchangeTimeoutMs, responseFormat, validate, stage: 'gate', l, graceMs: stageSettings.grace.roundMs, },);
  ```
  */
 export async function runWindowedRounds<ValueT,>(
@@ -212,7 +213,7 @@ export async function runWindowedRounds<ValueT,>(
     readonly stage: string;
     readonly l: Logger;
     readonly quorumOver?: number;
-    readonly graceMs?: number;
+    readonly graceMs: number;
     readonly fanOut?: FanOutMode;
   }>,
 ): Promise<WindowedRounds<ValueT>> {
@@ -282,7 +283,7 @@ export async function runWindowedRounds<ValueT,>(
     validate,
     stage,
     l,
-    ...((graceMs === undefined) ? {} : { graceMs, }),
+    graceMs,
   };
   if (fanOut === 'whole-bench') {
     /**

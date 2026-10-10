@@ -27,6 +27,7 @@ import { logBallotIrregularities, } from './ballot-irregularity-log.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { tallyVotes, } from './tally-votes.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Cluster-local panel
 
@@ -235,6 +236,9 @@ function describePanelReasons(issue: AdjudicatedIssue,): readonly string[] {
 
  @param l - parent logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Ordered issue decisions with independent per-claim readings
 
  @example
@@ -257,6 +261,7 @@ export async function runPanelStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly panelModelIds: readonly RosterModelId[];
@@ -271,6 +276,7 @@ export async function runPanelStage(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<PanelStageResult> {
   signal.throwIfAborted();
@@ -347,6 +353,9 @@ export async function runPanelStage(
         },),
         stage: 'panel',
         l: packetLogger,
+        graceMs: stageSettings
+          .grace
+          .roundMs,
       },);
       /**
        Wire indices resolve only against this packet's actual members.

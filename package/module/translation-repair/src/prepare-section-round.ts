@@ -24,6 +24,7 @@ import { pairingQuestionKey, } from './pairing-question-key.ts';
 import type { RepairDocument, } from './parse-document.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Section pairing round
 // BUYS A SECTION PAIRING, BUT ONLY WHERE THE DETERMINISTIC ALIGNER REFUSED.
@@ -276,11 +277,14 @@ function cachedSectionPairingMisfit(
  @param sectionCache - store a settled round is republished from, so a resumed
  entry buys nothing; a stored round the section reader refuses is a miss
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Pairing to align on, empty to keep the deterministic aligner
 
  @example
  ```ts
- const round = await buySectionPairing({ client, modelIds, source, target, signal, exchangeTimeoutMs, l, },);
+ const round = await buySectionPairing({ client, modelIds, source, target, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function buySectionPairing(
@@ -293,6 +297,7 @@ export async function buySectionPairing(
     exchangeTimeoutMs,
     l,
     sectionCache,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -302,6 +307,7 @@ export async function buySectionPairing(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly sectionCache?: SliceCache<PairedDocumentRecord>;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<SectionRoundOutcome> {
   /**
@@ -423,6 +429,7 @@ export async function buySectionPairing(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**

@@ -21,6 +21,7 @@ import type { FanOutMode, } from './stage-fanout-window.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Lane contest stage
 // SETTLES ONE CONTESTED SLICE by asking the roster which candidate the original
@@ -341,18 +342,19 @@ function logBallots(
 
  @param exchangeTimeoutMs - per-call ceiling
 
- @param graceMs - optional straggler window seam for deterministic tests
-
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
 
  @param l - logger to tag
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns What the roster settled on, with every usable ballot
 
  @example
  ```ts
- const outcome = await contestLaneSlice({ client, modelIds, subject, signal, exchangeTimeoutMs, l, },);
+ const outcome = await contestLaneSlice({ client, modelIds, subject, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function contestLaneSlice(
@@ -362,18 +364,18 @@ export async function contestLaneSlice(
     subject,
     signal,
     exchangeTimeoutMs,
-    graceMs,
     l,
     fanOut,
+    stageSettings,
   }: {
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: LaneContestSubject;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
-    readonly graceMs?: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<LaneContestOutcome> {
   /**
@@ -404,7 +406,9 @@ export async function contestLaneSlice(
     validate: isLaneContestWire,
     stage: 'lane-contest',
     l: cl,
-    ...((graceMs === undefined) ? {} : { graceMs, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);

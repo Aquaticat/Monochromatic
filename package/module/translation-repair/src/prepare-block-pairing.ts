@@ -26,6 +26,7 @@ import { queriedBlockPairingDetails, } from './queried-block-pairing-details.ts'
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { ContainerSpan, } from './unwrap-container.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region One indexed parent through existing block preparation
 // One aligned section's pairing: settled by structure, resumed from the cache, or asked of the roster.
@@ -121,13 +122,16 @@ function cachedPairingMisfit(
 
  @param pairingCache - existing versioned block cache, absent for an uncached probe
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Explicit slicer pairing or the existing implicit, empty or fallback state
 
  @throws Error when acquisition, cancellation or cache persistence fails unexpectedly
 
  @example
  ```ts
- const result = await prepareBlockPairing({ client, modelIds, pair, pairIndex: 2, targetContainers, signal, exchangeTimeoutMs, l });
+ const result = await prepareBlockPairing({ client, modelIds, pair, pairIndex: 2, targetContainers, signal, exchangeTimeoutMs, l, stageSettings, });
  ```
  */
 export async function prepareBlockPairing(
@@ -142,6 +146,7 @@ export async function prepareBlockPairing(
     l,
     pairingCache,
     pictureReadings,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -153,6 +158,7 @@ export async function prepareBlockPairing(
     readonly l: Logger;
     readonly pairingCache?: SliceCache<PairedSectionRecord>;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<PreparedBlockPairing> {
   /**
@@ -277,6 +283,7 @@ export async function prepareBlockPairing(
     signal,
     exchangeTimeoutMs,
     l: pl,
+    stageSettings,
   },);
   /**
    Shared normalization retains the exact findings and cache gate before persistence.

@@ -31,6 +31,7 @@ import type {
 import { resumeReuseOrBuyTranslateSlice, } from './translate-slice-settle.ts';
 import { translateRunShape, } from './translate-slice-key.ts';
 import type { TwinMemo, } from './twin-memo.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate document
 // The lane's document driver: every prepared slice is translated, judged, and
@@ -84,6 +85,9 @@ import type { TwinMemo, } from './twin-memo.ts';
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Reassembled translation, its `status`, one settled record per
  filled slice, and every passage this run left missing
 
@@ -103,6 +107,7 @@ import type { TwinMemo, } from './twin-memo.ts';
    perCallTimeoutMs,
    overlap: 4,
    l,
+   stageSettings,
  },);
  ```
  */
@@ -120,6 +125,7 @@ export async function translateDocument(
     beforeSlice,
     archiveDisputes,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -146,6 +152,7 @@ export async function translateDocument(
      */
     readonly beforeSlice?: () => Promise<TranslateSliceSeating>;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateDocumentResult> {
   // FIRST, before run shape and cache lookup: a fully cached document must not
@@ -296,6 +303,7 @@ export async function translateDocument(
             signal,
             perCallTimeoutMs,
             l: tl,
+            stageSettings,
           },);
         },
       },);

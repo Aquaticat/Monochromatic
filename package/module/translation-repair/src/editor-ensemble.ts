@@ -42,6 +42,7 @@ import {
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { repairSelectionSourceEvidence, } from './repair-selection-evidence.ts';
 import { envelopeContext, } from './editor-envelope-context.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Editor ensemble
 // Several editors rewrite the same chunk, and judges that wrote none of the
@@ -104,6 +105,9 @@ import { envelopeContext, } from './editor-envelope-context.ts';
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Composite operation set built from per-envelope winners
 
  @example
@@ -126,6 +130,7 @@ export async function selectPerEnvelope(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly candidates: readonly EditorCandidate[];
@@ -140,6 +145,7 @@ export async function selectPerEnvelope(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<EnvelopeSelection> {
   /**
@@ -257,6 +263,7 @@ export async function selectPerEnvelope(
       signal,
       perCallTimeoutMs,
       l,
+      stageSettings,
     },);
     /* oxlint-enable no-await-in-loop */
     selectionFindings.push(...outcome.findings,);
@@ -325,6 +332,9 @@ export async function selectPerEnvelope(
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Winning patch, or the fallback when judges decline, plus the
  judge fan-out findings for the caller to carry into the artifact
 
@@ -348,6 +358,7 @@ export async function selectChunkPatch(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly candidates: readonly Candidate<PatchOutcome>[];
@@ -362,6 +373,7 @@ export async function selectChunkPatch(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ChunkPatchSelection> {
   /**
@@ -424,6 +436,7 @@ export async function selectChunkPatch(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    This round's ballots, recorded before any branch, so a refusal keeps the

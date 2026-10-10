@@ -23,6 +23,7 @@ import {
 import type { RepairDocument, } from './parse-document.ts';
 import { runCriticStage, } from './repair-stages.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Chunk critic phase
 // Critics, then the deterministic screen over their non-translation votes.
@@ -120,6 +121,9 @@ export type ChunkCriticPhase = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Screened claims plus the vote accounting
 
  @example
@@ -143,6 +147,7 @@ export async function runChunkCriticPhase(
     perCallTimeoutMs,
     l,
     fanOut,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly criticModelIds: readonly RosterModelId[];
@@ -161,6 +166,7 @@ export async function runChunkCriticPhase(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ChunkCriticPhase> {
   /**
@@ -181,6 +187,7 @@ export async function runChunkCriticPhase(
     l,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    stageSettings,
   },);
 
   /**

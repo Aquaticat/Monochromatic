@@ -15,7 +15,6 @@ import {
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { describeAbandon, } from './abandon-kind.ts';
 import { exchangeFailureLogText, } from './exchange-failure-text.ts';
-import { resolveStragglerGraceMs, } from './grace-override.ts';
 import { monotonicMs, } from './monotonic-clock.ts';
 import { roundLine, } from './stage-round-line.ts';
 
@@ -77,10 +76,11 @@ import { roundLine, } from './stage-round-line.ts';
  hung voice long before its own deadline would, which is the whole purpose
  the user's rule of 2026-08-15 gave it.
 
- THE EDITOR CALIBRATION RUNS UNDER 300000 MS INSTEAD (`adoptCalibrationGrace`
- in `grace-override.ts`, the owner's decision of 2026-08-26 on arm D), because
- under four slices in flight the longer window costs nothing measurable and
- cuts the fewest voices. Writer rounds wait `WRITER_GRACE_MS`
+ THE EDITOR CALIBRATION RUNS UNDER 300000 MS INSTEAD
+ (`CALIBRATION_STRAGGLER_GRACE_MS` in `grace-override.ts`, the round fallback
+ `editor-calibrate.ts` reads both windows with, the owner's decision of
+ 2026-08-26 on arm D), because under four slices in flight the longer window
+ costs nothing measurable and cuts the fewest voices. Writer rounds wait `WRITER_GRACE_MS`
  (`writer-grace-override.ts`, the owner's decision of 2026-09-06) or this
  value when it is the longer one, unless `TRANSLATION_REPAIR_WRITER_GRACE_MS`
  says otherwise.
@@ -274,7 +274,7 @@ function refusedByRouter<ValueT,>(
 
 /**
  Runs one fan-out round and abandons whatever is still in flight once quorum
- has stood for {@link STRAGGLER_GRACE_MS}.
+ has stood for the window it is handed.
 
  @param client - injected model client
 
@@ -301,10 +301,11 @@ function refusedByRouter<ValueT,>(
  hands its place to the next of these at once, so the refusal costs the
  round no voice. Empty where the round asks the whole bench.
 
- @param graceMs - window granted after quorum before stragglers are abandoned;
- defaults to {@link STRAGGLER_GRACE_MS}, or to what
- `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` overrides it with, and exists so a
- test can bound its own wall time
+ @param graceMs - window granted after quorum before stragglers are abandoned:
+ the launch's round or writer window from the `StageSettings` its entry file
+ read (`stage-settings.ts`), {@link STRAGGLER_GRACE_MS} unless a dial moved
+ it. REQUIRED, where it once defaulted to a read of
+ `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` at every round
 
  @returns One outcome per model asked: the window's in roster order, then
  each reserve seat taken, in the order the round took it
@@ -328,7 +329,7 @@ export async function runGatherRound<ValueT,>(
     l,
     heardNeeded,
     reserve = [],
-    graceMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
+    graceMs,
     decision,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -343,7 +344,7 @@ export async function runGatherRound<ValueT,>(
     readonly l: Logger;
     readonly heardNeeded: number;
     readonly reserve?: readonly RosterModelId[];
-    readonly graceMs?: number;
+    readonly graceMs: number;
     readonly decision?: StageDecision;
   }>,
 ): Promise<readonly RoundOutcome<ValueT>[]> {

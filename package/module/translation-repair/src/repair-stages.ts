@@ -24,6 +24,7 @@ import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Critic and panel stages
 // The two claim-producing stages of one chunk's repair: critics fan out and
@@ -113,6 +114,9 @@ export type CriticStageResult = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Validated claims plus wire-level non-translation votes
 
  @example
@@ -135,6 +139,7 @@ export async function runCriticStage(
     perCallTimeoutMs,
     l,
     fanOut,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly criticModelIds: readonly RosterModelId[];
@@ -149,6 +154,7 @@ export async function runCriticStage(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<CriticStageResult> {
   /**
@@ -182,6 +188,9 @@ export async function runCriticStage(
     l,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   /**

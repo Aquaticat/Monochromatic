@@ -17,6 +17,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Probe sensitivity run
 // Asks the roster about every arm in order and prints what it said, which is
@@ -30,18 +31,23 @@ import {
 
  @param client - client shared by every arm
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await probeOne({ arm: SENSITIVITY_ARMS[0], client, },);
+ await probeOne({ arm: SENSITIVITY_ARMS[0], client, stageSettings, },);
  ```
  */
 async function probeOne(
   {
     arm,
     client,
+    stageSettings,
   }: {
     readonly arm: SensitivityArm;
     readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -60,6 +66,7 @@ async function probeOne(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'probe-sensitivity', },),
+    stageSettings,
   },);
 
   for (
@@ -83,9 +90,12 @@ async function probeOne(
  @param production - list production sends, which the opening and the closing
  notes name
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await runSensitivity({ client, arms: SENSITIVITY_ARMS, production: PRODUCTION_LIST, },);
+ await runSensitivity({ client, arms: SENSITIVITY_ARMS, production: PRODUCTION_LIST, stageSettings, },);
  ```
  */
 export async function runSensitivity(
@@ -93,10 +103,12 @@ export async function runSensitivity(
     client,
     arms,
     production,
+    stageSettings,
   }: {
     readonly client: SyntheticClient;
     readonly arms: readonly SensitivityArm[];
     readonly production: PriorIssueList;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   console.log(
@@ -113,6 +125,7 @@ export async function runSensitivity(
     await probeOne({
       arm,
       client,
+      stageSettings,
     },);
   /* oxlint-enable no-await-in-loop */
 

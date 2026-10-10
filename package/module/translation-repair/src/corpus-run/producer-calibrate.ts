@@ -10,6 +10,7 @@ import {
   readHeadSha,
   readRunCorpusPinSetting,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Producer calibrate
 // The producer calibration, as a command: the wiring only. Which models write
@@ -44,6 +45,7 @@ function main({ line, }: { readonly line: CommandLineOf<'producer-calibrate'>; }
       },);
     },
     readHead: readHeadSha,
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

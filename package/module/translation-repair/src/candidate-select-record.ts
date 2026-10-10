@@ -28,7 +28,8 @@ import { decideBestCandidate, } from './candidate-select.ts';
  and the whole point is that a later reader finds the evidence. The cost is one
  small file write against a round that just spent several model calls.
 
- @param request - exactly what {@link decideBestCandidate} takes
+ @param request - exactly what {@link decideBestCandidate} takes, whose
+ `stageSettings` also name where the contest is recorded
 
  @returns Whatever it decided, unchanged
 
@@ -37,7 +38,7 @@ import { decideBestCandidate, } from './candidate-select.ts';
 
  @example
  ```ts
- const outcome = await selectBestCandidate({ client, candidates, judgeModelIds, ... },);
+ const outcome = await selectBestCandidate({ client, candidates, judgeModelIds, ..., stageSettings, },);
  ```
  */
 export async function selectBestCandidate<ValueT,>(
@@ -54,6 +55,9 @@ export async function selectBestCandidate<ValueT,>(
     ballots: outcome.ballots,
     selectedIndex: (outcome.kind === 'selected') ? outcome.selectedIndex : 'declined',
     l: request.l,
+    contestLedger: request
+      .stageSettings
+      .contestLedger,
   },);
 
   return outcome;

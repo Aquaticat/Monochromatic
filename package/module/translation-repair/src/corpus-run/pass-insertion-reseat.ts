@@ -16,6 +16,7 @@ import type { RunClient, } from './run-client-contract.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import type { JudgeSeats, } from './run-seats.ts';
 import type { SeatReadingClient, } from './run-seats-read.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Insertion admission re-seating
 // THE INSERTION ADMISSION'S PER-CANDIDATE HOOK (ledger X12), beside the other
@@ -119,11 +120,14 @@ export function insertionHooksFor(
 
  @param entryId - entry the log lines are tagged with
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Admitted positions and count-only evidence for every candidate
 
  @example
  ```ts
- const admission = await admitPassInsertions({ client, prepared, modelIds, overlap, signal, entryId, },);
+ const admission = await admitPassInsertions({ client, prepared, modelIds, overlap, signal, entryId, stageSettings, },);
  ```
  */
 export async function admitPassInsertions(
@@ -134,6 +138,7 @@ export async function admitPassInsertions(
     overlap,
     signal,
     entryId,
+    stageSettings,
   }: {
     readonly client: RunClient;
     readonly prepared: PreparedDocumentPair;
@@ -141,6 +146,7 @@ export async function admitPassInsertions(
     readonly overlap: number;
     readonly signal: AbortSignal;
     readonly entryId: string;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<InsertionAdmission> {
   /**
@@ -162,6 +168,7 @@ export async function admitPassInsertions(
       l,
     },)
       .beforeCandidate,
+    stageSettings,
   },);
 }
 

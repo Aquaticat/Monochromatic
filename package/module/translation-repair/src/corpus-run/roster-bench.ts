@@ -13,6 +13,7 @@ import {
   resolveRunsDir,
   RUN_ROSTER,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Roster bench
 // The roster width bench, as a command: the wiring only. What it asks and
@@ -55,6 +56,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'roster-bench'>; }
     writeReport: writeBenchReport,
     clock: performance,
     runsDir: await resolveRunsDir(),
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

@@ -12,6 +12,7 @@ import {
   relabelNotes,
   relabelRebuilt,
 } from './probe-relabel-print.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Probe relabel run
 // Rebuilds the damaged and the control regions and probes each under the
@@ -33,12 +34,15 @@ import {
  @param gather - the two gatherers, which read the settled artifacts and the
  corpus pages: `gatherRelabelCases` and `gatherControlCases` in a run
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws Whatever a gatherer raises, a sample manifest that will not read
  included, since nothing has been asked by then
 
  @example
  ```ts
- await runProbeRelabel({ dir, pin, production: 'withheld', newClient: createRunClient, gather: { damaged: gatherRelabelCases, controls: gatherControlCases, }, },);
+ await runProbeRelabel({ dir, pin, production: 'withheld', newClient: createRunClient, gather: { damaged: gatherRelabelCases, controls: gatherControlCases, }, stageSettings, },);
  ```
  */
 export async function runProbeRelabel(
@@ -48,6 +52,7 @@ export async function runProbeRelabel(
     production,
     newClient,
     gather,
+    stageSettings,
   }: {
     readonly dir: string;
     readonly pin: CorpusPin;
@@ -57,6 +62,7 @@ export async function runProbeRelabel(
       readonly damaged: typeof gatherRelabelCases;
       readonly controls: typeof gatherControlCases;
     };
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -98,12 +104,14 @@ export async function runProbeRelabel(
       relabelCase,
       production,
       newClient,
+      stageSettings,
     },);
   for (const relabelCase of controls)
     await probePair({
       relabelCase,
       production,
       newClient,
+      stageSettings,
     },);
   /* oxlint-enable no-await-in-loop */
 

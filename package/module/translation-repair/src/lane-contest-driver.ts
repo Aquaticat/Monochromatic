@@ -40,6 +40,7 @@ import {
   type TwinMemo,
   type TwinStored,
 } from './twin-memo.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Lane contest driver
 // The contest over one document: which slices are worth asking about, and what
@@ -231,11 +232,14 @@ export async function persistLaneContestOutcome(
  @param beforeSlice - awaited before each slice starts, handing it the judges
  it runs on; none keeps the given ones
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns One record per contested slice, in comparison-row order
 
  @example
  ```ts
- const slices = await contestDocumentLanes({ client, projected, modelIds, frontMatterSlices, lineStructuredSlices, cache, signal, perCallTimeoutMs, l, },);
+ const slices = await contestDocumentLanes({ client, projected, modelIds, frontMatterSlices, lineStructuredSlices, cache, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function contestDocumentLanes(
@@ -257,6 +261,7 @@ export async function contestDocumentLanes(
     l,
     fanOut,
     beforeSlice,
+    stageSettings,
   }: {
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanes;
@@ -288,6 +293,7 @@ export async function contestDocumentLanes(
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
     readonly beforeSlice?: () => Promise<BenchSeating>;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<readonly ArtifactContestSlice[]> {
   /**
@@ -520,6 +526,7 @@ export async function contestDocumentLanes(
                   },),
                   // Conditional spread keeps the knob absent instead of undefined.
                   ...((fanOut === undefined) ? {} : { fanOut, }),
+                  stageSettings,
                 },);
                 /**
                  Effective result after inadmissible raw choices are excluded.

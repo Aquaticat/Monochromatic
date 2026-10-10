@@ -9,6 +9,7 @@ import { hashContent, } from '../document-node.ts';
 import type { BenchSeating, } from '../bench-seating.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { sameWording, } from '../wording-key.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Archive block repair
 
@@ -222,6 +223,9 @@ function removalSpan(
  @param beforeBlock - awaited before each block's review, handing it the roster it
  is asked of; none keeps the given one (ledger X12)
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Revised text, retained identities, and audit findings
 
  @example
@@ -242,6 +246,7 @@ export async function repairArchiveBlocks(
     exchangeTimeoutMs,
     l,
     beforeBlock,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -254,6 +259,7 @@ export async function repairArchiveBlocks(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly beforeBlock?: () => Promise<BenchSeating>;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ArchiveBlocksRepairOutcome> {
   /**
@@ -321,6 +327,7 @@ export async function repairArchiveBlocks(
       signal,
       exchangeTimeoutMs,
       l,
+      stageSettings,
     },);
     /* oxlint-enable no-await-in-loop */
     if (outcome.kind === 'retained') {

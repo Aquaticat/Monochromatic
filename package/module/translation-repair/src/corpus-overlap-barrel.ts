@@ -11,6 +11,11 @@ export {
 } from './corpus-run/slice-overlap.ts';
 
 export {
+  entryOverlap,
+  readPassOverlap,
+} from './corpus-run/pass-overlap.ts';
+
+export {
   CORPUS_CLONE_DIR_VAR,
   CORPUS_COMMIT_VAR,
   type CorpusPinSetting,

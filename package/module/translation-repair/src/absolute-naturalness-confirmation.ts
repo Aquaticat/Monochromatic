@@ -42,7 +42,7 @@ export type ConfirmedAbsoluteNaturalness = {
 
  @example
  ```ts
- const confirmed = await confirmAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });
+ const confirmed = await confirmAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, stageSettings, });
  ```
  */
 export async function confirmAbsoluteNaturalness(

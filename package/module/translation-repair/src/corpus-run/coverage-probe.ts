@@ -12,6 +12,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Coverage probe
 // Asks the coverage roster about the passages the aligners refuse to pair, and
@@ -74,6 +75,7 @@ if (import.meta.main)
         resolveRunsDir,
         now: nowIso,
         log: tagged({ tag: 'coverage-probe', },),
+        stageSettings: readStageSettings({ env: process.env, },),
       },);
     },
   },);

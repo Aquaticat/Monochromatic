@@ -23,6 +23,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Recall benchmark run
 // Measures what precision cannot see: of the defects that ARE present, how many
@@ -92,6 +93,9 @@ const RUN_BUDGET_MS = BUDGET_HOURS
  @param now - reads the instant as an ISO stamp, which names the scorecard
  file at the start and dates its end
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link import('../stated-refusal.ts').StatedRefusalError} when the
  corpus at the pin yields no entry to seed, with or without `--plan`, before
  any client is built or anything is kept
@@ -102,7 +106,7 @@ const RUN_BUDGET_MS = BUDGET_HOURS
 
  @example
  ```ts
- await runRecallBenchmark({ line, runsDir, readTip: readHeadSha, pin, newClient: createRunClient, now, },);
+ await runRecallBenchmark({ line, runsDir, readTip: readHeadSha, pin, newClient: createRunClient, now, stageSettings, },);
  ```
  */
 export async function runRecallBenchmark(
@@ -113,6 +117,7 @@ export async function runRecallBenchmark(
     pin,
     newClient,
     now,
+    stageSettings,
   }: {
     readonly line: CommandLineOf<'recall-benchmark'>;
     readonly runsDir: string;
@@ -120,6 +125,7 @@ export async function runRecallBenchmark(
     readonly pin: CorpusPin;
     readonly newClient: () => SyntheticClient;
     readonly now: () => string;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -190,6 +196,7 @@ export async function runRecallBenchmark(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     runBudgetMs: RUN_BUDGET_MS,
+    stageSettings,
   },);
 
   /**

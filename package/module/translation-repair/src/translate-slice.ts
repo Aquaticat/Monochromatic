@@ -35,6 +35,7 @@ import {
   describeArchiveDispute,
   disputedWordingsOf,
 } from './archive-dispute.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate slice
 // One slice from prepared pair to settled record: translate it, judge it, and
@@ -86,6 +87,9 @@ import {
 
  @param l - driver logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Settled record, whether the stage's text was accepted or refused
 
  @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
@@ -93,7 +97,7 @@ import {
 
  @example
  ```ts
- const record = await settleTranslateSlice({ client, slice, prepared, models, signal, perCallTimeoutMs, l, },);
+ const record = await settleTranslateSlice({ client, slice, prepared, models, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function settleTranslateSlice(
@@ -110,6 +114,7 @@ export async function settleTranslateSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slice: ChunkPair;
@@ -123,6 +128,7 @@ export async function settleTranslateSlice(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateSliceRecord> {
   /**
@@ -219,6 +225,7 @@ export async function settleTranslateSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**

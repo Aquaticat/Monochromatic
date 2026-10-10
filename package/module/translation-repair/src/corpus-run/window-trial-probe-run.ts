@@ -39,6 +39,7 @@ import {
   windowTrialReportLine,
 } from './window-trial-report.ts';
 import { witnessSheets, } from './window-trial-witness.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Window trial probe run
 // The window trial, run end to end: does showing the judges the neighbouring original
@@ -84,6 +85,9 @@ type PeopleLister = typeof listCorpusPeople;
 
  @param l - logger the run writes under
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link StatedRefusalError} when refusals in a row reach the stop
 
  @throws {@link WindowEvidenceError} when the first wide arm did not show the
@@ -91,7 +95,7 @@ type PeopleLister = typeof listCorpusPeople;
 
  @example
  ```ts
- await runWindowTrial({ runsDir, headSha, makeClient: createRunClient, pin, listPeople: listCorpusPeople, readPage: readCorpusFile, pickSlice: runPick, roster, perCallTimeoutMs, l, },);
+ await runWindowTrial({ runsDir, headSha, makeClient: createRunClient, pin, listPeople: listCorpusPeople, readPage: readCorpusFile, pickSlice: runPick, roster, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function runWindowTrial(
@@ -106,6 +110,7 @@ export async function runWindowTrial(
     roster,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: {
     readonly runsDir: string;
     readonly headSha: string;
@@ -117,6 +122,7 @@ export async function runWindowTrial(
     readonly roster: readonly RosterModelId[];
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -209,6 +215,7 @@ export async function runWindowTrial(
         signal,
         perCallTimeoutMs,
         l,
+        stageSettings,
       },);
       /* oxlint-enable no-await-in-loop */
       if (outcome.kind === 'refused') {

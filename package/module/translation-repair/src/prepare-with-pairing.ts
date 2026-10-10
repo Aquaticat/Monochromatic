@@ -24,6 +24,7 @@ import type { AttestedDetail, } from './reference-attest-match.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { BenchSeating, } from './bench-seating.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Preparation with roster pairing
 // THE ONE PLACE A MODEL TOUCHES PREPARATION, and it is deliberately outside it.
@@ -114,11 +115,14 @@ export type PairedPreparation = {
  block round, handing it the roster it is asked of; none keeps the given one
  (ledger X12)
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Preparation built on the roster's pairing, and its findings
 
  @example
  ```ts
- const { prepared, } = await prepareDocumentPairWithRoster({ client, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, },);
+ const { prepared, } = await prepareDocumentPairWithRoster({ client, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function prepareDocumentPairWithRoster(
@@ -140,6 +144,7 @@ export async function prepareDocumentPairWithRoster(
     sealArchiveOriginal,
     pictureReadings,
     beforeSection,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -158,6 +163,7 @@ export async function prepareDocumentPairWithRoster(
     readonly sealArchiveOriginal?: boolean;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
     readonly beforeSection?: () => Promise<BenchSeating>;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -199,6 +205,7 @@ export async function prepareDocumentPairWithRoster(
     exchangeTimeoutMs,
     l: pl,
     ...((sectionCache === undefined) ? {} : { sectionCache, }),
+    stageSettings,
   },);
   /**
    Correspondences to align on, absent when nobody was asked or nobody agreed.
@@ -249,6 +256,7 @@ export async function prepareDocumentPairWithRoster(
       l: pl,
       ...((pairingCache === undefined) ? {} : { pairingCache, }),
       ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
+      stageSettings,
     },);
     /* oxlint-enable no-await-in-loop */
     findings.push(...round.findings,);

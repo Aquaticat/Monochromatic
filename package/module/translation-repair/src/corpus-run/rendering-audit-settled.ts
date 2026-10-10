@@ -15,6 +15,7 @@ import {
   resolveRunsDir,
   RUN_MODELS,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Settled rendering audit
 // Runs the rendering audit over every decided slice of every settled version 2
@@ -111,6 +112,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'rendering-audit-s
     // for the same reason the digest is: a rebuild mid-run would otherwise
     // stamp a build that never ran.
     runnerClosure: await readRunnerClosure({ entryPath: line.script, },),
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

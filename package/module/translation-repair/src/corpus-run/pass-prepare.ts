@@ -1,22 +1,14 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '../chat-contract.ts';
 import {
   type PairedPreparation,
   prepareDocumentPairWithRoster,
 } from '../prepare-with-pairing.ts';
-import {
-  type BenchSeating,
-  keepBench,
-} from '../bench-seating.ts';
-import type { RosterModelId, } from '../synthetic-catalog.ts';
+import { keepBench, } from '../bench-seating.ts';
 import { wordForCount, } from '../count-word.ts';
 import { corpusNameLines, } from '../corpus-name-index.ts';
 import { pageIdentityLines, } from '../page-identity-lines.ts';
 import { parseDocument, } from '../parse-document.ts';
-import type { PassOutsideReads, } from './pass-outside-reads.ts';
-import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
   openPairingCache,
   openSectionPairingCache,
@@ -33,7 +25,7 @@ import { frontMatterAuthorityOf, } from './archive-front-matter.ts';
 import { relabelArchiveFootnotes, } from './pass-footnote-relabel.ts';
 import type { PairedReading, } from '../image-reading-pair.ts';
 import { photoReferences, } from '../photo-reference.ts';
-import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
+import type { PassPrepareRequest, } from './pass-prepare-request.ts';
 
 //region Pass preparation
 // Corpus-specific shell owns pairing cache namespaces and reviews inherited
@@ -59,7 +51,7 @@ import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 
  @example
  ```ts
- const { prepared, } = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads, },);
+ const { prepared, } = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads, stageSettings, },);
  ```
  */
 export type PassPreparation = Omit<PairedPreparation, 'findings'>;
@@ -132,13 +124,17 @@ function carryingPassFindings(
 
  @param outsideReads - what the preparation reads from outside the
  pipeline, required so no caller inherits the run's keys and caches by
- leaving it out (ledger X19): the readers the corpus-pass entry builds in a run
+ leaving it out (ledger X19): the readers the pass's entry file builds over
+ its environment in a run
+
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
 
  @returns Prepared slices, every finding on their `alignmentFindings`
 
  @example
  ```ts
- const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads, });
+ const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads, stageSettings, });
  ```
  */
 export async function preparePassEntry(
@@ -156,21 +152,8 @@ export async function preparePassEntry(
     readPictures,
     beforeItem,
     outsideReads,
-  }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
-    readonly entryId: string;
-    readonly entryCacheDir: string;
-    readonly pipelineDigest: PipelineDigest;
-    readonly modelIds: readonly RosterModelId[];
-    readonly sourceText: string;
-    readonly targetText: string;
-    readonly signal: AbortSignal;
-    readonly exchangeTimeoutMs: number;
-    readonly l: Logger;
-    readonly readPictures?: PassVisualEvidenceReader;
-    readonly beforeItem?: () => Promise<BenchSeating>;
-    readonly outsideReads: PassOutsideReads;
-  }>,
+    stageSettings,
+  }: ForeignBorrowed<PassPrepareRequest>,
 ): Promise<PassPreparation> {
   l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
   /**
@@ -290,6 +273,7 @@ export async function preparePassEntry(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    Evidence lines bought or read outside preparation, the same for every
@@ -328,6 +312,7 @@ export async function preparePassEntry(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    Reference lines with the attested lines under them.
@@ -386,6 +371,7 @@ export async function preparePassEntry(
       sealArchiveOriginal: true,
       ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
       ...((beforeItem === undefined) ? {} : { beforeSection: beforeItem, }),
+      stageSettings,
     },);
   }
   /**
@@ -515,6 +501,7 @@ export async function preparePassEntry(
     exchangeTimeoutMs,
     l,
     ...((beforeItem === undefined) ? {} : { beforeBlock: beforeItem, }),
+    stageSettings,
   },);
   if (repaired.targetText === relabel.archiveText) {
     return carryingPassFindings({

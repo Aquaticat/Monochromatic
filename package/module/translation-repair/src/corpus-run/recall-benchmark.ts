@@ -8,6 +8,7 @@ import {
   readRunCorpusPinSetting,
   resolveRunsDir,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Recall benchmark
 // The recall benchmark, as a command: the wiring only. How entries are chosen
@@ -43,6 +44,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'recall-benchmark'
     pin,
     newClient: createRunClient,
     now: nowAsIso,
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

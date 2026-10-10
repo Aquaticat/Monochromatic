@@ -8,6 +8,7 @@ import {
   readRunCorpusPinSetting,
   resolveRunsDir,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Probe relabel
 // Asks the introduced-defect probe about regions a HUMAN read as damaged, three
@@ -66,6 +67,7 @@ async function main(): Promise<void> {
       damaged: gatherRelabelCases,
       controls: gatherControlCases,
     },
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

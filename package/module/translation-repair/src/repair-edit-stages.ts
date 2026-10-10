@@ -27,6 +27,7 @@ import {
   resolveResolutionChecks,
   tallyResolutionChecks,
 } from './tally-resolution.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Checker stage
 // The proving stage of one chunk's repair: checker models judge whether each
@@ -109,6 +110,9 @@ export type CheckerStageResult = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Per-issue tallies, the quorum the round closed on, plus findings
 
  @example
@@ -129,6 +133,7 @@ export async function runCheckerStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly checkerModelIds: readonly RosterModelId[];
@@ -141,6 +146,7 @@ export async function runCheckerStage(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<CheckerStageResult> {
   /**
@@ -170,6 +176,9 @@ export async function runCheckerStage(
     },),
     stage: 'checker',
     l,
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   // ROSTER ORDER, NOT THE GATHER'S. `gatherStageVoices` hands voices back by

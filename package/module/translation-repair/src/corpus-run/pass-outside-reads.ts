@@ -26,6 +26,13 @@ import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
 // title, and wrote the result into the real lookup cache. A seam a caller may
 // leave out is a seam a test forgets; a required one is a type error until
 // the caller chooses.
+//
+// BUILT BY THE ENTRY FILE THAT RUNS A PREPARATION, over its own environment,
+// since 2026-10-10: `RUN_OUTSIDE_READS` was built here at module load over
+// the live `process.env`, so a library module named the process's environment
+// and every importer reached it without an entry file handing it on.
+// `corpus-pass.ts` and `rendering-audit-settled.ts` now call
+// `outsideReadsFrom` in their own functions.
 
 /**
  Reads what the pages an original links say, empty when it links nowhere or

@@ -27,6 +27,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Checker sensitivity run
 // Asks the resolution checkers about the single-issue cases and the two
@@ -44,11 +45,14 @@ import {
 
  @param issues - accepted issues the candidate is judged against
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns The stage's result
 
  @example
  ```ts
- const checker = await askCheckers({ client, sourceText, patchedText, issues: [TENSE_ISSUE,], },);
+ const checker = await askCheckers({ client, sourceText, patchedText, issues: [TENSE_ISSUE,], stageSettings, },);
  ```
  */
 async function askCheckers(
@@ -57,11 +61,13 @@ async function askCheckers(
     sourceText,
     patchedText,
     issues,
+    stageSettings,
   }: {
     readonly client: SyntheticClient;
     readonly sourceText: string;
     readonly patchedText: string;
     readonly issues: readonly AdjudicatedIssue[];
+    readonly stageSettings: StageSettings;
   },
 ): Promise<CheckerStageResult> {
   return await runCheckerStage({
@@ -74,6 +80,7 @@ async function askCheckers(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'checker-sensitivity', },),
+    stageSettings,
   },);
 }
 
@@ -129,9 +136,12 @@ function tallyOf(
 
  @param client - client this one call asks through
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await checkOne({ label: 'unfixed', patchedText: DEFECTIVE_TEXT, expectation: 'not-fixed', client, },);
+ await checkOne({ label: 'unfixed', patchedText: DEFECTIVE_TEXT, expectation: 'not-fixed', client, stageSettings, },);
  ```
  */
 export async function checkOne(
@@ -140,11 +150,13 @@ export async function checkOne(
     patchedText,
     expectation,
     client,
+    stageSettings,
   }: {
     readonly label: string;
     readonly patchedText: string;
     readonly expectation: string;
     readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   /**
@@ -155,6 +167,7 @@ export async function checkOne(
     sourceText: SOURCE_TEXT,
     patchedText,
     issues: [TENSE_ISSUE,],
+    stageSettings,
   },);
 
   console.log(
@@ -182,12 +195,23 @@ export async function checkOne(
 
  @param client - client this one call asks through
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await checkMixedSheet({ client, },);
+ await checkMixedSheet({ client, stageSettings, },);
  ```
  */
-export async function checkMixedSheet({ client, }: { readonly client: SyntheticClient; },): Promise<void> {
+export async function checkMixedSheet(
+  {
+    client,
+    stageSettings,
+  }: {
+    readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
+  },
+): Promise<void> {
   /**
    Checker result over the mixed sheet.
    */
@@ -200,6 +224,7 @@ export async function checkMixedSheet({ client, }: { readonly client: SyntheticC
       MEANING_ISSUE,
       ABSENT_ISSUE,
     ],
+    stageSettings,
   },);
 
   for (const [
@@ -245,12 +270,23 @@ export async function checkMixedSheet({ client, }: { readonly client: SyntheticC
 
  @param client - client this one call asks through
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await checkAllFixedSheet({ client, },);
+ await checkAllFixedSheet({ client, stageSettings, },);
  ```
  */
-export async function checkAllFixedSheet({ client, }: { readonly client: SyntheticClient; },): Promise<void> {
+export async function checkAllFixedSheet(
+  {
+    client,
+    stageSettings,
+  }: {
+    readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
+  },
+): Promise<void> {
   /**
    Checker result over the all-fixed sheet.
    */
@@ -263,6 +299,7 @@ export async function checkAllFixedSheet({ client, }: { readonly client: Synthet
       MEANING_ISSUE,
       ABSENT_ISSUE,
     ],
+    stageSettings,
   },);
 
   for (const issue of [
@@ -292,13 +329,22 @@ export async function checkAllFixedSheet({ client, }: { readonly client: Synthet
  PER CALL, since a client reuses the reply to a prompt it has already been
  asked
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await runCheckerSensitivity({ newClient: createRunClient, },);
+ await runCheckerSensitivity({ newClient: createRunClient, stageSettings, },);
  ```
  */
 export async function runCheckerSensitivity(
-  { newClient, }: { readonly newClient: () => SyntheticClient; },
+  {
+    newClient,
+    stageSettings,
+  }: {
+    readonly newClient: () => SyntheticClient;
+    readonly stageSettings: StageSettings;
+  },
 ): Promise<void> {
   // Sequential so this never competes with a running corpus pass for the
   // per-model stream slots.
@@ -307,11 +353,18 @@ export async function runCheckerSensitivity(
     await checkOne({
       ...check,
       client: newClient(),
+      stageSettings,
     },);
   /* oxlint-enable no-await-in-loop */
 
-  await checkMixedSheet({ client: newClient(), },);
-  await checkAllFixedSheet({ client: newClient(), },);
+  await checkMixedSheet({
+    client: newClient(),
+    stageSettings,
+  },);
+  await checkAllFixedSheet({
+    client: newClient(),
+    stageSettings,
+  },);
 
   console.log(CHECKER_NOTE,);
 }

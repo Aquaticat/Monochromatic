@@ -8,6 +8,7 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { TrialSlice, } from './window-trial-draw.ts';
 import type { WindowTrialRow, } from './window-trial-ledger.ts';
 import { runSliceArms, } from './window-trial-slice.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Window trial pick
 // One drawn slice, with the difference between a slice that cannot be tried and
@@ -77,6 +78,9 @@ export type PickOutcome = {
 
  @param l - run logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Arms bought, or the fact that this slice refused
 
  @example
@@ -97,6 +101,7 @@ export async function runPick(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
@@ -112,6 +117,7 @@ export async function runPick(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<PickOutcome> {
   try {
@@ -130,6 +136,7 @@ export async function runPick(
         signal,
         perCallTimeoutMs,
         l,
+        stageSettings,
       },),
     };
   }

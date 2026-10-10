@@ -15,6 +15,7 @@ import type {
 } from './repair-contract.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Repair slice buy
 // What one repair-lane slice costs when neither disk nor a twin can answer:
@@ -58,6 +59,9 @@ import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
 
  @param l - repair-lane logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Settled repair outcome, whether or not cache gate accepted it
 
  @throws Whatever `signal.reason` carries when caller aborts before or during
@@ -83,6 +87,7 @@ export async function buyRepairSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -97,6 +102,7 @@ export async function buyRepairSlice(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ChunkRepairOutcome> {
   /**
@@ -150,6 +156,7 @@ export async function buyRepairSlice(
         signal,
         perCallTimeoutMs,
         l,
+        stageSettings,
       },);
     }
     catch (error) {

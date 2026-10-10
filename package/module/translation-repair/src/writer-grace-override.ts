@@ -1,8 +1,8 @@
 import {
   readWindowDial,
   resolveStragglerGraceMs,
+  STRAGGLER_GRACE_VAR,
 } from './grace-override.ts';
-import { STRAGGLER_GRACE_MS, } from './stage-round.ts';
 
 //region Writer grace override
 // Gives the WRITER rounds a longer straggler window than the reader rounds,
@@ -60,8 +60,8 @@ export const WRITER_GRACE_MS = 180_000;
 /**
  Stage labels of the rounds the dial governs, as their log lines spell them.
 
- Listed here rather than imported from the stages, because each stage imports
- this module to read its window and the list exists for the launch note only.
+ Listed here rather than read off the stages, which take the writer window as
+ a value (`StageSettings`), because the list exists for the launch note only.
  */
 export const WRITER_STAGE_LABELS: readonly string[] = [
   'editor',
@@ -75,8 +75,9 @@ export const WRITER_STAGE_LABELS: readonly string[] = [
 
  @param fallback - window the writers run under when the text is blank
 
- @param raw - override text; tests pass their own, and the environment read
- supplies `''` for an absent variable, since unset and empty are alike here
+ @param raw - override text as the launch's environment holds it, `''` for an
+ absent variable, since unset and empty are alike here; REQUIRED, so the
+ environment is read where an entry file reads it and in no stage it feeds
 
  @returns Milliseconds a writer round keeps waiting on stragglers after quorum
 
@@ -85,16 +86,16 @@ export const WRITER_STAGE_LABELS: readonly string[] = [
 
  @example
  ```ts
- const writerMs = resolveWriterGraceMs({ fallback: WRITER_GRACE_MS, },);
+ const writerMs = resolveWriterGraceMs({ fallback: WRITER_GRACE_MS, raw: env[WRITER_GRACE_VAR] ?? '', },);
  ```
  */
 export function resolveWriterGraceMs(
   {
     fallback,
-    raw = process.env[WRITER_GRACE_VAR] ?? '',
+    raw,
   }: {
     readonly fallback: number;
-    readonly raw?: string;
+    readonly raw: string;
   },
 ): number {
   return readWindowDial({
@@ -130,10 +131,10 @@ export type WriterGrace = {
    window is shorter; `round-window` when the writers follow every other
    round, because that window is at least as long as the built-in.
 
-   CARRIED RATHER THAN INFERRED from the two numbers differing: the two are
-   read from mutable environment, and a note that blamed the writer dial
-   because two readings taken at different moments disagreed would name an
-   override nobody made.
+   CARRIED RATHER THAN INFERRED from the two numbers differing: a note that
+   blamed the writer dial whenever the two windows disagree would name an
+   override nobody made, since the built-in writer window differs from the
+   round window with no dial set at all.
    */
   readonly source: 'built-in' | 'round-window' | 'writer-dial';
 };
@@ -142,10 +143,17 @@ export type WriterGrace = {
  Reads both windows of this invocation, the round window first because the
  writer window is measured against it.
 
- READ AT EACH GATHER rather than once at launch, by the path every other
- round already takes through `runGatherRound`: the calibration adopts its own
- window by writing the round variable after launch, and a writer round that
- had read the environment at import time would miss it.
+ READ ONCE, BY THE ENTRY FILE, from the environment it hands in, and handed
+ down to every stage as a value (`StageSettings`). Every gather once read
+ both dials off the process's environment for itself, so the calibration
+ could adopt its own window by writing the round variable after launch; the
+ calibration now passes its own round fallback here instead.
+
+ @param env - environment of the launch, which the entry file hands in
+
+ @param roundFallback - window every other round runs under when the round
+ dial is blank: `STRAGGLER_GRACE_MS`, or the calibration's own
+ `CALIBRATION_STRAGGLER_GRACE_MS`
 
  @returns Both windows and the writers' source
 
@@ -155,19 +163,30 @@ export type WriterGrace = {
 
  @example
  ```ts
- const { writerMs, roundMs, source, } = readWriterGrace();
+ const { writerMs, roundMs, source, } = readWriterGrace({ env: process.env, roundFallback: STRAGGLER_GRACE_MS, },);
  ```
  */
-export function readWriterGrace(): WriterGrace {
+export function readWriterGrace(
+  {
+    env,
+    roundFallback,
+  }: {
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly roundFallback: number;
+  },
+): WriterGrace {
   /**
    Window every other round runs under.
    */
-  const roundMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },);
+  const roundMs = resolveStragglerGraceMs({
+    fallback: roundFallback,
+    raw: env[STRAGGLER_GRACE_VAR] ?? '',
+  },);
 
   /**
    What the launch set for the writers, blank when it set nothing.
    */
-  const written = process.env[WRITER_GRACE_VAR] ?? '';
+  const written = env[WRITER_GRACE_VAR] ?? '';
 
   if (written.trim() === '') {
     if (roundMs >= WRITER_GRACE_MS) {
@@ -194,28 +213,6 @@ export function readWriterGrace(): WriterGrace {
 }
 
 /**
- Window a writer round runs under in this invocation: the writer dial when
- set, otherwise the built-in writer window or the round window when that is
- longer.
-
- @returns Milliseconds a writer round keeps waiting on stragglers after quorum
-
- @throws {@link StatedRefusalError} as {@link readWriterGrace} does
-
- @example
- ```ts
- const gather = await gatherStageVoices({ ..., stage: 'editor', graceMs: writerRoundGraceMs(), },);
- ```
- */
-export function writerRoundGraceMs(): number {
-  /**
-   Both windows, of which the gather wants the writers'.
-   */
-  const { writerMs, } = readWriterGrace();
-  return writerMs;
-}
-
-/**
  Explains which window the writer rounds are under whenever it is not the
  round window, whether the built-in or a launch dial put them there.
 
@@ -231,7 +228,7 @@ export function writerRoundGraceMs(): number {
 
  @example
  ```ts
- const note = writerGraceOverrideNote({ grace: readWriterGrace(), },);
+ const note = writerGraceOverrideNote({ grace: stageSettings.grace, },);
  ```
  */
 export function writerGraceOverrideNote(

@@ -45,7 +45,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
  @example
  ```ts
- const shared: SharedRoundRequest<MeowReply> = { client, messages, signal, exchangeTimeoutMs, responseFormat, validate, stage, l, };
+ const shared: SharedRoundRequest<MeowReply> = { client, messages, signal, exchangeTimeoutMs, responseFormat, validate, stage, l, graceMs, };
  ```
  */
 export type SharedRoundRequest<ValueT,> = Omit<

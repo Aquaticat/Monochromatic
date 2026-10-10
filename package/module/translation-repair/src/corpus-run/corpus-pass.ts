@@ -1,17 +1,12 @@
 import {
-  graceOverrideNote,
-  resolveStragglerGraceMs,
-} from '../grace-override.ts';
-import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
-import {
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
+import { graceOverrideNote, } from '../grace-override.ts';
+import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 import { fetchTransport, } from '../synthetic-transport.ts';
-import {
-  readWriterGrace,
-  writerGraceOverrideNote,
-} from '../writer-grace-override.ts';
+import { writerGraceOverrideNote, } from '../writer-grace-override.ts';
 import { monotonicMs, } from '../monotonic-clock.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
@@ -24,6 +19,7 @@ import { runCorpusPassOver, } from './corpus-pass-run.ts';
 import { readDriftOptIn, } from './pass-generation-guard.ts';
 import { settleEntry, } from './pass-entry.ts';
 import { outsideReadsFrom, } from './pass-outside-reads.ts';
+import { readPassOverlap, } from './pass-overlap.ts';
 import { RUN_PICTURE_SOURCES, } from './pass-visual-evidence.ts';
 import {
   createRunClient,
@@ -48,10 +44,13 @@ import {
 
  EVERY OVERRIDE IS READ HERE, INSIDE THE REFUSAL BOUNDARY, in the order a
  launch's mistakes should surface: the per-entry ceiling, the spend allowance,
- both windows, then the corpus pin, before the lock is claimed and before
- anything is read, so an unreadable value refuses the pass before it claims a
- directory or spends anything, as a stated refusal and not as a fault at load
- (ledger B302; the pin was still read at load until 2026-10-10).
+ both windows, then the slice overlap, then the corpus pin, before the lock is
+ claimed and before anything is read, so an unreadable value refuses the pass
+ before it claims a directory or spends anything, as a stated refusal and not
+ as a fault at load (ledger B302; the pin was still read at load until
+ 2026-10-10). The windows, the contest ledger, the overlap and the pin are
+ handed on as values, and no stage reads the environment for them
+ (`stage-settings.ts`).
 
  @param line - the pass's command line, read whole by `reportingRefusals`
 
@@ -78,17 +77,30 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
   const spendCeilingUsd = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, },);
 
   /**
+   Both straggler windows and the contest ledger every stage of the pass runs
+   under, read once.
+   */
+  const stageSettings = readStageSettings({ env: process.env, },);
+
+  /**
    Note naming the straggler window when it is not the built-in one.
    */
   const graceNote = graceOverrideNote({
-    effectiveMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
+    effectiveMs: stageSettings
+      .grace
+      .roundMs,
     builtInMs: STRAGGLER_GRACE_MS,
   },);
 
   /**
    Note naming the writer rounds' window when a launch gave them their own.
    */
-  const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
+  const writerNote = writerGraceOverrideNote({ grace: stageSettings.grace, },);
+
+  /**
+   Slices each entry keeps in flight, read once for every entry of the pass.
+   */
+  const overlap = readPassOverlap({ env: process.env, },);
 
   /**
    Clone and commit the pass reads, after any environment override, beside
@@ -120,6 +132,8 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
     },),
     pictureSources: RUN_PICTURE_SOURCES,
     now: monotonicMs,
+    overlap,
+    stageSettings,
   },);
 }
 

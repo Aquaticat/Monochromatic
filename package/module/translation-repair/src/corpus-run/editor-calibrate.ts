@@ -1,5 +1,13 @@
-import { adoptCalibrationGrace, } from '../grace-override.ts';
-import { readWriterGrace, } from '../writer-grace-override.ts';
+import { readContestLedger, } from '../candidate-ledger.ts';
+import {
+  adoptCalibrationGrace,
+  type CalibrationGrace,
+  CALIBRATION_STRAGGLER_GRACE_MS,
+} from '../grace-override.ts';
+import {
+  readWriterGrace,
+  type WriterGrace,
+} from '../writer-grace-override.ts';
 import { sampleBenchSlices, } from './bench-sample.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
@@ -19,8 +27,70 @@ import { readOverlap, } from './slice-overlap.ts';
 // SPENDS QUOTA. Point `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
 
 /**
+ Reads how many slices may be in flight from this process's environment.
+
+ @param fallback - slices in flight when the environment says nothing
+
+ @returns Valid overlap
+
+ @throws StatedRefusalError when the variable is not a whole number written in
+ digits, or is below one
+
+ @example
+ ```ts
+ const overlap = overlapFromEnvironment({ fallback: CALIBRATION_OVERLAP, },);
+ ```
+ */
+function overlapFromEnvironment({ fallback, }: { readonly fallback: number; },): number {
+  return readOverlap({
+    fallback,
+    env: process.env,
+  },);
+}
+
+/**
+ Adopts the calibration's straggler window from this process's environment.
+
+ @returns Window the calibration's rounds run under, and where it came from
+
+ @throws StatedRefusalError when a launch set the variable to something no
+ dial can read
+
+ @example
+ ```ts
+ const grace = calibrationGraceFromEnvironment();
+ ```
+ */
+function calibrationGraceFromEnvironment(): CalibrationGrace {
+  return adoptCalibrationGrace({ env: process.env, },);
+}
+
+/**
+ Reads both windows the calibration's lane runs under from this process's
+ environment, the round window with the calibration's own fallback.
+
+ @returns Both windows and the writers' source
+
+ @throws StatedRefusalError when either dial is set to something no dial can
+ read
+
+ @example
+ ```ts
+ const windows = windowsFromEnvironment();
+ ```
+ */
+function windowsFromEnvironment(): WriterGrace {
+  return readWriterGrace({
+    env: process.env,
+    roundFallback: CALIBRATION_STRAGGLER_GRACE_MS,
+  },);
+}
+
+/**
  Hands the run what only a real process has: the overlap dial from its
- environment, the pinned corpus, the two straggler windows and the client.
+ environment, the pinned corpus, the two straggler windows and the client,
+ each a reader over this process's environment the run calls where the
+ command reads it, and the contest ledger, read here.
 
  @param line - the calibration's command line, read whole by `reportingRefusals`
 
@@ -37,12 +107,13 @@ function main({ line, }: { readonly line: CommandLineOf<'editor-calibrate'>; },)
   const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   return runEditorCalibrate({
     line,
-    readOverlap,
+    readOverlap: overlapFromEnvironment,
     drawSample: sampleBenchSlices,
     pin,
-    adoptGrace: adoptCalibrationGrace,
-    readWriterGrace,
+    adoptGrace: calibrationGraceFromEnvironment,
+    readWriterGrace: windowsFromEnvironment,
     newClient: createRunClient,
+    contestLedger: readContestLedger({ env: process.env, },),
   },);
 }
 

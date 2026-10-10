@@ -32,6 +32,7 @@ import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { TwinMemo, } from './twin-memo.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 export {
   type RepairStatus,
@@ -88,6 +89,9 @@ type SettledSlice = {
 
  @param parentLogger - logger this lane tags under
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Repaired candidate plus adjudicated issues and completion status
 
  @throws Whatever `signal.reason` carries once caller aborts with slices still
@@ -102,6 +106,7 @@ type SettledSlice = {
    signal,
    perCallTimeoutMs,
    overlap: 4,
+   stageSettings,
  },);
  ```
  */
@@ -117,6 +122,7 @@ export async function repairPreparedDocument(
     overlap = 1,
     beforeSlice,
     parentLogger = l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -136,6 +142,7 @@ export async function repairPreparedDocument(
      */
     readonly beforeSlice?: () => Promise<RepairSliceSeating>;
     readonly parentLogger?: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RepairTranslationResult> {
   // A fully cached document must not make invalid configuration valid. Refiner
@@ -261,6 +268,7 @@ export async function repairPreparedDocument(
             signal,
             perCallTimeoutMs,
             l: rl,
+            stageSettings,
           },);
         },
       },);
@@ -342,6 +350,7 @@ export async function repairPreparedDocument(
     perCallTimeoutMs,
     overlap,
     l: rl,
+    stageSettings,
   },);
 
   /**

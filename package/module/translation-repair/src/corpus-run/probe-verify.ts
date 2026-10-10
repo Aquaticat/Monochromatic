@@ -7,6 +7,7 @@ import {
   readRunCorpusPinSetting,
   resolveRunsDir,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Probe verify
 // Runs the unlabelled probe over damaged and control regions alike, keeps every
@@ -45,6 +46,7 @@ async function main(): Promise<void> {
       damaged: gatherRelabelCases,
       controls: gatherControlCases,
     },
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

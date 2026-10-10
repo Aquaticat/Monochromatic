@@ -265,6 +265,8 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
         baseSignal: neverAbort,
         outsideReads: input.outsideReads,
         pictureSources: input.pictureSources,
+        overlap: input.overlap,
+        stageSettings: input.stageSettings,
       },);
     },
   },);

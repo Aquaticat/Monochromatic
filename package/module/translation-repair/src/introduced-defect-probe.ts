@@ -21,6 +21,7 @@ import {
 import type { RepairRegion, } from './repair-region.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Introduced-defect probe stage
 // Asks whether the repair broke anything nobody had raised.
@@ -154,6 +155,9 @@ export const EMPTY_INTRODUCED_DEFECT_REPORT: IntroducedDefectReport = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Screened tallies plus roster accounting
 
  @example
@@ -177,6 +181,7 @@ export async function runIntroducedDefectProbe(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly proberModelIds: readonly RosterModelId[];
@@ -192,6 +197,7 @@ export async function runIntroducedDefectProbe(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<IntroducedDefectReport> {
   if (regions.length === 0)
@@ -225,6 +231,9 @@ export async function runIntroducedDefectProbe(
     validate: isIntroducedDefectReportWire,
     stage: 'introduced-defect-probe',
     l,
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   /**

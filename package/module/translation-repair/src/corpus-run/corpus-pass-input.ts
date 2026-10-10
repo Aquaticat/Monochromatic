@@ -1,9 +1,11 @@
 import type { ModelTransport, } from '../synthetic-transport.ts';
 import type { CommandLineOf, } from './command-lines.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 import type { CorpusPinSetting, } from './corpus-pin-override.ts';
 import type { settleEntry, } from './pass-entry.ts';
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
 import type { PassPictureSources, } from './pass-visual-evidence.ts';
+import type { OverlapSetting, } from './slice-overlap.ts';
 import type { RunClient, } from './run-client-contract.ts';
 
 //region Corpus pass input
@@ -14,7 +16,7 @@ import type { RunClient, } from './run-client-contract.ts';
 
  @example
  ```ts
- const input: CorpusPassInput = { line, runsDir, graceNote: '', writerNote: '', pinSetting, hardCapMs, spendCeilingUsd, driftAllowed: false, pipelineDir, readTip, env, transport, newClient, settle: settleEntry, outsideReads, pictureSources, now, };
+ const input: CorpusPassInput = { line, runsDir, graceNote: '', writerNote: '', pinSetting, hardCapMs, spendCeilingUsd, driftAllowed: false, pipelineDir, readTip, env, transport, newClient, settle: settleEntry, outsideReads, pictureSources, now, overlap, stageSettings, };
  ```
  */
 export type CorpusPassInput = {
@@ -102,6 +104,17 @@ export type CorpusPassInput = {
    Monotonic clock in milliseconds, which setting the system clock does not move.
    */
   readonly now: () => number;
+
+  /**
+   Slices each entry keeps in flight, beside where the value came from, read
+   once for the whole pass.
+   */
+  readonly overlap: OverlapSetting;
+
+  /**
+   Straggler windows and contest ledger every stage of the pass runs under.
+   */
+  readonly stageSettings: StageSettings;
 };
 
 //endregion Corpus pass input

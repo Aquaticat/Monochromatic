@@ -44,6 +44,7 @@ import {
   type TwinMemo,
   type TwinStored,
 } from './twin-memo.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate slice settle
 // One slice of the translate lane, from its window to its settled record: the
@@ -183,6 +184,9 @@ export type TranslateSliceSettlement = {
 
  @param l - lane logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Outcome beside what the slice reported
 
  @throws Whatever `signal.reason` carries, once the caller aborts with this
@@ -210,6 +214,7 @@ export async function resumeReuseOrBuyTranslateSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -226,6 +231,7 @@ export async function resumeReuseOrBuyTranslateSlice(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateSliceSettlement> {
   /**
@@ -438,6 +444,7 @@ export async function resumeReuseOrBuyTranslateSlice(
         signal,
         perCallTimeoutMs,
         l,
+        stageSettings,
       },);
     },
     persistedOf: storedRecord,

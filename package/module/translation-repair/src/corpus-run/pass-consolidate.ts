@@ -16,6 +16,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { consolidationHooksFor, } from './pass-consolidate-reseat.ts';
 import { readJudgeSeats, } from './run-seats-read.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Corpus pass consolidation
 
@@ -56,11 +57,14 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 
  @param l - entry logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Consolidation records in comparison order
 
  @example
  ```ts
- const slices = await runPassConsolidation({ client, prepared, projected, contests, frontMatterSlices, pictureReadings, entryCacheDir, pipelineDigest, signal, overlap, l, });
+ const slices = await runPassConsolidation({ client, prepared, projected, contests, frontMatterSlices, pictureReadings, entryCacheDir, pipelineDigest, signal, overlap, l, stageSettings, });
  ```
  */
 export async function runPassConsolidation(
@@ -77,6 +81,7 @@ export async function runPassConsolidation(
     overlap,
     archiveDisputes,
     l,
+    stageSettings,
   }: {
     readonly client: RunClient;
     readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
@@ -90,6 +95,7 @@ export async function runPassConsolidation(
     readonly signal: AbortSignal;
     readonly overlap: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<readonly ArtifactConsolidateSlice[]> {
   /**
@@ -159,6 +165,7 @@ export async function runPassConsolidation(
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     overlap,
     l,
+    stageSettings,
   },);
 }
 

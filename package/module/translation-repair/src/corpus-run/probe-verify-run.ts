@@ -15,6 +15,7 @@ import {
   assertSheetPairFree,
   writeSheetPair,
 } from './sheet-write.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Probe verify run
 // Gathers the damaged and control regions, probes each with the issues
@@ -123,6 +124,9 @@ export const VERIFY_BLIND_NOTE: string = 'NOTE the sheet is blind and its manife
  @param gather - the two gatherers, which read the settled artifacts and the
  corpus pages: `gatherRelabelCases` and `gatherControlCases` in a run
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @throws {@link StatedRefusalError} when the sheet or its manifest is already in
  the directory, before anything is gathered or asked
 
@@ -131,7 +135,7 @@ export const VERIFY_BLIND_NOTE: string = 'NOTE the sheet is blind and its manife
 
  @example
  ```ts
- await runProbeVerify({ dir, pin, newClient: createRunClient, gather: { damaged: gatherRelabelCases, controls: gatherControlCases, }, },);
+ await runProbeVerify({ dir, pin, newClient: createRunClient, gather: { damaged: gatherRelabelCases, controls: gatherControlCases, }, stageSettings, },);
  ```
  */
 export async function runProbeVerify(
@@ -140,6 +144,7 @@ export async function runProbeVerify(
     pin,
     newClient,
     gather,
+    stageSettings,
   }: {
     readonly dir: string;
     readonly pin: CorpusPin;
@@ -148,6 +153,7 @@ export async function runProbeVerify(
       readonly damaged: typeof gatherRelabelCases;
       readonly controls: typeof gatherControlCases;
     };
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   // BEFORE ANY REGION IS ASKED: the pair is refused at the write when either
@@ -194,11 +200,13 @@ export async function runProbeVerify(
       cases: damaged,
       kind: 'damaged',
       newClient,
+      stageSettings,
     },),
     ...await collectFlagged({
       cases: controls,
       kind: 'control',
       newClient,
+      stageSettings,
     },),
   ];
 

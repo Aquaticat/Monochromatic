@@ -22,6 +22,7 @@ import {
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Absolute naturalness review stage
 
@@ -180,12 +181,13 @@ function uniqueFindings(
 
  @param exchangeTimeoutMs - deadline accounting unavailable seat
 
- @param graceMs - optional test seam for post-quorum abandonment window
-
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
 
  @param l - parent logger
+
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
 
  @returns Candidate-bound absolute verdict and every seat status
 
@@ -193,7 +195,7 @@ function uniqueFindings(
 
  @example
  ```ts
- const review = await reviewAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });
+ const review = await reviewAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, stageSettings, });
  ```
  */
 export async function reviewAbsoluteNaturalness(
@@ -205,9 +207,9 @@ export async function reviewAbsoluteNaturalness(
     quorumOver = modelIds.length,
     signal,
     exchangeTimeoutMs,
-    graceMs,
     l,
     fanOut,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -216,9 +218,9 @@ export async function reviewAbsoluteNaturalness(
     readonly quorumOver?: number;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
-    readonly graceMs?: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<AbsoluteNaturalnessReviewOutcome> {
   /**
@@ -288,7 +290,9 @@ export async function reviewAbsoluteNaturalness(
     stage: 'absolute-naturalness-review',
     l: rl,
     quorumOver,
-    ...((graceMs === undefined) ? {} : { graceMs, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);

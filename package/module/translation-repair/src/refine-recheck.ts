@@ -11,6 +11,7 @@ import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
 import { silentStagesOf, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Refine recheck
 // The checker round a refined slice passes before its rewrite may ship: the
@@ -55,6 +56,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Whether refinement may ship, plus the checker stage's own findings
  and the recheck's verdict as findings
 
@@ -81,7 +85,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
  @example
  ```ts
- const retained = await retainsResolvedIssues({ client, checkerModelIds, outcome, refineContributors, sourceText, refinedText, signal, perCallTimeoutMs, l, },);
+ const retained = await retainsResolvedIssues({ client, checkerModelIds, outcome, refineContributors, sourceText, refinedText, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function retainsResolvedIssues(
@@ -97,6 +101,7 @@ export async function retainsResolvedIssues(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly checkerModelIds: readonly RosterModelId[];
@@ -109,6 +114,7 @@ export async function retainsResolvedIssues(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<{
   readonly retained: boolean;
@@ -182,6 +188,7 @@ export async function retainsResolvedIssues(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**

@@ -24,6 +24,7 @@ import type { FanOutMode, } from './stage-fanout-window.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Section pairing stage
 // ASKS THE ROSTER WHICH SECTION RENDERS WHICH, and keeps only what enough of
@@ -229,11 +230,14 @@ function readUsablePairings(
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns What the roster agreed on, with what it lost
 
  @example
  ```ts
- const outcome = await pairSectionsWithRoster({ client, modelIds, sourceSections, targetSections, signal, exchangeTimeoutMs, l, },);
+ const outcome = await pairSectionsWithRoster({ client, modelIds, sourceSections, targetSections, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function pairSectionsWithRoster(
@@ -246,6 +250,7 @@ export async function pairSectionsWithRoster(
     exchangeTimeoutMs,
     l,
     fanOut,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -255,6 +260,7 @@ export async function pairSectionsWithRoster(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<SectionPairingOutcome> {
   /**
@@ -286,6 +292,9 @@ export async function pairSectionsWithRoster(
     l: pl,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    graceMs: stageSettings
+      .grace
+      .roundMs,
   },);
 
   /**

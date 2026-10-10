@@ -9,6 +9,7 @@ import {
   createRunClient,
   resolveRunsDir,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Audit sensitivity
 // Asks whether the rendering audit can detect a planted defect at all, and
@@ -102,6 +103,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'audit-sensitivity
     now: nowAsIso,
     pipelineDigest,
     runnerClosure,
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

@@ -12,6 +12,7 @@ import {
   readRunCorpusPinSetting,
   resolveRunsDir,
 } from './run-config.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Editor width probe
 // Does seating more EDITORS buy a better repair, with the judging panel held
@@ -51,6 +52,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
     runSlice: runWidthSlice,
     writeReport: writeWidthReport,
     runsDir: await resolveRunsDir(),
+    stageSettings: readStageSettings({ env: process.env, },),
   },);
 }
 

@@ -10,6 +10,7 @@ import { rendersAsNothing, } from '../renders-as-nothing.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { AnchorTarget, } from '../validate-issue.ts';
 import { decoyCut, } from './coverage-control-decoy.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Coverage control
 // Whether the coverage roster can vote absence AT ALL, asked before its
@@ -342,6 +343,9 @@ export function withoutSpans(
 
  @param l - logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Row for this case, or the refusal saying why it could not be damaged
 
  @throws Error when a carried verdict offers no span, or one the translation
@@ -349,7 +353,7 @@ export function withoutSpans(
 
  @example
  ```ts
- const row = await tryCase({ client, probe, modelIds, signal, exchangeTimeoutMs, l, },);
+ const row = await tryCase({ client, probe, modelIds, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 async function tryCase(
@@ -360,6 +364,7 @@ async function tryCase(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly probe: CoverageControlCase;
@@ -367,6 +372,7 @@ async function tryCase(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<CoverageControlRow | CoverageControlRefusal> {
   /**
@@ -380,6 +386,7 @@ async function tryCase(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -469,6 +476,7 @@ async function tryCase(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -515,6 +523,7 @@ async function tryCase(
       signal,
       exchangeTimeoutMs,
       l,
+      stageSettings,
     },);
 
   /**
@@ -567,11 +576,14 @@ async function tryCase(
 
  @param l - logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Whether the wire voted absence once the rendering was gone
 
  @example
  ```ts
- const control = await coverageControlHolds({ client, cases, modelIds, signal, exchangeTimeoutMs, l, },);
+ const control = await coverageControlHolds({ client, cases, modelIds, signal, exchangeTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function coverageControlHolds(
@@ -582,6 +594,7 @@ export async function coverageControlHolds(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly cases: readonly CoverageControlCase[];
@@ -589,6 +602,7 @@ export async function coverageControlHolds(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<CoverageControlResult> {
   /**
@@ -616,6 +630,7 @@ export async function coverageControlHolds(
       signal,
       exchangeTimeoutMs,
       l,
+      stageSettings,
     },);
     /* oxlint-enable eslint/no-await-in-loop */
 

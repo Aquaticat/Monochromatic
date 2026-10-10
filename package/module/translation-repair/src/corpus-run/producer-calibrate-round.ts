@@ -7,6 +7,7 @@ import type { SelectionRound, } from '../self-preference.ts';
 import { runTranslateStage, } from '../translate-stage.ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Producer calibrate round
 // ONE SLICE OF THE PRODUCER CALIBRATION, every model writing and every model
@@ -53,11 +54,14 @@ export type ProducerCalibrateRound = {
  @param client - client this slice's calls go through, built by the caller so
  a case supplies one that answers from a script
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Slate, ballots and authors of that round
 
  @example
  ```ts
- const round = await runCalibrationRound({ slice, roster, client, },);
+ const round = await runCalibrationRound({ slice, roster, client, stageSettings, },);
  ```
  */
 export async function runCalibrationRound(
@@ -65,10 +69,12 @@ export async function runCalibrationRound(
     slice,
     roster,
     client,
+    stageSettings,
   }: {
     readonly slice: BenchSlice;
     readonly roster: readonly RosterModelId[];
     readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<ProducerCalibrateRound> {
   /**
@@ -92,6 +98,7 @@ export async function runCalibrationRound(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   /**

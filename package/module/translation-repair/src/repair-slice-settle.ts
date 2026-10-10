@@ -29,6 +29,7 @@ import {
   type TwinMemo,
   type TwinStored,
 } from './twin-memo.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Repair slice settle
 // One prepared repair slice from neighbour windows to a resumed, twin-reused or
@@ -112,6 +113,9 @@ function storedOutcome(
 
  @param l - repair-lane logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Outcome and cache-refusal findings
 
  @throws Whatever `signal.reason` carries when caller aborts with this slice
@@ -136,6 +140,7 @@ export async function settleRepairSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -149,6 +154,7 @@ export async function settleRepairSlice(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<RepairSliceSettlement> {
   /**
@@ -286,6 +292,7 @@ export async function settleRepairSlice(
         signal,
         perCallTimeoutMs,
         l,
+        stageSettings,
       },);
     },
     persistedOf: storedOutcome,

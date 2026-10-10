@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { reviewAbsoluteNaturalness, } from './absolute-naturalness-review-stage.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Archive block naturalness
 
@@ -51,6 +52,9 @@ function describeNaturalnessFindings(
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Findings from both responsibilities, located evidence on rejection
 
  @example
@@ -68,6 +72,7 @@ export async function recordArchiveBlockNaturalness(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -77,6 +82,7 @@ export async function recordArchiveBlockNaturalness(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<readonly string[]> {
   /**
@@ -102,6 +108,7 @@ export async function recordArchiveBlockNaturalness(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    First-round located evidence.
@@ -118,6 +125,7 @@ export async function recordArchiveBlockNaturalness(
     signal,
     exchangeTimeoutMs,
     l,
+    stageSettings,
   },);
   /**
    Second-round located evidence.

@@ -61,8 +61,9 @@ export type CalibrationGrace = {
 
  @param fallback - built-in window, used when nothing overrides it
 
- @param raw - override text; tests pass their own, and the environment read
- supplies `''` for an absent variable, since unset and empty are alike here
+ @param raw - override text as the launch's environment holds it, `''` for an
+ absent variable, since unset and empty are alike here; REQUIRED, so the
+ environment is read where an entry file reads it and in no stage it feeds
 
  @returns Milliseconds a round keeps waiting on stragglers after quorum
 
@@ -71,16 +72,16 @@ export type CalibrationGrace = {
 
  @example
  ```ts
- const graceMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },);
+ const graceMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, raw: env[STRAGGLER_GRACE_VAR] ?? '', },);
  ```
  */
 export function resolveStragglerGraceMs(
   {
     fallback,
-    raw = process.env[STRAGGLER_GRACE_VAR] ?? '',
+    raw,
   }: {
     readonly fallback: number;
-    readonly raw?: string;
+    readonly raw: string;
   },
 ): number {
   return readWindowDial({
@@ -231,13 +232,16 @@ export function graceOverrideNote(
 /**
  Puts the editor calibration under its own window unless a launch set one.
 
- THROUGH THE VARIABLE, DELIBERATELY. Every stage round reads its window off
- `resolveStragglerGraceMs` with the built-in fallback, and threading a second
- fallback through every stage the calibration drives would touch a dozen
- signatures for one caller. Setting the variable when it is unset gives the
- calibration's rounds the decided window by the path a launch already has,
- and a launch that set the variable is honored as an override, refused if
- unreadable, exactly as before.
+ RETURNED, NEVER WRITTEN BACK. This once set the variable when it was unset,
+ so every stage round, reading its window off the environment, picked the
+ calibration's window up by the path a launch has. The rounds now take their
+ windows as a value the entry hands down (`StageSettings`,
+ `stage-settings.ts`), so the calibration hands its rounds the window read
+ with this fallback (`readWriterGrace` with `CALIBRATION_STRAGGLER_GRACE_MS`)
+ and nothing writes the process's environment. A launch that set the
+ variable is honored as an override, refused if unreadable, exactly as before.
+
+ @param env - environment of the launch, which the entry file hands in
 
  @returns Window the calibration's rounds run under, and where it came from
 
@@ -246,18 +250,19 @@ export function graceOverrideNote(
 
  @example
  ```ts
- const grace = adoptCalibrationGrace();
+ const grace = adoptCalibrationGrace({ env: process.env, },);
  console.log(`straggler window ${String(grace.effectiveMs,)}ms (${grace.source})`,);
  ```
  */
-export function adoptCalibrationGrace(): CalibrationGrace {
+export function adoptCalibrationGrace(
+  { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
+): CalibrationGrace {
   /**
    What the launch set, empty when it set nothing.
    */
-  const written = process.env[STRAGGLER_GRACE_VAR] ?? '';
+  const written = env[STRAGGLER_GRACE_VAR] ?? '';
 
   if (written.trim() === '') {
-    process.env[STRAGGLER_GRACE_VAR] = String(CALIBRATION_STRAGGLER_GRACE_MS,);
     return {
       effectiveMs: CALIBRATION_STRAGGLER_GRACE_MS,
       source: 'calibration-default',

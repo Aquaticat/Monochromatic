@@ -16,6 +16,7 @@ import type {
   TranslateSliceRecord,
 } from './translate-document-contract.ts';
 import { settleTranslateSlice, } from './translate-slice.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate slice attempt
 // One slice's round, with settled and unfilled shapes named.
@@ -89,6 +90,9 @@ export type SliceAttempt = {
 
  @param l - driver logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Settled record, or the fact that this passage stays missing
 
  @throws Whatever the slice throws that is not an absence refusal over an
@@ -114,6 +118,7 @@ export async function attemptTranslateSlice(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slice: ChunkPair;
@@ -146,6 +151,7 @@ export async function attemptTranslateSlice(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<SliceAttempt> {
   try {
@@ -164,6 +170,7 @@ export async function attemptTranslateSlice(
         signal,
         perCallTimeoutMs,
         l,
+        stageSettings,
       },),
     };
   }

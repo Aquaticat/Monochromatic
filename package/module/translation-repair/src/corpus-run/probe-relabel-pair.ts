@@ -16,6 +16,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Probe relabel pair
 // Asks the introduced-defect probe about one region under the three
@@ -52,11 +53,14 @@ export function otherDisclosure({ production, }: { readonly production: PriorIss
 
  @param client - client this one call asks through
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns One line of counts
 
  @example
  ```ts
- const line = await probeOnce({ region, issues: [], disclosure: 'withheld', sourceText, baselineText, client, },);
+ const line = await probeOnce({ region, issues: [], disclosure: 'withheld', sourceText, baselineText, client, stageSettings, },);
  ```
  */
 async function probeOnce(
@@ -67,6 +71,7 @@ async function probeOnce(
     sourceText,
     baselineText,
     client,
+    stageSettings,
   }: {
     readonly region: RepairRegion;
     readonly issues: readonly AdjudicatedIssue[];
@@ -74,6 +79,7 @@ async function probeOnce(
     readonly sourceText: string;
     readonly baselineText: string;
     readonly client: SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<string> {
   /**
@@ -91,6 +97,7 @@ async function probeOnce(
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'probe-relabel', },),
+    stageSettings,
   },);
 
   /**
@@ -118,9 +125,12 @@ async function probeOnce(
  has already been asked, and a control region asked twice with no issues sends
  the same prompt twice
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @example
  ```ts
- await probePair({ relabelCase, production: 'withheld', newClient, },);
+ await probePair({ relabelCase, production: 'withheld', newClient, stageSettings, },);
  ```
  */
 export async function probePair(
@@ -128,10 +138,12 @@ export async function probePair(
     relabelCase,
     production,
     newClient,
+    stageSettings,
   }: {
     readonly relabelCase: RelabelCase;
     readonly production: PriorIssueDisclosure;
     readonly newClient: () => SyntheticClient;
+    readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
   for (const line of relabelCaseLines({ relabelCase, },))
@@ -152,6 +164,7 @@ export async function probePair(
     sourceText: relabelCase.sourceText,
     baselineText: relabelCase.baselineText,
     client: newClient(),
+    stageSettings,
   },);
   console.log(`  issues-${production} ${productionLine}`,);
 
@@ -165,6 +178,7 @@ export async function probePair(
     sourceText: relabelCase.sourceText,
     baselineText: relabelCase.baselineText,
     client: newClient(),
+    stageSettings,
   },);
   console.log(`  issues-${other} ${otherPrompt}`,);
 
@@ -182,6 +196,7 @@ export async function probePair(
     sourceText: relabelCase.sourceText,
     baselineText: relabelCase.baselineText,
     client: newClient(),
+    stageSettings,
   },);
   console.log(`  issues-absent ${absent}`,);
 }

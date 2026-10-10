@@ -15,6 +15,7 @@ import {
   type WidthArm,
 } from './editor-width-model.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
+import type { StageSettings, } from '../stage-settings.ts';
 
 //region Editor width contest
 // Two shipped repairs put on one slate, so the panel says which it prefers.
@@ -86,11 +87,14 @@ export type ContestedPair = {
 
  @param l - logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Text the panel preferred and how many ballots named anything
 
  @example
  ```ts
- const round = await contest({ client, input, first, second, judgeModelIds, signal, l, },);
+ const round = await contest({ client, input, first, second, judgeModelIds, signal, l, stageSettings, },);
  ```
  */
 async function contest(
@@ -102,6 +106,7 @@ async function contest(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly input: WidthProbeInput;
@@ -110,6 +115,7 @@ async function contest(
     readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ContestRound> {
   /**
@@ -171,6 +177,7 @@ async function contest(
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
+    stageSettings,
   },);
 
   /**
@@ -333,11 +340,14 @@ export function armInSeat(
 
  @param l - logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Verdict and how many ballots carried it
 
  @example
  ```ts
- const contested = await bothOrders({ client, input, narrow, wide, judgeModelIds, signal, l, },);
+ const contested = await bothOrders({ client, input, narrow, wide, judgeModelIds, signal, l, stageSettings, },);
  ```
  */
 export async function bothOrders(
@@ -349,6 +359,7 @@ export async function bothOrders(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly input: WidthProbeInput;
@@ -357,6 +368,7 @@ export async function bothOrders(
     readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ContestedPair> {
   /**
@@ -370,6 +382,7 @@ export async function bothOrders(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   },);
 
   /**
@@ -383,6 +396,7 @@ export async function bothOrders(
     judgeModelIds,
     signal,
     l,
+    stageSettings,
   },);
 
   return {

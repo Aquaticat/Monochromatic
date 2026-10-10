@@ -38,7 +38,7 @@ import { assertJudgeableEditorRoster, } from './repair-contract.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import { writerRoundGraceMs, } from './writer-grace-override.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Editor stage
 // Several editors rewrite one chunk's envelopes independently, every proposal
@@ -140,6 +140,9 @@ export type EditorStageResult = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Winning patch plus findings
 
  @throws {@link import('./repair-contract.ts').ProducerRosterError} when either
@@ -169,6 +172,7 @@ export async function runEditorStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly editorModelIds: readonly RosterModelId[];
@@ -186,6 +190,7 @@ export async function runEditorStage(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<EditorStageResult> {
   assertJudgeableEditorRoster({
@@ -237,7 +242,9 @@ export async function runEditorStage(
     //
     // A WRITER ROUND, so the third voice is a whole candidate and waits under
     // the writer window, built in since 2026-09-06 (`writer-grace-override.ts`).
-    graceMs: writerRoundGraceMs(),
+    graceMs: stageSettings
+      .grace
+      .writerMs,
     l,
   },);
 
@@ -336,6 +343,7 @@ export async function runEditorStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**
@@ -374,6 +382,7 @@ export async function runEditorStage(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
 
   /**

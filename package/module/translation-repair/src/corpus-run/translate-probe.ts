@@ -8,6 +8,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { probeTranslate, } from './translate-probe-run.ts';
+import { readStageSettings, } from '../stage-settings.ts';
 
 //region Translate probe
 // PROTOTYPE for the translate-first re-design: asks whether a translate stage
@@ -43,6 +44,7 @@ if (import.meta.main)
         editorModelIds: RUN_MODELS.editorModelIds,
         perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
         log: tagged({ tag: 'translate-probe', },),
+        stageSettings: readStageSettings({ env: process.env, },),
       },);
     },
   },);

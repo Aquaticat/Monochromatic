@@ -20,13 +20,13 @@ import { floorTranslateVoices, } from './translate-floor.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import { foldTranslatorVoices, } from './translator-answer-fold.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import { writerRoundGraceMs, } from './writer-grace-override.ts';
 import {
   buildTranslateMessages,
   isTranslateReportWire,
   TRANSLATE_RESPONSE_FORMAT,
   type TranslateFollowupEvidence,
 } from './translate-wire.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Translate produce
 // The half of the translate stage that WRITES: several models render the slice
@@ -124,11 +124,14 @@ export type ProducedSlate = {
 
  @param l - pipeline logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Slate, heard count and findings
 
  @example
  ```ts
- const slate = await produceTranslateSlate({ client, translatorModelIds, sourceText, incumbentText, lineStructured, signal, perCallTimeoutMs, l, },);
+ const slate = await produceTranslateSlate({ client, translatorModelIds, sourceText, incumbentText, lineStructured, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function produceTranslateSlate(
@@ -151,6 +154,7 @@ export async function produceTranslateSlate(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly translatorModelIds: readonly RosterModelId[];
@@ -170,6 +174,7 @@ export async function produceTranslateSlate(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ProducedSlate> {
   /**
@@ -217,7 +222,9 @@ export async function produceTranslateSlate(
     // A WRITER ROUND: every voice the window cuts is one fewer rendering on
     // the slate, so it waits under the writer window, built in since 2026-09-06
     // (`writer-grace-override.ts`).
-    graceMs: writerRoundGraceMs(),
+    graceMs: stageSettings
+      .grace
+      .writerMs,
     l: tl,
   },);
 

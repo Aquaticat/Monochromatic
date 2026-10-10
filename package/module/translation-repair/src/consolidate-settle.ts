@@ -43,6 +43,7 @@ import type {
 } from './translate-stage-result.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Consolidate settle
 // RUNS THE CONSOLIDATION'S DECIDING HALF, in the order it was specified: floor
@@ -346,13 +347,16 @@ export type ConsolidationSettlement = {
 
  @param l - stage logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns What ships, and every round that decided it
 
  @throws BlankSelectionError - when the slate judges settle on nothing at all
 
  @example
  ```ts
- const settled = await settleConsolidation({ client, roster, subject, voices, validity, producedFindings, standingText, standingMayShip, standingEligible, lineStructured, signal, perCallTimeoutMs, l, },);
+ const settled = await settleConsolidation({ client, roster, subject, voices, validity, producedFindings, standingText, standingMayShip, standingEligible, lineStructured, signal, perCallTimeoutMs, l, stageSettings, },);
  ```
  */
 export async function settleConsolidation(
@@ -376,6 +380,7 @@ export async function settleConsolidation(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly roster: readonly RosterModelId[];
@@ -396,6 +401,7 @@ export async function settleConsolidation(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly stageSettings: StageSettings;
   }>,
 ): Promise<ConsolidationSettlement> {
   /**
@@ -525,6 +531,7 @@ export async function settleConsolidation(
       signal,
       perCallTimeoutMs,
       l: sl,
+      stageSettings,
     },);
   }
 
@@ -631,6 +638,7 @@ export async function settleConsolidation(
     signal,
     perCallTimeoutMs,
     l: sl,
+    stageSettings,
   },);
 
   // THE JUDGES CHOOSING THE INCUMBENT ENDS IT. There is no consolidation to
@@ -672,6 +680,7 @@ export async function settleConsolidation(
       signal,
       perCallTimeoutMs,
       l: sl,
+      stageSettings,
     },);
   }
 
@@ -695,6 +704,7 @@ export async function settleConsolidation(
     signal,
     perCallTimeoutMs,
     l: sl,
+    stageSettings,
   },);
 }
 

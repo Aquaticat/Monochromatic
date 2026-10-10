@@ -15,6 +15,7 @@ import type { LaneText, } from './translate-candidates.ts';
 import { floorReach, } from './translate-floor-ground.ts';
 import { unflooredFinding, } from './translate-unfloored.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
+import type { StageSettings, } from './stage-settings.ts';
 
 //region Consolidate slice buy
 
@@ -51,6 +52,7 @@ type ConsolidationBuyInput = {
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
+  readonly stageSettings: StageSettings;
 };
 // Fresh model work for one consolidation question. Resume, twin reuse, cache
 // eligibility and ordered document aggregation remain driver responsibilities.
@@ -95,6 +97,9 @@ type ConsolidationBuyInput = {
 
  @param l - driver logger
 
+ @param stageSettings - straggler windows and contest ledger the entry file
+ read for this launch (`StageSettings`)
+
  @returns Complete settlement for this question
 
  @throws Whatever producer, judging, gate, or caller abort throws
@@ -111,6 +116,7 @@ type ConsolidationBuyInput = {
    signal,
    perCallTimeoutMs,
    l,
+   stageSettings,
  },);
  ```
 
@@ -135,6 +141,7 @@ async function buyConsolidationAttempt(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   }: ForeignBorrowed<ConsolidationBuyInput>,
 ): Promise<ConsolidationSettlement> {
   /**
@@ -161,6 +168,7 @@ async function buyConsolidationAttempt(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   };
 
   /**
@@ -223,6 +231,7 @@ async function buyConsolidationAttempt(
     signal,
     perCallTimeoutMs,
     l,
+    stageSettings,
   },);
   // SILENT PRODUCERS ARE THE HOUR, not the passage, lane texts or none: a
   // slate the judges would be as silent about must not settle as unjudged
