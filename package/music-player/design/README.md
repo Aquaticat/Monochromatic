@@ -45,8 +45,8 @@ The owned native runtime was stopped after restoring its recorded fields.
 
 D82 accepts Android's standard media-notification presentation;
 no special notification design remains.
-The [whole-map keyboard proposal](questions/keyboard-map.prototype.html)
-is now browser-verified,
+The [whole-map keyboard design](questions/keyboard-map.prototype.html)
+was browser-verified and accepted as built (D102),
 with editing and focused-control ownership preserved.
 [Its boundary record](evidence/keyboard-map-boundaries.md) distinguishes
 proposal,
@@ -390,8 +390,7 @@ the Fold visual choices even if its own proportions would suggest a different la
 The rejected command review remains at `questions/archive/command-igr-rejected.html`.
 D21's configurable global hotkey and extra Settings row belonged to the command bar;
 they do not silently move to Search.
- D25's Ctrl+F reservation remains pending the
-whole keyboard-map pass.
+ D25's Ctrl+F reservation is part of the keyboard map D102 accepted.
  Result actions and status truth conditions are settled design goals under
 D69 to D74.
 Exact cause-specific recovery needs a future source-status owner;

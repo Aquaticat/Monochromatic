@@ -470,7 +470,7 @@ new IME work and native accessibility acceptance.
   do not transfer to Search.
   D25 still reserves Ctrl+F for search and Ctrl+O for the
   picker,
-  pending the whole keyboard map.
+  and D102 accepted the whole keyboard map.
   Cover-specific accessibility remains open;
   D39/D40 settled only the unfolded
   screen.
@@ -534,9 +534,9 @@ new IME work and native accessibility acceptance.
   with information clear of the dent,
   preserve D34/D41 color treatments,
   and do not silently retain fixed 414dp content panes or a blank 24dp stripe.
-- **OPEN: keyboard map revision (section 6):**
-  one revised IntelliJ-aligned map,
-  including what ↑/↓ does after D43 removed the volume popover.
+- Keyboard map revision (section 6) is settled by D102:
+  the IntelliJ-aligned map is accepted as built,
+  and bare ↑/↓ keep their native behavior after D43 removed the volume popover.
 - Android media notification presentation is settled by D82.
   Accept what Android provides;
   no special notification design or variant round remains.
@@ -869,16 +869,15 @@ volume;
  and the
 Android media notification appearance is settled by D82:
 accept the platform presentation with no special design.
-**Status (2026-09-17):**
- the design deliverable is a single revised map brought back as a
-whole;
- implementing it is developer work.
-The requested pass now has a verified whole-map proposal at
-`questions/keyboard-map.prototype.html`.
+**Status (2026-10-10): SETTLED (D102).**
+ The human accepted the whole-map proposal at
+`questions/keyboard-map.prototype.html` as built,
+including the playback-area scope for Space, previous, next and `Ctrl+M`,
+and bare arrows keeping native behavior.
 `evidence/keyboard-map-boundaries.md` separates actual browser behavior
 from unverified OS/native delivery.
-New bindings and the proposed playback-region scope are not accepted defaults;
-there is no per-key ballot or production implementation authority.
+Implementing the map is developer work;
+there is no production implementation authority.
  The custom media-notification design item is closed by D82;
  functional integration remains separate.
 
@@ -1005,10 +1004,8 @@ of decisions.md.
 - **Command bar surface** (D21) — superseded by D47;
    the Search page is active in
    section 0b.
-- **Keyboard map / IntelliJ alignment pass** (D25):
-   see section 6;
-   one revised map is the
-  design deliverable.
+- **Keyboard map / IntelliJ alignment pass** — SETTLED (D102):
+   see section 6.
 - **Accessibility pass — SETTLED for the unfolded screen (D39, D40).**
    Other surfaces
   get their accessibility treatment inside their own rounds.

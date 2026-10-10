@@ -6,9 +6,8 @@ D25 requests one IntelliJ-aligned keyboard map,
 not individual key-label questions.
 [The self-contained behavior demonstration](../questions/keyboard-map.prototype.html)
 presents one coherent proposal with optional observations.
-Only D25's existing Search/picker assignments are settled;
-new assignments and the proposed playback-region scope are not accepted
-defaults.
+D25 settled the Search/picker assignments,
+and the human accepted the whole map, including the playback-region scope, as built (D102) on 2026-10-10.
 No production keyboard implementation is authorized.
 
 [The planning record](../../../../doc/planning/music-player-keyboard-map.md)
@@ -143,8 +142,8 @@ shares one cause.
 
 ## Remaining boundary and queue
 
-The artifact is a proposed whole map,
-not a new accepted decision or invitation to vote on each key.
+The artifact is the whole map the human accepted (D102),
+not an invitation to vote on each key.
 Actual OS reservations,
 media keys,
 native bindings,
