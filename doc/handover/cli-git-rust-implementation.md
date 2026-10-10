@@ -894,8 +894,10 @@ State found on 2026-10-10:
   the two `event_path.rs:173` base64 survivors are equivalent.
   Dependent-version wiring passes (680 unit, 43 binary, 1 consumer; release-bump differential identical in four scenarios)
   with one survivor, `policy_dependent_version.rs:255:66`, in a filter no probe could reach with a deleted candidate.
-  Decision taken without a question (the document ranked keep > partition > drop, and keeping costs nothing today):
-  keep the filter and record the survivor as unreachable; revisit when a reachable deletion appears.
+  The user corrected the gate on 2026-10-10: it requires every mutant to be caught or justified as impossible to catch,
+  not exactly zero missed.
+  A justification must rest on code (the call chain that makes the mutant equivalent), not on failed probes,
+  so the delegate was told to trace every producer of the filtered list and either write that proof or kill the mutant with a test.
   The commit path finished slice 3's leaf modules (829 library tests, planted controls, fuzz) and keeps going.
 - Landing order decided on 2026-10-10: Markdown autofix first, then dependent-version wiring (both edit
   `src/native/policy_checks.rs`; each needs a gate rerun on the merge with main, because the cutover changed
