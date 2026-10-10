@@ -58,7 +58,7 @@ import { sliceCensusWidestLines, } from './slice-census-widest.ts';
 
  @example
  ```ts
- await reportSliceCensus({ pin: RUN_CORPUS_PIN, resolveRuns: resolveRunsDir, readRecipe: readSettledRecipe, },);
+ await reportSliceCensus({ pin, resolveRuns: resolveRunsDir, readRecipe: readSettledRecipe, },);
  ```
  */
 export async function reportSliceCensus(

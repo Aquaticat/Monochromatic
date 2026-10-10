@@ -924,29 +924,51 @@ export const RUN_CALL_CONFIG: RunCallConfig = {
 };
 
 /**
- Corpus read location and commit with any environment override applied,
- beside where each half came from, for the launch line
- `corpusPinOverrideNote` makes of it.
+ Built-in corpus read location: the user's local clone at the benchmark
+ commit. Content is read at runtime and never committed here (the clone is
+ UNLICENSED).
  */
-export const RUN_CORPUS_PIN_SETTING: CorpusPinSetting = readCorpusPinSetting({
-  fallback: {
-    cloneDir: join(
-      homedir(),
-      'one-among-us',
-      'data',
-    ),
-    commitSha: CORPUS_COMMIT_SHA,
-  },
-},);
+const RUN_CORPUS_PIN_FALLBACK: CorpusPin = {
+  cloneDir: join(
+    homedir(),
+    'one-among-us',
+    'data',
+  ),
+  commitSha: CORPUS_COMMIT_SHA,
+};
 
 /**
- Pinned corpus read location: the user's local clone at the benchmark commit
- unless the environment overrides either half
- (`TRANSLATION_REPAIR_CORPUS_CLONE_DIR`, `TRANSLATION_REPAIR_CORPUS_COMMIT`),
- which fixture runs against an unmerged corpus pull request need.
- Content is read at runtime and never committed here (the clone is UNLICENSED).
+ Reads the run's corpus pin: the built-in clone and commit unless the
+ environment overrides either half (`TRANSLATION_REPAIR_CORPUS_CLONE_DIR`,
+ `TRANSLATION_REPAIR_CORPUS_COMMIT`), which fixture runs against an unmerged
+ corpus pull request need, beside where each half came from, for the launch
+ line `corpusPinOverrideNote` makes of it.
+
+ CALLED BY AN ENTRY INSIDE ITS REFUSAL BOUNDARY, and handed down as a value.
+ Until 2026-10-10 this was a module constant, resolved while this file
+ loaded, so an unreadable override exited every command that loads this
+ file at 1 under a dump of bundled source, before `reportingRefusals` ran,
+ whether or not the command reads the corpus (ledger B302, B381).
+
+ @param env - environment of the process the entry runs in
+
+ @returns The pin beside a per-half source
+
+ @throws StatedRefusalError when an override is written and unreadable
+
+ @example
+ ```ts
+ const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
+ ```
  */
-export const RUN_CORPUS_PIN: CorpusPin = RUN_CORPUS_PIN_SETTING.pin;
+export function readRunCorpusPinSetting(
+  { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
+): CorpusPinSetting {
+  return readCorpusPinSetting({
+    env,
+    fallback: RUN_CORPUS_PIN_FALLBACK,
+  },);
+}
 
 /**
  Worktree root of this checkout, resolved through git from this file's dir.

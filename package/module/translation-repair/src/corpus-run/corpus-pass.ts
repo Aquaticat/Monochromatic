@@ -3,6 +3,10 @@ import {
   resolveStragglerGraceMs,
 } from '../grace-override.ts';
 import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
+import {
+  listCorpusPeople,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import { fetchTransport, } from '../synthetic-transport.ts';
 import {
   readWriterGrace,
@@ -19,13 +23,13 @@ import {
 import { runCorpusPassOver, } from './corpus-pass-run.ts';
 import { readDriftOptIn, } from './pass-generation-guard.ts';
 import { settleEntry, } from './pass-entry.ts';
-import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
+import { outsideReadsFrom, } from './pass-outside-reads.ts';
 import { RUN_PICTURE_SOURCES, } from './pass-visual-evidence.ts';
 import {
   createRunClient,
   readHeadSha,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN_SETTING,
 } from './run-config.ts';
 import {
   resolveSpendCeilingUsd,
@@ -44,9 +48,10 @@ import {
 
  EVERY OVERRIDE IS READ HERE, INSIDE THE REFUSAL BOUNDARY, in the order a
  launch's mistakes should surface: the per-entry ceiling, the spend allowance,
- then both windows, before the lock is claimed and before anything is read, so
- an unreadable value refuses the pass before it claims a directory or spends
- anything, as a stated refusal and not as a fault at load.
+ both windows, then the corpus pin, before the lock is claimed and before
+ anything is read, so an unreadable value refuses the pass before it claims a
+ directory or spends anything, as a stated refusal and not as a fault at load
+ (ledger B302; the pin was still read at load until 2026-10-10).
 
  @param line - the pass's command line, read whole by `reportingRefusals`
 
@@ -85,12 +90,18 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
    */
   const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
 
+  /**
+   Clone and commit the pass reads, after any environment override, beside
+   where each half came from.
+   */
+  const pinSetting = readRunCorpusPinSetting({ env: process.env, },);
+
   return runCorpusPassOver({
     line,
     runsDir: await resolveRunsDir(),
     graceNote,
     writerNote,
-    pinSetting: RUN_CORPUS_PIN_SETTING,
+    pinSetting,
     hardCapMs,
     spendCeilingUsd,
     driftAllowed: readDriftOptIn(),
@@ -100,7 +111,13 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
     transport: fetchTransport,
     newClient: createRunClient,
     settle: settleEntry,
-    outsideReads: RUN_OUTSIDE_READS,
+    outsideReads: outsideReadsFrom({
+      env: process.env,
+      fetchFn: fetch,
+      pin: pinSetting.pin,
+      listPeople: listCorpusPeople,
+      readFile: readCorpusFile,
+    },),
     pictureSources: RUN_PICTURE_SOURCES,
     now: monotonicMs,
   },);

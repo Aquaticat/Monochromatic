@@ -9,8 +9,8 @@ import { runWidthSlice, } from './editor-width-slice.ts';
 import {
   createRunClient,
   readHeadSha,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
 } from './run-config.ts';
 
 //region Editor width probe
@@ -35,11 +35,16 @@ import {
  ```
  */
 async function main({ line, }: { readonly line: CommandLineOf<'editor-width-probe'>; },): Promise<void> {
+  /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   await runEditorWidthProbe({
     line,
     newClient: createRunClient,
     drawSample: sampleBenchSlices,
-    pin: RUN_CORPUS_PIN,
+    pin,
     readHeadSha,
     controlHolds: widthControlHolds,
     gather: gatherWidthInput,

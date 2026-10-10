@@ -2,7 +2,7 @@ import { repairTranslation, } from '../repair-entry.ts';
 import { monotonicMs, } from '../monotonic-clock.ts';
 import {
   createRunClient,
-  RUN_CORPUS_PIN,
+  readRunCorpusPinSetting,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
@@ -21,9 +21,14 @@ if (import.meta.main)
     argv: process.argv,
     env: process.env,
     run: function runSentinelProbe({ line, },) {
+      /**
+       Corpus clone and commit this run reads, after any environment
+       override, read inside the refusal boundary (ledger B302).
+       */
+      const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
       return probeCorpusEntries({
         line,
-        pin: RUN_CORPUS_PIN,
+        pin,
         newClient: createRunClient,
         repair: repairTranslation,
         models: RUN_MODELS,

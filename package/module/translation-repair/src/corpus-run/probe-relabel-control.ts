@@ -125,7 +125,7 @@ function byLengthDistance<Region extends { readonly before: string; },>(
 
  @param damaged - damaged cases, whose envelopes are excluded
 
- @param pin - corpus commit to read the pages at: `RUN_CORPUS_PIN` in a run, a
+ @param pin - corpus commit to read the pages at: the pin its entry reads in a run, a
  throwaway clone in a test. REQUIRED: a default read the clone for any caller
  that left it out (ledger M43, X24)
 
@@ -140,7 +140,7 @@ function byLengthDistance<Region extends { readonly before: string; },>(
 
  @example
  ```ts
- const controls = await gatherControlCases({ manifestPath, damaged, pin: RUN_CORPUS_PIN, runsDir, },);
+ const controls = await gatherControlCases({ manifestPath, damaged, pin, runsDir, },);
  ```
  */
 export async function gatherControlCases(

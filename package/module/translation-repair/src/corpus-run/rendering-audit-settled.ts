@@ -1,12 +1,17 @@
+import {
+  listCorpusPeople,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
-import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
+import { outsideReadsFrom, } from './pass-outside-reads.ts';
 import { nowAsIso, } from './probe-run-clock.ts';
 import { runSettledAudit, } from './rendering-audit-settled-drive.ts';
 import { readRunnerClosure, } from './runner-closure.ts';
 import {
   createRunClient,
+  readRunCorpusPinSetting,
   resolveRunsDir,
   RUN_MODELS,
 } from './run-config.ts';
@@ -62,6 +67,25 @@ import {
  */
 async function main({ line, }: { readonly line: CommandLineOf<'rendering-audit-settled'>; },): Promise<void> {
   /**
+   Corpus clone and commit of the run, after any environment override, read
+   inside the refusal boundary (ledger B302): its clone is the one read when
+   `--clone` names none, and the commit each artifact carries is its own.
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
+
+  /**
+   What the run reads from outside the pipeline: the cited pages through the
+   environment's key and caches, which the audit asks of each original.
+   */
+  const outsideReads = outsideReadsFrom({
+    env: process.env,
+    fetchFn: fetch,
+    pin,
+    listPeople: listCorpusPeople,
+    readFile: readCorpusFile,
+  },);
+
+  /**
    Digest over built output, which is the only identity that moves when the
    code moves but the commit does not.
 
@@ -77,7 +101,8 @@ async function main({ line, }: { readonly line: CommandLineOf<'rendering-audit-s
   return runSettledAudit({
     line,
     newClient: createRunClient,
-    reader: RUN_OUTSIDE_READS.references,
+    reader: outsideReads.references,
+    runCloneDir: pin.cloneDir,
     roster: RUN_MODELS.checkerModelIds,
     resolveRuns: resolveRunsDir,
     now: nowAsIso,

@@ -4,8 +4,8 @@ import { readCorpusFile, } from '../corpus-source.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { probeDisplacement, } from './displacement-probe-run.ts';
 import {
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
 } from './run-config.ts';
 import {
   carveSettled,
@@ -41,6 +41,12 @@ if (import.meta.main)
     env: process.env,
     run: async function runDisplacementProbe(): Promise<void> {
       /**
+       Corpus clone and commit this run reads, after any environment
+       override, read inside the refusal boundary (ledger B302).
+       */
+      const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
+
+      /**
        Runs directory whose settled artifacts name the population.
        */
       const runsDir = await resolveRunsDir();
@@ -53,7 +59,7 @@ if (import.meta.main)
           return carveSettled({
             entryId,
             runsDir,
-            cloneDir: RUN_CORPUS_PIN.cloneDir,
+            cloneDir: pin.cloneDir,
             readFile: readCorpusFile,
           },);
         },

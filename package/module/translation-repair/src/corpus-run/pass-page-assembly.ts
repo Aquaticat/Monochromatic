@@ -25,6 +25,9 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 
  @param pipelineDigest - digest of the pipeline that ran
 
+ @param corpusSha - corpus commit the entry was read at, which the artifact
+ names
+
  @param durationMs - time the entry took, on `monotonicMs`
 
  @param prepared - preparation both lanes ran over
@@ -43,7 +46,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 
  @example
  ```ts
- const artifact = settledPageArtifact({ entryId, tip, pipelineDigest, durationMs, prepared, lanes, contestSlices, consolidateSlices, targetText, l, },);
+ const artifact = settledPageArtifact({ entryId, tip, pipelineDigest, corpusSha, durationMs, prepared, lanes, contestSlices, consolidateSlices, targetText, l, },);
  ```
  */
 export function settledPageArtifact(
@@ -51,6 +54,7 @@ export function settledPageArtifact(
     entryId,
     tip,
     pipelineDigest,
+    corpusSha,
     durationMs,
     prepared,
     lanes,
@@ -62,6 +66,7 @@ export function settledPageArtifact(
     readonly entryId: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
+    readonly corpusSha: string;
     readonly durationMs: number;
     readonly prepared: PreparedDocumentPair;
     readonly lanes: DocumentLanesResult;
@@ -78,6 +83,7 @@ export function settledPageArtifact(
     entryId,
     tip,
     pipelineDigest,
+    corpusSha,
     durationMs,
     prepared,
     lanes,
@@ -124,6 +130,7 @@ export function settledPageArtifact(
     entryId,
     tip,
     pipelineDigest,
+    corpusSha,
     durationMs,
     prepared,
     lanes,

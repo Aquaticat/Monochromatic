@@ -193,7 +193,7 @@ export type CitedSubject = {
 
  @example
  ```ts
- const cited = await withCitedReferences({ subjects: buying, reader: RUN_OUTSIDE_READS.references, },);
+ const cited = await withCitedReferences({ subjects: buying, reader: outsideReads.references, },);
  ```
  */
 export async function withCitedReferences(

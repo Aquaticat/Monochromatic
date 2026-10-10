@@ -8,7 +8,7 @@ import { runProducerCalibrate, } from './producer-calibrate-run.ts';
 import {
   createRunClient,
   readHeadSha,
-  RUN_CORPUS_PIN,
+  readRunCorpusPinSetting,
 } from './run-config.ts';
 
 //region Producer calibrate
@@ -16,25 +16,6 @@ import {
 // and why is in `producer-calibrate-run.ts`; what one slice does is in
 // `producer-calibrate-round.ts`. This file names what only a real process has:
 // the run client, the pinned corpus and the repository's head.
-
-/**
- Draws the slices every model writes from the pinned corpus.
-
- @param count - slices wanted
-
- @returns The drawn slices
-
- @example
- ```ts
- const sample = await drawPinned({ count: 10, },);
- ```
- */
-function drawPinned({ count, }: { readonly count: number; },): Promise<readonly BenchSlice[]> {
-  return sampleBenchSlices({
-    count,
-    pin: RUN_CORPUS_PIN,
-  },);
-}
 
 /**
  Hands the real process's client, corpus and head to the calibration.
@@ -47,10 +28,21 @@ function drawPinned({ count, }: { readonly count: number; },): Promise<readonly 
  ```
  */
 function main({ line, }: { readonly line: CommandLineOf<'producer-calibrate'>; },): Promise<void> {
+  /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   return runProducerCalibrate({
     line,
     newClient: createRunClient,
-    drawSlices: drawPinned,
+    drawSlices: function drawPinned({ count, }: { readonly count: number; },): Promise<readonly BenchSlice[]> {
+      // The slices every model writes are drawn from the pin read here.
+      return sampleBenchSlices({
+        count,
+        pin,
+      },);
+    },
     readHead: readHeadSha,
   },);
 }

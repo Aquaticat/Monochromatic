@@ -1,6 +1,9 @@
 import { allInInputOrder, } from '../all-in-input-order.ts';
 import { textsInCodePointOrder, } from '../code-points.ts';
-import type { readCorpusFile, } from '../corpus-source.ts';
+import type {
+  CorpusPin,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import type { GradingCandidate, } from '../sample-grading.ts';
 import type { EligibleEntries, } from './artifact-eligible.ts';
 import {
@@ -52,6 +55,9 @@ export type DrawPool = {
 
  @param runsDir - runs directory a pass wrote into
 
+ @param pin - corpus clone and commit each entry's source is read at, the
+ draw's own, so the bands and the commit the sheets record come from one pin
+
  @param readSource - reads a corpus file at the pin: `readCorpusFile` in a run
 
  @param policy - generation policy the entry read from its environment, which
@@ -68,17 +74,19 @@ export type DrawPool = {
 
  @example
  ```ts
- const { entries, pool, } = await readDrawPool({ runsDir, readSource: readCorpusFile, policy, repository, },);
+ const { entries, pool, } = await readDrawPool({ runsDir, pin, readSource: readCorpusFile, policy, repository, },);
  ```
  */
 export async function readDrawPool(
   {
     runsDir,
+    pin,
     readSource,
     policy,
     repository,
   }: {
     readonly runsDir: string;
+    readonly pin: CorpusPin;
     readonly readSource: typeof readCorpusFile;
     readonly policy: PoolPolicy;
     readonly repository: string;
@@ -127,6 +135,7 @@ export async function readDrawPool(
         artifactsDir,
         name,
         eligible,
+        pin,
         readSource,
       },);
     },),

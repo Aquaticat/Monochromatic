@@ -5,8 +5,8 @@ import {
   type CorpusName,
   readCorpusNames,
 } from '../corpus-name-index.ts';
-import {
-  type CorpusPin,
+import type {
+  CorpusPin,
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
@@ -14,7 +14,6 @@ import { lookupCacheDir, } from '../lookup-cache.ts';
 import { referenceCacheDir, } from '../reference-cache.ts';
 import { workTitleLookupLines, } from '../work-title-lookup.ts';
 import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Pass outside reads
 // WHAT A PREPARATION READS FROM OUTSIDE THE PIPELINE, named in one place and
@@ -77,7 +76,7 @@ export type PassCorpusNameReader = () => Promise<readonly CorpusName[]>;
 
  @example
  ```ts
- const reads: PassOutsideReads = RUN_OUTSIDE_READS;
+ const reads: PassOutsideReads = outsideReadsFrom({ env: process.env, fetchFn: fetch, pin, listPeople: listCorpusPeople, readFile: readCorpusFile, },);
  ```
  */
 export type PassOutsideReads = {
@@ -137,7 +136,7 @@ function wallClock(): Date {
 
  @example
  ```ts
- const reads = outsideReadsFrom({ env: process.env, fetchFn: fetch, pin: RUN_CORPUS_PIN, listPeople: listCorpusPeople, readFile: readCorpusFile, },);
+ const reads = outsideReadsFrom({ env: process.env, fetchFn: fetch, pin, listPeople: listCorpusPeople, readFile: readCorpusFile, },);
  ```
  */
 export function outsideReadsFrom(
@@ -204,17 +203,5 @@ export function outsideReadsFrom(
     },
   };
 }
-
-/**
- The run's outside reads: the web, through the environment's key and
- caches, and the corpus at the run's pin.
- */
-export const RUN_OUTSIDE_READS: PassOutsideReads = outsideReadsFrom({
-  env: process.env,
-  fetchFn: fetch,
-  pin: RUN_CORPUS_PIN,
-  listPeople: listCorpusPeople,
-  readFile: readCorpusFile,
-},);
 
 //endregion Pass outside reads

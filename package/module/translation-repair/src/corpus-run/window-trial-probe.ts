@@ -7,8 +7,8 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import {
   createRunClient,
   readHeadSha,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
@@ -39,6 +39,12 @@ const l = contextRoot({ tag: 'window-trial', },);
  */
 async function main(): Promise<void> {
   /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
+
+  /**
    Run directory the ledger lives under.
    */
   const runsDir = await resolveRunsDir();
@@ -46,7 +52,7 @@ async function main(): Promise<void> {
     runsDir,
     headSha: await readHeadSha(),
     makeClient: createRunClient,
-    pin: RUN_CORPUS_PIN,
+    pin,
     listPeople: listCorpusPeople,
     readPage: readCorpusFile,
     pickSlice: runPick,

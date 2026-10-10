@@ -130,13 +130,13 @@ export function preparationHooksFor(
  @param signal - entry deadline and caller abort
 
  @param outsideReads - what the preparation reads from outside the pipeline
- (ledger X19): `RUN_OUTSIDE_READS` in a run
+ (ledger X19): the readers the corpus-pass entry builds in a run
 
  @returns Prepared slices, every finding on their `alignmentFindings`
 
  @example
  ```ts
- const paired = await runPassPreparation({ client, entryId, entryCacheDir, pipelineDigest, readPictures, sourceText, targetText, signal, outsideReads: RUN_OUTSIDE_READS, },);
+ const paired = await runPassPreparation({ client, entryId, entryCacheDir, pipelineDigest, readPictures, sourceText, targetText, signal, outsideReads, },);
  ```
  */
 export async function runPassPreparation(

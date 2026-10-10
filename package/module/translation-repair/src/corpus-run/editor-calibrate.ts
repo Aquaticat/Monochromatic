@@ -6,7 +6,7 @@ import type { CommandLineOf, } from './command-lines.ts';
 import { runEditorCalibrate, } from './editor-calibrate-run.ts';
 import {
   createRunClient,
-  RUN_CORPUS_PIN,
+  readRunCorpusPinSetting,
 } from './run-config.ts';
 import { readOverlap, } from './slice-overlap.ts';
 
@@ -30,11 +30,16 @@ import { readOverlap, } from './slice-overlap.ts';
  ```
  */
 function main({ line, }: { readonly line: CommandLineOf<'editor-calibrate'>; },): Promise<void> {
+  /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   return runEditorCalibrate({
     line,
     readOverlap,
     drawSample: sampleBenchSlices,
-    pin: RUN_CORPUS_PIN,
+    pin,
     adoptGrace: adoptCalibrationGrace,
     readWriterGrace,
     newClient: createRunClient,

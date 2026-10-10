@@ -40,7 +40,8 @@ import { writeDrawSheets, } from './draw-sample-sheets.ts';
 
  @param runsDir - durable, gitignored output root
 
- @param pin - corpus pin whose commit the sheets record
+ @param pin - corpus pin each entry's source is read at and whose commit the
+ sheets record
 
  @param readSource - reads a corpus file at the pin: `readCorpusFile` in a run
 
@@ -57,7 +58,7 @@ import { writeDrawSheets, } from './draw-sample-sheets.ts';
 
  @example
  ```ts
- await drawGradingSample({ line, runsDir, pin: RUN_CORPUS_PIN, readSource: readCorpusFile, policy, repository, },);
+ await drawGradingSample({ line, runsDir, pin, readSource: readCorpusFile, policy, repository, },);
  ```
  */
 export async function drawGradingSample(
@@ -108,6 +109,7 @@ export async function drawGradingSample(
     pool,
   } = await readDrawPool({
     runsDir,
+    pin,
     readSource,
     policy,
     repository,

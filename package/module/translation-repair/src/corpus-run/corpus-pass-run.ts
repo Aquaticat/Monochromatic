@@ -260,6 +260,7 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
         sliceCacheDir,
         tip,
         pipelineDigest,
+        pin,
         hardCapMs,
         baseSignal: neverAbort,
         outsideReads: input.outsideReads,

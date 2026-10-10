@@ -6,10 +6,7 @@ import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
-import {
-  RUN_CALL_CONFIG,
-  RUN_CORPUS_PIN,
-} from './run-config.ts';
+import { RUN_CALL_CONFIG, } from './run-config.ts';
 
 //region Pass entry artifact
 // The artifact one settled entry writes, assembled from what the pass ran,
@@ -35,6 +32,9 @@ import {
 
  @param pipelineDigest - identity of the built pipeline
 
+ @param corpusSha - corpus commit the entry was read at, which the artifact
+ names so a reader of it knows which pages it repaired
+
  @param durationMs - time the entry took on `monotonicMs`, both lanes and the contest
  included
 
@@ -50,7 +50,7 @@ import {
 
  @example
  ```ts
- const artifact = settledEntryArtifact({ entryId, tip, pipelineDigest, durationMs, prepared, lanes, contestSlices, consolidateSlices, pageAssembly, },);
+ const artifact = settledEntryArtifact({ entryId, tip, pipelineDigest, corpusSha, durationMs, prepared, lanes, contestSlices, consolidateSlices, pageAssembly, },);
  ```
  */
 export function settledEntryArtifact(
@@ -58,6 +58,7 @@ export function settledEntryArtifact(
     entryId,
     tip,
     pipelineDigest,
+    corpusSha,
     durationMs,
     prepared,
     lanes,
@@ -68,6 +69,7 @@ export function settledEntryArtifact(
     readonly entryId: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
+    readonly corpusSha: string;
     readonly durationMs: number;
     readonly prepared: PreparedDocumentPair;
     readonly lanes: DocumentLanesResult;
@@ -80,7 +82,7 @@ export function settledEntryArtifact(
     entryId,
     tip,
     pipelineDigest,
-    corpusSha: RUN_CORPUS_PIN.commitSha,
+    corpusSha,
     callConfig: RUN_CALL_CONFIG,
     durationMs,
     prepared,

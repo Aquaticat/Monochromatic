@@ -112,6 +112,9 @@ export function settledBuyingLine(
 
  @param reader - reads what the pages an original cites say
 
+ @param runCloneDir - clone of the run's corpus pin, read when `--clone`
+ names none
+
  @param roster - models the run records as its roster
 
  @param resolveRuns - names the runs directory the kept run lands in
@@ -128,7 +131,7 @@ export function settledBuyingLine(
 
  @example
  ```ts
- await runSettledAudit({ line, newClient, reader, roster, resolveRuns, now, pipelineDigest, runnerClosure, },);
+ await runSettledAudit({ line, newClient, reader, runCloneDir, roster, resolveRuns, now, pipelineDigest, runnerClosure, },);
  ```
  */
 export async function runSettledAudit(
@@ -136,6 +139,7 @@ export async function runSettledAudit(
     line,
     newClient,
     reader,
+    runCloneDir,
     roster,
     resolveRuns,
     now,
@@ -145,6 +149,7 @@ export async function runSettledAudit(
     readonly line: CommandLineOf<'rendering-audit-settled'>;
     readonly newClient: () => SyntheticClient;
     readonly reader: PassReferenceReader;
+    readonly runCloneDir: string;
     readonly roster: readonly string[];
     readonly resolveRuns: () => Promise<string>;
     readonly now: () => string;
@@ -161,7 +166,10 @@ export async function runSettledAudit(
   /**
    What the command line asked for.
    */
-  const asked = readAuditArguments({ line, },);
+  const asked = readAuditArguments({
+    line,
+    runCloneDir,
+  },);
 
   /**
    Every artifact the archive holds, parsed, re-prepared and verified. Free.

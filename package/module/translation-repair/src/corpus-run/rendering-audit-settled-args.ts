@@ -6,16 +6,16 @@ import {
   wholeNumberFlag,
 } from './command-flags.ts';
 import type { CommandLineOf, } from './command-lines.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Settled rendering audit arguments
 // The command line surface of `rendering-audit-settled.ts`, kept apart from the
 // probe itself because they answer to different readers: this is what a person
 // types, and that is what a roster is asked.
 //
-// The clone comes from `RUN_CORPUS_PIN` and the COMMIT does not. Only the
-// location of a checkout is a run-level fact; which commit a settled artifact
-// was read at is a fact about that artifact, and it carries it.
+// The clone comes from the run's corpus pin, which the entry reads and hands
+// in, and the COMMIT does not. Only the location of a checkout is a run-level
+// fact; which commit a settled artifact was read at is a fact about that
+// artifact, and it carries it.
 
 /**
  Default archive, whose subdirectories are run sets.
@@ -130,6 +130,10 @@ export function readReportArguments(
  @param line - the audit's command line, read whole by `reportingRefusals`
  and passed in so this is testable without a subprocess
 
+ @param runCloneDir - clone of the run's corpus pin, which the entry read
+ inside its refusal boundary, used when `--clone` names none; until
+ 2026-10-10 this read a module constant resolved at load (ledger B302, B381)
+
  @returns Archive, clone, entry filter and cap
 
  @throws StatedRefusalError when a cap is not a whole number written in
@@ -137,11 +141,17 @@ export function readReportArguments(
 
  @example
  ```ts
- const asked = readAuditArguments({ line, },);
+ const asked = readAuditArguments({ line, runCloneDir: pin.cloneDir, },);
  ```
  */
 export function readAuditArguments(
-  { line, }: { readonly line: CommandLineOf<'rendering-audit-settled'>; },
+  {
+    line,
+    runCloneDir,
+  }: {
+    readonly line: CommandLineOf<'rendering-audit-settled'>;
+    readonly runCloneDir: string;
+  },
 ): AuditArguments {
   /**
    Archive as written, absent when none was named.
@@ -155,7 +165,7 @@ export function readAuditArguments(
 
   return {
     archiveDir: (archiveText.kind === 'written') ? archiveText.value : DEFAULT_ARCHIVE_DIR,
-    cloneDir: (cloneText.kind === 'written') ? cloneText.value : RUN_CORPUS_PIN.cloneDir,
+    cloneDir: (cloneText.kind === 'written') ? cloneText.value : runCloneDir,
     onlyIds: idListFlag({
       asked: line.flag('only',),
       naming: 'entry id',

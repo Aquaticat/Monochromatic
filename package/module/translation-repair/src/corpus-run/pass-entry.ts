@@ -5,6 +5,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { armCallDeadline, } from '../call-deadline.ts';
 import { monotonicMs, } from '../monotonic-clock.ts';
 import { archiveDisputesOfRepair, } from '../archive-dispute.ts';
+import type { CorpusPin, } from '../corpus-source.ts';
 import {
   entryArchiveOriginalOf,
   recordEntryDecline,
@@ -88,6 +89,9 @@ import { runPassLanes, } from './pass-lanes.ts';
  @param pipelineDigest - identity of the built pipeline, which also generation
  -stamps the slice cache so a changed pipeline cannot resume foreign slices
 
+ @param pin - corpus clone and commit the entry was read at, whose commit the
+ artifact or decline record names and whose clone the pictures are read from
+
  @param hardCapMs - time this entry may run before its exchanges abort
 
  @param baseSignal - abort this entry's deadline forwards from
@@ -115,6 +119,7 @@ async function runEntryPipeline(
     entryCacheDir,
     tip,
     pipelineDigest,
+    pin,
     hardCapMs,
     baseSignal,
     overlap,
@@ -130,6 +135,7 @@ async function runEntryPipeline(
     readonly entryCacheDir: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
+    readonly pin: CorpusPin;
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
     readonly overlap: number;
@@ -177,6 +183,7 @@ async function runEntryPipeline(
         publishDir,
         tip,
         pipelineDigest,
+        corpusSha: pin.commitSha,
         note: archiveOriginal.note,
         startedAt: t0,
       },);
@@ -207,6 +214,7 @@ async function runEntryPipeline(
     const readPictures = createPassPictureReader({
       client,
       entryId: entry.id,
+      pin,
       cache: readingCache,
       signal: deadline.callSignal,
       l: tagged({ tag: entry.id, },),
@@ -430,6 +438,7 @@ async function runEntryPipeline(
       entryId: entry.id,
       tip,
       pipelineDigest,
+      corpusSha: pin.commitSha,
       durationMs,
       prepared,
       lanes,
@@ -537,8 +546,14 @@ async function runEntryPipeline(
  @param baseSignal - abort every entry deadline forwards from; the pass never
  aborts it, so only a per-entry timeout ever fires
 
+ @param pin - corpus clone and commit the pass read the entry at: the one the
+ entry read inside its refusal boundary in a run, an invented one in a test.
+ REQUIRED, as `outsideReads` is: the artifact and the decline record name its
+ commit and the pictures are read from its clone, which a module constant
+ resolved at load supplied until 2026-10-10 (ledger B302, B381)
+
  @param outsideReads - what preparation reads from outside the pipeline:
- `RUN_OUTSIDE_READS` in a run, a test's own readers in a test. REQUIRED, as
+ the readers the corpus-pass entry builds in a run, a test's own readers in a test. REQUIRED, as
  it is of the preparation (ledger X19): this driver once handed the run's
  readers down itself, so its unit test prepared every entry through the key
  the suite inherits, the real caches and the corpus clone (ledger M68)
@@ -556,7 +571,7 @@ async function runEntryPipeline(
 
  @example
  ```ts
- const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, outsideReads: RUN_OUTSIDE_READS, pictureSources: RUN_PICTURE_SOURCES, },);
+ const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, pin, hardCapMs, baseSignal, outsideReads, pictureSources: RUN_PICTURE_SOURCES, },);
  ```
  */
 export async function settleEntry(
@@ -569,6 +584,7 @@ export async function settleEntry(
     sliceCacheDir,
     tip,
     pipelineDigest,
+    pin,
     hardCapMs,
     baseSignal,
     outsideReads,
@@ -583,6 +599,7 @@ export async function settleEntry(
     readonly sliceCacheDir: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
+    readonly pin: CorpusPin;
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
     readonly outsideReads: PassOutsideReads;
@@ -616,6 +633,7 @@ export async function settleEntry(
     entryCacheDir,
     tip,
     pipelineDigest,
+    pin,
     hardCapMs,
     baseSignal,
     overlap,

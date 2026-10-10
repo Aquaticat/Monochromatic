@@ -90,7 +90,7 @@ import {
 // A MATCH is evidence either way: the identity hashes every slice's placement
 // and text, so a rebuild that reproduces it reproduced the slicing.
 //
-// THE PIN COMES FROM THE ARTIFACT, never from `RUN_CORPUS_PIN`. The run pin can
+// THE PIN COMES FROM THE ARTIFACT, never from the run's own. The run pin can
 // move; a file naming its own corpus commit answers for itself forever. The
 // read goes through the commit object rather than the working tree, so a dirty
 // clone cannot change the answer either.

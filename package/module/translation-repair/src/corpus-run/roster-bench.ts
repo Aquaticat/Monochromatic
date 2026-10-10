@@ -9,8 +9,8 @@ import { runRosterBench, } from './roster-bench-run.ts';
 import {
   createRunClient,
   readHeadSha,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
   RUN_ROSTER,
 } from './run-config.ts';
 
@@ -24,25 +24,6 @@ import {
 // SPENDS QUOTA. Point `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
 
 /**
- Draws the slices every width sees from the pinned corpus.
-
- @param count - slices wanted
-
- @returns The drawn slices
-
- @example
- ```ts
- const sample = await drawPinned({ count: 10, },);
- ```
- */
-function drawPinned({ count, }: { readonly count: number; },): Promise<readonly BenchSlice[]> {
-  return sampleBenchSlices({
-    count,
-    pin: RUN_CORPUS_PIN,
-  },);
-}
-
-/**
  Hands the real process's client, corpus, roster, clock and runs directory to
  the bench.
 
@@ -54,11 +35,22 @@ function drawPinned({ count, }: { readonly count: number; },): Promise<readonly 
  ```
  */
 async function main({ line, }: { readonly line: CommandLineOf<'roster-bench'>; },): Promise<void> {
+  /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   await runRosterBench({
     line,
     roster: RUN_ROSTER,
     newClient: createRunClient,
-    drawSlices: drawPinned,
+    drawSlices: function drawPinned({ count, }: { readonly count: number; },): Promise<readonly BenchSlice[]> {
+      // The slices every width sees are drawn from the pin read here.
+      return sampleBenchSlices({
+        count,
+        pin,
+      },);
+    },
     readHead: readHeadSha,
     writeReport: writeBenchReport,
     clock: performance,

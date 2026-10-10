@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { ChunkPair, } from '../chunk-document.ts';
+import type { CorpusPin, } from '../corpus-source.ts';
 import type { PairedReading, } from '../image-reading-pair.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import {
@@ -9,10 +10,7 @@ import {
   readPassVisualEvidence,
 } from './pass-visual-evidence.ts';
 import type { RunClient, } from './run-client-contract.ts';
-import {
-  RUN_CORPUS_PIN,
-  RUN_PER_CALL_TIMEOUT_MS,
-} from './run-config.ts';
+import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { picturesHooksFor, } from './pass-pictures-reseat.ts';
 import { readJudgeSeats, } from './run-seats-read.ts';
 
@@ -42,6 +40,9 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 
  @param entryId - corpus entry whose asset directory is read
 
+ @param pin - corpus clone and commit the entry's pictures are read at, the
+ pass's own
+
  @param cache - durable paired reading cache
 
  @param signal - entry cancellation
@@ -67,7 +68,7 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 
  @example
  ```ts
- const readings = await readSeatedPictures({ client, slices, entryId, cache, signal, l, priorReadings, pictureSources, },);
+ const readings = await readSeatedPictures({ client, slices, entryId, pin, cache, signal, l, priorReadings, pictureSources, },);
  ```
  */
 export async function readSeatedPictures(
@@ -75,6 +76,7 @@ export async function readSeatedPictures(
     client,
     slices,
     entryId,
+    pin,
     cache,
     signal,
     l,
@@ -85,6 +87,7 @@ export async function readSeatedPictures(
     readonly client: RunClient;
     readonly slices: readonly ChunkPair[];
     readonly entryId: string;
+    readonly pin: CorpusPin;
     readonly cache: SliceCache<PairedReading>;
     readonly signal: AbortSignal;
     readonly l: Logger;
@@ -105,7 +108,7 @@ export async function readSeatedPictures(
   return await readPassVisualEvidence({
     client,
     slices,
-    pin: RUN_CORPUS_PIN,
+    pin,
     entryId,
     readerModelIds: seats.readers,
     cache,
@@ -140,7 +143,7 @@ export async function readSeatedPictures(
 
  @example
  ```ts
- const readPictures = createPassPictureReader({ client, entryId, cache, signal, l, pictureSources, });
+ const readPictures = createPassPictureReader({ client, entryId, pin, cache, signal, l, pictureSources, });
  ```
  */
 export function createPassPictureReader(

@@ -6,7 +6,10 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { parseSettledArtifact, } from '../artifact-read.ts';
 import { requireRecord, } from '../artifact-guard.ts';
-import type { readCorpusFile, } from '../corpus-source.ts';
+import type {
+  CorpusPin,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import { DrawReconcileError, } from './draw-reconcile.ts';
 import type { EligibleEntries, } from './artifact-eligible.ts';
 import {
@@ -21,7 +24,6 @@ import {
   type GradingCandidate,
   type SizeBand,
 } from '../sample-grading.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Draw entry load
 // Reading ONE settled artifact into the banded, candidate-bearing shape a draw
@@ -78,6 +80,10 @@ export type EntryContribution = {
  @param eligible - resolved pool, whose recorded commit for this entry is
  checked against the bytes actually read
 
+ @param pin - corpus clone and commit the entry's source is read at, the
+ draw's own; until 2026-10-10 this read the run's module constant whatever
+ pin the draw was handed (ledger B302, B381)
+
  @param readSource - reads a corpus file at a pin: `readCorpusFile` in a run,
  a fixture in a test, since the clone is unlicensed and absent elsewhere.
  REQUIRED: a default read the clone for any caller that left it out
@@ -93,7 +99,7 @@ export type EntryContribution = {
 
  @example
  ```ts
- const entry = await loadEntry({ artifactsDir, name, eligible, readSource: readCorpusFile, },);
+ const entry = await loadEntry({ artifactsDir, name, eligible, pin, readSource: readCorpusFile, },);
  ```
  */
 export async function loadEntry(
@@ -101,11 +107,13 @@ export async function loadEntry(
     artifactsDir,
     name,
     eligible,
+    pin,
     readSource,
   }: {
     readonly artifactsDir: string;
     readonly name: ArtifactFileName;
     readonly eligible: EligibleEntries;
+    readonly pin: CorpusPin;
     readonly readSource: typeof readCorpusFile;
   },
 ): Promise<BandedEntry> {
@@ -213,7 +221,7 @@ export async function loadEntry(
    The entry's zh source at the pinned corpus commit.
    */
   const source = await readSource({
-    pin: RUN_CORPUS_PIN,
+    pin,
     relPath: `people/${parsed.id}/page.md`,
   },);
 

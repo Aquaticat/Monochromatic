@@ -131,7 +131,10 @@ export async function runWindowTrial(
   /**
    Digest this run buys under.
    */
-  const protocol = protocolDigest({ headSha, },);
+  const protocol = protocolDigest({
+    headSha,
+    pin,
+  },);
 
   /**
    Arms already bought under it.

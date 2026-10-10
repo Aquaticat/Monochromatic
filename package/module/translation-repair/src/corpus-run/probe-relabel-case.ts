@@ -86,7 +86,7 @@ const DAMAGED_POSITIONS: ReadonlySet<number> = new Set(
 
  @example
  ```ts
- const [first,] = await gatherRelabelCases({ manifestPath, pin: RUN_CORPUS_PIN, },);
+ const [first,] = await gatherRelabelCases({ manifestPath, pin, },);
  ```
  */
 export type RelabelCase = {
@@ -297,7 +297,7 @@ export function locateSlice(
 
  @param manifestPath - sample manifest the positions index into
 
- @param pin - corpus commit to read the pages at: `RUN_CORPUS_PIN` in a run, a
+ @param pin - corpus commit to read the pages at: the pin its entry reads in a run, a
  throwaway clone in a test. REQUIRED: a default read the clone for any caller
  that left it out (ledger M43, X24)
 
@@ -311,7 +311,7 @@ export function locateSlice(
 
  @example
  ```ts
- const cases = await gatherRelabelCases({ manifestPath, pin: RUN_CORPUS_PIN, runsDir, },);
+ const cases = await gatherRelabelCases({ manifestPath, pin, runsDir, },);
  ```
  */
 export async function gatherRelabelCases(

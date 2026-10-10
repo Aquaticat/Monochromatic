@@ -152,7 +152,6 @@ export {
   type PassOutsideReads,
   type PassReferenceReader,
   type PassWorkTitleReader,
-  RUN_OUTSIDE_READS,
 } from './corpus-run/pass-outside-reads.ts';
 export { attestPassReferences, } from './corpus-run/pass-attest-references.ts';
 export {

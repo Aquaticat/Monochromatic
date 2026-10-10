@@ -1,7 +1,7 @@
 import { reportingRefusals, } from './cli-refusal.ts';
 import {
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
 } from './run-config.ts';
 import { readSettledRecipe, } from './settled-carve.ts';
 import { reportSliceCensus, } from './slice-census-report.ts';
@@ -18,8 +18,13 @@ if (import.meta.main)
     argv: process.argv,
     env: process.env,
     run: function runSliceCensus(): Promise<void> {
+      /**
+       Corpus clone and commit this run reads, after any environment
+       override, read inside the refusal boundary (ledger B302).
+       */
+      const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
       return reportSliceCensus({
-        pin: RUN_CORPUS_PIN,
+        pin,
         resolveRuns: resolveRunsDir,
         readRecipe: readSettledRecipe,
       },);

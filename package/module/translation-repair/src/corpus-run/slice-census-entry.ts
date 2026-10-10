@@ -427,7 +427,7 @@ function measureCarve(
 
  @throws {@link CorpusReadError} when either side is absent
 
- @param pin - corpus clone and commit to read: `RUN_CORPUS_PIN` in a run, a
+ @param pin - corpus clone and commit to read: the pin its entry reads in a run, a
  throwaway clone in a test, since the real one is unlicensed. REQUIRED: a
  default read the clone for any caller that left it out (ledger M43, X24)
 
@@ -437,7 +437,7 @@ function measureCarve(
 
  @example
  ```ts
- const row = await censusEntry({ entryId: 'Toka_ls', pin: RUN_CORPUS_PIN, },);
+ const row = await censusEntry({ entryId: 'Toka_ls', pin, },);
  ```
  */
 export async function censusEntry(

@@ -4,8 +4,8 @@ import { gatherControlCases, } from './probe-relabel-control.ts';
 import { runProbeVerify, } from './probe-verify-run.ts';
 import {
   createRunClient,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
 } from './run-config.ts';
 
 //region Probe verify
@@ -32,9 +32,14 @@ import {
  ```
  */
 async function main(): Promise<void> {
+  /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   await runProbeVerify({
     dir: await resolveRunsDir(),
-    pin: RUN_CORPUS_PIN,
+    pin,
     newClient: createRunClient,
     gather: {
       damaged: gatherRelabelCases,

@@ -100,10 +100,19 @@ function isFullCommitSha(
 }
 
 /**
- Reads the corpus pin, overriding either half from the environment.
+ Reads the corpus pin, overriding either half from the environment it is
+ handed.
 
  Refuses rather than falls back on invalid input, because a run against
  the wrong corpus records fixture conclusions as pinned-corpus ones.
+
+ THE ENVIRONMENT IS HANDED IN, never read here: an entry reads its process's
+ environment inside its refusal boundary, so an unreadable value is the
+ command's stated refusal, not a fault while a module loads (ledger B302,
+ B381).
+
+ @param env - environment the two variables are read from: the process's
+ own at an entry, a case's own in a test
 
  @param fallback - pin used for any half the environment leaves unset
 
@@ -113,16 +122,22 @@ function isFullCommitSha(
 
  @example
  ```ts
- const setting = readCorpusPinSetting({ fallback: RUN_CORPUS_PIN, },);
+ const setting = readCorpusPinSetting({ env: process.env, fallback: { cloneDir: '/cats/corpus', commitSha: CORPUS_COMMIT_SHA, }, },);
  ```
  */
 export function readCorpusPinSetting(
-  { fallback, }: { readonly fallback: CorpusPin; },
+  {
+    env,
+    fallback,
+  }: {
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly fallback: CorpusPin;
+  },
 ): CorpusPinSetting {
   /**
    Clone directory as the invoking environment wrote it, empty when unset.
    */
-  const writtenDir = process.env[CORPUS_CLONE_DIR_VAR] ?? '';
+  const writtenDir = env[CORPUS_CLONE_DIR_VAR] ?? '';
   if ((writtenDir !== '') && (!isAbsolute(writtenDir,))) {
     throw new StatedRefusalError({
       says: `${CORPUS_CLONE_DIR_VAR} must be an absolute path, and ${writtenDir} is not one`,
@@ -132,7 +147,7 @@ export function readCorpusPinSetting(
   /**
    Commit as the invoking environment wrote it, empty when unset.
    */
-  const writtenCommit = process.env[CORPUS_COMMIT_VAR] ?? '';
+  const writtenCommit = env[CORPUS_COMMIT_VAR] ?? '';
   if ((writtenCommit !== '') && (!isFullCommitSha({ written: writtenCommit, },))) {
     throw new StatedRefusalError({
       says: `${CORPUS_COMMIT_VAR} must be one full lowercase hexadecimal commit name,`
@@ -166,7 +181,7 @@ export function readCorpusPinSetting(
 
  @example
  ```ts
- const note = corpusPinOverrideNote({ setting: RUN_CORPUS_PIN_SETTING, },);
+ const note = corpusPinOverrideNote({ setting: readRunCorpusPinSetting({ env: process.env, },), },);
  ```
  */
 export function corpusPinOverrideNote(

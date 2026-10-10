@@ -93,6 +93,7 @@ export {
 export {
   createRunClient,
   readHeadSha,
+  readRunCorpusPinSetting,
   resolveRunsDir,
   runClientFrom,
   type RunRepairModels,

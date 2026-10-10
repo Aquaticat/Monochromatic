@@ -4,7 +4,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import { drawGradingSample, } from './draw-sample-run.ts';
 import {
-  RUN_CORPUS_PIN,
+  readRunCorpusPinSetting,
   resolveRunsDir,
 } from './run-config.ts';
 
@@ -26,10 +26,15 @@ import {
  ```
  */
 async function drawSample({ line, }: { readonly line: CommandLineOf<'draw-sample'>; },): Promise<void> {
+  /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   await drawGradingSample({
     line,
     runsDir: await resolveRunsDir(),
-    pin: RUN_CORPUS_PIN,
+    pin,
     readSource: readCorpusFile,
     policy: readPoolPolicy({ env: process.env, },),
     // The checkout this command's build stands in, where a required commit is

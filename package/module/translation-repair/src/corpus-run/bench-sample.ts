@@ -588,7 +588,7 @@ export async function sliceListedEntries(
  @param count - slices wanted; fewer come back only when the corpus holds
  fewer
 
- @param pin - corpus clone and commit to read: `RUN_CORPUS_PIN` in a run, a
+ @param pin - corpus clone and commit to read: the pin its entry reads in a run, a
  throwaway clone in a test, since the real one is unlicensed. REQUIRED: a
  default read the clone for any caller that left it out (ledger M43, X24)
 
@@ -605,7 +605,7 @@ export async function sliceListedEntries(
 
  @example
  ```ts
- const sample = await sampleBenchSlices({ count: 12, pin: RUN_CORPUS_PIN, },);
+ const sample = await sampleBenchSlices({ count: 12, pin, },);
  ```
 
  @internal

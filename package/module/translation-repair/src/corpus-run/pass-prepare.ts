@@ -59,7 +59,7 @@ import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 
  @example
  ```ts
- const { prepared, } = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads: RUN_OUTSIDE_READS, },);
+ const { prepared, } = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads, },);
  ```
  */
 export type PassPreparation = Omit<PairedPreparation, 'findings'>;
@@ -132,13 +132,13 @@ function carryingPassFindings(
 
  @param outsideReads - what the preparation reads from outside the
  pipeline, required so no caller inherits the run's keys and caches by
- leaving it out (ledger X19): `RUN_OUTSIDE_READS` in a run
+ leaving it out (ledger X19): the readers the corpus-pass entry builds in a run
 
  @returns Prepared slices, every finding on their `alignmentFindings`
 
  @example
  ```ts
- const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads: RUN_OUTSIDE_READS, });
+ const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads, });
  ```
  */
 export async function preparePassEntry(

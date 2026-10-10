@@ -3,7 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import {
   createRunClient,
-  RUN_CORPUS_PIN,
+  readRunCorpusPinSetting,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
@@ -31,9 +31,14 @@ if (import.meta.main)
     argv: process.argv,
     env: process.env,
     run: function runTranslateProbe() {
+      /**
+       Corpus clone and commit this run reads, after any environment
+       override, read inside the refusal boundary (ledger B302).
+       */
+      const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
       return probeTranslate({
         entryId: PROBE_ENTRY,
-        pin: RUN_CORPUS_PIN,
+        pin,
         newClient: createRunClient,
         editorModelIds: RUN_MODELS.editorModelIds,
         perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,

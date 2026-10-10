@@ -97,7 +97,7 @@ export type PassEligibility = {
 
  @example
  ```ts
- const { eligible, incomplete, } = await collectEligiblePairs({ ids: people, done, pin: RUN_CORPUS_PIN, },);
+ const { eligible, incomplete, } = await collectEligiblePairs({ ids: people, done, pin, },);
  ```
  */
 export async function collectEligiblePairs(

@@ -8,8 +8,8 @@ import { nowAsIso, } from './probe-run-clock.ts';
 import { readRunnerClosure, } from './runner-closure.ts';
 import {
   createRunClient,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 
@@ -32,6 +32,12 @@ import {
  */
 async function main({ line, }: { readonly line: CommandLineOf<'judge-fidelity-probe'>; },): Promise<void> {
   /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
+
+  /**
    Digest over built output, read before anything runs: the identity that
    answers for a run is the build present at startup, whatever is rebuilt
    while it is in flight.
@@ -39,7 +45,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'judge-fidelity-pr
   const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
   return runFidelityProbe({
     line,
-    pin: RUN_CORPUS_PIN,
+    pin,
     readReferences: readReviewedFidelityReferences,
     resolveRuns: resolveRunsDir,
     newClient: createRunClient,

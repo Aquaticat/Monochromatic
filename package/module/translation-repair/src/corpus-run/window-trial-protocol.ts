@@ -1,8 +1,6 @@
+import type { CorpusPin, } from '../corpus-source.ts';
 import { hashContent, } from '../document-node.ts';
-import {
-  RUN_CORPUS_PIN,
-  RUN_ROSTER,
-} from './run-config.ts';
+import { RUN_ROSTER, } from './run-config.ts';
 
 //region Window trial protocol
 // The two rules of the trial that decide nothing about models and can be held
@@ -30,20 +28,37 @@ const TRIAL_PROTOCOL_VERSION = 1;
 
  @param headSha - commit the pipeline is running at
 
+ @param pin - corpus clone and commit the trial reads its slices at, the
+ run's own; until 2026-10-10 the digest folded in the run's module constant
+ whatever pin the trial was handed (ledger B302, B381). Its two halves are
+ folded in the order the pin reader writes them, clone then commit, so a
+ ledger keyed before the move still resumes at the same pin
+
  @returns Digest the ledger keys resumption on
 
  @example
  ```ts
- const protocol = protocolDigest({ headSha, },);
+ const protocol = protocolDigest({ headSha, pin, },);
  ```
  */
-export function protocolDigest({ headSha, }: { readonly headSha: string; },): string {
+export function protocolDigest(
+  {
+    headSha,
+    pin,
+  }: {
+    readonly headSha: string;
+    readonly pin: CorpusPin;
+  },
+): string {
   return hashContent({
     content: JSON.stringify([
       'window-trial',
       TRIAL_PROTOCOL_VERSION,
       RUN_ROSTER,
-      RUN_CORPUS_PIN,
+      {
+        cloneDir: pin.cloneDir,
+        commitSha: pin.commitSha,
+      },
       headSha,
     ],),
   },);

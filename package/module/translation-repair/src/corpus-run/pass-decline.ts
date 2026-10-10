@@ -25,7 +25,6 @@ import type {
 } from './pass-entry-contract.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { fixedPagePath, } from './publish-fixed.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Pass decline
 // The one way an entry leaves the pass without an artifact and without a
@@ -147,6 +146,9 @@ async function removeLeftoverPage(
 
  @param pipelineDigest - built pipeline that declined it
 
+ @param corpusSha - corpus commit the pass read the entry at, which the
+ record names
+
  @param note - the archive's note that decided it
 
  @param startedAt - `monotonicMs` reading when the entry started, for the tally's duration
@@ -155,7 +157,7 @@ async function removeLeftoverPage(
 
  @example
  ```ts
- return recordEntryDecline({ entry, declinedDir, publishDir, tip, pipelineDigest, note, startedAt: t0, },);
+ return recordEntryDecline({ entry, declinedDir, publishDir, tip, pipelineDigest, corpusSha: pin.commitSha, note, startedAt: t0, },);
  ```
  */
 export async function recordEntryDecline(
@@ -165,6 +167,7 @@ export async function recordEntryDecline(
     publishDir,
     tip,
     pipelineDigest,
+    corpusSha,
     note,
     startedAt,
   }: {
@@ -173,6 +176,7 @@ export async function recordEntryDecline(
     readonly publishDir: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
+    readonly corpusSha: string;
     readonly note: string;
     readonly startedAt: number;
   },
@@ -192,7 +196,7 @@ export async function recordEntryDecline(
       id: entry.id,
       tip,
       pipelineDigest,
-      corpusSha: RUN_CORPUS_PIN.commitSha,
+      corpusSha,
       timestamp: new Date().toISOString(),
       reason: 'archive-original',
       note,

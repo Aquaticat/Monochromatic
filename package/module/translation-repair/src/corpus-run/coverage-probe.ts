@@ -7,8 +7,8 @@ import { digestPipeline, } from './pipeline-digest.ts';
 import { readRunnerClosure, } from './runner-closure.ts';
 import {
   createRunClient,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
@@ -55,9 +55,14 @@ if (import.meta.main)
     argv: process.argv,
     env: process.env,
     run: function runCoverageProbeEntry({ line, },) {
+      /**
+       Corpus clone and commit this run reads, after any environment
+       override, read inside the refusal boundary (ledger B302).
+       */
+      const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
       return runCoverageProbe({
         line,
-        pin: RUN_CORPUS_PIN,
+        pin,
         newClient: createRunClient,
         stage: runCoverageStage,
         roster: RUN_ROSTER,

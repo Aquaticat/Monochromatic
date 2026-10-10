@@ -5,8 +5,8 @@ import { runRecallBenchmark, } from './recall-benchmark-run.ts';
 import {
   createRunClient,
   readHeadSha,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
 } from './run-config.ts';
 
 //region Recall benchmark
@@ -31,11 +31,16 @@ import {
  ```
  */
 async function main({ line, }: { readonly line: CommandLineOf<'recall-benchmark'>; },): Promise<void> {
+  /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   return runRecallBenchmark({
     line,
     runsDir: await resolveRunsDir(),
     readTip: readHeadSha,
-    pin: RUN_CORPUS_PIN,
+    pin,
     newClient: createRunClient,
     now: nowAsIso,
   },);

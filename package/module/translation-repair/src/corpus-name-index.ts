@@ -329,7 +329,7 @@ export function corpusNameLines(
 
  @example
  ```ts
- const names = await readCorpusNames({ pin: RUN_CORPUS_PIN, listPeople: listCorpusPeople, readFile: readCorpusFile, },);
+ const names = await readCorpusNames({ pin, listPeople: listCorpusPeople, readFile: readCorpusFile, },);
  ```
  */
 export async function readCorpusNames(

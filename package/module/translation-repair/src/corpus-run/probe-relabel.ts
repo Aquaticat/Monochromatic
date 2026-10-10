@@ -5,8 +5,8 @@ import { gatherControlCases, } from './probe-relabel-control.ts';
 import { runProbeRelabel, } from './probe-relabel-run.ts';
 import {
   createRunClient,
+  readRunCorpusPinSetting,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
 } from './run-config.ts';
 
 //region Probe relabel
@@ -52,9 +52,14 @@ import {
  ```
  */
 async function main(): Promise<void> {
+  /**
+   Corpus clone and commit this run reads, after any environment
+   override, read inside the refusal boundary (ledger B302).
+   */
+  const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
   await runProbeRelabel({
     dir: await resolveRunsDir(),
-    pin: RUN_CORPUS_PIN,
+    pin,
     production: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
     newClient: createRunClient,
     gather: {
