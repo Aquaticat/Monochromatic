@@ -198,17 +198,32 @@ the items after it are the record of 2026-10-05 and older.
   The batch 3b page gave the whole-cell plate a wrong cost (covering the focus line);
   the user was shown the correction with the applied frames and kept the plate.
   The shared image `localhost/monochromatic/ide` now contains cargo-about 0.9.2.
-- Agents at work:
-  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`), the last feature branch outstanding:
-    merging `main`, the remaining native external-reload flakes, lazy server lookup, and five gate rounds.
-  - `fix/ide-guard-anchors` (new worktree from `main`):
-    the stale `frame-stamp` guard anchor, a static check of every guard script's anchors,
-    and the three files `:format:rust` rewrites on `main`.
-- Still owed after those:
-  rerun every `inspect:*-guards` script on final `main`,
-  repeated gate runs,
-  a consumer check of the installed single file,
-  and removing finished worktrees whose branches are pushed.
+- Landed on `main` as merge `6de44d83d`:
+  the gate flake fixes and two Language defect fixes (`fix/ide-test-flakes` through `fe21f6494`)
+  and the guard anchor cleanup (`fix/ide-guard-anchors` through `8f5f174d0`).
+  Language servers get a start allowance of three request timeouts;
+  a late answer for an earlier hint window no longer replaces the current hints;
+  a diagnostics set pushed during the 2 s hold is kept and shown when it ends;
+  test fixtures moved from the container's btrfs `/tmp` into memory,
+  where captured kernel wait points showed transaction stalls;
+  several 3 s test bounds that sat below real first-reply cost now use the harness patience;
+  main's `rows::due` had weakened the `repaint-on-accept` guard's test,
+  so the test now pins the reader's scroll time a minute ahead and the guard fails again.
+  Gate at `e74339b7c` (IDE tree `1644837fddf533cdff60f5fc1e41a72ca49dd82b`), run as user units:
+  lint, lint:release, test, test:cli, test:native 124 of 124, bundle, inspect:bundle, inspect:bundle-guards.
+  The landing message says `inspect:language-navigation-guards` ran at that commit;
+  it ran at `8b04b222b`, whose IDE tree differs only by one `Cargo.toml` line merged from `main`.
+  The other nine guard scripts passed at `bd1ad9ad4`, which differs from the landed tree in one test file.
+  One `inspect:bundle` run at load 40 failed `lone-copy-highlights`
+  (the application took longer than the compositor's 2 s to close) and three reruns passed.
+- Left for the user to decide or for later:
+  - The IDE package has no `cargo fmt --check` task, so `:lint` does not catch formatter drift
+    (`package/linter/monochromatic-lint/mise.toml` has `lint:rustfmt`).
+  - Lazy server lookup was measured and not built:
+    locating servers is 12 ms of a 210 ms registry build.
+  - Fixtures of other native tests still use `tempfile::tempdir()` on btrfs.
+  - A consumer check of the installed single file needs the user's approval to install into the real home.
+  - Finished worktrees whose branches are pushed can be removed.
 - Inotify:
   on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
   about 462000 of them by `git fsmonitor--daemon` processes
