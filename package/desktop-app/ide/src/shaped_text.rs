@@ -20,6 +20,8 @@ use crate::row_map::{CODE_ROW, RowMap};
 /// export { ReadingRect, ShapedRow } from './shaped-row';
 /// ```
 pub use crate::shaped_row::{ReadingRect, ShapedRow};
+/// Shaped rows kept by line for one text revision and scale.
+use crate::shaped_row_cache::RowCache;
 /// Syntax classifications stay independent of pixels.
 use crate::source_style::StyleSpan;
 /// Immutable font requests validate continuous weights before shaping.
@@ -27,8 +29,6 @@ use crate::source_typography::SourceTypography;
 /// Tabs end on pixel tab stops,
 ///  whatever script precedes them.
 use crate::tab_layout::layout_with_tabs;
-/// Shaped rows kept by line for one text revision and scale.
-use crate::shaped_row_cache::RowCache;
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::project_line;
 /// Height and text size of the virtual rows above annotated lines.
@@ -479,7 +479,8 @@ impl TextShaper {
             let shaped = match hit {
                 Some(shaped) => shaped,
                 None => {
-                    let fresh = self.shape_row(document, (row, 0.0), viewport.scale, styles, baseline);
+                    let fresh =
+                        self.shape_row(document, (row, 0.0), viewport.scale, styles, baseline);
                     self.shaped_rows += 1;
                     if cached {
                         self.rows.insert(fresh.clone());

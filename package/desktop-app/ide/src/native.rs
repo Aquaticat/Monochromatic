@@ -160,6 +160,9 @@ mod navigation_reveal_tests;
 /// Native project callbacks exercise actual reader/timer and source replacement boundaries.
 #[cfg(test)]
 mod navigation_tests;
+/// Scrolling inside the overscan tile does no source work, and leaving it re-centers the tile once.
+#[cfg(test)]
+mod overscan_tile_tests;
 /// Real pointer events select by character,
 ///  word,
 ///  and line,
@@ -243,9 +246,6 @@ mod tree_pointer_tests;
 /// Long-distance tree reveal must show the whole target row after native layout.
 #[cfg(test)]
 mod tree_scroll_tests;
-/// Scrolling inside the overscan tile does no source work, and leaving it re-centers the tile once.
-#[cfg(test)]
-mod overscan_tile_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
 /// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.

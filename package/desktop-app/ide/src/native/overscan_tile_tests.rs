@@ -68,7 +68,8 @@ fn shown(window: &AppWindow) -> Vec<[u8; 4]> {
     let width = image.width() as usize;
     let view_top = -window.get_scroll_y();
     let first = ((view_top - window.get_image_y()) * scale).floor().max(0.0) as usize;
-    let last = (((view_top + window.get_viewport_height() - window.get_image_y()) * scale).ceil() as usize)
+    let last = (((view_top + window.get_viewport_height() - window.get_image_y()) * scale).ceil()
+        as usize)
         .min(image.height() as usize);
     let pixels = image.as_slice();
     let mut rows = Vec::new();
@@ -142,5 +143,7 @@ fn leaving_the_overscan_tile_re_centers_once_with_fresh_pixels() {
         "the visible pixels after scrolling differ from a fresh render at offset {target}"
     );
     window.hide().expect("close headless source window");
-    fresh_window.hide().expect("close fresh headless source window");
+    fresh_window
+        .hide()
+        .expect("close fresh headless source window");
 }
