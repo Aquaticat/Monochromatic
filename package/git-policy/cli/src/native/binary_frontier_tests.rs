@@ -29,7 +29,7 @@ use super::support::{
 };
 use git_policy_cli::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS};
 use git_policy_cli::policy_registry::PolicyId;
-use git_policy_cli::policy_trigger::Trigger;
+
 use git_policy_cli::refusal_frontier::LEASE_VARIABLES;
 use git_policy_cli::unported::{Unported, unported_notice};
 use std::ffi::OsStr;
@@ -231,10 +231,10 @@ fn add_runs_ported_content_policies_and_refuses_unported_ones() {
     remove(&fixture);
 }
 
-/// A real push stops at the manual-push gate;
+/// A real push is scanned at the manual-push gate and forwarded when clean;
 ///  a dry run is forwarded with `--atomic`.
 #[test]
-fn a_real_push_is_refused_at_the_manual_push_gate() {
+fn a_real_push_is_scanned_and_forwarded() {
     let fixture: Fixture = fixture("frontier-push");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     git(
@@ -248,20 +248,13 @@ fn a_real_push_is_refused_at_the_manual_push_gate() {
         repo.as_path(),
         &["remote", "add", "origin", "../remote.git"],
     );
-    let refused: Observed =
-        stopped_with(unported_notice(&Unported::Lifecycle(Trigger::ManualPush), "push").as_str());
-    for arguments in [
-        vec!["push", "origin", "main"],
-        vec!["push", "--quiet", "origin", "main"],
-        vec!["push", "--dry-run", "--no-dry-run", "origin", "main"],
-    ] {
-        assert_eq!(
-            run_wrapped(&fixture, repo.as_path(), arguments.as_slice()),
-            refused,
-            "{arguments:?}"
-        );
-    }
-    assert_eq!(refs(&fixture, remote.as_path()), "");
+    // A clean push is scanned, forwarded and publishes the branch.
+    let pushed: Observed = run_wrapped(&fixture, repo.as_path(), &["push", "origin", "main"]);
+    assert_eq!(pushed.code, Some(0), "{pushed:?}");
+    assert!(
+        !refs(&fixture, remote.as_path()).is_empty(),
+        "the clean push must publish main"
+    );
     // A dry run publishes nothing and is forwarded with the atomic-push insertion.
     let native: Observed = run_direct(
         &fixture,
@@ -277,7 +270,11 @@ fn a_real_push_is_refused_at_the_manual_push_gate() {
         ),
         native
     );
-    assert_eq!(refs(&fixture, remote.as_path()), "");
+    assert_eq!(
+        refs(&fixture, remote.as_path()),
+        "refs/heads/main
+"
+    );
     // Positive control: with the only manual-push policy escaped, the same push publishes.
     assert_eq!(
         run_wrapped(
@@ -507,5 +504,56 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
         stderr_of(&run_wrapped(&fixture, repo.as_path(), &guarded)),
         ""
     );
+    remove(&fixture);
+}
+
+/// A real push whose new commit breaks a manual-push policy is refused with exit 1 and publishes nothing.
+#[test]
+fn a_real_push_of_a_nonconforming_commit_is_refused_and_publishes_nothing() {
+    let fixture: Fixture = fixture("frontier-push-refused");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    git(
+        &fixture,
+        fixture.root.as_path(),
+        &["init", "--quiet", "--bare", "remote.git"],
+    );
+    let remote: PathBuf = fixture.root.join("remote.git");
+    git(
+        &fixture,
+        repo.as_path(),
+        &["remote", "add", "origin", "../remote.git"],
+    );
+    std::fs::write(
+        repo.join("cli-git.config.jsonc"),
+        "{ \"policies\": { \"final-newline\": \"error\" } }\n",
+    )
+    .expect("configuration");
+    git(&fixture, repo.as_path(), &["add", "cli-git.config.jsonc"]);
+    git(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "-m", "configure"],
+    );
+    git(
+        &fixture,
+        repo.as_path(),
+        &["push", "--quiet", "origin", "main"],
+    );
+    std::fs::write(repo.join("bad.txt"), "no final newline").expect("nonconforming file");
+    git(&fixture, repo.as_path(), &["add", "bad.txt"]);
+    git(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "-m", "nonconforming"],
+    );
+    let before: String = refs(&fixture, remote.as_path());
+    let pushed: Observed = run_wrapped(&fixture, repo.as_path(), &["push", "origin", "main"]);
+    assert_eq!(pushed.code, Some(1), "{pushed:?}");
+    assert!(
+        String::from_utf8_lossy(&pushed.stderr)
+            .contains("final-newline/noncanonical-final-newline"),
+        "{pushed:?}"
+    );
+    assert_eq!(refs(&fixture, remote.as_path()), before);
     remove(&fixture);
 }

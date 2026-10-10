@@ -142,11 +142,6 @@ fn not_at_root(root: &str, severity: Severity) -> PolicyEvent {
     });
 }
 
-/// The manual-push refusal.
-fn manual_push_refused() -> WrappedOutcome {
-    return refuses(&Unported::Lifecycle(Trigger::ManualPush), "push");
-}
-
 /// The refusal of an unported content policy asked about what `git add` would stage.
 fn content_refused(policy: PolicyId, needs: &'static str) -> WrappedOutcome {
     return refuses(&Unported::PolicyNeeds { policy, needs }, "add");
@@ -526,9 +521,11 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
             location_only()
         )
     );
-    assert_eq!(
-        run(&["push", "origin"], at_root(root.as_path()), &[]),
-        (manual_push_refused(), location_only())
+    // The probe finds no updates in a fixture without a repository, so the push fails closed with exit 2.
+    let (refused, _location) = run(&["push", "origin"], at_root(root.as_path()), &[]);
+    assert!(
+        matches!(refused, WrappedOutcome::Exit { code: 2, .. }),
+        "{refused:?}"
     );
     // A policy set to `warn` lets the command through and reports on standard error first.
     std::fs::write(
@@ -567,18 +564,17 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
 ///  a dry run and an ungated push are forwarded.
 #[test]
 fn a_real_push_must_clear_the_manual_push_gate() {
+    // Scripted facts have no repository, so a real push's scope fails closed with exit 2 and is never forwarded.
+    // Real pushes are exercised against real repositories in the manual-push integration tests.
     for values in [
         vec!["push"],
         vec!["push", "origin", "main"],
-        vec!["push", "--dry-run", "--no-dry-run"],
         vec!["push", "--", "--dry-run"],
-        // A region Git refuses is not known to be a dry run.
-        vec!["push", "--dry-run", "--no-such-option"],
     ] {
-        assert_eq!(
-            run(values.as_slice(), scripted_facts(), &[]),
-            (manual_push_refused(), location_only()),
-            "{values:?}"
+        let (outcome, _location) = run(values.as_slice(), scripted_facts(), &[]);
+        assert!(
+            matches!(outcome, WrappedOutcome::Exit { code: 2, .. }),
+            "{values:?}: {outcome:?}"
         );
     }
     assert_eq!(

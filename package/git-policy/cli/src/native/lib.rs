@@ -553,3 +553,6 @@ pub mod manual_push_probe;
 
 /// Published-set and range computation for manual-push scans: which pushed commits a remote does not have.
 pub mod manual_push_range;
+
+/// The manual-push candidate scope of one push: the commits and trees the destination lacks.
+pub mod manual_push_lifecycle;

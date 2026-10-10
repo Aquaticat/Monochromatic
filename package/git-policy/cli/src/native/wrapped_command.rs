@@ -35,14 +35,17 @@
 /// import { runPolicyPass } from './policy_pass.ts';
 /// ```
 use super::action::ENGINE_FAILURE_EXIT_CODE;
+use super::auto_push_single_flight::PushGit;
 /// `git add` asks for what it would stage.
 use super::candidate_prediction::CandidateRequest;
 use super::command_options::OptionError;
 use super::command_push::{PushRegion, parse_push_region};
 use super::config_loading::{ConfigLoading, classify_config_loading};
 use super::config_schema::PolicyConfig;
+use super::diagnostics::EngineFailureCode;
 use super::global_arguments::GlobalOutcome;
 use super::invocation_config::{config_invalid_event, load_identity_config};
+use super::manual_push_lifecycle::manual_push_scope;
 use super::pending_state::pending_state;
 use super::policy_checks::ShippedChecks;
 /// What the command offers its content policies.
@@ -76,6 +79,8 @@ use super::wrapper_invocation::{StrippedInvocation, command_region, command_word
 /// // string, but byte-preserving.
 /// ```
 use std::ffi::OsString;
+/// Paths of the probe's working directory.
+use std::path::{Path, PathBuf};
 
 /// What:
 ///  How the lifecycle of one wrapped command ended.
@@ -421,6 +426,20 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
         };
         let gated: Vec<PolicyId> = every_policy();
         if any_policy_applies(&gate_request, gated.as_slice()) {
+            // The push's scope is discovered before any policy reads content; a discovery failure refuses the push.
+            if let Err(failure) = prepare_manual_push(checks, command_region(stripped)) {
+                events.push(PolicyEvent::EngineFailure {
+                    code: EngineFailureCode::ContentUnavailable,
+                    message: failure.message,
+                    trigger: Some(Trigger::ManualPush),
+                    policy: None,
+                    path: None,
+                });
+                return WrappedOutcome::Exit {
+                    code: ENGINE_FAILURE_EXIT_CODE,
+                    stderr: render_policy_events(0, events.as_slice()),
+                };
+            }
             let gate: StageResult = run_policy_stage(&gate_request, gated.as_slice(), checks);
             // `.extend(list)` moves every item of `list` onto the end.
             events.extend(gate.events);
@@ -437,6 +456,43 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
 
 /// Lifecycle order,
 ///  fact use and every ending stay out of the release executable.
+/// What:
+///  Discover the scope of a manual push and hand it to the manual-push stage as its candidates.
+/// Why:
+///   The stage reads only what the push publishes, and the discovery runs against the repository the
+///  command targets, with the invocation's global options and environment.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const scope = await manualPushScope({ gitPath, cwd, args }); // then the manual-push stage reads it
+/// ```
+fn prepare_manual_push<F: RepositoryFacts>(
+    checks: &mut ShippedChecks<F>,
+    post_subcommand: &[OsString],
+) -> Result<(), super::manual_push_lifecycle::ManualPushFailure> {
+    let worktree: Option<PathBuf> = match checks.facts.location() {
+        Ok(location) => worktree_root(&location.identity).map(Path::to_path_buf),
+        Err(message) => return Err(super::manual_push_lifecycle::ManualPushFailure { message }),
+    };
+    let context = checks.facts.transaction_context();
+    let cwd = match worktree {
+        Some(root) => root,
+        None => std::env::current_dir().map_err(|error| {
+            return super::manual_push_lifecycle::ManualPushFailure {
+                message: format!("the working directory could not be read: {error}"),
+            };
+        })?,
+    };
+    let git = PushGit {
+        real_git: context.real_git,
+        cwd,
+        environment: context.overlay,
+    };
+    let scope = manual_push_scope(&git, context.global_prefix.as_slice(), post_subcommand)?;
+    checks.candidates = LifecycleContent::Requested(CandidateRequest::Pushed(scope));
+    return Ok(());
+}
+
 #[cfg(test)]
 #[path = "wrapped_command_tests.rs"]
 mod tests;

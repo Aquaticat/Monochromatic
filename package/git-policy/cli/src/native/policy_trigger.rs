@@ -175,10 +175,13 @@ pub fn policy_runs_on(id: PolicyId, trigger: Trigger) -> bool {
 /// ```
 pub fn trigger_is_ported(trigger: Trigger) -> bool {
     match trigger {
-        Trigger::PreForward | Trigger::PostCommit | Trigger::DirectCheck | Trigger::DirectFix => {
+        Trigger::PreForward
+        | Trigger::PostCommit
+        | Trigger::ManualPush
+        | Trigger::DirectCheck
+        | Trigger::DirectFix => {
             return true;
         }
-        Trigger::ManualPush => return false,
     }
 }
 

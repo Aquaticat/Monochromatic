@@ -4,6 +4,7 @@
 
 use super::*;
 use crate::auto_push_single_flight::PushGit;
+use crate::candidate_prediction::{CandidateRequest, PushedScope, prepare_candidates};
 use crate::manual_push_probe::PushUpdate;
 use crate::test_support::{fixture, git, remove};
 use std::path::{Path, PathBuf};
@@ -47,14 +48,26 @@ fn published_repository(name: &str) -> (PathBuf, String) {
     let root = fixture(name);
     let origin = root.join("origin.git");
     let repo = root.join("repo");
-    git(&root, &["init", "--quiet", "--bare", origin.to_str().expect("utf-8")]);
+    git(
+        &root,
+        &["init", "--quiet", "--bare", origin.to_str().expect("utf-8")],
+    );
     std::fs::create_dir_all(&repo).expect("repo");
     git(&repo, &["init", "--quiet", "--initial-branch=main"]);
     git(&repo, &["config", "user.email", "cli-git@example.invalid"]);
     git(&repo, &["config", "user.name", "cli-git fixture"]);
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=base"]);
-    git(&repo, &["remote", "add", "origin", origin.to_str().expect("utf-8")]);
-    git(&repo, &["push", "--quiet", "origin", "HEAD:refs/heads/main"]);
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=base"],
+    );
+    git(
+        &repo,
+        &["remote", "add", "origin", origin.to_str().expect("utf-8")],
+    );
+    git(
+        &repo,
+        &["push", "--quiet", "origin", "HEAD:refs/heads/main"],
+    );
     let base = head_of(&repo);
     return (repo, base);
 }
@@ -77,7 +90,7 @@ fn only_locally_present_commits_are_peeled() {
     let peeled = peel_commits(&git_for(&repo), &[base.clone(), missing.clone()]).expect("peels");
     assert_eq!(peeled.get(&base), Some(&base));
     assert!(!peeled.contains_key(&missing));
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// Tracking refs count only in their own remote's namespace, matched literally.
@@ -86,10 +99,11 @@ fn tracking_refs_are_matched_per_remote_literally() {
     let (repo, base) = published_repository("mp-range-tracking");
     git(&repo, &["update-ref", "refs/remotes/origin/main", &base]);
     git(&repo, &["update-ref", "refs/remotes/other/main", &base]);
-    let tracked = tracking_commits(&git_for(&repo), &["origin".to_owned(), "ori*".to_owned()]).expect("lists");
+    let tracked = tracking_commits(&git_for(&repo), &["origin".to_owned(), "ori*".to_owned()])
+        .expect("lists");
     assert_eq!(tracked.get("origin"), Some(&vec![base.clone()]));
     assert_eq!(tracked.get("ori*"), Some(&Vec::new()));
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// A prior destination value joins the published tips when it is a locally present commit.
@@ -101,40 +115,59 @@ fn prior_destination_values_join_the_published_tips() {
     let tracking: BTreeMap<String, Vec<String>> = BTreeMap::new();
     let tips = published_tips(&[update(Some(&base), Some(&base))], &prior, &tracking);
     assert_eq!(tips.get("origin"), Some(&vec![base.clone()]));
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// A commit whose base is published scans only the commits the remote lacks.
 #[test]
 fn a_known_base_scans_only_the_new_commits() {
     let (repo, base) = published_repository("mp-range-new");
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=one"]);
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=one"],
+    );
     let one = head_of(&repo);
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=two"]);
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=two"],
+    );
     let two = head_of(&repo);
-    let scope = update_scope(&git_for(&repo), &update(Some(&two), Some(&base)), std::slice::from_ref(&base)).expect("scopes");
+    let scope = update_scope(
+        &git_for(&repo),
+        &update(Some(&two), Some(&base)),
+        std::slice::from_ref(&base),
+    )
+    .expect("scopes");
     assert_eq!(scope, UpdateScope::Commits(vec![two.clone(), one.clone()]));
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// With no published base, the pushed tip's whole tree is the scope.
 #[test]
 fn an_unknown_base_scans_the_final_tree() {
     let (repo, _base) = published_repository("mp-range-final");
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=one"]);
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=one"],
+    );
     let tip = head_of(&repo);
     let scope = update_scope(&git_for(&repo), &update(Some(&tip), None), &[]).expect("scopes");
     assert_eq!(scope, UpdateScope::FinalTree(tip.clone()));
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// A deletion publishes nothing and has no scope.
 #[test]
 fn a_deletion_has_no_scope() {
     let (repo, base) = published_repository("mp-range-delete");
-    let scope = update_scope(&git_for(&repo), &update(None, Some(&base)), &[base.clone()]).expect("scopes");
+    let scope = update_scope(
+        &git_for(&repo),
+        &update(None, Some(&base)),
+        std::slice::from_ref(&base),
+    )
+    .expect("scopes");
     assert_eq!(scope, UpdateScope::None);
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// A pushed object that is not a commit fails closed, never an empty scope.
@@ -145,5 +178,67 @@ fn a_non_commit_target_fails_closed() {
         .trim()
         .to_owned();
     assert!(update_scope(&git_for(&repo), &update(Some(&tree), None), &[]).is_err());
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
+}
+
+/// The pushed scope lists each new commit's own delta and each tip tree's blobs, with no staged state.
+#[test]
+fn the_pushed_scope_lists_commit_deltas_and_tree_blobs() {
+    let (repo, base) = published_repository("mp-range-candidates");
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=empty"],
+    );
+    std::fs::write(repo.join("pushed.txt"), "pushed content\n").expect("pushed file");
+    git(&repo, &["add", "pushed.txt"]);
+    git(&repo, &["commit", "--quiet", "-m", "pushed"]);
+    let tip = head_of(&repo);
+    let real_git = PathBuf::from("/usr/bin/git");
+    let prefix: Vec<OsString> = vec![OsString::from("-C"), repo.as_os_str().to_os_string()];
+    let overlay = fixture_environment();
+    let commit_scope = PushedScope {
+        commits: vec![
+            crate::candidate_object::parse_object_id(tip.as_bytes()).expect("object name"),
+        ],
+        trees: Vec::new(),
+    };
+    let prepared = prepare_candidates(
+        &real_git,
+        &prefix,
+        &overlay,
+        &CandidateRequest::Pushed(commit_scope),
+    )
+    .expect("commit candidates");
+    let paths: Vec<String> = prepared
+        .version
+        .candidates()
+        .iter()
+        .map(|candidate| {
+            return String::from_utf8_lossy(&candidate.path).into_owned();
+        })
+        .collect();
+    assert_eq!(paths, vec!["pushed.txt".to_owned()], "{paths:?}");
+    let tree_scope = PushedScope {
+        commits: Vec::new(),
+        trees: vec![crate::candidate_object::parse_object_id(tip.as_bytes()).expect("object name")],
+    };
+    let whole = prepare_candidates(
+        &real_git,
+        &prefix,
+        &overlay,
+        &CandidateRequest::Pushed(tree_scope),
+    )
+    .expect("tree candidates");
+    let mut all: Vec<String> = whole
+        .version
+        .candidates()
+        .iter()
+        .map(|candidate| {
+            return String::from_utf8_lossy(&candidate.path).into_owned();
+        })
+        .collect();
+    all.sort();
+    assert_eq!(all, vec!["pushed.txt".to_owned()], "{all:?}");
+    assert!(!base.is_empty());
+    remove(repo.parent().expect("root"));
 }

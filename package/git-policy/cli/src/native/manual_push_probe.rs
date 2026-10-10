@@ -13,16 +13,16 @@
 
 /// The probe's Git runner and its environment.
 use super::auto_push_single_flight::{PushGit, git_command};
+/// Unguessable names for the private probe directory.
+use super::random_id::random_uuid;
 /// Owned OS strings for the probe's Git arguments.
 use std::ffi::OsString;
-/// `Stdio` connects the probe's standard input and output.
-use std::process::Stdio;
 /// Reading and writing the private hook and its captures.
 use std::fs;
 /// `Path` and `PathBuf` are borrowed and owned filesystem paths.
 use std::path::{Path, PathBuf};
-/// Unguessable names for the private probe directory.
-use super::random_id::random_uuid;
+/// `Stdio` connects the probe's standard input and output.
+use std::process::Stdio;
 
 /// Environment variable naming the capture directory the hook writes to.
 pub const CAPTURE_DIRECTORY_ENV: &str = "CLI_GIT_PUSH_FACTS_DIRECTORY";
@@ -130,7 +130,10 @@ pub struct PushUpdate {
 /// function isZeroOid(oid: string): boolean { return /^0+$/.test(oid); }
 /// ```
 pub fn is_zero_oid(oid: &str) -> bool {
-    return !oid.is_empty() && oid.bytes().all(|byte| byte == b'0');
+    return !oid.is_empty()
+        && oid.bytes().all(|byte| {
+            return byte == b'0';
+        });
 }
 
 /// What:
@@ -148,10 +151,14 @@ pub fn parse_update_records(
     remote_location: &str,
 ) -> Result<Vec<ProbedUpdate>, ManualPushProbeError> {
     let mut updates: Vec<ProbedUpdate> = Vec::new();
-    for line in input.split('\n').filter(|line| !line.is_empty()) {
+    for line in input.split('\n').filter(|line| {
+        return !line.is_empty();
+    }) {
         let parts: Vec<&str> = line.split(' ').collect();
         if parts.len() != PRE_PUSH_FIELD_COUNT {
-            return Err(probe_error(format!("Malformed pre-push update record: {line}")));
+            return Err(probe_error(format!(
+                "Malformed pre-push update record: {line}"
+            )));
         }
         updates.push(ProbedUpdate {
             local_ref: parts[0].to_owned(),
@@ -180,9 +187,9 @@ pub fn probe_arguments(
     post_subcommand: &[OsString],
     hooks_directory: &Path,
 ) -> Vec<OsString> {
-    let separator = post_subcommand
-        .iter()
-        .position(|argument| argument.as_os_str() == "--");
+    let separator = post_subcommand.iter().position(|argument| {
+        return argument.as_os_str() == "--";
+    });
     let insertion = separator.unwrap_or(post_subcommand.len());
     let mut arguments: Vec<OsString> = global_prefix.to_vec();
     arguments.push(OsString::from("-c"));
@@ -249,24 +256,41 @@ pub fn capture_probed_updates(
     let captures = scratch.join("captures");
     for directory in [scratch, hooks.as_path(), captures.as_path()] {
         create_private_directory(directory).map_err(|error| {
-            probe_error(format!("private probe directory {} could not be created: {error}", directory.display()))
+            return probe_error(format!(
+                "private probe directory {} could not be created: {error}",
+                directory.display()
+            ));
         })?;
     }
     let hook_path = hooks.join(HOOK_NAME);
-    fs::write(&hook_path, hook_source()).map_err(|error| probe_error(format!("hook write failed: {error}")))?;
+    fs::write(&hook_path, hook_source()).map_err(|error| {
+        return probe_error(format!("hook write failed: {error}"));
+    })?;
     set_executable(&hook_path)?;
     let arguments = probe_arguments(global_prefix, post_subcommand, &hooks);
     let mut command = git_command(git, &arguments);
     command
         .stdin(Stdio::null())
         .env(CAPTURE_DIRECTORY_ENV, &captures);
-    let probe = command.output().map_err(|error| probe_error(format!("probe push could not start: {error}")))?;
+    let probe = command.output().map_err(|error| {
+        return probe_error(format!("probe push could not start: {error}"));
+    })?;
     let mut names: Vec<PathBuf> = fs::read_dir(&captures)
-        .map_err(|error| probe_error(format!("captures unreadable: {error}")))?
-        .map(|entry| entry.map(|found| found.path()))
+        .map_err(|error| {
+            return probe_error(format!("captures unreadable: {error}"));
+        })?
+        .map(|entry| {
+            return entry.map(|found| {
+                return found.path();
+            });
+        })
         .collect::<Result<Vec<PathBuf>, std::io::Error>>()
-        .map_err(|error| probe_error(format!("captures unreadable: {error}")))?;
-    names.retain(|path| path.to_string_lossy().ends_with(CAPTURE_SUFFIX));
+        .map_err(|error| {
+            return probe_error(format!("captures unreadable: {error}"));
+        })?;
+    names.retain(|path| {
+        return path.to_string_lossy().ends_with(CAPTURE_SUFFIX);
+    });
     names.sort();
     if names.is_empty() {
         return Err(probe_error(format!(
@@ -277,14 +301,18 @@ pub fn capture_probed_updates(
     let mut updates: Vec<ProbedUpdate> = Vec::new();
     let _scratch_guard = ScratchGuard(scratch.to_path_buf());
     for path in names {
-        let bytes = fs::read(&path).map_err(|error| probe_error(format!("capture unreadable: {error}")))?;
+        let bytes = fs::read(&path).map_err(|error| {
+            return probe_error(format!("capture unreadable: {error}"));
+        })?;
         let text = String::from_utf8_lossy(&bytes);
         let mut lines = text.splitn(3, '\n');
         let remote_name = lines.next().unwrap_or_default();
         let remote_location = lines.next().unwrap_or_default();
         let input = lines.next().unwrap_or_default();
         if input.len() as u64 > MAX_HOOK_INPUT_BYTES {
-            return Err(probe_error("Pre-push input exceeded capture limit.".to_owned()));
+            return Err(probe_error(
+                "Pre-push input exceeded capture limit.".to_owned(),
+            ));
         }
         updates.extend(parse_update_records(input, remote_name, remote_location)?);
     }
@@ -317,8 +345,11 @@ impl Drop for ScratchGuard {
 /// ```
 fn set_executable(path: &Path) -> Result<(), ManualPushProbeError> {
     use std::os::unix::fs::PermissionsExt;
-    return fs::set_permissions(path, fs::Permissions::from_mode(PRIVATE_DIRECTORY_MODE))
-        .map_err(|error| probe_error(format!("hook mode failed: {error}")));
+    return fs::set_permissions(path, fs::Permissions::from_mode(PRIVATE_DIRECTORY_MODE)).map_err(
+        |error| {
+            return probe_error(format!("hook mode failed: {error}"));
+        },
+    );
 }
 
 /// Parse `git ls-remote --refs` records into a ref-to-object map.
@@ -329,7 +360,9 @@ fn set_executable(path: &Path) -> Result<(), ManualPushProbeError> {
 /// ```
 pub fn parse_remote_refs(output: &str) -> Result<Vec<(String, String)>, ManualPushProbeError> {
     let mut refs: Vec<(String, String)> = Vec::new();
-    for line in output.split('\n').filter(|line| !line.is_empty()) {
+    for line in output.split('\n').filter(|line| {
+        return !line.is_empty();
+    }) {
         let Some((oid, name)) = line.split_once('\t') else {
             return Err(probe_error(format!("Malformed ls-remote record: {line}")));
         };
@@ -353,12 +386,20 @@ pub fn confirm_group(
     remote_location: &str,
     updates: &[ProbedUpdate],
 ) -> Result<Vec<PushUpdate>, ManualPushProbeError> {
-    let mut arguments: Vec<OsString> = vec![OsString::from("ls-remote"), OsString::from("--refs"), OsString::from(remote_location)];
-    arguments.extend(updates.iter().map(|update| OsString::from(&update.remote_ref)));
+    let mut arguments: Vec<OsString> = vec![
+        OsString::from("ls-remote"),
+        OsString::from("--refs"),
+        OsString::from(remote_location),
+    ];
+    arguments.extend(updates.iter().map(|update| {
+        return OsString::from(&update.remote_ref);
+    }));
     let output = git_command(git, &arguments)
         .stdin(Stdio::null())
         .output()
-        .map_err(|error| probe_error(format!("ls-remote could not start: {error}")))?;
+        .map_err(|error| {
+            return probe_error(format!("ls-remote could not start: {error}"));
+        })?;
     if !output.status.success() {
         return Err(probe_error(format!(
             "ls-remote of {remote_location} failed: {}",
@@ -370,19 +411,33 @@ pub fn confirm_group(
     for update in updates {
         let authoritative: Option<&String> = remote_refs
             .iter()
-            .find(|(name, _oid)| name == &update.remote_ref)
-            .map(|(_name, oid)| oid);
+            .find(|(name, _oid)| {
+                return name == &update.remote_ref;
+            })
+            .map(|(_name, oid)| {
+                return oid;
+            });
         let advertised_absent = is_zero_oid(&update.advertised_remote_oid);
         if authoritative.is_none() != advertised_absent {
-            return Err(probe_error(format!("Remote ref changed during manual-push discovery: {}", update.remote_ref)));
+            return Err(probe_error(format!(
+                "Remote ref changed during manual-push discovery: {}",
+                update.remote_ref
+            )));
         }
         if let Some(oid) = authoritative
             && *oid != update.advertised_remote_oid
         {
-            return Err(probe_error(format!("Remote ref changed during manual-push discovery: {}", update.remote_ref)));
+            return Err(probe_error(format!(
+                "Remote ref changed during manual-push discovery: {}",
+                update.remote_ref
+            )));
         }
         confirmed.push(PushUpdate {
-            local_oid: if is_zero_oid(&update.local_oid) { None } else { Some(update.local_oid.clone()) },
+            local_oid: if is_zero_oid(&update.local_oid) {
+                None
+            } else {
+                Some(update.local_oid.clone())
+            },
             remote_oid: authoritative.cloned(),
             remote_name: update.remote_name.clone(),
             remote_ref: update.remote_ref.clone(),
@@ -407,7 +462,9 @@ pub fn probe_manual_push_updates(
 ) -> Result<Vec<PushUpdate>, ManualPushProbeError> {
     let scratch = std::env::temp_dir().join(format!(
         "cli-git-push-facts-{}",
-        random_uuid().map_err(|error| probe_error(format!("random source failed: {}", error.0)))?
+        random_uuid().map_err(|error| {
+            return probe_error(format!("random source failed: {}", error.0));
+        })?
     ));
     let probed = capture_probed_updates(git, global_prefix, post_subcommand, &scratch)?;
     let mut locations: Vec<String> = Vec::new();
@@ -420,7 +477,9 @@ pub fn probe_manual_push_updates(
     for location in &locations {
         let group: Vec<ProbedUpdate> = probed
             .iter()
-            .filter(|update| &update.remote_location == location)
+            .filter(|update| {
+                return &update.remote_location == location;
+            })
             .cloned()
             .collect();
         confirmed.extend(confirm_group(git, location, &group)?);

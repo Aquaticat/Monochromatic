@@ -13,13 +13,13 @@
 /// The Git runner, the probe's update type, and the object name helpers.
 use super::auto_push_single_flight::{PushGit, git_command};
 use super::manual_push_probe::PushUpdate;
+/// Maps from remote names and peeled object names.
+use std::collections::BTreeMap;
 /// Owned OS strings for Git arguments and the stdin of batch queries.
 use std::ffi::OsString;
 /// Pipes for the batch queries' stdin and stdout.
 use std::io::Write;
 use std::process::Stdio;
-/// Maps from remote names and peeled object names.
-use std::collections::BTreeMap;
 
 /// Remote-tracking ref namespace Git's default fetch refspec writes.
 const TRACKING_NAMESPACE: &str = "refs/remotes/";
@@ -68,28 +68,38 @@ fn range_error(message: String) -> ManualPushRangeError {
 /// ```ts
 /// await runGitBytes({ gitPath, cwd, args, input });
 /// ```
-pub fn run_git_bytes(git: &PushGit, arguments: &[OsString], input: Option<&str>) -> Result<Vec<u8>, ManualPushRangeError> {
+pub fn run_git_bytes(
+    git: &PushGit,
+    arguments: &[OsString],
+    input: Option<&str>,
+) -> Result<Vec<u8>, ManualPushRangeError> {
     let mut command = git_command(git, arguments);
     command
-        .stdin(if input.is_some() { Stdio::piped() } else { Stdio::null() })
+        .stdin(if input.is_some() {
+            Stdio::piped()
+        } else {
+            Stdio::null()
+        })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    let mut child = command
-        .spawn()
-        .map_err(|error| range_error(format!("git could not be started: {error}")))?;
+    let mut child = command.spawn().map_err(|error| {
+        return range_error(format!("git could not be started: {error}"));
+    })?;
     if let (Some(text), Some(mut stdin)) = (input, child.stdin.take()) {
         // A Git exit before reading the whole input surfaces through its status, so the write error is ignored here.
         let _written = stdin.write_all(text.as_bytes());
     }
-    let output = child
-        .wait_with_output()
-        .map_err(|error| range_error(format!("git did not finish: {error}")))?;
+    let output = child.wait_with_output().map_err(|error| {
+        return range_error(format!("git did not finish: {error}"));
+    })?;
     if !output.status.success() {
         return Err(range_error(format!(
             "git {} failed: {}",
             arguments
                 .iter()
-                .map(|argument| argument.to_string_lossy().into_owned())
+                .map(|argument| {
+                    return argument.to_string_lossy().into_owned();
+                })
                 .collect::<Vec<String>>()
                 .join(" "),
             String::from_utf8_lossy(&output.stderr).trim_end()
@@ -107,7 +117,9 @@ pub fn run_git_bytes(git: &PushGit, arguments: &[OsString], input: Option<&str>)
 fn lines_of(bytes: &[u8]) -> Vec<String> {
     return String::from_utf8_lossy(bytes)
         .split('\n')
-        .filter(|line| !line.is_empty())
+        .filter(|line| {
+            return !line.is_empty();
+        })
         .map(str::to_owned)
         .collect();
 }
@@ -122,7 +134,10 @@ fn lines_of(bytes: &[u8]) -> Vec<String> {
 /// ```ts
 /// peeled.get(oid)?.type === 'commit' ? [oid] : []
 /// ```
-pub fn peel_commits(git: &PushGit, oids: &[String]) -> Result<BTreeMap<String, String>, ManualPushRangeError> {
+pub fn peel_commits(
+    git: &PushGit,
+    oids: &[String],
+) -> Result<BTreeMap<String, String>, ManualPushRangeError> {
     let mut unique: Vec<String> = oids.to_vec();
     unique.sort();
     unique.dedup();
@@ -131,7 +146,9 @@ pub fn peel_commits(git: &PushGit, oids: &[String]) -> Result<BTreeMap<String, S
     }
     let input: String = unique
         .iter()
-        .map(|oid| format!("{oid}^{{}}\n"))
+        .map(|oid| {
+            return format!("{oid}^{{}}\n");
+        })
         .collect();
     let arguments: Vec<OsString> = ["cat-file", "--batch-check=%(objectname) %(objecttype)"]
         .iter()
@@ -140,7 +157,9 @@ pub fn peel_commits(git: &PushGit, oids: &[String]) -> Result<BTreeMap<String, S
     let output = run_git_bytes(git, &arguments, Some(&input))?;
     let records = lines_of(&output);
     if records.len() != unique.len() {
-        return Err(range_error("Git object batch-check returned an unexpected record count.".to_owned()));
+        return Err(range_error(
+            "Git object batch-check returned an unexpected record count.".to_owned(),
+        ));
     }
     let mut commits: BTreeMap<String, String> = BTreeMap::new();
     for (oid, record) in unique.iter().zip(records.iter()) {
@@ -149,7 +168,9 @@ pub fn peel_commits(git: &PushGit, oids: &[String]) -> Result<BTreeMap<String, S
         }
         let fields: Vec<&str> = record.split(' ').collect();
         if fields.len() != 2 {
-            return Err(range_error(format!("Git object batch-check returned malformed record: {record}")));
+            return Err(range_error(format!(
+                "Git object batch-check returned malformed record: {record}"
+            )));
         }
         if fields[1] == "commit" {
             commits.insert(oid.clone(), fields[0].to_owned());
@@ -167,7 +188,10 @@ pub fn peel_commits(git: &PushGit, oids: &[String]) -> Result<BTreeMap<String, S
 /// ```ts
 /// async function trackingCommits({ gitPath, cwd, remoteNames }): Promise<ReadonlyMap<string, string[]>>;
 /// ```
-pub fn tracking_commits(git: &PushGit, remote_names: &[String]) -> Result<BTreeMap<String, Vec<String>>, ManualPushRangeError> {
+pub fn tracking_commits(
+    git: &PushGit,
+    remote_names: &[String],
+) -> Result<BTreeMap<String, Vec<String>>, ManualPushRangeError> {
     if remote_names.is_empty() {
         return Ok(BTreeMap::new());
     }
@@ -187,7 +211,9 @@ pub fn tracking_commits(git: &PushGit, remote_names: &[String]) -> Result<BTreeM
         for record in &refs {
             let fields: Vec<&str> = record.split(' ').collect();
             if fields.len() != 3 {
-                return Err(range_error(format!("Git for-each-ref returned malformed record: {record}")));
+                return Err(range_error(format!(
+                    "Git for-each-ref returned malformed record: {record}"
+                )));
             }
             if fields[1] == "commit" && fields[2].starts_with(&prefix) {
                 commits.push(fields[0].to_owned());
@@ -215,7 +241,10 @@ pub fn published_tips(
     let mut tips: BTreeMap<String, Vec<String>> = BTreeMap::new();
     for update in updates {
         let entry = tips.entry(update.remote_name.clone()).or_insert_with(|| {
-            return tracking.get(&update.remote_name).cloned().unwrap_or_default();
+            return tracking
+                .get(&update.remote_name)
+                .cloned()
+                .unwrap_or_default();
         });
         if let Some(prior) = update.remote_oid.as_ref()
             && let Some(commit) = prior_commits.get(prior)
@@ -256,7 +285,11 @@ pub enum UpdateScope {
 /// ```ts
 /// async function scopeOf(update, publishedTips): Promise<UpdateScope>;
 /// ```
-pub fn update_scope(git: &PushGit, update: &PushUpdate, published: &[String]) -> Result<UpdateScope, ManualPushRangeError> {
+pub fn update_scope(
+    git: &PushGit,
+    update: &PushUpdate,
+    published: &[String],
+) -> Result<UpdateScope, ManualPushRangeError> {
     let Some(local) = update.local_oid.as_ref() else {
         return Ok(UpdateScope::None);
     };
@@ -269,7 +302,11 @@ pub fn update_scope(git: &PushGit, update: &PushUpdate, published: &[String]) ->
     if published.is_empty() {
         return Ok(UpdateScope::FinalTree(local.clone()));
     }
-    let mut arguments: Vec<OsString> = vec![OsString::from("rev-list"), OsString::from(local), OsString::from("--not")];
+    let mut arguments: Vec<OsString> = vec![
+        OsString::from("rev-list"),
+        OsString::from(local),
+        OsString::from("--not"),
+    ];
     arguments.extend(published.iter().map(OsString::from));
     let commits = lines_of(&run_git_bytes(git, &arguments, None)?);
     return Ok(UpdateScope::Commits(commits));

@@ -38,12 +38,24 @@ fn repository_with_origin(name: &str) -> (PathBuf, PathBuf, String) {
     let root = fixture(name);
     let origin = root.join("origin.git");
     let repo = root.join("repo");
-    git(&root, &["init", "--quiet", "--bare", origin.to_str().expect("utf-8")]);
+    git(
+        &root,
+        &["init", "--quiet", "--bare", origin.to_str().expect("utf-8")],
+    );
     std::fs::create_dir_all(&repo).expect("repo");
     git(&repo, &["init", "--quiet", "--initial-branch=main"]);
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=base"]);
-    git(&repo, &["remote", "add", "origin", origin.to_str().expect("utf-8")]);
-    git(&repo, &["push", "--quiet", "origin", "HEAD:refs/heads/main"]);
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=base"],
+    );
+    git(
+        &repo,
+        &["remote", "add", "origin", origin.to_str().expect("utf-8")],
+    );
+    git(
+        &repo,
+        &["push", "--quiet", "origin", "HEAD:refs/heads/main"],
+    );
     let base = head_of(&repo);
     return (repo, origin, base);
 }
@@ -91,7 +103,10 @@ fn update_records_have_four_fields_and_other_shapes_are_refused() {
     assert_eq!(parsed[0].advertised_remote_oid, "def");
     assert!(parse_update_records("refs/heads/main abc refs/heads/main\n", "o", "l").is_err());
     assert!(parse_update_records("a b c d e\n", "o", "l").is_err());
-    assert_eq!(parse_update_records("", "o", "l").expect("empty"), Vec::new());
+    assert_eq!(
+        parse_update_records("", "o", "l").expect("empty"),
+        Vec::new()
+    );
 }
 
 /// Only the all-zero spelling is an absent object name.
@@ -110,11 +125,25 @@ fn probe_arguments_keep_git_options_before_the_terminator() {
         &post(&["origin", "main", "--", "tail"]),
         Path::new("/hooks"),
     );
-    let text: Vec<String> = arguments.iter().map(|argument| argument.to_string_lossy().into_owned()).collect();
+    let text: Vec<String> = arguments
+        .iter()
+        .map(|argument| {
+            return argument.to_string_lossy().into_owned();
+        })
+        .collect();
     assert_eq!(
         text,
         vec![
-            "-C", "/repo", "-c", "core.hooksPath=/hooks", "push", "origin", "main", "--dry-run", "--verify", "--",
+            "-C",
+            "/repo",
+            "-c",
+            "core.hooksPath=/hooks",
+            "push",
+            "origin",
+            "main",
+            "--dry-run",
+            "--verify",
+            "--",
             "tail"
         ]
     );
@@ -126,8 +155,14 @@ fn the_hook_writes_an_exclusive_capture_of_bounded_input() {
     let source = hook_source();
     assert!(source.starts_with("#!/bin/sh\n"), "{source}");
     assert!(source.contains("set -C"), "{source}");
-    assert!(source.contains("$CLI_GIT_PUSH_FACTS_DIRECTORY/$$.capture"), "{source}");
-    assert!(source.contains(&format!("head -c {}", MAX_HOOK_INPUT_BYTES + 1)), "{source}");
+    assert!(
+        source.contains("$CLI_GIT_PUSH_FACTS_DIRECTORY/$$.capture"),
+        "{source}"
+    );
+    assert!(
+        source.contains(&format!("head -c {}", MAX_HOOK_INPUT_BYTES + 1)),
+        "{source}"
+    );
 }
 
 /// A new branch pushed by the probe is one update: a local object, no remote object, the named remote.
@@ -136,9 +171,13 @@ fn a_new_branch_is_one_update_with_no_remote_object() {
     let (repo, origin, _base) = repository_with_origin("mp-probe-new");
     git(&repo, &["checkout", "--quiet", "-b", "feature"]);
     let landed = head_of(&repo);
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=feature"]);
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=feature"],
+    );
     let tip = head_of(&repo);
-    let updates = probe_manual_push_updates(&git_for(&repo), &[], &post(&["origin", "feature"])).expect("probes");
+    let updates = probe_manual_push_updates(&git_for(&repo), &[], &post(&["origin", "feature"]))
+        .expect("probes");
     assert_eq!(
         updates,
         vec![PushUpdate {
@@ -148,30 +187,42 @@ fn a_new_branch_is_one_update_with_no_remote_object() {
             remote_ref: "refs/heads/feature".to_owned(),
         }]
     );
-    assert_eq!(remote_value(&origin, "refs/heads/feature"), None, "the probe must not publish");
+    assert_eq!(
+        remote_value(&origin, "refs/heads/feature"),
+        None,
+        "the probe must not publish"
+    );
     assert_ne!(landed, tip);
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// A fast-forward names the remote's current object as the prior value.
 #[test]
 fn a_fast_forward_names_the_prior_remote_value() {
     let (repo, origin, base) = repository_with_origin("mp-probe-ff");
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=next"]);
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=next"],
+    );
     let tip = head_of(&repo);
-    let updates = probe_manual_push_updates(&git_for(&repo), &[], &post(&["origin", "main"])).expect("probes");
+    let updates = probe_manual_push_updates(&git_for(&repo), &[], &post(&["origin", "main"]))
+        .expect("probes");
     assert_eq!(updates.len(), 1);
     assert_eq!(updates[0].local_oid.as_deref(), Some(tip.as_str()));
     assert_eq!(updates[0].remote_oid.as_deref(), Some(base.as_str()));
-    assert_eq!(remote_value(&origin, "refs/heads/main").as_deref(), Some(base.as_str()));
-    remove(&repo.parent().expect("root").to_path_buf());
+    assert_eq!(
+        remote_value(&origin, "refs/heads/main").as_deref(),
+        Some(base.as_str())
+    );
+    remove(repo.parent().expect("root"));
 }
 
 /// Deleting a remote branch is an update with no local object.
 #[test]
 fn a_deletion_has_no_local_object() {
     let (repo, _origin, base) = repository_with_origin("mp-probe-delete");
-    let updates = probe_manual_push_updates(&git_for(&repo), &[], &post(&["origin", ":main"])).expect("probes");
+    let updates = probe_manual_push_updates(&git_for(&repo), &[], &post(&["origin", ":main"]))
+        .expect("probes");
     assert_eq!(
         updates,
         vec![PushUpdate {
@@ -181,23 +232,27 @@ fn a_deletion_has_no_local_object() {
             remote_ref: "refs/heads/main".to_owned(),
         }]
     );
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// A push with nothing to send has no updates to scan.
 #[test]
 fn an_up_to_date_push_has_no_updates() {
     let (repo, _origin, _base) = repository_with_origin("mp-probe-noop");
-    let updates = probe_manual_push_updates(&git_for(&repo), &[], &post(&["origin", "main"])).expect("probes");
+    let updates = probe_manual_push_updates(&git_for(&repo), &[], &post(&["origin", "main"]))
+        .expect("probes");
     assert_eq!(updates, Vec::new());
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// A destination Git cannot reach yields no capture, so the probe fails instead of reporting no updates.
 #[test]
 fn an_unreachable_destination_fails_the_probe() {
     let (repo, _origin, _base) = repository_with_origin("mp-probe-unreachable");
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=next"]);
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=next"],
+    );
     let missing = repo.parent().expect("root").join("missing.git");
     let result = probe_manual_push_updates(
         &git_for(&repo),
@@ -205,7 +260,7 @@ fn an_unreachable_destination_fails_the_probe() {
         &post(&[missing.to_str().expect("utf-8"), "main"]),
     );
     assert!(result.is_err());
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// Confirmation refuses a destination whose value differs from the negotiated one.
@@ -229,9 +284,14 @@ fn confirmation_refuses_a_remote_ref_that_changed_after_negotiation() {
         remote_ref: "refs/heads/main".to_owned(),
         advertised_remote_oid: base.clone(),
     };
-    let confirmed = confirm_group(&git_for(&repo), origin.to_str().expect("utf-8"), &[matching]).expect("confirms");
+    let confirmed = confirm_group(
+        &git_for(&repo),
+        origin.to_str().expect("utf-8"),
+        &[matching],
+    )
+    .expect("confirms");
     assert_eq!(confirmed[0].remote_oid.as_deref(), Some(base.as_str()));
-    remove(&repo.parent().expect("root").to_path_buf());
+    remove(repo.parent().expect("root"));
 }
 
 /// The scratch guard removes its directory when it is dropped, on every path.
