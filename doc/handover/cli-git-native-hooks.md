@@ -29,3 +29,11 @@ Output:
 Conclusion: Git starts the hook with the path of the link (the `hooks` directory joined with the event name)
 as argv[0], so the start name is the link path, not the resolved target.
 The `Choices` and binary tests rely on this.
+
+Git 2.55.0 (the host's `/usr/bin/git`, run with `PATH=/usr/bin:/bin` so the installed cli-git wrapper stays out)
+gives the same three lines, with the probe directory under the scratch directory in place of `/work`:
+`git version 2.55.0`, then `argv0=<hooks>/pre-commit args=`, `argv0=<hooks>/commit-msg args=.git/COMMIT_EDITMSG`,
+and `argv0=<hooks>/pre-commit args=foo`.
+No difference between 2.55.0 and 2.56.0 was found for the start name.
+The plain host `git` on PATH is the installed cli-git wrapper, so a probe run through it proves nothing about Git;
+the first host attempt was discarded for that reason.
