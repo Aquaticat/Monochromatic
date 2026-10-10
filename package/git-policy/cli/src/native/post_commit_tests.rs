@@ -201,10 +201,12 @@ fn an_engine_failure_retains_the_commit_and_reports_the_failure() {
     let kinds: Vec<&str> = outcome
         .events
         .iter()
-        .map(|event| match event {
-            PolicyEvent::EngineFailure { .. } => "engine-failure",
-            PolicyEvent::CommitLanded { .. } => "commit-landed",
-            _ => "other",
+        .map(|event| {
+            return match event {
+                PolicyEvent::EngineFailure { .. } => "engine-failure",
+                PolicyEvent::CommitLanded { .. } => "commit-landed",
+                _ => "other",
+            };
         })
         .collect();
     assert_eq!(kinds.last(), Some(&"commit-landed"), "{kinds:?}");
@@ -316,7 +318,9 @@ fn the_landed_delta_lists_only_the_changed_paths_as_added() {
         .version
         .candidates()
         .iter()
-        .map(|candidate| String::from_utf8_lossy(&candidate.path).into_owned())
+        .map(|candidate| {
+            return String::from_utf8_lossy(&candidate.path).into_owned();
+        })
         .collect();
     assert_eq!(paths, vec!["landed.txt".to_owned()], "{paths:?}");
     remove(&root);
