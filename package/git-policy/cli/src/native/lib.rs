@@ -486,6 +486,9 @@ pub mod commit_args;
 /// The private commit index: copies, selection modes, pathspec files and listings.
 pub mod commit_index;
 
+/// Native `git commit` in the shadow, the prepared commit read back and `prepared.json`.
+pub mod commit_preparation;
+
 /// Creation of the shadow repository of one transaction.
 pub mod shadow_create;
 
