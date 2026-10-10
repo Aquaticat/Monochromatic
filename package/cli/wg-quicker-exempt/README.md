@@ -11,7 +11,8 @@ This loader applies that mark to sockets created in Ghostty,
  Pale Moon,
  Firefox Nightly,
  ChatGPT,
- and Interpreter cgroups without enumerating their destination IPs.
+ Interpreter,
+ and Qure cgroups without enumerating their destination IPs.
 
 ## How it works
 
@@ -50,7 +51,8 @@ List Ghostty,
  Pale Moon,
  Firefox Nightly,
  ChatGPT,
- and Interpreter targets without attaching:
+ Interpreter,
+ and Qure targets without attaching:
 
 ```sh
 wg-quicker-exempt list-targets <uid>
@@ -168,23 +170,34 @@ Release builds omit injection seam.
    Helium,
    Firefox Nightly,
    ChatGPT,
-   and Interpreter service enumeration plus future-cgroup inotify coverage.
+   Interpreter,
+   and Qure service enumeration plus future-cgroup inotify coverage.
    It periodically rescans Helium,
    Pale Moon,
    Firefox Nightly,
    ChatGPT,
-   and Interpreter processes.
+   Interpreter,
+   and Qure processes.
    Firefox Nightly matching accepts exact `firefox` and `firefox-bin` names only under a `firefox-nightly` directory.
    ChatGPT matching accepts every executable inside the root-owned `/usr/lib/chatgpt` package tree,
    which includes the subprocess agents that application spawns.
    Interpreter matching accepts every executable whose name begins with `interpreter`,
    which also includes the same vendor's terminal agent.
+   Qure matching accepts every executable whose name begins with `qure`,
+   which covers its AppImage file,
+   its mounted Electron image,
+   its bundled pytest runner,
+   and the agents its bundled CLI wrappers exec.
+   Qure's Chromium-generic helpers,
+   such as `chrome_crashpad_handler`,
+   carry no such name and bypass only while they share a matched cgroup.
 - Process discovery attaches entire current cgroup.
    If Helium,
    Pale Moon,
    Firefox Nightly,
    ChatGPT,
-   or Interpreter shares that cgroup with another process,
+   Interpreter,
+   or Qure shares that cgroup with another process,
    every sibling's newly created sockets receive exemption until cgroup disappears or watcher stops.
 - A newly started process-discovered application can create sockets before next periodic rescan,
    whose interval is 250 milliseconds.

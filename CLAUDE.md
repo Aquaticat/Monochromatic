@@ -35,6 +35,15 @@ never publish them to claude.ai (Artifacts, Claude Docs) or any host that keeps 
 whatever a tool's own instructions suggest.
 Uploads persist off-machine and are not private.
 
+Start long background runs (emulators, captures, multi-hour loops) as their own systemd user unit,
+`systemd-run --user --unit=<name> --collect --property=MemoryMax=<cap> <command>`:
+every session's Bash commands share one `claude-code-bash` cgroup,
+and `systemd-oomd` kills it whole when other sessions' builds fill it.
+Name the unit so it can be found,
+and cap its memory.
+Rationale:
+`doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md`.
+
 # Development guidelines for AI agents
 
 ORG:
@@ -423,9 +432,10 @@ RPB:
  then ask user to reconnect/re-authorize/restart before concluding unreachable.
 
 FCH:
- Doc points elsewhere for substance:
- fetch that before concluding;
- never hedge ("likely contains") about a document one tool call away.
+ Substance not in view:
+ fetch it or read on before concluding,
+ whether a doc points elsewhere or mandated steps sit later in the file.
+ Never hedge ("likely contains") about text one read away.
 
 ### Name the verification step
 

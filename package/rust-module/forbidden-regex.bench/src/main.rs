@@ -70,10 +70,12 @@ fn main() {
     );
 
     // Build ours once, leniently: rules this dialect cannot express are dropped.
+    // The freshly compiled set only feeds the serializer; the reloaded set below
+    // keeps the `fset` name so the round-tripped bytes are what everything races.
     let ours_all: Vec<&str> = usable.iter().map(|(our, _)| return our.as_str()).collect();
     let build_ours = Instant::now();
-    let (fset, kept) = forbidden_regex::RegexSet::compile_lenient(&ours_all);
-    let serialized = fset.to_bytes().expect("forbidden-regex serializes");
+    let (compiled, kept) = forbidden_regex::RegexSet::compile_lenient(&ours_all);
+    let serialized = compiled.to_bytes().expect("forbidden-regex serializes");
     println!(
         "build+serialize ours: {:.2}s for {} rules, {} bytes",
         build_ours.elapsed().as_secs_f64(),

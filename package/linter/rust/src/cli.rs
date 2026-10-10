@@ -384,11 +384,12 @@ fn collect_severity_overrides(matches: &clap::ArgMatches) -> Vec<CliOverride> {
         let indices = matches.indices_of(id);
 
         // `if let (Some(a), Some(b)) = (x, y)` destructures a tuple of two
-        // `Option`s, running the block only when BOTH are present.
-        if let (Some(values), Some(indices)) = (values, indices) {
+        // `Option`s, running the block only when BOTH are present. The inner
+        // names differ from the `Option` names so neither binding shadows.
+        if let (Some(present_values), Some(present_indices)) = (values, indices) {
             // `.zip(..)` walks two iterators in lockstep, pairing each argv
             // position with the value found there.
-            for (index, value) in indices.zip(values) {
+            for (index, value) in present_indices.zip(present_values) {
                 collected.push((index, CliOverride::parse(value, severity)));
             }
         }

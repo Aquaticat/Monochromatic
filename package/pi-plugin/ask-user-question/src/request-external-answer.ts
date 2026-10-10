@@ -28,6 +28,7 @@ import {
   resolveAnswerRuntime,
 } from './helper-launch.ts';
 import type { RequestRegistry, } from './request-registry.ts';
+import { ANSWER_BOOTSTRAP, } from './helper-bootstrap.ts';
 
 //region Constants
 
@@ -175,16 +176,7 @@ export async function requestExternalAnswer(
   },
 ): Promise<ExternalAnswerOutcome> {
   /**
-   terminal-exec selected terminal identity.
-   */
-  const terminalEntryId = await resolveTerminalEntryId();
-  if (((typeof terminalEntryId) !== 'symbol') && isGhosttyHelixCombination({
-    terminalEntryId,
-    editorCommand,
-  },))
-    warn(GHOSTTY_HELIX_WARNING,);
-  /**
-   Session-scoped cancellation handle for pending helper.
+   Session-scoped cancellation covers terminal resolution as well as the pending helper.
    */
   using request = registry.open();
   /**
@@ -197,6 +189,16 @@ export async function requestExternalAnswer(
       request.signal,
     ],);
   requestSignal.throwIfAborted();
+  /**
+   terminal-exec selected terminal identity.
+   */
+  const terminalEntryId = await resolveTerminalEntryId();
+  requestSignal.throwIfAborted();
+  if (((typeof terminalEntryId) !== 'symbol') && isGhosttyHelixCombination({
+    terminalEntryId,
+    editorCommand,
+  },))
+    warn(GHOSTTY_HELIX_WARNING,);
   /**
    Executable retained by live Pi process where supported.
    */
@@ -234,33 +236,39 @@ export async function requestExternalAnswer(
    Wait begins before detached launch to avoid missing fast helper connection.
    */
   const completionTask = channel.wait({ signal: requestSignal, },);
-  try {
-    await launch({
-      dir: cwd,
-      title: ANSWER_TERMINAL_TITLE,
-      command: [
-        runtimePath,
-        helperPath,
-        '--request',
-        workspace.requestPath,
-      ],
-    },);
-  }
-  catch (error: unknown) {
-    request.abort();
+  /**
+   Observe launch and channel together, including cancellation while launch is pending.
+   A late launcher still receives a bootstrap that safely handles expired requests.
+   */
+  async function launchAnswerTerminal(): Promise<void> {
     try {
-      await completionTask;
+      await launch({
+        dir: cwd,
+        title: ANSWER_TERMINAL_TITLE,
+        command: [
+          runtimePath,
+          '--input-type=module',
+          '--eval',
+          ANSWER_BOOTSTRAP,
+          helperPath,
+          '--request',
+          workspace.requestPath,
+        ],
+      },);
     }
-    catch (completionError: unknown) {
-      l.debug(`answer channel stopped after launch failure: ${String(completionError,)}`,);
+    catch (error: unknown) {
+      request.abort();
+      l.error(`answer terminal launch failed: ${String(error,)}`,);
+      throw error;
     }
-    l.error(`answer terminal launch failed: ${String(error,)}`,);
-    throw error;
   }
   /**
-   Helper completion while model tool remains blocked.
+   Both tasks are observed immediately, so cancellation cannot leave a rejected wait unhandled.
    */
-  const completion = await completionTask;
+  const [, completion,] = await Promise.all([
+    launchAnswerTerminal(),
+    completionTask,
+  ],);
   if (completion.status === 'cancelled') {
     l.info('answer helper cancelled',);
     return { status: 'cancelled', };

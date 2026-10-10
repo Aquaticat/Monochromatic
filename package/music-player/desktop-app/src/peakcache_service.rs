@@ -276,15 +276,16 @@ async fn run(
 /// async function openCache(path) { ... }
 /// ```
 async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache> {
-    // What:     `let Some(path) = path else { ...; return None; };`. Bail to degraded when
-    //           there is no path (no config dir), logging the reason.
+    // What:     `let Some(cache_path) = path else { ...; return None; };`. Bail to degraded
+    //           when there is no path (no config dir), logging the reason. The present path
+    //           gets its own name so it never shadows the `Option` parameter.
     // Why:      Run with no persistence when the platform gave us no path.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (!path) return null;
     // ```
-    let Some(path) = path else {
+    let Some(cache_path) = path else {
         tracing::debug!("no cache path; running degraded (no persistence)");
         return None;
     };
@@ -296,7 +297,7 @@ async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache> {
     // ```ts
     // mkdirSync(dirname(path), { recursive: true });
     // ```
-    if let Some(parent) = path.parent() {
+    if let Some(parent) = cache_path.parent() {
         let _ = std::fs::create_dir_all(parent)
             .inspect_err(|error| tracing::debug!(error = %error, "could not create cache parent dir; open may still succeed"));
     }
@@ -308,8 +309,8 @@ async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache> {
     // ```ts
     // const pathStr = String(path);
     // ```
-    let Some(path_str) = path.to_str() else {
-        tracing::warn!(path = %path.display(), "cache path is not UTF-8; running degraded");
+    let Some(path_str) = cache_path.to_str() else {
+        tracing::warn!(path = %cache_path.display(), "cache path is not UTF-8; running degraded");
         return None;
     };
     // What:     `match DecisionCache::open(path_str).await { ... }`. Open (creating the
@@ -366,23 +367,24 @@ async fn serve_read(cache: Option<&DecisionCache>, identity: CacheIdentity, requ
 /// async function get(cache, identity, fingerprint) { ... }
 /// ```
 async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint: u64) -> Option<Decision> {
-    // What:     `let cache = cache?;`. Degraded run has no cache.
+    // What:     `let decision_cache = cache?;`. Degraded run has no cache. The present
+    //           reference gets its own name so it never shadows the `Option` parameter.
     // Why:      Answer a miss without touching a database.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (!cache) return null;
     // ```
-    let cache = cache?;
-    // What:     `match cache.get(fingerprint, identity).await { ... }`. Run the shared point
-    //           lookup; an error collapses to a miss with a log line.
+    let decision_cache = cache?;
+    // What:     `match decision_cache.get(fingerprint, identity).await { ... }`. Run the
+    //           shared point lookup; an error collapses to a miss with a log line.
     // Why:      A read failure must degrade to a miss, never propagate as a crash.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // try { return await cache.get(fingerprint, identity); } catch (e) { warn(e); return null; }
     // ```
-    match cache.get(fingerprint, identity).await {
+    match decision_cache.get(fingerprint, identity).await {
         Ok(decision) => return decision,
         Err(error) => {
             tracing::warn!(error = %error, "cache get failed; treating as miss");
@@ -401,26 +403,27 @@ async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint
 /// async function known(cache, identity) { ... }
 /// ```
 async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) -> HashSet<u64> {
-    // What:     `let Some(cache) = cache else { return HashSet::new(); };`. Degraded run has
-    //           nothing cached.
+    // What:     `let Some(decision_cache) = cache else { return HashSet::new(); };`. Degraded
+    //           run has nothing cached. The present reference gets its own name so it never
+    //           shadows the `Option` parameter.
     // Why:      Skip-check finds nothing; everything re-measures.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (!cache) return new Set();
     // ```
-    let Some(cache) = cache else {
+    let Some(decision_cache) = cache else {
         return HashSet::new();
     };
-    // What:     `match cache.exact_fingerprints(identity).await { ... }`. Scan the exact rows;
-    //           degrade to the empty set on error.
+    // What:     `match decision_cache.exact_fingerprints(identity).await { ... }`. Scan the
+    //           exact rows; degrade to the empty set on error.
     // Why:      A scan failure just means an empty skip-check.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // try { return await cache.exactFingerprints(identity); } catch (e) { warn(e); return new Set(); }
     // ```
-    match cache.exact_fingerprints(identity).await {
+    match decision_cache.exact_fingerprints(identity).await {
         Ok(set) => return set,
         Err(error) => {
             tracing::warn!(error = %error, "cache scan failed; empty skip-check");
@@ -439,25 +442,27 @@ async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) -> HashSe
 /// async function put(cache, identity, request) { ... }
 /// ```
 async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Upsert) {
-    // What:     `let Some(cache) = cache else { return; };`. Degraded run drops the write.
+    // What:     `let Some(decision_cache) = cache else { return; };`. Degraded run drops the
+    //           write. The present reference gets its own name so it never shadows the
+    //           `Option` parameter.
     // Why:      Nothing to persist to.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (!cache) return;
     // ```
-    let Some(cache) = cache else {
+    let Some(decision_cache) = cache else {
         return;
     };
-    // What:     `if let Err(error) = cache.put(...).await { ... }`. Upsert the decision; log
-    //           and continue on error.
+    // What:     `if let Err(error) = decision_cache.put(...).await { ... }`. Upsert the
+    //           decision; log and continue on error.
     // Why:      One bad write must not stall the sweep; persistence is best-effort.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // try { await cache.put(request.fingerprint, identity, request.decision); } catch (e) { warn(e); }
     // ```
-    if let Err(error) = cache.put(request.fingerprint, identity, &request.decision).await {
+    if let Err(error) = decision_cache.put(request.fingerprint, identity, &request.decision).await {
         tracing::warn!(error = %error, "cache put failed; write dropped");
     }
 }

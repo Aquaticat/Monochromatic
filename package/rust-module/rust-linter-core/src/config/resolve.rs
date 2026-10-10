@@ -294,8 +294,8 @@ impl LinterConfig {
         // flags below. A rule scoped away from this path does not run, but an
         // explicit `-D rule` on the command line still turns it back on: the
         // flag is a deliberate instruction and the scope is a default.
-        if let Some(scope) = scope
-            && !scope.covers(path)
+        if let Some(winning_scope) = scope
+            && !winning_scope.covers(path)
         {
             severity = RuleSeverity::Off;
         }

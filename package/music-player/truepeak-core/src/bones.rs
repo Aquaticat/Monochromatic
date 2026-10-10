@@ -212,11 +212,13 @@ fn parse_metadata(buf: &[u8]) -> Result<(StreamInfo, usize), BonesError> {
             break;
         }
     }
-    let info = info.ok_or_else(|| return BonesError { message: "flac: no STREAMINFO block".to_owned() })?;
-    if info.sample_rate == 0 {
+    // The confirmed STREAMINFO gets its own name so it does not shadow the
+    // accumulator `Option` above.
+    let stream_info = info.ok_or_else(|| return BonesError { message: "flac: no STREAMINFO block".to_owned() })?;
+    if stream_info.sample_rate == 0 {
         return Err(BonesError { message: "flac: zero sample rate".to_owned() });
     }
-    return Ok((info, offset))
+    return Ok((stream_info, offset))
 }
 
 /// Walk audio frames from the first frame to EOF, confirming each start.

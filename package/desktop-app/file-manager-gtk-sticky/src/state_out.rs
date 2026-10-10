@@ -69,7 +69,7 @@ pub(crate) fn write_observed_state(inputs: &ObservedInputs) {
     );
     snapshot.insert("scrolledDown".into(), Value::from(inputs.scroll > 0.0));
     snapshot.insert("scrollTopPx".into(), Value::from(inputs.scroll.round() as i64));
-    let snapshot = Value::Object(snapshot);
+    let snapshot_value = Value::Object(snapshot);
     let stamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|elapsed| return elapsed.as_nanos())
@@ -79,7 +79,7 @@ pub(crate) fn write_observed_state(inputs: &ObservedInputs) {
         temp.push(format!(".{}.{}.tmp", process::id(), stamp));
         temp
     };
-    let body = format!("{snapshot:#}\n");
+    let body = format!("{snapshot_value:#}\n");
     if let Err(error) = fs::write(&temp, body) {
         tracing::error!(%error, "failed to write observed-state temp file");
         return;

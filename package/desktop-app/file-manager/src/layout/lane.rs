@@ -88,7 +88,7 @@ impl StripLayout {
         let positions = self.resolved_y_positions(&placements);
         for placement in &placements {
             let widget = self.widgets.borrow().get(&placement.id).cloned();
-            let Some(widget) = widget else {
+            let Some(present_widget) = widget else {
                 continue;
             };
             let y = positions
@@ -96,7 +96,7 @@ impl StripLayout {
                 .copied()
                 .unwrap_or_else(|| return self.desired_y_for_pane(*placement));
             if let Some(view) = self.columns.borrow().get(placement.column) {
-                view.fixed.move_(&widget, 0.0, y);
+                view.fixed.move_(&present_widget, 0.0, y);
             }
         }
     }
@@ -146,8 +146,10 @@ impl StripLayout {
         adj.set_value(target.clamp(0.0, max));
         self.sync_lane_offsets_to_app_scroll();
         let settled = adj.value();
-        let start = self.visual_y_for_pane(placement);
-        return start >= settled && start + f64::from(PANE_HEIGHT) <= settled + page
+        // Recomputed after the scroll settled; the name differs from the pre-scroll
+        // `start` so the second measurement never shadows the first.
+        let final_start = self.visual_y_for_pane(placement);
+        return final_start >= settled && final_start + f64::from(PANE_HEIGHT) <= settled + page
     }
 
     /// What: recompute every sibling-group lane offset from the whole-app vertical scroll.
@@ -271,8 +273,8 @@ impl StripLayout {
             min_y = Some(min_y.map_or(top, |current| return current.max(top)));
             max_y = Some(max_y.map_or(bottom, |current| return current.min(bottom)));
         }
-        let (min_y, max_y) = (min_y?, max_y?);
-        return Some((min_y, max_y.max(min_y)))
+        let (top_bound, bottom_bound) = (min_y?, max_y?);
+        return Some((top_bound, bottom_bound.max(top_bound)))
     }
 
     /// What: compute lane offsets affecting `id`.
@@ -290,8 +292,8 @@ impl StripLayout {
             total += offsets.get(&pane_id).copied().unwrap_or(0.0);
             current = placements
                 .iter()
-                .find(|placement| return placement.id == pane_id)
-                .and_then(|placement| return placement.parent);
+                .find(|candidate| return candidate.id == pane_id)
+                .and_then(|candidate| return candidate.parent);
         }
         return total
     }

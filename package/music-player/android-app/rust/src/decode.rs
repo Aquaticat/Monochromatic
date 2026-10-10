@@ -512,20 +512,22 @@ pub fn open_media_source(
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const source = OpusSource.create(format, track, trackId);
+        // const opusSource = OpusSource.create(format, track, trackId);
         // ```
-        let source = OpusSource::new(format, track, track_id)?;
+        // The branch-local name differs from the moved-in `source` parameter so
+        // the constructed decoder never shadows it.
+        let opus_source = OpusSource::new(format, track, track_id)?;
 
-        // What:     `Ok(Box::new(source))`. `Box::new(source)` heap-allocates and erases the
-        //           concrete type to `dyn Source`; `Ok(...)` wraps it as the success value.
-        //           Tail expression -> returned.
+        // What:     `Ok(Box::new(opus_source))`. `Box::new(opus_source)` heap-allocates and
+        //           erases the concrete type to `dyn Source`; `Ok(...)` wraps it as the
+        //           success value. Tail expression -> returned.
         // Why:      Hand back the boxed trait object on success.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return source;
+        // return opusSource;
         // ```
-        return Ok(Box::new(source))
+        return Ok(Box::new(opus_source))
     } else {
         // What:     `SymphoniaSource::new(format, track, track_id)?`. Builds the
         //           symphonia-decoder source, moving `format`/`track` in.
@@ -533,18 +535,20 @@ pub fn open_media_source(
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const source = SymphoniaSource.create(format, track, trackId);
+        // const symphoniaSource = SymphoniaSource.create(format, track, trackId);
         // ```
-        let source = SymphoniaSource::new(format, track, track_id)?;
+        // The branch-local name differs from the moved-in `source` parameter so
+        // the constructed decoder never shadows it.
+        let symphonia_source = SymphoniaSource::new(format, track, track_id)?;
 
-        // What:     `Ok(Box::new(source))`. Same boxing/wrapping as above.
+        // What:     `Ok(Box::new(symphonia_source))`. Same boxing/wrapping as above.
         // Why:      Return the boxed trait object.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return source;
+        // return symphoniaSource;
         // ```
-        return Ok(Box::new(source))
+        return Ok(Box::new(symphonia_source))
     }
 }
 
@@ -783,24 +787,24 @@ pub(crate) fn seek_format(
     let mut target_ts: Timestamp = start_ts.saturating_add(Duration::new(offset_frames));
 
     // What:     `if let Some(n_frames) = n_frames { ... }`. Run the block only when the total
-    //           length is known, binding the inner `u64` to `n_frames`.
+    //           length is known, binding the inner `u64` to `total_frames`.
     // Why:      Only clamp when we actually know where the end is.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (nFrames != null) { ... }
     // ```
-    if let Some(n_frames) = n_frames {
-        // What:     `let max_ts = start_ts.saturating_add(Duration::new(n_frames));`. The last
-        //           valid absolute frame is the start plus the audible length;
-        //           `Duration::new(n_frames)` wraps the `u64` count as a `Duration`.
+    if let Some(total_frames) = n_frames {
+        // What:     `let max_ts = start_ts.saturating_add(Duration::new(total_frames));`. The
+        //           last valid absolute frame is the start plus the audible length;
+        //           `Duration::new(total_frames)` wraps the `u64` count as a `Duration`.
         // Why:      Compute the upper bound the demuxer will accept.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const maxTs = startTs + nFrames;
         // ```
-        let max_ts = start_ts.saturating_add(Duration::new(n_frames));
+        let max_ts = start_ts.saturating_add(Duration::new(total_frames));
 
         // What:     `if target_ts > max_ts { target_ts = max_ts; }`. `Timestamp` derives
         //           `Ord`, so `>` compares the wrapped `i64`s directly. Pull the target back

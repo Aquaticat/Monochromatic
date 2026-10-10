@@ -105,9 +105,9 @@ impl StickyLayout {
         });
         let weak = Rc::downgrade(&layout);
         layout.outer.vadjustment().connect_value_changed(move |_| {
-            if let Some(layout) = weak.upgrade() {
-                layout.position_all();
-                if let Some(observer) = layout.on_scroll.borrow().as_ref() {
+            if let Some(upgraded) = weak.upgrade() {
+                upgraded.position_all();
+                if let Some(observer) = upgraded.on_scroll.borrow().as_ref() {
                     observer();
                 }
             }
@@ -219,12 +219,12 @@ impl StickyLayout {
     fn set_content_size(&self, placements: &[Placement]) {
         let max_column = placements.iter().map(|placement| return placement.column).max();
         let max_row = placements.iter().map(|placement| return placement.row).max();
-        let (Some(max_column), Some(max_row)) = (max_column, max_row) else {
+        let (Some(last_column), Some(last_row)) = (max_column, max_row) else {
             self.canvas.set_size_request(0, 0);
             return;
         };
-        let width = (column_x(max_column) as i32) + PANE_WIDTH;
-        let height = (band::row_y(max_row) as i32) + PANE_HEIGHT;
+        let width = (column_x(last_column) as i32) + PANE_WIDTH;
+        let height = (band::row_y(last_row) as i32) + PANE_HEIGHT;
         self.canvas.set_size_request(width, height);
     }
 
@@ -301,8 +301,8 @@ impl StickyLayout {
                 );
                 attempts.set(attempts.get() + 1);
                 if (horizontal && vertical) || attempts.get() >= MAX_REVEAL_ATTEMPTS {
-                    if let Some(pane) = &pane {
-                        pane.grab_focus();
+                    if let Some(focus_target) = &pane {
+                        focus_target.grab_focus();
                     }
                     return glib::ControlFlow::Break;
                 }

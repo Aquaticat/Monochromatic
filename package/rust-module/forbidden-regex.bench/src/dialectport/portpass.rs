@@ -108,8 +108,8 @@ fn faithful_port(pattern: &str) -> String {
         .iter()
         .enumerate()
         .map(|(index, operand)| {
-            let body = dialect_body(operand);
-            let body = if index == 0 { strip_leading_redundant(&body) } else { body };
+            let raw_body = dialect_body(operand);
+            let body = if index == 0 { strip_leading_redundant(&raw_body) } else { raw_body };
             return wrap_operand(&body);
         })
         .collect();

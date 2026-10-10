@@ -103,7 +103,7 @@ if (process.argv[2] === 'build') {
     'Every state is authored debug input', 'not real discovery or permission evaluation',
     'No production implementation is authorized', 'Open a folder', 'in-app Settings',
     'automatic and not optional', 'no choice about analysis',
-    'automatic WorkManager initialization', 'Allow access', 'For approval: the declined state', 'id="final-notes"', 'id="reply"', 'Native pixels', 'Reset 100% dp']) {
+    'automatic WorkManager initialization', 'Allow access', 'The declined state, as approved', 'id="final-notes"', 'id="reply"', 'Native pixels', 'Reset 100% dp']) {
     if (!html.includes(marker)) throw new Error(`First-run review is missing ${marker}.`);
   }
   if (html.includes(withdrawn)) throw new Error('First-run review still states the withdrawn analysis choice.');

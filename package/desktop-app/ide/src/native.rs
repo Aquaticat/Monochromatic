@@ -53,6 +53,15 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc, sync::Arc, time::Instant};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
+/// The find and search boxes and their clear controls through Slint's element handles, as assistive tools see them.
+#[cfg(test)]
+mod accessible_box_tests;
+/// The sidebar divider through Slint's element handles: slider role, value, bounds, step, actions, and keys.
+#[cfg(test)]
+mod accessible_divider_tests;
+/// Tree rows, search results, and the location list through element handles: roles and selected states.
+#[cfg(test)]
+mod accessible_list_tests;
 /// Inlay hints and diagnostics: the snapshot setter, the visible subset, and the problems at the caret.
 mod annotate;
 /// The gutter's severity letters in front of line numbers, in both schemes, with measured contrast.

@@ -8,10 +8,12 @@ mod stderr_filter;
 /// What:     `mod slint_generated { ... }` creates a private namespace around
 ///           Rust emitted by Slint. The lint attribute applies only inside that
 ///           namespace, while package-owned Rust remains under the manifest's
-///           denied `implicit_return` lint.
-/// Why:      Slint 1.17 emits tail-expression returns and already marks generated
-///           output as exempt from several Clippy groups. This extra exemption
-///           covers the restriction lint until Slint includes it itself.
+///           denied `implicit_return` and shadow lints.
+/// Why:      Slint 1.17 emits tail-expression returns and rebinds generated
+///           helpers (`self_rc`, `_self`, `the_struct`, ...) over each other. Its
+///           generated header already exempts several Clippy groups but not these
+///           restriction lints, so this boundary carries the exemption until Slint
+///           includes them itself.
 /// Gotcha:   The direct attribute on `slint::include_modules!()` is ignored by
 ///           rustc; a module boundary is required for the lint level to apply.
 ///
@@ -21,7 +23,12 @@ mod stderr_filter;
 ///   export * from './app.slint.generated';
 /// }
 /// ```
-#[allow(clippy::implicit_return)]
+#[allow(
+    clippy::implicit_return,
+    clippy::shadow_reuse,
+    clippy::shadow_same,
+    clippy::shadow_unrelated
+)]
 mod slint_generated {
     // What:     `slint::include_modules!()` includes build-time generated Rust.
     // Why:      `AppWindow` and `TerminalCell` come from the Slint markup.
@@ -258,12 +265,13 @@ fn apply_snapshot(app: &AppWindow, snapshot: TerminalSnapshot) {
 /// Why:      It keeps callback bodies short and testable by inspection.
 fn refresh_from_scroll(
     app: &AppWindow,
-    engine: &Rc<RefCell<TerminalEngine>>,
+    engine_cell: &Rc<RefCell<TerminalEngine>>,
     pixel_scroll: f32,
 ) -> Result<()> {
-    // What:     `engine.borrow_mut()` takes a checked mutable borrow from `RefCell`.
-    // Why:      The shared `Rc` engine can still be mutated inside callbacks.
-    let mut engine = engine.borrow_mut();
+    // What:     `engine_cell.borrow_mut()` takes a checked mutable borrow from `RefCell`.
+    // Why:      The shared `Rc` engine can still be mutated inside callbacks. The cell
+    //           parameter carries the container name so the borrow keeps `engine`.
+    let mut engine = engine_cell.borrow_mut();
     // What:     `let mapping = engine.set_pixel_scroll(pixel_scroll)?` maps Slint
     //           pixels and scrolls Ghostty's whole-row viewport.
     // Why:      This is the bridge required by the prototype.
@@ -285,7 +293,7 @@ fn refresh_from_scroll(
 ///           for cell placement.
 fn refresh_from_resize(
     app: &AppWindow,
-    engine: &Rc<RefCell<TerminalEngine>>,
+    engine_cell: &Rc<RefCell<TerminalEngine>>,
     pty: &Rc<RefCell<PtySession>>,
     width_px: f32,
     height_px: f32,
@@ -298,7 +306,7 @@ fn refresh_from_resize(
         cell_width_px,
         cell_height_px,
     );
-    let mut engine = engine.borrow_mut();
+    let mut engine = engine_cell.borrow_mut();
     engine.resize(geometry)?;
     pty.borrow().resize(geometry)?;
     let pixel_scroll = 0.0 - app.get_scroll_y();
@@ -315,13 +323,14 @@ fn refresh_from_resize(
 ///           feeds Ghostty from this timer callback.
 fn refresh_from_pty_events(
     app: &AppWindow,
-    engine: &Rc<RefCell<TerminalEngine>>,
+    engine_cell: &Rc<RefCell<TerminalEngine>>,
     receiver: &mpsc::Receiver<PtyEvent>,
 ) -> Result<()> {
-    // What:     `let mut engine = engine.borrow_mut()` takes a checked mutable
-    //           borrow of the UI-thread terminal engine.
+    // What:     `let mut engine = engine_cell.borrow_mut()` takes a checked mutable
+    //           borrow of the UI-thread terminal engine. The cell parameter carries the
+    //           container name so the borrow keeps the plain `engine` name.
     // Why:      Feeding PTY bytes mutates Ghostty state and render state.
-    let mut engine = engine.borrow_mut();
+    let mut engine = engine_cell.borrow_mut();
     // What:     `let mut saw_output = false` tracks whether any bytes arrived.
     // Why:      EOF or error events update status but do not require a snapshot.
     let mut saw_output = false;
@@ -458,15 +467,17 @@ fn main() -> Result<()> {
     let initial_snapshot = engine.snapshot(initial_mapping)?;
     apply_snapshot(&app, initial_snapshot);
     app.set_scroll_y(0.0);
-    let engine = Rc::new(RefCell::new(engine));
-    let pty = Rc::new(RefCell::new(pty));
+    // The shared cells get their own names so the wrapped values keep the plain
+    // names up to the move and the per-callback clones below never shadow them.
+    let shared_engine = Rc::new(RefCell::new(engine));
+    let shared_pty = Rc::new(RefCell::new(pty));
 
     let weak_for_scroll = app.as_weak();
     app.on_scroll_changed({
-        let engine = Rc::clone(&engine);
+        let scroll_engine = Rc::clone(&shared_engine);
         move |pixel_scroll| {
-            if let Some(app) = weak_for_scroll.upgrade()
-                && let Err(error) = refresh_from_scroll(&app, &engine, pixel_scroll) {
+            if let Some(window) = weak_for_scroll.upgrade()
+                && let Err(error) = refresh_from_scroll(&window, &scroll_engine, pixel_scroll) {
                     log_callback_error("scroll refresh failed", error);
                 }
         }
@@ -474,14 +485,14 @@ fn main() -> Result<()> {
 
     let weak_for_resize = app.as_weak();
     app.on_viewport_resized({
-        let engine = Rc::clone(&engine);
-        let pty = Rc::clone(&pty);
+        let resize_engine = Rc::clone(&shared_engine);
+        let resize_pty = Rc::clone(&shared_pty);
         move |width_px, height_px, cell_width_px, cell_height_px| {
-            if let Some(app) = weak_for_resize.upgrade()
+            if let Some(window) = weak_for_resize.upgrade()
                 && let Err(error) = refresh_from_resize(
-                    &app,
-                    &engine,
-                    &pty,
+                    &window,
+                    &resize_engine,
+                    &resize_pty,
                     width_px,
                     height_px,
                     cell_width_px,
@@ -493,9 +504,9 @@ fn main() -> Result<()> {
     });
 
     app.on_terminal_key({
-        let pty = Rc::clone(&pty);
+        let key_pty = Rc::clone(&shared_pty);
         move |key_text, control, alt| {
-            if let Err(error) = write_terminal_key(&pty, key_text, control, alt) {
+            if let Err(error) = write_terminal_key(&key_pty, key_text, control, alt) {
                 log_callback_error("terminal input write failed", error);
             }
         }
@@ -507,10 +518,10 @@ fn main() -> Result<()> {
         TimerMode::Repeated,
         Duration::from_millis(OUTPUT_POLL_INTERVAL_MS),
         {
-            let engine = Rc::clone(&engine);
+            let output_engine = Rc::clone(&shared_engine);
             move || {
-                if let Some(app) = weak_for_output.upgrade()
-                    && let Err(error) = refresh_from_pty_events(&app, &engine, &pty_receiver) {
+                if let Some(window) = weak_for_output.upgrade()
+                    && let Err(error) = refresh_from_pty_events(&window, &output_engine, &pty_receiver) {
                         log_callback_error("PTY output refresh failed", error);
                     }
             }

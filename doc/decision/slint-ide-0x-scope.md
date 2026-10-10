@@ -383,6 +383,13 @@ Quotations are the user's words.
   ("No need to consider any alternatives. Just it."),
   embedded beside the other notices,
   and printed by `--licenses` ("Adopt a notice generator").
+- Slint is used under GPL-3.0-only ("GPL-3.0-only"),
+  so a copy of the executable given to someone falls under GPL-3.0 terms as a whole,
+  while the IDE's own files stay LGPL-3.0-or-later;
+  the royalty-free license would need Slint's attribution in an About view or on a public page.
+- For crates offering a choice, cargo-about picks MIT first ("MIT first"),
+  because each crate's own MIT file carries its copyright lines:
+  197 texts for 424 crates, against 117 with Apache-2.0 first, where 66 crates would get the generic text.
 - Settled by the agent:
   the application's private state folder may lie inside any open project folder,
   since only that folder becomes writable either way.
@@ -477,6 +484,12 @@ and the frames under `package/desktop-app/ide/design/screenshots/2026-10-06-ui-b
   so the box's border and focus line show through:
   "Whole cell, it's more honest. And you don't have to compromise here: Use transparency."
 - A click on the panel padding leaves the focus in the box ("Box keeps focus").
+- Correction of the page:
+  it gave the whole-cell plate the cost of covering the box's focus line;
+  the frames show the focus line whole and the plate's boundary over the box's thin border instead.
+  Shown the applied plate
+  (fill at 10 percent hovered and 24 percent pressed, boundary 1 px at 50 percent and 2 px at 80 percent),
+  the user kept it ("Keep as applied").
 - Reaching the file-watch limit is reported in the log only ("Log only").
 
 ### Accessibility decisions
@@ -484,6 +497,10 @@ and the frames under `package/desktop-app/ide/design/screenshots/2026-10-06-ui-b
 - The text inside tree, search-result, and location rows is hidden from assistive technology,
   so each row's name is exposed once ("Hide the inner text").
 - The search box's accessible description carries the result count, as the find box's does ("Add the count").
+- Kept as the agent added them ("Keep both"):
+  a tree row with a slot badge describes its shortcut ("Source file, Ctrl+N"),
+  since the hidden text no longer exposes the badge,
+  and the search box says "M results, none selected" when no row is selected.
 
 ### Language-server start allowance
 

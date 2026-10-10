@@ -294,10 +294,11 @@ D10's empty state,
 which D27 had narrowed to no system library or a declined one,
 therefore remains only for the declined case.
 
-### The agent's version, for approval
+### The agent's version, approved as built (D101)
 
 The human approved building one version and asking afterwards for D97;
-the same is done here.
+the same was done here,
+and the human approved this version as built (D101).
 
 - Title:
   `The device music library can't be read`,

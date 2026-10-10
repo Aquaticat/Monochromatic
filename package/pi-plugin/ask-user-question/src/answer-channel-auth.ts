@@ -14,14 +14,14 @@ import { HelperProtocolError, } from './helper-protocol.ts';
 //region Constants
 
 /**
- Milliseconds allowed for detached helper to authenticate after terminal launch.
+ Milliseconds before logging delayed startup, without expiring a pending question.
  */
-const HELPER_CONNECT_TIMEOUT_MS = 30_000;
+const HELPER_START_NOTICE_MS = 30_000;
 
 /**
- Milliseconds per second for user-facing startup deadline.
+ Connected candidates must send authentication promptly; desktop launch has no deadline.
  */
-const MILLISECONDS_PER_SECOND = 1_000;
+const AUTHENTICATION_TIMEOUT_MS = 5_000;
 
 /**
  Bytes in one kibibyte.
@@ -44,28 +44,6 @@ export const MAX_PROTOCOL_BYTES: number = MAX_PROTOCOL_KIBIBYTES * BYTES_PER_KIB
 const AUTHENTICATION_REJECTED: unique symbol = Symbol('ask-user-question/helper-authentication-rejected',);
 
 //endregion Constants
-
-//region Startup failure
-
-/**
- Distinguishes helper startup deadline from user or session cancellation.
- */
-export class AnswerHelperStartupTimeoutError extends Error {
-  /**
-   Preserves timeout evidence without assigning an unobserved cause.
-
-   @param cause - channel wait interrupted by startup deadline
-   */
-  constructor(cause: unknown,) {
-    super(
-      `The answer helper did not connect within ${String(HELPER_CONNECT_TIMEOUT_MS / MILLISECONDS_PER_SECOND,)} seconds. The detached terminal may have failed to start it or opened too late. Inspect the detached terminal error and retry the question. If this repeats, check the runtime and helper bundle paths in the launch log, finish any package rebuild, and restart Pi.`,
-      { cause, },
-    );
-    this.name = 'AnswerHelperStartupTimeoutError';
-  }
-}
-
-//endregion Startup failure
 
 //region Logger
 
@@ -101,7 +79,8 @@ export type AuthenticatedSocket = {
 //region Authentication
 
 /**
- Accepts connections until one presents expected token before startup deadline.
+ Accepts connections until a helper authenticates or the caller cancels.
+ Desktop startup can legitimately wait for an unlocked or visible surface.
  
  @param server - loopback listener
  
@@ -111,7 +90,7 @@ export type AuthenticatedSocket = {
  
  @returns authenticated socket positioned after token line
  
- @throws when startup deadline or tool cancellation aborts waiting
+ @throws when caller cancellation aborts waiting or the listener yields an invalid connection
  
  @example
  ```ts
@@ -130,20 +109,18 @@ export async function acceptAuthenticatedSocket(
   },
 ): Promise<AuthenticatedSocket> {
   /**
-   Startup-only deadline;
-   authenticated editing has no timeout.
+   Slow startup is observable, not evidence that the user cancelled the question.
    */
-  const deadlineSignal = AbortSignal.timeout(HELPER_CONNECT_TIMEOUT_MS,);
+  using notice = setTimeout(
+    function reportPendingStartup(): void {
+    l.warn('The answer terminal has not connected yet. The question remains active; unlock or reveal the desktop, inspect the terminal, or cancel the tool in Pi.',);
+  },
+    HELPER_START_NOTICE_MS,
+  );
   /**
-   Combined startup cancellation source.
+   Only caller cancellation ends a pending desktop launch.
    */
-  const startupSignal = signal === undefined
-    ? deadlineSignal
-    : AbortSignal.any([
-      signal,
-      deadlineSignal,
-    ],);
-  try {
+  const startupSignal = signal ?? new AbortController().signal;
     for await (const connection of on(
       server,
       'connection',
@@ -171,13 +148,6 @@ export async function acceptAuthenticatedSocket(
       l.warn('rejected unauthenticated answer helper connection',);
     }
     throw new HelperProtocolError('Answer channel stopped before helper authenticated.',);
-  }
-  catch (error: unknown) {
-    if (deadlineSignal.aborted && (startupSignal.reason === deadlineSignal.reason)
-      && ((error === deadlineSignal.reason) || (Error.isError(error,) && (error.cause === deadlineSignal.reason))))
-      throw new AnswerHelperStartupTimeoutError(error,);
-    throw error;
-  }
 }
 
 /**
@@ -202,6 +172,64 @@ async function authenticateSocket(
     readonly signal: AbortSignal;
   },
 ): Promise<AuthenticatedSocket | typeof AUTHENTICATION_REJECTED> {
+  /**
+   Only this candidate's authentication is bounded, not terminal startup.
+   */
+  const deadline = AbortSignal.timeout(AUTHENTICATION_TIMEOUT_MS,);
+  /**
+   Either cancellation source closes the candidate's pending read.
+   */
+  const candidateSignal = AbortSignal.any([
+    signal,
+    deadline,
+  ],);
+  /**
+   Destroy a stalled candidate without ending the listener or question.
+   */
+  using abortSubscription = addAbortListener(
+    candidateSignal,
+    function abortAuthentication(): void {
+    socket.destroy();
+  },
+  );
+  try {
+    return await readAuthentication({
+      socket,
+      token,
+      signal: candidateSignal,
+    },);
+  }
+  catch (error: unknown) {
+    signal.throwIfAborted();
+    /**
+     Candidate-specific failure never revokes another helper's pending question.
+     */
+    const reason = deadline.aborted ? 'timed out' : 'failed before authentication';
+    l.warn(`answer helper connection ${reason}: ${String(error,)}`,);
+    return AUTHENTICATION_REJECTED;
+  }
+}
+
+/**
+ Reads a bounded authentication line while retaining any completion bytes.
+
+ @param socket - connected candidate
+
+ @param token - expected private credential
+
+ @param signal - candidate-specific cancellation
+
+ @returns accepted channel or wrong-token sentinel
+ */
+async function readAuthentication({
+  socket,
+  token,
+  signal,
+}: {
+  readonly socket: Socket;
+  readonly token: string;
+  readonly signal: AbortSignal;
+},): Promise<AuthenticatedSocket | typeof AUTHENTICATION_REJECTED> {
   socket.setEncoding('utf8',);
   /**
    Stream iterator retained for completion frame after authentication.
@@ -214,15 +242,6 @@ async function authenticateSocket(
     text: '',
     reading: true,
   };
-  /**
-   Subscription closing candidate socket when startup aborts.
-   */
-  using abortSubscription = addAbortListener(
-    signal,
-    function abortAuthentication(): void {
-      socket.destroy();
-    },
-  );
   while (state.reading) {
     /**
      Next decoded socket chunk.

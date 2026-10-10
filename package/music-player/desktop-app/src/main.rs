@@ -3,13 +3,16 @@
 //! engine, and engine `Update`s are applied to the window's properties from the
 //! event-loop thread. Also handles CLI path arguments and the file-open dialog.
 
-/// What:     `mod slint_generated { ... }` creates a private namespace around
-///           Rust emitted by Slint. The lint attribute applies only inside that
-///           namespace, while package-owned Rust remains under the manifest's
-///           denied `implicit_return` lint.
-/// Why:      Slint 1.17 emits tail-expression returns and already marks generated
-///           output as exempt from several Clippy groups. This extra exemption
-///           covers the restriction lint until Slint includes it itself.
+/// What:     `mod slint_generated;` loads the sibling `slint_generated.rs` module,
+///           the private lint boundary around Rust emitted by Slint. That file
+///           carries the generated-code Clippy allowances, while package-owned
+///           Rust remains under the manifest's denied `implicit_return` and
+///           shadow lints.
+/// Why:      Slint's generated output needs restriction-lint exemptions that must
+///           not leak into maintained modules, and keeping the boundary in its
+///           own file keeps those exemption lines out of this file's max-lines
+///           budget; see
+///           `doc/troubleshooting/slint-generated-rust-implicit-return.md`.
 /// Gotcha:   The direct attribute on `slint::include_modules!()` is ignored by
 ///           rustc; a module boundary is required for the lint level to apply.
 ///
@@ -19,17 +22,7 @@
 ///   export * from './app.slint.generated';
 /// }
 /// ```
-#[allow(clippy::implicit_return)]
-mod slint_generated {
-    // What:     `slint::include_modules!()` includes build-time generated Rust.
-    // Why:      `AppWindow` and related UI bindings come from Slint markup.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // export * from './app.slint.generated';
-    // ```
-    slint::include_modules!();
-}
+mod slint_generated;
 
 /// Imports every public Slint binding from the generated-only lint boundary.
 use slint_generated::*;
@@ -1302,27 +1295,28 @@ fn main() -> Result<()> {
     // const engine = Engine.spawn(update => postToUiThread(() => applyUpdate(app, update)));
     // ```
     let engine = Rc::new(Engine::spawn(move |update| {
-        // What:     `let weak = weak.clone();`. `.clone()` of a weak handle is cheap
-        //           (bumps a refcount); the outer closure is called repeatedly so it
-        //           cannot move `weak` out, hence a fresh clone per call.
+        // What:     `let update_weak = weak.clone();`. `.clone()` of a weak handle is
+        //           cheap (bumps a refcount); the outer closure is called repeatedly so
+        //           it cannot move `weak` out, hence a fresh per-call clone under its
+        //           own name.
         // Why:      Each update needs its own handle to move into the inner closure.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const w = weak; // GC: no explicit clone needed
         // ```
-        let weak = weak.clone();
-        // What:     `let launcher = launcher.clone();`. Clone the progress emitter for
-        //           this call (same reason as `weak`: the outer closure is `Fn` and
-        //           may run many times).
+        let update_weak = weak.clone();
+        // What:     `let update_launcher = launcher.clone();`. Clone the progress emitter
+        //           for this call (same reason as `update_weak`: the outer closure is `Fn`
+        //           and may run many times).
         // Why:      The inner closure moves it to the UI thread to emit progress.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const l = launcher;
         // ```
-        let launcher = launcher.clone();
-        // What:     `let progress_debouncer = Arc::clone(&progress_debouncer);`.
+        let update_launcher = launcher.clone();
+        // What:     `let update_debouncer = Arc::clone(&progress_debouncer);`.
         //           `Arc::clone(&x)` makes another owner of the SAME shared state by
         //           bumping the atomic refcount (the `&` lends the `Arc` to clone
         //           from). Written `Arc::clone(&x)` rather than `x.clone()` to make
@@ -1334,7 +1328,7 @@ fn main() -> Result<()> {
         // ```ts
         // const progressDebouncerForUpdate = progressDebouncer;
         // ```
-        let progress_debouncer = Arc::clone(&progress_debouncer);
+        let update_debouncer = Arc::clone(&progress_debouncer);
         // What:     `let progress_elapsed = progress_started_at.elapsed();`.
         //           `.elapsed()` returns a `Duration` measuring monotonic time since
         //           the captured `Instant`.
@@ -1360,19 +1354,19 @@ fn main() -> Result<()> {
         // queueMicrotaskOnUiThread(() => { ... });
         // ```
         let _ = slint::invoke_from_event_loop(move || {
-            // What:     `if let Some(app) = weak.upgrade() { ... }`. `upgrade()` turns
-            //           the weak handle back into `Option<AppWindow>`; the `if let
-            //           Some(app)` pattern runs the body only when the window still
-            //           exists, binding the strong handle to `app`.
+            // What:     `if let Some(window) = update_weak.upgrade() { ... }`. `upgrade()`
+            //           turns the weak handle back into `Option<AppWindow>`; the `if let
+            //           Some(window)` pattern runs the body only when the window still
+            //           exists, binding the strong handle under its own name.
             // Why:      The window may have closed before this scheduled closure runs.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // const app = weak.deref(); if (app) { ... }
             // ```
-            if let Some(app) = weak.upgrade() {
-                // What:     `ui_progress::apply_update_with_progress_debounce(&app, &launcher, &progress_debouncer, progress_elapsed, update);`.
-                //           Call the bridge, lending `app`, `launcher`, and the
+            if let Some(window) = update_weak.upgrade() {
+                // What:     `ui_progress::apply_update_with_progress_debounce(&window, &update_launcher, &update_debouncer, progress_elapsed, update);`.
+                //           Call the bridge, lending `window`, `update_launcher`, and the
                 //           debouncer by reference (`&`), and moving `progress_elapsed`
                 //           and `update` in by value.
                 // Why:      State updates stay immediate, while seek-bar and taskbar
@@ -1383,9 +1377,9 @@ fn main() -> Result<()> {
                 // uiProgress.applyUpdateWithProgressDebounce(app, launcher, progressDebouncer, progressElapsed, update);
                 // ```
                 ui_progress::apply_update_with_progress_debounce(
-                    &app,
-                    &launcher,
-                    &progress_debouncer,
+                    &window,
+                    &update_launcher,
+                    &update_debouncer,
                     progress_elapsed,
                     update,
                 );
@@ -1408,25 +1402,26 @@ fn main() -> Result<()> {
     // app.onTogglePlay(() => engine.send(Command.TogglePlay));
     // ```
     app.on_toggle_play({
-        // What:     `let engine = engine.clone();`. A shared-owner clone of the `Rc`
-        //           for this closure (cheap: bumps the reference count).
+        // What:     `let handler_engine = engine.clone();`. A shared-owner clone of the
+        //           `Rc` for this closure (cheap: bumps the reference count), named
+        //           apart so it never shadows the shared `engine`.
         // Why:      The closure must own an engine handle that outlives this scope.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const e = engine;
         // ```
-        let engine = engine.clone();
-        // What:     `move || engine.send(Command::TogglePlay)`. A zero-argument MOVE
-        //           closure (the `|| ...` is the param list) that owns the cloned
-        //           `engine` and sends the toggle command.
+        let handler_engine = engine.clone();
+        // What:     `move || handler_engine.send(Command::TogglePlay)`. A zero-argument
+        //           MOVE closure (the `|| ...` is the param list) that owns the cloned
+        //           engine handle and sends the toggle command.
         // Why:      Ask the engine to toggle play/pause.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // () => engine.send(Command.TogglePlay)
         // ```
-        move || engine.send(Command::TogglePlay)
+        move || handler_engine.send(Command::TogglePlay)
     });
 
     // What:     `app.on_prev({ ... })`. Register the previous-track handler, same
@@ -1438,24 +1433,25 @@ fn main() -> Result<()> {
     // app.onPrev(() => engine.send(Command.Prev));
     // ```
     app.on_prev({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure (refcount bump).
+        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
+        //           this handler's closure (refcount bump), named apart so it never
+        //           shadows the shared `engine`.
         // Why:      The closure needs its own owning handle.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const e = engine;
         // ```
-        let engine = engine.clone();
-        // What:     `move || engine.send(Command::Prev)`. Zero-arg move closure that
-        //           sends the previous-track command.
+        let handler_engine = engine.clone();
+        // What:     `move || handler_engine.send(Command::Prev)`. Zero-arg move closure
+        //           that sends the previous-track command.
         // Why:      One Prev click -> one `Prev` command.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // () => engine.send(Command.Prev)
         // ```
-        move || engine.send(Command::Prev)
+        move || handler_engine.send(Command::Prev)
     });
 
     // What:     `app.on_next({ ... })`. Register the next-track handler.
@@ -1466,24 +1462,25 @@ fn main() -> Result<()> {
     // app.onNext(() => engine.send(Command.Next));
     // ```
     app.on_next({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure.
+        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
+        //           this handler's closure, named apart so it never shadows the shared
+        //           `engine`.
         // Why:      The closure needs its own owning handle.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const e = engine;
         // ```
-        let engine = engine.clone();
-        // What:     `move || engine.send(Command::Next)`. Zero-arg move closure that
-        //           sends the next-track command.
+        let handler_engine = engine.clone();
+        // What:     `move || handler_engine.send(Command::Next)`. Zero-arg move closure
+        //           that sends the next-track command.
         // Why:      One Next click -> one `Next` command.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // () => engine.send(Command.Next)
         // ```
-        move || engine.send(Command::Next)
+        move || handler_engine.send(Command::Next)
     });
 
     // What:     `app.on_seek({ ... })`. Register the seek handler; its closure takes
@@ -1495,16 +1492,17 @@ fn main() -> Result<()> {
     // app.onSeek((secs) => engine.send(Command.Seek(secs)));
     // ```
     app.on_seek({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure.
+        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
+        //           this handler's closure, named apart so it never shadows the shared
+        //           `engine`.
         // Why:      The closure needs its own owning handle.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const e = engine;
         // ```
-        let engine = engine.clone();
-        // What:     `move |secs| engine.send(Command::Seek(secs as f64))`. A move
+        let handler_engine = engine.clone();
+        // What:     `move |secs| handler_engine.send(Command::Seek(secs as f64))`. A move
         //           closure taking one `f32` parameter `secs`; `as f64` WIDENS it to
         //           the seconds type `Command::Seek` carries.
         // Why:      One seek drag -> one `Seek` command at the dragged position.
@@ -1513,7 +1511,7 @@ fn main() -> Result<()> {
         // ```ts
         // (secs) => engine.send(Command.Seek(secs))
         // ```
-        move |secs| engine.send(Command::Seek(secs as f64))
+        move |secs| handler_engine.send(Command::Seek(secs as f64))
     });
 
     // What:     `app.on_set_volume({ ... })`. Register the volume handler; its closure
@@ -1525,16 +1523,17 @@ fn main() -> Result<()> {
     // app.onSetVolume((v) => engine.send(Command.SetVolume(v)));
     // ```
     app.on_set_volume({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure.
+        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
+        //           this handler's closure, named apart so it never shadows the shared
+        //           `engine`.
         // Why:      The closure needs its own owning handle.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const e = engine;
         // ```
-        let engine = engine.clone();
-        // What:     `move |v| engine.send(Command::SetVolume(v))`. A move closure
+        let handler_engine = engine.clone();
+        // What:     `move |v| handler_engine.send(Command::SetVolume(v))`. A move closure
         //           taking one `f32` gain `v` and forwarding it.
         // Why:      One slider change -> one `SetVolume` command.
         //
@@ -1542,7 +1541,7 @@ fn main() -> Result<()> {
         // ```ts
         // (v) => engine.send(Command.SetVolume(v))
         // ```
-        move |v| engine.send(Command::SetVolume(v))
+        move |v| handler_engine.send(Command::SetVolume(v))
     });
 
     // What:     `app.on_set_playback_mode_mode({ ... })`. Register the shuffle radio
@@ -1556,15 +1555,17 @@ fn main() -> Result<()> {
     // app.onSetPlaybackMode((m) => engine.send(Command.SetPlaybackMode(intToShuffle(m))));
     // ```
     app.on_set_playback_mode({
-        let engine = engine.clone();
-        let weak = app.as_weak();
+        // The handler's own engine clone and window handle, named apart so neither
+        // shadows the shared `engine` or the outer `app`/`weak`.
+        let mode_engine = engine.clone();
+        let mode_weak = app.as_weak();
         move |mode| {
-            if let Some(app) = weak.upgrade() {
-                engine.send(Command::SetPageScope(page_scope(
-                    &app,
-                    app.get_selected_page(),
+            if let Some(window) = mode_weak.upgrade() {
+                mode_engine.send(Command::SetPageScope(page_scope(
+                    &window,
+                    window.get_selected_page(),
                 )));
-                engine.send(Command::SetPlaybackMode(int_to_playback_mode(mode)));
+                mode_engine.send(Command::SetPlaybackMode(int_to_playback_mode(mode)));
             }
         }
     });
@@ -1580,17 +1581,18 @@ fn main() -> Result<()> {
     // app.onSelectIndex((i) => engine.send(Command.SelectIndex(i)));
     // ```
     app.on_select_index({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure.
+        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
+        //           this handler's closure, named apart so it never shadows the shared
+        //           `engine`.
         // Why:      The closure needs its own owning handle.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const e = engine;
         // ```
-        let engine = engine.clone();
-        // What:     `move |i| engine.send(Command::SelectIndex(i as usize))`. A move
-        //           closure taking the row `i: i32`; `as usize` casts it to the
+        let handler_engine = engine.clone();
+        // What:     `move |i| handler_engine.send(Command::SelectIndex(i as usize))`. A
+        //           move closure taking the row `i: i32`; `as usize` casts it to the
         //           pointer-sized index type the command carries.
         // Why:      One row click -> one `SelectIndex` command.
         //
@@ -1598,7 +1600,7 @@ fn main() -> Result<()> {
         // ```ts
         // (i) => engine.send(Command.SelectIndex(i))
         // ```
-        move |i| engine.send(Command::SelectIndex(i as usize))
+        move |i| handler_engine.send(Command::SelectIndex(i as usize))
     });
     // What:     `app.on_select_page({ ... })`. Register the tab-click handler; the
     //           closure takes the page index `p: i32`. It does NOT touch the engine:
@@ -1612,22 +1614,22 @@ fn main() -> Result<()> {
     // app.onSelectPage((p) => refreshPage(app, p));
     // ```
     app.on_select_page({
-        // What:     `let weak = app.as_weak();`. A WEAK handle the `'static` closure
+        // What:     `let page_weak = app.as_weak();`. A WEAK handle the `'static` closure
         //           can hold (it cannot borrow `app`, which would not live long
-        //           enough).
+        //           enough), named apart so it never shadows the engine callback's weak.
         // Why:      `refresh_page` needs the window to read `queue` and set the page.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const w = app; // WeakRef so the closure does not keep the window alive
         // ```
-        let weak = app.as_weak();
-        let engine = engine.clone();
-        // What:     `move |p| { if let Some(app) = weak.upgrade() { refresh_page(&app, PageNav::Show(p)); } }`.
-        //           A move closure taking the page `p`; `weak.upgrade()` yields
-        //           `Option<AppWindow>`, the `if let Some(app)` runs only if the window
-        //           still exists, and `refresh_page(&app, PageNav::Show(p))` lends the window
-        //           and requests that EXACT page (not the follow-current or keep paths).
+        let page_weak = app.as_weak();
+        let page_engine = engine.clone();
+        // What:     `move |p| { if let Some(window) = page_weak.upgrade() { refresh_page(&window, PageNav::Show(p)); } }`.
+        //           A move closure taking the page `p`; `page_weak.upgrade()` yields
+        //           `Option<AppWindow>`, the `if let Some(window)` runs only if the window
+        //           still exists, and `refresh_page(&window, PageNav::Show(p))` lends the
+        //           window and requests that EXACT page (not the follow-current or keep paths).
         // Why:      Show the clicked tab's tracks.
         //
         // In TS you'd write (pseudocode):
@@ -1635,9 +1637,9 @@ fn main() -> Result<()> {
         // (p) => { const app = weak.deref(); if (app) refreshPage(app, { kind: "show", page: p }); }
         // ```
         move |p| {
-            if let Some(app) = weak.upgrade() {
-                refresh_page(&app, PageNav::Show(p));
-                engine.send(Command::SetPageScope(page_scope(&app, p)));
+            if let Some(window) = page_weak.upgrade() {
+                refresh_page(&window, PageNav::Show(p));
+                page_engine.send(Command::SetPageScope(page_scope(&window, p)));
             }
         }
     });
@@ -1676,14 +1678,15 @@ fn main() -> Result<()> {
         // () => { ... }
         // ```
         move || {
-            // What:     `let tx = tx.clone();`. Clone the sender for this invocation.
+            // What:     `let picker_tx = tx.clone();`. Clone the sender for this
+            //           invocation, named apart so it never shadows the captured sender.
             // Why:      Each open spawns a fresh thread that owns its own sender.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // const t = tx;
             // ```
-            let tx = tx.clone();
+            let picker_tx = tx.clone();
             // What:     `std::thread::spawn(move || { ... });`. `thread::spawn` starts
             //           a NEW OS thread running the move closure (which owns `tx`).
             // Why:      Run the blocking dialog off the UI thread so the UI stays
@@ -1707,7 +1710,7 @@ fn main() -> Result<()> {
                 // if (dir) { ... }
                 // ```
                 if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                    // What:     `tx.send(Command::OpenRoot { root: dir, select: None, play: false });`.
+                    // What:     `picker_tx.send(Command::OpenRoot { root: dir, select: None, play: false });`.
                     //           The picked folder becomes the Source Root; `select: None`
                     //           opens with nothing cued; `play: false` loads PAUSED (only a
                     //           `--start-playing` command-line launch auto-plays).
@@ -1720,7 +1723,7 @@ fn main() -> Result<()> {
                     // ```ts
                     // tx.send(Command.OpenRoot({ root: dir, select: null, play: false }));
                     // ```
-                    tx.send(Command::OpenRoot {
+                    picker_tx.send(Command::OpenRoot {
                         root: dir,
                         select: None,
                         play: false,
@@ -1807,10 +1810,11 @@ fn main() -> Result<()> {
             // const root = (session.sourceRoot && isDir(session.sourceRoot)) ? session.sourceRoot : null;
             // ```
             let root = session.source_root.clone().filter(|r| return r.is_dir());
-            // What:     `if let Some(root) = root { ... } else if let Some(music_dir) = music_dir() { ... }`.
+            // What:     `if let Some(saved_root) = root { ... } else if let Some(music_dir) = music_dir() { ... }`.
             //           Restore the saved root with its Selected Track and position, else
             //           restore the music directory carrying the saved settings but no
-            //           selection, else leave the queue empty.
+            //           selection, else leave the queue empty. The present path keeps its
+            //           own name so it never shadows the filtered `Option`.
             // Why:      Keep the user's settings even when the saved root is gone, and never
             //           leave a usable launch empty when a music directory exists.
             //
@@ -1819,9 +1823,9 @@ fn main() -> Result<()> {
             // if (root) restore(root, session.selected, ...);
             // else if (musicDir()) restore(musicDir(), null, settingsOnly);
             // ```
-            if let Some(root) = root {
+            if let Some(saved_root) = root {
                 engine.send(Command::Restore {
-                    root,
+                    root: saved_root,
                     selected: session.selected,
                     position: session.position_secs,
                     volume: session.volume,

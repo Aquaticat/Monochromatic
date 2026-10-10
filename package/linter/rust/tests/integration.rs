@@ -995,7 +995,7 @@ fn unused_directive_report_is_opt_in() {
         "silent by default: {quiet}"
     );
 
-    let (_code, loud) = run_in(&root, &["--report-unused-disable-directives", "src"]);
+    let (_, loud) = run_in(&root, &["--report-unused-disable-directives", "src"]);
     assert!(
         loud.contains("builtin(unused-disable-directive)"),
         "reported when asked: {loud}"
@@ -1182,7 +1182,7 @@ fn plugins_key_gates_each_package() {
     assert!(all.contains("pattern("), "so does pattern: {all}");
 
     write_config("plugins = [\"builtin\"]");
-    let (_code, only_builtin) = run_in(&root, &["src"]);
+    let (_, only_builtin) = run_in(&root, &["src"]);
     assert!(only_builtin.contains("builtin("), "named plugin runs");
     assert!(
         !only_builtin.contains("pattern("),
@@ -1190,7 +1190,7 @@ fn plugins_key_gates_each_package() {
     );
 
     write_config("plugins = [\"pattern\"]");
-    let (_code, only_pattern) = run_in(&root, &["src"]);
+    let (_, only_pattern) = run_in(&root, &["src"]);
     assert!(only_pattern.contains("pattern("), "named plugin runs");
     assert!(
         !only_pattern.contains("builtin("),
@@ -1278,7 +1278,7 @@ fn no_matching_files_is_fatal_by_default() {
     let (code, _stdout) = run_in(&root, &["empty"]);
     assert_eq!(code, 2, "usually a typo in a path, so it fails");
 
-    let (allowed, _stdout) = run_in(&root, &["--no-error-on-unmatched-pattern", "empty"]);
+    let (allowed, _) = run_in(&root, &["--no-error-on-unmatched-pattern", "empty"]);
     assert_eq!(allowed, 0, "unless the caller said it is expected");
 
     let _ = std::fs::remove_dir_all(&root);
@@ -1305,8 +1305,8 @@ fn thread_count_does_not_change_output() {
     }
 
     let (_code, single) = run_in(&root, &["--threads", "1", "."]);
-    let (_code, several) = run_in(&root, &["--threads", "4", "."]);
-    let (_code, many) = run_in(&root, &["--threads", "16", "."]);
+    let (_, several) = run_in(&root, &["--threads", "4", "."]);
+    let (_, many) = run_in(&root, &["--threads", "16", "."]);
 
     assert_eq!(single, several, "one thread and four agree");
     assert_eq!(single, many, "one thread and sixteen agree");

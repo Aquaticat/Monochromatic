@@ -128,6 +128,53 @@ or fabricate an `index-installed` marker.
 The printed commit-success line alone was insufficient evidence of complete wrapper finalization.
 The later committed history and clean current index were independently checked.
 
+## Separate empty index lock on 2026-10-09
+
+The governing-domain documentation checkpoint `proc_377d` failed before `git add`.
+Cli-git emitted `index-lock-unproven-owner` with exit 2.
+This was an empty main-repository `.git/index.lock`,
+not the historical superseded journal incident.
+
+The native wait preserves a lock when its owner is not proven alive
+and the configured unproven-owner budget expires:
+
+```typescript
+// package/git-policy/cli/src/index-lock/index-lock-wait.ts:350
+if (state.unprovenMs >= timeoutMs)
+  throw new IndexLockUnprovenOwnerError({
+    evidence,
+    verdict,
+    timeoutMs,
+    consequence,
+  },);
+```
+
+The diagnostic reported no PID file,
+no open descriptor found for the lock,
+and inaccessible process-descriptor directories.
+That output alone was not treated as proof of a dead owner.
+Subsequent current-user process inspection found only Git filesystem-monitor daemons,
+not a Git writer.
+The unchanged lock was user-owned,
+zero bytes,
+and inode `185394298`.
+
+After those checks,
+the recovery compared the exact inode,
+size,
+and user ID before moving the lock without overwriting its destination
+to `~/temp/agent/auto-mode-main-index-lock-185394298.empty`.
+No index content,
+journal,
+or ref was restored.
+The scoped documentation commit then passed as `proc_10e4`.
+The lock creator and cause of its abandonment remain unestablished.
+
+This is not a generic permission to delete `index.lock`.
+An active or uncertain writer requires preserving its lock.
+The incident demonstrates an evidence-preserving local recovery,
+not a defect in Git or cli-git's refusal.
+
 ## Upstream filing decision
 
 No external upstream issue was drafted or filed.

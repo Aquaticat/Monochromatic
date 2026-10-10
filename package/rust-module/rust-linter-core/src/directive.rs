@@ -238,7 +238,7 @@ fn parse_comment(text: &str, offset: usize, context: &LintContext) -> Option<Dir
         rules,
         // An empty justification after the separator counts as absent: `-- `
         // with nothing behind it explains no more than no separator at all.
-        justification: justification.filter(|text| return !text.is_empty()),
+        justification: justification.filter(|value| return !value.is_empty()),
         line: context.line_at_offset(offset),
         span: context.span_at_offset(offset, text.len()),
     });
