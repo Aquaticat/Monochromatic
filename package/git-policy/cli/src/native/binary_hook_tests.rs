@@ -75,8 +75,8 @@ struct Prepared {
 
 /// Build the transaction for one repository.
 fn prepared(fixture: &Fixture, name: &str, shared: &Path, concurrent_commits: bool) -> Prepared {
-    let repository_root: PathBuf = repository(fixture, std::ffi::OsStr::new(name));
-    let repository_root: PathBuf = std::fs::canonicalize(repository_root).expect("canonical");
+    let created: PathBuf = repository(fixture, std::ffi::OsStr::new(name));
+    let repository_root: PathBuf = std::fs::canonicalize(created).expect("canonical");
     std::fs::create_dir_all(repository_root.join(".git").join("cli-git")).expect("cli-git");
     let mut config: Command = hermetic_command(fixture, Path::new(REAL_GIT), repository_root.as_path());
     config.args(["config", "core.hooksPath", shared.to_str().expect("UTF-8")]);
@@ -175,8 +175,8 @@ fn a_hookdir_hook_and_a_command_hook_each_run_once() {
     let outcome: Output = run_entry(&fixture, &prepared_state, "pre-commit", prepared_state.repository.as_path(), "a");
     assert_eq!(outcome.status.code(), Some(0), "{}", String::from_utf8_lossy(&outcome.stderr));
     let lines: Vec<String> = log_lines(log.as_path());
-    assert_eq!(lines.iter().filter(|line| line.as_str() == "hookdir").count(), 1, "{lines:?}");
-    assert_eq!(lines.iter().filter(|line| line.as_str() == "command").count(), 1, "{lines:?}");
+    assert_eq!(lines.iter().filter(|line| { return line.as_str() == "hookdir"; }).count(), 1, "{lines:?}");
+    assert_eq!(lines.iter().filter(|line| { return line.as_str() == "command"; }).count(), 1, "{lines:?}");
     assert!(!prepared_state.repository.join(".git/cli-git/hook.lock").exists());
     remove_fixture(fixture);
 }
@@ -307,7 +307,7 @@ fn barrier_script(log: &Path, release: &Path) -> String {
 /// Wait until the log names the line.
 fn wait_for_line(log: &Path, line: &str) {
     let started: Instant = Instant::now();
-    while !log_lines(log).iter().any(|entry| entry == line) {
+    while !log_lines(log).iter().any(|entry| { return entry == line; }) {
         assert!(started.elapsed() < BARRIER_LIMIT, "timed out waiting for {line}");
         std::thread::sleep(POLL);
     }
