@@ -20743,6 +20743,7 @@ and the dead-declaration scan already fails a namespace import.
 which both scans import.
 The three `GLOBAL_WRITER_COPIES` groups can now move into a fixture;
 that move is queued.
+Closed since by B385 in `3fa45b1377073e74042d66fdb033f2533abbb7cc`.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -32508,6 +32509,625 @@ Recurrence:
 `mistake-prevention.md`,
 "Tests on the real clock".
 
+### B379: the ledger and meter reports wrote the exit code on the caller's process
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers,
+among the observations the lead's brief handed on.
+`reportLedger` (`corpus-run/ledger-report-run.ts`) and `reportMeters` (`corpus-run/meter-report-run.ts`)
+wrote `process.exitCode` inside the procedure,
+so a caller importing either had its own process status changed.
+By the agent's census of the 42 distinct entries `src/build-entries.ts` lists
+(it names `coverage-census.ts` twice),
+37 set no exit code themselves,
+leaving 4,
+5 and 6 to `reportingRefusals` (`corpus-run/cli-refusal.ts`),
+and after the fix five set one:
+`ledger-report`,
+`meter-report`,
+`model-health` and `verify-published` from what their procedure returns,
+and `editor-standing-read` inside its own `reportStandings`.
+By the agent's search with `git log -S 'process.exitCode'` over `src/corpus-run`,
+23 commits touched such a write,
+and two removed one,
+each on purpose:
+`97aeee2ca` took `ASKED_WITHOUT_A_SEAT` out of `ledger-report.ts`,
+a case the command-line reader now refuses,
+and `354f6bae7` took `PUBLISHED_TREE_DISAGREES` out of verify-published,
+which exits 0 with its findings;
+the moves of `387af02b7` and `8206fa5c6` kept every code.
+By the agent's run against the base build,
+seven cases of `ledger-report-run.unit.test.ts` and three of `meter-report-run.unit.test.ts` fail,
+each expecting the code returned and none left on the process,
+for example `expected { lines: [ …(2) ], …(2) } to deeply equal { lines: [ …(2) ], returned: 1, …(1) }`.
+
+The fix:
+`reportLedger` returns `NOTHING_TO_READ` (1),
+`LEDGER_INCOMPLETE` (2) or the new `LEDGER_READ` (0),
+and `reportMeters` returns `NOTHING_RECORDED` (1) or the new `REPORTED` (0);
+each entry sets `process.exitCode` from what its procedure returns,
+and `meter-report.ts` gains a `main`.
+`captureCodedReport` (`corpus-run/report-run-capture.test-fixture.ts`) reads what a report returned
+beside what it left on the process,
+and the cases expect the code returned and the process code unset.
+
+The red commit fails 26 of the 68 named test files against `b7244804f`'s production code,
+one of them without running a case,
+since it imports `readPoolPolicy`,
+which the fix adds (B380);
+the other 42 pass either way.
+Run on the merged tree before the fix commit:
+lint clean,
+49 scans passing,
+and the suite at 2,032 passing with no failure,
+two PASS lines more than B378's 2,030,
+from the two suites `artifact-pool-conflict.unit.test.ts` gained.
+
+Open:
+the logger package's own sink verification bound of 5,000 ms timed out 12 times in the agent's suite run,
+without failing a case,
+as it did in the run B378 records;
+the agent ran no suite at the base to compare.
+
+Open to the owner's veto:
+`editor-standing-read` still sets `NOTHING_RECORDED` on the process itself,
+since its procedure lives inside the entry file;
+the alternative is to split it into a `-run.ts` procedure that returns the code,
+as its siblings are.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B380: the artifact pool read its commit policy from the environment inside library code
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers,
+in its census of direct `process.env` reads in production code,
+78 at the base.
+`resolvePool` (`corpus-run/artifact-pool.ts`) read `TRANSLATION_REPAIR_REQUIRED_COMMIT`
+and `TRANSLATION_REPAIR_POOL_ALL` itself,
+under every reader that pools settled artifacts,
+so a case chose its pool by writing the process's environment,
+and a shell that exported either variable chose the pool a library caller measured.
+The contradictory pair,
+a required commit with `TRANSLATION_REPAIR_POOL_ALL=yes`,
+was a plain `Error`,
+which the commands printed as a fault at exit 5 under frames,
+for a sentence telling the operator which variable to unset.
+By the agent's run against the base build,
+the as-built conflict cases of `score-attribution`,
+`score-crosscheck`,
+`score-probe`,
+`draw-sample` and `damage-sample` exit 5 where they expect 6,
+and `artifact-pool-conflict.unit.test.ts` fails to load,
+with a `SyntaxError` for the missing export `readPoolPolicy`.
+
+The fix:
+`readPoolPolicy({ env })` returns a `PoolPolicy`,
+its `requiredCommit` and `poolAll` read as before (`?? ''` and `=== 'yes'`);
+`resolvePool` takes the policy as a required value
+and refuses the pair as a `StatedRefusalError` with the same text;
+and the readers over it
+(`gatherAttributionEntries`,
+`gatherProbeReadings`,
+`collectShippedRegions`,
+`readDrawPool` and the five procedures)
+take the policy too.
+The five pooling entries read it from `process.env` and hand it down.
+By the agent's census after the fix,
+82 direct reads stand:
+the read in `resolvePool` is gone,
+and five are new,
+each in one of those entries' own functions.
+`pool-policy.test-fixture.ts` holds the policy of an invoker who set neither variable,
+and the pair as a built command's child is handed it and as the pool refuses it;
+`artifact-pool-names.unit.test.ts` no longer clears the process's variables around its case.
+
+Open to the owner's veto:
+The contradictory pair is a stated refusal at exit 6,
+where it was a fault at exit 5;
+the report names no alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world" and "Two layers reading one refusal".
+
+### B381: three runs-directory readers read the environment, so relabel and verify ignored the directory handed them
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers,
+in its census of readers that reach the environment through a function.
+`readArtifactRecords` (`corpus-run/probe-relabel-artifact.ts`),
+`writeWidthReport` (`corpus-run/editor-width-report.ts`)
+and `writeBenchReport` (`corpus-run/bench-report.ts`)
+each called `resolveRunsDir()`,
+which reads `TRANSLATION_REPAIR_RUNS_DIR`.
+`runProbeRelabel` and `runProbeVerify` are handed a runs directory,
+while their gatherers,
+`gatherRelabelCases` and `gatherControlCases`,
+read through `readArtifactRecords`,
+so they read whatever the variable named,
+not the directory their procedure was handed.
+By the agent's run against a build holding these readers' base code,
+each case pointing the variable elsewhere and handing the filled directory in:
+`readArtifactRecords` fails with `RunJsonUnreadableError: could not read whiskers.json as JSON (ENOENT)`;
+`writeWidthReport` writes outside the directory it is handed;
+`writeBenchReport` leaves no `roster-bench/rows.json` there (ENOENT);
+`runProbeRelabel` and `runProbeVerify` fail with `expected [ { …(2) } ] to deeply equal [ { …(3) } ]`;
+and the relabel case,
+control and gathering suites fail with ENOENT.
+In that run the base build's width report cases tried to write under the worktree's default runs directory,
+`node_modules/.monochromatic/translation-repair-runs`,
+and failed with ENOENT;
+by the agent's uncapped listing,
+nothing was written there.
+
+The fix:
+the three readers take `runsDir`,
+as do `gatherRelabelCases` and `gatherControlCases`,
+and `runProbeRelabel` and `runProbeVerify` hand them their own directory;
+`runRosterBench`,
+`runEditorWidthProbe` and `runWidthDraw` take `runsDir`,
+and the entries `roster-bench.ts` and `editor-width-probe.ts` pass `runsDir: await resolveRunsDir()`.
+By the agent's census after the fix,
+every production caller of `resolveRunsDir` is an entry or is handed the function
+(`coverage-probe-run.ts` takes it as a parameter).
+`runsDirPointedAt` (`corpus-run/runs-dir-pointed.test-fixture.ts`) stays for the three cases
+showing that a directory handed in wins over the variable,
+and the gathering,
+bench report,
+relabel case and relabel control tests no longer write the variable.
+
+Not shown red:
+`roster-bench-run.unit.test.ts`'s changed expectation,
+which records the runs directory each report write is handed,
+never ran against the base,
+and no base build was left to run it on;
+the red commit's message does not say whether that file is among the 26 it shows failing.
+The width loop and width run tests pass `runsDir` to fakes that do not record it,
+so only the type checker holds that pass-through.
+
+Open,
+a defect left to the owner:
+`run-config.ts` reads the corpus pin at module load
+(`RUN_CORPUS_PIN_SETTING`,
+through `readCorpusPinSetting`,
+which reads `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`),
+75 production files import that module by the agent's count,
+and an unreadable value refuses at import,
+exiting 1 with a stack outside `reportingRefusals`.
+B302 records it as still open.
+
+Open to the owner's veto:
+`roster-bench` and `editor-width-probe` resolve the runs directory once at start,
+not at each report write;
+the variable means the same,
+but with it unset a git failure in `resolveWorktreeRoot` now refuses before any quota is spent,
+not after the first row;
+the alternative is to keep the resolution lazy by handing the procedures a resolver.
+The pipeline-wide reads stay where they are,
+since moving each would change the signature of every stage on its way:
+the straggler grace,
+read by `resolveStragglerGraceMs` in the default of every round (`stage-round.ts`),
+where the alternative is to hand the grace from the entry into each stage;
+the writer grace,
+read through `readWriterGrace` inside the consolidate,
+translate,
+refine and repair editor stages,
+where the alternative is to thread it from the entry;
+the slice overlap,
+read by `readPassOverlap` inside `settleEntry` for each entry,
+where the alternative is to read it once at the corpus-pass entry;
+the contest records,
+whose `recordContest` (`candidate-ledger.ts`) reads `TRANSLATION_REPAIR_RUNS_DIR` under `selectBestCandidate`,
+where the alternative is to thread a runs directory through candidate selection;
+the calibration grace,
+whose `adoptCalibrationGrace` (`grace-override.ts`) reads and writes `process.env` for `editor-calibrate`,
+where the alternative is to return the grace and pass it down;
+and the outside reads,
+`RUN_OUTSIDE_READS` (`pass-outside-reads.ts`) handing the live `process.env` on at module load,
+where the alternative is to build them in the corpus-pass entry.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B382: a refused fidelity reference request printed a stack at exit 5
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers,
+from the code,
+since the lead's brief named it with no source text (M142).
+`runFidelityProbe` (`corpus-run/judge-fidelity-probe-run.ts`) handed what the command line asked for
+to `reviewedFidelityRequest`,
+whose `FidelityReferenceError` reached `reportingRefusals` as a fault,
+printed under frames at exit 5,
+where the command's other refusals of what was typed print one stated line at exit 6.
+The class is a fault elsewhere,
+where a reference read from the clone fails its reviewed hashes.
+By the agent's run against the base build,
+three as-built cases of `fidelity-reference-cli.unit.test.ts` exit 5 where they expect 6,
+with one stderr line and nothing on stdout:
+an entry with no reviewed reference,
+unreviewed context,
+and the default damage families for an entry with no reviewed alteration;
+and the case of `judge-fidelity-probe-run.unit.test.ts` on unreviewed context fails.
+
+The fix:
+`requestedSpecs` restates a `FidelityReferenceError` from the request check
+as a `StatedRefusalError` carrying its message,
+with the caught error as its cause,
+and rethrows anything else;
+its TSDoc says an empty checked-in manifest,
+or one repeating an id,
+is restated too,
+though that refusal is not the operator's.
+The site is listed in `FORWARDING_SITES` (`message-names-only.unit.test.ts`)
+and held in `caught-value-text.unit.test.ts`,
+both added before either scan flagged it.
+A request a transport refused still logs `voice lost`,
+and a trial whose judges are all lost logs `roster declined`,
+as its siblings do.
+
+The comment the fix wrote at `requestedSpecs` cited "ledger B313" for this defect,
+an entry on a settled run file's row that was no object;
+it cites this entry since `dc23e67cc1a4db79842412a448fd35c693ad433c`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal".
+
+### B383: the fidelity probe read its start after its references
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers,
+from the code,
+since the lead's brief named it with no source text (M142).
+`runFidelityProbe` read the start it records in its plan after it had read every reference,
+so the time those reads took was left out of the run the plan and the kept run date.
+By the agent's run against the base build,
+the case
+"READS THE START OF THE RUN BEFORE IT READS ANY REFERENCE and the finish after the last row,
+so the plan and the kept run date the whole run and not the end of the corpus read"
+fails;
+it counts the reference reads made by each clock reading,
+and expects `[0, 1]`.
+
+The fix:
+`startedAt` is read once,
+after the request check and the return for a cap of 0,
+before `readReferences`.
+By the agent's census of the other runners,
+`audit-sensitivity`,
+`recall-benchmark`,
+`coverage-probe` and the settled audit's drive read their start before any work;
+`sentinel-probe` reads each entry's start before that entry's reads;
+`roster-bench` reads its start before each stage call;
+and `pass-entry.ts` reads it at the entry's start.
+`corpus-pass` starts its loop clock after selection and republish,
+which its documentation calls loop time shared with the soft budget,
+and is unchanged.
+
+Recurrence:
+`mistake-prevention.md`,
+"Durations on the system clock".
+
+### B384: the coverage census counted every line as unrun for a suite that ran no test
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers,
+from the code,
+since the lead's brief named it with no source text (M142).
+`runCoverageCensus` (`corpus-run/coverage-census-run.ts`) refused a suite that failed,
+and counted one that exited clean having printed no PASS marker,
+so a suite that ran no test gave a census claiming every line of the package was code no test ran.
+By the agent's run against the base build,
+the new case's scripted suite of no passes,
+no failures and exit 0
+printed a census of nothing,
+its first line `coverage-census at abc123def: the unit suite, 0 passes`,
+and wrote `census.json`.
+
+The fix:
+the census throws a `StatedRefusalError` when the suite printed no pass,
+before it tallies or places anything:
+"the suite printed no PASS marker,
+so it ran no test;
+its log is" the log's path,
+and why such a census is not counted.
+The case asserts the whole message,
+no tally,
+no placement and nothing printed.
+
+The comment the fix wrote beside the refusal cited "ledger B313" for this defect,
+an entry on a settled run file's row that was no object;
+it cites this entry since `dc23e67cc1a4db79842412a448fd35c693ad433c`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence" and "Tasks,
+builds and bulk output".
+
+### B385: runner tests kept near copies of helpers a shared fixture could hold
+
+Changed in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+passing before and after `9d558da592162f9765fb03a2280af9477ada147d`;
+nothing in it can be red.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers.
+Its census read every top-level helper in the package's tests and fixtures,
+reduced each body to its syntax shape
+(node kinds,
+operators and property keys kept,
+identifiers and string,
+template and number values dropped),
+and grouped shapes of length 300 or more:
+111 groups,
+41 of them with members in two or more runner files.
+
+The change:
+the red commit names four fixtures,
+`fresh-run-seats`,
+`pool-policy`,
+`runs-dir-pointed` and `slice-overlap-dial`,
+with `runProbeOver` in the probes-b fixture.
+`fresh-run-seats.test-fixture.ts` holds `withFreshRunSeats`,
+whose body stood identical in the cli-refusal and run-config tests (group 104);
+`runs-dir-pointed.test-fixture.ts` holds `runsDirPointedAt`,
+identical in four tests (group 24);
+`slice-overlap-dial.test-fixture.ts` holds the overlap dial of the slice-overlap and pass-entry tests,
+a pair outside the census's 41;
+and `probes-b-built-command.test-fixture.ts` holds `runProbeOver` and `ONE_ENTRY_CORPUS`,
+from the `runOverOneEntry` of the coverage-probe and coverage-control-probe tests (group 12),
+which the translate-probe test now uses too,
+its second case keeping a corpus of its own for the `commitSha` it needs.
+`pool-policy.test-fixture.ts` holds the values of the pool change (B380),
+and replaced the variable clearer of `artifact-pool-names.unit.test.ts`,
+which had no copy.
+`GLOBAL_WRITER_COPIES` is gone from `duplicate-bodies.unit.test.ts`:
+its three groups were `runsDirPointedAt`,
+the `restore` nested in it and the overlap dial's restore,
+kept apart while the global-writes scan followed a writer within its own file,
+which it no longer does (B120);
+the case's name no longer mentions them.
+By the agent's run against the base build,
+the moved files pass with their case names as at the base,
+the renamed duplicate-bodies case aside.
+
+Left,
+each with the agent's reason,
+read from a diff it ran:
+group 3,
+two cache stores answering `get` and `has`;
+group 4,
+two row scenarios with different counts;
+group 8,
+two console methods diverted;
+group 43,
+clients scripting different sheets;
+and group 67,
+different corpora,
+pages and pictures.
+Identical raw bodies the duplicate-bodies scan passes,
+though it reads the whole package,
+since it compares bodies of 80 or more characters with whitespace and comments aside,
+and these fall under that floor once normalized,
+by the agent's reading:
+group 28,
+`textsOf` and `idsOf`,
+80 to 92 characters raw,
+and group 72,
+the Canadian helpers,
+72 characters raw.
+Read by names and members only:
+group 38,
+reports driving different procedures;
+groups 14,
+60,
+88 and 98,
+two-lane cat and kitten families for different scenarios;
+group 53,
+width clients scripted by model and by stage;
+group 103,
+`noReaches` over different reach types;
+and 23 groups of shape alone,
+helpers with different subjects and literals
+(31,
+32,
+45,
+52,
+62,
+65,
+68,
+73,
+75,
+76,
+79,
+80,
+81,
+82,
+84,
+91,
+94,
+99,
+107,
+108,
+109,
+110 and 111).
+
+Open to the owner's veto:
+Group 25's environment setters,
+`withDriftVar` and `withRunsDir`,
+set different variables and stay apart;
+the alternative is a new setter keyed by the variable's name.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code".
+
+### B386: three as-built suites started their command through their own path
+
+Changed in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+passing before and after `9d558da592162f9765fb03a2280af9477ada147d`;
+nothing in it can be red.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers.
+`verify-published.unit.test.ts`,
+`editor-standing-read.unit.test.ts` and `sink-names-only.unit.test.ts`
+started their built commands through `runKeyless` with a path each built itself
+(`VERIFIER`,
+`STANDING_ENTRY` and a `command` and `args` pair),
+not through the shared starter,
+`runBuiltCommand`,
+which adds the `TRANSLATION_REPAIR_STARTED_BY` marker the built command's guard reads;
+the working directory,
+`PACKAGE_ROOT`,
+is the same.
+
+The change:
+the three start through `runBuiltCommand`,
+and `VERIFIER` and `STANDING_ENTRY` are gone.
+By the agent's run against the base build,
+the three pass with their case names as at the base,
+and pass after the fix.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B387: `UnansweredContestSliceError` printed as a bare class name in the tally and in verify-published
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers.
+`UnansweredContestSliceError` (`corpus-run/would-ship-text.ts`) took a finished message and was unmarked,
+so `refusalText` named its class alone:
+a corpus pass's TALLY line read `refused by UnansweredContestSliceError`,
+and verify-published's refusal line,
+which `reportingRefusals` (`corpus-run/cli-refusal.ts`) writes through `refusalText`,
+named the class the same way before printing the frames,
+the slice lost in both,
+where its marked siblings,
+`CollapsedHeadingError` among them,
+print their sentence.
+By the agent's run against the base build,
+the new `tally-error-text` case fails;
+and the `verify-published-run` ordering case,
+now building the error from its slice,
+reads an empty message,
+which is the red the new constructor gives against the base class,
+since that class took a finished message.
+
+The fix:
+the class declares `messageNamesOnly: true`,
+carries `sliceIndex`,
+and writes "slice" and the index,
+then "differs across lanes and the contest names it nowhere";
+it is listed in `MARKED_CLASSES`.
+Like `CollapsedHeadingError`,
+it names no remedy for the operator.
+
+Open to the owner's veto:
+verify-published still prints this error as a fault at exit 5;
+the alternative is a stated refusal at exit 6.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B388: two runners logged per-entry lines in completion order
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers,
+in its census of combinator calls in `src/corpus-run`:
+48 sites,
+five of them logging from inside a member.
+The census reads only function bodies written inline in a combinator's arguments,
+so a member passed by name is out of its sight,
+and the order of log lines was checked only at the two sites fixed.
+`probeDisplacement` (`corpus-run/displacement-probe-run.ts`) logged its per-entry lines
+from inside its member of `allInInputOrder`,
+and `withCitedReferences` (`corpus-run/rendering-audit-settled-buy.ts`) logged each page's CITED REFERENCES line
+from inside its read,
+so one input gave its lines in whichever order the members ended.
+By the agent's probes against the base build,
+with a print added to each test file and the file restored after,
+the displacement probe logged Tabby before Mittens,
+and the settled audit logged tabby's `characters=64` before mittens' `characters=77`;
+the cases
+"LOGS EACH ENTRY IT SKIPS IN THE ORDER THE ENTRIES ARE LISTED when the later entry's carve ends first,
+so two walks over one archive log the same lines"
+and
+"LOGS WHAT EACH PAGE CITES IN BUYING ORDER when the later page's read ends first,
+so two runs over one archive log the same lines"
+fail there.
+
+The fix:
+the members return what they found,
+and each runner logs after `allInInputOrder` has settled,
+in the order of its input.
+
+Left by the agent,
+each with its reason:
+`editor-calibrate-drive.ts` and `pass-insertion-admission.ts` print progress lines,
+which follow completion by design;
+and `entry-pictures.ts` reads through nothing a case can script,
+so no case can order its reads and none can be red.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order" and "Searches and censuses that miss".
+
+### B389: the settled audit counted cited characters in UTF-16 units, and its docs named the wrong caller
+
+Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
+fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner leftovers.
+The CITED REFERENCES line of `withCitedReferences` printed `characters=` from the text's `length`,
+in UTF-16 units,
+so a character beyond the first plane counted twice.
+By the agent's run against the base build,
+the case
+"COUNTS WHAT A PAGE CITES IN CHARACTERS,
+a character outside the basic plane once,
+as the line names its unit"
+fails:
+a page citing U+1F408 (cat),
+a space and `naps.`
+logs `characters=8`,
+where it expects 7.
+Five TSDoc paragraphs in `corpus-run/rendering-audit-settled-buy.ts` said `main` was their function's only caller,
+where it is `runSettledAudit` (`corpus-run/rendering-audit-settled-drive.ts`);
+one said `readCap` refuses a typed negative cap,
+where `readAuditArguments` reads `--cap` through `wholeNumberFlag`;
+and a comment in `corpus-run/rendering-audit-settled-args.ts` placed `capped` in `rendering-audit-settled.ts`.
+
+The fix:
+the line counts with `codePointLength` (`code-points.ts`),
+as the package counts a page's characters,
+and each doc names the code as it stands.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text by code point" and "Claims without their evidence".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -35201,6 +35821,32 @@ the rule beside each slip.
 "Tasks,
 builds and bulk output",
 "Shell commands" and "Numbers read back from text".
+
+### M142: a brief that handed on observations without naming their sources
+
+Status:
+happened on 2026-10-10 (UTC),
+by the lead's notes for docs batch ten;
+it touched no commit.
+The lead's brief for the runner leftovers listed ten observations drawn from a task title and two old notes,
+and three of them
+(the fidelity request refusals,
+the start time read first,
+and the census over a suite with no pass)
+had no source text in the notes at all,
+so the agent had to find each again from the code and the ledger.
+It did,
+and all ten held (B379 to B389).
+
+Prevention:
+a brief that hands on an observation names its source
+(a file and line,
+a ledger code or a report)
+or says it holds none,
+so the agent knows whether it is checking a claim or searching for one.
+`mistake-prevention.md`,
+"Tasks,
+builds and bulk output".
 
 ### M79: a coverage census measuring compressed code
 

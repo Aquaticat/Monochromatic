@@ -400,6 +400,10 @@ precedent is a match that was read,
 never a count;
 a positive control uses the probe's own pattern and tool;
 and a census collapses its inputs to distinct files before it counts.
+A census of combinator members that log read only function bodies written inline in the call's arguments,
+so a member passed by name stayed out of its sight,
+and the order of log lines was checked only at the two sites it fixed (ledger B388);
+a census names the forms it cannot see beside its count.
 
 The rule:
 a search whose result licenses a change runs uncapped over all of `src` (or `--count` first),
@@ -562,6 +566,15 @@ or written as unverified.
 A standing summary counted the digests whose rounds were judged,
 so a digest whose rounds drew no ballot was counted nowhere (ledger B372):
 every population a filter drops is counted on a line.
+The coverage census refused a suite that failed,
+and counted one that exited clean having printed no PASS marker,
+so a suite that ran no test gave a census claiming no test ran any line of the package (ledger B384):
+a suite with no pass marker is refused,
+not counted.
+Five TSDoc paragraphs of the settled audit named `main` as their function's only caller,
+where the caller is `runSettledAudit`,
+and one named a reader of `--cap` the package does not define (ledger B389);
+a doc naming a caller or a reader is read against the code each time that code moves.
 
 The rule:
 every number,
@@ -944,6 +957,9 @@ and only then sets what the case names.
 A built command is started the same way by an agent as by a test,
 and an environment is never stripped,
 filtered or rebuilt by hand.
+Three as-built suites still started their command through `runKeyless` with a path each built itself,
+without the start marker `runBuiltCommand` adds (ledger B386);
+a test starts a built command through `runBuiltCommand` alone.
 
 Production code then started its own children with the run's whole environment:
 git children,
@@ -969,6 +985,21 @@ The corpus git children kept the caller's locale variables,
 and git translates the refusals the corpus reader tells apart by their English words:
 under a German `LANGUAGE`,
 `LANG` or `LC_MESSAGES` a path absent at a held commit printed its refusal in German (ledger B347).
+
+The process's own state was also read and written inside library code,
+not at the entries.
+The ledger and meter reports wrote `process.exitCode` inside their procedures,
+so a caller importing either had its process status changed (ledger B379).
+The artifact pool read its commit policy from the environment inside `resolvePool`,
+so a case chose its pool by writing the process's variables (ledger B380);
+and three readers of the runs directory read the environment themselves,
+so the relabel and verify procedures read whatever the variable named,
+not the directory they were handed (ledger B381).
+A procedure returns its exit code,
+and the entry sets it on the process.
+Library code takes a setting as a value from the entry,
+and the entry reads the environment;
+a read left inside library code is recorded with why it stays (ledger B381).
 
 The rule:
 before a test drives a production entry point,
@@ -1081,6 +1112,16 @@ a built command no task starts,
 and an entry file that hands the guard no environment.
 A process that imports the built library directly is outside the guard,
 and a shell in a worktree still holds the keys.
+`corpus-run/ledger-report-run.unit.test.ts` and `corpus-run/meter-report-run.unit.test.ts`
+assert the code each report returns and that it leaves the process's code unset (ledger B379);
+the cases of the relabel artifact reader,
+the width report and the bench report point the variable elsewhere and hand a directory in (ledger B381);
+and the as-built conflict cases of the five pooling commands hold the pool's refusal at exit 6 (ledger B380).
+No source scan finds an environment read,
+an exit-code write or a hand-built path to a built command outside where these rules put it,
+by the names of the scans the `source-scans` task runs;
+the censuses that found them were scratch scripts,
+so the rest is habit.
 
 ## Tests on the real clock
 
@@ -1244,6 +1285,13 @@ Hoisting those copies again left lint findings only the moved code met,
 orphaned four type imports in their callers,
 kept two type assertions the literals never needed,
 and left two test helpers nothing called (ledger B115).
+The runner tests then held near copies the duplicate-body scan cannot see,
+since it groups only bodies that match once comments and spacing are aside:
+a census by syntax shape found 111 groups,
+41 of them across runner files;
+four helpers copied across runner tests moved into fixtures,
+and the rest were left with a reason each (ledger B385).
+A group left apart says whether its reason comes from a diff or from names alone.
 
 The rule:
 before writing a helper,
@@ -1290,9 +1338,13 @@ so the move is linted,
 and a patch an agent wrote passes lint,
 the source scans and the TSDoc attachment probe before any review of it is trusted
 (ledger B111).
-A helper that writes a process global moves into a fixture only by stubbing through the case's own sandbox;
-one that assigns the global directly stays in the file of the sequenced suites that call it,
-where the global-writes scan can follow it to its cases (ledger B111).
+A helper that writes a process global moves into a fixture by stubbing through the case's own sandbox,
+or,
+where it assigns the global directly,
+only where the global-writes scan can follow it to its cases:
+imported by name,
+never through a namespace import or a re-export (ledger B111,
+B120).
 A caller that passed a local helper to `map` passes a named wrapper once the helper is imported,
 since the callback-arity rule reads the parameters of a function declared in the same file only.
 A move that leaves a caller without a use for an import removes that import in the same change,
@@ -1314,7 +1366,8 @@ so no two patches touch one file,
 and their rules file carries every lint and scan rule a merge has had to fix
 (`rules-t8.md` in the session's scratch).
 A writer moved into a fixture is followed by the global-writes scan to the files importing it by name (ledger B120),
-so the env writers it once kept copied can move.
+so the env writers it once kept copied have moved into fixtures,
+and the list of global-writer copies is gone (ledger B385).
 A test's expectation is never the module's own body restated:
 it states the result,
 or a relation between values the module exports,
@@ -1329,7 +1382,7 @@ literals compared as written,
 kept in two places in the package's source,
 its tests or its test fixtures (ledger B116),
 in one file or two,
-except the frozen copies and global-writer copies it lists with their reasons,
+except the frozen copies it lists with their reasons,
 and fails when a listed copy no longer stands.
 A copy that must stay separate is added to that list in the same change that makes it,
 with the reason and the check that compares it.
@@ -1387,6 +1440,11 @@ A picture reading's length was logged in UTF-16 units beside a verdict that coun
 so fifteen astral letters logged as thirty (ledger B252).
 A length printed beside a verdict is counted the way the verdict counted it.
 
+The settled audit printed what a page cites as `characters=` from the text's UTF-16 length,
+so a character beyond the first plane counted twice (ledger B389).
+A count of characters uses code points,
+through `codePointLength` (`code-points.ts`).
+
 The rule:
 text is ordered with `compareCodePoints` from `code-points.ts`,
 and a list of plain text with `textsInCodePointOrder` from the same file,
@@ -1431,6 +1489,10 @@ and the script and Extension B cases in the declared-name,
 tokenizer,
 Han residue and pinyin guards,
 fail when a unit read returns.
+The settled audit's case on a cited character beyond the first plane fails on a UTF-16 count (ledger B389);
+no source scan finds a UTF-16 length printed as a count of characters,
+by the names of the scans the `source-scans` task runs,
+so elsewhere that is habit.
 
 ## Words inside words
 
@@ -2010,6 +2072,14 @@ a waiter watches the failure line as well as the success line,
 and the folder a unit writes to exists before the unit starts;
 a gate runs in the plain shell,
 since it makes worktrees with the shell's `git`.
+The lead's brief for the runner leftovers handed on ten observations from a task title and two old notes,
+three of them with no source text in the notes,
+so the agent had to find each again from the code and the ledger (ledger M142).
+A brief names the source of each observation it hands on
+(a file and line,
+a ledger code or a report),
+or says it holds none,
+so the agent knows whether it is checking a claim or searching for one.
 
 The rule:
 a task that must not run with a fan-out parent is named outside the parent's prefix,
@@ -2036,8 +2106,10 @@ one that runs past its expected time is checked once by process status.
 
 What enforces it:
 the coverage census,
-which refuses a suite whose log carries a failing marker;
-habit for the names and the directories.
+which refuses a suite whose log carries a failing marker,
+and one that printed no pass marker (ledger B384);
+habit for the names,
+the directories and the sources a brief names.
 
 ## Questions to the owner
 
@@ -2289,6 +2361,10 @@ and every log line that went through `refusalText` named their class alone,
 the HTTP status lost (ledger B180).
 A class a log line must explain is built from named parts,
 so that it can be marked.
+`UnansweredContestSliceError` took a finished message and stayed unmarked,
+so a corpus pass's TALLY line named its class alone and lost the slice,
+where its marked siblings print their sentence (ledger B387);
+it is now built from the slice's index and marked.
 
 A stream's error event naming a refused request is thrown as a marked class
 that names the provider's documented error type,
@@ -3481,6 +3557,9 @@ and an entry's artifact recorded a duration of an hour below zero,
 which its reader refuses;
 set forward,
 the repair benchmark read its budget spent and skipped an entry (ledger B78).
+The fidelity probe read the start it records after reading every reference,
+so the time those reads took was left out of the run it dates (ledger B383).
+A run's start is read before its first work.
 
 The rule:
 a difference of two readings inside one process reads `monotonicMs` (`monotonic-clock.ts`),
@@ -3509,6 +3588,9 @@ Out of the scan's reach:
 those globals reached through `globalThis` or another name,
 dates compared with `<` or `>`,
 and durations between stamps a process wrote.
+Where a run reads its start is held by the fidelity probe's case alone,
+which counts the reference reads made by each clock reading (ledger B383);
+elsewhere it is habit.
 
 ## Globals a case replaces
 
@@ -3806,7 +3888,13 @@ and a census run where no build stands raised its listing error uncaught,
 printed as a fault at exit 5 (ledger B311).
 Two settings that can refuse were read in module constants,
 before the boundary that prints refusals ran,
-and exited 1 under a dump of source (ledger B302).
+and exited 1 under a dump of source (ledger B302);
+the corpus pin is still read that way,
+at the load of `run-config.ts` (ledger B381).
+The artifact pool's contradictory pair of variables was a plain `Error`,
+printed as a fault at exit 5 (ledger B380);
+and a fidelity reference request refused for what the operator typed printed under frames at exit 5,
+its class a fault where a reference the clone holds fails its hashes (ledger B382).
 A refusal that is always the operator's is a stated refusal by class,
 never caught and wrapped where it happens to be printed;
 a class that is a fault elsewhere is restated at the one site where it is the operator's;
@@ -4304,6 +4392,10 @@ the finding naming the listed call's line (ledger B354).
 Forms the scan already read were planted only then (ledger B355),
 and the section the change wrote for its own facts was folded into this one,
 rather than a second section on one rule (ledger B357).
+The displacement probe and the settled audit read in input order
+and still logged each entry's line from inside its member,
+as the member ended,
+so one input logged its lines in a different order on each run (ledger B388).
 
 The rule:
 what a command prints,
@@ -4339,6 +4431,10 @@ Voices are ordered by roster,
 ties by a stated key,
 and a case asserts the order exactly,
 never after a sort of its own.
+A log line about one member of a combinator is printed after ordering,
+from what the member returned,
+never from inside the member;
+a progress line kept inside one says so.
 
 What enforces it:
 `promise-combinators-in-order.unit.test.ts`,
@@ -4362,7 +4458,10 @@ each whole (ledger B365);
 `refine-recheck.unit.test.ts` and `refine-slice-settle.unit.test.ts`
 assert the recheck's order as the stage returns it,
 and `corpus-run/score-crosscheck-authors.unit.test.ts` holds the author table's ties under both arrival orders.
-No scan finds a result ordered by arrival.
+`displacement-probe-run.unit.test.ts` and `rendering-audit-settled.unit.test.ts` hold their per-entry lines
+in input order when the later member ends first (ledger B388).
+No scan finds a result ordered by arrival,
+nor a line logged from inside a member.
 
 ## Escapes and the layer that reads them
 
