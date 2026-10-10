@@ -51,3 +51,6 @@ mod builtin;
 /// The `git cli-git` management namespace.
 #[path = "binary_management_tests.rs"]
 mod management;
+
+#[path = "binary_hook_tests.rs"]
+mod hook;

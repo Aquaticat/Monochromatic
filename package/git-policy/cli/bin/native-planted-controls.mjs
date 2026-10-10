@@ -114,6 +114,62 @@ const plantedControls = [
     to: 'if ticks > i64::MAX {',
     failing: 'process_start::tests::a_start_tick_beyond_the_safe_integers_is_refused',
   },
+  {
+    name: 'hook entry recognized outside a transaction',
+    file: 'src/native/hook_dispatch.rs',
+    from: '    if transaction.parent()?.file_name()? != TRANSACTION_ROOT_NAME {',
+    to: '    if false {',
+    failing: 'hook_dispatch::tests::every_other_start_name_is_not_a_dispatch',
+  },
+  {
+    name: 'disabled events still start Git',
+    file: 'src/native/hook_dispatch.rs',
+    from: '    if plan.disabled_events.iter().any(|name| name == target.event) {',
+    to: '    if false {',
+    failing: 'hook_dispatch::tests::a_disabled_event_succeeds_without_starting_git',
+  },
+  {
+    name: 'hook lock skip flag ignored',
+    file: 'src/native/hook_dispatch.rs',
+    from: '    let lock: Option<OwnerLock> = if plan.skip_hook_lock {',
+    to: '    let lock: Option<OwnerLock> = if false {',
+    failing: 'hook::two_dispatches_overlap_with_concurrent_commits',
+  },
+  {
+    name: 'hook status not propagated',
+    file: 'src/native/hook_dispatch.rs',
+    from: '    return finished.code().unwrap_or(1);',
+    to: '    return finished.code().unwrap_or(0);',
+    failing: 'hook::a_failing_hook_propagates_its_status',
+  },
+  {
+    name: 'stale config parameters kept',
+    file: 'src/native/hook_dispatch.rs',
+    from: '        let overridden: bool = name == CONFIG_PARAMETERS_VARIABLE',
+    to: '        let overridden: bool = name == WORK_TREE_VARIABLE',
+    failing: 'hook_dispatch::tests::the_dispatched_environment_carries_the_plan',
+  },
+  {
+    name: 'concurrent commits do not skip the hook lock',
+    file: 'src/native/hook_dispatch_plan.rs',
+    from: 'skip_hook_lock: inputs.concurrent_commits || inputs.inherited_lease_valid,',
+    to: 'skip_hook_lock: inputs.inherited_lease_valid,',
+    failing: 'hook_dispatch_plan::tests::plans_read_real_git_configuration',
+  },
+  {
+    name: 'repeated dash c pairing skipped',
+    file: 'src/native/hook_dispatch_plan.rs',
+    from: '        if token != \"-c\" {',
+    to: '        if false {',
+    failing: 'hook_dispatch_plan::tests::global_overrides_pair_each_dash_c_with_its_next_token',
+  },
+  {
+    name: 'existing hooks directory reused',
+    file: 'src/native/hook_dispatch_entries.rs',
+    from: '    create_private_directory(hooks_directory).map_err(|error| {',
+    to: '    std::fs::create_dir_all(hooks_directory).map_err(|error| {',
+    failing: 'hook_dispatch_entries::tests::an_existing_hooks_directory_is_refused',
+  },
 ];
 
 /**
