@@ -483,6 +483,33 @@ import androidx.compose.foundation.layout.widthIn
 // ```
 import androidx.compose.foundation.layout.wrapContentWidth
 
+// What:     `import androidx.compose.foundation.layout.WindowInsets` describes the insets the screen pads for.
+// Why:      The Scaffold passes no insets to the production content, which pads its own status and navigation bars.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { WindowInsets } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.WindowInsets
+
+// What:     `import androidx.compose.foundation.layout.safeDrawing` names the system-bar and cutout insets.
+// Why:      The Settings page keeps its own system-bar padding because the Scaffold no longer supplies it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { safeDrawing } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.safeDrawing
+
+// What:     `import androidx.compose.foundation.layout.windowInsetsPadding` pads a node by the given insets.
+// Why:      The Settings page pads itself by the safe drawing insets.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { windowInsetsPadding } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.windowInsetsPadding
+
 // What:     `import androidx.compose.foundation.lazy.LazyColumn` pulls in `LazyColumn`, a
 //           SCROLLING column that only composes visible items (like a virtualized list).
 // Why:      `trackPager` shows the tabs + tracks in one scrolling `LazyColumn`.
@@ -951,6 +978,24 @@ import dev.monochromatic.musicplayer.core.PageEntry
 // ```
 import dev.monochromatic.musicplayer.core.PlaybackMode
 
+// What:     `import dev.monochromatic.musicplayer.core.PlayerContentModel` names the screen model snapshot.
+// Why:      `playerScreen` builds one model per composition and passes it to `playerContent`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { PlayerContentModel } from "./core/PlayerContentModel";
+// ```
+import dev.monochromatic.musicplayer.core.PlayerContentModel
+
+// What:     `import dev.monochromatic.musicplayer.core.buildPlayerContent` builds the screen model.
+// Why:      `playerScreen` turns the controller snapshot into the model the screen draws.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { buildPlayerContent } from "./core/PlayerContentModel";
+// ```
+import dev.monochromatic.musicplayer.core.buildPlayerContent
+
 // What:     `import dev.monochromatic.musicplayer.core.rowDisplay` imports the
 //           `rowDisplay(label, name)` FUNCTION that strips a folder tab's `<label>/` prefix
 //           from a track's display name (and leaves letter / `#` tab names whole).
@@ -988,20 +1033,6 @@ import kotlinx.coroutines.delay
  * and use.
  */
 const val LOG_TAG = "MusicPlayer"
-
-// What:     `private const val SECONDS_PER_MINUTE: Int = 60` declares a private
-//           compile-time `Int` constant (32-bit; siblings `Long`/`Short`).
-// Why:      Used by `formatTime` to split seconds into `m:ss`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SECONDS_PER_MINUTE = 60;
-// ```
-/**
- * Defines seconds per minute value for this music-player component; the TypeScript-oriented notes above explain
- * its source and use.
- */
-private const val SECONDS_PER_MINUTE: Int = 60
 
 // What:     `private const val POSITION_POLL_MS: Long = 200L` declares a private
 //           compile-time `Long` constant (64-bit; the `L` suffix forces `Long`, a bare
@@ -2024,27 +2055,6 @@ private fun musicPlayerColorScheme(): ColorScheme {
     return scheme.copy(background = Color.Black, surface = Color.Black)
 }
 
-// What:     `pageSceneColor` selects LED reference ground or standard app background.
-// Why:      LED hardware follows true-black dark and low-glare light scenes without recoloring other styles.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function pageSceneColor(style: PageControlStyle): Color { ... }
-// ```
-/** Returns page ground for current control style and ambient theme. */
-@Composable
-private fun pageSceneColor(style: PageControlStyle): Color {
-    if (isSystemInDarkTheme()) {
-        return Color.Black
-    }
-    if (style != PageControlStyle.LED_SEGMENTED_BUTTONS) {
-        return MaterialTheme.colorScheme.background
-    }
-    /** Holds updated reference's low-glare bright-scene ground. */
-    val lightGround: Color = Color(0xFFECEEF1)
-    return lightGround
-}
-
 /** Holds live seek position and duration sampled from current controller. */
 private data class PlaybackProgress(
     /** Stores elapsed playback seconds. */
@@ -2070,154 +2080,73 @@ private fun rememberPlaybackProgress(controller: PlayerController): PlaybackProg
     return PlaybackProgress(position = position, duration = duration)
 }
 
-// What:     `@Composable` marks the next function as a Compose component.
-// Why:      `playerScreen` is the main UI component.
+// What:     `@Composable fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit)` draws the
+//           production player screen from the controller snapshot and routes each action back to the controller.
+// Why:      The folder picker and the settings page are local screen state, while every playback and browsing
+//           change goes through the controller so the snapshot stays the single source of truth.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// // (component function)
+// function playerScreen(props: { controller: PlayerController; onChooseFolder: () => void }): UIElement { /* ... */ }
 // ```
+/** Draws the production player screen from the controller state and routes each action to the controller. */
 @Composable
-// What:     `fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) { ... }`
-//           declares a PUBLIC (Kotlin default) composable taking the brain and an
-//           `onChooseFolder` callback (`() -> Unit`).
-// Why:      The player screen mirrors the desktop layout: responsive progress/transport and
-//           volume/end-of-track pairs, Settings/Open actions, then settings or the selected
-//           page's controls and tracks. Each pair wraps only when its usable widths no longer fit.
-//           Tap a track to play it; tap the playing track to pause or resume.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function playerScreen(props: { controller: PlayerController; onChooseFolder: () => void; }) { ... }
-// ```
-/**
- * Defines player screen behavior for this music-player component; the TypeScript-oriented notes above explain
- * its call shape and effects.
- */
 fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
-    // What:     `val state = controller.uiState` reads the brain's Compose-observable
-    //           snapshot. Reading the `uiState` (a Compose state) here SUBSCRIBES this
-    //           composable, so it recomposes when the brain swaps in a new snapshot.
-    // Why:      Render from the current UI snapshot.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const state = controller.uiState;
-    // ```
-    /**
-     * Defines state value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    val state = controller.uiState
-    // What:     `val context = LocalContext.current` reads the current Android context.
-    // Why:      The page-control preference is loaded and saved through SessionStore.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const context = useContext(LocalContext);
-    // ```
     /** Holds the current Android context for preference persistence. */
     val context = LocalContext.current
-    // What:     `pageControlStyle` is remembered observable UI state seeded from storage.
-    // Why:      Changing a setting immediately recomposes the page selector.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const [pageControlStyle, setPageControlStyle] = useState(SessionStore.loadPageControlStyle(context));
-    // ```
-    /** Holds the selected page-control treatment. */
+    /** Holds the selected page-control treatment, which the Settings page still edits. */
     var pageControlStyle by remember { mutableStateOf(SessionStore.loadPageControlStyle(context)) }
-    /** Retains explicit page-control expansion through recomposition and rotation. */
-    var pageControlsExpanded by rememberSaveable { mutableStateOf(false) }
-    // What:     `showingSettings` is remembered observable navigation state.
-    // Why:      The Settings button swaps the library area for the settings page.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const [showingSettings, setShowingSettings] = useState(false);
-    // ```
     /** Tracks whether the settings page is visible. */
     var showingSettings by remember { mutableStateOf(false) }
-    // What:     `BackHandler(enabled = showingSettings)` handles system Back only on Settings.
-    // Why:      Return to the library before allowing Back to close the activity.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // useBackHandler(showingSettings, () => setShowingSettings(false));
-    // ```
+    /** Tracks whether the folder picker is open on the folded cover, collapsed again once a folder is chosen. */
+    var pickerOpen by remember { mutableStateOf(false) }
     BackHandler(enabled = showingSettings) { showingSettings = false }
-    /** Samples live seek values without keeping polling loop inside screen layout function. */
+    /** Samples live seek values without keeping a polling loop inside the screen layout function. */
     val playbackProgress: PlaybackProgress = rememberPlaybackProgress(controller)
-
-    // What:     `Scaffold { innerPadding -> ... }` calls the `Scaffold` composable with a
-    //           trailing lambda whose parameter `innerPadding` is the system-bar inset
-    //           padding the scaffold computes for its content.
-    // Why:      Provide a layout shell that hands us safe-area padding for the content.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <Scaffold>{(innerPadding) => (
-    //   <Column modifier={...}> ... </Column>
-    // )}</Scaffold>
-    // ```
-    Scaffold(containerColor = pageSceneColor(pageControlStyle)) { innerPadding ->
-        // What:     `Column( modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 12.dp),
-        //           verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
-        //           lays the screen out vertically. The modifier chain fills the screen, then
-        //           applies the scaffold `innerPadding`, then 12dp horizontal padding (named
-        //           `horizontal = 12.dp`). Children are spaced 8dp apart.
-        // Why:      Stack the player controls with consistent spacing inside the safe area.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Column
-        //   modifier={Modifier.fillMaxSize().padding(innerPadding).padding({ horizontal: dp(12) })}
-        //   verticalArrangement={Arrangement.spacedBy(dp(8))}
-        // > ... </Column>
-        // ```
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            // What:     `seekRow(playbackProgress, controller)` renders elapsed time, seek slider,
-            //           duration, and transport control as children of one horizontal row.
-            // Why:      Keep Prev, Play/Pause, and Next on the progress line requested by AQU-456.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <SeekRow progress={playbackProgress} controller={controller}/>
-            // ```
-            seekRow(playbackProgress, controller)
-            // What:     `volumeRow(controller)` renders volume and end-of-track controls together.
-            // Why:      Keep the label and actual playback-mode control on the volume line.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <VolumeRow controller={controller}/>
-            // ```
-            volumeRow(controller)
-            // What:     `sourceActionRow(...)` renders only Settings and Open callbacks.
-            // Why:      Source actions remain separate from the two playback-semantic lines.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <SourceActionRow onSettings={() => setShowingSettings(true)} onOpen={onChooseFolder}/>
-            // ```
-            sourceActionRow(
-                onSettings = { showingSettings = true },
-                onOpen = onChooseFolder,
-            )
-            // What:     The settings/library branch renders one page in the remaining space.
-            // Why:      Settings replaces the page selector and tracks until the user returns.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return showingSettings ? <settingsPage .../> : <trackPager .../>;
-            // ```
-            if (showingSettings) {
+    /** Holds the controller snapshot the screen is built from. */
+    val state: PlayerUiState = controller.uiState
+    /** Builds the screen model from the controller snapshot and the sampled progress. */
+    val model: PlayerContentModel = buildPlayerContent(
+        pageLabels = state.pageLabels,
+        selectedPage = state.selectedPage,
+        pageItems = state.pageItems,
+        currentIndex = state.currentIndex,
+        playing = state.playing,
+        mode = state.playbackMode,
+        positionSec = playbackProgress.position,
+        durationSec = playbackProgress.duration,
+    )
+    /** Routes each screen action to the controller or to the local screen state. */
+    val actions = PlayerContentActions(
+        onToggleFolderPicker = { pickerOpen = !pickerOpen },
+        onSelectFolder = { folder ->
+            /** Page index of the chosen folder in tab order, or -1 when no page has that name. */
+            val page: Int = controller.uiState.pageLabels.indexOf(folder)
+            if (page >= 0) {
+                controller.selectPage(page)
+            }
+            pickerOpen = false
+        },
+        onOpen = onChooseFolder,
+        onSettings = { showingSettings = true },
+        onPlay = { index -> controller.playIndex(index) },
+        deck = TransportDeckActions(
+            onSeek = { position -> controller.seek(position) },
+            onPrevious = { controller.prev() },
+            onTogglePlay = { controller.togglePlay() },
+            onNext = { controller.next() },
+            onSelectMode = { mode -> controller.setPlaybackMode(mode) },
+        ),
+    )
+    Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0)) { innerPadding ->
+        if (showingSettings) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(horizontal = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 settingsPage(
                     style = pageControlStyle,
                     onSelectStyle = { style ->
@@ -2227,360 +2156,21 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
                     },
                     onBack = { showingSettings = false },
                 )
-            } else {
-                // What:     `trackPager(state = state, controller = controller)` renders the page
-            //           tabs + track list. (Folds in the old inline note: page tabs and the
-            //           track list share one scroll area, the desktop's narrow layout: a library
-            //           with many folder pages would otherwise let the wrapping tab bar fill the
-            //           column and leave the list no room, so the tabs scroll together with the
-            //           tracks as one column.)
-            // Why:      Show the browsable, scrollable track list.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <trackPager state={state} controller={controller}/>
-            // ```
-                trackPager(
-                    TrackPagerOptions(
-                        state = state,
-                        controller = controller,
-                        pageControlStyle = pageControlStyle,
-                        pageControlsExpanded = pageControlsExpanded,
-                        onPageControlsExpandedChange = { pageControlsExpanded = it },
-                    ),
-                )
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                playerContent(model = model, pickerOpen = pickerOpen, actions = actions)
+                if (state.queueSize == 0) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        if (state.loading) {
+                            loadingNotice()
+                        } else {
+                            Text("No music found in your audio library.")
+                        }
+                    }
+                }
             }
         }
-    }
-}
-
-// What:     `@Composable` marks the next function as a Compose component.
-// Why:      `seekRow` is a UI component.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // (component function)
-// ```
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-// What:     `private fun seekRow(progress: PlaybackProgress, controller: PlayerController) { ... }`
-//           declares a private component receiving sampled progress and the playback boundary.
-// Why:      One row owns elapsed time, seeking, duration, and transport actions.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function SeekRow(props: { progress: PlaybackProgress; controller: PlayerController }) { ... }
-// ```
-/** Keeps progress and transport on one line when possible, wrapping the transport group when needed. */
-private fun seekRow(progress: PlaybackProgress, controller: PlayerController) {
-    /** Current elapsed seconds sampled by the parent polling effect. */
-    val position: Double = progress.position
-    /** Current duration seconds sampled by the parent polling effect. */
-    val duration: Double = progress.duration
-    // What:     `val maxValue = if (duration > 0.0) duration.toFloat() else 1.0f` declares
-    //           `maxValue` from an `if/else` EXPRESSION. `duration.toFloat()` converts the
-    //           `Double` to a `Float` (32-bit; the Slider API takes `Float`). `1.0f` is a
-    //           `Float` literal (the `f` suffix; a bare `1.0` would be a `Double` and would
-    //           not match). Type INFERRED as `Float`.
-    // Why:      The slider needs a positive `Float` max; before a duration is known, fall
-    //           back to `1.0f` to avoid a zero-length range.
-    // Gotcha:   `1.0f` is a `Float` literal; the `f` is load-bearing because the branch type
-    //           must match `duration.toFloat()` (a `Float`). `Double` and `Float` are
-    //           distinct Kotlin types.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const maxValue = duration > 0 ? duration : 1;
-    // ```
-    /**
-     * Defines max value value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    val maxValue = if (duration > 0.0) duration.toFloat() else 1.0f
-    // What:     `FlowRow { Row(...) { ... }; transportControl(...) }` keeps progress and
-    //           transport side by side while their intrinsic widths fit, then wraps the whole
-    //           transport group onto a following line.
-    // Why:      Preserve the requested shared line without squeezing controls past their content.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <WrappingRow><ProgressControl/><TransportControl/></WrappingRow>
-    // ```
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1.0f, fill = false),
-        ) {
-        // What:     `Text(formatTime(position))` shows the elapsed time as `m:ss` via
-        //           `formatTime`.
-        // Why:      Display the current position.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Text>{formatTime(position)}</Text>
-        // ```
-        Text(formatTime(position))
-        // What:     `Slider(...)` renders the scrubber from sampled progress and forwards each
-        //           changed `Float` to `controller.seek` after converting it to a `Double`.
-        //           `valueRange = 0.0f..maxValue` builds the Slider range with Kotlin's `..`
-        //           operator. `Modifier.weight(1.0f)` gives the slider space left after the
-        //           labels and content-width transport group are measured.
-        // Why:      A draggable position control spans the flexible part of the shared progress line.
-        // Gotcha:   `0.0f..maxValue` uses the `..` range operator (no TS equivalent; it builds
-        //           a range object). The `f` literals are `Float`s to match the Slider API.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Slider
-        //   value={clamp(position, 0, maxValue)}
-        //   onValueChange={(v) => controller.seek(v)}
-        //   min={0}
-        //   max={maxValue}
-        //   modifier={Modifier.weight(1).padding({ horizontal: dp(8) })}
-        // />
-        // ```
-        Slider(
-            value = position.toFloat().coerceIn(0.0f, maxValue),
-            onValueChange = { controller.seek(it.toDouble()) },
-            valueRange = 0.0f..maxValue,
-            modifier = Modifier
-                .weight(1.0f)
-                .padding(horizontal = 8.dp),
-        )
-        // What:     `Text(formatTime(duration))` shows the total time as `m:ss`.
-        // Why:      Display the track duration.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Text>{formatTime(duration)}</Text>
-        // ```
-            Text(formatTime(duration))
-        }
-        // What:     `transportControl(controller.uiState.playing, controller)` emits one
-        //           content-sized transport group after the progress group.
-        // Why:      Prev, Play/Pause, and Next stay together and wrap as one unit when needed.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <TransportControl controller={controller}/>
-        // ```
-        transportControl(controller.uiState.playing, controller)
-    }
-}
-
-// What:     `@Composable` marks the next function as a Compose component.
-// Why:      `volumeRow` is a UI component.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // (component function)
-// ```
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-// What:     `private fun volumeRow(controller: PlayerController) { ... }` declares a private
-//           component receiving the playback boundary that owns volume and mode state.
-// Why:      One row owns Volume, its slider, the end-of-track label, and its actual control.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function VolumeRow(props: { controller: PlayerController }) { ... }
-// ```
-/** Keeps volume and end-of-track pairs on one line when possible, wrapping the latter when needed. */
-private fun volumeRow(controller: PlayerController) {
-    /** Compose-observable values used by the slider and playback-mode segments. */
-    val state: PlayerUiState = controller.uiState
-    // What:     `FlowRow` places a volume pair and an end-of-track pair on the same line when
-    //           their intrinsic widths fit, otherwise moving the latter pair to the next line.
-    // Why:      Keep each label with its control without clipping a narrow screen.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <WrappingRow><VolumeControl/><PlaybackModeControl/></WrappingRow>
-    // ```
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1.0f, fill = false),
-        ) {
-        // What:     `Text("Volume")` shows the label.
-        // Why:      Label the slider.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Text>Volume</Text>
-        // ```
-        Text("Volume")
-        // What:     `Slider(...)` reads `state.volume`, forwards changed values through
-        //           `controller.setVolume`, and uses the `[0, 1]` `Float` range from `0.0f..1.0f`.
-        //           Its weight shares remaining width with the playback-mode segments.
-        // Why:      Keep gain adjustable while reserving row width for the end-of-track control.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Slider
-        //   value={state.volume}
-        //   onValueChange={(value) => controller.setVolume(value)}
-        //   min={0}
-        //   max={1}
-        //   modifier={Modifier.weight(1).padding({ start: dp(8) })}
-        // />
-        // ```
-        Slider(
-            value = state.volume,
-            onValueChange = { controller.setVolume(it) },
-            valueRange = 0.0f..1.0f,
-            modifier = Modifier
-                .weight(1.0f)
-                .padding(start = 8.dp),
-        )
-        // What:     `playbackModeControl(controller)` emits the fixed one-line label followed by
-        //           a weighted, horizontally reachable segmented control into this `Row`.
-        // Why:      The label and actual control stay on the volume line while long page names remain reachable.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <PlaybackModeControl controller={controller}/>
-        // ```
-        }
-        playbackModeControl(controller)
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-/** Emits one wrapping-item pair containing the end label and horizontally reachable mode control. */
-private fun FlowRowScope.playbackModeControl(controller: PlayerController) {
-    /** Compose-observable playback-mode and page-label state. */
-    val state: PlayerUiState = controller.uiState
-    /** Displayed page text used verbatim by the page-shuffle segment. */
-    val currentPage: String = state.pageLabels.getOrNull(state.selectedPage) ?: "page"
-    /** Dynamic segment label that follows selected page changes. */
-    val pageShuffleLabel: String = "Shuffle $currentPage"
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.weight(2.0f, fill = false),
-    ) {
-        Text(
-            text = "When this track ends",
-            maxLines = 1,
-            softWrap = false,
-        )
-        Row(
-            modifier = Modifier
-                .weight(1.0f)
-                .horizontalScroll(rememberScrollState()),
-        ) {
-            SingleChoiceSegmentedButtonRow {
-            SegmentedButton(
-                selected = state.playbackMode == PlaybackMode.REPEAT,
-                onClick = { controller.setPlaybackMode(PlaybackMode.REPEAT) },
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 4),
-                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-            ) { Text("Repeat", maxLines = 1) }
-            SegmentedButton(
-                selected = state.playbackMode == PlaybackMode.IN_ORDER,
-                onClick = { controller.setPlaybackMode(PlaybackMode.IN_ORDER) },
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 4),
-                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-            ) { Text("In order", maxLines = 1) }
-            SegmentedButton(
-                selected = state.playbackMode == PlaybackMode.SHUFFLE_PAGE,
-                onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE) },
-                shape = SegmentedButtonDefaults.itemShape(index = 2, count = 4),
-                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-            ) { Text(pageShuffleLabel, maxLines = 1) }
-            SegmentedButton(
-                selected = state.playbackMode == PlaybackMode.SHUFFLE_ALL,
-                onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_ALL) },
-                shape = SegmentedButtonDefaults.itemShape(index = 3, count = 4),
-                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text("Shuffle all", maxLines = 1) }
-            }
-        }
-    }
-}
-
-@Composable
-/** Renders the overflow-aware Material transport button group at its content width. */
-private fun transportControl(playing: Boolean, controller: PlayerController) {
-    ButtonGroup(
-        overflowIndicator = { menuState ->
-            ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
-        },
-    ) {
-        customItem(
-            buttonGroupContent = {
-                Button(
-                    onClick = { controller.prev() },
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text("Prev") }
-            },
-            menuContent = { menuState ->
-                DropdownMenuItem(
-                    text = { Text("Prev") },
-                    onClick = {
-                        controller.prev()
-                        menuState.dismiss()
-                    },
-                )
-            },
-        )
-        customItem(
-            buttonGroupContent = {
-                Button(
-                    onClick = { controller.togglePlay() },
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text(if (playing) "Pause" else "Play") }
-            },
-            menuContent = { menuState ->
-                DropdownMenuItem(
-                    text = { Text(if (playing) "Pause" else "Play") },
-                    onClick = {
-                        controller.togglePlay()
-                        menuState.dismiss()
-                    },
-                )
-            },
-        )
-        customItem(
-            buttonGroupContent = {
-                Button(
-                    onClick = { controller.next() },
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text("Next") }
-            },
-            menuContent = { menuState ->
-                DropdownMenuItem(
-                    text = { Text("Next") },
-                    onClick = {
-                        controller.next()
-                        menuState.dismiss()
-                    },
-                )
-            },
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-/** Renders Settings and Open separately from playback-semantic rows. */
-private fun sourceActionRow(
-    onSettings: () -> Unit,
-    onOpen: () -> Unit,
-) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Button(onClick = onSettings) { Text("Settings") }
-        Button(onClick = onOpen) { Text("Open") }
     }
 }
 
@@ -3246,389 +2836,6 @@ internal fun pageTabs(options: PageTabsOptions) {
     }
 }
 
-/** Groups track pager state, controller, style, and transient fold boundary. */
-private data class TrackPagerOptions(
-    /** Holds current queue and pagination snapshot. */
-    val state: PlayerUiState,
-    /** Drives page and track selection. */
-    val controller: PlayerController,
-    /** Holds selected visual page-control treatment. */
-    val pageControlStyle: PageControlStyle,
-    /** Records retained portrait disclosure state. */
-    val pageControlsExpanded: Boolean,
-    /** Updates retained portrait disclosure state. */
-    val onPageControlsExpandedChange: (Boolean) -> Unit,
-)
-
-// What:     `@Composable` marks the next function as a Compose component.
-// Why:      `trackPager` is a UI component.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // (component function)
-// ```
-@Composable
-// What:     `private fun ColumnScope.trackPager(state: PlayerUiState, controller: PlayerController) { ... }`
-//           declares a private composable that is an EXTENSION on `ColumnScope`: the
-//           `ColumnScope.` receiver prefix means this function can only be called inside a
-//           `Column`'s child block and may use column-only modifiers like `Modifier.weight`.
-// Why:      The page tabs and the selected page's track rows in one shared scroll area,
-//           matching the desktop's narrow (phone) layout: the page-tab bar scrolls together
-//           with the tracks rather than sitting fixed above them. A wrapping tab bar over a
-//           many-folder library (every top-level folder under the loaded root is its own
-//           page) would otherwise consume the whole column and collapse a separate weighted
-//           list to zero height, the "cannot scroll" failure. Folding the tabs into the same
-//           `LazyColumn` as its first item lets a long tab bar and a long track list share
-//           the available space and a single scroll gesture.
-// Gotcha:   The `ColumnScope.` receiver is what grants `Modifier.weight(...)`; calling this
-//           outside a `Column` would not compile.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // must be rendered inside a <Column>; uses column-only weight()
-// function trackPager(props: { state: PlayerUiState; controller: PlayerController; }) { ... }
-// ```
-/**
- * Defines track pager behavior for this music-player component; the TypeScript-oriented notes above explain its
- * call shape and effects.
- */
-private fun ColumnScope.trackPager(options: TrackPagerOptions) {
-    /** Holds current snapshot for concise existing row bindings. */
-    val state: PlayerUiState = options.state
-    /** Holds player controller for concise existing actions. */
-    val controller: PlayerController = options.controller
-    // What:     `if (state.queueSize == 0) { ... }` checks for an empty queue (`==` integer
-    //           equality).
-    // Why:      An empty queue shows either a loading notice or a "no music" message, then
-    //           nothing else.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (state.queueSize === 0) { ... }
-    // ```
-    if (state.queueSize == 0) {
-        // What:     `if (state.loading) { loadingNotice() } else { Text("No music found in your audio library.") }`
-        //           branches the empty-queue UI. (Folds in the old inline note: an empty queue
-        //           means "no music" only once loading has finished; during a scan, a chosen
-        //           folder can take seconds, show a loading notice instead of the
-        //           failure-sounding message.)
-        // Why:      Distinguish "still scanning" from "truly empty".
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (state.loading) return <loadingNotice/>;
-        // return <Text>No music found in your audio library.</Text>;
-        // ```
-        if (state.loading) {
-            // What:     `loadingNotice()` renders the spinner + loading line.
-            // Why:      Show progress during a scan.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <loadingNotice/>
-            // ```
-            loadingNotice()
-        } else {
-            // What:     `Text("No music found in your audio library.")` renders the empty
-            //           message.
-            // Why:      Tell the user no tracks were found once loading finished.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <Text>No music found in your audio library.</Text>
-            // ```
-            Text("No music found in your audio library.")
-        }
-        // What:     `return` exits the composable early (nothing more to render for an empty
-        //           queue). Bare `return`, `Unit`.
-        // Why:      Skip the list when there are no tracks.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return;
-        // ```
-        return
-    }
-    // What:     `LazyColumn( modifier = Modifier.fillMaxWidth().weight(1.0f, fill = true), ) { ... }`
-    //           renders the scrolling list. The modifier fills the width and uses
-    //           `weight(1.0f, fill = true)` (a column-only modifier from the `ColumnScope`
-    //           receiver) to take all remaining vertical space. `1.0f` is a `Float` weight;
-    //           `fill = true` is a named argument.
-    // Why:      One scroll area sharing the available height for tabs + tracks.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <LazyColumn modifier={Modifier.fillMaxWidth().weight(1, { fill: true })}> ... </LazyColumn>
-    // ```
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .weight(1.0f, fill = true),
-    ) {
-        // What:     `if (state.pageLabels.isNotEmpty()) { ... }` adds the tab bar only when
-        //           there are pages. `isNotEmpty()` is the list "has elements" predicate.
-        //           (Folds in the old inline note: the tab bar is the first scrolling item, so
-        //           it scrolls away with the list, not pinned; this is the desktop's
-        //           shared-scrollbar narrow behavior.)
-        // Why:      Don't emit an empty tab bar.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (state.pageLabels.length > 0) { ... }
-        // ```
-        if (state.pageLabels.isNotEmpty()) {
-            // What:     `item { pageTabs(state = state, onSelectPage = { controller.selectPage(it) }) }`
-            //           emits ONE list item (`item { ... }` is the `LazyListScope` builder for a
-            //           single row) holding the `pageTabs`. Its `onSelectPage` lambda uses `it`
-            //           (the chosen page index).
-            // Why:      Make the tab bar the first scrolling row.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // item(() => (
-            //   <pageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
-            // ));
-            // ```
-            item {
-                // What:     `pageTabs(state = state, onSelectPage = { controller.selectPage(it) })`
-                //           renders the tab bar; `it` is the page index passed to `selectPage`.
-                // Why:      Show the page tabs.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // <pageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
-                // ```
-                foldablePageControls(
-                    FoldablePageControlsOptions(
-                        state = state,
-                        style = options.pageControlStyle,
-                        expanded = options.pageControlsExpanded,
-                        onExpandedChange = options.onPageControlsExpandedChange,
-                        onSelectPage = { controller.selectPage(it) },
-                    ),
-                )
-            }
-        }
-        // What:     `items(state.pageItems) { item -> ... }` emits one list row per element of
-        //           `state.pageItems`. `items(list) { item -> ... }` is the `LazyListScope`
-        //           builder; the trailing lambda's `item` parameter is one `PageEntry`.
-        // Why:      Render the visible page's tracks as scrolling rows.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // items(state.pageItems, (item) => (
-        //   <trackRow item={item} state={state} controller={controller}/>
-        // ));
-        // ```
-        items(state.pageItems) { item ->
-            // What:     `trackRow(item = item, state = state, controller = controller)` renders
-            //           one track row from the page entry.
-            // Why:      Show and drive a single track row.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <trackRow item={item} state={state} controller={controller}/>
-            // ```
-            trackRow(item = item, state = state, controller = controller)
-        }
-    }
-}
-
-// What:     `@Composable` marks the next function as a Compose component.
-// Why:      `trackRow` is a UI component.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // (component function)
-// ```
-@Composable
-// What:     `private fun trackRow(item: PageEntry, state: PlayerUiState, controller: PlayerController) { ... }`
-//           declares a private composable for one track row, taking the entry, the snapshot,
-//           and the brain.
-// Why:      One track row: its path relative to the loaded root, highlighted when it is the
-//           current track. Tap a row to play it; tap the current row to toggle play/pause.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function trackRow(props: { item: PageEntry; state: PlayerUiState; controller: PlayerController; }) { ... }
-// ```
-/**
- * Defines track row behavior for this music-player component; the TypeScript-oriented notes above explain its
- * call shape and effects.
- */
-private fun trackRow(item: PageEntry, state: PlayerUiState, controller: PlayerController) {
-    // What:     `val isCurrent = item.index == state.currentIndex` declares a `Boolean`
-    //           `isCurrent` comparing this row's load-order `index` (an `Int`) to the
-    //           snapshot's `currentIndex` (an `Int?`). `==` is null-safe value equality (a
-    //           null `currentIndex` simply is not equal).
-    // Why:      Decide whether to highlight this row as the playing track.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const isCurrent = item.index === state.currentIndex;
-    // ```
-    /**
-     * Defines is current value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    val isCurrent = item.index == state.currentIndex
-    // What:     `val rowBackground = if (isCurrent) MaterialTheme.colorScheme.primary else Color.Transparent`
-    //           picks the row background from an `if/else` EXPRESSION: the theme primary when
-    //           current, otherwise transparent.
-    // Why:      Visually mark the current track.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const rowBackground = isCurrent ? MaterialTheme.colorScheme.primary : Color.Transparent;
-    // ```
-    /**
-     * Defines row background value for this music-player component; the TypeScript-oriented notes above explain
-     * its source and use.
-     */
-    val rowBackground = if (isCurrent) MaterialTheme.colorScheme.primary else Color.Transparent
-    // What:     `val rowColor = if (isCurrent) { MaterialTheme.colorScheme.onPrimary } else {
-    //           MaterialTheme.colorScheme.onSurface }`
-    //           picks the text color from an `if/else` EXPRESSION: the on-primary color when
-    //           current (readable on the highlight), otherwise the on-surface color.
-    // Why:      Keep the text readable against whichever background is used.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const rowColor = isCurrent
-    //   ? MaterialTheme.colorScheme.onPrimary
-    //   : MaterialTheme.colorScheme.onSurface;
-    // ```
-    /**
-     * Defines row color value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    val rowColor = if (isCurrent) {
-        // What:     `MaterialTheme.colorScheme.onPrimary` is the `then`-branch value: the color
-        //           meant to sit on top of the primary color.
-        // Why:      Readable text over the highlighted background.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // MaterialTheme.colorScheme.onPrimary
-        // ```
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        // What:     `MaterialTheme.colorScheme.onSurface` is the `else`-branch value: the color
-        //           meant to sit on top of the default surface.
-        // Why:      Readable text over the transparent (surface) background.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // MaterialTheme.colorScheme.onSurface
-        // ```
-        MaterialTheme.colorScheme.onSurface
-    }
-    // What:     `val rowLabel: String = state.pageLabels.getOrNull(state.selectedPage).orEmpty()`
-    //           declares a read-only `String` holding the ACTIVE tab's caption.
-    //           `getOrNull(i)` returns the label or `null` for an out-of-range index (no
-    //           throw); `.orEmpty()` turns a `null` into the empty string `""`.
-    // Why:      `rowDisplay` needs the current page's folder label to know which prefix to trim
-    //           from this row; `state.pageItems` are exactly that page's entries.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const rowLabel = state.pageLabels[state.selectedPage] ?? "";
-    // ```
-    /**
-     * Defines row label value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    val rowLabel: String = state.pageLabels.getOrNull(state.selectedPage).orEmpty()
-    // What:     `val rowText: String = rowDisplay(rowLabel, item.name)` declares a read-only
-    //           `String`: the text to SHOW. `rowDisplay` strips the `<rowLabel>/` folder prefix
-    //           on folder tabs, or returns the whole name on letter / `#` tabs (see
-    //           `Pagination.kt`).
-    // Why:      A folder tab already names its folder, so the row shows only the path below it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const rowText = rowDisplay(rowLabel, item.name);
-    // ```
-    /**
-     * Defines row text value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    val rowText: String = rowDisplay(rowLabel, item.name)
-    // What:     `Text( text = rowText, color = rowColor, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier =
-    //           Modifier.fillMaxWidth().background(rowBackground).clickable { ... }.padding(horizontal = 8.dp, vertical
-    //           = 8.dp), )`
-    //           renders the row as a single `Text`. Named args: `text` is the trimmed display
-    //           name (`rowText`); `color` is `rowColor`; `maxLines = 1` and
-    //           `overflow = TextOverflow.Ellipsis` clip long names with an ellipsis. The
-    //           `modifier` chain fills the width, paints `rowBackground`, makes the row
-    //           `clickable { ... }` (the trailing lambda is the tap handler), then pads it.
-    // Why:      Show the track name (folder-tab prefix trimmed), highlight it when current, and
-    //           handle taps.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <Text
-    //   color={rowColor}
-    //   maxLines={1}
-    //   overflow={TextOverflow.Ellipsis}
-    //   modifier={Modifier.fillMaxWidth().background(rowBackground).clickable(onTap).padding({ horizontal: dp(8),
-    //   vertical: dp(8) })}
-    // >{rowText}</Text>
-    // ```
-    Text(
-        text = rowText,
-        color = rowColor,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(rowBackground)
-            .clickable {
-                // What:     `Log.i(LOG_TAG, "tap row ${item.index} (current=${state.currentIndex})")`
-                //           logs the tap with this row's index and the current index.
-                // Why:      Trace row taps for verification.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // console.info(`[${LOG_TAG}] tap row ${item.index} (current=${state.currentIndex})`);
-                // ```
-                Log.i(LOG_TAG, "tap row ${item.index} (current=${state.currentIndex})")
-                // What:     `if (item.index == state.currentIndex) { controller.togglePlay() } else {
-                //           controller.playIndex(item.index) }`
-                //           branches the tap: tapping the CURRENT row toggles play/pause; tapping
-                //           another row plays that track. `==` is null-safe value equality.
-                // Why:      Tap-to-play, with the current row acting as play/pause.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // if (item.index === state.currentIndex) controller.togglePlay();
-                // else controller.playIndex(item.index);
-                // ```
-                if (item.index == state.currentIndex) {
-                    // What:     `controller.togglePlay()` toggles play/pause on the current track.
-                    // Why:      Tapping the playing row pauses/resumes it.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // controller.togglePlay();
-                    // ```
-                    controller.togglePlay()
-                } else {
-                    // What:     `controller.playIndex(item.index)` plays the tapped (non-current)
-                    //           track by its load-order index.
-                    // Why:      Tapping another row starts that track.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // controller.playIndex(item.index);
-                    // ```
-                    controller.playIndex(item.index)
-                }
-            }
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-    )
-}
-
 // What:     `@Composable` marks the next function as a Compose component.
 // Why:      `loadingNotice` is a UI component.
 //
@@ -3687,76 +2894,6 @@ private fun loadingNotice() {
         // ```
         Text("Loading your library…")
     }
-}
-
-// What:     `private fun formatTime(seconds: Double): String { ... }` declares a private
-//           helper taking a `Double` seconds value and returning a `String`, block body.
-//           This is a PLAIN function (no `@Composable`): pure formatting, no UI.
-// Why:      Format a seconds value as `m:ss` (e.g. `3:07`).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function formatTime(seconds: number): string { ... }
-// ```
-/**
- * Defines format time behavior for this music-player component; the TypeScript-oriented notes above explain its
- * call shape and effects.
- */
-private fun formatTime(seconds: Double): String {
-    // What:     `val total = seconds.toInt()` declares `total` (inferred `Int`) by converting
-    //           the `Double` to an `Int` with `.toInt()`, which TRUNCATES toward zero (drops
-    //           the fraction).
-    // Why:      Work in whole seconds for the `m:ss` split.
-    // Gotcha:   `.toInt()` truncates (does not round); `3.9` becomes `3`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const total = Math.trunc(seconds);
-    // ```
-    /**
-     * Defines total value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    val total = seconds.toInt()
-    // What:     `val minutes = total / SECONDS_PER_MINUTE` declares `minutes` (inferred `Int`)
-    //           via INTEGER DIVISION: `Int / Int` discards the remainder (so `127 / 60` is
-    //           `2`).
-    // Why:      The minutes part of `m:ss`.
-    // Gotcha:   Kotlin `Int / Int` is INTEGER division (truncates); JS `/` is always float, so
-    //           the TS equivalent needs `Math.trunc`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const minutes = Math.trunc(total / SECONDS_PER_MINUTE);
-    // ```
-    /**
-     * Defines minutes value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    val minutes = total / SECONDS_PER_MINUTE
-    // What:     `val secs = total % SECONDS_PER_MINUTE` declares `secs` (inferred `Int`) via
-    //           the MODULO operator `%` (the remainder after dividing by 60).
-    // Why:      The seconds part of `m:ss`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const secs = total % SECONDS_PER_MINUTE;
-    // ```
-    /**
-     * Defines secs value for this music-player component; the TypeScript-oriented notes above explain its source
-     * and use.
-     */
-    val secs = total % SECONDS_PER_MINUTE
-    // What:     `return "%d:%02d".format(minutes, secs)` formats and returns the result.
-    //           `"%d:%02d".format(...)` is a method ON the `String` literal: `%d` is an
-    //           integer, `%02d` is an integer zero-padded to width 2 (so `7` becomes `07`).
-    // Why:      Produce `m:ss` like `3:07`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return `${minutes}:${String(secs).padStart(2, "0")}`;
-    // ```
-    return "%d:%02d".format(minutes, secs)
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
