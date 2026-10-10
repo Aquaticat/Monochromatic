@@ -1187,8 +1187,9 @@ In flight when drained:
   `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli.fuzz:smoke`,
   log `~/temp/agent/dv-gate/fuzz-smoke2.log`, campaign directory
   `package/git-policy/cli.fuzz/target/verification/campaign-aq6uCe`.
-  Targets finished with exit 0 at the time of drain: `global_arguments` through `wrapper_controls`
-  (the rest had not reported). Its `FUZZ-EXIT=` line in the log is the verdict.
+  Finished before the drain report: all twelve targets exited 0 (`dependent_version` 221,829 executions;
+  `linter_output`, `event_path`, `linter_config` included), `FUZZ-EXIT=0`.
+  The fuzz step is therefore complete and is not in the list of work left.
 
 Not done yet:
 
