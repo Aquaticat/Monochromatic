@@ -734,6 +734,11 @@ async function picturesAsked(
       held,
     },),
     entryId: 'CatEntry',
+    // Invented: the stand-in sources read no clone.
+    pin: {
+      cloneDir: '/cats/corpus/clone',
+      commitSha: 'feedface'.repeat(5,),
+    },
     cache: {
       resumed: new Map(),
       persist: async () => {},

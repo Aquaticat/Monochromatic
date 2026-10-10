@@ -15,6 +15,7 @@
 import {
   mkdir,
   readdir,
+  readFile,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -55,6 +56,11 @@ assertPipelineDigest(DIGEST_TEXT,);
  Digest the declining build claims.
  */
 const DIGEST: PipelineDigest = DIGEST_TEXT;
+
+/**
+ Corpus commit every case's pass read the entry at, invented.
+ */
+const DECLINE_COMMIT = 'feedface'.repeat(5,);
 
 /**
  The entry every case declines.
@@ -131,6 +137,7 @@ async function decline(
     publishDir: run.publishDir,
     tip: 'a'.repeat(DIGEST_HEX_LENGTH,),
     pipelineDigest: DIGEST,
+    corpusSha: DECLINE_COMMIT,
     note: '原文即英文',
     startedAt: monotonicMs(),
   },);
@@ -205,6 +212,29 @@ await describe({
             await decline({ run, },);
 
             expect(await readdir(run.declinedDir,),).toStrictEqual([`${ENTRY.id}.json`,],);
+          },
+        },),
+        it({
+          name: 'NAMES THE CORPUS COMMIT IT IS HANDED on the record, never one of its own',
+          fn: async () => {
+            await using run = await runsDirectory();
+
+            await decline({ run, },);
+
+            /**
+             The record as written.
+             */
+            const recordText = await readFile(
+              join(
+                run.declinedDir,
+                `${ENTRY.id}.json`,
+              ),
+              'utf8',
+            );
+            expect(JSON.parse(recordText,),).toHaveProperty(
+              'corpusSha',
+              DECLINE_COMMIT,
+            );
           },
         },),
         it({

@@ -76,6 +76,15 @@ const POOL_DIGEST = '8e3a0d5c17bf';
 const OTHER_TIP = 'fa27b9046e3d';
 
 /**
+ Clone and commit the draw is handed, invented, so a read at any other pin
+ shows in what the reader was asked for.
+ */
+const DRAW_PIN = {
+  cloneDir: '/cats/corpus/clone',
+  commitSha: 'feedface'.repeat(5,),
+} as const;
+
+/**
  Builds one accepted issue record, in the shape the settled parser takes.
 
  @param issueId - identity of the adjudicated issue
@@ -204,6 +213,7 @@ async function loadingFrom(
     artifactsDir: scratch.path,
     name: ARTIFACT_NAME,
     eligible,
+    pin: DRAW_PIN,
     readSource: readSource ?? async function refuseCorpusRead(): Promise<string> {
       throw new Error('a refusal case read a corpus page before refusing',);
     },
@@ -371,6 +381,44 @@ await describe({
         expect(loaded.candidates.map(function carriesRepair(candidate,): boolean {
           return 'repair' in candidate;
         },),).toStrictEqual([false, true,],);
+      },
+    },),
+    it({
+      name: 'READS THE ENTRY\'S SOURCE AT THE PIN IT IS HANDED, never at one of its own',
+      fn: async () => {
+        /**
+         Pins the reader was asked to read at, with the path asked for.
+         */
+        const asked: unknown[] = [];
+        await loadingFrom({
+          artifact: {
+            id: ENTRY_ID,
+            tip: POOL_TIP,
+            pipelineDigest: POOL_DIGEST,
+            corpusSha: 'sha/1',
+            status: 'repaired',
+            durationMs: 1,
+            acceptedCount: 1,
+            issues: [acceptedRecord({ issueId: 'adjudicated/purr', },),],
+          },
+          eligible: pooled({ tip: POOL_TIP, },),
+          readSource: async function readSource({
+            pin,
+            relPath,
+          },): Promise<string> {
+            asked.push({
+              pin,
+              relPath,
+            },);
+            return SOURCE_PAGE;
+          },
+        },);
+        expect(asked,).toEqual([
+          {
+            pin: DRAW_PIN,
+            relPath: `people/${ENTRY_ID}/page.md`,
+          },
+        ],);
       },
     },),
     it({

@@ -33,17 +33,22 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { tmpdir, } from 'node:os';
+import {
+  homedir,
+  tmpdir,
+} from 'node:os';
 import { join, } from 'node:path';
 
 import {
   BEDROCK_CREDIT_USD_VAR,
   BEDROCK_LEDGER_PATH_VAR,
+  CORPUS_COMMIT_SHA,
   createRunClient,
   HYPER_MESSAGES_URL,
   NoProviderForModelError,
   OWNER_CULLED,
   readHeadSha,
+  readRunCorpusPinSetting,
   resolveRunsDir,
   runClientFrom,
   RUN_SEATS,
@@ -943,6 +948,46 @@ await describe({
             expect(sha.length,).toBe(40,);
             expect(sha.includes('\n',),).toBe(false,);
             expect(sha,).toBe(sha.trim(),);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: readRunCorpusPinSetting.name,
+      children: [
+        it({
+          name: 'READS THE BUILT-IN CLONE AND THE PINNED COMMIT from a handed environment that overrides neither half',
+          fn: async () => {
+            expect(readRunCorpusPinSetting({ env: {}, },),).toEqual({
+              pin: {
+                cloneDir: join(
+                  homedir(),
+                  'one-among-us',
+                  'data',
+                ),
+                commitSha: CORPUS_COMMIT_SHA,
+              },
+              cloneDirSource: 'fallback',
+              commitSource: 'fallback',
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES AN UNREADABLE COMMIT in the handed environment as a stated refusal naming the variable',
+          fn: async () => {
+            /**
+             What the reader threw for a commit that is a cat's name.
+             */
+            const refusal = caught(function readsUnderBadCommit(): unknown {
+              return readRunCorpusPinSetting({ env: { TRANSLATION_REPAIR_CORPUS_COMMIT: 'whiskers', }, },);
+            },);
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(refusal,),).toBe(
+              'StatedRefusalError: TRANSLATION_REPAIR_CORPUS_COMMIT must be one full lowercase hexadecimal '
+                + 'commit name, and whiskers is not one',
+            );
           },
         },),
       ],

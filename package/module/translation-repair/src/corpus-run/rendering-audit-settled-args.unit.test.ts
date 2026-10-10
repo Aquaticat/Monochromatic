@@ -55,13 +55,11 @@ const DEFAULT_ARCHIVE = join(
 );
 
 /**
- Corpus clone a run reads when nobody names one.
+ Clone of the run's corpus pin, which the entry hands in and a run reads
+ when nobody names one; invented, so a reader that took any other clone
+ shows.
  */
-const DEFAULT_CLONE = join(
-  homedir(),
-  'one-among-us',
-  'data',
-);
+const RUN_CLONE = '/cats/corpus/clone';
 
 /**
  Cap meaning "buy every subject", which is what no `--cap` asks for.
@@ -122,6 +120,30 @@ function auditLine(
 }
 
 /**
+ What the audit's argument reader makes of a command line, with the run's
+ clone handed in as the entry hands it.
+
+ @param typed - what the operator wrote after the script path
+
+ @returns Archive, clone, entry filter and cap
+
+ @throws StatedRefusalError when the line or one of its flags is refused
+
+ @example
+ ```ts
+ const asked = auditArgumentsOf({ typed: ['--cap', '4',], },);
+ ```
+ */
+function auditArgumentsOf(
+  { typed, }: { readonly typed: readonly string[]; },
+): ReturnType<typeof readAuditArguments> {
+  return readAuditArguments({
+    line: auditLine({ typed, },),
+    runCloneDir: RUN_CLONE,
+  },);
+}
+
+/**
  The settled audit report's command line, read as `reportingRefusals` reads
  it.
 
@@ -154,11 +176,12 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'ANSWERS with the defaults for a command line that named nothing',
+          name: 'ANSWERS with the defaults for a command line that named nothing, the clone the run\'s pin it is '
+            + 'handed names among them',
           fn: async () => {
-            expect(readAuditArguments({ line: auditLine({ typed: [], },), },),).toEqual({
+            expect(auditArgumentsOf({ typed: [], },),).toEqual({
               archiveDir: DEFAULT_ARCHIVE,
-              cloneDir: DEFAULT_CLONE,
+              cloneDir: RUN_CLONE,
               onlyIds: [],
               cap: EVERY_SUBJECT,
             },);
@@ -167,19 +190,17 @@ await describe({
         it({
           name: 'READS every flag the operator did name, in any order',
           fn: async () => {
-            expect(readAuditArguments({
-              line: auditLine({
-                typed: [
-                  '--cap',
-                  String(SMALL_BUY,),
-                  '--only',
-                  `${ONE_CAT},${ANOTHER_CAT}`,
-                  '--clone',
-                  OTHER_CLONE,
-                  '--archive',
-                  OTHER_ARCHIVE,
-                ],
-              },),
+            expect(auditArgumentsOf({
+              typed: [
+                '--cap',
+                String(SMALL_BUY,),
+                '--only',
+                `${ONE_CAT},${ANOTHER_CAT}`,
+                '--clone',
+                OTHER_CLONE,
+                '--archive',
+                OTHER_ARCHIVE,
+              ],
             },),).toEqual({
               archiveDir: OTHER_ARCHIVE,
               cloneDir: OTHER_CLONE,
@@ -196,13 +217,11 @@ await describe({
           fn: async () => {
             // Zero is not "no cap": it is the wiring check the audit exists to make
             // cheap. A reader that treated it as absent would spend a roster.
-            expect(readAuditArguments({
-              line: auditLine({
-                typed: [
-                  '--cap',
-                  String(READ_ONLY_BUY,),
-                ],
-              },),
+            expect(auditArgumentsOf({
+              typed: [
+                '--cap',
+                String(READ_ONLY_BUY,),
+              ],
             },).cap,).toBe(READ_ONLY_BUY,);
           },
         },),
@@ -210,16 +229,14 @@ await describe({
           name: 'KEEPS a cap of zero written in the equals form, which once read as no cap and bought every subject '
             + 'in the archive (ledger B75)',
           fn: async () => {
-            expect(readAuditArguments({
-              line: auditLine({ typed: [`--cap=${String(READ_ONLY_BUY,)}`,], },),
-            },).cap,).toBe(READ_ONLY_BUY,);
+            expect(auditArgumentsOf({ typed: [`--cap=${String(READ_ONLY_BUY,)}`,], },).cap,).toBe(READ_ONLY_BUY,);
           },
         },),
         it({
           name: 'REFUSES a mistyped flag rather than auditing as if nothing were typed (ledger B75)',
           fn: async () => {
             expect(function readsMistyped(): void {
-              readAuditArguments({ line: auditLine({ typed: ['--cpa', String(READ_ONLY_BUY,),], },), },);
+              auditArgumentsOf({ typed: ['--cpa', String(READ_ONLY_BUY,),], },);
             },).toThrow(StatedRefusalError,);
           },
         },),
@@ -243,7 +260,7 @@ await describe({
                What the reader threw.
                */
               const refusal = caught(function readsCap(): void {
-                readAuditArguments({ line: auditLine({ typed: ['--cap', cap,], },), },);
+                auditArgumentsOf({ typed: ['--cap', cap,], },);
               },);
               expect(refusal,).toBeInstanceOf(StatedRefusalError,);
               return (refusal as Error).message;
@@ -256,13 +273,11 @@ await describe({
           name: 'REFUSES a cap that is not a number, instead of auditing nothing in silence',
           fn: async () => {
             expect(() => {
-              readAuditArguments({
-                line: auditLine({
-                  typed: [
-                    '--cap',
-                    'once',
-                  ],
-                },),
+              auditArgumentsOf({
+                typed: [
+                  '--cap',
+                  'once',
+                ],
               },);
             },).toThrow(StatedRefusalError,);
           },
@@ -274,13 +289,11 @@ await describe({
              What the reader threw.
              */
             const refusal = caught(function readsWord(): void {
-              readAuditArguments({
-                line: auditLine({
-                  typed: [
-                    '--cap',
-                    'once',
-                  ],
-                },),
+              auditArgumentsOf({
+                typed: [
+                  '--cap',
+                  'once',
+                ],
               },);
             },);
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
@@ -295,23 +308,19 @@ await describe({
             + 'sign would audit the whole archive in silence',
           fn: async () => {
             expect(() => {
-              readAuditArguments({
-                line: auditLine({
-                  typed: [
-                    '--cap',
-                    '-3',
-                  ],
-                },),
+              auditArgumentsOf({
+                typed: [
+                  '--cap',
+                  '-3',
+                ],
               },);
             },).toThrow(StatedRefusalError,);
             expect(() => {
-              readAuditArguments({
-                line: auditLine({
-                  typed: [
-                    '--cap',
-                    '-3',
-                  ],
-                },),
+              auditArgumentsOf({
+                typed: [
+                  '--cap',
+                  '-3',
+                ],
               },);
             },).toThrow('--cap cannot be below zero, and -3 is; leave it off to audit every subject',);
           },
@@ -320,7 +329,7 @@ await describe({
           name: 'REFUSES a flag written at the end of the line with no value after it',
           fn: async () => {
             expect(() => {
-              readAuditArguments({ line: auditLine({ typed: ['--cap',], },), },);
+              auditArgumentsOf({ typed: ['--cap',], },);
             },).toThrow('--cap needs a value written after it',);
           },
         },),
@@ -330,14 +339,12 @@ await describe({
             // `--only` standing where the archive path should be is a typo, and
             // reading it as a path would send the run at a directory named `--only`.
             expect(() => {
-              readAuditArguments({
-                line: auditLine({
-                  typed: [
-                    '--archive',
-                    '--only',
-                    ONE_CAT,
-                  ],
-                },),
+              auditArgumentsOf({
+                typed: [
+                  '--archive',
+                  '--only',
+                  ONE_CAT,
+                ],
               },);
             },).toThrow('--archive needs a value written after it',);
           },
@@ -346,13 +353,11 @@ await describe({
           name: 'REFUSES an entry filter that names nobody, which would read as every entry',
           fn: async () => {
             expect(() => {
-              readAuditArguments({
-                line: auditLine({
-                  typed: [
-                    '--only',
-                    ',',
-                  ],
-                },),
+              auditArgumentsOf({
+                typed: [
+                  '--only',
+                  ',',
+                ],
               },);
             },).toThrow(StatedRefusalError,);
           },
@@ -360,13 +365,11 @@ await describe({
         it({
           name: 'DROPS a stray separator inside a filter that still names someone',
           fn: async () => {
-            expect(readAuditArguments({
-              line: auditLine({
-                typed: [
-                  '--only',
-                  `${ONE_CAT},,${ANOTHER_CAT}`,
-                ],
-              },),
+            expect(auditArgumentsOf({
+              typed: [
+                '--only',
+                `${ONE_CAT},,${ANOTHER_CAT}`,
+              ],
             },).onlyIds,).toEqual([
               ONE_CAT,
               ANOTHER_CAT,

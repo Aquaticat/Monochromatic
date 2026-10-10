@@ -360,5 +360,47 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'RUNS THE ENTRIES --only NAMES IN THE PASS\'S OWN ORDER, resuming one holding cached slices ahead of one '
+        + 'the command line and the corpus both name first',
+      fn: async () => {
+        await using clone = await makeCorpusPassClone({ entries: COMPLETE, },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-select-', },);
+        await mkdir(join(
+          scratch.path,
+          'tabby',
+        ),);
+        await writeFile(
+          join(
+            scratch.path,
+            'tabby',
+            '0.json',
+          ),
+          '{}',
+        );
+
+        /**
+         What the pass would run when the command line names both entries.
+         */
+        const selected = await selectPendingEntries({
+          line: lineOf({
+            command: 'corpus-pass',
+            typed: [
+              '--only',
+              'biscuit,tabby',
+            ],
+          },),
+          pin: clone,
+          done: new Set<string>(),
+          attempts: new Map(),
+          sliceCacheDir: scratch.path,
+        },);
+
+        expect(idsOf({ pairs: selected.pending, },),).toEqual([
+          'tabby',
+          'biscuit',
+        ],);
+      },
+    },),
   ],
 },);

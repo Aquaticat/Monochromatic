@@ -35,6 +35,14 @@ import {
   UNASKED_REPOSITORY,
 } from './pool-policy.test-fixture.ts';
 
+/**
+ Clone and commit the draw reads each entry's source at, invented.
+ */
+const POOL_PIN = {
+  cloneDir: '/cats/corpus/clone',
+  commitSha: 'feedface'.repeat(5,),
+} as const;
+
 await describe({
   name: readDrawPool.name,
   // ONE AT A TIME: its cases divert the process-wide `console.log`.
@@ -75,6 +83,7 @@ await describe({
           policy: NO_POOL_POLICY,
           repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
+          pin: POOL_PIN,
           readSource: async function readPage({ relPath, },): Promise<string> {
             asked.push(relPath,);
             return await Promise.resolve('猫猫在窗台上睡觉。\n',);
@@ -150,6 +159,7 @@ await describe({
             policy: NO_POOL_POLICY,
             repository: UNASKED_REPOSITORY,
             runsDir: scratch.path,
+            pin: POOL_PIN,
             readSource: async function refusesTabbyFirst({ relPath, },): Promise<string> {
               if (relPath === 'people/tabby/page.md') {
                 laterRefused.resolve(undefined,);

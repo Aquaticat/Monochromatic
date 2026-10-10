@@ -19,6 +19,7 @@ import {
 import {
   protocolDigest,
   readHeadSha,
+  readRunCorpusPinSetting,
 } from '../../dist/final/node/index.mjs';
 import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
@@ -98,10 +99,14 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'window-trial-probe-whole-', },);
 
         /**
-         Digest the run buys under at this checkout's head, which the opening
-         line names the first twelve characters of.
+         Digest the run buys under at this checkout's head and the built-in
+         pin, which the child reads with no corpus setting in its environment,
+         and which the opening line names the first twelve characters of.
          */
-        const protocol = protocolDigest({ headSha: await readHeadSha(), },);
+        const protocol = protocolDigest({
+          headSha: await readHeadSha(),
+          pin: readRunCorpusPinSetting({ env: {}, },).pin,
+        },);
 
         // The shared fixture removes every variable ending in `_API_KEY`.
         const run = await runBuiltCommand({

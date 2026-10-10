@@ -7,7 +7,8 @@
 
  THE LIMITS: the cap and the spend ceiling were resolved while the file
  loaded, outside the refusal boundary, so an unreadable value exited 1 under
- Node's echo of the bundle's source line instead of exit 6. THE ARTIFACT
+ Node's echo of the bundle's source line instead of exit 6; the corpus pin
+ was resolved the same way until 2026-10-10 (ledger B302). THE ARTIFACT
  GUARDS: their errors are plain errors that forward their message, so the
  command printed an operator's refusal as a fault in the command, at exit 5,
  with frames. THE CAP LINE wrote "1 minutes".
@@ -121,6 +122,41 @@ await describe({
               + 'unreadable value is refused rather than quietly replaced by the default: an operator who set it '
               + 'believes the run is bounded the way they asked for.\n',
             );
+          },
+        },),
+
+        it({
+          name: 'REFUSES AN UNREADABLE CORPUS COMMIT at exit 6 with its line alone, nothing on stdout and no lock '
+            + 'taken',
+          fn: async () => {
+            await using clone = await makeCorpusPassClone({ entries: ENTRIES, },);
+            await using runs = await scratchDir({ prefix: 'corpus-pass-runs-', },);
+            await using cache = await scratchDir({ prefix: 'corpus-pass-cache-', },);
+
+            /**
+             What the command wrote for a commit that is no full commit name.
+             */
+            const run = await runPass({
+              args: [],
+              runsDir: runs.path,
+              cacheDir: cache.path,
+              clone,
+              settings: { TRANSLATION_REPAIR_CORPUS_COMMIT: 'whiskers', },
+            },);
+
+            expect(run,).toEqual({
+              code: REFUSED_AS_STATED,
+              stdout: '',
+              stderr: 'corpus-pass: TRANSLATION_REPAIR_CORPUS_COMMIT must be one full lowercase hexadecimal commit '
+                + 'name, and whiskers is not one\n',
+            },);
+            await expect(readFile(
+              join(
+                runs.path,
+                'pass.lock',
+              ),
+              'utf8',
+            ),).rejects.toThrow('ENOENT',);
           },
         },),
 

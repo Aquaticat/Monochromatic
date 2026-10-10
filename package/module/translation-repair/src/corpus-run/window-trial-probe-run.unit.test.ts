@@ -74,7 +74,10 @@ const ROSTER = RUN_ROSTER.slice(
 /**
  Digest every case buys under.
  */
-const PROTOCOL = protocolDigest({ headSha: HEAD, },);
+const PROTOCOL = protocolDigest({
+  headSha: HEAD,
+  pin: CAT_PIN,
+},);
 
 /**
  Opening line of a run that holds no arm yet.

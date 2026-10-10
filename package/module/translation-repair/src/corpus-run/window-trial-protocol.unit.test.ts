@@ -26,6 +26,14 @@ import {
  */
 const SHA256_HEX_LENGTH = 64;
 
+/**
+ Clone and commit a trial reads at, invented.
+ */
+const TRIAL_PIN = {
+  cloneDir: '/cats/corpus/clone',
+  commitSha: 'feedface'.repeat(5,),
+} as const;
+
 await describe({
   name: '',
   concurrency: 1,
@@ -99,25 +107,52 @@ await describe({
         it({
           name: 'changes with the commit, so rows bought under other code are never pooled',
           fn: async () => {
-            expect(protocolDigest({ headSha: 'a'.repeat(SHA256_HEX_LENGTH,), },),).not.toBe(
-              protocolDigest({ headSha: 'b'.repeat(SHA256_HEX_LENGTH,), },),
-            );
+            expect(protocolDigest({
+              headSha: 'a'.repeat(SHA256_HEX_LENGTH,),
+              pin: TRIAL_PIN,
+            },),).not.toBe(protocolDigest({
+              headSha: 'b'.repeat(SHA256_HEX_LENGTH,),
+              pin: TRIAL_PIN,
+            },),);
+          },
+        },),
+
+        it({
+          name: 'CHANGES WITH THE CORPUS COMMIT IT IS HANDED, so rows bought at another pin are never pooled',
+          fn: async () => {
+            expect(protocolDigest({
+              headSha: 'a'.repeat(SHA256_HEX_LENGTH,),
+              pin: TRIAL_PIN,
+            },),).not.toBe(protocolDigest({
+              headSha: 'a'.repeat(SHA256_HEX_LENGTH,),
+              pin: {
+                ...TRIAL_PIN,
+                commitSha: 'deadbeef'.repeat(5,),
+              },
+            },),);
           },
         },),
 
         it({
           name: 'is the same digest twice for the same commit, which is what resumption keys on',
           fn: async () => {
-            expect(protocolDigest({ headSha: 'a'.repeat(SHA256_HEX_LENGTH,), },),).toBe(
-              protocolDigest({ headSha: 'a'.repeat(SHA256_HEX_LENGTH,), },),
-            );
+            expect(protocolDigest({
+              headSha: 'a'.repeat(SHA256_HEX_LENGTH,),
+              pin: TRIAL_PIN,
+            },),).toBe(protocolDigest({
+              headSha: 'a'.repeat(SHA256_HEX_LENGTH,),
+              pin: TRIAL_PIN,
+            },),);
           },
         },),
 
         it({
           name: 'is a whole SHA-256 in hex, the shape the ledger stores',
           fn: async () => {
-            expect(protocolDigest({ headSha: 'a'.repeat(SHA256_HEX_LENGTH,), },).length,).toBe(SHA256_HEX_LENGTH,);
+            expect(protocolDigest({
+              headSha: 'a'.repeat(SHA256_HEX_LENGTH,),
+              pin: TRIAL_PIN,
+            },).length,).toBe(SHA256_HEX_LENGTH,);
           },
         },),
       ],

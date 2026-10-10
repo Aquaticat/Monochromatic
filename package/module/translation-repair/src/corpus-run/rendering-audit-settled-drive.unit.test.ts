@@ -252,6 +252,7 @@ async function driveOver(
         counts.reads += 1;
         return Promise.resolve('',);
       },
+      runCloneDir: corpus.cloneDir,
       roster: ROSTER,
       resolveRuns: function resolveScratch(): Promise<string> {
         counts.runsAsked += 1;

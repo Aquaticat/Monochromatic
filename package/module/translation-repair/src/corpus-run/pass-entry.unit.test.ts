@@ -64,6 +64,15 @@ import { dialSaying, } from './slice-overlap-dial.test-fixture.ts';
 const DIGEST = `sha256-tree-v1:${'c'.repeat(64,)}` as PipelineDigest;
 
 /**
+ Clone and commit every entry is settled at, invented, so a record naming
+ any other commit shows.
+ */
+const ENTRY_PIN = {
+  cloneDir: '/cats/corpus/clone',
+  commitSha: 'feedface'.repeat(5,),
+} as const;
+
+/**
  Successful model calls in flight for one pass stage.
  */
 type PassStageConcurrency = {
@@ -1158,6 +1167,7 @@ await describe({
             sliceCacheDir: dirs.sliceCacheDir,
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
+            pin: ENTRY_PIN,
             outsideReads: NO_OUTSIDE_READS,
             pictureSources: NO_PICTURE_SOURCES,
             hardCapMs: HANG_STOP_MS,
@@ -1187,6 +1197,7 @@ await describe({
             sliceCacheDir: dirs.sliceCacheDir,
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
+            pin: ENTRY_PIN,
             outsideReads: NO_OUTSIDE_READS,
             pictureSources: NO_PICTURE_SOURCES,
             hardCapMs: HANG_STOP_MS,
@@ -1226,6 +1237,7 @@ await describe({
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
+              pin: ENTRY_PIN,
               outsideReads: NO_OUTSIDE_READS,
               // A GATHERER THAT FINDS NO BYTES, which is the case under test:
               // the entry names a picture and no file for it exists where it
@@ -1281,6 +1293,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -1326,6 +1339,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -1370,6 +1384,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -1531,6 +1546,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: {
             workTitles: async function recordWorkTitles({ sourceText, },) {
               asked.workTitles.push(sourceText,);
@@ -1581,6 +1597,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: {
             ...NO_OUTSIDE_READS,
             references: async function citedPage(): Promise<string> {
@@ -1651,6 +1668,7 @@ await describe({
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
+              pin: ENTRY_PIN,
               outsideReads: NO_OUTSIDE_READS,
               pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: HANG_STOP_MS,
@@ -1737,6 +1755,7 @@ await describe({
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
+              pin: ENTRY_PIN,
               outsideReads: NO_OUTSIDE_READS,
               pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: HANG_STOP_MS,
@@ -1823,6 +1842,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -1893,6 +1913,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -1913,6 +1934,84 @@ await describe({
       },
     },),
     it({
+      name: 'NAMES THE COMMIT OF THE PIN IT IS HANDED on the artifact it writes and on a decline record, never one '
+        + 'of its own',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         Entry whose archive carries a whole-page note, which is declined.
+         */
+        const ownEnglish = {
+          id: 'CatEntryOwnEnglish',
+          sourceText: SOURCE_TEXT,
+          targetText: `<!-- 这只猫的原文即英文 -->\n\n${TARGET_TEXT}`,
+        };
+        /**
+         Settles one entry into this case's directories at the invented pin.
+
+         @param entry - corpus pair to settle
+
+         @returns What settling it answered
+
+         @example
+         ```ts
+         await settledAtPin({ entry: ENTRY, },);
+         ```
+         */
+        async function settledAtPin(
+          { entry, }: { readonly entry: typeof ownEnglish; },
+        ): Promise<Awaited<ReturnType<typeof settleEntry>>> {
+          return await settleEntry({
+            client: entryClient({ served: [], },),
+            entry,
+            artifactsDir: dirs.artifactsDir,
+            publishDir: dirs.publishDir,
+            declinedDir: dirs.declinedDir,
+            sliceCacheDir: dirs.sliceCacheDir,
+            tip: 'a'.repeat(40,),
+            pipelineDigest: DIGEST,
+            pin: ENTRY_PIN,
+            outsideReads: NO_OUTSIDE_READS,
+            pictureSources: NO_PICTURE_SOURCES,
+            hardCapMs: HANG_STOP_MS,
+            baseSignal: new AbortController().signal,
+          },);
+        }
+        expect(await settledAtPin({ entry: ENTRY, },),).toEqual({ kind: 'settled', },);
+        expect(await settledAtPin({ entry: ownEnglish, },),).toEqual({ kind: 'declined', },);
+
+        /**
+         The artifact the settled entry wrote, as text.
+         */
+        const artifactText = await readFile(
+          join(
+            dirs.artifactsDir,
+            `${ENTRY.id}.json`,
+          ),
+          'utf8',
+        );
+
+        /**
+         The decline record the declined entry wrote, as text.
+         */
+        const declineText = await readFile(
+          join(
+            dirs.declinedDir,
+            `${ownEnglish.id}.json`,
+          ),
+          'utf8',
+        );
+        expect(JSON.parse(artifactText,),).toHaveProperty(
+          'corpusSha',
+          ENTRY_PIN.commitSha,
+        );
+        expect(JSON.parse(declineText,),).toHaveProperty(
+          'corpusSha',
+          ENTRY_PIN.commitSha,
+        );
+      },
+    },),
+    it({
       name: 'PUBLISHES preparation-stage archive correction through lanes, artifact, and page',
       fn: async () => {
         await using dirs = await throwawayDirs();
@@ -1927,6 +2026,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -1987,6 +2087,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2024,6 +2125,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2080,6 +2182,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2126,6 +2229,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2155,6 +2259,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2206,6 +2311,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2252,6 +2358,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2297,6 +2404,7 @@ await describe({
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
+              pin: ENTRY_PIN,
               outsideReads: NO_OUTSIDE_READS,
               pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: HANG_STOP_MS,
@@ -2335,6 +2443,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2371,6 +2480,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2405,6 +2515,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2457,6 +2568,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2489,6 +2601,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2563,6 +2676,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2590,6 +2704,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2640,6 +2755,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
@@ -2673,6 +2789,7 @@ await describe({
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
+              pin: ENTRY_PIN,
               outsideReads: NO_OUTSIDE_READS,
               pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: HANG_STOP_MS,
@@ -2777,6 +2894,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
           outsideReads: NO_OUTSIDE_READS,
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
