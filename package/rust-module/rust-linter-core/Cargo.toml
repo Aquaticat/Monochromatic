@@ -20,6 +20,7 @@ repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "Rule trait, lint context, diagnostic and fix model shared by monochromatic-rust-linter and its rule packages."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

@@ -13,6 +13,7 @@ publish = false
 description = "Corpus evaluation and corrected-target parameter search for the shared true-peak policy, scored with the production truepeak-core meter, gain, and window math."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

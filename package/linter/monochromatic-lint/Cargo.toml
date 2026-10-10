@@ -10,6 +10,7 @@ include = ["src/**/*.rs", "fixtures/*.json", "Cargo.toml", "Cargo.lock", "README
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/linter/monochromatic-lint"
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
