@@ -10,7 +10,10 @@ import { writerGraceOverrideNote, } from '../writer-grace-override.ts';
 import { monotonicMs, } from '../monotonic-clock.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
-import { resolveHardCapMinutes, } from './cap-override.ts';
+import {
+  HARD_CAP_VAR,
+  resolveHardCapMinutes,
+} from './cap-override.ts';
 import {
   HARD_CAP_MINUTES,
   PASS_MS_PER_MINUTE,
@@ -30,6 +33,7 @@ import {
 import {
   resolveSpendCeilingUsd,
   SPEND_CEILING_USD,
+  SPEND_CEILING_VAR,
 } from './spend-ceiling.ts';
 
 //region Corpus pass
@@ -44,13 +48,14 @@ import {
 
  EVERY OVERRIDE IS READ HERE, INSIDE THE REFUSAL BOUNDARY, in the order a
  launch's mistakes should surface: the per-entry ceiling, the spend allowance,
- both windows, then the slice overlap, then the corpus pin, before the lock is
- claimed and before anything is read, so an unreadable value refuses the pass
- before it claims a directory or spends anything, as a stated refusal and not
- as a fault at load (ledger B302; the pin was still read at load until
- 2026-10-10). The windows, the contest ledger, the overlap and the pin are
- handed on as values, and no stage reads the environment for them
- (`stage-settings.ts`).
+ both windows, then the slice overlap, then the corpus pin, then the drift
+ opt-in, which refuses nothing, before the lock is claimed and before anything
+ is read, so an unreadable value refuses the pass before it claims a
+ directory or spends anything, as a stated refusal and not as a fault at load
+ (ledger B302; the pin was still read at load until 2026-10-10). Every one of
+ them is handed on as a value, and no library code reads the environment for
+ them (`stage-settings.ts`, `cap-override.ts`, `spend-ceiling.ts`,
+ `pass-generation-guard.ts`).
 
  @param line - the pass's command line, read whole by `reportingRefusals`
 
@@ -68,13 +73,19 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
    the shipped ceiling means the smallest such entry needs thirteen hours.
    `cap-override.ts` carries why an unreadable override throws.
    */
-  const hardCapMs = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, },) * PASS_MS_PER_MINUTE;
+  const hardCapMs = resolveHardCapMinutes({
+    fallback: HARD_CAP_MINUTES,
+    raw: process.env[HARD_CAP_VAR] ?? '',
+  },) * PASS_MS_PER_MINUTE;
 
   /**
    USD this run may spend on the provider that bills in USD before it stops
    starting entries, after any environment override (`spend-ceiling.ts`).
    */
-  const spendCeilingUsd = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, },);
+  const spendCeilingUsd = resolveSpendCeilingUsd({
+    fallback: SPEND_CEILING_USD,
+    raw: process.env[SPEND_CEILING_VAR] ?? '',
+  },);
 
   /**
    Both straggler windows and the contest ledger every stage of the pass runs
@@ -108,6 +119,12 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
    */
   const pinSetting = readRunCorpusPinSetting({ env: process.env, },);
 
+  /**
+   Whether the launch asked to resume across a foreign build
+   (`pass-generation-guard.ts`).
+   */
+  const driftAllowed = readDriftOptIn({ env: process.env, },);
+
   return runCorpusPassOver({
     line,
     runsDir: await resolveRunsDir(),
@@ -116,7 +133,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
     pinSetting,
     hardCapMs,
     spendCeilingUsd,
-    driftAllowed: readDriftOptIn(),
+    driftAllowed,
     pipelineDir: import.meta.dirname,
     readTip: readHeadSha,
     env: process.env,

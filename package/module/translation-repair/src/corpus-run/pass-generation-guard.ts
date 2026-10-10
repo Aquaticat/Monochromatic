@@ -38,22 +38,25 @@ const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
 const ALLOW_DRIFT_VALUE = 'yes';
 
 /**
- Whether this process was started with the drift opt-in.
+ Whether a launch's environment carries the drift opt-in.
 
- Separated from the guard so the environment is read in exactly one place. The
- environment is process-wide, so a guard that read it internally could not be
- exercised by two callers at once, and its own tests had to mutate a shared
- variable to reach either branch.
+ Separated from the guard so the environment is read in exactly one place,
+ and handed in by the entry file rather than read off the process here
+ (ledger B398): the process's environment is shared by every caller, so a
+ reader of it could not be exercised by two callers at once, and its own
+ tests had to mutate a shared variable to reach either branch.
+
+ @param env - environment of the launch, which the entry file hands in
 
  @returns Whether the variable carries the exact opt-in
 
  @example
  ```ts
- const driftAllowed = readDriftOptIn();
+ const driftAllowed = readDriftOptIn({ env: process.env, },);
  ```
  */
-export function readDriftOptIn(): boolean {
-  return process.env[ALLOW_DRIFT_VAR] === ALLOW_DRIFT_VALUE;
+export function readDriftOptIn({ env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },): boolean {
+  return env[ALLOW_DRIFT_VAR] === ALLOW_DRIFT_VALUE;
 }
 
 /**
@@ -326,7 +329,7 @@ export async function assertArtifactsPlaceable(
 
  @example
  ```ts
- assertBuildGenerationResumable({ census, digest, driftAllowed: readDriftOptIn(), },);
+ assertBuildGenerationResumable({ census, digest, driftAllowed: readDriftOptIn({ env: process.env, },), },);
  ```
  */
 export function assertBuildGenerationResumable(

@@ -61,10 +61,12 @@ export class HardCapOverrideError extends StatedRefusalError {
 
  @param fallback - built-in ceiling, used when nothing overrides it
 
- @param raw - override text; tests pass their own. UNSET AND EMPTY COLLAPSE TO
- ONE VALUE here rather than being distinguished, because this module already
- treats them alike: neither is an override. That is why the parameter is a
- plain string and the environment read supplies `''` for an absent variable
+ @param raw - override text, which the entry file reads from its launch's
+ environment and hands in, so no library code reads the process's own (ledger
+ B398). UNSET AND EMPTY COLLAPSE TO ONE VALUE here rather than being
+ distinguished, because this module already treats them alike: neither is an
+ override. That is why the parameter is a plain string and the entry file
+ supplies `''` for an absent variable
 
  @returns Minutes one entry may run before its exchanges abort
 
@@ -73,16 +75,16 @@ export class HardCapOverrideError extends StatedRefusalError {
 
  @example
  ```ts
- const minutes = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, },);
+ const minutes = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, raw: process.env[HARD_CAP_VAR] ?? '', },);
  ```
  */
 export function resolveHardCapMinutes(
   {
     fallback,
-    raw = process.env[HARD_CAP_VAR] ?? '',
+    raw,
   }: {
     readonly fallback: number;
-    readonly raw?: string;
+    readonly raw: string;
   },
 ): number {
   if (raw.trim() === '')

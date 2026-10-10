@@ -76,8 +76,10 @@ export class SpendCeilingOverrideError extends StatedRefusalError {
 
  @param fallback - built-in ceiling, used when nothing overrides it
 
- @param raw - override text; tests pass their own. Unset and empty collapse
- to one value here, as in `cap-override.ts`: neither is an override
+ @param raw - override text, which the entry file reads from its launch's
+ environment and hands in, so no library code reads the process's own (ledger
+ B398). Unset and empty collapse to one value here, as in `cap-override.ts`:
+ neither is an override
 
  @returns USD this run may spend on the metered provider before it stops
  starting entries
@@ -87,16 +89,16 @@ export class SpendCeilingOverrideError extends StatedRefusalError {
 
  @example
  ```ts
- const ceiling = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, },);
+ const ceiling = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, raw: process.env[SPEND_CEILING_VAR] ?? '', },);
  ```
  */
 export function resolveSpendCeilingUsd(
   {
     fallback,
-    raw = process.env[SPEND_CEILING_VAR] ?? '',
+    raw,
   }: {
     readonly fallback: number;
-    readonly raw?: string;
+    readonly raw: string;
   },
 ): number {
   if (raw.trim() === '')
