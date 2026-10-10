@@ -1,55 +1,34 @@
-//! The find box keeps the toolkit text box's editing behavior:
-//!  editing keys,
-//!  the context menu,
-//!  and
+//! The find box keeps the toolkit text box's editing behavior: editing keys, the context menu, and
 //! scrolling of a text wider than the box.
 
 /// The generated window type from the shipped markup.
 use super::AppWindow;
-/// An opened find bar over a disposable two-match file,
-///  with keyboard focus in the find box.
+/// An opened find bar over a disposable two-match file, with keyboard focus in the find box.
 use super::find_clear_tests::opened;
-/// Real key events through the window and the wait for the find count,
-///  shared with the find tests.
+/// Real key events through the window and the wait for the find count, shared with the find tests.
 use super::find_tests::{chord, key, status, type_text};
-/// The range of ink lightness inside a region,
-///  shared with the search box's paint tests.
+/// The range of ink lightness inside a region, shared with the search box's paint tests.
 use super::query_input_paint_tests::ink_range;
-/// Rendered frames and single pixels,
-///  shared with the sidebar paint tests.
+/// Rendered frames and single pixels, shared with the sidebar paint tests.
 use super::sidebar_paint_tests::{frame, pixel};
-/// The scheme switch the desktop-settings watcher makes,
-///  and color bytes.
+/// Pointer helpers and the pinned width of the divider's line.
+use super::sidebar_tests::{DIVIDER, press, release, settle};
+/// The scheme switch the desktop-settings watcher makes, and color bytes.
 use super::theme_tests::{rgba, switch};
-/// What:
-///  `ColorScheme` is the toolkit's scheme enum (`Unknown`,
-///  `Dark`,
-///  `Light`),
-///  reached through its unstable
+/// What: `ColorScheme` is the toolkit's scheme enum (`Unknown`, `Dark`, `Light`), reached through its unstable
 /// re-export module.
-/// Why:
-///  The selection ink is checked in both schemes.
-/// Gotcha:
-///  This module is not stable API;
-///  a toolkit upgrade can rename it and break only these tests.
+/// Why: The selection ink is checked in both schemes.
+/// Gotcha: This module is not stable API; a toolkit upgrade can rename it and break only these tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { ColorScheme } from 'slint/private';
 /// ```
 use slint::private_unstable_api::re_exports::ColorScheme;
-/// Pointer helpers and the pinned width of the divider's line.
-use super::sidebar_tests::{DIVIDER, press, release, settle};
-/// What:
-///  `Rgba8Pixel` is one pixel of four bytes;
-///  `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
-/// (the `<...>` names the element type,
-///  like `Array<Pixel>`);
-///  `WindowEvent` is the union of events a
+/// What: `Rgba8Pixel` is one pixel of four bytes; `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
+/// (the `<...>` names the element type, like `Array<Pixel>`); `WindowEvent` is the union of events a
 /// windowing backend reports.
-/// Why:
-///  Scrolling of the find text exists only in rendered pixels,
-///  and a held modifier is two events.
+/// Why: Scrolling of the find text exists only in rendered pixels, and a held modifier is two events.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,19 +39,10 @@ use slint::{
     platform::{Key, PointerEventButton, WindowEvent},
 };
 
-/// What:
-///  `steps: usize` is how many times Down is pressed (`usize` is the unsigned counting type;
+/// What: `steps: usize` is how many times Down is pressed (`usize` is the unsigned counting type;
 /// siblings `u32` and `i32`).
-/// Why:
-///  The menu opens by a right click on the find text and is driven by keys like the toolkit's:
-/// Down moves through Undo,
-///  Redo,
-///  Cut,
-///  Copy,
-///  Paste,
-///  and Select All,
-///  skipping the separator,
-///  and Return
+/// Why: The menu opens by a right click on the find text and is driven by keys like the toolkit's:
+/// Down moves through Undo, Redo, Cut, Copy, Paste, and Select All, skipping the separator, and Return
 /// runs the highlighted entry.
 ///
 /// In TS you'd write (pseudocode):
@@ -94,13 +64,11 @@ fn menu(window: &AppWindow, steps: usize) {
     settle(window);
 }
 
-/// Entry positions in the menu,
-///  counted in Down presses from the opened menu.
+/// Entry positions in the menu, counted in Down presses from the opened menu.
 const UNDO: usize = 1;
 /// Redo is the second entry.
 const REDO: usize = 2;
-/// Cut is the first entry after the separator,
-///  which Down skips.
+/// Cut is the first entry after the separator, which Down skips.
 const CUT: usize = 3;
 /// Copy follows Cut.
 const COPY: usize = 4;
@@ -109,17 +77,7 @@ const PASTE: usize = 5;
 /// Select All is the last entry.
 const SELECT_ALL: usize = 6;
 
-/// Home,
-///  End,
-///  Backspace,
-///  Delete,
-///  Shift selection,
-///  select-all,
-///  copy,
-///  cut,
-///  paste,
-///  undo,
-///  and redo edit the find text.
+/// Home, End, Backspace, Delete, Shift selection, select-all, copy, cut, paste, undo, and redo edit the find text.
 #[test]
 fn find_box_keeps_the_toolkit_editing_keys() {
     // `_fixture` keeps the directory alive until the test ends.
@@ -210,8 +168,7 @@ fn find_box_keeps_the_toolkit_editing_keys() {
     window.hide().expect("close editing window");
 }
 
-/// A right click opens the toolkit's menu,
-///  and each of its entries acts on the find text.
+/// A right click opens the toolkit's menu, and each of its entries acts on the find text.
 #[test]
 fn find_box_context_menu_runs_each_entry() {
     let (_fixture, reader) = opened();
@@ -275,17 +232,9 @@ fn find_box_context_menu_runs_each_entry() {
     window.hide().expect("close menu window");
 }
 
-/// What:
-///  `bounds` is a fixed array of four pixel positions,
-///  left,
-///  right,
-///  top,
-///  bottom;
-///  the answer is a
-/// growable array (`Vec<Rgba8Pixel>`,
-///  sibling fixed array `[Rgba8Pixel; N]`) of the pixels inside them.
-/// Why:
-///  Two frames show the same thing in a region exactly when these arrays are equal.
+/// What: `bounds` is a fixed array of four pixel positions, left, right, top, bottom; the answer is a
+/// growable array (`Vec<Rgba8Pixel>`, sibling fixed array `[Rgba8Pixel; N]`) of the pixels inside them.
+/// Why: Two frames show the same thing in a region exactly when these arrays are equal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -308,10 +257,8 @@ fn pixels(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) -> Vec<Rgba
     return found;
 }
 
-/// A text wider than the box scrolls so that its end and the caret stay visible,
-///  Home scrolls back to its
-/// start,
-///  and no part of it is drawn inside the clear cell.
+/// A text wider than the box scrolls so that its end and the caret stay visible, Home scrolls back to its
+/// start, and no part of it is drawn inside the clear cell.
 #[test]
 fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     let (_fixture, reader) = opened();
@@ -382,12 +329,8 @@ fn find_box_scrolls_long_text_and_keeps_it_out_of_the_clear_cell() {
     window.hide().expect("close scrolling window");
 }
 
-/// Selected find text is drawn in the ink chosen from the selection fill,
-///  light in both schemes,
-///  like
-/// selected text in the search box,
-///  the selected rows,
-///  and the source view.
+/// Selected find text is drawn in the ink chosen from the selection fill, light in both schemes, like
+/// selected text in the search box, the selected rows, and the source view.
 #[test]
 fn find_box_selection_uses_the_ink_chosen_from_the_fill() {
     let (_fixture, reader) = opened();
@@ -413,7 +356,10 @@ fn find_box_selection_uses_the_ink_chosen_from_the_fill() {
         let filled = pixels(&shown, glyphs)
             .iter()
             .any(|found| return [found.r, found.g, found.b, found.a] == fill);
-        assert!(filled, "{label}: selected find text has no selection fill behind it");
+        assert!(
+            filled,
+            "{label}: selected find text has no selection fill behind it"
+        );
         // The box's own fill far right of the text, left of the count.
         let (darkest, lightest) = ink_range(&shown, glyphs, pixel(&shown, start + 300, top + 24));
         assert!(

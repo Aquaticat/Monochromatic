@@ -9,11 +9,8 @@ use helix_core::Rope;
 /// The protocol's diagnostic record and each server's column unit.
 use helix_lsp::{OffsetEncoding, lsp};
 
-/// What:
-///  A closed set of names for what happened to one pushed set.
-/// Why:
-///  The worker logs the reason,
-///  and tests assert the exact rule that applied.
+/// What: A closed set of names for what happened to one pushed set.
+/// Why: The worker logs the reason, and tests assert the exact rule that applied.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,13 +21,12 @@ use helix_lsp::{OffsetEncoding, lsp};
 pub(crate) enum PushVerdict {
     /// The set's version equals the displayed revision's protocol version.
     AcceptedVersioned,
-    /// No version was sent,
-    ///  no hold is open,
-    ///  and every range starts on an existing line.
+    /// No version was sent, no hold is open, and every range starts on an existing line.
     AcceptedUnversioned,
     /// The set names another protocol version of the document.
     WrongVersion,
-    /// No version was sent and the server has not yet answered anything since the last reload.
+    /// No version was sent and the server has not yet answered anything since the last reload:
+    /// the set is kept, unshown, and shown when the hold ends unless a newer set arrived first.
     Held,
     /// No version was sent and a range starts past the last line of the displayed text.
     LineOutOfRange,
@@ -42,11 +38,8 @@ pub(crate) enum PushVerdict {
 struct Tracked {
     /// File generation and revision of the displayed text.
     stamp: DocumentStamp,
-    /// Protocol version of that revision.
-    ///  `i32` is the signed 32-bit integer the protocol
-    /// mandates (siblings:
-    ///  `u32`,
-    ///  `i64`).
+    /// Protocol version of that revision. `i32` is the signed 32-bit integer the protocol
+    /// mandates (siblings: `u32`, `i64`).
     version: i32,
 }
 
@@ -54,8 +47,7 @@ struct Tracked {
 struct StoredSet {
     /// Server process that sent it.
     server: ServerIdentity,
-    /// True for an answer to a pull request;
-    ///  false for a pushed notification.
+    /// True for an answer to a pull request; false for a pushed notification.
     pulled: bool,
     /// Text the set was accepted for.
     stamp: DocumentStamp,
@@ -63,12 +55,23 @@ struct StoredSet {
     freshness: Freshness,
     /// Column unit of the sending server.
     encoding: OffsetEncoding,
-    /// What:
-    ///  `Vec<lsp::Diagnostic>` keeps the protocol records unconverted.
-    /// Why:
-    ///  A later "unchanged" pull answer re-stamps the set for a new revision,
-    ///  and the ranges
+    /// What: `Vec<lsp::Diagnostic>` keeps the protocol records unconverted.
+    /// Why: A later "unchanged" pull answer re-stamps the set for a new revision, and the ranges
     ///      must then be converted against that revision's text.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// items: lsp.Diagnostic[];
+    /// ```
+    items: Vec<lsp::Diagnostic>,
+}
+
+/// The latest unversioned set one server pushed while its hold was open.
+struct Kept {
+    /// Column unit of the sending server.
+    encoding: OffsetEncoding,
+    /// What: The protocol records, unconverted, as `Vec<lsp::Diagnostic>` (a growable list).
+    /// Why: They are converted when shown, against the text of the revision the hold belongs to.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -79,20 +82,27 @@ struct StoredSet {
 
 /// An open hold on one server's unversioned pushes.
 struct Hold {
-    /// Server whose unversioned sets are discarded.
+    /// Server whose unversioned sets are kept back.
     server: ServerIdentity,
-    /// Number of the reload that opened the hold;
-    ///  `u64` never wraps in practice.
+    /// Number of the reload that opened the hold; `u64` never wraps in practice.
     serial: u64,
+    /// What: The latest unversioned set the server pushed during the hold, or nothing.
+    ///       `Option<Kept>` is "a kept set, or nothing".
+    /// Why: A set pushed during the hold may be the server's only set for the new text, for
+    ///      example from a server that pushes once per change. Dropping it would leave the
+    ///      displayed file without diagnostics until the server's next push; it is shown when
+    ///      the hold ends instead. A hold belongs to one revision, because every reload replaces
+    ///      all holds, so a kept set is always shown against the text it arrived for.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// kept?: Kept;
+    /// ```
+    kept: Option<Kept>,
 }
 
-/// What:
-///  The store's whole state.
-///  `Option<Tracked>` is "a tracked document,
-///  or nothing".
-/// Why:
-///  Push and pull arrive on different paths at different times;
-///  one owner decides which
+/// What: The store's whole state. `Option<Tracked>` is "a tracked document, or nothing".
+/// Why: Push and pull arrive on different paths at different times; one owner decides which
 ///      sets may be shown together.
 ///
 /// In TS you'd write (pseudocode):
@@ -101,22 +111,19 @@ struct Hold {
 ///                         resultIds: [ServerIdentity, string][] = []; serial = 0; }
 /// ```
 pub(crate) struct DiagnosticStore {
-    /// Displayed document,
-    ///  absent when no file is displayed.
+    /// Displayed document, absent when no file is displayed.
     document: Option<Tracked>,
     /// At most one pushed and one pulled set per server process.
     sets: Vec<StoredSet>,
-    /// Servers whose unversioned pushes are discarded for now.
+    /// Servers whose unversioned pushes are kept back for now, with the latest set each pushed.
     holds: Vec<Hold>,
     /// Result identifiers servers attached to their last full pull answer.
     result_ids: Vec<(ServerIdentity, String)>,
-    /// Count of reloads,
-    ///  used to tell a late hold timer from a current one.
+    /// Count of reloads, used to tell a late hold timer from a current one.
     serial: u64,
 }
 
-/// Store operations,
-///  each corresponding to one lifecycle or protocol event.
+/// Store operations, each corresponding to one lifecycle or protocol event.
 impl DiagnosticStore {
     /// Create an empty store with no displayed document.
     pub(crate) fn new() -> Self {
@@ -129,18 +136,14 @@ impl DiagnosticStore {
         };
     }
 
-    /// A file is displayed:
-    ///  forget everything about the previous one.
+    /// A file is displayed: forget everything about the previous one.
     pub(crate) fn open(&mut self, stamp: DocumentStamp, version: i32) {
         self.close();
         // `Some(...)` wraps the record in the "value present" variant of `Option`.
         self.document = Some(Tracked { stamp, version });
     }
 
-    /// No file is displayed:
-    ///  a file switch or close clears every set,
-    ///  hold,
-    ///  and result identifier.
+    /// No file is displayed: a file switch or close clears every set, hold, and result identifier.
     pub(crate) fn close(&mut self) {
         self.document = None;
         self.sets.clear();
@@ -148,14 +151,11 @@ impl DiagnosticStore {
         self.result_ids.clear();
     }
 
-    /// What:
-    ///  Record an accepted reload and return its number.
-    ///  `&[ServerIdentity]` lends a list
+    /// What: Record an accepted reload and return its number. `&[ServerIdentity]` lends a list
     ///       of the servers that hold the document open.
-    /// Why:
-    ///  Every pushed set of the previous revision is invalid at once,
-    ///  and each server's
-    ///      unversioned pushes are held until it has demonstrably processed the change.
+    /// Why: Every pushed set of the previous revision is invalid at once, and each server's
+    ///      unversioned pushes are kept back until it has demonstrably processed the change or
+    ///      the fixed delay passed. Sets kept for the previous revision are dropped with its holds.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -187,24 +187,73 @@ impl DiagnosticStore {
                 // `clone` copies the identity so the hold owns its own value.
                 server: server.clone(),
                 serial: self.serial,
+                kept: None,
             });
         }
         return self.serial;
     }
 
-    /// True while the server's unversioned pushes are being discarded.
+    /// What: End every hold for which `ends` returns true, and show the set each kept.
+    ///       `impl Fn(&Hold) -> bool` is any function that judges a borrowed hold; `drain` empties
+    ///       the list and hands out each hold by value. Returns how many holds ended.
+    /// Why: A hold ends when the server answers for the new text or when its fixed delay
+    ///      passes. Either way its kept set is the server's latest set for this revision. A set
+    ///      that arrived after it never meets it here: an accepted push removes the kept set.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// endHolds(ends: (hold: Hold) => boolean): number {
+    ///   const ending = this.holds.filter(ends);
+    ///   this.holds = this.holds.filter(hold => !ends(hold));
+    ///   for (const hold of ending) if (hold.kept) this.storePushed(hold.server, hold.kept, 'unversioned');
+    ///   return ending.length;
+    /// }
+    /// ```
+    fn end_holds(&mut self, ends: impl Fn(&Hold) -> bool) -> usize {
+        let Some(tracked) = self.document.as_ref() else {
+            self.holds.clear();
+            return 0;
+        };
+        let stamp = tracked.stamp;
+        let mut ended = 0;
+        // `Vec::new()` creates an empty list that collects the holds that stay open.
+        let mut open: Vec<Hold> = Vec::new();
+        for hold in self.holds.drain(..) {
+            if !ends(&hold) {
+                open.push(hold);
+                continue;
+            }
+            ended += 1;
+            // `if let Some(x) = ...` runs the block only when the hold kept a set.
+            if let Some(kept) = hold.kept {
+                tracing::debug!(server = %hold.server.name, "showing the set pushed during the hold that just ended");
+                self.sets
+                    .retain(|set| return set.pulled || set.server != hold.server);
+                self.sets.push(StoredSet {
+                    server: hold.server,
+                    pulled: false,
+                    stamp,
+                    freshness: Freshness::Unversioned,
+                    encoding: kept.encoding,
+                    items: kept.items,
+                });
+            }
+        }
+        self.holds = open;
+        return ended;
+    }
+
+    /// True while the server's unversioned pushes are being kept back. Only tests ask; `push`
+    /// finds the hold itself, because it also changes it.
+    #[cfg(test)]
     pub(crate) fn is_held(&self, server: &ServerIdentity) -> bool {
         // `iter().any(...)` is `Array.prototype.some`; `&self.holds` is only read.
         return self.holds.iter().any(|hold| return &hold.server == server);
     }
 
-    /// What:
-    ///  The server answered a request sent for `stamp`;
-    ///  returns true when that ended a hold.
-    /// Why:
-    ///  An answer to a request sent after the change shows the server processed the change,
-    ///      provided servers handle messages in order,
-    ///  which the protocol does not promise.
+    /// What: The server answered a request sent for `stamp`; returns true when that ended a hold.
+    /// Why: An answer to a request sent after the change shows the server processed the change,
+    ///      provided servers handle messages in order, which the protocol does not promise.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -226,27 +275,19 @@ impl DiagnosticStore {
         {
             return false;
         }
-        let before = self.holds.len();
-        self.holds.retain(|hold| return &hold.server != server);
-        return self.holds.len() != before;
+        // The closure judges each hold; `&hold.server == server` compares the borrowed identities.
+        return self.end_holds(|hold| return &hold.server == server) > 0;
     }
 
-    /// The fixed delay after reload number `serial` passed;
-    ///  returns true when a hold ended.
+    /// The fixed delay after reload number `serial` passed; returns true when a hold ended.
     pub(crate) fn hold_expired(&mut self, serial: u64) -> bool {
-        let before = self.holds.len();
-        self.holds.retain(|hold| return hold.serial != serial);
-        return self.holds.len() != before;
+        return self.end_holds(|hold| return hold.serial == serial) > 0;
     }
 
-    /// What:
-    ///  Judge one `publishDiagnostics` notification for the displayed file and store it when
-    ///       accepted.
-    ///  `version` is the optional document version the server attached;
+    /// What: Judge one `publishDiagnostics` notification for the displayed file and store it when
+    ///       accepted. `version` is the optional document version the server attached;
     ///       `line_count` is the number of lines of the displayed text.
-    /// Why:
-    ///  A versioned set is exact;
-    ///  an unversioned one can only be shown conservatively.
+    /// Why: A versioned set is exact; an unversioned one can only be shown conservatively.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -273,9 +314,6 @@ impl DiagnosticStore {
                 Freshness::Versioned
             }
             None => {
-                if self.is_held(server) {
-                    return PushVerdict::Held;
-                }
                 for item in &items {
                     // What: `usize::try_from` converts the protocol's `u32`; `is_ok_and` is true only
                     //       for a successful conversion whose value passes the closure's test.
@@ -291,9 +329,33 @@ impl DiagnosticStore {
                         return PushVerdict::LineOutOfRange;
                     }
                 }
+                // What: `iter_mut().find(...)` lends the server's open hold for changing, if any.
+                // Why: During the hold the set is kept, replacing an earlier kept one, and shown
+                //      when the hold ends. The line check already ran against the displayed text,
+                //      which is the text the hold belongs to.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const hold = this.holds.find(hold => same(hold.server, server));
+                // if (hold) { hold.kept = { encoding, items }; return 'held'; }
+                // ```
+                if let Some(hold) = self
+                    .holds
+                    .iter_mut()
+                    .find(|hold| return &hold.server == server)
+                {
+                    hold.kept = Some(Kept { encoding, items });
+                    return PushVerdict::Held;
+                }
                 Freshness::Unversioned
             }
         };
+        // A versioned set accepted during the hold is newer than anything the hold kept.
+        for hold in self.holds.iter_mut() {
+            if &hold.server == server {
+                hold.kept = None;
+            }
+        }
         // Any later set from the same server replaces its earlier pushed set.
         self.sets
             .retain(|set| return set.pulled || &set.server != server);
@@ -311,13 +373,9 @@ impl DiagnosticStore {
         return PushVerdict::AcceptedUnversioned;
     }
 
-    /// What:
-    ///  Store a full pull answer;
-    ///  false when it answers another revision or file.
+    /// What: Store a full pull answer; false when it answers another revision or file.
     ///       `Option<String>` is the result identifier the server may attach.
-    /// Why:
-    ///  A pull answer is fenced like every other reply:
-    ///  only the displayed text counts.
+    /// Why: A pull answer is fenced like every other reply: only the displayed text counts.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -355,8 +413,7 @@ impl DiagnosticStore {
         return true;
     }
 
-    /// The server said its previous pull answer still holds:
-    ///  re-stamp it for the displayed text.
+    /// The server said its previous pull answer still holds: re-stamp it for the displayed text.
     pub(crate) fn pulled_unchanged(
         &mut self,
         server: &ServerIdentity,
@@ -382,12 +439,8 @@ impl DiagnosticStore {
         return false;
     }
 
-    /// What:
-    ///  The identifier to send with the next pull request,
-    ///  or nothing.
-    /// Why:
-    ///  It is offered only while the set it refers to is still stored;
-    ///  otherwise an
+    /// What: The identifier to send with the next pull request, or nothing.
+    /// Why: It is offered only while the set it refers to is still stored; otherwise an
     ///      "unchanged" answer would leave nothing to show.
     ///
     /// In TS you'd write (pseudocode):
@@ -411,24 +464,16 @@ impl DiagnosticStore {
         return None;
     }
 
-    /// A server process ended:
-    ///  its sets,
-    ///  hold,
-    ///  and result identifier are removed.
+    /// A server process ended: its sets, hold, and result identifier are removed.
     pub(crate) fn server_exited(&mut self, server: &ServerIdentity) {
         self.sets.retain(|set| return &set.server != server);
         self.holds.retain(|hold| return &hold.server != server);
         self.result_ids.retain(|(known, _)| return known != server);
     }
 
-    /// What:
-    ///  Build the latest-value snapshot against the displayed text,
-    ///  or nothing when no file
-    ///       is displayed.
-    ///  Only sets stamped with the displayed revision take part.
-    /// Why:
-    ///  Sets of an earlier revision are removed from display,
-    ///  never carried forward.
+    /// What: Build the latest-value snapshot against the displayed text, or nothing when no file
+    ///       is displayed. Only sets stamped with the displayed revision take part.
+    /// Why: Sets of an earlier revision are removed from display, never carried forward.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

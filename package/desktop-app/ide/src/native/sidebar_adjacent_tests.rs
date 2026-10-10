@@ -1,33 +1,22 @@
 //! Tree rows and source text beside the divider's five-column pointer zone keep their own clicks at every
-//! sidebar width,
-//!  and the tree scrollbar works up to the zone.
+//! sidebar width, and the tree scrollbar works up to the zone.
 
-/// Shared window fixture,
-///  pointer helpers,
-///  and the pinned layout measurements.
+/// Bounded waiting while the toolkit eases a wheel scroll, shared with the find tests.
+use super::find_tests::eventually;
+/// Shared window fixture, pointer helpers, and the pinned layout measurements.
 use super::sidebar_tests::{
     DIVIDER, HEADER, MINIMUM, REACH, SOURCE_MINIMUM, click, drag_to, fixture, motion, press,
     release, settle,
 };
-/// Bounded waiting while the toolkit eases a wheel scroll,
-///  shared with the find tests.
-use super::find_tests::eventually;
-/// Window ownership for closing the fixture,
-///  the left pointer button for a scrollbar drag,
-///  and the
+/// Window ownership for closing the fixture, the left pointer button for a scrollbar drag, and the
 /// wheel event a windowing backend reports.
 use slint::{
     ComponentHandle, LogicalPosition,
     platform::{PointerEventButton, WindowEvent},
 };
 
-/// The last tree pixel left of the zone activates its row,
-///  a click on any of the zone's five columns does
-/// nothing,
-///  and the first source pixel right of the zone places the caret,
-///  at the default,
-///  narrowest,
-///  and
+/// The last tree pixel left of the zone activates its row, a click on any of the zone's five columns does
+/// nothing, and the first source pixel right of the zone places the caret, at the default, narrowest, and
 /// widest sidebar.
 #[test]
 fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
@@ -122,9 +111,7 @@ fn clicks_beside_the_divider_reach_tree_rows_and_source_at_every_width() {
     window.hide().expect("close sidebar window");
 }
 
-/// Far reveal,
-///  row clicks after a reveal,
-///  and the tree scrollbar beside the divider work at both bounds.
+/// Far reveal, row clicks after a reveal, and the tree scrollbar beside the divider work at both bounds.
 /// The scrollbar is dragged on its thumb and on the last tree column left of the divider's zone.
 #[test]
 fn tree_windowing_and_scrollbar_follow_the_sidebar_width() {
@@ -174,10 +161,8 @@ fn tree_windowing_and_scrollbar_follow_the_sidebar_width() {
     window.hide().expect("close sidebar window");
 }
 
-/// A wheel turn over the zone's tree columns scrolls the tree,
-///  and over its source columns the source:
-/// the divider takes presses there,
-///  not the wheel.
+/// A wheel turn over the zone's tree columns scrolls the tree, and over its source columns the source:
+/// the divider takes presses there, not the wheel.
 #[test]
 fn wheel_over_the_divider_zone_scrolls_what_lies_under_it() {
     let shared = fixture(60);
@@ -191,11 +176,13 @@ fn wheel_over_the_divider_zone_scrolls_what_lies_under_it() {
     // ```ts
     // window.dispatchEvent({ kind: 'wheel', position: { x: 254.5, y: 300 }, deltaX: 0, deltaY: -96 });
     // ```
-    window.window().dispatch_event(WindowEvent::PointerScrolled {
-        position: LogicalPosition::new(256.0 - REACH + 0.5, 300.0),
-        delta_x: 0.0,
-        delta_y: -96.0,
-    });
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerScrolled {
+            position: LogicalPosition::new(256.0 - REACH + 0.5, 300.0),
+            delta_x: 0.0,
+            delta_y: -96.0,
+        });
     // What: `|| return ...` is a zero-argument arrow function that `eventually` calls until it holds.
     // Why: The toolkit eases a wheel scroll over several frames.
     //
@@ -209,11 +196,13 @@ fn wheel_over_the_divider_zone_scrolls_what_lies_under_it() {
     );
     let source_before = window.get_scroll_y();
     // The zone's last column lies over the source column's first columns.
-    window.window().dispatch_event(WindowEvent::PointerScrolled {
-        position: LogicalPosition::new(256.0 + DIVIDER + REACH - 0.5, 300.0),
-        delta_x: 0.0,
-        delta_y: -96.0,
-    });
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerScrolled {
+            position: LogicalPosition::new(256.0 + DIVIDER + REACH - 0.5, 300.0),
+            delta_x: 0.0,
+            delta_y: -96.0,
+        });
     eventually(
         "a wheel turn over the zone's source columns did not scroll the source",
         || return window.get_scroll_y() < source_before,

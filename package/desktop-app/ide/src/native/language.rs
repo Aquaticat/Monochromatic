@@ -132,6 +132,9 @@ mod state_tests;
 ///  shared by the window tests.
 #[cfg(test)]
 mod test_support;
+/// Waiting for timers and for the scripted server, shared by the window tests.
+#[cfg(test)]
+mod test_waits;
 /// An external change reaches a server through the application's relay to the change watcher.
 #[cfg(test)]
 mod watched_tests;

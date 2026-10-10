@@ -1,29 +1,19 @@
-//! `Content-Length` framing on the standard streams,
-//!  the report file,
-//!  and pending client replies.
+//! `Content-Length` framing on the standard streams, the report file, and pending client replies.
 
-/// What:
-///  `Value` is any JSON value;
-///  `json!` builds one from literal syntax.
-/// Why:
-///  Every protocol message is one JSON object.
+/// What: `Value` is any JSON value; `json!` builds one from literal syntax.
+/// Why: Every protocol message is one JSON object.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Value = unknown;
 /// ```
 use serde_json::{Value, json};
-/// What:
-///  `HashMap` is a key-value table;
-///  `File` an open file;
-///  `BufRead` and `Write` are
-///       the reading and writing interfaces;
-///  `Mutex` guards a value so one thread uses it at a
-///       time;
-///  `mpsc` channels pass owned messages between threads;
-///  `Duration` is a time span.
-/// Why:
-///  Delayed hover answers and the probe run on helper threads that share the output stream.
+/// What: `HashMap` is a key-value table; `File` an open file; `BufRead` and `Write` are
+///       the reading and writing interfaces; `Mutex` guards a value so one thread uses it at a
+///       time; `mpsc` channels pass owned messages between threads; `Duration` is a time span;
+///       `SystemTime` and `UNIX_EPOCH` read the wall clock.
+/// Why: Delayed hover answers and the probe run on helper threads that share the output stream,
+///      and every report line carries the wall-clock time it was written.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,45 +28,32 @@ use std::{
         Mutex,
         mpsc::{Sender, channel},
     },
-    time::Duration,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-/// What:
-///  Everything threads share.
-///  Each field sits in a `Mutex`,
-///  which hands out exclusive access.
-/// Why:
-///  Two threads writing one message each must not interleave their bytes.
+/// What: Everything threads share. Each field sits in a `Mutex`, which hands out exclusive access.
+/// Why: Two threads writing one message each must not interleave their bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class Wire { waiting = new Map<number, (reply: unknown) => void>(); nextId = 1000; }
 /// ```
 pub struct Wire {
-    /// Standard output,
-    ///  where framed messages go.
+    /// Standard output, where framed messages go.
     output: Mutex<io::Stdout>,
-    /// Report file,
-    ///  when a test asked for one.
+    /// Report file, when a test asked for one.
     report: Mutex<Option<File>>,
-    /// Requests sent to the client that still await a reply,
-    ///  by request number.
+    /// Requests sent to the client that still await a reply, by request number.
     waiting: Mutex<HashMap<u64, Sender<Value>>>,
-    /// Next request number;
-    ///  starts high so it is recognizable in logs.
+    /// Next request number; starts high so it is recognizable in logs.
     next_id: Mutex<u64>,
 }
 
 /// Shared-stream operations.
 impl Wire {
-    /// What:
-    ///  Open the report file for appending when a path is given.
-    ///  `Option<&Path>` is "a
-    ///       borrowed path,
-    ///  or nothing";
-    ///  `io::Result<Self>` is success with a value or an I/O error.
-    /// Why:
-    ///  Tests read this file to learn what the server received and what text it holds.
+    /// What: Open the report file for appending when a path is given. `Option<&Path>` is "a
+    ///       borrowed path, or nothing"; `io::Result<Self>` is success with a value or an I/O error.
+    /// Why: Tests read this file to learn what the server received and what text it holds.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -97,11 +74,10 @@ impl Wire {
         });
     }
 
-    /// What:
-    ///  Write one framed message.
-    ///  `mut message` lets this function add the version field.
-    /// Why:
-    ///  The protocol requires a byte-length header before every JSON body.
+    /// What: Write one framed message, then record in the report that it was written.
+    ///       `mut message` lets this function add the version field.
+    /// Why: The protocol requires a byte-length header before every JSON body. The `sent` line
+    ///      tells a test, or a person reading a failure, when the server wrote each message.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -123,12 +99,36 @@ impl Wire {
         // ```
         let mut output = self.output.lock().expect("output lock is not poisoned");
         write!(output, "Content-Length: {}\r\n\r\n{body}", body.len())?;
-        return output.flush();
+        output.flush()?;
+        // `drop` releases the output lock before the report lock is taken.
+        drop(output);
+        self.record(json!({ "sent": { "id": message["id"], "method": message["method"] } }));
+        return Ok(());
     }
 
-    /// Append one JSON line to the report,
-    ///  if a report was requested.
-    pub fn record(&self, entry: Value) {
+    /// What: Append one JSON line to the report, if a report was requested, with the wall-clock
+    ///       time in milliseconds as `at`. `mut entry` lets this function add that field.
+    /// Why: The times of the server's lines and of the client's log tell which side stalled.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// record(entry: object) { appendFileSync(report, JSON.stringify({ ...entry, at: Date.now() }) + '\n'); }
+    /// ```
+    pub fn record(&self, mut entry: Value) {
+        // What: `SystemTime::now().duration_since(UNIX_EPOCH)` is the time since 1970 as a
+        //       `Result`; `map_or` turns it into fractional milliseconds, or zero for a clock set
+        //       before 1970. `as_secs_f64` gives seconds as a 64-bit floating-point number.
+        // Why: JSON numbers are floating-point; milliseconds with a fraction keep sub-millisecond order.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // entry.at = Date.now();
+        // ```
+        entry["at"] = json!(
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map_or(0.0, |since| return since.as_secs_f64() * 1000.0)
+        );
         let mut report = self.report.lock().expect("report lock is not poisoned");
         // `as_mut()` borrows the file inside the `Option` for writing.
         if let Some(file) = report.as_mut() {
@@ -139,11 +139,8 @@ impl Wire {
         }
     }
 
-    /// What:
-    ///  Send a request to the client and wait up to ten seconds for its reply.
-    /// Why:
-    ///  The probe needs each reply before sending the next request,
-    ///  like a real server
+    /// What: Send a request to the client and wait up to ten seconds for its reply.
+    /// Why: The probe needs each reply before sending the next request, like a real server
     ///      that awaits `client/registerCapability`.
     ///
     /// In TS you'd write (pseudocode):
@@ -188,14 +185,9 @@ impl Wire {
     }
 }
 
-/// What:
-///  Read one framed message,
-///  or nothing at end of input.
-///  `&mut impl BufRead` lends any
+/// What: Read one framed message, or nothing at end of input. `&mut impl BufRead` lends any
 ///       buffered reader for reading.
-/// Why:
-///  The client closes standard input when it drops the server;
-///  that must end the loop.
+/// Why: The client closes standard input when it drops the server; that must end the loop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
