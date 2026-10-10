@@ -1144,3 +1144,56 @@ On `feat/cli-git-native-dependent-version`, oldest first, first parent only:
 prefix. Gated commit.
 - The commit that adds the section "The surviving mutant is equivalent after the candidate fix" and this list.
 - The commit that adds the section "Wiring into the native executable" and this paragraph.
+
+## Merge of main at 1b6677a9af, gated at 39ba42039c
+
+The merge commit is `0b9e4e3eda` (main brought the Markdown autofix branch, `1b6677a9af`).
+Conflicts and their resolution:
+
+- `package/git-policy/cli.fuzz/Cargo.toml`, `bin/container.mjs`, `bin/planted-controls.mjs`, `src/lib.rs`:
+  both sides kept, the dependent-version target and the Markdown targets (`linter_output`, `event_path`, `linter_config`).
+- `package/git-policy/cli/src/native/policy_checks.rs`:
+  `MarkdownAutofix` runs `check_markdown` (main's policy), `DependentVersionBump` runs `check_dependent_version` (this branch).
+  The `unported_content` helper and `MARKDOWN_AUTOFIX_NEEDS` / `DEPENDENT_VERSION_BUMP_NEEDS` were removed, since no content policy is unported now.
+- Tests that asserted a refusal, rewritten to the wired behavior: `policy_checks_tests.rs`, `policy_pass_tests.rs`,
+  `wrapped_command_tests.rs`, `direct_fix_tests.rs` (`a_fix_with_the_wired_policy_listed_completes_and_installs`),
+  `binary_frontier_tests.rs` (`add_runs_the_content_policies_over_what_it_stages`), `binary_policy_tests.rs`
+  (`direct_fix_corrects_only_worktree_files`, its refusal step removed).
+- `policy_dependent_version.rs` and its tests: `PolicyOutcome::Failed` and `PolicyFinding.path` now carry `EventPath`
+  (`EventPath::from_git_bytes` for findings, `path: None` for failures).
+
+Doc-comment regeneration (`mise run format:monochromatic-lint -- package/git-policy/cli/src/native`) was run.
+It also rewrote files this merge did not touch; those changes were reverted, and only the files named above keep
+the regenerated comments.
+
+Gate on `39ba42039c` (the gated commit; container, through `~/temp/agent/gate-slot.ts`), evidence
+`package/git-policy/cli/target/verification/native-Wde3ai` (`passed.json`: tests and Clippy true):
+736 unit passed, 1 ignored; 49 binary passed; 1 consumer passed.
+
+Host runs show the same environment-bound failures as before (Git 2.55 and wrapper resolution), plus two tests that need
+`GIT_POLICY_NATIVE_TEST_LINTER`, which only the gate image sets.
+
+Gated paths: `package/git-policy/cli`, `package/git-policy/cli.fuzz`, `package/cli/forbidden-strings`,
+`package/rust-module`, `package/linter/monochromatic-lint`, `clippy.toml`.
+`git diff --quiet 39ba42039c HEAD -- <those paths>` is empty at the time of writing.
+
+### Drained state
+
+Stopped for a `~/temp` move. Nothing is left running in the repository.
+
+In flight when drained:
+
+- Fuzz smoke on `39ba42039c`:
+  `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli.fuzz:smoke`,
+  log `~/temp/agent/dv-gate/fuzz-smoke2.log`, campaign directory
+  `package/git-policy/cli.fuzz/target/verification/campaign-aq6uCe`.
+  Targets finished with exit 0 at the time of drain: `global_arguments` through `wrapper_controls`
+  (the rest had not reported). Its `FUZZ-EXIT=` line in the log is the verdict.
+
+Not done yet:
+
+- Scoped mutation over the changed planner and candidate files, with its timeout rerun:
+  `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/policy_checks.rs' --file 'src/native/policy_dependent_version.rs'`.
+  Any timed-out mutant is rerun alone with `--timeout 300` (temporary runner edit, restored afterwards, as before).
+- Lint: `format:monochromatic-lint` reports `rust/no-anonymous-functions` warnings in `policy_dependent_version.rs`
+  (lines 226, 311, 312) and `policy_dependent_version_tests.rs` (lines 50, 289). Not addressed.
