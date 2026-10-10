@@ -575,6 +575,11 @@ Five TSDoc paragraphs of the settled audit named `main` as their function's only
 where the caller is `runSettledAudit`,
 and one named a reader of `--cap` the package does not define (ledger B389);
 a doc naming a caller or a reader is read against the code each time that code moves.
+The runs lock warned that a claim's staged text was left after the claim whenever its removal failed,
+though a runs directory too long for the staged name refuses the write and the removal with the same error,
+so the warning named a file left behind that was never written (ledger B390);
+a message says a file stands only where its write is known to have succeeded,
+and otherwise says what failed and on what condition the file stands.
 
 The rule:
 every number,
@@ -1000,6 +1005,18 @@ and the entry sets it on the process.
 Library code takes a setting as a value from the entry,
 and the entry reads the environment;
 a read left inside library code is recorded with why it stays (ledger B381).
+
+One case reads this checkout's own git:
+the artifact pool's case for a required commit named by a revision reads `HEAD` and `HEAD~1` read-only,
+through `fixtureGit`,
+since `resolveCommit` and `tipContains` (`corpus-run/artifact-generation.ts`)
+take a repository that defaults to the package's own directory,
+and `resolvePool` hands them none,
+so the case fails on a checkout of one commit (ledger T8,
+the runner and git cluster of the final census).
+It stands against the rule that an outside read is a required seam,
+awaiting the owner's word,
+where a required `repository` parameter on `resolvePool` is the alternative.
 
 The rule:
 before a test drives a production entry point,
@@ -4128,6 +4145,20 @@ under a comment calling that end unreachable (ledger B275).
 A fallback is called unreachable only after every way into it is read,
 a comment that says so included.
 
+The clusters of the final census of 2026-10-10 (UTC) made seven more arms throw:
+four that answered without a word for a state no input produces,
+and three paths that rethrew a value nothing they call throws,
+each now wrapped with the caught value as its cause (ledger T8).
+The brief for those clusters said a silent arm becomes a throw,
+and not that a loud refusal a caller already handles stays,
+so one agent turned six `FootnoteRewriteError` refusals into plain `unreachable:` errors.
+The relabel pass,
+the only production catch of that class,
+turns the refusal into a withheld relabel that keeps the archive,
+while a plain error passes the catch and stops the entry;
+the lead restored the refusals at the merge (ledger M143).
+A census brief names the refusal classes a caller handles and the callers that handle them.
+
 The rule:
 a state no input produces is refused out loud,
 with `throw new Error('unreachable: <what was found and why it cannot occur>',)`
@@ -4142,6 +4173,16 @@ where the answer is a sentinel used as a value,
 a slice from the wrong place,
 a wrong boolean or a loop that does not end,
 the guard becomes the throw.
+That is for an arm that answers without a word.
+A loud refusal of a class a caller turns into a withheld result stays as it is,
+cold or not,
+and its stretch is recorded as kept,
+as the six `FootnoteRewriteError` refusals the relabel pass withholds on are (ledger M143).
+Turning such a refusal into a throw changes what a run does when the proof is wrong,
+a stopped entry where a withheld result shipped,
+so it is the lead's decision,
+made against the owner's rule that a run always ships,
+and never an agent's on its own proof.
 It may come out only where the operation after it refuses the same state by itself,
 in words that name it.
 When a guard does come out,
@@ -4177,7 +4218,9 @@ stays cold or goes unseen,
 so the shapes the count reads are the shapes an invariant is written in.
 
 What enforces it:
-review of every removed guard against this list.
+review of every removed guard against this list,
+and the lead's review at the merge of every refusal an agent turned into a throw,
+both habit.
 `sample-draw.unit.test.ts` holds
 "REFUSES a size that is not a whole number of slots",
 the one case here an honest input reaches.
