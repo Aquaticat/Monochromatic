@@ -463,6 +463,9 @@ pub mod capture_records;
 /// Replay: the unified-diff parser of subsumption (`replay_patch`).
 pub mod replay_patch;
 
+/// Replay: the exact strict reverse check of subsumption (`replay_reverse_apply`).
+pub mod replay_reverse_apply;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
