@@ -531,32 +531,41 @@ await describe({
 
     describe({
       name: readDriftOptIn.name,
-      // ONE AT A TIME as well, so a case added beside this one cannot read the
-      // variable while it walks the values (ledger B79).
+      // ONE AT A TIME as well: a case points the process's own variable
+      // elsewhere while the read runs (ledger B79).
       concurrency: 1,
       children: [
         it({
-          name: 'reads the exact opt-in and NOTHING ELSE, walked in one case '
-            + 'rather than one case per value. The variable is process-wide, so '
-            + 'separate cases would set it while each other read it, and the '
-            + 'suite that first found this was flaky rather than wrong',
+          name: 'reads the exact opt-in and NOTHING ELSE from the environment it is handed: '
+            + 'a stray 0, an empty value, the opt-in in capitals or with a trailing space, true, and no variable at all '
+            + 'leave the guard on',
           fn: async () => {
-            using _unset = withDriftVar({ value: 'yes', },);
-            expect(readDriftOptIn(),).toBe(true,);
-
-            for (const value of [
+            expect(readDriftOptIn({ env: { [ALLOW_DRIFT_VAR]: 'yes', }, },),).toBe(true,);
+            expect([
               '0',
               '',
               'YES',
               'yes ',
               'true',
-            ]) {
-              process.env[ALLOW_DRIFT_VAR] = value;
-              expect(readDriftOptIn(),).toBe(false,);
-            }
+            ].map(function optInOf(value,): boolean {
+              return readDriftOptIn({ env: { [ALLOW_DRIFT_VAR]: value, }, },);
+            },),).toEqual([false, false, false, false, false,],);
+            expect(readDriftOptIn({ env: {}, },),).toBe(false,);
+          },
+        },),
 
-            Reflect.deleteProperty(process.env, ALLOW_DRIFT_VAR,);
-            expect(readDriftOptIn(),).toBe(false,);
+        it({
+          name: 'READS THE ENVIRONMENT IT IS HANDED, never the process\'s own, whose opt-in would let a '
+            + 'resume across a foreign build through, and whose absence would refuse one the launch asked for',
+          fn: async () => {
+            {
+              using _optedIn = withDriftVar({ value: 'yes', },);
+              expect(readDriftOptIn({ env: {}, },),).toBe(false,);
+            }
+            {
+              using _optedOut = withDriftVar({ value: 'no', },);
+              expect(readDriftOptIn({ env: { [ALLOW_DRIFT_VAR]: 'yes', }, },),).toBe(true,);
+            }
           },
         },),
       ],

@@ -12,10 +12,11 @@
  exported-but-empty variable is an ordinary shell accident rather than an
  intention.
 
- The override text is injected rather than the environment mutated, so no case
- here can leak into another. The one exception is the case that reads the
- environment itself, which sets and restores the variable in a suite run one
- case at a time.
+ The override text is handed in, since the entry file reads the environment
+ and hands its text on (ledger B398). One case points the process's own
+ variable elsewhere to show the read never consults it; it sets and restores
+ the variable in a suite run one case at a time, so the value leaks into no
+ other case.
 
  @module
  */
@@ -57,27 +58,26 @@ function clearHardCap(): void {
 }
 
 /**
- Sets or clears the hard-cap variable for one case, restoring it after.
+ Points the process's own hard-cap variable at a value for one case,
+ restoring it after.
 
- @param says - value to set, or nothing to clear the variable
+ @param says - value the process's variable holds while the case runs
 
- @returns Disposable that puts the variable back as it stood
+ @returns Disposable that puts the variable back as it stood, its absence
+ included
 
  @example
  ```ts
  using exported = hardCapSaying({ says: '15', },);
  ```
  */
-function hardCapSaying({ says, }: { readonly says?: string; },): Disposable {
+function hardCapSaying({ says, }: { readonly says: string; },): Disposable {
   /**
    Value before the case, restored on dispose.
    */
   const before = process.env[HARD_CAP_VAR];
 
-  if (says === undefined)
-    clearHardCap();
-  else
-    process.env[HARD_CAP_VAR] = says;
+  process.env[HARD_CAP_VAR] = says;
 
   return {
     [Symbol.dispose]: function restore(): void {
@@ -95,8 +95,8 @@ await describe({
   children: [
     describe({
       name: resolveHardCapMinutes.name,
-      // One case at a time: the case reading the environment writes a process
-      // variable.
+      // One case at a time: a case points the process's own variable
+      // elsewhere while the read runs.
       concurrency: 1,
       children: [
         it({
@@ -233,16 +233,22 @@ await describe({
           },
         },),
         it({
-          name: 'READS THE ENVIRONMENT when the caller names no raw text, and the fallback where the variable '
-            + 'is unset',
+          name: 'READS ONLY THE TEXT IT IS HANDED, never the process\'s own variable, whose unreadable value '
+            + 'would refuse the read and whose number would replace the fallback',
           fn: async () => {
             {
-              using exported = hardCapSaying({ says: '15', },);
-              expect(resolveHardCapMinutes({ fallback: FALLBACK, },),).toBe(15,);
+              using refused = hardCapSaying({ says: 'soon', },);
+              expect(resolveHardCapMinutes({
+                fallback: FALLBACK,
+                raw: '15',
+              },),).toBe(15,);
             }
             {
-              using unset = hardCapSaying({},);
-              expect(resolveHardCapMinutes({ fallback: FALLBACK, },),).toBe(FALLBACK,);
+              using exported = hardCapSaying({ says: '15', },);
+              expect(resolveHardCapMinutes({
+                fallback: FALLBACK,
+                raw: '',
+              },),).toBe(FALLBACK,);
             }
           },
         },),

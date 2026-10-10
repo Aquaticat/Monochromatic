@@ -16,8 +16,9 @@
  of `wait` imported from `@monochromatic-dev/module-async-time/ts`, under any
  local name; and the value of an object literal's key, or the default of a
  destructured parameter, named in `BOUND_KEYS`: the per-call deadlines, grace
- windows, stream bounds, caps, budgets, holds and the runner's own `timeout`
- that production arms a timer with or compares elapsed time against. A read
+ windows (the two of a `WriterGrace` among them), stream bounds, caps,
+ budgets, holds and the runner's own `timeout` that production arms a timer
+ with or compares elapsed time against. A read
  whose value is the shared constant, imported from its fixture under any
  local name, is left alone; every other value, a number, another constant,
  a parameter handed on or an expression, is a finding, keyed
@@ -87,6 +88,14 @@ const HANG_STOP_NAME = 'HANG_STOP_MS';
 
 /**
  Option keys production arms a timer with, or compares elapsed time against.
+
+ THE STRAGGLER WINDOWS UNDER EVERY NAME THEY TRAVEL BY: `graceMs` where a
+ round takes one, and `roundMs` and `writerMs` where a `WriterGrace`
+ (`writer-grace-override.ts`) carries both inside a `StageSettings`
+ (`stage-settings.ts`), from which every stage hands one to its round as
+ `graceMs` (ledger B398). A calibration grace's `effectiveMs` and a note's
+ `builtInMs` are left out: production only prints them, and the calibration's
+ rounds take their window from a `WriterGrace`.
  */
 const BOUND_KEYS: ReadonlySet<string> = new Set([
   'boundMs',
@@ -100,6 +109,7 @@ const BOUND_KEYS: ReadonlySet<string> = new Set([
   'modelHoldMs',
   'perCallTimeoutMs',
   'rateLimitBackoffMs',
+  'roundMs',
   'runBudgetMs',
   'softBudgetMs',
   'statedWaitMs',
@@ -109,6 +119,7 @@ const BOUND_KEYS: ReadonlySet<string> = new Set([
   'timeout',
   'timeoutMs',
   'windowMs',
+  'writerMs',
 ],);
 
 /**
@@ -218,6 +229,22 @@ const RECALL_CALL_CONFIG = 'production\'s call configuration for the recall run,
  */
 const SENTINEL_DEADLINE = 'the deadline the walk hands each scripted repair, read back in what the repair was asked; '
   + 'the scripted repair arms no timer with it';
+
+/**
+ Why a window a reader returns keeps its value: the case asserts the reader's
+ whole output, and no round runs under it.
+ */
+const READER_OUTPUT = 'a window the reader under test returns, asserted whole in its output; the case runs no round '
+  + 'and arms no timer with it';
+
+/**
+ Why a writer grace's windows keep their values where both readers and the
+ launch note are tested: each is the output of `readWriterGrace` asserted
+ whole, or a grace handed to `writerGraceOverrideNote` and read back in the
+ line it prints or the silence it keeps.
+ */
+const WRITER_GRACE_READ_BACK = 'a window of a writer grace the case reads back: the output of readWriterGrace '
+  + 'asserted whole, or a grace handed to writerGraceOverrideNote and read back in its line; no round runs under it';
 
 /**
  Bounds that keep a value of their own, keyed `path#site: form value`.
@@ -634,6 +661,28 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: 'the delay of the slow voice: inside the window in the case that loses a voice, and before quorum, as a '
       + 'floor only, in the whole-roster case',
   },
+  'stage-settings.test-fixture.ts#scriptedStageSettingsWaiting: roundMs: graceMs': {
+    count: 1,
+    bound: 'other',
+    reason: HANDED_ON,
+  },
+  'stage-settings.test-fixture.ts#scriptedStageSettingsWaiting: writerMs: graceMs': {
+    count: 1,
+    bound: 'other',
+    reason: HANDED_ON,
+  },
+  'stage-settings.unit.test.ts#<module>: roundMs: 90_000': { count: 1, bound: 'read back', reason: READER_OUTPUT, },
+  'stage-settings.unit.test.ts#<module>: roundMs: STRAGGLER_GRACE_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: READER_OUTPUT,
+  },
+  'stage-settings.unit.test.ts#<module>: writerMs: 240_000': { count: 1, bound: 'read back', reason: READER_OUTPUT, },
+  'stage-settings.unit.test.ts#<module>: writerMs: WRITER_GRACE_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: READER_OUTPUT,
+  },
   'stage-windowed-rounds.unit.test.ts#runBench: graceMs: graceMs': { count: 1, bound: 'other', reason: HANDED_ON, },
   'stream-bound.unit.test.ts#<module>: boundMs: SHORT_BOUND_MS': {
     count: 2,
@@ -719,6 +768,51 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'other',
     reason: 'a timer turn the case crosses to show the stub holds across it; its length decides nothing',
+  },
+  'writer-grace-override.unit.test.ts#<module>: roundMs: CALIBRATION_STRAGGLER_GRACE_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
+  },
+  'writer-grace-override.unit.test.ts#<module>: roundMs: LONG_ROUND': {
+    count: 2,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
+  },
+  'writer-grace-override.unit.test.ts#<module>: roundMs: ROUND': {
+    count: 6,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
+  },
+  'writer-grace-override.unit.test.ts#<module>: roundMs: STRAGGLER_GRACE_MS': {
+    count: 3,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
+  },
+  'writer-grace-override.unit.test.ts#<module>: writerMs: CALIBRATION_STRAGGLER_GRACE_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
+  },
+  'writer-grace-override.unit.test.ts#<module>: writerMs: LONG_ROUND': {
+    count: 2,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
+  },
+  'writer-grace-override.unit.test.ts#<module>: writerMs: ROUND': {
+    count: 1,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
+  },
+  'writer-grace-override.unit.test.ts#<module>: writerMs: WRITER': {
+    count: 4,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
+  },
+  'writer-grace-override.unit.test.ts#<module>: writerMs: WRITER_GRACE_MS': {
+    count: 4,
+    bound: 'read back',
+    reason: WRITER_GRACE_READ_BACK,
   },
 };
 
@@ -1166,7 +1260,7 @@ await describe({
     it({
       name: 'FINDS a bare or local bound in AbortSignal.timeout, a global setTimeout and setInterval, the promise '
         + 'sleep and module-async-time wait under any local name, a bound key\'s value and its destructured default, '
-        + 'and an expression over the hang stop, and leaves the imported hang stop under any local name, keys outside '
+        + 'both windows of a writer grace, and an expression over the hang stop, and leaves the imported hang stop under any local name, keys outside '
         + 'the bound keys, timers no import names, package source, and a deferral that still holds a finding',
       fn: async () => {
         /**
@@ -1192,6 +1286,8 @@ await describe({
               '  await snooze(HANG_STOP_MS,);',
               '  void { perCallTimeoutMs: 1_000, exchangeTimeoutMs: (HANG_STOP_MS as number), graceMs, };',
               '  void { timeout: 30_000, elapsedMs: 5, baseMs: 1, \'hardCapMs\': 90_000, };',
+              '  void { grace: { writerMs: TINY_MS, roundMs: 90_000, source: \'writer-dial\', }, };',
+              '  void { grace: { writerMs: HANG_STOP_MS, roundMs: HANG_STOP_MS, source: \'round-window\', }, };',
               '  const { idleMs, } = { idleMs: HANG_STOP_MS, };',
               '  void idleMs;',
               '}',
@@ -1225,10 +1321,12 @@ await describe({
           'litter.unit.test.ts#purr: hardCapMs: 90_000',
           'litter.unit.test.ts#purr: nap of node:timers/promises 30',
           'litter.unit.test.ts#purr: perCallTimeoutMs: 1_000',
+          'litter.unit.test.ts#purr: roundMs: 90_000',
           'litter.unit.test.ts#purr: setInterval (none)',
           'litter.unit.test.ts#purr: setTimeout 20',
           'litter.unit.test.ts#purr: snooze of module-async-time TINY_MS',
           'litter.unit.test.ts#purr: timeout: 30_000',
+          'litter.unit.test.ts#purr: writerMs: TINY_MS',
         ],);
         expect(againstListed({
           found: [

@@ -31,13 +31,43 @@ import {
  */
 const FALLBACK = 7;
 
+/**
+ Points the process's own ceiling variable at a value for one case, and puts
+ it back as the case found it.
+
+ @param says - value the process's variable holds while the case runs
+
+ @returns Disposable restoring the variable, its absence included
+
+ @example
+ ```ts
+ using exported = ceilingSaying({ says: 'plenty', },);
+ ```
+ */
+function ceilingSaying({ says, }: { readonly says: string; },): Disposable {
+  /**
+   The variable as this process found it, put back when the case ends.
+   */
+  const found = process.env[SPEND_CEILING_VAR];
+  process.env[SPEND_CEILING_VAR] = says;
+  return {
+    [Symbol.dispose]: function restoreCeiling(): void {
+      if (found === undefined)
+        Reflect.deleteProperty(process.env, SPEND_CEILING_VAR,);
+      else
+        process.env[SPEND_CEILING_VAR] = found;
+    },
+  };
+}
+
 await describe({
   name: '',
   concurrency: 1,
   children: [
     describe({
       name: resolveSpendCeilingUsd.name,
-      // ONE AT A TIME: a case sets the process-wide ceiling variable (ledger B79).
+      // ONE AT A TIME: a case points the process-wide ceiling variable
+      // elsewhere while the read runs (ledger B79).
       concurrency: 1,
       children: [
         it({
@@ -119,25 +149,23 @@ await describe({
           },
         },),
         it({
-          name: 'READS THE DIAL FROM THE ENVIRONMENT when no value is handed in, and the built-in when the dial is unset '
-            + '(ledger T8)',
+          name: 'READS ONLY THE TEXT IT IS HANDED, never the process\'s own variable, whose unreadable value '
+            + 'would refuse the read and whose amount would replace the fallback',
           fn: async () => {
-            /**
-             The dial as this process found it, put back when the case ends.
-             */
-            const found = process.env[SPEND_CEILING_VAR];
-            await using restore = {
-              [Symbol.asyncDispose]: async function restoreDial(): Promise<void> {
-                if (found === undefined)
-                  Reflect.deleteProperty(process.env, SPEND_CEILING_VAR,);
-                else
-                  process.env[SPEND_CEILING_VAR] = found;
-              },
-            };
-            process.env[SPEND_CEILING_VAR] = '12.5';
-            expect(resolveSpendCeilingUsd({ fallback: FALLBACK, },),).toBe(12.5,);
-            Reflect.deleteProperty(process.env, SPEND_CEILING_VAR,);
-            expect(resolveSpendCeilingUsd({ fallback: FALLBACK, },),).toBe(FALLBACK,);
+            {
+              using refused = ceilingSaying({ says: 'plenty', },);
+              expect(resolveSpendCeilingUsd({
+                fallback: FALLBACK,
+                raw: '5.5',
+              },),).toBe(5.5,);
+            }
+            {
+              using exported = ceilingSaying({ says: '12.5', },);
+              expect(resolveSpendCeilingUsd({
+                fallback: FALLBACK,
+                raw: '',
+              },),).toBe(FALLBACK,);
+            }
           },
         },),
       ],
