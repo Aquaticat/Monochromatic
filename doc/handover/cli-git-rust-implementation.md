@@ -1522,7 +1522,19 @@ that is verification, not a decision for the user.
   the rest adopted under the standing instruction (`User decisions 2026-10-05`).
 - [x] Cutover decisions: all adopted under the standing instruction and open to veto
   (`User decisions 2026-10-05`, section `Adopted without a question`).
-- [ ] Before cutover: this host's Git must be 2.56.0 or newer (it is 2.55.0); the user's system, not ours to change.
+- [x] Git version: the user decided on 2026-10-10 that Git 2.55.0 (this host) is acceptable,
+  so the native minimum is lowered from 2.56.0 to 2.55.0 and Git-dependent behavior is probed against 2.55.0 too.
+- [ ] Commit path, run as parallel lanes from 2026-10-10 (user: no hybrid, the old TypeScript implementation goes,
+  wait for the native commit path and parallelize better).
+  Lanes branch from `feat/cli-git-native-transactions` at `0faec78d77`,
+  each with its own evidence file `doc/handover/cli-git-native-<lane>.md` and worktree `.claude/worktrees/cli-git-lane-<lane>`:
+  `hooks` (slice 4), `capture` (slice 5), `replay-core` (slice 8 without the landing lock),
+  `auto-push` (slice 9 auto-push, post-commit lifecycle, manual-push listings), `signals` (slice 10 and maintenance),
+  `worktree-copy` (slice 11).
+  The transactions branch finishes slice 3, then the lanes are merged into it,
+  and the remaining serial slices (6 preparation policies, 7 landing, 9 integration) follow.
+  Heavy gates run through `~/temp/agent/gate-slot.ts` (four host-wide slots).
+  At most five delegates run at once.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).
