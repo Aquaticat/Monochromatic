@@ -540,3 +540,6 @@ and the frames under `package/desktop-app/ide/design/screenshots/2026-10-06-ui-b
   and approved the new `wgpu` and `vello` dependencies as they come.
   If the nested compositor cannot host a GPU renderer, the nested compositor changes.
 - The user approved running `git cli-git trust --yes` in worktrees created for this work.
+- For the open soft-wrap decisions (the gutter indicator, where lines break, continuation indent,
+  Home, End, Up, Down, and caret placement at a wrap), the IDE follows what JetBrains IntelliJ IDEA Community does,
+  read from its source (the user's answer of 2026-10-10: "go with what JetBrains does. IDEA is OSS").
