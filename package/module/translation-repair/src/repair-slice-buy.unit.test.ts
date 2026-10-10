@@ -1,7 +1,8 @@
 /**
  Tests for what buying one repair slice does when the caller stops the run
- while the provider is refusing: the abort wins, the line says what the
- provider refused with, and the key its refusal echoed is never in it.
+ while the provider is refusing: the abort wins, the seat's line says what the
+ provider refused with, the slice's line says the caller abandoned it, and the
+ key the refusal echoed is in neither.
 
  Fixtures are cat-themed invention.
 
@@ -63,8 +64,9 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'WARNS OF A PROVIDER REFUSAL THE CALLER\'S ABORT ENDED by the slice, the status and the provider\'s words, '
-        + 'the key its refusal echoed masked, and raises the abort\'s own reason',
+      name: 'WARNS OF A PROVIDER REFUSAL THE CALLER\'S ABORT ENDED by the seat, the status and the provider\'s words, '
+        + 'the key its refusal echoed masked, once, then that the slice was abandoned by the caller\'s abort, and '
+        + 'raises the abort\'s own reason',
       fn: async ctx => {
         /**
          Refusal the real client raised over the real transport.
@@ -120,12 +122,11 @@ await describe({
         },);
 
         expect(refusal,).toBe(stop.signal.reason,);
-        expect(lines.filter(function abandoned(line,): boolean {
-          return line.includes('abandoned by the caller',);
-        },),).toEqual([
-          `warn [repair-slice-buy-test] chunk 0: abandoned by the caller's abort (${
+        expect(lines,).toEqual([
+          `warn [repair-slice-buy-test] critic ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: ${
             statusFailureLogText({ status: 401, },)
-          })`,
+          }, as the caller stopped the round`,
+          'warn [repair-slice-buy-test] chunk 0: abandoned by the caller\'s abort (refused by AbortError)',
         ],);
       },
     },),

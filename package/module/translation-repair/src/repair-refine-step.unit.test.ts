@@ -167,8 +167,9 @@ await describe({
       },
     },),
     it({
-      name: 'WARNS OF A PROVIDER REFUSAL THE CALLER\'S ABORT ENDED by the status and the provider\'s words, the key '
-        + 'its refusal echoed masked, and raises the abort\'s own reason',
+      name: 'WARNS OF A PROVIDER REFUSAL THE CALLER\'S ABORT ENDED by the seat, the status and the provider\'s words, '
+        + 'the key its refusal echoed masked, once, then that the refinement was abandoned by the caller\'s abort, '
+        + 'and raises the abort\'s own reason',
       fn: async ctx => {
         /**
          Refusal the real client raised over the real transport.
@@ -214,10 +215,11 @@ await describe({
         },);
 
         expect(refusal,).toBe(stop.signal.reason,);
-        expect(lines.filter(function abandoned(line,): boolean {
-          return line.includes('abandoned by the caller',);
-        },),).toEqual([
-          `warn refinement abandoned by the caller's abort (${statusFailureLogText({ status: 401, },)})`,
+        expect(lines,).toEqual([
+          `warn refiner ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: ${
+            statusFailureLogText({ status: 401, },)
+          }, as the caller stopped the round`,
+          'warn refinement abandoned by the caller\'s abort (refused by AbortError)',
         ],);
       },
     },),

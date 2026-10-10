@@ -18,10 +18,13 @@
  @module
  */
 
+import { setImmediate as turnOfTheLoop, } from 'node:timers/promises';
+
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
+  type DisposableSandbox,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
@@ -34,6 +37,11 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from './capturing-logger.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import {
+  statusFailureLogText,
+  statusFailureOf,
+} from './provider-status-failure.test-fixture.ts';
 import { refusalOrder, } from './refusal-order.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import {
@@ -270,6 +278,142 @@ async function withTheCallersReason(signal: AbortSignal,): Promise<never> {
 }
 
 /**
+ Line the round writes for a seat whose call failed of its own as the caller
+ stopped the round.
+
+ @param seat - seat whose call failed
+
+ @param failure - that failure as a log line renders it
+
+ @returns The seat's line, as the round writes it
+
+ @example
+ ```ts
+ const line = stoppedSeatLine({ seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR, failure: 'refused by RangeError', },);
+ ```
+ */
+function stoppedSeatLine(
+  {
+    seat,
+    failure,
+  }: {
+    readonly seat: RosterModelId;
+    readonly failure: string;
+  },
+): string {
+  return `cat-stage ${seat}: ${failure}, as the caller stopped the round`;
+}
+
+/**
+ Runs a round whose first two seats fail once the caller stops it and whose
+ third answers at once, stops it with the caller's reason, and hands back
+ what it rejected with once every ask has ended.
+
+ @param failFirst - ends the first seat's call once the stop reached it
+
+ @param failSecond - ends the second seat's call the same way
+
+ @param stop - whether the stop arrives while no quorum stands, every seat
+ being needed, or once the third seat's answer made a quorum of one stand and
+ the round waits out its grace
+
+ @param reason - what the caller stops the round with
+
+ @param said - array the round's lines land in
+
+ @returns What the round rejected with
+
+ @example
+ ```ts
+ const refusal = await stoppedRound({ failFirst, failSecond, stop: 'after quorum', reason, said, },);
+ ```
+ */
+async function stoppedRound(
+  {
+    failFirst,
+    failSecond,
+    stop,
+    reason,
+    said,
+  }: {
+    readonly failFirst: (signal: AbortSignal,) => Promise<never>;
+    readonly failSecond: (signal: AbortSignal,) => Promise<never>;
+    readonly stop: 'before quorum' | 'after quorum';
+    readonly reason: Error;
+    readonly said: string[];
+  },
+): Promise<unknown> {
+  /**
+   The caller's steering.
+   */
+  const steering = new AbortController();
+  /**
+   The round, started and left waiting on the first two seats.
+   */
+  const round = runGatherRound({
+    client: clientFailingAfterTheStop({
+      failFirst,
+      failSecond,
+    },),
+    modelIds: ROSTER,
+    messages: [{ role: 'user', content: 'meow', },],
+    signal: steering.signal,
+    exchangeTimeoutMs: HANG_STOP_MS,
+    responseFormat: MEOW_FORMAT,
+    validate: isMeowReply,
+    stage: 'cat-stage',
+    l: capturingLogger({ messages: said, },),
+    heardNeeded: (stop === 'after quorum') ? 1 : ROSTER.length,
+    graceMs: HANG_STOP_MS,
+  },);
+  // The third seat's answer and the round's count of it take microtasks
+  // alone, so a turn of the event loop leaves quorum standing and the round
+  // waiting out its grace when the stop arrives.
+  if (stop === 'after quorum')
+    await turnOfTheLoop();
+  steering.abort(reason,);
+  /**
+   What the round rejected with.
+   */
+  const refusal = await rejectionOf(async function stopped(): Promise<unknown> {
+    return await round;
+  },);
+  // A seat that ends after the ask the round rejected on writes its line as it
+  // ends. No scripted failure waits on anything but a microtask, so a turn of
+  // the event loop later every ask has ended.
+  await turnOfTheLoop();
+  return refusal;
+}
+
+/**
+ Refusal the real client raises over the real transport, typed as the error
+ it is so a seat can end in it.
+
+ @param sinon - calling case's own sandbox, which stubs `fetch` until it is restored
+
+ @returns The provider's refusal, its key masked by the transport
+
+ @throws Error when the client raised something other than an error
+
+ @example
+ ```ts
+ const failure = await providerRefusalOf({ sinon: ctx.sinon, },);
+ ```
+ */
+async function providerRefusalOf({ sinon, }: { readonly sinon: DisposableSandbox; },): Promise<Error> {
+  /**
+   What the exchange the invented provider refused raised.
+   */
+  const failure = await statusFailureOf({
+    sinon,
+    status: 401,
+  },);
+  if (!Error.isError(failure,))
+    throw new Error('the exchange the invented provider refused raised something other than an error',);
+  return failure;
+}
+
+/**
  Numbers the round line carries, pulled back out of it.
  */
 type RoundTimings = {
@@ -362,6 +506,11 @@ function readRoundLine({ said, }: { readonly said: readonly string[]; },): Round
 
 await describe({
   name: '',
+  // ONE CASE AT A TIME: the timing cases read how long a round took to reach
+  // quorum against when its first voice answered, and the stop cases build a
+  // real client over the stubbed transport, work that landed inside that
+  // reading when both ran at once.
+  concurrency: 1,
   children: [
     describe({
       name: runGatherRound.name,
@@ -512,17 +661,13 @@ await describe({
         },),
 
         it({
-          name: 'LOGS THE FAILURE AN ASK ENDED IN AFTER THE CALLER\'S ABORT, whole as its refusal text names it, on a '
-            + 'line tagged nextSettled, before the round rejects with the caller\'s own reason in its place',
+          name: 'LOGS EACH FAILURE THE ASKS END IN AFTER THE CALLER\'S ABORT, the one that ends after the round '
+            + 'rejected as well, on a line naming its seat, and rejects with the caller\'s own reason in their place',
           fn: async () => {
             /**
              Every message the round logged.
              */
             const said: string[] = [];
-            /**
-             The caller's steering, aborted once every ask is in flight.
-             */
-            const steering = new AbortController();
             /**
              Why the caller stopped the round.
              */
@@ -531,36 +676,148 @@ await describe({
              The two failures the asks end in, the later-listed one first.
              */
             const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
-            /**
-             The round, started and left waiting on the first two seats.
-             */
-            const round = runGatherRound({
-              client: clientFailingAfterTheStop({
-                failFirst: async function outOfTime(): Promise<never> {
-                  return await refuseAfterThat(new Error('the first seat ran out of time as the owner called',),);
-                },
-                failSecond: async function dropped(): Promise<never> {
-                  return await refuseAtOnce(new RangeError('the second seat dropped its line as the owner called',),);
-                },
-              },),
-              modelIds: ROSTER,
-              messages: [{ role: 'user', content: 'meow', },],
-              signal: steering.signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-              responseFormat: MEOW_FORMAT,
-              validate: isMeowReply,
-              stage: 'cat-stage',
-              l: capturingLogger({ messages: said, },),
-              heardNeeded: ROSTER.length,
-              graceMs: GRACE_MS,
-            },);
-            steering.abort(reason,);
-            expect(await rejectionOf(async function stopped(): Promise<unknown> {
-              return await round;
+            expect(await stoppedRound({
+              failFirst: async function outOfTime(): Promise<never> {
+                return await refuseAfterThat(new Error('the first seat ran out of time as the owner called',),);
+              },
+              failSecond: async function dropped(): Promise<never> {
+                return await refuseAtOnce(new RangeError('the second seat dropped its line as the owner called',),);
+              },
+              stop: 'before quorum',
+              reason,
+              said,
             },),).toBe(reason,);
             expect(said,).toEqual([
-              '[nextSettled] cat-stage: an ask failed as the caller stopped the round, which reports the caller\'s '
-                + 'reason in its place: refused by RangeError',
+              stoppedSeatLine({
+                seat: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                failure: 'refused by RangeError',
+              },),
+              stoppedSeatLine({
+                seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                failure: 'refused by Error',
+              },),
+            ],);
+          },
+        },),
+
+        it({
+          name: 'LOGS A PROVIDER REFUSAL AN ASK ENDS IN AFTER THE CALLER\'S ABORT by its seat, the status and the '
+            + 'provider\'s words, the key its refusal echoed masked, once, where it ends before an ask ending in the '
+            + 'caller\'s own reason',
+          fn: async ctx => {
+            /**
+             Every message the round logged.
+             */
+            const said: string[] = [];
+            /**
+             Why the caller stopped the round.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             Refusal the real client raised over the real transport.
+             */
+            const failure = await providerRefusalOf({ sinon: ctx.sinon, },);
+            /**
+             The refusal first, then the caller's own reason.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+            expect(await stoppedRound({
+              failFirst: async function refused(): Promise<never> {
+                return await refuseAtOnce(failure,);
+              },
+              failSecond: async function stopped(): Promise<never> {
+                return await refuseAfterThat(reason,);
+              },
+              stop: 'before quorum',
+              reason,
+              said,
+            },),).toBe(reason,);
+            expect(said,).toEqual([
+              stoppedSeatLine({
+                seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                failure: statusFailureLogText({ status: 401, },),
+              },),
+            ],);
+          },
+        },),
+
+        it({
+          name: 'LOGS A PROVIDER REFUSAL AN ASK ENDS IN AFTER ANOTHER ASK ENDED IN THE CALLER\'S OWN REASON, by its '
+            + 'seat, the status and the provider\'s words, where the round rejecting on that reason wrote no line for '
+            + 'the refusal',
+          fn: async ctx => {
+            /**
+             Every message the round logged.
+             */
+            const said: string[] = [];
+            /**
+             Why the caller stopped the round.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             Refusal the real client raised over the real transport.
+             */
+            const failure = await providerRefusalOf({ sinon: ctx.sinon, },);
+            /**
+             The caller's own reason first, then the refusal.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+            expect(await stoppedRound({
+              failFirst: async function refused(): Promise<never> {
+                return await refuseAfterThat(failure,);
+              },
+              failSecond: async function stopped(): Promise<never> {
+                return await refuseAtOnce(reason,);
+              },
+              stop: 'before quorum',
+              reason,
+              said,
+            },),).toBe(reason,);
+            expect(said,).toEqual([
+              stoppedSeatLine({
+                seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                failure: statusFailureLogText({ status: 401, },),
+              },),
+            ],);
+          },
+        },),
+
+        it({
+          name: 'LOGS A PROVIDER REFUSAL AN ASK ENDS IN WHEN THE CALLER STOPS THE ROUND AFTER QUORUM STOOD, by its '
+            + 'seat, the status and the provider\'s words, where the wait on the grace window swallowed it unlogged',
+          fn: async ctx => {
+            /**
+             Every message the round logged.
+             */
+            const said: string[] = [];
+            /**
+             Why the caller stopped the round.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             Refusal the real client raised over the real transport.
+             */
+            const failure = await providerRefusalOf({ sinon: ctx.sinon, },);
+            /**
+             The refusal first, then the caller's own reason.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+            expect(await stoppedRound({
+              failFirst: async function refused(): Promise<never> {
+                return await refuseAtOnce(failure,);
+              },
+              failSecond: async function stopped(): Promise<never> {
+                return await refuseAfterThat(reason,);
+              },
+              stop: 'after quorum',
+              reason,
+              said,
+            },),).toBe(reason,);
+            expect(said,).toEqual([
+              stoppedSeatLine({
+                seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                failure: statusFailureLogText({ status: 401, },),
+              },),
             ],);
           },
         },),

@@ -266,8 +266,9 @@ await describe({
     },),
 
     it({
-      name: 'WARNS OF A PROVIDER REFUSAL THE CALLER\'S ABORT ENDED by the slice, the status and the provider\'s words, '
-        + 'the key its refusal echoed masked, and raises the abort\'s own reason',
+      name: 'WARNS OF THE PROVIDER REFUSAL EACH SEAT ENDED IN AS THE CALLER ABORTED by the seat, the status and the '
+        + 'provider\'s words, the key its refusal echoed masked, once a seat, then that the slice was abandoned by the '
+        + 'caller\'s abort, and raises the abort\'s own reason',
       fn: async ctx => {
         /**
          Refusal the real client raised over the real transport.
@@ -319,12 +320,20 @@ await describe({
         },);
 
         expect(refusal,).toBe(stop.signal.reason,);
-        expect(lines.filter(function abandoned(line,): boolean {
-          return line.includes('abandoned by the caller',);
-        },),).toEqual([
-          `warn slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort (${
-            statusFailureLogText({ status: 401, },)
-          })`,
+        // Every translator is asked at once, before the first refusal settles,
+        // and the scripted client refuses each, so each seat's line carries the
+        // refusal, in the order the stage asks them.
+        expect(lines,).toEqual([
+          ...[
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            SEAT_HYPER_VISION,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+          ].map(function seatLine(seat,): string {
+            return `warn [produceTranslateSlate] translate ${seat}: ${
+              statusFailureLogText({ status: 401, },)
+            }, as the caller stopped the round`;
+          },),
+          `warn slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort (refused by AbortError)`,
         ],);
       },
     },),

@@ -2328,7 +2328,8 @@ const LISTED_CALLS: readonly ListedSite[] = [
     restsOn: [{ inHandler: 'throwIfAborted', },],
     note: 'an ask rejects only once the caller\'s signal has aborted, each with the failure its own call caught, so '
       + 'the asks share no rejection value but share that signal; the catch around the race throws the signal\'s '
-      + 'reason through throwIfAborted in place of whichever ask ended first, after logging a failure it drops',
+      + 'reason through throwIfAborted in place of whichever ask ended first, each ask having logged a failure of '
+      + 'its own call as it ended',
   },
   {
     site: 'stage-recovery-round.ts#runRecoveryRound',

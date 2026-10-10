@@ -179,8 +179,9 @@ await describe({
       },
     },),
     it({
-      name: 'WARNS OF A PROVIDER REFUSAL THAT ENDED THE ARMS by the slice, the status and the provider\'s words, '
-        + 'the key its refusal echoed masked, where the run was stopped while the provider refused',
+      name: 'WARNS OF A PROVIDER REFUSAL THAT ENDED THE ARMS by the seat, the status and the provider\'s words, '
+        + 'the key its refusal echoed masked, once, then of the slice refused by the caller\'s abort, where the run '
+        + 'was stopped while the provider refused',
       fn: async ctx => {
         await using scratch = await scratchDir({ prefix: 'window-pick-', },);
         /**
@@ -239,7 +240,10 @@ await describe({
 
         expect(outcome.kind,).toBe('refused',);
         expect(warnings,).toEqual([
-          `Mittens/0 (relocation): refused, ${statusFailureLogText({ status: 401, },)}`,
+          `[produceTranslateSlate] translate hf:cat/Cat-A: ${
+            statusFailureLogText({ status: 401, },)
+          }, as the caller stopped the round`,
+          'Mittens/0 (relocation): refused, refused by AbortError',
         ],);
       },
     },),
