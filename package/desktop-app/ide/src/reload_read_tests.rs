@@ -2,20 +2,28 @@
 
 /// The classification under test and the engine type it receives.
 use super::{SyntaxEngine, classify};
-/// What: `Rope` is the text type highlighting reads; `Path` names the file.
-/// Why: Recognition looks at the filename and the first line.
+/// What:
+///  `Rope` is the text type highlighting reads;
+///  `Path` names the file.
+/// Why:
+///  Recognition looks at the filename and the first line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { Rope } from 'helix';
 /// ```
 use helix_core::Rope;
-/// Paths for the fixture names; nothing is read from disk.
+/// Paths for the fixture names;
+///  nothing is read from disk.
 use std::path::Path;
 
-/// What: An engine that failed to start, as when the bundled manifest is missing. `anyhow!` builds
+/// What:
+///  An engine that failed to start,
+///  as when the bundled manifest is missing.
+///  `anyhow!` builds
 ///       an error value from text.
-/// Why: Both tests need the same failure.
+/// Why:
+///  Both tests need the same failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,7 +35,9 @@ fn unstarted() -> anyhow::Result<SyntaxEngine> {
     ));
 }
 
-/// A plain text file loses nothing, so the failed start is plain text, not a failure.
+/// A plain text file loses nothing,
+///  so the failed start is plain text,
+///  not a failure.
 #[test]
 fn plain_text_is_not_a_failure_when_highlighting_cannot_start() {
     let reply = classify(
@@ -44,7 +54,8 @@ fn plain_text_is_not_a_failure_when_highlighting_cannot_start() {
     assert_eq!(reply.revision, 3);
 }
 
-/// A file a language applies to loses its highlighting, so the failure stays visible.
+/// A file a language applies to loses its highlighting,
+///  so the failure stays visible.
 #[test]
 fn a_language_file_keeps_the_failure_when_highlighting_cannot_start() {
     let reply = classify(
@@ -71,7 +82,8 @@ fn a_language_file_keeps_the_failure_when_highlighting_cannot_start() {
     );
 }
 
-/// A shebang names a language too, so a script without an extension keeps the failure visible.
+/// A shebang names a language too,
+///  so a script without an extension keeps the failure visible.
 #[test]
 fn a_shebang_script_keeps_the_failure_when_highlighting_cannot_start() {
     let reply = classify(

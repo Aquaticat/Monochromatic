@@ -1,9 +1,16 @@
-//! What:     Decimal digit-string arithmetic for unbounded JSON number exponents.
-//!           A JSON number exponent may carry more digits than any machine integer holds, so this
-//!           module adds and subtracts decimal magnitudes as byte strings (`&str`, a borrowed
-//!           read-only view of UTF-8 text, not an owned `String` or a fixed `[u8; N]` array).
-//! Why:      The exact-number identity must shift an exponent by a digit count without ever
-//!           widening it into `i64`, `i128` or `isize`, which would silently reject or wrap a
+//! What:
+//!      Decimal digit-string arithmetic for unbounded JSON number exponents.
+//!           A JSON number exponent may carry more digits than any machine integer holds,
+//!  so this
+//!           module adds and subtracts decimal magnitudes as byte strings (`&str`,
+//!  a borrowed
+//!           read-only view of UTF-8 text,
+//!  not an owned `String` or a fixed `[u8; N]` array).
+//! Why:
+//!       The exact-number identity must shift an exponent by a digit count without ever
+//!           widening it into `i64`,
+//!  `i128` or `isize`,
+//!  which would silently reject or wrap a
 //!           legal JSON literal.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,8 +18,11 @@
 //! // module numberScale: addDigits(a, b), subtractDigits(a, b), signedSum(...) over decimal strings.
 //! ```
 
-/// What:     Report whether one byte is an ASCII decimal digit.
-/// Why:      JSON number grammar admits only ASCII digits, so Unicode numeral characters must be
+/// What:
+///      Report whether one byte is an ASCII decimal digit.
+/// Why:
+///       JSON number grammar admits only ASCII digits,
+///  so Unicode numeral characters must be
 ///           rejected rather than normalized.
 ///
 /// In TS you'd write (pseudocode):
@@ -30,8 +40,11 @@ pub(crate) fn is_digit(byte: u8) -> bool {
     return byte.is_ascii_digit();
 }
 
-/// What:     Add two non-negative decimal digit strings and return the owned sum.
-/// Why:      Column addition keeps arbitrary exponent widths exact, the way `bigint` addition does
+/// What:
+///      Add two non-negative decimal digit strings and return the owned sum.
+/// Why:
+///       Column addition keeps arbitrary exponent widths exact,
+///  the way `bigint` addition does
 ///           in TypeScript.
 ///
 /// In TS you'd write (pseudocode):
@@ -86,8 +99,11 @@ pub(crate) fn add_digits(left: &str, right: &str) -> String {
     return String::from_utf8(reversed).expect("decimal digit sum is ASCII");
 }
 
-/// What:     Subtract a smaller non-negative decimal string from a larger one.
-/// Why:      Opposing exponent signs combine by magnitude difference, again without a fixed-width
+/// What:
+///      Subtract a smaller non-negative decimal string from a larger one.
+/// Why:
+///       Opposing exponent signs combine by magnitude difference,
+///  again without a fixed-width
 ///           integer.
 ///
 /// In TS you'd write (pseudocode):
@@ -123,8 +139,11 @@ pub(crate) fn subtract_digits(left: &str, right: &str) -> String {
     return String::from_utf8(reversed).expect("decimal digit difference is ASCII");
 }
 
-/// What:     Add two signed decimal magnitudes and normalize a zero result.
-/// Why:      An exponent shifts by the count of trailing zeros and fraction digits, and that shift
+/// What:
+///      Add two signed decimal magnitudes and normalize a zero result.
+/// Why:
+///       An exponent shifts by the count of trailing zeros and fraction digits,
+///  and that shift
 ///           can be positive or negative.
 ///
 /// In TS you'd write (pseudocode):

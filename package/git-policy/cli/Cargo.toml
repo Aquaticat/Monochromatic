@@ -45,6 +45,7 @@ ignore = "0.4"
 tempfile = "3"
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

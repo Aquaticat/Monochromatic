@@ -1,21 +1,39 @@
-//! What: A repository path as an event reports it: readable text, and the exact bytes
+//! What:
+//!  A repository path as an event reports it:
+//!  readable text,
+//!  and the exact bytes
 //!       as well when those bytes are not UTF-8.
-//! Why: Git allows any bytes in a file name, and a JSON string can hold only text. An
-//!      event keeps `path` as text with replacement characters, so every existing reader
-//!      works unchanged, and adds an optional `pathBytes` field, base64 encoded, only for
-//!      a name that is not UTF-8, so a reader that needs the file can still find it.
-//!      This is option C of `doc/planning/cli-git-rust-open-decisions.md`, section
-//!      "Non-UTF-8 paths in events and journals", which the owner adopted.
+//! Why:
+//!  Git allows any bytes in a file name,
+//!  and a JSON string can hold only text.
+//!  An
+//!      event keeps `path` as text with replacement characters,
+//!  so every existing reader
+//!      works unchanged,
+//!  and adds an optional `pathBytes` field,
+//!  base64 encoded,
+//!  only for
+//!      a name that is not UTF-8,
+//!  so a reader that needs the file can still find it.
+//!      This is option C of `doc/planning/cli-git-rust-open-decisions.md`,
+//!  section
+//!      "Non-UTF-8 paths in events and journals",
+//!  which the owner adopted.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const path = eventPath(bytes); line.path = path.text; if (path.exact) line.pathBytes = base64(path.exact);
 //! ```
 
-/// What: The 64 characters of the standard base64 alphabet, in value order.
+/// What:
+///  The 64 characters of the standard base64 alphabet,
+///  in value order.
 ///       `&[u8; 64]` is a fixed-length byte array baked into the program.
-/// Why:  RFC 4648 section 4 is the alphabet every common decoder reads by default
-///       (`Buffer.from(text, 'base64')`, Python's `base64.b64decode`, Go's `[]byte` JSON).
+/// Why:
+///   RFC 4648 section 4 is the alphabet every common decoder reads by default
+///       (`Buffer.from(text, 'base64')`,
+///  Python's `base64.b64decode`,
+///  Go's `[]byte` JSON).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,10 +42,17 @@
 const BASE64_ALPHABET: &[u8; 64] =
     b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-/// What: One path as events report it. The fields are private, so the only ways to build
-///       one are the two constructors, and `exact` is present exactly when the bytes
-///       were not UTF-8. `#[derive(...)]` generates cloning, debug printing and `==`.
-/// Why:  A reader must be able to rely on "no `pathBytes` means `path` is the exact name".
+/// What:
+///  One path as events report it.
+///  The fields are private,
+///  so the only ways to build
+///       one are the two constructors,
+///  and `exact` is present exactly when the bytes
+///       were not UTF-8.
+///  `#[derive(...)]` generates cloning,
+///  debug printing and `==`.
+/// Why:
+///   A reader must be able to rely on "no `pathBytes` means `path` is the exact name".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,24 +60,34 @@ const BASE64_ALPHABET: &[u8; 64] =
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EventPath {
-    /// The path as text; bytes that are not UTF-8 are replaced by U+FFFD.
+    /// The path as text;
+    ///  bytes that are not UTF-8 are replaced by U+FFFD.
     text: String,
-    /// The exact bytes, kept only when they are not UTF-8.
+    /// The exact bytes,
+    ///  kept only when they are not UTF-8.
     exact: Option<Vec<u8>>,
 }
 
-/// What: `impl EventPath { ... }` attaches the constructors and the two reads.
-/// Why:  The invariant between the two fields is kept in one place.
+/// What:
+///  `impl EventPath { ... }` attaches the constructors and the two reads.
+/// Why:
+///   The invariant between the two fields is kept in one place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class EventPath { static fromGitBytes(bytes) {} static display(text) {} }
 /// ```
 impl EventPath {
-    /// What: The event form of a pathname exactly as Git printed it. `&[u8]` borrows the
-    ///       bytes; `String::from_utf8_lossy` replaces each invalid sequence by U+FFFD.
-    /// Why:  A UTF-8 name is its own exact form and gets no extra field; any other name
-    ///       keeps its bytes, because different names can share one replaced text.
+    /// What:
+    ///  The event form of a pathname exactly as Git printed it.
+    ///  `&[u8]` borrows the
+    ///       bytes;
+    ///  `String::from_utf8_lossy` replaces each invalid sequence by U+FFFD.
+    /// Why:
+    ///   A UTF-8 name is its own exact form and gets no extra field;
+    ///  any other name
+    ///       keeps its bytes,
+    ///  because different names can share one replaced text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -77,8 +112,13 @@ impl EventPath {
         }
     }
 
-    /// What: A path whose event form is text only. `&str` borrows the text.
-    /// Why:  A constant name, or the scanner's masked display of a name, is already text;
+    /// What:
+    ///  A path whose event form is text only.
+    ///  `&str` borrows the text.
+    /// Why:
+    ///   A constant name,
+    ///  or the scanner's masked display of a name,
+    ///  is already text;
     ///       the masked display must never carry the bytes it masks.
     ///
     /// In TS you'd write (pseudocode):
@@ -92,8 +132,12 @@ impl EventPath {
         };
     }
 
-    /// What: The readable text of the path. `&str` borrows it from the record.
-    /// Why:  Every event prints it as `path`, whatever else it prints.
+    /// What:
+    ///  The readable text of the path.
+    ///  `&str` borrows it from the record.
+    /// Why:
+    ///   Every event prints it as `path`,
+    ///  whatever else it prints.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -103,9 +147,13 @@ impl EventPath {
         return self.text.as_str();
     }
 
-    /// What: The exact bytes, only when they are not UTF-8. `Option<&[u8]>` lends them or
+    /// What:
+    ///  The exact bytes,
+    ///  only when they are not UTF-8.
+    ///  `Option<&[u8]>` lends them or
     ///       says there are none.
-    /// Why:  Rendering adds `pathBytes` exactly when this is present.
+    /// Why:
+    ///   Rendering adds `pathBytes` exactly when this is present.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -116,9 +164,14 @@ impl EventPath {
         return self.exact.as_deref();
     }
 
-    /// What: The bytes of the name: the exact ones when kept, else the text's UTF-8 bytes.
-    /// Why:  A list of paths that holds one name that is not UTF-8 lists the bytes of every
-    ///       name, so its entries line up with the readable list one for one.
+    /// What:
+    ///  The bytes of the name:
+    ///  the exact ones when kept,
+    ///  else the text's UTF-8 bytes.
+    /// Why:
+    ///   A list of paths that holds one name that is not UTF-8 lists the bytes of every
+    ///       name,
+    ///  so its entries line up with the readable list one for one.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -132,9 +185,13 @@ impl EventPath {
     }
 }
 
-/// What: The alphabet character for the low six bits of `value`. `u32` is an unsigned
-///       32-bit integer; `char::from` turns one ASCII byte into a character.
-/// Why:  Each base64 character carries six bits of the input.
+/// What:
+///  The alphabet character for the low six bits of `value`.
+///  `u32` is an unsigned
+///       32-bit integer;
+///  `char::from` turns one ASCII byte into a character.
+/// Why:
+///   Each base64 character carries six bits of the input.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -145,11 +202,18 @@ fn sextet(value: u32) -> char {
     return char::from(BASE64_ALPHABET[(value & 63) as usize]);
 }
 
-/// What: Encode bytes as standard base64 with `=` padding (RFC 4648 section 4).
-/// Why:  `pathBytes` carries exact pathname bytes inside a JSON string. Base64 is what
+/// What:
+///  Encode bytes as standard base64 with `=` padding (RFC 4648 section 4).
+/// Why:
+///   `pathBytes` carries exact pathname bytes inside a JSON string.
+///  Base64 is what
 ///       ripgrep's JSON output uses for a path that is not UTF-8 and what Go's JSON
-///       encoding uses for bytes; it is unmistakably not a name, so no reader uses it as
-///       one by accident. Every three input bytes become four characters; a final group
+///       encoding uses for bytes;
+///  it is unmistakably not a name,
+///  so no reader uses it as
+///       one by accident.
+///  Every three input bytes become four characters;
+///  a final group
 ///       of one or two bytes is padded to four characters with `=`.
 ///
 /// In TS you'd write (pseudocode):
@@ -187,7 +251,8 @@ pub fn base64_standard(bytes: &[u8]) -> String {
     return encoded;
 }
 
-/// Construction, invariant and encoding controls stay out of the release executable.
+/// Construction,
+///  invariant and encoding controls stay out of the release executable.
 #[cfg(test)]
 #[path = "event_path_tests.rs"]
 mod tests;

@@ -18,6 +18,7 @@ repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "Loads a cgroup-BPF program that marks sockets from chosen app cgroups so a policy-routing rule sends their traffic outside the WireGuard tunnel."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

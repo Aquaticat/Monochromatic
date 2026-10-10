@@ -1,17 +1,29 @@
-//! Which hints and diagnostics a frame paints: stale snapshots paint nothing, hints are grouped by line and
-//! accumulated per revision, underline windows are bounded to the materialized rows, multi-line ranges above a
-//! window are found, problems at the caret are listed worst first, and space is held across a reload.
+//! Which hints and diagnostics a frame paints:
+//!  stale snapshots paint nothing,
+//!  hints are grouped by line and
+//! accumulated per revision,
+//!  underline windows are bounded to the materialized rows,
+//!  multi-line ranges above a
+//! window are found,
+//!  problems at the caret are listed worst first,
+//!  and space is held across a reload.
 
-/// What: Helix's rope and the shared-ownership pointer the Language module hands snapshots out in.
-/// Why: Windows are computed from the displayed text's line starts.
+/// What:
+///  Helix's rope and the shared-ownership pointer the Language module hands snapshots out in.
+/// Why:
+///  Windows are computed from the displayed text's line starts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { Rope } from 'helix-core';
 /// ```
 use helix_core::Rope;
-/// The production selection logic, the Language module's snapshot records, and what assembly needs:
-/// the displayed document, the shaper that packs hint rows, and the block record.
+/// The production selection logic,
+///  the Language module's snapshot records,
+///  and what assembly needs:
+/// the displayed document,
+///  the shaper that packs hint rows,
+///  and the block record.
 use ide_app::{
     annotation::{Annotations, Held, Mark, describe},
     document::Document,
@@ -23,8 +35,11 @@ use ide_app::{
     shaped_text::TextShaper,
     virtual_row::{BLOCK_GAP, Block, ROW_HEIGHT},
 };
-/// What: Snapshots and blocks are shared values; `Duration` and `Instant` time held space.
-/// Why: Held space ends at a point in time the tests choose.
+/// What:
+///  Snapshots and blocks are shared values;
+///  `Duration` and `Instant` time held space.
+/// Why:
+///  Held space ends at a point in time the tests choose.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,7 +50,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// The displayed text every test uses: five lines, the third empty, the last without a terminator.
+/// The displayed text every test uses:
+///  five lines,
+///  the third empty,
+///  the last without a terminator.
 const TEXT: &str = "let a = 1;\nlet bb = 22;\n\nfn main() {\n}";
 
 /// The stamp of the displayed text.
@@ -64,8 +82,11 @@ fn hint(position: usize, label: &str) -> InlayHint {
     };
 }
 
-/// What: One diagnostic over `start..end`; `Option<Severity>` lets a test omit the severity.
-/// Why: Records are built exactly as the Language module builds them.
+/// What:
+///  One diagnostic over `start..end`;
+///  `Option<Severity>` lets a test omit the severity.
+/// Why:
+///  Records are built exactly as the Language module builds them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,7 +109,9 @@ fn hints(stamp: DocumentStamp, items: Vec<InlayHint>) -> Option<Arc<HintsSnapsho
     return ranged(stamp, (0, 5), items);
 }
 
-/// Shared hint snapshot for `stamp` that answers for the lines `asked.0` up to, not including, `asked.1`.
+/// Shared hint snapshot for `stamp` that answers for the lines `asked.0` up to,
+///  not including,
+///  `asked.1`.
 fn ranged(
     stamp: DocumentStamp,
     asked: (usize, usize),
@@ -102,9 +125,13 @@ fn ranged(
     }));
 }
 
-/// What: The blocks the store assembles for the text `stamp`, packed by the production shaper at scale one.
-///       `&mut Annotations` lends the store for change, because assembly fills its packing cache.
-/// Why: Blocks are what the vertical mapping and every frame take from the store.
+/// What:
+///  The blocks the store assembles for the text `stamp`,
+///  packed by the production shaper at scale one.
+///       `&mut Annotations` lends the store for change,
+///  because assembly fills its packing cache.
+/// Why:
+///  Blocks are what the vertical mapping and every frame take from the store.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -116,7 +143,8 @@ fn blocks(store: &mut Annotations, stamp: DocumentStamp) -> Vec<Arc<Block>> {
     return store.assemble(stamp, &document, &mut shaper, 1.0);
 }
 
-/// The hint texts of the block above `line`, or nothing when the line has no block.
+/// The hint texts of the block above `line`,
+///  or nothing when the line has no block.
 fn hint_texts(assembled: &[Arc<Block>], line: usize) -> Vec<String> {
     let mut texts = Vec::new();
     for block in assembled {
@@ -148,7 +176,9 @@ fn diagnostics(
 }
 
 /// Snapshots accepted for another file generation or another revision paint nothing for the displayed text:
-/// no block, no underline, and no problem at the caret.
+/// no block,
+///  no underline,
+///  and no problem at the caret.
 #[test]
 fn stale_snapshots_paint_nothing_and_show_no_card() {
     let text = Rope::from(TEXT);
@@ -223,8 +253,12 @@ fn stale_snapshots_paint_nothing_and_show_no_card() {
     assert!(blocks(&mut refused, SHOWN).is_empty());
 }
 
-/// Hints belong to the line their position lies on: a hint at a line end stays on its line, the end of the
-/// text belongs to the last line, labels lose their padding spaces, and blank labels are dropped.
+/// Hints belong to the line their position lies on:
+///  a hint at a line end stays on its line,
+///  the end of the
+/// text belongs to the last line,
+///  labels lose their padding spaces,
+///  and blank labels are dropped.
 #[test]
 fn hints_are_grouped_by_line_and_line_ends() {
     let text = Rope::from(TEXT);
@@ -259,7 +293,8 @@ fn hints_are_grouped_by_line_and_line_ends() {
 }
 
 /// A hint snapshot replaces the hints of the lines it asked about and keeps those of other lines of the same
-/// revision; hints of another revision are dropped as a whole.
+/// revision;
+///  hints of another revision are dropped as a whole.
 #[test]
 fn hints_of_one_revision_accumulate_by_line_range() {
     let text = Rope::from(TEXT);
@@ -300,8 +335,11 @@ fn hints_of_one_revision_accumulate_by_line_range() {
     assert_eq!(hint_texts(&renewed, 0), [": new"]);
 }
 
-/// After an external change the previous rows' space is held above the lines it is mapped to: hint space until
-/// hints for those lines arrive, message space until its time has passed, and nothing after that.
+/// After an external change the previous rows' space is held above the lines it is mapped to:
+///  hint space until
+/// hints for those lines arrive,
+///  message space until its time has passed,
+///  and nothing after that.
 #[test]
 fn held_space_keeps_block_heights_until_hints_return_or_time_passes() {
     let text = Rope::from(TEXT);
@@ -392,7 +430,8 @@ fn held_space_keeps_block_heights_until_hints_return_or_time_passes() {
     assert!(!store.expire(until + Duration::from_secs(5)));
 }
 
-/// A range starting above the window is found through the reach index; ranges ending before it are not;
+/// A range starting above the window is found through the reach index;
+///  ranges ending before it are not;
 /// groups of several sources merge into one start order.
 #[test]
 fn diagnostic_window_finds_ranges_starting_above_it() {
@@ -436,7 +475,9 @@ fn diagnostic_window_finds_ranges_starting_above_it() {
     assert_eq!(assembled[0].messages.len(), 3);
 }
 
-/// The problems at the caret are every range touching it, ends included, worst first;
+/// The problems at the caret are every range touching it,
+///  ends included,
+///  worst first;
 /// an omitted severity is a warning and a point range is found at its position.
 #[test]
 fn caret_problems_include_range_ends_and_order_by_severity() {
@@ -480,7 +521,9 @@ fn caret_problems_include_range_ends_and_order_by_severity() {
     assert!(annotations.at(SHOWN, 3).is_empty());
 }
 
-/// A problem's text names the severity in words, then the code and source, then the trimmed message.
+/// A problem's text names the severity in words,
+///  then the code and source,
+///  then the trimmed message.
 #[test]
 fn problem_text_spells_out_severity_code_and_source() {
     let mut coded = problem(
@@ -513,7 +556,8 @@ fn problem_text_spells_out_severity_code_and_source() {
     assert_eq!(describe(annotations.at(SHOWN, 2)[0]), "Information: plain");
 }
 
-/// Handing back the same shared snapshots is recognized, so a poll does not rebuild the index.
+/// Handing back the same shared snapshots is recognized,
+///  so a poll does not rebuild the index.
 #[test]
 fn identical_snapshots_are_recognized_by_identity() {
     let hint_snapshot = hints(SHOWN, vec![hint(5, ": i32")]);
@@ -533,8 +577,11 @@ fn identical_snapshots_are_recognized_by_identity() {
     assert!(Annotations::default().holds(&None, &None));
 }
 
-/// The Language poll's entry points store only snapshots of the displayed text, hand them out only for that
-/// text, keep what was held when a snapshot is refused, and index accepted diagnostics for painting.
+/// The Language poll's entry points store only snapshots of the displayed text,
+///  hand them out only for that
+/// text,
+///  keep what was held when a snapshot is refused,
+///  and index accepted diagnostics for painting.
 #[test]
 fn accepting_stores_only_snapshots_of_the_displayed_text() {
     let text = Rope::from(TEXT);

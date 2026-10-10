@@ -1,5 +1,7 @@
-//! What: Native reference-definition classification and deletion controls.
-//! Why: Parser-normalized identities and source-line boundaries jointly determine a safe fix.
+//! What:
+//!  Native reference-definition classification and deletion controls.
+//! Why:
+//!  Parser-normalized identities and source-line boundaries jointly determine a safe fix.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -38,7 +40,8 @@ fn fixed(source: &str) -> String {
         .source;
 }
 
-/// Used definitions retain their first target; unused repeats remain unused rather than duplicate.
+/// Used definitions retain their first target;
+///  unused repeats remain unused rather than duplicate.
 #[test]
 fn reference_classification_preserves_messages_and_targets() {
     let source: &str =
@@ -64,7 +67,8 @@ fn reference_classification_preserves_messages_and_targets() {
     assert!(check(output.as_str()).is_empty());
 }
 
-/// Link/image kinds, collapsed whitespace and Unicode folding use the parser's normalized identity.
+/// Link/image kinds,
+///  collapsed whitespace and Unicode folding use the parser's normalized identity.
 #[test]
 fn parser_identity_and_comment_exemption_are_preserved() {
     for source in [
@@ -80,7 +84,8 @@ fn parser_identity_and_comment_exemption_are_preserved() {
     }
 }
 
-/// Standalone removals consume complete line endings, including indentation and final EOF.
+/// Standalone removals consume complete line endings,
+///  including indentation and final EOF.
 #[test]
 fn standalone_definitions_do_not_leave_line_fragments() {
     for newline in ["\n", "\r\n", "\r"] {

@@ -1,9 +1,11 @@
-//! Cloneable search cancellation reaches both child processes, including while neither pipe produces output.
+//! Cloneable search cancellation reaches both child processes,
+//!  including while neither pipe produces output.
 
 /// Tokio watch channels provide a retained cancellation value plus an awaitable change notification.
 use tokio::sync::watch;
 
-/// One-way cancellation signal; a newer search gets a new independent signal rather than resetting this one.
+/// One-way cancellation signal;
+///  a newer search gets a new independent signal rather than resetting this one.
 #[derive(Clone, Debug)]
 pub struct SearchCancellation {
     /// Retained state lets cancellation before process startup work without a timing race.

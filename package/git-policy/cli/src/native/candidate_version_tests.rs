@@ -1,5 +1,8 @@
-//! What: Controls for building and reading a candidate version.
-//! Why: Identity must equal list position, duplicates must resolve to the first record,
+//! What:
+//!  Controls for building and reading a candidate version.
+//! Why:
+//!  Identity must equal list position,
+//!  duplicates must resolve to the first record,
 //!      and lookups by pathname must match bytes exactly.
 //!
 //! In TS you'd write (pseudocode):
@@ -27,7 +30,8 @@ fn added(path: &[u8], digit: u8) -> CandidateRecord {
     };
 }
 
-/// Candidates keep listing order, and each identity is the generation plus the list position.
+/// Candidates keep listing order,
+///  and each identity is the generation plus the list position.
 #[test]
 fn identity_is_generation_and_position() {
     let deleted: CandidateRecord = CandidateRecord {
@@ -75,7 +79,8 @@ fn identity_is_generation_and_position() {
     );
 }
 
-/// The first record of a pathname wins; later ones neither replace it nor take a position.
+/// The first record of a pathname wins;
+///  later ones neither replace it nor take a position.
 #[test]
 fn first_record_of_a_pathname_wins() {
     let version: CandidateVersion = build_version(
@@ -101,7 +106,9 @@ fn first_record_of_a_pathname_wins() {
     );
 }
 
-/// Lookup is by exact bytes: a present pathname returns its own candidate, anything else nothing.
+/// Lookup is by exact bytes:
+///  a present pathname returns its own candidate,
+///  anything else nothing.
 #[test]
 fn lookup_matches_exact_pathname_bytes() {
     let version: CandidateVersion =

@@ -21,6 +21,7 @@ repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "Comment-preserving JSONC parse, immutable edit, and canonical emit for Rust: every object key and value keeps one queryable attached comment, numbers compare by exact mathematical value while retaining their source spelling, and escaped unpaired UTF-16 surrogates survive as code units."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

@@ -7,7 +7,9 @@ use ide_app::syntax::SyntaxEngine;
 /// Paths drive Helix's built-in filename and shebang recognition.
 use std::path::Path;
 
-/// Real Rust grammar/query assets identify keywords, Unicode strings, and comments.
+/// Real Rust grammar/query assets identify keywords,
+///  Unicode strings,
+///  and comments.
 #[test]
 fn rust_highlights_use_unicode_source_positions() {
     let engine = SyntaxEngine::new().expect("language configuration");

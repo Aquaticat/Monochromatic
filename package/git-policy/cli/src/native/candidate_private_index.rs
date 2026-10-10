@@ -1,12 +1,21 @@
-//! What: A private copy of the real index, in its own directory beside it, removed when
+//! What:
+//!  A private copy of the real index,
+//!  in its own directory beside it,
+//!  removed when
 //!       the copy is dropped.
-//! Why: Predicting what `git add` would stage means running it against an index nobody
-//!      else reads, so the real index never changes before the policies have answered.
-//!      The copy keeps the real index's access and modification times: Git re-reads an
-//!      entry whose stat data is not older than the index file, and a copy with a fresh
+//! Why:
+//!  Predicting what `git add` would stage means running it against an index nobody
+//!      else reads,
+//!  so the real index never changes before the policies have answered.
+//!      The copy keeps the real index's access and modification times:
+//!  Git re-reads an
+//!      entry whose stat data is not older than the index file,
+//!  and a copy with a fresh
 //!      time would make it trust stat data from the same second as a later edit of the
-//!      same size, so the prediction could miss that edit (the installed wrapper's
-//!      `index-file-timestamps.ts`, issue #544).
+//!      same size,
+//!  so the prediction could miss that edit (the installed wrapper's
+//!      `index-file-timestamps.ts`,
+//!  issue #544).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -17,9 +26,11 @@
 use super::candidate_error::{CandidateError, CandidateFailure};
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw OS bytes.
 use std::path::{Path, PathBuf};
-/// What: `AtomicU64` is a counter that several threads may increase without a lock;
+/// What:
+///  `AtomicU64` is a counter that several threads may increase without a lock;
 ///       `Ordering::Relaxed` asks only that each increase is counted once.
-/// Why:  Two private indexes made by one process in the same nanosecond still get
+/// Why:
+///   Two private indexes made by one process in the same nanosecond still get
 ///       different directory names.
 ///
 /// In TS you'd write (pseudocode):
@@ -28,16 +39,23 @@ use std::path::{Path, PathBuf};
 /// ```
 use std::sync::atomic::{AtomicU64, Ordering};
 
-/// The name prefix of every private index directory; the installed wrapper uses the same one.
+/// The name prefix of every private index directory;
+///  the installed wrapper uses the same one.
 pub const PRIVATE_INDEX_PREFIX: &str = "cli-git-add-policy-";
 
-/// How many unique names this process has made, for private index directories and sibling files.
+/// How many unique names this process has made,
+///  for private index directories and sibling files.
 static CREATED: AtomicU64 = AtomicU64::new(0);
 
-/// What: A name part no other file of this process or another one chose: the process ID,
-///       the time in nanoseconds and this process's count, joined by `-`.
-/// Why:  Private index directories and the direct fix's sibling files are created beside
-///       files other processes use, so their names must not collide.
+/// What:
+///  A name part no other file of this process or another one chose:
+///  the process ID,
+///       the time in nanoseconds and this process's count,
+///  joined by `-`.
+/// Why:
+///   Private index directories and the direct fix's sibling files are created beside
+///       files other processes use,
+///  so their names must not collide.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -62,9 +80,15 @@ pub fn unique_suffix() -> String {
     return format!("{}-{nanoseconds}-{count}", std::process::id());
 }
 
-/// What: A private index file in a directory this value owns. Fields are private, so the
+/// What:
+///  A private index file in a directory this value owns.
+///  Fields are private,
+///  so the
 ///       directory can be removed only by dropping the value.
-/// Why:  Every path out of a prediction, failures included, removes the directory.
+/// Why:
+///   Every path out of a prediction,
+///  failures included,
+///  removes the directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,10 +102,14 @@ pub struct PrivateIndex {
     index: PathBuf,
 }
 
-/// What: Build the failure of a private index that could not be prepared.
+/// What:
+///  Build the failure of a private index that could not be prepared.
 ///       `&std::io::Error` borrows the operating system's reason.
-/// Why:  The message names the step and the reason; the directory is under the Git
-///       directory, never a candidate pathname.
+/// Why:
+///   The message names the step and the reason;
+///  the directory is under the Git
+///       directory,
+///  never a candidate pathname.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -94,8 +122,12 @@ fn private_index_failure(step: &str, error: &std::io::Error) -> CandidateError {
     );
 }
 
-/// What: Create a directory only this user can read, failing when it already exists.
-/// Why:  The copy holds the repository's staged entries; a fresh directory also proves
+/// What:
+///  Create a directory only this user can read,
+///  failing when it already exists.
+/// Why:
+///   The copy holds the repository's staged entries;
+///  a fresh directory also proves
 ///       no other process chose the same name.
 ///
 /// In TS you'd write (pseudocode):
@@ -105,7 +137,8 @@ fn private_index_failure(step: &str, error: &std::io::Error) -> CandidateError {
 fn create_private_directory(directory: &Path) -> std::io::Result<()> {
     #[cfg(unix)]
     {
-        /// `DirBuilderExt` adds `mode`, the permissions a new directory is created with.
+        /// `DirBuilderExt` adds `mode`,
+        ///  the permissions a new directory is created with.
         use std::os::unix::fs::DirBuilderExt;
         // `.mode(0o700)` configures the temporary builder; `.create` makes the directory.
         return std::fs::DirBuilder::new().mode(0o700).create(directory);
@@ -117,9 +150,14 @@ fn create_private_directory(directory: &Path) -> std::io::Result<()> {
     }
 }
 
-/// What: Copy the real index into `destination` and give the copy the real index's times.
-///       `Ok(false)` means the real index does not exist, which Git reads as an empty index.
-/// Why:  A missing index needs no copy: Git treats a missing index file as empty, so the
+/// What:
+///  Copy the real index into `destination` and give the copy the real index's times.
+///       `Ok(false)` means the real index does not exist,
+///  which Git reads as an empty index.
+/// Why:
+///   A missing index needs no copy:
+///  Git treats a missing index file as empty,
+///  so the
 ///       private index path can simply name a file that does not exist yet.
 ///
 /// In TS you'd write (pseudocode):
@@ -153,17 +191,23 @@ fn copy_index(source: &Path, destination: &Path) -> std::io::Result<bool> {
     return Ok(true);
 }
 
-/// What: `impl PrivateIndex { ... }` attaches the constructor and the accessor.
-/// Why:  The directory is created and filled in one step, so no caller sees a half-made copy.
+/// What:
+///  `impl PrivateIndex { ... }` attaches the constructor and the accessor.
+/// Why:
+///   The directory is created and filled in one step,
+///  so no caller sees a half-made copy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class PrivateIndex { static create(realIndex: string): PrivateIndex; get path(): string }
 /// ```
 impl PrivateIndex {
-    /// What: Create the directory beside `real_index` and copy the index into it.
-    /// Why:  Beside the real index keeps the copy on the same filesystem and inside the
-    ///       Git directory, where the installed wrapper also put it.
+    /// What:
+    ///  Create the directory beside `real_index` and copy the index into it.
+    /// Why:
+    ///   Beside the real index keeps the copy on the same filesystem and inside the
+    ///       Git directory,
+    ///  where the installed wrapper also put it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -191,8 +235,10 @@ impl PrivateIndex {
         return Ok(private);
     }
 
-    /// What: The private index file Git is pointed at.
-    /// Why:  The caller sets `GIT_INDEX_FILE` to it for every command of the prediction.
+    /// What:
+    ///  The private index file Git is pointed at.
+    /// Why:
+    ///   The caller sets `GIT_INDEX_FILE` to it for every command of the prediction.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -203,9 +249,12 @@ impl PrivateIndex {
     }
 }
 
-/// What: `impl Drop for PrivateIndex` runs `drop` when the value goes out of scope, like
+/// What:
+///  `impl Drop for PrivateIndex` runs `drop` when the value goes out of scope,
+///  like
 ///       a `[Symbol.dispose]` that the language calls on every exit path.
-/// Why:  The directory and everything Git wrote into it are removed whether the
+/// Why:
+///   The directory and everything Git wrote into it are removed whether the
 ///       prediction succeeded or failed.
 ///
 /// In TS you'd write (pseudocode):
@@ -213,9 +262,13 @@ impl PrivateIndex {
 /// [Symbol.dispose]() { rmSync(this.#directory, { recursive: true, force: true }); }
 /// ```
 impl Drop for PrivateIndex {
-    /// What: Remove the directory and everything in it. `&mut self` lends the value for
+    /// What:
+    ///  Remove the directory and everything in it.
+    ///  `&mut self` lends the value for
     ///       its last use.
-    /// Why:  Called by the language on every exit path, failures included.
+    /// Why:
+    ///   Called by the language on every exit path,
+    ///  failures included.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -234,7 +287,8 @@ impl Drop for PrivateIndex {
     }
 }
 
-/// Copy, timestamp and removal controls stay out of the release executable.
+/// Copy,
+///  timestamp and removal controls stay out of the release executable.
 #[cfg(test)]
 #[path = "candidate_private_index_tests.rs"]
 mod tests;

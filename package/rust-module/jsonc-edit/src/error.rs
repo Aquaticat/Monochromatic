@@ -1,16 +1,28 @@
-//! What:     The crate's public failure types: a byte-offset parse failure, a number-token failure,
-//!           a missing document address, and a wrong-shape address or target.
-//! Why:      Each failure answers a different caller question (where is the malformed byte, which
-//!           literal is not a JSON number, which address does not exist, which target has the wrong
-//!           shape), so collapsing them into one string would force callers to parse messages.
+//! What:
+//!      The crate's public failure types:
+//!  a byte-offset parse failure,
+//!  a number-token failure,
+//!           a missing document address,
+//!  and a wrong-shape address or target.
+//! Why:
+//!       Each failure answers a different caller question (where is the malformed byte,
+//!  which
+//!           literal is not a JSON number,
+//!  which address does not exist,
+//!  which target has the wrong
+//!           shape),
+//!  so collapsing them into one string would force callers to parse messages.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // module error: class JsoncParseError extends Error; class JsoncPathNotFoundError extends Error;
 //! ```
 
-/// What:     Import the address type so a not-found failure can carry the address it was given.
-/// Why:      A caller debugging a failed edit needs the exact path back, not only a message.
+/// What:
+///      Import the address type so a not-found failure can carry the address it was given.
+/// Why:
+///       A caller debugging a failed edit needs the exact path back,
+///  not only a message.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +30,11 @@
 /// ```
 use crate::path::JsoncPathSegment;
 
-/// What:     A JSONC source rejection with the byte offset where scanning stopped.
-/// Why:      Editors point at a position in the original document, and a UTF-8 byte offset is the
+/// What:
+///      A JSONC source rejection with the byte offset where scanning stopped.
+/// Why:
+///       Editors point at a position in the original document,
+///  and a UTF-8 byte offset is the
 ///           only position this crate can report without re-scanning for UTF-16 units.
 ///
 /// In TS you'd write (pseudocode):
@@ -30,21 +45,29 @@ use crate::path::JsoncPathSegment;
 pub struct JsoncParseError {
     /// Zero-based UTF-8 byte offset in the rejected source.
     pub offset: usize,
-    /// Operation-focused explanation naming the malformed input, never a moral judgement.
+    /// Operation-focused explanation naming the malformed input,
+    ///  never a moral judgement.
     pub message: String,
 }
 
-/// What:     Make `JsoncParseError` printable as a message.
-/// Why:      Callers log and format failures directly, and `message (at offset N)` is the shape the
-///           maintained TypeScript package prints, so shared fixtures can compare text.
+/// What:
+///      Make `JsoncParseError` printable as a message.
+/// Why:
+///       Callers log and format failures directly,
+///  and `message (at offset N)` is the shape the
+///           maintained TypeScript package prints,
+///  so shared fixtures can compare text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class JsoncParseError extends Error {}
 /// ```
 impl std::fmt::Display for JsoncParseError {
-    /// What:     Render the failure the way the maintained TypeScript package renders it.
-    /// Why:      Shared fixtures compare messages across both implementations, so the shape is part
+    /// What:
+    ///      Render the failure the way the maintained TypeScript package renders it.
+    /// Why:
+    ///       Shared fixtures compare messages across both implementations,
+    ///  so the shape is part
     ///           of the supported behavior.
     ///
     /// In TS you'd write (pseudocode):
@@ -56,8 +79,11 @@ impl std::fmt::Display for JsoncParseError {
     }
 }
 
-/// What:     Register `JsoncParseError` as a standard-library error type.
-/// Why:      The marker implementation lets `?`, `Box<dyn Error>` and error chains carry this
+/// What:
+///      Register `JsoncParseError` as a standard-library error type.
+/// Why:
+///       The marker implementation lets `?`,
+///  `Box<dyn Error>` and error chains carry this
 ///           failure without a custom wrapper.
 ///
 /// In TS you'd write (pseudocode):
@@ -66,8 +92,11 @@ impl std::fmt::Display for JsoncParseError {
 /// ```
 impl std::error::Error for JsoncParseError {}
 
-/// What:     Why one number token cannot become an exact mathematical identity.
-/// Why:      A JSON number literal has several independent grammar parts, and a caller fixing a
+/// What:
+///      Why one number token cannot become an exact mathematical identity.
+/// Why:
+///       A JSON number literal has several independent grammar parts,
+///  and a caller fixing a
 ///           document needs to know which part failed rather than receiving one generic message.
 ///
 /// In TS you'd write (pseudocode):
@@ -78,9 +107,11 @@ impl std::error::Error for JsoncParseError {}
 pub enum JsoncNumberError {
     /// The token held no bytes at all.
     Empty,
-    /// A leading plus sign, which JSON does not admit.
+    /// A leading plus sign,
+    ///  which JSON does not admit.
     LeadingPlus,
-    /// An integer part with a leading zero, such as `01`.
+    /// An integer part with a leading zero,
+    ///  such as `01`.
     LeadingZero,
     /// No integer digit where the grammar requires one.
     MissingIntegerDigit,
@@ -92,17 +123,24 @@ pub enum JsoncNumberError {
     UnexpectedSuffix,
 }
 
-/// What:     Make `JsoncNumberError` printable as a message.
-/// Why:      Callers log and format failures directly, and `the offending grammar part` is the shape the
-///           maintained TypeScript package prints, so shared fixtures can compare text.
+/// What:
+///      Make `JsoncNumberError` printable as a message.
+/// Why:
+///       Callers log and format failures directly,
+///  and `the offending grammar part` is the shape the
+///           maintained TypeScript package prints,
+///  so shared fixtures can compare text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class JsoncNumberError extends Error {}
 /// ```
 impl std::fmt::Display for JsoncNumberError {
-    /// What:     Name the offending grammar part in plain operational terms.
-    /// Why:      The message is user-facing diagnostics, so it describes the input rather than the
+    /// What:
+    ///      Name the offending grammar part in plain operational terms.
+    /// Why:
+    ///       The message is user-facing diagnostics,
+    ///  so it describes the input rather than the
     ///           code that rejected it.
     ///
     /// In TS you'd write (pseudocode):
@@ -131,8 +169,11 @@ impl std::fmt::Display for JsoncNumberError {
     }
 }
 
-/// What:     Register `JsoncNumberError` as a standard-library error type.
-/// Why:      The marker implementation lets `?`, `Box<dyn Error>` and error chains carry this
+/// What:
+///      Register `JsoncNumberError` as a standard-library error type.
+/// Why:
+///       The marker implementation lets `?`,
+///  `Box<dyn Error>` and error chains carry this
 ///           failure without a custom wrapper.
 ///
 /// In TS you'd write (pseudocode):
@@ -141,8 +182,11 @@ impl std::fmt::Display for JsoncNumberError {
 /// ```
 impl std::error::Error for JsoncNumberError {}
 
-/// What:     A document address that does not name an existing key or element.
-/// Why:      Reading and deleting must distinguish "absent" from "wrong shape", so an absent
+/// What:
+///      A document address that does not name an existing key or element.
+/// Why:
+///       Reading and deleting must distinguish "absent" from "wrong shape",
+///  so an absent
 ///           address is its own failure type.
 ///
 /// In TS you'd write (pseudocode):
@@ -155,17 +199,24 @@ pub struct JsoncPathNotFoundError {
     pub path: Vec<JsoncPathSegment>,
 }
 
-/// What:     Make `JsoncPathNotFoundError` printable as a message.
-/// Why:      Callers log and format failures directly, and `no JSONC node at path ...` is the shape the
-///           maintained TypeScript package prints, so shared fixtures can compare text.
+/// What:
+///      Make `JsoncPathNotFoundError` printable as a message.
+/// Why:
+///       Callers log and format failures directly,
+///  and `no JSONC node at path ...` is the shape the
+///           maintained TypeScript package prints,
+///  so shared fixtures can compare text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class JsoncPathNotFoundError extends Error {}
 /// ```
 impl std::fmt::Display for JsoncPathNotFoundError {
-    /// What:     Render the missing address with debug formatting for its segments.
-    /// Why:      A mixed key and index address is ambiguous in plain text, and this message is for
+    /// What:
+    ///      Render the missing address with debug formatting for its segments.
+    /// Why:
+    ///       A mixed key and index address is ambiguous in plain text,
+    ///  and this message is for
     ///           diagnostics rather than document output.
     ///
     /// In TS you'd write (pseudocode):
@@ -177,8 +228,11 @@ impl std::fmt::Display for JsoncPathNotFoundError {
     }
 }
 
-/// What:     Register `JsoncPathNotFoundError` as a standard-library error type.
-/// Why:      The marker implementation lets `?`, `Box<dyn Error>` and error chains carry this
+/// What:
+///      Register `JsoncPathNotFoundError` as a standard-library error type.
+/// Why:
+///       The marker implementation lets `?`,
+///  `Box<dyn Error>` and error chains carry this
 ///           failure without a custom wrapper.
 ///
 /// In TS you'd write (pseudocode):
@@ -187,8 +241,12 @@ impl std::fmt::Display for JsoncPathNotFoundError {
 /// ```
 impl std::error::Error for JsoncPathNotFoundError {}
 
-/// What:     An address or target whose shape does not fit the requested operation.
-/// Why:      Indexing an object with a number, or a key with a string, is a caller mistake that must
+/// What:
+///      An address or target whose shape does not fit the requested operation.
+/// Why:
+///       Indexing an object with a number,
+///  or a key with a string,
+///  is a caller mistake that must
 ///           not be reinterpreted as an absent address.
 ///
 /// In TS you'd write (pseudocode):
@@ -201,17 +259,23 @@ pub struct JsoncTypeError {
     pub message: String,
 }
 
-/// What:     Make `JsoncTypeError` printable as a message.
-/// Why:      Callers log and format failures directly, and `the mismatch message` is the shape the
-///           maintained TypeScript package prints, so shared fixtures can compare text.
+/// What:
+///      Make `JsoncTypeError` printable as a message.
+/// Why:
+///       Callers log and format failures directly,
+///  and `the mismatch message` is the shape the
+///           maintained TypeScript package prints,
+///  so shared fixtures can compare text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class JsoncTypeError extends Error {}
 /// ```
 impl std::fmt::Display for JsoncTypeError {
-    /// What:     Pass the explanation through unchanged.
-    /// Why:      The constructing site already knows the operation and the offending value.
+    /// What:
+    ///      Pass the explanation through unchanged.
+    /// Why:
+    ///       The constructing site already knows the operation and the offending value.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -222,8 +286,11 @@ impl std::fmt::Display for JsoncTypeError {
     }
 }
 
-/// What:     Register `JsoncTypeError` as a standard-library error type.
-/// Why:      The marker implementation lets `?`, `Box<dyn Error>` and error chains carry this
+/// What:
+///      Register `JsoncTypeError` as a standard-library error type.
+/// Why:
+///       The marker implementation lets `?`,
+///  `Box<dyn Error>` and error chains carry this
 ///           failure without a custom wrapper.
 ///
 /// In TS you'd write (pseudocode):
@@ -232,9 +299,14 @@ impl std::fmt::Display for JsoncTypeError {
 /// ```
 impl std::error::Error for JsoncTypeError {}
 
-/// What:     Any failure an edit, read or comment operation can return.
-/// Why:      A caller addressing a document can hit a missing address or a wrong-shaped target, and
-///           both are ordinary outcomes rather than panics, so one enum keeps signatures short.
+/// What:
+///      Any failure an edit,
+///  read or comment operation can return.
+/// Why:
+///       A caller addressing a document can hit a missing address or a wrong-shaped target,
+///  and
+///           both are ordinary outcomes rather than panics,
+///  so one enum keeps signatures short.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -244,16 +316,21 @@ impl std::error::Error for JsoncTypeError {}
 pub enum JsoncEditError {
     /// The addressed key or element does not exist in the document.
     ///
-    /// What:     holds the not-found failure with the address that named nothing.
-    /// Why:      callers can report or recover from an absent address without string matching.
+    /// What:
+    ///      holds the not-found failure with the address that named nothing.
+    /// Why:
+    ///       callers can report or recover from an absent address without string matching.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// { kind: 'path-not-found', error: JsoncPathNotFoundError }
     /// ```
     PathNotFound {
-        /// What:    The underlying not-found failure.
-        /// Why:     `error` stores the address, so a caller can echo exactly what was requested.
+        /// What:
+        ///     The underlying not-found failure.
+        /// Why:
+        ///      `error` stores the address,
+        ///  so a caller can echo exactly what was requested.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -263,16 +340,21 @@ pub enum JsoncEditError {
     },
     /// The addressed value or segment has the wrong shape for the requested operation.
     ///
-    /// What:     holds the shape failure.
-    /// Why:      indexing an object with a number is a caller mistake, not an absent address.
+    /// What:
+    ///      holds the shape failure.
+    /// Why:
+    ///       indexing an object with a number is a caller mistake,
+    ///  not an absent address.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// { kind: 'type', error: JsoncTypeError }
     /// ```
     Type {
-        /// What:    The underlying shape failure.
-        /// Why:     `error` stores the explanation naming the mismatched input.
+        /// What:
+        ///     The underlying shape failure.
+        /// Why:
+        ///      `error` stores the explanation naming the mismatched input.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -282,16 +364,21 @@ pub enum JsoncEditError {
     },
 }
 
-/// What:     Print whichever underlying failure this edit error carries.
-/// Why:      A caller logging the error should see the same text the underlying type produces.
+/// What:
+///      Print whichever underlying failure this edit error carries.
+/// Why:
+///       A caller logging the error should see the same text the underlying type produces.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// toString(): string { return this.error.message; }
 /// ```
 impl std::fmt::Display for JsoncEditError {
-    /// What:     Delegate to the wrapped failure's own rendering.
-    /// Why:      The wrapper adds no information, so duplicating the text would risk divergence.
+    /// What:
+    ///      Delegate to the wrapped failure's own rendering.
+    /// Why:
+    ///       The wrapper adds no information,
+    ///  so duplicating the text would risk divergence.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -305,8 +392,10 @@ impl std::fmt::Display for JsoncEditError {
     }
 }
 
-/// What:     Register the edit failure as a standard-library error type.
-/// Why:      `?` and error chains then carry it without a custom wrapper.
+/// What:
+///      Register the edit failure as a standard-library error type.
+/// Why:
+///       `?` and error chains then carry it without a custom wrapper.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

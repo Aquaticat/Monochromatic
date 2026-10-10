@@ -1,5 +1,8 @@
-//! What: The built-in table against real Git's own list.
-//! Why: A missing name would refuse a plain Git command in a linked worktree; an extra
+//! What:
+//!  The built-in table against real Git's own list.
+//! Why:
+//!  A missing name would refuse a plain Git command in a linked worktree;
+//!  an extra
 //!      name would forward an alias that might create a worktree.
 //!
 //! In TS you'd write (pseudocode):
@@ -13,7 +16,8 @@ use crate::test_support::{fixture, git_output, remove};
 use std::path::PathBuf;
 use std::process::Output;
 
-/// The table is exactly what Git 2.56.0 prints, name for name and in order.
+/// The table is exactly what Git 2.56.0 prints,
+///  name for name and in order.
 #[test]
 fn table_is_what_real_git_lists() {
     let root: PathBuf = fixture("builtins");

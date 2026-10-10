@@ -55,7 +55,8 @@ fn jetbrains_programming_ligatures_have_a_real_off_control() {
     assert!((normal.rows[0].layout.width() - off.rows[0].layout.width()).abs() < 0.01);
 }
 
-/// Optional glyph choices work when explicitly requested; they are not forced as new defaults.
+/// Optional glyph choices work when explicitly requested;
+///  they are not forced as new defaults.
 #[test]
 fn slashed_zero_changes_glyphs_not_source_or_advance() {
     let document = Document::new("0O");

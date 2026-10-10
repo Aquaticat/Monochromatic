@@ -1,10 +1,14 @@
 //! Every language measured in the repository is recognized and painted by the bundled runtime.
-//! Paths mirror real repository file shapes; the selection evidence is recorded in
+//! Paths mirror real repository file shapes;
+//!  the selection evidence is recorded in
 //! `doc/planning/slint-ide-runtime-languages.md`.
 
-/// What: `mod syntax_support;` compiles the sibling file `syntax_support/mod.rs` into this
+/// What:
+///  `mod syntax_support;` compiles the sibling file `syntax_support/mod.rs` into this
 ///       test program as a module named `syntax_support`.
-/// Why:  Cargo builds each file in `tests/` as its own program, so shared helpers are
+/// Why:
+///   Cargo builds each file in `tests/` as its own program,
+///  so shared helpers are
 ///       included as a module rather than imported from a package.
 ///
 /// In TS you'd write (pseudocode):
@@ -13,12 +17,16 @@
 /// ```
 mod syntax_support;
 
-/// The one shared assertion: recognized language plus one painted fragment.
+/// The one shared assertion:
+///  recognized language plus one painted fragment.
 use syntax_support::assert_reads_as;
 
-/// What: `#[test]` marks the function below as a test the harness runs; the function takes
+/// What:
+///  `#[test]` marks the function below as a test the harness runs;
+///  the function takes
 ///       nothing and passes unless it panics.
-/// Why:  TypeScript source is the largest measured language.
+/// Why:
+///   TypeScript source is the largest measured language.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -83,7 +91,8 @@ fn json_data_is_read_as_json() {
     );
 }
 
-/// `tsconfig.json` is JSON with comments, a separate Helix language on the JSON grammar.
+/// `tsconfig.json` is JSON with comments,
+///  a separate Helix language on the JSON grammar.
 #[test]
 fn typescript_project_configuration_is_read_as_jsonc() {
     assert_reads_as(
@@ -191,7 +200,8 @@ fn kotlin_source_is_read_as_kotlin() {
     );
 }
 
-/// Slint markup, the language of this application's own interface.
+/// Slint markup,
+///  the language of this application's own interface.
 #[test]
 fn slint_markup_is_read_as_slint() {
     assert_reads_as(
@@ -334,7 +344,8 @@ fn xml_and_svg_are_read_as_xml() {
     assert_reads_as("/project/icon.svg", source, "xml", "tag", "a");
 }
 
-/// Markdown and MDX share the Markdown language; a fenced block is painted by its own grammar.
+/// Markdown and MDX share the Markdown language;
+///  a fenced block is painted by its own grammar.
 #[test]
 fn markdown_and_mdx_are_read_as_markdown() {
     let source = "# Title\n\n```rust\nfn main() {}\n```\n";

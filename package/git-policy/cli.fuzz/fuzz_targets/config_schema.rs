@@ -1,5 +1,8 @@
-//! What: Generated and raw configuration documents through the JSONC schema invariants.
-//! Why: Generated documents reach accepted settings with a known expectation; raw text exercises rejection.
+//! What:
+//!  Generated and raw configuration documents through the JSONC schema invariants.
+//! Why:
+//!  Generated documents reach accepted settings with a known expectation;
+//!  raw text exercises rejection.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

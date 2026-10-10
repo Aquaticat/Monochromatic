@@ -1,10 +1,21 @@
-//! What: The shipped policies as the engine sees them: one check per policy, built from
+//! What:
+//!  The shipped policies as the engine sees them:
+//!  one check per policy,
+//!  built from
 //!       the pure rule cores and the repository facts they ask for.
-//! Why: The engine owns order, severity and stopping; the rule cores own decisions from
-//!      arguments; this module joins them and fetches a repository fact only when a core
-//!      asks. The content policies read the lifecycle's candidates: they report nothing
-//!      where a lifecycle has none. The content policy that is not ported is unavailable
-//!      wherever a lifecycle has candidates, so an unchecked file can never read as a
+//! Why:
+//!  The engine owns order,
+//!  severity and stopping;
+//!  the rule cores own decisions from
+//!      arguments;
+//!  this module joins them and fetches a repository fact only when a core
+//!      asks.
+//!  The content policies read the lifecycle's candidates:
+//!  they report nothing
+//!      where a lifecycle has none.
+//!  The content policy that is not ported is unavailable
+//!      wherever a lifecycle has candidates,
+//!  so an unchecked file can never read as a
 //!      clean one.
 //!
 //! In TS you'd write (pseudocode):
@@ -12,9 +23,13 @@
 //! // const findings = await policy.check({ context });
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  Each check combines one rule core with the facts interface.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   Each check combines one rule core with the facts interface.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,14 +37,17 @@
 /// ```
 use super::diagnostics::EngineFailureCode;
 use super::effective_target::{EffectiveTarget, classify_effective_target};
-/// The Markdown autofix check, its state and the linter the executable gives it.
+/// The Markdown autofix check,
+///  its state and the linter the executable gives it.
 use super::markdown_linter::executable_linter;
-/// What the lifecycle offers content policies, and its prepared candidates.
+/// What the lifecycle offers content policies,
+///  and its prepared candidates.
 use super::policy_content::{ContentState, LifecycleContent};
 use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 /// The built-in final-newline check over candidates.
 use super::policy_final_newline::check_final_newline;
-/// The forbidden-strings check, its settings and its scanner.
+/// The forbidden-strings check,
+///  its settings and its scanner.
 use super::policy_forbidden_strings::{
     ScannerSettings, ScannerState, check_forbidden_strings, default_scanner_settings,
     unloaded_scanner,
@@ -54,9 +72,14 @@ use super::rule_require_root::{
     decide_require_root, resolve_require_root,
 };
 use super::worktree_identity::worktree_root;
-/// What: `OsString` is owned operating-system text of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  The command's arguments are kept exactly as Git will receive them.
+/// What:
+///  `OsString` is owned operating-system text of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   The command's arguments are kept exactly as Git will receive them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,11 +92,18 @@ use std::path::PathBuf;
 /// What the dependent-version policy needs that is not ported.
 pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps";
 
-/// What: The shipped policies over one invocation. `<F: RepositoryFacts>` says the record
-///       works with any one type `F` that provides the facts interface, chosen where the
-///       record is built: real Git in the executable, a script in tests.
-/// Why:  Holding the provider by value keeps its remembered answers and its query count
-///       for the whole invocation, and lets a test read them back afterwards.
+/// What:
+///  The shipped policies over one invocation.
+///  `<F: RepositoryFacts>` says the record
+///       works with any one type `F` that provides the facts interface,
+///  chosen where the
+///       record is built:
+///  real Git in the executable,
+///  a script in tests.
+/// Why:
+///   Holding the provider by value keeps its remembered answers and its query count
+///       for the whole invocation,
+///  and lets a test read them back afterwards.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,26 +112,36 @@ pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps
 pub struct ShippedChecks<F: RepositoryFacts> {
     /// Where repository facts come from.
     pub facts: F,
-    /// The command's arguments without wrapper controls; for a direct command, the Git
+    /// The command's arguments without wrapper controls;
+    ///  for a direct command,
+    ///  the Git
     /// global options written before `cli-git`.
     pub arguments: Vec<OsString>,
     /// What the lifecycle offers content policies.
     pub candidates: LifecycleContent,
     /// Tool-cache directories exempt from linked-worktree enforcement.
     pub allowed_worktree_dirs: Vec<PathBuf>,
-    /// The candidates once a content policy prepared them, shared by every later one.
+    /// The candidates once a content policy prepared them,
+    ///  shared by every later one.
     pub content: ContentState,
-    /// Where the forbidden-strings rules come from: options and environment.
+    /// Where the forbidden-strings rules come from:
+    ///  options and environment.
     pub scanner_settings: ScannerSettings,
-    /// The forbidden-strings scanner once loaded, shared by every later scan.
+    /// The forbidden-strings scanner once loaded,
+    ///  shared by every later scan.
     pub scanner: ScannerState,
-    /// The Markdown autofix policy's options, linter and exclude patterns.
+    /// The Markdown autofix policy's options,
+    ///  linter and exclude patterns.
     pub markdown: MarkdownState,
 }
 
-/// What: The shipped checks for one invocation, with no candidates yet prepared.
+/// What:
+///  The shipped checks for one invocation,
+///  with no candidates yet prepared.
 ///       `<F: RepositoryFacts>` accepts any facts provider.
-/// Why:  Every lifecycle builds its checks the same way; it only chooses what the
+/// Why:
+///   Every lifecycle builds its checks the same way;
+///  it only chooses what the
 ///       content policies may read.
 ///
 /// In TS you'd write (pseudocode):
@@ -128,10 +168,14 @@ pub fn shipped_checks<F: RepositoryFacts>(
     };
 }
 
-/// What: The outcome of a check whose repository fact could not be read.
+/// What:
+///  The outcome of a check whose repository fact could not be read.
 ///       `String` is the owned reason the facts provider gave.
-/// Why:  Every fact these checks ask for is read from the repository, so its absence is
-///       `content-unavailable`, never a failure of the policy itself.
+/// Why:
+///   Every fact these checks ask for is read from the repository,
+///  so its absence is
+///       `content-unavailable`,
+///  never a failure of the policy itself.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -146,8 +190,12 @@ fn fact_unavailable(message: String) -> PolicyOutcome {
     };
 }
 
-/// What: The outcome "nothing found". `Vec::<PolicyFinding>::new()` is an empty owned list.
-/// Why:  Most checks end this way; one helper keeps them identical.
+/// What:
+///  The outcome "nothing found".
+///  `Vec::<PolicyFinding>::new()` is an empty owned list.
+/// Why:
+///   Most checks end this way;
+///  one helper keeps them identical.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -157,9 +205,14 @@ fn clean() -> PolicyOutcome {
     return PolicyOutcome::Findings(Vec::<PolicyFinding>::new());
 }
 
-/// What: The outcome "exactly one finding about the command". `&'static str` is text
-///       baked into the program; `String` is owned text.
-/// Why:  The four command policies each report at most one finding, without a path.
+/// What:
+///  The outcome "exactly one finding about the command".
+///  `&'static str` is text
+///       baked into the program;
+///  `String` is owned text.
+/// Why:
+///   The four command policies each report at most one finding,
+///  without a path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -177,11 +230,19 @@ fn rejected(code: &'static str, message: String) -> PolicyOutcome {
     }]);
 }
 
-/// What: The require-root check. `&mut dyn RepositoryFacts` lends "any facts provider" for
-///       writing (`dyn` means the concrete type is chosen at run time, like a TS interface
-///       value); `&[OsString]` borrows the arguments.
-/// Why:  A forwarded command is first judged by its arguments, because many commands are
-///       exempt. A direct check has no Git command whose exemption could apply. The root
+/// What:
+///  The require-root check.
+///  `&mut dyn RepositoryFacts` lends "any facts provider" for
+///       writing (`dyn` means the concrete type is chosen at run time,
+///  like a TS interface
+///       value);
+///  `&[OsString]` borrows the arguments.
+/// Why:
+///   A forwarded command is first judged by its arguments,
+///  because many commands are
+///       exempt.
+///  A direct check has no Git command whose exemption could apply.
+///  The root
 ///       and the directory both come from Git's own answer.
 ///
 /// In TS you'd write (pseudocode):
@@ -222,8 +283,12 @@ fn check_require_root(
     }
 }
 
-/// What: The linked-worktree-only check. `&[PathBuf]` borrows the exempt tool caches.
-/// Why:  Only a guarded, state-changing command needs to know which worktree it targets.
+/// What:
+///  The linked-worktree-only check.
+///  `&[PathBuf]` borrows the exempt tool caches.
+/// Why:
+///   Only a guarded,
+///  state-changing command needs to know which worktree it targets.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -252,8 +317,11 @@ fn check_linked_worktree(
     }
 }
 
-/// What: The branch-worktree-only check.
-/// Why:  Explicit creation is rejected from the arguments; a bare name is rejected only
+/// What:
+///  The branch-worktree-only check.
+/// Why:
+///   Explicit creation is rejected from the arguments;
+///  a bare name is rejected only
 ///       when Git would create a branch for it from the one remote that has it.
 ///
 /// In TS you'd write (pseudocode):
@@ -282,8 +350,10 @@ fn check_branch_worktree(facts: &mut dyn RepositoryFacts, arguments: &[OsString]
     }
 }
 
-/// What: The add-explicit check.
-/// Why:  The decision needs the arguments only.
+/// What:
+///  The add-explicit check.
+/// Why:
+///   The decision needs the arguments only.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -296,10 +366,16 @@ fn check_add_explicit(arguments: &[OsString]) -> PolicyOutcome {
     }
 }
 
-/// What: The check of a content policy that is not ported. `&LifecycleContent` borrows
-///       what the lifecycle offers; `needs` names what is missing.
-/// Why:  No candidates means no findings; candidates nobody can check mean the policy
-///       cannot answer, which refuses the command instead of letting it through.
+/// What:
+///  The check of a content policy that is not ported.
+///  `&LifecycleContent` borrows
+///       what the lifecycle offers;
+///  `needs` names what is missing.
+/// Why:
+///   No candidates means no findings;
+///  candidates nobody can check mean the policy
+///       cannot answer,
+///  which refuses the command instead of letting it through.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -312,9 +388,12 @@ fn unported_content(candidates: &LifecycleContent, needs: &'static str) -> Polic
     }
 }
 
-/// What: `impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F>` provides the engine's
-///       interface for the shipped policies, for any facts provider `F`.
-/// Why:  One `match` over the typed policy identity is the whole registry of behavior:
+/// What:
+///  `impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F>` provides the engine's
+///       interface for the shipped policies,
+///  for any facts provider `F`.
+/// Why:
+///   One `match` over the typed policy identity is the whole registry of behavior:
 ///       the compiler refuses a policy without a check.
 ///
 /// In TS you'd write (pseudocode):

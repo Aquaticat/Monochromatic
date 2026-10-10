@@ -1,6 +1,12 @@
-//! What: Controls for running one child with a time bound and output caps.
-//! Why: A child that hangs, floods its output, ignores its input or dies by a signal must
-//!      come back as its own failure, quickly, and must not be left running.
+//! What:
+//!  Controls for running one child with a time bound and output caps.
+//! Why:
+//!  A child that hangs,
+//!  floods its output,
+//!  ignores its input or dies by a signal must
+//!      come back as its own failure,
+//!  quickly,
+//!  and must not be left running.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -36,7 +42,8 @@ fn stand_in(root: &Path, name: &str, script: &str) -> PathBuf {
     return path;
 }
 
-/// Run `program` in `root` with `input`, the given environment and limits.
+/// Run `program` in `root` with `input`,
+///  the given environment and limits.
 fn run(
     root: &Path,
     program: &Path,
@@ -56,8 +63,11 @@ fn run(
     });
 }
 
-/// The stand-in reads all its input, sees exactly the given environment, arguments and
-/// directory, and its exit code and both outputs come back exactly.
+/// The stand-in reads all its input,
+///  sees exactly the given environment,
+///  arguments and
+/// directory,
+///  and its exit code and both outputs come back exactly.
 #[test]
 fn a_child_reads_its_input_and_returns_both_outputs() {
     let root: PathBuf = fixture("bounded-echo");
@@ -88,7 +98,9 @@ fn a_child_reads_its_input_and_returns_both_outputs() {
     remove(root.as_path());
 }
 
-/// A child that never reads its input, of any size, ends normally and quickly.
+/// A child that never reads its input,
+///  of any size,
+///  ends normally and quickly.
 #[test]
 fn a_child_that_ignores_its_input_ends_quickly() {
     let root: PathBuf = fixture("bounded-ignore");
@@ -132,12 +144,14 @@ fn a_child_ended_by_a_signal_reports_it() {
     remove(root.as_path());
 }
 
-/// Whether a process with this identifier still exists, by `/proc`.
+/// Whether a process with this identifier still exists,
+///  by `/proc`.
 fn running(pid: &str) -> bool {
     return Path::new("/proc").join(pid).exists();
 }
 
-/// A child still running at its bound is killed and collected, and the run says so.
+/// A child still running at its bound is killed and collected,
+///  and the run says so.
 #[test]
 fn a_child_past_its_bound_is_killed() {
     let root: PathBuf = fixture("bounded-timeout");
@@ -174,7 +188,8 @@ fn a_child_past_its_bound_is_killed() {
     remove(root.as_path());
 }
 
-/// Output past either cap stops the child; output exactly at the cap is kept whole.
+/// Output past either cap stops the child;
+///  output exactly at the cap is kept whole.
 #[test]
 fn output_past_a_cap_stops_the_child() {
     let root: PathBuf = fixture("bounded-cap");
@@ -256,8 +271,11 @@ fn output_past_a_cap_stops_the_child() {
     remove(root.as_path());
 }
 
-/// A program that does not exist, and a scratch directory that does not exist, fail
-/// before anything runs, each with its own cause.
+/// A program that does not exist,
+///  and a scratch directory that does not exist,
+///  fail
+/// before anything runs,
+///  each with its own cause.
 #[test]
 fn a_child_that_cannot_start_reports_why() {
     let root: PathBuf = fixture("bounded-start");
@@ -290,7 +308,8 @@ fn a_child_that_cannot_start_reports_why() {
     remove(root.as_path());
 }
 
-/// The cap comparison keeps a size equal to the cap; the bound is reached at equality.
+/// The cap comparison keeps a size equal to the cap;
+///  the bound is reached at equality.
 #[test]
 fn caps_and_bounds_are_inclusive_where_they_should_be() {
     assert!(!exceeds(5, 5));
@@ -303,7 +322,8 @@ fn caps_and_bounds_are_inclusive_where_they_should_be() {
     assert!(deadline_reached(Duration::from_millis(6), five));
 }
 
-/// Pauses double from one millisecond and settle at sixteen; a sleep never passes the bound.
+/// Pauses double from one millisecond and settle at sixteen;
+///  a sleep never passes the bound.
 #[test]
 fn pauses_double_and_never_pass_the_bound() {
     let mut pauses: Vec<u128> = Vec::new();

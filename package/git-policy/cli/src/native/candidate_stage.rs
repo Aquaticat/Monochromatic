@@ -1,13 +1,26 @@
-//! What: Parse the NUL-delimited stage records of `git ls-files --stage -z`, find the paths
-//!       one staging operation changed, and turn them into candidate records.
-//! Why: `git add` is checked before Git runs it, by replaying it on a private copy of the
-//!      index. The paths it would stage are exactly those whose index records differ
-//!      between the copy before and after the replay. Comparing complete records, conflict
-//!      stages included, finds a resolved conflict like any other change, and an unrelated
-//!      conflict elsewhere in the index never stops the comparison. Pathnames stay the raw
+//! What:
+//!  Parse the NUL-delimited stage records of `git ls-files --stage -z`,
+//!  find the paths
+//!       one staging operation changed,
+//!  and turn them into candidate records.
+//! Why:
+//!  `git add` is checked before Git runs it,
+//!  by replaying it on a private copy of the
+//!      index.
+//!  The paths it would stage are exactly those whose index records differ
+//!      between the copy before and after the replay.
+//!  Comparing complete records,
+//!  conflict
+//!      stages included,
+//!  finds a resolved conflict like any other change,
+//!  and an unrelated
+//!      conflict elsewhere in the index never stops the comparison.
+//!  Pathnames stay the raw
 //!      bytes Git printed.
 //!
-//! Git 2.56.0 (`builtin/ls-files.c`, `show_ce`) prints, with `--stage -z`:
+//! Git 2.56.0 (`builtin/ls-files.c`,
+//!  `show_ce`) prints,
+//!  with `--stage -z`:
 //! `<mode> SP <object> SP <stage> TAB <path> NUL`.
 //!
 //! In TS you'd write (pseudocode):
@@ -18,13 +31,19 @@
 
 /// Import the layer's failure type and its closed list of causes.
 use super::candidate_error::{CandidateError, CandidateFailure};
-/// Import the candidate modes, the validated object name and their parsers.
+/// Import the candidate modes,
+///  the validated object name and their parsers.
 use super::candidate_object::{CandidateMode, ObjectId, mode_from_git, parse_object_id};
-/// Import the candidate record a version is built from, and its change kinds.
+/// Import the candidate record a version is built from,
+///  and its change kinds.
 use super::candidate_record::{CandidateChange, CandidateRecord};
-/// What: `HashMap<K, V>` is a key-to-value table and `HashSet<T>` a set of keys
-///       (siblings: `BTreeMap` and `BTreeSet`, which keep keys sorted).
-/// Why:  Each path of one state is found without scanning the other state's list.
+/// What:
+///  `HashMap<K, V>` is a key-to-value table and `HashSet<T>` a set of keys
+///       (siblings:
+///  `BTreeMap` and `BTreeSet`,
+///  which keep keys sorted).
+/// Why:
+///   Each path of one state is found without scanning the other state's list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,10 +51,17 @@ use super::candidate_record::{CandidateChange, CandidateRecord};
 /// ```
 use std::collections::{HashMap, HashSet};
 
-/// What: One index entry. `u8` is an unsigned byte; a stage is 0 for a merged entry and
-///       1 to 3 for the sides of a conflict. `#[derive(...)]` generates cloning, debug
+/// What:
+///  One index entry.
+///  `u8` is an unsigned byte;
+///  a stage is 0 for a merged entry and
+///       1 to 3 for the sides of a conflict.
+///  `#[derive(...)]` generates cloning,
+///  debug
 ///       printing and `==`.
-/// Why:  Two states are compared record by record, so a record holds every field Git
+/// Why:
+///   Two states are compared record by record,
+///  so a record holds every field Git
 ///       printed for the entry.
 ///
 /// In TS you'd write (pseudocode):
@@ -48,15 +74,22 @@ pub struct StageRecord {
     pub mode: CandidateMode,
     /// The object the entry names.
     pub object: ObjectId,
-    /// 0 for a merged entry; 1, 2 or 3 for a conflict stage.
+    /// 0 for a merged entry;
+    ///  1,
+    ///  2 or 3 for a conflict stage.
     pub stage: u8,
-    /// Repository-relative pathname, exactly as Git printed it.
+    /// Repository-relative pathname,
+    ///  exactly as Git printed it.
     pub path: Vec<u8>,
 }
 
-/// What: One path a staging operation changed, with what the index holds there afterwards.
+/// What:
+///  One path a staging operation changed,
+///  with what the index holds there afterwards.
 ///       `Vec<StageRecord>` is empty when the operation removed the path from the index.
-/// Why:  A candidate is built from the state after the operation; a removed path becomes
+/// Why:
+///   A candidate is built from the state after the operation;
+///  a removed path becomes
 ///       a deletion only when the baseline commit has it.
 ///
 /// In TS you'd write (pseudocode):
@@ -67,13 +100,21 @@ pub struct StageRecord {
 pub struct ChangedPath {
     /// Repository-relative pathname.
     pub path: Vec<u8>,
-    /// The path's records after the operation, in stage order; empty when it was removed.
+    /// The path's records after the operation,
+    ///  in stage order;
+    ///  empty when it was removed.
     pub after: Vec<StageRecord>,
 }
 
-/// What: Build the failure for one malformed stage record. `position` is the record's
-///       zero-based place in the listing; `usize` is the type of list positions.
-/// Why:  A record is named by its position, never by its pathname, which can itself be a
+/// What:
+///  Build the failure for one malformed stage record.
+///  `position` is the record's
+///       zero-based place in the listing;
+///  `usize` is the type of list positions.
+/// Why:
+///   A record is named by its position,
+///  never by its pathname,
+///  which can itself be a
 ///       forbidden string.
 ///
 /// In TS you'd write (pseudocode):
@@ -91,8 +132,12 @@ fn stage_failure(failure: CandidateFailure, position: usize, detail: &str) -> Ca
     );
 }
 
-/// What: Whether one byte is NUL, the record terminator.
-/// Why:  A named predicate for `split`, because the repository bans anonymous functions.
+/// What:
+///  Whether one byte is NUL,
+///  the record terminator.
+/// Why:
+///   A named predicate for `split`,
+///  because the repository bans anonymous functions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -102,8 +147,11 @@ fn is_nul(byte: &u8) -> bool {
     return *byte == 0;
 }
 
-/// What: Whether one byte is a space, the metadata field separator.
-/// Why:  A named predicate for `split`.
+/// What:
+///  Whether one byte is a space,
+///  the metadata field separator.
+/// Why:
+///   A named predicate for `split`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -113,8 +161,11 @@ fn is_space(byte: &u8) -> bool {
     return *byte == b' ';
 }
 
-/// What: Whether one byte is a tab, which ends the metadata.
-/// Why:  A named predicate for `position`.
+/// What:
+///  Whether one byte is a tab,
+///  which ends the metadata.
+/// Why:
+///   A named predicate for `position`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -124,9 +175,13 @@ fn is_tab(byte: &u8) -> bool {
     return *byte == b'\t';
 }
 
-/// What: The stage number of a stage field, or nothing for any other text.
+/// What:
+///  The stage number of a stage field,
+///  or nothing for any other text.
 ///       `Option<u8>` is "a number or nothing".
-/// Why:  Git prints exactly one digit from 0 to 3; anything else means the output is not
+/// Why:
+///   Git prints exactly one digit from 0 to 3;
+///  anything else means the output is not
 ///       a stage listing.
 ///
 /// In TS you'd write (pseudocode):
@@ -144,9 +199,15 @@ fn stage_number(text: &[u8]) -> Option<u8> {
     }
 }
 
-/// What: Parse one record from its zero-based position and its bytes, terminator removed.
-/// Why:  The first tab ends the metadata; the pathname is every byte after it, tabs
-///       included, and must not be empty.
+/// What:
+///  Parse one record from its zero-based position and its bytes,
+///  terminator removed.
+/// Why:
+///   The first tab ends the metadata;
+///  the pathname is every byte after it,
+///  tabs
+///       included,
+///  and must not be empty.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -207,10 +268,15 @@ fn parse_stage_record(position: usize, record: &[u8]) -> Result<StageRecord, Can
     });
 }
 
-/// What: Parse a complete `git ls-files --stage -z` listing.
-///       `Result<Vec<StageRecord>, CandidateError>` is "every record, or the first failure".
-/// Why:  A listing that does not end with NUL was cut short; a partial list would hide
-///       entries from the comparison, so the whole listing is refused.
+/// What:
+///  Parse a complete `git ls-files --stage -z` listing.
+///       `Result<Vec<StageRecord>, CandidateError>` is "every record,
+///  or the first failure".
+/// Why:
+///   A listing that does not end with NUL was cut short;
+///  a partial list would hide
+///       entries from the comparison,
+///  so the whole listing is refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -238,10 +304,16 @@ pub fn parse_stage_records(output: &[u8]) -> Result<Vec<StageRecord>, CandidateE
     return Ok(records);
 }
 
-/// What: The records of one index state grouped by path, in listing order.
-///       `Vec<(&[u8], &[StageRecord])>` is a list of borrowed pathnames, each with the
+/// What:
+///  The records of one index state grouped by path,
+///  in listing order.
+///       `Vec<(&[u8], &[StageRecord])>` is a list of borrowed pathnames,
+///  each with the
 ///       consecutive records Git listed for it.
-/// Why:  Git lists every stage of a path together, sorted, so one pass over the slice
+/// Why:
+///   Git lists every stage of a path together,
+///  sorted,
+///  so one pass over the slice
 ///       groups them without copying a record.
 ///
 /// In TS you'd write (pseudocode):
@@ -266,10 +338,19 @@ fn group_by_path(records: &[StageRecord]) -> Vec<(&[u8], &[StageRecord])> {
     return groups;
 }
 
-/// What: The paths whose records differ between two index states, in the order the
-///       installed wrapper reports them: paths the first state held, in its order, then
-///       paths only the second state holds, in its order.
-/// Why:  A path is changed when its complete record list differs, stage by stage, so a
+/// What:
+///  The paths whose records differ between two index states,
+///  in the order the
+///       installed wrapper reports them:
+///  paths the first state held,
+///  in its order,
+///  then
+///       paths only the second state holds,
+///  in its order.
+/// Why:
+///   A path is changed when its complete record list differs,
+///  stage by stage,
+///  so a
 ///       resolved conflict counts and an untouched conflict does not.
 ///
 /// In TS you'd write (pseudocode):
@@ -312,12 +393,20 @@ pub fn staged_delta(before: &[StageRecord], after: &[StageRecord]) -> Vec<Change
     return changed;
 }
 
-/// What: Turn changed paths into candidate records, given the records `git diff-index`
+/// What:
+///  Turn changed paths into candidate records,
+///  given the records `git diff-index`
 ///       printed for those paths against the baseline commit.
-/// Why:  A path the index still holds is a candidate with its merged entry: an addition
-///       when the baseline lacks it, otherwise a modification, even when its content now
-///       equals the baseline's. A removed path is a deletion only when the baseline has
-///       it; a path that was never committed carries nothing to check and is dropped.
+/// Why:
+///   A path the index still holds is a candidate with its merged entry:
+///  an addition
+///       when the baseline lacks it,
+///  otherwise a modification,
+///  even when its content now
+///       equals the baseline's.
+///  A removed path is a deletion only when the baseline has
+///       it;
+///  a path that was never committed carries nothing to check and is dropped.
 ///       A path left unmerged has no single staged content and stops the prediction.
 ///
 /// In TS you'd write (pseudocode):
@@ -373,10 +462,17 @@ pub fn delta_candidates(
     return Ok(candidates);
 }
 
-/// What: Turn every entry of a scope into a candidate record, given the records
+/// What:
+///  Turn every entry of a scope into a candidate record,
+///  given the records
 ///       `git diff-index` printed for the same scope against the baseline commit.
-/// Why:  A direct check reads every selected file, changed or not, so every merged entry
-///       is a candidate: an addition when the baseline lacks it, otherwise a modification.
+/// Why:
+///   A direct check reads every selected file,
+///  changed or not,
+///  so every merged entry
+///       is a candidate:
+///  an addition when the baseline lacks it,
+///  otherwise a modification.
 ///       A conflicted entry has no single content and stops the projection.
 ///
 /// In TS you'd write (pseudocode):
@@ -417,7 +513,8 @@ pub fn scope_candidates(
     return Ok(candidates);
 }
 
-/// Parser, delta and classification controls stay out of the release executable.
+/// Parser,
+///  delta and classification controls stay out of the release executable.
 #[cfg(test)]
 #[path = "candidate_stage_tests.rs"]
 mod tests;

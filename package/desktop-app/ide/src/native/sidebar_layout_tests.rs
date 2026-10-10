@@ -1,17 +1,26 @@
-//! Source repaint, window resizing, the find bar, and the search overlay beside a resized sidebar.
+//! Source repaint,
+//!  window resizing,
+//!  the find bar,
+//!  and the search overlay beside a resized sidebar.
 
-/// Shared window fixture, pointer helpers, and the pinned layout measurements.
+/// Shared window fixture,
+///  pointer helpers,
+///  and the pinned layout measurements.
 use super::sidebar_tests::{
     DIVIDER, GUTTER, HEADER, MINIMUM, REACH, SOURCE_MINIMUM, click, drag_to, fixture, motion,
     press, release, resize, settle,
 };
-/// Generated window and search row types from the shipped markup, and the single rendering boundary.
+/// Generated window and search row types from the shipped markup,
+///  and the single rendering boundary.
 use super::{AppWindow, render, ui::SearchEntry};
 /// Toolkit models and the left pointer button for a drag that must not resize.
 use slint::{ComponentHandle, ModelRc, VecModel, platform::PointerEventButton};
-/// What: `Rc` is a shared pointer for one thread (sibling `Arc` works across threads); `Cell` holds a
+/// What:
+///  `Rc` is a shared pointer for one thread (sibling `Arc` works across threads);
+///  `Cell` holds a
 /// small copied value that can change behind that pointer (sibling `RefCell` for larger values).
-/// Why: Overlay callbacks record what they were asked to do while the test keeps reading it.
+/// Why:
+///  Overlay callbacks record what they were asked to do while the test keeps reading it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,9 +28,12 @@ use slint::{ComponentHandle, ModelRc, VecModel, platform::PointerEventButton};
 /// ```
 use std::{cell::Cell, rc::Rc};
 
-/// What: `&AppWindow` lends the window; the `bool` answer says whether the source image spans the whole
+/// What:
+///  `&AppWindow` lends the window;
+///  the `bool` answer says whether the source image spans the whole
 /// visible source width at the current horizontal scroll offset.
-/// Why: A stale raster tile shows as blank source at the right edge after the source column widens.
+/// Why:
+///  A stale raster tile shows as blank source at the right edge after the source column widens.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -111,7 +123,9 @@ fn source_relayouts_and_repaints_after_a_sidebar_resize() {
     window.hide().expect("close sidebar window");
 }
 
-/// A narrow window shrinks the shown sidebar, keeps the request, and never goes below the minimum.
+/// A narrow window shrinks the shown sidebar,
+///  keeps the request,
+///  and never goes below the minimum.
 #[test]
 fn window_resize_shrinks_the_sidebar_and_restores_the_request() {
     let shared = fixture(6);

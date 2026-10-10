@@ -1,6 +1,9 @@
-//! What: Controls for the one-rule linter configuration and its temporary file.
-//! Why: The document must select exactly the policy's rules at `warn` and carry every
-//!      exclude pattern as data, whatever characters the pattern holds.
+//! What:
+//!  Controls for the one-rule linter configuration and its temporary file.
+//! Why:
+//!  The document must select exactly the policy's rules at `warn` and carry every
+//!      exclude pattern as data,
+//!  whatever characters the pattern holds.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -59,7 +62,8 @@ fn the_document_selects_the_rule_at_warn() {
     );
 }
 
-/// No rule selects nothing; no pattern is an empty list.
+/// No rule selects nothing;
+///  no pattern is an empty list.
 #[test]
 fn empty_lists_stay_empty() {
     let none: JsoncValue = parse_jsonc(one_rule_configuration(&[], &[]).as_str()).expect("JSON");
@@ -80,7 +84,10 @@ fn empty_lists_stay_empty() {
     assert_eq!(texts(member(lfs, "exclude")), Vec::<String>::new());
 }
 
-/// Patterns holding JSON and JSONC syntax, escapes, line breaks, control and astral
+/// Patterns holding JSON and JSONC syntax,
+///  escapes,
+///  line breaks,
+///  control and astral
 /// characters come back exactly as data.
 #[test]
 fn hostile_patterns_stay_data() {
@@ -104,8 +111,11 @@ fn hostile_patterns_stay_data() {
     assert_eq!(texts(member(lfs, "exclude")), exclude);
 }
 
-/// The file holds the document, sits in the given directory with the policy's name, is
-/// readable by its owner only, and is gone once dropped.
+/// The file holds the document,
+///  sits in the given directory with the policy's name,
+///  is
+/// readable by its owner only,
+///  and is gone once dropped.
 #[test]
 fn the_file_is_private_and_removed_when_dropped() {
     use std::os::unix::fs::PermissionsExt;
@@ -133,7 +143,8 @@ fn the_file_is_private_and_removed_when_dropped() {
     remove(root.as_path());
 }
 
-/// A directory that does not exist is reported, naming it.
+/// A directory that does not exist is reported,
+///  naming it.
 #[test]
 fn a_missing_directory_is_reported() {
     let missing: &Path = Path::new("/nonexistent-cli-git-scratch");

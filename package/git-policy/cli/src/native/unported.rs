@@ -1,17 +1,29 @@
-//! What: The work of the installed cli-git that this executable does not do yet, as one
-//!       typed list, and the notice printed when a command needs any of it.
-//! Why: A command that needs unported work must stop with exit status 2 and say what is
-//!      missing. Forwarding it instead would run the command without the protection the
-//!      installed wrapper gives it, and nobody would see that it happened.
+//! What:
+//!  The work of the installed cli-git that this executable does not do yet,
+//!  as one
+//!       typed list,
+//!  and the notice printed when a command needs any of it.
+//! Why:
+//!  A command that needs unported work must stop with exit status 2 and say what is
+//!      missing.
+//!  Forwarding it instead would run the command without the protection the
+//!      installed wrapper gives it,
+//!  and nobody would see that it happened.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // process.stderr.write(unportedNotice({ kind: 'commit-transaction' }, 'commit')); process.exitCode = 2;
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  A refusal can name a policy, a lifecycle trigger, or an engine "unavailable" answer.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   A refusal can name a policy,
+///  a lifecycle trigger,
+///  or an engine "unavailable" answer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,9 +32,14 @@
 use super::policy_engine::Unavailable;
 use super::policy_registry::{PolicyId, policy_descriptor};
 use super::policy_trigger::{Trigger, trigger_name};
-/// What: `PathBuf` is an owned filesystem path of raw bytes. Sibling the reader might
-///       expect: `String`, which must be valid UTF-8.
-/// Why:  A refusal about leftover state names the directory that holds it.
+/// What:
+///  `PathBuf` is an owned filesystem path of raw bytes.
+///  Sibling the reader might
+///       expect:
+///  `String`,
+///  which must be valid UTF-8.
+/// Why:
+///   A refusal about leftover state names the directory that holds it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,10 +47,17 @@ use super::policy_trigger::{Trigger, trigger_name};
 /// ```
 use std::path::PathBuf;
 
-/// What: One piece of unported work. An `enum` is a closed set of named alternatives; some
-///       carry a value. `#[derive(...)]` asks the compiler to generate copying, debug
+/// What:
+///  One piece of unported work.
+///  An `enum` is a closed set of named alternatives;
+///  some
+///       carry a value.
+///  `#[derive(...)]` asks the compiler to generate copying,
+///  debug
 ///       printing and `==`.
-/// Why:  Every refusal of this executable is one of these, so the list of what stops a
+/// Why:
+///   Every refusal of this executable is one of these,
+///  so the list of what stops a
 ///       command is in one place and a test can name the exact reason.
 ///
 /// In TS you'd write (pseudocode):
@@ -54,11 +78,14 @@ pub enum Unported {
     WorktreeCopy,
     /// Resolving a Git alias to the command it runs.
     AliasResolution,
-    /// Recovering, or waiting for, the commit transactions recorded in this directory.
+    /// Recovering,
+    ///  or waiting for,
+    ///  the commit transactions recorded in this directory.
     TransactionRecovery(PathBuf),
     /// Recovering the interrupted worktree copies recorded in this directory.
     WorktreeCopyRecovery(PathBuf),
-    /// Checking the lease in this environment variable, set by a running cli-git.
+    /// Checking the lease in this environment variable,
+    ///  set by a running cli-git.
     InheritedLease(&'static str),
     /// The policy lifecycle of this trigger.
     Lifecycle(Trigger),
@@ -66,13 +93,17 @@ pub enum Unported {
     PolicyNeeds {
         /// The policy that could not be evaluated.
         policy: PolicyId,
-        /// What it needs, in words.
+        /// What it needs,
+        ///  in words.
         needs: &'static str,
     },
 }
 
-/// What: Turn the engine's "unavailable" answer into the refusal it stands for.
-/// Why:  The engine reports what it could not evaluate; the wrapper refuses with one
+/// What:
+///  Turn the engine's "unavailable" answer into the refusal it stands for.
+/// Why:
+///   The engine reports what it could not evaluate;
+///  the wrapper refuses with one
 ///       vocabulary whether the gap was found by the engine or before it.
 ///
 /// In TS you'd write (pseudocode):
@@ -87,10 +118,15 @@ pub fn unported_from_unavailable(unavailable: Unavailable) -> Unported {
     }
 }
 
-/// What: Name the missing work as the subject of the sentence "... is not implemented".
-///       `&Unported` borrows the reason; `String` is owned UTF-8 text.
-/// Why:  The person reading the notice must learn which protection is missing, in plain
-///       words, and what they can do when there is a way to avoid needing it.
+/// What:
+///  Name the missing work as the subject of the sentence "... is not implemented".
+///       `&Unported` borrows the reason;
+///  `String` is owned UTF-8 text.
+/// Why:
+///   The person reading the notice must learn which protection is missing,
+///  in plain
+///       words,
+///  and what they can do when there is a way to avoid needing it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -147,10 +183,16 @@ fn unported_subject(what: &Unported) -> String {
     }
 }
 
-/// What: The complete, line-terminated notice for a command stopped by unported work.
+/// What:
+///  The complete,
+///  line-terminated notice for a command stopped by unported work.
 ///       `&str` borrows the command words as the caller typed them.
-/// Why:  One sentence shape for every refusal: what is missing, that the command did not
-///       run, and where the complete implementation is.
+/// Why:
+///   One sentence shape for every refusal:
+///  what is missing,
+///  that the command did not
+///       run,
+///  and where the complete implementation is.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

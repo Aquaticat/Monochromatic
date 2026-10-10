@@ -1,8 +1,14 @@
-//! What: A control for a byte source that reports its end and later yields more bytes.
-//! Why: A pipe stays ended once it ends, but the reply reader accepts any buffered source,
-//!      and a file that is still being written does not. Without the explicit check that
-//!      all declared content bytes arrived, such a source could have its later bytes
-//!      read as the closing line feed, and shortened content would be accepted.
+//! What:
+//!  A control for a byte source that reports its end and later yields more bytes.
+//! Why:
+//!  A pipe stays ended once it ends,
+//!  but the reply reader accepts any buffered source,
+//!      and a file that is still being written does not.
+//!  Without the explicit check that
+//!      all declared content bytes arrived,
+//!  such a source could have its later bytes
+//!      read as the closing line feed,
+//!  and shortened content would be accepted.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -17,7 +23,8 @@ use std::io::{BufRead, Read};
 /// A complete SHA-1 object name used as the request.
 const NAME: &str = "0123456789abcdef0123456789abcdef01234567";
 
-/// A byte source in two parts that reports its end once between them, like a file that grows.
+/// A byte source in two parts that reports its end once between them,
+///  like a file that grows.
 struct ResumingStream {
     /// Bytes available before the first reported end.
     first: Vec<u8>,
@@ -29,7 +36,9 @@ struct ResumingStream {
     reported_end: bool,
 }
 
-/// Reading hands out the first part, then one end, then the second part.
+/// Reading hands out the first part,
+///  then one end,
+///  then the second part.
 impl Read for ResumingStream {
     fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
         let available: &[u8] = self.fill_buf()?;
@@ -60,7 +69,8 @@ impl BufRead for ResumingStream {
     }
 }
 
-/// Content that stops short of its declared size is truncated, even when a line feed arrives afterwards.
+/// Content that stops short of its declared size is truncated,
+///  even when a line feed arrives afterwards.
 #[test]
 fn content_that_ends_early_is_refused_even_when_more_bytes_follow() {
     let mut stream: ResumingStream = ResumingStream {
@@ -84,7 +94,8 @@ fn content_that_ends_early_is_refused_even_when_more_bytes_follow() {
     assert_eq!(stream.position, 0);
 }
 
-/// The same source with its content complete in the first part is accepted, so the control can tell the two apart.
+/// The same source with its content complete in the first part is accepted,
+///  so the control can tell the two apart.
 #[test]
 fn complete_content_from_the_same_source_is_accepted() {
     let mut stream: ResumingStream = ResumingStream {

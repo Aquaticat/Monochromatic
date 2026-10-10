@@ -1,5 +1,9 @@
-//! What: Slot-position controls for inferred generic constants, compared by finding message.
-//! Why: A constant hole and a nameable type hole both yield one finding; only the message shows which slot was resolved.
+//! What:
+//!  Slot-position controls for inferred generic constants,
+//!  compared by finding message.
+//! Why:
+//!  A constant hole and a nameable type hole both yield one finding;
+//!  only the message shows which slot was resolved.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,8 +20,11 @@ const CONSTANT: &str = "Replace inferred '_' with an explicit constant value.";
 /// Message reported when the hole stands in a nameable type parameter's slot.
 const TYPE: &str = "Replace inferred '_' with an explicit Rust type.";
 
-/// What: Authored source and its independently expected finding messages, in source order.
-/// Why: An equal finding count cannot hide a hole that was matched against a neighbouring parameter.
+/// What:
+///  Authored source and its independently expected finding messages,
+///  in source order.
+/// Why:
+///  An equal finding count cannot hide a hole that was matched against a neighbouring parameter.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,7 +35,8 @@ struct Case {
     name: &'static str,
     /// Complete standalone Rust input for the owned fixture.
     source: &'static str,
-    /// Expected ordinary findings; semantic-processing failures are prohibited separately.
+    /// Expected ordinary findings;
+    ///  semantic-processing failures are prohibited separately.
     messages: &'static [&'static str],
 }
 
@@ -45,7 +53,8 @@ fn assert_case(fixture: &mut SemanticFixture, case: &Case) {
     assert_eq!(messages, case.messages, "{}", case.name);
 }
 
-/// Each hole is matched with the parameter in its own slot, whatever precedes it in either list.
+/// Each hole is matched with the parameter in its own slot,
+///  whatever precedes it in either list.
 #[test]
 fn holes_resolve_against_the_parameter_in_their_own_slot() {
     let mut fixture: SemanticFixture = SemanticFixture::new();

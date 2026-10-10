@@ -1,13 +1,25 @@
-//! What: The linter the executable gives `markdown/autofix`: `monochromatic-lint`, found
+//! What:
+//!  The linter the executable gives `markdown/autofix`:
+//!  `monochromatic-lint`,
+//!  found
 //!       on the invocation's PATH and started once per candidate as
 //!       `monochromatic-lint --config=<file> --stdin --stdin-filename=<path> --fix`
-//!       from the repository's top level, with a time bound and output caps.
-//! Why: This is the plan's stream contract (`doc/planning/unified-linter.md`, section
-//!      "Distribution and consumers"; `doc/planning/cli-git-rust-implementation.md`,
-//!      lines 181 to 189). The program and its one-rule configuration are found and
-//!      written once per invocation, when the first candidate needs them, so a command
-//!      with no Markdown candidate never needs the linter. Every option is written as one
-//!      `--name=value` argument, so a pathname that starts with `-` stays a value.
+//!       from the repository's top level,
+//!  with a time bound and output caps.
+//! Why:
+//!  This is the plan's stream contract (`doc/planning/unified-linter.md`,
+//!  section
+//!      "Distribution and consumers";
+//!  `doc/planning/cli-git-rust-implementation.md`,
+//!      lines 181 to 189).
+//!  The program and its one-rule configuration are found and
+//!      written once per invocation,
+//!  when the first candidate needs them,
+//!  so a command
+//!      with no Markdown candidate never needs the linter.
+//!  Every option is written as one
+//!      `--name=value` argument,
+//!  so a pathname that starts with `-` stays a value.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -39,12 +51,21 @@ use std::time::Duration;
 /// The owner-only temporary file that holds the configuration while the invocation runs.
 use tempfile::NamedTempFile;
 
-/// What: The bounds of one linter run in the executable.
-/// Why:  Measured on the host, one run takes about 11 milliseconds warm and 227 cold; the
-///       LFS rule also hashes every image a file links, which for a large image takes
-///       seconds, and the host has run at load averages of 40 to 90. A minute leaves
-///       room for all of that and still ends a hung linter. Standard output is the fixed
-///       source: the cap allows a large file whose every link grows into an object URL.
+/// What:
+///  The bounds of one linter run in the executable.
+/// Why:
+///   Measured on the host,
+///  one run takes about 11 milliseconds warm and 227 cold;
+///  the
+///       LFS rule also hashes every image a file links,
+///  which for a large image takes
+///       seconds,
+///  and the host has run at load averages of 40 to 90.
+///  A minute leaves
+///       room for all of that and still ends a hung linter.
+///  Standard output is the fixed
+///       source:
+///  the cap allows a large file whose every link grows into an object URL.
 ///       Standard error carries only the findings the fixes leave.
 ///
 /// In TS you'd write (pseudocode):
@@ -57,9 +78,18 @@ pub const LINTER_LIMITS: ChildLimits = ChildLimits {
     max_stderr: 4 << 20,
 };
 
-/// What: The linter of one invocation: the environment it runs with, its bounds, where
-///       its files go, and, once known, its program and configuration file.
-/// Why:  The lookup and the file are made at most once; their failures are remembered and
+/// What:
+///  The linter of one invocation:
+///  the environment it runs with,
+///  its bounds,
+///  where
+///       its files go,
+///  and,
+///  once known,
+///  its program and configuration file.
+/// Why:
+///   The lookup and the file are made at most once;
+///  their failures are remembered and
 ///       reported to every later candidate the same way.
 ///
 /// In TS you'd write (pseudocode):
@@ -67,21 +97,30 @@ pub const LINTER_LIMITS: ChildLimits = ChildLimits {
 /// class ProcessLinter implements MarkdownLinter { executable?: string | null; configuration?: TemporaryFile | string }
 /// ```
 pub struct ProcessLinter {
-    /// The invocation's whole environment, which the linter runs with.
+    /// The invocation's whole environment,
+    ///  which the linter runs with.
     environment: Vec<(OsString, OsString)>,
     /// The bounds of each run.
     limits: ChildLimits,
     /// The directory for the configuration file and the stream files.
     scratch: PathBuf,
-    /// The program, once looked up; `Some(None)` remembers that it was not found.
+    /// The program,
+    ///  once looked up;
+    ///  `Some(None)` remembers that it was not found.
     executable: Option<Option<PathBuf>>,
-    /// The configuration file, once written, or the reason it could not be.
+    /// The configuration file,
+    ///  once written,
+    ///  or the reason it could not be.
     configuration: Option<Result<NamedTempFile, String>>,
 }
 
-/// What: The linter for an invocation with this environment, bounds and scratch directory.
+/// What:
+///  The linter for an invocation with this environment,
+///  bounds and scratch directory.
 ///       `&[(OsString, OsString)]` borrows the environment.
-/// Why:  The executable passes `LINTER_LIMITS` and the system's temporary directory; tests
+/// Why:
+///   The executable passes `LINTER_LIMITS` and the system's temporary directory;
+///  tests
 ///       pass small bounds and a fixture.
 ///
 /// In TS you'd write (pseudocode):
@@ -102,10 +141,16 @@ pub fn process_linter(
     };
 }
 
-/// What: The linter of the running executable: `LINTER_LIMITS` and the system's temporary
-///       directory, made absolute. `std::path::absolute` resolves a relative directory
+/// What:
+///  The linter of the running executable:
+///  `LINTER_LIMITS` and the system's temporary
+///       directory,
+///  made absolute.
+///  `std::path::absolute` resolves a relative directory
 ///       against the current one without touching the filesystem.
-/// Why:  The linter runs from the top level, so a relative configuration path would name
+/// Why:
+///   The linter runs from the top level,
+///  so a relative configuration path would name
 ///       another file there.
 ///
 /// In TS you'd write (pseudocode):
@@ -118,8 +163,10 @@ pub fn executable_linter(environment: &[(OsString, OsString)]) -> ProcessLinter 
     return process_linter(environment, LINTER_LIMITS, scratch);
 }
 
-/// What: The sentence for a child that produced no usable run.
-/// Why:  Each cause tells the person what happened in the linter's terms.
+/// What:
+///  The sentence for a child that produced no usable run.
+/// Why:
+///   Each cause tells the person what happened in the linter's terms.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -155,16 +202,22 @@ fn child_failure_reason(failure: &ChildFailure, program: &std::path::Path) -> St
     }
 }
 
-/// What: `impl ProcessLinter { ... }` attaches the two remembered preparations.
-/// Why:  They are made on first use and never twice.
+/// What:
+///  `impl ProcessLinter { ... }` attaches the two remembered preparations.
+/// Why:
+///   They are made on first use and never twice.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ProcessLinter { program(): string; configurationPath(options): string }
 /// ```
 impl ProcessLinter {
-    /// What: The program, looked up on the environment's PATH on first use.
-    /// Why:  A missing linter is a broken installation, reported as the reason every
+    /// What:
+    ///  The program,
+    ///  looked up on the environment's PATH on first use.
+    /// Why:
+    ///   A missing linter is a broken installation,
+    ///  reported as the reason every
     ///       Markdown candidate stays unchecked (`doc/planning/cli-git-rust-open-decisions.md`,
     ///       "Markdown policy without the linter").
     ///
@@ -188,8 +241,12 @@ impl ProcessLinter {
         }
     }
 
-    /// What: The configuration file's path, written for the request's options on first use.
-    /// Why:  The options are the invocation's, the same for every candidate.
+    /// What:
+    ///  The configuration file's path,
+    ///  written for the request's options on first use.
+    /// Why:
+    ///   The options are the invocation's,
+    ///  the same for every candidate.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -218,8 +275,12 @@ impl ProcessLinter {
     }
 }
 
-/// What: One `--name=value` argument. `&std::ffi::OsStr` borrows the value's raw bytes.
-/// Why:  Joined to its option, a value that starts with `-` can never read as an option.
+/// What:
+///  One `--name=value` argument.
+///  `&std::ffi::OsStr` borrows the value's raw bytes.
+/// Why:
+///   Joined to its option,
+///  a value that starts with `-` can never read as an option.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -232,16 +293,21 @@ fn option(name: &str, value: &std::ffi::OsStr) -> OsString {
     return argument;
 }
 
-/// What: `impl MarkdownLinter for ProcessLinter` starts the real linter for each request.
-/// Why:  See the module comment.
+/// What:
+///  `impl MarkdownLinter for ProcessLinter` starts the real linter for each request.
+/// Why:
+///   See the module comment.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ProcessLinter implements MarkdownLinter {}
 /// ```
 impl MarkdownLinter for ProcessLinter {
-    /// What: Lint one candidate through the linter's standard input.
-    /// Why:  The linter reads `.lfsconfig` and linked images from the worktree, so it runs
+    /// What:
+    ///  Lint one candidate through the linter's standard input.
+    /// Why:
+    ///   The linter reads `.lfsconfig` and linked images from the worktree,
+    ///  so it runs
     ///       from the top level and is told the candidate's name relative to it.
     ///
     /// In TS you'd write (pseudocode):
@@ -278,7 +344,9 @@ impl MarkdownLinter for ProcessLinter {
     }
 }
 
-/// Lookup, configuration, argument and failure controls stay out of the release executable.
+/// Lookup,
+///  configuration,
+///  argument and failure controls stay out of the release executable.
 #[cfg(test)]
 #[path = "markdown_linter_tests.rs"]
 mod tests;

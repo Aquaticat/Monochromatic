@@ -1,5 +1,9 @@
-//! What:    Byte-class equivalence: collapse the 256 bytes into transition-equivalent groups.
-//! Why:     This file is the Rust module that groups the classes implementation, so the
+//! What:
+//!     Byte-class equivalence:
+//!  collapse the 256 bytes into transition-equivalent groups.
+//! Why:
+//!      This file is the Rust module that groups the classes implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +11,11 @@
 //! // module classes: see exported functions and types below.
 //! ```
 
-/// What:    Imports the hash map used to deduplicate byte signatures.
-/// Why:     The code below uses `HashMap` directly; importing from `std/collections` keeps each
+/// What:
+///     Imports the hash map used to deduplicate byte signatures.
+/// Why:
+///      The code below uses `HashMap` directly;
+///  importing from `std/collections` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +24,12 @@
 /// ```
 use std::collections::HashMap;
 
-/// What:    Imports the byte-set leaf type and the word predicate.
-/// Why:     The code below uses `ByteSet`, `is_word_byte` directly; importing from
+/// What:
+///     Imports the byte-set leaf type and the word predicate.
+/// Why:
+///      The code below uses `ByteSet`,
+///  `is_word_byte` directly;
+///  importing from
 ///          `crate/charset` keeps each call site focused on the matcher logic instead of the
 ///          full Rust path.
 ///
@@ -28,8 +39,11 @@ use std::collections::HashMap;
 /// ```
 use crate::charset::{ByteSet, is_word_byte};
 
-/// What:    Imports the node algebra walked to gather classes.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra walked to gather classes.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -40,9 +54,15 @@ use crate::ast::node::Node;
 
 /// The byte-class partition derived from a pattern.
 ///
-/// What: how many classes there are, a byte-to-class map, a representative byte
-/// per class (for computing transitions), and per-class word/newline flags. Why:
-/// transitions and acceptance depend on a byte only through its class, so the
+/// What:
+///  how many classes there are,
+///  a byte-to-class map,
+///  a representative byte
+/// per class (for computing transitions),
+///  and per-class word/newline flags.
+///  Why:
+/// transitions and acceptance depend on a byte only through its class,
+///  so the
 /// transition table can be `num_states * nclasses` wide instead of `* 256`.
 ///
 /// In TS you'd write (pseudocode):
@@ -52,8 +72,11 @@ use crate::ast::node::Node;
 /// };
 /// ```
 pub struct Classes {
-    /// What:    Number of distinct classes.
-    /// Why:     `nclasses` stores number of distinct classes, so matcher code reads that
+    /// What:
+    ///     Number of distinct classes.
+    /// Why:
+    ///      `nclasses` stores number of distinct classes,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -61,8 +84,11 @@ pub struct Classes {
     /// nclasses: number;
     /// ```
     pub nclasses: usize,
-    /// What:    Length-256 map from a byte to its class id.
-    /// Why:     `class_map` stores length-256 map from a byte to its class id, so matcher code
+    /// What:
+    ///     Length-256 map from a byte to its class id.
+    /// Why:
+    ///      `class_map` stores length-256 map from a byte to its class id,
+    ///  so matcher code
     ///          reads that precomputed state by name instead of recomputing or passing it
     ///          separately.
     ///
@@ -71,8 +97,11 @@ pub struct Classes {
     /// class_map: number[];
     /// ```
     pub class_map: Vec<u8>,
-    /// What:    One representative byte per class id.
-    /// Why:     `reps` stores one representative byte per class id, so matcher code reads that
+    /// What:
+    ///     One representative byte per class id.
+    /// Why:
+    ///      `reps` stores one representative byte per class id,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -80,8 +109,11 @@ pub struct Classes {
     /// reps: number[];
     /// ```
     pub reps: Vec<u8>,
-    /// What:    Per-class word-byte flag.
-    /// Why:     `class_word` stores per-class word-byte flag, so matcher code reads that
+    /// What:
+    ///     Per-class word-byte flag.
+    /// Why:
+    ///      `class_word` stores per-class word-byte flag,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -89,8 +121,11 @@ pub struct Classes {
     /// class_word: boolean[];
     /// ```
     pub class_word: Vec<bool>,
-    /// What:    Per-class newline flag.
-    /// Why:     `class_newline` stores per-class newline flag, so matcher code reads that
+    /// What:
+    ///     Per-class newline flag.
+    /// Why:
+    ///      `class_newline` stores per-class newline flag,
+    ///  so matcher code reads that
     ///          precomputed state by name instead of recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -102,10 +137,14 @@ pub struct Classes {
 
 /// Computes the byte-class partition for a node.
 ///
-/// What: gathers every distinct `Class` byte set in the node, then groups bytes
+/// What:
+///  gathers every distinct `Class` byte set in the node,
+///  then groups bytes
 /// whose `(is_word, is_newline, membership-in-each-set)` signature is identical.
-/// Why: two bytes with the same signature drive identical derivatives and the
-/// same boundary context, so they are interchangeable in the DFA.
+/// Why:
+///  two bytes with the same signature drive identical derivatives and the
+/// same boundary context,
+///  so they are interchangeable in the DFA.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -171,7 +210,11 @@ pub fn compute_classes(root: &Node) -> Classes {
 
 /// Builds the equivalence signature of one byte.
 ///
-/// What: word-ness, newline-ness, then membership in each collected set. Why:
+/// What:
+///  word-ness,
+///  newline-ness,
+///  then membership in each collected set.
+///  Why:
 /// bytes sharing this vector produce identical transitions everywhere.
 ///
 /// In TS you'd write (pseudocode):
@@ -199,8 +242,12 @@ fn byte_signature(b: u8, sets: &[ByteSet]) -> Vec<bool> {
 
 /// Walks a node collecting its distinct `Class` byte sets.
 ///
-/// What: a structural recursion over the node tree, adding each unseen set. Why:
-/// only `Class` nodes constrain bytes; the constants and anchors do not.
+/// What:
+///  a structural recursion over the node tree,
+///  adding each unseen set.
+///  Why:
+/// only `Class` nodes constrain bytes;
+///  the constants and anchors do not.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

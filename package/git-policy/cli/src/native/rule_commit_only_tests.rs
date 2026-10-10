@@ -1,13 +1,19 @@
-//! What: Every `commit-only.unit.test.ts` case, ported to the pure decision.
-//! Why: The TypeScript test injected checker stubs; here a decision that needs no repository
-//!      fact simply is not a `Needs...` variant, and one that does is resolved explicitly.
+//! What:
+//!  Every `commit-only.unit.test.ts` case,
+//!  ported to the pure decision.
+//! Why:
+//!  The TypeScript test injected checker stubs;
+//!  here a decision that needs no repository
+//!      fact simply is not a `Needs...` variant,
+//!  and one that does is resolved explicitly.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(await commitOnlyStateless(['commit', '-m', 'message', 'file.ts'])).toEqual([...]);
 //! ```
 
-/// The decision under test, the fact types and the shared argument builder.
+/// The decision under test,
+///  the fact types and the shared argument builder.
 use super::{
     CommitOnlyDecision, CommitOnlyViolationCode, decide_commit_only, resolve_index_state,
     resolve_sequencer_state,
@@ -17,7 +23,8 @@ use crate::rule_commit_index::IndexVsHead;
 use crate::rule_commit_sequencer::SequencerState;
 use std::ffi::OsString;
 
-/// Decide from arguments alone; the TypeScript "stateless" rule with forbidden checkers.
+/// Decide from arguments alone;
+///  the TypeScript "stateless" rule with forbidden checkers.
 fn decide(values: &[&str]) -> CommitOnlyDecision {
     return decide_commit_only(os_arguments(values).as_slice(), &[]).expect("Git accepts");
 }
@@ -27,7 +34,9 @@ fn rewritten(values: &[&str]) -> CommitOnlyDecision {
     return CommitOnlyDecision::Rewritten(os_arguments(values));
 }
 
-/// Decide, require the index question, and answer it.
+/// Decide,
+///  require the index question,
+///  and answer it.
 fn decide_with_index(values: &[&str], state: IndexVsHead) -> CommitOnlyDecision {
     let arguments: Vec<OsString> = os_arguments(values);
     let first: CommitOnlyDecision =
@@ -38,7 +47,9 @@ fn decide_with_index(values: &[&str], state: IndexVsHead) -> CommitOnlyDecision 
     panic!("{values:?} was decided without the index state: {first:?}");
 }
 
-/// Decide, require the sequencer question, and answer it.
+/// Decide,
+///  require the sequencer question,
+///  and answer it.
 fn decide_with_sequencer(values: &[&str], state: SequencerState) -> CommitOnlyDecision {
     let first: CommitOnlyDecision = decide(values);
     assert_eq!(first, CommitOnlyDecision::NeedsSequencerState, "{values:?}");
@@ -53,7 +64,9 @@ fn rejection(decision: CommitOnlyDecision) -> (CommitOnlyViolationCode, String) 
     panic!("expected a rejection, got {decision:?}");
 }
 
-/// Ported: "passes non-commit commands through unchanged", "injects -o immediately after
+/// Ported:
+///  "passes non-commit commands through unchanged",
+///  "injects -o immediately after
 /// commit when pathspec is present" and "preserves global options before commit".
 #[test]
 fn injects_only_after_commit_and_nowhere_else() {
@@ -79,7 +92,8 @@ fn injects_only_after_commit_and_nowhere_else() {
     );
 }
 
-/// Ported: "strips escape hatch and skips validation".
+/// Ported:
+///  "strips escape hatch and skips validation".
 #[test]
 fn strips_the_escape_hatch_and_skips_validation() {
     assert_eq!(
@@ -88,7 +102,9 @@ fn strips_the_escape_hatch_and_skips_validation() {
     );
 }
 
-/// Ported: "skips injection when explicit -o is present", "... clustered -o ..." and
+/// Ported:
+///  "skips injection when explicit -o is present",
+///  "... clustered -o ..." and
 /// "allows --no-only as explicit opt-out without pathspec".
 #[test]
 fn skips_injection_for_an_explicit_only_choice() {
@@ -105,7 +121,9 @@ fn skips_injection_for_an_explicit_only_choice() {
     }
 }
 
-/// Ported: "does not mistake message text for -a flag", "treats dash-leading tokens after --
+/// Ported:
+///  "does not mistake message text for -a flag",
+///  "treats dash-leading tokens after --
 /// as pathspecs" and "treats lone dash before -- as pathspec".
 #[test]
 fn reads_values_and_pathspecs_by_position() {
@@ -131,7 +149,8 @@ fn reads_values_and_pathspecs_by_position() {
     }
 }
 
-/// Ported: "rejects pathless --amend when index differs from HEAD" and
+/// Ported:
+///  "rejects pathless --amend when index differs from HEAD" and
 /// "rejects pathless --allow-empty when index differs from HEAD".
 #[test]
 fn rejects_a_pathless_amend_or_empty_commit_over_a_dirty_index() {
@@ -152,7 +171,8 @@ fn rejects_a_pathless_amend_or_empty_commit_over_a_dirty_index() {
     ));
 }
 
-/// Ported: "injects -o for pathless --amend when index state is undeterminable" and the
+/// Ported:
+///  "injects -o for pathless --amend when index state is undeterminable" and the
 /// clean-index `--amend`/`--allow-empty` rows of "allows pathless ...".
 #[test]
 fn injects_for_a_pathless_amend_over_a_clean_or_unknown_index() {
@@ -181,7 +201,8 @@ fn injects_for_a_pathless_amend_over_a_clean_or_unknown_index() {
     }
 }
 
-/// Ported: the four "skips index check ..." cases and the two pathspec-file rows of
+/// Ported:
+///  the four "skips index check ..." cases and the two pathspec-file rows of
 /// "allows pathless ...".
 #[test]
 fn skips_the_index_check_when_paths_or_an_only_choice_are_given() {
@@ -213,7 +234,8 @@ fn skips_the_index_check_when_paths_or_an_only_choice_are_given() {
     }
 }
 
-/// Ported: the four "skips injection when ... include flag ..." cases.
+/// Ported:
+///  the four "skips injection when ... include flag ..." cases.
 #[test]
 fn skips_injection_in_include_mode() {
     for values in [
@@ -230,9 +252,12 @@ fn skips_injection_in_include_mode() {
     }
 }
 
-/// Ported: "passes pathless commit through unchanged during sequencer conclusion",
-/// "still rejects -a during sequencer conclusion", "pathless rejection names --no-only as
-/// an explicit choice", and the two pathless rows of "rejects ...".
+/// Ported:
+///  "passes pathless commit through unchanged during sequencer conclusion",
+/// "still rejects -a during sequencer conclusion",
+///  "pathless rejection names --no-only as
+/// an explicit choice",
+///  and the two pathless rows of "rejects ...".
 #[test]
 fn asks_for_the_sequencer_state_only_for_a_pathless_commit() {
     assert_eq!(
@@ -269,8 +294,10 @@ fn asks_for_the_sequencer_state_only_for_a_pathless_commit() {
     }
 }
 
-/// Ported: the three `-a` rows of "rejects ..." and "still rejects -a during sequencer
-/// conclusion": the rejection needs no repository fact.
+/// Ported:
+///  the three `-a` rows of "rejects ..." and "still rejects -a during sequencer
+/// conclusion":
+///  the rejection needs no repository fact.
 #[test]
 fn rejects_the_all_flag_from_arguments_alone() {
     for values in [
@@ -285,7 +312,8 @@ fn rejects_the_all_flag_from_arguments_alone() {
     }
 }
 
-/// Ported: the five "detects pathspec after no-value flag ..." cases and the four
+/// Ported:
+///  the five "detects pathspec after no-value flag ..." cases and the four
 /// "detects pathspec after value option ..." cases.
 #[test]
 fn detects_a_pathspec_after_flags_and_value_options() {

@@ -7,7 +7,8 @@ use std::path::PathBuf;
 
 /// Visible traversal and lazy loading have the same expansion boundary.
 impl FileTree {
-    /// Flatten visible rows in filesystem order; the implicit root is not a duplicate visible row.
+    /// Flatten visible rows in filesystem order;
+    ///  the implicit root is not a duplicate visible row.
     pub fn rows(&self) -> Vec<TreeRow> {
         // What: Vec owns a growable list; unlike a fixed array its size follows expanded snapshots.
         // Why: Rebuilding this flat view needs no recursive node ownership or toolkit-specific state.

@@ -1,5 +1,9 @@
-//! What: Which directory contents count as durable state, for each kind of location.
-//! Why: Missing state that exists would run a command beside a landing commit; seeing
+//! What:
+//!  Which directory contents count as durable state,
+//!  for each kind of location.
+//! Why:
+//!  Missing state that exists would run a command beside a landing commit;
+//!  seeing
 //!      state that does not exist would refuse every command in a quiet repository.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,7 +13,8 @@
 //! ```
 #![cfg(unix)]
 
-/// The check under test, the refusal it returns and the disposable-directory helpers.
+/// The check under test,
+///  the refusal it returns and the disposable-directory helpers.
 use super::pending_state;
 use crate::test_support::{fixture, remove};
 use crate::unported::Unported;
@@ -52,7 +57,8 @@ fn directories(name: &str) -> (PathBuf, PathBuf, PathBuf) {
     return (root, common, linked);
 }
 
-/// Nothing recorded, an empty registry and an empty journal directory are all quiet.
+/// Nothing recorded,
+///  an empty registry and an empty journal directory are all quiet.
 #[test]
 fn quiet_directories_hold_no_state() {
     let (root, common, linked): (PathBuf, PathBuf, PathBuf) = directories("pending-quiet");
@@ -81,7 +87,9 @@ fn quiet_directories_hold_no_state() {
     remove(root.as_path());
 }
 
-/// Any registry entry, and the legacy directory, stop every location that has a Git directory.
+/// Any registry entry,
+///  and the legacy directory,
+///  stop every location that has a Git directory.
 #[test]
 fn transaction_entries_are_state_for_the_invocations_git_directory() {
     let (root, common, linked): (PathBuf, PathBuf, PathBuf) = directories("pending-transactions");
@@ -140,7 +148,8 @@ fn transaction_entries_are_state_for_the_invocations_git_directory() {
     remove(root.as_path());
 }
 
-/// A journal stops a linked worktree and a bare repository, but not the main worktree or an opted-out caller.
+/// A journal stops a linked worktree and a bare repository,
+///  but not the main worktree or an opted-out caller.
 #[test]
 fn worktree_copy_journals_are_state_where_copies_are_synchronized() {
     let (root, common, linked): (PathBuf, PathBuf, PathBuf) = directories("pending-copies");

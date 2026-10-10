@@ -1,7 +1,13 @@
-//! What: Controls for the `markdown/autofix` policy over real candidates, with a scripted
+//! What:
+//!  Controls for the `markdown/autofix` policy over real candidates,
+//!  with a scripted
 //!       linter in place of the child process.
-//! Why: Which candidates reach the linter, in which order, and what the policy reports and
-//!      proposes for each answer are decided here, independently of the program it runs.
+//! Why:
+//!  Which candidates reach the linter,
+//!  in which order,
+//!  and what the policy reports and
+//!      proposes for each answer are decided here,
+//!  independently of the program it runs.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -49,11 +55,13 @@ struct Linted {
 struct ScriptedLinter {
     /// The answer to every request.
     answer: Answer,
-    /// Every request, shared with the test.
+    /// Every request,
+    ///  shared with the test.
     log: Rc<RefCell<Vec<Linted>>>,
 }
 
-/// The scripted linter logs, then answers.
+/// The scripted linter logs,
+///  then answers.
 impl MarkdownLinter for ScriptedLinter {
     fn lint(&mut self, request: &LintRequest<'_>) -> Result<LintRun, String> {
         self.log.borrow_mut().push(Linted {
@@ -83,7 +91,9 @@ fn stale() -> RemainingFinding {
     };
 }
 
-/// Answer: rewrite the image link, leave nothing.
+/// Answer:
+///  rewrite the image link,
+///  leave nothing.
 fn rewrite(request: &LintRequest<'_>) -> Result<LintRun, String> {
     return Ok(LintRun {
         fixed: rewritten(request.source),
@@ -91,7 +101,8 @@ fn rewrite(request: &LintRequest<'_>) -> Result<LintRun, String> {
     });
 }
 
-/// Answer: rewrite the image link and leave one finding.
+/// Answer:
+///  rewrite the image link and leave one finding.
 fn rewrite_and_report(request: &LintRequest<'_>) -> Result<LintRun, String> {
     return Ok(LintRun {
         fixed: rewritten(request.source),
@@ -99,7 +110,8 @@ fn rewrite_and_report(request: &LintRequest<'_>) -> Result<LintRun, String> {
     });
 }
 
-/// Answer: change nothing and leave one finding.
+/// Answer:
+///  change nothing and leave one finding.
 fn report(request: &LintRequest<'_>) -> Result<LintRun, String> {
     return Ok(LintRun {
         fixed: request.source.to_vec(),
@@ -107,12 +119,15 @@ fn report(request: &LintRequest<'_>) -> Result<LintRun, String> {
     });
 }
 
-/// Answer: the run could not be used.
+/// Answer:
+///  the run could not be used.
 fn refuse(_request: &LintRequest<'_>) -> Result<LintRun, String> {
     return Err(String::from("monochromatic-lint exited with status 3"));
 }
 
-/// A state with the scripted linter, the LFS rule and `exclude`, and the shared log.
+/// A state with the scripted linter,
+///  the LFS rule and `exclude`,
+///  and the shared log.
 fn scripted_state(answer: Answer, exclude: &[&str]) -> (MarkdownState, Rc<RefCell<Vec<Linted>>>) {
     let log: Rc<RefCell<Vec<Linted>>> = Rc::new(RefCell::new(Vec::new()));
     let mut state: MarkdownState = markdown_state(Box::new(ScriptedLinter {
@@ -128,7 +143,8 @@ fn add_all() -> LifecycleContent {
     return LifecycleContent::Requested(CandidateRequest::Add(vec![OsString::from("--all")]));
 }
 
-/// Scripted facts whose candidates come from `repo`, at the scripted top level `/r`.
+/// Scripted facts whose candidates come from `repo`,
+///  at the scripted top level `/r`.
 fn facts_for(repo: &Path) -> ScriptedFacts {
     let mut facts: ScriptedFacts = scripted_facts();
     facts.candidates_repository = Some(repo.to_path_buf());
@@ -163,7 +179,8 @@ fn mixed_repository(root: &Path) -> PathBuf {
     return repo;
 }
 
-/// The autofix finding about `path`, offering a fix or not.
+/// The autofix finding about `path`,
+///  offering a fix or not.
 fn autofix(path: &[u8], fix_available: bool) -> PolicyFinding {
     let event: EventPath = EventPath::from_git_bytes(path);
     return PolicyFinding {
@@ -188,9 +205,15 @@ fn correction(path: &[u8], mode: CandidateMode, before: &[u8]) -> Correction {
     };
 }
 
-/// Only regular and executable files named `.md` or `.mdx`, not excluded, not deleted and
-/// holding UTF-8 reach the linter, in candidate order, from the top level; each rewrite is
-/// reported, and corrected only by a direct fix.
+/// Only regular and executable files named `.md` or `.mdx`,
+///  not excluded,
+///  not deleted and
+/// holding UTF-8 reach the linter,
+///  in candidate order,
+///  from the top level;
+///  each rewrite is
+/// reported,
+///  and corrected only by a direct fix.
 #[test]
 fn each_eligible_candidate_reaches_the_linter_once_in_order() {
     let root: PathBuf = fixture("markdown-eligible");
@@ -258,7 +281,8 @@ fn single_repository(root: &Path) -> PathBuf {
     return repo;
 }
 
-/// The policy's outcome for `a.md` under `answer`, at `trigger`.
+/// The policy's outcome for `a.md` under `answer`,
+///  at `trigger`.
 fn single(answer: Answer, trigger: Trigger) -> PolicyOutcome {
     let root: PathBuf = fixture(format!("markdown-single-{trigger:?}").as_str());
     let repo: PathBuf = single_repository(root.as_path());
@@ -274,7 +298,9 @@ fn single(answer: Answer, trigger: Trigger) -> PolicyOutcome {
     return outcome;
 }
 
-/// Findings the fixes leave follow the rewrite, in the installed wrapper's words; an
+/// Findings the fixes leave follow the rewrite,
+///  in the installed wrapper's words;
+///  an
 /// unchanged source reports only them.
 #[test]
 fn remaining_findings_are_violations_after_the_rewrite() {
@@ -297,7 +323,9 @@ fn remaining_findings_are_violations_after_the_rewrite() {
     );
 }
 
-/// A candidate the linter cannot check ends the policy, naming that candidate, and no
+/// A candidate the linter cannot check ends the policy,
+///  naming that candidate,
+///  and no
 /// later candidate is linted.
 #[test]
 fn a_candidate_the_linter_cannot_check_fails_the_policy() {
@@ -356,7 +384,9 @@ fn exclude_patterns_that_do_not_compile_fail_the_policy() {
     remove(root.as_path());
 }
 
-/// No candidates, candidates that cannot be prepared, and no selected rule lint nothing.
+/// No candidates,
+///  candidates that cannot be prepared,
+///  and no selected rule lint nothing.
 #[test]
 fn nothing_to_lint_lints_nothing() {
     let (mut state, log) = scripted_state(rewrite, &[]);
@@ -403,7 +433,8 @@ fn nothing_to_lint_lints_nothing() {
     remove(root.as_path());
 }
 
-/// The top level is asked only for a candidate the linter must see; an answer without
+/// The top level is asked only for a candidate the linter must see;
+///  an answer without
 /// one is content that could not be read.
 #[test]
 fn the_top_level_is_asked_only_when_a_candidate_needs_the_linter() {
@@ -462,7 +493,8 @@ fn the_top_level_is_asked_only_when_a_candidate_needs_the_linter() {
     remove(root.as_path());
 }
 
-/// A candidate whose bytes vanished is unreadable content, never a clean file.
+/// A candidate whose bytes vanished is unreadable content,
+///  never a clean file.
 #[test]
 fn unreadable_candidate_bytes_are_content_unavailable() {
     let root: PathBuf = fixture("markdown-unreadable");
@@ -502,7 +534,9 @@ fn unreadable_candidate_bytes_are_content_unavailable() {
     remove(root.as_path());
 }
 
-/// The extension test is the linter's: exact case, and a name that is only an extension
+/// The extension test is the linter's:
+///  exact case,
+///  and a name that is only an extension
 /// has none.
 #[test]
 fn markdown_paths_are_the_linter_s() {

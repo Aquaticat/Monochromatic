@@ -1,13 +1,22 @@
-//! The production launch policy: every language server runs inside bubblewrap, so neither it
-//! nor anything it starts can write project files. If confinement cannot be set up, the server
-//! is refused; there is no fallback to an unconfined launch.
+//! The production launch policy:
+//!  every language server runs inside bubblewrap,
+//!  so neither it
+//! nor anything it starts can write project files.
+//!  If confinement cannot be set up,
+//!  the server
+//! is refused;
+//!  there is no fallback to an unconfined launch.
 
-/// The seam's input and output types, and the state-path checks shared with `prepare`.
+/// The seam's input and output types,
+///  and the state-path checks shared with `prepare`.
 use super::launch::{LaunchRequest, ServerLaunch, check_state_directory, resolve_existing};
 /// The shared private cache directory rule and the fixed FNV-1a digest that names per-project state.
 use crate::{app_cache::application_cache, content_digest::fnv1a};
-/// What: `Command` starts a child process and waits for it; `OnceLock` holds a value computed once.
-/// Why: The namespace probe runs bubblewrap once per process and remembers the answer.
+/// What:
+///  `Command` starts a child process and waits for it;
+///  `OnceLock` holds a value computed once.
+/// Why:
+///  The namespace probe runs bubblewrap once per process and remembers the answer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,23 +31,32 @@ use std::{
 
 /// How the project is mounted inside the sandbox.
 pub mod project;
-/// The bubblewrap command line, without system access.
+/// The bubblewrap command line,
+///  without system access.
 pub mod recipe;
 
-/// The only bubblewrap the policy uses: the host's packaged copy, never one found on `PATH`.
+/// The only bubblewrap the policy uses:
+///  the host's packaged copy,
+///  never one found on `PATH`.
 pub const BUBBLEWRAP: &str = "/usr/bin/bwrap";
 
-/// A program that exists on the host and does nothing, used to test sandbox creation.
+/// A program that exists on the host and does nothing,
+///  used to test sandbox creation.
 const PROBE_PROGRAM: &str = "/usr/bin/true";
 
-/// Result of the sandbox probe with a process-id namespace, computed once per process.
+/// Result of the sandbox probe with a process-id namespace,
+///  computed once per process.
 static PROBE_WITH_PID: OnceLock<Result<(), String>> = OnceLock::new();
 
-/// Result of the sandbox probe without a process-id namespace, computed once per process.
+/// Result of the sandbox probe without a process-id namespace,
+///  computed once per process.
 static PROBE_WITHOUT_PID: OnceLock<Result<(), String>> = OnceLock::new();
 
-/// What: Turn text into a safe single path component. `char` is one Unicode scalar value.
-/// Why: Project and server names become directory names below private state.
+/// What:
+///  Turn text into a safe single path component.
+///  `char` is one Unicode scalar value.
+/// Why:
+///  Project and server names become directory names below private state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -63,9 +81,12 @@ fn component(text: &str) -> String {
     return safe;
 }
 
-/// What: The private state directory of one server for one project:
+/// What:
+///  The private state directory of one server for one project:
 ///       `<state root>/<project name>-<hash of the project path>/<server>`.
-/// Why: The adopted shape keeps state per project and per server, in the private cache.
+/// Why:
+///  The adopted shape keeps state per project and per server,
+///  in the private cache.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,9 +106,14 @@ pub fn state_directory(state_root: &Path, project_root: &Path, server: &str) -> 
         .join(component(server));
 }
 
-/// What: The application's private state root: `$XDG_CACHE_HOME/monochromatic-ide/language`,
-///       or `$HOME/.cache/monochromatic-ide/language`; nothing when neither is an absolute path.
-/// Why: A private application cache is allowed by the accepted scope; it lies inside the project
+/// What:
+///  The application's private state root:
+///  `$XDG_CACHE_HOME/monochromatic-ide/language`,
+///       or `$HOME/.cache/monochromatic-ide/language`;
+///  nothing when neither is an absolute path.
+/// Why:
+///  A private application cache is allowed by the accepted scope;
+///  it lies inside the project
 ///      only when the home folder (or a folder above it) is opened.
 ///
 /// In TS you'd write (pseudocode):
@@ -100,9 +126,15 @@ pub fn default_state_root() -> Option<PathBuf> {
     return application_cache().map(|cache| return cache.join("language"));
 }
 
-/// What: Refuse a path below `/proc`. `what` names the path and `remedy` the fix in the message.
-/// Why: No directory a user creates can lie there, and the sandbox mounts a fresh process file
-///      system; every other location works, because the project and private state are bound
+/// What:
+///  Refuse a path below `/proc`.
+///  `what` names the path and `remedy` the fix in the message.
+/// Why:
+///  No directory a user creates can lie there,
+///  and the sandbox mounts a fresh process file
+///      system;
+///  every other location works,
+///  because the project and private state are bound
 ///      again after the replacements.
 ///
 /// In TS you'd write (pseudocode):
@@ -119,9 +151,13 @@ fn check_outside_proc(path: &Path, what: &str, remedy: &str) -> Result<(), Strin
     return Ok(());
 }
 
-/// What: The private state directory of the requested server, below the resolved state root,
+/// What:
+///  The private state directory of the requested server,
+///  below the resolved state root,
 ///       or the refusal reason.
-/// Why: The state root is resolved first, so a variable that reaches `/tmp` or the project
+/// Why:
+///  The state root is resolved first,
+///  so a variable that reaches `/tmp` or the project
 ///      through a symbolic link is compared and bound by its real location.
 ///
 /// In TS you'd write (pseudocode):
@@ -145,9 +181,13 @@ pub fn private_state(request: &LaunchRequest) -> Result<PathBuf, String> {
     return Ok(state_directory(&resolved, &request.project_root, server));
 }
 
-/// What: Start bubblewrap once with the server's namespaces around a program that does nothing.
-/// Why: A host without user namespaces makes bubblewrap fail; the probe turns that into a
-///      refusal with the cause, before any server process exists.
+/// What:
+///  Start bubblewrap once with the server's namespaces around a program that does nothing.
+/// Why:
+///  A host without user namespaces makes bubblewrap fail;
+///  the probe turns that into a
+///      refusal with the cause,
+///  before any server process exists.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -173,8 +213,10 @@ fn probe(bubblewrap: &str, pid_namespace: bool) -> Result<(), String> {
     ));
 }
 
-/// What: The confined launch with an explicit bubblewrap path.
-/// Why: Tests pass a missing path to prove that an absent bubblewrap refuses the server.
+/// What:
+///  The confined launch with an explicit bubblewrap path.
+/// Why:
+///  Tests pass a missing path to prove that an absent bubblewrap refuses the server.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -217,8 +259,12 @@ pub fn confine_with(request: &LaunchRequest, bubblewrap: &str) -> Result<ServerL
     return recipe::recipe(request, &state, bubblewrap, &inherited);
 }
 
-/// What: The production launch policy. Its signature is `LaunchPolicy`.
-/// Why: One function decides how every server starts; it refuses rather than run unconfined.
+/// What:
+///  The production launch policy.
+///  Its signature is `LaunchPolicy`.
+/// Why:
+///  One function decides how every server starts;
+///  it refuses rather than run unconfined.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -228,7 +274,11 @@ pub fn launch_confined(request: &LaunchRequest) -> Result<ServerLaunch, String> 
     return confine_with(request, BUBBLEWRAP);
 }
 
-/// Command-line shapes, settings overrides, state naming, and refusals, without starting bubblewrap.
+/// Command-line shapes,
+///  settings overrides,
+///  state naming,
+///  and refusals,
+///  without starting bubblewrap.
 #[cfg(test)]
 #[path = "confine_tests.rs"]
 mod tests;

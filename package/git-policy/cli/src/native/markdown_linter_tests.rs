@@ -1,8 +1,20 @@
-//! What: Controls for the executable's linter: lookup, arguments, configuration file,
-//!       bounds and every failure, with stand-in programs, and the real linter's contract.
-//! Why: The stand-ins reach each branch quickly; the real linter, built from this
-//!      repository and named by `GIT_POLICY_NATIVE_TEST_LINTER`, proves the contract the
-//!      policy relies on. A test that needs it fails when the variable is unset, so an
+//! What:
+//!  Controls for the executable's linter:
+//!  lookup,
+//!  arguments,
+//!  configuration file,
+//!       bounds and every failure,
+//!  with stand-in programs,
+//!  and the real linter's contract.
+//! Why:
+//!  The stand-ins reach each branch quickly;
+//!  the real linter,
+//!  built from this
+//!      repository and named by `GIT_POLICY_NATIVE_TEST_LINTER`,
+//!  proves the contract the
+//!      policy relies on.
+//!  A test that needs it fails when the variable is unset,
+//!  so an
 //!      absent linter can never read as a pass.
 //!
 //! In TS you'd write (pseudocode):
@@ -24,15 +36,18 @@ use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-/// The variable naming the linter built from this repository, set in the gate image.
+/// The variable naming the linter built from this repository,
+///  set in the gate image.
 const LINTER_VARIABLE: &str = "GIT_POLICY_NATIVE_TEST_LINTER";
 
-/// The default options: the LFS rule and no exclusion.
+/// The default options:
+///  the LFS rule and no exclusion.
 fn default_options() -> MarkdownAutofixOptions {
     return PolicyConfig::defaults().markdown_autofix;
 }
 
-/// An environment whose PATH is `bin` and system programs, with `extra` pairs.
+/// An environment whose PATH is `bin` and system programs,
+///  with `extra` pairs.
 fn environment(bin: &Path, extra: &[(&str, &Path)]) -> Vec<(OsString, OsString)> {
     let mut path: OsString = bin.as_os_str().to_os_string();
     path.push(":/usr/bin:/bin");
@@ -109,17 +124,22 @@ fn a_missing_linter_is_reported() {
     remove(root.as_path());
 }
 
-/// Whether one byte ends a line, for splitting the recorded arguments.
+/// Whether one byte ends a line,
+///  for splitting the recorded arguments.
 fn is_line_feed(byte: &u8) -> bool {
     return *byte == b'\n';
 }
 
-/// The stand-in records its arguments, directory and configuration, then echoes its input.
+/// The stand-in records its arguments,
+///  directory and configuration,
+///  then echoes its input.
 const RECORDING: &str = "printf '%s\\n' \"$@\" > \"$RECORD/arguments\"\npwd > \"$RECORD/directory\"\ncat \"${1#--config=}\" > \"$RECORD/configuration\"\ncat";
 
 /// The linter is started from the top level with one `--name=value` argument per option,
-/// the candidate's exact name and the one-rule configuration, written once for the
-/// invocation and removed with it; its input comes back as the fixed source.
+/// the candidate's exact name and the one-rule configuration,
+///  written once for the
+/// invocation and removed with it;
+///  its input comes back as the fixed source.
 #[test]
 fn the_linter_gets_the_contract_arguments() {
     let root: PathBuf = fixture("linter-arguments");
@@ -181,7 +201,9 @@ fn the_linter_gets_the_contract_arguments() {
     remove(root.as_path());
 }
 
-/// The program found first is kept for the invocation: once it is gone, the next start
+/// The program found first is kept for the invocation:
+///  once it is gone,
+///  the next start
 /// fails instead of searching again.
 #[test]
 fn the_program_is_looked_up_once() {
@@ -208,7 +230,9 @@ fn the_program_is_looked_up_once() {
     remove(root.as_path());
 }
 
-/// A run past its bound or its cap, a run that could not finish, a configuration that
+/// A run past its bound or its cap,
+///  a run that could not finish,
+///  a configuration that
 /// cannot be written and a name that cannot be spelled each come back with their reason.
 #[test]
 fn each_failure_comes_back_with_its_reason() {
@@ -319,7 +343,8 @@ fn child_failures_read_as_sentences() {
     }
 }
 
-/// The linter built from this repository, by the variable the gate image sets.
+/// The linter built from this repository,
+///  by the variable the gate image sets.
 fn real_linter() -> PathBuf {
     let Some(path) = std::env::var_os(LINTER_VARIABLE) else {
         panic!(
@@ -330,7 +355,8 @@ fn real_linter() -> PathBuf {
     return PathBuf::from(path);
 }
 
-/// A repository directory with an LFS endpoint, the PNG rule and one tracked image.
+/// A repository directory with an LFS endpoint,
+///  the PNG rule and one tracked image.
 fn lfs_tree(root: &Path) -> PathBuf {
     let top: PathBuf = root.join("top");
     std::fs::create_dir_all(top.join("pkg/asset")).expect("tree");
@@ -348,11 +374,16 @@ fn lfs_tree(root: &Path) -> PathBuf {
     return top;
 }
 
-/// The object URL of `pkg/asset/shot.png`; the digest is `sha256sum` of `image bytes`.
+/// The object URL of `pkg/asset/shot.png`;
+///  the digest is `sha256sum` of `image bytes`.
 const SHOT_URL: &str = "https://lfs.example.com/org/repo/de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66faec/pkg/asset/shot.png";
 
-/// The real linter rewrites a relative image link, keeps an exact one, reports a stale
-/// object URL as a remaining finding, honors the exclude option, and lints a name that is
+/// The real linter rewrites a relative image link,
+///  keeps an exact one,
+///  reports a stale
+/// object URL as a remaining finding,
+///  honors the exclude option,
+///  and lints a name that is
 /// not UTF-8 and one that starts with `-`.
 #[test]
 fn the_real_linter_meets_the_contract() {

@@ -1,7 +1,16 @@
-//! What: Stage order, trigger and filter skipping, severities, stopping, and the three ways
+//! What:
+//!  Stage order,
+//!  trigger and filter skipping,
+//!  severities,
+//!  stopping,
+//!  and the three ways
 //!       a pass can fail to decide.
-//! Why: Each rule here is a way a policy could silently not run or a blocked command could
-//!      be let through: a wrong trigger set, an ignored severity, a swallowed failure.
+//! Why:
+//!  Each rule here is a way a policy could silently not run or a blocked command could
+//!      be let through:
+//!  a wrong trigger set,
+//!  an ignored severity,
+//!  a swallowed failure.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -24,7 +33,8 @@ use crate::wrapper_controls::{Controls, no_controls};
 
 /// A provider that answers from a script and records every check it was asked for.
 struct Scripted {
-    /// Outcomes by policy; a policy without an entry finds nothing.
+    /// Outcomes by policy;
+    ///  a policy without an entry finds nothing.
     outcomes: Vec<(PolicyId, PolicyOutcome)>,
     /// Every check in call order.
     calls: Vec<(PolicyId, Trigger)>,
@@ -139,7 +149,8 @@ fn event(
     });
 }
 
-/// A policy runs only for the triggers it declares, in the order it was given.
+/// A policy runs only for the triggers it declares,
+///  in the order it was given.
 #[test]
 fn policies_run_in_order_for_their_triggers() {
     let configured: PolicyConfig = all_listed();
@@ -191,7 +202,8 @@ fn policies_run_in_order_for_their_triggers() {
     );
 }
 
-/// A policy that is off, escaped or outside the direct-command filter is never asked.
+/// A policy that is off,
+///  escaped or outside the direct-command filter is never asked.
 #[test]
 fn off_escaped_and_unselected_policies_are_skipped() {
     let none: Controls = no_controls();
@@ -260,7 +272,9 @@ fn off_escaped_and_unselected_policies_are_skipped() {
     assert_eq!(wrong_trigger, Vec::<PolicyId>::new());
 }
 
-/// Without keep-going the first error finding ends the pass; with it, later policies still run.
+/// Without keep-going the first error finding ends the pass;
+///  with it,
+///  later policies still run.
 #[test]
 fn first_error_stops_unless_keep_going() {
     let config: PolicyConfig = PolicyConfig::defaults();
@@ -318,7 +332,8 @@ fn first_error_stops_unless_keep_going() {
     );
 }
 
-/// A warning finding never stops the pass and never blocks; the event carries the configured severity.
+/// A warning finding never stops the pass and never blocks;
+///  the event carries the configured severity.
 #[test]
 fn warning_findings_do_not_stop_or_block() {
     let config: PolicyConfig = with_severity(
@@ -359,7 +374,8 @@ fn warning_findings_do_not_stop_or_block() {
     assert_eq!(pass_exit_code(result.events.as_slice(), result.end), 0);
 }
 
-/// `warn` on a policy it does not protect is reported after that policy's findings, also when it found nothing.
+/// `warn` on a policy it does not protect is reported after that policy's findings,
+///  also when it found nothing.
 #[test]
 fn unsafe_warn_is_reported_even_when_clean() {
     let config: PolicyConfig = with_severity(
@@ -455,7 +471,8 @@ fn finding_details_reach_the_event() {
 }
 
 /// A policy that could not finish ends the pass with one engine failure naming trigger,
-/// policy and the outcome's own cause, for either cause.
+/// policy and the outcome's own cause,
+///  for either cause.
 #[test]
 fn failed_check_ends_the_pass_with_an_engine_failure() {
     let mut keep_going: Controls = no_controls();
@@ -509,7 +526,8 @@ fn failed_check_ends_the_pass_with_an_engine_failure() {
     }
 }
 
-/// A policy that cannot be evaluated ends the pass as unavailable, keeping earlier events and inventing none.
+/// A policy that cannot be evaluated ends the pass as unavailable,
+///  keeping earlier events and inventing none.
 #[test]
 fn unavailable_policy_ends_the_pass_without_a_clean_result() {
     let (result, called) = run(
@@ -544,7 +562,8 @@ fn unavailable_policy_ends_the_pass_without_a_clean_result() {
     assert_eq!(pass_exit_code(result.events.as_slice(), result.end), 2);
 }
 
-/// A trigger whose lifecycle is not ported is unavailable before any policy is asked, even when none is enabled.
+/// A trigger whose lifecycle is not ported is unavailable before any policy is asked,
+///  even when none is enabled.
 #[test]
 fn unported_triggers_are_unavailable_not_clean() {
     let mut all_off: PolicyConfig = all_listed();
@@ -566,7 +585,8 @@ fn unported_triggers_are_unavailable_not_clean() {
     }
 }
 
-/// A manual-push request over the given settings, controls and filter.
+/// A manual-push request over the given settings,
+///  controls and filter.
 fn manual_push(config: &PolicyConfig, controls: &Controls, selected: &[PolicyId]) -> StageRequest {
     return StageRequest {
         trigger: Trigger::ManualPush,
@@ -576,7 +596,9 @@ fn manual_push(config: &PolicyConfig, controls: &Controls, selected: &[PolicyId]
     };
 }
 
-/// Applicability follows the same trigger, filter, escape and severity tests as the stage.
+/// Applicability follows the same trigger,
+///  filter,
+///  escape and severity tests as the stage.
 #[test]
 fn applicability_matches_the_stage() {
     let built_ins: PolicyConfig = PolicyConfig::defaults();
@@ -634,7 +656,9 @@ fn warning_event() -> PolicyEvent {
     );
 }
 
-/// The exit code is 2 for an undecided pass, 1 for a blocking event, and 0 otherwise.
+/// The exit code is 2 for an undecided pass,
+///  1 for a blocking event,
+///  and 0 otherwise.
 #[test]
 fn exit_code_follows_ending_then_events() {
     let core: PolicyEvent = PolicyEvent::CoreFinding {
@@ -674,8 +698,10 @@ fn fixable(code: &'static str) -> PolicyFinding {
     return offered;
 }
 
-/// A policy that proposes a correction ends the stage after its own findings, whatever
-/// its severity and even under keep-going; a finding without a fix does not.
+/// A policy that proposes a correction ends the stage after its own findings,
+///  whatever
+/// its severity and even under keep-going;
+///  a finding without a fix does not.
 #[test]
 fn a_proposed_correction_ends_the_stage() {
     let mut keep_going: Controls = no_controls();

@@ -25,7 +25,8 @@ fn color_scheme_values_match_the_startup_option() {
     );
 }
 
-/// The verb itself is known, so a malformed value names the verb instead of "unknown command".
+/// The verb itself is known,
+///  so a malformed value names the verb instead of "unknown command".
 #[test]
 fn color_scheme_rejects_missing_unknown_and_extra_values() {
     for command in [

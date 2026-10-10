@@ -1,14 +1,23 @@
-//! What: Removal of wrapper controls from whole invocations, by command grammar.
-//! Why: A control that reaches Git fails the command; a message, option value or path that
-//!      spells a control and is removed changes what the command does. Both are checked
-//!      for commands with a ported Git table, without one, and with a region Git refuses.
+//! What:
+//!  Removal of wrapper controls from whole invocations,
+//!  by command grammar.
+//! Why:
+//!  A control that reaches Git fails the command;
+//!  a message,
+//!  option value or path that
+//!      spells a control and is removed changes what the command does.
+//!  Both are checked
+//!      for commands with a ported Git table,
+//!  without one,
+//!  and with a region Git refuses.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(stripWrapperControls(['reset', '--', '--no-enforce-worktree']).args).toEqual(['reset', '--', '--no-enforce-worktree']);
 //! ```
 
-/// The function under test, its result types and the argument builder.
+/// The function under test,
+///  its result types and the argument builder.
 use super::{
     RegionReading, StrippedInvocation, command_region, command_word, strip_wrapper_controls,
 };
@@ -31,7 +40,8 @@ fn escaping(policies: &[PolicyId]) -> Controls {
     return controls;
 }
 
-/// Assert the kept arguments, the recorded controls and the reading of one invocation.
+/// Assert the kept arguments,
+///  the recorded controls and the reading of one invocation.
 fn assert_stripped(values: &[&str], kept: &[&str], controls: &Controls, reading: RegionReading) {
     let found: StrippedInvocation = strip(values);
     assert_eq!(found.arguments, os_arguments(kept), "{values:?}");
@@ -182,7 +192,8 @@ fn table_commands_lose_controls_in_option_position() {
     }
 }
 
-/// `--no-enforce-only` is removed only from option position of `git commit`, and is remembered separately.
+/// `--no-enforce-only` is removed only from option position of `git commit`,
+///  and is remembered separately.
 #[test]
 fn commit_hatch_is_removed_by_position() {
     let mut escaped: Controls = no_controls();
@@ -220,7 +231,8 @@ fn commit_hatch_is_removed_by_position() {
     );
 }
 
-/// A control spelled as an option value, as a message or after `--` is never removed.
+/// A control spelled as an option value,
+///  as a message or after `--` is never removed.
 #[test]
 fn values_and_paths_spelling_a_control_are_kept() {
     for values in [
@@ -346,7 +358,8 @@ fn worktree_opt_out_is_removed_after_either_word() {
     }
 }
 
-/// A region Git refuses keeps its tokens except leading controls, and carries Git's refusal.
+/// A region Git refuses keeps its tokens except leading controls,
+///  and carries Git's refusal.
 #[test]
 fn refused_regions_report_the_refusal() {
     let found: StrippedInvocation = strip(&[
@@ -377,7 +390,8 @@ fn refused_regions_report_the_refusal() {
     }
 }
 
-/// Without a subcommand there is no region; the layout describes the kept arguments.
+/// Without a subcommand there is no region;
+///  the layout describes the kept arguments.
 #[test]
 fn invocations_without_a_command_have_no_region() {
     for (values, kept, outcome, prefix_len) in [
@@ -452,7 +466,8 @@ fn undecodable_arguments_are_kept_unchanged() {
     assert_eq!(found.controls.escaped, vec![PolicyId::AddExplicit]);
 }
 
-/// The command word and its region are read after the global options, without the word itself.
+/// The command word and its region are read after the global options,
+///  without the word itself.
 #[test]
 fn the_command_word_and_its_region_follow_the_global_options() {
     for (values, word, region) in [

@@ -1,6 +1,14 @@
-//! What: Controls for the linked scanner: one load, typed redacted findings, cache warnings, fail-closed loading.
-//! Why: The adapter adds nothing to the scanner's verdicts, so these controls observe the
-//!      scanner's own values through it, in a child process with a disposable home and cache.
+//! What:
+//!  Controls for the linked scanner:
+//!  one load,
+//!  typed redacted findings,
+//!  cache warnings,
+//!  fail-closed loading.
+//! Why:
+//!  The adapter adds nothing to the scanner's verdicts,
+//!  so these controls observe the
+//!      scanner's own values through it,
+//!  in a child process with a disposable home and cache.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -32,7 +40,8 @@ fn candidate(index: usize, path: &[u8]) -> Candidate {
     };
 }
 
-/// Load the planted single-rule file explicitly, without the built-in baseline.
+/// Load the planted single-rule file explicitly,
+///  without the built-in baseline.
 fn loaded(directory: &Path) -> CandidateScanner {
     let rules: RulesSource = RulesSource {
         path: rules_file(directory),
@@ -52,7 +61,9 @@ fn load_failure(rules: &RulesSource, builtin_rules: bool) -> ScannerError {
     }
 }
 
-/// Body: after one load the rules file and cache are deleted, and every later scan still uses the loaded rules.
+/// Body:
+///  after one load the rules file and cache are deleted,
+///  and every later scan still uses the loaded rules.
 fn rules_are_loaded_once_body(directory: &Path) {
     let scanner: CandidateScanner = loaded(directory);
     std::fs::remove_file(directory.join("rules.txt")).expect("remove rules after loading");
@@ -101,7 +112,10 @@ fn rules_are_loaded_once() {
     );
 }
 
-/// Body: a matching pathname component is masked, non-UTF-8 names are matched as bytes, and a line break fails closed.
+/// Body:
+///  a matching pathname component is masked,
+///  non-UTF-8 names are matched as bytes,
+///  and a line break fails closed.
 fn pathnames_are_scanned_and_masked_body(directory: &Path) {
     let scanner: CandidateScanner = loaded(directory);
     let token: String = needle();
@@ -138,7 +152,8 @@ fn pathnames_are_scanned_and_masked_body(directory: &Path) {
     assert!(!format!("{by_name:?}{by_bytes:?}{broken:?}").contains(token.as_str()));
 }
 
-/// Pathnames go to the scanner as native bytes, and its fail-closed findings pass through.
+/// Pathnames go to the scanner as native bytes,
+///  and its fail-closed findings pass through.
 #[test]
 fn pathnames_are_scanned_and_masked() {
     run_isolated(
@@ -148,7 +163,9 @@ fn pathnames_are_scanned_and_masked() {
     );
 }
 
-/// Body: the first load of new rules reports the scanner's cache recovery; a second load finds the cache.
+/// Body:
+///  the first load of new rules reports the scanner's cache recovery;
+///  a second load finds the cache.
 fn cache_warnings_are_the_scanners_own_body(directory: &Path) {
     let first: CandidateScanner = loaded(directory);
     assert_eq!(first.cache_warnings().len(), 1);
@@ -168,7 +185,9 @@ fn cache_warnings_are_the_scanners_own() {
     );
 }
 
-/// Body: a missing or invalid rules file leaves no scanner, with the scanner's redacted explanation.
+/// Body:
+///  a missing or invalid rules file leaves no scanner,
+///  with the scanner's redacted explanation.
 fn load_failures_leave_no_scanner_body(directory: &Path) {
     let missing: PathBuf = directory.join("missing.txt");
     let explicit: RulesSource = RulesSource {
@@ -218,7 +237,8 @@ fn load_failures_leave_no_scanner_body(directory: &Path) {
     assert!(!refused.message.contains(pattern.as_str()), "{refused}");
 }
 
-/// Loading fails closed, and the built-in and explicit settings reach the scanner.
+/// Loading fails closed,
+///  and the built-in and explicit settings reach the scanner.
 #[test]
 fn load_failures_leave_no_scanner() {
     run_isolated(
@@ -228,7 +248,8 @@ fn load_failures_leave_no_scanner() {
     );
 }
 
-/// Body: a candidate whose pathname is no native path is refused by position instead of scanned under another name.
+/// Body:
+///  a candidate whose pathname is no native path is refused by position instead of scanned under another name.
 fn unrepresentable_pathname_is_refused_body(directory: &Path) {
     let scanner: CandidateScanner = loaded(directory);
     let error: ScannerError = match scanner.scan(&candidate(7, b""), b"content\n") {

@@ -1,7 +1,16 @@
-//! What: `git cat-file --batch` replies built from fuzz bytes, and the invariants of reading one.
-//! Why: Reply content is file content, so it can be any bytes, including text shaped
-//!      like a reply. Reading must accept exactly Git's canonical reply, attribute it
-//!      only to the object requested, refuse every cut-short form, and never be
+//! What:
+//!  `git cat-file --batch` replies built from fuzz bytes,
+//!  and the invariants of reading one.
+//! Why:
+//!  Reply content is file content,
+//!  so it can be any bytes,
+//!  including text shaped
+//!      like a reply.
+//!  Reading must accept exactly Git's canonical reply,
+//!  attribute it
+//!      only to the object requested,
+//!  refuse every cut-short form,
+//!  and never be
 //!      steered by bytes after the reply.
 //!
 //! In TS you'd write (pseudocode):
@@ -16,9 +25,13 @@ use git_policy_cli::candidate_batch::{
 use git_policy_cli::candidate_error::{CandidateError, CandidateFailure};
 use git_policy_cli::candidate_object::{ObjectId, parse_object_id};
 
-/// What: What a generated stream must be read as.
-///       `#[derive(...)]` generates cloning, debug printing and `==`.
-/// Why:  The generator knows what it built, so the reader's answer is compared with an
+/// What:
+///  What a generated stream must be read as.
+///       `#[derive(...)]` generates cloning,
+///  debug printing and `==`.
+/// Why:
+///   The generator knows what it built,
+///  so the reader's answer is compared with an
 ///       expectation computed without the reader.
 ///
 /// In TS you'd write (pseudocode):
@@ -33,9 +46,15 @@ pub enum Expectation {
     Failure(CandidateFailure),
 }
 
-/// What: One generated case: the request line, the reply stream, and what reading must yield.
+/// What:
+///  One generated case:
+///  the request line,
+///  the reply stream,
+///  and what reading must yield.
 ///       `Vec<u8>` is an owned byte list (sibling `String` would require UTF-8).
-/// Why:  Requests and replies are bytes; nothing here is decoded.
+/// Why:
+///   Requests and replies are bytes;
+///  nothing here is decoded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,7 +62,8 @@ pub enum Expectation {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GeneratedReply {
-    /// The request line that was "sent", without its line feed.
+    /// The request line that was "sent",
+    ///  without its line feed.
     pub request: Vec<u8>,
     /// The bytes the reader is given.
     pub stream: Vec<u8>,
@@ -51,9 +71,12 @@ pub struct GeneratedReply {
     pub expectation: Expectation,
 }
 
-/// What: Split raw fuzz bytes into a request and a stream at the first line feed.
+/// What:
+///  Split raw fuzz bytes into a request and a stream at the first line feed.
 ///       The result is a tuple of two borrowed views into `data`.
-/// Why:  A request line can never contain a line feed, so the first one is a natural
+/// Why:
+///   A request line can never contain a line feed,
+///  so the first one is a natural
 ///       boundary and every other byte reaches the reader unchanged.
 ///
 /// In TS you'd write (pseudocode):
@@ -68,7 +91,8 @@ pub fn request_and_stream(data: &[u8]) -> (&[u8], &[u8]) {
     }
 }
 
-/// Named predicate for the first line feed; `&u8` borrows one byte.
+/// Named predicate for the first line feed;
+///  `&u8` borrows one byte.
 fn is_line_feed(byte: &u8) -> bool {
     return *byte == b'\n';
 }
@@ -83,9 +107,16 @@ fn kind_word(kind: ObjectKind) -> &'static str {
     }
 }
 
-/// What: Git's canonical bytes for a found reply: header, content, closing line feed.
-/// Why:  Whatever the reader accepts must be exactly these bytes, so acceptance is
-///       checked by rendering the result and comparing, not by parsing a second time.
+/// What:
+///  Git's canonical bytes for a found reply:
+///  header,
+///  content,
+///  closing line feed.
+/// Why:
+///   Whatever the reader accepts must be exactly these bytes,
+///  so acceptance is
+///       checked by rendering the result and comparing,
+///  not by parsing a second time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -99,15 +130,18 @@ pub fn render_found(object: &str, kind: ObjectKind, bytes: &[u8]) -> Vec<u8> {
     return rendered;
 }
 
-/// Read one reply from an in-memory stream; returns the result and how many bytes were consumed.
+/// Read one reply from an in-memory stream;
+///  returns the result and how many bytes were consumed.
 fn read(request: &[u8], stream: &[u8]) -> (Result<BatchReply, CandidateError>, usize) {
     let mut remaining: &[u8] = stream;
     let result: Result<BatchReply, CandidateError> = read_batch_reply(&mut remaining, request);
     return (result, stream.len() - remaining.len());
 }
 
-/// What: Assert that every sampled proper prefix of an accepted reply is refused as cut short.
-/// Why:  A reader that accepted a prefix would hand out less content than Git stored.
+/// What:
+///  Assert that every sampled proper prefix of an accepted reply is refused as cut short.
+/// Why:
+///   A reader that accepted a prefix would hand out less content than Git stored.
 ///       All prefixes are checked for short replies and an even sample for long ones,
 ///       which keeps one execution linear in the input.
 ///
@@ -140,11 +174,18 @@ fn check_prefixes_refused(request: &[u8], accepted: &[u8]) {
     }
 }
 
-/// What: Assert the invariants of reading one reply to `request` from `stream`.
-/// Why:  Whatever the bytes are: reading is repeatable; an accepted reply is exactly
+/// What:
+///  Assert the invariants of reading one reply to `request` from `stream`.
+/// Why:
+///   Whatever the bytes are:
+///  reading is repeatable;
+///  an accepted reply is exactly
 ///       Git's canonical bytes for the returned value and names the object requested;
-///       bytes after it change nothing; no proper prefix of it is accepted; and a
-///       refusal is one of the four reply failures, "ended" only for an empty stream.
+///       bytes after it change nothing;
+///  no proper prefix of it is accepted;
+///  and a
+///       refusal is one of the four reply failures,
+///  "ended" only for an empty stream.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -223,11 +264,17 @@ pub fn check_batch_reply(request: &[u8], stream: &[u8]) {
     }
 }
 
-/// Lowercase hexadecimal digits, indexed by value.
+/// Lowercase hexadecimal digits,
+///  indexed by value.
 const HEX_DIGITS: &[u8; 16] = b"0123456789abcdef";
 
-/// What: Build a complete object name from fuzz bytes: 40 digits, or 64 when `long`.
-/// Why:  Generated cases need names the reader accepts, in both hash formats.
+/// What:
+///  Build a complete object name from fuzz bytes:
+///  40 digits,
+///  or 64 when `long`.
+/// Why:
+///   Generated cases need names the reader accepts,
+///  in both hash formats.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -248,7 +295,8 @@ fn generated_name(data: &[u8], long: bool) -> String {
     return name;
 }
 
-/// A different complete name of the same length: the first digit is changed.
+/// A different complete name of the same length:
+///  the first digit is changed.
 fn other_name(name: &str) -> String {
     let replacement: char = if name.starts_with('0') { '1' } else { '0' };
     let mut other: String = String::from(replacement);
@@ -267,7 +315,8 @@ fn object_of(name: &str) -> ObjectId {
 /// The number of case shapes `generated_reply` builds.
 pub const GENERATED_SHAPES: u8 = 14;
 
-/// Header texts Git never prints; `{name}` is replaced by the requested object name.
+/// Header texts Git never prints;
+///  `{name}` is replaced by the requested object name.
 const MALFORMED_HEADERS: &[&str] = &[
     "{name} ambiguous",
     "{name} blob",
@@ -281,10 +330,17 @@ const MALFORMED_HEADERS: &[&str] = &[
     "",
 ];
 
-/// What: Build one case from fuzz bytes: the first byte picks the shape, the second
-///       the object kind and hash format, the rest is the content.
-/// Why:  Raw bytes almost never spell a valid header, so the generator builds valid
-///       replies and each specific corruption directly, with the outcome it must have.
+/// What:
+///  Build one case from fuzz bytes:
+///  the first byte picks the shape,
+///  the second
+///       the object kind and hash format,
+///  the rest is the content.
+/// Why:
+///   Raw bytes almost never spell a valid header,
+///  so the generator builds valid
+///       replies and each specific corruption directly,
+///  with the outcome it must have.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -412,9 +468,14 @@ pub fn generated_reply(data: &[u8]) -> GeneratedReply {
     };
 }
 
-/// What: Build a case from fuzz bytes, require the reader to produce its expectation, and run the general invariants on it.
-/// Why:  The general invariants cannot tell a wrongly refused valid reply from a
-///       correctly refused one; the generator's expectation can.
+/// What:
+///  Build a case from fuzz bytes,
+///  require the reader to produce its expectation,
+///  and run the general invariants on it.
+/// Why:
+///   The general invariants cannot tell a wrongly refused valid reply from a
+///       correctly refused one;
+///  the generator's expectation can.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

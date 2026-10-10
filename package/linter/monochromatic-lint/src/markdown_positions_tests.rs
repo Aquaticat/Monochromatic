@@ -1,5 +1,8 @@
-//! What: Markdown coordinate controls independent from rule logic.
-//! Why: Emoji, BOMs and CR-only input must not shift fixes or reported columns.
+//! What:
+//!  Markdown coordinate controls independent from rule logic.
+//! Why:
+//!  Emoji,
+//!  BOMs and CR-only input must not shift fixes or reported columns.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -43,7 +46,8 @@ fn utf16_columns_are_distinct_from_byte_offsets() {
     );
 }
 
-/// CR, LF and CRLF each advance exactly one line.
+/// CR,
+///  LF and CRLF each advance exactly one line.
 #[test]
 fn newline_variants_share_the_parser_convention() {
     let index = MarkdownPositions::new("a\rb\r\nc\nd");

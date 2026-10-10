@@ -1,13 +1,17 @@
-//! What: JsoncComment attachment and safe canonical emission.
-//! Why: Comments are data on keys and values rather than discarded parser trivia.
+//! What:
+//!  JsoncComment attachment and safe canonical emission.
+//! Why:
+//!  Comments are data on keys and values rather than discarded parser trivia.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! function attach(existing: JsoncComment | undefined, additions: JsoncComment[]): JsoncComment | undefined;
 //! ```
 
-/// What: Import the comment value and its discriminated source kind.
-/// Why: This module combines and emits only those parser-owned values.
+/// What:
+///  Import the comment value and its discriminated source kind.
+/// Why:
+///  This module combines and emits only those parser-owned values.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,8 +19,10 @@
 /// ```
 use crate::value::{JsoncComment, JsoncCommentKind};
 
-/// What: Merge one existing comment with incoming comments in source order.
-/// Why: The model admits one queryable comment per key or value.
+/// What:
+///  Merge one existing comment with incoming comments in source order.
+/// Why:
+///  The model admits one queryable comment per key or value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,8 +63,10 @@ pub fn attach(existing: Option<JsoncComment>, additions: Vec<JsoncComment>) -> O
     return current;
 }
 
-/// What: Check whether a comment body fits after a value on one line.
-/// Why: A multi-line comment must be moved before the value during emission.
+/// What:
+///  Check whether a comment body fits after a value on one line.
+/// Why:
+///  A multi-line comment must be moved before the value during emission.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,8 +80,10 @@ pub fn single_line(comment: &JsoncComment) -> bool {
     return !comment.text.contains('\n') && !comment.text.contains('\r');
 }
 
-/// What: Emit a comment before a node with two-space indentation.
-/// Why: A line comment is safe even when a block body contains `*/`.
+/// What:
+///  Emit a comment before a node with two-space indentation.
+/// Why:
+///  A line comment is safe even when a block body contains `*/`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -120,8 +130,10 @@ pub fn leading(comment: &JsoncComment, depth: usize) -> String {
     return output;
 }
 
-/// What: Emit a single-line attached comment after a value.
-/// Why: Using `//` avoids the block-comment close delimiter in arbitrary edited text.
+/// What:
+///  Emit a single-line attached comment after a value.
+/// Why:
+///  Using `//` avoids the block-comment close delimiter in arbitrary edited text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

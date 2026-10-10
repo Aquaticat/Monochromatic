@@ -1,13 +1,17 @@
-//! What: Acceptance controls for the configuration schema.
-//! Why: A valid document must yield exactly the settings it states and the defaults for
-//!      everything it leaves out, so a silently dropped or widened setting fails here.
+//! What:
+//!  Acceptance controls for the configuration schema.
+//! Why:
+//!  A valid document must yield exactly the settings it states and the defaults for
+//!      everything it leaves out,
+//!  so a silently dropped or widened setting fails here.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(parseConfig('{}')).toEqual(defaults());
 //! ```
 
-/// Import the parser under test, the typed settings and the registry identities.
+/// Import the parser under test,
+///  the typed settings and the registry identities.
 use super::parse_config;
 use crate::config_schema::{
     CliGitConfig, ForbiddenStringsOptions, MarkdownAutofixOptions, MarkdownRule, PolicySetting,
@@ -15,7 +19,9 @@ use crate::config_schema::{
 };
 use crate::policy_registry::{POLICY_REGISTRY, PolicyId, Severity};
 
-/// An empty object, with or without comments and trailing commas, is exactly the defaults.
+/// An empty object,
+///  with or without comments and trailing commas,
+///  is exactly the defaults.
 #[test]
 fn empty_documents_equal_the_defaults() {
     let defaults: CliGitConfig = CliGitConfig::defaults();
@@ -122,7 +128,9 @@ fn repository_translation_names_all_four_optional_policies() {
 }
 
 /// A word-for-word translation of the TypeScript `policies` map names only three of them:
-/// `mono/dependent-version-bump`, which the incumbent enforced unlisted, silently stops.
+/// `mono/dependent-version-bump`,
+///  which the incumbent enforced unlisted,
+///  silently stops.
 #[test]
 fn literal_translation_silently_stops_the_unlisted_policy() {
     let config: CliGitConfig = parse_config(
@@ -145,7 +153,8 @@ fn literal_translation_silently_stops_the_unlisted_policy() {
     );
 }
 
-/// Each optional policy is off until the file names it, and naming one turns on only that one.
+/// Each optional policy is off until the file names it,
+///  and naming one turns on only that one.
 #[test]
 fn optional_policies_run_only_when_listed() {
     let optional: [(PolicyId, &str, Severity); 4] = [
@@ -233,7 +242,8 @@ fn optional_policies_run_only_when_listed() {
     );
 }
 
-/// Every policy accepts every severity word, and the setting is marked explicit.
+/// Every policy accepts every severity word,
+///  and the setting is marked explicit.
 #[test]
 fn every_policy_accepts_every_severity() {
     for descriptor in POLICY_REGISTRY {
@@ -265,7 +275,8 @@ fn every_policy_accepts_every_severity() {
     }
 }
 
-/// Options override only their own field; a bare severity keeps default options.
+/// Options override only their own field;
+///  a bare severity keeps default options.
 #[test]
 fn policy_options_apply_field_by_field() {
     let scanner: CliGitConfig = parse_config(
@@ -323,8 +334,10 @@ fn policy_options_apply_field_by_field() {
     assert!(bare.policies.setting(PolicyId::ForbiddenStrings).explicit);
 }
 
-/// An options object alone names the policy: it runs at its incumbent default severity
-/// with those options, and unknown or retired option keys are still rejected by key.
+/// An options object alone names the policy:
+///  it runs at its incumbent default severity
+/// with those options,
+///  and unknown or retired option keys are still rejected by key.
 #[test]
 fn options_alone_list_a_policy_at_its_default_severity() {
     let markdown: CliGitConfig =

@@ -1,21 +1,28 @@
-//! What: Deterministic JSONC emission from comment-bearing values.
-//! Why: The editor writes a canonical tree, not byte-identical source splices.
+//! What:
+//!  Deterministic JSONC emission from comment-bearing values.
+//! Why:
+//!  The editor writes a canonical tree,
+//!  not byte-identical source splices.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! function emitJsoncValue(node: JsoncValue): string;
 //! ```
 
-/// What: Import safe comment placement decisions.
-/// Why: Multi-line comments cannot appear after a value's comma.
+/// What:
+///  Import safe comment placement decisions.
+/// Why:
+///  Multi-line comments cannot appear after a value's comma.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { leading, singleLine, trailing } from './comment';
 /// ```
 use crate::comment_merge::{leading, single_line, trailing};
-/// What: Borrow parsed node and tagged value types.
-/// Why: Emission reads source data without mutating an edit state.
+/// What:
+///  Borrow parsed node and tagged value types.
+/// Why:
+///  Emission reads source data without mutating an edit state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,8 +30,11 @@ use crate::comment_merge::{leading, single_line, trailing};
 /// ```
 use crate::value::{JsoncKind, JsoncValue};
 
-/// What: Serialize a whole JSONC document with its root-attached comment.
-/// Why: Callers get a deterministic, parseable document in one operation.
+/// What:
+///  Serialize a whole JSONC document with its root-attached comment.
+/// Why:
+///  Callers get a deterministic,
+///  parseable document in one operation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,8 +56,11 @@ pub fn emit_jsonc_value(root: &JsoncValue) -> String {
     return out;
 }
 
-/// What: Write only a value's syntax; its owner positions the attached comment.
-/// Why: A member key and its value have different legal comment placements.
+/// What:
+///  Write only a value's syntax;
+///  its owner positions the attached comment.
+/// Why:
+///  A member key and its value have different legal comment placements.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

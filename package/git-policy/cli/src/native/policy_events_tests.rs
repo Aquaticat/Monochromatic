@@ -1,13 +1,20 @@
-//! What: Exact JSON Lines text of every event kind, its optional fields, escaping and numbering.
-//! Why: Readers of the incumbent's events match field names and rely on one object per
-//!      line; a reordered, missing or unescaped field breaks them without any error here.
+//! What:
+//!  Exact JSON Lines text of every event kind,
+//!  its optional fields,
+//!  escaping and numbering.
+//! Why:
+//!  Readers of the incumbent's events match field names and rely on one object per
+//!      line;
+//!  a reordered,
+//!  missing or unescaped field breaks them without any error here.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(renderPolicyEvent(0, finding)).toBe(JSON.stringify(expected) + '\n');
 //! ```
 
-/// The renderer, its event types and the names it prints.
+/// The renderer,
+///  its event types and the names it prints.
 use super::{
     FindingEvent, FindingLocation, PolicyEvent, WARN_UNSAFE_CODE, event_blocks,
     render_policy_event, render_policy_events,
@@ -32,7 +39,8 @@ fn finding(severity: Severity) -> FindingEvent {
     };
 }
 
-/// A finding prints the incumbent's fields in the incumbent's order, with the code prefixed by the policy name.
+/// A finding prints the incumbent's fields in the incumbent's order,
+///  with the code prefixed by the policy name.
 #[test]
 fn finding_has_the_incumbent_shape() {
     assert_eq!(
@@ -98,7 +106,9 @@ fn core_finding_has_the_incumbent_shape() {
     );
 }
 
-/// An engine failure prints code and message, then trigger, policy and path only when present.
+/// An engine failure prints code and message,
+///  then trigger,
+///  policy and path only when present.
 #[test]
 fn engine_failure_prints_optional_fields_in_order() {
     assert_eq!(
@@ -170,7 +180,8 @@ fn engine_failure_prints_optional_fields_in_order() {
     }
 }
 
-/// A fix summary prints its pass count and its paths as a JSON array, empty included.
+/// A fix summary prints its pass count and its paths as a JSON array,
+///  empty included.
 #[test]
 fn fix_summary_has_the_incumbent_shape() {
     assert_eq!(
@@ -218,7 +229,8 @@ fn hostile_text_cannot_leave_its_field() {
     assert_eq!(rendered.matches('\n').count(), 1);
 }
 
-/// A list is numbered consecutively from its first sequence; an empty list prints nothing.
+/// A list is numbered consecutively from its first sequence;
+///  an empty list prints nothing.
 #[test]
 fn lists_are_numbered_from_the_first_sequence() {
     assert_eq!(render_policy_events(5, &[]), "");
@@ -286,7 +298,10 @@ fn only_errors_and_core_findings_block() {
 }
 
 /// A finding about a name that is not UTF-8 prints the readable `path` and then its exact
-/// bytes as base64 `pathBytes`; a UTF-8 name, multi-byte characters included, prints none.
+/// bytes as base64 `pathBytes`;
+///  a UTF-8 name,
+///  multi-byte characters included,
+///  prints none.
 #[test]
 fn a_finding_about_a_name_that_is_not_utf8_adds_path_bytes() {
     let mut latin: FindingEvent = finding(Severity::Warn);
@@ -340,8 +355,11 @@ fn render_summary(paths: Vec<EventPath>) -> String {
     );
 }
 
-/// A fix summary whose paths are all UTF-8 has no byte list; one that holds a name that is
-/// not UTF-8 lists the bytes of every path, in the same order, so indices line up.
+/// A fix summary whose paths are all UTF-8 has no byte list;
+///  one that holds a name that is
+/// not UTF-8 lists the bytes of every path,
+///  in the same order,
+///  so indices line up.
 #[test]
 fn a_fix_summary_lists_every_path_s_bytes_once_one_is_not_utf8() {
     assert_eq!(

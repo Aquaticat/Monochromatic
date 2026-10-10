@@ -1,8 +1,15 @@
-//! What: The events one policy pass produces, and their JSON Lines rendering.
-//! Why: Agents and scripts read these lines from wrapper standard error and from
-//!      `git cli-git check|fix` standard output. Each event is one compact JSON object with
-//!      the incumbent's field names and field order, so existing readers parse native
-//!      events unchanged. Events are numbered when rendered, so a list of events always
+//! What:
+//!  The events one policy pass produces,
+//!  and their JSON Lines rendering.
+//! Why:
+//!  Agents and scripts read these lines from wrapper standard error and from
+//!      `git cli-git check|fix` standard output.
+//!  Each event is one compact JSON object with
+//!      the incumbent's field names and field order,
+//!  so existing readers parse native
+//!      events unchanged.
+//!  Events are numbered when rendered,
+//!  so a list of events always
 //!      prints with consecutive numbers in emission order.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,10 +17,16 @@
 //! // process.stderr.write(renderPolicyEvents(result.events));
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  JSON string escaping, the failure-code spellings and the schema version already
-///       live in `diagnostics.rs`; policy and severity names live in the registry.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   JSON string escaping,
+///  the failure-code spellings and the schema version already
+///       live in `diagnostics.rs`;
+///  policy and severity names live in the registry.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,7 +35,8 @@
 use super::diagnostics::{
     EngineFailureCode, SCHEMA_VERSION, engine_failure_code_name, json_string,
 };
-/// A pathname as events report it, and the encoding of its exact bytes.
+/// A pathname as events report it,
+///  and the encoding of its exact bytes.
 use super::event_path::{EventPath, base64_standard};
 use super::policy_registry::{PolicyId, Severity, policy_descriptor, severity_name};
 use super::policy_trigger::{Trigger, trigger_name};
@@ -30,10 +44,17 @@ use super::policy_trigger::{Trigger, trigger_name};
 /// The code of the warning for a `warn` severity on a policy whose protection `warn` removes.
 pub const WARN_UNSAFE_CODE: &str = "warn-unsafe";
 
-/// What: A byte range inside a candidate. A `struct` is a record with named fields; `u64`
-///       is an unsigned 64-bit integer (siblings `u32`, `usize`).
-/// Why:  Content policies point at the exact bytes of a finding. `u64` holds any file
-///       offset on every platform, where `usize` would be 32 bits on a 32-bit system.
+/// What:
+///  A byte range inside a candidate.
+///  A `struct` is a record with named fields;
+///  `u64`
+///       is an unsigned 64-bit integer (siblings `u32`,
+///  `usize`).
+/// Why:
+///   Content policies point at the exact bytes of a finding.
+///  `u64` holds any file
+///       offset on every platform,
+///  where `usize` would be 32 bits on a 32-bit system.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,11 +68,18 @@ pub struct FindingLocation {
     pub byte_end: u64,
 }
 
-/// What: One policy finding as it is reported. `String` is owned UTF-8 text (sibling `&str`
-///       borrows); `Option<T>` is "a value or nothing"; `&'static str` is text baked into
+/// What:
+///  One policy finding as it is reported.
+///  `String` is owned UTF-8 text (sibling `&str`
+///       borrows);
+///  `Option<T>` is "a value or nothing";
+///  `&'static str` is text baked into
 ///       the program.
-/// Why:  The record owns its message and path because events outlive the check that made
-///       them. The code is compiled-in text, so a shipped policy cannot emit an empty or
+/// Why:
+///   The record owns its message and path because events outlive the check that made
+///       them.
+///  The code is compiled-in text,
+///  so a shipped policy cannot emit an empty or
 ///       misspelled code at run time.
 ///
 /// In TS you'd write (pseudocode):
@@ -64,24 +92,34 @@ pub struct FindingEvent {
     pub trigger: Trigger,
     /// The policy that reported.
     pub policy: PolicyId,
-    /// The effective severity, `Warn` or `Error`.
+    /// The effective severity,
+    ///  `Warn` or `Error`.
     pub severity: Severity,
-    /// The policy-local code; rendering prefixes the policy name.
+    /// The policy-local code;
+    ///  rendering prefixes the policy name.
     pub code: &'static str,
     /// The explanation for the person who ran the command.
     pub message: String,
-    /// The repository path the finding is about, when it has one.
+    /// The repository path the finding is about,
+    ///  when it has one.
     pub path: Option<EventPath>,
-    /// The byte range the finding is about, when it has one.
+    /// The byte range the finding is about,
+    ///  when it has one.
     pub location: Option<FindingLocation>,
     /// Whether the engine holds a correction for this finding.
     pub fix_available: bool,
 }
 
-/// What: Every event a policy pass can produce. An `enum` is a closed set of named
-///       alternatives; each variant carries its own fields. `Vec<EventPath>` is an owned
+/// What:
+///  Every event a policy pass can produce.
+///  An `enum` is a closed set of named
+///       alternatives;
+///  each variant carries its own fields.
+///  `Vec<EventPath>` is an owned
 ///       list of pathnames in their event form.
-/// Why:  One list of events is rendered in order, whatever mixture of kinds it holds.
+/// Why:
+///   One list of events is rendered in order,
+///  whatever mixture of kinds it holds.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -98,11 +136,14 @@ pub enum PolicyEvent {
         /// The policy configured as `warn`.
         policy: PolicyId,
     },
-    /// A fixed transform rejected the command; it has no severity and cannot be configured.
+    /// A fixed transform rejected the command;
+    ///  it has no severity and cannot be configured.
     CoreFinding {
-        /// The transform, for example `commit-only`.
+        /// The transform,
+        ///  for example `commit-only`.
         core_id: &'static str,
-        /// The transform-local code; rendering prefixes the transform name.
+        /// The transform-local code;
+        ///  rendering prefixes the transform name.
         code: &'static str,
         /// The explanation for the person who ran the command.
         message: String,
@@ -113,11 +154,14 @@ pub enum PolicyEvent {
         code: EngineFailureCode,
         /// The explanation for the person who ran the command.
         message: String,
-        /// The lifecycle point, when the failure belongs to one.
+        /// The lifecycle point,
+        ///  when the failure belongs to one.
         trigger: Option<Trigger>,
-        /// The policy that could not complete, when one is responsible.
+        /// The policy that could not complete,
+        ///  when one is responsible.
         policy: Option<PolicyId>,
-        /// The repository path responsible, when the failure is about one path.
+        /// The repository path responsible,
+        ///  when the failure is about one path.
         path: Option<EventPath>,
     },
     /// Corrections were applied.
@@ -126,13 +170,19 @@ pub enum PolicyEvent {
         trigger: Trigger,
         /// How many passes changed candidate content before it settled.
         passes: u64,
-        /// The changed paths, each once, in Git's byte order.
+        /// The changed paths,
+        ///  each once,
+        ///  in Git's byte order.
         changed_paths: Vec<EventPath>,
     },
 }
 
-/// What: Whether an event blocks the command. `&PolicyEvent` borrows the event read-only.
-/// Why:  An error finding and a fixed-transform rejection keep Git from running; a
+/// What:
+///  Whether an event blocks the command.
+///  `&PolicyEvent` borrows the event read-only.
+/// Why:
+///   An error finding and a fixed-transform rejection keep Git from running;
+///  a
 ///       warning finding and a configuration warning do not.
 ///
 /// In TS you'd write (pseudocode):
@@ -150,8 +200,13 @@ pub fn event_blocks(event: &PolicyEvent) -> bool {
     }
 }
 
-/// What: The opening every event shares: schema version, sequence and type.
-/// Why:  Readers branch on these three fields first, and they always come first.
+/// What:
+///  The opening every event shares:
+///  schema version,
+///  sequence and type.
+/// Why:
+///   Readers branch on these three fields first,
+///  and they always come first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -165,8 +220,12 @@ fn event_head(sequence: u64, event_type: &str) -> String {
     );
 }
 
-/// What: Append `,"name":"value"` to a line. `&mut String` lends the line for appending.
-/// Why:  Every text field is encoded at this final step, so no value can end its JSON
+/// What:
+///  Append `,"name":"value"` to a line.
+///  `&mut String` lends the line for appending.
+/// Why:
+///   Every text field is encoded at this final step,
+///  so no value can end its JSON
 ///       string or its line.
 ///
 /// In TS you'd write (pseudocode):
@@ -178,11 +237,18 @@ fn push_text_field(line: &mut String, name: &str, value: &str) {
     line.push_str(format!(",\"{name}\":{}", json_string(value)).as_str());
 }
 
-/// What: Append `,"path":"..."` and, for a name that is not UTF-8, `,"pathBytes":"..."`.
+/// What:
+///  Append `,"path":"..."` and,
+///  for a name that is not UTF-8,
+///  `,"pathBytes":"..."`.
 ///       `&EventPath` borrows the pathname's event form.
-/// Why:  `path` keeps its meaning for every existing reader; `pathBytes` is the optional
-///       field schema version 1 allows (`SPEC.md`, "Unknown fields may be added only in a
-///       backward-compatible schema revision"), present only when `path` is not exact.
+/// Why:
+///   `path` keeps its meaning for every existing reader;
+///  `pathBytes` is the optional
+///       field schema version 1 allows (`SPEC.md`,
+///  "Unknown fields may be added only in a
+///       backward-compatible schema revision"),
+///  present only when `path` is not exact.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -196,9 +262,18 @@ fn push_path_field(line: &mut String, path: &EventPath) {
     }
 }
 
-/// What: Render a finding's fields after the shared opening.
-/// Why:  The order is the incumbent's: trigger, policy, severity, code, message, then the
-///       optional path (with its exact bytes) and location, then the fix state.
+/// What:
+///  Render a finding's fields after the shared opening.
+/// Why:
+///   The order is the incumbent's:
+///  trigger,
+///  policy,
+///  severity,
+///  code,
+///  message,
+///  then the
+///       optional path (with its exact bytes) and location,
+///  then the fix state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -236,9 +311,14 @@ fn push_finding(line: &mut String, finding: &FindingEvent) {
     push_text_field(line, "fix", fix);
 }
 
-/// What: Render one JSON string per changed path: its text, or the base64 of its bytes.
+/// What:
+///  Render one JSON string per changed path:
+///  its text,
+///  or the base64 of its bytes.
 ///       `fn(&EventPath) -> String` is a plain function pointer choosing what each entry holds.
-/// Why:  A fix summary lists every path it changed, and its byte list lines up with that
+/// Why:
+///   A fix summary lists every path it changed,
+///  and its byte list lines up with that
 ///       list entry for entry.
 ///
 /// In TS you'd write (pseudocode):
@@ -259,8 +339,12 @@ fn path_array(paths: &[EventPath], entry: fn(&EventPath) -> String) -> String {
     return array;
 }
 
-/// What: The readable text of one changed path, as a `changedPaths` entry.
-/// Why:  A named function for `path_array`, because the repository bans anonymous functions.
+/// What:
+///  The readable text of one changed path,
+///  as a `changedPaths` entry.
+/// Why:
+///   A named function for `path_array`,
+///  because the repository bans anonymous functions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -270,8 +354,12 @@ fn path_text(path: &EventPath) -> String {
     return String::from(path.text());
 }
 
-/// What: The base64 of one changed path's bytes, as a `changedPathBytes` entry.
-/// Why:  Names that are UTF-8 are listed too, so index `n` of both lists is the same file.
+/// What:
+///  The base64 of one changed path's bytes,
+///  as a `changedPathBytes` entry.
+/// Why:
+///   Names that are UTF-8 are listed too,
+///  so index `n` of both lists is the same file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -281,10 +369,16 @@ fn path_bytes(path: &EventPath) -> String {
     return base64_standard(path.bytes());
 }
 
-/// What: Append `,"changedPaths":[...]` and, when any of them is not UTF-8,
+/// What:
+///  Append `,"changedPaths":[...]` and,
+///  when any of them is not UTF-8,
 ///       `,"changedPathBytes":[...]` with one base64 entry per path.
-/// Why:  An array cannot hold an absent entry without JSON `null`, which events never
-///       carry, so the byte list names every path once it is needed at all, and is
+/// Why:
+///   An array cannot hold an absent entry without JSON `null`,
+///  which events never
+///       carry,
+///  so the byte list names every path once it is needed at all,
+///  and is
 ///       absent while every name is exact.
 ///
 /// In TS you'd write (pseudocode):
@@ -303,8 +397,10 @@ fn push_changed_paths(line: &mut String, paths: &[EventPath]) {
     }
 }
 
-/// What: The wire spelling of an event's kind.
-/// Why:  The `type` field is the third field of every line and decides how a reader
+/// What:
+///  The wire spelling of an event's kind.
+/// Why:
+///   The `type` field is the third field of every line and decides how a reader
 ///       interprets the rest.
 ///
 /// In TS you'd write (pseudocode):
@@ -321,9 +417,14 @@ fn event_type(event: &PolicyEvent) -> &'static str {
     }
 }
 
-/// What: Render one event as a line-terminated JSON object. `&PolicyEvent` borrows the
-///       event; the result is owned text.
-/// Why:  One function owns every field order, so two events of one kind can never differ
+/// What:
+///  Render one event as a line-terminated JSON object.
+///  `&PolicyEvent` borrows the
+///       event;
+///  the result is owned text.
+/// Why:
+///   One function owns every field order,
+///  so two events of one kind can never differ
 ///       in shape.
 ///
 /// In TS you'd write (pseudocode):
@@ -391,9 +492,13 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
     return line;
 }
 
-/// What: Render a list of events, numbered consecutively from `first_sequence`.
+/// What:
+///  Render a list of events,
+///  numbered consecutively from `first_sequence`.
 ///       `&[PolicyEvent]` borrows the list.
-/// Why:  An invocation numbers its events once: events printed before the pass (a legacy
+/// Why:
+///   An invocation numbers its events once:
+///  events printed before the pass (a legacy
 ///       configuration notice) take the first numbers and the pass continues after them.
 ///
 /// In TS you'd write (pseudocode):
@@ -410,7 +515,8 @@ pub fn render_policy_events(first_sequence: u64, events: &[PolicyEvent]) -> Stri
     return rendered;
 }
 
-/// Field-order, escaping and numbering controls stay out of the release executable.
+/// Field-order,
+///  escaping and numbering controls stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_events_tests.rs"]
 mod tests;

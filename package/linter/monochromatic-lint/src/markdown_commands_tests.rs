@@ -1,12 +1,16 @@
-//! What: Prompt-only fence behavior and original-byte preservation controls.
-//! Why: Source-normalized code values cannot be used as raw source lengths for CRLF or Unicode inputs.
+//! What:
+//!  Prompt-only fence behavior and original-byte preservation controls.
+//! Why:
+//!  Source-normalized code values cannot be used as raw source lengths for CRLF or Unicode inputs.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Parse real Markdown, apply the advertised grouped fixes, and compare every authored byte.
 //! ```
 
-/// Import actual rule, parser, diagnostic and edit application.
+/// Import actual rule,
+///  parser,
+///  diagnostic and edit application.
 use super::commands_show_output;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::{Fix, apply_fixes};
@@ -20,7 +24,10 @@ fn check(source: &str) -> Vec<Diagnostic> {
     return commands_show_output(&context, Severity::Error);
 }
 
-/// Prompts are localized edits, preserving fence spelling, blank lines, Unicode and newline sequences.
+/// Prompts are localized edits,
+///  preserving fence spelling,
+///  blank lines,
+///  Unicode and newline sequences.
 #[test]
 fn prompt_only_examples_preserve_authored_source() {
     for newline in ["\n", "\r\n", "\r"] {
@@ -45,7 +52,8 @@ fn prompt_only_examples_preserve_authored_source() {
     }
 }
 
-/// Prompt-looking text inside a command is content, not another physical line's prefix.
+/// Prompt-looking text inside a command is content,
+///  not another physical line's prefix.
 #[test]
 fn embedded_prompt_text_is_never_removed() {
     for newline in ["\n", "\r\n", "\r"] {
@@ -87,7 +95,9 @@ fn fences_after_other_content_keep_absolute_prompt_offsets() {
     }
 }
 
-/// Empty, output-bearing, indented and non-fenced examples are not prompt-only column-one fences.
+/// Empty,
+///  output-bearing,
+///  indented and non-fenced examples are not prompt-only column-one fences.
 #[test]
 fn exceptions_do_not_rewrite_unrelated_examples() {
     for source in [

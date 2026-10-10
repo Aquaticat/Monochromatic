@@ -1,5 +1,7 @@
-//! What: Atomic-fix regression controls.
-//! Why: Flattened edit application can accept half of a finding's fix and corrupt otherwise valid source.
+//! What:
+//!  Atomic-fix regression controls.
+//! Why:
+//!  Flattened edit application can accept half of a finding's fix and corrupt otherwise valid source.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -18,7 +20,8 @@ fn edit(start: usize, end: usize, replacement: &str) -> Edit {
     };
 }
 
-/// Empty plans preserve bytes, and independent edits apply in source order rather than argument order.
+/// Empty plans preserve bytes,
+///  and independent edits apply in source order rather than argument order.
 #[test]
 fn empty_and_reversed_edit_plans_preserve_source_order() {
     let original = apply_fixes("abc", &[]).expect("no fixes");
@@ -34,7 +37,8 @@ fn empty_and_reversed_edit_plans_preserve_source_order() {
     assert_eq!(fixes, snapshot);
 }
 
-/// A late conflict rejects the complete multi-edit fix, including its earlier nonconflicting edit.
+/// A late conflict rejects the complete multi-edit fix,
+///  including its earlier nonconflicting edit.
 #[test]
 fn conflicting_multi_edit_fix_is_never_applied_partly() {
     let fixes = [
@@ -70,7 +74,8 @@ fn later_interval_conflict_rejects_the_new_fix() {
     assert_eq!(applied.rejected, [1]);
 }
 
-/// Same-position insertions conflict, but insertions at a replacement's exclusive end remain valid.
+/// Same-position insertions conflict,
+///  but insertions at a replacement's exclusive end remain valid.
 #[test]
 fn insertion_boundaries_have_explicit_ordering() {
     let fixes = [

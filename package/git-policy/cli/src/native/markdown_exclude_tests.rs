@@ -1,6 +1,12 @@
-//! What: Controls for the `exclude` patterns of `markdown/autofix`.
-//! Why: Gitignore semantics decide which candidates the policy leaves alone: directory
-//!      patterns, anchoring, negation, and a negated file below an excluded directory.
+//! What:
+//!  Controls for the `exclude` patterns of `markdown/autofix`.
+//! Why:
+//!  Gitignore semantics decide which candidates the policy leaves alone:
+//!  directory
+//!      patterns,
+//!  anchoring,
+//!  negation,
+//!  and a negated file below an excluded directory.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -34,7 +40,8 @@ fn a_directory_pattern_excludes_what_is_below_it() {
     }
 }
 
-/// A pattern without a slash matches in any directory; a leading slash anchors it.
+/// A pattern without a slash matches in any directory;
+///  a leading slash anchors it.
 #[test]
 fn anchoring_follows_gitignore() {
     assert!(excluded(&["*.mdx"], b"a/b/c.mdx"));
@@ -45,7 +52,8 @@ fn anchoring_follows_gitignore() {
     assert!(excluded(&["doc/**/draft.md"], b"doc/draft.md"));
 }
 
-/// A later negation re-includes a file, but never a file below an excluded directory.
+/// A later negation re-includes a file,
+///  but never a file below an excluded directory.
 #[test]
 fn negation_cannot_reach_below_an_excluded_directory() {
     assert!(!excluded(&["*.md", "!keep.md"], b"keep.md"));
@@ -57,8 +65,12 @@ fn negation_cannot_reach_below_an_excluded_directory() {
     ));
 }
 
-/// No patterns, comments and blank lines exclude nothing; an empty pathname, which names
-/// no file, is never excluded even by a pattern that matches everything.
+/// No patterns,
+///  comments and blank lines exclude nothing;
+///  an empty pathname,
+///  which names
+/// no file,
+///  is never excluded even by a pattern that matches everything.
 #[test]
 fn nothing_excludes_nothing() {
     assert!(!excluded(&[], b"a.md"));
@@ -67,7 +79,8 @@ fn nothing_excludes_nothing() {
     assert!(!excluded(&["*"], b""));
 }
 
-/// A name that is not UTF-8 is matched by its directories and by wildcards, byte for byte.
+/// A name that is not UTF-8 is matched by its directories and by wildcards,
+///  byte for byte.
 #[test]
 fn a_name_that_is_not_utf8_is_matched_by_its_bytes() {
     assert!(excluded(&["x/"], b"x/caf\xe9.md"));
@@ -75,7 +88,8 @@ fn a_name_that_is_not_utf8_is_matched_by_its_bytes() {
     assert!(!excluded(&["caf?.txt"], b"caf\xe9.md"));
 }
 
-/// A pattern the compiler refuses is reported with the pattern, never ignored.
+/// A pattern the compiler refuses is reported with the pattern,
+///  never ignored.
 #[test]
 fn a_pattern_that_cannot_compile_is_reported() {
     let refused: String =

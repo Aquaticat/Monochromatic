@@ -1,5 +1,9 @@
-//! What: Heading punctuation fixes over decoded text and original syntax boundaries.
-//! Why: Escapes, entities, emphasis delimiters and Unicode must survive localized byte editing.
+//! What:
+//!  Heading punctuation fixes over decoded text and original syntax boundaries.
+//! Why:
+//!  Escapes,
+//!  entities,
+//!  emphasis delimiters and Unicode must survive localized byte editing.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -52,7 +56,8 @@ fn localized_fixes_preserve_delimiters_and_unicode() {
     }
 }
 
-/// Non-heading content, other punctuation and headings with no text node stay unchanged.
+/// Non-heading content,
+///  other punctuation and headings with no text node stay unchanged.
 #[test]
 fn unrelated_text_is_not_rewritten() {
     for source in [
@@ -81,7 +86,9 @@ fn suffix_mapping_rejects_incomplete_or_unrelated_entities() {
 }
 
 /// Backslash runs that reach the text's first byte still decide whether the punctuation is escaped.
-/// An odd run escapes it, so its last backslash leaves with it; an even run is literal backslashes that stay.
+/// An odd run escapes it,
+///  so its last backslash leaves with it;
+///  an even run is literal backslashes that stay.
 #[test]
 fn escape_runs_reaching_the_text_start_decide_the_suffix() {
     // Each tuple is (authored text, punctuation count, expected suffix start); usize offsets are byte positions.

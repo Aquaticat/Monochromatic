@@ -1,11 +1,22 @@
-//! What: `markdown/autofix` through the built executable, with the linter built from this
-//!       repository found on the fixture's PATH, a missing linter, and a linter that fails.
-//! Why: The policy's promises are about the program a person runs as `git`: an add warns
-//!      about a Markdown file the linter would rewrite and stages it unchanged, `check`
-//!      reports it, `fix` rewrites only the worktree file, an excluded file is left alone,
+//! What:
+//!  `markdown/autofix` through the built executable,
+//!  with the linter built from this
+//!       repository found on the fixture's PATH,
+//!  a missing linter,
+//!  and a linter that fails.
+//! Why:
+//!  The policy's promises are about the program a person runs as `git`:
+//!  an add warns
+//!      about a Markdown file the linter would rewrite and stages it unchanged,
+//!  `check`
+//!      reports it,
+//!  `fix` rewrites only the worktree file,
+//!  an excluded file is left alone,
 //!      and a linter that is missing or fails stops the command with exit status 2 and
-//!      stages nothing. The real linter comes only from `GIT_POLICY_NATIVE_TEST_LINTER`,
-//!      never from whatever is installed, and its absence fails the controls that need it.
+//!      stages nothing.
+//!  The real linter comes only from `GIT_POLICY_NATIVE_TEST_LINTER`,
+//!      never from whatever is installed,
+//!  and its absence fails the controls that need it.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -19,16 +30,19 @@ use super::support::{
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 
-/// The variable naming the linter built from this repository, set in the gate image.
+/// The variable naming the linter built from this repository,
+///  set in the gate image.
 const LINTER_VARIABLE: &str = "GIT_POLICY_NATIVE_TEST_LINTER";
 
-/// The object URL of `pkg/asset/shot.png`; the digest is `sha256sum` of `image bytes`.
+/// The object URL of `pkg/asset/shot.png`;
+///  the digest is `sha256sum` of `image bytes`.
 const SHOT_URL: &str = "https://lfs.example.com/org/repo/de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66faec/pkg/asset/shot.png";
 
 /// A Markdown file whose relative image link the LFS rule rewrites.
 const RELATIVE: &[u8] = b"# T\n\n![shot](asset/shot.png)\n";
 
-/// The linter built from this repository, by the variable the gate image sets.
+/// The linter built from this repository,
+///  by the variable the gate image sets.
 fn real_linter() -> PathBuf {
     let Some(path) = std::env::var_os(LINTER_VARIABLE) else {
         panic!(
@@ -40,7 +54,9 @@ fn real_linter() -> PathBuf {
 }
 
 /// Put a `monochromatic-lint` link to `program` in `<root>/linter` and return the PATH that
-/// has the wrapper first, then that directory, then the system.
+/// has the wrapper first,
+///  then that directory,
+///  then the system.
 fn path_with_linter(fixture: &Fixture, program: &Path) -> OsString {
     let directory: PathBuf = fixture.root.join("linter");
     std::fs::create_dir_all(&directory).expect("linter directory");
@@ -62,8 +78,12 @@ fn run_with(fixture: &Fixture, path: &OsStr, repo: &Path, arguments: &[&str]) ->
     );
 }
 
-/// A repository with an LFS endpoint, the PNG rule, one tracked image, the Markdown policy
-/// configured with `setting` and `final-newline` off, and all of that committed.
+/// A repository with an LFS endpoint,
+///  the PNG rule,
+///  one tracked image,
+///  the Markdown policy
+/// configured with `setting` and `final-newline` off,
+///  and all of that committed.
 fn lfs_repository(fixture: &Fixture, setting: &str) -> PathBuf {
     let repo: PathBuf = repository(fixture, OsStr::new("repo"));
     std::fs::create_dir_all(repo.join("pkg/asset")).expect("tree");
@@ -95,7 +115,8 @@ fn lfs_repository(fixture: &Fixture, setting: &str) -> PathBuf {
     return repo;
 }
 
-/// The autofix finding about `path` for one trigger, severity and fix state.
+/// The autofix finding about `path` for one trigger,
+///  severity and fix state.
 fn autofix(sequence: u64, trigger: &str, severity: &str, path: &str, fix: &str) -> String {
     return format!(
         "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"{trigger}\",\
@@ -104,14 +125,19 @@ fn autofix(sequence: u64, trigger: &str, severity: &str, path: &str, fix: &str) 
     );
 }
 
-/// The staged bytes of `path`, read from the index by real Git.
+/// The staged bytes of `path`,
+///  read from the index by real Git.
 fn staged(fixture: &Fixture, repo: &Path, path: &str) -> Vec<u8> {
     return git(fixture, repo, &["show", format!(":{path}").as_str()]).stdout;
 }
 
-/// With the real linter: an add warns and stages the bytes as they are; `check` reports;
-/// `fix` rewrites the worktree file only and summarizes; an excluded file and a file
-/// that is already right report nothing; at `error` the add stops and stages nothing.
+/// With the real linter:
+///  an add warns and stages the bytes as they are;
+///  `check` reports;
+/// `fix` rewrites the worktree file only and summarizes;
+///  an excluded file and a file
+/// that is already right report nothing;
+///  at `error` the add stops and stages nothing.
 #[test]
 fn the_real_linter_rewrites_through_add_check_and_fix() {
     let fixture: Fixture = fixture("markdown-real");
@@ -220,7 +246,9 @@ fn unchecked(trigger: &str, path: &str, reason: &str) -> String {
 }
 
 /// Without a linter on PATH a Markdown add stops with exit status 2 and stages nothing,
-/// while an add with no Markdown file, or with excluded ones only, needs no linter;
+/// while an add with no Markdown file,
+///  or with excluded ones only,
+///  needs no linter;
 /// escaping the policy lets the Markdown add through.
 #[test]
 fn a_missing_linter_stops_only_markdown_work() {
@@ -278,7 +306,9 @@ fn a_missing_linter_stops_only_markdown_work() {
 }
 
 /// A linter that exits with a status its configuration never produces stops the add and
-/// the fix, quoting its explanation, and changes nothing.
+/// the fix,
+///  quoting its explanation,
+///  and changes nothing.
 #[test]
 fn a_failing_linter_stops_the_command() {
     let fixture: Fixture = fixture("markdown-failing");

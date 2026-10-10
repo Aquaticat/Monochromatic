@@ -1,17 +1,28 @@
-//! Build step: precompile the embedded builtin baseline into a serialized `RegexSet`.
+//! Build step:
+//!  precompile the embedded builtin baseline into a serialized `RegexSet`.
 //!
 //! The migration plan (open-questions resolution) measured that compiling the full
-//! ported baseline at scanner startup is not viable: individual faithful rules take
-//! seconds to determinize, tens of seconds in the worst case. So the baseline is
-//! compiled once here, at build time, and serialized with the engine's `to_bytes`;
+//! ported baseline at scanner startup is not viable:
+//!  individual faithful rules take
+//! seconds to determinize,
+//!  tens of seconds in the worst case.
+//!  So the baseline is
+//! compiled once here,
+//!  at build time,
+//!  and serialized with the engine's `to_bytes`;
 //! `lib.rs` embeds the blob with `include_bytes!` and the runtime loader rebuilds it
 //! through the stage-one `load_precompiled` (the engine's validating `from_bytes`),
-//! which only decodes, never recompiles. Mutable runtime rules use a separate
+//! which only decodes,
+//!  never recompiles.
+//!  Mutable runtime rules use a separate
 //! content-addressed per-user artifact and compile from text only on cache recovery.
 //!
 //! The two-form parse and literal escaper are shared verbatim with the runtime frx
-//! compiler by `#[path]`-including the same source files: the build script cannot
-//! `use` its own crate, so this is the only way to keep one parser. The engine is a
+//! compiler by `#[path]`-including the same source files:
+//!  the build script cannot
+//! `use` its own crate,
+//!  so this is the only way to keep one parser.
+//!  The engine is a
 //! build-dependency so this script can call `RegexSet::new`.
 
 // Scoped to this build-script compilation only. The shared `error.rs` this script
@@ -30,8 +41,11 @@ use std::{env, fs, path::Path};
 
 /// Registers the redacted load-error type shared with the runtime frx compiler.
 ///
-/// The parser returns it; the build step never renders it with rule text, only its
-/// `Display`, whose interpolations are an opaque index and a config flag letter.
+/// The parser returns it;
+///  the build step never renders it with rule text,
+///  only its
+/// `Display`,
+///  whose interpolations are an opaque index and a config flag letter.
 #[path = "src/rule/frx/error.rs"]
 mod error;
 
@@ -39,7 +53,9 @@ mod error;
 #[path = "src/rule/frx/escape.rs"]
 mod escape;
 
-/// Registers the format autodetector, legacy line parser, and flag policy shared
+/// Registers the format autodetector,
+///  legacy line parser,
+///  and flag policy shared
 /// with the runtime.
 #[path = "src/rule/frx/format.rs"]
 mod format;
@@ -47,22 +63,35 @@ mod format;
 /// Registers the tail-format sectioned parser shared with the runtime.
 ///
 /// The `format` module this build script includes now routes through the section
-/// parser, so the section source must be included here too or the shared `#[path]`
-/// parser would not compile. The committed baseline is legacy-format, so this parser
-/// is never exercised at build time; it only needs to compile.
+/// parser,
+///  so the section source must be included here too or the shared `#[path]`
+/// parser would not compile.
+///  The committed baseline is legacy-format,
+///  so this parser
+/// is never exercised at build time;
+///  it only needs to compile.
 #[path = "src/rule/frx/sections.rs"]
 mod sections;
 
 /// Compiles the ported baseline once and writes its serialized bytes into `OUT_DIR`,
 /// beside a name sidecar carrying each rule's section name for finding identity.
 ///
-/// Parses the committed, generated `data/builtin-rules.txt` through the shared
-/// parser, compiles the whole set through the engine, serializes it, and writes the
+/// Parses the committed,
+///  generated `data/builtin-rules.txt` through the shared
+/// parser,
+///  compiles the whole set through the engine,
+///  serializes it,
+///  and writes the
 /// blob for `include_bytes!` plus one sidecar line per rule (the rule's section
-/// name, or an empty line for an unnamed legacy rule) for `include_str!`. A parse
-/// or compile failure fails the build, which is the correct fail-closed response to
-/// a corrupt or un-ported baseline; the error is surfaced only through its redacted
-/// `Display`, never rule text.
+/// name,
+///  or an empty line for an unnamed legacy rule) for `include_str!`.
+///  A parse
+/// or compile failure fails the build,
+///  which is the correct fail-closed response to
+/// a corrupt or un-ported baseline;
+///  the error is surfaced only through its redacted
+/// `Display`,
+///  never rule text.
 fn main() {
     // Rerun only when the baseline data or the shared parser sources change; the
     // build script's own edits are tracked by cargo automatically.

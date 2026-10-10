@@ -14,7 +14,10 @@ struct PinObjectInvalidError {
     source: io::Error,
 }
 
-/// Renders command, path, kernel-regression hint, and original diagnostic.
+/// Renders command,
+///  path,
+///  kernel-regression hint,
+///  and original diagnostic.
 impl fmt::Display for PinObjectInvalidError {
     /// Writes stable human-readable diagnostic without controlling behavior selection.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

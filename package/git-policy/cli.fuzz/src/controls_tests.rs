@@ -1,6 +1,10 @@
-//! What: Controls proving the control generators reach every way of reading a command,
-//!       every control effect and every ending of the lifecycle, and fixed hard cases.
-//! Why: An invariant that is never reached proves nothing; these controls count what the
+//! What:
+//!  Controls proving the control generators reach every way of reading a command,
+//!       every control effect and every ending of the lifecycle,
+//!  and fixed hard cases.
+//! Why:
+//!  An invariant that is never reached proves nothing;
+//!  these controls count what the
 //!      generators produce and run the invariants over all short inputs.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +12,8 @@
 //! // expect(readingsReachedBy(controlArguments)).toContain('refused');
 //! ```
 
-/// Import the generators and invariants under control, and the tables they draw from.
+/// Import the generators and invariants under control,
+///  and the tables they draw from.
 use super::{
     FrontierSeen, MAX_CONTROL_ARGUMENTS, SEPARATOR_MARK, check_control_removal, check_frontier,
     check_separator, control_arguments, removed_tokens, separated_arguments,
@@ -32,7 +37,8 @@ fn text(values: &[&str]) -> Vec<OsString> {
     return result;
 }
 
-/// The index of a token in the generator table, as the byte that selects it.
+/// The index of a token in the generator table,
+///  as the byte that selects it.
 fn byte_of(token: &[u8]) -> u8 {
     for (index, candidate) in CONTROL_TOKENS.iter().enumerate() {
         if *candidate == token {
@@ -42,7 +48,8 @@ fn byte_of(token: &[u8]) -> u8 {
     panic!("{token:?} is not in the generator table");
 }
 
-/// The restated spellings are exactly what the subject recognizes, and the generator can produce each.
+/// The restated spellings are exactly what the subject recognizes,
+///  and the generator can produce each.
 #[test]
 fn restated_spellings_match_the_subject() {
     assert_eq!(WRAPPER_SPELLINGS.len(), CONTROL_SPELLINGS.len() + 1);
@@ -74,7 +81,8 @@ fn restated_spellings_match_the_subject() {
     assert_eq!(control_arguments(&[0; 200]).len(), MAX_CONTROL_ARGUMENTS);
 }
 
-/// The token difference is exact, and a rewritten or reordered list is not a removal.
+/// The token difference is exact,
+///  and a rewritten or reordered list is not a removal.
 #[test]
 fn removed_tokens_are_an_exact_difference() {
     let before: Vec<OsString> = text(&["a", "x", "b", "x", "c"]);
@@ -167,7 +175,10 @@ fn generated_arguments_reach_every_reading_and_effect() {
     }
 }
 
-/// Fixed hard cases: values, paths and near-misses stay; a control in option position goes.
+/// Fixed hard cases:
+///  values,
+///  paths and near-misses stay;
+///  a control in option position goes.
 #[test]
 fn fixed_cases_hold_the_removal_invariants() {
     for (values, expected) in [
@@ -237,7 +248,8 @@ fn fixed_cases_hold_the_removal_invariants() {
     }
 }
 
-/// Everything from the separator on survives, for every command and every two tokens around it.
+/// Everything from the separator on survives,
+///  for every command and every two tokens around it.
 #[test]
 fn separated_arguments_keep_everything_after_the_separator() {
     assert_eq!(separated_arguments(&[]), None);
@@ -292,7 +304,8 @@ fn separated_arguments_keep_everything_after_the_separator() {
     );
 }
 
-/// All two-token inputs at both locations hold the frontier, and every ending is reached.
+/// All two-token inputs at both locations hold the frontier,
+///  and every ending is reached.
 #[test]
 fn generated_arguments_reach_every_frontier_ending() {
     let mut forwarded: usize = 0;

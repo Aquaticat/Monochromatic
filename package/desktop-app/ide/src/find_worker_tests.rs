@@ -1,11 +1,17 @@
-//! Synthetic reply channels prove each identity component is checked, independent of thread timing.
+//! Synthetic reply channels prove each identity component is checked,
+//!  independent of thread timing.
 
 /// Private fields build a worker handle around channels the test controls.
 use super::{FindIdentity, FindReply, FindRequest, FindWorker};
-/// Empty successful results make identity, not match content, the variable under test.
+/// Empty successful results make identity,
+///  not match content,
+///  the variable under test.
 use crate::find::find_matches;
-/// What: `sync_channel` creates bounded sender and receiver ends; `SyncSender` is the sending end.
-/// Why: The test publishes replies directly instead of racing a real scan.
+/// What:
+///  `sync_channel` creates bounded sender and receiver ends;
+///  `SyncSender` is the sending end.
+/// Why:
+///  The test publishes replies directly instead of racing a real scan.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,7 +19,8 @@ use crate::find::find_matches;
 /// ```
 use std::sync::mpsc::{Receiver, SyncSender, sync_channel};
 
-/// The identity every test wants; each stale reply differs from it in exactly one component.
+/// The identity every test wants;
+///  each stale reply differs from it in exactly one component.
 fn wanted() -> FindIdentity {
     return FindIdentity {
         file: 4,
@@ -22,7 +29,8 @@ fn wanted() -> FindIdentity {
     };
 }
 
-/// A busy handle without a thread; the returned ends let the test act as the worker.
+/// A busy handle without a thread;
+///  the returned ends let the test act as the worker.
 fn handle(
     identity: Option<FindIdentity>,
 ) -> (FindWorker, SyncSender<FindReply>, Receiver<FindRequest>) {
@@ -54,7 +62,8 @@ fn reply(identity: FindIdentity) -> FindReply {
     };
 }
 
-/// Publish one stale reply, then the exact wanted reply as the positive control.
+/// Publish one stale reply,
+///  then the exact wanted reply as the positive control.
 fn rejects(stale: FindIdentity, message: &str) {
     let (mut worker, publisher, _requests) = handle(Some(wanted()));
     publisher.send(reply(stale)).expect("stale reply slot");
@@ -106,7 +115,8 @@ fn reply_for_another_query_is_rejected() {
     rejects(stale, "a reply for another query was accepted");
 }
 
-/// Closing the bar wants nothing, so even an identical late reply is dropped.
+/// Closing the bar wants nothing,
+///  so even an identical late reply is dropped.
 #[test]
 fn reply_after_cancel_is_rejected() {
     let (mut worker, publisher, _requests) = handle(Some(wanted()));

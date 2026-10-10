@@ -1,7 +1,13 @@
-//! What: Event paths of a file whose name is not UTF-8, through the built executable.
-//! Why: `pathBytes` is a promise to the agent or script reading the events: the readable
-//!      `path` keeps its replacement characters, and the exact name comes back from the
-//!      base64 field, on wrapper standard error and on `check` and `fix` standard output.
+//! What:
+//!  Event paths of a file whose name is not UTF-8,
+//!  through the built executable.
+//! Why:
+//!  `pathBytes` is a promise to the agent or script reading the events:
+//!  the readable
+//!      `path` keeps its replacement characters,
+//!  and the exact name comes back from the
+//!      base64 field,
+//!  on wrapper standard error and on `check` and `fix` standard output.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -14,13 +20,17 @@ use std::ffi::{OsStr, OsString};
 use std::os::unix::ffi::OsStringExt;
 use std::path::PathBuf;
 
-/// The Latin-1 spelling of `café.txt`: valid as a Unix name, not valid UTF-8.
+/// The Latin-1 spelling of `café.txt`:
+///  valid as a Unix name,
+///  not valid UTF-8.
 const LATIN_NAME: &[u8] = b"caf\xe9.txt";
 
-/// The base64 of `LATIN_NAME`, as the decision brief shows it and `base64` prints it.
+/// The base64 of `LATIN_NAME`,
+///  as the decision brief shows it and `base64` prints it.
 const LATIN_NAME_BYTES: &str = "Y2Fm6S50eHQ=";
 
-/// The final-newline finding about `LATIN_NAME` for one trigger, with its sequence number.
+/// The final-newline finding about `LATIN_NAME` for one trigger,
+///  with its sequence number.
 fn latin_finding(sequence: u64, trigger: &str, fix: &str) -> String {
     return format!(
         "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"{trigger}\",\
@@ -30,9 +40,13 @@ fn latin_finding(sequence: u64, trigger: &str, fix: &str) -> String {
     );
 }
 
-/// `git add`, `git cli-git check` and `git cli-git fix` name a Latin-1 file by its
-/// readable text and its exact bytes; a UTF-8 file beside it keeps the old shape, and the
-/// fix summary lists the bytes of both, in Git's byte order.
+/// `git add`,
+///  `git cli-git check` and `git cli-git fix` name a Latin-1 file by its
+/// readable text and its exact bytes;
+///  a UTF-8 file beside it keeps the old shape,
+///  and the
+/// fix summary lists the bytes of both,
+///  in Git's byte order.
 #[test]
 fn events_carry_the_exact_bytes_of_a_name_that_is_not_utf8() {
     let fixture: Fixture = fixture("event-path");

@@ -1,5 +1,8 @@
-//! What: Disposable Cargo-backed semantic fixtures using the production workspace loader.
-//! Why: Tests exercise discovery, source overlays and query protection rather than parallel test-only glue.
+//! What:
+//!  Disposable Cargo-backed semantic fixtures using the production workspace loader.
+//! Why:
+//!  Tests exercise discovery,
+//!  source overlays and query protection rather than parallel test-only glue.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,6 +11,7 @@
 
 /// Import production findings and session ownership.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the session type that these fixtures construct for the semantic tests.
 use crate::rust_semantic_session::RustSemanticSession;
 /// Import the actual Cargo loader and its fixed preparation choices.
 use crate::rust_workspace::{WorkspacePreparation, load_cargo_workspace};
@@ -15,6 +19,7 @@ use crate::rust_workspace::{WorkspacePreparation, load_cargo_workspace};
 use crate::test_fs::Fixture;
 /// Import native paths and captured fixture-preparation commands.
 use std::path::{Path, PathBuf};
+/// Import the process types that run Cargo or the toolchain for the fixtures.
 use std::process::{Command, Output};
 
 /// Keep loader progress in the test harness's captured diagnostics.
@@ -22,7 +27,8 @@ pub(crate) fn progress(message: String) {
     eprintln!("semantic fixture: {message}");
 }
 
-/// Generate the fixture lockfile with Cargo, not by hand-writing a package-manager artifact.
+/// Generate the fixture lockfile with Cargo,
+///  not by hand-writing a package-manager artifact.
 pub(crate) fn prepare_lockfile(directory: &Path) {
     let output: Output = Command::new("cargo")
         .args(["generate-lockfile", "--offline"])
@@ -36,15 +42,18 @@ pub(crate) fn prepare_lockfile(directory: &Path) {
     );
 }
 
-/// What: Owned source directory and production semantic session.
-/// Why: The session is released before cleanup deletes the physical fixture.
+/// What:
+///  Owned source directory and production semantic session.
+/// Why:
+///  The session is released before cleanup deletes the physical fixture.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class SemanticFixture { check(source: string, severity: Severity): Diagnostic[]; }
 /// ```
 pub(crate) struct SemanticFixture {
-    /// Reused production session, including source-overlay handling.
+    /// Reused production session,
+    ///  including source-overlay handling.
     pub(crate) session: RustSemanticSession,
     /// Path already present in the loaded workspace.
     pub(crate) source_path: PathBuf,
@@ -54,7 +63,8 @@ pub(crate) struct SemanticFixture {
 
 /// Create and query the disposable production consumer.
 impl SemanticFixture {
-    /// Load a dependency-free fixture; source-only preparation never executes its build scripts or macros.
+    /// Load a dependency-free fixture;
+    ///  source-only preparation never executes its build scripts or macros.
     pub(crate) fn new() -> SemanticFixture {
         let directory: Fixture = Fixture::new();
         let source_directory: PathBuf = directory.path.join("src");

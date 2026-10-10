@@ -1,11 +1,21 @@
-//! What: The `exclude` option of `markdown/autofix`: gitignore-syntax patterns, relative to
-//!       the repository's top level, naming candidates the policy leaves alone.
-//! Why: The installed wrapper filtered candidates with the `ignore` package before starting
-//!      the linter (`rewrite-candidates.ts`, `rewriteCandidates`), so an excluded file never
-//!      starts a linter and never fails for one. The linter evaluates its own copy of the
+//! What:
+//!  The `exclude` option of `markdown/autofix`:
+//!  gitignore-syntax patterns,
+//!  relative to
+//!       the repository's top level,
+//!  naming candidates the policy leaves alone.
+//! Why:
+//!  The installed wrapper filtered candidates with the `ignore` package before starting
+//!      the linter (`rewrite-candidates.ts`,
+//!  `rewriteCandidates`),
+//!  so an excluded file never
+//!      starts a linter and never fails for one.
+//!  The linter evaluates its own copy of the
 //!      option with the `ignore` crate's gitignore matcher and a walk over ancestor
-//!      directories (`package/linter/monochromatic-lint/src/markdown_lfs_patterns.rs`); this
-//!      module uses the same matcher and the same walk, so both agree on every path.
+//!      directories (`package/linter/monochromatic-lint/src/markdown_lfs_patterns.rs`);
+//!  this
+//!      module uses the same matcher and the same walk,
+//!  so both agree on every path.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -14,8 +24,11 @@
 
 /// Import the conversion of Git's pathname bytes to a path.
 use super::git_metadata::path_from_git_bytes;
-/// What: `Gitignore` is a compiled pattern list; `GitignoreBuilder` compiles one.
-/// Why:  The same compiler the linter and the scanner use.
+/// What:
+///  `Gitignore` is a compiled pattern list;
+///  `GitignoreBuilder` compiles one.
+/// Why:
+///   The same compiler the linter and the scanner use.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,8 +36,13 @@ use super::git_metadata::path_from_git_bytes;
 /// ```
 use ignore::gitignore::{Gitignore, GitignoreBuilder};
 
-/// What: The compiled patterns. The field is private: build one with `compile_exclude`.
-/// Why:  Compiled once per invocation, then asked once per Markdown candidate.
+/// What:
+///  The compiled patterns.
+///  The field is private:
+///  build one with `compile_exclude`.
+/// Why:
+///   Compiled once per invocation,
+///  then asked once per Markdown candidate.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,14 +50,21 @@ use ignore::gitignore::{Gitignore, GitignoreBuilder};
 /// ```
 #[derive(Clone, Debug)]
 pub struct ExcludeMatcher {
-    /// The patterns in authored order; a later match overrides an earlier one.
+    /// The patterns in authored order;
+    ///  a later match overrides an earlier one.
     matcher: Gitignore,
 }
 
-/// What: Compile `patterns` in order. `Result<ExcludeMatcher, String>` is the matcher or
-///       the reason a pattern was refused, naming it.
-/// Why:  A pattern that cannot compile must not silently match nothing. The empty root
-///       keeps candidate paths as Git prints them: relative to the top level.
+/// What:
+///  Compile `patterns` in order.
+///  `Result<ExcludeMatcher, String>` is the matcher or
+///       the reason a pattern was refused,
+///  naming it.
+/// Why:
+///   A pattern that cannot compile must not silently match nothing.
+///  The empty root
+///       keeps candidate paths as Git prints them:
+///  relative to the top level.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,19 +90,28 @@ pub fn compile_exclude(patterns: &[String]) -> Result<ExcludeMatcher, String> {
     }
 }
 
-/// What: `impl ExcludeMatcher { ... }` attaches the one question it answers.
-/// Why:  Callers never see the walk over ancestor directories.
+/// What:
+///  `impl ExcludeMatcher { ... }` attaches the one question it answers.
+/// Why:
+///   Callers never see the walk over ancestor directories.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ExcludeMatcher { excludes(path: Uint8Array): boolean }
 /// ```
 impl ExcludeMatcher {
-    /// What: Whether the patterns name the candidate at `path`, Git's pathname bytes.
-    /// Why:  In gitignore semantics a file below an excluded directory stays excluded
-    ///       even when a later pattern negates the file, so each ancestor directory is
-    ///       asked first, from the top; only when none is excluded does the file's own
-    ///       last match decide. A pathname this platform cannot spell is not excluded.
+    /// What:
+    ///  Whether the patterns name the candidate at `path`,
+    ///  Git's pathname bytes.
+    /// Why:
+    ///   In gitignore semantics a file below an excluded directory stays excluded
+    ///       even when a later pattern negates the file,
+    ///  so each ancestor directory is
+    ///       asked first,
+    ///  from the top;
+    ///  only when none is excluded does the file's own
+    ///       last match decide.
+    ///  A pathname this platform cannot spell is not excluded.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -107,8 +141,12 @@ impl ExcludeMatcher {
     }
 }
 
-/// What: Whether one byte is `/`, the separator of Git pathnames.
-/// Why:  A named predicate for `split`, because the repository bans anonymous functions.
+/// What:
+///  Whether one byte is `/`,
+///  the separator of Git pathnames.
+/// Why:
+///   A named predicate for `split`,
+///  because the repository bans anonymous functions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

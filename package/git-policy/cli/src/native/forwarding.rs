@@ -1,5 +1,9 @@
-//! What: Start real Git with the caller's exact arguments, streams and environment.
-//! Why: The wrapper adds policy around Git; it must never change what Git receives
+//! What:
+//!  Start real Git with the caller's exact arguments,
+//!  streams and environment.
+//! Why:
+//!  The wrapper adds policy around Git;
+//!  it must never change what Git receives
 //!      or what the caller observes from Git.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,9 +11,12 @@
 //! // spawn(gitPath, args, { stdio: 'inherit', env }) and exit with the child's status.
 //! ```
 
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  Arguments are forwarded byte for byte; they are never decoded or re-quoted.
+/// Why:
+///   Arguments are forwarded byte for byte;
+///  they are never decoded or re-quoted.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,14 +25,21 @@
 use std::ffi::OsString;
 /// `Path` is a borrowed filesystem path of raw OS bytes.
 use std::path::Path;
-/// `Command` builds a child process from a program and an argument list, with no shell.
+/// `Command` builds a child process from a program and an argument list,
+///  with no shell.
 use std::process::Command;
 
-/// What: How a Git child ended.
-///       `i32` is a signed 32-bit integer, the type of exit codes and signal numbers
-///       (siblings `u8`, `i64`).
-/// Why:  A child killed by a signal has no exit code; callers need both cases to
-///       report Git's result faithfully. `i32` is what the operating system returns.
+/// What:
+///  How a Git child ended.
+///       `i32` is a signed 32-bit integer,
+///  the type of exit codes and signal numbers
+///       (siblings `u8`,
+///  `i64`).
+/// Why:
+///   A child killed by a signal has no exit code;
+///  callers need both cases to
+///       report Git's result faithfully.
+///  `i32` is what the operating system returns.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,10 +53,18 @@ pub enum ChildOutcome {
     Signaled(i32),
 }
 
-/// What: Build the child command: program, unchanged arguments, added variables.
-///       `&[OsString]` borrows the argument list; `&[(OsString, OsString)]` borrows
+/// What:
+///  Build the child command:
+///  program,
+///  unchanged arguments,
+///  added variables.
+///       `&[OsString]` borrows the argument list;
+///  `&[(OsString, OsString)]` borrows
 ///       name/value pairs.
-/// Why:  One builder guarantees every real-Git start, forwarded or queried, uses an
+/// Why:
+///   One builder guarantees every real-Git start,
+///  forwarded or queried,
+///  uses an
 ///       argument array (no shell string) and inherits the caller's environment plus
 ///       only the overlay.
 ///
@@ -66,9 +88,12 @@ pub fn git_command(
     return command;
 }
 
-/// What: Translate a child's end into this process's exit code.
-/// Why:  Git 2.56.0 `run-command.c` reports a child killed by signal N as `128 + N`,
-///       which is also what a POSIX shell reports; an exit code passes through.
+/// What:
+///  Translate a child's end into this process's exit code.
+/// Why:
+///   Git 2.56.0 `run-command.c` reports a child killed by signal N as `128 + N`,
+///       which is also what a POSIX shell reports;
+///  an exit code passes through.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,11 +113,18 @@ pub fn exit_code(outcome: ChildOutcome) -> i32 {
     }
 }
 
-/// What: Read a finished child's status into a `ChildOutcome`.
+/// What:
+///  Read a finished child's status into a `ChildOutcome`.
 ///       `#[cfg(unix)]` on the inner block compiles it only on Unix-like systems.
-/// Why:  Unix reports either an exit code or a terminating signal, never both. Other
-///       systems report only an exit code. One function serves both, so the part every
-///       system shares is the part every test run exercises; a status that is neither
+/// Why:
+///   Unix reports either an exit code or a terminating signal,
+///  never both.
+///  Other
+///       systems report only an exit code.
+///  One function serves both,
+///  so the part every
+///       system shares is the part every test run exercises;
+///  a status that is neither
 ///       cannot be reported faithfully and counts as a general failure.
 ///
 /// In TS you'd write (pseudocode):
@@ -115,13 +147,22 @@ fn outcome_of(status: std::process::ExitStatus) -> ChildOutcome {
     return ChildOutcome::Exited(1);
 }
 
-/// What: Run real Git as a child with inherited stdin, stdout and stderr, and wait.
+/// What:
+///  Run real Git as a child with inherited stdin,
+///  stdout and stderr,
+///  and wait.
 ///       `std::io::Result<T>` is `Result<T, std::io::Error>`.
-/// Why:  Callers that must do work after Git returns (post-commit policies, status
-///       notes) need the wrapper process to survive Git. The child shares the
-///       caller's terminal and streams directly; nothing is buffered or copied.
-///       This path installs no signal handlers: a signal sent to the wrapper alone
-///       does not reach Git, exactly as with the TypeScript wrapper.
+/// Why:
+///   Callers that must do work after Git returns (post-commit policies,
+///  status
+///       notes) need the wrapper process to survive Git.
+///  The child shares the
+///       caller's terminal and streams directly;
+///  nothing is buffered or copied.
+///       This path installs no signal handlers:
+///  a signal sent to the wrapper alone
+///       does not reach Git,
+///  exactly as with the TypeScript wrapper.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -146,12 +187,23 @@ pub fn run_real_git(
     return Ok(outcome_of(status));
 }
 
-/// What: Become real Git; returns only when Git could not be started.
+/// What:
+///  Become real Git;
+///  returns only when Git could not be started.
 ///       The returned `std::io::Error` says why the operating system refused.
 ///       `#[cfg(unix)]` and `#[cfg(not(unix))]` each compile one of the two inner blocks.
-/// Why:  On Unix this process is replaced by Git, which is exact forwarding: same process
-///       ID, same streams, same signals, same exit status, and no wrapper process left
-///       between the caller and Git. Windows cannot replace a process image; the nearest
+/// Why:
+///   On Unix this process is replaced by Git,
+///  which is exact forwarding:
+///  same process
+///       ID,
+///  same streams,
+///  same signals,
+///  same exit status,
+///  and no wrapper process left
+///       between the caller and Git.
+///  Windows cannot replace a process image;
+///  the nearest
 ///       faithful behaviour there is to wait for Git and exit with its status.
 ///
 /// In TS you'd write (pseudocode):

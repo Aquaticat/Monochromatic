@@ -1,11 +1,22 @@
-//! What: Run one child program to completion with a time bound and output caps: its
-//!       input comes from a file, its two outputs go to files, and the parent polls it.
-//! Why: The Markdown policy starts the linter once per candidate, and a child that hangs,
-//!      floods its output or exits early must never hang or exhaust the wrapper. Files
-//!      instead of pipes need no reader or writer threads: a child that stops reading its
-//!      input cannot block the parent, a child that writes more than the cap is stopped
-//!      when the parent sees the file grow past it, and a grandchild that keeps an output
-//!      open cannot delay the parent once the child itself has exited. Every file is an
+//! What:
+//!  Run one child program to completion with a time bound and output caps:
+//!  its
+//!       input comes from a file,
+//!  its two outputs go to files,
+//!  and the parent polls it.
+//! Why:
+//!  The Markdown policy starts the linter once per candidate,
+//!  and a child that hangs,
+//!      floods its output or exits early must never hang or exhaust the wrapper.
+//!  Files
+//!      instead of pipes need no reader or writer threads:
+//!  a child that stops reading its
+//!      input cannot block the parent,
+//!  a child that writes more than the cap is stopped
+//!      when the parent sees the file grow past it,
+//!  and a grandchild that keeps an output
+//!      open cannot delay the parent once the child itself has exited.
+//!  Every file is an
 //!      anonymous temporary file that the operating system removes when it is closed.
 //!
 //! In TS you'd write (pseudocode):
@@ -13,11 +24,19 @@
 //! // const run = await runBoundedChild({ executable, args, cwd, env, input, timeoutMs, maxStdout, maxStderr });
 //! ```
 
-/// `OsString` is owned operating-system text: arguments and environment values need not be UTF-8.
+/// `OsString` is owned operating-system text:
+///  arguments and environment values need not be UTF-8.
 use std::ffi::OsString;
-/// What: `File` is an open file; `Read`, `Seek` and `Write` add reading, repositioning and
-///       writing; `SeekFrom::Start(0)` names the first byte.
-/// Why:  The input file is written before the child starts, and the output files are read
+/// What:
+///  `File` is an open file;
+///  `Read`,
+///  `Seek` and `Write` add reading,
+///  repositioning and
+///       writing;
+///  `SeekFrom::Start(0)` names the first byte.
+/// Why:
+///   The input file is written before the child starts,
+///  and the output files are read
 ///       back after it ends.
 ///
 /// In TS you'd write (pseudocode):
@@ -25,25 +44,38 @@ use std::ffi::OsString;
 /// import { open } from 'node:fs/promises';
 /// ```
 use std::fs::File;
-/// `Read`, `Seek` and `Write` are the traits that add reading, rewinding and writing to a file.
+/// `Read`,
+///  `Seek` and `Write` are the traits that add reading,
+///  rewinding and writing to a file.
 use std::io::{Read, Seek, SeekFrom, Write};
 /// `Path` is a borrowed filesystem path.
 use std::path::Path;
-/// What: `Command` describes a child before it starts; `Child` is a running one;
-///       `ExitStatus` is how it ended; `Stdio` says where each stream goes.
-/// Why:  The child is started directly, never through a shell.
+/// What:
+///  `Command` describes a child before it starts;
+///  `Child` is a running one;
+///       `ExitStatus` is how it ended;
+///  `Stdio` says where each stream goes.
+/// Why:
+///   The child is started directly,
+///  never through a shell.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { spawn } from 'node:child_process';
 /// ```
 use std::process::{Child, Command, ExitStatus, Stdio};
-/// `Duration` is a span of time; `Instant` is a point on a clock that never goes backwards.
+/// `Duration` is a span of time;
+///  `Instant` is a point on a clock that never goes backwards.
 use std::time::{Duration, Instant};
 
-/// What: The first and the longest pause between two looks at a running child.
-/// Why:  A short child, such as the linter on one file (about 11 milliseconds measured on
-///       the host), is noticed within a few milliseconds of ending; the pause doubles so a
+/// What:
+///  The first and the longest pause between two looks at a running child.
+/// Why:
+///   A short child,
+///  such as the linter on one file (about 11 milliseconds measured on
+///       the host),
+///  is noticed within a few milliseconds of ending;
+///  the pause doubles so a
 ///       long child costs a look every 16 milliseconds at most.
 ///
 /// In TS you'd write (pseudocode):
@@ -54,9 +86,14 @@ const FIRST_PAUSE: Duration = Duration::from_millis(1);
 /// See `FIRST_PAUSE`.
 const LONGEST_PAUSE: Duration = Duration::from_millis(16);
 
-/// What: The bounds of one child. `usize` is an unsigned size in bytes.
-///       `#[derive(...)]` generates copying, debug printing and `==`.
-/// Why:  The caller chooses them, so tests can use bounds small enough to reach quickly.
+/// What:
+///  The bounds of one child.
+///  `usize` is an unsigned size in bytes.
+///       `#[derive(...)]` generates copying,
+///  debug printing and `==`.
+/// Why:
+///   The caller chooses them,
+///  so tests can use bounds small enough to reach quickly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -66,15 +103,21 @@ const LONGEST_PAUSE: Duration = Duration::from_millis(16);
 pub struct ChildLimits {
     /// How long the child may run before it is killed.
     pub timeout: Duration,
-    /// The most bytes of standard output kept; one more stops the child.
+    /// The most bytes of standard output kept;
+    ///  one more stops the child.
     pub max_stdout: usize,
-    /// The most bytes of standard error kept; one more stops the child.
+    /// The most bytes of standard error kept;
+    ///  one more stops the child.
     pub max_stderr: usize,
 }
 
-/// What: Everything one child needs. `'a` names how long the borrowed parts last;
-///       `&[(OsString, OsString)]` is the complete environment, as name and value pairs.
-/// Why:  The child gets exactly this environment and nothing inherited by accident.
+/// What:
+///  Everything one child needs.
+///  `'a` names how long the borrowed parts last;
+///       `&[(OsString, OsString)]` is the complete environment,
+///  as name and value pairs.
+/// Why:
+///   The child gets exactly this environment and nothing inherited by accident.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,9 +125,11 @@ pub struct ChildLimits {
 /// ```
 #[derive(Clone, Copy, Debug)]
 pub struct ChildRequest<'a> {
-    /// The program, by path.
+    /// The program,
+    ///  by path.
     pub executable: &'a Path,
-    /// Its arguments, after the program name.
+    /// Its arguments,
+    ///  after the program name.
     pub arguments: &'a [OsString],
     /// Its working directory.
     pub directory: &'a Path,
@@ -92,15 +137,21 @@ pub struct ChildRequest<'a> {
     pub environment: &'a [(OsString, OsString)],
     /// The bytes it reads as standard input.
     pub input: &'a [u8],
-    /// The directory the anonymous stream files are made in, normally the system's
+    /// The directory the anonymous stream files are made in,
+    ///  normally the system's
     /// temporary directory.
     pub scratch: &'a Path,
     /// Its time bound and output caps.
     pub limits: ChildLimits,
 }
 
-/// What: How a finished child ended: its exit code, or the signal that ended it.
-/// Why:  A child ended by a signal has no exit code, and the message must say which.
+/// What:
+///  How a finished child ended:
+///  its exit code,
+///  or the signal that ended it.
+/// Why:
+///   A child ended by a signal has no exit code,
+///  and the message must say which.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,12 +169,17 @@ pub enum ChildExit {
         /// The signal number.
         i32,
     ),
-    /// Neither is known; a platform without signals reported no code.
+    /// Neither is known;
+    ///  a platform without signals reported no code.
     Unknown,
 }
 
-/// What: A child that ran to its end within its bounds, with what it wrote.
-/// Why:  Interpreting the output is the caller's job; this only reports it exactly.
+/// What:
+///  A child that ran to its end within its bounds,
+///  with what it wrote.
+/// Why:
+///   Interpreting the output is the caller's job;
+///  this only reports it exactly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -139,9 +195,12 @@ pub struct FinishedChild {
     pub stderr: Vec<u8>,
 }
 
-/// What: Why a child produced no usable result. `String` carries the operating system's
+/// What:
+///  Why a child produced no usable result.
+///  `String` carries the operating system's
 ///       own words where it gave any.
-/// Why:  Each cause gets its own sentence for the person who ran the command.
+/// Why:
+///   Each cause gets its own sentence for the person who ran the command.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -173,20 +232,25 @@ pub enum ChildFailure {
     TooLarge {
         /// `standard output` or `standard error`.
         stream: &'static str,
-        /// The cap it exceeded, in bytes.
+        /// The cap it exceeded,
+        ///  in bytes.
         limit: usize,
     },
 }
 
-/// What: The child's three stream files. Each is an anonymous temporary file.
-/// Why:  One record keeps them together for the child's whole run.
+/// What:
+///  The child's three stream files.
+///  Each is an anonymous temporary file.
+/// Why:
+///   One record keeps them together for the child's whole run.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type StreamFiles = { input: FileHandle; stdout: FileHandle; stderr: FileHandle };
 /// ```
 struct StreamFiles {
-    /// The child's standard input, already written and rewound.
+    /// The child's standard input,
+    ///  already written and rewound.
     input: File,
     /// The child's standard output.
     stdout: File,
@@ -194,8 +258,11 @@ struct StreamFiles {
     stderr: File,
 }
 
-/// What: The text of an operating-system failure. `&std::io::Error` borrows the failure.
-/// Why:  A named conversion for the `map_err` calls below.
+/// What:
+///  The text of an operating-system failure.
+///  `&std::io::Error` borrows the failure.
+/// Why:
+///   A named conversion for the `map_err` calls below.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -205,9 +272,12 @@ fn files_failure(error: std::io::Error) -> ChildFailure {
     return ChildFailure::Files(error.to_string());
 }
 
-/// What: Make the three stream files and write the input into the first.
+/// What:
+///  Make the three stream files and write the input into the first.
 ///       The trailing `?` returns a failure to the caller at once.
-/// Why:  The input is complete before the child starts, so the child can read it at any
+/// Why:
+///   The input is complete before the child starts,
+///  so the child can read it at any
 ///       pace or not at all.
 ///
 /// In TS you'd write (pseudocode):
@@ -225,9 +295,12 @@ fn stream_files(input: &[u8], scratch: &Path) -> Result<StreamFiles, ChildFailur
     });
 }
 
-/// What: Whether an output of `size` bytes is past a cap of `limit` bytes. `u64` is an
+/// What:
+///  Whether an output of `size` bytes is past a cap of `limit` bytes.
+///  `u64` is an
 ///       unsigned 64-bit size.
-/// Why:  A size equal to the cap is still within it.
+/// Why:
+///   A size equal to the cap is still within it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -238,8 +311,10 @@ fn exceeds(size: u64, limit: usize) -> bool {
     return size > limit as u64;
 }
 
-/// What: Whether `elapsed` has reached the time bound `timeout`.
-/// Why:  A child still running at exactly its bound has used all of it.
+/// What:
+///  Whether `elapsed` has reached the time bound `timeout`.
+/// Why:
+///   A child still running at exactly its bound has used all of it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -249,8 +324,12 @@ fn deadline_reached(elapsed: Duration, timeout: Duration) -> bool {
     return elapsed >= timeout;
 }
 
-/// What: The pause after `pause`: twice as long, but never longer than `LONGEST_PAUSE`.
-/// Why:  Looks come quickly at first and settle at one every 16 milliseconds.
+/// What:
+///  The pause after `pause`:
+///  twice as long,
+///  but never longer than `LONGEST_PAUSE`.
+/// Why:
+///   Looks come quickly at first and settle at one every 16 milliseconds.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -260,8 +339,13 @@ fn next_pause(pause: Duration) -> Duration {
     return (pause * 2).min(LONGEST_PAUSE);
 }
 
-/// What: How long to sleep now: the current pause, or what is left of the bound if less.
-/// Why:  The parent never sleeps past the bound, so a stopped child is reported on time.
+/// What:
+///  How long to sleep now:
+///  the current pause,
+///  or what is left of the bound if less.
+/// Why:
+///   The parent never sleeps past the bound,
+///  so a stopped child is reported on time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -271,9 +355,15 @@ fn sleep_for(pause: Duration, remaining: Duration) -> Duration {
     return pause.min(remaining);
 }
 
-/// What: The stream that has grown past its cap, if any. `&File` borrows an output file.
-/// Why:  The parent looks at both sizes on every poll; a file whose size cannot be read is
-///       treated as unbounded, because nothing proves it stayed small.
+/// What:
+///  The stream that has grown past its cap,
+///  if any.
+///  `&File` borrows an output file.
+/// Why:
+///   The parent looks at both sizes on every poll;
+///  a file whose size cannot be read is
+///       treated as unbounded,
+///  because nothing proves it stayed small.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -295,9 +385,15 @@ fn overflowed(files: &StreamFiles, limits: ChildLimits) -> Option<ChildFailure> 
     return None;
 }
 
-/// What: Kill a child and collect it. `&mut Child` lends the running child.
-/// Why:  A killed child must still be waited for, or it stays behind as a zombie. A child
-///       that already ended makes `kill` fail harmlessly, which is ignored.
+/// What:
+///  Kill a child and collect it.
+///  `&mut Child` lends the running child.
+/// Why:
+///   A killed child must still be waited for,
+///  or it stays behind as a zombie.
+///  A child
+///       that already ended makes `kill` fail harmlessly,
+///  which is ignored.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -315,9 +411,15 @@ fn stop(child: &mut Child) {
     let _ = child.wait();
 }
 
-/// What: Wait for a child within its bound, stopping it at the first overflow or at the
-///       bound. `Result<ExitStatus, ChildFailure>` is how it ended or why it was stopped.
-/// Why:  `std` has no timed wait, so the parent looks with `try_wait`, which never blocks,
+/// What:
+///  Wait for a child within its bound,
+///  stopping it at the first overflow or at the
+///       bound.
+///  `Result<ExitStatus, ChildFailure>` is how it ended or why it was stopped.
+/// Why:
+///   `std` has no timed wait,
+///  so the parent looks with `try_wait`,
+///  which never blocks,
 ///       and sleeps a growing pause between looks.
 ///
 /// In TS you'd write (pseudocode):
@@ -357,8 +459,11 @@ fn wait_bounded(
     }
 }
 
-/// What: Read one output file back from its start. `&mut File` lends it.
-/// Why:  The overflow check already proved the file is within its cap.
+/// What:
+///  Read one output file back from its start.
+///  `&mut File` lends it.
+/// Why:
+///   The overflow check already proved the file is within its cap.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -371,9 +476,14 @@ fn read_back(file: &mut File) -> Result<Vec<u8>, ChildFailure> {
     return Ok(bytes);
 }
 
-/// What: How an exit status reads: its code, else its signal. `#[cfg(unix)]` compiles the
+/// What:
+///  How an exit status reads:
+///  its code,
+///  else its signal.
+///  `#[cfg(unix)]` compiles the
 ///       signal lookup only where signals exist.
-/// Why:  The message names a signal when there is one instead of "no exit code".
+/// Why:
+///   The message names a signal when there is one instead of "no exit code".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -385,7 +495,8 @@ fn child_exit(status: ExitStatus) -> ChildExit {
     }
     #[cfg(unix)]
     {
-        /// The trait adds `.signal()`; `use` inside a block scopes it to this block.
+        /// The trait adds `.signal()`;
+        ///  `use` inside a block scopes it to this block.
         use std::os::unix::process::ExitStatusExt;
         if let Some(signal) = status.signal() {
             return ChildExit::Signal(signal);
@@ -394,8 +505,13 @@ fn child_exit(status: ExitStatus) -> ChildExit {
     return ChildExit::Unknown;
 }
 
-/// What: Run the child of `request` to its end, or stop it at its bound or its cap.
-/// Why:  See the module comment. The environment is cleared first, so the child sees
+/// What:
+///  Run the child of `request` to its end,
+///  or stop it at its bound or its cap.
+/// Why:
+///   See the module comment.
+///  The environment is cleared first,
+///  so the child sees
 ///       exactly the pairs the caller passed.
 ///
 /// In TS you'd write (pseudocode):
@@ -438,7 +554,8 @@ pub fn run_bounded_child(request: &ChildRequest<'_>) -> Result<FinishedChild, Ch
     });
 }
 
-/// Bound, cap and stream controls stay out of the release executable.
+/// Bound,
+///  cap and stream controls stay out of the release executable.
 #[cfg(test)]
 #[path = "bounded_child_tests.rs"]
 mod tests;

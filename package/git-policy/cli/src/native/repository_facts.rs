@@ -1,18 +1,30 @@
-//! What: The repository facts policies and fixed transforms need, behind one small
-//!       interface, with the provider that asks real Git.
-//! Why: The rule cores decide from arguments alone and name the fact they still need.
-//!      This module fetches those facts lazily and at most once: an invocation whose rules
-//!      need nothing starts no Git process, and several rules that need the repository's
-//!      location share one query. Tests drive the rules with a scripted provider.
+//! What:
+//!  The repository facts policies and fixed transforms need,
+//!  behind one small
+//!       interface,
+//!  with the provider that asks real Git.
+//! Why:
+//!  The rule cores decide from arguments alone and name the fact they still need.
+//!      This module fetches those facts lazily and at most once:
+//!  an invocation whose rules
+//!      need nothing starts no Git process,
+//!  and several rules that need the repository's
+//!      location share one query.
+//!  Tests drive the rules with a scripted provider.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const facts = createGitFacts({ gitPath, globalPrefix }); await facts.location();
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  Each fact has a pure core that builds its query and reads its answer; this module
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   Each fact has a pure core that builds its query and reads its answer;
+///  this module
 ///       only runs the query.
 ///
 /// In TS you'd write (pseudocode):
@@ -33,9 +45,14 @@ use super::rule_commit_sequencer::{
     SequencerFacts, SequencerState, sequencer_head_paths, sequencer_query_arguments,
     sequencer_state, sequencer_state_when_query_fails,
 };
-/// What: `OsStr`/`OsString` are borrowed/owned operating-system text of raw bytes. Sibling
-///       the reader might expect: `&str`/`String`, which must be valid UTF-8.
-/// Why:  Global options and branch names are passed to Git unchanged.
+/// What:
+///  `OsStr`/`OsString` are borrowed/owned operating-system text of raw bytes.
+///  Sibling
+///       the reader might expect:
+///  `&str`/`String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Global options and branch names are passed to Git unchanged.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,38 +62,59 @@ use std::ffi::{OsStr, OsString};
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths of raw bytes.
 use std::path::{Path, PathBuf};
 
-/// What: The facts a rule may ask for. A `trait` is a named set of methods a type promises
-///       to provide, like a TS `interface`; `&mut self` lends the provider for writing,
-///       because it remembers answers. `Result<T, String>` is "a value, or a message
+/// What:
+///  The facts a rule may ask for.
+///  A `trait` is a named set of methods a type promises
+///       to provide,
+///  like a TS `interface`;
+///  `&mut self` lends the provider for writing,
+///       because it remembers answers.
+///  `Result<T, String>` is "a value,
+///  or a message
 ///       saying why Git could not be asked or understood".
-/// Why:  Two providers exist: real Git for the executable, a script for tests.
+/// Why:
+///   Two providers exist:
+///  real Git for the executable,
+///  a script for tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// interface RepositoryFacts { location(): Promise<RepositoryLocation>; indexVsHead(): Promise<IndexVsHead>; /* ... */ }
 /// ```
 pub trait RepositoryFacts {
-    /// Repository identity, worktree top level and the path below it; asked once.
+    /// Repository identity,
+    ///  worktree top level and the path below it;
+    ///  asked once.
     fn location(&mut self) -> Result<RepositoryLocation, String>;
     /// Whether the index differs from `HEAD`.
     fn index_vs_head(&mut self) -> Result<IndexVsHead, String>;
-    /// Whether a merge, cherry-pick or revert awaits its concluding commit.
+    /// Whether a merge,
+    ///  cherry-pick or revert awaits its concluding commit.
     fn sequencer_state(&mut self) -> Result<SequencerState, String>;
     /// Whether `git switch <target>` or `git checkout <target>` would create a local
     /// branch from the one remote branch of that name.
     fn remote_guess_creates_branch(&mut self, target: &OsStr) -> Result<bool, String>;
-    /// The candidates a content policy reads for this request, prepared on a private
-    /// index; a failure carries the candidate layer's cause.
+    /// The candidates a content policy reads for this request,
+    ///  prepared on a private
+    /// index;
+    ///  a failure carries the candidate layer's cause.
     fn candidates(
         &mut self,
         request: &CandidateRequest,
     ) -> Result<PreparedCandidates, CandidateError>;
 }
 
-/// What: The provider that asks real Git. A `struct` is a record with named fields;
-///       `Option<T>` is "a value or nothing"; `usize` is the unsigned integer of counts.
-/// Why:  It owns copies of the executable path, the caller's global options and the child
-///       environment additions, so it can be handed around without borrowing rules. The
+/// What:
+///  The provider that asks real Git.
+///  A `struct` is a record with named fields;
+///       `Option<T>` is "a value or nothing";
+///  `usize` is the unsigned integer of counts.
+/// Why:
+///   It owns copies of the executable path,
+///  the caller's global options and the child
+///       environment additions,
+///  so it can be handed around without borrowing rules.
+///  The
 ///       query count lets a test prove how many Git processes an invocation started.
 ///
 /// In TS you'd write (pseudocode):
@@ -87,19 +125,26 @@ pub trait RepositoryFacts {
 pub struct GitFacts {
     /// The selected real Git executable.
     real_git: PathBuf,
-    /// The arguments before the subcommand, without wrapper controls.
+    /// The arguments before the subcommand,
+    ///  without wrapper controls.
     global_prefix: Vec<OsString>,
     /// Variables added to every Git child.
     overlay: Vec<(OsString, OsString)>,
-    /// The remembered location answer, once asked.
+    /// The remembered location answer,
+    ///  once asked.
     location: Option<Result<RepositoryLocation, String>>,
     /// How many Git processes this provider started.
     pub queries: usize,
 }
 
-/// What: Build a provider that has asked nothing yet. `&Path` and `&[...]` borrow the
-///       caller's values; the provider keeps its own copies.
-/// Why:  Creating a provider costs no process; only a rule that needs a fact pays for it.
+/// What:
+///  Build a provider that has asked nothing yet.
+///  `&Path` and `&[...]` borrow the
+///       caller's values;
+///  the provider keeps its own copies.
+/// Why:
+///   Creating a provider costs no process;
+///  only a rule that needs a fact pays for it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,9 +166,13 @@ pub fn git_facts(
     };
 }
 
-/// What: Say that real Git could not be started for a fact. `&std::io::Error` borrows the
+/// What:
+///  Say that real Git could not be started for a fact.
+///  `&std::io::Error` borrows the
 ///       operating system's error.
-/// Why:  The message names the executable and the fact, so the reader knows what failed.
+/// Why:
+///   The message names the executable and the fact,
+///  so the reader knows what failed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -139,10 +188,15 @@ fn not_started(real_git: &Path, fact: &str, error: &std::io::Error) -> String {
 
 /// Private helpers of the real-Git provider.
 impl GitFacts {
-    /// What: Run one captured Git query after the caller's global options and count it.
-    ///       `&mut self` lends the provider for writing; `Vec<OsString>` is the owned
-    ///       argument list, already starting with the global options.
-    /// Why:  Every fact goes through here, so the count cannot miss a process.
+    /// What:
+    ///  Run one captured Git query after the caller's global options and count it.
+    ///       `&mut self` lends the provider for writing;
+    ///  `Vec<OsString>` is the owned
+    ///       argument list,
+    ///  already starting with the global options.
+    /// Why:
+    ///   Every fact goes through here,
+    ///  so the count cannot miss a process.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -163,9 +217,11 @@ impl GitFacts {
     }
 }
 
-/// What: `impl RepositoryFacts for GitFacts` provides the interface's methods for the
+/// What:
+///  `impl RepositoryFacts for GitFacts` provides the interface's methods for the
 ///       real-Git provider.
-/// Why:  Each method is one query whose arguments and reading belong to a pure core.
+/// Why:
+///   Each method is one query whose arguments and reading belong to a pure core.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -227,7 +283,8 @@ impl RepositoryFacts for GitFacts {
         ));
     }
 
-    /// Prepare the candidates with this provider's Git, prefix and environment.
+    /// Prepare the candidates with this provider's Git,
+    ///  prefix and environment.
     fn candidates(
         &mut self,
         request: &CandidateRequest,
@@ -243,9 +300,12 @@ impl RepositoryFacts for GitFacts {
     }
 }
 
-/// What: Read the location answer, turning an unreadable one into a message.
+/// What:
+///  Read the location answer,
+///  turning an unreadable one into a message.
 ///       `&MetadataOutput` borrows the captured query result.
-/// Why:  Callers of the facts interface report failures as text.
+/// Why:
+///   Callers of the facts interface report failures as text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -259,9 +319,13 @@ fn read_location(output: &MetadataOutput) -> Result<RepositoryLocation, String> 
     }
 }
 
-/// What: Whether the file at the path Git printed exists, without following a final link.
+/// What:
+///  Whether the file at the path Git printed exists,
+///  without following a final link.
 ///       `&[u8]` borrows the path bytes.
-/// Why:  Git itself tests these head files with `lstat`, so a dangling link counts as
+/// Why:
+///   Git itself tests these head files with `lstat`,
+///  so a dangling link counts as
 ///       present here too.
 ///
 /// In TS you'd write (pseudocode):

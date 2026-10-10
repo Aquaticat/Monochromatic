@@ -110,13 +110,12 @@ mise run //package/music-player/android-app:test:instrumented:device
 ```bash
 mise run //package/music-player/android-app:lint
 mise run //package/music-player/android-app:lint:detekt
-mise run //package/music-player/android-app:lint:rust
 mise run //package/music-player/android-app:clean
 ```
 
 - `lint` runs Android Lint against the debug variant.
 - `lint:detekt` enforces the repository's Kotlin documentation rules.
-- `lint:rust` runs the repository's Rust line-budget and rustdoc checks over the nested crate.
+- The root `mise run lint` runs the repository's Rust line-budget and rustdoc checks over the nested crate.
 - `clean` removes Gradle build outputs.
   It does not remove the Rust target directory or generated JNI libraries.
 

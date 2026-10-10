@@ -1,8 +1,16 @@
-//! What: The pure decision of the commit-only transform: insert `-o` after `git commit`, or
+//! What:
+//!  The pure decision of the commit-only transform:
+//!  insert `-o` after `git commit`,
+//!  or
 //!       say why not.
-//! Why: Every commit must name the paths it includes. Two decisions need a repository fact
-//!      (sequencer state, index against `HEAD`); this module asks for the fact by returning
-//!      a `Needs...` variant and the caller answers through a `resolve_...` function, so no
+//! Why:
+//!  Every commit must name the paths it includes.
+//!  Two decisions need a repository fact
+//!      (sequencer state,
+//!  index against `HEAD`);
+//!  this module asks for the fact by returning
+//!      a `Needs...` variant and the caller answers through a `resolve_...` function,
+//!  so no
 //!      process or file is touched here.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,9 +18,14 @@
 //! // const rule = makeCommitOnly({ checkIndexDiffersFromHead, checkSequencerInProgress });
 //! ```
 
-/// What: Bring the commit facts, the global-option boundary, the tokenizer helpers and the
+/// What:
+///  Bring the commit facts,
+///  the global-option boundary,
+///  the tokenizer helpers and the
 ///       repository-fact types into this file.
-/// Why:  The decision combines them; it owns no parsing of its own.
+/// Why:
+///   The decision combines them;
+///  it owns no parsing of its own.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,8 +45,13 @@ use super::rule_commit_sequencer::SequencerState;
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: Stable rejection codes. An `enum` is a closed set of named alternatives.
-/// Why:  Events carry `commit-only/<code>`; consumers match the code, not the message.
+/// What:
+///  Stable rejection codes.
+///  An `enum` is a closed set of named alternatives.
+/// Why:
+///   Events carry `commit-only/<code>`;
+///  consumers match the code,
+///  not the message.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,8 +67,11 @@ pub enum CommitOnlyViolationCode {
     StagedChangesIgnored,
 }
 
-/// What: The kebab-case spelling of a code. `&'static str` is text baked into the program.
-/// Why:  The event format predates this module and its spellings must not drift.
+/// What:
+///  The kebab-case spelling of a code.
+///  `&'static str` is text baked into the program.
+/// Why:
+///   The event format predates this module and its spellings must not drift.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,8 +86,12 @@ pub fn violation_code_text(code: CommitOnlyViolationCode) -> &'static str {
     };
 }
 
-/// What: One expected rejection. `String` is owned UTF-8 text (sibling `&str` borrows).
-/// Why:  The message is built per invocation, so the violation owns it.
+/// What:
+///  One expected rejection.
+///  `String` is owned UTF-8 text (sibling `&str` borrows).
+/// Why:
+///   The message is built per invocation,
+///  so the violation owns it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,8 +105,10 @@ pub struct CommitOnlyViolation {
     pub message: String,
 }
 
-/// What: What `resolve_index_state` needs to finish the decision.
-/// Why:  The first call already located `commit` and the pathless-allowed flags.
+/// What:
+///  What `resolve_index_state` needs to finish the decision.
+/// Why:
+///   The first call already located `commit` and the pathless-allowed flags.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -91,12 +118,17 @@ pub struct CommitOnlyViolation {
 pub struct PendingInjection {
     /// Index of the `commit` token in the full argument list.
     pub command_index: usize,
-    /// The pathless-allowed flags present, echoed in the diagnostic.
+    /// The pathless-allowed flags present,
+    ///  echoed in the diagnostic.
     pub flag_text: String,
 }
 
-/// What: The transform's answer, or the repository fact it needs first.
-/// Why:  The facts are fetched lazily: most commands are decided from arguments alone.
+/// What:
+///  The transform's answer,
+///  or the repository fact it needs first.
+/// Why:
+///   The facts are fetched lazily:
+///  most commands are decided from arguments alone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -107,19 +139,26 @@ pub struct PendingInjection {
 pub enum CommitOnlyDecision {
     /// Forward the caller's arguments as they are.
     Unchanged,
-    /// Forward this list: `-o` inserted, or the escape hatch removed.
+    /// Forward this list:
+    ///  `-o` inserted,
+    ///  or the escape hatch removed.
     Rewritten(Vec<OsString>),
     /// Block the command with this finding.
     Rejected(CommitOnlyViolation),
-    /// Ask whether a merge, cherry-pick or revert awaits its commit, then call
+    /// Ask whether a merge,
+    ///  cherry-pick or revert awaits its commit,
+    ///  then call
     /// `resolve_sequencer_state`.
     NeedsSequencerState,
-    /// Ask whether the index differs from `HEAD`, then call `resolve_index_state`.
+    /// Ask whether the index differs from `HEAD`,
+    ///  then call `resolve_index_state`.
     NeedsIndexState(PendingInjection),
 }
 
-/// What: Build a rejection from a code and its message text.
-/// Why:  `String::from` copies the borrowed text into storage the violation owns.
+/// What:
+///  Build a rejection from a code and its message text.
+/// Why:
+///   `String::from` copies the borrowed text into storage the violation owns.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -132,8 +171,11 @@ fn rejected(code: CommitOnlyViolationCode, message: &str) -> CommitOnlyDecision 
     });
 }
 
-/// What: The pathless-allowed flags of a region as diagnostic text, such as `--amend`.
-/// Why:  The rejection names the exact form that was refused.
+/// What:
+///  The pathless-allowed flags of a region as diagnostic text,
+///  such as `--amend`.
+/// Why:
+///   The rejection names the exact form that was refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -154,11 +196,23 @@ fn pathless_flag_text(region: &CommitRegion) -> String {
     return parts.join(" ");
 }
 
-/// What: Decide from arguments alone, or name the repository fact needed.
+/// What:
+///  Decide from arguments alone,
+///  or name the repository fact needed.
 ///       `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  The order mirrors the TypeScript rule: escape hatch, opt-out, `-a`, pathspec
-///       source, explicit only, modes Git owns, then the dirty-index guard.
-/// Gotcha: `Err` means Git 2.56.0 itself refuses the commit options; the caller forwards
+/// Why:
+///   The order mirrors the TypeScript rule:
+///  escape hatch,
+///  opt-out,
+///  `-a`,
+///  pathspec
+///       source,
+///  explicit only,
+///  modes Git owns,
+///  then the dirty-index guard.
+/// Gotcha:
+///  `Err` means Git 2.56.0 itself refuses the commit options;
+///  the caller forwards
 ///         such a command unchanged so Git prints its own error.
 ///
 /// In TS you'd write (pseudocode):
@@ -223,8 +277,12 @@ pub fn decide_commit_only(
     )));
 }
 
-/// What: Finish a `NeedsSequencerState` decision.
-/// Why:  A pathless commit concludes a merge, cherry-pick or revert; otherwise it is refused.
+/// What:
+///  Finish a `NeedsSequencerState` decision.
+/// Why:
+///   A pathless commit concludes a merge,
+///  cherry-pick or revert;
+///  otherwise it is refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -240,9 +298,14 @@ pub fn resolve_sequencer_state(state: SequencerState) -> CommitOnlyDecision {
     );
 }
 
-/// What: Finish a `NeedsIndexState` decision. `&PendingInjection` borrows the pending data.
-/// Why:  An injected `--only` on a pathless amend or empty commit reuses `HEAD`'s tree, so a
-///       dirty index would be ignored silently; an equal or unknown index is safe to inject.
+/// What:
+///  Finish a `NeedsIndexState` decision.
+///  `&PendingInjection` borrows the pending data.
+/// Why:
+///   An injected `--only` on a pathless amend or empty commit reuses `HEAD`'s tree,
+///  so a
+///       dirty index would be ignored silently;
+///  an equal or unknown index is safe to inject.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -273,7 +336,8 @@ pub fn resolve_index_state(
 #[path = "rule_commit_only_tests.rs"]
 mod tests;
 
-/// Cases beyond the incumbent test, including readings where Git differs from it.
+/// Cases beyond the incumbent test,
+///  including readings where Git differs from it.
 #[cfg(test)]
 #[path = "rule_commit_only_divergence_tests.rs"]
 mod divergence_tests;

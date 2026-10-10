@@ -1,5 +1,9 @@
-//! What: Require generic argument spelling using resolved Rust declarations.
-//! Why: Receiver type, aliases and imported function items determine the requirement, not a method-name list.
+//! What:
+//!  Require generic argument spelling using resolved Rust declarations.
+//! Why:
+//!  Receiver type,
+//!  aliases and imported function items determine the requirement,
+//!  not a method-name list.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,7 +12,8 @@
 
 /// Import owned findings and the retained source context.
 use crate::diagnostic::{Diagnostic, Severity};
-/// Import the resolved argument-owner mapping, including enum and function-trait spellings.
+/// Import the resolved argument-owner mapping,
+///  including enum and function-trait spellings.
 use crate::rust_generic_arguments::{
     GenericSite, is_instantiation_path, path_site, required_arguments, supplied_arguments,
 };
@@ -56,7 +61,8 @@ fn check_method(
     ));
 }
 
-/// Check expression/type paths, including generic function items passed as named callbacks.
+/// Check expression/type paths,
+///  including generic function items passed as named callbacks.
 fn check_path(
     semantics: &Semantics<'_, dyn HirDatabase>,
     context: &RustSource,
@@ -96,8 +102,10 @@ fn check_path(
     ));
 }
 
-/// What: Check each authored instantiation against its actual declaration in the current semantic scope.
-/// Why: Unresolved syntax produces a processing failure rather than being counted as a verified nongeneric call.
+/// What:
+///  Check each authored instantiation against its actual declaration in the current semantic scope.
+/// Why:
+///  Unresolved syntax produces a processing failure rather than being counted as a verified nongeneric call.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

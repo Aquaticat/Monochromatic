@@ -1,15 +1,32 @@
-//! What: The optional `markdown/autofix` policy: every Markdown candidate the lifecycle
-//!       offers is passed through `monochromatic-lint --fix` with the policy's rules; a
-//!       changed source is reported, and corrected on `git cli-git fix`, and each finding
+//! What:
+//!  The optional `markdown/autofix` policy:
+//!  every Markdown candidate the lifecycle
+//!       offers is passed through `monochromatic-lint --fix` with the policy's rules;
+//!  a
+//!       changed source is reported,
+//!  and corrected on `git cli-git fix`,
+//!  and each finding
 //!       the fixes leave is reported as it is.
-//! Why: The installed wrapper's `markdownLintPolicy` (`package/git-policy/markdown-lint/src`)
-//!      decides the behaviour: deleted files, symbolic links and submodules are skipped,
+//! Why:
+//!  The installed wrapper's `markdownLintPolicy` (`package/git-policy/markdown-lint/src`)
+//!      decides the behaviour:
+//!  deleted files,
+//!  symbolic links and submodules are skipped,
 //!      and so are excluded paths before any linter starts and contents that are not UTF-8;
-//!      candidates are linted one at a time, in candidate order; the codes and words of
-//!      both findings are kept. One thing differs by design: the extension test is the
-//!      linter's own (`.md` and `.mdx`, exact case), so no file is sent that the linter
-//!      refuses. The autofix finding keeps the installed wrapper's words, which name its
-//!      former linter, so both wrappers report the same file the same way while both are
+//!      candidates are linted one at a time,
+//!  in candidate order;
+//!  the codes and words of
+//!      both findings are kept.
+//!  One thing differs by design:
+//!  the extension test is the
+//!      linter's own (`.md` and `.mdx`,
+//!  exact case),
+//!  so no file is sent that the linter
+//!      refuses.
+//!  The autofix finding keeps the installed wrapper's words,
+//!  which name its
+//!      former linter,
+//!  so both wrappers report the same file the same way while both are
 //!      in use.
 //!
 //! In TS you'd write (pseudocode):
@@ -17,7 +34,8 @@
 //! // const findings = await rewriteCandidates({ rules, exclude, repositoryRoot, canApplyPatches, candidates });
 //! ```
 
-/// Import the candidate's mode, which decides whether it is a file of text.
+/// Import the candidate's mode,
+///  which decides whether it is a file of text.
 use super::candidate_object::CandidateMode;
 /// Import the candidate's change kinds.
 use super::candidate_record::CandidateChange;
@@ -39,7 +57,8 @@ use super::markdown_linter_output::{LintRun, RemainingFinding};
 use super::policy_content::{ContentState, Correction, LifecycleContent};
 /// Import the finding and outcome types of a check.
 use super::policy_engine::{PolicyFinding, PolicyOutcome};
-/// Import the lifecycle points; only a direct fix corrects.
+/// Import the lifecycle points;
+///  only a direct fix corrects.
 use super::policy_trigger::Trigger;
 /// Import the facts interface for the repository's top level.
 use super::repository_facts::RepositoryFacts;
@@ -49,7 +68,8 @@ use super::repository_location::RepositoryLocation;
 use super::worktree_identity::worktree_root;
 /// `Path` and `PathBuf` are borrowed and owned filesystem paths.
 use std::path::{Path, PathBuf};
-/// `Rc<T>` is a shared, read-only handle.
+/// `Rc<T>` is a shared,
+///  read-only handle.
 use std::rc::Rc;
 
 /// The policy-local code of a candidate the fixes rewrite.
@@ -61,9 +81,15 @@ pub const MARKDOWN_VIOLATION_CODE: &str = "markdown-violation";
 /// What the person can do about a candidate the linter could not check.
 pub const UNCHECKED_REMEDY: &str = "The Markdown candidate was not checked and nothing was changed; fix the cause, or pass --no-enforce-markdown/autofix to skip this policy for one command.";
 
-/// What: One candidate for the linter. `'a` names how long the borrowed parts last.
-/// Why:  The linter runs from the top level, so `.lfsconfig`, `.gitattributes` and linked
-///       images resolve as they do for the person, and lints `source` as the file at `path`.
+/// What:
+///  One candidate for the linter.
+///  `'a` names how long the borrowed parts last.
+/// Why:
+///   The linter runs from the top level,
+///  so `.lfsconfig`,
+///  `.gitattributes` and linked
+///       images resolve as they do for the person,
+///  and lints `source` as the file at `path`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -71,20 +97,32 @@ pub const UNCHECKED_REMEDY: &str = "The Markdown candidate was not checked and n
 /// ```
 #[derive(Clone, Copy, Debug)]
 pub struct LintRequest<'a> {
-    /// The repository's top level, the linter's working directory.
+    /// The repository's top level,
+    ///  the linter's working directory.
     pub top_level: &'a Path,
     /// The policy's rules and exclude patterns.
     pub options: &'a MarkdownAutofixOptions,
-    /// The candidate's pathname, relative to the top level, as Git's raw bytes.
+    /// The candidate's pathname,
+    ///  relative to the top level,
+    ///  as Git's raw bytes.
     pub path: &'a [u8],
-    /// The candidate's bytes, already known to be UTF-8.
+    /// The candidate's bytes,
+    ///  already known to be UTF-8.
     pub source: &'a [u8],
 }
 
-/// What: Whatever lints one candidate. A `trait` is a named set of methods, like a TS
-///       `interface`; `&mut self` lends it for writing, because it may remember the program
+/// What:
+///  Whatever lints one candidate.
+///  A `trait` is a named set of methods,
+///  like a TS
+///       `interface`;
+///  `&mut self` lends it for writing,
+///  because it may remember the program
 ///       and its configuration across candidates.
-/// Why:  The executable starts the real linter; tests answer from a script, so every branch
+/// Why:
+///   The executable starts the real linter;
+///  tests answer from a script,
+///  so every branch
 ///       of the policy is reached without a child process.
 ///
 /// In TS you'd write (pseudocode):
@@ -92,30 +130,46 @@ pub struct LintRequest<'a> {
 /// interface MarkdownLinter { lint(request: LintRequest): LintRun } // throws string
 /// ```
 pub trait MarkdownLinter {
-    /// Lint one candidate: the usable run, or why there is none, for the person.
+    /// Lint one candidate:
+    ///  the usable run,
+    ///  or why there is none,
+    ///  for the person.
     fn lint(&mut self, request: &LintRequest<'_>) -> Result<LintRun, String>;
 }
 
-/// What: The policy's state for one invocation: its options, its linter and the compiled
-///       exclude patterns. `Box<dyn MarkdownLinter>` owns "any linter", chosen at run time.
-/// Why:  The lifecycle sets the options once; the patterns compile on first use, and a
-///       failure to compile is remembered, like the scanner's rules.
+/// What:
+///  The policy's state for one invocation:
+///  its options,
+///  its linter and the compiled
+///       exclude patterns.
+///  `Box<dyn MarkdownLinter>` owns "any linter",
+///  chosen at run time.
+/// Why:
+///   The lifecycle sets the options once;
+///  the patterns compile on first use,
+///  and a
+///       failure to compile is remembered,
+///  like the scanner's rules.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type MarkdownState = { options: MarkdownAutofixOptions; linter: MarkdownLinter; exclude?: ExcludeMatcher | string };
 /// ```
 pub struct MarkdownState {
-    /// The policy's validated options; defaults until the configuration is loaded.
+    /// The policy's validated options;
+    ///  defaults until the configuration is loaded.
     pub options: MarkdownAutofixOptions,
     /// What lints a candidate.
     pub linter: Box<dyn MarkdownLinter>,
-    /// The compiled exclude patterns, or the reason they did not compile.
+    /// The compiled exclude patterns,
+    ///  or the reason they did not compile.
     exclude: Option<Result<ExcludeMatcher, String>>,
 }
 
-/// What: A state over `linter` with the default options and nothing compiled.
-/// Why:  Every lifecycle builds its checks the same way and then sets the options.
+/// What:
+///  A state over `linter` with the default options and nothing compiled.
+/// Why:
+///   Every lifecycle builds its checks the same way and then sets the options.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -129,16 +183,21 @@ pub fn markdown_state(linter: Box<dyn MarkdownLinter>) -> MarkdownState {
     };
 }
 
-/// What: `impl MarkdownState { ... }` attaches the one question about exclusion.
-/// Why:  The patterns compile at most once per invocation.
+/// What:
+///  `impl MarkdownState { ... }` attaches the one question about exclusion.
+/// Why:
+///   The patterns compile at most once per invocation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class MarkdownState { excludes(path: Uint8Array): boolean }
 /// ```
 impl MarkdownState {
-    /// What: Whether the exclude patterns name `path`; `Err` is the compile failure.
-    /// Why:  An excluded candidate is left alone before its bytes are read.
+    /// What:
+    ///  Whether the exclude patterns name `path`;
+    ///  `Err` is the compile failure.
+    /// Why:
+    ///   An excluded candidate is left alone before its bytes are read.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -160,11 +219,18 @@ impl MarkdownState {
     }
 }
 
-/// What: Whether a pathname ends in `.md` or `.mdx`, with exactly that case, by the
+/// What:
+///  Whether a pathname ends in `.md` or `.mdx`,
+///  with exactly that case,
+///  by the
 ///       platform's rule for a file name's extension.
-/// Why:  The linter decides the language with the same rule (`run_paths.rs`,
-///       `language_of`) and refuses any other name read from standard input; a name such
-///       as `.md`, with no extension under that rule, is therefore not Markdown here.
+/// Why:
+///   The linter decides the language with the same rule (`run_paths.rs`,
+///       `language_of`) and refuses any other name read from standard input;
+///  a name such
+///       as `.md`,
+///  with no extension under that rule,
+///  is therefore not Markdown here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -181,8 +247,11 @@ pub fn is_markdown_path(path: &[u8]) -> bool {
     }
 }
 
-/// What: Whether the policy inspects a candidate at all.
-/// Why:  Deletions have no content; symbolic links and submodules are not files of text.
+/// What:
+///  Whether the policy inspects a candidate at all.
+/// Why:
+///   Deletions have no content;
+///  symbolic links and submodules are not files of text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -198,8 +267,13 @@ fn is_eligible(candidate: &Candidate) -> bool {
     return is_markdown_path(candidate.path.as_slice());
 }
 
-/// What: The outcome of a candidate the policy could not check, naming that candidate.
-/// Why:  The policy's own machinery failed, which is `policy-incomplete`; the event names
+/// What:
+///  The outcome of a candidate the policy could not check,
+///  naming that candidate.
+/// Why:
+///   The policy's own machinery failed,
+///  which is `policy-incomplete`;
+///  the event names
 ///       the file in its own field and the message says what to do.
 ///
 /// In TS you'd write (pseudocode):
@@ -215,8 +289,12 @@ fn unchecked(path: Option<&[u8]>, reason: &str) -> PolicyOutcome {
     };
 }
 
-/// What: The repository's top level, from Git's answer about where the command runs.
-/// Why:  The linter runs there; a missing answer is a repository fact that could not be read.
+/// What:
+///  The repository's top level,
+///  from Git's answer about where the command runs.
+/// Why:
+///   The linter runs there;
+///  a missing answer is a repository fact that could not be read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -247,8 +325,12 @@ fn top_level<F: RepositoryFacts>(facts: &mut F) -> Result<PathBuf, PolicyOutcome
     }
 }
 
-/// What: The rules of the options as configured, joined by `, `.
-/// Why:  The autofix finding lists them, as the installed wrapper's did.
+/// What:
+///  The rules of the options as configured,
+///  joined by `, `.
+/// Why:
+///   The autofix finding lists them,
+///  as the installed wrapper's did.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -262,9 +344,15 @@ fn rule_list(options: &MarkdownAutofixOptions) -> String {
     return names.join(", ");
 }
 
-/// What: The finding for one remaining linter finding, in the installed wrapper's words:
+/// What:
+///  The finding for one remaining linter finding,
+///  in the installed wrapper's words:
 ///       `<rule> at <path>:<line>:<column>: <message>`.
-/// Why:  The person sees which rule, where, and why, without the linter's own output.
+/// Why:
+///   The person sees which rule,
+///  where,
+///  and why,
+///  without the linter's own output.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -287,9 +375,14 @@ fn violation(path: &EventPath, remaining: &RemainingFinding) -> PolicyFinding {
     };
 }
 
-/// What: The findings of one candidate the linter ran on, and the correction a fix applies.
-/// Why:  An unchanged source reports only what is left; a changed one reports the
-///       rewrite first, with a correction on a direct fix only (`canApplyPatches`).
+/// What:
+///  The findings of one candidate the linter ran on,
+///  and the correction a fix applies.
+/// Why:
+///   An unchanged source reports only what is left;
+///  a changed one reports the
+///       rewrite first,
+///  with a correction on a direct fix only (`canApplyPatches`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -333,9 +426,15 @@ fn candidate_findings(
     return findings;
 }
 
-/// What: Check every candidate of the lifecycle. `<F: RepositoryFacts>` accepts any facts
-///       provider; `&mut MarkdownState` lends the policy's linter and patterns.
-/// Why:  See the module comment. A policy with no rule selected has nothing to run; the
+/// What:
+///  Check every candidate of the lifecycle.
+///  `<F: RepositoryFacts>` accepts any facts
+///       provider;
+///  `&mut MarkdownState` lends the policy's linter and patterns.
+/// Why:
+///   See the module comment.
+///  A policy with no rule selected has nothing to run;
+///  the
 ///       first candidate the linter cannot check ends the policy with that candidate named.
 ///
 /// In TS you'd write (pseudocode):
@@ -402,7 +501,9 @@ pub fn check_markdown<F: RepositoryFacts>(
     return PolicyOutcome::Findings(findings);
 }
 
-/// Eligibility, exclusion, finding and correction controls stay out of the release executable.
+/// Eligibility,
+///  exclusion,
+///  finding and correction controls stay out of the release executable.
 #[cfg(test)]
 #[path = "policy_markdown_tests.rs"]
 mod tests;

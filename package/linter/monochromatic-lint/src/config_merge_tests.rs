@@ -1,13 +1,17 @@
-//! What: Regression tests for the linter's ordered JSONC settings merge.
-//! Why: Fixed examples and the independent public corpus distinguish all-input merging from a pairwise fold.
+//! What:
+//!  Regression tests for the linter's ordered JSONC settings merge.
+//! Why:
+//!  Fixed examples and the independent public corpus distinguish all-input merging from a pairwise fold.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! describe('configuration merge', () => { /* semantic and ownership controls */ });
 //! ```
 
-/// What: Import the production merge and the actual JSONC parser.
-/// Why: Fixtures cross the same value representation as runtime configuration.
+/// What:
+///  Import the production merge and the actual JSONC parser.
+/// Why:
+///  Fixtures cross the same value representation as runtime configuration.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,8 +21,10 @@
 use super::merge_values;
 use monochromatic_jsonc_edit::{JsoncKind, JsoncValue, emit_jsonc_value, parse_jsonc};
 
-/// What: Read a required corpus field as an independent owned value.
-/// Why: Missing fixture fields must fail the test rather than silently remove a case.
+/// What:
+///  Read a required corpus field as an independent owned value.
+/// Why:
+///  Missing fixture fields must fail the test rather than silently remove a case.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,8 +44,10 @@ fn field(value: &JsoncValue, name: &str) -> JsoncValue {
     panic!("missing corpus field {name}");
 }
 
-/// What: Merge an input-array document through the production implementation.
-/// Why: Every test exercises the real parser and keeps scalar inputs possible inside the outer array.
+/// What:
+///  Merge an input-array document through the production implementation.
+/// Why:
+///  Every test exercises the real parser and keeps scalar inputs possible inside the outer array.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -58,8 +66,10 @@ fn merge_text(source: &str) -> JsoncValue {
     return merge_values(&inputs);
 }
 
-/// What: Check the independent public JSON corpus from the existing merge sidecar.
-/// Why: The Rust implementation must not define its own expected outcomes.
+/// What:
+///  Check the independent public JSON corpus from the existing merge sidecar.
+/// Why:
+///  The Rust implementation must not define its own expected outcomes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -124,7 +134,9 @@ fn decoded_keys_and_first_key_spelling_survive() {
     assert_eq!(actual, expected);
 }
 
-/// Null, booleans, strings and numbers use the final value without treating null as absence.
+/// Null,
+///  booleans,
+///  strings and numbers use the final value without treating null as absence.
 #[test]
 fn scalar_values_and_mixed_kinds_choose_last() {
     for source in [

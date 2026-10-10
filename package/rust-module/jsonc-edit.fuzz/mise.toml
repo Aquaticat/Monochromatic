@@ -15,10 +15,6 @@ run = "cargo nextest run --lib --release"
 description = "Run Clippy over every Rust target with warnings denied"
 run = "cargo clippy --release --all-targets -- -D warnings"
 
-[tasks."lint:rust"]
-description = "Run the repository Rust linter over this package"
-run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
-
 [tasks.list]
 description = "List all fuzz targets"
 run = "cargo fuzz list --fuzz-dir ."

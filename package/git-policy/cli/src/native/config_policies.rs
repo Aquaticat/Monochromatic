@@ -1,14 +1,22 @@
-//! What: Validation of the `policies` section and of each policy's options.
-//! Why: Only shipped policy IDs, the three severities and each policy's declared
-//!      option keys are settings; everything else is reported with its key.
+//! What:
+//!  Validation of the `policies` section and of each policy's options.
+//! Why:
+//!  Only shipped policy IDs,
+//!  the three severities and each policy's declared
+//!      option keys are settings;
+//!  everything else is reported with its key.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // parsePolicies(value) returns PolicyConfig or throws ConfigError naming the key.
 //! ```
 
-/// What: `use super::...` imports sibling modules of this crate.
-/// Why:  The section reader combines the error type, typed settings, shared value
+/// What:
+///  `use super::...` imports sibling modules of this crate.
+/// Why:
+///   The section reader combines the error type,
+///  typed settings,
+///  shared value
 ///       readers and the compiled-in registry.
 ///
 /// In TS you'd write (pseudocode):
@@ -26,8 +34,10 @@ use super::config_values::{boolean, member_keys, member_path, strings, text, wro
 use super::policy_registry::{
     POLICY_REGISTRY, PolicyDescriptor, PolicyId, Severity, policy_by_name, severity_from_name,
 };
-/// What: Import the repository's JSONC value type.
-/// Why:  The reader walks the parser's values directly.
+/// What:
+///  Import the repository's JSONC value type.
+/// Why:
+///   The reader walks the parser's values directly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,9 +45,11 @@ use super::policy_registry::{
 /// ```
 use monochromatic_jsonc_edit::JsoncValue;
 
-/// What: List every shipped policy ID for the unknown-ID diagnostic.
+/// What:
+///  List every shipped policy ID for the unknown-ID diagnostic.
 ///       `String` is owned text (sibling `&str` borrows).
-/// Why:  The remedy for a mistyped ID is the list of real ones.
+/// Why:
+///   The remedy for a mistyped ID is the list of real ones.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -62,9 +74,12 @@ fn known_policy_ids() -> String {
     return result;
 }
 
-/// What: Read a severity word at a named key.
-///       `Result<T, E>` is "value or error": `Ok(...)` or `Err(...)`.
-/// Why:  A misspelled severity must never silently fall back to a default.
+/// What:
+///  Read a severity word at a named key.
+///       `Result<T, E>` is "value or error":
+///  `Ok(...)` or `Err(...)`.
+/// Why:
+///   A misspelled severity must never silently fall back to a default.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,9 +115,13 @@ fn severity(value: &JsoncValue, path: &str) -> Result<Severity, ConfigError> {
     return Ok(parsed);
 }
 
-/// What: Validate the options object of `security/forbidden-strings`.
-/// Why:  The scanner is linked into cli-git; an `executable` path would let repository
-///       data choose a program to run, which this configuration format forbids.
+/// What:
+///  Validate the options object of `security/forbidden-strings`.
+/// Why:
+///   The scanner is linked into cli-git;
+///  an `executable` path would let repository
+///       data choose a program to run,
+///  which this configuration format forbids.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -167,10 +186,14 @@ fn forbidden_strings_options(
     return Ok(options);
 }
 
-/// What: Validate the `rules` list of `markdown/autofix`.
+/// What:
+///  Validate the `rules` list of `markdown/autofix`.
 ///       `Vec<MarkdownRule>` is an owned growable list (sibling `&[T]` borrows one).
-/// Why:  Only shipped rules exist, an empty list would enable a policy that does
-///       nothing, and a repeated rule is an ambiguous duplicate setting.
+/// Why:
+///   Only shipped rules exist,
+///  an empty list would enable a policy that does
+///       nothing,
+///  and a repeated rule is an ambiguous duplicate setting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -215,8 +238,11 @@ fn markdown_rules(value: &JsoncValue, path: &str) -> Result<Vec<MarkdownRule>, C
     return Ok(rules);
 }
 
-/// What: Validate the options object of `markdown/autofix`.
-/// Why:  cli-git starts its own coordinated linter; a `command` array would let
+/// What:
+///  Validate the options object of `markdown/autofix`.
+/// Why:
+///   cli-git starts its own coordinated linter;
+///  a `command` array would let
 ///       repository data choose a program and its arguments.
 ///
 /// In TS you'd write (pseudocode):
@@ -257,9 +283,11 @@ fn markdown_autofix_options(
     return Ok(options);
 }
 
-/// What: Validate one option-bearing policy's options object and store it.
+/// What:
+///  Validate one option-bearing policy's options object and store it.
 ///       `&mut PolicyConfig` lends the settings for modification (plain `&` is read-only).
-/// Why:  The array form and the options-alone form read the same object the same way.
+/// Why:
+///   The array form and the options-alone form read the same object the same way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -280,10 +308,16 @@ fn apply_options(
     return Ok(());
 }
 
-/// What: Validate one policy's setting and write it into the accumulated settings.
-/// Why:  A setting is a severity word, or `[severity, options]` for the policies that
-///       declare options, or their options object alone, which names the policy at its
-///       incumbent default severity. Mutating one accumulated record keeps each
+/// What:
+///  Validate one policy's setting and write it into the accumulated settings.
+/// Why:
+///   A setting is a severity word,
+///  or `[severity, options]` for the policies that
+///       declare options,
+///  or their options object alone,
+///  which names the policy at its
+///       incumbent default severity.
+///  Mutating one accumulated record keeps each
 ///       policy's row and option record together.
 ///
 /// In TS you'd write (pseudocode):
@@ -351,9 +385,13 @@ fn apply_setting(
     return Ok(());
 }
 
-/// What: Validate the whole `policies` object.
-/// Why:  Unknown IDs are errors, so a typo cannot silently leave a policy at its
-///       default; unmentioned policies keep their registry defaults.
+/// What:
+///  Validate the whole `policies` object.
+/// Why:
+///   Unknown IDs are errors,
+///  so a typo cannot silently leave a policy at its
+///       default;
+///  unmentioned policies keep their registry defaults.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

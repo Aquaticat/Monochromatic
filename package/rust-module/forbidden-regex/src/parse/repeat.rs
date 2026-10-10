@@ -1,5 +1,9 @@
-//! What:    Bounded repetition `{n}` and `{n,m}`, kept as a `Repeat` node.
-//! Why:     This file is the Rust module that groups the repeat implementation, so the
+//! What:
+//!     Bounded repetition `{n}` and `{n,m}`,
+//!  kept as a `Repeat` node.
+//! Why:
+//!      This file is the Rust module that groups the repeat implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +11,11 @@
 //! // module repeat: see exported functions and types below.
 //! ```
 
-/// What:    Imports the node algebra being repeated.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra being repeated.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +24,11 @@
 /// ```
 use crate::ast::node::Node;
 
-/// What:    Imports the smart constructor that builds the `Repeat` node.
-/// Why:     The code below uses `repeat` directly; importing from `crate/ast/smart` keeps each
+/// What:
+///     Imports the smart constructor that builds the `Repeat` node.
+/// Why:
+///      The code below uses `repeat` directly;
+///  importing from `crate/ast/smart` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,8 +37,11 @@ use crate::ast::node::Node;
 /// ```
 use crate::ast::smart::repeat;
 
-/// What:    Imports the error type for malformed or oversized repetitions.
-/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+/// What:
+///     Imports the error type for malformed or oversized repetitions.
+/// Why:
+///      The code below uses `CompileError` directly;
+///  importing from `crate/error` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -37,8 +50,11 @@ use crate::ast::smart::repeat;
 /// ```
 use crate::error::CompileError;
 
-/// What:    Imports the cursor.
-/// Why:     The code below uses `Cursor` directly; importing from `crate/parse/cursor` keeps
+/// What:
+///     Imports the cursor.
+/// Why:
+///      The code below uses `Cursor` directly;
+///  importing from `crate/parse/cursor` keeps
 ///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -47,10 +63,16 @@ use crate::error::CompileError;
 /// ```
 use crate::parse::cursor::Cursor;
 
-/// Largest repetition count accepted, bounding the counter range.
+/// Largest repetition count accepted,
+///  bounding the counter range.
 ///
-/// What: an upper limit on `n` and `m`. Why: the count becomes a runtime counter
-/// register, so `{1000000}` would demand a huge counter domain; capping turns that
+/// What:
+///  an upper limit on `n` and `m`.
+///  Why:
+///  the count becomes a runtime counter
+/// register,
+///  so `{1000000}` would demand a huge counter domain;
+///  capping turns that
 /// into a clean error instead of an unbounded counter.
 ///
 /// In TS you'd write (pseudocode):
@@ -61,8 +83,14 @@ const REPEAT_CAP: usize = 1024;
 
 /// Parses a `{n}` or `{n,m}` quantifier and applies it to `atom`.
 ///
-/// What: reads the counts after `{`, rejects unbounded `{n,}` and `n > m`, caps
-/// the magnitude, and builds a `Repeat` node. Why: the count stays symbolic on the
+/// What:
+///  reads the counts after `{`,
+///  rejects unbounded `{n,}` and `n > m`,
+///  caps
+/// the magnitude,
+///  and builds a `Repeat` node.
+///  Why:
+///  the count stays symbolic on the
 /// node (later a counter register) rather than being unrolled into states.
 ///
 /// In TS you'd write (pseudocode):
@@ -101,8 +129,14 @@ pub fn parse_repeat(cur: &mut Cursor, atom: Node) -> Result<Node, CompileError> 
 
 /// Parses the upper bound of a `{n,m}` after the comma.
 ///
-/// What: rejects the unbounded `{n,}` form, reads `m`, checks ordering and the
-/// cap, and builds the range. Why: keeps `parse_repeat` short and isolates the
+/// What:
+///  rejects the unbounded `{n,}` form,
+///  reads `m`,
+///  checks ordering and the
+/// cap,
+///  and builds the range.
+///  Why:
+///  keeps `parse_repeat` short and isolates the
 /// range-specific validation.
 ///
 /// In TS you'd write (pseudocode):
@@ -143,10 +177,15 @@ fn parse_repeat_upper(cur: &mut Cursor, atom: Node, n: usize, pos: usize) -> Res
     return Ok(repeat(atom, n, m))
 }
 
-/// Reads a run of ASCII digits as a `usize`, failing on overflow or none.
+/// Reads a run of ASCII digits as a `usize`,
+///  failing on overflow or none.
 ///
-/// What: folds digits left to right with checked arithmetic. Why: a missing or
-/// overflowing count is a syntax error, not a panic.
+/// What:
+///  folds digits left to right with checked arithmetic.
+///  Why:
+///  a missing or
+/// overflowing count is a syntax error,
+///  not a panic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -189,7 +228,10 @@ fn parse_number(cur: &mut Cursor, pos: usize) -> Result<usize, CompileError> {
 
 /// Rejects a count above the cap.
 ///
-/// What: compares against `REPEAT_CAP`. Why: bounds desugared expansion size.
+/// What:
+///  compares against `REPEAT_CAP`.
+///  Why:
+///  bounds desugared expansion size.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

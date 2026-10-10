@@ -1,14 +1,32 @@
-//! What: Read what one `monochromatic-lint --stdin --fix` run produced: the fixed source on
-//!       standard output, findings it could not fix as JSON Lines on standard error, and its
-//!       exit status. The result is the fixed bytes and the remaining findings, or the reason
+//! What:
+//!  Read what one `monochromatic-lint --stdin --fix` run produced:
+//!  the fixed source on
+//!       standard output,
+//!  findings it could not fix as JSON Lines on standard error,
+//!  and its
+//!       exit status.
+//!  The result is the fixed bytes and the remaining findings,
+//!  or the reason
 //!       the run cannot be trusted.
-//! Why: The linter is a child process whose output is untrusted text. Its contract
-//!      (`package/linter/monochromatic-lint/README.md`, `src/run_stdin.rs`, `src/run_output.rs`)
-//!      is exit status 0 with the fixed source and warning records, because the policy's
-//!      one-rule configuration gives the rule severity `warn`; 1 only for error findings or a
-//!      warning limit, neither of which that configuration can produce; and 2 for a run that
-//!      could not finish. Anything else, and any record that is not a finding of a selected
-//!      rule, means the run cannot be trusted, so the policy fails instead of passing an
+//! Why:
+//!  The linter is a child process whose output is untrusted text.
+//!  Its contract
+//!      (`package/linter/monochromatic-lint/README.md`,
+//!  `src/run_stdin.rs`,
+//!  `src/run_output.rs`)
+//!      is exit status 0 with the fixed source and warning records,
+//!  because the policy's
+//!      one-rule configuration gives the rule severity `warn`;
+//!  1 only for error findings or a
+//!      warning limit,
+//!  neither of which that configuration can produce;
+//!  and 2 for a run that
+//!      could not finish.
+//!  Anything else,
+//!  and any record that is not a finding of a selected
+//!      rule,
+//!  means the run cannot be trusted,
+//!  so the policy fails instead of passing an
 //!      unchecked file.
 //!
 //! In TS you'd write (pseudocode):
@@ -20,8 +38,12 @@
 use super::bounded_child::{ChildExit, FinishedChild};
 /// Import the selectable rules and their configuration spelling.
 use super::config_schema::{MarkdownRule, markdown_rule_name};
-/// What: Import the JSONC parser, its value model and the decoder of its text units.
-/// Why:  Each JSON Lines record is one JSON value; JSON is a subset of what it reads.
+/// What:
+///  Import the JSONC parser,
+///  its value model and the decoder of its text units.
+/// Why:
+///   Each JSON Lines record is one JSON value;
+///  JSON is a subset of what it reads.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,12 +54,17 @@ use monochromatic_jsonc_edit::{JsoncEntry, JsoncValue, parse_jsonc, units_to_str
 /// The prefix of every line the linter writes to standard error that is not a record.
 pub const LINTER_MESSAGE_PREFIX: &str = "monochromatic-lint: ";
 
-/// The longest explanation quoted from the linter's standard error, in characters.
+/// The longest explanation quoted from the linter's standard error,
+///  in characters.
 pub const EXPLANATION_LIMIT: usize = 400;
 
-/// What: One finding the linter reported and could not fix. `u64` holds the one-based
+/// What:
+///  One finding the linter reported and could not fix.
+///  `u64` holds the one-based
 ///       line and column the linter gives.
-/// Why:  The policy reports it with the incumbent's words, naming the rule as configured.
+/// Why:
+///   The policy reports it with the incumbent's words,
+///  naming the rule as configured.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,14 +76,19 @@ pub struct RemainingFinding {
     pub rule: MarkdownRule,
     /// One-based line of the finding's first label.
     pub line: u64,
-    /// One-based column of that label, in the linter's units.
+    /// One-based column of that label,
+    ///  in the linter's units.
     pub column: u64,
     /// The linter's explanation.
     pub message: String,
 }
 
-/// What: A run the policy can use: the source after every fix, and what is left.
-/// Why:  The fixed bytes equal the input exactly when nothing changed.
+/// What:
+///  A run the policy can use:
+///  the source after every fix,
+///  and what is left.
+/// Why:
+///   The fixed bytes equal the input exactly when nothing changed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,15 +96,22 @@ pub struct RemainingFinding {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LintRun {
-    /// The fixed source, byte for byte as the linter printed it.
+    /// The fixed source,
+    ///  byte for byte as the linter printed it.
     pub fixed: Vec<u8>,
-    /// Findings the fixes did not remove, in the linter's order.
+    /// Findings the fixes did not remove,
+    ///  in the linter's order.
     pub remaining: Vec<RemainingFinding>,
 }
 
-/// What: The one member named `key` of a record, or nothing. `&'a [JsoncEntry]` borrows
-///       the members; the result borrows the value for as long.
-/// Why:  A record that names a field twice is ambiguous and is refused.
+/// What:
+///  The one member named `key` of a record,
+///  or nothing.
+///  `&'a [JsoncEntry]` borrows
+///       the members;
+///  the result borrows the value for as long.
+/// Why:
+///   A record that names a field twice is ambiguous and is refused.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -97,8 +136,11 @@ fn member<'a>(entries: &'a [JsoncEntry], key: &str) -> Result<Option<&'a JsoncVa
     return Ok(found);
 }
 
-/// What: The text of the required member `key`.
-/// Why:  `code`, `message` and `severity` must be strings.
+/// What:
+///  The text of the required member `key`.
+/// Why:
+///   `code`,
+///  `message` and `severity` must be strings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,9 +159,13 @@ fn required_text(entries: &[JsoncEntry], key: &str) -> Result<String, String> {
     }
 }
 
-/// What: The whole number of the required member `key`. `str::parse::<u64>` accepts only
+/// What:
+///  The whole number of the required member `key`.
+///  `str::parse::<u64>` accepts only
 ///       plain decimal digits.
-/// Why:  A line or column that is negative, fractional or exponential is not a position.
+/// Why:
+///   A line or column that is negative,
+///  fractional or exponential is not a position.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -138,8 +184,11 @@ fn required_count(entries: &[JsoncEntry], key: &str) -> Result<u64, String> {
     }
 }
 
-/// What: The members of the span of a record's first label.
-/// Why:  The line and column of a finding come from there, as the incumbent took them.
+/// What:
+///  The members of the span of a record's first label.
+/// Why:
+///   The line and column of a finding come from there,
+///  as the incumbent took them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -161,9 +210,13 @@ fn first_span(entries: &[JsoncEntry]) -> Result<&[JsoncEntry], String> {
     return Ok(span);
 }
 
-/// What: The selected rule a finding code names. `&[MarkdownRule]` borrows the rules the
+/// What:
+///  The selected rule a finding code names.
+///  `&[MarkdownRule]` borrows the rules the
 ///       configuration selected.
-/// Why:  The linter prefixes every Markdown rule with `markdown/`; a code of a rule the
+/// Why:
+///   The linter prefixes every Markdown rule with `markdown/`;
+///  a code of a rule the
 ///       one-rule configuration did not select means the linter ran something else.
 ///
 /// In TS you'd write (pseudocode):
@@ -179,8 +232,11 @@ fn selected_rule(code: &str, rules: &[MarkdownRule]) -> Option<MarkdownRule> {
     return None;
 }
 
-/// What: Read one JSON Lines record of a successful run as a finding.
-/// Why:  Every record must be a warning of a selected rule with a position; anything else
+/// What:
+///  Read one JSON Lines record of a successful run as a finding.
+/// Why:
+///   Every record must be a warning of a selected rule with a position;
+///  anything else
 ///       is a contract the policy cannot rely on.
 ///
 /// In TS you'd write (pseudocode):
@@ -212,8 +268,13 @@ fn remaining_finding(line: &str, rules: &[MarkdownRule]) -> Result<RemainingFind
     });
 }
 
-/// What: Read the standard error of a successful run as findings. `&[u8]` borrows the bytes.
-/// Why:  JSON Lines: one record per LF-terminated line; an empty stream is no findings.
+/// What:
+///  Read the standard error of a successful run as findings.
+///  `&[u8]` borrows the bytes.
+/// Why:
+///   JSON Lines:
+///  one record per LF-terminated line;
+///  an empty stream is no findings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -252,9 +313,16 @@ fn remaining_findings(
     return Ok(findings);
 }
 
-/// What: The linter's own explanation of a failed run: its prefixed message lines and the
-///       messages of its records, joined, at most `EXPLANATION_LIMIT` characters.
-/// Why:  The person needs the linter's reason; the records' file names are left out, so the
+/// What:
+///  The linter's own explanation of a failed run:
+///  its prefixed message lines and the
+///       messages of its records,
+///  joined,
+///  at most `EXPLANATION_LIMIT` characters.
+/// Why:
+///   The person needs the linter's reason;
+///  the records' file names are left out,
+///  so the
 ///       explanation does not repeat the candidate's pathname the event already names.
 ///
 /// In TS you'd write (pseudocode):
@@ -285,11 +353,21 @@ pub fn explanation(stderr: &[u8]) -> String {
     return format!("{kept}...");
 }
 
-/// What: Interpret one finished linter run over `input`. `Result<LintRun, String>` is the
-///       usable run, or the reason it cannot be used, for the person who ran the command.
-/// Why:  See the module comment. A successful run must print text, and must print some for
-///       a non-empty input: the linter refuses to empty a file, so an empty fixed source
-///       would mean it never read the input, and using it would empty the file.
+/// What:
+///  Interpret one finished linter run over `input`.
+///  `Result<LintRun, String>` is the
+///       usable run,
+///  or the reason it cannot be used,
+///  for the person who ran the command.
+/// Why:
+///   See the module comment.
+///  A successful run must print text,
+///  and must print some for
+///       a non-empty input:
+///  the linter refuses to empty a file,
+///  so an empty fixed source
+///       would mean it never read the input,
+///  and using it would empty the file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -339,7 +417,8 @@ pub fn interpret_linter_run(
     });
 }
 
-/// Contract, record and explanation controls stay out of the release executable.
+/// Contract,
+///  record and explanation controls stay out of the release executable.
 #[cfg(test)]
 #[path = "markdown_linter_output_tests.rs"]
 mod tests;

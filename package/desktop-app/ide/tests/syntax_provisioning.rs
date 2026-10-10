@@ -1,30 +1,45 @@
-//! The bundled manifest decides which recognized languages are supported, plain text, or broken.
+//! The bundled manifest decides which recognized languages are supported,
+//!  plain text,
+//!  or broken.
 
-/// What: `use helix_core::{...}` brings several names from the Helix core library into this file.
-///       `Rope` is the application's text container; `Configuration` is the decoded registry file.
-/// Why:  The last test checks every registry language that uses a bundled grammar, which the
-///       application engine only does lazily, one opened file at a time.
+/// What:
+///  `use helix_core::{...}` brings several names from the Helix core library into this file.
+///       `Rope` is the application's text container;
+///  `Configuration` is the decoded registry file.
+/// Why:
+///   The last test checks every registry language that uses a bundled grammar,
+///  which the
+///       application engine only does lazily,
+///  one opened file at a time.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { Rope, type Configuration } from 'helix-core';
 /// ```
 use helix_core::{Rope, syntax::config::Configuration};
-/// The application-owned engine, its manifest reader, and the runtime directory it reads.
+/// The application-owned engine,
+///  its manifest reader,
+///  and the runtime directory it reads.
 use ide_app::{
     runtime::{self, RuntimeSource},
     syntax::{SyntaxEngine, provisioned_grammars},
 };
-/// Sets hold grammar ids; paths name sample files and manifest fixtures.
+/// Sets hold grammar ids;
+///  paths name sample files and manifest fixtures.
 use std::{
     collections::HashSet,
     fs,
     path::{Path, PathBuf},
 };
 
-/// What: The runtime directory these tests read: the one `HELIX_RUNTIME` names, as the
-///       application's own runtime module reads it, never through Helix's directory search.
-/// Why:  The checks must look at the same files the engine highlights with.
+/// What:
+///  The runtime directory these tests read:
+///  the one `HELIX_RUNTIME` names,
+///  as the
+///       application's own runtime module reads it,
+///  never through Helix's directory search.
+/// Why:
+///   The checks must look at the same files the engine highlights with.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,10 +59,14 @@ fn runtime_directory() -> PathBuf {
     return path.clone();
 }
 
-/// What: `fn write_manifest(content: &str) -> tempfile::TempDir` takes borrowed text (`&str`:
-///       the caller keeps ownership; sibling `String` would take it) and returns a handle that
-///       owns a fresh temporary directory, deleted when the handle goes out of scope.
-/// Why:  Manifest edge cases need real files that never touch the bundled runtime.
+/// What:
+///  `fn write_manifest(content: &str) -> tempfile::TempDir` takes borrowed text (`&str`:
+///       the caller keeps ownership;
+///  sibling `String` would take it) and returns a handle that
+///       owns a fresh temporary directory,
+///  deleted when the handle goes out of scope.
+/// Why:
+///   Manifest edge cases need real files that never touch the bundled runtime.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -71,9 +90,13 @@ fn write_manifest(content: &str) -> tempfile::TempDir {
     return directory;
 }
 
-/// What: `#[test]` marks the function below as a test the harness runs; the function takes
+/// What:
+///  `#[test]` marks the function below as a test the harness runs;
+///  the function takes
 ///       nothing and passes unless it panics.
-/// Why:  Python is in the registry but not in the measured inventory, so no grammar is bundled;
+/// Why:
+///   Python is in the registry but not in the measured inventory,
+///  so no grammar is bundled;
 ///       the file must stay readable plain text without a rebuild-assets diagnostic.
 ///
 /// In TS you'd write (pseudocode):
@@ -143,7 +166,9 @@ fn listed_grammar_that_cannot_load_is_a_visible_failure() {
     assert!(message.contains("could not be loaded"), "{message}");
 }
 
-/// The manifest, not the presence of a library file, decides what is bundled.
+/// The manifest,
+///  not the presence of a library file,
+///  decides what is bundled.
 #[test]
 fn unlisted_grammar_is_plain_text_even_when_its_library_exists() {
     let engine = SyntaxEngine::with_provisioned(HashSet::new()).expect("language configuration");
@@ -153,7 +178,8 @@ fn unlisted_grammar_is_plain_text_even_when_its_library_exists() {
     assert!(engine.language_id(file, &text).is_none());
 }
 
-/// Manifest entries are library file names; grammar ids drop the suffix and keep other keys ignored.
+/// Manifest entries are library file names;
+///  grammar ids drop the suffix and keep other keys ignored.
 #[test]
 fn manifest_lists_grammar_ids_without_the_library_suffix() {
     let directory = write_manifest(
@@ -237,7 +263,9 @@ fn bundled_manifest_matches_shipped_libraries_and_notices() {
 }
 
 /// Every registry language that uses a bundled grammar loads it and compiles its rules,
-/// including languages that only reuse a grammar (`jsonc`, `miseconfig`, `markdown-rustdoc`).
+/// including languages that only reuse a grammar (`jsonc`,
+///  `miseconfig`,
+///  `markdown-rustdoc`).
 #[test]
 fn every_language_on_a_bundled_grammar_compiles_its_highlighting_rules() {
     let names =

@@ -6,12 +6,14 @@ use super::{AppWindow, State};
 use crate::native::rows;
 /// Character positions are canonical even when source lines contain multibyte UTF-8 or ligatures.
 use ide_app::document::ReadingPosition;
-/// `ComponentHandle` reaches the window's display scale, which hint rows are packed at.
+/// `ComponentHandle` reaches the window's display scale,
+///  which hint rows are packed at.
 use slint::ComponentHandle;
 /// Reading-state changes stay on the native event-loop thread.
 use std::{cell::RefCell, rc::Rc};
 
-/// Reveal a one-based search line, clamping a now-stale line number to the current source snapshot.
+/// Reveal a one-based search line,
+///  clamping a now-stale line number to the current source snapshot.
 pub(super) fn reveal(window: &AppWindow, source: &Rc<RefCell<State>>, requested: usize) {
     let mut current = source.borrow_mut();
     let line = requested

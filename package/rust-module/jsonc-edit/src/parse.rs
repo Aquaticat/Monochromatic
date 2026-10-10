@@ -1,37 +1,52 @@
-//! What: Iterative JSONC structural parsing with explicit container frames.
-//! Why: Native Rust test threads overflowed their stacks before 512 nested containers returned.
+//! What:
+//!  Iterative JSONC structural parsing with explicit container frames.
+//! Why:
+//!  Native Rust test threads overflowed their stacks before 512 nested containers returned.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! function parseJsonc(source: string): JsoncValue { const frames: Frame[] = []; /* loop over tokens */ }
 //! ```
 
-/// What: Import comment attachment for ordered parser trivia.
-/// Why: Each key or value owns one normalized comment, not a flat token list.
+/// What:
+///  Import comment attachment for ordered parser trivia.
+/// Why:
+///  Each key or value owns one normalized comment,
+///  not a flat token list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { attach } from './comment';
 /// ```
 use crate::comment_merge::attach;
-/// What: Import the source-borrowing scanner and same-line trivia result.
-/// Why: Parser phases share one byte cursor.
+/// What:
+///  Import the source-borrowing scanner and same-line trivia result.
+/// Why:
+///  Parser phases share one byte cursor.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { Scanner } from './scan';
 /// ```
 use crate::scan::Scanner;
-/// What: Import JSON value, key, member, and parse-error types.
-/// Why: Completed frame values move into their parent without decoding again.
+/// What:
+///  Import JSON value,
+///  key,
+///  member,
+///  and parse-error types.
+/// Why:
+///  Completed frame values move into their parent without decoding again.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncEntry, JsoncKey, JsoncValue, JsoncParseError, JsoncKind } from './value';
 /// ```
 use crate::error::JsoncParseError;
-/// What:     Import the document model types the parser builds.
-/// Why:      Completed frames move into their parents, so the parser names the same types callers hold.
+/// What:
+///      Import the document model types the parser builds.
+/// Why:
+///       Completed frames move into their parents,
+///  so the parser names the same types callers hold.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,8 +54,10 @@ use crate::error::JsoncParseError;
 /// ```
 use crate::value::{JsoncComment, JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
 
-/// What: Maximum number of simultaneously open JSONC containers.
-/// Why: Erroring before a 513th opener bounds the explicit parser frame list.
+/// What:
+///  Maximum number of simultaneously open JSONC containers.
+/// Why:
+///  Erroring before a 513th opener bounds the explicit parser frame list.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,8 +65,10 @@ use crate::value::{JsoncComment, JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
 /// ```
 const MAX_CONTAINERS: usize = 512;
 
-/// What: The grammar phase of one open array or record frame.
-/// Why: Separator enforcement must not be inferred from a comment or cursor alone.
+/// What:
+///  The grammar phase of one open array or record frame.
+/// Why:
+///  Separator enforcement must not be inferred from a comment or cursor alone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,14 +78,19 @@ const MAX_CONTAINERS: usize = 512;
 enum Phase {
     /// An item or close delimiter may follow.
     ItemOrClose,
-    /// A nested child has started; the frame waits for its completed node.
+    /// A nested child has started;
+    ///  the frame waits for its completed node.
     AwaitingChild,
-    /// An item completed without a comma; a separator or close must follow.
+    /// An item completed without a comma;
+    ///  a separator or close must follow.
     SeparatorOrClose,
 }
 
-/// What: One open array or record, including pending key and leading comments.
-/// Why: A growable work stack replaces recursive calls while retaining source order.
+/// What:
+///  One open array or record,
+///  including pending key and leading comments.
+/// Why:
+///  A growable work stack replaces recursive calls while retaining source order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -75,33 +99,47 @@ enum Phase {
 enum Frame {
     /// Open array with completed elements and comments preceding its opener.
     ///
-    /// What:     holds the elements parsed so far, the comments seen before the opener, and the
+    /// What:
+    ///      holds the elements parsed so far,
+    ///  the comments seen before the opener,
+    ///  and the
     ///           grammar phase.
-    /// Why:      an array frame must know whether a value, a comma or the closer may come next.
+    /// Why:
+    ///       an array frame must know whether a value,
+    ///  a comma or the closer may come next.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// { kind: 'array', elements: JsoncValue[], leading: JsoncComment[], phase: Phase }
     /// ```
     Array {
-        /// What:    Elements completed so far, in source order.
-        /// Why:     `elements` stores finished children so the closer can build one value at the end.
+        /// What:
+        ///     Elements completed so far,
+        ///  in source order.
+        /// Why:
+        ///      `elements` stores finished children so the closer can build one value at the end.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// elements: JsoncValue[];
         /// ```
         elements: Vec<JsoncValue>,
-        /// What:    Comments seen before this array's opening bracket.
-        /// Why:     `leading` stores them until the array value exists, so they can be attached to it.
+        /// What:
+        ///     Comments seen before this array's opening bracket.
+        /// Why:
+        ///      `leading` stores them until the array value exists,
+        ///  so they can be attached to it.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// leading: JsoncComment[];
         /// ```
         leading: Vec<JsoncComment>,
-        /// What:    Grammar phase this frame expects next.
-        /// Why:     `phase` stores the expectation, so a separator cannot be inferred from a comment
+        /// What:
+        ///     Grammar phase this frame expects next.
+        /// Why:
+        ///      `phase` stores the expectation,
+        ///  so a separator cannot be inferred from a comment
         ///          or cursor position alone.
         ///
         /// In TS you'd write (pseudocode):
@@ -112,9 +150,15 @@ enum Frame {
     },
     /// Open record with ordered entries and at most one key awaiting its value.
     ///
-    /// What:     holds the members parsed so far, the comments before the opener, a key awaiting its
-    ///           value, and the grammar phase.
-    /// Why:      a member's key and value carry separate comments, so the frame keeps them apart until
+    /// What:
+    ///      holds the members parsed so far,
+    ///  the comments before the opener,
+    ///  a key awaiting its
+    ///           value,
+    ///  and the grammar phase.
+    /// Why:
+    ///       a member's key and value carry separate comments,
+    ///  so the frame keeps them apart until
     ///           the value is complete.
     ///
     /// In TS you'd write (pseudocode):
@@ -122,8 +166,11 @@ enum Frame {
     /// { kind: 'record', entries: JsoncEntry[], leading: JsoncComment[], key?: JsoncKey, phase: Phase }
     /// ```
     Record {
-        /// What:    Members completed so far, in source order.
-        /// Why:     `entries` stores finished pairs so duplicate keys stay visible rather than
+        /// What:
+        ///     Members completed so far,
+        ///  in source order.
+        /// Why:
+        ///      `entries` stores finished pairs so duplicate keys stay visible rather than
         ///          collapsing into a map.
         ///
         /// In TS you'd write (pseudocode):
@@ -131,24 +178,33 @@ enum Frame {
         /// entries: JsoncEntry[];
         /// ```
         entries: Vec<JsoncEntry>,
-        /// What:    Comments seen before this record's opening brace.
-        /// Why:     `leading` stores them until the record value exists, so they attach to the record.
+        /// What:
+        ///     Comments seen before this record's opening brace.
+        /// Why:
+        ///      `leading` stores them until the record value exists,
+        ///  so they attach to the record.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// leading: JsoncComment[];
         /// ```
         leading: Vec<JsoncComment>,
-        /// What:    The key whose value has not been parsed yet, if any.
-        /// Why:     `pending_key` stores it so the value can be paired with its own key comment.
+        /// What:
+        ///     The key whose value has not been parsed yet,
+        ///  if any.
+        /// Why:
+        ///      `pending_key` stores it so the value can be paired with its own key comment.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
         /// key?: JsoncKey;
         /// ```
         pending_key: Option<JsoncKey>,
-        /// What:    Grammar phase this frame expects next.
-        /// Why:     `phase` stores the expectation, so a value cannot be accepted where a comma belongs.
+        /// What:
+        ///     Grammar phase this frame expects next.
+        /// Why:
+        ///      `phase` stores the expectation,
+        ///  so a value cannot be accepted where a comma belongs.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -158,8 +214,11 @@ enum Frame {
     },
 }
 
-/// What:     Read and update one frame's grammar phase and closer.
-/// Why:      Both frame variants carry a phase, so the driver asks the frame instead of matching on its
+/// What:
+///      Read and update one frame's grammar phase and closer.
+/// Why:
+///       Both frame variants carry a phase,
+///  so the driver asks the frame instead of matching on its
 ///           shape at every step.
 ///
 /// In TS you'd write (pseudocode):
@@ -167,8 +226,10 @@ enum Frame {
 /// class Frame { get phase(): Phase; set phase(next: Phase); closeByte(): number }
 /// ```
 impl Frame {
-    /// What: Read the frame's current grammar phase.
-    /// Why: The driver can decide whether a value or a separator is legal.
+    /// What:
+    ///  Read the frame's current grammar phase.
+    /// Why:
+    ///  The driver can decide whether a value or a separator is legal.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -187,8 +248,10 @@ impl Frame {
         };
     }
 
-    /// What: Change the frame's expected next grammar event.
-    /// Why: Accepting a child or comma must advance exactly one continuation.
+    /// What:
+    ///  Change the frame's expected next grammar event.
+    /// Why:
+    ///  Accepting a child or comma must advance exactly one continuation.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -200,8 +263,10 @@ impl Frame {
         }
     }
 
-    /// What: Select the matching close delimiter for this exact frame.
-    /// Why: A `]` may not close an object or search for an older array.
+    /// What:
+    ///  Select the matching close delimiter for this exact frame.
+    /// Why:
+    ///  A `]` may not close an object or search for an older array.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -212,8 +277,10 @@ impl Frame {
     }
 }
 
-/// What: Put newly encountered leading comments before comments already on a node.
-/// Why: `/*outer*/[/*inner*/]` must retain source order even for empty containers.
+/// What:
+///  Put newly encountered leading comments before comments already on a node.
+/// Why:
+///  `/*outer*/[/*inner*/]` must retain source order even for empty containers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -236,8 +303,10 @@ fn prepend(node: &mut JsoncValue, leading: Vec<JsoncComment>) {
     };
 }
 
-/// What: Attach trivia just before a comma or close to the last child value.
-/// Why: Interstitial comments survive even when a comma begins a later line.
+/// What:
+///  Attach trivia just before a comma or close to the last child value.
+/// Why:
+///  Interstitial comments survive even when a comma begins a later line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -258,8 +327,10 @@ fn attach_last(frame: &mut Frame, comments: Vec<JsoncComment>) {
     }
 }
 
-/// What: Finish a matched container and move its completed values into one node.
-/// Why: An emitted node is delivered exactly once to its immediate parent.
+/// What:
+///  Finish a matched container and move its completed values into one node.
+/// Why:
+///  An emitted node is delivered exactly once to its immediate parent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -300,8 +371,12 @@ fn finish(frame: Frame, before_close: Vec<JsoncComment>) -> JsoncValue {
     return node;
 }
 
-/// What: Begin a value, either yielding a scalar or pushing one container frame.
-/// Why: Containers never call this function recursively, so stack use stays constant.
+/// What:
+///  Begin a value,
+///  either yielding a scalar or pushing one container frame.
+/// Why:
+///  Containers never call this function recursively,
+///  so stack use stays constant.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -364,8 +439,10 @@ fn begin_value(
     return Ok(());
 }
 
-/// What: Deliver one completed child and consume only its same-line trailing trivia.
-/// Why: A comma after a later newline belongs to the parent's separator phase.
+/// What:
+///  Deliver one completed child and consume only its same-line trailing trivia.
+/// Why:
+///  A comma after a later newline belongs to the parent's separator phase.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -388,8 +465,10 @@ fn receive_child(scanner: &mut Scanner<'_>, frames: &mut [Frame], mut child: Jso
     return Ok(());
 }
 
-/// What: Parse one complete JSONC document by driving a stack of container phases.
-/// Why: Valid 512-depth input must not exhaust the Rust call stack.
+/// What:
+///  Parse one complete JSONC document by driving a stack of container phases.
+/// Why:
+///  Valid 512-depth input must not exhaust the Rust call stack.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

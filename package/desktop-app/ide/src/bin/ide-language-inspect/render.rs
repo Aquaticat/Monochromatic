@@ -1,4 +1,5 @@
-//! JSON rendering of what the Language module publishes, for the inspection record.
+//! JSON rendering of what the Language module publishes,
+//!  for the inspection record.
 
 /// The published types being rendered.
 use ide_app::language::{
@@ -7,8 +8,11 @@ use ide_app::language::{
     reply::{LanguageReply, RequestOutcome, Target},
     status::LanguageStatus,
 };
-/// What: `Value` is any JSON value; `json!` builds one from literal syntax.
-/// Why: Observations are printed as one JSON object per line.
+/// What:
+///  `Value` is any JSON value;
+///  `json!` builds one from literal syntax.
+/// Why:
+///  Observations are printed as one JSON object per line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -16,7 +20,8 @@ use ide_app::language::{
 /// ```
 use serde_json::{Value, json};
 
-/// Longest text copied into the record, in characters.
+/// Longest text copied into the record,
+///  in characters.
 const SHOWN_CHARS: usize = 400;
 
 /// Shorten text for the record.

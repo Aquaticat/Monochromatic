@@ -1,6 +1,10 @@
-//! What: Run the selected Markdown rules over one shared parse.
-//! Why: Rule order is the incumbent registry's order, which decides which fix wins when two
-//! findings' edits conflict; absent and `off` rules are not executed at all.
+//! What:
+//!  Run the selected Markdown rules over one shared parse.
+//! Why:
+//!  Rule order is the incumbent registry's order,
+//!  which decides which fix wins when two
+//! findings' edits conflict;
+//!  absent and `off` rules are not executed at all.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -26,9 +30,14 @@ use crate::{
     markdown_tables::no_pipe_tables,
 };
 
-/// What: Collect findings from every selected rule, in fixed registry order.
-/// Why: `rustdoc` switches the fence-language fix to `rust`, because an unlabeled fence inside
-/// rustdoc is a doc test. `lfs` is `None` when the file has no LFS repository or is excluded,
+/// What:
+///  Collect findings from every selected rule,
+///  in fixed registry order.
+/// Why:
+///  `rustdoc` switches the fence-language fix to `rust`,
+///  because an unlabeled fence inside
+/// rustdoc is a doc test.
+///  `lfs` is `None` when the file has no LFS repository or is excluded,
 /// which leaves `markdown/lfs-image-url` inert.
 ///
 /// In TS you'd write (pseudocode):

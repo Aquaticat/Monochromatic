@@ -1,22 +1,40 @@
 //! Mechanically ports a resharp/PCRE rule into the forbidden-regex dialect.
 //!
-//! What: strips the boundary/context around a secret, wraps `|` branches and `&`
-//! operands as single atoms, and hands `regex` the complement-stripped positive;
-//! normalization (quantifier bounding, case flags, POSIX classes) lives in the
-//! sibling module. Why: the real ruleset is written in a richer dialect than this
-//! engine accepts, so each rule is adapted; whatever fails to compile is dropped by
-//! the caller's compile-filter, so soundness is preserved.
+//! What:
+//!  strips the boundary/context around a secret,
+//!  wraps `|` branches and `&`
+//! operands as single atoms,
+//!  and hands `regex` the complement-stripped positive;
+//! normalization (quantifier bounding,
+//!  case flags,
+//!  POSIX classes) lives in the
+//! sibling module.
+//!  Why:
+//!  the real ruleset is written in a richer dialect than this
+//! engine accepts,
+//!  so each rule is adapted;
+//!  whatever fails to compile is dropped by
+//! the caller's compile-filter,
+//!  so soundness is preserved.
 
 /// Imports the dialect normalizer.
 use crate::normalize::normalize;
 
 /// Ports one rule body into `(ours, bare)`.
 ///
-/// What: extracts just the secret from the positive operand (the capturing group's
-/// content, or the boundary-stripped whole), keeps any `&`/`~` operands, and yields
+/// What:
+///  extracts just the secret from the positive operand (the capturing group's
+/// content,
+///  or the boundary-stripped whole),
+///  keeps any `&`/`~` operands,
+///  and yields
 /// `ours` (with operands wrapped to single atoms) and `bare` (the positive alone,
-/// for `regex`). Why: a secret is just as leaky surrounded, so the ruleset carries
-/// no boundary or context wrappers, only the secret shape and its set algebra.
+/// for `regex`).
+///  Why:
+///  a secret is just as leaky surrounded,
+///  so the ruleset carries
+/// no boundary or context wrappers,
+///  only the secret shape and its set algebra.
 pub fn port(inner: &str) -> (String, String) {
     let operands = split_top_level(inner, b'&');
     let secret = strip_context(&normalize(&operands[0]));
@@ -34,10 +52,17 @@ pub fn port(inner: &str) -> (String, String) {
 
 /// Strips the leading and trailing context that surrounds a secret.
 ///
-/// What: repeatedly removes a leading boundary (`\b`/`^`) or context class-repeat
-/// (`[\w.-]{0,50}`), and a trailing boundary (`\b`/`$`) or context group
-/// (`(?:…|$)`). Why: a secret is just as leaky surrounded, so betterleaks' boundary
-/// and delimiter context is dropped while the keyword, gap, and value are kept.
+/// What:
+///  repeatedly removes a leading boundary (`\b`/`^`) or context class-repeat
+/// (`[\w.-]{0,50}`),
+///  and a trailing boundary (`\b`/`$`) or context group
+/// (`(?:…|$)`).
+///  Why:
+///  a secret is just as leaky surrounded,
+///  so betterleaks' boundary
+/// and delimiter context is dropped while the keyword,
+///  gap,
+///  and value are kept.
 fn strip_context(s: &str) -> String {
     let mut cur = s.to_string();
     loop {
@@ -52,10 +77,18 @@ fn strip_context(s: &str) -> String {
 
 /// Strips one leading context element.
 ///
-/// What: a leading `\b`, a nullable class-repeat `[...]{0,N}`, or such a class-repeat
-/// nested right after a leading `(?:` group open; a leading `^` is kept. Why: `\b` and
-/// the class-repeats are pure context (the engine flattens the kept `(?:` groups, so
-/// the keyword inside becomes the leading literal), but `^` is a real line-start
+/// What:
+///  a leading `\b`,
+///  a nullable class-repeat `[...]{0,N}`,
+///  or such a class-repeat
+/// nested right after a leading `(?:` group open;
+///  a leading `^` is kept.
+///  Why:
+///  `\b` and
+/// the class-repeats are pure context (the engine flattens the kept `(?:` groups,
+///  so
+/// the keyword inside becomes the leading literal),
+///  but `^` is a real line-start
 /// anchor that lets the engine check the rule only at line starts.
 fn strip_leading(s: &str) -> String {
     if let Some(rest) = s.strip_prefix("\\b") {
@@ -74,8 +107,12 @@ fn strip_leading(s: &str) -> String {
 
 /// Strips a leading nullable class-repeat such as `[\w.-]{0,50}`.
 ///
-/// What: a class at the start immediately followed by `{0,N}`. Why: it is pure
-/// preceding context under unanchored search, never part of the secret.
+/// What:
+///  a class at the start immediately followed by `{0,N}`.
+///  Why:
+///  it is pure
+/// preceding context under unanchored search,
+///  never part of the secret.
 fn strip_leading_class_repeat(s: &str) -> Option<&str> {
     if !s.starts_with('[') {
         return None;
@@ -91,7 +128,11 @@ fn strip_leading_class_repeat(s: &str) -> Option<&str> {
 
 /// Returns the index just past a class starting at index 0.
 ///
-/// What: scans to the closing `]`, honoring escapes and a leading `]`. Why: a
+/// What:
+///  scans to the closing `]`,
+///  honoring escapes and a leading `]`.
+///  Why:
+///  a
 /// leading class-repeat's bound starts right after its class.
 fn class_span_end(b: &[u8]) -> Option<usize> {
     let mut i = 1;
@@ -109,7 +150,12 @@ fn class_span_end(b: &[u8]) -> Option<usize> {
 
 /// Strips one trailing context element.
 ///
-/// What: a trailing `\b`, `$`, or context group `(?:…|$)`. Why: these are the
+/// What:
+///  a trailing `\b`,
+///  `$`,
+///  or context group `(?:…|$)`.
+///  Why:
+///  these are the
 /// end-context idioms betterleaks appends to a secret.
 fn strip_trailing(s: &str) -> String {
     if let Some(rest) = s.strip_suffix("\\b") {
@@ -126,9 +172,14 @@ fn strip_trailing(s: &str) -> String {
 
 /// Returns the start index of a trailing context group `(?:…|$)`.
 ///
-/// What: the top-level group that ends the string and contains an end-anchor
-/// (`$` or `\z`). Why: betterleaks closes a rule with such a delimiter group, which
-/// is context, not secret.
+/// What:
+///  the top-level group that ends the string and contains an end-anchor
+/// (`$` or `\z`).
+///  Why:
+///  betterleaks closes a rule with such a delimiter group,
+///  which
+/// is context,
+///  not secret.
 fn trailing_context_group(s: &str) -> Option<usize> {
     let b = s.as_bytes();
     if b.last() != Some(&b')') {
@@ -167,8 +218,12 @@ fn trailing_context_group(s: &str) -> Option<usize> {
 
 /// Wraps one `&` operand so it is a single atom.
 ///
-/// What: a complement is already an atom; anything else is wrapped in `(?:...)`
-/// after its branches are wrapped. Why: the grammar requires single-atom operands.
+/// What:
+///  a complement is already an atom;
+///  anything else is wrapped in `(?:...)`
+/// after its branches are wrapped.
+///  Why:
+///  the grammar requires single-atom operands.
 fn wrap_operand(operand: &str) -> String {
     if operand.trim_start().starts_with('~') {
         return wrap_branches(operand)
@@ -179,8 +234,12 @@ fn wrap_operand(operand: &str) -> String {
 
 /// Wraps each top-level `|` branch of a fragment in a non-capturing group.
 ///
-/// What: a single branch is returned processed; multiple branches are each wrapped
-/// so the alternation's operands are single atoms. Why: the grammar requires it.
+/// What:
+///  a single branch is returned processed;
+///  multiple branches are each wrapped
+/// so the alternation's operands are single atoms.
+///  Why:
+///  the grammar requires it.
 fn wrap_branches(s: &str) -> String {
     let branches = split_top_level(s, b'|');
     if branches.len() == 1 {
@@ -193,11 +252,16 @@ fn wrap_branches(s: &str) -> String {
         .join("|")
 }
 
-/// Re-emits a branch, recursing into groups and complements.
+/// Re-emits a branch,
+///  recursing into groups and complements.
 ///
-/// What: copies escapes and classes verbatim and rewraps the contents of each
-/// `(?:...)` group and `~(...)` complement. Why: branch wrapping must reach every
-/// nesting level, not just the top.
+/// What:
+///  copies escapes and classes verbatim and rewraps the contents of each
+/// `(?:...)` group and `~(...)` complement.
+///  Why:
+///  branch wrapping must reach every
+/// nesting level,
+///  not just the top.
 fn process_seq(s: &str) -> String {
     let b = s.as_bytes();
     let mut out = String::new();
@@ -237,8 +301,13 @@ fn process_seq(s: &str) -> String {
 
 /// Returns the index just past a class that starts at `open`.
 ///
-/// What: scans to the closing `]`, honoring escapes. Why: class contents must be
-/// copied verbatim so their `(`/`|`/`*` are not misread as operators; shared with
+/// What:
+///  scans to the closing `]`,
+///  honoring escapes.
+///  Why:
+///  class contents must be
+/// copied verbatim so their `(`/`|`/`*` are not misread as operators;
+///  shared with
 /// the normalizer.
 pub(crate) fn class_end(b: &[u8], open: usize) -> usize {
     let mut i = open + 1;
@@ -250,8 +319,12 @@ pub(crate) fn class_end(b: &[u8], open: usize) -> usize {
 
 /// Returns the index of the `)` matching the `(` at `open`.
 ///
-/// What: tracks paren depth while skipping escapes and classes. Why: recursion into
-/// a group needs its exact extent; shared with the case-expansion module.
+/// What:
+///  tracks paren depth while skipping escapes and classes.
+///  Why:
+///  recursion into
+/// a group needs its exact extent;
+///  shared with the case-expansion module.
 pub(crate) fn matching_close(b: &[u8], open: usize) -> usize {
     let mut depth = 0i32;
     let mut i = open;
@@ -287,8 +360,13 @@ pub(crate) fn matching_close(b: &[u8], open: usize) -> usize {
 
 /// Returns the index where a group's inner content starts after its prefix.
 ///
-/// What: skips `(?:` when present, else just the `(`. Why: only the content is
-/// rewrapped; the prefix is copied as-is.
+/// What:
+///  skips `(?:` when present,
+///  else just the `(`.
+///  Why:
+///  only the content is
+/// rewrapped;
+///  the prefix is copied as-is.
 fn group_inner_start(b: &[u8], open: usize) -> usize {
     if open + 2 < b.len() && b[open + 1] == b'?' && b[open + 2] == b':' {
         return open + 3
@@ -297,9 +375,15 @@ fn group_inner_start(b: &[u8], open: usize) -> usize {
     }
 }
 
-/// Splits `s` on a delimiter byte that sits at paren depth zero, outside classes.
+/// Splits `s` on a delimiter byte that sits at paren depth zero,
+///  outside classes.
 ///
-/// What: an escape-, class-, and depth-aware split. Why: `&` operands and `|`
+/// What:
+///  an escape-,
+///  class-,
+///  and depth-aware split.
+///  Why:
+///  `&` operands and `|`
 /// branches must be separated only at the current level.
 fn split_top_level(s: &str, delim: u8) -> Vec<String> {
     let b = s.as_bytes();

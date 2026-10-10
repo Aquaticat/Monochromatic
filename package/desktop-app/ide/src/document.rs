@@ -1,7 +1,13 @@
-//! Versioned read-only text and edit correspondence; no filesystem writes.
+//! Versioned read-only text and edit correspondence;
+//!  no filesystem writes.
 
-/// What: Import Helix's text rope, diff transaction, its change set, and position association.
-/// Why: Reuse the inspected edit model instead of matching selected strings.
+/// What:
+///  Import Helix's text rope,
+///  diff transaction,
+///  its change set,
+///  and position association.
+/// Why:
+///  Reuse the inspected edit model instead of matching selected strings.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -9,9 +15,12 @@
 /// ```
 use helix_core::{Assoc, ChangeSet, Rope, Transaction, diff::compare_ropes};
 
-/// What: A copyable reading-position record. usize is an address-sized index,
+/// What:
+///  A copyable reading-position record.
+///  usize is an address-sized index,
 /// unlike signed i32/i64 or fixed-width u32/u64.
-/// Why: Helix positions use character indices and its interfaces require usize.
+/// Why:
+///  Helix positions use character indices and its interfaces require usize.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,16 +28,20 @@ use helix_core::{Assoc, ChangeSet, Rope, Transaction, diff::compare_ropes};
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct ReadingPosition {
-    /// Selection origin in Unicode scalar positions, not UTF-8 bytes.
+    /// Selection origin in Unicode scalar positions,
+    ///  not UTF-8 bytes.
     pub anchor: usize,
-    /// Moving end of the selection; equality with anchor denotes a caret.
+    /// Moving end of the selection;
+    ///  equality with anchor denotes a caret.
     pub head: usize,
     /// Source position attached to the viewport's top visible source line.
     pub viewport: usize,
 }
 
-/// What: A prepared replacement retains its base version and new owned text.
-/// Why: A worker can compute this without borrowing mutable UI state.
+/// What:
+///  A prepared replacement retains its base version and new owned text.
+/// Why:
+///  A worker can compute this without borrowing mutable UI state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,7 +50,8 @@ pub struct ReadingPosition {
 pub struct Reload {
     /// Version used when computing the correspondence.
     base: u64,
-    /// Text of the base version; a rope clone shares its chunks instead of copying characters.
+    /// Text of the base version;
+    ///  a rope clone shares its chunks instead of copying characters.
     previous: Rope,
     /// Authoritative replacement text read from disk.
     text: Rope,
@@ -52,12 +66,14 @@ impl Reload {
         return &self.text;
     }
 
-    /// Lend the base text the change set applies to, so language servers can be told what was replaced.
+    /// Lend the base text the change set applies to,
+    ///  so language servers can be told what was replaced.
     pub fn previous_text(&self) -> &Rope {
         return &self.previous;
     }
 
-    /// Lend the edit list from the base text to the replacement, in character offsets.
+    /// Lend the edit list from the base text to the replacement,
+    ///  in character offsets.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -73,8 +89,12 @@ impl Reload {
     }
 }
 
-/// What: A document owns its rope and current reading position.
-/// Why: Source, copying, and refresh share one state rather than UI buffers.
+/// What:
+///  A document owns its rope and current reading position.
+/// Why:
+///  Source,
+///  copying,
+///  and refresh share one state rather than UI buffers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -84,14 +104,19 @@ impl Reload {
 pub struct Document {
     /// Current immutable-by-convention source snapshot.
     text: Rope,
-    /// Monotonic content revision; u64 avoids tying lifetime count to pointer width.
+    /// Monotonic content revision;
+    ///  u64 avoids tying lifetime count to pointer width.
     revision: u64,
-    /// Current user interaction state, including movement during background work.
+    /// Current user interaction state,
+    ///  including movement during background work.
     position: ReadingPosition,
 }
 
-/// What: impl groups operations belonging to Document, like class methods.
-/// Why: The native view cannot alter text except by applying an external reload.
+/// What:
+///  impl groups operations belonging to Document,
+///  like class methods.
+/// Why:
+///  The native view cannot alter text except by applying an external reload.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -137,12 +162,15 @@ impl Document {
         return self.revision;
     }
 
-    /// Read the current caret, selection direction, and viewport source anchor.
+    /// Read the current caret,
+    ///  selection direction,
+    ///  and viewport source anchor.
     pub fn position(&self) -> ReadingPosition {
         return self.position;
     }
 
-    /// Set a reading position, clamping external UI coordinates to valid text.
+    /// Set a reading position,
+    ///  clamping external UI coordinates to valid text.
     pub fn select(&mut self, position: ReadingPosition) {
         // What: A typed local records the rope's valid character endpoint.
         // Why: UI hit tests can land beyond the final glyph.
@@ -159,7 +187,8 @@ impl Document {
         };
     }
 
-    /// Copy only source characters, excluding hints and line numbers.
+    /// Copy only source characters,
+    ///  excluding hints and line numbers.
     pub fn selected_text(&self) -> String {
         let start = self.position.anchor.min(self.position.head);
         let end = self.position.anchor.max(self.position.head);
@@ -197,7 +226,8 @@ impl Document {
 
     /// Apply only a reload computed from the current displayed revision.
     ///
-    /// Returns whether the revision was accepted, not whether text differed.
+    /// Returns whether the revision was accepted,
+    ///  not whether text differed.
     pub fn apply_reload(&mut self, reload: Reload) -> bool {
         if reload.base != self.revision {
             tracing::debug!(

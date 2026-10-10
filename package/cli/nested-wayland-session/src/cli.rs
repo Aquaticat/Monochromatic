@@ -23,9 +23,13 @@ use crate::screen_geometry::OutputScale;
 
 /// Parse arguments excluding the executable name without starting application work.
 ///
-/// What: The borrowed string slice stays owned by the caller. Clap errors are
-/// retained inside anyhow, so main can honor help's success exit status.
-/// Why: Library tests can inspect help without terminating their own process.
+/// What:
+///  The borrowed string slice stays owned by the caller.
+///  Clap errors are
+/// retained inside anyhow,
+///  so main can honor help's success exit status.
+/// Why:
+///  Library tests can inspect help without terminating their own process.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

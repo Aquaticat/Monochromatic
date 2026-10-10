@@ -1,6 +1,10 @@
-//! What: Disposable-directory controls for configuration discovery and reading.
-//! Why: The loader must read one regular bounded file, report legacy executable
-//!      configuration, and never follow links or execute anything.
+//! What:
+//!  Disposable-directory controls for configuration discovery and reading.
+//! Why:
+//!  The loader must read one regular bounded file,
+//!  report legacy executable
+//!      configuration,
+//!  and never follow links or execute anything.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -39,7 +43,9 @@ fn rejection(root: &Path) -> String {
 }
 
 /// A repository without any configuration file and one with an empty file load the same
-/// settings: built-ins on, the four optional policies off.
+/// settings:
+///  built-ins on,
+///  the four optional policies off.
 #[test]
 fn absent_and_empty_configuration_load_the_same_defaults() {
     let root: PathBuf = fixture("absent");
@@ -177,7 +183,8 @@ fn non_regular_configuration_path_is_rejected() {
     remove(root.as_path());
 }
 
-/// A symbolic link is rejected even when it points at a valid file, and a dangling one is not "absent".
+/// A symbolic link is rejected even when it points at a valid file,
+///  and a dangling one is not "absent".
 #[cfg(unix)]
 #[test]
 fn symbolic_link_configuration_is_rejected() {
@@ -229,7 +236,8 @@ fn legacy_configuration_alone_requires_migration() {
     }
 }
 
-/// Legacy files beside a JSONC file are reported, never read and never silently dropped.
+/// Legacy files beside a JSONC file are reported,
+///  never read and never silently dropped.
 #[test]
 fn legacy_configuration_beside_jsonc_is_reported() {
     let root: PathBuf = fixture("legacy-beside");
@@ -263,7 +271,8 @@ fn legacy_configuration_beside_jsonc_is_reported() {
     remove(root.as_path());
 }
 
-/// A root whose entries cannot be inspected is an error, never "no configuration".
+/// A root whose entries cannot be inspected is an error,
+///  never "no configuration".
 #[cfg(unix)]
 #[test]
 fn uninspectable_root_is_an_error() {
@@ -296,7 +305,8 @@ fn unreadable_file_is_an_error() {
     remove(root.as_path());
 }
 
-/// Repository roots need not be UTF-8; the path is used as raw operating-system bytes.
+/// Repository roots need not be UTF-8;
+///  the path is used as raw operating-system bytes.
 #[cfg(unix)]
 #[test]
 fn non_utf8_repository_root_is_supported() {

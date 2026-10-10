@@ -1,12 +1,16 @@
-//! What: Semantic break integration through actual Markdown/MDX parses.
-//! Why: Lexically plausible insertions must also preserve inline delimiters, container prefixes and positions.
+//! What:
+//!  Semantic break integration through actual Markdown/MDX parses.
+//! Why:
+//!  Lexically plausible insertions must also preserve inline delimiters,
+//!  container prefixes and positions.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Apply advertised edits once, reparse, and require no remaining semantic-break findings.
 //! ```
 
-/// Import production checking, parsing and grouped edits.
+/// Import production checking,
+///  parsing and grouped edits.
 use super::semantic_line_breaks;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::{Fix, apply_fixes};
@@ -31,7 +35,8 @@ fn fixed(source: &str) -> String {
     return output;
 }
 
-/// Breaks at inline tails land outside closing delimiters, including nested wrappers.
+/// Breaks at inline tails land outside closing delimiters,
+///  including nested wrappers.
 #[test]
 fn breaks_preserve_inline_delimiters_and_paragraph_tails() {
     assert_eq!(
@@ -125,7 +130,10 @@ fn non_prose_and_existing_breaks_are_excluded() {
     assert!(check(spaced.as_str()).is_empty());
 }
 
-/// Following prose must not become a heading, nested list, quote, code fence or raw HTML block.
+/// Following prose must not become a heading,
+///  nested list,
+///  quote,
+///  code fence or raw HTML block.
 #[test]
 fn inserted_breaks_cannot_change_block_structure() {
     for suffix in [

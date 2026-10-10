@@ -1,5 +1,9 @@
-//! The default level, the `RUST_LOG` override, and helix-lsp's directive inside it, decided by the
-//! real filter under a scoped subscriber; the environment itself is never changed.
+//! The default level,
+//!  the `RUST_LOG` override,
+//!  and helix-lsp's directive inside it,
+//!  decided by the
+//! real filter under a scoped subscriber;
+//!  the environment itself is never changed.
 
 use super::directives;
 use std::{
@@ -30,7 +34,8 @@ impl<'writer> MakeWriter<'writer> for Capture {
     }
 }
 
-/// Emit one record per probe under the filter built from `defaults` and `requested`, and return
+/// Emit one record per probe under the filter built from `defaults` and `requested`,
+///  and return
 /// the names of the probes that were written.
 fn written(defaults: &str, requested: Option<&str>) -> Vec<&'static str> {
     let capture = Capture::default();

@@ -1,12 +1,15 @@
-//! The window's reply checks on fabricated replies: request identity and displayed text.
+//! The window's reply checks on fabricated replies:
+//!  request identity and displayed text.
 
 /// The checks under test and the request record they compare against.
 use super::{
     Action, Pending,
     guard::{Verdict, verdict},
 };
-/// What: `Rope` is Helix's character-indexed text buffer.
-/// Why: The store groups what it accepts by the lines of the displayed text.
+/// What:
+///  `Rope` is Helix's character-indexed text buffer.
+/// Why:
+///  The store groups what it accepts by the lines of the displayed text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,7 +18,9 @@ use super::{
 use helix_core::Rope;
 /// The snapshot store the poll fills and the source renderer reads.
 use ide_app::annotation::Annotations;
-/// Replies, identities, and snapshots as the worker produces them.
+/// Replies,
+///  identities,
+///  and snapshots as the worker produces them.
 use ide_app::language::{
     diagnostics::DiagnosticsSnapshot,
     hints::HintsSnapshot,
@@ -25,7 +30,8 @@ use ide_app::language::{
 /// Snapshots arrive behind shared pointers.
 use std::sync::Arc;
 
-/// A hover request numbered 7 for file 3, revision 2.
+/// A hover request numbered 7 for file 3,
+///  revision 2.
 fn waiting() -> Pending {
     return Pending {
         action: Action::Hover,
@@ -64,7 +70,9 @@ fn reply_to_the_waiting_request_about_the_displayed_text_is_applied() {
     assert_eq!(verdict(&pending, pending.stamp, &answer), Verdict::Apply);
 }
 
-/// A late reply to an earlier request, or a reply of another kind, is never applied.
+/// A late reply to an earlier request,
+///  or a reply of another kind,
+///  is never applied.
 #[test]
 fn reply_to_another_request_is_not_applied() {
     let pending = waiting();
@@ -91,7 +99,9 @@ fn reply_to_another_request_is_not_applied() {
     );
 }
 
-/// A reply about a revision a reload replaced, or about another file, is never applied,
+/// A reply about a revision a reload replaced,
+///  or about another file,
+///  is never applied,
 /// even when the handle's fence has not caught up yet.
 #[test]
 fn reply_about_text_no_longer_displayed_is_not_applied() {

@@ -1,8 +1,14 @@
-//! Message sentences per server state and outcome, and hover text, without a window.
+//! Message sentences per server state and outcome,
+//!  and hover text,
+//!  without a window.
 
-/// The sentences under test, the action that names the key, and hover rendering.
+/// The sentences under test,
+///  the action that names the key,
+///  and hover rendering.
 use super::{Action, hover_text::plain, message};
-/// States, outcomes, and identities as the worker reports them.
+/// States,
+///  outcomes,
+///  and identities as the worker reports them.
 use ide_app::language::{
     identity::ServerIdentity,
     reply::{HoverText, RequestFailure, RequestOutcome},
@@ -43,7 +49,11 @@ fn single(action: Action, outcome: RequestOutcome, from: &LanguageStatus) -> Str
     return message::explain(action, &[(Some(server()), outcome)], from);
 }
 
-/// Starting, unsupported, failed, superseded, and empty answers each get their own sentence.
+/// Starting,
+///  unsupported,
+///  failed,
+///  superseded,
+///  and empty answers each get their own sentence.
 #[test]
 fn each_outcome_names_its_reason_and_remedy() {
     let ready = status(DocumentState::Attached, Some(ServerState::Ready));
@@ -98,7 +108,9 @@ fn each_outcome_names_its_reason_and_remedy() {
     );
 }
 
-/// A server that could not be started safely names what is unavailable, then the cause, and
+/// A server that could not be started safely names what is unavailable,
+///  then the cause,
+///  and
 /// ends with the remedy the launch policy gave.
 #[test]
 fn refused_launch_names_the_unavailable_feature_and_ends_with_the_remedy() {
@@ -174,7 +186,8 @@ fn no_server_is_explained_by_the_status() {
     assert!(!message::needs_reopen(&ready));
 }
 
-/// With several answers, the most telling one is explained.
+/// With several answers,
+///  the most telling one is explained.
 #[test]
 fn the_most_telling_answer_is_explained() {
     let ready = status(DocumentState::Attached, Some(ServerState::Ready));
@@ -186,7 +199,9 @@ fn the_most_telling_answer_is_explained() {
     assert!(message::explain(Action::Definition, &outcomes, &ready).contains("still starting"));
 }
 
-/// Fence lines are dropped, blank runs collapse, and plain text is kept as it is.
+/// Fence lines are dropped,
+///  blank runs collapse,
+///  and plain text is kept as it is.
 #[test]
 fn hover_markdown_is_shown_as_plain_text_without_fences() {
     let markdown = HoverText {

@@ -1,6 +1,10 @@
-//! What: Controls for reading one linter run.
-//! Why: Only exit status 0 with text output and well-formed warnings of a selected rule is
-//!      usable; every other status, record or stream shape must be refused with its reason.
+//! What:
+//!  Controls for reading one linter run.
+//! Why:
+//!  Only exit status 0 with text output and well-formed warnings of a selected rule is
+//!      usable;
+//!  every other status,
+//!  record or stream shape must be refused with its reason.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -33,7 +37,8 @@ fn finished(code: i32, stdout: &[u8], stderr: &[u8]) -> FinishedChild {
     };
 }
 
-/// A clean run returns the fixed source and no findings; an unchanged one returns the input.
+/// A clean run returns the fixed source and no findings;
+///  an unchanged one returns the input.
 #[test]
 fn a_clean_run_returns_the_fixed_source() {
     assert_eq!(
@@ -82,7 +87,8 @@ fn warnings_of_a_selected_rule_are_remaining_findings() {
     );
 }
 
-/// Every other exit ends the run with its own reason, and quotes the linter's explanation.
+/// Every other exit ends the run with its own reason,
+///  and quotes the linter's explanation.
 #[test]
 fn other_exits_are_refused_by_cause() {
     let setup: &[u8] = b"monochromatic-lint: Standard input is not valid UTF-8 (first invalid byte at offset 1).\n";
@@ -128,7 +134,9 @@ fn other_exits_are_refused_by_cause() {
     );
 }
 
-/// A successful run whose fixed source is not text, or is empty for a non-empty input, is refused.
+/// A successful run whose fixed source is not text,
+///  or is empty for a non-empty input,
+///  is refused.
 #[test]
 fn a_fixed_source_that_cannot_be_right_is_refused() {
     assert_eq!(
@@ -145,7 +153,8 @@ fn a_fixed_source_that_cannot_be_right_is_refused() {
     );
 }
 
-/// The reason a standard error of a successful run is refused, or the findings.
+/// The reason a standard error of a successful run is refused,
+///  or the findings.
 fn records(stderr: &str) -> Result<Vec<RemainingFinding>, String> {
     return match interpret_linter_run(b"x", RULES, &finished(0, b"x", stderr.as_bytes())) {
         Ok(run) => Ok(run.remaining),
@@ -160,7 +169,8 @@ fn on_line_two(problem: &str) -> String {
     );
 }
 
-/// Each malformed record is refused, naming its line and what is wrong with it.
+/// Each malformed record is refused,
+///  naming its line and what is wrong with it.
 #[test]
 fn malformed_records_are_refused_with_their_line() {
     let good: String = record("m", 1, 1);
@@ -270,7 +280,8 @@ fn malformed_records_are_refused_with_their_line() {
     );
 }
 
-/// Without any selected rule, every record names an unselected rule.
+/// Without any selected rule,
+///  every record names an unselected rule.
 #[test]
 fn no_selected_rule_accepts_no_record() {
     assert_eq!(
@@ -281,7 +292,9 @@ fn no_selected_rule_accepts_no_record() {
     );
 }
 
-/// The explanation joins prefixed lines and record messages, ignores the rest, and stops
+/// The explanation joins prefixed lines and record messages,
+///  ignores the rest,
+///  and stops
 /// at its limit.
 #[test]
 fn the_explanation_quotes_the_linter_and_stays_short() {

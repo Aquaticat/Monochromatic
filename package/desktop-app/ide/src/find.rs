@@ -1,15 +1,23 @@
-//! In-file find matching: plain literal, case-insensitive substrings in canonical source characters.
+//! In-file find matching:
+//!  plain literal,
+//!  case-insensitive substrings in canonical source characters.
 
-/// What: `Result` carries either a value or an error; `bail!` returns an error built from a message.
-/// Why: An over-long query or oversized source is reported to the find bar instead of matching nothing silently.
+/// What:
+///  `Result` carries either a value or an error;
+///  `bail!` returns an error built from a message.
+/// Why:
+///  An over-long query or oversized source is reported to the find bar instead of matching nothing silently.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// // functions below `throw new Error(message)` instead of returning a Result
 /// ```
 use anyhow::{Context, Result, bail};
-/// What: Helix reexports the `regex` crate; `escape` turns every query character into a literal.
-/// Why: The matcher reuses an existing dependency and never interprets user input as pattern syntax.
+/// What:
+///  Helix reexports the `regex` crate;
+///  `escape` turns every query character into a literal.
+/// Why:
+///  The matcher reuses an existing dependency and never interprets user input as pattern syntax.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,8 +27,11 @@ use helix_core::{
     Rope,
     regex::{RegexBuilder, escape},
 };
-/// What: `Arc` is a shared pointer that may cross threads; its sibling `Rc` may not.
-/// Why: The worker produces the match list and the native thread paints it without copying every range.
+/// What:
+///  `Arc` is a shared pointer that may cross threads;
+///  its sibling `Rc` may not.
+/// Why:
+///  The worker produces the match list and the native thread paints it without copying every range.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,8 +39,14 @@ use helix_core::{
 /// ```
 use std::sync::Arc;
 
-/// What: `usize` is the address-sized unsigned integer; siblings are `u32`, `u64`, and signed `i64`.
-/// Why: Vector lengths are `usize`, and ten thousand ranges bound reply memory at 160 kB on this host.
+/// What:
+///  `usize` is the address-sized unsigned integer;
+///  siblings are `u32`,
+///  `u64`,
+///  and signed `i64`.
+/// Why:
+///  Vector lengths are `usize`,
+///  and ten thousand ranges bound reply memory at 160 kB on this host.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,14 +54,24 @@ use std::sync::Arc;
 /// ```
 pub const MAX_FIND_MATCHES: usize = 10_000;
 
-/// Longer queries are rejected with a diagnostic, bounding the compiled matcher and its build time.
+/// Longer queries are rejected with a diagnostic,
+///  bounding the compiled matcher and its build time.
 pub const MAX_FIND_QUERY_CHARS: usize = 1_000;
 
-/// The worker copies the source into one contiguous string; larger files report a diagnostic instead.
+/// The worker copies the source into one contiguous string;
+///  larger files report a diagnostic instead.
 pub const MAX_FIND_SOURCE_BYTES: usize = 64 * 1024 * 1024;
 
-/// What: A copyable record of one match; `derive` asks the compiler to write copy, print, and equality code.
-/// Why: Ranges use source character positions, the same unit as selection, copying, and reload mapping.
+/// What:
+///  A copyable record of one match;
+///  `derive` asks the compiler to write copy,
+///  print,
+///  and equality code.
+/// Why:
+///  Ranges use source character positions,
+///  the same unit as selection,
+///  copying,
+///  and reload mapping.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,14 +79,20 @@ pub const MAX_FIND_SOURCE_BYTES: usize = 64 * 1024 * 1024;
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FindRange {
-    /// Inclusive source character position, not a UTF-8 byte or UTF-16 unit.
+    /// Inclusive source character position,
+    ///  not a UTF-8 byte or UTF-16 unit.
     pub start: usize,
-    /// Exclusive source character position; always greater than `start`.
+    /// Exclusive source character position;
+    ///  always greater than `start`.
     pub end: usize,
 }
 
-/// What: A shared immutable list; `[FindRange]` is a variable-length sequence, unlike the growable `Vec`.
-/// Why: Paint identity can compare one pointer instead of every range on each caret movement.
+/// What:
+///  A shared immutable list;
+///  `[FindRange]` is a variable-length sequence,
+///  unlike the growable `Vec`.
+/// Why:
+///  Paint identity can compare one pointer instead of every range on each caret movement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,18 +100,26 @@ pub struct FindRange {
 /// ```
 pub type FindRanges = Arc<[FindRange]>;
 
-/// Ordered, non-overlapping matches plus whether the retained list stopped at its limit.
+/// Ordered,
+///  non-overlapping matches plus whether the retained list stopped at its limit.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FindMatches {
-    /// Ascending document order; navigation and painting both binary-search this list.
+    /// Ascending document order;
+    ///  navigation and painting both binary-search this list.
     pub ranges: FindRanges,
     /// True when more matches exist than were retained.
     pub truncated: bool,
 }
 
-/// What: The single matching function: `&str` borrows text without owning it, unlike `String`.
-/// Why: Replacing the matching semantics later means replacing this one function.
-/// An empty query matches nothing; every other query is compared literally, ignoring Unicode simple case.
+/// What:
+///  The single matching function:
+///  `&str` borrows text without owning it,
+///  unlike `String`.
+/// Why:
+///  Replacing the matching semantics later means replacing this one function.
+/// An empty query matches nothing;
+///  every other query is compared literally,
+///  ignoring Unicode simple case.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -169,8 +210,12 @@ pub fn find_matches(text: &str, query: &str, limit: usize) -> Result<FindMatches
     });
 }
 
-/// What: `&Rope` borrows the document's chunked text; `String::from` copies it into contiguous bytes.
-/// Why: The regex engine needs one contiguous string, so the copy is bounded before it is made.
+/// What:
+///  `&Rope` borrows the document's chunked text;
+///  `String::from` copies it into contiguous bytes.
+/// Why:
+///  The regex engine needs one contiguous string,
+///  so the copy is bounded before it is made.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

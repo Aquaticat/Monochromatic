@@ -1,5 +1,8 @@
-//! What:    Smart constructors that keep nodes canonical so derivative states stay finite.
-//! Why:     This file is the Rust module that groups the smart implementation, so the
+//! What:
+//!     Smart constructors that keep nodes canonical so derivative states stay finite.
+//! Why:
+//!      This file is the Rust module that groups the smart implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,11 @@
 //! // module smart: see exported functions and types below.
 //! ```
 
-/// What:    Imports the byte-set leaf type for the `class` constructor.
-/// Why:     The code below uses `ByteSet` directly; importing from `crate/charset` keeps each
+/// What:
+///     Imports the byte-set leaf type for the `class` constructor.
+/// Why:
+///      The code below uses `ByteSet` directly;
+///  importing from `crate/charset` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +23,11 @@
 /// ```
 use crate::charset::ByteSet;
 
-/// What:    Imports the node algebra these constructors build.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra these constructors build.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,10 +36,17 @@ use crate::charset::ByteSet;
 /// ```
 use crate::ast::node::Node;
 
-/// Builds a sequence, dropping `Empty`, absorbing `Fail`, and flattening.
+/// Builds a sequence,
+///  dropping `Empty`,
+///  absorbing `Fail`,
+///  and flattening.
 ///
-/// What: concatenation is associative with `Empty` as identity and `Fail` as a
-/// zero. Why: normalizing here means equal languages produce equal nodes, which
+/// What:
+///  concatenation is associative with `Empty` as identity and `Fail` as a
+/// zero.
+///  Why:
+///  normalizing here means equal languages produce equal nodes,
+///  which
 /// bounds the number of derivative states.
 ///
 /// In TS you'd write (pseudocode):
@@ -81,11 +97,20 @@ pub fn concat(parts: Vec<Node>) -> Node {
     }
 }
 
-/// Builds an alternation with ACI normalization (flatten, drop `Fail`, sort,
-/// dedup), absorbing `Top`.
+/// Builds an alternation with ACI normalization (flatten,
+///  drop `Fail`,
+///  sort,
+/// dedup),
+///  absorbing `Top`.
 ///
-/// What: union is associative, commutative, and idempotent, with `Fail` as
-/// identity and `Top` as the absorbing element. Why: sorting plus dedup gives a
+/// What:
+///  union is associative,
+///  commutative,
+///  and idempotent,
+///  with `Fail` as
+/// identity and `Top` as the absorbing element.
+///  Why:
+///  sorting plus dedup gives a
 /// canonical form so two equal unions are the same node.
 ///
 /// In TS you'd write (pseudocode):
@@ -131,11 +156,18 @@ pub fn alt(parts: Vec<Node>) -> Node {
     }
 }
 
-/// Builds an intersection with ACI normalization, absorbing `Fail` and dropping
+/// Builds an intersection with ACI normalization,
+///  absorbing `Fail` and dropping
 /// `Top`.
 ///
-/// What: intersection is associative, commutative, idempotent, with `Top` as
-/// identity and `Fail` as the absorbing element. Why: canonical form bounds
+/// What:
+///  intersection is associative,
+///  commutative,
+///  idempotent,
+///  with `Top` as
+/// identity and `Fail` as the absorbing element.
+///  Why:
+///  canonical form bounds
 /// state growth from `&` and complement.
 ///
 /// In TS you'd write (pseudocode):
@@ -181,9 +213,15 @@ pub fn inter(parts: Vec<Node>) -> Node {
     }
 }
 
-/// Builds a complement, collapsing double negation and the constants.
+/// Builds a complement,
+///  collapsing double negation and the constants.
 ///
-/// What: `~~x = x`, `~Fail = Top`, `~Top = Fail`. Why: keeps complement nodes
+/// What:
+///  `~~x = x`,
+///  `~Fail = Top`,
+///  `~Top = Fail`.
+///  Why:
+///  keeps complement nodes
 /// from stacking and resolves the constant cases immediately.
 ///
 /// In TS you'd write (pseudocode):
@@ -201,12 +239,18 @@ pub fn comp(inner: Node) -> Node {
     }
 }
 
-/// Builds a bounded repetition, collapsing the trivial arities.
+/// Builds a bounded repetition,
+///  collapsing the trivial arities.
 ///
-/// What: `max == 0` matches nothing-repeated (the empty string); a `Fail` body is
-/// `Empty` when zero reps are allowed else `Fail`; exactly-one becomes the body.
-/// Why: keeps the count in a `Repeat` node (later a counter register) rather than
-/// unrolling it into states, and removes degenerate nodes.
+/// What:
+///  `max == 0` matches nothing-repeated (the empty string);
+///  a `Fail` body is
+/// `Empty` when zero reps are allowed else `Fail`;
+///  exactly-one becomes the body.
+/// Why:
+///  keeps the count in a `Repeat` node (later a counter register) rather than
+/// unrolling it into states,
+///  and removes degenerate nodes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -233,7 +277,10 @@ pub fn repeat(node: Node, min: usize, max: usize) -> Node {
 
 /// Builds `x?` as `x{0,1}`.
 ///
-/// What: optional is repetition between zero and one. Why: a single spelling for
+/// What:
+///  optional is repetition between zero and one.
+///  Why:
+///  a single spelling for
 /// the optional tail used by `?` and by `{n,m}` upper bounds.
 ///
 /// In TS you'd write (pseudocode):
@@ -246,9 +293,13 @@ pub fn optional(node: Node) -> Node {
     return repeat(node, 0, 1)
 }
 
-/// Builds a one-byte class node, collapsing an empty set to `Fail`.
+/// Builds a one-byte class node,
+///  collapsing an empty set to `Fail`.
 ///
-/// What: a class matching no byte matches nothing. Why: keeps `Fail` as the sole
+/// What:
+///  a class matching no byte matches nothing.
+///  Why:
+///  keeps `Fail` as the sole
 /// representation of the empty language so nullability and derivatives stay
 /// simple.
 ///
@@ -266,8 +317,11 @@ pub fn class(set: ByteSet) -> Node {
     }
 }
 
-/// What:    Unit tests for the smart constructors, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for the smart constructors,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

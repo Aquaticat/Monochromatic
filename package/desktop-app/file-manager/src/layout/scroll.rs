@@ -1,48 +1,77 @@
 //! Horizontal reveal helpers for `StripLayout`.
 //!
-//! Vertical movement belongs to lane groups (`layout/lane.rs`). This child module keeps the small
-//! amount of remaining scroll work: reveal a newly spawned column horizontally, ask the lane module
-//! to reveal the pane vertically, and expose the shared row-to-pixel helper.
+//! Vertical movement belongs to lane groups (`layout/lane.rs`).
+//!  This child module keeps the small
+//! amount of remaining scroll work:
+//!  reveal a newly spawned column horizontally,
+//!  ask the lane module
+//! to reveal the pane vertically,
+//!  and expose the shared row-to-pixel helper.
 
-/// What: imports the single-slot cell.
-/// Why: reveal retries count attempts in a `Cell` captured by the timer closure.
+/// What:
+///  imports the single-slot cell.
+/// Why:
+///  reveal retries count attempts in a `Cell` captured by the timer closure.
 use std::cell::Cell;
-/// What: imports the reference-counted pointer.
-/// Why: reveal timers hold weak references to the layout adapter.
+/// What:
+///  imports the reference-counted pointer.
+/// Why:
+///  reveal timers hold weak references to the layout adapter.
 use std::rc::Rc;
 
-/// What: imports GTK adjustment and focus extension traits.
-/// Why: reveal reads/writes the horizontal scroll adjustment and focuses pane widgets.
+/// What:
+///  imports GTK adjustment and focus extension traits.
+/// Why:
+///  reveal reads/writes the horizontal scroll adjustment and focuses pane widgets.
 use gtk4::prelude::*;
-/// What: imports the scroll-adjustment type and GLib timer module.
-/// Why: horizontal reveal operates on `Adjustment`; retries use GLib timers.
+/// What:
+///  imports the scroll-adjustment type and GLib timer module.
+/// Why:
+///  horizontal reveal operates on `Adjustment`;
+///  retries use GLib timers.
 use gtk4::{Adjustment, glib};
 
-/// What: imports pane geometry constants.
-/// Why: reveal extents and row offsets share pane geometry.
+/// What:
+///  imports pane geometry constants.
+/// Why:
+///  reveal extents and row offsets share pane geometry.
 use crate::constants::{PANE_GAP, PANE_HEIGHT, PANE_WIDTH};
-/// What: imports stable pane identity.
-/// Why: reveal targets a pane widget by id.
+/// What:
+///  imports stable pane identity.
+/// Why:
+///  reveal targets a pane widget by id.
 use crate::types::PaneId;
 
-/// What: imports the parent module's layout type.
-/// Why: this module extends `StripLayout` while retaining access to its private fields.
+/// What:
+///  imports the parent module's layout type.
+/// Why:
+///  this module extends `StripLayout` while retaining access to its private fields.
 use super::StripLayout;
 
-/// What: how many timed passes to retry revealing a spawned pane before giving up.
-/// Why: scroll bounds settle a layout pass after content changes; the retry must terminate even if a
+/// What:
+///  how many timed passes to retry revealing a spawned pane before giving up.
+/// Why:
+///  scroll bounds settle a layout pass after content changes;
+///  the retry must terminate even if a
 ///      pane can never fully fit.
 const MAX_REVEAL_ATTEMPTS: u32 = 20;
 
-/// What: milliseconds between reveal retries.
-/// Why: a real delay yields to the frame clock and layout between attempts so scroll bounds update.
+/// What:
+///  milliseconds between reveal retries.
+/// Why:
+///  a real delay yields to the frame clock and layout between attempts so scroll bounds update.
 const REVEAL_INTERVAL_MS: u64 = 8;
 
-/// What: horizontal reveal methods on the deep layout adapter.
-/// Why: placement callers get reveal through `StripLayout` without touching GTK pieces.
+/// What:
+///  horizontal reveal methods on the deep layout adapter.
+/// Why:
+///  placement callers get reveal through `StripLayout` without touching GTK pieces.
 impl StripLayout {
-    /// What: reveal pane `id` horizontally and vertically, then focus it.
-    /// Why: a spawn must bring the newly focused pane into view even though GTK updates scroll
+    /// What:
+    ///  reveal pane `id` horizontally and vertically,
+    ///  then focus it.
+    /// Why:
+    ///  a spawn must bring the newly focused pane into view even though GTK updates scroll
     ///      bounds one layout pass after reconciliation.
     pub(crate) fn scroll_to_pane(self: &Rc<Self>, id: PaneId) {
         let Some(placement) = self
@@ -80,14 +109,19 @@ impl StripLayout {
     }
 }
 
-/// What: vertical pixel offset of `row` within the pane grid.
-/// Why: panes tile down each column at a fixed stride shared by every lane and column.
+/// What:
+///  vertical pixel offset of `row` within the pane grid.
+/// Why:
+///  panes tile down each column at a fixed stride shared by every lane and column.
 pub(super) fn row_y(row: usize) -> f64 {
     return row as f64 * f64::from(PANE_HEIGHT + PANE_GAP)
 }
 
-/// What: scroll `adj` so `[start, start + extent)` is fully visible, returning whether it is.
-/// Why: callers retry until layout settles because scroll bounds update after content changes.
+/// What:
+///  scroll `adj` so `[start, start + extent)` is fully visible,
+///  returning whether it is.
+/// Why:
+///  callers retry until layout settles because scroll bounds update after content changes.
 fn reveal(adj: &Adjustment, start: f64, extent: f64) -> bool {
     let page = adj.page_size();
     let value = adj.value();

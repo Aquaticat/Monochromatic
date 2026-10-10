@@ -1,15 +1,23 @@
-//! What: The SHA-256 digest of one byte buffer, as lowercase hexadecimal text.
-//! Why: A smudged Git LFS file's object id is by definition the SHA-256 of its bytes,
+//! What:
+//!  The SHA-256 digest of one byte buffer,
+//!  as lowercase hexadecimal text.
+//! Why:
+//!  A smudged Git LFS file's object id is by definition the SHA-256 of its bytes,
 //! and this crate has no approved hashing dependency.
-//! The algorithm is FIPS 180-4 section 6.2; its fixed vectors are checked in the sibling test file.
+//! The algorithm is FIPS 180-4 section 6.2;
+//!  its fixed vectors are checked in the sibling test file.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // createHash('sha256').update(bytes).digest('hex')
 //! ```
 
-/// What: The 64 round constants, the first 32 bits of the fractional parts of the cube roots of the first 64 primes.
-/// Why: FIPS 180-4 section 4.2.2 fixes these values; a wrong constant changes every digest.
+/// What:
+///  The 64 round constants,
+///  the first 32 bits of the fractional parts of the cube roots of the first 64 primes.
+/// Why:
+///  FIPS 180-4 section 4.2.2 fixes these values;
+///  a wrong constant changes every digest.
 /// `u32` (not `u64` or `usize`) because SHA-256 is defined over 32-bit words on every platform.
 ///
 /// In TS you'd write (pseudocode):
@@ -83,8 +91,11 @@ const ROUND: [u32; 64] = [
     0xc671_78f2,
 ];
 
-/// What: The initial hash value, the first 32 bits of the fractional parts of the square roots of the first 8 primes.
-/// Why: FIPS 180-4 section 5.3.3 fixes the starting state.
+/// What:
+///  The initial hash value,
+///  the first 32 bits of the fractional parts of the square roots of the first 8 primes.
+/// Why:
+///  FIPS 180-4 section 5.3.3 fixes the starting state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,11 +112,17 @@ const INITIAL: [u32; 8] = [
     0x5be0_cd19,
 ];
 
-/// What: The FIPS 180-4 `Ch` function: each result bit is the `y` bit where the `x` bit is 1,
+/// What:
+///  The FIPS 180-4 `Ch` function:
+///  each result bit is the `y` bit where the `x` bit is 1,
 /// and the `z` bit where the `x` bit is 0.
-/// Why: FIPS spells it `(x & y) ^ (!x & z)`. Those two halves never share a set bit, so in that
+/// Why:
+///  FIPS spells it `(x & y) ^ (!x & z)`.
+///  Those two halves never share a set bit,
+///  so in that
 /// spelling `^` and `|` give the same value and replacing one with the other changes no digest.
-/// This spelling is the same function, and each of its operators changes some result bit when replaced,
+/// This spelling is the same function,
+///  and each of its operators changes some result bit when replaced,
 /// so the fixed vectors notice any such change.
 ///
 /// In TS you'd write (pseudocode):
@@ -116,10 +133,18 @@ fn choose(x: u32, y: u32, z: u32) -> u32 {
     return z ^ (x & (y ^ z));
 }
 
-/// What: The FIPS 180-4 `Maj` function: each result bit is the value at least two of the three input bits share.
-/// Why: FIPS spells it `(x & y) ^ (x & z) ^ (y & z)`, where either `^` can become `|` without changing
-/// the value, because at most one or all three of the terms are set. Here `x` and `y` are the majority
-/// where they agree, and `z` breaks the tie where they differ; replacing any operator changes some result bit.
+/// What:
+///  The FIPS 180-4 `Maj` function:
+///  each result bit is the value at least two of the three input bits share.
+/// Why:
+///  FIPS spells it `(x & y) ^ (x & z) ^ (y & z)`,
+///  where either `^` can become `|` without changing
+/// the value,
+///  because at most one or all three of the terms are set.
+///  Here `x` and `y` are the majority
+/// where they agree,
+///  and `z` breaks the tie where they differ;
+///  replacing any operator changes some result bit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -129,9 +154,12 @@ fn majority(x: u32, y: u32, z: u32) -> u32 {
     return y ^ ((x ^ y) & (y ^ z));
 }
 
-/// What: Mix one 64-byte block into the running eight-word state.
-/// Why: The digest is this compression applied to every padded block in order.
-/// `&mut [u32; 8]` lends the caller's state for in-place update; `&[u8]` lends the block read-only.
+/// What:
+///  Mix one 64-byte block into the running eight-word state.
+/// Why:
+///  The digest is this compression applied to every padded block in order.
+/// `&mut [u32; 8]` lends the caller's state for in-place update;
+///  `&[u8]` lends the block read-only.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -185,8 +213,11 @@ fn compress(state: &mut [u32; 8], block: &[u8]) {
     }
 }
 
-/// What: Hash a complete in-memory buffer and return 64 lowercase hexadecimal characters.
-/// Why: Git LFS object ids use exactly this spelling; the caller compares and embeds them as text.
+/// What:
+///  Hash a complete in-memory buffer and return 64 lowercase hexadecimal characters.
+/// Why:
+///  Git LFS object ids use exactly this spelling;
+///  the caller compares and embeds them as text.
 /// `String` (not `&str`) because the digest is newly built and outlives this call.
 ///
 /// In TS you'd write (pseudocode):

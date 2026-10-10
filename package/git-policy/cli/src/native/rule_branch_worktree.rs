@@ -1,9 +1,20 @@
-//! What: Pure decision of the branch-worktree-only policy: a new branch starts in its own
-//!       linked worktree, not in the current one.
-//! Why: `git branch <name>`, `git checkout -b`, `git switch -c` and Git's guess of a remote
-//!      branch all create a branch in the current worktree. The policy rejects them and
-//!      points at `git worktree add -b`. This file decides from the arguments alone, names
-//!      the one repository query the guess needs, and reads that query's answer. It starts
+//! What:
+//!  Pure decision of the branch-worktree-only policy:
+//!  a new branch starts in its own
+//!       linked worktree,
+//!  not in the current one.
+//! Why:
+//!  `git branch <name>`,
+//!  `git checkout -b`,
+//!  `git switch -c` and Git's guess of a remote
+//!      branch all create a branch in the current worktree.
+//!  The policy rejects them and
+//!      points at `git worktree add -b`.
+//!  This file decides from the arguments alone,
+//!  names
+//!      the one repository query the guess needs,
+//!  and reads that query's answer.
+//!  It starts
 //!      no process.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,9 +22,13 @@
 //! // decideBranchWorktree(['switch', '-c', 'topic']) => { kind: 'creates', command: 'switch' }
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  The creation facts come from Git's own option tables of the three commands.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   The creation facts come from Git's own option tables of the three commands.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,9 +41,14 @@ use super::command_branch_create::{
 use super::command_options::OptionError;
 use super::escape_hatch::BRANCH_WORKTREE_ESCAPE_HATCH;
 use super::global_arguments::command_tokens;
-/// What: `OsStr`/`OsString` are borrowed/owned operating-system text of raw bytes. Sibling
-///       the reader might expect: `&str`/`String`, which must be valid UTF-8.
-/// Why:  A branch name is passed to Git with its exact bytes.
+/// What:
+///  `OsStr`/`OsString` are borrowed/owned operating-system text of raw bytes.
+///  Sibling
+///       the reader might expect:
+///  `&str`/`String`,
+///  which must be valid UTF-8.
+/// Why:
+///   A branch name is passed to Git with its exact bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,9 +56,12 @@ use super::global_arguments::command_tokens;
 /// ```
 use std::ffi::{OsStr, OsString};
 
-/// What: The finding code of a branch-worktree rejection. `&str` is borrowed text baked
+/// What:
+///  The finding code of a branch-worktree rejection.
+///  `&str` is borrowed text baked
 ///       into the program.
-/// Why:  Callers identify the finding by this stable code.
+/// Why:
+///   Callers identify the finding by this stable code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,10 +75,16 @@ const LOCAL_BRANCH_PREFIX: &[u8] = b"refs/heads/";
 /// Ref namespace of remote-tracking branches.
 const REMOTE_BRANCH_PREFIX: &[u8] = b"refs/remotes/";
 
-/// What: The outcome of looking at the argument list only. An `enum` is a closed set of
-///       named alternatives; `NeedsRemoteGuess` carries the name Git may guess.
-///       `#[derive(...)]` asks the compiler to generate cloning, debug printing and `==`.
-/// Why:  Explicit creation is decided here; the guess depends on which branches exist.
+/// What:
+///  The outcome of looking at the argument list only.
+///  An `enum` is a closed set of
+///       named alternatives;
+///  `NeedsRemoteGuess` carries the name Git may guess.
+///       `#[derive(...)]` asks the compiler to generate cloning,
+///  debug printing and `==`.
+/// Why:
+///   Explicit creation is decided here;
+///  the guess depends on which branches exist.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -63,24 +92,35 @@ const REMOTE_BRANCH_PREFIX: &[u8] = b"refs/remotes/";
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum BranchWorktreeDecision {
-    /// Not a guarded command, a form that creates nothing, or a region Git refuses.
+    /// Not a guarded command,
+    ///  a form that creates nothing,
+    ///  or a region Git refuses.
     Pass,
     /// The command creates a branch explicitly.
     Creates(BranchCreationCommand),
-    /// `git switch <target>` or `git checkout <target>`: creation depends on the
-    /// repository's branches; the caller asks and then calls `resolve_remote_guess`.
+    /// `git switch <target>` or `git checkout <target>`:
+    ///  creation depends on the
+    /// repository's branches;
+    ///  the caller asks and then calls `resolve_remote_guess`.
     NeedsRemoteGuess {
         /// The command being run.
         command: BranchCreationCommand,
-        /// The name Git may guess, with its exact bytes.
+        /// The name Git may guess,
+        ///  with its exact bytes.
         target: OsString,
     },
 }
 
-/// What: Decide from the argument list. `&[OsString]` borrows the arguments, already free
+/// What:
+///  Decide from the argument list.
+///  `&[OsString]` borrows the arguments,
+///  already free
 ///       of wrapper controls.
-/// Why:  Only `branch`, `checkout` and `switch` can create a branch outside
-///       `git worktree add`. A region Git itself refuses creates nothing.
+/// Why:
+///   Only `branch`,
+///  `checkout` and `switch` can create a branch outside
+///       `git worktree add`.
+///  A region Git itself refuses creates nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,9 +158,12 @@ pub fn decide_branch_worktree(arguments: &[OsString]) -> BranchWorktreeDecision 
     return BranchWorktreeDecision::Pass;
 }
 
-/// What: The subcommand word of a guarded command. `&'static str` is text baked into the
+/// What:
+///  The subcommand word of a guarded command.
+///  `&'static str` is text baked into the
 ///       program.
-/// Why:  The rejection names the command the caller typed.
+/// Why:
+///   The rejection names the command the caller typed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,10 +178,17 @@ fn command_word(command: BranchCreationCommand) -> &'static str {
     }
 }
 
-/// What: Build the rejection text. `Option<&OsStr>` is "a borrowed branch name or
-///       nothing"; `String` is the owned result.
-/// Why:  The text names the command, the guessed branch when there is one, the worktree
-///       form to use instead, and the one-invocation bypass.
+/// What:
+///  Build the rejection text.
+///  `Option<&OsStr>` is "a borrowed branch name or
+///       nothing";
+///  `String` is the owned result.
+/// Why:
+///   The text names the command,
+///  the guessed branch when there is one,
+///  the worktree
+///       form to use instead,
+///  and the one-invocation bypass.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -161,11 +211,19 @@ pub fn branch_creation_message(command: BranchCreationCommand, target: Option<&O
     );
 }
 
-/// What: Build the real-Git argument list of the guess query: the caller's global
-///       options, then one `for-each-ref` over the local branch of that name and the
-///       remote branches of that name. `Vec<OsString>` is the owned result.
-/// Why:  One listing answers both questions the guess depends on, so the check starts one
-///       Git process. The query must inspect the repository the command will run in, so
+/// What:
+///  Build the real-Git argument list of the guess query:
+///  the caller's global
+///       options,
+///  then one `for-each-ref` over the local branch of that name and the
+///       remote branches of that name.
+///  `Vec<OsString>` is the owned result.
+/// Why:
+///   One listing answers both questions the guess depends on,
+///  so the check starts one
+///       Git process.
+///  The query must inspect the repository the command will run in,
+///  so
 ///       the global options are forwarded unchanged.
 ///
 /// In TS you'd write (pseudocode):
@@ -187,7 +245,8 @@ pub fn remote_guess_query_arguments(global_prefix: &[OsString], target: &OsStr) 
     return arguments;
 }
 
-/// Named predicate for splitting output into lines; `&u8` borrows one byte.
+/// Named predicate for splitting output into lines;
+///  `&u8` borrows one byte.
 fn is_line_feed(byte: &u8) -> bool {
     return *byte == b'\n';
 }
@@ -197,9 +256,13 @@ fn is_slash(byte: &u8) -> bool {
     return *byte == b'/';
 }
 
-/// What: Whether a listed ref is `refs/remotes/<remote>/<target>` with a remote name of
-///       one path segment. `&[u8]` borrows the ref name and the branch name.
-/// Why:  The query's patterns can also list refs that merely start with the name, so
+/// What:
+///  Whether a listed ref is `refs/remotes/<remote>/<target>` with a remote name of
+///       one path segment.
+///  `&[u8]` borrows the ref name and the branch name.
+/// Why:
+///   The query's patterns can also list refs that merely start with the name,
+///  so
 ///       each line is compared exactly.
 ///
 /// In TS you'd write (pseudocode):
@@ -219,9 +282,14 @@ fn is_remote_branch_of(line: &[u8], target: &[u8]) -> bool {
     return &rest[slash + 1..] == target;
 }
 
-/// What: Read the guess query's listing: no local branch of that name, and exactly one
-///       remote branch of that name. `bool` is true or false.
-/// Why:  That is when `git switch <name>` and `git checkout <name>` create a local branch.
+/// What:
+///  Read the guess query's listing:
+///  no local branch of that name,
+///  and exactly one
+///       remote branch of that name.
+///  `bool` is true or false.
+/// Why:
+///   That is when `git switch <name>` and `git checkout <name>` create a local branch.
 ///       A remote's `HEAD` pointer is not a branch and is never guessed.
 ///
 /// In TS you'd write (pseudocode):
@@ -246,7 +314,9 @@ pub fn remote_guess_creates_branch(stdout: &[u8], target: &[u8]) -> bool {
     return remotes == 1;
 }
 
-/// Decisions, the message, and the guess query with real Git 2.56.0 controls.
+/// Decisions,
+///  the message,
+///  and the guess query with real Git 2.56.0 controls.
 #[cfg(test)]
 #[path = "rule_branch_worktree_tests.rs"]
 mod tests;

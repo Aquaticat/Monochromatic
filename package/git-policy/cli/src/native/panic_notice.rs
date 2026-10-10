@@ -1,10 +1,20 @@
-//! What: The panic hook of the executable: one line naming where an internal error
-//!       happened, never its message.
-//! Why: The linked scanner catches a matcher panic and reports it as a failed scan, but
-//!      Rust runs the process's panic hook before the panic can be caught, and the default
-//!      hook prints the panic's message, which can hold bytes of the file being scanned.
-//!      The scanner's own executable installs a hook that prints nothing; this one keeps
-//!      the source location, which holds no repository content, so a wrapper defect is
+//! What:
+//!  The panic hook of the executable:
+//!  one line naming where an internal error
+//!       happened,
+//!  never its message.
+//! Why:
+//!  The linked scanner catches a matcher panic and reports it as a failed scan,
+//!  but
+//!      Rust runs the process's panic hook before the panic can be caught,
+//!  and the default
+//!      hook prints the panic's message,
+//!  which can hold bytes of the file being scanned.
+//!      The scanner's own executable installs a hook that prints nothing;
+//!  this one keeps
+//!      the source location,
+//!  which holds no repository content,
+//!  so a wrapper defect is
 //!      still visible.
 //!
 //! In TS you'd write (pseudocode):
@@ -12,17 +22,25 @@
 //! // process.on('uncaughtException', () => process.stderr.write('cli-git: internal error ...\n'));
 //! ```
 
-/// What: `Write` adds `write_all` to the standard error stream.
-/// Why:  The notice is written whole, as bytes.
+/// What:
+///  `Write` adds `write_all` to the standard error stream.
+/// Why:
+///   The notice is written whole,
+///  as bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// // process.stderr.write(text)
 /// ```
 use std::io::Write;
-/// What: `Location` is a source file, line and column; `PanicHookInfo` is what a panic
-///       hook is given, its message and its location.
-/// Why:  Only the location is read.
+/// What:
+///  `Location` is a source file,
+///  line and column;
+///  `PanicHookInfo` is what a panic
+///       hook is given,
+///  its message and its location.
+/// Why:
+///   Only the location is read.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,10 +48,14 @@ use std::io::Write;
 /// ```
 use std::panic::{Location, PanicHookInfo};
 
-/// What: The line the hook writes, with the location when the panic has one.
-///       `Option<&Location<'_>>` is "a borrowed location or nothing"; `'_` lets the
+/// What:
+///  The line the hook writes,
+///  with the location when the panic has one.
+///       `Option<&Location<'_>>` is "a borrowed location or nothing";
+///  `'_` lets the
 ///       compiler choose how long the borrow lasts.
-/// Why:  A pure function of the location can be checked exactly.
+/// Why:
+///   A pure function of the location can be checked exactly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,9 +82,14 @@ pub fn panic_notice(location: Option<&Location<'_>>) -> String {
     }
 }
 
-/// What: The hook itself: write the notice to standard error and nothing else.
-///       `&PanicHookInfo<'_>` borrows what the panic carries; its message is never read.
-/// Why:  A hook cannot report a failure to write, so a closed stream is ignored.
+/// What:
+///  The hook itself:
+///  write the notice to standard error and nothing else.
+///       `&PanicHookInfo<'_>` borrows what the panic carries;
+///  its message is never read.
+/// Why:
+///   A hook cannot report a failure to write,
+///  so a closed stream is ignored.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -79,9 +106,12 @@ pub fn payload_free_panic_hook(information: &PanicHookInfo<'_>) {
     let _ = std::io::stderr().write_all(panic_notice(information.location()).as_bytes());
 }
 
-/// What: Make `payload_free_panic_hook` the process's panic hook.
+/// What:
+///  Make `payload_free_panic_hook` the process's panic hook.
 ///       `Box::new(..)` puts the named function where the standard library keeps its hook.
-/// Why:  The executable calls this before anything can scan, as the scanner's embedding
+/// Why:
+///   The executable calls this before anything can scan,
+///  as the scanner's embedding
 ///       contract requires.
 ///
 /// In TS you'd write (pseudocode):
@@ -92,7 +122,9 @@ pub fn install_payload_free_panic_hook() {
     std::panic::set_hook(Box::new(payload_free_panic_hook));
 }
 
-/// Hook controls, each in its own process, stay out of the release executable.
+/// Hook controls,
+///  each in its own process,
+///  stay out of the release executable.
 #[cfg(test)]
 #[path = "panic_notice_tests.rs"]
 mod tests;

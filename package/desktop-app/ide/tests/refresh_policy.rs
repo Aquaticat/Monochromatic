@@ -1,8 +1,16 @@
-//! Reread schedules with chosen times: notifications first, old timers only while unwatched,
-//! unfinished writes after a quiet period, and the safety sweep last.
+//! Reread schedules with chosen times:
+//!  notifications first,
+//!  old timers only while unwatched,
+//! unfinished writes after a quiet period,
+//!  and the safety sweep last.
 
-/// What: the two schedules, the change classification, and the named intervals under test.
-/// Why: Tests pass their own `Instant`s, so intervals are checked exactly without sleeping.
+/// What:
+///  the two schedules,
+///  the change classification,
+///  and the named intervals under test.
+/// Why:
+///  Tests pass their own `Instant`s,
+///  so intervals are checked exactly without sleeping.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,8 +23,11 @@ use ide_app::{
         UNWATCHED_SOURCE_POLL, WRITE_QUIET, WRITE_WAIT_LIMIT,
     },
 };
-/// What: `Duration` is a span and `Instant` a monotonic time point; `+` on them yields a later `Instant`.
-/// Why: Every expectation is expressed as an offset from one starting instant.
+/// What:
+///  `Duration` is a span and `Instant` a monotonic time point;
+///  `+` on them yields a later `Instant`.
+/// Why:
+///  Every expectation is expressed as an offset from one starting instant.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,7 +39,8 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// One millisecond, for "just before" and "just after" an interval boundary.
+/// One millisecond,
+///  for "just before" and "just after" an interval boundary.
 const TICK: Duration = Duration::from_millis(1);
 
 /// A source schedule whose first read happened at `start`.
@@ -40,7 +52,10 @@ fn source_after_first_read(start: Instant, watched: bool) -> SourceRefresh {
     return refresh;
 }
 
-/// Watched: no timer read before the safety sweep; unwatched: the old 250 ms timer.
+/// Watched:
+///  no timer read before the safety sweep;
+///  unwatched:
+///  the old 250 ms timer.
 #[test]
 fn source_timers_depend_on_whether_its_directory_is_watched() {
     let start = Instant::now();
@@ -62,7 +77,9 @@ fn source_timers_depend_on_whether_its_directory_is_watched() {
     );
 }
 
-/// A settled change is read at once; an unfinished write waits for quiet, but not past the wait limit.
+/// A settled change is read at once;
+///  an unfinished write waits for quiet,
+///  but not past the wait limit.
 #[test]
 fn unfinished_writes_wait_for_quiet_within_a_limit() {
     let start = Instant::now();
@@ -101,7 +118,9 @@ fn unfinished_writes_wait_for_quiet_within_a_limit() {
     );
 }
 
-/// The latest classification wins: delete then rewrite waits, write then close reads at once.
+/// The latest classification wins:
+///  delete then rewrite waits,
+///  write then close reads at once.
 #[test]
 fn the_latest_change_classification_wins() {
     let start = Instant::now();
@@ -129,7 +148,8 @@ fn the_latest_change_classification_wins() {
 }
 
 /// A notified reread starts no sooner than the reread gap after the previous read of the same item,
-/// so continuous changes cannot reread a file or a folder on every tick; other folders are not delayed.
+/// so continuous changes cannot reread a file or a folder on every tick;
+///  other folders are not delayed.
 #[test]
 fn notified_rereads_keep_a_gap_per_item() {
     let start = Instant::now();
@@ -183,7 +203,8 @@ fn notified_rereads_keep_a_gap_per_item() {
     );
 }
 
-/// Owned paths in visible order, as the native tree builds them.
+/// Owned paths in visible order,
+///  as the native tree builds them.
 fn paths(names: &[&str]) -> Vec<PathBuf> {
     let mut owned = Vec::new();
     for name in names {
@@ -192,7 +213,9 @@ fn paths(names: &[&str]) -> Vec<PathBuf> {
     return owned;
 }
 
-/// Notified directories come first, in visible order; directories no longer shown are dropped.
+/// Notified directories come first,
+///  in visible order;
+///  directories no longer shown are dropped.
 #[test]
 fn notified_directories_are_read_first_in_visible_order() {
     let start = Instant::now();
@@ -232,7 +255,8 @@ fn notified_directories_are_read_first_in_visible_order() {
     }
 }
 
-/// Unwatched shown directories keep the old 500 ms round robin; watched ones are not polled.
+/// Unwatched shown directories keep the old 500 ms round robin;
+///  watched ones are not polled.
 #[test]
 fn unwatched_directories_keep_the_old_round_robin() {
     let start = Instant::now();

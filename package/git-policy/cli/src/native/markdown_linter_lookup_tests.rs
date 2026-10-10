@@ -1,5 +1,10 @@
-//! What: Controls for finding the linter on PATH.
-//! Why: The first usable absolute entry wins; relative entries, directories, plain files
+//! What:
+//!  Controls for finding the linter on PATH.
+//! Why:
+//!  The first usable absolute entry wins;
+//!  relative entries,
+//!  directories,
+//!  plain files
 //!      and an unset PATH never yield a program.
 //!
 //! In TS you'd write (pseudocode):
@@ -25,8 +30,12 @@ fn the_name_is_the_linter_s() {
     assert_eq!(linter_file_name(), "monochromatic-lint");
 }
 
-/// The first absolute entry with an executable file wins; earlier entries that hold a
-/// directory, a file without an execute bit, or nothing are passed over, and so is a
+/// The first absolute entry with an executable file wins;
+///  earlier entries that hold a
+/// directory,
+///  a file without an execute bit,
+///  or nothing are passed over,
+///  and so is a
 /// relative entry even when it holds a usable program.
 #[test]
 fn the_first_usable_absolute_entry_wins() {
@@ -65,7 +74,8 @@ fn the_first_usable_absolute_entry_wins() {
     remove(root.as_path());
 }
 
-/// A symbolic link to the executable is followed, as running it would follow it.
+/// A symbolic link to the executable is followed,
+///  as running it would follow it.
 #[test]
 fn a_link_to_the_linter_is_found() {
     let root: PathBuf = fixture("lookup-link");
@@ -84,7 +94,9 @@ fn a_link_to_the_linter_is_found() {
     remove(root.as_path());
 }
 
-/// No usable entry, an empty PATH, a PATH of relative entries and an unset PATH find nothing.
+/// No usable entry,
+///  an empty PATH,
+///  a PATH of relative entries and an unset PATH find nothing.
 #[test]
 fn nothing_usable_finds_nothing() {
     let root: PathBuf = fixture("lookup-none");

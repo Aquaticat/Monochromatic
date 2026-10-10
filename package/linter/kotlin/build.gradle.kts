@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // Standalone Kotlin/JVM build for the monorepo-wide detekt rule set. It compiles the
 // custom rules into a plugin jar and runs the detekt CLI over an arbitrary source
-// tree, the Kotlin parallel of package/linter/rust (a standalone linter invoked by
+// tree, the Kotlin parallel of package/linter/monochromatic-lint (a standalone linter invoked by
 // the root `lint:detekt` task over package/). detekt and the CLI resolve from
 // mavenCentral; nothing here ships in any application.
 plugins {

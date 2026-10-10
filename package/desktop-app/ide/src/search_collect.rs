@@ -30,7 +30,8 @@ pub(crate) struct Collected {
     pub capped: bool,
 }
 
-/// Consume bounded records until EOF or the stream's result cap, without spawning or owning a child process.
+/// Consume bounded records until EOF or the stream's result cap,
+///  without spawning or owning a child process.
 pub(crate) async fn collect<R: AsyncBufRead + Unpin>(
     mut reader: R,
     root: &Path,

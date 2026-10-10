@@ -1,5 +1,7 @@
-//! What: Deterministic configuration-discovery tests.
-//! Why: A memory filesystem avoids depending on any host-wide configuration during ancestor lookup.
+//! What:
+//!  Deterministic configuration-discovery tests.
+//! Why:
+//!  A memory filesystem avoids depending on any host-wide configuration during ancestor lookup.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -17,8 +19,10 @@ use crate::test_fs::Fixture;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
-/// What: A test filesystem with explicit file contents and read failures.
-/// Why: Absent keys mean absence rather than a fallback to the host filesystem.
+/// What:
+///  A test filesystem with explicit file contents and read failures.
+/// Why:
+///  Absent keys mean absence rather than a fallback to the host filesystem.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,8 +36,10 @@ struct MemoryFilesystem {
     failures: BTreeSet<PathBuf>,
 }
 
-/// What: Supply controlled reads for the production discovery algorithm.
-/// Why: Error-versus-absence behavior is observable without platform permission assumptions.
+/// What:
+///  Supply controlled reads for the production discovery algorithm.
+/// Why:
+///  Error-versus-absence behavior is observable without platform permission assumptions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -141,7 +147,8 @@ fn explicit_configuration_uses_working_directory_as_base() {
     assert_eq!(selected.base, base);
 }
 
-/// Relative file and override paths resolve from the injected cwd, not the process's cwd.
+/// Relative file and override paths resolve from the injected cwd,
+///  not the process's cwd.
 #[test]
 fn relative_paths_resolve_from_injected_cwd() {
     let base = root();
@@ -160,7 +167,8 @@ fn relative_paths_resolve_from_injected_cwd() {
     assert_eq!(selected.base, base);
 }
 
-/// Missing discovered config is absence; a missing explicit config is a setup error.
+/// Missing discovered config is absence;
+///  a missing explicit config is a setup error.
 #[test]
 fn missing_and_explicit_missing_are_distinct() {
     let base = root();
@@ -198,7 +206,8 @@ fn invalid_nearest_configuration_does_not_fall_back() {
     assert!(error.message.contains("child"));
 }
 
-/// Read failures are not absence, and relative cwd is rejected before filesystem access.
+/// Read failures are not absence,
+///  and relative cwd is rejected before filesystem access.
 #[test]
 fn read_failures_and_relative_cwd_are_errors() {
     let base = root();

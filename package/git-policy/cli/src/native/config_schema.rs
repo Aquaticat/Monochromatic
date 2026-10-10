@@ -1,13 +1,19 @@
-//! What: The typed settings a validated `cli-git.config.jsonc` produces, with defaults.
-//! Why: The policy engine and transactions read plain typed values, never JSON.
+//! What:
+//!  The typed settings a validated `cli-git.config.jsonc` produces,
+//!  with defaults.
+//! Why:
+//!  The policy engine and transactions read plain typed values,
+//!  never JSON.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // type CliGitConfig = { policies: PolicyConfig; concurrency: ConcurrencyConfig };
 //! ```
 
-/// What: Import the compiled-in registry and its identity and severity types.
-/// Why:  Defaults are derived from the registry so the two can never disagree.
+/// What:
+///  Import the compiled-in registry and its identity and severity types.
+/// Why:
+///   Defaults are derived from the registry so the two can never disagree.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -17,8 +23,14 @@ use super::policy_registry::{
     POLICY_REGISTRY, PolicyDescriptor, PolicyId, Severity, policy_descriptor,
 };
 
-/// What: `u64` constant, an unsigned 64-bit integer (siblings `u32`, `usize`, `i64`).
-/// Why:  Milliseconds up to 2^53 - 1 are accepted, which `u32` cannot hold.
+/// What:
+///  `u64` constant,
+///  an unsigned 64-bit integer (siblings `u32`,
+///  `usize`,
+///  `i64`).
+/// Why:
+///   Milliseconds up to 2^53 - 1 are accepted,
+///  which `u32` cannot hold.
 ///       This is the incumbent's default patience for an unproven `index.lock` owner.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,12 +39,16 @@ use super::policy_registry::{
 /// ```
 pub const DEFAULT_UNPROVEN_OWNER_TIMEOUT_MS: u64 = 1_000;
 
-/// Incumbent default: reserve the next landing slot after one lost landing race.
+/// Incumbent default:
+///  reserve the next landing slot after one lost landing race.
 pub const DEFAULT_RESERVE_AFTER_LOST_RACES: u64 = 1;
 
-/// What: The effective severity of one shipped policy.
-///       `#[derive(...)]` generates copy, debug printing and `==` for the struct.
-/// Why:  `explicit` separates "the repository chose this" from "the default applied";
+/// What:
+///  The effective severity of one shipped policy.
+///       `#[derive(...)]` generates copy,
+///  debug printing and `==` for the struct.
+/// Why:
+///   `explicit` separates "the repository chose this" from "the default applied";
 ///       only an explicit unsafe `warn` earns a configuration warning.
 ///
 /// In TS you'd write (pseudocode):
@@ -49,9 +65,13 @@ pub struct PolicySetting {
     pub explicit: bool,
 }
 
-/// What: The closed set of Markdown rules the commit-time policy may run.
-/// Why:  The shipped policy runs the owned linter with a fixed rule list; an unknown
-///       rule name is a configuration error, never a pass-through argument.
+/// What:
+///  The closed set of Markdown rules the commit-time policy may run.
+/// Why:
+///   The shipped policy runs the owned linter with a fixed rule list;
+///  an unknown
+///       rule name is a configuration error,
+///  never a pass-through argument.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,14 +79,21 @@ pub struct PolicySetting {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MarkdownRule {
-    /// `lfs-image-url`: rewrite image links to LFS-tracked files to immutable object URLs.
+    /// `lfs-image-url`:
+    ///  rewrite image links to LFS-tracked files to immutable object URLs.
     LfsImageUrl,
 }
 
-/// What: Validated options of `markdown/autofix`.
-///       `Vec<T>` is an owned growable list (siblings: `&[T]` borrowed, `[T; N]` fixed).
-///       `String` is owned text (sibling: `&str` borrowed).
-/// Why:  The settings outlive the parsed document, so they own their lists and text.
+/// What:
+///  Validated options of `markdown/autofix`.
+///       `Vec<T>` is an owned growable list (siblings:
+///  `&[T]` borrowed,
+///  `[T; N]` fixed).
+///       `String` is owned text (sibling:
+///  `&str` borrowed).
+/// Why:
+///   The settings outlive the parsed document,
+///  so they own their lists and text.
 ///       There is deliberately no command or executable field.
 ///
 /// In TS you'd write (pseudocode):
@@ -75,15 +102,23 @@ pub enum MarkdownRule {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct MarkdownAutofixOptions {
-    /// Rules to run, without repeats; defaults to the LFS image rewrite alone.
+    /// Rules to run,
+    ///  without repeats;
+    ///  defaults to the LFS image rewrite alone.
     pub rules: Vec<MarkdownRule>,
-    /// gitignore-syntax patterns, relative to the repository root, left untouched.
+    /// gitignore-syntax patterns,
+    ///  relative to the repository root,
+    ///  left untouched.
     pub exclude: Vec<String>,
 }
 
-/// What: Validated options of `security/forbidden-strings`. `Option<String>` is "a
+/// What:
+///  Validated options of `security/forbidden-strings`.
+///  `Option<String>` is "a
 ///       configured file name or nothing".
-/// Why:  The scanner is linked into cli-git, so the remaining choices are whether its
+/// Why:
+///   The scanner is linked into cli-git,
+///  so the remaining choices are whether its
 ///       embedded baseline rules run and which repository file holds the private rules.
 ///       There is deliberately no executable path.
 ///
@@ -93,15 +128,24 @@ pub struct MarkdownAutofixOptions {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ForbiddenStringsOptions {
-    /// Whether the scanner's embedded baseline rules are loaded; default `true`.
+    /// Whether the scanner's embedded baseline rules are loaded;
+    ///  default `true`.
     pub builtin_rules: bool,
-    /// The private rules file, relative to the repository's top level, already checked to
-    /// stay inside it; when absent, `FORBIDDEN_STRINGS_RULES` and then the default file apply.
+    /// The private rules file,
+    ///  relative to the repository's top level,
+    ///  already checked to
+    /// stay inside it;
+    ///  when absent,
+    ///  `FORBIDDEN_STRINGS_RULES` and then the default file apply.
     pub rules_file: Option<String>,
 }
 
-/// What: Every policy's severity plus the option records of option-bearing policies.
-/// Why:  One value answers "does this policy run, how strictly, with what options".
+/// What:
+///  Every policy's severity plus the option records of option-bearing policies.
+/// Why:
+///   One value answers "does this policy run,
+///  how strictly,
+///  with what options".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,16 +154,21 @@ pub struct ForbiddenStringsOptions {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PolicyConfig {
-    /// One row per registry policy, in registry order.
+    /// One row per registry policy,
+    ///  in registry order.
     pub settings: Vec<PolicySetting>,
-    /// Options of `security/forbidden-strings`, defaults applied.
+    /// Options of `security/forbidden-strings`,
+    ///  defaults applied.
     pub forbidden_strings: ForbiddenStringsOptions,
-    /// Options of `markdown/autofix`, defaults applied.
+    /// Options of `markdown/autofix`,
+    ///  defaults applied.
     pub markdown_autofix: MarkdownAutofixOptions,
 }
 
-/// What: Hook serialization tuning (`hooks` key).
-/// Why:  `false` serializes preparation and post-landing hooks through the hook lock.
+/// What:
+///  Hook serialization tuning (`hooks` key).
+/// Why:
+///   `false` serializes preparation and post-landing hooks through the hook lock.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -127,12 +176,15 @@ pub struct PolicyConfig {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct HooksConfig {
-    /// Whether hooks of concurrent commits may overlap; default `false`.
+    /// Whether hooks of concurrent commits may overlap;
+    ///  default `false`.
     pub concurrent_commits: bool,
 }
 
-/// What: Foreign `index.lock` patience (`indexLock` key).
-/// Why:  A lock whose owner cannot be proven alive is waited on only this long.
+/// What:
+///  Foreign `index.lock` patience (`indexLock` key).
+/// Why:
+///   A lock whose owner cannot be proven alive is waited on only this long.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -140,12 +192,15 @@ pub struct HooksConfig {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct IndexLockConfig {
-    /// Backoff budget in milliseconds; whole number of at least 0.
+    /// Backoff budget in milliseconds;
+    ///  whole number of at least 0.
     pub unproven_owner_timeout_ms: u64,
 }
 
-/// What: Landing starvation tuning (`landing` key).
-/// Why:  A commit that keeps losing landing races eventually reserves the next slot.
+/// What:
+///  Landing starvation tuning (`landing` key).
+/// Why:
+///   A commit that keeps losing landing races eventually reserves the next slot.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -153,12 +208,16 @@ pub struct IndexLockConfig {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct LandingConfig {
-    /// Lost races before reserving; whole number of at least 1.
+    /// Lost races before reserving;
+    ///  whole number of at least 1.
     pub reserve_after_lost_races: u64,
 }
 
-/// What: The three concurrent-commit tuning groups together.
-/// Why:  None of them disables the commit transaction; they only tune it.
+/// What:
+///  The three concurrent-commit tuning groups together.
+/// Why:
+///   None of them disables the commit transaction;
+///  they only tune it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -174,9 +233,12 @@ pub struct ConcurrencyConfig {
     pub landing: LandingConfig,
 }
 
-/// What: The complete validated configuration of one repository.
-/// Why:  A repository without a file and a repository with an empty `{}` file both yield
-///       `CliGitConfig::defaults()`: a policy that is off unless listed stays off either way.
+/// What:
+///  The complete validated configuration of one repository.
+/// Why:
+///   A repository without a file and a repository with an empty `{}` file both yield
+///       `CliGitConfig::defaults()`:
+///  a policy that is off unless listed stays off either way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -190,16 +252,20 @@ pub struct CliGitConfig {
     pub concurrency: ConcurrencyConfig,
 }
 
-/// What: `impl ConcurrencyConfig { ... }` attaches functions to the struct.
-/// Why:  Startup recovery runs before configuration loads and always uses these values.
+/// What:
+///  `impl ConcurrencyConfig { ... }` attaches functions to the struct.
+/// Why:
+///   Startup recovery runs before configuration loads and always uses these values.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const DEFAULT_CONCURRENCY_CONFIG: ConcurrencyConfig = { ... };
 /// ```
 impl ConcurrencyConfig {
-    /// What: Build the incumbent's default tuning.
-    /// Why:  One function is the single source of the defaults for every caller.
+    /// What:
+    ///  Build the incumbent's default tuning.
+    /// Why:
+    ///   One function is the single source of the defaults for every caller.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -220,11 +286,17 @@ impl ConcurrencyConfig {
     }
 }
 
-/// What: The severity of a policy the repository configuration does not name. `&PolicyDescriptor`
+/// What:
+///  The severity of a policy the repository configuration does not name.
+///  `&PolicyDescriptor`
 ///       borrows the policy's registry row.
-/// Why:  The five built-in policies run everywhere at their default severity. The four
+/// Why:
+///   The five built-in policies run everywhere at their default severity.
+///  The four
 ///       policies that plugins used to provide run only where `cli-git.config.jsonc` names
-///       them, whether or not a file exists, so an empty file and no file behave alike.
+///       them,
+///  whether or not a file exists,
+///  so an empty file and no file behave alike.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -239,9 +311,12 @@ pub fn unlisted_severity(descriptor: &PolicyDescriptor) -> Severity {
 
 /// Defaults and lookup for policy settings.
 impl PolicyConfig {
-    /// What: Build the settings of a repository whose configuration names no policy, or
+    /// What:
+    ///  Build the settings of a repository whose configuration names no policy,
+    ///  or
     ///       that has no configuration file at all.
-    /// Why:  Parsing starts from these values and replaces only the policies the file names.
+    /// Why:
+    ///   Parsing starts from these values and replaces only the policies the file names.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -282,8 +357,11 @@ impl PolicyConfig {
         };
     }
 
-    /// What: Read the effective setting of one policy. `&self` borrows this record.
-    /// Why:  Callers ask by typed identity instead of scanning the list themselves.
+    /// What:
+    ///  Read the effective setting of one policy.
+    ///  `&self` borrows this record.
+    /// Why:
+    ///   Callers ask by typed identity instead of scanning the list themselves.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -308,9 +386,12 @@ impl PolicyConfig {
 
 /// Whole-configuration defaults.
 impl CliGitConfig {
-    /// What: Build the configuration of a repository without `cli-git.config.jsonc`, which
+    /// What:
+    ///  Build the configuration of a repository without `cli-git.config.jsonc`,
+    ///  which
     ///       is also what an empty `{}` file produces.
-    /// Why:  Parsing starts from these values and replaces only what the file states.
+    /// Why:
+    ///   Parsing starts from these values and replaces only what the file states.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -324,9 +405,13 @@ impl CliGitConfig {
     }
 }
 
-/// What: Translate a configured rule name into its typed rule.
-///       `Option<T>` is "value or nothing": `Some(rule)` or `None`.
-/// Why:  Only shipped rules exist; the caller reports any other name with its key.
+/// What:
+///  Translate a configured rule name into its typed rule.
+///       `Option<T>` is "value or nothing":
+///  `Some(rule)` or `None`.
+/// Why:
+///   Only shipped rules exist;
+///  the caller reports any other name with its key.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -341,9 +426,11 @@ pub fn markdown_rule_from_name(name: &str) -> Option<MarkdownRule> {
     return None;
 }
 
-/// What: Translate a typed rule back to its configuration spelling.
+/// What:
+///  Translate a typed rule back to its configuration spelling.
 ///       `&'static str` borrows text compiled into the executable for its whole run.
-/// Why:  Diagnostics and the later linter invocation print the accepted spelling.
+/// Why:
+///   Diagnostics and the later linter invocation print the accepted spelling.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

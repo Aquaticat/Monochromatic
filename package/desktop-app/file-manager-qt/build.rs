@@ -1,7 +1,13 @@
-//! What: cxx-qt build script; registers the QML module and compiles the Rust bridge.
-//! Why: pure-Cargo cxx-qt build (no CMake). `QmlModule` embeds qml/main.qml as a qrc
-//!      resource and registers the module URI; `.files` lists the Rust sources holding
-//!      `#[cxx_qt::bridge]` blocks so their C++ shims are generated and linked. build.rs
+//! What:
+//!  cxx-qt build script;
+//!  registers the QML module and compiles the Rust bridge.
+//! Why:
+//!  pure-Cargo cxx-qt build (no CMake).
+//!  `QmlModule` embeds qml/main.qml as a qrc
+//!      resource and registers the module URI;
+//!  `.files` lists the Rust sources holding
+//!      `#[cxx_qt::bridge]` blocks so their C++ shims are generated and linked.
+//!  build.rs
 //!      is exempt from the require-rustdoc / max-lines linters.
 
 use cxx_qt_build::{CxxQtBuilder, QmlModule};

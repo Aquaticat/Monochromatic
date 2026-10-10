@@ -1,5 +1,7 @@
-//! What: Native Markdown/MDX parser-interface controls.
-//! Why: Rule ports must receive exact source slices and must not inspect MDX code as prose.
+//! What:
+//!  Native Markdown/MDX parser-interface controls.
+//! Why:
+//!  Rule ports must receive exact source slices and must not inspect MDX code as prose.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

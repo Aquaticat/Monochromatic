@@ -1,12 +1,16 @@
-//! What: Validated JSONC to typed Rust dispatch controls.
-//! Why: Omission, explicit off and selected severity have different configuration meanings.
+//! What:
+//!  Validated JSONC to typed Rust dispatch controls.
+//! Why:
+//!  Omission,
+//!  explicit off and selected severity have different configuration meanings.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Resolve typed settings, then exercise the selected syntax checks through their consumer boundary.
 //! ```
 
-/// Import the real conversion, shared diagnostics and syntax dispatcher.
+/// Import the real conversion,
+///  shared diagnostics and syntax dispatcher.
 use super::{LineBudget, RustRuleSettings, rust_rule_settings};
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rust_dispatch::check_syntax_rules;
@@ -85,7 +89,8 @@ fn selected_documentation_rule_executes() {
     assert_eq!(findings[0].code, "rust/require-rustdoc");
 }
 
-/// Other valid language rules do not enable Rust rules; invalid input is never silently ignored.
+/// Other valid language rules do not enable Rust rules;
+///  invalid input is never silently ignored.
 #[test]
 fn language_selection_keeps_schema_failures_visible() {
     assert_eq!(

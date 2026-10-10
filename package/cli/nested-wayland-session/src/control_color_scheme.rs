@@ -1,9 +1,14 @@
 //! Apply the runtime `color-scheme` control verb to the private appearance portal only.
 
-/// What:     A grouped `use` of the private portal handle, its value and outcome types, and
-///           the wire response. The braces avoid repeating the common `crate::` prefix
+/// What:
+///      A grouped `use` of the private portal handle,
+///  its value and outcome types,
+///  and
+///           the wire response.
+///  The braces avoid repeating the common `crate::` prefix
 ///           (`crate` is this package's own root).
-/// Why:      This function maps one typed control request onto one control-socket response.
+/// Why:
+///       This function maps one typed control request onto one control-socket response.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,14 +20,24 @@ use crate::{
     protocol::Response,
 };
 
-/// Switch the private portal's color scheme, or explain why no private portal exists.
+/// Switch the private portal's color scheme,
+///  or explain why no private portal exists.
 ///
-/// What:     `pub fn switch(portal: Option<&AppearancePortal>, preference:
-///           ColorSchemePreference) -> Response`. `Option<&AppearancePortal>` is either a
-///           borrowed portal handle or nothing; Rust has no `null`. Taking the handle as a
-///           parameter, instead of the whole compositor, lets tests call this without a display.
-/// Why:      A session started without `--color-scheme` has no private bus. The only other
-///           bus this process could reach is the host session bus, so the request is refused
+/// What:
+///      `pub fn switch(portal: Option<&AppearancePortal>, preference:
+///           ColorSchemePreference) -> Response`.
+///  `Option<&AppearancePortal>` is either a
+///           borrowed portal handle or nothing;
+///  Rust has no `null`.
+///  Taking the handle as a
+///           parameter,
+///  instead of the whole compositor,
+///  lets tests call this without a display.
+/// Why:
+///       A session started without `--color-scheme` has no private bus.
+///  The only other
+///           bus this process could reach is the host session bus,
+///  so the request is refused
 ///           rather than redirected there.
 ///
 /// In TS you'd write (pseudocode):

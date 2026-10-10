@@ -1,7 +1,14 @@
-//! Diagnostic underline pixels: each severity has its own line style, so severity is never shown by color alone.
+//! Diagnostic underline pixels:
+//!  each severity has its own line style,
+//!  so severity is never shown by color alone.
 //!
-//! Errors get a wavy line, warnings a dashed line, information a dotted line, and hint-severity problems
-//! sparse dots. Runs are drawn into the source tile after the glyphs, below the common baseline.
+//! Errors get a wavy line,
+//!  warnings a dashed line,
+//!  information a dotted line,
+//!  and hint-severity problems
+//! sparse dots.
+//!  Runs are drawn into the source tile after the glyphs,
+//!  below the common baseline.
 
 /// Positioned underline runs and their inks.
 use crate::annotation_layout::AnnotationFrame;
@@ -9,30 +16,44 @@ use crate::annotation_layout::AnnotationFrame;
 use crate::language::diagnostics::Severity;
 /// The frame's vertical mapping says where each underlined code row starts.
 use crate::row_map::RowMap;
-/// Selection coverage and ink blending, shared with selected glyphs.
+/// Selection coverage and ink blending,
+///  shared with selected glyphs.
 use crate::selection_paint;
 /// Selection rectangles in logical source coordinates.
 use crate::shaped_row::ReadingRect;
 
-/// What: Repeat length of the wave, dash, and sparse-dot patterns in logical pixels; `f32` is a 32-bit float
+/// What:
+///  Repeat length of the wave,
+///  dash,
+///  and sparse-dot patterns in logical pixels;
+///  `f32` is a 32-bit float
 ///       (sibling `f64`).
-/// Why: Six pixels keep a wave visibly wavy and a dash visibly broken at 15 px source text.
+/// Why:
+///  Six pixels keep a wave visibly wavy and a dash visibly broken at 15 px source text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// export const PERIOD = 6;
 /// ```
 pub const PERIOD: f32 = 6.0;
-/// Height of the wave above and below its center line, in logical pixels.
+/// Height of the wave above and below its center line,
+///  in logical pixels.
 pub const AMPLITUDE: f32 = 1.5;
-/// Thickness of every underline style in logical pixels, rounded to whole physical rows and at least one.
+/// Thickness of every underline style in logical pixels,
+///  rounded to whole physical rows and at least one.
 pub const THICKNESS: f32 = 1.25;
-/// Distance of the underline's center line below the common source baseline, in logical pixels.
+/// Distance of the underline's center line below the common source baseline,
+///  in logical pixels.
 pub const DROP: f32 = 3.0;
 
-/// What: The tile being painted: premultiplied RGBA bytes and their physical size; `&'a mut [u8]` lends the
+/// What:
+///  The tile being painted:
+///  premultiplied RGBA bytes and their physical size;
+///  `&'a mut [u8]` lends the
 ///       bytes for writing for as long as the record lives (`'a` names that span).
-/// Why: Underlines go into the same image as the glyphs, so one upload shows both.
+/// Why:
+///  Underlines go into the same image as the glyphs,
+///  so one upload shows both.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,9 +68,13 @@ pub struct Tile<'a> {
     pub height: u32,
 }
 
-/// What: Where the tile lies in the text and how logical pixels become physical ones; `Copy` lets the small
+/// What:
+///  Where the tile lies in the text and how logical pixels become physical ones;
+///  `Copy` lets the small
 ///       record be passed by value like a number.
-/// Why: Every painter of a tile needs the same four numbers; one record keeps them together.
+/// Why:
+///  Every painter of a tile needs the same four numbers;
+///  one record keeps them together.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,18 +82,23 @@ pub struct Tile<'a> {
 /// ```
 #[derive(Clone, Copy, Debug)]
 pub struct TilePlace {
-    /// Logical y of the tile's top edge, from the top of the text.
+    /// Logical y of the tile's top edge,
+    ///  from the top of the text.
     pub top: f32,
-    /// Logical x of the tile's left edge, from the start of the text.
+    /// Logical x of the tile's left edge,
+    ///  from the start of the text.
     pub left: f32,
     /// Physical pixels per logical pixel.
     pub scale: f32,
-    /// Common physical baseline of every code row, from the row's top.
+    /// Common physical baseline of every code row,
+    ///  from the row's top.
     pub baseline: f32,
 }
 
-/// What: Composite a straight RGBA color with extra coverage into one premultiplied pixel at byte `offset`.
-/// Why: Partially covered edge pixels keep the line smooth without darkening the color.
+/// What:
+///  Composite a straight RGBA color with extra coverage into one premultiplied pixel at byte `offset`.
+/// Why:
+///  Partially covered edge pixels keep the line smooth without darkening the color.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,7 +140,9 @@ fn lit(severity: Severity, along: f32, scale: f32) -> bool {
     return along.rem_euclid(PERIOD * scale) < 2.0 * scale;
 }
 
-/// Vertical offset of the line's center at physical distance `along`: a triangle wave for errors, flat otherwise.
+/// Vertical offset of the line's center at physical distance `along`:
+///  a triangle wave for errors,
+///  flat otherwise.
 fn offset(severity: Severity, along: f32, scale: f32) -> f32 {
     if severity != Severity::Error {
         return 0.0;
@@ -123,10 +155,19 @@ fn offset(severity: Severity, along: f32, scale: f32) -> f32 {
     return AMPLITUDE * scale * wave;
 }
 
-/// What: The inks of one run: its severity ink, the selected-text ink, and the physical selection intervals
-///       of its row; `&'a [(f32, f32)]` lends the intervals for as long as the record lives.
-/// Why: A selected underline is drawn in the selected-text ink, as selected glyphs are, because a severity ink
-///      on the selection fill measured as low as 1.16:1; the line style still names the severity.
+/// What:
+///  The inks of one run:
+///  its severity ink,
+///  the selected-text ink,
+///  and the physical selection intervals
+///       of its row;
+///  `&'a [(f32, f32)]` lends the intervals for as long as the record lives.
+/// Why:
+///  A selected underline is drawn in the selected-text ink,
+///  as selected glyphs are,
+///  because a severity ink
+///      on the selection fill measured as low as 1.16:1;
+///  the line style still names the severity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -141,9 +182,14 @@ struct Pen<'a> {
     intervals: &'a [(f32, f32)],
 }
 
-/// What: Draw one underline run over the physical `span` (left and right edge), centered on physical `line`.
-///       `&mut Tile` lends the tile for writing; `(f32, f32)` is a pair (tuple) of floats.
-/// Why: Each pixel column is covered in proportion to its overlap with the run; rows are whole pixels.
+/// What:
+///  Draw one underline run over the physical `span` (left and right edge),
+///  centered on physical `line`.
+///       `&mut Tile` lends the tile for writing;
+///  `(f32, f32)` is a pair (tuple) of floats.
+/// Why:
+///  Each pixel column is covered in proportion to its overlap with the run;
+///  rows are whole pixels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -199,10 +245,17 @@ fn underline(
     }
 }
 
-/// What: Draw every underline run of `frame` into `tile`. `place` says where the tile lies and how it is
-///       scaled, and `map` (lent, `&RowMap`) places each run's code row; `selections` are the frame's logical
+/// What:
+///  Draw every underline run of `frame` into `tile`.
+///  `place` says where the tile lies and how it is
+///       scaled,
+///  and `map` (lent,
+///  `&RowMap`) places each run's code row;
+///  `selections` are the frame's logical
 ///       selection rectangles and `selected` the selected-text ink.
-/// Why: The frame's runs are already ordered mildest first, so the worst style ends on top of an overlap.
+/// Why:
+///  The frame's runs are already ordered mildest first,
+///  so the worst style ends on top of an overlap.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

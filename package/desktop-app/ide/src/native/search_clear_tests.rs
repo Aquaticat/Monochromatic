@@ -1,6 +1,10 @@
-//! The search box's clear control through real key and pointer events: its 48px cell, focus, and results.
+//! The search box's clear control through real key and pointer events:
+//!  its 48px cell,
+//!  focus,
+//!  and results.
 
-/// Real typing into whatever has keyboard focus, shared with the find tests.
+/// Real typing into whatever has keyboard focus,
+///  shared with the find tests.
 use super::find_tests::type_text;
 /// Bounded waits and tree-row lookup shared with the navigation tests.
 use super::navigation_tests::{row, wait_until};
@@ -13,8 +17,12 @@ use slint::{ComponentHandle, Model};
 /// Fixture files are written into a disposable project directory.
 use std::fs;
 
-/// The cell measures at least 48px by 48px; the pixels beside it clear nothing; a click on it empties the
-/// query, removes the results, and leaves keyboard focus in the box.
+/// The cell measures at least 48px by 48px;
+///  the pixels beside it clear nothing;
+///  a click on it empties the
+/// query,
+///  removes the results,
+///  and leaves keyboard focus in the box.
 #[test]
 fn search_clear_cell_is_48px_clears_the_query_and_results_and_keeps_focus() {
     // What: `expect` returns the successful value or fails the test with this message.

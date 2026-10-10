@@ -1,5 +1,8 @@
-//! What: Controls for raw `-z` changed-path record parsing.
-//! Why: The record list decides which paths are checked at all, so a misread or
+//! What:
+//!  Controls for raw `-z` changed-path record parsing.
+//! Why:
+//!  The record list decides which paths are checked at all,
+//!  so a misread or
 //!      partially read listing must fail instead of silently shrinking.
 //!
 //! In TS you'd write (pseudocode):
@@ -53,7 +56,10 @@ fn empty_output_lists_nothing() {
     assert_eq!(parse_raw_records(b"").expect("empty"), Vec::new());
 }
 
-/// Added, modified, type-changed and deleted entries carry the right side's mode and object, in Git's order.
+/// Added,
+///  modified,
+///  type-changed and deleted entries carry the right side's mode and object,
+///  in Git's order.
 #[test]
 fn each_status_reads_the_side_it_describes() {
     let mut output: Vec<u8> = raw(&format!(":000000 100644 {ZERO} {BLOB} A"), b"new.txt");
@@ -104,7 +110,12 @@ fn each_status_reads_the_side_it_describes() {
     );
 }
 
-/// Pathname bytes are kept exactly: non-UTF-8 bytes, spaces, tabs, line feeds, colons and quotes.
+/// Pathname bytes are kept exactly:
+///  non-UTF-8 bytes,
+///  spaces,
+///  tabs,
+///  line feeds,
+///  colons and quotes.
 #[test]
 fn pathname_bytes_are_never_decoded() {
     let path: &[u8] = b"d\xff\xfe/ sp\tace\nline:colon\"quote\\";
@@ -114,7 +125,8 @@ fn pathname_bytes_are_never_decoded() {
     assert_eq!(records[0].path, path);
 }
 
-/// SHA-256 repositories print 64-digit names, which are carried the same way.
+/// SHA-256 repositories print 64-digit names,
+///  which are carried the same way.
 #[test]
 fn sha256_names_are_accepted() {
     let zero: String = "0".repeat(64);
@@ -125,7 +137,8 @@ fn sha256_names_are_accepted() {
     assert_eq!(records[0].object, Some(object(name.as_str())));
 }
 
-/// A conflicted index entry is its own failure, naming the remedy.
+/// A conflicted index entry is its own failure,
+///  naming the remedy.
 #[test]
 fn unmerged_entry_is_refused() {
     let mut output: Vec<u8> = raw(&format!(":000000 100644 {ZERO} {BLOB} A"), b"ok");
@@ -140,7 +153,8 @@ fn unmerged_entry_is_refused() {
     assert!(!error.message.contains("private-name"), "{error}");
 }
 
-/// Statuses a listing without rename detection never prints are refused, including near misses of accepted ones.
+/// Statuses a listing without rename detection never prints are refused,
+///  including near misses of accepted ones.
 #[test]
 fn other_statuses_are_refused() {
     for status in ["R100", "C75", "X", "B", "", "AM", "a", "m", "t", "d", "DD"] {
@@ -155,7 +169,8 @@ fn other_statuses_are_refused() {
     }
 }
 
-/// Directory, absent and unknown modes are refused on the side the status reads.
+/// Directory,
+///  absent and unknown modes are refused on the side the status reads.
 #[test]
 fn unsupported_modes_are_refused() {
     for metadata in [
@@ -183,7 +198,11 @@ fn unsupported_modes_are_refused() {
     );
 }
 
-/// Records with the wrong shape are refused: prefix, field count, object names, and an empty pathname.
+/// Records with the wrong shape are refused:
+///  prefix,
+///  field count,
+///  object names,
+///  and an empty pathname.
 #[test]
 fn malformed_records_are_refused() {
     for (metadata, path) in [
@@ -211,7 +230,9 @@ fn malformed_records_are_refused() {
     }
 }
 
-/// Output cut before its final NUL, or holding a record without a pathname, is refused whole.
+/// Output cut before its final NUL,
+///  or holding a record without a pathname,
+///  is refused whole.
 #[test]
 fn cut_short_listings_are_refused() {
     let complete: Vec<u8> = raw(&format!(":000000 100644 {ZERO} {BLOB} A"), b"first");

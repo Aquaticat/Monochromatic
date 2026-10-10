@@ -1,7 +1,10 @@
-//! editord-compatible, session-local recent-file slots.
+//! editord-compatible,
+//!  session-local recent-file slots.
 
-/// What: Path and PathBuf represent borrowed and owned filesystem paths.
-/// Why: History owns names across file switches without assuming UTF-8 filenames.
+/// What:
+///  Path and PathBuf represent borrowed and owned filesystem paths.
+/// Why:
+///  History owns names across file switches without assuming UTF-8 filenames.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -9,8 +12,11 @@
 /// ```
 use std::path::{Path, PathBuf};
 
-/// What: A default-constructible record owns a growable path list.
-/// Why: Recently opened files are transient application state, never a project file.
+/// What:
+///  A default-constructible record owns a growable path list.
+/// Why:
+///  Recently opened files are transient application state,
+///  never a project file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,7 +24,8 @@ use std::path::{Path, PathBuf};
 /// ```
 #[derive(Default, Debug)]
 pub struct RecentFiles {
-    /// Most recent first, with at most ten unique paths.
+    /// Most recent first,
+    ///  with at most ten unique paths.
     paths: Vec<PathBuf>,
 }
 
@@ -62,7 +69,8 @@ impl RecentFiles {
     }
 }
 
-/// Decode exactly Ctrl+0 through Ctrl+9, excluding Shift and Alt variants.
+/// Decode exactly Ctrl+0 through Ctrl+9,
+///  excluding Shift and Alt variants.
 pub fn shortcut_slot(key: &str, control: bool, shift: bool, alt: bool) -> Option<usize> {
     if !control || shift || alt || key.len() != 1 {
         return None;

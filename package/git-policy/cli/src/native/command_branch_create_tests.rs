@@ -1,7 +1,12 @@
-//! What: Branch-creation facts of `git branch`, the escape hatch positions of all three
-//!       guarded commands, and the regions Git refuses.
-//! Why: The branch-worktree policy is bypassed by any creating spelling the parser reads as
-//!      listing, and blocks ordinary work when it reads a listing as creation.
+//! What:
+//!  Branch-creation facts of `git branch`,
+//!  the escape hatch positions of all three
+//!       guarded commands,
+//!  and the regions Git refuses.
+//! Why:
+//!  The branch-worktree policy is bypassed by any creating spelling the parser reads as
+//!      listing,
+//!  and blocks ordinary work when it reads a listing as creation.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -9,7 +14,9 @@
 //! ```
 
 use super::BranchCreationCommand::{Branch, Checkout, Switch};
-/// The parser, its result types, the shared hatch spelling and the argument builders.
+/// The parser,
+///  its result types,
+///  the shared hatch spelling and the argument builders.
 use super::{
     BranchCreationCommand, BranchCreationRegion, branch_creation_command,
     parse_branch_creation_region,
@@ -24,12 +31,14 @@ use crate::command_test_support::os_arguments;
 use crate::escape_hatch::BRANCH_WORKTREE_ESCAPE_HATCH as HATCH;
 use std::ffi::OsString;
 
-/// Split a space-separated argument line; the empty line is the empty region.
+/// Split a space-separated argument line;
+///  the empty line is the empty region.
 fn words(line: &str) -> Vec<&str> {
     return line.split_whitespace().collect();
 }
 
-/// Parse a region Git accepts, with no other wrapper flags.
+/// Parse a region Git accepts,
+///  with no other wrapper flags.
 fn region(command: BranchCreationCommand, line: &str) -> BranchCreationRegion {
     return parse_branch_creation_region(
         command,
@@ -44,7 +53,8 @@ fn branch_creates(line: &str) -> bool {
     return region(Branch, line).creates_branch;
 }
 
-/// Only the three guarded words select a command; `worktree add -b` is not guarded.
+/// Only the three guarded words select a command;
+///  `worktree add -b` is not guarded.
 #[test]
 fn names_the_guarded_commands() {
     assert_eq!(branch_creation_command(b"branch"), Some(Branch));
@@ -63,7 +73,10 @@ fn names_the_guarded_commands() {
     }
 }
 
-/// Ported: listing patterns, deletion and rename pass; plain creation and copy are creation.
+/// Ported:
+///  listing patterns,
+///  deletion and rename pass;
+///  plain creation and copy are creation.
 #[test]
 fn ports_the_incumbent_branch_cases() {
     for line in [
@@ -81,7 +94,9 @@ fn ports_the_incumbent_branch_cases() {
     assert!(created.wrapper.escape.is_empty() && created.wrapper.other.is_empty());
 }
 
-/// Ported: the checkout and switch creation options, in the incumbent's spellings.
+/// Ported:
+///  the checkout and switch creation options,
+///  in the incumbent's spellings.
 #[test]
 fn ports_the_incumbent_checkout_and_switch_cases() {
     for line in ["-b topic", "--orphan topic", "--track origin/topic"] {
@@ -95,7 +110,8 @@ fn ports_the_incumbent_checkout_and_switch_cases() {
     assert_eq!(paths.implicit_creation_target, None);
 }
 
-/// One or two names create when no action option applies; display options are not actions.
+/// One or two names create when no action option applies;
+///  display options are not actions.
 #[test]
 fn branch_names_create_without_an_action() {
     for line in [
@@ -137,7 +153,8 @@ fn branch_names_create_without_an_action() {
     }
 }
 
-/// Every action option, every filter and the kind options stop plain creation.
+/// Every action option,
+///  every filter and the kind options stop plain creation.
 #[test]
 fn branch_actions_and_filters_do_not_create() {
     for line in [
@@ -178,7 +195,8 @@ fn branch_actions_and_filters_do_not_create() {
     }
 }
 
-/// A copy creates its target with one or two names, whatever `-a` or the tracking mode say.
+/// A copy creates its target with one or two names,
+///  whatever `-a` or the tracking mode say.
 #[test]
 fn branch_copy_creates_its_target() {
     for line in [
@@ -234,7 +252,8 @@ fn branch_tracking_mode_is_last_writer_wins() {
     }
 }
 
-/// The hatch counts in option position only, and never as a branch name.
+/// The hatch counts in option position only,
+///  and never as a branch name.
 #[test]
 fn reports_the_escape_hatch_by_position() {
     for (command, values, escape, creates) in [
@@ -263,7 +282,8 @@ fn reports_the_escape_hatch_by_position() {
     }
 }
 
-/// Ported: removing the hatch keeps an equal-looking option value.
+/// Ported:
+///  removing the hatch keeps an equal-looking option value.
 #[test]
 fn removes_the_escape_hatch_but_keeps_an_equal_value() {
     let arguments: Vec<OsString> = os_arguments(&["checkout", "-b", HATCH, HATCH]);
@@ -275,7 +295,8 @@ fn removes_the_escape_hatch_but_keeps_an_equal_value() {
     );
 }
 
-/// The caller's own wrapper flags are reported separately, by their index in its list.
+/// The caller's own wrapper flags are reported separately,
+///  by their index in its list.
 #[test]
 fn reports_other_wrapper_flags() {
     let found: BranchCreationRegion = parse_branch_creation_region(
@@ -292,7 +313,8 @@ fn reports_other_wrapper_flags() {
     assert!(found.creates_branch);
 }
 
-/// A region Git refuses is reported as refused, per command table.
+/// A region Git refuses is reported as refused,
+///  per command table.
 #[test]
 fn reports_what_git_refuses() {
     for (command, line, kind) in [

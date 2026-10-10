@@ -1,45 +1,67 @@
-//! The window's side of the vertical mapping: keep `State::row_map` equal to what the displayed text and its
-//! annotations call for, and tell the window what follows from it.
+//! The window's side of the vertical mapping:
+//!  keep `State::row_map` equal to what the displayed text and its
+//! annotations call for,
+//!  and tell the window what follows from it.
 //!
-//! Every native function that places or finds a line vertically reads `State::row_map`; none multiplies a line
-//! number by a row height. The markup only scrolls and draws at positions handed to it.
+//! Every native function that places or finds a line vertically reads `State::row_map`;
+//!  none multiplies a line
+//! number by a row height.
+//!  The markup only scrolls and draws at positions handed to it.
 
-/// The window, the source state that owns the map, the stamp of the displayed text, and the choice of the
+/// The window,
+///  the source state that owns the map,
+///  the stamp of the displayed text,
+///  and the choice of the
 /// materialized lines for an offset.
 use super::{AppWindow, State, annotate::displayed, viewport::place};
-/// What: `Assoc` says which side of inserted text a mapped position stays on; `ChangeSet` is Helix's edit list.
-/// Why: Rows of a replaced text keep their space above the lines their old lines became.
+/// What:
+///  `Assoc` says which side of inserted text a mapped position stays on;
+///  `ChangeSet` is Helix's edit list.
+/// Why:
+///  Rows of a replaced text keep their space above the lines their old lines became.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { Assoc, type ChangeSet } from 'helix-core';
 /// ```
 use helix_core::{Assoc, ChangeSet};
-/// Space held open above a line of a reloaded text, and the rank that orders severities.
+/// Space held open above a line of a reloaded text,
+///  and the rank that orders severities.
 use ide_app::annotation::{Held, rank};
 /// The mapping itself and the height of one code row.
 use ide_app::row_map::{CODE_ROW, RowMap};
-/// The stamp naming a displayed text, and one line's block of virtual rows.
+/// The stamp naming a displayed text,
+///  and one line's block of virtual rows.
 use ide_app::{language::identity::DocumentStamp, virtual_row::Block};
-/// What: `Model` gives a list its `row_count` and row access; `VecModel` is the toolkit's growable list model.
-/// Why: Line-number positions are updated row by row, so the markup keeps its text elements while scrolling.
+/// What:
+///  `Model` gives a list its `row_count` and row access;
+///  `VecModel` is the toolkit's growable list model.
+/// Why:
+///  Line-number positions are updated row by row,
+///  so the markup keeps its text elements while scrolling.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { type Model, ArrayModel } from 'slint';
 /// ```
 use slint::{Model, ModelRc, VecModel};
-/// `Rc` shares the persistent model between the state and the window; `Duration` and `Instant` time held space.
+/// `Rc` shares the persistent model between the state and the window;
+///  `Duration` and `Instant` time held space.
 use std::{
     rc::Rc,
     sync::Arc,
     time::{Duration, Instant},
 };
 
-/// What: How long the view must have stood still before a change of rows may move the scroll offset.
-/// Why: The toolkit animates a wheel notch for 180 ms (`WHEEL_SCROLL_DURATION` in Slint 1.18.1's
-///      `internal/core/items/flickable.rs`) through a binding on the offset, and assigning the offset removes
-///      that binding: the scroll would stop short. Waiting slightly longer than the animation lets it finish.
+/// What:
+///  How long the view must have stood still before a change of rows may move the scroll offset.
+/// Why:
+///  The toolkit animates a wheel notch for 180 ms (`WHEEL_SCROLL_DURATION` in Slint 1.18.1's
+///      `internal/core/items/flickable.rs`) through a binding on the offset,
+///  and assigning the offset removes
+///      that binding:
+///  the scroll would stop short.
+///  Waiting slightly longer than the animation lets it finish.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,9 +69,15 @@ use std::{
 /// ```
 const SCROLL_QUIET: Duration = Duration::from_millis(200);
 
-/// What: What the map key is made of: the displayed text's stamp, the annotation store's change counter, and
-///       the display scale as exact bits; `type` names the tuple once.
-/// Why: Blocks are assembled again only when one of the three changed.
+/// What:
+///  What the map key is made of:
+///  the displayed text's stamp,
+///  the annotation store's change counter,
+///  and
+///       the display scale as exact bits;
+///  `type` names the tuple once.
+/// Why:
+///  Blocks are assembled again only when one of the three changed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,9 +85,14 @@ const SCROLL_QUIET: Duration = Duration::from_millis(200);
 /// ```
 pub(super) type RowKey = (DocumentStamp, u64, u32);
 
-/// What: A freshly assembled vertical layout that is not installed yet: its key, the blocks of every annotated
-///       line, and the map they call for.
-/// Why: Whether the view can take it now is decided before anything in the state changes.
+/// What:
+///  A freshly assembled vertical layout that is not installed yet:
+///  its key,
+///  the blocks of every annotated
+///       line,
+///  and the map they call for.
+/// Why:
+///  Whether the view can take it now is decided before anything in the state changes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -68,13 +101,16 @@ pub(super) type RowKey = (DocumentStamp, u64, u32);
 pub(super) struct Rebuilt {
     /// What the layout was built from.
     key: RowKey,
-    /// Blocks of virtual rows, in line order.
+    /// Blocks of virtual rows,
+    ///  in line order.
     blocks: Vec<Arc<Block>>,
     /// The mapping the blocks call for.
     map: RowMap,
 }
 
-/// The key the displayed text, its annotations, and the display `scale` call for now.
+/// The key the displayed text,
+///  its annotations,
+///  and the display `scale` call for now.
 fn wanted_key(current: &State, scale: f32) -> RowKey {
     // `to_bits` turns the float into an integer that compares exactly.
     return (
@@ -84,10 +120,19 @@ fn wanted_key(current: &State, scale: f32) -> RowKey {
     );
 }
 
-/// What: Assemble the blocks and the map the displayed text, its annotations, and the display `scale` call for,
-///       or nothing when the state's layout was built from exactly these; `Option<Rebuilt>` is that result.
-/// Why: Blocks are assembled only when the text, the annotation store, or the scale changed, which the stored
-///      key records. Nothing in the state changes here except the store's packing cache.
+/// What:
+///  Assemble the blocks and the map the displayed text,
+///  its annotations,
+///  and the display `scale` call for,
+///       or nothing when the state's layout was built from exactly these;
+///  `Option<Rebuilt>` is that result.
+/// Why:
+///  Blocks are assembled only when the text,
+///  the annotation store,
+///  or the scale changed,
+///  which the stored
+///      key records.
+///  Nothing in the state changes here except the store's packing cache.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -122,9 +167,12 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
     return Some(Rebuilt { key, blocks, map });
 }
 
-/// What: Make `layout` the state's layout and answer the previous map when positions changed;
-///       `Option<RowMap>` is that map or nothing. `Rebuilt` is moved in.
-/// Why: The caller compares positions in both maps to keep the view still.
+/// What:
+///  Make `layout` the state's layout and answer the previous map when positions changed;
+///       `Option<RowMap>` is that map or nothing.
+///  `Rebuilt` is moved in.
+/// Why:
+///  The caller compares positions in both maps to keep the view still.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -153,9 +201,13 @@ fn install(current: &mut State, layout: Rebuilt) -> Option<RowMap> {
     return Some(previous);
 }
 
-/// What: Bring `current.blocks` and `current.row_map` up to date at once and answer the previous map when
+/// What:
+///  Bring `current.blocks` and `current.row_map` up to date at once and answer the previous map when
 ///       positions changed.
-/// Why: Callers that place the view themselves (a reload, a file switch, a revealed line) refresh before they
+/// Why:
+///  Callers that place the view themselves (a reload,
+///  a file switch,
+///  a revealed line) refresh before they
 ///      compute an offset.
 ///
 /// In TS you'd write (pseudocode):
@@ -176,13 +228,30 @@ fn scrolling(current: &State) -> bool {
         .is_some_and(|at| return at.elapsed() < SCROLL_QUIET);
 }
 
-/// What: Bring the vertical mapping up to date for a render and, when it changed, keep the view still: the
-///       answer is the scroll offset the window must take, or nothing. `view` holds the horizontal offset, the
-///       vertical offset, the width, and the height of the view in logical pixels.
-/// Why: Rows that appear, change, or vanish above the first visible code row must move nothing visible, so
-///      the offset follows them; the materialized lines are chosen again for the offset that results.
-///      While the reader is scrolling, a change that would move the offset waits: the rows it brings are
-///      above the view anyway, and assigning the offset would cut the toolkit's scroll animation short.
+/// What:
+///  Bring the vertical mapping up to date for a render and,
+///  when it changed,
+///  keep the view still:
+///  the
+///       answer is the scroll offset the window must take,
+///  or nothing.
+///  `view` holds the horizontal offset,
+///  the
+///       vertical offset,
+///  the width,
+///  and the height of the view in logical pixels.
+/// Why:
+///  Rows that appear,
+///  change,
+///  or vanish above the first visible code row must move nothing visible,
+///  so
+///      the offset follows them;
+///  the materialized lines are chosen again for the offset that results.
+///      While the reader is scrolling,
+///  a change that would move the offset waits:
+///  the rows it brings are
+///      above the view anyway,
+///  and assigning the offset would cut the toolkit's scroll animation short.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -227,9 +296,14 @@ pub(super) fn settle(current: &mut State, scale: f32, view: (f32, f32, f32, f32)
     return Some(kept);
 }
 
-/// What: Whether the window must render now for the vertical mapping's sake: held space ran out of time, or
+/// What:
+///  Whether the window must render now for the vertical mapping's sake:
+///  held space ran out of time,
+///  or
 ///       rows that waited for scrolling to stop can be shown.
-/// Why: Neither comes with an event of its own; the source refresh timer asks every tick.
+/// Why:
+///  Neither comes with an event of its own;
+///  the source refresh timer asks every tick.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -243,10 +317,17 @@ pub(super) fn due(current: &mut State, scale: f32) -> bool {
     return expired || waiting;
 }
 
-/// What: The scroll offset in `next` that shows what `offset` showed in `previous`: the code row of the line
+/// What:
+///  The scroll offset in `next` that shows what `offset` showed in `previous`:
+///  the code row of the line
 ///       at the view's top edge keeps its distance from that edge.
-/// Why: Virtual rows that appear, change, or vanish above the first visible code row must move nothing that
-///      is visible. A view at the very top of the text stays there, so rows arriving for the first lines push
+/// Why:
+///  Virtual rows that appear,
+///  change,
+///  or vanish above the first visible code row must move nothing that
+///      is visible.
+///  A view at the very top of the text stays there,
+///  so rows arriving for the first lines push
 ///      the text down instead of hiding above the top edge.
 ///
 /// In TS you'd write (pseudocode):
@@ -262,11 +343,19 @@ pub(super) fn anchored(previous: &RowMap, next: &RowMap, offset: f32) -> f32 {
     return (next.code_top(line) + within).max(0.0);
 }
 
-/// What: The scroll offset that shows `row`'s code row in a view of `height` starting at `offset`, changed by
-///       the smallest amount; the answer is unrounded and not clamped to the text.
-/// Why: Caret keys and drags keep the caret's line in view. A line above the view becomes the top line
-///      together with its virtual rows, so what is said about the caret's line is in view with it; a line
-///      below the view becomes the bottom line. The code row wins when both do not fit.
+/// What:
+///  The scroll offset that shows `row`'s code row in a view of `height` starting at `offset`,
+///  changed by
+///       the smallest amount;
+///  the answer is unrounded and not clamped to the text.
+/// Why:
+///  Caret keys and drags keep the caret's line in view.
+///  A line above the view becomes the top line
+///      together with its virtual rows,
+///  so what is said about the caret's line is in view with it;
+///  a line
+///      below the view becomes the bottom line.
+///  The code row wins when both do not fit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -289,10 +378,18 @@ pub(super) fn limit(map: &RowMap, height: f32) -> f32 {
     return (map.height() - height).max(0.0);
 }
 
-/// What: Everything the window draws from the map, read while the state is borrowed: the scroll extent, the
-///       first materialized line with the code-row top of each materialized line, the shared line-number
-///       model, and the place of the line a language surface is anchored to.
-/// Why: Window setters run only after the state borrow ended, so the values are collected first.
+/// What:
+///  Everything the window draws from the map,
+///  read while the state is borrowed:
+///  the scroll extent,
+///  the
+///       first materialized line with the code-row top of each materialized line,
+///  the shared line-number
+///       model,
+///  and the place of the line a language surface is anchored to.
+/// Why:
+///  Window setters run only after the state borrow ended,
+///  so the values are collected first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -308,19 +405,25 @@ pub(super) struct Placement {
     tops: Vec<f32>,
     /// The persistent line-number model.
     model: Rc<VecModel<f32>>,
-    /// Gutter severity mark of each materialized line; see `State::line_marks`.
+    /// Gutter severity mark of each materialized line;
+    ///  see `State::line_marks`.
     marks: Vec<i32>,
     /// The persistent severity-mark model.
     mark_model: Rc<VecModel<i32>>,
-    /// Number of lines, whose last number sets the width of the gutter's number column.
+    /// Number of lines,
+    ///  whose last number sets the width of the gutter's number column.
     lines: usize,
     /// Top and height of everything the anchoring line owns.
     anchor: (f32, f32),
 }
 
-/// What: Collect the [`Placement`] of the current map; `anchor_line` is the line the window says a language
+/// What:
+///  Collect the [`Placement`] of the current map;
+///  `anchor_line` is the line the window says a language
 ///       surface belongs to.
-/// Why: The markup holds no row arithmetic; every position it uses comes from here.
+/// Why:
+///  The markup holds no row arithmetic;
+///  every position it uses comes from here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -368,9 +471,16 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
     };
 }
 
-/// What: Make `model` hold exactly `wanted`, changing only rows that differ. `T` is the row type; `Copy` lets a
+/// What:
+///  Make `model` hold exactly `wanted`,
+///  changing only rows that differ.
+///  `T` is the row type;
+///  `Copy` lets a
 ///       row be duplicated like a number and `PartialEq` lets two rows be compared.
-/// Why: Updating in place changes numbers, positions, and letters while scrolling without rebuilding elements.
+/// Why:
+///  Updating in place changes numbers,
+///  positions,
+///  and letters while scrolling without rebuilding elements.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -389,8 +499,13 @@ fn update<T: Copy + PartialEq + 'static>(model: &VecModel<T>, wanted: &[T]) {
     }
 }
 
-/// What: Hand a [`Placement`] to the window. The line-number and severity-mark models are updated row by row.
-/// Why: The window draws a number and, where a diagnostic starts, a letter on each materialized code row.
+/// What:
+///  Hand a [`Placement`] to the window.
+///  The line-number and severity-mark models are updated row by row.
+/// Why:
+///  The window draws a number and,
+///  where a diagnostic starts,
+///  a letter on each materialized code row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -419,9 +534,15 @@ pub(super) fn present(window: &AppWindow, placement: Placement) {
     window.set_language_anchor_height(height);
 }
 
-/// What: Top and height of everything `anchor_line` owns, its virtual rows and its code row; a pair (tuple).
-/// Why: A language popup or list is placed beside that span, so it covers neither the code row nor the
-///      line's own virtual rows, also when rows appear above the line while the surface is shown.
+/// What:
+///  Top and height of everything `anchor_line` owns,
+///  its virtual rows and its code row;
+///  a pair (tuple).
+/// Why:
+///  A language popup or list is placed beside that span,
+///  so it covers neither the code row nor the
+///      line's own virtual rows,
+///  also when rows appear above the line while the surface is shown.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -444,9 +565,13 @@ pub(super) fn mark_model() -> Rc<VecModel<i32>> {
     return Rc::new(VecModel::from(Vec::new()));
 }
 
-/// What: How long the space of a replaced text's virtual rows stays open while nothing is painted in it.
-/// Why: Hints for a reloaded text were measured to arrive 20 to 40 ms after the reload; one second covers that
-///      many times over, and space that no answer fills does not stay empty for long.
+/// What:
+///  How long the space of a replaced text's virtual rows stays open while nothing is painted in it.
+/// Why:
+///  Hints for a reloaded text were measured to arrive 20 to 40 ms after the reload;
+///  one second covers that
+///      many times over,
+///  and space that no answer fills does not stay empty for long.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -454,10 +579,15 @@ pub(super) fn mark_model() -> Rc<VecModel<i32>> {
 /// ```
 const ROW_HOLD: Duration = Duration::from_millis(1000);
 
-/// What: Before an external change is applied, where each block of the displayed text will be in the new one:
+/// What:
+///  Before an external change is applied,
+///  where each block of the displayed text will be in the new one:
 ///       the mapped character position of its line's start and the heights of its hint part and message part.
-///       `&ChangeSet` lends the edits from the displayed text to the new one; the answer is a list of triples.
-/// Why: The rows of the old text are never painted for the new one, but their space is held open so lines the
+///       `&ChangeSet` lends the edits from the displayed text to the new one;
+///  the answer is a list of triples.
+/// Why:
+///  The rows of the old text are never painted for the new one,
+///  but their space is held open so lines the
 ///      change did not touch stay where they are.
 ///
 /// In TS you'd write (pseudocode):
@@ -476,10 +606,17 @@ pub(super) fn carried(current: &State, changes: &ChangeSet) -> Vec<(usize, f32, 
     return kept;
 }
 
-/// What: After the change was applied, hold the `carried` space above the lines the positions now lie on, and
-///       rebuild the map. `Vec<...>` is moved in.
-/// Why: Hint space is given up as soon as hints for those lines arrive; message space stays until its time
-///      has passed, because diagnostics of one text arrive in several parts.
+/// What:
+///  After the change was applied,
+///  hold the `carried` space above the lines the positions now lie on,
+///  and
+///       rebuild the map.
+///  `Vec<...>` is moved in.
+/// Why:
+///  Hint space is given up as soon as hints for those lines arrive;
+///  message space stays until its time
+///      has passed,
+///  because diagnostics of one text arrive in several parts.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -265,7 +265,7 @@ Run compile checks,
 ```bash
 # package/desktop-app/terminal
 mise run //package/desktop-app/terminal:lint
-mise run //package/desktop-app/terminal:lint:rust
+mise run lint:monochromatic-lint -- package/desktop-app/terminal
 mise run //package/desktop-app/terminal:lint:clippy
 mise run //package/desktop-app/terminal:test
 ```

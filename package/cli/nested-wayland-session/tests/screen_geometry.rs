@@ -1,19 +1,28 @@
-//! Logical size, output scale, and the physical framebuffer they produce, without a display.
+//! Logical size,
+//!  output scale,
+//!  and the physical framebuffer they produce,
+//!  without a display.
 
-/// The same geometry the compositor applies for `--size`, `--scale`, `resize`, and `scale`.
+/// The same geometry the compositor applies for `--size`,
+///  `--scale`,
+///  `resize`,
+///  and `scale`.
 use nested_wayland_session::screen_geometry::{OutputScale, ScreenGeometry};
 
-/// Parse a scale the test knows is valid; a parse failure stops the test with its message.
+/// Parse a scale the test knows is valid;
+///  a parse failure stops the test with its message.
 fn scale(text: &str) -> OutputScale {
     return OutputScale::parse(text).expect(text);
 }
 
-/// Build the 1100x660 screen the IDE inspection uses, at one scale.
+/// Build the 1100x660 screen the IDE inspection uses,
+///  at one scale.
 fn screen(text: &str) -> ScreenGeometry {
     return ScreenGeometry { logical_width: 1100, logical_height: 660, scale: scale(text) };
 }
 
-/// Integer and fractional KDE scales become exact 120ths, the unit clients receive.
+/// Integer and fractional KDE scales become exact 120ths,
+///  the unit clients receive.
 #[test]
 fn scale_text_becomes_exact_120ths() {
     for (text, per_120) in [
@@ -25,7 +34,9 @@ fn scale_text_becomes_exact_120ths() {
     assert_eq!(OutputScale::ONE, scale("1"));
 }
 
-/// Values outside KDE's range, between 120ths, or not numbers never reach a client.
+/// Values outside KDE's range,
+///  between 120ths,
+///  or not numbers never reach a client.
 #[test]
 fn scale_text_outside_the_grammar_is_rejected() {
     for text in [
@@ -41,7 +52,9 @@ fn scale_text_outside_the_grammar_is_rejected() {
     assert!(between.contains("1.3250") && between.contains("1.3333"), "{between}");
 }
 
-/// What clients are told: `wl_output.scale` rounds up, the fractional scale stays exact.
+/// What clients are told:
+///  `wl_output.scale` rounds up,
+///  the fractional scale stays exact.
 #[test]
 fn clients_are_told_the_rounded_up_integer_and_the_exact_fraction() {
     for (text, integer, fraction) in [
@@ -55,7 +68,8 @@ fn clients_are_told_the_rounded_up_integer_and_the_exact_fraction() {
     }
 }
 
-/// Screenshots are the logical size times the scale, rounded half away from zero.
+/// Screenshots are the logical size times the scale,
+///  rounded half away from zero.
 #[test]
 fn physical_size_at_each_scale() {
     assert_eq!(screen("1").physical_size(), (1100, 660));
@@ -67,7 +81,8 @@ fn physical_size_at_each_scale() {
     assert_eq!(half.physical_size(), (1280, 722));
 }
 
-/// A scale switch keeps the configured logical size, so the client is not resized.
+/// A scale switch keeps the configured logical size,
+///  so the client is not resized.
 #[test]
 fn scale_switch_keeps_the_logical_size() {
     let before = screen("1");
@@ -76,7 +91,9 @@ fn scale_switch_keeps_the_logical_size() {
     assert_ne!(after.physical_size(), (after.logical_width, after.logical_height));
 }
 
-/// The parent window is asked for its own logical pixels, rounded up, never fewer pixels.
+/// The parent window is asked for its own logical pixels,
+///  rounded up,
+///  never fewer pixels.
 #[test]
 fn parent_request_rounds_up_to_cover_the_physical_size() {
     assert_eq!(screen("1.25").parent_request(2.0), (688, 413));
@@ -95,7 +112,8 @@ fn parent_request_rounds_up_to_cover_the_physical_size() {
     }
 }
 
-/// Parent rounding keeps the screen; a real parent resize changes the logical size.
+/// Parent rounding keeps the screen;
+///  a real parent resize changes the logical size.
 #[test]
 fn parent_resize_distinguishes_rounding_from_a_new_size() {
     let current = screen("1.25");

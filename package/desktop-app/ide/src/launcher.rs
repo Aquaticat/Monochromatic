@@ -1,23 +1,37 @@
-//! Desktop-shell integration: the Wayland app id, stamped before the window exists.
+//! Desktop-shell integration:
+//!  the Wayland app id,
+//!  stamped before the window exists.
 //!
-//! What: [`install_backend`] installs Slint's winit backend explicitly with a window-attributes hook,
-//!       [`set_window_app_id`], that names the window `monochromatic.ide`, as the sibling terminal
+//! What:
+//!  [`install_backend`] installs Slint's winit backend explicitly with a window-attributes hook,
+//!       [`set_window_app_id`],
+//!  that names the window `monochromatic.ide`,
+//!  as the sibling terminal
 //!       and music player do in their own `launcher.rs`.
-//! Why: Desktop shells match a window to its launcher entry by app id (`StartupWMClass` in
-//!      `share/applications/monochromatic.ide.desktop`); Slint's default backend sets none, and the id
+//! Why:
+//!  Desktop shells match a window to its launcher entry by app id (`StartupWMClass` in
+//!      `share/applications/monochromatic.ide.desktop`);
+//!  Slint's default backend sets none,
+//!  and the id
 //!      cannot be changed after the window is created.
 
-/// What: The trait that adds `with_name` (the Wayland app id) to winit window attributes; `use`
+/// What:
+///  The trait that adds `with_name` (the Wayland app id) to winit window attributes;
+///  `use`
 ///       brings it into scope like a TS import.
-/// Why: Without the trait in scope the method does not exist on the attributes value.
+/// Why:
+///  Without the trait in scope the method does not exist on the attributes value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { withWaylandName } from 'winit/platform/wayland';
 /// ```
 use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
-/// What: The creation-time window settings record and Slint's winit backend.
-/// Why: The hook receives and returns attributes; the backend is built with the hook installed.
+/// What:
+///  The creation-time window settings record and Slint's winit backend.
+/// Why:
+///  The hook receives and returns attributes;
+///  the backend is built with the hook installed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,8 +39,12 @@ use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 /// ```
 use i_slint_backend_winit::{Backend, winit::window::WindowAttributes};
 
-/// What: The app id. `&str` is text stored in the program (sibling `String`, owned text built at run time).
-/// Why: The window's app id and the launcher entry's `StartupWMClass` and file name must match exactly.
+/// What:
+///  The app id.
+///  `&str` is text stored in the program (sibling `String`,
+///  owned text built at run time).
+/// Why:
+///  The window's app id and the launcher entry's `StartupWMClass` and file name must match exactly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,9 +52,13 @@ use i_slint_backend_winit::{Backend, winit::window::WindowAttributes};
 /// ```
 pub const APP_ID: &str = "monochromatic.ide";
 
-/// What: The window-attributes hook: stamp the app id onto the window being created and hand the
+/// What:
+///  The window-attributes hook:
+///  stamp the app id onto the window being created and hand the
 ///       attributes back (taken and returned by value).
-/// Why: Passed to `Backend::builder().with_window_attributes_hook(...)`, which calls it at window creation.
+/// Why:
+///  Passed to `Backend::builder().with_window_attributes_hook(...)`,
+///  which calls it at window creation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,12 +71,23 @@ pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes {
     return attributes.with_name(APP_ID, APP_ID);
 }
 
-/// What: Install the winit backend with the app-id hook, unless the environment asks Slint for
-///       something else. `anyhow::Result<()>` is success without a value, or an error.
-/// Why: The app id must be stamped before the window exists, which only an explicit backend allows.
-/// Gotcha: Slint's embedded inspection server (`SLINT_MCP_PORT`, debug inspection tasks only) starts
-///         only when Slint chooses the backend itself, so those runs keep Slint's selector and no app
-///         id, as in the sibling applications. A `SLINT_BACKEND` naming another backend is honored
+/// What:
+///  Install the winit backend with the app-id hook,
+///  unless the environment asks Slint for
+///       something else.
+///  `anyhow::Result<()>` is success without a value,
+///  or an error.
+/// Why:
+///  The app id must be stamped before the window exists,
+///  which only an explicit backend allows.
+/// Gotcha:
+///  Slint's embedded inspection server (`SLINT_MCP_PORT`,
+///  debug inspection tasks only) starts
+///         only when Slint chooses the backend itself,
+///  so those runs keep Slint's selector and no app
+///         id,
+///  as in the sibling applications.
+///  A `SLINT_BACKEND` naming another backend is honored
 ///         the same way.
 ///
 /// In TS you'd write (pseudocode):

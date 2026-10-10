@@ -1,20 +1,31 @@
-//! Where one frame draws its annotations: underline segments under source glyphs, and the texts of the
-//! virtual rows above annotated lines. Every horizontal position comes from the shaped rows that paint the
-//! source, and nothing is inserted into a row, so the geometry inside a code row is the same with and without
+//! Where one frame draws its annotations:
+//!  underline segments under source glyphs,
+//!  and the texts of the
+//! virtual rows above annotated lines.
+//!  Every horizontal position comes from the shaped rows that paint the
+//! source,
+//!  and nothing is inserted into a row,
+//!  so the geometry inside a code row is the same with and without
 //! annotations.
 
-/// The visible subset of the snapshots, hint labels, and the severity order.
+/// The visible subset of the snapshots,
+///  hint labels,
+///  and the severity order.
 use crate::annotation::{Label, Mark, Visible, rank};
 /// Severities as the Language module names them.
 use crate::language::diagnostics::Severity;
 /// One shaped source row and its caret and range geometry.
 use crate::shaped_row::ShapedRow;
-/// The frame's shaped rows, the selected-terminator width, and the shaper that sets virtual-row text.
+/// The frame's shaped rows,
+///  the selected-terminator width,
+///  and the shaper that sets virtual-row text.
 use crate::shaped_text::{ShapedView, TERMINATOR_MARK, TextShaper};
 /// Placed hints and the spacing of virtual rows.
 use crate::virtual_row::{CONTINUATION_INDENT, HINT_GAP, HintPlace};
-/// What: `Layout<u32>` is a shaped paragraph whose glyph brushes are numbers.
-/// Why: Each virtual-row text is shaped once per frame and painted by the raster like a source row.
+/// What:
+///  `Layout<u32>` is a shaped paragraph whose glyph brushes are numbers.
+/// Why:
+///  Each virtual-row text is shaped once per frame and painted by the raster like a source row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,9 +33,16 @@ use crate::virtual_row::{CONTINUATION_INDENT, HINT_GAP, HintPlace};
 /// ```
 use parley::Layout;
 
-/// What: The inks annotations are painted with, as straight RGBA bytes; `[u8; 4]` is a fixed array of four bytes
-///       (siblings `Vec<u8>`, `&[u8]`).
-/// Why: Colors follow the system scheme; they are part of the frame stamp, so a scheme change repaints.
+/// What:
+///  The inks annotations are painted with,
+///  as straight RGBA bytes;
+///  `[u8; 4]` is a fixed array of four bytes
+///       (siblings `Vec<u8>`,
+///  `&[u8]`).
+/// Why:
+///  Colors follow the system scheme;
+///  they are part of the frame stamp,
+///  so a scheme change repaints.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,8 +79,12 @@ impl AnnotationColors {
     }
 }
 
-/// What: One horizontal underline run on one row, in logical pixels from the text's left edge.
-/// Why: A multi-line diagnostic becomes one run per row; the raster draws each in its severity's line style.
+/// What:
+///  One horizontal underline run on one row,
+///  in logical pixels from the text's left edge.
+/// Why:
+///  A multi-line diagnostic becomes one run per row;
+///  the raster draws each in its severity's line style.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -76,13 +98,21 @@ pub struct Underline {
     pub x: f32,
     /// Horizontal extent.
     pub width: f32,
-    /// Severity, which selects ink and line style.
+    /// Severity,
+    ///  which selects ink and line style.
     pub severity: Severity,
 }
 
-/// What: One shaped text on a virtual row: a hint label or one row of a diagnostic message. `[u8; 4]` is the
-///       straight RGBA ink. `Option<Severity>` is the message's severity, or nothing for a hint.
-/// Why: The raster paints every text of every virtual row the same way; tests read positions from here.
+/// What:
+///  One shaped text on a virtual row:
+///  a hint label or one row of a diagnostic message.
+///  `[u8; 4]` is the
+///       straight RGBA ink.
+///  `Option<Severity>` is the message's severity,
+///  or nothing for a hint.
+/// Why:
+///  The raster paints every text of every virtual row the same way;
+///  tests read positions from here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -92,7 +122,8 @@ pub struct Underline {
 pub struct RowText {
     /// Source line whose block the text belongs to.
     pub line: usize,
-    /// How far above the top of that line's code row the text's row starts, in logical pixels.
+    /// How far above the top of that line's code row the text's row starts,
+    ///  in logical pixels.
     pub rise: f32,
     /// Left edge in logical pixels from the start of the line's text.
     pub x: f32,
@@ -100,29 +131,51 @@ pub struct RowText {
     pub width: f32,
     /// The shaped text.
     pub layout: Layout<u32>,
-    /// Ink: the hint ink, or the ink of the message's severity.
+    /// Ink:
+    ///  the hint ink,
+    ///  or the ink of the message's severity.
     pub ink: [u8; 4],
-    /// Severity of a message row; nothing for a hint.
+    /// Severity of a message row;
+    ///  nothing for a hint.
     pub severity: Option<Severity>,
 }
 
-/// Everything one frame paints for annotations, positioned against its shaped rows.
+/// Everything one frame paints for annotations,
+///  positioned against its shaped rows.
 pub struct AnnotationFrame {
-    /// Underline runs, mildest severity first, so the worst is drawn on top where ranges overlap.
+    /// Underline runs,
+    ///  mildest severity first,
+    ///  so the worst is drawn on top where ranges overlap.
     pub underlines: Vec<Underline>,
-    /// Texts of the virtual rows of the materialized lines: hints first, then messages, line by line.
+    /// Texts of the virtual rows of the materialized lines:
+    ///  hints first,
+    ///  then messages,
+    ///  line by line.
     pub texts: Vec<RowText>,
-    /// Right edge of the furthest virtual-row text, so the scroll range can reach it.
+    /// Right edge of the furthest virtual-row text,
+    ///  so the scroll range can reach it.
     pub extent: f32,
     /// Inks the raster uses.
     pub colors: AnnotationColors,
 }
 
-/// What: Add the underline runs of `mark` on `row` to `out`; `&mut Vec<Underline>` lends the list for appending.
-/// Why: The marked characters come from the same range geometry as selection, so ligatures, tabs, CJK, and
-///      combining marks are covered exactly. Like a selection, a range crossing the line end also marks the
-///      terminator, so an empty line inside a range stays visible. A point gets a terminator-wide run:
-///      after the text at a line end, centered on the boundary elsewhere.
+/// What:
+///  Add the underline runs of `mark` on `row` to `out`;
+///  `&mut Vec<Underline>` lends the list for appending.
+/// Why:
+///  The marked characters come from the same range geometry as selection,
+///  so ligatures,
+///  tabs,
+///  CJK,
+///  and
+///      combining marks are covered exactly.
+///  Like a selection,
+///  a range crossing the line end also marks the
+///      terminator,
+///  so an empty line inside a range stays visible.
+///  A point gets a terminator-wide run:
+///      after the text at a line end,
+///  centered on the boundary elsewhere.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -166,12 +219,23 @@ fn runs(row: &ShapedRow, mark: Mark, scale: f32, out: &mut Vec<Underline>) {
     }
 }
 
-/// What: Pack the hints of one line onto hint rows. `row` is the line's shaped code row, `labels` its hints
-///       in position order; `&mut TextShaper` is lent to measure each label. The answer pairs the number of
+/// What:
+///  Pack the hints of one line onto hint rows.
+///  `row` is the line's shaped code row,
+///  `labels` its hints
+///       in position order;
+///  `&mut TextShaper` is lent to measure each label.
+///  The answer pairs the number of
 ///       rows with one placement per hint (a tuple).
-/// Why: Each hint stands at the exact pixel x of the position it annotates, so it sits above the place it
-///      describes. A hint that would start less than [`HINT_GAP`] after the previous hint's end starts a new
-///      row; like the reference editor's packing, only the current row is considered, so reading the rows top
+/// Why:
+///  Each hint stands at the exact pixel x of the position it annotates,
+///  so it sits above the place it
+///      describes.
+///  A hint that would start less than [`HINT_GAP`] after the previous hint's end starts a new
+///      row;
+///  like the reference editor's packing,
+///  only the current row is considered,
+///  so reading the rows top
 ///      to bottom follows the source left to right.
 ///
 /// In TS you'd write (pseudocode):
@@ -207,11 +271,18 @@ pub fn pack(
     return (rows, places);
 }
 
-/// What: Position every visible annotation against the frame's rows. `&mut TextShaper` is lent so virtual-row
-///       texts can be shaped; the other inputs are lent read-only.
-/// Why: Underlines follow the glyphs they mark. A hint takes its x from the painted row's own caret geometry
-///      and a message row from its diagnostic's start, so both stand exactly above the characters they are
-///      about. The cost per repaint is one text layout per visible hint and message row plus a pass over the
+/// What:
+///  Position every visible annotation against the frame's rows.
+///  `&mut TextShaper` is lent so virtual-row
+///       texts can be shaped;
+///  the other inputs are lent read-only.
+/// Why:
+///  Underlines follow the glyphs they mark.
+///  A hint takes its x from the painted row's own caret geometry
+///      and a message row from its diagnostic's start,
+///  so both stand exactly above the characters they are
+///      about.
+///  The cost per repaint is one text layout per visible hint and message row plus a pass over the
 ///      visible marks for each materialized row.
 ///
 /// In TS you'd write (pseudocode):

@@ -1,5 +1,7 @@
-//! What: Prose break offsets independent of parser-node placement.
-//! Why: Existing newlines and whitespace past the text-node boundary must remain visible to the scanner.
+//! What:
+//!  Prose break offsets independent of parser-node placement.
+//! Why:
+//!  Existing newlines and whitespace past the text-node boundary must remain visible to the scanner.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -10,14 +12,17 @@
 use super::{abbreviation_at, break_offsets};
 /// Import the finding record and the severity every rule entry point takes.
 use crate::diagnostic::{Diagnostic, Severity};
-/// Import the grouped fix record and the production applier, so fixes are applied exactly as released.
+/// Import the grouped fix record and the production applier,
+///  so fixes are applied exactly as released.
 use crate::edits::{Fix, apply_fixes};
-/// Import the consuming rule, which hands this scanner parser-placed text-node boundaries.
+/// Import the consuming rule,
+///  which hands this scanner parser-placed text-node boundaries.
 use crate::markdown_semantic_breaks::semantic_line_breaks;
 /// Import the native parser adapter that owns exact source bytes and node offsets.
 use crate::markdown_source::MarkdownSource;
 
-/// Run the consuming rule so text-node boundaries come from the real parser, not handcrafted slices.
+/// Run the consuming rule so text-node boundaries come from the real parser,
+///  not handcrafted slices.
 fn check(source: &str) -> Vec<Diagnostic> {
     // Own the fixture text because the parsed source keeps its exact bytes for later offsets.
     let context: MarkdownSource =
@@ -77,7 +82,8 @@ fn leading_break_points_are_not_mistaken_for_ellipses() {
     assert!(break_offsets(".. next word", "", true).is_empty());
 }
 
-/// Inline code places the following text node directly after itself; its leading period still ends a sentence.
+/// Inline code places the following text node directly after itself;
+///  its leading period still ends a sentence.
 #[test]
 fn parsed_text_nodes_may_begin_with_their_break_point() {
     let source: &str = "`code`. Next words here\n";
@@ -92,7 +98,8 @@ fn parsed_text_nodes_may_begin_with_their_break_point() {
     );
 }
 
-/// Source glued to a node's final break point is the next written character, not a word boundary.
+/// Source glued to a node's final break point is the next written character,
+///  not a word boundary.
 #[test]
 fn glued_trailing_source_is_not_a_separator() {
     assert!(break_offsets("Sentence.", "`code` follows", false).is_empty());
@@ -102,7 +109,8 @@ fn glued_trailing_source_is_not_a_separator() {
     assert_eq!(break_offsets("said \"done.\"", " then", false), [12]);
 }
 
-/// The parser ends a text node where inline code begins, with or without a written separator between them.
+/// The parser ends a text node where inline code begins,
+///  with or without a written separator between them.
 #[test]
 fn parsed_inline_code_glued_to_a_sentence_gets_no_break() {
     assert!(check("Sentence.`code` follows here\n").is_empty());

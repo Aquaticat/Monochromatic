@@ -1,13 +1,18 @@
-//! What: Nested requests and partial-construction faults across the named load boundary.
-//! Why: A compiler callback may re-enter loading; neither nesting nor panic may overwrite a pending owner's state.
+//! What:
+//!  Nested requests and partial-construction faults across the named load boundary.
+//! Why:
+//!  A compiler callback may re-enter loading;
+//!  neither nesting nor panic may overwrite a pending owner's state.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Consume outer arguments, execute an inner request, and recover independently from either failure.
 //! ```
 
-/// What: Import the parent module's private request slot and guarded operation.
-/// Why: Test the real ownership boundary without publishing test-only panic controls.
+/// What:
+///  Import the parent module's private request slot and guarded operation.
+/// Why:
+///  Test the real ownership boundary without publishing test-only panic controls.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +23,11 @@ use super::{LoadRequest, PENDING, protected_request};
 use crate::frx_load::LoadedRules;
 use std::path::PathBuf;
 
-/// What: Own request arguments, using PathBuf rather than borrowed Path or UTF-8-only String.
-/// Why: The callback consumes native filename ownership independently of any caller lifetime.
+/// What:
+///  Own request arguments,
+///  using PathBuf rather than borrowed Path or UTF-8-only String.
+/// Why:
+///  The callback consumes native filename ownership independently of any caller lifetime.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,7 +57,8 @@ fn outer() -> anyhow::Result<LoadedRules> {
     return protected_request(request("inner"), inner);
 }
 
-/// Construct a real ruleset, then fault before accepting it.
+/// Construct a real ruleset,
+///  then fault before accepting it.
 fn panic_after_construction() -> anyhow::Result<LoadedRules> {
     // Consume arguments exactly as the production callback does before compilation.
     let _current: LoadRequest = PENDING.take().expect("partial request");
@@ -66,7 +75,8 @@ fn nested_loads_consume_their_own_requests() {
     assert!(PENDING.take().is_none());
 }
 
-/// Partial construction is never accepted, and the same thread can subsequently load again.
+/// Partial construction is never accepted,
+///  and the same thread can subsequently load again.
 #[test]
 fn constructed_rules_are_discarded_after_a_panic() {
     // match distinguishes failure from an accidentally returned partial compiled set.

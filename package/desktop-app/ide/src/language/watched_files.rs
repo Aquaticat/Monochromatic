@@ -1,21 +1,41 @@
-//! The files each language server asked to hear about, through `client/registerCapability` for
-//! `workspace/didChangeWatchedFiles`, and the changes waiting to be sent to them.
+//! The files each language server asked to hear about,
+//!  through `client/registerCapability` for
+//! `workspace/didChangeWatchedFiles`,
+//!  and the changes waiting to be sent to them.
 //!
 //! helix-lsp's own handler (`helix-lsp/src/file_event.rs` at the pinned revision) keeps only string glob
-//! patterns, ignores the kinds a watcher asks for, and always sends "changed". Helix declares support for
-//! relative patterns, and both rust-analyzer and the TypeScript 7 server register relative patterns, so
-//! this module keeps the registrations instead, per the Language Server Protocol 3.17:
-//! - a watcher is a glob pattern, either a string or a pattern relative to a base address;
-//! - `*` and `?` stay inside one path segment, `**` spans any number of segments, `{a,b}` and `[...]` group;
-//! - a watcher's kind says which of created, changed, and deleted it wants; it defaults to all three.
+//! patterns,
+//!  ignores the kinds a watcher asks for,
+//!  and always sends "changed".
+//!  Helix declares support for
+//! relative patterns,
+//!  and both rust-analyzer and the TypeScript 7 server register relative patterns,
+//!  so
+//! this module keeps the registrations instead,
+//!  per the Language Server Protocol 3.17:
+//! - a watcher is a glob pattern,
+//!    either a string or a pattern relative to a base address;
+//! - `*` and `?` stay inside one path segment,
+//!    `**` spans any number of segments,
+//!    `{a,b}` and `[...]` group;
+//! - a watcher's kind says which of created,
+//!    changed,
+//!    and deleted it wants;
+//!    it defaults to all three.
 //!
-//! Changes are gathered per path, so a burst (a build writing many files) becomes one notification per
-//! server in which each path appears once, with the kind that matches its final state on disk.
+//! Changes are gathered per path,
+//!  so a burst (a build writing many files) becomes one notification per
+//! server in which each path appears once,
+//!  with the kind that matches its final state on disk.
 
 /// The changes the change watcher forwards.
 use crate::change_watch::{ServerChange, ServerChangeKind};
-/// What: `GlobBuilder` compiles one glob pattern; `GlobMatcher` tests paths against it.
-/// Why: The protocol's glob syntax is what globset implements, with `literal_separator` keeping `*` and
+/// What:
+///  `GlobBuilder` compiles one glob pattern;
+///  `GlobMatcher` tests paths against it.
+/// Why:
+///  The protocol's glob syntax is what globset implements,
+///  with `literal_separator` keeping `*` and
 ///      `?` inside one path segment.
 ///
 /// In TS you'd write (pseudocode):
@@ -25,9 +45,15 @@ use crate::change_watch::{ServerChange, ServerChangeKind};
 use globset::{GlobBuilder, GlobMatcher};
 /// The protocol's data types.
 use helix_lsp::lsp;
-/// What: `BTreeMap` is an ordered map (sibling: `HashMap`, unordered); `Duration`/`Instant` are a time span
+/// What:
+///  `BTreeMap` is an ordered map (sibling:
+///  `HashMap`,
+///  unordered);
+///  `Duration`/`Instant` are a time span
 ///       and a monotonic time point.
-/// Why: Pending changes are sent in path order, which keeps notifications reproducible in tests.
+/// Why:
+///  Pending changes are sent in path order,
+///  which keeps notifications reproducible in tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,10 +73,17 @@ pub(super) const FORWARD_QUIET: Duration = Duration::from_millis(50);
 /// A burst that never pauses is still sent this long after its first change.
 pub(super) const FORWARD_LIMIT: Duration = Duration::from_millis(500);
 
-/// What: Combine the kind already pending for a path with a later one, so the result describes the path's
-///       final state. `Option<ServerChangeKind>` is the pending kind, or `None` for the first change.
-/// Why: A deletion after a creation must still arrive as a deletion; a file replaced by a deletion and a
-///      creation still exists, so it changed.
+/// What:
+///  Combine the kind already pending for a path with a later one,
+///  so the result describes the path's
+///       final state.
+///  `Option<ServerChangeKind>` is the pending kind,
+///  or `None` for the first change.
+/// Why:
+///  A deletion after a creation must still arrive as a deletion;
+///  a file replaced by a deletion and a
+///      creation still exists,
+///  so it changed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -91,7 +124,8 @@ pub fn merge(previous: Option<ServerChangeKind>, next: ServerChangeKind) -> Serv
 /// One watcher a server registered.
 #[derive(Debug)]
 struct Watcher {
-    /// The folder a relative pattern is matched against; `None` for a string pattern.
+    /// The folder a relative pattern is matched against;
+    ///  `None` for a string pattern.
     base: Option<PathBuf>,
     /// The compiled glob pattern.
     glob: GlobMatcher,
@@ -99,7 +133,8 @@ struct Watcher {
     kinds: lsp::WatchKind,
 }
 
-/// Compile one protocol glob pattern, or `None` when it is not a valid pattern.
+/// Compile one protocol glob pattern,
+///  or `None` when it is not a valid pattern.
 fn compile(pattern: &str) -> Option<GlobMatcher> {
     // What: `literal_separator(true)` stops `*` and `?` at `/`; `build` returns `Result`; `ok()` turns it
     //       into an `Option`; `map` compiles the matcher.
@@ -128,7 +163,8 @@ fn compile(pattern: &str) -> Option<GlobMatcher> {
     }
 }
 
-/// Turn one registered watcher into a matcher, or `None` when its pattern or base is unusable.
+/// Turn one registered watcher into a matcher,
+///  or `None` when its pattern or base is unusable.
 fn watcher(source: lsp::FileSystemWatcher) -> Option<Watcher> {
     // What: `unwrap_or` substitutes all three kinds when the watcher named none.
     // Why: The protocol's default is created, changed, and deleted (7).
@@ -187,7 +223,8 @@ fn protocol_kind(kind: ServerChangeKind) -> lsp::FileChangeType {
     };
 }
 
-/// True when `watcher` wants this change of `path`, spelled as the server spells the project root.
+/// True when `watcher` wants this change of `path`,
+///  spelled as the server spells the project root.
 /// A string pattern that does not match the whole path is also tried against the path below `root`.
 fn matches(watcher: &Watcher, path: &Path, root: &Path, kind: ServerChangeKind) -> bool {
     if !watcher.kinds.contains(wanted_kind(kind)) {
@@ -215,9 +252,14 @@ fn matches(watcher: &Watcher, path: &Path, root: &Path, kind: ServerChangeKind) 
     }
 }
 
-/// What: Registrations per server and the changes not yet sent. `Server` is the key that names a server:
-///       helix-lsp's `LanguageServerId` in the worker, a plain number in tests.
-/// Why: helix-lsp hands out its keys only to running servers, so tests name servers themselves.
+/// What:
+///  Registrations per server and the changes not yet sent.
+///  `Server` is the key that names a server:
+///       helix-lsp's `LanguageServerId` in the worker,
+///  a plain number in tests.
+/// Why:
+///  helix-lsp hands out its keys only to running servers,
+///  so tests name servers themselves.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -225,15 +267,19 @@ fn matches(watcher: &Watcher, path: &Path, root: &Path, kind: ServerChangeKind) 
 /// ```
 #[derive(Debug)]
 pub(super) struct WatchedFiles<Server> {
-    /// What: per server, its registration identifiers and their watchers (`Map<Server, Map<string, Watcher[]>>`).
-    /// Why: A server may register and unregister watchers by identifier at any time.
+    /// What:
+    ///  per server,
+    ///  its registration identifiers and their watchers (`Map<Server, Map<string, Watcher[]>>`).
+    /// Why:
+    ///  A server may register and unregister watchers by identifier at any time.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// const registrations = new Map<ServerId, Map<string, Watcher[]>>();
     /// ```
     registrations: HashMap<Server, HashMap<String, Vec<Watcher>>>,
-    /// Each changed path with the kind matching its final state, in path order.
+    /// Each changed path with the kind matching its final state,
+    ///  in path order.
     pending: BTreeMap<PathBuf, ServerChangeKind>,
     /// When the first pending change arrived.
     first: Option<Instant>,
@@ -254,16 +300,25 @@ impl<Server> Default for WatchedFiles<Server> {
     }
 }
 
-/// What: Registration, gathering, and sending, for any key type that can be copied, compared, hashed,
+/// What:
+///  Registration,
+///  gathering,
+///  and sending,
+///  for any key type that can be copied,
+///  compared,
+///  hashed,
 ///       and printed (`Copy + Eq + Hash + Display` are those abilities).
-/// Why: The map needs to hash and compare keys; the log prints them.
+/// Why:
+///  The map needs to hash and compare keys;
+///  the log prints them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class WatchedFiles<Server extends Key> { }
 /// ```
 impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
-    /// Keep the usable watchers of one registration, replacing an earlier one with the same identifier.
+    /// Keep the usable watchers of one registration,
+    ///  replacing an earlier one with the same identifier.
     pub(super) fn register(
         &mut self,
         server: Server,
@@ -286,7 +341,8 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
             .insert(identifier, usable);
     }
 
-    /// Forget one registration; a server with none left hears about nothing.
+    /// Forget one registration;
+    ///  a server with none left hears about nothing.
     pub(super) fn unregister(&mut self, server: Server, identifier: &str) {
         if let Some(server_registrations) = self.registrations.get_mut(&server) {
             server_registrations.remove(identifier);
@@ -297,7 +353,8 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
         tracing::debug!(%server, identifier, "a language server removed file watchers");
     }
 
-    /// True while some server has a watcher, so the project's folders are worth watching.
+    /// True while some server has a watcher,
+    ///  so the project's folders are worth watching.
     pub(super) fn wanted(&self) -> bool {
         return self
             .registrations
@@ -305,7 +362,9 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
             .any(|server| return server.values().any(|watchers| return !watchers.is_empty()));
     }
 
-    /// Gather one change; true when it is the first of a burst, so the caller schedules sending.
+    /// Gather one change;
+    ///  true when it is the first of a burst,
+    ///  so the caller schedules sending.
     pub(super) fn record(&mut self, change: ServerChange, now: Instant) -> bool {
         // Nothing is gathered while no server could want it.
         if self.registrations.is_empty() {
@@ -322,7 +381,9 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
         return false;
     }
 
-    /// How long to wait before sending: `None` with nothing pending, zero when the burst is due.
+    /// How long to wait before sending:
+    ///  `None` with nothing pending,
+    ///  zero when the burst is due.
     pub(super) fn wait(&self, now: Instant) -> Option<Duration> {
         let (first, last) = (self.first?, self.last?);
         let quiet = FORWARD_QUIET.saturating_sub(now.saturating_duration_since(last));
@@ -330,11 +391,18 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
         return Some(quiet.min(limit));
     }
 
-    /// What: Take the pending changes as one list of protocol events per server that wants some of them.
-    ///       `respell` turns a resolved path into the spelling the servers use for the project root, which
-    ///       is `root`; `live` says whether a server still runs, and the registrations of one that does not
+    /// What:
+    ///  Take the pending changes as one list of protocol events per server that wants some of them.
+    ///       `respell` turns a resolved path into the spelling the servers use for the project root,
+    ///  which
+    ///       is `root`;
+    ///  `live` says whether a server still runs,
+    ///  and the registrations of one that does not
     ///       are forgotten.
-    /// Why: Servers that registered nothing, or whose watchers match none of the changes, get nothing.
+    /// Why:
+    ///  Servers that registered nothing,
+    ///  or whose watchers match none of the changes,
+    ///  get nothing.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -385,7 +453,11 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
     }
 }
 
-/// The merge rule, glob matching, kinds, and per-server batches, without a server.
+/// The merge rule,
+///  glob matching,
+///  kinds,
+///  and per-server batches,
+///  without a server.
 #[cfg(test)]
 #[path = "watched_files_tests.rs"]
 mod tests;

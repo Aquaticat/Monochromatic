@@ -1,5 +1,8 @@
-//! What:    DFA state minimization by Moore partition refinement.
-//! Why:     This file is the Rust module that groups the minimize implementation, so the
+//! What:
+//!     DFA state minimization by Moore partition refinement.
+//! Why:
+//!      This file is the Rust module that groups the minimize implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,11 @@
 //! // module minimize: see exported functions and types below.
 //! ```
 
-/// What:    Imports the hash map used to assign colors from signatures.
-/// Why:     The code below uses `HashMap` directly; importing from `std/collections` keeps each
+/// What:
+///     Imports the hash map used to assign colors from signatures.
+/// Why:
+///      The code below uses `HashMap` directly;
+///  importing from `std/collections` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +23,11 @@
 /// ```
 use std::collections::HashMap;
 
-/// What:    Imports the table type being minimized.
-/// Why:     The code below uses `Dfa` directly; importing from `crate/dfa/table` keeps each call
+/// What:
+///     Imports the table type being minimized.
+/// Why:
+///      The code below uses `Dfa` directly;
+///  importing from `crate/dfa/table` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -29,12 +38,22 @@ use crate::dfa::table::Dfa;
 
 /// Returns a behaviorally equivalent DFA with the fewest states.
 ///
-/// What: Moore's algorithm: color states by acceptance mask, then repeatedly
+/// What:
+///  Moore's algorithm:
+///  color states by acceptance mask,
+///  then repeatedly
 /// refine so two states share a color only if every class transition leads to the
-/// same color, until the partition is stable; rebuild one state per color. Why:
+/// same color,
+///  until the partition is stable;
+///  rebuild one state per color.
+///  Why:
 /// the unanchored derivative construction over-distinguishes overlapping partial
-/// matches, so the raw DFA has far more states than the language needs; the
-/// minimal DFA is smaller, faster (better cache behavior), and smaller to
+/// matches,
+///  so the raw DFA has far more states than the language needs;
+///  the
+/// minimal DFA is smaller,
+///  faster (better cache behavior),
+///  and smaller to
 /// serialize.
 ///
 /// In TS you'd write (pseudocode):
@@ -76,7 +95,10 @@ pub fn minimize(dfa: &Dfa) -> Dfa {
 
 /// Assigns each state an initial color from its acceptance mask.
 ///
-/// What: equal masks share a color. Why: the coarsest partition consistent with
+/// What:
+///  equal masks share a color.
+///  Why:
+///  the coarsest partition consistent with
 /// observable acceptance.
 ///
 /// In TS you'd write (pseudocode):
@@ -95,10 +117,15 @@ fn initial_colors(dfa: &Dfa, n: usize) -> Vec<u32> {
     return color
 }
 
-/// Refines a coloring once, splitting groups by transition signature.
+/// Refines a coloring once,
+///  splitting groups by transition signature.
 ///
-/// What: a state's signature is its color plus the colors of all its class
-/// successors; distinct signatures get distinct new colors. Why: one round of
+/// What:
+///  a state's signature is its color plus the colors of all its class
+/// successors;
+///  distinct signatures get distinct new colors.
+///  Why:
+///  one round of
 /// Moore refinement.
 ///
 /// In TS you'd write (pseudocode):
@@ -132,7 +159,10 @@ fn refine(dfa: &Dfa, color: &[u32], n: usize, nc: usize) -> (Vec<u32>, usize) {
 
 /// Counts the distinct colors in a coloring.
 ///
-/// What: size of the set of color values. Why: the loop stops when this stops
+/// What:
+///  size of the set of color values.
+///  Why:
+///  the loop stops when this stops
 /// growing.
 ///
 /// In TS you'd write (pseudocode):
@@ -148,8 +178,11 @@ fn distinct_count(color: &[u32]) -> usize {
     return seen.len()
 }
 
-/// What:    Unit tests for minimization helpers, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for minimization helpers,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -162,8 +195,11 @@ mod tests;
 
 /// Rebuilds a DFA with one state per color.
 ///
-/// What: picks a representative state per color and remaps its transitions and
-/// acceptance through the coloring. Why: produces the minimized table while
+/// What:
+///  picks a representative state per color and remaps its transitions and
+/// acceptance through the coloring.
+///  Why:
+///  produces the minimized table while
 /// keeping the byte-class layout unchanged.
 ///
 /// In TS you'd write (pseudocode):

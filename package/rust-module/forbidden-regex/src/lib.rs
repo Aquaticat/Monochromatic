@@ -1,10 +1,21 @@
-//! What:     This Rust crate exports [`compile`], [`Regex`], and [`RegexSet`].
-//!           A Rust crate is closest to a TypeScript package module: it has private
-//!           implementation files and a public API surface. The implementation matches
-//!           byte slices (`&[u8]`, a borrowed read-only view of bytes, not an owned
-//!           `Vec<u8>` or fixed `[u8; N]` array), and internally chooses counting,
-//!           product, or derivative-DFA matcher back-ends plus set-level literal gating.
-//! Why:     This file is the Rust module that groups the lib implementation, so the
+//! What:
+//!      This Rust crate exports [`compile`],
+//!  [`Regex`],
+//!  and [`RegexSet`].
+//!           A Rust crate is closest to a TypeScript package module:
+//!  it has private
+//!           implementation files and a public API surface.
+//!  The implementation matches
+//!           byte slices (`&[u8]`,
+//!  a borrowed read-only view of bytes,
+//!  not an owned
+//!           `Vec<u8>` or fixed `[u8; N]` array),
+//!  and internally chooses counting,
+//!           product,
+//!  or derivative-DFA matcher back-ends plus set-level literal gating.
+//! Why:
+//!      This file is the Rust module that groups the lib implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -13,11 +24,15 @@
 //! ```
 //!
 //! The batch match kernels (`dfa::sheng`/`dfa::sheng2`) use explicit `std::arch` SIMD
-//! intrinsics (`vpermb` / `vqtbl4q`), runtime-detected, so the crate needs no nightly
+//! intrinsics (`vpermb` / `vqtbl4q`),
+//!  runtime-detected,
+//!  so the crate needs no nightly
 //! `portable_simd` feature.
 
-/// What:    The byte-set leaf alphabet.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The byte-set leaf alphabet.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -26,8 +41,10 @@
 /// ```
 mod charset;
 
-/// What:    The compile-time error type.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The compile-time error type.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -36,8 +53,10 @@ mod charset;
 /// ```
 mod error;
 
-/// What:    The regex node algebra and its smart constructors.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The regex node algebra and its smart constructors.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -46,8 +65,10 @@ mod error;
 /// ```
 mod ast;
 
-/// What:    The boundary context resolving zero-width assertions.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The boundary context resolving zero-width assertions.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -56,8 +77,10 @@ mod ast;
 /// ```
 mod context;
 
-/// What:    Position-dependent nullability.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Position-dependent nullability.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -66,8 +89,10 @@ mod context;
 /// ```
 mod nullable;
 
-/// What:    Brzozowski byte derivatives.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Brzozowski byte derivatives.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -76,8 +101,10 @@ mod nullable;
 /// ```
 mod derivative;
 
-/// What:    Pattern parsing into the node algebra.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Pattern parsing into the node algebra.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -86,8 +113,10 @@ mod derivative;
 /// ```
 mod parse;
 
-/// What:    Determinization and the compiled table.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Determinization and the compiled table.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -96,8 +125,10 @@ mod parse;
 /// ```
 mod dfa;
 
-/// What:    The counting back-end for bounded repetition.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The counting back-end for bounded repetition.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -106,8 +137,10 @@ mod dfa;
 /// ```
 mod counting;
 
-/// What:    The per-pattern back-end selector.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The per-pattern back-end selector.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -116,8 +149,10 @@ mod counting;
 /// ```
 mod engine;
 
-/// What:    Per-rule back-end selection and the seedless-rule fold into the gate.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Per-rule back-end selection and the seedless-rule fold into the gate.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -126,8 +161,11 @@ mod engine;
 /// ```
 mod build;
 
-/// What:    Builds a ruleset's rules across worker threads, results in input order.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Builds a ruleset's rules across worker threads,
+///  results in input order.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -136,8 +174,10 @@ mod build;
 /// ```
 mod parallel;
 
-/// What:    The RegexSet-level combined literal prefilter.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     The RegexSet-level combined literal prefilter.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -146,8 +186,10 @@ mod parallel;
 /// ```
 mod gate;
 
-/// What:    Greedy combination of literal-free rules into union DFAs.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Greedy combination of literal-free rules into union DFAs.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -156,8 +198,10 @@ mod gate;
 /// ```
 mod group;
 
-/// What:    Public matcher types.
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Public matcher types.
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -166,8 +210,10 @@ mod group;
 /// ```
 mod regex;
 
-/// What:    Re-exports the compile-time error type.
-/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+/// What:
+///     Re-exports the compile-time error type.
+/// Why:
+///      The surrounding function uses this step to keep the matcher behavior correct at
 ///          this point.
 ///
 /// In TS you'd write (pseudocode):
@@ -176,8 +222,10 @@ mod regex;
 /// ```
 pub use crate::error::CompileError;
 
-/// What:    Re-exports the public matcher API.
-/// Why:     The surrounding function uses this step to keep the matcher behavior correct at
+/// What:
+///     Re-exports the public matcher API.
+/// Why:
+///      The surrounding function uses this step to keep the matcher behavior correct at
 ///          this point.
 ///
 /// In TS you'd write (pseudocode):
@@ -186,10 +234,15 @@ pub use crate::error::CompileError;
 /// ```
 pub use crate::regex::{Regex, RegexSet, compile};
 
-/// Diagnostic: debug-prints the parsed node of a pattern that has no usable seed.
+/// Diagnostic:
+///  debug-prints the parsed node of a pattern that has no usable seed.
 ///
-/// What: returns `Some(debug)` when the pattern parses and is seedless (no leading
-/// seed and no required-literal seed), else `None`. Why: a temporary probe for the
+/// What:
+///  returns `Some(debug)` when the pattern parses and is seedless (no leading
+/// seed and no required-literal seed),
+///  else `None`.
+///  Why:
+///  a temporary probe for the
 /// CsA work to enumerate exactly which rules force the literal-free second pass.
 ///
 /// In TS you'd write (pseudocode):
@@ -210,12 +263,20 @@ pub fn debug_seedless(pattern: &str) -> Option<String> {
     }
 }
 
-/// Diagnostic: tries to build ONE combined search DFA over every pattern.
+/// Diagnostic:
+///  tries to build ONE combined search DFA over every pattern.
 ///
-/// What: parses each pattern, alternates them under a single `Σ*` search prefix, and
-/// eagerly determinizes the union; returns the state count on success or the
-/// `CompileError` (typically `StateCap`) on a blowup. Why: a measured probe of the
-/// "all-rules combined automaton" idea, to see whether a single monolithic DFA over the
+/// What:
+///  parses each pattern,
+///  alternates them under a single `Σ*` search prefix,
+///  and
+/// eagerly determinizes the union;
+///  returns the state count on success or the
+/// `CompileError` (typically `StateCap`) on a blowup.
+///  Why:
+///  a measured probe of the
+/// "all-rules combined automaton" idea,
+///  to see whether a single monolithic DFA over the
 /// whole ruleset is even buildable (vs the per-rule gate-plus-fold architecture).
 ///
 /// In TS you'd write (pseudocode):

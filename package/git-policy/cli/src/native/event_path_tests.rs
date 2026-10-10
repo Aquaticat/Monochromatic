@@ -1,5 +1,9 @@
-//! What: Controls for the event form of a pathname and its base64 encoding.
-//! Why: A UTF-8 name must stay exactly as today, with no extra field; every other name
+//! What:
+//!  Controls for the event form of a pathname and its base64 encoding.
+//! Why:
+//!  A UTF-8 name must stay exactly as today,
+//!  with no extra field;
+//!  every other name
 //!      must keep bytes a reader can decode back to the file.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,9 +14,14 @@
 /// The carrier and the encoder under test.
 use super::{EventPath, base64_standard};
 
-/// What: Decode standard padded base64, for the round-trip controls only.
-/// Why:  An encoder checked only against itself could be wrong in a way its own output
-///       hides; this decoder is written from the alphabet, not from the encoder.
+/// What:
+///  Decode standard padded base64,
+///  for the round-trip controls only.
+/// Why:
+///   An encoder checked only against itself could be wrong in a way its own output
+///       hides;
+///  this decoder is written from the alphabet,
+///  not from the encoder.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,7 +54,8 @@ fn decode(text: &str) -> Vec<u8> {
     return bytes;
 }
 
-/// The RFC 4648 section 10 test vectors, every padding length included.
+/// The RFC 4648 section 10 test vectors,
+///  every padding length included.
 #[test]
 fn base64_matches_the_rfc_vectors() {
     for (input, expected) in [
@@ -61,7 +71,9 @@ fn base64_matches_the_rfc_vectors() {
     }
 }
 
-/// The decision brief's own example, `caf` 0xE9 `.txt`, encodes as the brief shows it.
+/// The decision brief's own example,
+///  `caf` 0xE9 `.txt`,
+///  encodes as the brief shows it.
 #[test]
 fn base64_encodes_the_brief_example() {
     assert_eq!(
@@ -71,7 +83,9 @@ fn base64_encodes_the_brief_example() {
     );
 }
 
-/// Every byte value, including the two that use `+` and `/`, survives a round trip.
+/// Every byte value,
+///  including the two that use `+` and `/`,
+///  survives a round trip.
 #[test]
 fn base64_round_trips_every_byte_value() {
     let every: Vec<u8> = (0..=255).collect();
@@ -85,7 +99,9 @@ fn base64_round_trips_every_byte_value() {
     }
 }
 
-/// A UTF-8 name, multi-byte characters and control characters included, keeps no bytes.
+/// A UTF-8 name,
+///  multi-byte characters and control characters included,
+///  keeps no bytes.
 #[test]
 fn a_utf8_name_has_no_exact_bytes() {
     for name in ["a.txt", "doc/café.md", "\u{1}tab\there.md", "😀/x", ""] {
@@ -95,7 +111,8 @@ fn a_utf8_name_has_no_exact_bytes() {
     }
 }
 
-/// Every kind of invalid sequence keeps the exact bytes, and the text replaces them.
+/// Every kind of invalid sequence keeps the exact bytes,
+///  and the text replaces them.
 #[test]
 fn a_name_that_is_not_utf8_keeps_its_bytes() {
     let cases: [(&[u8], &str); 7] = [
@@ -127,7 +144,8 @@ fn a_name_that_is_not_utf8_keeps_its_bytes() {
     }
 }
 
-/// Every byte Git allows in a name (all but NUL) survives, and two names that read alike
+/// Every byte Git allows in a name (all but NUL) survives,
+///  and two names that read alike
 /// stay apart by their bytes.
 #[test]
 fn names_that_read_alike_stay_apart() {
@@ -141,7 +159,8 @@ fn names_that_read_alike_stay_apart() {
     assert_ne!(first, second);
 }
 
-/// A display path is text only, even when it spells escapes.
+/// A display path is text only,
+///  even when it spells escapes.
 #[test]
 fn a_display_path_never_has_bytes() {
     let path: EventPath = EventPath::display("folder/\\xffname");

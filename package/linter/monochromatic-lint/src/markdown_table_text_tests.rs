@@ -1,5 +1,9 @@
-//! What: Encoding controls for Markdown cell text moved into HTML/MDX.
-//! Why: Unicode padding, escape runs, tag delimiters and braces exercise different syntax boundaries.
+//! What:
+//!  Encoding controls for Markdown cell text moved into HTML/MDX.
+//! Why:
+//!  Unicode padding,
+//!  escape runs,
+//!  tag delimiters and braces exercise different syntax boundaries.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -25,7 +29,8 @@ fn html_text_encoding_neutralizes_markup_without_stripping_markdown() {
     assert_eq!(html_table_cell_text("end\\", false), "end\\");
 }
 
-/// Authored entity spelling remains literal, matching the incumbent's raw-cell conversion.
+/// Authored entity spelling remains literal,
+///  matching the incumbent's raw-cell conversion.
 #[test]
 fn entity_spelling_is_preserved_in_the_html_text() {
     for (source, expected) in [
@@ -39,7 +44,8 @@ fn entity_spelling_is_preserved_in_the_html_text() {
     }
 }
 
-/// MDX braces are literal text, never an expression introduced by the conversion.
+/// MDX braces are literal text,
+///  never an expression introduced by the conversion.
 #[test]
 fn mdx_text_cannot_gain_executable_braces() {
     assert_eq!(
