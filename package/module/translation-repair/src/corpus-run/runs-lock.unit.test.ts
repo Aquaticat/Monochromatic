@@ -624,8 +624,9 @@ await describe({
         },),
 
         it({
-          name: 'PROPAGATES a filesystem refusal that is not EEXIST rather than mistaking it for another pass '
-            + 'already holding the lock, since only EEXIST means the file is already claimed',
+          name: 'PROPAGATES the write refusal of a runs directory it cannot write into (EACCES at the claim\'s staged '
+            + 'text) rather than mistaking it for another pass already holding the lock, since only EEXIST at the '
+            + 'link means the file is already claimed',
           fn: async () => {
             requireNonRoot();
             await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
