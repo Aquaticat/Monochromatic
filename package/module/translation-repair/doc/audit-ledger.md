@@ -7976,6 +7976,39 @@ and pinning only the first printed line in the artifact pool case,
 where pinning the whole printed list is the alternative.
 The wording of the runs lock's warning is under B390.
 
+Closed on 2026-10-10 (UTC) by the runner entry tails round,
+red in `cb553634188266b72019e60b6bd285d5746b0d32`,
+fixed in `752be22cf8f4d875333bf1d54efdb90955d619a1`:
+`editor-width-probe` builds its client from a factory once the draw holds a slice (B391);
+`corpus-run/editor-standing-read.ts` is 43 lines of wiring over four role modules,
+each with cases of its own (B392);
+and the artifact pool case builds a throwaway repository of two commits,
+since `resolvePool` takes a required `repository`,
+handed down through the five pooling entries (B393),
+the alternative the veto on that case named.
+The four entry tails stay cold,
+each now the closing `},);` of its entry's one awaited call,
+after a run that needs a provider's answer:
+wiring,
+and left as such.
+By that round's census over its 24 named test files,
+the entry files show 4 files with 4 stretches over 4 lines,
+those four closing lines,
+and the four new standing modules,
+`corpus-run/editor-width-probe-run.ts`,
+`corpus-run/artifact-pool.ts` and `corpus-run/artifact-eligible.ts` show no cold stretch;
+it read only the suites of its named files,
+so its counts are not comparable with the census at `f5ea0872bf9f4e8d551b92c64aeba925cf1933e2`.
+Still open to the owner's veto:
+the four `unreachable:` throws,
+the two stubs of `corpus-run/runs-lock.ts`,
+casing the arm with no `names` while `names` stays optional,
+the `/proc` stub's body,
+and pinning only the first printed line in the artifact pool case,
+which the rewritten case still does.
+`corpus-run/artifact-eligible.unit.test.ts` still reads this checkout's root commit and `HEAD`,
+now open under B393.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -29639,6 +29672,27 @@ the `ONLY` line says the ordering is bypassed although the entries asked for are
 the detail of an `INCOMPLETE` line says to check that the clone exists for a page that is simply absent;
 and the pair target on the `DONE` line is a literal 92.
 
+Closed on 2026-10-10 (UTC) for the corpus pin by B394 (`d415f1ddac6b11f68193865985a69842ff9387d2`):
+each entry reads the pin inside its refusal boundary,
+and an unreadable value is a stated refusal at exit 6.
+The other three were not reproduced at that round's base,
+`791196bdc8458c54962cd834b0ac1a58851fdf78`,
+since `cfac5b981` had already met them.
+The `ONLY` line says the entries named are run in the pass's own order,
+which the case
+"RUNS THE ENTRIES --only NAMES IN THE PASS'S OWN ORDER,
+resuming one holding cached slices ahead of one the command line and the corpus both name first"
+(`corpus-run/corpus-pass-select.unit.test.ts`),
+added by that round and passing at its base,
+now pins.
+The detail for an absent page says "check the path,
+or pin a commit that has it",
+and an unreadable clone prints no `INCOMPLETE` line,
+since it is a stated refusal.
+The `DONE` line counts `artifacts=N/M` over the complete pairs the walk found,
+and no literal 92 is left in production code.
+What those changes left open is under B394.
+
 Recurrence:
 `mistake-prevention.md`,
 "Two layers reading one refusal":
@@ -32973,6 +33027,11 @@ since its procedure lives inside the entry file;
 the alternative is to split it into a `-run.ts` procedure that returns the code,
 as its siblings are.
 
+Closed on 2026-10-10 (UTC) by B392 (`752be22cf8f4d875333bf1d54efdb90955d619a1`),
+which took the alternative:
+`reportStandings` (`corpus-run/editor-standing-read-run.ts`) returns `NOTHING_RECORDED` (1) or `STANDINGS_READ` (0),
+and the entry sets `process.exitCode` from what it returns.
+
 Recurrence:
 `mistake-prevention.md`,
 "Tests touching the real world".
@@ -33130,6 +33189,19 @@ where the alternative is to return the grace and pass it down;
 and the outside reads,
 `RUN_OUTSIDE_READS` (`pass-outside-reads.ts`) handing the live `process.env` on at module load,
 where the alternative is to build them in the corpus-pass entry.
+
+Closed on 2026-10-10 (UTC):
+the corpus pin read at load,
+and the outside reads,
+by B394 (`d415f1ddac6b11f68193865985a69842ff9387d2`);
+and the straggler grace,
+the writer grace,
+the slice overlap,
+the contest records and the calibration grace by B398 to B400 (`477bbd6601509ac08d867e858af680a59c4f91eb`),
+each by the alternative this entry named.
+The resolution of the runs directory once at start still stands for `roster-bench` and `editor-width-probe`;
+since B391 the width probe resolves it in `main`,
+before its run builds the client.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -33441,6 +33513,18 @@ Open to the owner's veto:
 verify-published still prints this error as a fault at exit 5;
 the alternative is a stated refusal at exit 6.
 
+Closed on 2026-10-10 (UTC) by `752be22cf8f4d875333bf1d54efdb90955d619a1`,
+which keeps the fault and records why in its message.
+Every artifact verify-published reads goes through `parseSettledTwoLaneArtifact`,
+which hands `parseLaneSelection` the comparison it recomputes,
+and `assertContestCoversEligible` (`corpus-run/artifact-two-lane-read-contest.ts`)
+refuses a contest that omits a slice whose lanes differ as an `ArtifactParseError`,
+which `readEntry` (`corpus-run/verify-published-entry.ts`) prints as a `REFUSED by` line.
+So the error is reachable only through a defect in the reader,
+and its sentence offers the operator nothing to change;
+no honest input reaches it,
+and no case is red.
+
 Recurrence:
 `mistake-prevention.md`,
 "Messages a marked class carries".
@@ -33573,6 +33657,600 @@ the alternative tells a failed write from a failed removal and says the text is 
 Recurrence:
 `mistake-prevention.md`,
 "Claims without their evidence".
+
+### B391: the width probe built its client before anything a keyless operator could be told
+
+Red in `cb553634188266b72019e60b6bd285d5746b0d32`,
+fixed in `752be22cf8f4d875333bf1d54efdb90955d619a1`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner entry tails,
+from the open items of the T8 passage "The runner and git cluster of the final census".
+`editor-width-probe.ts` built its run client with `createRunClient()`
+before it resolved the runs directory,
+and `runEditorWidthProbe` (`corpus-run/editor-width-probe-run.ts`) took the built client,
+so a process holding no key refused at the client
+and never printed the count,
+the draw,
+or the refusal of an empty draw,
+none of which needs a provider;
+and the rest of `main` stayed cold in every keyless child.
+By the agent's run against the unchanged production code,
+three cases of `editor-width-probe-run.unit.test.ts` fail,
+among them the new
+"BUILDS THE CLIENT ONLY ONCE THE DRAW HOLDS A SLICE,
+so a process holding no key prints the header and the draw and then refuses with what building the client said,
+asking the panel nothing";
+and two as-built cases of `editor-width-probe.unit.test.ts` fail:
+the keyless refusal,
+now expected after the header and the draw,
+and
+"REFUSES DRAW B OF A ONE-SLICE SAMPLE as stated and exits 6 before any client is built,
+so the refusal that needs no provider is the one a keyless operator reads".
+The as-built cases run over a throwaway runs directory,
+lookup cache and corpus clone (`benchWorld`),
+since the draw now comes before the client and would otherwise read the operator's own clone.
+The red commit's message counts 9 of its 23 named test files failing against the unchanged production code,
+four of them for want of the modules they import (B392);
+the other 14 pass,
+handing a repository the old signatures ignore (B393).
+
+The fix:
+`runEditorWidthProbe` takes `newClient`,
+as `runRosterBench` does,
+and calls it once,
+after the draw is known to hold a slice and before `controlHolds` asks the panel;
+the entry passes `createRunClient`.
+By the agent's census over the round's 24 named test files,
+the entry's one cold line is the closing `},);` of its awaited run,
+which is wiring (the T8 passage).
+
+Run on the merged tree of this round,
+B394's and B398's:
+lint clean,
+49 scans passing,
+and the suite at 2,047 passing with no failure,
+14 more than B390's 2,033:
+5 from this round's suites,
+3 from B394's and 6 from B398's.
+At the merge the lead resolved two TSDoc example lines,
+in `corpus-run/draw-sample-pool.ts` and `corpus-run/draw-sample-run.ts`,
+keeping both the pin of B394 and the repository of B393.
+
+Open to the owner's veto:
+one client,
+built right before the control;
+the alternatives are one client per stage,
+or one built at the start as before.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B392: the editor standing read printed its stderr lines in whichever order its reads ended
+
+Red in `cb553634188266b72019e60b6bd285d5746b0d32`,
+fixed in `752be22cf8f4d875333bf1d54efdb90955d619a1`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner entry tails,
+while moving the printer out of `corpus-run/editor-standing-read.ts`,
+an open item of the T8 passage "The runner and git cluster of the final census" and of B379's veto.
+The entry file held the whole printer and set its own exit code,
+605 lines.
+The listing of every named directory and the reading of every artifact ran side by side under `Promise.all`,
+and each member printed its "no artifacts under",
+off-roster or refused line from inside itself,
+as it found it,
+so one set of archives gave its stderr lines in completion order.
+The case that holds it is
+"SAYS EACH REFUSED ARTIFACT IN THE ORDER ITS ARCHIVE WAS NAMED when the later archive's read ends first,
+so two runs over the same archives say the same lines",
+which puts a 32 MB refused artifact in the archive named first and an empty one in the archive named second;
+by the agent's measurement against the unmoved printer,
+the second's line printed first.
+At the base the case's file,
+`corpus-run/editor-standing-read-run.unit.test.ts`,
+cannot load,
+since it imports a module the fix adds;
+the order's red rests on that one measurement of a slow read,
+and the fix does not depend on timing.
+Before the move,
+the agent tightened the as-built suite to pin whole outputs;
+it passed against the unmoved printer and again after the move,
+so the move changed no byte,
+by the agent's account.
+
+The fix:
+the entry file is 43 lines of wiring,
+and the printer is four role modules:
+`corpus-run/editor-standing-read-listing.ts`,
+`corpus-run/editor-standing-read-artifact.ts`,
+`corpus-run/editor-standing-read-seat.ts` and `corpus-run/editor-standing-read-run.ts`,
+whose `reportStandings` returns `NOTHING_RECORDED` (1) or `STANDINGS_READ` (0),
+and the entry sets `process.exitCode` from it.
+The listing and the reader return what they have to say (`said`),
+and `reportStandings` prints every line once all reads settle,
+in the order the directories were named and their artifacts listed.
+The listing's "no artifacts under" lines have no red of their own,
+since two failed listings end together;
+the run case
+"SAYS WHY EACH NAMED DIRECTORY COULD NOT BE LISTED,
+in the order they were named,
+and returns 1 over no artifact"
+pins their order.
+The editor runner barrel names the new modules;
+the key in `caught-value-text.unit.test.ts` and two entries of `promise-combinators-in-order.unit.test.ts` follow them.
+
+Open to the owner's veto:
+`resolveRuns` is called only when the command line names no directory,
+so git is never asked when directories are named,
+as at the base;
+the alternative is to resolve it at the start.
+A kind-union outcome carrying `said` replaces the string sentinels and the `ARTIFACT_ABSENCES` record;
+the report names no alternative.
+The summary still prints `archives=0` when the runs directory is read by default,
+byte for byte as before;
+the alternative counts that directory as one archive.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B393: the artifact pool asked the package's own checkout for ancestry
+
+Red in `cb553634188266b72019e60b6bd285d5746b0d32`,
+fixed in `752be22cf8f4d875333bf1d54efdb90955d619a1`.
+
+Found on 2026-10-10 (UTC) by the agent working the runner entry tails,
+from the veto on the artifact pool case in the T8 passage "The runner and git cluster of the final census".
+`resolveCommit` and `tipContains` (`corpus-run/artifact-generation.ts`)
+defaulted `repository` to the directory of the built bundle,
+and `resolvePool` (`corpus-run/artifact-pool.ts`) handed them none,
+so the case
+"RESOLVES A REQUIRED COMMIT NAMED BY A REVISION ..."
+read this checkout's `HEAD` and `HEAD~1`
+and failed on a checkout of one commit,
+and no caller of `resolvePool` could ask another repository.
+The rewritten case builds a throwaway repository of two commits with `makeNamingArchive`;
+by the agent's run against the unchanged production code,
+it failed with "Cannot place pipeline commit ... against required commit ...".
+
+The fix:
+`repository` is a required value on `resolveCommit`,
+`tipContains`,
+`selectEligible`,
+`resolvePool`,
+`gatherAttributionEntries`,
+`gatherProbeReadings`,
+`collectShippedRegions`,
+`readDrawPool` and the five pooling procedures
+(`printAttribution`,
+`printCrosscheck`,
+`printProbeScore`,
+`drawGradingSample` and `sampleDamage`);
+the five entries pass `import.meta.dirname`,
+and every built bundle sits flat in `dist/final/node`,
+so they name the checkout the default named.
+`selectEligible` asks the repository nothing when no commit is required,
+and cases with no required commit pass `UNASKED_REPOSITORY` (`corpus-run/pool-policy.test-fixture.ts`),
+a path no directory stands at.
+
+Open to the owner's veto:
+`repository` is required even where no commit is required;
+the report names no alternative.
+Four cases of `corpus-run/artifact-eligible.unit.test.ts` still read this checkout's root commit and `HEAD`,
+through `gitBounds`,
+and hand the checkout in as `THIS_CHECKOUT`;
+the alternative is a throwaway repository.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B394: the corpus pin was resolved at module load
+
+Red in `b42882f3a74c02b8e77549e8075a18ccbad0a221`,
+fixed in `d415f1ddac6b11f68193865985a69842ff9387d2`.
+
+Found on 2026-10-10 (UTC) by the agent reading the corpus pin at each entry,
+the open item B302 and B381 left.
+`run-config.ts` held `RUN_CORPUS_PIN_SETTING`,
+built by `readCorpusPinSetting` while the module loaded,
+and `RUN_CORPUS_PIN`,
+its pin;
+and `pass-outside-reads.ts` built `RUN_OUTSIDE_READS` from them at load,
+over the live `process.env`.
+So an unreadable `TRANSLATION_REPAIR_CORPUS_COMMIT` or `TRANSLATION_REPAIR_CORPUS_CLONE_DIR`
+exited 1 under bundled source before `reportingRefusals` ran,
+in 34 of the 43 built bundles,
+`index.mjs` among them,
+whether or not the command reads the corpus.
+Seventeen entries read the pin in code besides `corpus-pass`:
+`coverage-control-probe`,
+`coverage-probe`,
+`displacement-probe` (its clone alone),
+`draw-sample`,
+`editor-calibrate`,
+`editor-width-probe`,
+`judge-fidelity-probe`,
+`probe-relabel`,
+`probe-verify`,
+`producer-calibrate`,
+`recall-benchmark`,
+`roster-bench`,
+`sentinel-probe`,
+`slice-census`,
+`translate-probe`,
+`window-trial-probe`,
+and `rendering-audit-settled` through its arguments.
+Seven library modules read the constant in code:
+`draw-entry-load`,
+`pass-decline`,
+`pass-entry-artifact`,
+`pass-seated-pictures`,
+`pass-outside-reads`,
+`rendering-audit-settled-args` and `window-trial-protocol`.
+By the agent's run against the base build,
+each of the 17 commands gave code 1,
+nothing on stdout and stderr beginning with the bundled source,
+where `corpus-pin-entries.unit.test.ts` holds each at exit 6 with its whole stated line and nothing on stdout;
+the same file holds a command that never reads the corpus,
+`ledger-report`,
+running past the setting.
+The red commit's message counts 10 of its 15 named test files failing against the unchanged production code;
+the other five pass,
+the `--only` order case among them (B302's closing note),
+and the rest hand a pin the old signatures ignore.
+
+The fix:
+`readCorpusPinSetting({ env, fallback })` reads the environment it is handed,
+as `readPoolPolicy({ env })` does since B380;
+`readRunCorpusPinSetting({ env })` replaces both constants,
+its fallback a private constant of `run-config.ts`,
+the same clone path and `CORPUS_COMMIT_SHA`.
+Each of the 18 entries calls it inside its run callback,
+at the callback's start by the agent's account,
+except `corpus-pass`,
+where it follows the cap,
+the ceiling,
+both windows and the overlap (B400)
+and comes before the runs directory and the lock.
+The library takes the pin as a required value:
+`settleEntry`,
+`runEntryPipeline`,
+`loadEntry`,
+`readDrawPool`,
+`protocolDigest({ headSha, pin })` and `readSeatedPictures` take `pin`;
+`readAuditArguments` and `runSettledAudit` take `runCloneDir`;
+and `recordEntryDecline`,
+`settledEntryArtifact` and `settledPageArtifact` take `corpusSha`.
+`RUN_OUTSIDE_READS` is gone,
+and `corpus-pass.ts` and `rendering-audit-settled.ts` call `outsideReadsFrom` in their own functions;
+the removal is in this commit,
+though the fix commit of B398 to B400 names it too,
+having made the same change on its own branch (M144).
+The pinned commit and its default are unchanged.
+Cases also stand in `corpus-pass-refusals`,
+`corpus-pin-override`
+(rewritten so no case writes `process.env`),
+`run-config`,
+`draw-entry-load`,
+`pass-decline`,
+`pass-entry`,
+`window-trial-protocol` and `rendering-audit-settled-args`.
+By the agent's census over its 15 test files,
+`readRunCorpusPinSetting`,
+`readCorpusPinSetting`,
+`loadEntry`,
+`protocolDigest`,
+`readAuditArguments` and `recordEntryDecline` show no cold stretch,
+and the changed files it lists cold are callers whose suites were not in its run.
+The whole merged tree's run is recorded in B391.
+
+Open,
+the lead's list,
+not fixed:
+the TSDoc in `corpus-run/corpus-pass-lines.ts` says "Until 2026-10-06" for the ordering wording and the literal 92,
+where both left the code on 2026-10-10 (`cfac5b981`);
+`doc/configuration.md` still names `RUN_CORPUS_PIN`,
+the removed constant;
+and the `INCOMPLETE` detail for an ordinary absent page still tells the operator to "check the path",
+a path the pass builds itself,
+where the alternative is to reword it locally in `passIncompleteLine` and `readSide`.
+
+Open to the owner's veto:
+commands that never read the corpus now run past a malformed setting;
+the alternative is to read it in every entry.
+`rendering-audit-settled` refuses a malformed commit even when `--clone` is given,
+as at the base;
+the alternative is to read the clone half alone.
+The 17 as-built cases sit in one file;
+in `corpus-pass` the pin is read after the windows and the overlap and before the runs directory and the lock;
+and `judge-fidelity-probe` reads the pin before `digestPipeline`;
+the report names no alternative to these three.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal" and "Tests touching the real world".
+
+### B395: the draw's entry loader read its source at the module constant
+
+Red in `b42882f3a74c02b8e77549e8075a18ccbad0a221`,
+fixed in `d415f1ddac6b11f68193865985a69842ff9387d2`.
+
+Found by the move B394 records.
+`loadEntry` (`corpus-run/draw-entry-load.ts`) read each entry's zh source at `RUN_CORPUS_PIN`,
+whatever pin `drawGradingSample` was handed,
+so the bands a draw built and the commit its sheets record could come from two pins.
+The case is
+"READS THE ENTRY'S SOURCE AT THE PIN IT IS HANDED,
+never at one of its own"
+(`draw-entry-load.unit.test.ts`).
+
+The fix:
+`loadEntry` takes `pin`,
+which `readDrawPool` hands it from the draw.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B396: the window trial's protocol digest folded in the module constant
+
+Red in `b42882f3a74c02b8e77549e8075a18ccbad0a221`,
+fixed in `d415f1ddac6b11f68193865985a69842ff9387d2`.
+
+Found by the move B394 records.
+`protocolDigest` (`corpus-run/window-trial-protocol.ts`)
+folded `RUN_CORPUS_PIN` into the digest the trial ledger resumes on,
+whatever pin `runWindowTrial` was handed,
+so a trial at another pin pooled rows bought at the first.
+The case is
+"CHANGES WITH THE CORPUS COMMIT IT IS HANDED,
+so rows bought at another pin are never pooled"
+(`window-trial-protocol.unit.test.ts`).
+
+The fix:
+`protocolDigest({ headSha, pin })` folds in the pin it is handed,
+its clone and then its commit.
+
+Not checked by a run,
+an inference:
+the digest's key order is the order the pin reader writes,
+so a ledger keyed before the change still resumes at the same pin.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B397: the artifact and the decline record named the commit of the module constant
+
+Red in `b42882f3a74c02b8e77549e8075a18ccbad0a221`,
+fixed in `d415f1ddac6b11f68193865985a69842ff9387d2`.
+
+Found by the move B394 records.
+`settledEntryArtifact` (`corpus-run/pass-entry-artifact.ts`) and `recordEntryDecline` (`corpus-run/pass-decline.ts`)
+named `RUN_CORPUS_PIN.commitSha` on the artifact and on the decline record,
+whatever pin the pass read the entry at.
+The cases are
+"NAMES THE CORPUS COMMIT IT IS HANDED on the record,
+never one of its own"
+(`pass-decline.unit.test.ts`)
+and
+"NAMES THE COMMIT OF THE PIN IT IS HANDED on the artifact it writes and on a decline record,
+never one of its own"
+(`pass-entry.unit.test.ts`).
+
+The fix:
+both take `corpusSha`,
+as does `settledPageArtifact`,
+from the pin `settleEntry` is handed.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B398: the stage windows were read at every round and inside the writer stages
+
+Red in `1e8ad4c070a15a130344f7bed7d668db6b59c6a9`,
+fixed in `477bbd6601509ac08d867e858af680a59c4f91eb`.
+
+Found on 2026-10-10 (UTC) by the agent working the pipeline-wide environment reads,
+the alternatives B381 left open.
+`resolveStragglerGraceMs` (`grace-override.ts`) read `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS`
+in the `graceMs` default of `runGatherRound` (`stage-round.ts`),
+at every round;
+and `writerRoundGraceMs()` (`writer-grace-override.ts`) read both window dials
+inside the four writer stages
+(consolidate-produce,
+translate-produce,
+refine and repair-editor).
+So a case chose its windows by writing the process's environment,
+no signature showed that a command depends on them,
+and an unreadable dial refused a probe at its first round,
+not at its launch.
+By the agent's run against the base build,
+a judges-only selection with the round dial at `300s` refused
+although the case handed in its windows (`candidate-select.unit.test.ts`);
+a refine stage with only the writer dial at `300s` refused with
+"TRANSLATION_REPAIR_WRITER_GRACE_MS must be ...";
+and eight `readWriterGrace` cases fail,
+since it ignored the `env` it is handed.
+The red commit's message counts 12 of its 156 named test files failing at run time
+against the unchanged production code;
+the rest are red only to the type checker,
+which gives 540 errors in 152 test and fixture files against the base declarations,
+and none in production.
+
+The fix:
+one value,
+`StageSettings` (`stage-settings.ts`),
+holding the `WriterGrace` and the `ContestLedger` (B399),
+threaded along the one chain the reads share:
+by the agent's reference walk from `runGatherRound` with oxc,
+160 declarations in 128 files,
+reached from 19 entries.
+The 18 entries other than `editor-calibrate` call `readStageSettings({ env: process.env })` once;
+`editor-calibrate` reads its windows through `readWriterGrace` with its own round fallback (B399).
+`runGatherRound`,
+`gatherStageVoices` and `runWindowedRounds` require `graceMs` with no default,
+so a gather with no window does not compile;
+reader stages pass `stageSettings.grace.roundMs`,
+and the four writer stages pass `stageSettings.grace.writerMs`.
+`resolveStragglerGraceMs` and `resolveWriterGraceMs` require `raw`;
+`readWriterGrace({ env, roundFallback })` keeps the refusal order that names the round dial first;
+`writerRoundGraceMs` is gone,
+and so are the optional test seams `graceMs` on `reviewAbsoluteNaturalness` and `contestLaneSlice`.
+The 17 probes now refuse an unreadable window in their entry,
+before any round.
+At the merge the lead resolved eleven conflicting hunks between this round and B391's and B394's,
+in comments,
+examples and one duplicate block (M144),
+and added the overlap and the settings the merged signature requires to B394's pin case in `pass-entry.unit.test.ts`,
+in the fix commit.
+The whole merged tree's run is recorded in B391.
+
+By the agent's census of direct `process.env` reads in production code,
+82 at the base and 99 after,
+the nine library reads of the items this round moved are gone,
+and every new read is in an entry's own function.
+By the agent's census over its 13 test files,
+none of `stage-settings.ts`,
+`corpus-run/pass-overlap.ts`,
+`grace-override.ts`,
+`writer-grace-override.ts` and `corpus-run/slice-overlap.ts` has a cold stretch,
+and the cold stretches in the files it touched are older code.
+
+Open:
+"only entries read the environment" holds for these reads and for the bases of child environments,
+not for the whole package.
+`resolveHardCapMinutes` (`corpus-run/cap-override.ts`) and `resolveSpendCeilingUsd` (`corpus-run/spend-ceiling.ts`)
+read the environment in their default parameters,
+and `readDriftOptIn` (`corpus-run/pass-generation-guard.ts`) in its body;
+`corpus-pass.ts` is each one's only production caller,
+by a search made for this entry.
+The alternative is a required `raw` or `env`,
+as done for the windows.
+A scan gap the move opened:
+`real-clock-bounds.unit.test.ts` keys `graceMs`,
+but not the `roundMs` or `writerMs` of a `StageSettings`.
+Tests hand windows only through `SCRIPTED_STAGE_SETTINGS`
+or `scriptedStageSettingsWaiting({ graceMs })` (`stage-settings.test-fixture.ts`),
+whose `graceMs:` key the scan reads,
+and the `WriterGrace` literals of `editor-calibrate-run.unit.test.ts` are out of its reach;
+the alternative is to add both keys and list the literals of a reader's output.
+
+Open to the owner's veto:
+one `StageSettings` value for both windows and the ledger;
+the alternative is separate `graceMs` and `contestLedger` parameters.
+Tests run their rounds under the hang stop,
+60,000 ms for both windows in `SCRIPTED_STAGE_SETTINGS`,
+instead of the 120,000 and 180,000 ms they took from the environment;
+so the note case in `editor-calibrate-run.unit.test.ts` reads `60000ms ... 60000ms` where it read `5678ms ... 1234ms`,
+and no longer tells the two numbers apart;
+the alternative keeps 1234 and 5678 as small bounds on the real clock.
+`CorpusPassInput` keeps `graceNote` and `writerNote` beside the new fields,
+and `RepairChunkRequest` (`repair-chunk-request.ts`) and `PassPrepareRequest` (`corpus-run/pass-prepare-request.ts`)
+are modules of types alone,
+split out because `repair-chunk.ts` reached 306 code lines and `corpus-run/pass-prepare.ts` 302,
+against the limit of 300;
+the report names no alternative to these two.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world" and "Tests on the real clock".
+
+### B399: the contest ledger and the calibration grace read and wrote the process's environment
+
+Red in `1e8ad4c070a15a130344f7bed7d668db6b59c6a9`,
+fixed in `477bbd6601509ac08d867e858af680a59c4f91eb`.
+
+Found by the work B398 records.
+`recordContest` (`candidate-ledger.ts`) read `TRANSLATION_REPAIR_RUNS_DIR` under every `selectBestCandidate`,
+whose callers are `editor-ensemble.ts`,
+`refine-stage.ts`,
+`translate-judge.ts` and `judge-fidelity.ts`,
+so contests landed wherever the process's variable pointed,
+and a case chose where by writing it.
+`adoptCalibrationGrace` (`grace-override.ts`) wrote `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` back into the process
+when the launch had left it unset,
+so that every round would read the calibration's window there,
+and the variable stood at `300000` after a call.
+By the red commit's message,
+the contest ledger's cases fail at the base,
+the ledger writing where the process's variable points and not where the ledger handed in says,
+and the calibration grace's cases fail on the environment it ignores and the variable it writes.
+
+The fix:
+`ContestLedger` is `{ kind: 'unkept' }` or `{ kind: 'kept', runsDir }`,
+read by `readContestLedger({ env })`,
+where unset and empty both keep nothing,
+as before;
+`recordContest` writes where the ledger it is handed says,
+and `selectBestCandidate` hands it the one `StageSettings` carries.
+`adoptCalibrationGrace({ env })` returns the grace and writes nothing;
+the calibration lane's rounds get `readWriterGrace` with `CALIBRATION_STRAGGLER_GRACE_MS` as the round fallback.
+`editor-calibrate.ts` reads the overlap,
+the calibration grace and both windows in functions of its own that the run calls where it used them before,
+and reads the ledger in `main`.
+No production code writes `process.env`:
+a search over `src` outside tests and fixtures for an assignment to it
+finds none at `477bbd6601509ac08d867e858af680a59c4f91eb`,
+and the same search finds the write in `grace-override.ts` at `791196bdc8458c54962cd834b0ac1a58851fdf78`.
+The key of `blank-text-tests.unit.test.ts` is renamed to `candidate-ledger.ts#readContestLedger`.
+
+Open to the owner's veto:
+the ledger is read from the raw variable,
+not from the pass's resolved `runsDir`;
+the alternative would start recording contests in a launch that named no runs directory,
+which changes what the setting means.
+`editor-calibrate` reads its settings where the run used them,
+so the tested output and the order of refusals are unchanged;
+the alternative reads them all at the start of `main`,
+which puts a window or overlap refusal before the refusal of a bad slice count.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B400: the slice overlap was read for each entry, after the lock
+
+Red in `1e8ad4c070a15a130344f7bed7d668db6b59c6a9`,
+fixed in `477bbd6601509ac08d867e858af680a59c4f91eb`.
+
+Found by the work B398 records.
+`settleEntry` (`corpus-run/pass-entry.ts`) read `TRANSLATION_REPAIR_SLICE_OVERLAP` through `readPassOverlap`,
+for each entry,
+so an unreadable value refused the pass at its first entry,
+after the runs lock was taken and the layout made,
+and after `runPassQueue`,
+which has no catch,
+had counted and written that entry's first attempt;
+and a case chose an entry's overlap by writing the process's environment.
+By the agent's run against the base build,
+a `settleEntry` handed overlaps 1 and 2 with the process's variable at `several` refused;
+and eight `readOverlap` cases fail,
+since it ignored the `env` it is handed.
+
+The fix:
+`readPassOverlap({ env })` (`corpus-run/pass-overlap.ts`) returns the `OverlapSetting`,
+read once in `corpus-pass.ts` after both windows and before the corpus pin,
+the runs directory and the lock;
+`settleEntry` takes the setting
+and logs the unchanged `OVERLAP <id> value=... source=...` line through `entryOverlap`;
+`readOverlapSetting` and `readOverlap` (`corpus-run/slice-overlap.ts`) take `env`.
+So the refusal now comes at launch,
+before the lock,
+and no attempt is recorded.
+B394's fix had read the pin right after the windows;
+this round put the overlap between them.
+The allowlist line of `own-unit-tests.unit.test.ts` for `corpus-run/pass-overlap.ts` is gone,
+since the module has a test of its own;
+`window-dial-unreadable.test-fixture.ts` is new,
+and `slice-overlap-dial.test-fixture.ts` gains `PASS_FALLBACK_OVERLAP`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal" and "Tests touching the real world".
 
 ## Process mistakes in this audit
 
@@ -36335,6 +37013,34 @@ made against the rule that a run always ships,
 and is never merged on the agent's proof alone.
 `mistake-prevention.md`,
 "Guards a census wants gone".
+
+### M144: two briefs touched one entry file, and both agents built the same block
+
+Status:
+happened on 2026-10-10 (UTC),
+by the lead's notes for the follow-up round of B391 to B400;
+caught at the merge,
+before `477bbd6601509ac08d867e858af680a59c4f91eb`,
+which holds one copy.
+The follow-up round's briefs named `RUN_OUTSIDE_READS` as an item of the pipeline-wide reads (B398 to B400)
+and `corpus-pass.ts` as a file of the corpus pin's change (B394),
+and neither said which agent owned the statements of the entry files both would touch.
+Both agents removed the constant and built an `outsideReadsFrom` block in its place,
+in `corpus-pass.ts` and in `rendering-audit-settled.ts`.
+The lead found the duplicate block in `rendering-audit-settled.ts` among eleven conflicting hunks at the merge
+and kept one;
+the removal stands in B394's fix commit,
+and the fix commit of B398 to B400 keeps a message line claiming it.
+At the same merge,
+a case B394's agent wrote lacked two values B398's agent made required,
+and the lead added them in B398's fix commit.
+
+Prevention:
+when two briefs touch one entry file,
+the briefs name which agent owns each statement of it,
+and the lead merges each patch's red commit before its fix.
+`mistake-prevention.md`,
+"Copies of shared code".
 
 ### M79: a coverage census measuring compressed code
 

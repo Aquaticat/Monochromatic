@@ -1005,18 +1005,44 @@ and the entry sets it on the process.
 Library code takes a setting as a value from the entry,
 and the entry reads the environment;
 a read left inside library code is recorded with why it stays (ledger B381).
+The same held deeper in the pipeline.
+The corpus pin was resolved while `run-config.ts` loaded,
+and seven library modules read it as a module constant,
+so the draw's entry loader,
+the window trial's digest,
+an entry's artifact and its decline record used that constant whatever pin they were handed (ledger B394 to B397).
+The straggler and writer windows were read at every round and inside the writer stages,
+the contest records' directory under every selection,
+and the editor calibration wrote its window back into the process for its rounds to find (ledger B398,
+B399);
+the slice overlap was read for each entry (ledger B400).
+Each is now read by the entry file and handed down as a value,
+and no production code writes `process.env`.
+Three reads stay in library code,
+each with `corpus-pass.ts` as its only production caller:
+the defaults of `resolveHardCapMinutes` (`corpus-run/cap-override.ts`)
+and of `resolveSpendCeilingUsd` (`corpus-run/spend-ceiling.ts`),
+and `readDriftOptIn` (`corpus-run/pass-generation-guard.ts`),
+open under ledger B398.
+The width probe built its run client before its draw,
+so a process holding no key refused before every refusal that needs no provider,
+and its as-built cases never reached the draw (ledger B391).
 
-One case reads this checkout's own git:
-the artifact pool's case for a required commit named by a revision reads `HEAD` and `HEAD~1` read-only,
-through `fixtureGit`,
+The artifact pool's case for a required commit named by a revision read this checkout's `HEAD` and `HEAD~1`,
 since `resolveCommit` and `tipContains` (`corpus-run/artifact-generation.ts`)
-take a repository that defaults to the package's own directory,
-and `resolvePool` hands them none,
-so the case fails on a checkout of one commit (ledger T8,
+took a repository that defaulted to the package's own directory,
+and `resolvePool` handed them none,
+so the case failed on a checkout of one commit (ledger T8,
 the runner and git cluster of the final census).
+The repository is now a required value from the five pooling entries down to `resolveCommit` and `tipContains`,
+and the case builds a throwaway repository of two commits (ledger B393).
+One suite still reads this checkout's own git:
+four cases of `corpus-run/artifact-eligible.unit.test.ts` read its root commit and `HEAD` read-only,
+through `gitBounds`,
+and hand the checkout in as `THIS_CHECKOUT`.
 It stands against the rule that an outside read is a required seam,
 awaiting the owner's word,
-where a required `repository` parameter on `resolvePool` is the alternative.
+where a throwaway repository is the alternative (ledger B393).
 
 The rule:
 before a test drives a production entry point,
@@ -1029,13 +1055,19 @@ A seam that reaches the network,
 a real cache or the corpus is a required parameter,
 never an optional one.
 When a seam becomes required,
-every reference to the production value is listed (`rg RUN_OUTSIDE_READS src`),
-and each one below the function a run calls moves to a parameter:
-the process's own values are named once,
-in that function (`createRunClient`,
-`RUN_OUTSIDE_READS`,
-the pass's own calls),
-and in TSDoc examples.
+every reference to the production value is listed (`rg 'outsideReadsFrom\(' src`),
+and each one in a function the entry calls moves to a parameter:
+the process's own values are named in the entry file,
+inside its refusal boundary
+(`createRunClient`,
+the `outsideReadsFrom` calls of `corpus-pass.ts` and `rendering-audit-settled.ts`,
+and `readStageSettings`,
+`readRunCorpusPinSetting` and `readPassOverlap` over `process.env`),
+and in TSDoc examples;
+no module builds one while it loads (ledger B394).
+A client a run builds is handed in as a factory
+and built where the run first needs it,
+after every refusal that needs no provider (ledger B391).
 A test makes a temporary directory only through `scratchDir`,
 bound with `await using` where it is made or by every caller of a helper returning it,
 so the directory goes when the case ends,
@@ -1092,7 +1124,18 @@ and tests pass `NO_PICTURE_SOURCES` (`corpus-run/pass-picture-sources.test-fixtu
 `outsideReadsFrom` requires the environment,
 the transport and the corpus readers;
 the five provider clients require their transport,
-and every corpus reader its pin or reader (X24).
+and every corpus reader its pin or reader (X24);
+`runGatherRound`,
+`gatherStageVoices` and `runWindowedRounds` require `graceMs`,
+every stage on the way to them takes `stageSettings`,
+and tests pass `SCRIPTED_STAGE_SETTINGS` (`stage-settings.test-fixture.ts`,
+ledger B398,
+B399);
+`settleEntry` requires the pin and the overlap setting (ledger B394,
+B400);
+and the pool and its readers require `repository`,
+which tests that require no commit pass as `UNASKED_REPOSITORY` (`corpus-run/pool-policy.test-fixture.ts`,
+ledger B393).
 A seam added to make a function testable never takes the production value as its default (M70).
 `src/temp-dirs-scratch.unit.test.ts` (ledger B117),
 among the source scans,
@@ -1134,6 +1177,15 @@ assert the code each report returns and that it leaves the process's code unset 
 the cases of the relabel artifact reader,
 the width report and the bench report point the variable elsewhere and hand a directory in (ledger B381);
 and the as-built conflict cases of the five pooling commands hold the pool's refusal at exit 6 (ledger B380).
+The cases of the window readers,
+the contest ledger and the overlap readers hand each its own environment
+beside a process that holds another value (ledger B398 to B400),
+and `corpus-run/corpus-pin-override.unit.test.ts` writes no `process.env` (ledger B394).
+`corpus-run/editor-width-probe-run.unit.test.ts` holds the order of the draw,
+the client and the control,
+and its as-built suite runs over a throwaway runs directory,
+lookup cache and corpus clone (`benchWorld`,
+ledger B391).
 No source scan finds an environment read,
 an exit-code write or a hand-built path to a built command outside where these rules put it,
 by the names of the scans the `source-scans` task runs;
@@ -1244,6 +1296,15 @@ with no file deferred since ledger B378;
 the whole unit suite run before a batch's work is called done.
 No scan reads an upper bound on elapsed time;
 review holds each to a span the case reads itself.
+Since the stage windows became a `StageSettings` value (ledger B398),
+tests hand them through `SCRIPTED_STAGE_SETTINGS` or `scriptedStageSettingsWaiting({ graceMs })`
+(`stage-settings.test-fixture.ts`),
+whose `graceMs:` key the scan reads;
+it does not key the `roundMs` or `writerMs` of a `StageSettings`,
+so a window written there,
+such as the `WriterGrace` literals of `corpus-run/editor-calibrate-run.unit.test.ts`,
+is out of its reach,
+open under ledger B398.
 Open,
 as the follow-up merged on 2026-10-10 (UTC) left it (ledger B358,
 B378):
@@ -1309,6 +1370,11 @@ a census by syntax shape found 111 groups,
 four helpers copied across runner tests moved into fixtures,
 and the rest were left with a reason each (ledger B385).
 A group left apart says whether its reason comes from a diff or from names alone.
+Two briefs of one round touched the same entry files,
+one naming `RUN_OUTSIDE_READS` as its item and the other `corpus-pass.ts` as its file,
+and neither said which agent owned which statements;
+both agents removed the constant and built an `outsideReadsFrom` block in its place,
+and the lead found the duplicate at the merge (ledger M144).
 
 The rule:
 before writing a helper,
@@ -1382,6 +1448,9 @@ Agents working at once each write only the test files of their own modules,
 so no two patches touch one file,
 and their rules file carries every lint and scan rule a merge has had to fix
 (`rules-t8.md` in the session's scratch).
+When two briefs touch one production entry file,
+the briefs name which agent owns each statement of it,
+and the lead merges each patch's red commit before its fix (ledger M144).
 A writer moved into a fixture is followed by the global-writes scan to the files importing it by name (ledger B120),
 so the env writers it once kept copied have moved into fixtures,
 and the list of global-writer copies is gone (ledger B385).
@@ -1422,6 +1491,8 @@ fails on a production module with neither a unit test of its own nor a line in i
 `src/unused-imports.unit.test.ts` (ledger B32),
 among the source scans,
 fails on an import a move left unread.
+Habit holds the owner of each statement two briefs share,
+and the lead's review at the merge (ledger M144).
 
 ## Text by code point
 
@@ -3906,8 +3977,12 @@ printed as a fault at exit 5 (ledger B311).
 Two settings that can refuse were read in module constants,
 before the boundary that prints refusals ran,
 and exited 1 under a dump of source (ledger B302);
-the corpus pin is still read that way,
-at the load of `run-config.ts` (ledger B381).
+the corpus pin was read that way too,
+at the load of `run-config.ts` (ledger B381),
+in 34 of the 43 built bundles,
+until each entry read it inside its boundary on 2026-10-10 (ledger B394).
+The slice overlap was read inside the boundary but for each entry,
+so an unreadable value refused the pass after the runs lock was taken and the first attempt recorded (ledger B400).
 The artifact pool's contradictory pair of variables was a plain `Error`,
 printed as a fault at exit 5 (ledger B380);
 and a fidelity reference request refused for what the operator typed printed under frames at exit 5,
@@ -3915,7 +3990,9 @@ its class a fault where a reference the clone holds fails its hashes (ledger B38
 A refusal that is always the operator's is a stated refusal by class,
 never caught and wrapped where it happens to be printed;
 a class that is a fault elsewhere is restated at the one site where it is the operator's;
-and a setting that can refuse is read inside the boundary.
+and a setting that can refuse is read inside the boundary,
+once,
+before the command claims a directory or records anything (ledger B400).
 A refusal that arrives in a 200 stream's error chunk with a 4xx code is returned unretried,
 as the same refusal over plain HTTP is (ledger B251).
 
@@ -3950,6 +4027,9 @@ and the refusal of a claim the screen did not corroborate.
 asserting the printed line and the exit code;
 each moved runner's suite "<command> as built" asserts the printed line and the exit code of its refusals,
 from a child process;
+`corpus-run/corpus-pin-entries.unit.test.ts` holds each command other than `corpus-pass` that reads the corpus pin
+at exit 6 with its stated line alone,
+and one that never reads it running past an unreadable commit (ledger B394);
 no scan finds an operator's mistake still thrown as a class the printer reads as a fault.
 
 ## One field carrying two kinds of text
@@ -4439,6 +4519,10 @@ The displacement probe and the settled audit read in input order
 and still logged each entry's line from inside its member,
 as the member ended,
 so one input logged its lines in a different order on each run (ledger B388).
+The editor standing read listed its directories and read its artifacts under `Promise.all`,
+and printed each "no artifacts under",
+off-roster or refused line from inside the member that found it,
+so one set of archives gave its stderr lines in completion order (ledger B392).
 
 The rule:
 what a command prints,
@@ -4503,6 +4587,9 @@ assert the recheck's order as the stage returns it,
 and `corpus-run/score-crosscheck-authors.unit.test.ts` holds the author table's ties under both arrival orders.
 `displacement-probe-run.unit.test.ts` and `rendering-audit-settled.unit.test.ts` hold their per-entry lines
 in input order when the later member ends first (ledger B388).
+`corpus-run/editor-standing-read-run.unit.test.ts` holds each refused artifact in the order its archive was named
+when the later archive's read ends first,
+and two directories that cannot be listed in the order they were named (ledger B392).
 No scan finds a result ordered by arrival,
 nor a line logged from inside a member.
 
