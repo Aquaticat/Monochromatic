@@ -1545,6 +1545,12 @@ that is verification, not a decision for the user.
   keep full mutation gating.
   Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
   Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
+  Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
+  Right after it, without a pause, the queue continues with these gates in the order listed
+  (the interop matrix and the old-format fixtures first, then fuzz campaigns, non-core mutation,
+  the `pathBytes` field, the Windows checks and the release-artifact performance gates),
+  each recorded and closed like any other gate,
+  and then the retirement of the old TypeScript implementation is verified complete.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).
