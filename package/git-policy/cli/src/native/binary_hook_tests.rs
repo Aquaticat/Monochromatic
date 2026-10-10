@@ -160,8 +160,18 @@ fn a_hookdir_hook_and_a_command_hook_each_run_once() {
         Path::new(REAL_GIT),
         prepared_state.repository.as_path(),
     );
-    command.args(["config", "hook.pre-commit.command"]).arg(format!("echo command >> {}", log.display()));
+    // A `hook.<name>.command` hook names its event with `hook.<name>.event`, per git-hook(1).
+    command
+        .args(["config", "hook.logcmd.command"])
+        .arg(format!("echo command >> {}", log.display()));
     assert!(command.status().expect("config").success());
+    let mut event: Command = hermetic_command(
+        &fixture,
+        Path::new(REAL_GIT),
+        prepared_state.repository.as_path(),
+    );
+    event.args(["config", "hook.logcmd.event", "pre-commit"]);
+    assert!(event.status().expect("event config").success());
     let outcome: Output = run_entry(&fixture, &prepared_state, "pre-commit", prepared_state.repository.as_path(), "a");
     assert_eq!(outcome.status.code(), Some(0), "{}", String::from_utf8_lossy(&outcome.stderr));
     let lines: Vec<String> = log_lines(log.as_path());
