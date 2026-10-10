@@ -240,8 +240,8 @@ the items after it are the record of 2026-10-05 and older.
   - Lazy server lookup was measured and not built:
     locating servers is 12 ms of a 210 ms registry build.
   - Fixtures of other native tests still use `tempfile::tempdir()` on btrfs.
-  - The `.claude/worktrees/ide-integrate` worktree sits in a half finished merge of `main`
-    because git there is blocked by the same `config-changed` stop; remove it with `--force` when no longer needed.
+  - The `.claude/worktrees/ide-integrate` worktree was removed with its half finished merge of `main`
+    (git there was blocked by the same `config-changed` stop); the branch `integrate/ide-language-core` remains.
 - Inotify:
   on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
   about 462000 of them by `git fsmonitor--daemon` processes
