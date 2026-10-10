@@ -101,3 +101,12 @@ fn a_pattern_that_cannot_compile_is_reported() {
         "{refused}"
     );
 }
+
+/// A directory-only pattern never excludes a file of the same name,
+///  because the last segment of a pathname is the file itself.
+#[test]
+fn a_directory_only_pattern_never_excludes_a_file_of_that_name() {
+    assert!(!excluded(&["package/ssg/"], b"package/ssg"));
+    assert!(!excluded(&["ssg/"], b"a/ssg"));
+    assert!(excluded(&["ssg/"], b"a/ssg/b.md"));
+}
