@@ -3,6 +3,8 @@
 //! and invoke the accessible set-value and default actions, the same properties and actions the
 //! platform accessibility bridge exposes.
 
+/// The window type generated from the shipped markup.
+use super::AppWindow;
 /// The find fixture with the bar open and focused, and the wait for the find count.
 use super::find_clear_tests::opened;
 /// Typing into whatever has keyboard focus, one key press, and the bounded wait for a condition.
@@ -13,8 +15,6 @@ use super::navigation_tests::{row, wait_until};
 use super::search_tests::{open, reader};
 /// An exact window size and settled layout.
 use super::sidebar_tests::{resize, settle};
-/// The window type generated from the shipped markup.
-use super::AppWindow;
 /// What: `ElementHandle` is Slint's test-only handle on one element of a live window; `AccessibleRole`
 /// is the toolkit's enum of accessible roles (`TextInput`, `Button`, `Slider`, `List`, and so on).
 /// Why: Searching by accessible label and reading roles and values is what an assistive tool does,

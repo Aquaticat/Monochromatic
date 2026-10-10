@@ -71,11 +71,7 @@ pub(super) fn opened() -> (tempfile::TempDir, super::find_tests::Reader) {
     // const fixture = mkdtempSync(...); writeFileSync(join(fixture, 'clear.txt'), text);
     // ```
     let fixture = tempfile::tempdir().expect("disposable clear project");
-    fs::write(
-        fixture.path().join("clear.txt"),
-        "needle one\nneedle two\n",
-    )
-    .expect("clear fixture");
+    fs::write(fixture.path().join("clear.txt"), "needle one\nneedle two\n").expect("clear fixture");
     let opened = reader(fixture.path(), "clear.txt");
     resize(&opened.window, 1100.0, 660.0);
     chord(&opened.window, Key::Control, "f");

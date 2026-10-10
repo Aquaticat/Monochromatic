@@ -107,7 +107,12 @@ fn divider_is_a_slider_with_value_bounds_step_actions_and_keys() {
     divider.set_accessible_value("300");
     assert_width(window, &divider, 300.0, "setting the value to 300");
     divider.set_accessible_value("5000");
-    assert_width(window, &divider, widest, "setting a value above the widest width");
+    assert_width(
+        window,
+        &divider,
+        widest,
+        "setting a value above the widest width",
+    );
     // Keyboard focus reaches the divider by Tab from the tree; its keys change the reported value.
     window.invoke_focus_tree();
     key(window, Key::Tab);

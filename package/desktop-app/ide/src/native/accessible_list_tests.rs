@@ -228,7 +228,12 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     wait_until(|| return row(window, "beta.txt").is_some());
     settle(window);
     let rows = window.get_tree_entries().row_count();
-    let tree = container(window, AccessibleRole::Tree, "Project directories and files", rows);
+    let tree = container(
+        window,
+        AccessibleRole::Tree,
+        "Project directories and files",
+        rows,
+    );
     let nested = item(&tree, "nested");
     assert_eq!(
         nested.accessible_expandable(),
@@ -250,9 +255,12 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     );
     // Opening another file through the row's default action moves the selected state to its row.
     item(&tree, "beta.txt").invoke_accessible_default_action();
-    eventually("opening beta.txt through its row did not select its row", || {
-        return item(&tree, "beta.txt").accessible_item_selected() == Some(true);
-    });
+    eventually(
+        "opening beta.txt through its row did not select its row",
+        || {
+            return item(&tree, "beta.txt").accessible_item_selected() == Some(true);
+        },
+    );
     assert_row(&tree, "alpha.txt", false, 0);
     assert_row(&tree, "beta.txt", true, 1);
     // The opened file has a slot badge; its row's description names the shortcut the badge shows.
@@ -261,17 +269,26 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
         .row_data(row(window, "beta.txt").expect("beta row") as usize)
         .expect("beta entry")
         .recency;
-    assert!(!badge.is_empty(), "positive control: the opened file has no slot badge");
+    assert!(
+        !badge.is_empty(),
+        "positive control: the opened file has no slot badge"
+    );
     assert_eq!(
-        item(&tree, "beta.txt").accessible_description().unwrap_or_default().as_str(),
+        item(&tree, "beta.txt")
+            .accessible_description()
+            .unwrap_or_default()
+            .as_str(),
         format!("Source file, Ctrl+{badge}").as_str(),
         "the row of a file with a slot badge does not name its shortcut"
     );
     // A handle does not keep its element alive, so the row is looked up again after the file switch.
     item(&tree, "nested").invoke_accessible_expand_action();
-    eventually("the expand action did not list the directory's file", || {
-        return row(window, "inner.txt").is_some();
-    });
+    eventually(
+        "the expand action did not list the directory's file",
+        || {
+            return row(window, "inner.txt").is_some();
+        },
+    );
     settle(window);
     assert_eq!(
         item(&tree, "nested").accessible_expanded(),
