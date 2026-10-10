@@ -460,6 +460,9 @@ pub mod capture_store;
 ///  their recording and pruning.
 pub mod capture_records;
 
+/// Replay: the unified-diff parser of subsumption (`replay_patch`).
+pub mod replay_patch;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
