@@ -547,3 +547,6 @@ pub mod auto_push;
 
 /// The post-commit gate over a landed commit: its events, its blocking and the backup it allows.
 pub mod post_commit;
+
+/// Authoritative manual-push updates discovered by a private dry-run push and confirmed with ls-remote.
+pub mod manual_push_probe;
