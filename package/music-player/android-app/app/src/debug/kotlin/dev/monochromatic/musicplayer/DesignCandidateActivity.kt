@@ -1297,10 +1297,11 @@ private fun CoverPickerTopRow(
                     modifier = Modifier
                         .heightIn(min = 48.dp)
                         .then(
-                            if (showsOpen) Modifier.background(
+                            // The container reaches 8dp past the title on each side, so the title keeps its place.
+                            if (showsOpen) Modifier.offset(x = (-8).dp).background(
                                 MaterialTheme.colorScheme.secondaryContainer,
                                 RoundedCornerShape(24.dp),
-                            ).padding(start = 16.dp, end = 8.dp) else Modifier,
+                            ).padding(horizontal = 8.dp) else Modifier,
                         ),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
