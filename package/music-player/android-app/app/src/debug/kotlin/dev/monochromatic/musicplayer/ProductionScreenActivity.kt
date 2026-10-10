@@ -113,6 +113,10 @@ import androidx.compose.material3.ColorScheme
 // ```
 import androidx.compose.material3.MaterialTheme
 
+// What:     `import androidx.compose.material3.Surface` is the themed background container.
+// Why:      The host wraps its scenes in one, as the production activity does, so text inherits the right color.
+import androidx.compose.material3.Surface
+
 // What:     `import androidx.compose.material3.darkColorScheme` and `lightColorScheme` are the pre-Android-12 schemes.
 // Why:      The production activity falls back to these schemes on older devices, and the host must match it.
 //
@@ -225,6 +229,11 @@ import dev.monochromatic.musicplayer.core.ScanIndicatorModel
 import dev.monochromatic.musicplayer.core.TemplateKind
 import dev.monochromatic.musicplayer.core.scanIndicatorFor
 import dev.monochromatic.musicplayer.core.searchLibrary
+import dev.monochromatic.musicplayer.core.TrashRecord
+import dev.monochromatic.musicplayer.core.TrashRoute
+import dev.monochromatic.musicplayer.core.trackFileNameOf
+import dev.monochromatic.musicplayer.core.trackMenuActionsFor
+import dev.monochromatic.musicplayer.core.trashUndoMessage
 
 // What:     `const val EXTRA_PICKER: String = "picker"` is the intent extra that starts the cover picker open.
 // Why:      The screenshot runs need the picker open without tapping, so the extra sets the starting state.
@@ -356,6 +365,26 @@ private const val SCENE_SCAN_MEASURING: String = "scan-measuring"
 // ```
 /** Scene name of the player with an Undo message above an Error message. */
 private const val SCENE_FEEDBACK_BOTH: String = "feedback-both"
+
+// What:     `private const val SCENE_TRACK_MENU: String = "track-menu"` names the scene with the track menu open.
+// Why:      The menu capture needs the popup open on the second row of the sample library without any playback.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_TRACK_MENU = "track-menu";
+// ```
+/** Scene name of the player with the track context menu open on the second row. */
+private const val SCENE_TRACK_MENU: String = "track-menu"
+
+// What:     `private const val SCENE_TRASH_UNDO: String = "trash-undo"` names the scene with one Undo message visible.
+// Why:      The Undo capture needs the message alone over the player, as the production overlay draws it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_TRASH_UNDO = "trash-undo";
+// ```
+/** Scene name of the player with one Undo message from a trash, offering the Undo action. */
+private const val SCENE_TRASH_UNDO: String = "trash-undo"
 
 // What:     `private const val SAMPLE_FOLDER_NAME: String = "Camellia"` is the folder the folder pane names.
 // Why:      The headline names a real folder, so the capture reads like a user's folder.
@@ -631,7 +660,10 @@ class ProductionScreenActivity : ComponentActivity() {
             /** Color scheme matching the production activity for the current appearance. */
             val colorScheme: ColorScheme = sampleColorScheme()
             MaterialTheme(colorScheme = colorScheme) {
-                ProductionScreenHost(startWithPicker = startWithPicker, scene = scene)
+                // A Surface supplies the content color and canvas, as the production activity's root does.
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    ProductionScreenHost(startWithPicker = startWithPicker, scene = scene)
+                }
             }
         }
     }
@@ -774,6 +806,14 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
                 messages = sampleFeedbackMessages(),
                 scanModel = scanIndicatorFor(loading = false, measured = 0, total = 0),
             )
+            SCENE_TRASH_UNDO -> sampleOverlayScene(
+                model = model,
+                actions = actions,
+                pickerOpen = pickerOpen,
+                messages = listOf(trashUndoMessage(sampleTrashRecord())),
+                scanModel = scanIndicatorFor(loading = false, measured = 0, total = 0),
+            )
+            SCENE_TRACK_MENU -> sampleTrackMenuScene(model = model, actions = actions, pickerOpen = pickerOpen)
             else -> throw IllegalArgumentException("Unknown ProductionScreenActivity scene: $scene")
         }
     }
@@ -838,6 +878,62 @@ private fun sampleFeedbackMessages(): List<FeedbackMessage> {
 // function SampleOverlayScene(props): UIElement { return
 //           <Player><BottomColumn>{feedback}{scan}</BottomColumn></Player>; }
 // ```
+// What:     `private fun sampleTrashRecord(): TrashRecord` builds one Undo record over the second Camellia track.
+// Why:      The trash-undo scene shows the production message text for a real sample name, without touching any file.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function sampleTrashRecord(): TrashRecord { return { id: "sample", displayName: secondTrackName, ... }; }
+// ```
+/** Returns a pending trash record for the second Camellia track, with no cache copy and no file behind it. */
+private fun sampleTrashRecord(): TrashRecord = TrashRecord(
+    id = "sample",
+    displayName = trackFileNameOf(SAMPLE_CAMELLIA_SECOND_PATH),
+    route = TrashRoute.SAF_DELETE_WITH_COPY_BACK,
+    trackUri = "",
+    treeUri = null,
+    parentDocumentId = null,
+    mimeType = "audio/mpeg",
+    copyPath = null,
+    sizeBytes = 0L,
+)
+
+// What:     `private val SAMPLE_CAMELLIA_SECOND_PATH: String` is the display path of the second Camellia row.
+// Why:      The menu and the Undo message name the same track the second row shows.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SAMPLE_CAMELLIA_SECOND_PATH = SAMPLE_PAGES[SAMPLE_SELECTED_PAGE].entries[1].name;
+// ```
+/** Display path of the second track in the Camellia page, which the menu scene opens on. */
+private val SAMPLE_CAMELLIA_SECOND_PATH: String = SAMPLE_PAGES[SAMPLE_SELECTED_PAGE].entries[1].name
+
+// What:     `private fun sampleTrackMenuScene(...)` draws the player with the track context menu open on the second row.
+// Why:      The menu capture shows the production popup over the production player, with its actions and heading.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SampleTrackMenuScene(props): UIElement { return <Player><TrackMenu title="..." /></Player>; }
+// ```
+/** Draws the player over the sample library with the track menu open on the second Camellia row. */
+@Composable
+private fun sampleTrackMenuScene(
+    model: PlayerContentModel,
+    actions: PlayerContentActions,
+    pickerOpen: Boolean,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        playerContent(model = model, pickerOpen = pickerOpen, actions = actions)
+        trackMenuPopup(
+            actions = trackMenuActionsFor(),
+            title = trackFileNameOf(SAMPLE_CAMELLIA_SECOND_PATH),
+            detailsValue = null,
+            onSelect = {},
+            onDismiss = {},
+        )
+    }
+}
+
 /** Draws the player over the sample library with the feedback overlay and the scan bar stacked at the bottom. */
 @Composable
 private fun sampleOverlayScene(

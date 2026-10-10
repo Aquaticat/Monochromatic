@@ -1321,6 +1321,7 @@ private fun searchResultRow(
             Text(
                 text = searchHighlightedText(result.name, result.nameHighlights, fill, ink),
                 style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             searchRowSecondLine(result)?.let { context ->
                 Text(

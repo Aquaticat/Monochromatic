@@ -685,6 +685,8 @@ import androidx.compose.material3.lightColorScheme
 // import { Composable } from "androidx/compose/runtime";
 // ```
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import dev.monochromatic.musicplayer.core.folderGrantAttempts
 
 // What:     `import androidx.compose.runtime.LaunchedEffect` pulls in `LaunchedEffect`,
 //           the composable that runs a `suspend` side-effect block tied to a key (re-runs
@@ -1130,6 +1132,32 @@ class MainActivity : ComponentActivity() {
     /** Feedback queue that the player host draws, and that activity code posts messages to. */
     private val feedback: FeedbackHostState = FeedbackHostState()
 
+    // What:     `private val trashResultLauncher` registers the result of Android's media trash and restore
+    //           confirmations.
+    // Why:      The confirmation is a system dialog whose answer returns to the activity, so the launcher must be
+    //           registered here before the activity starts.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const trashResultLauncher = useActivityResult(StartIntentSenderForResult, (r) => trashRequest.deliver(r.code));
+    // ```
+    /** Activity result launcher for the system confirmations of media trash and restore requests. */
+    private val trashResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult(),
+    ) { result ->
+        trashRequest.deliver(result.resultCode)
+    }
+
+    // What:     `private val trashRequest` routes the launcher's result to the request that started it.
+    // Why:      The player host starts a request and waits for its answer, and this holder keeps the waiting callback.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const trashRequest = new TrashMediaStoreRequest(trashResultLauncher);
+    // ```
+    /** Holder that starts media trash and restore requests through the launcher and delivers each result. */
+    private val trashRequest: TrashMediaStoreRequest = TrashMediaStoreRequest(trashResultLauncher)
+
     // What:     `private var heldFolderName: String? by mutableStateOf(null)` is the held folder's display name.
     // Why:      The first-run copy names the folder, and composition must redraw when the held folder changes.
     //
@@ -1555,13 +1583,15 @@ class MainActivity : ComponentActivity() {
                         //   onChooseFolder={() => this.folderPicker.launch(null)}
                         // />
                         // ```
-                        appRoot(
-                            controller = controller,
-                            onAudioGranted = { binder?.ensureLibraryLoaded() },
-                            onChooseFolder = { folderPicker.launch(null) },
-                            feedback = feedback,
-                            folderName = heldFolderName,
-                        )
+                        CompositionLocalProvider(LocalTrashMediaStoreRequest provides trashRequest) {
+                            appRoot(
+                                controller = controller,
+                                onAudioGranted = { binder?.ensureLibraryLoaded() },
+                                onChooseFolder = { folderPicker.launch(null) },
+                                feedback = feedback,
+                                folderName = heldFolderName,
+                            )
+                        }
                     }
                 }
             }
@@ -1694,6 +1724,43 @@ class MainActivity : ComponentActivity() {
         binder = null
     }
 
+    // What:     `private fun takeFolderGrant(treeUri: Uri)` persists the picker's grant, write first and read only
+    //           second.
+    // Why:      The copy-back trash needs write access, and a picker that grants read only must still persist the
+    //           library.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const flags of folderGrantAttempts(READ, WRITE)) { try { takePersistable(treeUri, flags); return; } catch
+    //   (e) { /* next */ } }
+    // ```
+    /**
+     * Persists the grant for the picked tree with each flag set in order, keeping the first one the provider accepts.
+     *
+     * @throws SecurityException when the provider refuses even the read-only grant
+     */
+    private fun takeFolderGrant(treeUri: Uri) {
+        /** Flag sets to request, read and write first and read only as the fallback. */
+        val attempts: List<Int> = folderGrantAttempts(
+            readFlag = Intent.FLAG_GRANT_READ_URI_PERMISSION,
+            writeFlag = Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+        )
+        for ((index, flags) in attempts.withIndex()) {
+            try {
+                contentResolver.takePersistableUriPermission(treeUri, flags)
+                /** Whether this kept grant includes write access. */
+                val writeKept: Boolean = (flags and Intent.FLAG_GRANT_WRITE_URI_PERMISSION) != 0
+                Log.i(LOG_TAG, "folder grant kept write=$writeKept tree=$treeUri")
+                return
+            } catch (grantFailure: SecurityException) {
+                if (index == attempts.lastIndex) {
+                    throw grantFailure
+                }
+                Log.w(LOG_TAG, "folder write grant refused, trying read only tree=$treeUri", grantFailure)
+            }
+        }
+    }
+
     // What:     `private fun onFolderChosen(treeUri: Uri) { ... }` declares a private method
     //           taking a tree `Uri`, block body, `Unit`.
     // Why:      Persist read access to a just-picked SAF folder and make it the live
@@ -1711,10 +1778,9 @@ class MainActivity : ComponentActivity() {
      * explain its call shape and effects.
      */
     private fun onFolderChosen(treeUri: Uri) {
-        // What:     `contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)`
-        //           takes a persistable READ grant for the picked tree. `contentResolver` is
-        //           the activity's resolver; the flag requests read access that survives
-        //           reboots.
+        // What:     `takeFolderGrant(treeUri)` takes a persistable grant for the picked tree, read and write when
+        //           the picker allows it and read only otherwise. `contentResolver` is the activity's resolver.
+        //           The OpenDocumentTree contract returns only the tree Uri, so the result flags are not visible here.
         // Why:      So a later cold start can re-read the folder without re-prompting.
         //
         // In TS you'd write (pseudocode):
@@ -1722,7 +1788,7 @@ class MainActivity : ComponentActivity() {
         // this.contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         // ```
         try {
-            contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            takeFolderGrant(treeUri)
         } catch (grantFailure: SecurityException) {
             // What:     `feedback.showFeedback(feedbackFolderOpenFailed())` posts a two-line error and returns.
             // Why:      The provider refused a lasting grant, so the folder is not saved and the user is told to choose

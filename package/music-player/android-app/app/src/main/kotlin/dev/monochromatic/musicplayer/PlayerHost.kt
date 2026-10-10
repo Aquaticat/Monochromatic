@@ -98,6 +98,32 @@ import androidx.compose.runtime.remember
 // ```
 import androidx.compose.runtime.saveable.rememberSaveable
 
+// What:     Imports for the track menu, its actions, and the trash Undo flow.
+// Why:      The host opens the menu, runs its actions on a coroutine scope, and shows each result in the overlay.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { trackMenuPopup, trashRouteFor, trashUndoMessage } from "./track-menu";
+// ```
+import android.net.Uri
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.rememberCoroutineScope
+import dev.monochromatic.musicplayer.core.TrackActionFailure
+import dev.monochromatic.musicplayer.core.TrackMenuAction
+import dev.monochromatic.musicplayer.core.TrashRecord
+import dev.monochromatic.musicplayer.core.TrashRoute
+import dev.monochromatic.musicplayer.core.trackFileNameOf
+import dev.monochromatic.musicplayer.core.mimeTypeFor
+import dev.monochromatic.musicplayer.core.trackActionFailureMessage
+import dev.monochromatic.musicplayer.core.trackMenuActionsFor
+import dev.monochromatic.musicplayer.core.trashRouteFor
+import dev.monochromatic.musicplayer.core.trashUndoMessage
+import java.util.UUID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 // What:     `import androidx.compose.ui.Alignment` aligns the feedback overlay and scan bar to the bottom start edge.
 // Why:      The overlay stacks above the scan bar at the bottom of the player, and it never reflows the content.
 //
@@ -542,6 +568,418 @@ fun playerHost(
         },
     )
 
+    // What:     `val scope: CoroutineScope` runs the library reads and the file operations of the track actions.
+    // Why:      The file work suspends, and the scope lets it finish off the main thread while the host keeps drawing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const scope = useCoroutineScope();
+    // ```
+    /** Coroutine scope of the host, which runs the track actions and the library reads they need. */
+    val scope: CoroutineScope = rememberCoroutineScope()
+    /** Media-library trash request launcher that the activity provides, or null when none is provided. */
+    val mediaStoreTrash: TrashMediaStoreRequest? = LocalTrashMediaStoreRequest.current
+    /** Track whose context menu is open, bound to its URI at open time, or null when no menu is open. */
+    var menuTarget: TrackMenuTarget? by remember { mutableStateOf<TrackMenuTarget?>(null) }
+
+    // What:     `fun openMenu(index: Int)` binds the menu to the track at a library index.
+    // Why:      The track is read once here, so a later rescan that moves the index cannot redirect the action.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // openMenu(index: number): void { menuTarget = { indexInLibrary: index, track: library[index] }; }
+    // ```
+    /** Opens the context menu for the track at the given library index, logging when the index is out of range. */
+    fun openMenu(index: Int) {
+        /** Track at the index in load order, or null when the index is out of range. */
+        val track: Track? = controller.libraryTracks().getOrNull(index)
+        if (track == null) {
+            Log.w(LOG_TAG, "player host menu index out of range index=$index")
+            return
+        }
+        Log.i(LOG_TAG, "player host menu opened index=$index")
+        menuTarget = TrackMenuTarget(indexInLibrary = index, track = track)
+    }
+
+    // What:     `fun showFailure(failure: TrackActionFailure, name: String)` shows one failure in the overlay.
+    // Why:      Every failure of a track action reaches the user through the same overlay message.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // showFailure(failure, name): void { feedback.showFeedback(trackActionFailureMessage(failure, name)); }
+    // ```
+    /** Shows the failure message for one track action in the feedback overlay. */
+    fun showFailure(failure: TrackActionFailure, name: String) {
+        feedback.showFeedback(trackActionFailureMessage(failure, name))
+    }
+
+    // What:     `fun attempt(name: String, block: () -> Unit)` runs one synchronous action and shows its failure.
+    // Why:      The menu actions that do not move files throw TrackActionException, and this keeps the catch in one
+    //           place.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function attempt(name: string, block: () => void): void { try { block(); } catch (e) { showFailure(e.failure,
+    //   name); } }
+    // ```
+    /** Runs one track action, logging and showing its failure when it throws a track action exception. */
+    fun attempt(name: String, block: () -> Unit) {
+        try {
+            block()
+        } catch (expectedFailure: TrackActionException) {
+            Log.w(LOG_TAG, "player host track action failed failure=${expectedFailure.failure}", expectedFailure)
+            showFailure(expectedFailure.failure, name)
+        }
+    }
+
+    // What:     `fun commitTrash(record: TrashRecord)` makes one trash the pending Undo and shows its message.
+    // Why:      The record is stored before the message is shown, so the cleanup check always sees it as offered.
+    //           A replaced record's copy is removed, because its Undo message is gone.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // commitTrash(record: TrashRecord): void { const old = store.replace(record); remove(old); show(undo(record)); }
+    // ```
+    /** Stores one trash as the pending Undo, removes the copy of any record it replaces, and shows its Undo message. */
+    fun commitTrash(record: TrashRecord) {
+        /** Record that this one replaces, whose Undo message is no longer offered. */
+        val replaced: TrashRecord? = TrashUndoStore.replace(record)
+        if (replaced != null) {
+            Log.i(LOG_TAG, "player host replaced pending trash id=${replaced.id}")
+            scope.launch(Dispatchers.IO) { removeCopy(replaced) }
+        }
+        feedback.showFeedback(trashUndoMessage(record))
+        Log.i(LOG_TAG, "player host trash undo offered id=${record.id} route=${record.route.name}")
+    }
+
+    // What:     `suspend fun reconcile()` reloads the library and reconciles the controller with it.
+    // Why:      A trashed track must leave the list, and a restored track must return to it, so the host rescans after
+    //           each change.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // async function reconcile(): Promise<void> { controller.reconcileLibrary(await loadLibrary()); }
+    // ```
+    /** Reloads the library off the main thread, then reconciles the controller on the main thread. */
+    suspend fun reconcile() {
+        /** Tracks read from the current library after the change. */
+        val tracks: List<Track> = withContext(Dispatchers.IO) { LibrarySource.load(context) }
+        controller.reconcileLibrary(tracks)
+        Log.i(LOG_TAG, "player host library reconciled tracks=${tracks.size}")
+    }
+
+    // What:     `suspend fun trashWithCopy(...)` runs the picked-folder trash and reports its outcome.
+    // Why:      The copy-back needs the held grant, and any failure before the delete leaves the file where it was.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // async function trashWithCopy(target, tree): Promise<void> { ... }
+    // ```
+    /**
+     * Trashes one picked-folder track through the copy route, then reconciles and offers Undo, or shows the failure.
+     */
+    suspend fun trashWithCopy(target: TrackMenuTarget, treeUri: Uri) {
+        /** Unique key for this trash, which names its cache folder and its Undo message. */
+        val id: String = UUID.randomUUID().toString()
+        try {
+            /** Trash record of the picked-folder trash, which the Undo message needs. */
+            val record: TrashRecord = trashSaf(context = context, track = target.track, treeUri = treeUri, id = id)
+            commitTrash(record)
+            reconcile()
+        } catch (expectedFailure: TrackActionException) {
+            Log.w(LOG_TAG, "player host trash failed failure=${expectedFailure.failure}", expectedFailure)
+            showFailure(expectedFailure.failure, trackFileNameOf(target.track.displayPath))
+        }
+    }
+
+    // What:     `fun handleMediaStoreTrashResult(...)` decides what the system's trash answer means for the library.
+    // Why:      A confirmed trash is checked against the trashed flag before the app offers Undo, because Android can
+    //           report
+    //           success before the item moves.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function handleTrashResult(track, accepted: boolean, uri): void { ... }
+    // ```
+    /** Offers Undo when the item is now trashed, shows a failure when it is not, and logs a declined confirmation. */
+    fun handleMediaStoreTrashResult(track: Track, accepted: Boolean, uri: Uri) {
+        /** Name of the track, used in any failure message. */
+        val name: String = trackFileNameOf(track.displayPath)
+        if (!accepted) {
+            Log.i(LOG_TAG, "player host media store trash declined by user")
+            return
+        }
+        if (isMediaStoreTrashed(context = context, uri = uri) != true) {
+            Log.w(LOG_TAG, "player host media store trash accepted but item not trashed")
+            showFailure(TrackActionFailure.MEDIASTORE_FAILED, name)
+            return
+        }
+        commitTrash(
+            TrashRecord(
+                id = UUID.randomUUID().toString(),
+                displayName = name,
+                route = TrashRoute.MEDIASTORE_TRASH_REQUEST,
+                trackUri = track.uri,
+                treeUri = null,
+                parentDocumentId = null,
+                mimeType = mimeTypeFor(name),
+                copyPath = null,
+                sizeBytes = 0L,
+            ),
+        )
+        scope.launch { reconcile() }
+    }
+
+    // What:     `fun trashInMediaStore(target: TrackMenuTarget)` starts Android's trash request for a media item.
+    // Why:      The device-wide library has its own trash, so the app asks Android and waits for its result.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function trashInMediaStore(target: TrackMenuTarget): void { system.requestTrash(target.uri, onResult); }
+    // ```
+    /**
+     * Launches Android's trash request for the media item, or shows a failure when no launcher or request is available.
+     */
+    fun trashInMediaStore(target: TrackMenuTarget) {
+        /** Name of the track, used in any failure message. */
+        val name: String = trackFileNameOf(target.track.displayPath)
+        /** Launcher the activity registered for the media trash request, or null when none is provided. */
+        val request: TrashMediaStoreRequest = mediaStoreTrash ?: run {
+            Log.w(LOG_TAG, "player host has no media store trash launcher")
+            showFailure(TrackActionFailure.MEDIASTORE_FAILED, name)
+            return
+        }
+        /** URI of the media item to trash. */
+        val uri: Uri = Uri.parse(target.track.uri)
+        try {
+            /** Pending intent of Android's trash request for this item. */
+            val pending = mediaStoreRequest(context = context, uri = uri, trash = true)
+            request.launch(pending.intentSender) { accepted ->
+                handleMediaStoreTrashResult(track = target.track, accepted = accepted, uri = uri)
+            }
+        } catch (expectedFailure: TrackActionException) {
+            Log.w(LOG_TAG, "player host media store trash could not start", expectedFailure)
+            showFailure(expectedFailure.failure, name)
+        }
+    }
+
+    // What:     `fun moveToTrash(target: TrackMenuTarget)` chooses the trash route for the target and runs it.
+    // Why:      The route depends on the source of the track, so the decision is made here from the held grant.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function moveToTrash(target: TrackMenuTarget): void { switch (trashRouteFor(...)) { ... } }
+    // ```
+    /** Chooses the trash route of the target track from its URI and the held folder grant, then runs that route. */
+    fun moveToTrash(target: TrackMenuTarget) {
+        /** Name of the track, used in any failure message. */
+        val name: String = trackFileNameOf(target.track.displayPath)
+        /** Tree of the held folder grant, or null when no folder is held. */
+        val heldTree: Uri? = LibraryRoot.heldRoot(context)
+        /** Whether the held grant can still change files. */
+        val writable: Boolean = writableGrantCovers(context = context, treeUri = heldTree)
+        /** Route chosen for this track from its URI and the grant. */
+        val route: TrashRoute = trashRouteFor(
+            trackUri = target.track.uri,
+            treeUri = heldTree?.toString(),
+            writableGrant = writable,
+        )
+        Log.i(LOG_TAG, "player host trash route=${route.name} index=${target.indexInLibrary}")
+        when (route) {
+            TrashRoute.UNAVAILABLE -> showFailure(TrackActionFailure.ROUTE_UNAVAILABLE, name)
+            TrashRoute.SAF_DELETE_WITH_COPY_BACK -> {
+                if (heldTree == null) {
+                    showFailure(TrackActionFailure.ROUTE_UNAVAILABLE, name)
+                    return
+                }
+                scope.launch { trashWithCopy(target = target, treeUri = heldTree) }
+            }
+            TrashRoute.MEDIASTORE_TRASH_REQUEST -> trashInMediaStore(target)
+        }
+    }
+
+    // What:     `fun handleMediaStoreRestoreResult(...)` reports the system restore answer and keeps Undo when it was
+    //           declined.
+    // Why:      A declined restore leaves the item in the system trash, so the Undo offer must come back rather than be
+    //           lost.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function handleRestoreResult(original, restoring, accepted, uri): void { ... }
+    // ```
+    /** Finishes the restore as restored or failed, or re-offers Undo when the user declined the system confirmation. */
+    fun handleMediaStoreRestoreResult(
+        original: TrashRecord,
+        restoring: TrashRecord,
+        accepted: Boolean,
+        uri: Uri,
+    ) {
+        if (!accepted) {
+            Log.i(LOG_TAG, "player host media store restore declined, offering Undo again id=${original.id}")
+            commitTrash(original)
+            return
+        }
+        /** Whether the item left the system trash, or null when the flag cannot be read. */
+        val stillTrashed: Boolean? = isMediaStoreTrashed(context = context, uri = uri)
+        if (stillTrashed != false) {
+            Log.w(LOG_TAG, "player host media store restore accepted but item still trashed id=${original.id}")
+            restoring.finishRestore(restored = false)
+            showFailure(TrackActionFailure.MEDIASTORE_RESTORE_FAILED, restoring.displayName)
+            return
+        }
+        /** Restoring record, whose outcome is recorded once the restore answer arrives. */
+        val finished: TrashRecord = restoring.finishRestore(restored = true)
+        Log.i(LOG_TAG, "player host undo finished state=${finished.state.name} id=${original.id}")
+        scope.launch { reconcile() }
+    }
+
+    // What:     `fun restoreInMediaStore(...)` starts Android's restore request for a media item in the system trash.
+    // Why:      The system trash owns the restore, so the app asks Android and waits for its answer before it reports
+    //           success.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function restoreInMediaStore(record: TrashRecord): void { system.requestRestore(record.uri, onResult); }
+    // ```
+    /** Launches Android's restore request for the trashed media item, and offers Undo again when the user declines. */
+    fun restoreInMediaStore(original: TrashRecord, restoring: TrashRecord) {
+        /** Launcher the activity registered for media requests, or null when none is provided. */
+        val request: TrashMediaStoreRequest = mediaStoreTrash ?: run {
+            Log.w(LOG_TAG, "player host has no media store restore launcher")
+            showFailure(TrackActionFailure.MEDIASTORE_RESTORE_FAILED, restoring.displayName)
+            return
+        }
+        /** URI of the trashed media item. */
+        val uri: Uri = Uri.parse(restoring.trackUri)
+        try {
+            /** Pending intent of Android's restore request for this item. */
+            val pending = mediaStoreRequest(context = context, uri = uri, trash = false)
+            request.launch(pending.intentSender) { accepted ->
+                handleMediaStoreRestoreResult(
+                    original = original,
+                    restoring = restoring,
+                    accepted = accepted,
+                    uri = uri,
+                )
+            }
+        } catch (expectedFailure: TrackActionException) {
+            Log.w(LOG_TAG, "player host media store restore could not start", expectedFailure)
+            showFailure(TrackActionFailure.MEDIASTORE_RESTORE_FAILED, restoring.displayName)
+        }
+    }
+
+    // What:     `suspend fun restoreFromCopy(...)` recreates a picked-folder file from its cache copy.
+    // Why:      The copy is the only copy of the bytes, so a failed restore keeps it and says so.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // async function restoreFromCopy(original, restoring): Promise<void> { ... }
+    // ```
+    /** Restores one picked-folder file, reconciles the library on success, and shows the failure otherwise. */
+    suspend fun restoreFromCopy(original: TrashRecord, restoring: TrashRecord) {
+        try {
+            restoreSaf(context = context, record = restoring)
+            /** Restoring record, whose outcome is recorded once the restore finishes. */
+            val finished: TrashRecord = restoring.finishRestore(restored = true)
+            Log.i(LOG_TAG, "player host undo finished state=${finished.state.name} id=${original.id}")
+            reconcile()
+        } catch (expectedFailure: TrackActionException) {
+            restoring.finishRestore(restored = false)
+            Log.w(LOG_TAG, "player host undo failed failure=${expectedFailure.failure}", expectedFailure)
+            showFailure(expectedFailure.failure, original.displayName)
+        }
+    }
+
+    // What:     `fun startUndo(messageId: String)` runs the Undo of the pending trash whose message carries the id.
+    // Why:      The record leaves the store before its restore starts, so the cleanup check cannot delete its copy
+    //           mid-restore.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // startUndo(messageId: string): void { const record = store.takeForRestore(messageId); ... }
+    // ```
+    /** Takes the pending record whose message carries the id, dismisses its message, and runs its restore by route. */
+    fun startUndo(messageId: String) {
+        /** Pending record taken for the restore, or null when the id matches no pending Undo. */
+        val original: TrashRecord = TrashUndoStore.takeForRestore(messageId) ?: run {
+            Log.w(LOG_TAG, "player host undo ignored, no pending trash for id=$messageId")
+            return
+        }
+        feedback.dismiss(messageId)
+        /** The record in the restoring state, whose outcome is recorded once the restore finishes. */
+        val restoring: TrashRecord = original.beginRestore()
+        Log.i(LOG_TAG, "player host undo started id=${original.id} route=${original.route.name}")
+        when (original.route) {
+            TrashRoute.SAF_DELETE_WITH_COPY_BACK ->
+                scope.launch { restoreFromCopy(original = original, restoring = restoring) }
+            TrashRoute.MEDIASTORE_TRASH_REQUEST -> restoreInMediaStore(original = original, restoring = restoring)
+            TrashRoute.UNAVAILABLE -> showFailure(TrackActionFailure.ROUTE_UNAVAILABLE, original.displayName)
+        }
+    }
+
+    // What:     `fun runMenuAction(...)` routes one selected menu action to its implementation.
+    // Why:      Each action has one owner, and the two file-moving actions run on the host's scope while the rest run
+    //           here.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function runMenuAction(action: TrackMenuAction, target: TrackMenuTarget): void { switch (action) { ... } }
+    // ```
+    /** Runs the implementation of one selected menu action for the bound target track. */
+    fun runMenuAction(action: TrackMenuAction, target: TrackMenuTarget) {
+        Log.i(LOG_TAG, "player host menu action=${action.name} index=${target.indexInLibrary}")
+        /** Name of the bound track, used in any failure message. */
+        val name: String = trackFileNameOf(target.track.displayPath)
+        when (action) {
+            TrackMenuAction.PLAY -> controller.playIndex(target.indexInLibrary)
+            TrackMenuAction.SHUFFLE_FROM_HERE ->
+                shuffleFromHere(controller = controller, indexInLibrary = target.indexInLibrary)
+            TrackMenuAction.DETAILS -> showFailure(TrackActionFailure.DETAILS_UNAVAILABLE, name)
+            TrackMenuAction.REANALYSE_TRUE_PEAK -> showFailure(TrackActionFailure.REANALYSE_UNAVAILABLE, name)
+            TrackMenuAction.SHOW_IN_FILE_MANAGER ->
+                attempt(name) { showInFileManager(context = context, track = target.track) }
+            TrackMenuAction.COPY_FILENAME -> attempt(name) { copyFilename(context = context, track = target.track) }
+            TrackMenuAction.MOVE_TO_TRASH -> moveToTrash(target)
+        }
+    }
+
+    // What:     `val visibleIds: Set<String>` holds the ids of the feedback messages shown this frame.
+    // Why:      A pending trash whose message is gone has no Undo left, so its copy is released by the effect below.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const visibleIds = new Set(feedback.visible().map(m => m.id));
+    // ```
+    /** Ids of the feedback messages visible in this frame. */
+    val visibleIds: Set<String> = feedback.queue.visible().map { message -> message.id }.toSet()
+    // What:     `LaunchedEffect(visibleIds)` releases the pending trash when its Undo message is no longer visible.
+    // Why:      Expiry, dismissal, and replacement all remove the message, and only then is the copy no longer needed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { const dropped = store.dropIfHidden(visibleIds); if (dropped) remove(dropped); }, [visibleIds]);
+    // ```
+    LaunchedEffect(visibleIds) {
+        /** Pending record whose message is gone, or null when its message is still visible or none is pending. */
+        val dropped: TrashRecord? = TrashUndoStore.dropIfHidden(visibleIds)
+        if (dropped != null) {
+            Log.i(LOG_TAG, "player host undo expired, releasing copy id=${dropped.id}")
+            withContext(Dispatchers.IO) { removeCopy(dropped) }
+        }
+    }
+    // What:     `LaunchedEffect(Unit)` runs the startup sweep of earlier copies once per process.
+    // Why:      Copies left by an earlier process have no Undo message, so they are removed before any new trash.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { if (claimStartupSweep()) purge(); }, []);
+    // ```
+    LaunchedEffect(Unit) {
+        if (TrashUndoStore.claimStartupSweep()) {
+            withContext(Dispatchers.IO) { purgeTrashCopies(context) }
+        }
+    }
+
     BackHandler(enabled = route != PlayerRoute.Player) {
         go(PlayerRouteRules.backFrom(route))
     }
@@ -576,8 +1014,26 @@ fun playerHost(
                 if (firstRunContent != null) {
                     firstRunContent { go(PlayerRoute.Settings) }
                 } else {
-                    playerContent(model = model, pickerOpen = pickerOpen, actions = playerActions)
+                    CompositionLocalProvider(LocalTrackRowMenuOpener provides { index -> openMenu(index) }) {
+                        playerContent(model = model, pickerOpen = pickerOpen, actions = playerActions)
+                    }
                     emptyNotice(state)
+                }
+                // The menu is anchored to the player box, not to the row it was opened from; its position is
+                //   unverified.
+                /** Track whose context menu is open in this frame, or null when no menu is shown. */
+                val openTarget: TrackMenuTarget? = menuTarget
+                if (openTarget != null) {
+                    trackMenuPopup(
+                        actions = trackMenuActionsFor(),
+                        title = trackFileNameOf(openTarget.track.displayPath),
+                        detailsValue = null,
+                        onSelect = { action ->
+                            menuTarget = null
+                            runMenuAction(action = action, target = openTarget)
+                        },
+                        onDismiss = { menuTarget = null },
+                    )
                 }
                 // The overlay and the scan bar share one bottom column, so the overlay sits above the bar and
                 // neither one changes the layout of the player beneath.
@@ -588,7 +1044,10 @@ fun playerHost(
                         feedbackOverlay(
                             messages = messages,
                             onDismiss = { id -> feedback.dismiss(id) },
-                            onAction = { id -> Log.i(LOG_TAG, "feedback action id=$id") },
+                            onAction = { id ->
+                                Log.i(LOG_TAG, "feedback action id=$id")
+                                startUndo(id)
+                            },
                             modifier = Modifier.padding(
                                 start = PLAYER_HOST_FEEDBACK_INSET,
                                 end = PLAYER_HOST_FEEDBACK_INSET,
