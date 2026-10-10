@@ -1,0 +1,373 @@
+//! What:
+//!  The private commit index of one transaction:
+//!       its timestamp-preserving copies of the real index,
+//!       its initialization for each selection mode,
+//!       the intended tree written from it,
+//!       its path listings,
+//!       the pathspec-file source, and
+//!       interactive and patch selection run against it.
+//! Why:
+//!  Git's staging and selection run against a private index and the shadow object store,
+//!  so the real index and object store change only at landing.
+//!  A copy keeps the real index's timestamps, because Git re-reads a stat entry
+//!  whose time is not older than the index file (`index-file-timestamps.ts`, issue #544).
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! await initializeCommitIndex({ workspace, gitPath, cwd, mode, pathspecs, baseRevision, ... });
+//! ```
+
+/// One required Git start, its request builder and the failure text.
+use super::capture_order::{CaptureIndexes, indexed_request};
+use super::transaction_git::{GitContext, GitFailure, GitOutput, run_git_checked};
+/// Commit selection mode of the transaction.
+use super::transaction_journal::TransactionMode;
+/// Exclusive private file writes for the pathspec snapshot.
+use super::private_storage::write_private_file;
+/// Real-Git command builder shared with the forwarded commands.
+use super::forwarding::git_command;
+/// `Read` consumes the standard input snapshot; `FileTimes` carries the copied timestamps.
+use std::io::Read;
+use std::fs::FileTimes;
+/// `OsString` is owned operating-system text.
+use std::ffi::OsString;
+/// `Path`/`PathBuf` are borrowed/owned filesystem paths.
+use std::path::{Path, PathBuf};
+
+/// Name of the single-consumption stdin snapshot inside the transaction directory.
+pub const PATHSPEC_INPUT_NAME: &str = "pathspec.input";
+
+/// What:
+///  Copies an index and gives the copy the source's access and modification times.
+/// Why:
+///   A copy with fresh times would make Git trust stat data captured in the same second
+///  as a later same-size edit (issue #544).
+///  A missing source is an error, as the incumbent's `copyFile` reports it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await copyIndexFile({ sourcePath, destinationPath });
+/// ```
+pub fn copy_index_with_timestamps(source: &Path, destination: &Path) -> std::io::Result<()> {
+    std::fs::copy(source, destination)?;
+    let metadata: std::fs::Metadata = std::fs::metadata(source)?;
+    let times: FileTimes = FileTimes::new()
+        .set_accessed(metadata.accessed()?)
+        .set_modified(metadata.modified()?);
+    return std::fs::File::options()
+        .write(true)
+        .open(destination)?
+        .set_times(times);
+}
+
+/// What:
+///  The choices that shape one private index.
+/// Why:
+///   The incumbent's `initializeCommitIndex` takes these as one object,
+///  and the selection modes differ only in these values.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// initializeCommitIndex({ mode, pathspecs, pathspecFile, pathspecFileNul, stageIntoIndex, stageTrackedChanges, baseRevision });
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct IndexSelection<'selection> {
+    /// Commit selection mode.
+    pub mode: TransactionMode,
+    /// Positional pathspecs of the command.
+    pub pathspecs: &'selection [String],
+    /// Materialized pathspec file, when the command names one.
+    pub pathspec_file: Option<&'selection Path>,
+    /// Whether the pathspec file separates records with NUL.
+    pub pathspec_file_nul: bool,
+    /// Whether an index commit stages the selected worktree content into its copy.
+    pub stage_into_index: bool,
+    /// Whether an index commit stages every tracked change, as `commit -a` does.
+    pub stage_tracked_changes: bool,
+    /// Recorded base commit, or the empty tree for an unborn base.
+    pub base_revision: &'selection str,
+}
+
+/// What:
+///  The selection arguments of `git add`:
+///  the pathspecs after `--`, or the pathspec-file controls.
+/// Why:
+///   Staging reads the same selection the policies were given.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// selectionArguments({ pathspecs, pathspecFile, pathspecFileNul });
+/// ```
+fn selection_arguments(selection: &IndexSelection) -> Vec<String> {
+    return match selection.pathspec_file {
+        None => {
+            let mut arguments: Vec<String> = vec![String::from("--")];
+            arguments.extend(selection.pathspecs.iter().cloned());
+            arguments
+        }
+        Some(file) => {
+            let mut arguments: Vec<String> =
+                vec![format!("--pathspec-from-file={}", file.display())];
+            if selection.pathspec_file_nul {
+                arguments.push(String::from("--pathspec-file-nul"));
+            }
+            arguments
+        }
+    };
+}
+
+/// What:
+///  Runs one Git command against the private index and the shadow object store,
+///  requiring success.
+/// Why:
+///   Every private-index step uses the same index and object directory.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await runTransactionGit({ gitPath, cwd, indexPath, objectDirectory, args });
+/// ```
+fn private_git(
+    context: &GitContext,
+    cwd: &Path,
+    index: &Path,
+    object_directory: &Path,
+    arguments: &[String],
+) -> Result<GitOutput, GitFailure> {
+    return run_git_checked(
+        context,
+        &indexed_request(cwd, arguments, Some(index), Some(object_directory)),
+    );
+}
+
+/// What:
+///  Copies or builds the private commit index and snapshots the real index at invocation.
+/// Why:
+///   Index commits start from the real index, so their staged state is the state at invocation;
+///  explicit-path commits start from the recorded base, never live `HEAD`,
+///  because another landing may have moved it since invocation.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await initializeCommitIndex({ workspace, gitPath, cwd, mode, pathspecs, baseRevision, ... });
+/// ```
+pub fn initialize_commit_index(
+    context: &GitContext,
+    cwd: &Path,
+    real_index: &Path,
+    indexes: &CaptureIndexes,
+    selection: &IndexSelection,
+) -> Result<(), GitFailure> {
+    let copy_failure = |error: std::io::Error| GitFailure(format!("copying the index failed: {error}"));
+    copy_index_with_timestamps(real_index, indexes.captured_index.as_path()).map_err(copy_failure)?;
+    if selection.mode == TransactionMode::Index {
+        copy_index_with_timestamps(indexes.captured_index.as_path(), indexes.commit_index.as_path())
+            .map_err(copy_failure)?;
+        if selection.stage_tracked_changes {
+            // Whole-tree update of tracked paths, exactly what `commit -a` stages, captured once at invocation.
+            private_git(
+                context,
+                cwd,
+                indexes.commit_index.as_path(),
+                indexes.object_directory.as_path(),
+                &["add".to_string(), "--update".to_string(), "--".to_string(), ":/".to_string()],
+            )?;
+        }
+        if !selection.stage_into_index {
+            return Ok(());
+        }
+    } else {
+        private_git(
+            context,
+            cwd,
+            indexes.commit_index.as_path(),
+            indexes.object_directory.as_path(),
+            &["read-tree".to_string(), selection.base_revision.to_string()],
+        )?;
+    }
+    let mut arguments: Vec<String> = vec![String::from("add"), String::from("--all")];
+    arguments.extend(selection_arguments(selection));
+    private_git(
+        context,
+        cwd,
+        indexes.commit_index.as_path(),
+        indexes.object_directory.as_path(),
+        &arguments,
+    )?;
+    return Ok(());
+}
+
+/// What:
+///  Writes the intended tree from the private index into the shadow object store.
+/// Why:
+///   The tree is the exact content the commit will carry.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await writePrivateTree({ workspace, gitPath, cwd });
+/// ```
+pub fn write_private_tree(
+    context: &GitContext,
+    cwd: &Path,
+    commit_index: &Path,
+    object_directory: &Path,
+) -> Result<String, GitFailure> {
+    let output: GitOutput = private_git(
+        context,
+        cwd,
+        commit_index,
+        object_directory,
+        &[String::from("write-tree")],
+    )?;
+    let text: &str = std::str::from_utf8(output.stdout.as_slice())
+        .map_err(|_| GitFailure(String::from("Git returned non-UTF-8 output.")))?;
+    let oid: &str = text.trim();
+    if oid.is_empty() {
+        return Err(GitFailure(String::from("Git returned empty private tree identity.")));
+    }
+    return Ok(String::from(oid));
+}
+
+/// What:
+///  Lists the repository paths with unmerged stages, once each, in first-seen order.
+/// Why:
+///   A conflicted path cannot be committed by automatic fixes, so preparation refuses it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await listUnmergedIndexPaths({ gitPath, cwd, indexPath });
+/// ```
+pub fn list_unmerged_index_paths(
+    context: &GitContext,
+    cwd: &Path,
+    commit_index: &Path,
+) -> Result<Vec<String>, GitFailure> {
+    let output: GitOutput = run_git_checked(
+        context,
+        &indexed_request(cwd, &["ls-files", "--unmerged", "-z"], Some(commit_index), None),
+    )?;
+    let text: &str = std::str::from_utf8(output.stdout.as_slice())
+        .map_err(|_| GitFailure(String::from("Git returned non-UTF-8 output.")))?;
+    let mut paths: Vec<String> = Vec::new();
+    for record in text.split('\0') {
+        let Some(tab) = record.find('\t') else {
+            continue;
+        };
+        let path: String = String::from(&record[tab + 1..]);
+        if !paths.contains(&path) {
+            paths.push(path);
+        }
+    }
+    return Ok(paths);
+}
+
+/// What:
+///  Lists the paths the private index changes against the recorded base.
+/// Why:
+///   The base is the recorded one, so a landing that moved `HEAD` since invocation changes nothing here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await listChangedIndexPaths({ gitPath, cwd, indexPath, baseRevision, objectDirectory });
+/// ```
+pub fn list_changed_index_paths(
+    context: &GitContext,
+    cwd: &Path,
+    commit_index: &Path,
+    base_revision: &str,
+    object_directory: &Path,
+) -> Result<Vec<String>, GitFailure> {
+    let output: GitOutput = run_git_checked(
+        context,
+        &indexed_request(
+            cwd,
+            &["diff", "--cached", "--name-only", "-z", base_revision],
+            Some(commit_index),
+            Some(object_directory),
+        ),
+    )?;
+    let text: &str = std::str::from_utf8(output.stdout.as_slice())
+        .map_err(|_| GitFailure(String::from("Git returned non-UTF-8 output.")))?;
+    return Ok(text
+        .split('\0')
+        .filter(|path| !path.is_empty())
+        .map(String::from)
+        .collect());
+}
+
+/// What:
+///  Resolves a pathspec-file source to the file the private index reads.
+/// Why:
+///   A regular source is read where it is named, relative to the invocation directory,
+///  and standard input is copied once into the transaction, so no second read sees different bytes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await materializePathspecFile({ workspace, effectiveCwd, source });
+/// ```
+pub fn materialize_pathspec_file(
+    directory: &Path,
+    effective_cwd: &Path,
+    source: Option<&str>,
+    standard_input: &mut dyn Read,
+) -> std::io::Result<Option<PathBuf>> {
+    let Some(name) = source else {
+        return Ok(None);
+    };
+    if name != "-" {
+        let path: PathBuf = PathBuf::from(name);
+        return Ok(Some(if path.is_absolute() {
+            path
+        } else {
+            effective_cwd.join(path)
+        }));
+    }
+    let mut bytes: Vec<u8> = Vec::new();
+    standard_input.read_to_end(&mut bytes)?;
+    let path: PathBuf = directory.join(PATHSPEC_INPUT_NAME);
+    write_private_file(path.as_path(), bytes.as_slice())?;
+    return Ok(Some(path));
+}
+
+/// What:
+///  Runs `git add --patch` or `git add --interactive` against the private index with inherited stdio.
+/// Why:
+///   The user's terminal answers the selection, and the choice lands only in the private copy.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await prepareInteractiveSelection({ workspace, gitPath, cwd, patch, pathspecs, pathspecFile, pathspecFileNul });
+/// ```
+pub fn prepare_interactive_selection(
+    context: &GitContext,
+    cwd: &Path,
+    commit_index: &Path,
+    object_directory: &Path,
+    patch: bool,
+    selection: &IndexSelection,
+) -> Result<(), GitFailure> {
+    let mode: &str = if patch { "--patch" } else { "--interactive" };
+    let mut arguments: Vec<String> = vec![String::from("add"), String::from(mode)];
+    arguments.extend(selection_arguments(selection));
+    let os_arguments: Vec<OsString> = arguments.iter().map(OsString::from).collect();
+    let mut command = git_command(context.real_git.as_path(), os_arguments.as_slice(), context.overlay.as_slice());
+    command
+        .current_dir(cwd)
+        .env("GIT_INDEX_FILE", commit_index)
+        .env("GIT_OBJECT_DIRECTORY", object_directory);
+    let status: std::process::ExitStatus = command
+        .status()
+        .map_err(|error| GitFailure(format!("git {} could not start: {error}", arguments.join(" "))))?;
+    if !status.success() {
+        return Err(GitFailure(format!(
+            "git {} exited {}",
+            arguments.join(" "),
+            status.code().map_or_else(|| String::from("by signal"), |code| code.to_string())
+        )));
+    }
+    return Ok(());
+}
+
+/// Private index controls stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_index_tests.rs"]
+mod tests;

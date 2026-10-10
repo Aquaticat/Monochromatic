@@ -483,6 +483,9 @@ pub mod conclusion_copy;
 /// Argument transforms of native preparation: normalisation, global split, `-a` removal and private arguments.
 pub mod commit_args;
 
+/// The private commit index: copies, selection modes, pathspec files and listings.
+pub mod commit_index;
+
 /// Creation of the shadow repository of one transaction.
 pub mod shadow_create;
 

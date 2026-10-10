@@ -19,7 +19,7 @@
 //! ```
 
 /// Shadow path, redirect variables and the shadow request.
-use super::shadow_git::{REPOSITORY_REDIRECT_VARIABLES, shadow_repository_path, shadow_request};
+use super::shadow_git::{REPOSITORY_REDIRECT_VARIABLES, shadow_repository_path};
 /// Invocation capture.
 use super::capture_invocation::InvocationCapture;
 /// Format copy and config text.
