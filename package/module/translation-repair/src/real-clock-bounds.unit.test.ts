@@ -146,23 +146,11 @@ type ListedBound = {
 };
 
 /**
- Why a deferred file's bounds wait: changes in flight on 2026-10-06 (UTC)
- edit it, and the census's rule is applied to it once they have merged.
+ Files another change edits first, each with why its bounds wait. Empty since
+ the seven files deferred on 2026-10-06 (UTC) took the census's rule once the
+ changes in flight on them merged.
  */
-const DEFERRED_REASON = 'other changes in flight edit this file; its bounds take the census\'s rule once they merge';
-
-/**
- Files another change edits first, each with why its bounds wait.
- */
-const DEFERRED: Readonly<Record<string, string>> = {
-  'corpus-run/coverage-probe-run.unit.test.ts': DEFERRED_REASON,
-  'corpus-run/recall-benchmark-run.unit.test.ts': DEFERRED_REASON,
-  'corpus-run/sentinel-probe-run.unit.test.ts': DEFERRED_REASON,
-  'corpus-run/settled-carve.unit.test.ts': DEFERRED_REASON,
-  'corpus-run/translate-probe-run.unit.test.ts': DEFERRED_REASON,
-  'corpus-run/window-trial-probe-run.unit.test.ts': DEFERRED_REASON,
-  'stage-round.unit.test.ts': DEFERRED_REASON,
-};
+const DEFERRED: Readonly<Record<string, string>> = {};
 
 /**
  Why a field of a record keeps its value: the case builds an error, a stream
