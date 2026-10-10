@@ -22,9 +22,10 @@ import {
 // SPENDS QUOTA. Point `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
 
 /**
- Hands the run what only a real process has: the client, the pinned corpus,
- the commit read, the stages that ask a model or write a report, and the runs
- directory the environment names.
+ Hands the run what only a real process has: the way to build the client, the
+ pinned corpus, the commit read, the stages that ask a model or write a report,
+ and the runs directory the environment names, resolved before any client is
+ built.
 
  @param line - the probe's command line, read whole by `reportingRefusals`
 
@@ -36,7 +37,7 @@ import {
 async function main({ line, }: { readonly line: CommandLineOf<'editor-width-probe'>; },): Promise<void> {
   await runEditorWidthProbe({
     line,
-    client: createRunClient(),
+    newClient: createRunClient,
     drawSample: sampleBenchSlices,
     pin: RUN_CORPUS_PIN,
     readHeadSha,

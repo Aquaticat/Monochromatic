@@ -40,8 +40,13 @@ import {
 // SPENDS QUOTA. Point `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
 //
 // WHAT THE PROCESS HANDS IN, because this module reads neither the environment
-// nor the command line itself: the client, the corpus draw, the commit read and
-// the four stages that touch the runs directory or ask a model.
+// nor the command line itself: the way to build the client, the corpus draw, the
+// commit read and the four stages that touch the runs directory or ask a model.
+//
+// THE CLIENT IS BUILT ONCE THE DRAW HOLDS A SLICE, right before the control
+// asks the panel, so every refusal that needs no provider (the count, the draw's
+// name, an empty draw) reaches the operator first. Until 2026-10-10 the entry
+// built it before anything else, and a process holding no key refused there.
 
 /**
  Slices drawn when the caller names no count.
@@ -66,8 +71,9 @@ const SLICES_A_DRAW_NEEDS: Readonly<Record<WidthDraw, number>> = {
 
  @param line - the probe's command line, read whole by `reportingRefusals`
 
- @param client - client every call goes through, built by the process before
- the command line's count is read, so a missing key refuses first
+ @param newClient - builds the client every call goes through; called once,
+ after the draw is known to hold a slice and before the control is asked, so
+ a refusal that needs no provider is printed before a missing key is
 
  @param drawSample - draws the whole sample, spread across the corpus the pin names
 
@@ -91,15 +97,21 @@ const SLICES_A_DRAW_NEEDS: Readonly<Record<WidthDraw, number>> = {
 
  @throws {@link StatedRefusalError} when the named draw is neither half
 
+ @throws {@link StatedRefusalError} when the named draw holds no slice of the
+ sample, before the client is built
+
+ @throws whatever building the client refuses with, such as a missing provider
+ key, after the header and the draw are printed
+
  @example
  ```ts
- await runEditorWidthProbe({ line, client, drawSample, pin, readHeadSha, controlHolds, gather, runSlice, writeReport, runsDir, },);
+ await runEditorWidthProbe({ line, newClient: createRunClient, drawSample, pin, readHeadSha, controlHolds, gather, runSlice, writeReport, runsDir, },);
  ```
  */
 export async function runEditorWidthProbe(
   {
     line,
-    client,
+    newClient,
     drawSample,
     pin,
     readHeadSha,
@@ -110,7 +122,7 @@ export async function runEditorWidthProbe(
     runsDir,
   }: {
     readonly line: CommandLineOf<'editor-width-probe'>;
-    readonly client: SyntheticClient;
+    readonly newClient: () => SyntheticClient;
     readonly drawSample: typeof sampleBenchSlices;
     readonly pin: CorpusPin;
     readonly readHeadSha: () => Promise<string>;
@@ -215,6 +227,12 @@ export async function runEditorWidthProbe(
       }`,
     },);
   }
+
+  /**
+   Client every call of this run goes through, built only now that the draw
+   holds work to spend it on.
+   */
+  const client = newClient();
 
   /**
    Whether the panel can tell a deleted sentence from an intact passage.

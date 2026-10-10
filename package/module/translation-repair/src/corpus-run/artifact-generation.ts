@@ -35,11 +35,6 @@ import { resolveGit, } from './git-command.ts';
 // than estimated.
 
 /**
- Directory of this source file, for locating the worktree via git.
- */
-const HERE = import.meta.dirname;
-
-/**
  Exit status `git merge-base --is-ancestor` uses for a clean negative.
 
  Anything else is a real failure: an unknown commit exits 128, and treating
@@ -307,15 +302,16 @@ export async function censusByGeneration(
  requirement to the same standard, at the one place it enters.
 
  Exported through the barrel so the built bundle's tests can hand it a
- throwaway repository; the pool is its only caller.
+ throwaway repository; the pool is its only production caller.
 
  @internal
 
  @param revision - whatever the invoker named: an id, an abbreviation, a
  branch, or a revision expression
 
- @param repository - checkout to ask, this package's own worktree unless a
- test hands it a throwaway one
+ @param repository - checkout to ask, which the entry names: the package's own
+ in a run, a throwaway one in a case; required, since a default would ask
+ whichever checkout the build stands in
 
  @returns Full object id of the commit it names
 
@@ -324,16 +320,16 @@ export async function censusByGeneration(
 
  @example
  ```ts
- const commit = await resolveCommit({ revision: 'ce130535d', },);
+ const commit = await resolveCommit({ revision: 'ce130535d', repository, },);
  ```
  */
 export async function resolveCommit(
   {
     revision,
-    repository = HERE,
+    repository,
   }: {
     readonly revision: string;
-    readonly repository?: string;
+    readonly repository: string;
   },
 ): Promise<string> {
   try {
@@ -431,8 +427,9 @@ function isCleanNegative({ error, }: { readonly error: unknown; },): boolean {
 
  @param commit - commit the draw requires
 
- @param repository - checkout to ask, this package's own worktree unless a
- test hands it a throwaway one
+ @param repository - checkout to ask, which the entry names: the package's own
+ in a run, a throwaway one in a case; required, since a default would ask
+ whichever checkout the build stands in
 
  @returns Whether `commit` is an ancestor of `tip`, or the same commit
 
@@ -442,18 +439,18 @@ function isCleanNegative({ error, }: { readonly error: unknown; },): boolean {
 
  @example
  ```ts
- const eligible = await tipContains({ tip, commit: 'fc7912929', },);
+ const eligible = await tipContains({ tip, commit: 'fc7912929', repository, },);
  ```
  */
 export async function tipContains(
   {
     tip,
     commit,
-    repository = HERE,
+    repository,
   }: {
     readonly tip: string;
     readonly commit: string;
-    readonly repository?: string;
+    readonly repository: string;
   },
 ): Promise<boolean> {
   try {

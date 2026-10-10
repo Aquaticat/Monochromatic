@@ -30,21 +30,27 @@ import {
  @param policy - generation policy the entry read from its environment
  (`readPoolPolicy`), handed to the pool
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @throws {@link StatedRefusalError} when the runs directory holds no readable
  `artifacts` directory, after the first line has named it
 
  @example
  ```ts
- await printAttribution({ runsDir, policy, },);
+ await printAttribution({ runsDir, policy, repository, },);
  ```
  */
 export async function printAttribution(
   {
     runsDir,
     policy,
+    repository,
   }: {
     readonly runsDir: string;
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<void> {
   /**
@@ -70,6 +76,7 @@ export async function printAttribution(
   } = await gatherAttributionEntries({
     artifactsDir,
     policy,
+    repository,
   },);
 
   /**

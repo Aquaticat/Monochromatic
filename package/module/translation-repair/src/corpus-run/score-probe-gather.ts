@@ -37,6 +37,10 @@ type NamedProbeReading = {
  @param policy - generation policy the entry read from its environment, which
  decides which generations the pool admits (`readPoolPolicy`)
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @returns Readings and coverage counts across every artifact
 
  @throws {@link ArtifactParseError} when a present probe field is malformed,
@@ -44,16 +48,18 @@ type NamedProbeReading = {
 
  @example
  ```ts
- const gathered = await gatherProbeReadings({ artifactsDir, policy, },);
+ const gathered = await gatherProbeReadings({ artifactsDir, policy, repository, },);
  ```
  */
 export async function gatherProbeReadings(
   {
     artifactsDir,
     policy,
+    repository,
   }: {
     readonly artifactsDir: string;
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<GatheredProbe> {
   /**
@@ -74,6 +80,7 @@ export async function gatherProbeReadings(
       artifactsDir,
       names: listed,
       policy,
+      repository,
     },),
   },);
 

@@ -19,6 +19,10 @@ async function main(): Promise<void> {
   await printAttribution({
     runsDir: await resolveRunsDir(),
     policy: readPoolPolicy({ env: process.env, },),
+    // The checkout this command's build stands in, where a required commit is
+    // resolved and placed; the pool took it from its own location until
+    // 2026-10-10.
+    repository: import.meta.dirname,
   },);
 }
 

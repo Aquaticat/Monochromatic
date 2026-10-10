@@ -45,13 +45,17 @@ import { readSheetText, } from './score-sheet-text.ts';
  @param policy - generation policy the entry read from its environment
  (`readPoolPolicy`), handed to the pool
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @throws {@link StatedRefusalError} when only one of `--repair-sheet` and `--manifest`
  is named, when the runs directory holds no readable `artifacts` directory, when
  the repair sheet cannot be read, or when the sheet and the manifest differ in length
 
  @example
  ```ts
- await printProbeScore({ runsDir, line, policy, },);
+ await printProbeScore({ runsDir, line, policy, repository, },);
  ```
  */
 export async function printProbeScore(
@@ -59,10 +63,12 @@ export async function printProbeScore(
     runsDir,
     line,
     policy,
+    repository,
   }: {
     readonly runsDir: string;
     readonly line: CommandLineOf<'score-probe'>;
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<void> {
   /**
@@ -103,6 +109,7 @@ export async function printProbeScore(
   const gathered = await gatherProbeReadings({
     artifactsDir,
     policy,
+    repository,
   },);
 
   reportProbeTelemetry({ gathered, },);

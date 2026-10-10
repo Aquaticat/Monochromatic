@@ -41,6 +41,10 @@ async function sampleOverTheEnvironment(): Promise<void> {
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: logger,
     policy: readPoolPolicy({ env: process.env, },),
+    // The checkout this command's build stands in, where a required commit is
+    // resolved and placed; the pool took it from its own location until
+    // 2026-10-10.
+    repository: import.meta.dirname,
   },);
 }
 

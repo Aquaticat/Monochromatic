@@ -59,6 +59,10 @@ import { writeSheetPair, } from './sheet-write.ts';
  @param policy - generation policy the entry read from its environment
  (`readPoolPolicy`), handed to the pool
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @throws {@link StatedRefusalError} When the settled entries ship no replacement
  over an archive wording to draw from, or no prober answered for any region
  drawn, since a sheet with no item would be kept and refuse the next run; and
@@ -66,7 +70,7 @@ import { writeSheetPair, } from './sheet-write.ts';
 
  @example
  ```ts
- await sampleDamage({ runsDir, seed: 'damage-round-one', openClient: createRunClient, proberModelIds, perCallTimeoutMs: 360_000, l, policy, },);
+ await sampleDamage({ runsDir, seed: 'damage-round-one', openClient: createRunClient, proberModelIds, perCallTimeoutMs: 360_000, l, policy, repository, },);
  ```
  */
 export async function sampleDamage(
@@ -78,6 +82,7 @@ export async function sampleDamage(
     perCallTimeoutMs,
     l,
     policy,
+    repository,
   }: {
     readonly runsDir: string;
     readonly seed: string;
@@ -86,6 +91,7 @@ export async function sampleDamage(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<void> {
   /**
@@ -97,6 +103,7 @@ export async function sampleDamage(
   } = await collectShippedRegions({
     runsDir,
     policy,
+    repository,
   },);
   if (pool.length === 0) {
     // AN EMPTY SHEET IS KEPT: both files are refused for as long as either

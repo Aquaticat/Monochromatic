@@ -57,6 +57,10 @@ export type DrawPool = {
  @param policy - generation policy the entry read from its environment, which
  decides which generations the pool admits (`readPoolPolicy`)
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @returns The admitted entries and their pool
 
  @throws {@link StatedRefusalError} When the runs directory holds no artifacts
@@ -64,7 +68,7 @@ export type DrawPool = {
 
  @example
  ```ts
- const { entries, pool, } = await readDrawPool({ runsDir, readSource: readCorpusFile, policy, },);
+ const { entries, pool, } = await readDrawPool({ runsDir, readSource: readCorpusFile, policy, repository, },);
  ```
  */
 export async function readDrawPool(
@@ -72,10 +76,12 @@ export async function readDrawPool(
     runsDir,
     readSource,
     policy,
+    repository,
   }: {
     readonly runsDir: string;
     readonly readSource: typeof readCorpusFile;
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<DrawPool> {
   /**
@@ -101,6 +107,7 @@ export async function readDrawPool(
     artifactsDir,
     names: listed,
     policy,
+    repository,
   },);
 
   /**

@@ -47,13 +47,17 @@ import { writeDrawSheets, } from './draw-sample-sheets.ts';
  @param policy - generation policy the entry read from its environment
  (`readPoolPolicy`), handed to the pool
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @throws {@link StatedRefusalError} When a final draw's sample is empty, or
  carries issues with no recorded repair, the count of them named, and for what
  the pool and the sheet paths refuse with
 
  @example
  ```ts
- await drawGradingSample({ line, runsDir, pin: RUN_CORPUS_PIN, readSource: readCorpusFile, policy, },);
+ await drawGradingSample({ line, runsDir, pin: RUN_CORPUS_PIN, readSource: readCorpusFile, policy, repository, },);
  ```
  */
 export async function drawGradingSample(
@@ -63,12 +67,14 @@ export async function drawGradingSample(
     pin,
     readSource,
     policy,
+    repository,
   }: {
     readonly line: CommandLineOf<'draw-sample'>;
     readonly runsDir: string;
     readonly pin: CorpusPin;
     readonly readSource: typeof readCorpusFile;
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<void> {
   /**
@@ -104,6 +110,7 @@ export async function drawGradingSample(
     runsDir,
     readSource,
     policy,
+    repository,
   },);
 
   for (const bandLine of poolBandLines({ entries, },))

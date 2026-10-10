@@ -39,7 +39,7 @@ import {
 
  @example
  ```ts
- const eligible = await selectEligible({ census, requiredCommit, },);
+ const eligible = await selectEligible({ census, requiredCommit, repository, },);
  ```
  */
 export type EligibleEntries = Readonly<{
@@ -277,20 +277,24 @@ function unplaceableLines(
 
  @param requiredCommit - commit an entry's pipeline must contain
 
+ @param repository - checkout every recorded commit is placed against
+
  @returns Verdict for every commit the census placed
 
  @example
  ```ts
- const verdicts = await verdictsByTip({ census, requiredCommit, },);
+ const verdicts = await verdictsByTip({ census, requiredCommit, repository, },);
  ```
  */
 async function verdictsByTip(
   {
     census,
     requiredCommit,
+    repository,
   }: {
     readonly census: GenerationCensus;
     readonly requiredCommit: string;
+    readonly repository: string;
   },
 ): Promise<ReadonlyMap<string, boolean>> {
   /**
@@ -319,6 +323,7 @@ async function verdictsByTip(
       await tipContains({
         tip,
         commit: requiredCommit,
+        repository,
       },),
     );
   }
@@ -339,6 +344,9 @@ async function verdictsByTip(
  every generation at once, which is legitimate for a census but never for a
  rate
 
+ @param repository - checkout a required commit's ancestry is asked of; asked
+ nothing when no commit is required
+
  @returns Eligible entries, what was excluded, and the lines to print above
  any number drawn from them
 
@@ -349,7 +357,7 @@ async function verdictsByTip(
 
  @example
  ```ts
- const eligible = await selectEligible({ census, requiredCommit: 'fc7912929', },);
+ const eligible = await selectEligible({ census, requiredCommit: 'fc7912929', repository, },);
  ```
  */
 export async function selectEligible(
@@ -357,10 +365,12 @@ export async function selectEligible(
     census,
     requiredCommit,
     pooledDeliberately = false,
+    repository,
   }: {
     readonly census: GenerationCensus;
     readonly requiredCommit?: string;
     readonly pooledDeliberately?: boolean;
+    readonly repository: string;
   },
 ): Promise<EligibleEntries> {
   /**
@@ -435,6 +445,7 @@ export async function selectEligible(
   const verdicts = await verdictsByTip({
     census,
     requiredCommit,
+    repository,
   },);
 
   /**

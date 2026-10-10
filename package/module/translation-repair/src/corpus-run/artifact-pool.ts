@@ -113,6 +113,10 @@ export function readPoolPolicy({ env, }: { readonly env: Readonly<NodeJS.Process
 
  @param policy - generation policy the entry read (`readPoolPolicy`)
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @returns Eligible entries, what was excluded, and the printed report
 
  @throws StatedRefusalError when the policy requires a commit and asks for
@@ -124,7 +128,7 @@ export function readPoolPolicy({ env, }: { readonly env: Readonly<NodeJS.Process
 
  @example
  ```ts
- const pool = await resolvePool({ artifactsDir, policy: readPoolPolicy({ env: process.env, },), },);
+ const pool = await resolvePool({ artifactsDir, policy: readPoolPolicy({ env: process.env, },), repository: import.meta.dirname, },);
  ```
 
  @internal
@@ -134,10 +138,12 @@ export async function resolvePool(
     artifactsDir,
     names,
     policy,
+    repository,
   }: {
     readonly artifactsDir: string;
     readonly names?: readonly ArtifactFileName[];
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<EligibleEntries> {
   /**
@@ -182,7 +188,10 @@ export async function resolvePool(
    */
   const commit = (required === '')
     ? ''
-    : await resolveCommit({ revision: required, },);
+    : await resolveCommit({
+      revision: required,
+      repository,
+    },);
 
   if ((commit !== '') && (commit !== required))
     console.log(`POOL required commit ${required} resolves to ${commit}`,);
@@ -194,6 +203,7 @@ export async function resolvePool(
     census,
     ...((commit === '') ? {} : { requiredCommit: commit, }),
     pooledDeliberately: policy.poolAll,
+    repository,
   },);
 
   // The reader's OWN identity, which the artifacts cannot carry. Every artifact

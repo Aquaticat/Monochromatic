@@ -38,12 +38,16 @@ import {
  @param policy - generation policy the entry read from its environment
  (`readPoolPolicy`), handed to the pool
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @throws {@link StatedRefusalError} when the runs directory holds no readable
  `artifacts` directory, after the first line has named it
 
  @example
  ```ts
- await printCrosscheck({ runsDir, roster: RUN_MODELS.judgeModelIds, policy, },);
+ await printCrosscheck({ runsDir, roster: RUN_MODELS.judgeModelIds, policy, repository, },);
  ```
  */
 export async function printCrosscheck(
@@ -51,10 +55,12 @@ export async function printCrosscheck(
     runsDir,
     roster,
     policy,
+    repository,
   }: {
     readonly runsDir: string;
     readonly roster: readonly RosterModelId[];
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<void> {
   /**
@@ -80,6 +86,7 @@ export async function printCrosscheck(
   } = await gatherAttributionEntries({
     artifactsDir,
     policy,
+    repository,
   },);
 
   printCrosscheckMalformed({ malformed, },);

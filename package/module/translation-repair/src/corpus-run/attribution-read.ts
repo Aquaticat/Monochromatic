@@ -443,7 +443,7 @@ export type MalformedArtifact = {
 
  @example
  ```ts
- const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
+ const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, policy, repository, },);
  ```
  */
 export type AttributionGather = {
@@ -479,20 +479,26 @@ export type AttributionGather = {
  @param policy - generation policy the entry read from its environment, which
  decides which generations the pool admits (`readPoolPolicy`)
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @returns Entries that parsed, and the artifacts that did not
 
  @example
  ```ts
- const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, policy, },);
+ const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, policy, repository, },);
  ```
  */
 export async function gatherAttributionEntries(
   {
     artifactsDir,
     policy,
+    repository,
   }: {
     readonly artifactsDir: string;
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<AttributionGather> {
   /**
@@ -513,6 +519,7 @@ export async function gatherAttributionEntries(
       artifactsDir,
       names: listed,
       policy,
+      repository,
     },),
   },);
 

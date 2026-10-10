@@ -27,6 +27,10 @@ import { listSettledNames, } from './sample-artifact-names.ts';
  @param policy - generation policy the entry read from its environment, which
  decides which generations the pool admits (`readPoolPolicy`)
 
+ @param repository - checkout a required commit is resolved in and every
+ recorded commit is placed against, which the entry names: the package's own
+ in a run, a throwaway one in a case
+
  @returns Regions the damage question can be asked about, and how many rows
  filled a passage that had no incumbent wording
 
@@ -35,16 +39,18 @@ import { listSettledNames, } from './sample-artifact-names.ts';
 
  @example
  ```ts
- const { regions, } = await collectShippedRegions({ runsDir, policy, },);
+ const { regions, } = await collectShippedRegions({ runsDir, policy, repository, },);
  ```
  */
 export async function collectShippedRegions(
   {
     runsDir,
     policy,
+    repository,
   }: {
     readonly runsDir: string;
     readonly policy: PoolPolicy;
+    readonly repository: string;
   },
 ): Promise<ShippedRegionCensus> {
   /**
@@ -70,6 +76,7 @@ export async function collectShippedRegions(
         artifactsDir,
         names: listed,
         policy,
+        repository,
       },),
     },),
   },);
