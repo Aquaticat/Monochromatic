@@ -341,3 +341,8 @@ pub fn auto_push(
 #[cfg(test)]
 #[path = "auto_push_tests.rs"]
 mod tests;
+
+/// Racing auto-push processes on one branch, killed pushers and joins.
+#[cfg(test)]
+#[path = "auto_push_concurrency_tests.rs"]
+mod concurrency_tests;
