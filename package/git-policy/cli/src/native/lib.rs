@@ -550,3 +550,6 @@ pub mod post_commit;
 
 /// Authoritative manual-push updates discovered by a private dry-run push and confirmed with ls-remote.
 pub mod manual_push_probe;
+
+/// Published-set and range computation for manual-push scans: which pushed commits a remote does not have.
+pub mod manual_push_range;
