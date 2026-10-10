@@ -13,6 +13,13 @@
  a measurement rather than a constant: a round that loses a voice spends the
  whole window, and a round whose roster all answers spends almost none of it.
 
+ NO CEILING ON THE CLOCK. A figure that must be small is held to a span the
+ case reads itself around the same instants, on the same clock, at a turn of
+ the event loop the round's own work cannot outlast: a stall widens both the
+ figure and the span, and cannot put one past the other. Only floors are
+ asserted against a delay (`mistake-prevention.md`, "Tests on the real
+ clock").
+
  Fixtures are cat-themed invention. No corpus content appears here.
 
  @module
@@ -63,13 +70,16 @@ import {
 //region Fixtures
 
 /**
- Grace short enough to finish a test in well under a second, standing in for
- the three real minutes.
+ Grace the round that loses a voice waits out, short enough to finish the case
+ in well under a second, standing in for the three real minutes. Every other
+ round here ends before any window would close, and takes the hang stop.
  */
 const GRACE_MS = 250;
 
 /**
- Delay a slow-but-working voice takes, comfortably inside the grace.
+ Delay a slow-but-working voice takes: armed when the round asks it, before
+ the round arms its grace, and shorter, so it lands inside the window on any
+ machine.
  */
 const SLOW_MS = 40;
 
@@ -87,19 +97,6 @@ const SLOW_MS = 40;
  distinguished from, which is a round that did not wait at all.
  */
 const CLOCK_SLACK_MS = 2;
-
-/**
- Exchange deadline the rounds are given; the scripted client arms none.
- */
-const EXCHANGE_TIMEOUT_MS = 10_000;
-
-/**
- How far past the first real answer a round's quorum mark may land.
- Half the grace: scheduling between the answer's return and the round's mark
- stays far under it even at 0.2 CPU, while a round that spent a grace's worth
- of waiting before quorum lands a whole grace past it.
- */
-const QUORUM_MARK_SLACK_MS = GRACE_MS / 2;
 
 /**
  Roster the rounds ask, named from the catalog because model identifiers are
@@ -506,10 +503,12 @@ function readRoundLine({ said, }: { readonly said: readonly string[]; },): Round
 
 await describe({
   name: '',
-  // ONE CASE AT A TIME: the timing cases read how long a round took to reach
-  // quorum against when its first voice answered, and the stop cases build a
-  // real client over the stubbed transport, work that landed inside that
-  // reading when both ran at once.
+  // ONE CASE AT A TIME, as set when the case "SEPARATES THE TIME A ROUND
+  // WORKED" held the round's quorum mark to a ceiling past its first answer and
+  // failed in 2 of 4 runs beside the stop cases, which build a real client over
+  // the stubbed transport (commit `154da3c68`). It now reads the mark against
+  // the turn of the event loop after the round starts, which work beside it
+  // widens and cannot break; the setting stays as that change left it.
   concurrency: 1,
   children: [
     describe({
@@ -525,24 +524,24 @@ await describe({
              */
             const said: string[] = [];
             /**
-             When each voice really answered.
-             */
-            const answeredAt: number[] = [];
-            /**
              Clock before the round starts, at or before its own start mark.
              */
             const startedAt = performance.now();
 
-            await runGatherRound({
+            /**
+             The round, every seat already asked: the first seat answered inside
+             this call, and the round marks quorum in the microtasks that answer
+             starts.
+             */
+            const round = runGatherRound({
               client: scheduledClient({
                 slowModelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
                 hangingModelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-                answeredAt,
               },),
               modelIds: ROSTER,
               messages: [{ role: 'user', content: 'meow', },],
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
@@ -550,6 +549,17 @@ await describe({
               heardNeeded: 1,
               graceMs: GRACE_MS,
             },);
+            // Every microtask runs before the event loop turns, so this turn
+            // comes after the round's quorum mark however long the machine
+            // stalls in between, and before the slow voice's timer or the
+            // window could have moved the mark.
+            await turnOfTheLoop();
+            /**
+             Milliseconds from before the round started to the next turn of the
+             event loop, a span the round's own time to quorum lies inside.
+             */
+            const toNextTurnMs = performance.now() - startedAt;
+            await round;
 
             /**
              What the round said about itself.
@@ -561,16 +571,13 @@ await describe({
             // The window really was spent: the hanging voice never answered, so
             // the round waited it out rather than finishing at quorum.
             expect(timings.inGraceMs,).toBeGreaterThanOrEqual(GRACE_MS - CLOCK_SLACK_MS,);
-            // Quorum stood on the first voice that answered, so the round did no
-            // waiting before it. Anchored on when that voice really answered
-            // rather than compared with the grace: time to the first answer grows
-            // with load (398 ms against a 250 ms grace at 0.2 CPU, 2026-09-27).
-            /**
-             Milliseconds from before the round started to the first answer, never
-             shorter than the round's own reading of that instant.
-             */
-            const firstAnswerMs = nonNullishOrThrow(answeredAt[0],) - startedAt;
-            expect(timings.toQuorumMs,).toBeLessThan(firstAnswerMs + QUORUM_MARK_SLACK_MS,);
+            // Quorum stood on the voice that answered at once, so the round did
+            // no waiting before it: its mark lies before the next turn. Held to
+            // that span rather than to a ceiling past the first answer, which
+            // failed in 2 of 4 runs beside the stop cases (commit `154da3c68`).
+            // The round floors both of its readings and starts no earlier than
+            // the case's, so its figure is at most the span's ceiling.
+            expect(timings.toQuorumMs,).toBeLessThanOrEqual(Math.ceil(toNextTurnMs,),);
             // The three numbers describe one round rather than three measurements.
             expect(timings.totalMs,).toBe(timings.toQuorumMs + timings.inGraceMs,);
           },
@@ -585,28 +592,55 @@ await describe({
              Every message the round logged.
              */
             const said: string[] = [];
+            /**
+             When each voice really answered, the slow voice last.
+             */
+            const answeredAt: number[] = [];
 
-            await runGatherRound({
-              client: scheduledClient({ slowModelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },),
+            /**
+             The round, every seat already asked, the slow voice's wait among
+             them.
+             */
+            const round = runGatherRound({
+              client: scheduledClient({
+                slowModelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                answeredAt,
+              },),
               modelIds: ROSTER,
               messages: [{ role: 'user', content: 'meow', },],
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
               l: capturingLogger({ messages: said, },),
               heardNeeded: ROSTER.length,
-              graceMs: GRACE_MS,
+              graceMs: HANG_STOP_MS,
             },);
+            // Armed after the slow voice's own wait and as long, so it fires
+            // after that voice answered and after every microtask its answer
+            // started, however long the machine stalls (measured 2026-10-10 on
+            // Node 26.10.0, with stalls of 300 and 1,100 ms).
+            await wait(SLOW_MS,);
+            /**
+             Milliseconds from the last answer to this turn, a span the round's
+             grace lies inside when it ended in that answer's microtasks.
+             */
+            const sinceLastAnswerMs = performance.now() - nonNullishOrThrow(answeredAt.at(-1,),);
 
             /**
-             What the round said about itself.
+             What the round said about itself, read at this turn: the line is
+             written as the round ends, so a round still waiting on a window has
+             none yet.
              */
             const timings = readRoundLine({ said, },);
+            await round;
 
             expect(timings.heard,).toBe(ROSTER.length,);
-            expect(timings.inGraceMs,).toBeLessThan(GRACE_MS,);
+            // The grace is a measurement of that span, not the window: the round
+            // floors both of its readings and takes them after the last answer
+            // and before this turn, so its figure is at most the span's ceiling.
+            expect(timings.inGraceMs,).toBeLessThanOrEqual(Math.ceil(sinceLastAnswerMs,),);
             // The slow voice is what the round waited on, and it waited before
             // quorum rather than after it.
             expect(timings.toQuorumMs,).toBeGreaterThanOrEqual(SLOW_MS - CLOCK_SLACK_MS,);
@@ -645,13 +679,13 @@ await describe({
               modelIds: ROSTER,
               messages: [{ role: 'user', content: 'meow', },],
               signal: steering.signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
               l: capturingLogger({ messages: [], },),
               heardNeeded: ROSTER.length,
-              graceMs: GRACE_MS,
+              graceMs: HANG_STOP_MS,
             },);
             steering.abort(reason,);
             expect(await rejectionOf(async function stopped(): Promise<unknown> {
@@ -849,13 +883,13 @@ await describe({
               modelIds: ROSTER,
               messages: [{ role: 'user', content: 'meow', },],
               signal: steering.signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
               l: capturingLogger({ messages: said, },),
               heardNeeded: ROSTER.length,
-              graceMs: GRACE_MS,
+              graceMs: HANG_STOP_MS,
             },);
             steering.abort(reason,);
             expect(await rejectionOf(async function stopped(): Promise<unknown> {
@@ -879,7 +913,7 @@ await describe({
                 modelIds: ROSTER,
                 messages: [{ role: 'user', content: 'meow', },],
                 signal: new AbortController().signal,
-                exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+                exchangeTimeoutMs: HANG_STOP_MS,
                 responseFormat: MEOW_FORMAT,
                 validate: isMeowReply,
                 stage: 'cat-stage',
@@ -890,7 +924,7 @@ await describe({
                   },
                 },
                 heardNeeded: ROSTER.length,
-                graceMs: GRACE_MS,
+                graceMs: HANG_STOP_MS,
               },);
             },),).toBe(logFailure,);
           },
@@ -914,13 +948,13 @@ await describe({
               modelIds: ROSTER,
               messages: [{ role: 'user', content: 'meow', },],
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
               l: capturingLogger({ messages: said, },),
               heardNeeded: ROSTER.length,
-              graceMs: GRACE_MS,
+              graceMs: HANG_STOP_MS,
             },);
             /**
              The round's own line.
@@ -967,13 +1001,13 @@ await describe({
               modelIds: ROSTER,
               messages: [{ role: 'user', content: 'meow', },],
               signal: new AbortController().signal,
-              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              exchangeTimeoutMs: HANG_STOP_MS,
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
               l: capturingLogger({ messages: said, },),
               heardNeeded: ROSTER.length,
-              graceMs: GRACE_MS,
+              graceMs: HANG_STOP_MS,
             },);
             wall.step({ byMs: 2 * HOUR_MS, },);
             await round;

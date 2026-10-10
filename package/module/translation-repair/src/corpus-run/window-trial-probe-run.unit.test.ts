@@ -44,6 +44,7 @@ import {
   WindowEvidenceError,
 } from '../../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from '../capturing-logger.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import {
@@ -306,7 +307,7 @@ await describe({
           readPage: readScripted,
           pickSlice: runPick,
           roster: ROSTER,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
         },);
 
@@ -390,7 +391,7 @@ await describe({
           readPage: readScripted,
           pickSlice: runPick,
           roster: ROSTER,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
         },);
 
@@ -436,7 +437,7 @@ await describe({
             return runPick(input,);
           },
           roster: ROSTER,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
         },);
 
@@ -478,7 +479,7 @@ await describe({
               clients: [],
             },),
             roster: ROSTER,
-            perCallTimeoutMs: 5_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
           },),
         },);
@@ -527,7 +528,7 @@ await describe({
             clients: [],
           },),
           roster: ROSTER,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
         },);
 
@@ -577,7 +578,7 @@ await describe({
               clients: [],
             },),
             roster: ROSTER,
-            perCallTimeoutMs: 5_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
           },),
         },);
@@ -617,7 +618,7 @@ await describe({
               clients: [],
             },),
             roster: ROSTER,
-            perCallTimeoutMs: 5_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
           },),
         },);
@@ -675,7 +676,7 @@ await describe({
             readPage: readScripted,
             pickSlice: runPick,
             roster: ROSTER,
-            perCallTimeoutMs: 5_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
           },),
         },);
@@ -719,7 +720,7 @@ await describe({
             readPage: readScripted,
             pickSlice: runPick,
             roster: ROSTER,
-            perCallTimeoutMs: 5_000,
+            perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
           },),
         },);
@@ -749,7 +750,7 @@ await describe({
           readPage: readScripted,
           pickSlice: runPick,
           roster: ROSTER,
-          perCallTimeoutMs: 5_000,
+          perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
         },);
 

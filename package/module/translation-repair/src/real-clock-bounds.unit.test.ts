@@ -206,6 +206,20 @@ const SERIAL_HEAD_START = 'a head start in the runs where the driver admits one 
 const HANDED_ON = 'hands on its caller\'s value, which is read where the caller gives it';
 
 /**
+ Why the recall run's call configuration keeps its values: the case reads
+ production's configuration back whole in the scorecard the run keeps.
+ */
+const RECALL_CALL_CONFIG = 'production\'s call configuration for the recall run, read back whole in the scorecard '
+  + 'the run keeps; the case arms no timer with it, and the scripted critic client none';
+
+/**
+ Why the sentinel probe's deadline keeps its value: a number no default
+ shares, so the case shows the walk handed the repair this one.
+ */
+const SENTINEL_DEADLINE = 'the deadline the walk hands each scripted repair, read back in what the repair was asked; '
+  + 'the scripted repair arms no timer with it';
+
+/**
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
@@ -370,6 +384,21 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: 'a budget handed to a pure decision beside the elapsed time the case gives it; no clock is read',
   },
+  'corpus-run/recall-benchmark-run.unit.test.ts#<module>: perCallTimeoutMs: 360_000': {
+    count: 1,
+    bound: 'read back',
+    reason: RECALL_CALL_CONFIG,
+  },
+  'corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamFirstByteMs: 600_000': {
+    count: 1,
+    bound: 'read back',
+    reason: RECALL_CALL_CONFIG,
+  },
+  'corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamIdleMs: 600_000': {
+    count: 1,
+    bound: 'read back',
+    reason: RECALL_CALL_CONFIG,
+  },
   'corpus-run/recall-scorecard-store.unit.test.ts#<module>: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
@@ -386,12 +415,32 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: RECORD_FIELD,
   },
   'corpus-run/run-timing.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'corpus-run/sentinel-probe-run.unit.test.ts#<module>: perCallTimeoutMs: CALL_TIMEOUT_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: SENTINEL_DEADLINE,
+  },
+  'corpus-run/sentinel-probe-run.unit.test.ts#scripted: perCallTimeoutMs: input.perCallTimeoutMs': {
+    count: 1,
+    bound: 'other',
+    reason: HANDED_ON,
+  },
+  'corpus-run/sentinel-probe-run.unit.test.ts#walk: perCallTimeoutMs: CALL_TIMEOUT_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: SENTINEL_DEADLINE,
+  },
   'corpus-run/settled-artifact.test-fixture.ts#settledArtifactOver: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
   'corpus-run/settled-artifact.test-fixture.ts#settledArtifactOverRows: perCallTimeoutMs: 600_000': {
+    count: 1,
+    bound: 'read back',
+    reason: CALL_CONFIG,
+  },
+  'corpus-run/settled-carve.unit.test.ts#writeArtifact: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
@@ -565,6 +614,25 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 3,
     bound: 'reached',
     reason: 'the window that cuts the slow seat, which answers only once it is aborted',
+  },
+  'stage-round.unit.test.ts#<module>: graceMs: GRACE_MS': {
+    count: 1,
+    bound: 'reached',
+    reason: 'the window the case that loses a voice reaches: its hanging seat answers only once the round cuts it, '
+      + 'and its slow voice, armed before the window and shorter, lands inside it on any machine',
+  },
+  'stage-round.unit.test.ts#<module>: wait of module-async-time SLOW_MS': {
+    count: 1,
+    bound: 'other',
+    reason: 'the turn at which the whole-roster case reads the round\'s line: armed after the slow voice\'s own wait '
+      + 'and as long, so it fires after that answer and its microtasks however long the loop stalls (measured '
+      + '2026-10-10); a round still waiting on a window has written no line by then',
+  },
+  'stage-round.unit.test.ts#scheduledClient: wait of module-async-time SLOW_MS': {
+    count: 1,
+    bound: 'other',
+    reason: 'the delay of the slow voice: inside the window in the case that loses a voice, and before quorum, as a '
+      + 'floor only, in the whole-roster case',
   },
   'stage-windowed-rounds.unit.test.ts#runBench: graceMs: graceMs': { count: 1, bound: 'other', reason: HANDED_ON, },
   'stream-bound.unit.test.ts#<module>: boundMs: SHORT_BOUND_MS': {

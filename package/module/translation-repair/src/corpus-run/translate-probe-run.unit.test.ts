@@ -23,6 +23,7 @@ import {
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from '../capturing-logger.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -40,11 +41,6 @@ const ROSTER: readonly RosterModelId[] = [
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
-
-/**
- Deadline handed to every exchange.
- */
-const TIMEOUT_MS = 60_000;
 
 /**
  What the translators were scripted to say, by model id; a model absent from
@@ -187,7 +183,7 @@ async function probeOver(
       pin: corpus.pin,
       newClient: counting,
       editorModelIds: roster,
-      perCallTimeoutMs: TIMEOUT_MS,
+      perCallTimeoutMs: HANG_STOP_MS,
       log: logger,
     },);
   }

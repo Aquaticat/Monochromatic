@@ -25,6 +25,7 @@ import {
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import {
   statusFailureLogText,
   statusFailureOf,
@@ -73,11 +74,6 @@ const CLOSURE = {
   kind: 'unavailable',
   reason: 'a cat sat on the entry',
 } as const;
-
-/**
- Deadline handed to every scripted stage.
- */
-const EXCHANGE_TIMEOUT_MS = 777;
 
 /**
  Answer a scripted stage gives for a passage.
@@ -288,7 +284,7 @@ async function runOver(
       },
       stage: scripted,
       roster: ROSTER,
-      exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+      exchangeTimeoutMs: HANG_STOP_MS,
       readDigest: function digest(): Promise<string> {
         return Promise.resolve(DIGEST,);
       },
