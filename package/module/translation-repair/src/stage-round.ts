@@ -1,7 +1,4 @@
-import {
-  type Logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { settleWithin, } from '@monochromatic-dev/module-async-time/ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -17,9 +14,9 @@ import {
 } from './stage-call.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { describeAbandon, } from './abandon-kind.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import { resolveStragglerGraceMs, } from './grace-override.ts';
 import { monotonicMs, } from './monotonic-clock.ts';
-import { refusalText, } from './refusal-text.ts';
 import { roundLine, } from './stage-round-line.ts';
 
 //region Stage round
@@ -124,25 +121,19 @@ export type RoundOutcome<ValueT,> = {
  rejecting ask ended in, and the round's failure is the same whichever ask
  ended first.
 
- THE FAILURE IT DROPS IS LOGGED, through `refusalText`, wherever it is not the
- caller's reason itself: a seat whose own deadline or transport failure landed
- as the stop arrived is then still on a line, though the round is stopping
- whatever it was.
+ THE FAILURE IT REPLACES IS NOT ITS TO LOG. Each ask writes its own failure
+ as it ends (`askOnce` in `runGatherRound`), so a failure is on a line
+ whichever ask ended first, the asks that end after this throws included,
+ and a provider's refusal keeps its words there.
 
  @param pending - promises of the asks still to settle, each settling to its ask's position
 
  @param signal - the caller's abort, whose reason replaces an ask's rejection
  so the round's failure does not depend on which ask ended first
 
- @param stage - stage label the dropped failure's line names, as every other line of the round does
-
- @param l - logger of the calling stage, which the dropped failure's line is written on, tagged with this function
-
  @returns Position of the ask that settled first
 
  @throws The caller's abort reason, once an ask rejected after the caller aborted
-
- @throws Whatever the logger raises while it writes the dropped failure's line
 
  @throws Whatever the ask rejected with, unchanged, where the caller had not
  aborted, which only a failure inside `askOnce`'s own catch produces, such as
@@ -150,40 +141,22 @@ export type RoundOutcome<ValueT,> = {
 
  @example
  ```ts
- const settled = await nextSettled({ pending: pending.values(), signal, stage, l, },);
+ const settled = await nextSettled({ pending: pending.values(), signal, },);
  ```
  */
 async function nextSettled(
   {
     pending,
     signal,
-    stage,
-    l,
   }: {
     readonly pending: Iterable<Promise<number>>;
     readonly signal: AbortSignal;
-    readonly stage: string;
-    readonly l: Logger;
   },
 ): Promise<number> {
   try {
     return await Promise.race(pending,);
   }
   catch (error) {
-    if (signal.aborted && (error !== signal.reason)) {
-      /**
-       The stage's logger, tagged with this function.
-       */
-      const nl = tagged({
-        tag: nextSettled.name,
-        l,
-      },);
-      nl.warn(
-        `${stage}: an ask failed as the caller stopped the round, which reports the caller's reason in its place: ${
-          refusalText({ error, },)
-        }`,
-      );
-    }
     signal.throwIfAborted();
     throw error;
   }
@@ -203,13 +176,7 @@ async function nextSettled(
  @param signal - the caller's abort, whose reason is what the round rejects
  with when an ask rejects, whichever ask ended first
 
- @param stage - stage label a dropped failure's line names
-
- @param l - logger of the calling stage, which a dropped failure's line is written on
-
  @throws The caller's abort reason, once an ask rejected after the caller aborted
-
- @throws Whatever the logger raises while it writes a dropped failure's line
 
  @throws Whatever an ask rejected with, unchanged, where the caller had not
  aborted, which only a failure inside `askOnce`'s own catch produces, such as
@@ -217,7 +184,7 @@ async function nextSettled(
 
  @example
  ```ts
- await awaitHeard({ asks, heardNeeded: 2, signal, stage, l, },);
+ await awaitHeard({ asks, heardNeeded: 2, signal, },);
  ```
  */
 async function awaitHeard<ValueT,>(
@@ -225,14 +192,10 @@ async function awaitHeard<ValueT,>(
     asks,
     heardNeeded,
     signal,
-    stage,
-    l,
   }: {
     readonly asks: readonly Promise<RoundOutcome<ValueT>>[];
     readonly heardNeeded: number;
     readonly signal: AbortSignal;
-    readonly stage: string;
-    readonly l: Logger;
   },
 ): Promise<void> {
   /**
@@ -269,8 +232,6 @@ async function awaitHeard<ValueT,>(
     const settled = await nextSettled({
       pending: pending.values(),
       signal,
-      stage,
-      l,
     },);
     /* oxlint-enable no-await-in-loop */
     pending.delete(settled,);
@@ -444,6 +405,9 @@ export async function runGatherRound<ValueT,>(
    the reserve seat was taken in
 
    @returns Seat's answer, its recorded silence, or its refusal
+
+   @throws Whatever the seat's call raised, once the caller aborted, having
+   written it on the seat's line unless it is the caller's reason itself
    */
   async function askOnce(
     {
@@ -485,8 +449,22 @@ export async function runGatherRound<ValueT,>(
       // The CALLER's abort still propagates, so user steering stops a fan-out
       // exactly as it did. Only this round's own cut is turned into a lost
       // voice, because that is what it is: a model that had its chance.
-      if (signal.aborted)
+      //
+      // A FAILURE OF THE CALL'S OWN IS WRITTEN HERE, as the seat ends, since
+      // the round fails with the caller's reason and no catch past it sees
+      // this one: a deadline or a provider's refusal that landed as the stop
+      // arrived, before quorum or in the grace window, whichever seat ended
+      // first. Rendered as the seat's lost voice is (`attemptStageCall`), so
+      // a refusal keeps its status and the provider's words, the key masked
+      // where the transport built it.
+      if (signal.aborted) {
+        if (error !== signal.reason) {
+          l.warn(
+            `${stage} ${modelId}: ${exchangeFailureLogText({ error, },)}, as the caller stopped the round`,
+          );
+        }
         throw error;
+      }
       l.warn(
         `${stage} ${modelId}: abandoned ${
           String(graceMs,)
@@ -562,8 +540,6 @@ export async function runGatherRound<ValueT,>(
     asks,
     heardNeeded,
     signal,
-    stage,
-    l,
   },);
 
   /**
@@ -605,7 +581,8 @@ export async function runGatherRound<ValueT,>(
   // on that, the slice would settle, and the driver would cache a decision the
   // run was told to stop making. Before quorum an ask's rejection already
   // surfaces through `awaitHeard` as this same reason; this covers the window
-  // after it.
+  // after it. Either way a seat's own failure is already on its line, written
+  // by `askOnce` as the seat ended.
   signal.throwIfAborted();
 
   /**
