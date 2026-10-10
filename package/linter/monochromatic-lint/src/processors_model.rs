@@ -96,10 +96,16 @@ pub(crate) enum Guard {
     ///  with no extraction.
     Root,
     /// Fence marker's original byte address.
-    Fence { marker: usize },
+    Fence {
+        /// Byte address of the fence marker in the physical host.
+        marker: usize,
+    },
     /// Physical line start of an authored comment run,
     ///  or block marker address.
-    Docs { anchor: usize },
+    Docs {
+        /// Byte address of the first comment line or block marker of the run.
+        anchor: usize,
+    },
     /// Hidden-line stripping and synthetic-main preparation.
     Prepared,
 }
