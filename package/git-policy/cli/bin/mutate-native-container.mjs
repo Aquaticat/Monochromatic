@@ -152,7 +152,7 @@ function mutationCommand({ scopes }) {
     '--build-timeout',
     '300',
     '--timeout',
-    '90',
+    '300',
     '--no-config',
     '--no-shuffle',
     '--output',
