@@ -1,15 +1,25 @@
-//! What: Facts about the arguments after `git commit`, read as Git 2.56.0 reads them.
-//! Why: The commit-only transform, the dry-run check and the commit transaction all decide
-//!      from these facts. Every fact is the final state after Git applied each option in
-//!      order, so `--all --no-all` reports `all` off, exactly as `git commit` would act.
+//! What:
+//!  Facts about the arguments after `git commit`,
+//!  read as Git 2.56.0 reads them.
+//! Why:
+//!  The commit-only transform,
+//!  the dry-run check and the commit transaction all decide
+//!      from these facts.
+//!  Every fact is the final state after Git applied each option in
+//!      order,
+//!  so `--all --no-all` reports `all` off,
+//!  exactly as `git commit` would act.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // parseCommitRegion(postSubcommandArgs): CommitRegion  (throws OptionError)
 //! ```
 
-/// What: Bring the commit table, the tokenizer and its questions into this file.
-/// Why:  This module only interprets what the shared tokenizer found.
+/// What:
+///  Bring the commit table,
+///  the tokenizer and its questions into this file.
+/// Why:
+///   This module only interprets what the shared tokenizer found.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,9 +42,13 @@ use std::ffi::OsString;
 /// Wrapper-only flag that suppresses `-o` injection for one commit invocation.
 pub const COMMIT_ESCAPE_HATCH: &str = "--no-enforce-only";
 
-/// What: The form of a `--fixup` value (builtin/commit.c:1378-1411). An `enum` is a closed
+/// What:
+///  The form of a `--fixup` value (builtin/commit.c:1378-1411).
+///  An `enum` is a closed
 ///       set of named alternatives.
-/// Why:  `amend:` and `reword:` turn on `--allow-empty`; `reword:` also turns on `--only`
+/// Why:
+///   `amend:` and `reword:` turn on `--allow-empty`;
+///  `reword:` also turns on `--only`
 ///       itself and refuses paths and an explicit `-o`.
 ///
 /// In TS you'd write (pseudocode):
@@ -49,13 +63,21 @@ pub enum FixupKind {
     Amend,
     /// `--fixup=reword:<commit>`.
     Reword,
-    /// Letters then `:` that are neither `amend` nor `reword`; Git dies on these.
+    /// Letters then `:` that are neither `amend` nor `reword`;
+    ///  Git dies on these.
     UnknownSuboption,
 }
 
-/// What: Final-state facts of one `git commit` region. `Vec<usize>` is an owned list of
-///       token indexes; `Option<bool>` is "true, false, or never stated".
-/// Why:  Indexes point into the caller's unchanged arguments, so paths keep their bytes.
+/// What:
+///  Final-state facts of one `git commit` region.
+///  `Vec<usize>` is an owned list of
+///       token indexes;
+///  `Option<bool>` is "true,
+///  false,
+///  or never stated".
+/// Why:
+///   Indexes point into the caller's unchanged arguments,
+///  so paths keep their bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,7 +87,9 @@ pub enum FixupKind {
 pub struct CommitRegion {
     /// `-a`/`--all` is on.
     pub all: bool,
-    /// `Some(true)` after `-o`/`--only`, `Some(false)` after `--no-only`, `None` if unstated.
+    /// `Some(true)` after `-o`/`--only`,
+    ///  `Some(false)` after `--no-only`,
+    ///  `None` if unstated.
     pub only: Option<bool>,
     /// `-i`/`--include` is on.
     pub include: bool,
@@ -73,26 +97,35 @@ pub struct CommitRegion {
     pub interactive: bool,
     /// `-p`/`--patch` is on.
     pub patch: bool,
-    /// `--dry-run`, a status format, or `-z` makes Git record no commit (commit.c:1422-1423).
+    /// `--dry-run`,
+    ///  a status format,
+    ///  or `-z` makes Git record no commit (commit.c:1422-1423).
     pub dry_run: bool,
     /// `--amend` is on.
     pub amend: bool,
     /// `--allow-empty` is on.
     pub allow_empty: bool,
-    /// Form of the final `--fixup` value, when one is set.
+    /// Form of the final `--fixup` value,
+    ///  when one is set.
     pub fixup: Option<FixupKind>,
-    /// Position of the final `--pathspec-from-file` value, when one is set.
+    /// Position of the final `--pathspec-from-file` value,
+    ///  when one is set.
     pub pathspec_from_file: Option<OptionValue>,
     /// `--pathspec-file-nul` is on.
     pub pathspec_file_nul: bool,
-    /// Region token indexes of positional pathspecs, before and after `--`.
+    /// Region token indexes of positional pathspecs,
+    ///  before and after `--`.
     pub pathspecs: Vec<usize>,
-    /// Wrapper-only flags in option position; `escape` is `--no-enforce-only`.
+    /// Wrapper-only flags in option position;
+    ///  `escape` is `--no-enforce-only`.
     pub wrapper: WrapperFlags,
 }
 
-/// What: Classify a `--fixup` value by its leading letters. `&[u8]` borrows the value bytes.
-/// Why:  Git treats `<letters>:` as a suboption and anything else as a commit name.
+/// What:
+///  Classify a `--fixup` value by its leading letters.
+///  `&[u8]` borrows the value bytes.
+/// Why:
+///   Git treats `<letters>:` as a suboption and anything else as a commit name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,8 +151,13 @@ fn fixup_kind(value: &[u8]) -> FixupKind {
     return FixupKind::UnknownSuboption;
 }
 
-/// What: Whether the options leave Git with a status format, which forces a dry run.
-/// Why:  `--short`, `--porcelain` and `--long` write one shared variable, so only the last
+/// What:
+///  Whether the options leave Git with a status format,
+///  which forces a dry run.
+/// Why:
+///   `--short`,
+///  `--porcelain` and `--long` write one shared variable,
+///  so only the last
 ///       of them counts and a negated form clears it (commit.c:1752-1761).
 ///
 /// In TS you'd write (pseudocode):
@@ -137,8 +175,12 @@ fn has_status_format(parsed: &ParsedOptions) -> bool {
     return format;
 }
 
-/// What: The value of an option's final use, unless that use negated it.
-/// Why:  `--no-pathspec-from-file` after a value clears it, as Git's `OPTION_FILENAME` does.
+/// What:
+///  The value of an option's final use,
+///  unless that use negated it.
+/// Why:
+///   `--no-pathspec-from-file` after a value clears it,
+///  as Git's `OPTION_FILENAME` does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -157,9 +199,14 @@ fn final_value(parsed: &ParsedOptions, id: u16) -> Option<OptionValue> {
     return None;
 }
 
-/// What: Parse the region after `commit`. `wrapper_flags` lists the caller's other
-///       wrapper-only spellings; `Result<A, B>` is "either success `A` or failure `B`".
-/// Why:  A region Git itself would refuse yields the refusal, never a guessed fact set.
+/// What:
+///  Parse the region after `commit`.
+///  `wrapper_flags` lists the caller's other
+///       wrapper-only spellings;
+///  `Result<A, B>` is "either success `A` or failure `B`".
+/// Why:
+///   A region Git itself would refuse yields the refusal,
+///  never a guessed fact set.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

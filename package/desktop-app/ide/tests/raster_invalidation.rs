@@ -8,7 +8,12 @@ use ide_app::{
     text_raster::{CodeColors, TextRaster},
 };
 
-/// Reuse one cache through font fallback, scale, origin, style, selection, and theme changes.
+/// Reuse one cache through font fallback,
+///  scale,
+///  origin,
+///  style,
+///  selection,
+///  and theme changes.
 #[test]
 fn cached_pixels_match_fresh_pixels_after_input_changes() {
     // What: mut allows cache updates through these owned engines.

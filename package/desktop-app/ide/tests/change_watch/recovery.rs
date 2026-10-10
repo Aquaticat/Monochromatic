@@ -1,11 +1,17 @@
-//! The event stream is not trusted forever: overflow, errors, and lost or failed watches reread everything shown.
+//! The event stream is not trusted forever:
+//!  overflow,
+//!  errors,
+//!  and lost or failed watches reread everything shown.
 
-/// Waits, kernel probes, and fixture helpers shared by this crate.
+/// Waits,
+///  kernel probes,
+///  and fixture helpers shared by this crate.
 use super::support::{arrive, kernel_watches, not_watching, quiet, set, settle, start, watching};
 /// Fixture files are created and moved through the ordinary filesystem API.
 use std::fs;
 
-/// A real inotify queue overflow (`IN_Q_OVERFLOW`, notify's rescan flag) requests a full reread.
+/// A real inotify queue overflow (`IN_Q_OVERFLOW`,
+///  notify's rescan flag) requests a full reread.
 #[test]
 fn queue_overflow_requests_a_full_reread() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -78,8 +84,11 @@ fn a_removed_watched_folder_requests_a_full_reread() {
     );
 }
 
-/// A renamed watched folder leaves the watched set and requests a full reread, and its new location is
-/// not reported under the old name. With the parent watched, notify also drops the kernel watch itself.
+/// A renamed watched folder leaves the watched set and requests a full reread,
+///  and its new location is
+/// not reported under the old name.
+///  With the parent watched,
+///  notify also drops the kernel watch itself.
 #[test]
 fn a_renamed_watched_folder_is_not_followed_to_its_new_name() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -111,8 +120,10 @@ fn a_renamed_watched_folder_is_not_followed_to_its_new_name() {
     );
 }
 
-/// The displayed file's folder can be watched while its parent is not; renaming it then reports only
-/// inotify's move-self event, and notify keeps that watch on the moved directory unless the IDE removes it.
+/// The displayed file's folder can be watched while its parent is not;
+///  renaming it then reports only
+/// inotify's move-self event,
+///  and notify keeps that watch on the moved directory unless the IDE removes it.
 #[test]
 fn a_renamed_folder_with_an_unwatched_parent_loses_its_kernel_watch() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -140,7 +151,9 @@ fn a_renamed_folder_with_an_unwatched_parent_loses_its_kernel_watch() {
     );
 }
 
-/// A watch that cannot be added requests a full reread, stays unwatched, and is retried on request.
+/// A watch that cannot be added requests a full reread,
+///  stays unwatched,
+///  and is retried on request.
 #[test]
 fn a_failed_watch_requests_a_full_reread_and_is_retried_on_request() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -172,8 +185,12 @@ fn a_failed_watch_requests_a_full_reread_and_is_retried_on_request() {
     );
 }
 
-/// A watch that keeps failing the same way is reported once. Retries, which the native tick requests on
-/// every 1 s sweep, report nothing more until the failure changes; here it ends when the folder appears.
+/// A watch that keeps failing the same way is reported once.
+///  Retries,
+///  which the native tick requests on
+/// every 1 s sweep,
+///  report nothing more until the failure changes;
+///  here it ends when the folder appears.
 #[test]
 fn a_watch_failing_the_same_way_is_reported_once_until_it_changes() {
     let fixture = tempfile::tempdir().expect("disposable project");

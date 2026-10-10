@@ -1,6 +1,13 @@
-//! What: The core's own findings: inability to process an input, and refused fixes.
-//! Why: A file that could not be read, parsed, mapped or safely fixed must appear in the JSONL
-//! output and fail the run with status 2; it must never look like a clean file.
+//! What:
+//!  The core's own findings:
+//!  inability to process an input,
+//!  and refused fixes.
+//! Why:
+//!  A file that could not be read,
+//!  parsed,
+//!  mapped or safely fixed must appear in the JSONL
+//! output and fail the run with status 2;
+//!  it must never look like a clean file.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -15,9 +22,15 @@ use crate::{
     run_paths::Language,
 };
 
-/// What: The code of a finding that reports incomplete processing.
-/// Why: Parse failures, MDX errors, caught panics, unreadable inputs and unavailable semantic
-/// coverage share one code; the message names the operation that failed.
+/// What:
+///  The code of a finding that reports incomplete processing.
+/// Why:
+///  Parse failures,
+///  MDX errors,
+///  caught panics,
+///  unreadable inputs and unavailable semantic
+/// coverage share one code;
+///  the message names the operation that failed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,8 +38,10 @@ use crate::{
 /// ```
 pub const PROCESSING_FAILURE: &str = "core/processing-failure";
 
-/// What: The code of a finding that reports a fix the engine declined to apply.
-/// Why: A consumer can tell "this file was not rewritten" from an ordinary rule finding.
+/// What:
+///  The code of a finding that reports a fix the engine declined to apply.
+/// Why:
+///  A consumer can tell "this file was not rewritten" from an ordinary rule finding.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,8 +49,10 @@ pub const PROCESSING_FAILURE: &str = "core/processing-failure";
 /// ```
 pub const FIX_REFUSED: &str = "core/fix-refused";
 
-/// What: The zero-width position at the start of a file.
-/// Why: A failure that concerns the whole file still needs a position in the JSONL record.
+/// What:
+///  The zero-width position at the start of a file.
+/// Why:
+///  A failure that concerns the whole file still needs a position in the JSONL record.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,9 +67,15 @@ pub fn file_start() -> Span {
     };
 }
 
-/// What: Resolve a host byte offset to a zero-width span in that language's column convention.
-/// Why: Rust findings use LF-delimited lines with byte columns; Markdown findings use CR, LF or
-/// CRLF lines with UTF-16 columns. No parser runs here, so a failure caused by a parser can still be placed.
+/// What:
+///  Resolve a host byte offset to a zero-width span in that language's column convention.
+/// Why:
+///  Rust findings use LF-delimited lines with byte columns;
+///  Markdown findings use CR,
+///  LF or
+/// CRLF lines with UTF-16 columns.
+///  No parser runs here,
+///  so a failure caused by a parser can still be placed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -79,8 +102,10 @@ pub fn host_span(language: Language, source: &str, offset: usize) -> Span {
     };
 }
 
-/// What: Build an error-severity finding that marks incomplete processing.
-/// Why: `processing_failure` makes the run exit with status 2 and stops the fixer from publishing edits.
+/// What:
+///  Build an error-severity finding that marks incomplete processing.
+/// Why:
+///  `processing_failure` makes the run exit with status 2 and stops the fixer from publishing edits.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -98,8 +123,12 @@ pub fn processing_failure(filename: &str, span: Span, message: String) -> Diagno
     return finding;
 }
 
-/// What: Build the finding for a fix the engine refused, such as one that would empty a non-empty file.
-/// Why: The file's bytes are unchanged, and the run must say so instead of reporting only what remained.
+/// What:
+///  Build the finding for a fix the engine refused,
+///  such as one that would empty a non-empty file.
+/// Why:
+///  The file's bytes are unchanged,
+///  and the run must say so instead of reporting only what remained.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,8 +146,11 @@ pub fn fix_refused(filename: &str, message: String) -> Diagnostic {
     return finding;
 }
 
-/// What: Convert a processor refusal into a host-positioned processing failure.
-/// Why: The processor reports an original-host byte offset; the finding needs line and column too.
+/// What:
+///  Convert a processor refusal into a host-positioned processing failure.
+/// Why:
+///  The processor reports an original-host byte offset;
+///  the finding needs line and column too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -132,9 +164,12 @@ pub fn processor_failure(language: Language, source: &str, error: &ProcessorErro
     );
 }
 
-/// What: Read the text of a caught panic payload.
-/// Why: A panic's message is the only explanation available once unwinding has been stopped.
-/// `&(dyn Any + Send)` is a borrowed value of unknown type; `downcast_ref` asks whether it is text.
+/// What:
+///  Read the text of a caught panic payload.
+/// Why:
+///  A panic's message is the only explanation available once unwinding has been stopped.
+/// `&(dyn Any + Send)` is a borrowed value of unknown type;
+///  `downcast_ref` asks whether it is text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

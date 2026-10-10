@@ -1,5 +1,8 @@
-//! What: Controls for the compiled-in policy registry.
-//! Why: Policy IDs, order and defaults are a stable contract for configuration and JSONL.
+//! What:
+//!  Controls for the compiled-in policy registry.
+//! Why:
+//!  Policy IDs,
+//!  order and defaults are a stable contract for configuration and JSONL.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,7 +15,9 @@ use super::{
     severity_name,
 };
 
-/// The registry lists exactly the shipped IDs, built-ins first, in execution order.
+/// The registry lists exactly the shipped IDs,
+///  built-ins first,
+///  in execution order.
 #[test]
 fn registry_order_and_names_are_stable() {
     let mut names: Vec<&str> = Vec::<&str>::new();
@@ -36,9 +41,12 @@ fn registry_order_and_names_are_stable() {
 }
 
 /// Every policy's default severity is pinned to the incumbent definition's `defaultSeverity`.
-/// Sources: `src/policy-engine/{require-root,linked-worktree,branch-worktree,add-explicit,final-newline}-policy.ts`,
-/// `src/optional/markdown-lint/index.ts`, `src/optional/repository-policy/index.ts`,
-/// `src/optional/repository-policy/dependent-version-bump-policy.ts`, `src/optional/forbidden-strings/index.ts`.
+/// Sources:
+///  `src/policy-engine/{require-root,linked-worktree,branch-worktree,add-explicit,final-newline}-policy.ts`,
+/// `src/optional/markdown-lint/index.ts`,
+///  `src/optional/repository-policy/index.ts`,
+/// `src/optional/repository-policy/dependent-version-bump-policy.ts`,
+///  `src/optional/forbidden-strings/index.ts`.
 #[test]
 fn every_identity_resolves_to_its_declared_row() {
     // (identity, name, incumbent defaultSeverity, warnSafe, accepts options, off unless listed)
@@ -175,7 +183,8 @@ fn unknown_policy_names_are_absent() {
     }
 }
 
-/// Only the three documented words are severities, and each prints back unchanged.
+/// Only the three documented words are severities,
+///  and each prints back unchanged.
 #[test]
 fn severities_round_trip_and_reject_other_spellings() {
     for (name, severity) in [

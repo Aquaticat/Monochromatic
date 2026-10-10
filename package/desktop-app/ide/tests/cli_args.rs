@@ -4,7 +4,8 @@
 use clap::{Error, error::ErrorKind};
 /// Parse arguments through the production library entry point.
 use ide_app::cli::{Options, Startup, parse_args, parse_args_with_home};
-/// Native byte filenames must survive parsing, including paths that are not valid UTF-8.
+/// Native byte filenames must survive parsing,
+///  including paths that are not valid UTF-8.
 use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::Path};
 
 /// Convert readable ASCII fixtures to owned native argv values.
@@ -16,7 +17,8 @@ fn args(values: &[&str]) -> Vec<OsString> {
         .collect();
 }
 
-/// The options of a start that opens a window; any other outcome fails the test.
+/// The options of a start that opens a window;
+///  any other outcome fails the test.
 fn opened(startup: Startup) -> Options {
     return match startup {
         Startup::Open(options) => options,
@@ -75,7 +77,8 @@ fn help_and_version_are_successful_parser_outcomes() {
     }
 }
 
-/// Without a project argument the home folder is the project; an explicit project still wins.
+/// Without a project argument the home folder is the project;
+///  an explicit project still wins.
 #[test]
 fn missing_project_opens_the_home_folder() {
     let home = Path::new("/var/home/someone");
@@ -93,7 +96,8 @@ fn missing_project_opens_the_home_folder() {
     assert_eq!(explicit.project, Path::new("/srv/project"));
 }
 
-/// Without a project argument and without a usable home folder, the grammar reports a usage error.
+/// Without a project argument and without a usable home folder,
+///  the grammar reports a usage error.
 #[test]
 fn missing_project_without_a_home_folder_is_a_usage_error() {
     let result = parse_args_with_home(&args(&[]), None).expect_err("nothing to open");
@@ -103,8 +107,10 @@ fn missing_project_without_a_home_folder_is_a_usage_error() {
     assert!(cli.to_string().contains("No PROJECT was given"), "{cli}");
 }
 
-/// `--licenses` asks for the license listing even without a project or a home folder, and is a
-/// usage error beside a project or a file, which it would otherwise silently ignore.
+/// `--licenses` asks for the license listing even without a project or a home folder,
+///  and is a
+/// usage error beside a project or a file,
+///  which it would otherwise silently ignore.
 #[test]
 fn licenses_needs_no_project_and_accepts_none() {
     assert!(matches!(
@@ -128,7 +134,10 @@ fn licenses_needs_no_project_and_accepts_none() {
     }
 }
 
-/// Extra roots, repeated file selection, unknown options, and empty paths are rejected.
+/// Extra roots,
+///  repeated file selection,
+///  unknown options,
+///  and empty paths are rejected.
 #[test]
 fn invalid_argument_shapes_are_usage_errors() {
     for values in [

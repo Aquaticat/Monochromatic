@@ -1,10 +1,18 @@
-//! The blocks of virtual rows the store's hints and diagnostics call for, one per annotated line.
+//! The blocks of virtual rows the store's hints and diagnostics call for,
+//!  one per annotated line.
 //!
-//! Three things decide a block: the hints accumulated for the displayed revision, the message rows of its
-//! diagnostics, and space held over from the previous revision after an external change. Assembly packs hint
-//! rows with the production shaper, so a block's height is exactly what a frame will paint.
+//! Three things decide a block:
+//!  the hints accumulated for the displayed revision,
+//!  the message rows of its
+//! diagnostics,
+//!  and space held over from the previous revision after an external change.
+//!  Assembly packs hint
+//! rows with the production shaper,
+//!  so a block's height is exactly what a frame will paint.
 
-/// The store these methods extend, its records, and the hint label type.
+/// The store these methods extend,
+///  its records,
+///  and the hint label type.
 use super::{Annotations, Held, Label};
 /// Hint rows are packed against the shaped code line.
 use crate::annotation_layout::pack;
@@ -16,17 +24,23 @@ use crate::language::{hints::HintsSnapshot, identity::DocumentStamp};
 use crate::shaped_text::TextShaper;
 /// The assembled record of one line's rows.
 use crate::virtual_row::Block;
-/// What: `Rope` is Helix's character-indexed text buffer.
-/// Why: A hint belongs to the line its position lies on.
+/// What:
+///  `Rope` is Helix's character-indexed text buffer.
+/// Why:
+///  A hint belongs to the line its position lies on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { type Rope } from 'helix-core';
 /// ```
 use helix_core::Rope;
-/// What: `BTreeMap` is a map kept in key order; `Arc` shares one immutable block between the window state and
-///       the frames that paint it; `Instant` is a point on a monotonic clock.
-/// Why: Blocks are handed out in line order and compared by content when deciding whether to repaint.
+/// What:
+///  `BTreeMap` is a map kept in key order;
+///  `Arc` shares one immutable block between the window state and
+///       the frames that paint it;
+///  `Instant` is a point on a monotonic clock.
+/// Why:
+///  Blocks are handed out in line order and compared by content when deciding whether to repaint.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,14 +48,23 @@ use helix_core::Rope;
 /// ```
 use std::{collections::BTreeMap, sync::Arc, time::Instant};
 
-/// Group hints by line, hold space across a reload, and assemble blocks.
+/// Group hints by line,
+///  hold space across a reload,
+///  and assemble blocks.
 impl Annotations {
-    /// What: Take the labels of `snapshot` into the per-line store: lines the snapshot asked about are replaced
-    ///       by its answer, other lines keep the labels an earlier snapshot of the same revision gave them.
+    /// What:
+    ///  Take the labels of `snapshot` into the per-line store:
+    ///  lines the snapshot asked about are replaced
+    ///       by its answer,
+    ///  other lines keep the labels an earlier snapshot of the same revision gave them.
     ///       `&Rope` lends the text the snapshot describes.
-    /// Why: Hints are requested for one view height above and two below the visible lines. Replacing all hints
-    ///      with each answer would remove the rows of lines scrolled away from, and put them back when the
-    ///      view returns, moving the text both times.
+    /// Why:
+    ///  Hints are requested for one view height above and two below the visible lines.
+    ///  Replacing all hints
+    ///      with each answer would remove the rows of lines scrolled away from,
+    ///  and put them back when the
+    ///      view returns,
+    ///  moving the text both times.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -95,10 +118,16 @@ impl Annotations {
         }
     }
 
-    /// What: Hold `parts` open above lines of the text `next` until `until`. `Vec<Held>` is moved in.
-    /// Why: Called when an external change replaced the displayed text: the rows of the old text are not
-    ///      painted for the new one, but their space stays until hints and diagnostics of the new text arrive
-    ///      or the time passes, so unchanged lines do not move twice.
+    /// What:
+    ///  Hold `parts` open above lines of the text `next` until `until`.
+    ///  `Vec<Held>` is moved in.
+    /// Why:
+    ///  Called when an external change replaced the displayed text:
+    ///  the rows of the old text are not
+    ///      painted for the new one,
+    ///  but their space stays until hints and diagnostics of the new text arrive
+    ///      or the time passes,
+    ///  so unchanged lines do not move twice.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -111,8 +140,11 @@ impl Annotations {
         self.version += 1;
     }
 
-    /// What: Give up held space whose time has passed at `now`; the answer says whether anything was given up.
-    /// Why: A server that never answers for the new text must not leave empty rows forever.
+    /// What:
+    ///  Give up held space whose time has passed at `now`;
+    ///  the answer says whether anything was given up.
+    /// Why:
+    ///  A server that never answers for the new text must not leave empty rows forever.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -133,10 +165,16 @@ impl Annotations {
         return had;
     }
 
-    /// What: The blocks of every annotated line of the text `displayed`, in line order. `&mut TextShaper` is
-    ///       lent to pack hint rows of lines not packed yet at `scale`; `&Document` lends the displayed text.
-    /// Why: This is the single source of block heights for the vertical mapping and of the rows a frame
-    ///      paints. Snapshots and held space of any other text contribute nothing.
+    /// What:
+    ///  The blocks of every annotated line of the text `displayed`,
+    ///  in line order.
+    ///  `&mut TextShaper` is
+    ///       lent to pack hint rows of lines not packed yet at `scale`;
+    ///  `&Document` lends the displayed text.
+    /// Why:
+    ///  This is the single source of block heights for the vertical mapping and of the rows a frame
+    ///      paints.
+    ///  Snapshots and held space of any other text contribute nothing.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

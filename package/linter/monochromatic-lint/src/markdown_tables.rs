@@ -1,5 +1,8 @@
-//! What: Report pipe tables and convert only standalone, unindented tables to an HTML fallback.
-//! Why: Nested container prefixes cannot be replaced safely by a whole-table edit.
+//! What:
+//!  Report pipe tables and convert only standalone,
+//!  unindented tables to an HTML fallback.
+//! Why:
+//!  Nested container prefixes cannot be replaced safely by a whole-table edit.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,10 +11,13 @@
 
 /// Import shared diagnostic and edit contracts.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the edit and fix types that a table repair is expressed as.
 use crate::edits::{Edit, Fix};
+/// Import the finding constructor that wraps a table problem as a located diagnostic.
 use crate::markdown_finding::finding;
 /// Import the native source and final-context text encoder.
 use crate::markdown_source::MarkdownSource;
+/// Import the helper that reads the visible text of an HTML table cell.
 use crate::markdown_table_text::html_table_cell_text;
 /// Import installed table payload decoders rather than interpreting bytes manually.
 use satteri_ast::mdast::{ColumnAlign, MdastNodeType, decode_table_alignments};
@@ -19,7 +25,8 @@ use satteri_ast::mdast::{ColumnAlign, MdastNodeType, decode_table_alignments};
 /// Preferred authoring forms and the explicitly secondary automatic fallback.
 const DETAIL: &str = "Markdown pipe tables force each row onto one line; prefer headings or lists. `--fix` converts to an HTML table as a fallback.";
 
-/// Strip cell delimiter pipes, preserving an escaped final pipe when no outer delimiter was authored.
+/// Strip cell delimiter pipes,
+///  preserving an escaped final pipe when no outer delimiter was authored.
 fn cell_content(written: &str) -> &str {
     // Borrow a narrower source view; no normalized parser text replaces inline Markdown spelling.
     let content: &str = written.strip_prefix('|').unwrap_or(written);
@@ -98,7 +105,8 @@ fn table_html(context: &MarkdownSource, table: u32) -> String {
     return output;
 }
 
-/// Report all rule-visible pipe tables, offering whole-table edits only at the standalone boundary.
+/// Report all rule-visible pipe tables,
+///  offering whole-table edits only at the standalone boundary.
 pub fn no_pipe_tables(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
     // Own findings so their lifetime does not depend on the parser's arena.
     let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();

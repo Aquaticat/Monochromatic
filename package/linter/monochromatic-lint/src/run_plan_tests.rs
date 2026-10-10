@@ -1,13 +1,20 @@
-//! What: Controls for configuration lookup, memoization and per-file planning.
-//! Why: Which configuration governs a file, and what its patterns resolve against, decides every
-//! rule that runs; these are checked on real disposable directory trees.
+//! What:
+//!  Controls for configuration lookup,
+//!  memoization and per-file planning.
+//! Why:
+//!  Which configuration governs a file,
+//!  and what its patterns resolve against,
+//!  decides every
+//! rule that runs;
+//!  these are checked on real disposable directory trees.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! describe('ConfigStore', () => { /* nearest alone, --config base, ignored, unconfigured, errors */ });
 //! ```
 
-/// Import the store, its outcomes and fixture helpers.
+/// Import the store,
+///  its outcomes and fixture helpers.
 use super::{ConfigStore, FilePlan, Planned, RootRules};
 use crate::diagnostic::Severity;
 use crate::run_paths::Language;
@@ -23,7 +30,8 @@ fn lint(store: &mut ConfigStore, path: &str) -> FilePlan {
     }
 }
 
-/// The nearest configuration is used alone, and its patterns resolve against its own directory.
+/// The nearest configuration is used alone,
+///  and its patterns resolve against its own directory.
 #[test]
 fn the_nearest_configuration_governs_alone() {
     let fixture: Fixture = Fixture::new();
@@ -74,7 +82,8 @@ fn the_nearest_configuration_governs_alone() {
     assert!(!unmatched.needs_semantic_engine());
 }
 
-/// Lookup results are remembered per directory, including "none found".
+/// Lookup results are remembered per directory,
+///  including "none found".
 #[test]
 fn lookups_are_memoized_per_directory() {
     let fixture: Fixture = Fixture::new();
@@ -147,7 +156,8 @@ fn an_explicit_configuration_resolves_against_the_working_directory() {
     ));
 }
 
-/// Ignored, unsupported and unconfigured inputs are distinguished from lint plans.
+/// Ignored,
+///  unsupported and unconfigured inputs are distinguished from lint plans.
 #[test]
 fn skipped_inputs_are_classified() {
     let fixture: Fixture = Fixture::new();

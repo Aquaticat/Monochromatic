@@ -1,6 +1,9 @@
-//! What: The Git token tables the argument generator and invariants draw from.
-//! Why: Keeping the spellings apart from the logic lets each list be reviewed against
-//!      Git's documentation on its own; the inspection and mutation lists restate the
+//! What:
+//!  The Git token tables the argument generator and invariants draw from.
+//! Why:
+//!  Keeping the spellings apart from the logic lets each list be reviewed against
+//!      Git's documentation on its own;
+//!  the inspection and mutation lists restate the
 //!      subject's rules independently instead of importing them.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,9 +11,13 @@
 //! // export const TOKENS = ['-C', '-c', '--git-dir', ...];
 //! ```
 
-/// What: Tokens the structured generator draws from.
+/// What:
+///  Tokens the structured generator draws from.
 ///       `&[&[u8]]` is a borrowed list of borrowed byte strings compiled into the program.
-/// Why:  Random bytes rarely spell a Git option; drawing from real option, command and
+/// Why:
+///   Random bytes rarely spell a Git option;
+///  drawing from real option,
+///  command and
 ///       boundary spellings reaches the deep branches of both classifiers.
 ///
 /// In TS you'd write (pseudocode):
@@ -80,7 +87,8 @@ pub(crate) const TOKENS: &[&[u8]] = &[
     b"--\xff=",
 ];
 
-/// Commands that never need policy configuration, restated independently of the subject.
+/// Commands that never need policy configuration,
+///  restated independently of the subject.
 pub(crate) const INSPECTION_COMMANDS: &[&[u8]] = &[
     b"annotate",
     b"blame",
@@ -137,7 +145,8 @@ pub(crate) const BRANCH_MUTATIONS: &[&[u8]] = &[
     b"--create-reflog",
 ];
 
-/// Flags that make `git tag` create, replace or delete a tag.
+/// Flags that make `git tag` create,
+///  replace or delete a tag.
 pub(crate) const TAG_MUTATIONS: &[&[u8]] = &[
     b"-a",
     b"-d",

@@ -1,46 +1,63 @@
-//! What:     Tests for the immutable read and structural edit surface.
-//! Why:      An edit must return a new document, leave the input usable, create only a missing final
-//!           segment, and report a missing address separately from a wrong-shaped one.
+//! What:
+//!      Tests for the immutable read and structural edit surface.
+//! Why:
+//!       An edit must return a new document,
+//!  leave the input usable,
+//!  create only a missing final
+//!           segment,
+//!  and report a missing address separately from a wrong-shaped one.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! describe('jsonc edit api', () => { /* lookup, keys, set, delete, immutability */ });
 //! ```
 
-/// What:     Import the failure enum so tests can name the expected variant.
-/// Why:      A missing address and a wrong shape are different outcomes and must not be conflated.
+/// What:
+///      Import the failure enum so tests can name the expected variant.
+/// Why:
+///       A missing address and a wrong shape are different outcomes and must not be conflated.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import type { JsoncEditError } from './error';
 /// ```
 use crate::error::JsoncEditError;
-/// What:     Import the canonical emitter for edited values.
-/// Why:      An edit returns a value, and its text is what a consumer would write out.
+/// What:
+///      Import the canonical emitter for edited values.
+/// Why:
+///       An edit returns a value,
+///  and its text is what a consumer would write out.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { emitJsoncValue } from './emit';
 /// ```
 use crate::emit::emit_jsonc_value;
-/// What:     Import the address segment type and the key-path helper.
-/// Why:      Addresses are built from key and index segments rather than from a string syntax.
+/// What:
+///      Import the address segment type and the key-path helper.
+/// Why:
+///       Addresses are built from key and index segments rather than from a string syntax.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { jsoncKeyPath, type JsoncPathSegment } from './path';
 /// ```
 use crate::path::{jsonc_key_path, JsoncPathSegment};
-/// What:     Import the quoted-text conversion used to read key names.
-/// Why:      Keys are stored as code units, so a test comparing names converts them explicitly.
+/// What:
+///      Import the quoted-text conversion used to read key names.
+/// Why:
+///       Keys are stored as code units,
+///  so a test comparing names converts them explicitly.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { unitsToString } from './textUnits';
 /// ```
 use crate::text_units::units_to_string;
-/// What:     Import the value model and the state lifecycle functions under test.
-/// Why:      These tests use the same public surface a consumer uses.
+/// What:
+///      Import the value model and the state lifecycle functions under test.
+/// Why:
+///       These tests use the same public surface a consumer uses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,8 +69,11 @@ use crate::{
     parse_jsonc_edit,
 };
 
-/// What:     Build one index segment.
-/// Why:      Array addresses are positions, and the helper keeps test lines readable.
+/// What:
+///      Build one index segment.
+/// Why:
+///       Array addresses are positions,
+///  and the helper keeps test lines readable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -76,7 +96,10 @@ fn state_parses_and_serializes() {
     assert_eq!(jsonc_stringify(&wrapped), text);
 }
 
-/// Check reads at the root, through keys, through indexes, and against scalar targets.
+/// Check reads at the root,
+///  through keys,
+///  through indexes,
+///  and against scalar targets.
 #[test]
 fn lookup_walks_addresses() {
     let state = parse_jsonc_edit("{\"a\":{\"b\":[10,20]},\"c\":true}").expect("valid document");
@@ -117,7 +140,9 @@ fn lookup_reports_missing_and_mismatched_addresses() {
     assert!(matches!(scalar, JsoncEditError::Type { .. }), "expected shape failure");
 }
 
-/// Check that keys come back in source order, duplicates included, and only for records.
+/// Check that keys come back in source order,
+///  duplicates included,
+///  and only for records.
 #[test]
 fn keys_list_members_in_order() {
     let state = parse_jsonc_edit("{\"b\":1,\"a\":2,\"b\":3}").expect("valid document with a duplicate key");
@@ -138,7 +163,8 @@ fn keys_list_members_in_order() {
     ));
 }
 
-/// Check replacement, insertion and the addresses that must not invent structure.
+/// Check replacement,
+///  insertion and the addresses that must not invent structure.
 #[test]
 fn set_replaces_and_appends_only_a_final_segment() {
     let state = parse_jsonc_edit("{\"a\":1,\"list\":[1,2]} // doc").expect("valid document");
@@ -181,7 +207,8 @@ fn set_replaces_and_appends_only_a_final_segment() {
     ));
 }
 
-/// Check deletion of members and elements, including duplicates and the root guard.
+/// Check deletion of members and elements,
+///  including duplicates and the root guard.
 #[test]
 fn delete_removes_members_and_elements() {
     let state = parse_jsonc_edit("{\"a\":1,\"dup\":2,\"dup\":3,\"list\":[10,20,30]}").expect("valid document");
@@ -260,8 +287,10 @@ fn constructors_build_consistent_values() {
     assert_eq!(JsoncValue::record(Vec::new()).entries().expect("record payload").len(), 0);
 }
 
-/// The document root must stay a container. A root set to a scalar emits text the parser then
-/// rejects, which fuzzing found as an emission of `null`.
+/// The document root must stay a container.
+///  A root set to a scalar emits text the parser then
+/// rejects,
+///  which fuzzing found as an emission of `null`.
 #[test]
 fn root_set_to_a_scalar_is_refused() {
     let document = parse_jsonc_edit("{\"a\":1}").expect("source parses").root;
@@ -274,8 +303,10 @@ fn root_set_to_a_scalar_is_refused() {
     assert!(jsonc_set(&document, &[], replacement).is_ok(), "a container root must be accepted");
 }
 
-/// A shape mismatch must name both the operation and the mismatch. The generic scalar complaint is
-/// a different arm, so asserting the exact message is what distinguishes them.
+/// A shape mismatch must name both the operation and the mismatch.
+///  The generic scalar complaint is
+/// a different arm,
+///  so asserting the exact message is what distinguishes them.
 #[test]
 fn mismatched_segments_name_operation_and_shape() {
     let state = parse_jsonc_edit("{\"list\":[10],\"rec\":{\"a\":1}}").expect("document parses");

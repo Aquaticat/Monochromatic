@@ -109,24 +109,39 @@ or credentials.
 ## Blocking and cleanup
 
 A private request file transfers a random channel token and loopback endpoint to the detached helper.
-The helper authenticates immediately,
-then keeps the channel open for the editor lifetime.
+The helper authenticates immediately and waits for the requester's acknowledgement before opening an editor.
+It then keeps the channel open for the editor lifetime.
 The Pi tool awaits that channel,
 which blocks the model without taking input focus from the original Pi terminal.
 
 Before opening the terminal,
 the extension copies its self-contained helper into the private request workspace.
 Replacing the installed helper after that point cannot remove the pending launch target.
+The terminal starts an inline bootstrap rather than executing the temporary file directly.
+If explicit cancellation removed the helper or request file before the terminal starts,
+the bootstrap exits cleanly instead of producing a missing-module stack trace.
 On Linux,
 it uses the live Pi executable through procfs to survive removal of the original runtime path.
 Other platforms and systems without accessible procfs use a checked original runtime path.
 Missing launch inputs fail inside Pi with a path-specific diagnostic.
 
 The channel keeps the requester alive while the detached helper starts.
-A connection-start deadline detects a terminal that starts without running the helper
-and reports a startup timeout separately from user cancellation.
-There is no editing deadline after authentication.
-Aborting the tool or shutting down the session closes the channel and removes its answer workspace.
+Desktop startup and editing have no wall-clock deadline.
+A terminal can legitimately defer command execution while a desktop is locked or a window is not rendered.
+After 30 seconds without a connection,
+the extension logs a warning but retains the pending question and its workspace.
+If a terminal never opens,
+inspect the desktop or cancel the tool in Pi;
+the model does not continue merely because startup was slow.
+Connected candidates have a separate bounded authentication wait,
+which cannot expire the question.
+Aborting the tool or shutting down the session closes every owned socket and removes the answer workspace.
+An active helper then stops its editor without an unhandled shutdown error.
+
+The bootstrap's cancellation message may disappear with its terminal window after a clean exit.
+It is not a persistent notification.
+Forcefully ending Pi before the terminal executes remains outside the supported request lifetime:
+on Linux the retained runtime path also belongs to the Pi process.
 
 Long answers follow Pi's tool-output limits.
 The visible result is truncated when needed,
@@ -137,12 +152,12 @@ and the complete answer is retained in a private temporary file whose path is re
 Run package validation from the repository root:
 
 ```sh
-cd package/pi-plugin/ask-user-question
-mise run build
-mise run test:unit
-mise run lint
-mise run verify:extension
-mise run verify:terminal
+# Repository root.
+mise run //package/pi-plugin/ask-user-question:build
+mise run //package/pi-plugin/ask-user-question:test:unit
+mise run //package/pi-plugin/ask-user-question:lint
+mise run //package/pi-plugin/ask-user-question:verify:extension
+mise run //package/pi-plugin/ask-user-question:verify:terminal
 ```
 
 `verify:terminal` opens the real default terminal with a scripted editor,

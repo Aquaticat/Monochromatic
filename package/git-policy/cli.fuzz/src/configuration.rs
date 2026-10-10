@@ -1,6 +1,11 @@
-//! What: Generated configuration documents and the invariants of the JSONC schema.
-//! Why: Raw bytes mostly exercise rejection. Generated documents reach every accepted
-//!      setting, and each one comes with the typed result it must produce, so the
+//! What:
+//!  Generated configuration documents and the invariants of the JSONC schema.
+//! Why:
+//!  Raw bytes mostly exercise rejection.
+//!  Generated documents reach every accepted
+//!      setting,
+//!  and each one comes with the typed result it must produce,
+//!  so the
 //!      schema is checked against an expectation it did not compute itself.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +13,8 @@
 //! // const { document, expected } = generatedConfig(data); expect(parseConfig(emit(document))).toEqual(expected);
 //! ```
 
-/// Import the schema under test, its typed settings and the event renderer.
+/// Import the schema under test,
+///  its typed settings and the event renderer.
 use git_policy_cli::config_error::ConfigError;
 use git_policy_cli::config_parse::parse_config;
 use git_policy_cli::config_schema::{
@@ -21,13 +27,19 @@ use monochromatic_jsonc_edit::{
     JsoncEntry, JsoncKey, JsoncValue, emit_jsonc_value, parse_jsonc, units_to_string,
 };
 
-/// JavaScript's largest safe integer, the schema's upper bound for whole numbers.
+/// JavaScript's largest safe integer,
+///  the schema's upper bound for whole numbers.
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 
-/// What: A generated document together with the settings it must parse to.
-///       `#[derive(...)]` generates cloning, debug printing and `==`.
-/// Why:  The expectation is built beside the document from the same bytes, not by
-///       running the parser, so agreement is evidence about the parser.
+/// What:
+///  A generated document together with the settings it must parse to.
+///       `#[derive(...)]` generates cloning,
+///  debug printing and `==`.
+/// Why:
+///   The expectation is built beside the document from the same bytes,
+///  not by
+///       running the parser,
+///  so agreement is evidence about the parser.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -41,9 +53,13 @@ pub struct GeneratedConfig {
     pub expected: CliGitConfig,
 }
 
-/// What: Build one object member.
-///       `&str` borrows the key text; the member owns its value.
-/// Why:  Keys are escaped by the JSONC package at emission, never by string pasting here.
+/// What:
+///  Build one object member.
+///       `&str` borrows the key text;
+///  the member owns its value.
+/// Why:
+///   Keys are escaped by the JSONC package at emission,
+///  never by string pasting here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -56,8 +72,11 @@ fn entry(name: &str, value: JsoncValue) -> JsoncEntry {
     };
 }
 
-/// What: Build a JSON string value from Rust text.
-/// Why:  The text is stored as UTF-16 units; quoting happens at emission.
+/// What:
+///  Build a JSON string value from Rust text.
+/// Why:
+///   The text is stored as UTF-16 units;
+///  quoting happens at emission.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -68,9 +87,12 @@ fn text(value: &str) -> JsoncValue {
     return JsoncValue::text_from_units(value.encode_utf16().collect());
 }
 
-/// What: Build a JSON number value from a whole number.
-///       `u64` is an unsigned 64-bit integer (siblings `u32`, `usize`).
-/// Why:  Decimal digits of a whole number are always a valid JSON number token.
+/// What:
+///  Build a JSON number value from a whole number.
+///       `u64` is an unsigned 64-bit integer (siblings `u32`,
+///  `usize`).
+/// Why:
+///   Decimal digits of a whole number are always a valid JSON number token.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,9 +104,14 @@ fn number(value: u64) -> JsoncValue {
         .expect("decimal digits are a number token");
 }
 
-/// What: Read byte `index` of the fuzz input, or zero past its end.
-///       `u8` is one byte, 0 to 255.
-/// Why:  Short inputs still describe a complete, valid document.
+/// What:
+///  Read byte `index` of the fuzz input,
+///  or zero past its end.
+///       `u8` is one byte,
+///  0 to 255.
+/// Why:
+///   Short inputs still describe a complete,
+///  valid document.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -97,8 +124,14 @@ fn byte_at(data: &[u8], index: usize) -> u8 {
     return 0;
 }
 
-/// What: Derive one exclusion pattern from a byte: path-like text with awkward characters.
-/// Why:  Patterns are free text; quotes, backslashes, control characters and non-ASCII
+/// What:
+///  Derive one exclusion pattern from a byte:
+///  path-like text with awkward characters.
+/// Why:
+///   Patterns are free text;
+///  quotes,
+///  backslashes,
+///  control characters and non-ASCII
 ///       must survive emission and parsing unchanged.
 ///
 /// In TS you'd write (pseudocode):
@@ -120,10 +153,15 @@ fn pattern(byte: u8) -> String {
     return format!("{}{}", pieces[usize::from(byte) % pieces.len()], byte);
 }
 
-/// What: Build a valid configuration document and its expected settings from fuzz bytes.
-/// Why:  Each policy is omitted or given a severity, option-bearing policies sometimes
-///       use the `[severity, options]` form, and each concurrency section is omitted,
-///       empty or set, so every accepted shape is reached.
+/// What:
+///  Build a valid configuration document and its expected settings from fuzz bytes.
+/// Why:
+///   Each policy is omitted or given a severity,
+///  option-bearing policies sometimes
+///       use the `[severity, options]` form,
+///  and each concurrency section is omitted,
+///       empty or set,
+///  so every accepted shape is reached.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -246,8 +284,11 @@ pub fn generated_config(data: &[u8]) -> GeneratedConfig {
     };
 }
 
-/// What: Rebuild a canonical document that states every setting of a parsed configuration.
-/// Why:  Parsing that document again must give the same settings; this checks that
+/// What:
+///  Rebuild a canonical document that states every setting of a parsed configuration.
+/// Why:
+///   Parsing that document again must give the same settings;
+///  this checks that
 ///       every accepted value has a spelling the schema accepts back.
 ///
 /// In TS you'd write (pseudocode):
@@ -317,8 +358,10 @@ pub fn canonical_document(config: &CliGitConfig) -> JsoncValue {
     ]);
 }
 
-/// What: Assert the invariants every accepted configuration satisfies.
-/// Why:  Later stages index settings by registry position and rely on the bounds.
+/// What:
+///  Assert the invariants every accepted configuration satisfies.
+/// Why:
+///   Later stages index settings by registry position and rely on the bounds.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -365,8 +408,12 @@ fn check_accepted(config: &CliGitConfig) {
     }
 }
 
-/// What: Assert that a rejection message survives event rendering as one JSON line.
-/// Why:  Messages quote user-written keys and values. Whatever they contain, the
+/// What:
+///  Assert that a rejection message survives event rendering as one JSON line.
+/// Why:
+///   Messages quote user-written keys and values.
+///  Whatever they contain,
+///  the
 ///       `config-invalid` event must stay one line and decode back to the same message.
 ///
 /// In TS you'd write (pseudocode):
@@ -397,9 +444,12 @@ fn check_rejected(message: &str) {
     assert_eq!(decoded, message);
 }
 
-/// What: Assert the schema's invariants for arbitrary source text.
-/// Why:  Parsing must be repeatable and must end in a checked acceptance or a
-///       renderable rejection, never a panic.
+/// What:
+///  Assert the schema's invariants for arbitrary source text.
+/// Why:
+///   Parsing must be repeatable and must end in a checked acceptance or a
+///       renderable rejection,
+///  never a panic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -415,8 +465,11 @@ pub fn check_config_source(source: &str) {
     }
 }
 
-/// What: Assert that a generated document parses to exactly its expected settings.
-/// Why:  This is the differential check: the generator's expectation against the schema.
+/// What:
+///  Assert that a generated document parses to exactly its expected settings.
+/// Why:
+///   This is the differential check:
+///  the generator's expectation against the schema.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

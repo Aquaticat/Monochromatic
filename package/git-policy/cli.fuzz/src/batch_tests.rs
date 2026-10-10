@@ -1,5 +1,8 @@
-//! What: Controls proving the reply generator reaches every outcome and the invariants hold on fixed hard cases.
-//! Why: An invariant that is never reached proves nothing; these controls count the
+//! What:
+//!  Controls proving the reply generator reaches every outcome and the invariants hold on fixed hard cases.
+//! Why:
+//!  An invariant that is never reached proves nothing;
+//!  these controls count the
 //!      outcomes the generator produces and run the same checks the fuzz target runs.
 //!
 //! In TS you'd write (pseudocode):
@@ -15,7 +18,8 @@ use super::{
 use git_policy_cli::candidate_batch::{BatchReply, ObjectKind};
 use git_policy_cli::candidate_error::CandidateFailure;
 
-/// Raw bytes split at the first line feed only; the rest reaches the reader unchanged.
+/// Raw bytes split at the first line feed only;
+///  the rest reaches the reader unchanged.
 #[test]
 fn raw_bytes_split_at_the_first_line_feed() {
     assert_eq!(request_and_stream(b""), (b"".as_slice(), b"".as_slice()));
@@ -37,7 +41,8 @@ fn raw_bytes_split_at_the_first_line_feed() {
     );
 }
 
-/// The canonical rendering is Git's documented reply shape, byte for byte.
+/// The canonical rendering is Git's documented reply shape,
+///  byte for byte.
 #[test]
 fn canonical_rendering_matches_git() {
     let name: String = "a".repeat(40);
@@ -51,7 +56,10 @@ fn canonical_rendering_matches_git() {
     );
 }
 
-/// Generated inputs reach every reply kind, every object kind, both hash formats and every failure, and all hold.
+/// Generated inputs reach every reply kind,
+///  every object kind,
+///  both hash formats and every failure,
+///  and all hold.
 #[test]
 fn generated_replies_reach_every_outcome() {
     let mut kinds: Vec<ObjectKind> = Vec::new();
@@ -118,7 +126,10 @@ fn generated_replies_reach_every_outcome() {
     check_generated_reply(&[5]);
 }
 
-/// The general invariants hold on fixed hard cases: forged headers in content, near-valid headers, and empty input.
+/// The general invariants hold on fixed hard cases:
+///  forged headers in content,
+///  near-valid headers,
+///  and empty input.
 #[test]
 fn fixed_hard_cases_hold() {
     let name: String = "0123456789abcdef0123456789abcdef01234567".to_owned();

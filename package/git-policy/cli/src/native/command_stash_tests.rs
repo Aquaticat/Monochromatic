@@ -1,14 +1,20 @@
-//! What: `git stash` dispatch and escape-hatch positions per subcommand, with real-Git
+//! What:
+//!  `git stash` dispatch and escape-hatch positions per subcommand,
+//!  with real-Git
 //!       controls for every subcommand table and for the top-level readings.
-//! Why: A hatch spelled as a stash message or a path must be forwarded as that message or
-//!      path; a hatch in option position must be found wherever the subcommand allows one.
+//! Why:
+//!  A hatch spelled as a stash message or a path must be forwarded as that message or
+//!      path;
+//!  a hatch in option position must be found wherever the subcommand allows one.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(parseStashRegion(['push', '-m', '--no-enforce-worktree']).hasEscapeHatch).toBe(false);
 //! ```
 
-/// The parser, its tables, the oracles and the real-Git fixture helpers.
+/// The parser,
+///  its tables,
+///  the oracles and the real-Git fixture helpers.
 use super::{StashRegion, StashSubcommand, parse_stash_region};
 use crate::command_options::{OptionError, OptionErrorKind, OptionSpec, WrapperOccurrence};
 use crate::command_stash_table::{
@@ -27,7 +33,8 @@ use std::process::Output;
 /// The shared hatch spelling.
 const HATCH: &str = WORKTREE_ENFORCEMENT_ESCAPE_HATCH;
 
-/// Parse a region Git accepts, with no other wrapper flags.
+/// Parse a region Git accepts,
+///  with no other wrapper flags.
 fn region(values: &[&str]) -> StashRegion {
     return parse_stash_region(os_arguments(values).as_slice(), &[]).expect("valid region");
 }
@@ -37,7 +44,8 @@ fn refusal(values: &[&str]) -> OptionError {
     return parse_stash_region(os_arguments(values).as_slice(), &[]).expect_err("refused region");
 }
 
-/// The first word selects the subcommand; anything else is an assumed `push`.
+/// The first word selects the subcommand;
+///  anything else is an assumed `push`.
 #[test]
 fn dispatches_like_cmd_stash() {
     for (word, subcommand) in [
@@ -145,7 +153,8 @@ fn reads_the_hatch_by_position_in_each_subcommand() {
     );
 }
 
-/// Git's refusals, with token indexes relative to the whole region.
+/// Git's refusals,
+///  with token indexes relative to the whole region.
 #[test]
 fn reports_what_git_refuses() {
     for (values, kind, token) in [
@@ -232,7 +241,9 @@ fn tables_match_git_stash_completion_helpers() {
     remove(directory.as_path());
 }
 
-/// Real Git stores the hatch text as the message, refuses `-push`, and refuses an assumed
+/// Real Git stores the hatch text as the message,
+///  refuses `-push`,
+///  and refuses an assumed
 /// push that meets a non-option.
 #[test]
 fn top_level_readings_match_git() {

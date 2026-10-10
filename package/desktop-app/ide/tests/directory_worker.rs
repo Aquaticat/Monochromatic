@@ -1,16 +1,24 @@
 //! Bounded background reads update only current tree requests in disposable workspaces.
 
+/// Disposable fixture directories,
+///  in memory when the system has one.
+mod memory_fixture;
+
 /// Expected reader failures remain ordinary results in this test helper.
 use anyhow::Result;
-/// The consumer combines the read-only workspace, UI-thread tree, and background reader.
+/// The consumer combines the read-only workspace,
+///  UI-thread tree,
+///  and background reader.
 use ide_app::{directory_worker::DirectoryWorker, file_tree::FileTree, workspace::Workspace};
-/// Filesystem fixtures are private; worker waits have an explicit deadline.
+/// Filesystem fixtures are private;
+///  worker waits have an explicit deadline.
 use std::{
     fs,
     time::{Duration, Instant},
 };
 
-/// Wait for one bounded reply; idle polls never block the caller.
+/// Wait for one bounded reply;
+///  idle polls never block the caller.
 fn finish(worker: &mut DirectoryWorker, tree: &mut FileTree) -> Result<bool> {
     let start = Instant::now();
     while worker.is_busy() {
@@ -38,7 +46,7 @@ fn finish(worker: &mut DirectoryWorker, tree: &mut FileTree) -> Result<bool> {
 /// Busy admission must not supersede the first token or enqueue another directory snapshot.
 #[test]
 fn reader_bounds_requests_and_preserves_snapshot_order() {
-    let fixture = tempfile::tempdir().expect("disposable workspace");
+    let fixture = memory_fixture::directory("ide-directory-worker-");
     fs::write(fixture.path().join("猫.rs"), "source").expect("source fixture");
     fs::write(fixture.path().join(".hidden"), "hidden").expect("hidden fixture");
     let workspace = Workspace::new(fixture.path()).expect("workspace");
@@ -73,7 +81,7 @@ fn reader_bounds_requests_and_preserves_snapshot_order() {
 /// A synchronous replacement makes the in-flight read stale without requiring thread cancellation.
 #[test]
 fn stale_worker_reply_does_not_replace_current_rows() {
-    let fixture = tempfile::tempdir().expect("disposable workspace");
+    let fixture = memory_fixture::directory("ide-directory-worker-");
     fs::write(fixture.path().join("old.rs"), "source").expect("source fixture");
     let workspace = Workspace::new(fixture.path()).expect("workspace");
     let root = workspace.root().to_path_buf();
@@ -89,7 +97,7 @@ fn stale_worker_reply_does_not_replace_current_rows() {
 /// A current read error retains prior rows and permits a successful read after directory restoration.
 #[test]
 fn reader_failure_retains_snapshot_and_recovers() {
-    let fixture = tempfile::tempdir().expect("disposable parent");
+    let fixture = memory_fixture::directory("ide-directory-worker-");
     let path = fixture.path().join("project");
     fs::create_dir(&path).expect("project directory");
     fs::write(path.join("old.rs"), "old").expect("source fixture");
@@ -117,8 +125,8 @@ fn reader_failure_retains_snapshot_and_recovers() {
 /// The read-only workspace still rejects a request from a tree rooted outside its project boundary.
 #[test]
 fn workspace_boundary_rejects_foreign_tree_paths() {
-    let inside = tempfile::tempdir().expect("workspace fixture");
-    let outside = tempfile::tempdir().expect("outside fixture");
+    let inside = memory_fixture::directory("ide-directory-worker-");
+    let outside = memory_fixture::directory("ide-directory-worker-");
     let workspace = Workspace::new(inside.path()).expect("workspace");
     let foreign = Workspace::new(outside.path()).expect("outside root");
     let mut tree = FileTree::new(foreign.root());
@@ -131,10 +139,11 @@ fn workspace_boundary_rejects_foreign_tree_paths() {
     assert!(!worker.is_busy());
 }
 
-/// Invalid rows fail before occupying the queue; dropping busy and idle readers joins their threads.
+/// Invalid rows fail before occupying the queue;
+///  dropping busy and idle readers joins their threads.
 #[test]
 fn invalid_admission_and_shutdown_do_not_leave_background_work() {
-    let fixture = tempfile::tempdir().expect("disposable workspace");
+    let fixture = memory_fixture::directory("ide-directory-worker-");
     let workspace = Workspace::new(fixture.path()).expect("workspace");
     let root = workspace.root().to_path_buf();
     let mut tree = FileTree::new(&root);

@@ -1,5 +1,8 @@
-//! What: Consumer-level diagnostic stream and exit-status controls.
-//! Why: Hidden findings still count, and fixed source must remain byte-identical outside its requested edits.
+//! What:
+//!  Consumer-level diagnostic stream and exit-status controls.
+//! Why:
+//!  Hidden findings still count,
+//!  and fixed source must remain byte-identical outside its requested edits.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -26,7 +29,8 @@ fn finding(severity: Severity) -> Diagnostic {
     );
 }
 
-/// Clean ordinary runs emit nothing; ordinary findings use only JSONL stdout.
+/// Clean ordinary runs emit nothing;
+///  ordinary findings use only JSONL stdout.
 #[test]
 fn clean_and_ordinary_output_keep_the_jsonl_contract() {
     let clean: RunOutput = run_output(&[], None, OutputOptions::default()).expect("clean");
@@ -89,7 +93,8 @@ fn display_filtering_does_not_change_accounting() {
     );
 }
 
-/// A clean stdin-fix run still emits its source, and hidden warnings still count against their budget.
+/// A clean stdin-fix run still emits its source,
+///  and hidden warnings still count against their budget.
 #[test]
 fn clean_stdin_and_silent_warning_limits_preserve_status() {
     let source: &str = "unchanged\r\n";

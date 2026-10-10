@@ -40,7 +40,8 @@ fn snapshot(window: &FontProbe) -> Vec<u8> {
         .to_vec();
 }
 
-/// Weight/style requests repaint both bundled families; exact face provenance has separate font-stack tests.
+/// Weight/style requests repaint both bundled families;
+///  exact face provenance has separate font-stack tests.
 #[test]
 fn native_text_repaints_for_weight_and_italic_requests() {
     let window = FontProbe::new().expect("headless typography fixture");

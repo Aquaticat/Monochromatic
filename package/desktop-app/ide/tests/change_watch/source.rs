@@ -1,11 +1,17 @@
-//! Displayed-file notifications: finished and unfinished writes, and silence for the IDE's own reads.
+//! Displayed-file notifications:
+//!  finished and unfinished writes,
+//!  and silence for the IDE's own reads.
 
 /// Waits and fixture helpers shared by this crate.
 use super::support::{arrive, quiet, set, settle, start};
-/// Settled changes are read at once; unsettled ones wait for the writer to go quiet.
+/// Settled changes are read at once;
+///  unsettled ones wait for the writer to go quiet.
 use ide_app::change_watch::{ChangeWatcher, SourceChange};
-/// What: `OpenOptions` opens a file with chosen flags; `Write` provides `write_all` on the open handle.
-/// Why: Holding a written file open shows what an unfinished write looks like before its close.
+/// What:
+///  `OpenOptions` opens a file with chosen flags;
+///  `Write` provides `write_all` on the open handle.
+/// Why:
+///  Holding a written file open shows what an unfinished write looks like before its close.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -16,7 +22,9 @@ use std::{
     io::Write,
 };
 
-/// Drain, run `change`, and return the latest classification reported for the displayed file.
+/// Drain,
+///  run `change`,
+///  and return the latest classification reported for the displayed file.
 fn classification(
     watcher: &mut ChangeWatcher,
     what: &str,
@@ -33,7 +41,10 @@ fn classification(
     return first.source;
 }
 
-/// Writes still open are unsettled; closing, replacing by rename, and removing are settled.
+/// Writes still open are unsettled;
+///  closing,
+///  replacing by rename,
+///  and removing are settled.
 #[test]
 fn displayed_file_changes_are_settled_only_when_finished() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -101,7 +112,10 @@ fn displayed_file_changes_are_settled_only_when_finished() {
     );
 }
 
-/// Opening, reading, and listing what is watched reports nothing; a real write still does.
+/// Opening,
+///  reading,
+///  and listing what is watched reports nothing;
+///  a real write still does.
 #[test]
 fn the_ides_own_reads_report_nothing() {
     let fixture = tempfile::tempdir().expect("disposable project");

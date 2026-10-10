@@ -1,14 +1,18 @@
-//! What: Duplicate heading checks within the incumbent's textual ancestor scope.
-//! Why: Equal text at different depths or under different parent headings is not a duplicate sibling.
+//! What:
+//!  Duplicate heading checks within the incumbent's textual ancestor scope.
+//! Why:
+//!  Equal text at different depths or under different parent headings is not a duplicate sibling.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Maintain the heading ancestor stack and compare [ancestor path, depth, text] identities.
 //! ```
 
+/// Import the diagnostic and severity types that duplicate-heading findings use.
 use crate::diagnostic::{Diagnostic, Severity};
 /// Import node findings and the processing failure reported when the document's structure cannot be walked.
 use crate::markdown_finding::{finding, structure_failure};
+/// Import the parsed Markdown source whose headings are compared for duplicates.
 use crate::markdown_source::MarkdownSource;
 /// Import native heading data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_heading_data};

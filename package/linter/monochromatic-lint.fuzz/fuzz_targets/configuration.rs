@@ -1,5 +1,7 @@
-//! What: Raw and structured configuration inputs in the same coverage-guided target.
-//! Why: Every byte input reaches valid merging as well as attempting the malformed-text boundary.
+//! What:
+//!  Raw and structured configuration inputs in the same coverage-guided target.
+//! Why:
+//!  Every byte input reaches valid merging as well as attempting the malformed-text boundary.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

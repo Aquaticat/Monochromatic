@@ -1,12 +1,16 @@
-//! What: The deep processor module at the native orchestration seam.
-//! Why: Configuration callers see virtual paths, but never duplicate source maps or prefix encoding.
+//! What:
+//!  The deep processor module at the native orchestration seam.
+//! Why:
+//!  Configuration callers see virtual paths,
+//!  but never duplicate source maps or prefix encoding.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // extract(host) -> virtuals; virtual.checkRust(settings); virtual.projectDiagnostic(finding).
 //! ```
 
-/// Import diagnostics, grouped source edits and the immutable processor model.
+/// Import diagnostics,
+///  grouped source edits and the immutable processor model.
 use crate::diagnostic::Diagnostic;
 /// Fix groups stay atomic across every extraction layer.
 use crate::edits::Fix;
@@ -48,17 +52,21 @@ pub struct VirtualSource {
 
 /// Read and use a virtual file without learning internal prefix or position machinery.
 impl VirtualSource {
-    /// Logical path for ordinary configuration matching, never host display output.
+    /// Logical path for ordinary configuration matching,
+    ///  never host display output.
     pub fn filename(&self) -> &str {
         return self.mapping.filename.as_str();
     }
 
-    /// Prepared parse bytes; synthetic bytes are handled by check_rust and projection.
+    /// Prepared parse bytes;
+    ///  synthetic bytes are handled by check_rust and projection.
     pub fn source(&self) -> &str {
         return self.mapping.text.as_str();
     }
 
-    /// Rust or Markdown parser choice; Rustdoc is Markdown, not MDX.
+    /// Rust or Markdown parser choice;
+    ///  Rustdoc is Markdown,
+    ///  not MDX.
     pub fn language(&self) -> ProcessorLanguage {
         return self.mapping.language;
     }
@@ -68,12 +76,14 @@ impl VirtualSource {
         return matches!(self.mapping.guard, Guard::Docs { .. });
     }
 
-    /// Map a whole atomic fix, or refuse it without returning a partial edit group.
+    /// Map a whole atomic fix,
+    ///  or refuse it without returning a partial edit group.
     pub fn project_fix(&self, fix: &Fix) -> Result<Fix, ProcessorError> {
         return crate::processors_projection::project(&self.mapping, fix);
     }
 
-    /// Map all authored labels and any grouped fix; synthetic-only findings are absent.
+    /// Map all authored labels and any grouped fix;
+    ///  synthetic-only findings are absent.
     pub fn project_diagnostic(
         &self,
         mut finding: Diagnostic,
@@ -143,7 +153,8 @@ impl VirtualSource {
 
 /// Pending extraction work retains its Rust-fence depth and authored Rustdoc mode.
 struct Pending {
-    /// Raw/hidden Rust for discovery, never generated main text.
+    /// Raw/hidden Rust for discovery,
+    ///  never generated main text.
     mapping: Arc<Mapping>,
     /// Number of embedded Rust fences traversed from the real host.
     depth: usize,
@@ -151,8 +162,10 @@ struct Pending {
     rustdoc: bool,
 }
 
-/// Extract all virtual files in deterministic source order; nested Rust fences are capped at two.
-/// Root rules remain the caller's responsibility. Re-extract after every changed host snapshot.
+/// Extract all virtual files in deterministic source order;
+///  nested Rust fences are capped at two.
+/// Root rules remain the caller's responsibility.
+///  Re-extract after every changed host snapshot.
 pub fn extract(
     filename: String,
     source: String,
@@ -214,7 +227,9 @@ pub fn extract(
     return Ok(output);
 }
 
-/// Consumer-facing extraction, projection, native parsing and generated adversarial controls.
+/// Consumer-facing extraction,
+///  projection,
+///  native parsing and generated adversarial controls.
 #[cfg(test)]
 #[path = "processors_tests.rs"]
 mod tests;

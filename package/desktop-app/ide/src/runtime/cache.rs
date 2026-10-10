@@ -1,24 +1,45 @@
-//! Unpack an embedded parser library into the private cache, exactly once per content.
+//! Unpack an embedded parser library into the private cache,
+//!  exactly once per content.
 //!
-//! What: A parser library (a shared object) must be a file on disk, because the operating system's
-//!       dynamic loader opens libraries by path. [`unpack`] writes one embedded library into
+//! What:
+//!  A parser library (a shared object) must be a file on disk,
+//!  because the operating system's
+//!       dynamic loader opens libraries by path.
+//!  [`unpack`] writes one embedded library into
 //!       `$XDG_CACHE_HOME/monochromatic-ide/runtime/<key>/grammars/<name>.so` and returns that path.
-//! Why: The application is one executable; everything it needs at run time comes from inside it.
-//!      Queries are read straight from the executable and never touch the disk; only libraries do.
+//! Why:
+//!  The application is one executable;
+//!  everything it needs at run time comes from inside it.
+//!      Queries are read straight from the executable and never touch the disk;
+//!  only libraries do.
 //!
 //! The rules that keep the cache safe:
 //! - The cached file is compared byte for byte with the embedded bytes every time a library is
-//!   loaded. A missing, shortened, or altered file is written again; it is never loaded as found.
-//! - A write goes to a private file named after this process and a counter, then is renamed over the
-//!   final name. A rename within one directory is atomic, so another process or thread opening the
-//!   final name sees either the complete old file or the complete new one, never a partial write.
-//!   Two first starts racing each other both write identical bytes; whichever rename lands last wins.
-//! - Directories are created readable only by the user (mode 0700), files mode 0600.
-//! - `<key>` is a digest of every embedded file, so builds with different files never share a cache.
+//!   loaded.
+//!    A missing,
+//!    shortened,
+//!    or altered file is written again;
+//!    it is never loaded as found.
+//! - A write goes to a private file named after this process and a counter,
+//!    then is renamed over the
+//!   final name.
+//!    A rename within one directory is atomic,
+//!    so another process or thread opening the
+//!   final name sees either the complete old file or the complete new one,
+//!    never a partial write.
+//!   Two first starts racing each other both write identical bytes;
+//!    whichever rename lands last wins.
+//! - Directories are created readable only by the user (mode 0700),
+//!    files mode 0600.
+//! - `<key>` is a digest of every embedded file,
+//!    so builds with different files never share a cache.
 
 /// Errors name the cache directory and the remedy.
 use anyhow::{Context, Result};
-/// Files, the private file and directory modes, the write counter, and timing for logs.
+/// Files,
+///  the private file and directory modes,
+///  the write counter,
+///  and timing for logs.
 use std::{
     fs,
     io::{ErrorKind, Write},
@@ -28,9 +49,17 @@ use std::{
     time::Instant,
 };
 
-/// What: A process-wide counter. `AtomicU64` is a 64-bit integer that several threads may increment
-///       without a lock (siblings: `u64`, a plain integer, and `Mutex<u64>`, one behind a lock).
-/// Why: Threads of one process share a process id, so each private write file also takes a number
+/// What:
+///  A process-wide counter.
+///  `AtomicU64` is a 64-bit integer that several threads may increment
+///       without a lock (siblings:
+///  `u64`,
+///  a plain integer,
+///  and `Mutex<u64>`,
+///  one behind a lock).
+/// Why:
+///  Threads of one process share a process id,
+///  so each private write file also takes a number
 ///      no other write in this process uses.
 ///
 /// In TS you'd write (pseudocode):
@@ -39,9 +68,14 @@ use std::{
 /// ```
 static NEXT_WRITE: AtomicU64 = AtomicU64::new(0);
 
-/// What: Write `bytes` to a new private file beside `target`, then rename it over `target`.
-///       `&Path` is a borrowed path (sibling `PathBuf`, an owned one).
-/// Why: Kept separate so a failed write can remove its private file in one place; the retention
+/// What:
+///  Write `bytes` to a new private file beside `target`,
+///  then rename it over `target`.
+///       `&Path` is a borrowed path (sibling `PathBuf`,
+///  an owned one).
+/// Why:
+///  Kept separate so a failed write can remove its private file in one place;
+///  the retention
 ///      module writes its use marker through it as well.
 ///
 /// In TS you'd write (pseudocode):
@@ -97,9 +131,14 @@ pub(super) fn replace_atomically(
     return written;
 }
 
-/// What: Return the path of a cached copy of `bytes` named `<name>.so` in `directory`, writing it
-///       first when the cached file is absent or differs. `Result<PathBuf>` is the path or an error.
-/// Why: The dynamic loader needs a file; the byte comparison is the integrity check of the cache.
+/// What:
+///  Return the path of a cached copy of `bytes` named `<name>.so` in `directory`,
+///  writing it
+///       first when the cached file is absent or differs.
+///  `Result<PathBuf>` is the path or an error.
+/// Why:
+///  The dynamic loader needs a file;
+///  the byte comparison is the integrity check of the cache.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -151,8 +190,12 @@ pub fn unpack(directory: &Path, name: &str, bytes: &[u8]) -> Result<PathBuf> {
     return Ok(target);
 }
 
-/// What: The message for a cache that cannot be written, naming the directory and every way out.
-/// Why: The application shows this under the source; the reader must know it is a cache problem.
+/// What:
+///  The message for a cache that cannot be written,
+///  naming the directory and every way out.
+/// Why:
+///  The application shows this under the source;
+///  the reader must know it is a cache problem.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -165,7 +208,12 @@ fn remedy(directory: &Path, name: &str) -> String {
     );
 }
 
-/// First use, reuse, damage, concurrency, and an unwritable cache, on disposable directories.
+/// First use,
+///  reuse,
+///  damage,
+///  concurrency,
+///  and an unwritable cache,
+///  on disposable directories.
 #[cfg(test)]
 #[path = "cache_tests.rs"]
 mod tests;

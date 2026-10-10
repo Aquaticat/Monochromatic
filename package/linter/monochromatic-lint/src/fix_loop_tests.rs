@@ -1,5 +1,9 @@
-//! What: Fix-loop convergence, cycle, budget and failure controls.
-//! Why: Passing single-pass edit tests does not prove reparsing or final diagnostic freshness.
+//! What:
+//!  Fix-loop convergence,
+//!  cycle,
+//!  budget and failure controls.
+//! Why:
+//!  Passing single-pass edit tests does not prove reparsing or final diagnostic freshness.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,7 +15,8 @@ use super::{FixStop, SourceChecker, fix_source};
 use crate::diagnostic::{Diagnostic, Severity, Span};
 use crate::edits::{Edit, Fix, FixError};
 
-/// Deterministic fixture behavior, not executable repository configuration.
+/// Deterministic fixture behavior,
+///  not executable repository configuration.
 enum Mode {
     Settle,
     Cycle,
@@ -35,7 +40,8 @@ struct Checker {
 }
 
 impl SourceChecker for Checker {
-    /// Produce a fix derived from the current source, never an offset cached from another pass.
+    /// Produce a fix derived from the current source,
+    ///  never an offset cached from another pass.
     fn check(&mut self, source: &str) -> Result<Vec<Diagnostic>, FixError> {
         self.seen.push(String::from(source));
         if self.fail_at == Some(self.seen.len()) {
@@ -109,7 +115,8 @@ fn checker(mode: Mode) -> Checker {
     };
 }
 
-/// Unicode replacement lengths change between passes, and the returned diagnostics are from the final source.
+/// Unicode replacement lengths change between passes,
+///  and the returned diagnostics are from the final source.
 #[test]
 fn reparses_each_changed_snapshot_and_checks_once_more() {
     let mut state: Checker = checker(Mode::Settle);
@@ -133,7 +140,8 @@ fn cycles_stop_at_the_repeated_snapshot() {
     assert_eq!(state.seen, ["a", "b", "a"]);
 }
 
-/// Nonconvergent growth stops at the agreed pass limit, keeping fresh remaining findings.
+/// Nonconvergent growth stops at the agreed pass limit,
+///  keeping fresh remaining findings.
 #[test]
 fn budget_limits_changed_passes_not_the_final_check() {
     let mut state: Checker = checker(Mode::Grow);

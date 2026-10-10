@@ -38,7 +38,7 @@ fn flags_only_rules_whose_literal_is_present() {
     gate.for_each_candidate(b"xx AKIA yy", |rule, _pos| seen.push(rule));
     assert_eq!(seen, vec![0]);
 
-    let mut seen = Vec::new();
+    seen.clear();
     gate.for_each_candidate(b"a ghp_ b", |rule, _pos| seen.push(rule));
     assert_eq!(seen, vec![1]);
 }

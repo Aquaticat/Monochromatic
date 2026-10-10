@@ -2,7 +2,7 @@
 
 Monorepo-wide [detekt][] rule set enforcing KDoc on every Kotlin declaration,
 the Kotlin counterpart of the repo's `require-tsdoc` oxlint rule for TypeScript.
-It is the Kotlin sibling of `package/linter/rust`:
+It is the Kotlin sibling of `package/linter/monochromatic-lint`:
 a standalone linter run over all of `package/` by the root `lint:detekt` task.
 
 ## Why this exists

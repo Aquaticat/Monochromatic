@@ -1,5 +1,7 @@
-//! What: Coverage-guided entry for the Rust anonymous-function rule.
-//! Why: libFuzzer mutates arbitrary source and a bounded structured grammar together.
+//! What:
+//!  Coverage-guided entry for the Rust anonymous-function rule.
+//! Why:
+//!  libFuzzer mutates arbitrary source and a bounded structured grammar together.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

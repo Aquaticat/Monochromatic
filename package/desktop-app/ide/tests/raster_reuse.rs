@@ -1,7 +1,11 @@
 //! Repeatable raster comparison and stage timings for a viewport-sized source fixture.
 
-/// What: Imports the same document, shaping, and raster APIs used by the native window.
-/// Why: A toolkit-only timing would miss application work before each image update.
+/// What:
+///  Imports the same document,
+///  shaping,
+///  and raster APIs used by the native window.
+/// Why:
+///  A toolkit-only timing would miss application work before each image update.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -12,8 +16,11 @@ use ide_app::{
     shaped_text::{TextShaper, Viewport},
     text_raster::{CodeColors, TextRaster},
 };
-/// What: Instant measures monotonic elapsed time, unlike wall-clock SystemTime.
-/// Why: Clock corrections must not change the reported stage durations.
+/// What:
+///  Instant measures monotonic elapsed time,
+///  unlike wall-clock SystemTime.
+/// Why:
+///  Clock corrections must not change the reported stage durations.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,7 +29,8 @@ use ide_app::{
 use std::time::Instant;
 
 /// Compare repeated renders byte-for-byte while reporting shape and raster costs.
-/// Timings are evidence, not a machine-dependent pass/fail threshold.
+/// Timings are evidence,
+///  not a machine-dependent pass/fail threshold.
 #[test]
 fn repeated_viewport_renders_preserve_pixels() {
     // What: repeat allocates an owned String; &str would only borrow literal bytes.

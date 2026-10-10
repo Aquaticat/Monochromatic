@@ -1,29 +1,46 @@
-//! What:     Depth-envelope target: the published nesting boundary must hold on both sides.
-//! Why:      The limit is the crate's protection against stack exhaustion, and it is the boundary a
-//!           fuzzer is most likely to find a hole in. This target asserts the exact accepted depth,
-//!           the exact rejected depth, and that malformed over-deep input is refused rather than
+//! What:
+//!      Depth-envelope target:
+//!  the published nesting boundary must hold on both sides.
+//! Why:
+//!       The limit is the crate's protection against stack exhaustion,
+//!  and it is the boundary a
+//!           fuzzer is most likely to find a hole in.
+//!  This target asserts the exact accepted depth,
+//!           the exact rejected depth,
+//!  and that malformed over-deep input is refused rather than
 //!           overflowing.
 
 #![no_main]
 
-/// What:     Import the harness macro.
-/// Why:      Every target in this sidecar is a libFuzzer entry point.
+/// What:
+///      Import the harness macro.
+/// Why:
+///       Every target in this sidecar is a libFuzzer entry point.
 use libfuzzer_sys::fuzz_target;
-/// What:     Import the exact-depth document builder.
-/// Why:      A boundary needs inputs on both sides rather than generated approximations.
+/// What:
+///      Import the exact-depth document builder.
+/// Why:
+///       A boundary needs inputs on both sides rather than generated approximations.
 use jsonc_edit_fuzz::generators::nested_document;
-/// What:     Import the iterative depth measurement.
-/// Why:      The accepted side must be shown to hold the depth it was built with.
+/// What:
+///      Import the iterative depth measurement.
+/// Why:
+///       The accepted side must be shown to hold the depth it was built with.
 use jsonc_edit_fuzz::invariants::depth_of;
-/// What:     Import the parser entry point.
-/// Why:      The nesting limit is enforced while parsing.
+/// What:
+///      Import the parser entry point.
+/// Why:
+///       The nesting limit is enforced while parsing.
 use monochromatic_jsonc_edit::parse_jsonc;
 
-/// The contract's accepted container count, duplicated here on purpose: the target must fail if the
+/// The contract's accepted container count,
+///  duplicated here on purpose:
+///  the target must fail if the
 /// crate's bound moves without the shared fixtures and this assertion moving with it.
 const ACCEPTED_DEPTH: usize = 512;
 
-/// Deepest generated nesting, chosen past the bound so both sides are exercised every campaign.
+/// Deepest generated nesting,
+///  chosen past the bound so both sides are exercised every campaign.
 const PROBE_CEILING: usize = 900;
 
 fuzz_target!(|input: (u16, bool)| {

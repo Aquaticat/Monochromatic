@@ -4,7 +4,8 @@
 use crate::{search::SearchResults, search_cancel::SearchCancellation, workspace::Workspace};
 /// Startup and unexpected worker failures must not masquerade as no results.
 use anyhow::{Context, Result};
-/// Arc shares immutable requests/replies across threads; the join handle owns shutdown.
+/// Arc shares immutable requests/replies across threads;
+///  the join handle owns shutdown.
 use std::{
     path::PathBuf,
     sync::Arc,
@@ -24,9 +25,11 @@ mod request;
 pub struct SearchReply {
     /// Latest-query identity assigned by the caller's worker handle.
     pub generation: u64,
-    /// Original query, retained for diagnostic and stale-result inspection.
+    /// Original query,
+    ///  retained for diagnostic and stale-result inspection.
     pub query: String,
-    /// Directory actually searched, or the requested scope named in a resolution failure.
+    /// Directory actually searched,
+    ///  or the requested scope named in a resolution failure.
     pub scope: PathBuf,
     /// Filename and content results stay independently usable.
     pub results: SearchResults,
@@ -36,29 +39,36 @@ pub struct SearchReply {
 struct Request {
     /// Request identity survives replacement in the watch slot.
     generation: u64,
-    /// Query is passed as one subprocess argument, never shell source.
+    /// Query is passed as one subprocess argument,
+    ///  never shell source.
     query: String,
-    /// None searches the project root; a selected subtree must resolve inside it before execution.
+    /// None searches the project root;
+    ///  a selected subtree must resolve inside it before execution.
     scope: Option<PathBuf>,
     /// Shared one-way cancellation signal reaches both child streams.
     cancellation: SearchCancellation,
 }
 
-/// Native-owned handle; no Slint handle or mutable document crosses this boundary.
+/// Native-owned handle;
+///  no Slint handle or mutable document crosses this boundary.
 pub struct SearchWorker {
     /// Dropping this sender closes the worker's request loop after active cancellation finishes.
     requests: Option<watch::Sender<Option<Arc<Request>>>>,
-    /// At most one immutable latest reply is retained, whether or not the UI has consumed it.
+    /// At most one immutable latest reply is retained,
+    ///  whether or not the UI has consumed it.
     replies: watch::Receiver<Option<Arc<SearchReply>>>,
     /// New requests invalidate old ones before publishing replacement work.
     cancellation: Option<SearchCancellation>,
     /// Monotonic query generation prevents old replies from entering the current result model.
     generation: u64,
-    /// Worker thread is joined, never detached, when the owning window closes.
+    /// Worker thread is joined,
+    ///  never detached,
+    ///  when the owning window closes.
     thread: Option<JoinHandle<()>>,
 }
 
-/// Process each latest request directly; intermediate queued queries are replaced rather than accumulated.
+/// Process each latest request directly;
+///  intermediate queued queries are replaced rather than accumulated.
 async fn run(
     workspace: Workspace,
     mut requests: watch::Receiver<Option<Arc<Request>>>,
@@ -144,7 +154,8 @@ impl SearchWorker {
         return self.submit(query, None);
     }
 
-    /// Narrow a query to a selected directory; resolution and containment checks run on the worker.
+    /// Narrow a query to a selected directory;
+    ///  resolution and containment checks run on the worker.
     pub fn request_scoped(&mut self, query: String, scope: PathBuf) -> Result<u64> {
         return self.submit(query, Some(scope));
     }
@@ -172,7 +183,8 @@ impl SearchWorker {
         return Ok(self.generation);
     }
 
-    /// Poll without waiting; outdated replies are consumed but never exposed as current results.
+    /// Poll without waiting;
+    ///  outdated replies are consumed but never exposed as current results.
     pub fn try_take(&mut self) -> Result<Option<Arc<SearchReply>>> {
         if !self
             .replies

@@ -1,15 +1,19 @@
-//! What: Target-independent native separator policy and protocol-safe display controls.
-//! Why: Linux verification must exercise Windows byte decisions without pretending it ran Windows's native Path parser.
+//! What:
+//!  Target-independent native separator policy and protocol-safe display controls.
+//! Why:
+//!  Linux verification must exercise Windows byte decisions without pretending it ran Windows's native Path parser.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Supply target semantics explicitly and assert exact normalized byte sequences.
 //! ```
 
-/// Import the pure production policy helpers, not a second normalization implementation.
+/// Import the pure production policy helpers,
+///  not a second normalization implementation.
 use super::{normalize_bytes, count_prefix_parts, safe_component};
 
-/// Windows separators normalize only under Windows semantics; native Unix backslashes remain filename bytes.
+/// Windows separators normalize only under Windows semantics;
+///  native Unix backslashes remain filename bytes.
 #[test]
 fn target_separator_semantics_are_explicit() {
     // Borrow literal byte slices; compare the owned Vec output to independently written expected bytes.
@@ -36,7 +40,8 @@ fn prefix_parts_count_nonempty_runs_with_both_separators() {
     assert_eq!(count_prefix_parts(b""), 0);
 }
 
-/// Prefix parts spelled like navigation markers still count, because the scan consumes them as prefix.
+/// Prefix parts spelled like navigation markers still count,
+///  because the scan consumes them as prefix.
 #[test]
 fn prefix_parts_count_navigation_spellings_and_device_markers() {
     // br"..." keeps backslashes literal; each slice is the raw native prefix std returns for that form.
@@ -48,7 +53,9 @@ fn prefix_parts_count_navigation_spellings_and_device_markers() {
     assert_eq!(count_prefix_parts(br"\\?\a/./b"), 4);
 }
 
-/// Invalid bytes, backslashes, control characters and protocol colons have distinguishable safe spellings.
+/// Invalid bytes,
+///  backslashes,
+///  control characters and protocol colons have distinguishable safe spellings.
 #[test]
 fn display_encoding_keeps_adversarial_native_bytes_distinct() {
     assert_eq!(safe_component(b"\xff\xfe"), "\\xff\\xfe");

@@ -1,16 +1,35 @@
-//! Apply the nested screen's logical size and output scale to the window, output, and surfaces.
+//! Apply the nested screen's logical size and output scale to the window,
+//!  output,
+//!  and surfaces.
 //!
-//! The arithmetic lives in `screen_geometry`; this module performs it against the live
-//! compositor. The physical framebuffer is the nested window itself, so a new size or scale
-//! first asks the parent compositor for a window that covers `logical size x scale`, then reads
-//! back the size the window actually has. winit applies that request to a normal (not
-//! maximized, tiled, or fullscreen) window at once, without waiting for the parent, so this
+//! The arithmetic lives in `screen_geometry`;
+//!  this module performs it against the live
+//! compositor.
+//!  The physical framebuffer is the nested window itself,
+//!  so a new size or scale
+//! first asks the parent compositor for a window that covers `logical size x scale`,
+//!  then reads
+//! back the size the window actually has.
+//!  winit applies that request to a normal (not
+//! maximized,
+//!  tiled,
+//!  or fullscreen) window at once,
+//!  without waiting for the parent,
+//!  so this
 //! also works while the host session is locked.
 
-/// What:     Grouped `use` of the Smithay pieces this module touches: the output mode, the
-///           damage tracker, the display handle, winit's logical size, Smithay's size type
-///           with its physical-pixel tag, and the fractional-scale and viewporter states.
-/// Why:      Applying a geometry rewrites the output mode and scale and tells every surface.
+/// What:
+///      Grouped `use` of the Smithay pieces this module touches:
+///  the output mode,
+///  the
+///           damage tracker,
+///  the display handle,
+///  winit's logical size,
+///  Smithay's size type
+///           with its physical-pixel tag,
+///  and the fractional-scale and viewporter states.
+/// Why:
+///       Applying a geometry rewrites the output mode and scale and tells every surface.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,9 +46,17 @@ use smithay::{
     },
 };
 
-/// What:     Grouped `use` of this crate's refresh constant, the fullscreen reconfigure, the
-///           wire response, the geometry types, and the compositor state.
-/// Why:      `apply` rebuilds the mode, reconfigures the toplevel, and answers control verbs.
+/// What:
+///      Grouped `use` of this crate's refresh constant,
+///  the fullscreen reconfigure,
+///  the
+///           wire response,
+///  the geometry types,
+///  and the compositor state.
+/// Why:
+///       `apply` rebuilds the mode,
+///  reconfigures the toplevel,
+///  and answers control verbs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,11 +72,17 @@ use crate::{
 
 /// The current geometry plus the two protocol globals that carry a fractional scale.
 ///
-/// What:     `pub struct ScreenState { ... }`. `geometry` is the logical size and scale the
-///           caller asked for. The two underscore-prefixed fields are kept only so the
+/// What:
+///      `pub struct ScreenState { ... }`.
+///  `geometry` is the logical size and scale the
+///           caller asked for.
+///  The two underscore-prefixed fields are kept only so the
 ///           `wp_fractional_scale_manager_v1` and `wp_viewporter` globals live as long as the
-///           compositor; the underscore silences the "never read" lint.
-/// Why:      winit binds `wp_viewporter` only when `wp_fractional_scale_manager_v1` exists, and
+///           compositor;
+///  the underscore silences the "never read" lint.
+/// Why:
+///       winit binds `wp_viewporter` only when `wp_fractional_scale_manager_v1` exists,
+///  and
 ///           once it binds the fractional manager it ignores integer scales from `wl_output`.
 ///           Advertising both lets a hosted winit client render at exactly 1.25 or 1.5 and
 ///           tell this compositor its logical size through the viewport.
@@ -59,7 +92,8 @@ use crate::{
 /// type ScreenState = { geometry: ScreenGeometry; fractionalScaleGlobal: Global; viewporterGlobal: Global };
 /// ```
 pub struct ScreenState {
-    /// Logical size the hosted toplevel is configured with, and the scale surfaces are told.
+    /// Logical size the hosted toplevel is configured with,
+    ///  and the scale surfaces are told.
     pub geometry: ScreenGeometry,
     /// Keeps the `wp_fractional_scale_manager_v1` global alive.
     _fractional_scale: FractionalScaleManagerState,
@@ -69,15 +103,21 @@ pub struct ScreenState {
 
 /// Construction of the screen state.
 ///
-/// What:     `impl ScreenState { ... }`.
-/// Why:      The globals must be created against the display before any client connects.
+/// What:
+///      `impl ScreenState { ... }`.
+/// Why:
+///       The globals must be created against the display before any client connects.
 impl ScreenState {
     /// Register the fractional-scale and viewporter globals and remember the starting geometry.
     ///
-    /// What:     `pub fn new(display: &DisplayHandle, geometry: ScreenGeometry) -> Self`.
-    ///           `&DisplayHandle` lends the display; `::<Compositor>` tells each global which
+    /// What:
+    ///      `pub fn new(display: &DisplayHandle, geometry: ScreenGeometry) -> Self`.
+    ///           `&DisplayHandle` lends the display;
+    ///  `::<Compositor>` tells each global which
     ///           state type answers its requests.
-    /// Why:      Called once from `Compositor::new`, beside the other protocol globals.
+    /// Why:
+    ///       Called once from `Compositor::new`,
+    ///  beside the other protocol globals.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -90,13 +130,25 @@ impl ScreenState {
     }
 }
 
-/// Make `target` the nested screen: size the window, set the output, and tell the client.
+/// Make `target` the nested screen:
+///  size the window,
+///  set the output,
+///  and tell the client.
 ///
-/// What:     `pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(),
-///           String>`. `Result<(), String>` is success with no value, or a message. `()` is the
-///           empty tuple, Rust's "nothing".
-/// Why:      `resize`, `scale`, and parent-initiated window changes all end in the same state:
-///           the output mode equals the framebuffer, the output scale equals the target scale,
+/// What:
+///      `pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(),
+///           String>`.
+///  `Result<(), String>` is success with no value,
+///  or a message.
+///  `()` is the
+///           empty tuple,
+///  Rust's "nothing".
+/// Why:
+///       `resize`,
+///  `scale`,
+///  and parent-initiated window changes all end in the same state:
+///           the output mode equals the framebuffer,
+///  the output scale equals the target scale,
 ///           and every hosted surface knows both.
 ///
 /// In TS you'd write (pseudocode):
@@ -174,12 +226,19 @@ pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(), Strin
     return Ok(());
 }
 
-/// Make the output mode the framebuffer size, and announce the scale when it changed.
+/// Make the output mode the framebuffer size,
+///  and announce the scale when it changed.
 ///
-/// What:     `fn set_mode(state: &mut Compositor, framebuffer: Size<i32, Physical>,
-///           scale_changed: bool, scale: OutputScale)`. Private helper.
-/// Why:      Smithay sends `wl_output.mode`, `wl_output.scale`, and `xdg_output.logical_size`
-///           from `change_current_state`; the damage tracker is rebuilt for the new size.
+/// What:
+///      `fn set_mode(state: &mut Compositor, framebuffer: Size<i32, Physical>,
+///           scale_changed: bool, scale: OutputScale)`.
+///  Private helper.
+/// Why:
+///       Smithay sends `wl_output.mode`,
+///  `wl_output.scale`,
+///  and `xdg_output.logical_size`
+///           from `change_current_state`;
+///  the damage tracker is rebuilt for the new size.
 fn set_mode(state: &mut Compositor, framebuffer: Size<i32, Physical>, scale_changed: bool, scale: OutputScale) {
     let mode = Mode { size: framebuffer, refresh: OUTPUT_REFRESH_MHZ };
     // What:     `None` leaves the scale as it is; `Some(...)` sets and announces a new one.
@@ -200,12 +259,19 @@ fn set_mode(state: &mut Compositor, framebuffer: Size<i32, Physical>, scale_chan
 
 /// Tell every surface of every mapped window the current fractional scale.
 ///
-/// What:     `fn tell_surfaces_scale(state: &Compositor)`. Walks each window's surface tree,
-///           popups included, and sets the preferred scale Smithay sends as
-///           `wp_fractional_scale_v1.preferred_scale` (in 120ths). Smithay sends nothing when a
+/// What:
+///      `fn tell_surfaces_scale(state: &Compositor)`.
+///  Walks each window's surface tree,
+///           popups included,
+///  and sets the preferred scale Smithay sends as
+///           `wp_fractional_scale_v1.preferred_scale` (in 120ths).
+///  Smithay sends nothing when a
 ///           surface already has that value.
-/// Why:      Smithay's `Space` only sends output enter and leave; the fractional scale is the
-///           compositor's job, and it is how winit learns the scale.
+/// Why:
+///       Smithay's `Space` only sends output enter and leave;
+///  the fractional scale is the
+///           compositor's job,
+///  and it is how winit learns the scale.
 fn tell_surfaces_scale(state: &Compositor) {
     let factor = state.screen.geometry.scale.factor();
     for window in state.space.elements() {
@@ -226,12 +292,18 @@ fn tell_surfaces_scale(state: &Compositor) {
     }
 }
 
-/// Answer the `scale` control verb: switch the scale, keeping the logical size.
+/// Answer the `scale` control verb:
+///  switch the scale,
+///  keeping the logical size.
 ///
-/// What:     `pub fn switch_scale(state: &mut Compositor, scale: OutputScale) -> Response`.
+/// What:
+///      `pub fn switch_scale(state: &mut Compositor, scale: OutputScale) -> Response`.
 ///           `ScreenGeometry { scale, ..current }` copies every other field from `current`.
-/// Why:      `ok unchanged` tells a test that no client was notified, so it must not wait for a
-///           repaint, mirroring the `color-scheme` verb.
+/// Why:
+///       `ok unchanged` tells a test that no client was notified,
+///  so it must not wait for a
+///           repaint,
+///  mirroring the `color-scheme` verb.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -249,10 +321,15 @@ pub fn switch_scale(state: &mut Compositor, scale: OutputScale) -> Response {
     }
 }
 
-/// Answer the `resize` control verb: change the logical size, keeping the scale.
+/// Answer the `resize` control verb:
+///  change the logical size,
+///  keeping the scale.
 ///
-/// What:     `pub fn resize(state: &mut Compositor, width: i32, height: i32) -> Response`.
-/// Why:      The framebuffer becomes `width x height` times the scale, applied at once rather
+/// What:
+///      `pub fn resize(state: &mut Compositor, width: i32, height: i32) -> Response`.
+/// Why:
+///       The framebuffer becomes `width x height` times the scale,
+///  applied at once rather
 ///           than after a parent event that a locked host session never sends.
 pub fn resize(state: &mut Compositor, width: i32, height: i32) -> Response {
     let target = ScreenGeometry { logical_width: width, logical_height: height, scale: state.screen.geometry.scale };
@@ -264,11 +341,18 @@ pub fn resize(state: &mut Compositor, width: i32, height: i32) -> Response {
 
 /// Follow a size change the parent compositor made to the nested window.
 ///
-/// What:     `pub fn parent_resized(state: &mut Compositor, size: Size<i32, Physical>)`.
-/// Why:      A size the screen already has needs nothing. Rounding by the parent keeps the
-///           logical size; a real change (a dragged edge, a tiling layout) derives a new
-///           logical size at the current scale. The host's own scale is never adopted as the
-///           nested scale, so captures do not depend on which host output shows the window.
+/// What:
+///      `pub fn parent_resized(state: &mut Compositor, size: Size<i32, Physical>)`.
+/// Why:
+///       A size the screen already has needs nothing.
+///  Rounding by the parent keeps the
+///           logical size;
+///  a real change (a dragged edge,
+///  a tiling layout) derives a new
+///           logical size at the current scale.
+///  The host's own scale is never adopted as the
+///           nested scale,
+///  so captures do not depend on which host output shows the window.
 pub fn parent_resized(state: &mut Compositor, size: Size<i32, Physical>) {
     // What:     `.map(|mode| mode.size)` reads the size out of the optional current mode.
     // Why:      Our own `apply` already set the mode to this size; ignore that echo.

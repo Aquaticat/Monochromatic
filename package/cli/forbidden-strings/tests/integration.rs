@@ -1468,7 +1468,8 @@ fn compile_rules_subcommand_creates_silent_artifact() {
     let _ = fs::remove_dir_all(dir);
 }
 
-/// First scan warns and repairs; repeated scan reuses cache with identical finding.
+/// First scan warns and repairs;
+///  repeated scan reuses cache with identical finding.
 #[test]
 fn scan_repairs_missing_cache_then_reuses_artifact() {
     let dir = unique_tmp("scan-cache-repair");
@@ -1597,7 +1598,10 @@ fn compile_rules_subcommand_rejects_invalid_rules() {
     let _ = fs::remove_dir_all(dir);
 }
 
-/// Corrupt artifact warns, recompiles, replaces cache, and preserves finding.
+/// Corrupt artifact warns,
+///  recompiles,
+///  replaces cache,
+///  and preserves finding.
 #[test]
 fn corrupt_artifact_is_repaired_without_false_clean() {
     let dir = unique_tmp("corrupt-cache-repair");

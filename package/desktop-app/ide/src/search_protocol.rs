@@ -10,7 +10,8 @@ use base64::{Engine, engine::general_purpose::STANDARD};
 use helix_core::unicode::segmentation::UnicodeSegmentation;
 /// Deserialize only needed fields while retaining envelope types for explicit metadata handling.
 use serde::Deserialize;
-/// Native paths preserve arbitrary Unix filename bytes; components reject traversal-shaped results.
+/// Native paths preserve arbitrary Unix filename bytes;
+///  components reject traversal-shaped results.
 use std::{
     ffi::OsString,
     os::unix::ffi::OsStringExt,
@@ -22,7 +23,8 @@ use std::{
 struct TextOrBytes {
     /// UTF-8 input retains its exact bytes after JSON decoding.
     text: Option<String>,
-    /// Non-UTF-8 input is represented by base64, not a lossy display string.
+    /// Non-UTF-8 input is represented by base64,
+    ///  not a lossy display string.
     bytes: Option<String>,
 }
 
@@ -55,8 +57,11 @@ impl TextOrBytes {
     }
 }
 
-/// What: Serde selects a closed variant from type and decodes its data directly.
-/// Why: Metadata is skipped without allocation, while duplicate match fields remain detectable.
+/// What:
+///  Serde selects a closed variant from type and decodes its data directly.
+/// Why:
+///  Metadata is skipped without allocation,
+///  while duplicate match fields remain detectable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -92,18 +97,21 @@ enum Event {
     ),
 }
 
-/// Match fields used by the reader; other ripgrep offsets/statistics remain forward-compatible metadata.
+/// Match fields used by the reader;
+///  other ripgrep offsets/statistics remain forward-compatible metadata.
 #[derive(Deserialize)]
 struct Match {
     /// Exact native path to the matching file.
     path: TextOrBytes,
-    /// Source line bytes, including their original terminator.
+    /// Source line bytes,
+    ///  including their original terminator.
     lines: TextOrBytes,
     /// One-based line number supplied by normal non-multiline JSON search.
     line_number: usize,
 }
 
-/// Validate a native result lexically; actual file activation separately resolves symlink containment.
+/// Validate a native result lexically;
+///  actual file activation separately resolves symlink containment.
 fn path(root: &Path, bytes: Vec<u8>) -> Result<PathBuf> {
     if bytes.is_empty() || bytes.contains(&0) {
         bail!(
@@ -146,7 +154,9 @@ pub fn filename(root: &Path, record: &[u8]) -> Result<PathBuf> {
     return path(root, record.to_vec());
 }
 
-/// Decode one JSON record; expected metadata has no content result, while unknown or malformed events are errors.
+/// Decode one JSON record;
+///  expected metadata has no content result,
+///  while unknown or malformed events are errors.
 pub fn content(root: &Path, record: &[u8]) -> Result<Option<SearchHit>> {
     let event: Event =
         serde_json::from_slice(record).context("Cannot decode ripgrep JSON record")?;

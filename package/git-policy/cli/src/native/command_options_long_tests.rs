@@ -1,5 +1,11 @@
-//! What: Long-option cases: exact names, abbreviations, ambiguity and `no-` negation.
-//! Why: Git accepts `--am` for `--amend` and `--no-verify` as a positive option name; a
+//! What:
+//!  Long-option cases:
+//!  exact names,
+//!  abbreviations,
+//!  ambiguity and `no-` negation.
+//! Why:
+//!  Git accepts `--am` for `--amend` and `--no-verify` as a positive option name;
+//!  a
 //!      list of exact spellings misses forms a policy must see.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,7 +13,8 @@
 //! // expect(parseOptions(['--am'])).toEqual(...)
 //! ```
 
-/// Tokenizer types, queries and the shared synthetic table.
+/// Tokenizer types,
+///  queries and the shared synthetic table.
 use crate::command_options::{
     Arity, DEFAULT_MODE, Occurrence, OptionError, OptionErrorKind, OptionSpec, OptionValue,
     ParsedOptions, parse_options, row,
@@ -22,7 +29,8 @@ fn refusal(kind: OptionErrorKind) -> Result<ParsedOptions, OptionError> {
     return Err(OptionError { kind, token: 0 });
 }
 
-/// A unique prefix resolves, and a joined value starts after the `=` of the written name.
+/// A unique prefix resolves,
+///  and a joined value starts after the `=` of the written name.
 #[test]
 fn resolves_unique_abbreviations() {
     let parsed: ParsedOptions =
@@ -44,7 +52,8 @@ fn resolves_unique_abbreviations() {
     );
 }
 
-/// A prefix shared by several names is refused, including the empty prefix.
+/// A prefix shared by several names is refused,
+///  including the empty prefix.
 #[test]
 fn refuses_ambiguous_abbreviations() {
     for values in [
@@ -65,7 +74,8 @@ fn refuses_ambiguous_abbreviations() {
     }
 }
 
-/// An exact name wins over a longer name it prefixes, in either table order.
+/// An exact name wins over a longer name it prefixes,
+///  in either table order.
 #[test]
 fn prefers_an_exact_name_over_an_abbreviation() {
     let exact: ParsedOptions =
@@ -93,7 +103,8 @@ fn prefers_an_exact_name_over_an_abbreviation() {
     assert!(!is_stated(&later_exact, ALLOW_EMPTY_MESSAGE));
 }
 
-/// `--no-<name>` turns an option off, also in abbreviated form.
+/// `--no-<name>` turns an option off,
+///  also in abbreviated form.
 #[test]
 fn negates_with_a_no_prefix() {
     let negated: ParsedOptions = parse_synthetic(&["--all", "--no-all", "--no-am"]).expect("ok");
@@ -140,10 +151,15 @@ fn refuses_negation_of_non_negatable_rows() {
     assert!(parse_synthetic(&["--hard", "--har"]).is_ok());
 }
 
-/// With one negatable row, the very short negations `--n` and `--no` resolve to it. `--no-`
-/// stays ambiguous: the row registers once as an empty abbreviation and once as a very
-/// short negation, and Git counts the second registration as a conflict
-/// (parse-options.c:504-514, 564-571).
+/// With one negatable row,
+///  the very short negations `--n` and `--no` resolve to it.
+///  `--no-`
+/// stays ambiguous:
+///  the row registers once as an empty abbreviation and once as a very
+/// short negation,
+///  and Git counts the second registration as a conflict
+/// (parse-options.c:504-514,
+///  564-571).
 #[test]
 fn resolves_a_very_short_negation_when_unique() {
     let only_all: &[OptionSpec] = &[row(ALL, Some(b'a'), Some("all"), Arity::None, true)];

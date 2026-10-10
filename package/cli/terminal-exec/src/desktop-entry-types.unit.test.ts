@@ -15,7 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { expandEscapes, } from './desktop-entry-types.ts';
+import { expandEscapes, } from '../dist/final/node/launch.mjs';
 
 /** Iteration count for the long-run case; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;

@@ -1,12 +1,17 @@
-//! What: Byte offsets of missing prose line breaks, with token and abbreviation exclusions.
-//! Why: Declining ambiguous breaks preserves content; inserted breaks must never split names or numbers.
+//! What:
+//!  Byte offsets of missing prose line breaks,
+//!  with token and abbreviation exclusions.
+//! Why:
+//!  Declining ambiguous breaks preserves content;
+//!  inserted breaks must never split names or numbers.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Scan prose once, checking only bounded abbreviation suffixes and the following whitespace run.
 //! ```
 
-/// Accepted abbreviation catalog from the incumbent, not a language-dependent sentence heuristic.
+/// Accepted abbreviation catalog from the incumbent,
+///  not a language-dependent sentence heuristic.
 const ABBREVIATIONS: &[&str] = &[
     "e.g.", "i.e.", "etc.", "vs.", "cf.", "al.", "dr.", "mr.", "mrs.", "ms.", "st.", "no.", "fig.",
     "eq.", "approx.", "a.m.", "p.m.", "u.s.", "u.k.", "ph.d.",
@@ -42,7 +47,8 @@ fn closing(character: char) -> bool {
     return ['"', '\'', ')', ']', '}', '”', '’', '»', '›'].contains(&character);
 }
 
-/// Only written word boundaries permit breaks; a glued letter/digit/delimiter keeps the token intact.
+/// Only written word boundaries permit breaks;
+///  a glued letter/digit/delimiter keeps the token intact.
 fn separator(character: Option<char>) -> bool {
     let Some(value) = character else {
         return true;
@@ -69,8 +75,11 @@ fn needs_break(slice_tail: &str, trailing: &str, paragraph_tail: bool) -> bool {
     return !paragraph_tail;
 }
 
-/// What: Locate insertion offsets within one authored text-node slice.
-/// Why: Byte addressing survives Unicode before abbreviations and punctuation; checks never rebuild the source.
+/// What:
+///  Locate insertion offsets within one authored text-node slice.
+/// Why:
+///  Byte addressing survives Unicode before abbreviations and punctuation;
+///  checks never rebuild the source.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

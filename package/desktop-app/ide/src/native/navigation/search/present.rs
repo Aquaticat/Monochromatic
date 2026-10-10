@@ -1,4 +1,5 @@
-//! Search result labels are projections, never filesystem identities.
+//! Search result labels are projections,
+//!  never filesystem identities.
 
 /// The window model owns copied labels while native search retains the original paths.
 use crate::native::{AppWindow, ui::SearchEntry};
@@ -26,8 +27,10 @@ pub(super) fn results(results: &SearchResults, content_only: bool) -> (Vec<Searc
     return (hits, messages.join("\n"));
 }
 
-/// What: `&[SearchHit]` borrows a variable-length list instead of owning `Vec<SearchHit>` or requiring `[T; N]`.
-/// Why: Rendering labels must not consume the paths later used by the open callback.
+/// What:
+///  `&[SearchHit]` borrows a variable-length list instead of owning `Vec<SearchHit>` or requiring `[T; N]`.
+/// Why:
+///  Rendering labels must not consume the paths later used by the open callback.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

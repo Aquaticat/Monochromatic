@@ -1,4 +1,6 @@
-//! Read-only ripgrep commands stream concurrently and are explicitly reaped on limits, cancellation, and failures.
+//! Read-only ripgrep commands stream concurrently and are explicitly reaped on limits,
+//!  cancellation,
+//!  and failures.
 
 /// Independent stream outcomes retain useful filename matches when content search fails.
 use crate::{
@@ -20,10 +22,21 @@ use tokio::{
     process::{Child, Command},
 };
 
-/// What: The ripgrep settings every listing of the project shares: no configuration file, no preprocessor,
-///       no decompression, one thread, line-buffered output. `[&str; 6]` is a fixed-length array of six texts.
-/// Why: The search and the language servers' folder watching list the project with the same ignore rules
-///      (`.gitignore`, `.ignore`, `.rgignore`, hidden names), so both agree on what belongs to it.
+/// What:
+///  The ripgrep settings every listing of the project shares:
+///  no configuration file,
+///  no preprocessor,
+///       no decompression,
+///  one thread,
+///  line-buffered output.
+///  `[&str; 6]` is a fixed-length array of six texts.
+/// Why:
+///  The search and the language servers' folder watching list the project with the same ignore rules
+///      (`.gitignore`,
+///  `.ignore`,
+///  `.rgignore`,
+///  hidden names),
+///  so both agree on what belongs to it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,7 +51,8 @@ pub(crate) const RIPGREP_SETTINGS: [&str; 6] = [
     "--line-buffered",
 ];
 
-/// Construct only the required search operation, excluding inherited preprocessing or decompression commands.
+/// Construct only the required search operation,
+///  excluding inherited preprocessing or decompression commands.
 fn command(root: &Path, query: &str, stream: Stream) -> Command {
     let mut command = Command::new("rg");
     command.current_dir(root);
@@ -96,7 +110,8 @@ async fn execute(
     return consume(child, root, query, stream, cancellation, signal).await;
 }
 
-/// Own and reap an already spawned child; tests can observe its PID without introducing a production debug callback.
+/// Own and reap an already spawned child;
+///  tests can observe its PID without introducing a production debug callback.
 async fn consume(
     mut child: Child,
     root: &Path,
@@ -195,12 +210,16 @@ async fn consume(
     return Ok(Some(collected.hits));
 }
 
-/// Real child pipes exercise cancellation, reaping, diagnostics, and inherited-config exclusion.
+/// Real child pipes exercise cancellation,
+///  reaping,
+///  diagnostics,
+///  and inherited-config exclusion.
 #[cfg(test)]
 #[path = "search_process_tests.rs"]
 mod tests;
 
-/// Execute both bounded streams concurrently; a cancelled query never becomes an empty successful reply.
+/// Execute both bounded streams concurrently;
+///  a cancelled query never becomes an empty successful reply.
 pub(crate) async fn search(
     root: &Path,
     query: &str,

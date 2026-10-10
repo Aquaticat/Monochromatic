@@ -4,8 +4,10 @@
 use crate::find::{FindMatches, FindRange, FindRanges};
 /// Accepted results keep the tag of the request that produced them.
 use crate::find_worker::FindIdentity;
-/// What: `Arc` shares one immutable allocation between owners.
-/// Why: A stale result returns an empty list without copying or exposing its outdated ranges.
+/// What:
+///  `Arc` shares one immutable allocation between owners.
+/// Why:
+///  A stale result returns an empty list without copying or exposing its outdated ranges.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,8 +15,12 @@ use crate::find_worker::FindIdentity;
 /// ```
 use std::sync::Arc;
 
-/// What: `&[FindRange]` borrows a sorted list; `Option<usize>` is an index or nothing.
-/// Why: The active match is derived from the selection, so reloads and clicks need no second cursor.
+/// What:
+///  `&[FindRange]` borrows a sorted list;
+///  `Option<usize>` is an index or nothing.
+/// Why:
+///  The active match is derived from the selection,
+///  so reloads and clicks need no second cursor.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,8 +53,10 @@ pub fn active(ranges: &[FindRange], start: usize, end: usize) -> Option<usize> {
     return None;
 }
 
-/// First match starting at or after `origin`, wrapping to the first match of the document.
-/// Incremental typing passes the selection start; Enter passes the selection end.
+/// First match starting at or after `origin`,
+///  wrapping to the first match of the document.
+/// Incremental typing passes the selection start;
+///  Enter passes the selection end.
 pub fn at_or_after(ranges: &[FindRange], origin: usize) -> Option<usize> {
     if ranges.is_empty() {
         return None;
@@ -60,7 +68,8 @@ pub fn at_or_after(ranges: &[FindRange], origin: usize) -> Option<usize> {
     return Some(index);
 }
 
-/// Last match ending at or before `origin`, wrapping to the last match of the document.
+/// Last match ending at or before `origin`,
+///  wrapping to the last match of the document.
 /// Shift+Enter passes the selection start.
 pub fn at_or_before(ranges: &[FindRange], origin: usize) -> Option<usize> {
     if ranges.is_empty() {
@@ -73,8 +82,10 @@ pub fn at_or_before(ranges: &[FindRange], origin: usize) -> Option<usize> {
     return Some(index - 1);
 }
 
-/// What: The returned `&[FindRange]` borrows a contiguous part of the input list.
-/// Why: Painting shapes rectangles only for matches intersecting the materialized rows.
+/// What:
+///  The returned `&[FindRange]` borrows a contiguous part of the input list.
+/// Why:
+///  Painting shapes rectangles only for matches intersecting the materialized rows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -96,11 +107,15 @@ pub fn visible(ranges: &[FindRange], start: usize, end: usize) -> &[FindRange] {
     return &ranges[first..last];
 }
 
-/// Visible count text and its spoken form; the two strings always describe the same state.
-/// The default is empty text: no find text, so nothing to count.
+/// Visible count text and its spoken form;
+///  the two strings always describe the same state.
+/// The default is empty text:
+///  no find text,
+///  so nothing to count.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct FindStatus {
-    /// Compact "active/total" text, or "No matches".
+    /// Compact "active/total" text,
+    ///  or "No matches".
     pub label: String,
     /// Full sentence for accessibility tools.
     pub detail: String,
@@ -153,7 +168,9 @@ pub fn status(matches: &FindMatches, active_index: Option<usize>) -> FindStatus 
     };
 }
 
-/// Accepted matches remember the file generation, revision, and query that produced them.
+/// Accepted matches remember the file generation,
+///  revision,
+///  and query that produced them.
 pub struct FindResults {
     /// Tag copied from the accepted worker reply.
     identity: FindIdentity,
@@ -161,7 +178,8 @@ pub struct FindResults {
     matches: FindMatches,
 }
 
-/// Results are read only through identity checks, so stale positions cannot be painted or navigated.
+/// Results are read only through identity checks,
+///  so stale positions cannot be painted or navigated.
 impl FindResults {
     /// Record matches together with the identity of the reply that carried them.
     pub fn new(identity: FindIdentity, matches: FindMatches) -> Self {
@@ -169,7 +187,8 @@ impl FindResults {
     }
 
     /// Lend matches while their positions describe the displayed document.
-    /// The query may be one edit behind: its highlights stay until the newer reply replaces them.
+    /// The query may be one edit behind:
+    ///  its highlights stay until the newer reply replaces them.
     pub fn positioned(&self, file: u64, revision: u64) -> Option<&FindMatches> {
         if self.identity.file == file && self.identity.revision == revision {
             return Some(&self.matches);
@@ -177,8 +196,11 @@ impl FindResults {
         return None;
     }
 
-    /// Lend matches only for the exact displayed file, revision, and current find text.
-    /// Enter and Shift+Enter use this, so they never step through matches of a superseded query.
+    /// Lend matches only for the exact displayed file,
+    ///  revision,
+    ///  and current find text.
+    /// Enter and Shift+Enter use this,
+    ///  so they never step through matches of a superseded query.
     pub fn navigable(&self, wanted: FindIdentity) -> Option<&FindMatches> {
         // What: `&wanted` lends the copied tag to the three-part comparison.
         // Why: One comparison function decides staleness for worker replies and for navigation.
@@ -194,8 +216,11 @@ impl FindResults {
     }
 }
 
-/// What: `&Option<FindResults>` borrows results that may be absent; the answer borrows from them.
-/// Why: Painting and the count text after a reload or file switch must not use outdated positions.
+/// What:
+///  `&Option<FindResults>` borrows results that may be absent;
+///  the answer borrows from them.
+/// Why:
+///  Painting and the count text after a reload or file switch must not use outdated positions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -212,7 +237,10 @@ pub fn positioned_matches(
     return accepted.positioned(file, revision);
 }
 
-/// Matches usable for Enter and Shift+Enter; absent while a newer query, revision, or file is pending.
+/// Matches usable for Enter and Shift+Enter;
+///  absent while a newer query,
+///  revision,
+///  or file is pending.
 pub fn navigable_matches(
     results: &Option<FindResults>,
     wanted: FindIdentity,
@@ -223,7 +251,8 @@ pub fn navigable_matches(
     return accepted.navigable(wanted);
 }
 
-/// Ranges to paint for the displayed document; stale or absent results paint nothing.
+/// Ranges to paint for the displayed document;
+///  stale or absent results paint nothing.
 pub fn paint_ranges(results: &Option<FindResults>, file: u64, revision: u64) -> FindRanges {
     if let Some(matches) = positioned_matches(results, file, revision) {
         // What: `Arc::clone` copies the pointer, not the ranges.

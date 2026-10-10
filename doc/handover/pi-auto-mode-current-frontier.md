@@ -5,7 +5,2757 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-05.
+Updated 2026-10-09.
+
+## Original rendered prompt-input contributions
+
+The serializer consumer now accounts for original host,
+append,
+and context base inputs through the existing `runInputCarriers`.
+It also accounts for already-retained run replacements through their original run publication.
+Neither route invents a source inventory,
+reparses the request,
+or re-encodes it.
+
+Each nonempty rendered input retains its own original source reference.
+Independent equal append or context inputs do not borrow the host's authority.
+Removed inputs receive no representation association,
+but non-transmission does not revoke a separately governing instruction.
+Replaced or reordered inputs retain their replacement occurrence rather than claiming the displaced base identity.
+Empty run inputs and native-default rendering remain separate cases.
+
+The canonical consumer requires the original source view's request receipt,
+the original terminal request,
+and the original run carrier or replacement publication.
+Associations remain partial contributions to a containing field,
+not byte ranges or complete composite coverage.
+They add no priority,
+permission,
+or delegation.
+
+Missing host association failed `proc_c437`;
+missing replacement association failed `proc_09d9`.
+The extended renderer matrix passed `proc_7111`,
+and source-owner controls passed `proc_85bb`.
+The original owners still bound context entries to 64 and append inputs to 32.
+The actual-serializer bound control retained 97 separate partial contributions,
+including repeated explicit republications of one original source.
+Independent sources are not merged.
+
+A proxy that changed its sections between validation and serialization failed `proc_50ca`.
+Association now excludes proxy envelopes and arrays through Node's native proxy predicate.
+The fixed profile also requires the native normalized message-only context.
+Accessor and proxy exclusions do not replace original identity checks.
+
+Full native `proc_efb9`,
+action `proc_4e12`,
+and ten-document render `proc_bc5d` passed after replacement support.
+The already-retained forced prompt now has a separate original publication capability
+created by the existing run owner.
+The actual native forced-prompt projection publishes its new message through that owner.
+The serializer associates only that original message with the original forced input;
+equal text in a copied message or displaced base input supplies no link or authority.
+The initial forced-source control failed `proc_84e0` and passed `proc_6a2e`.
+Full native `proc_f939`,
+action `proc_bf15`,
+and consumer identity `proc_3056` passed copied,
+equal-text,
+empty,
+and permanently retired forced-projection controls.
+Omission `c316f17` failed `proc_305b` by associating an independent equal-byte copy.
+The identity guard is restored.
+Full native `proc_38d6`,
+action `proc_3eaf`,
+and ten-document render `proc_f55b` passed.
+
+Already-retained custom sections now use original `mappedPromptInputs` and the full sections publication.
+A nonempty `addendum` or `project_context` override displaces its base or replacement input contribution;
+an empty override preserves the native base rendering.
+This affects representation only,
+not separately established governing authority.
+Section names and equal bytes grant no authority.
+
+Missing-association red `proc_ff08` preceded green `proc_48c0`.
+Expanded matrix `proc_49c5` passed 18 modes,
+including replacement shadowing,
+empty overrides,
+forced precedence,
+copied sections,
+malformed Unicode,
+native-default rendering,
+and invalid section names.
+Source-owner and inherited map-bound controls passed `proc_73fc`.
+Omission `proc_30bf` incorrectly credited a displaced context input;
+omission `proc_cb23` incorrectly accounted for a source outside the original run's mapped inputs.
+Both guards are restored.
+Full native `proc_744b`,
+full action `proc_09ee`,
+and ten-document render `proc_fed3` passed.
+
+The direct native-generated default preamble,
+tool-discovery guidance,
+and documentation guidance now retain their original run and render association.
+They use existing generated-input occurrences,
+not a second inventory or authority inferred from native placement.
+Custom-host rendering does not construct these sources;
+truthy section overrides and forced prompts prevent their contribution association.
+
+Missing native-fragment association failed `proc_b831` before initial green `proc_c667`.
+Expanded visibility matrix `proc_4165` passed 24 modes;
+original source/render controls passed `proc_814f`.
+Displacement omission `c79930b` failed `proc_1ffa` by associating overridden documentation guidance.
+Render-binding omission `1dae346` failed `proc_d254` by accounting for a source from a foreign render.
+Both guards are restored.
+Full native `proc_fd1a`,
+action `proc_5a42`,
+and ten-document render `proc_d198` passed for these direct generated fragments.
+Project-context introduction and skill-usage guidance now use the same original run/render linkage.
+The skill formatter constructs leading blank lines that native section construction trims;
+the source remains unchanged and its contribution follows that known native transformation.
+No skill-file identity or authority is inferred.
+Disabled skills,
+absence of a selected reader,
+custom-section overrides,
+forced prompts,
+and independent payload copies retain their distinct behavior.
+
+Missing context-introduction association failed `proc_0f4b`;
+initial context/skill consumer `proc_0500` and the 32-mode matrix `proc_edd5` passed.
+The existing base-bound fixture still has 97 base-input contributions;
+the separately retained native introduction makes 98 total contributions without increasing any input limit.
+Full native `proc_4f7c`,
+action `proc_2217`,
+and ten-document render `proc_bd76` passed for context/skill guidance.
+Default-rule sources now retain the fixed native builder's observed `nativeRuleInsertion` result.
+The recorder measures the original local rules-array length around the untouched `addRule` call.
+It preserves every constructed default occurrence,
+including rules suppressed by normalization or deduplication.
+Only an inserted occurrence can receive a contribution association,
+and a subsequent section override or forced prompt still prevents it.
+Equal text emitted by an independent guideline supplies no identity for the suppressed default.
+
+Missing insertion association failed `proc_ed24`;
+initial consumer `proc_bfe3` and the 38-mode rendering matrix `proc_a236` passed.
+The `proc_a236` command forwarded later task names as script arguments,
+so it did not verify builder parity or render-owner controls.
+Corrected separate invocations passed those checks in `proc_4b3c`.
+Consumer controls passed `proc_52c2` and `proc_0b8d`.
+Producer omission `proc_3a5c` fabricated a suppressed occurrence's contribution;
+consumer omission `proc_1fd3` incorrectly accounted for a `not-inserted` fact.
+Both guards are restored.
+Full native `proc_a618`,
+action `proc_412e`,
+and eleven-document render `proc_d1a5` passed.
+The new fact concerns only local native insertion,
+not instruction authority,
+complete governing coverage,
+or permission.
+Already-retained tool snippets now use the original mapped-input sources.
+Only selected,
+visible,
+nonempty snippets in native-default rendering receive a contribution association.
+Custom prompts,
+tools-section replacements,
+and forced output do not borrow snippet identities.
+Equal inactive snippets remain distinct and unassociated.
+
+Native declaration hiding comes from the tool's `prepareLoadout` hook;
+the SDK overwrites `hiddenTools` during loadout preparation.
+The controls exercise that actual hook and inspect the resulting original options.
+A hidden read tool still permits native indirect skill guidance,
+without exposing its declaration or naming the reader.
+
+Missing snippet association failed `proc_9121`;
+initial `proc_04cd`,
+expanded visibility `proc_4f4e`,
+and consumer-owner `proc_43a1` checks passed.
+Hidden-declaration omission `proc_882a` and selected-tool omission `proc_d76d`
+each wrongly associated a non-rendered snippet.
+Both guards are restored.
+Full native `proc_18cf`,
+action `proc_7c12`,
+and eleven-document render `proc_3594` passed.
+Already-retained skill descriptions now use their original source,
+run,
+and sections publication.
+Their contribution follows the native XML escaping rather than rewriting the retained description.
+No skill-file identity,
+instruction authority,
+or delegation is inferred from the description's companion metadata.
+
+Disabled entries,
+no selected reader,
+empty descriptions,
+skills-section overrides,
+forced output,
+and independent payload copies receive no description contribution.
+Hidden readers still support the native indirect route.
+Equal enabled descriptions retain separate original occurrences.
+
+Missing description association failed `proc_f07f`;
+initial `proc_cd76`,
+55-mode visibility/escaping `proc_1cc5`,
+and consumer-owner `proc_848f` checks passed.
+The XML control includes closing-tag delimiters,
+ampersands,
+quotes,
+backslashes,
+and newlines.
+Disabled-entry omission `proc_0567` and reader-availability omission `proc_0dff`
+each wrongly associated non-rendered descriptions.
+Both guards are restored.
+Full native `proc_8600`,
+action `proc_4807`,
+and eleven-document render `proc_9301` passed.
+
+Original prompt and tool guideline sources now collect insertion evidence within their native render.
+The existing source records are constructed as private drafts from the frozen render input,
+updated directly by the fixed native loop observations,
+then sealed and published as those same records.
+No parallel source inventory or request parser is introduced.
+
+The observer uses the existing active-render window and its existing cleanup path.
+Late calls cannot change or poison a published run.
+A caught observation failure still retires the original render,
+including when its thrown value is `false`.
+Unobserved legacy sources receive no insertion fact.
+
+Missing guideline association failed `proc_99ae`;
+initial native consumer `proc_f2dc` passed.
+Original-source/lifetime and builder parity controls passed `proc_8829`;
+the 69-mode visibility matrix passed `proc_b1b1`;
+consumer-owner checks passed `proc_c84f`.
+Equal entries within one array and equal prompt/tool entries remain independent sources.
+Only the actual inserted occurrence contributes,
+and later rules-section or forced overrides still prevent association.
+Failure-ledger omission `proc_acd7` allowed a caught observation error to disappear;
+render-window omission `proc_3d7a` poisoned the old scope on a late call.
+Producer omission `proc_95dc` fabricated a suppressed contribution;
+consumer omission `proc_5308` incorrectly accounted for a `not-inserted` fact.
+Every guard is restored.
+Full native `proc_f733`,
+action `proc_8b6b`,
+and eleven-document render `proc_1cf2` passed.
+
+## Original handler-message contributions
+
+Original `before_agent_start` message inputs now retain their source identity through actual native construction,
+manager copies,
+session projection,
+custom-to-user conversion,
+and user-content serialization.
+The existing handler sources and active run ancestry are reused.
+Text-block arrays stay original JSON sources;
+there is no joined Markdown,
+additional request parser,
+or second source inventory.
+
+Only actual original-capability transfers establish these links.
+Equal independent messages and context-edit replacements cannot borrow an original handler source.
+Payload custody owns new text arrays and blocks before the OpenAI client's awaited authentication,
+without freezing callback-owned objects.
+Historical receipts discard transient payload nodes and do not depend on later mutations of those aliases.
+
+Required missing-association control `proc_51d1` failed;
+canonical handler accounting passed `proc_e424`.
+Original emitting-run/ancestry consumer controls passed `proc_9621`.
+Installed/private conversion parity passed `proc_1bd1` with 15 SDK cases and 60 provider cases;
+existing serializer regressions passed `proc_6131`.
+Private preparation now copies 11 native modules and leaves installed files unchanged.
+
+Nested equal replacement failed `proc_2adc`;
+descriptor-restoration revival failed `proc_9061`.
+Both defects are fixed:
+existing aliases retain content and part identities,
+and observed currentness failure retires eligibility before structural rejection can short-circuit it.
+The restored owner controls and 24-mode native handler matrix passed `proc_7137`.
+These include empty/nullish content,
+structured text,
+equal independent inputs,
+context edits,
+payload copies,
+borrowed input mutation,
+malformed Unicode,
+and pre/post-materialization payload mutations.
+
+This is partial source lineage only.
+System-like labels and user transport roles supply no authority or permission.
+Independent boundary drafts,
+`sendCustomMessage` deliveries,
+and general persisted-session provenance remain outside this retained-handler profile.
+All guards are restored.
+Expanded 26-mode handler verification passed `proc_2471`,
+including an actual later review using original run ancestry and isolation of new prompts from persisted equal text.
+Nested part-identity omission `proc_cecc` republished an equal replacement;
+context-edit omission `proc_dd37` credited equal replacement text;
+nested payload-custody omission `proc_6256` exposed mutation during awaited authentication;
+emitting-run membership omission `proc_6486` accounted a copied run.
+Each targeted control failed.
+Restored full native `proc_41bf` and action `proc_de99` passed.
+Eleven-document rendering passed `proc_c7e4` before this final evidence update.
+
+The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
+
+## Original direct Agent string prompts
+
+String-form `Agent.prompt(input, images)` is now observed before its active-run check and normalization.
+Required red `8e56006` / `proc_b58b` completed the direct request without session input events,
+then found its original source absent from canonical review.
+
+The existing private Agent observer and manager owner retain the actual call frame's string input.
+The source remains `native-agent-input` at `agentInput`,
+with method `prompt`,
+no role-derived authority,
+and no fabricated user-message publication.
+The observer does not read the image argument.
+Message/array prompt forms are deliberately untouched and remain a separate gap.
+
+Canonical `b192dc9` / `proc_960b` passed direct source/reference/wire assertions
+and real active-run rejection retiring the earlier review.
+`proc_f1aa` passed native entry-frame,
+empty/adversarial/UTF-8 bound,
+strict/unmapped,
+image-reference,
+non-string branch,
+oversize,
+and error controls.
+Its normalization delegate is a labelled double;
+the canonical consumer separately exercises real request and busy-run behavior.
+No image governance or full producer coverage is inferred.
+
+The integrated string-prompt matrix is running.
+Observation sensitivity and complete regressions remain pending.
+All source limits,
+budgets,
+and installed files remain unchanged.
+
+## Original direct Agent queue-call inputs
+
+Direct `Agent.steer(message)` and `followUp(message)` bypass `AgentSession` text entry.
+Required red `c6bc256` / `proc_d56b` queued the exact supplied message,
+cleared it through native `clearAllQueues`,
+then found zero original direct-Agent sources during later review.
+
+The existing SDK generator now attaches a fixed observer immediately after constructing each private Agent.
+It closes over that SDK construction's original manager.
+The Agent stores the callback in a once-assignable private field.
+No borrowed constructor option,
+new registry,
+or source-domain flag is used.
+Each actual queue-call arguments frame gets an input-only source,
+so an already-published message keeps its prior alias.
+Observation precedes enqueue and proves neither enqueue success nor material contribution.
+
+`native-agent-input` uses `agentInput`,
+with method and selected message metadata.
+Supported content uses the incumbent bounded copier and text-content profile for user,
+custom,
+assistant,
+tool-result,
+and legacy hook-message roles.
+System and non-text/mixed representations remain unsupported.
+Expected capture failures latch while native queue behavior continues.
+Unexpected observer failures latch and rethrow their original value.
+
+`f58fd92` / `proc_afcc` passed the cleared-input consumer.
+`proc_0d29` passed native queue/reference parity,
+one-time attachment,
+unchanged constructor-option reads,
+two-SDK-manager isolation,
+publication preservation,
+and native/capture error boundaries.
+The owner phase of `proc_c501` passed content and shared-bound controls.
+`proc_7763` passed delivery,
+clearing,
+late changes,
+overflow,
+reset,
+and disposal cancellation.
+
+This observation also sees internal `AgentSession` forwarding.
+Mixed image messages can therefore latch the text-only source-profile failure even when their earlier text input
+was captured.
+Native messages/images remain unfrozen and queue behavior remains unchanged;
+this does not complete image governance.
+All caps remain unchanged.
+
+Queue fixture `proc_77d0` failed because a preceding private-only injected enqueue failure left native steering
+bookkeeping on only one side.
+An erroneous progress sentence marking that run as passed was retracted.
+`proc_54e8` now tests the preceding failure on both SDKs,
+verifies and clears identical bookkeeping,
+and passes the supported-text and explicit mixed-image cases.
+No runtime guard was weakened.
+
+Integrated `proc_b210` passed 97 constructed-input outputs with empty child stderr,
+including actual settled-event queueing before clear.
+Rethrow omission `92fe738` / `proc_7cf0` failed with `Missing expected exception.`
+SDK attachment omission `b3c1431` / `proc_7234` and queue-observation omission `d34d75c` / `proc_cd4a`
+each lost the original cleared input.
+All guards and observations are restored.
+Complete native `proc_c273` passed in 428 seconds.
+Complete action-policy `proc_43c5` and policy-source `proc_89b0` also passed.
+These local checks establish the bounded mechanism,
+not empirical qualification or a production admission policy.
+Direct Agent prompt/state producers and governing-domain closure remain unfinished.
+
+## Original public API input before native branching
+
+Public `AgentSession.prompt`,
+`steer`,
+and `followUp` can reject or defer before the already-observed input constructions.
+Required red `c05cf9d` / `proc_30b3` rejected a known command through the real queue API,
+with no command handler,
+input event,
+or transport,
+then found its original text absent from later canonical review.
+
+The maintained generator now observes each actual method-entry `arguments` object synchronously.
+The existing manager owner selects only its own text data descriptor at index zero.
+`native-call-input` uses `callInput` with fixed method metadata.
+No option/image fields are read or serialized.
+No call inventory,
+synthetic event,
+run,
+entry ordinal,
+authority,
+or human origin is invented.
+The opaque frame remains mutable and input-only.
+
+Engine/owner probe `proc_dd75` was not SDK coverage.
+Actual native `proc_2d41` subsequently verified strict/unmapped entry frames for all supported methods,
+original publication identity,
+native argument behavior after frame-only mutation,
+and installed/private option-getter,
+rejection,
+and oversize parity.
+These are `AgentSession` text APIs;
+direct `Agent` message APIs remain separate.
+
+Canonical `3dbf0f6` / `proc_0ff4` passed rejected steering,
+rejected follow-up,
+and original prompt-option getter failure.
+Owner/queue controls `proc_48a4` passed shared bounds and explicit source ordering.
+`proc_118a` had exposed an obsolete fixture index:
+the new call input precedes the native input event.
+The fixture now verifies both rather than dropping either source.
+
+Successful calls also add original invocation occurrences.
+Existing constructor/event occurrences are not merged by equal bytes.
+The same source-count,
+content,
+serialized-record,
+and snapshot caps apply,
+so supported occupancy can be exhausted earlier.
+No bound or judgment deadline was enlarged.
+
+Native settled deferral/replay and reset/disposal checks passed `proc_1842`.
+The deferred entry reads no options;
+replay has its own physical invocation,
+and prior root eligibility is not restored.
+Late rejected-call and unchanged-view failure controls passed `proc_d2ba`.
+Original-judgment profiles passed within `proc_0abb`;
+subsequent prompt/handler fixtures now verify API-call and return sources separately.
+
+Runtime `proc_5939` passed those custody checks,
+then the full-policy fixture failed to reach review during independent-copy preparation.
+Diagnostic-only retry `proc_9a1e` passed with unchanged runtime and the same policy input.
+That non-reproduction proves neither cause nor fix.
+The five-second budget remains unchanged,
+and nested failure diagnostics are now preserved.
+Integrated `proc_4a74` passed 85 constructed-input outputs with empty child stderr.
+Rethrow omission `0d7076e` / `proc_82cb` failed with `Missing expected rejection.`
+Entry-observation omission `5a3020f` / `proc_c64f` lost the original rejected-call source.
+Both guards are restored;
+no deliberate omission remains.
+Complete native `proc_834c` passed in 428 seconds,
+including the full-policy fixture.
+Complete action-policy `proc_fcb7` and policy-source `proc_e74d` also passed.
+The prior full-policy incident remains unattributed;
+these later passes are not evidence of a runtime fix.
+All guards and original bounds remain intact.
+No production admission or governing-domain closure is claimed.
+
+## Original known-command input before interception
+
+Known extension commands can return before input-event observation.
+Required red `1e2add0` / `proc_d845` ran an inert command with no input event or initial transport;
+later canonical review lacked its original text.
+
+The existing manager owner now records the original full text and native parsed command name
+beside the actual freshly constructed command context,
+before attempting the handler call.
+`native-command-input` uses location `commandInput`.
+The context is only an opaque input-only identity witness:
+its getters,
+methods,
+and other fields are neither read nor serialized.
+The handler still receives native arguments,
+not a reconstructed command.
+There is no invented event,
+run,
+ordinal,
+authority,
+or successful-execution fact.
+
+`3356afe` / `proc_e670` passed the canonical source/publication and assessment-wire checks.
+Corrected owner controls `proc_24cc` preserve the existing `toJSON` exclusion,
+zero getter/proxy reads,
+distinct equal occurrences,
+first-failure latching,
+and shared bounds.
+The initial positive getter fixture in `proc_d918` incorrectly included `toJSON`;
+the guard was preserved and the fixture now tests that hook as rejected.
+
+Installed/private parity `proc_cfac` preserved native parsing,
+context construction,
+handler receiver,
+lazy getter behavior,
+unknown-command absence,
+and native handler/reporter/context-factory failures.
+Expected capture-profile failure does not replace native handler behavior.
+Unexpected observer failure retains the original thrown value,
+latches guarded source failure,
+and is not reported as a command-handler failure.
+
+`proc_797b` passed pre-run command-triggered delivery,
+overlapping equal commands,
+reentrancy,
+late non-transmitted input,
+oversized late capture,
+and reset before consumption.
+Integrated `proc_375b` passed 71 constructed-input outputs with empty child stderr,
+including reset/disposal during awaited command handlers.
+Rethrow omission `b30b5b0` / `proc_1854` failed with `Missing expected rejection.`
+Observation omission `9bebebc` / `proc_e106` lost the original command source after real handler entry.
+Both guards are restored;
+no deliberate omission remains.
+Complete native `proc_1736` passed in 411 seconds.
+Complete action-policy `proc_4dfe` and policy-source `proc_666d` also passed.
+These local checks do not qualify semantic estimates or admit production policy.
+Deferred or rejected calls before this observed handoff,
+direct-agent inputs,
+image governance,
+delegation,
+and domain closure remain unfinished.
+
+## Final transformed input before expansion
+
+The final input handler can create text that no later input event sees.
+A native template can then discard that text.
+Required red `91b4edb` / `proc_2bf2` isolated a restriction-like argument created only by the final handler;
+canonical review lacked its original source despite successful native termination.
+
+The maintained generator now observes the actual aggregate transform-return construction.
+The existing manager owner retains `native-transformed-input` at `transformedInput`,
+with text and source/streaming metadata.
+It returns the identical native object,
+does not inspect or freeze borrowed images,
+and invents no handler event,
+run,
+entry ordinal,
+or authority.
+This is not the handler's borrowed result object.
+Native aggregate continue and handled outcomes create no transformed-return publication.
+Equal text with changed images can still select the native transform branch.
+
+`80fe2f5` / `proc_03ab` passed the canonical source/publication and assessment-wire assertions.
+`proc_83f6` passed installed/private return parity,
+original failure latching,
+shared source and serialized-record bounds,
+and reset/disposal during awaited handlers.
+The original root lease remains ineligible after reset;
+disposal still rejects guarded source access.
+All source bounds remain unchanged.
+These checks do not establish image governance or payload eligibility.
+
+Integrated `proc_1851` passed 60 constructed-input outputs with empty child stderr,
+including queued/cleared,
+chained,
+equal-byte,
+oversized,
+and rejected-streaming transformed inputs.
+Omitting only this native observation failed `c0e74fc` / `proc_166f` at the original-source assertion.
+The observation is restored in `6e373a9`;
+no deliberate omission remains.
+Standalone source profiles with explicit preparation and the complete native parent suite passed in `proc_3e8e`
+(426 seconds for the combined command).
+Complete action-policy `proc_db21` and policy-source `proc_8595` also passed.
+These remain local mechanism checks,
+not empirical semantic qualification or a production admission policy.
+The earlier unintercepted-input closeout remains a separate verified checkpoint,
+not verification of this new construction edge.
+
+## Original unintercepted input before expansion
+
+The private SDK now observes the actual `{text,images}` return object from the
+no-input-handler branch before skill/template expansion.
+It returns that same object unchanged and records only original text and source/streaming metadata
+through the existing manager owner.
+The source is `native-unintercepted-input`,
+not a fabricated input event,
+run,
+entry position,
+human issuer,
+or payload capability.
+
+Required red `c2ca326` / `proc_785c` used a native template without argument placeholders.
+The expanded request omitted the raw invocation and its arguments.
+`1509002` / `proc_bd69` preserved that original input;
+the installed template parser and expander remain unchanged.
+
+`proc_af25` matched installed/private return values,
+borrowed image references,
+empty and UTF-8 boundary inputs,
+reset,
+and oversized capture preserving the native return.
+`proc_a904` covered steering,
+follow-up,
+cleared queues,
+a raw input rejected before transport,
+and a rejected streaming prompt that still retires earlier source evidence without queuing anything.
+Expanded strings and equal raw strings remain distinct source occurrences;
+the raw input never borrows the expanded prompt's material association.
+
+The ordinary source-content cap remains 65536 bytes,
+with the same combined 64-source/four-MiB record limits.
+Raw text can now fail the source profile even if later expansion shortens it.
+The first capture failure remains latched across a later valid input.
+A fresh native input owner can clear that capture failure,
+but does not revive the old root lease.
+Wrong-manager observation rejects without publishing a source.
+
+`proc_801f` exposed a loaded-source fixture that counted every manager-owned source as loaded.
+Selecting `native-load` explicitly restored the original load assertions in `proc_e82c`.
+Expanded-prompt regression `proc_3db1` also passed.
+
+Metadata validation already rejected nested getters before cloning.
+Proxy traps were a distinct gap:
+`bfb344f` / `input-metadata-proxy-read-required-red` observed two trap calls before rejection.
+The incumbent `copyMessageData` now checks Node's `types.isProxy` before reflection.
+`1583671` / `proc_5258` passed the zero-side-effect controls.
+No additional copier or registry was introduced.
+
+Integrated `proc_753b` passed with empty child stderr,
+including placeholders,
+equal raw/expanded values,
+persistent failure,
+foreign-manager rejection,
+and reset before consumption.
+Observation-edge omission `proc_8292` lost the original raw source and failed;
+the edge is restored.
+The first complete run `proc_5485` stopped at an obsolete built-in source offset in
+`original-judgment.test.mjs`.
+Its wire correctly included the original raw prompt before generated fragments.
+Narrow red `proc_28b6` reproduced the assertion;
+`cf238c5` now verifies the raw source and its original publication separately.
+Restored `proc_5f2e` and all source profiles in `proc_1be7` passed.
+No runtime or generator code changed for this fixture correction.
+Complete retry `proc_efa9` passed the source profiles but exposed another stale assumption:
+settled prompt/handler snapshots expected raw inputs to disappear with the run.
+`proc_18dd` also exposed stream assertions converted into native terminal error messages.
+The fixtures now require successful native termination and compare original run/raw source references separately.
+The existing task sequence is split at `test:runtime`,
+without dropping cases,
+so fixture retries do not repeat the source phase.
+Runtime stage `proc_1cea` passed in 39 seconds.
+Complete staged parent run `proc_075f` passed in 431 seconds.
+Complete action-policy `proc_843e` and policy-source `proc_87c4` also passed.
+All deliberate omissions are restored;
+these are local mechanism checks,
+not semantic qualification or production policy admission.
+
+This does not cover commands or deferred/rejected calls before the observed branch,
+last-handler output before further expansion,
+direct-agent producers,
+image origin,
+or complete governing scope.
+Skill expansion is not separately exercised here.
+`request-source-domain`,
+semantic qualification,
+and independent approval sufficiency remain unresolved.
+No installed change or provider trial occurred.
+
+## Original native input-event text
+
+The private emitter now observes each actual native `input` event before its handler receives it.
+The existing manager owner retains original text and source/streaming metadata as
+`native-input-event`,
+using the same constructed-input reference view and source limits.
+It does not read image data,
+freeze the borrowed event,
+infer human origin from `source:'interactive'`,
+or grant payload eligibility.
+
+The maintained generator copies the current SDK's input emitter,
+including its handler snapshot,
+ordering,
+transform chain,
+handled short-circuit,
+and native error reporting.
+Equal text passed to distinct handler events keeps distinct original occurrences.
+Handled or transformed text remains represented even when absent from the model request.
+
+Required red `b4c72b5` / `proc_dae2` lacked the original intercepted input.
+`09cb90e` / `proc_7ee7` passed handled and transformed consumers.
+`proc_64d3` passed chained transforms,
+equal events,
+handled-after-transform,
+and late handled/oversized input.
+A handled input can invalidate earlier source evidence without ever becoming a queued message.
+
+`proc_5822` exposed an obsolete fixture count:
+an intercepted queue call now has its actual input-event occurrence as well as queue construction.
+The corrected parity assertions in `proc_7530` distinguish both original publications.
+Pure source controls `proc_6bb9` cover UTF-8 bounds,
+metadata,
+borrowed-event mutation,
+getter rejection,
+image-read exclusion,
+and shared load/append/queue/custom/event limits.
+
+Independent review identified a private diagnostic error:
+observation was inside the native handler catch.
+Structural red `a0e0071` / `proc_c956` showed an observer's falsy throw was swallowed and attributed to the extension.
+`9cde800` moves construction/observation before the handler try.
+Native handler failures keep their own catch and reporting;
+unexpected observation failures propagate as themselves.
+Ordinary source-profile failures still latch for guarded use.
+The initial consumers passed `proc_be20` after the change.
+
+Integrated `proc_a059` passed with empty child stderr,
+including the absent-handler negative and separate observer/handler error paths.
+Omitting the actual observation edge failed `proc_e954`;
+the edge is restored.
+Complete native `proc_a1d5` passed in 365 seconds;
+action `proc_d1a1`,
+source-policy `proc_62bd`,
+and 14-document rendering `proc_e9ec` also passed.
+No-handler fast paths and commands handled before the input emitter construct no event under this profile.
+Their absence is not proof of non-governing input.
+Images,
+direct-agent producers,
+authenticated callers,
+applicable governing scope,
+and domain closure remain unfinished.
+No provider trial or installed change is authorized.
+
+## Original current custom-message construction inputs
+
+The private native `sendCustomMessage` constructor now captures its normalized
+`appMessage` through the existing manager input owner.
+Text stays text;
+text-block arrays stay structured source data.
+`customType` and `display` remain metadata,
+not authority.
+Opaque `details` are not read into instruction metadata.
+The source uses `native-custom-construction`,
+a fresh manager input occurrence,
+and no fabricated run or entry ordinal.
+
+The shared reference view is now named `readConstructedInputs`.
+Its native reader is `readNativeConstructedInputOrigins`.
+These replaced the private `readQueuedInputs` and `readNativeQueuedInputOrigins` names on 2026-10-09.
+Existing queued-user source metadata is unchanged.
+This remains one view of original source/publication records,
+not a second message inventory.
+
+Actual custom-entry construction now propagates input-only identity,
+including the immediate `_appendCustomMessage` path.
+Projection and conversion retain that identity without payload eligibility.
+Native normalization,
+queue behavior,
+and dispatch errors remain native.
+
+Required red `0abb416` / `proc_2d96` lacked the original constructed source.
+`74e6e10` / `proc_fb7c` then exposed the missing input-only entry edge.
+`d7c857e` / `proc_07f8` passed immediate,
+next-turn,
+and hidden inputs,
+but exposed first-turn `triggerTurn` without a native run composition.
+
+The incumbent policy-input collector now retains original constructed inputs directly when no native run exists.
+Its fixed native session reader checks liveness and capture failure.
+The snapshot carries `nativeConstructedInputs`;
+the source view invents neither `runOccurrence` nor `currentRunOccurrence`.
+Changed source references or capture failure retire earlier request evidence.
+Once a native run exists,
+the original run-retention path remains the carrier.
+
+A copied resource-owner attempt failed `proc_15b4` at
+`Native base composition lacks its exact owned resource binding`.
+That duplicate-owner route,
+generator,
+and unused generated artifact were removed.
+The correction in `6fe0552` extends the incumbent collector and preserves its original binding map.
+
+`proc_f9b4` passed immediate,
+next-turn,
+hidden,
+initial trigger,
+and streaming steering/follow-up/deferred construction.
+`proc_d5cb` rejected late pre-run changes,
+oversize capture,
+and reset.
+`proc_fb31` passed installed/private normalization parity and retained-input controls.
+`proc_bbe9` passed the integrated user/custom matrix with empty child stderr,
+including actual continuation delivery and original entry aliases.
+
+The pre-run snapshot keeps the existing one-MiB base-linked bound,
+separate from the shared 64-source/four-MiB owner limits.
+The allowed control retained eight pending 63000-byte inputs;
+18 such inputs failed before transport.
+Unsupported custom image content and oversized immediate input also failed before transport.
+The disposal fixture initially expected the wrong error:
+`proc_685d` showed original `JudgmentCancelledError` with its `AbortError` cause.
+The corrected fixture preserves that cause identity and separately rejects reads after disposal.
+
+Entry omission `proc_2dde` and pre-run freshness omission `proc_c28d` failed as required.
+The byte-bound omission first survived `proc_ef01`:
+a later check emitted the same error after one original transport.
+The strengthened before-transport assertion failed `proc_0fdc` with `1 !== 0`.
+All guards are restored.
+Full native `proc_d3b5` passed in 359 seconds;
+action `proc_f8cd`,
+source-policy `proc_21a7`,
+and 14-document render `proc_3378` also passed.
+Runtime and generator source is unchanged after that full-native checkpoint.
+Direct agent producers,
+pre-handler inputs,
+mixed-content origin,
+and complete governing-domain coverage remain unfinished.
+Native settled-callback control `proc_3e24` also passed:
+it observed actual `agent_settled`,
+queued one deferred custom action while not streaming,
+and verified later delivery and original entry identity.
+This test-only addition is in the integrated matrix.
+No installed activation,
+semantic qualification,
+policy grant,
+or provider request is implied.
+
+## Original native queued user text
+
+The private consumer captures the actual user-message construction in
+`AgentSession._queueSteer` and `AgentSession._queueFollowUp`,
+after native input handlers,
+skill expansion,
+and prompt-template expansion.
+The existing manager input owner retains the original text and input-only publication.
+It assigns `inputOrigin:'native-queue'`,
+a fresh input occurrence,
+and delivery metadata,
+not an emitting run,
+a saved issuer,
+or a session-entry ordinal.
+
+A frozen view holds references to those original source/publication records.
+It is not another transcript,
+message inventory,
+parser,
+or serialized request.
+Loaded,
+appended,
+and queued sources share the existing 64-source and four-MiB serialized-record limits.
+The source remains unregistered and cannot authenticate a payload contribution.
+Queue clearing and delayed transmission do not independently prove governing-policy revocation.
+
+Context retention incorporates these known inputs independently of transmission.
+A source read refreshes nonempty changed queue views and rechecks deferred capture failure.
+Empty queues do not manufacture a native context observation.
+The queued-view marker is committed only after successful retention or unchanged-view reuse.
+Late input changes invalidate the original request source view rather than borrowing its earlier assessment.
+
+Required red `7047d65` / `proc_10e8` lacked the original queued occurrence.
+The first implementation failed `proc_1693` because a late generator insertion used
+`_sessionManager` instead of the already-private `#sessionManager`.
+Corrected native delivered/cleared cases passed `proc_43ef`.
+Late-arrival controls `proc_f702` and `proc_14cd` closed the original judgment with
+`close-failed` and all members unentered.
+They cover explicit queue calls,
+streaming prompt/extension routes,
+oversized capture with unchanged queue-view identity,
+and native reset before merge.
+
+Empty-view red `ddea9bd` / `proc_3fab` was corrected in `242d62c`.
+`proc_cd98` passed queue-owner controls only:
+mise treated the other task name as an argument.
+Separate `proc_a0bc` passed the 23 selected-path,
+append,
+and queue-owner controls.
+`proc_60ef` exposed a fixture assertion against an ordinary entry wrapper;
+the actual copy observer associates `entry.message`.
+Corrected native aliases passed `proc_83d8`.
+
+This is construction-field custody,
+not complete original-input coverage.
+Direct `Agent.steer` / `Agent.followUp` calls,
+custom queue messages,
+pre-handler inputs,
+and independent image/mixed-content origins remain unestablished.
+Native delivery metadata is not governing applicability.
+`request-source-domain`,
+authority,
+delegation,
+semantic qualification,
+and independent approval sufficiency remain separate unresolved premises.
+Installed/private queue API parity passed `proc_6162`,
+including images without origin claims,
+transformed/handled input,
+and unchanged falsy native enqueue errors.
+Omissions `proc_d12b`,
+`proc_2f0b`,
+and `proc_88a1` independently lost pending-input membership,
+late-input source retirement,
+and unchanged-view capture-failure rechecking.
+All were restored;
+integrated controls passed `proc_2ae8` with empty child stderr.
+Complete native `proc_33e4` passed in 346 seconds;
+complete action `proc_593c`,
+source-policy `proc_188a`,
+and the 14-document render `proc_b538` also passed.
+Nothing is installed or activated.
+
+## Original current-session summary inputs and append membership
+
+Current compaction and branch-summary arguments now use the incumbent manager input owner.
+Each is a fresh `native-append` input.
+The current derived system checkpoint is not recaptured as a new independent instruction source;
+reopening its saved file creates a separate `native-load` input.
+This does not prove complete composition or governing scope.
+
+Capturing the argument alone was insufficient when a context handler appended it
+without returning a rebuilt projection.
+Required red `5f576bb` / `proc_6f5a` exposed that untransmitted-input gap.
+The actual native leaf assignment now extends the existing root-scoped known-input reference set.
+No additional tree walk,
+message inventory,
+authority registration,
+or budget was added.
+
+The append observation happens after native in-memory index/leaf publication and before persistence.
+Source-set overflow is deferred to source use and latched for that root,
+so an observation-bound failure does not replace a native append error.
+A new root can start a new observation set;
+that does not revive the retired runtime.
+
+Summary required red `e539d3c` / `proc_02e3`
+became native green `901ee9d` / `proc_3775`.
+Untransmitted edit/summary consumers passed `466cb3d` / `proc_7838`.
+Summary/derived-checkpoint,
+branch/reset,
+and 43-mode native controls passed `proc_eecb`.
+Root,
+duplicate,
+foreign,
+and deferred-bound controls plus loaded-input regression passed `proc_1bea`.
+Combined capture-overflow and native write-error controls passed `proc_f207`.
+
+Leaf-observation omission `proc_19e4` and failure-latch omission `proc_40b7` each failed their control.
+Both guards are restored.
+Current summary manager controls are included in routine verification;
+complete native `proc_7a67`,
+action `proc_a32c`,
+source-policy `proc_42e6`,
+and 14-document rendering `proc_62a0` / `proc_28b9` passed.
+Queued inputs,
+mixed representations,
+tool instruction-source ownership,
+applicable governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
+## Original current-session context-edit inputs
+
+The existing manager input owner now observes native context-edit appends after defensive cloning.
+Each actual append gets a fresh input occurrence with `inputOrigin: native-append`;
+file-loaded inputs remain `native-load`.
+No earlier run,
+historical issuer,
+authority,
+or payload eligibility is invented.
+Only supported edit and summary inputs are newly captured;
+known run publications and derived system checkpoints are not recaptured.
+
+Context handlers can create an edit after initial context observation.
+The private native context return therefore rechecks the original run handle and current manager input owner.
+It unions newly observed inputs with the original pre-handler membership.
+Removing visible output does not remove the original input;
+an unchanged published view is reused without another observation charge.
+First empty observation still publishes its empty view.
+
+Between-prompt required red `e1ab1be` / `proc_0fe4`
+became native green `b2cd8aa` / `proc_398f`.
+Owner,
+append/load distinction,
+shared-limit,
+failure-latching,
+and failed-native-write controls passed `proc_61e1`.
+Same-request red `b2d9480` / `proc_cc5e`
+identified the missing final context boundary.
+Superseded-run red `a1c3a1a` / `proc_db41` required exact run-handle revalidation.
+
+The no-op optimization initially skipped the first empty observation (`proc_5206`);
+that is fixed.
+The image fixture initially expected the nested capture error's text,
+then attempted to inspect the failed run after prompt reset (`proc_ef57` / `proc_6aad`).
+It now intercepts and rethrows the actual native context error before cleanup,
+checking the exact original nested failure.
+Corrected owner checks and the 41-mode native matrix passed `proc_b11b`.
+
+Append omission `proc_7ed6`,
+final-context omission `proc_0903`,
+and prior-input-union omission `proc_a4c1` each failed their required control.
+All omitted code is restored.
+Creation-owner and manager controls are integrated into the routine suite;
+complete native `proc_8bde`,
+action `proc_9601`,
+source-policy `proc_f730`,
+and 14-document rendering `proc_a31c` / `proc_c9e9` passed.
+The native ordinal assertion passed without adding one to the header-inclusive position.
+Other current inputs,
+queued inputs,
+mixed representations,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
+## Original loaded context-edit inputs
+
+The existing load owner captures original `context_edit` replacement content and null omissions.
+Displaced target inputs and shadowed edits remain separate original occurrences.
+Actual native replacement construction propagates the edit's input-only identity,
+not the displaced target's identity.
+Unapplied replacements do not authenticate unchanged or unrelated outputs.
+
+Target IDs remain metadata.
+Neither context suppression nor replacement establishes policy revocation,
+authority,
+permission,
+execution facts,
+or complete composite origin.
+The shared source and byte limits remain unchanged.
+
+Required red `4f164d6` / `proc_d556`
+preceded consumer `f001a43`.
+Native editable-role and owner checks passed inside `proc_2061`,
+but its matrix phase failed.
+The equal-edit fixture incorrectly searched array content only;
+the native serializer also preserves scalar user text.
+After that correction,
+`proc_871e` exposed a separate fixture flag collision:
+`edit-hidden` accidentally enabled compaction-system hidden behavior.
+The fixture now keeps those families separate and explicitly checks the displaced target's content.
+
+Corrected 36-mode matrix,
+19 native edit-manager cases,
+and owner controls passed `proc_da68`.
+Construction omission `ddc6f13` / `proc_e0e8` lost the edited message's original publication.
+The observer is restored.
+Complete native `proc_36c9`,
+action `proc_fafc`,
+source-policy `proc_80b6`,
+and 14-document rendering `proc_18b1` passed.
+Mixed or unsupported representations,
+current-run generated inputs,
+queued transformations,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
+## Original loaded bash record inputs
+
+The existing load owner captures native `bashExecution` command and output text.
+Reported exit,
+cancellation,
+truncation,
+path,
+and context-exclusion fields remain metadata,
+not historical execution facts.
+These fixtures store authored records;
+they never execute the recorded shell commands.
+
+Actual native formatting propagates input-only identity to the resulting user message.
+Excluded and compacted records remain original inputs without inventing visible contributions.
+The source does not acquire authority,
+permission,
+text-part eligibility,
+or payload eligibility.
+The existing source and byte limits still apply.
+
+Required red `a7a1966` / `proc_f853`
+became canonical native green `646453a` / `proc_5aac`.
+Formatting variants,
+owner shape/getter controls,
+the 31-mode native input matrix,
+and manager regression passed `proc_589c`.
+Conversion omission `1316895` / `proc_30e1` lost the formatted message's original publication.
+The observation is restored.
+Complete native `proc_aa93`,
+action `proc_25cc`,
+source-policy `proc_7e06`,
+and 14-document rendering `proc_e36e` / `proc_0f9f` passed.
+
+Loaded context-edit replacement inputs,
+mixed or unsupported representations,
+current-run generated inputs,
+queued transformations,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
+## Original loaded assistant and tool text
+
+The incumbent text-content profile now includes stored `assistant`,
+`toolResult`,
+and message-form `custom`/`hookMessage` inputs.
+These use the same original load occurrence,
+source limits,
+and input-only publication mechanism.
+Saved role labels,
+tool names,
+call IDs,
+and reported error flags establish neither authority nor execution facts.
+
+Opaque details,
+usage,
+and nested-call records are not copied into semantic source material.
+Legacy `hookMessage` capture occurs before native migration to `custom`;
+the saved role remains source metadata while actual native conversion preserves input-only identity.
+Mixed assistant thinking/tool-call content and media remain outside this text-only profile.
+Unsupported content fails closed at guarded source use,
+not during native file parsing.
+
+Required red `b56aa77` / `proc_1259`
+became native consumer green `4086f0a` / `proc_b37f`.
+The first broader matrix,
+`proc_d69d`,
+exposed a fixture assumption that the requested source was always first.
+Capturing the seed assistant changed that order for branch summaries.
+The corrected fixture selects the original role/content and keeps exact source-count assertions.
+Corrected 28-mode matrix,
+native manager checks including legacy custom migration,
+and owner controls passed `816732c` / `proc_0bf6`.
+Text-profile omission `e938c5d` / `proc_2f73` produced native `stop` instead of the required source-use `error`.
+Validation is restored.
+Complete native `proc_1011`,
+action `proc_a1d6`,
+source-policy `proc_c54d`,
+and 14-document rendering `proc_5570` passed.
+
+Loaded context-edit inputs,
+mixed or unsupported representations,
+queued inputs,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
+## Original loaded system prose
+
+The existing load owner now captures original system-message `content` and optional `sections`.
+It also captures a compaction entry's stored `systemMessage` prose as its own input,
+separate from the summary.
+The already-observed native selected path retains each original capability,
+including non-transmitted older checkpoint inputs.
+
+Scalar content remains text.
+Combined content and sections use the incumbent `native-content-json` source representation,
+not a rebuilt request body.
+The observer does not read or serialize `toolsAdded` or `toolsRemoved`.
+Tool schemas,
+tool instruction sources,
+and prose origins remain separate responsibilities.
+All message and companion records share the existing source and byte limits.
+
+A stored `system` role or section name grants no authority.
+Original input identity remains input-only,
+without text-part or payload capability.
+Native replay may remove null section values before storing a checkpoint;
+the original delta and the checkpoint are distinct inputs,
+not equal source records.
+Native deletion of a section is not policy-revocation evidence.
+
+Required red `2c57586` / `proc_147b`
+preceded consumer `4289eec`.
+Initial run `proc_3666` passed plain,
+section,
+and companion cases but exposed an incorrect fixture expectation for replayed null sections.
+The corrected fixture checks each original stored field separately.
+Owner and native companion controls passed `proc_950c`.
+Corrected 22-mode native matrix and manager regression passed `proc_69e4`.
+Native reset,
+selected-path root retirement,
+null sections,
+and getter non-invocation controls passed `proc_db9e`.
+Retention omission `f29b4be` / `proc_aef6` lost the hidden older companion (`4 !== 5` sources).
+The edge is restored.
+Complete native `proc_c526`,
+action `proc_1b97`,
+source-policy `proc_e729`,
+and 14-document rendering `proc_949d` / `proc_9332` passed.
+The routine native matrix now also covers a native-written 32-compaction history exceeding the shared source cap.
+
+Other loaded roles,
+current-run generated inputs,
+queued or unobserved transformations,
+tool instruction-source ownership,
+governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
+## Original loaded summary inputs
+
+The existing load owner captures original `compaction.summary` and `branch_summary.summary` text,
+including empty inputs.
+Summaries share the user/custom source and byte limits.
+Equal text keeps distinct source occurrences.
+No saved summary authenticates prior human instructions or receives inherited authority.
+
+A native compaction entry can project to a stored system message and a summary.
+The private constructor observation attaches the summary input only to the actual summary output.
+Native summary-to-user conversion keeps input-only identity,
+not text-part or payload capability.
+The summary publication never authenticates the system companion.
+Its separate capture is described in “Original loaded system prose”.
+
+Required red `fced351` / `proc_640e`
+became canonical native green `cc6c408` / `proc_1efc`.
+The 14-mode loaded-input matrix,
+including empty summaries,
+passed `proc_503b`.
+Explicit two-output row,
+legacy migration,
+failed-rewrite withholding,
+native conversion parity,
+shared bounds,
+and occurrence controls passed `proc_047a`.
+Constructor omission `076347b` / `proc_de3c` lost the summary identity;
+that edge is restored.
+Companion-attribution omission `f165d21` / `proc_9769` incorrectly marked the stored system message.
+The single-output guard is restored.
+Complete native `proc_18d1`,
+action `proc_06a7`,
+source-policy `proc_62b3`,
+and 14-document rendering `proc_7bd6` passed.
+
+Current-run generated summaries,
+other loaded roles,
+queued or unobserved inputs,
+applicable governing scope,
+and domain closure remain unfinished.
+No provider trial or installed activation occurred.
+
+## Original loaded custom-message inputs
+
+The existing manager-load owner now captures supported `custom_message` inputs as well as stored user messages.
+It retains bounded content and native `customType`/`display` companion data.
+Opaque `details` are neither read for source assessment nor serialized as semantic metadata.
+An authority-looking custom label or details object grants no authority.
+
+Input-only aliases follow the actual native custom-to-user conversion.
+This preserves original input identity without producing text-part or payload capabilities.
+User and custom inputs share the original source and byte limits.
+
+Required red `a7b820e` / `proc_e115`
+became native green `e50abe1` / `proc_71df`.
+Native matrix and manager/conversion parity passed `proc_f925`,
+covering string,
+structured,
+empty,
+nullish,
+unsupported,
+and over-bound inputs.
+Shared-bound and opaque-metadata owner controls passed `proc_8cb1`.
+Conversion omission `cdbbdf8` / `proc_6d32` lost the original alias in the actual SDK converted message.
+The omitted branch is restored.
+Full native `proc_297d`,
+action `proc_7871`,
+source-policy `proc_de4f`,
+and 14-document rendering `proc_4922` passed.
+
+Other loaded message roles,
+queued inputs,
+historical issuer authentication,
+and governing-domain closure are still unfinished.
+The separate loaded-summary increment is described in “Original loaded summary inputs”.
+This is another original input consumer,
+not a production qualification or installed activation.
+
+## Original owned session-load inputs
+
+The next accepted-domain increment records a new native load occurrence,
+not the historical issuer of a saved message.
+Required red `ae9d582` / `proc_ddb2` opened a native-written session through a distinct owned manager
+and reached canonical review with the prior user text in the body,
+but without an original source view.
+
+The existing private manager now owns capture of supported loaded user-message content
+after its defensive clone and before migration.
+Each record is unregistered,
+with historical issuer,
+authority,
+and priority unestablished.
+Saved roles,
+IDs,
+timestamps,
+paths,
+and equal bytes do not carry an older capability into this load.
+Loaded sources have their own session-input occurrence,
+not an invented emitting run.
+
+A default message-copy observer preserves input-only aliases during initial SDK projection,
+before `AgentSession` attaches its run observer.
+The fixed manager reader supplies original loaded-source lookup to the existing source collection.
+It stores source/publication references,
+not a parallel transcript.
+Loaded input aliases do not grant text-part or serialized-payload eligibility.
+
+Capture failures remain owner-local until source use.
+The native file loader still runs its parser,
+migration,
+and original error paths.
+The source-use assertion fails on capture errors rather than publishing a truncated source set as complete.
+The incumbent data copier,
+source limit,
+source-byte limit,
+and snapshot ledger are retained.
+
+Initial stage `proc_0bb0` rejected the injected helper imports.
+Explicit mappings in `342b64f` repaired that import allow-list without accepting arbitrary file URLs.
+Native consumer `proc_397c` and publication regression `proc_9794` passed.
+Pure identity,
+bounds,
+and deferred-failure controls passed `proc_4bbb`.
+Native manager identity/value parity passed `proc_3dd2`;
+native migration and invalid-file controls passed `proc_68f4`.
+Capture-failure omission `342436b` / `proc_647a`
+and pre-attachment observer omission `4e579c9` / `proc_1f27` failed and were restored.
+Full native `proc_2f89`,
+action `proc_0d50`,
+and policy-source `proc_1b35` passed.
+
+Failed in-place loading exposed an incorrect fixture expectation in `proc_12a4`.
+Corrected `proc_84c8` follows surviving native state or withholds provenance;
+it does not relabel prior indexed values as a newly attempted load.
+The details are in main `doc/troubleshooting/pi-sdk-staging.md`.
+Material-guard omission `9e05514` / `proc_9357` incorrectly accounted input-only membership;
+the guard is restored and complete action regression `proc_eb8e` passed.
+The earlier attempt `proc_8568` stopped at a Git lock collision and ran no test.
+Runtime/generator sources match full-native checkpoint `a3d2086` by scoped Git diff.
+
+This initial profile covers supported stored user-message text content.
+It does not authenticate a prior human,
+inherit a registration,
+establish other loaded message kinds,
+or close the governing domain.
+No provider trial or installed activation occurred.
+
+## Original selected-path inputs after native projection
+
+Native compaction and context edits can remove an input from the rendered transcript
+without establishing that its instructions ceased to govern.
+The selected-path increment retains known original run inputs through that boundary,
+without assigning them authority or scope.
+
+The maintained private manager generator observes the path already computed by native `buildSessionProjection`,
+before compaction and edit projection.
+It adds no second traversal,
+JSON parse,
+or retained entry tree.
+The run owner keeps original source/publication references and the manager's original root occurrence.
+At context consumption,
+it re-reads that root and verifies original tuple membership.
+Payload eligibility is checked separately.
+
+Native root occurrences rotate on branch,
+reset,
+fork,
+and load operations.
+Ordinary append-only extensions preserve the observed selected path as a prefix.
+The stored observation therefore does not claim to describe every entry in the later current path.
+Missing or unknown input origins still keep `request-source-domain` unresolved.
+
+Required compaction red `53b92f5` / `proc_a393`
+became native green `a3ffc46` / `proc_e0fd`.
+The expanded native matrix `proc_d92e` passed original prompt and handler retention after compaction,
+pre-capture context removal and equal replacement,
+and reset without a refreshed path observation.
+Native root controls and installed/private projection parity passed `proc_501a`.
+The first native reset omission `proc_95d4` passed,
+so it was not claimed as a sensitivity witness.
+The original-owner interleaving control `65ec659` / `proc_6875` then failed as intended
+when a changed root retained one old source instead of zero.
+That is an authored owner-boundary control,
+not proof of a native scheduling interleaving.
+The guard is restored;
+owner controls and the 40-mode native matrix passed `proc_70e3`.
+Runtime and generator sources match full-native checkpoint `71d727c` byte-for-byte by scoped Git diff.
+Full native `proc_c35b`,
+action `proc_066c`,
+and 14-document rendering `proc_aa7e` passed.
+
+Known originals are retained even when they have no current serialized contribution.
+This does not establish the origin or authority of an unknown compaction summary,
+a disk-loaded history,
+queued input,
+or an unobserved transformation.
+The accepted all-host-input domain remains unfinished.
+
+## Input-origin-only links for unsupported prompt representations
+
+A native prompt containing an image or normalization hint still has an original expanded-text input.
+It must not disappear from source assessment merely because its representation is outside the text-only association profile.
+Required control `1c03dff` / `proc_1b9c` failed on that missing retained input.
+
+The existing publication alias index now distinguishes `input-only` links
+from text-part and payload capabilities.
+They retain the original input through actual native copies without claiming unchanged current content.
+Changing such a message into an equal text-only shape does not upgrade its capability.
+Independent copies still have no origin until an actual native copy edge connects them.
+Original occurrence collisions must not overwrite another publication.
+
+The native image/hint retention controls passed in the 35-mode matrix `proc_0441`.
+Pure publication controls also check that observers do not invoke getters
+and that input-only aliases cannot become text contributions.
+Collision-guard omission `7bd4d85` / `proc_e92d` overwrote another original occurrence and failed its control.
+The guard is restored.
+Complete native `proc_0f88`,
+action `proc_df6e`,
+and 14-document rendering `proc_1715` passed.
+This adds neither authority nor request-domain completeness.
+
+## Retained original run inputs after another prompt
+
+The user accepted governing-domain option A on 2026-10-09:
+account for all original host instruction inputs within their applicable scope,
+without treating unregistered possible instructions as absent.
+The accepted scope is recorded in
+`doc/planning/pi-auto-mode-governing-domain-closure.md`
+in the main repository.
+It is not a completeness declaration.
+
+The first implementation increment retains known original prompt and handler inputs
+that are actually present at the native context-emitter entry after another prompt.
+The existing run-scope lookup and publication alias index supply the original references.
+The current run stores frozen `retainedMessageOrigins` links;
+it does not promote the earlier emitting run into active ancestry.
+The combined `runMessageInputs` collection retains those same source records,
+not copied text or a second message inventory.
+
+Source retention and serialized contribution eligibility remain separate.
+A context handler can remove or independently copy the old message:
+its original input remains available for assessment,
+but the replacement acquires no contribution capability.
+Observed publication retirement remains permanent.
+Known native copy edges preserve message aliases even while a new prompt has no current run;
+system-publication copying still requires its current run.
+
+Required consumer red `db94d91` / `proc_b7c9`
+became native green `387c717` / `proc_0333`.
+Prompt and handler matrices passed `proc_93b2`;
+canonical source-binding controls passed `proc_a3ce`.
+Retained-membership omission `4057cef` / `proc_0e9a`
+incorrectly accounted a nonmember and is restored.
+
+The first preparation-copy fixture `proc_9841` was invalid evidence:
+a nonexistent `replaceMessages` call was swallowed by the native handler catch.
+The setter control `proc_2904` did not prove its copied objects reached conversion.
+The refined fixture actually routes its saved native preparation copy into context conversion.
+Restoring the old no-current-run gate then failed as `b164094` / `proc_9d78`;
+the message copy path is restored.
+
+Full native `proc_dd40` reached the original handler-input fixture
+and failed its obsolete count after another prompt:
+the correct retained source count was 12,
+not 6.
+The fixture now checks exact distinct original source references rather than enlarging bounds;
+targeted owner regressions passed `proc_c5e4`.
+Full action `proc_4576` and source-policy `proc_9fad` passed.
+The 33-mode expanded-prompt/retained-input matrix passed `proc_b46c`.
+Actual native branch departure/return and manager reset/fork controls observed their input boundaries,
+but the original bound policy runtime correctly refused new transport with `Root lease has been retired`.
+Branch return preserves observed original input links without reviving the retired root.
+The reset and uninstrumented fork-copy paths do not borrow the earlier run's origins.
+These are manager/projection controls,
+not qualification of the full host resume or fork workflow.
+The restored full native rerun `proc_3da2` passed.
+
+The initial owner-local route did not establish disk-loaded,
+queued,
+compacted,
+or pre-capture-excluded origins.
+The selected-path increment now retains known original inputs omitted by native projection;
+unknown summary and historical origins remain unresolved.
+It does not prove revocation when a source is absent from the current transcript.
+Registration,
+applicable governing scope,
+and request-domain completeness remain independent.
+No new authority,
+permission,
+provider trial,
+or installed activation occurred.
+
+## Original expanded-prompt input and contribution
+
+The incumbent run owner now captures the actual native `expandedText` handoff
+after input,
+skill,
+and template expansion.
+This establishes that native occurrence,
+not unmodified caller wording,
+human origin,
+or instruction authority.
+The input remains unregistered.
+
+The existing source collection now exposes `runMessageInputs`
+(renamed from the collector snapshot's `handlerMessageInputs` on 2026-10-09).
+It references the same run-owned expanded-prompt and handler records.
+Per-run `handlerMessageInputs` remains the emitter-only collection.
+No parallel message inventory,
+second request parse,
+or request re-encoding was added.
+
+The existing publication/copy index now supports the actual text-only native user construction.
+Native identity pass-through checks known original aliases before retaining them.
+Independent deep copies,
+equal context-edit replacements,
+and replaced text parts do not inherit lineage.
+Wrappers retaining the actual original part capabilities remain distinct from independent material copies.
+Payload custody still owns fresh arrays and text blocks across awaited authentication
+and discards transient aliases at sealing.
+
+Image-containing and hint-modified constructions retain the original expanded text
+but remain outside this association profile.
+Empty and malformed text receives no invented contribution.
+Active ancestry is supported;
+prior prompt occurrences cannot supply the new prompt's source association.
+
+Missing origin failed `proc_2f9f`;
+retained origin without association failed `proc_6dd4`;
+initial native consumer passed `proc_3e36`.
+Native input-owner controls passed `proc_1190`,
+conversion parity `proc_f69b`,
+source-policy `proc_898f`,
+and action `proc_dd50`.
+The 23-mode native input/representation matrix passed `proc_7109`,
+including actual native image and normalization-hint paths.
+Original scalar-publication controls passed `proc_b338`.
+The pass-through retirement positive control passed `proc_eebb`.
+Pass-through omission `proc_334e` revived invalid prompt lineage on a later review;
+scalar-publication omission `proc_b17c` admitted a copied publication;
+hint-profile omission `proc_7ea3` changed unsupported native output into an exception.
+All guards are restored.
+Full native `proc_5d3b`,
+full action `proc_15a2`,
+and 12-document rendering `proc_2db5` passed.
+Source accounting remains partial and `request-source-domain` remains unresolved.
+
+## Original orphan-heading directive use
+
+Original top-level orphan headings now use the existing clause-operation consumer
+when their directive meaning is separately admitted and their original source has registered request scope.
+The existing parser visits root children only;
+a heading inside a blockquote,
+fence,
+or list remains inside that different original candidate.
+Both ATX and setext heading forms use the same original heading capability.
+
+Heading syntax supplies neither authority nor meaning.
+Priority still comes from the exact original registered source,
+and copied or unregistered sources receive no substitute priority.
+Unknown and abstained meanings remain unresolved;
+an admitted `none` adds no directive.
+Contextual-heading aggregates remain separate:
+`potential-instruction` is not a directive and cannot use this route.
+Structured JSON is not reinterpreted as Markdown.
+
+Required native red `proc_9b23` lacked the registered heading's prohibition.
+Initial native `proc_3043` and action/source `proc_c39d` passed.
+The expanded compiler matrix passed `proc_1da2`,
+including quoted,
+fenced,
+list,
+unregistered,
+abstained,
+and setext controls.
+No source scope,
+question budget,
+production admission,
+or request-domain completeness is enlarged.
+Quoted-scope omission `proc_5954` wrongly lowered a quoted heading;
+source-authority omission `proc_9adf` invented priority for an unregistered heading;
+admission omission `proc_18d4` treated an abstained heading as interpreted.
+All guards are restored.
+Full native `proc_b8db` and action/source `proc_39cd` passed.
+The expanded 12-document check,
+including the effect contract,
+passed `proc_40a3` with zero diagnostics.
+
+## Original complete-group scheduling and multi-program application
+
+The original dispatcher now adds its effective `groupExecutionMode`
+to the existing frozen prepared-member records.
+The value comes from the same latched `serial` decision that controls native entry turns,
+including a sequential tool forcing the whole group to run sequentially.
+The existing prepared-manifest serialization carries it;
+there is no new parser,
+source inventory,
+or scheduling owner.
+
+Missing original scheduling failed `proc_c205`.
+Explicit modes,
+per-tool forcing,
+borrowed argument mutation,
+live configuration retirement,
+and original error-class identity passed `proc_5337`.
+The live configuration negative preserves
+`Native tool "codemode" or its context owner changed after request preparation`;
+it is not a reason to relax freshness.
+
+Missing complete-group application failed `proc_e3d5`.
+The compiler now consumes admitted whole-proposal relationships for matching original inspected programs
+with a consistent original scheduling fact and no bypassed independent fact owner.
+Application records retain the original `preparedOperations` array.
+They do not turn effect estimates into code-established effects.
+Mixed or uninspected programs,
+missing/inconsistent schedules,
+unknown meanings,
+abstention,
+and independent fact-owner gaps remain unresolved.
+Same-source incorporation remains single-member.
+
+Parallel/sequential native consumers passed `proc_5a03`;
+full action tests passed `proc_e8e3`;
+the 12-mode native scheduling/application matrix passed `proc_bce2`.
+The current dispatcher also passed actual fixture-authorized execution,
+queue,
+abort,
+and disposal controls in `proc_c317`.
+All deliberate guard omissions are restored.
+Producer `proc_e6ad` misreported tool-forced sequential scheduling;
+consumer `proc_b025` accepted inconsistent schedules;
+`proc_54ee` erased an independent fact-owner gap;
+`proc_9907` accepted a wrong inspected profile.
+Each control failed.
+Restored full native `proc_c1a5`,
+action `proc_2992`,
+and eleven-document render `proc_f581` passed.
+Production admission and installed activation remain unchanged.
+
+## Express same-source quoted-unit incorporation
+
+The user accepted option A on 2026-10-08.
+The new `unitAdoptionAdmissionPolicy` fixes the `unit_adoption` definition,
+model,
+inspected program profile,
+and synchronous acceptance function separately from clause interpretation.
+No production semantic admission policy is supplied.
+
+The original judgment selects a bounded opportunity only when one existing source has one tagged adopter
+and one blockquote target,
+and the operation has one original prepared member.
+That shape is not authority.
+The existing instruction-binding and program-selection maps retain the exact pair and member.
+All original clause candidates still receive their independent assessments;
+pair questions join the same batch,
+deadline,
+and existing question bounds.
+
+A positive admitted pair must represent the complete adopting instruction as exact,
+unmodified incorporation.
+Code separately requires its original registered authority and original-request scope.
+A conflicting admitted primitive effect on the adopter prevents incorporation.
+An amendment,
+ambiguous reference,
+extra independent norm,
+unknown condition,
+unregistered source,
+or unadmitted pair does not establish target scope.
+
+For a selected quoted target,
+the clause estimator reports conditional directive meaning,
+not operative authority.
+The target must independently pass its own clause-admission policy.
+Only that target relationship supplies a permit,
+prohibit,
+or prerequisite effect.
+Incorporation itself supplies no permission or additional directive.
+The adopter's original primitive estimate remains unchanged;
+`representedByAdoption` identifies the separate admitted control meaning.
+
+The consumer discharges named clause-meaning and clause-operation obligations for that adopter
+and the exact quotation-use restriction for that target.
+Independent implementation-fact owners retain their operation obligations
+and receive no estimated incorporation operation marker.
+Other source,
+heading,
+request-domain,
+authorization-satisfaction,
+and approval-channel obligations remain.
+
+The actual-serializer control failed `proc_e0f1` with zero pair estimates instead of one.
+Initial implementation passed `proc_d760`.
+Expanded native `proc_84c5` passed 24 modes;
+the mixed-use,
+priority,
+fact-owner,
+and target-provenance expansion passed `proc_7c37`.
+Original selection,
+wire,
+request-scope,
+and priority controls passed `proc_8f62`.
+Guard-removal controls rejected missing positive meaning,
+foreign request scope,
+unadmitted target effects,
+foreign members,
+copied projections,
+conflicting adopter meanings,
+and unregistered authority.
+Every omitted guard is restored.
+Full native `proc_3c3a` passed with 36 incorporation scenarios;
+full action `proc_0b25` also passed.
+
+The full-policy control first exposed 674 pre-fact dependency checks in `proc_8a16`.
+Pair derivation now uses the incumbent synchronous binding segment with entry and exit checks.
+Restored measurements were 38 checks for the short-host profile and 41 for native-default.
+No cached freshness crosses an `await`.
+The existing source,
+candidate,
+question,
+and byte bounds are unchanged.
+These are authored mechanism controls,
+not model-accuracy evidence or installed activation.
+
+## Native source association through the real serializer
+
+The SDK 1.1.0 private adapter passed full native regression `proc_a814`.
+The new `serializer-association.test.mjs` uses the installed OpenAI serializer and local SSE responses,
+not a manually assembled model-request body.
+Missing-association control `proc_6ab2` reached canonical compilation and failed at the required source-use assertion.
+
+The existing run owner now retains the original sections publication.
+Its source capability is explicitly carried through the private manager's defensive copies
+and the SDK's initial context clone.
+Independent equal-text replacements remain unassociated.
+The initial request-observer profile qualified only the fixed installed serializer route,
+a full current-run sections publication,
+and the existing linked context source.
+The expanded profiles described in "Original rendered prompt-input contributions" also consume base,
+replacement,
+forced,
+and custom-section contributions.
+Additional independent system content,
+sampling overrides,
+and unrelated stream wrappers remain outside association.
+
+A payload callback can retain mutable aliases across the SDK's asynchronous body construction.
+The adapter therefore copies the ordinary payload root,
+message array,
+and original associated message after the callback.
+Only these newly owned containers are frozen.
+Borrowed callback objects remain mutable;
+changes to discarded aliases after materialization do not invalidate the historical request.
+Accessors,
+serialization hooks,
+and independently copied message nodes remain unsupported for association.
+
+The observer reuses its existing JSON validation to check the particular terminal field.
+It retains no parsed request tree and performs no second parse or request re-encoding.
+The original receipt owns the resulting contribution and its original request reference.
+The canonical consumer reports `requestSourceAssociationUses`.
+An accounted use covers only the particular original context contribution,
+not the full composite system message,
+authority,
+valid delegation,
+or the request's governing-source domain.
+The existing `request-source-domain` obligation remains.
+
+Matrix `proc_6043` passed 11 local modes,
+including source-copy rejection,
+changed content,
+callback hooks,
+opaque streams,
+post-materialization alias mutation,
+and permanent retirement after restoration.
+These controls performed no provider request or native tool execution.
+Equality substitution `34a0355` failed `proc_92e5`:
+an independent equal-byte payload became accounted.
+The original identity guard is restored.
+Expanded matrix `proc_2731` passed 15 modes,
+including accessor substitution,
+getter-call parity,
+and callback-alias replacement during actual client authentication before body materialization.
+Custody omission `8bc2eb4` failed that timing control in `proc_7738`;
+the owned copy is restored.
+Native context-transform parity `proc_3ece` compared 10 installed/private SDK sessions.
+Full restored native `proc_c4d5` and action `proc_2fa4` passed on SDK 1.1.0.
+
+The association currently requires explicit bootstrap selection of `nativeOpenAIStream`
+and a full current-run sections publication.
+The default model-runtime wrapper and later runs without that publication remain outside this bounded association.
+Only content origin is associated:
+the complete message node and its other fields are not claimed semantically unchanged.
+
+Independent review exposed input-envelope accessors and copy-observer getter side effects.
+The native controls reproduced both in `proc_0731` and `proc_98b2`.
+The implementation now requires ordinary source-bearing data fields
+and observes copies through descriptors without invoking accessors.
+Early seal exits also discard transient payload references.
+
+## Whole-request and contextual-heading follow-up
+
+Whole-request identity omission `73fda0d` failed `proc_d064`;
+restoration passed `proc_de54`.
+Removing the independent request-domain obligation in `29272de`
+made `proc_e7ca` approve and enter an inert tool body.
+That omission is restored;
+full native `proc_8a24` and action `proc_74d6` passed.
+
+Contextual headings now have a separate original aggregate content use,
+`heading_instruction_content`,
+under their own captured startup policy.
+Implementation `2465042` preserves one group per original source.
+An admitted `none` clears only that group's independent heading-content obligation.
+Potential or unknown content supplies no directive,
+authority,
+or governing-domain completeness.
+Potential-as-resolved omission `ebe2514` failed `proc_9d89`.
+Restoration `e9161b3` passed native `proc_6fd2` and action `proc_a023` on SDK 1.0.4;
+the current SDK 1.1.0 full regressions also cover these consumers.
+
+The user accepted express same-source incorporation in
+[scoped incorporation of quoted policy text](../planning/pi-auto-mode-quoted-unit-incorporation.md).
+Its private consumer is implemented and under expanded verification.
+Q21's governing-instruction principle remains settled;
+no production semantic admission profile or installed activation is adopted.
+
+## Configured native clause compiler
+
+Private implementation `f172216` connects original typed estimates to the existing clause lowerer and resolver.
+The ordinary native reviewer can now produce nonempty permission/prohibition inputs
+and separate authorization requirements,
+without an injected final decision.
+The startup `semanticAdmissionPolicy` fixes model,
+relation definition,
+inspected program profile,
+and a synchronous acceptance function.
+No production policy or probability band has been adopted.
+The unconfigured runtime still sends no semantic requests.
+
+The configured raw transport reuses the existing wire and response parser.
+It verifies the reported model and complete answer set
+before the original question-selection owner retains model attribution.
+Legacy normalized strings supply no model attribution and cannot satisfy the configured compiler.
+There is no new evidence registry,
+source-hash lock,
+tools-field extraction,
+or serialized answer envelope.
+Original `semanticQualification: 'not-established'` records remain unchanged.
+That tag limits what transport establishes;
+it is not a permanent veto on downstream code admission policy.
+Authored test acceptance rules establish no empirical model quality.
+
+The compiler authenticates the original batch,
+uses code-registered original source priorities,
+and preserves uncertainty instead of admitting unsupported or unknown meanings.
+Its acceptance function cannot return authority,
+complete coverage,
+authorization satisfaction,
+or an action verdict.
+An inspected outer-program shape is not qualified callee effects.
+Consumed original candidates now discharge their supported interpretation and operation uses.
+Remaining request-domain,
+contextual-heading,
+authority/delegation,
+and unsupported operation uses stay explicit.
+All current native compiler cases therefore withhold execution.
+Production activation and the full migration remain unfinished.
+
+Initial canonical control `proc_b9d8` passed 17 modes.
+Action suite `proc_83cd` passed the new policy-capture,
+model-attribution,
+and original-evidence controls.
+Expanded full native regression `proc_daa0` passed 20 compiler modes
+plus the existing runtime suites.
+Those additional controls cover repeated codes across sources,
+multiple clauses with different relationships,
+reordered answer-object fields,
+exact original clause-projection association,
+mixed direct/program membership,
+and missing raw transport before native hook installation.
+
+Model-match omission `7e570a2` failed `proc_885f`:
+a mismatched model reached the acceptance callback.
+Restoration passed `proc_9198`.
+Abstention omission `004091c` failed `proc_6270`:
+`admitted` was returned instead of `abstained`.
+Both guards are restored.
+Full restored native `proc_d5a8` and action `proc_059a` passed.
+No semantic provider request,
+genuine approval,
+or installed change occurred.
+
+### Inspected-effect rubric correction
+
+The permission rubric previously required every relevant condition to be established by supplied code facts.
+That excluded Q13 B's accepted use of qualified inspected-form effect estimates.
+A permission conditional on a read-only inspected script exposed the contradiction.
+Independent transcript review confirmed the mismatch against
+[the accepted effect contract](../planning/pi-auto-mode-effect-contract.md).
+
+The rubric now separates estimated effects from external runtime facts.
+Effect estimates remain subject to code-owned admission;
+canonical paths,
+file contents,
+account ownership,
+and existing authorization cannot be invented by the estimator.
+Full native `proc_968f` passed 22 compiler modes;
+action `proc_d032` also passed.
+The new local cases exercise an authored estimated-effect relationship
+without promoting it to `establishedEffectFacts`.
+The missing-external-fact case supplies `unknown` explicitly:
+it verifies preservation of uncertainty,
+not independent enforcement against an incorrect model answer.
+No semantic accuracy or production profile was established.
+
+The unconditional operation premise in `compiler.mjs` was another concrete consumer defect.
+Canonical control `proc_7bd1` failed because an admitted relationship to the whole original inspected program
+still could not satisfy its operation-evidence consumer.
+The compiler now records per-clause `operationApplication` using the original member and program inspection.
+Supported admitted relationships replace the universal static-effect demand for one enclosing inspected program
+without a separate implementation-fact owner.
+At that checkpoint,
+unknown uses,
+multi-member composition,
+and independent fact-owner gaps remained unresolved.
+The current bounded multi-program route is recorded in
+[Original complete-group scheduling and multi-program application](#original-complete-group-scheduling-and-multi-program-application).
+Full native `proc_7b44` passed 23 compiler modes;
+action `proc_b3d0` passed.
+The estimated relationships remain estimates,
+not code facts or complete governing-source proof.
+
+Already-retained unclassified source spans now have original selectable capabilities
+through the existing index,
+source set,
+judgment,
+and typed wire.
+The canonical regression failed `proc_3ca8` with zero estimates instead of two
+for equal untagged prohibitions in independent original sources.
+Implementation passed `proc_b70d` and full native `proc_7e1b`.
+Source-owner and action checks passed `proc_db47`;
+native quotation control `proc_95a9` passed.
+Quotation-scope omission `8a03068` failed `proc_4ab6` by lowering quoted data with developer priority.
+The guard is restored and full native `proc_5707` passed.
+Structured content remains exact JSON,
+not reconstructed Markdown.
+Copied diagnostic spans do not authenticate candidates.
+
+The updated full-policy control measured 212 and 217 retained candidates
+for the short-host and native-default linked profiles,
+including 207 tagged rules.
+The corresponding typed requests were 208,145 and 216,999 bytes.
+Existing bounds still reject independent copies;
+no source equality merge,
+batch split,
+or limit increase occurred.
+
+Authority need is now derived from consumed original relationships.
+Sources whose consumed candidates are all admitted `none` no longer impose blanket authority premises.
+Operative,
+unknown,
+abstained,
+unrepresented-source,
+and unit-level delegation cases retain their gaps.
+The canonical control failed `proc_9516` before this change;
+full native `proc_7fff` and action `proc_66e7` passed after it.
+This is not a declaration that the complete source or request has no other governing instructions.
+
+Orphan headings and source-local coverage uses are now implemented in `6ca7009`.
+The missing original heading control failed `proc_7986`;
+heading-none,
+heading-unknown,
+and heading-operative controls passed `proc_2e5a`.
+Source-local candidate use is discharged only for admitted supported interpretations.
+Heading strings supplied only as ancestry retain a separate normative-use obligation.
+The original request observation remains attached to its independent request-domain issue.
+
+Omission `d8baccb` failed `proc_110b` by removing the original orphan-heading candidate.
+Restoration `69e69d2` passed full native `proc_44b5` and action `proc_9324`.
+The configured-compiler matrix now has 26 scenarios,
+and the linked full-policy counts remain 212 and 217 candidates.
+No production policy,
+paid semantic trial,
+new source inventory,
+or installed activation was introduced.
+
+The initial request-source proposal incorrectly required another grant for an already-retained input.
+That requirement is withdrawn in
+[the corrected scope proposal](../planning/pi-auto-mode-batched-assessment.md#proposed-expansion-of-request-source-accounting).
+The original observer already owns the complete exact request bytes;
+selecting and consuming them through the same request/judgment owner is authorized implementation,
+not a new source origin or parallel message inventory.
+That consumer is now implemented through the original judgment's existing binding and assessment owners.
+The absent selection failed `proc_bd4a`;
+initial canonical none,
+potential-instruction,
+and unknown controls passed `proc_86c2`.
+A separately captured `requestMaterialAdmissionPolicy` selects `request_instruction_content`,
+not the clause-authority rubric.
+Independent clause and whole-request questions share the same original batch and deadline.
+No observer change,
+extra parsing,
+message inventory,
+or request re-encoding was needed.
+
+Expanded full native `proc_53ff` and action `proc_5aed` passed.
+The controls preserve complete whitespace,
+escaped text,
+and structured message content,
+and distinguish independent requests with identical bytes.
+They cover request-only operation,
+missing or mismatched request policy,
+abstention,
+bootstrap-copy isolation,
+and rejection of member/clause substitution.
+Whole-request operative answers acquire no single authority tier or directive lowering,
+and `none` still cannot certify request-wide governing completeness.
+Origin association,
+contextual-heading meaning,
+and valid delegation remain separate obligations.
+
+### Review disposition and remaining work
+
+The default Advisor call reported an operation deadline and unconfirmed remote settlement;
+it supplied no review.
+Explicit alternate `hyper/deepseek-v4-pro-0813` returned a transcript-based review,
+not an independent execution.
+Its missing-transport and multi-clause verification suggestions are covered by the expanded native controls.
+The existing issuer maps the immutable candidate list in order;
+the original selection owner preserves that exact issued order.
+No new identity registry was needed for correlation.
+
+Do not adopt the suggested direct lowering of `states_approval_prerequisite`.
+Its actual definition in private
+`contract/research/instruction-prerequisite-relation/cases.mjs`
+expressly excludes current-operation applicability and authorization satisfaction.
+A positive scalar cannot establish an applicable authorization requirement.
+Likewise,
+a single native-read member does not expand the existing execute-body fact
+into complete callback,
+transfer,
+or whole-operation coverage.
+
+Remaining authorized work is decision-specific source/delegation and operation coverage through existing owners.
+The compiler mechanism is no longer the unconditional empty-program placeholder.
+Do not mistake its configured test policy for production qualification,
+or treat the remaining implementation as automatically a blocker.
+
+## Continuation correction: predecision program inspection
+
+The assistant incorrectly stopped after verifying partial helpers.
+The remaining consumer implementation is authorized work,
+not a reason to wait for another continuation prompt.
+The protected `AGENTS.md` remains unchanged;
+the existing unapplied `PXQ` proposal is tightened to distinguish missing implementation from a genuine blocker.
+
+The immediate consumer requirement is concrete:
+the native reviewer must receive the validated original program declaration before permission or execution.
+Before `0381bdc`,
+the program owner parsed that declaration only inside `openProgram`,
+after an execution token became active.
+Execution controls that independently allowed a fixture do not verify this earlier policy-consumption point.
+
+Work now reuses the existing declaration decoder and ownership check,
+the original callable-tool snapshot,
+and the original judgment member records.
+The declaration must be available before review and reused by identity during execution,
+under the same preparation-inclusive budget and currentness checks.
+No new registry,
+source-hash lock,
+semantic qualification,
+or provider trial follows from this work.
+Validated outer syntax still does not establish complete effects or instruction meaning.
+
+The missing predecision reader failed `proc_c2f6`.
+Implementation `0381bdc` now compiles through the existing decoder before review,
+binds its original declaration to the judgment's prepared member,
+and requires execution to reuse it by identity.
+Canonical control `proc_063c` passed without an injected Allow or model request.
+Execution and shared-queue controls `proc_3f37` passed.
+The source remains private;
+no installed SDK or plugin was changed.
+
+The policy inputs now retain `programInspection`
+and revalidate it through the original judgment.
+Referenced callable metadata participates in the original dependency checks.
+Unsupported shapes close evidence before review;
+changed callees permanently retire eligibility.
+Expanded canonical controls `proc_af20` passed.
+`proc_355e` was a test expecting the original decoder diagnostic in a rendered native outcome;
+the corrected control forwards the canonical handler unchanged
+and checks its retained thrown error instead.
+
+Required-inspection omission `003d6ec` failed `proc_6aa8` after running three inert children.
+Restoration `33e37ca` passed the full native suite in `proc_4785`.
+Document check `proc_3acf` also passed.
+This verifies the preparation dependency,
+not completion of the remaining consumer work.
+
+## Accepted policy-consumer slice: partial implementation
+
+The user accepted the focused policy-consumer slice on 2026-10-08.
+Its contract is recorded in
+[the batched-assessment plan](../planning/pi-auto-mode-batched-assessment.md).
+The initial implementation established clause lowering and original-owner premise diagnostics.
+The configured native clause compiler now consumes those components;
+the historical controls in this section concern the initial partial implementation.
+
+Private `contract/integration/action-policy/clause-lowering.mjs`
+maps authored established permission and prohibition relationships to directives.
+Prerequisites become only authorization constraints.
+Satisfaction and approval-channel sufficiency remain independent code inputs.
+Unknown and unsupported meanings remain gaps;
+`none` adds no permission.
+Raw probability vectors,
+qualification flags,
+unsupported fields,
+and accessors cannot stand in for established relationships.
+
+Implementation `4591d78` passed `proc_4b77`,
+including 22 malformed-input controls
+and the incumbent Allow/Deny/Stop binder with controlled responses.
+These are authored relationships and fixture selections,
+not model-quality evidence or genuine human approvals.
+
+Private `premises.mjs` and `evaluate.mjs`
+now return frozen `premiseIssues` alongside the derived `missingPremises`.
+Issues retain original source,
+clause,
+and prepared-effect references.
+They distinguish registered source/request bindings from unregistered or mismatched sources.
+Equal text cannot borrow registration.
+Unclassified material and member-only facts remain visible gaps.
+Unsupported implementation-evidence kinds reject instead of being described as established member facts.
+
+Premise implementation `427416d`,
+tests `ff9f110`,
+action `proc_2503`,
+and canonical native control `proc_c8a8` passed.
+The canonical test uses the ordinary native reviewer,
+not an injected final Allow.
+It verifies withholding and retained identity,
+not operative approval.
+
+The incorrect prerequisite-to-`require-approval` mutation `16232a0`
+failed `proc_bf63` at the outcome assertion:
+`ask` instead of `deny` for an independent prohibition.
+The original constraint lowering is restored.
+Restored action suite `proc_0816` and full native regression `proc_72fa` passed.
+Document check `proc_9293` passed before this final result note.
+
+The remaining limit is explicit:
+source/delegation coverage and complete-operation coverage remain missing under their current contracts.
+The unconfigured evaluator sends no inference.
+The configured compiler calls the lowerer using original estimates admitted by fixed code policy,
+but the resolver's complete-premises branch is still unreachable with the current coverage producers.
+The lowerer's defensive branch for a future catalog label is also unexercised.
+Do not call this a completed policy consumer or claim that it can now approve ordinary native work.
+
+## Current native program integration
+
+Current SDK program composition is implemented privately in
+`contract/integration/native-batch/program-source.mjs`,
+`tools.mjs`,
+and `prepare.mjs`.
+It reuses the original judgment,
+program and result owners,
+native nested runner,
+queue,
+and recorder.
+The actual sandbox and native script conversion run against the original request's executable-tool snapshot.
+The installed plugin and SDK remain unchanged.
+
+Initial control `proc_a75a`,
+execution matrix `proc_20e0`,
+and subsequent full native suite `proc_2615` passed.
+These fixtures independently authorize authored inert programs.
+They do not demonstrate native policy admission,
+complete semantic effects,
+or genuine human approval.
+Preparation now emits nine SDK-derived modules.
+
+Currentness follow-up found and repaired public runner shadowing
+(`proc_305f` to `proc_5adc`,
+fix `87b8e7e`).
+Transcript-based Advisor review then identified mutable prototype routing and shallow schema comparisons.
+Prototype control `proc_6072` reproduced redirection;
+input-schema control `proc_c467` reproduced execution after in-place mutation.
+Fix `3100219` passed `proc_9d00`.
+The existing tool owner now retains schema data descriptors,
+including TypeBox symbols,
+without freezing borrowed objects or extracting another JSON representation.
+The fixed request-wide profile limits property and object entries to 10,000.
+This protects runtime schema dependencies,
+not interpretation or permission.
+
+Expanded verification now asserts retained original failure causes,
+settled child execution,
+and one conversion per returned native result.
+`proc_3948` first exposed a test counting all declared groups as reached;
+the test was corrected against the original owner's `unreached` state.
+The corrected 18-case matrix `proc_5caf`,
+schema-owner checks `proc_a52b`,
+full native suite `proc_c1b1`,
+action `proc_edaa`,
+and source `proc_bdbb` passed.
+Schema unit checks include permanent retirement after restoration,
+but use execution-position facades rather than claiming native authentication.
+
+Shared-queue control `proc_0d8b` passed release,
+queued abort,
+and disposal while a child was suspended.
+Release executed six children across separate parent recorders;
+abort and disposal each entered only the initially suspended child.
+The driver verified empty child stderr,
+original judgment reuse,
+settled children,
+parent-specific usage and updates,
+late-context rejection,
+and refusal to detach before the agent run settles.
+`proc_7f41` was an inaccurate test regex for that existing detach diagnostic.
+
+A concrete missing consumer requirement then emerged:
+native Codemode can call inactive deferred tools,
+but the adapter had captured only active tools.
+`proc_7bfe` measured that limitation;
+the required callable behavior failed `proc_f19b`.
+Implementation `7d9bdeb` extends the existing per-request execution-tool owner.
+It captures native callable names before the model request
+and reuses each wrapper across the active and callable views.
+`proc_65de` passed active,
+inactive-but-originally-callable,
+and later-exposed cases.
+Later additions remain excluded.
+Inactive callable declarations are not added to the main model request.
+
+Native loadout descriptions were also being replaced by unprojected definition text.
+`proc_3145` reproduced the lost Codemode return-type guidance.
+The wrapper now retains the native projected description;
+`proc_8ebd` passed.
+The earlier `proc_622a` failure was a test reading `tools` from the normalized stream context.
+The corrected test observes the original execution context instead.
+
+Final suite `proc_a91d` passed after original-callable capture and description repair.
+It ran 21 program cases,
+22 schema mutation cases,
+and the shared-queue release,
+abort,
+and disposal controls.
+Document check `proc_659d` passed before this final result note.
+
+The bounded native-program checkpoint is complete.
+Independent transcript-based review found no further concrete defect in the actual issued-context path.
+It did not independently execute the tests or qualify semantic decisions.
+Forged direct calls to internal SDK glue are not a public admission endpoint;
+the fixed consumer callback supplies its captured session and tool view.
+Do not turn hypothetical trusted-helper misuse into another mandatory capture or hardening queue.
+
+Arbitrary programs and identifier forms outside the existing bounded profile remain unsupported.
+The substantive unresolved frontier is established actual clause interpretation/application
+and enough decision-specific instruction/operation coverage to exclude outcome-changing alternatives.
+The full migration and installed cutover remain incomplete.
+Keep the canonical bound evaluator withholding.
+No semantic provider trial,
+threshold adoption,
+or installed activation occurred.
+
+## Continuation decision: no additional live trial
+
+The user declined an additional trial on 2026-10-07.
+A stale frozen input is not a reason to repeat a paid experiment.
+The user also directed faster implementation without hash locking or unnecessary validation machinery.
+Do not add source-freeze manifests,
+admission pipelines,
+or repeated qualification runs as prerequisites for ordinary code changes.
+Use existing evidence and targeted tests.
+Retain the successful full-rule interface call and the local native controls at their proven scopes.
+Refresh current policy and source inputs,
+then verify changed implementation paths deterministically.
+The prepared native-live snapshot was never dispatched and is not admitted for use.
+Live native end-to-end behavior,
+semantic accuracy,
+and production readiness remain unproven.
+
+Read-only intake `proc_48d7` found installed Pi SDK 1.0.4
+and 86 unavailable paths in the historical native source manifest.
+The protected policy now has 207 lexical rule markers and 31,867 bytes;
+its text is not merely whitespace-normalized equivalent to the captured policy.
+The Node binary still matches its pin.
+No SDK was imported,
+no credential was read,
+and no provider request was made by this intake.
+Re-index the current policy and rebase deterministic source checks;
+do not restore removed dependencies or reinterpret old receipts as current verification.
+
+## Simplification correction: reuse the original request
+
+The user asked why JSON was being parsed and serialized
+and directed the implementation not to overengineer.
+The tools-field extraction detour duplicated evidence already retained as `originalRequestBody`
+in `contract/integration/action-policy/wire.mjs`.
+Decoding and re-encoding that field introduced representation problems without supplying a missing policy premise.
+The detour was removed,
+including the separate source/binder,
+receipt projection,
+and raw-span regression.
+No raw-span parser was implemented.
+The existing request bytes and one-time JSON-format validation remain.
+
+Do not expand the source inventory merely for completeness.
+Before adding parsing or another evidence representation,
+identify the specific missing requirement in the actual policy consumer
+and check whether existing captured data already satisfies it.
+The migration remains incomplete;
+qualified interpretation and complete-operation policy are the substantive open areas.
+
+The assessment helper's operation-only call was then replaced with the existing original mixed batch
+so requested assessment includes both rule meaning and whole-operation relations.
+Action `proc_fde4` and native `proc_e5ac` passed.
+The bound evaluator remains incomplete;
+this is not a claim that native automatic decisions now work.
+The next substantive gap is admitted instruction effects and applicability from existing inputs.
+Do not introduce an unqualified-estimate-to-approval fallback or re-open that settled behavior.
+
+### Partial supported instruction effects
+
+The existing code resolver now accepts an explicit unresolved effect among its supported instruction effects.
+It retains the priority of a known-applicable rule whose effect is unknown,
+rather than falling through to a weaker known rule.
+Unknown meaning blocks only when it can change the outcome.
+Known-inapplicable rules and weaker rules do not defeat an established stronger result.
+This partial state does not stand for unclassified prose,
+unknown delegation,
+or unsupported conditions.
+Source admission and complete-operation requirements remain unchanged.
+
+`proc_b90a` reached the expected rejection before implementation.
+The preceding `proc_176a` committed the test but did not run it:
+its repository-root `//contract` task invocation required monorepo configuration absent in the private repository.
+The existing directory-local invocation was used instead.
+Implementation `27ad6ac` passed `proc_5a09`,
+including 14,400 partial programs checked against 112,896 complete worlds.
+Omission `2f409d4` made `proc_af31` return resolved instead of unresolved at the guard-outcome boundary.
+The guard is restored in `41d9294`;
+`proc_1c88` passed.
+Action `proc_d1d1`,
+native `proc_304b`,
+and rendered document checks `proc_dce0` passed.
+Routine kernel checks compare behavior instead of enforcing the historical textual source delta;
+the old verification record remains intact.
+
+### Operation-bound typed clause estimates
+
+The experimental `clause_operation_relation` separates affirmative permission,
+prohibition,
+authorization prerequisite,
+no operative effect,
+unsupported semantics,
+and unknown premises.
+It estimates one clause's relationship to the complete original operation,
+not source authority or the final action outcome.
+Authorization prerequisites cannot be treated as conditional permission or proof that session Allow suffices.
+Unknown and unsupported meanings do not automatically fit the partial resolver's supported-effect domain.
+
+The existing selection owner,
+response parser,
+and assessment wire now retain typed choice estimates and their probability vectors.
+The rubric is included once;
+exact original request text is reused.
+Native `proc_e737` passed current-policy linked controls with 207 clauses and 207 questions per local response.
+Request bodies were 204,917 bytes with the host prompt and 209,700 bytes with native defaults.
+Normalized local answers were 34,253 bytes.
+Independent-source failures retain the existing bounds.
+No provider request or semantic qualification occurred.
+The default mixed helper and incomplete bound evaluator have not adopted these estimates as facts.
+Omission `1c41a06` failed `proc_a4ae` because choice probabilities were not frozen.
+Restoration `88f3635` passed `proc_c971`.
+Expanded action `proc_3e68` and complete native `proc_5ed5` passed.
+
+### Authorization prerequisites remain constraints
+
+Prerequisite-aware composition is implemented in the existing code-owned consumer.
+A higher-tier instruction requiring authorization does not itself override a lower-tier independent prohibition.
+The legacy authored `require-approval` effect acts as conditional authorization through the approval adapter;
+a bare prerequisite cannot be lowered into it directly.
+`authorizationRequirements` now retain applicability,
+satisfaction,
+and eligible-channel facts separately.
+Known denial remains denial;
+unknown satisfaction is not absence,
+and unsupported channels do not open the UI.
+Only an otherwise-permitted operation with fully satisfiable remaining requirements reaches approval.
+
+Naive lowering failed `proc_d724` with approve instead of deny.
+The missing composition also failed `proc_ae02` by skipping required UI.
+Implementation `7bad409` and interaction controls `fb203a1` passed action `proc_f0d3`
+and native `proc_e801`.
+Channel-eligibility omission `2e19c00` failed `proc_ff0d`;
+the guard is restored and action `proc_e1a6` passed.
+These are authored-fact and fixture-approval controls,
+not model qualification or genuine human approvals.
+The partial-effect truth table proves its bounded algebra,
+not semantic lowering from prose.
+The native evaluator still withholds until admitted interpretation and complete-operation premises are available.
+
+### Unapplied instruction clarification
+
+A proposed tightening of the existing `RCI` rule in `AGENTS.md` is:
+
+> Before adding capture,
+>  parsing,
+>  validation,
+>  or an owner,
+>  inspect existing generators,
+>  managers,
+>  and retained data.
+> Extend their owner only for a specific missing consumer requirement.
+
+This proposal is recorded only;
+`AGENTS.md` remains unchanged.
+The overlapping Git inspection and index-lock incident also motivates this unapplied `CPN` tightening:
+
+> Commit pathspecs name every new file.
+> Serialize Git calls per repository,
+> including status,
+> and check status after the commit finishes.
+
+## Direct integration progress
+
+Private implementation lives in `contract/integration/` in the retained consumer-contract repository.
+The installed plugin is unchanged.
+The public relevance hook passed its provider-free current-policy cases in `proc_10ca`.
+The bound action review now retains original source and effect evidence through closure.
+It refuses caller-supplied completeness and invented permits,
+and selects the incumbent original-group approval binder directly.
+The combined action-policy suite passed in `proc_c7b7`.
+Its real native-read check used SDK 1.0.4 and a disposable file;
+request/judgment and approval doubles are not live sessions or genuine human confirmations.
+
+The new `policy-source` integration links the original policy capture to the actual native system-input callback.
+It preserves other context and appended inputs rather than deleting them to satisfy a profile.
+A bounded system-view adapter checks the original resource,
+base,
+run,
+and final request links.
+The initial numeric-priority claim was an overreach and has been removed:
+observed system placement does not establish instruction authority.
+`proc_6295` passed the initial source-publication tests using actual resource/base/run owners
+and the installed prompt builder,
+with a test-double final request boundary.
+Action-review wiring passed `proc_ad11` and `proc_2de4`.
+A fabricated input-owner regression failed in `proc_e1d6`;
+private instance authentication fixed it,
+and `proc_f52c` passed the original/copy/proxy controls.
+The corrected system-view adapter now imports the native renderer directly,
+rather than accepting a caller renderer.
+Corrected system-view tests passed `proc_4a3d`,
+action-policy tests passed `proc_d73e`,
+and the ordinary document render passed `proc_5031`.
+The request-owner integration test passed in `proc_8d6d` with one local stub terminal send and no provider calls.
+It uses the real producer,
+observer,
+collector,
+and budget owner,
+while retaining stream/transport/session-reader and judgment-facade doubles.
+Instruction authority and priority,
+additional governing-source coverage and delegation,
+qualified rule interpretation,
+and complete-operation coverage remain unresolved.
+Neither source identity nor a narrow read fact supplies those premises.
+The user accepted [trusted-bootstrap authority registration](../planning/pi-auto-mode-instruction-authority-root.md)
+on 2026-10-07.
+The existing source owner's private state now retains an optional immutable startup declaration.
+Registered tiers and original-request scope are separate from observed wire placement.
+A user-tier registration remains user-tier in a system message;
+per-action metadata cannot register an unregistered source.
+The new authority binding retains the exact original source and request identities.
+The ordinary-host registration profile passed `proc_a0b3`,
+and action-policy regression passed `proc_61e6`.
+Registration now preserves the native host prompt,
+normal context files,
+and appended instructions instead of requiring a sole system carrier.
+`createBoundPolicyReviewer` fixes owner capabilities at bootstrap
+and takes only the original response,
+obtaining its existing judgment internally.
+Its entry-point controls passed `proc_9c85`.
+An ordinary installed SDK 1.0.4 session retained the registered source in `proc_292a`,
+using an isolated home and local stream/transport doubles with no network requests.
+`proc_3a8c` verified judgment start before native argument preparation,
+original signal identity,
+and simulated expiry within the original five-second budget.
+
+Private `contract/integration/native-batch/` now copies only the SDK factory,
+Agent,
+and loop modules to add complete-group dispatch.
+It uses the incumbent prepared dispatcher and execution-context/cancellation wrappers.
+`proc_7fcb` passed 11 native SDK-session cases,
+including parallel/sequential ordering,
+whole-group blocking,
+preparation expiry,
+implementation-change retirement,
+unsupported nesting,
+multiple groups,
+and native termination requests.
+Positive reads were independently authorized disposable fixtures;
+judgment facades and local model-stream/transport doubles remain.
+No installed source,
+provider trial,
+source-hash lock,
+or source manifest was introduced.
+The unsupported session-runtime replacement exports are intentionally absent from this private factory.
+
+The current copy then added the incumbent manager copy/private-field/root-occurrence mechanisms
+and session liveness/disposal-completion mechanisms,
+for five copied modules.
+`proc_e023` passed the batch matrix and a real-owner composition:
+the original judgment constructor,
+constructor/root-lifecycle owners,
+registered source authority,
+and native read-fact owner ran through a current SDK session.
+The judgment closed and both members remained unentered because policy premises were incomplete.
+Native root reset/restoration did not revive an old lease;
+copied leases,
+protected manager shadows,
+and disposal were also exercised.
+This composition no longer uses the judgment facade,
+but its model stream and transport remain local doubles.
+`createRootSessionFactory` now reuses constructor and factory-cleanup owners as a reusable entry.
+`bindNativePolicyRuntime` composes the actual source,
+request,
+judgment,
+review,
+and execution owners.
+`proc_5be8` passed construction cleanup controls and the incumbent default scope cases;
+`proc_4ddb` passed runtime composition and active/duplicate binding controls.
+`proc_328f` passed the action-policy regressions after the effect-owner argument change.
+Independent review identified missing rollback after interrupted runtime installation
+and a provisional session association that could overwrite an existing association before rejection.
+`proc_87bc` reproduced retained hooks after interrupted binding;
+`proc_3b1b` reproduced loss of the previous session association after rejected reuse.
+Both were corrected,
+and `proc_fecd` passed the combined suite,
+including partial-registration cleanup and retryable detachment with falsy causes preserved.
+The current SDK copy now reuses incumbent native base/run prompt custody.
+It contains five whole SDK modules plus the extracted native handler emitter.
+`bindPolicySessionCollector` retains those publications in the original request snapshot.
+The existing suite passed in `proc_e079`,
+and source regressions passed in `proc_c172`.
+`proc_8791` exposed an owned test-phase error:
+native settlement clears the run publication,
+so request-time freshness does not survive `prompt()` returning.
+The corrected active-phase checks passed in `proc_a6fe`,
+including actual handler capture,
+late-alias independence,
+private-reader shadow resistance,
+reset/reload/disposal,
+and original request-publication links.
+Captured input still does not establish authority or complete instruction coverage.
+Optional `customPromptAuthority` now registers explicitly configured host prompt text within the existing source owner.
+It requires the original resource/base publication and does not assign a tier to the composite system message,
+context files,
+appendices,
+or handler outputs.
+The file registration and host registration remain separate original-request bindings.
+Native tests passed in `proc_9463`,
+source tests in `proc_109e`,
+action tests in `proc_6e61`,
+and additional copy/per-action override controls in `proc_2961`.
+The original judgment now indexes the selected policy and explicit fixed host prompt text,
+even when the latter has no authority registration.
+It preserves duplicate codes as distinct source-owned handles,
+rejects ambiguous bare-code selection,
+and retains unclassified prose per source.
+Whole-program and bounded prerequisite wire adapters retain all captured source text.
+Wire ordinals are representation data,
+not original-occurrence authentication.
+`proc_2fe0` passed an original judgment through the whole-program wire with one local relation-response double,
+retaining the native signal and original five-second deadline;
+its estimates remained unqualified and execution remained withheld.
+Source and action regressions passed in `proc_c356` and `proc_bf22`.
+No provider request was sent.
+`bindRuleAssessmentWire` then added the fixed meaning and operation definitions in one request.
+`proc_2371` passed a single original mixed batch through one local response double.
+The original owner now also declares and issues that fixed batch within its existing synchronous binding segment;
+`proc_7f48` passed that original-owner helper composition with one local relation dispatch,
+no provider requests,
+and no execution release.
+Broader native/delegated source inventory,
+qualified interpretation,
+provider acceptance and full-policy capacity of the mixed representation,
+and complete-operation policy remain unfinished.
+
+`proc_1c65` then reproduced an owned review-lifecycle defect:
+a failed fact reader withheld execution but left its prepared judgment open.
+The bound reviewer now rejects phase/concurrency misuse before acquiring cleanup responsibility.
+On an accepted review failure,
+it uses the existing finalizer to close still-open evidence,
+then rethrows the original failure unchanged.
+If closure also fails,
+both occurrences are retained in order.
+`proc_0871` passed real-SDK zero/false/undefined/error and changed-dependency cases,
+with no tool execution or provider calls.
+`proc_979e` passed phase/copy/repeat controls and `proc_1597` passed action regressions.
+Evidence-only closure still supplies no policy outcome or permission.
+The full native suite passed in `proc_7d3e`.
+Native append outputs now enter the original source index and wire without acquiring authority.
+Repeated text keeps distinct original resource-frame positions,
+not invented raw-file identities.
+The current source controls passed in `proc_8684`;
+the initial failure in `proc_7df2` was an outdated authored snapshot missing the new append-input link,
+corrected without weakening the binding.
+The tagged-appendix original mixed-batch test passed in `proc_658a`.
+Native context entries then entered the source-owned index without path-derived authority;
+native/source/action tests passed in `proc_ecf4`,
+`proc_4314`,
+and `proc_da14`.
+The full current-policy check caught repeated per-clause dependency checks in `proc_03b7`.
+Using the original synchronous binding segment passed `proc_18ea`,
+with 207 rules,
+414 unlinked occurrences,
+and 19 checks before fact collection.
+
+The ordinary-host loader now also preserves its configured context callback and emits fresh unchanged entries
+from the original selected policy capture.
+Original native returned-array/entry/frame checks establish these as carriers of that source,
+not proof of the displaced read.
+Unmatched entries stay independent,
+including equal text at another path.
+Source publication and failure controls passed in `proc_b756`.
+`proc_9e95` passed the current-policy comparison:
+207 canonical clauses and 414 mixed questions with the explicit carrier link;
+414 clauses and no dispatch with an additional independent copy.
+The negative fixture explicitly ends after its mixed-bound check.
+A later enlarged-ancestry request exceeded the existing private collection byte bound in `proc_052e`;
+that bound was not raised and later-request support is not claimed.
+A separate owned hook defect masked native terminal errors as missing producer observations in `proc_edda`.
+Reordering the non-executing terminal check fixed it in `proc_f814`;
+unowned executable responses still require authentication.
+The full carrier suite passed in `proc_690f`.
+
+The incumbent run owner now captures forced prompt output and generic prompt-guideline inputs
+as original run-publication sources.
+Empty forced text is retained,
+and repeated guideline positions remain distinct.
+Neither system placement nor capture supplies an authority tier or proves rendered visibility.
+Late callback aliases do not alter published inputs.
+The original judgment-to-mixed-wire case still makes one local relation dispatch and releases no tools.
+Native tests passed in `proc_fbd4`,
+source tests in `proc_2341`,
+and action tests in `proc_7e0e`.
+Native resource-system output is now retained when not already represented by a fixed host input
+or the selected-policy system carrier.
+Discovered `SYSTEM.md` and replacement callbacks do not establish tier or raw-file provenance.
+`proc_5351` passed discovered and empty system text through the original mixed wire,
+forced rendered-head isolation,
+and an in-place empty forced override.
+`proc_013e` passed reload,
+replacement,
+empty/absent,
+and existing owner rejection of invalid replacement types.
+Tool-guideline entries now retain their native map key and list position,
+including unselected tools and repeated text.
+Those positions survive the mixed and legacy wires as data,
+not authority or applicability.
+Native `proc_1eb2`,
+source `proc_34c5`,
+and action `proc_bea7` passed.
+The full current-policy local control still carries 207 clauses and 414 questions.
+Tool-snippet and section-map inputs now retain original field/key positions too,
+including empty section entries and repeated text under different keys.
+Native `proc_cdd9`,
+source `proc_0537`,
+and action `proc_4646` passed.
+The expanded original-owner fixture carries 24 questions,
+or 22 with an empty discovered-system source,
+through one local mixed response.
+The full current-policy control remains 207 clauses and 414 questions.
+Scalar and context run inputs now preserve unchanged values through explicit original-base republication.
+Field and position select the original source link;
+no byte-keyed source search or append-subset decomposition occurs.
+Changed or added values remain independent unregistered run sources.
+`proc_a309` passed the complete native suite,
+including present/absent system inputs,
+empty values,
+removals,
+reordering,
+late aliases,
+and copied-snapshot rejection.
+The original replacement-input batch carries 30 questions through one local response.
+Source `proc_47a1` and action `proc_cfcf` passed.
+The first matrix failure was a fixture assumption about configured empty append strings;
+its native override-boundary correction passed `proc_26ba`
+and is recorded in `doc/troubleshooting/pi-sdk-staging.md`.
+The full-policy control remains 207 clauses and 414 questions.
+Skill descriptions now retain their original positions and serialized native metadata,
+including disabled or empty entries.
+Metadata scope and paths do not supply authority or authenticate skill files.
+Native `proc_8037`,
+source `proc_db99`,
+and action `proc_c1af` passed.
+The initial failure was an owned JSON-boundary assertion,
+corrected without loosening source validation.
+Handler output now retains original emitter occurrences through current-run ancestry.
+String content is indexed;
+text-block arrays are retained as JSON and explicitly unclassified,
+without guessing clause boundaries.
+Labels,
+display flags,
+and user-role transport do not grant authority or human origin.
+Native `proc_9d95` passed string and structured content through the original mixed wire,
+opaque-details exclusion,
+late aliases,
+and another next-turn ancestry level.
+Source `proc_d3ea` and action `proc_827f` passed.
+This does not establish provenance of older persisted messages after a new prompt resets ancestry.
+The private structured-content guard omission failed its regression in `proc_1d20`;
+the guard is restored.
+Native prompt construction now captures built-in instruction fragments through the original run owner.
+The private copy includes seven SDK modules,
+with the native prompt builder and skill formatter retained in the new builder module.
+Rendered-section parity passed `proc_bc87`.
+Native `proc_997c`,
+source `proc_6abc`,
+and action `proc_2e52` passed.
+The native path requires its exact construction input and render occurrence;
+fragments remain unregistered and do not prove final visibility.
+`proc_a631` confirmed the linked default prompt supports 207 clauses and 414 questions
+at 34,332 rendered bytes.
+Only the independent-copy default case exceeded the unchanged 65,536-byte source cap,
+at 66,405 bytes,
+before judgment creation.
+The failure must not be generalized to the linked default case.
+The render-requirement omission failed its committed regression in `proc_8931`;
+the requirement was restored in private `df8e07d`,
+and `proc_0a4d` passed.
+The complete native suite `proc_259b` passed the expanded rendering parity,
+original-owner controls,
+and both full-policy prompt variants.
+Document rendering passed in `proc_9dfa`.
+Remaining source-index gaps include general persisted-session messages,
+later-read skill-file contents,
+tool-schema descriptions,
+and broader delegated inputs.
+Complete governing-source coverage,
+delegation,
+qualified interpretation,
+complete-operation policy,
+and broader nested/runtime support remain unfinished.
+Continue other authorized implementation without a new paid trial or source-locking pipeline.
 
 ## Current direction: incremental rule relevance
 
@@ -255,9 +3005,10 @@ These remain local mechanical controls,
 not a live native guard call.
 
 Next:
-connect the accepted representation to a separately admitted live original-judgment fixture,
-keeping exact prospective input checks and the preparation-inclusive deadline.
-Continue semantic and source/policy qualification separately.
+continue private implementation with current policy and source inputs,
+using deterministic checks rather than another live qualification trial.
+Keep exact input checks and the original preparation-inclusive deadline.
+Continue semantic and source/policy work without treating existing transport evidence as final permission.
 Do not truncate required inputs,
 assume moving guidance preserves calibration,
 reopen the original judgment,
@@ -2402,12 +5153,13 @@ Current independently verifiable areas:
 Proposed tightening of `AGENTS.md` rule `PXQ`,
 not applied because that file remains protected:
 
-> Completion means the authorized queue,
->  not a phase.
->  After each checkpoint,
->  start the next authorized item.
->  Stop only at completion or a genuine blocker;
->  never require the user to say "continue".
+> Tracked work remains:
+>  start the next authorized item after verification.
+>  A missing implementation is work,
+>  not a blocker;
+>  stop only for missing authorization,
+>  unavailable input,
+>  or completion.
 
 - Establish the composed operation and relevant effect scope before mapping nested transport groups to judgments.
   Do not infer missing safety information merely from a runtime-dependent value.

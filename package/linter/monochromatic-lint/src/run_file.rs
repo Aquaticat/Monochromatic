@@ -1,13 +1,20 @@
-//! What: Lint or fix one planned file from its bytes to its findings.
-//! Why: Reading, the bounded fix loop, the refusal rules and the atomic write are one unit of
-//! work per file; nothing here knows about other files, so workers can run it concurrently.
+//! What:
+//!  Lint or fix one planned file from its bytes to its findings.
+//! Why:
+//!  Reading,
+//!  the bounded fix loop,
+//!  the refusal rules and the atomic write are one unit of
+//! work per file;
+//!  nothing here knows about other files,
+//!  so workers can run it concurrently.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // processFile(plan) -> { findings, notes, written }
 //! ```
 
-/// Import the finding model, the fix loop and the per-snapshot checker.
+/// Import the finding model,
+///  the fix loop and the per-snapshot checker.
 use crate::{
     diagnostic::Diagnostic,
     fix_loop::{FixedSource, fix_source},
@@ -21,8 +28,11 @@ use crate::{
 /// Import ordering for the stable per-file sort of findings.
 use std::cmp::Ordering;
 
-/// What: The result of checking or fixing one in-memory source.
-/// Why: Standard-input mode and file mode share this step; only what happens to `fixed` differs.
+/// What:
+///  The result of checking or fixing one in-memory source.
+/// Why:
+///  Standard-input mode and file mode share this step;
+///  only what happens to `fixed` differs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,16 +40,21 @@ use std::cmp::Ordering;
 /// ```
 #[derive(Debug)]
 pub struct SourceOutcome {
-    /// Findings for the final source, sorted by position.
+    /// Findings for the final source,
+    ///  sorted by position.
     pub findings: Vec<Diagnostic>,
-    /// The accepted fixed source in fix mode; `None` when not fixing or when the fix was refused.
+    /// The accepted fixed source in fix mode;
+    ///  `None` when not fixing or when the fix was refused.
     pub fixed: Option<String>,
     /// Debug explanations for this source.
     pub notes: Vec<String>,
 }
 
-/// What: The result of processing one file on disk.
-/// Why: The run needs findings for output and exit status, and notes for `--debug`.
+/// What:
+///  The result of processing one file on disk.
+/// Why:
+///  The run needs findings for output and exit status,
+///  and notes for `--debug`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,8 +70,13 @@ pub struct FileOutcome {
     pub written: bool,
 }
 
-/// What: Order findings by host position, then by rule code.
-/// Why: Rules run in registry order, but a report reads top to bottom; the code breaks ties so
+/// What:
+///  Order findings by host position,
+///  then by rule code.
+/// Why:
+///  Rules run in registry order,
+///  but a report reads top to bottom;
+///  the code breaks ties so
 /// the output is deterministic.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,8 +89,12 @@ fn by_position(left: &Diagnostic, right: &Diagnostic) -> Ordering {
         .then(left.code.cmp(&right.code));
 }
 
-/// What: The byte offset of a finding's first label, or zero for a finding without labels.
-/// Why: Every finding this crate builds has one label; zero keeps the comparison total anyway.
+/// What:
+///  The byte offset of a finding's first label,
+///  or zero for a finding without labels.
+/// Why:
+///  Every finding this crate builds has one label;
+///  zero keeps the comparison total anyway.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -83,8 +107,13 @@ fn first_offset(finding: &Diagnostic) -> usize {
     return 0;
 }
 
-/// What: Check, or fix and re-check, one source under a plan.
-/// Why: In fix mode a refused fix leaves the source unchanged: the findings are those of the
+/// What:
+///  Check,
+///  or fix and re-check,
+///  one source under a plan.
+/// Why:
+///  In fix mode a refused fix leaves the source unchanged:
+///  the findings are those of the
 /// original source plus one `core/fix-refused` finding carrying the reason.
 ///
 /// In TS you'd write (pseudocode):
@@ -128,8 +157,10 @@ pub fn process_source(
     };
 }
 
-/// What: Build the outcome for a file that could not be read at all.
-/// Why: An unreadable or non-UTF-8 file is one processing finding at the start of the file.
+/// What:
+///  Build the outcome for a file that could not be read at all.
+/// Why:
+///  An unreadable or non-UTF-8 file is one processing finding at the start of the file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -147,10 +178,15 @@ fn unreadable(plan: &FilePlan, message: String) -> FileOutcome {
     };
 }
 
-/// What: The signature of the operation that replaces a file's contents.
-/// Why: Production passes `write_atomically`; a test passes a writer that refuses, to exercise
+/// What:
+///  The signature of the operation that replaces a file's contents.
+/// Why:
+///  Production passes `write_atomically`;
+///  a test passes a writer that refuses,
+///  to exercise
 /// the failed-write outcome without depending on filesystem permissions.
-/// `fn(...)` is a plain function pointer, not a closure.
+/// `fn(...)` is a plain function pointer,
+///  not a closure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -158,8 +194,14 @@ fn unreadable(plan: &FilePlan, message: String) -> FileOutcome {
 /// ```
 pub type Writer = fn(&std::path::Path, &[u8]) -> Result<(), WriteError>;
 
-/// What: Read, check or fix, and in fix mode atomically rewrite one file.
-/// Why: This is the production entry: the same pipeline as `process_file_with`, with the atomic writer.
+/// What:
+///  Read,
+///  check or fix,
+///  and in fix mode atomically rewrite one file.
+/// Why:
+///  This is the production entry:
+///  the same pipeline as `process_file_with`,
+///  with the atomic writer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -174,9 +216,15 @@ pub fn process_file(
     return process_file_with(plan, fix, lfs, engine, write_atomically);
 }
 
-/// What: Read, check or fix, and in fix mode rewrite one file through the given writer.
-/// Why: The file is rewritten only when the accepted fixed source differs from what was read. A
-/// failed write leaves the original bytes in place, so the findings reported are then those of
+/// What:
+///  Read,
+///  check or fix,
+///  and in fix mode rewrite one file through the given writer.
+/// Why:
+///  The file is rewritten only when the accepted fixed source differs from what was read.
+///  A
+/// failed write leaves the original bytes in place,
+///  so the findings reported are then those of
 /// the original source plus one processing finding for the write.
 ///
 /// In TS you'd write (pseudocode):

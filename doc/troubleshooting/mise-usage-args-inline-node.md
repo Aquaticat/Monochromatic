@@ -1,5 +1,47 @@
 # Mise usage arguments are not Node eval process arguments
 
+## Additional task names can be forwarded as ordinary arguments
+
+This is a separate invocation mistake,
+observed with mise 2026.10.0 on 2026-10-08.
+The following command returned success but ran only the section-source matrix:
+
+```sh
+# Private consumer-contract directory: contract/integration/native-batch
+mise --no-env --no-hooks run test:section-source-association test:builder test:render-owner --jobs 1
+```
+
+Process `proc_a236` logged the actual child command:
+
+```text
+# Relevant suffix of the child command printed by mise.
+section-source-controls.test.mjs test:builder test:render-owner --jobs 1
+```
+
+The script did not consume those additional arguments.
+Neither `test:builder` nor `test:render-owner` ran in that process.
+The current `mise run --help` states:
+
+```text
+# mise 2026.10.0: run --help
+Usage: mise run [FLAGS] [TASK] [ARGS]…
+Put mise flags before the task name; following arguments are passed to that task.
+```
+
+Use separate invocations for the already-defined tasks,
+or a task whose `run` array sequences the required commands.
+The corrected invocation passed `proc_4b3c` and logged both task names:
+
+```sh
+# Private consumer-contract directory: contract/integration/native-batch
+mise --no-env --no-hooks run test:builder && mise --no-env --no-hooks run test:render-owner
+```
+
+Task exit success proves only the tasks actually invoked.
+Check task labels and child commands before attributing verification to trailing names.
+No upstream defect or filing is indicated:
+this behavior matches the command's documented argument grammar.
+
 ## Symptom
 
 A mise task declares variadic usage arguments,

@@ -59,7 +59,8 @@ exists to compare layout engines,
    close,
    zero pane overlaps,
    and the root pane pinning while scrolled.
-- `mise run //package/desktop-app/file-manager-gtk-sticky:lint:clippy` and `:lint:rust` run the linters.
+- `mise run //package/desktop-app/file-manager-gtk-sticky:lint:clippy` runs Clippy;
+  the repository's Rust rules run from the root `mise run lint`.
 - `mise run //package/desktop-app/file-manager-gtk-sticky:run` runs the GUI on native Wayland.
 
 ## Environment variables

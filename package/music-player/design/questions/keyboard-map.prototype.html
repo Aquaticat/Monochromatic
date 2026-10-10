@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>One proposed keyboard map and focus-owner demonstration</title>
+<title>The accepted keyboard map and focus-owner demonstration</title>
 <style>
 :root { color-scheme: light dark; font-family: system-ui, sans-serif;
 --color-background: #fcf9ff; --color-text: #201e26; --color-panel: #f0ecf5;
@@ -47,20 +47,19 @@ padding-block: 1rem; padding-inline: 1rem; }
 </head>
 <body>
 <header>
-<p>Design proposal and isolated behavior demonstration. No native application binding is implemented.</p>
+<p>Accepted design (D102) and isolated behavior demonstration. No native application binding is implemented.</p>
 <h1>One keyboard map, with editing and controls owning their keys</h1>
 <p>Purpose: complete D25's whole-map IntelliJ alignment pass without asking about individual key labels.
-D25's Ctrl+F and Ctrl+O reservations remain settled; their macOS equivalents and the other bindings
-are proposals. The consequential concern is preventing
+D25's Ctrl+F and Ctrl+O reservations are settled, and the human accepted the whole map as built (D102). The consequential concern is preventing
 caret motion or a focused button from also changing playback.</p>
 <p class="note">This is an HTML behavior sandbox, not an Android/Slint screen mockup. It reads no files,
 plays no audio and implements no matcher. Platform shortcut delivery, media keys, IME behavior and native
-accessibility are unverified. The new assignments and playback-area scope are a coherent proposal, not accepted defaults.</p>
+accessibility are unverified. The map and the playback-area scope are accepted; this page does not prove any platform delivers the keys.</p>
 </header>
 <section aria-labelledby="map-title">
-<h2 id="map-title">Proposed map</h2>
+<h2 id="map-title">Accepted map</h2>
 <label for="platform">Inspect platform convention</label>
-<select id="platform"><option value="windows-linux">Windows/Linux proposal</option><option value="mac">macOS proposal</option></select>
+<select id="platform"><option value="windows-linux">Windows/Linux map</option><option value="mac">macOS map</option></select>
 <ul id="map"></ul>
 <p>Search and Settings use current IntelliJ precedents. Reveal-current uses its go-to-location precedent.
 Transport and mode keys are product exceptions, not claims that IntelliJ performs music operations.
@@ -258,7 +257,7 @@ function invalidate() { element('response').hidden = true; element('reply').valu
 element('notes').addEventListener('input', invalidate);
 element('review').addEventListener('submit', event => {
   event.preventDefault();
-  element('reply').value = 'Keyboard-map proposal observations: ' + (element('notes').value.trim() || 'None.') + '\nNo production implementation authorized.';
+  element('reply').value = 'Keyboard-map observations: ' + (element('notes').value.trim() || 'None.') + '\nNo production implementation authorized.';
   element('response').hidden = false;
 });
 //endregion

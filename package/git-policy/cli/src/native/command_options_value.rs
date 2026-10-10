@@ -1,14 +1,22 @@
-//! What: Decide which bytes, if any, are the value of one matched Git option.
-//! Why: Git's `do_get_value` and `get_arg` (parse-options.c:47-62, 130-336) are the only
-//!      authority on whether the next token is a value; both spellings share this decision.
+//! What:
+//!  Decide which bytes,
+//!  if any,
+//!  are the value of one matched Git option.
+//! Why:
+//!  Git's `do_get_value` and `get_arg` (parse-options.c:47-62,
+//!  130-336) are the only
+//!      authority on whether the next token is a value;
+//!  both spellings share this decision.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // takeValue({ args, index, arity, attached, spelling }): OptionValue | undefined
 //! ```
 
-/// What: Bring the shared tokenizer types into this file.
-/// Why:  The value position and the refusal are reported with the tokenizer's own types.
+/// What:
+///  Bring the shared tokenizer types into this file.
+/// Why:
+///   The value position and the refusal are reported with the tokenizer's own types.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,8 +26,12 @@ use super::command_options::{Arity, OptionError, OptionErrorKind, OptionValue};
 /// `OsString` is owned operating-system text of raw bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
 
-/// What: How the option was written. `pub(crate)` means "visible inside this crate only".
-/// Why:  A short letter cannot be negated, and only a long spelling can carry `=value`.
+/// What:
+///  How the option was written.
+///  `pub(crate)` means "visible inside this crate only".
+/// Why:
+///   A short letter cannot be negated,
+///  and only a long spelling can carry `=value`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,11 +47,19 @@ pub(crate) enum Spelling {
     NegatedLong,
 }
 
-/// What: Return where the value of the option at `index` sits. `attached` is the byte offset
-///       inside the same token where a value would start, when the token continues.
-///       `Result<Option<OptionValue>, OptionError>` is "a value position, no value, or a refusal".
-/// Why:  Negated options never take a value; a required value takes the next token even when
-///       it starts with a dash; an optional value never takes the next token.
+/// What:
+///  Return where the value of the option at `index` sits.
+///  `attached` is the byte offset
+///       inside the same token where a value would start,
+///  when the token continues.
+///       `Result<Option<OptionValue>, OptionError>` is "a value position,
+///  no value,
+///  or a refusal".
+/// Why:
+///   Negated options never take a value;
+///  a required value takes the next token even when
+///       it starts with a dash;
+///  an optional value never takes the next token.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

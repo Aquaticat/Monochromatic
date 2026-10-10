@@ -386,9 +386,10 @@ RPB:
  then ask user to reconnect/re-authorize/restart before concluding unreachable.
 
 FCH:
- Doc points elsewhere for substance:
- fetch that before concluding;
- never hedge ("likely contains") about a document one tool call away.
+ Substance not in view:
+ fetch it or read on before concluding,
+ whether a doc points elsewhere or mandated steps sit later in the file.
+ Never hedge ("likely contains") about text one read away.
 
 ### Name the verification step
 

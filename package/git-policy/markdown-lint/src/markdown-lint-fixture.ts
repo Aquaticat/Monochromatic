@@ -1,7 +1,7 @@
 /**
  Test-only fixtures: a disposable repository with `.lfsconfig`,
- `.gitattributes`, one LFS-tracked image, and the path of the workspace
- markdown-lint CLI to drive it.
+ `.gitattributes`, one LFS-tracked image, and the monochromatic-lint command
+ to drive it.
 
  @module
  */
@@ -14,10 +14,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import {
-  join,
-  resolve,
-} from 'node:path';
+import { join, } from 'node:path';
 
 import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
 
@@ -78,24 +75,10 @@ export const FIXTURE_IMAGE_BYTES: Uint8Array = Buffer.from('image bytes',);
 export const FIXTURE_OBJECT_BASE = 'https://lfs.example';
 
 /**
- Command that starts the workspace markdown-lint source entry, resolved from
- this file's location so the fixture repository can live anywhere.
+ Command that starts monochromatic-lint: the executable on `PATH`, which the
+ repository installs through mise as `cargo:monochromatic-lint`.
  */
-export const MARKDOWN_LINT_COMMAND: readonly string[] = [
-  process.execPath,
-  resolve(
-    import.meta.dirname,
-    '..',
-    '..',
-    '..',
-    '..',
-    'package',
-    'cli',
-    'markdown-lint',
-    'src',
-    'cli.ts',
-  ),
-];
+export const MONOCHROMATIC_LINT_COMMAND: readonly string[] = ['monochromatic-lint',];
 
 /**
  Create a disposable repository fixture: `.lfsconfig` pointing at the fixture

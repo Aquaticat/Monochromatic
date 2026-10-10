@@ -1,6 +1,11 @@
-//! What: Argument builders, disposable real-Git fixtures and table oracles for unit tests.
-//! Why: Every command module is checked against the Git 2.56.0 binary in the verification
-//!      image, inside a fresh directory, never against the real home or global configuration.
+//! What:
+//!  Argument builders,
+//!  disposable real-Git fixtures and table oracles for unit tests.
+//! Why:
+//!  Every command module is checked against the Git 2.56.0 binary in the verification
+//!      image,
+//!  inside a fresh directory,
+//!  never against the real home or global configuration.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,11 +17,15 @@ use super::command_options::{
     Arity, DEFAULT_MODE, OptionError, OptionSpec, ParsedOptions, parse_options, row,
 };
 /// The real Git path and fixture removal are shared with the wrapper's unit tests unchanged.
-/// The fixture constructor and Git runners stay separate on purpose: their directory prefix
-/// keeps command fixtures apart from wrapper fixtures in one test process, and the runners
+/// The fixture constructor and Git runners stay separate on purpose:
+///  their directory prefix
+/// keeps command fixtures apart from wrapper fixtures in one test process,
+///  and the runners
 /// also fix `GIT_EDITOR` and close standard input.
 pub(crate) use super::test_support::{REAL_GIT, remove};
-/// Native string, path, stream and process types used by the fixtures.
+/// Native string,
+///  path,
+///  stream and process types used by the fixtures.
 use std::ffi::OsString;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -143,7 +152,8 @@ pub(crate) fn git_status(directory: &Path, arguments: &[&str]) -> Output {
     return git_output(directory, os_arguments(arguments).as_slice());
 }
 
-/// Run real Git with bytes on standard input, as `git rev-parse --parseopt` needs.
+/// Run real Git with bytes on standard input,
+///  as `git rev-parse --parseopt` needs.
 pub(crate) fn git_with_input(directory: &Path, arguments: &[OsString], input: &[u8]) -> Output {
     let mut child: std::process::Child = git_command(directory)
         .args(arguments)
@@ -176,7 +186,8 @@ pub(crate) fn repository(parent: &Path, name: &str) -> PathBuf {
     return root;
 }
 
-/// Create a fixture whose repository has `tracked.txt` committed; returns the fixture
+/// Create a fixture whose repository has `tracked.txt` committed;
+///  returns the fixture
 /// directory to remove and the repository root.
 pub(crate) fn repository_with_tracked_file(name: &str) -> (PathBuf, PathBuf) {
     let directory: PathBuf = fixture(name);
@@ -190,7 +201,8 @@ pub(crate) fn repository_with_tracked_file(name: &str) -> (PathBuf, PathBuf) {
     return (directory, root);
 }
 
-/// Leave the repository in a conflicted merge of `tracked.txt`, with `MERGE_HEAD` present.
+/// Leave the repository in a conflicted merge of `tracked.txt`,
+///  with `MERGE_HEAD` present.
 pub(crate) fn start_conflicted_merge(root: &Path) {
     git(root, &["switch", "--quiet", "--create", "other"]);
     std::fs::write(root.join("tracked.txt"), b"other\n").expect("write other side");
@@ -214,7 +226,9 @@ pub(crate) fn output_text(output: &Output) -> String {
 }
 
 /// Require what Git's `parse_options_check` requires of a table (parse-options.c:642-736):
-/// unique short letters, unique long names, and spellings that can introduce an option.
+/// unique short letters,
+///  unique long names,
+///  and spellings that can introduce an option.
 pub(crate) fn assert_table_invariants(table: &[OptionSpec]) {
     let mut shorts: Vec<u8> = Vec::<u8>::new();
     let mut longs: Vec<&str> = Vec::<&str>::new();

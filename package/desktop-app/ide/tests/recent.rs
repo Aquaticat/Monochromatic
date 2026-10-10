@@ -1,11 +1,14 @@
 //! Consumer tests for the explicitly required Ctrl+digit navigation contract.
 
-/// Import production history and key decoding, plus owned test paths.
+/// Import production history and key decoding,
+///  plus owned test paths.
 use ide_app::recent::{RecentFiles, shortcut_slot};
 /// PathBuf owns test names independently of temporary formatting strings.
 use std::path::{Path, PathBuf};
 
-/// Verify ten unique slots, eviction, and current-file stability.
+/// Verify ten unique slots,
+///  eviction,
+///  and current-file stability.
 #[test]
 fn history_caps_at_ten_and_promotes_duplicates() {
     // What: Default creates empty history; mut permits in-memory updates.
@@ -38,7 +41,8 @@ fn history_caps_at_ten_and_promotes_duplicates() {
     assert_eq!(recent.at(1), Some(Path::new("file11.ts")));
 }
 
-/// Verify repeated Ctrl+1 alternates the last two opened files, as editord does.
+/// Verify repeated Ctrl+1 alternates the last two opened files,
+///  as editord does.
 #[test]
 fn previous_slot_toggles_after_promotion() {
     let mut recent = RecentFiles::default();

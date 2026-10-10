@@ -1,9 +1,18 @@
-//! Turn notify events into pending invalidations; this runs on notify's own event-loop thread.
+//! Turn notify events into pending invalidations;
+//!  this runs on notify's own event-loop thread.
 
-/// Shared invalidation state, the changes sent to the language servers, and the poison-tolerant lock.
+/// Shared invalidation state,
+///  the changes sent to the language servers,
+///  and the poison-tolerant lock.
 use super::shared::{ServerChange, ServerChangeKind, Shared, SourceChange, lock};
-/// What: notify's event types: `Event` holds a kind plus affected paths; the `*Kind` enums classify it.
-/// Why: Classification decides whether a directory listing, the displayed file, or nothing is stale.
+/// What:
+///  notify's event types:
+///  `Event` holds a kind plus affected paths;
+///  the `*Kind` enums classify it.
+/// Why:
+///  Classification decides whether a directory listing,
+///  the displayed file,
+///  or nothing is stale.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,8 +22,12 @@ use notify::{
     Event, EventKind,
     event::{AccessKind, AccessMode, CreateKind, ModifyKind, RenameMode},
 };
-/// What: `Mutex` guards the shared state; `SyncSender` is the sending half of a bounded channel.
-/// Why: The handler must never block notify's thread; it only locks briefly and sends a non-blocking wake.
+/// What:
+///  `Mutex` guards the shared state;
+///  `SyncSender` is the sending half of a bounded channel.
+/// Why:
+///  The handler must never block notify's thread;
+///  it only locks briefly and sends a non-blocking wake.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,27 +40,38 @@ use std::{
 
 /// What one event means for the window.
 ///
-/// What: an `enum` whose `Content` and `Entries` variants each carry a `SourceChange` payload,
+/// What:
+///  an `enum` whose `Content` and `Entries` variants each carry a `SourceChange` payload,
 ///       like a TS tagged union `{ kind: 'content', change } | { kind: 'entries', change } | { kind: 'ignore' }`.
-/// Why: Entry changes (create, remove, rename) also make the parent directory's listing stale;
+/// Why:
+///  Entry changes (create,
+///  remove,
+///  rename) also make the parent directory's listing stale;
 ///      content changes only matter when the path is the displayed file.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Reaction {
-    /// Opens and read-only closes, including the IDE's own reads; reacting would reread forever.
+    /// Opens and read-only closes,
+    ///  including the IDE's own reads;
+    ///  reacting would reread forever.
     Ignore,
-    /// File content or permissions changed; the parent listing is unaffected.
+    /// File content or permissions changed;
+    ///  the parent listing is unaffected.
     Content(
         /// How finished the change looks when the path is the displayed file.
         SourceChange,
     ),
-    /// A name appeared, disappeared, or moved; the parent listing is stale too.
+    /// A name appeared,
+    ///  disappeared,
+    ///  or moved;
+    ///  the parent listing is stale too.
     Entries(
         /// How finished the change looks when the path is the displayed file.
         SourceChange,
     ),
 }
 
-/// Classify one event kind; unknown kinds are treated as entry changes so nothing is missed.
+/// Classify one event kind;
+///  unknown kinds are treated as entry changes so nothing is missed.
 fn classify(kind: &EventKind) -> Reaction {
     // What: `match` compares `kind` against each pattern in order; `_` matches anything left.
     //       `EventKind::Access(AccessKind::Close(AccessMode::Write))` is a nested pattern, like checking
@@ -80,7 +104,8 @@ fn classify(kind: &EventKind) -> Reaction {
     }
 }
 
-/// What an event means for the language servers, or `None` for events they never hear about.
+/// What an event means for the language servers,
+///  or `None` for events they never hear about.
 fn server_kind(kind: &EventKind) -> Option<ServerChangeKind> {
     // What: `match` on nested event kinds; `RenameMode::From` and `RenameMode::To` are the two halves of a move.
     // Why: The protocol knows only created, changed, and deleted; a move is a deletion plus a creation.
@@ -112,8 +137,12 @@ fn server_kind(kind: &EventKind) -> Option<ServerChangeKind> {
     }
 }
 
-/// True for an event that may have made a new folder appear: a folder creation, a creation of unknown
-/// kind, or a move into place, which inotify does not mark as a file or a folder.
+/// True for an event that may have made a new folder appear:
+///  a folder creation,
+///  a creation of unknown
+/// kind,
+///  or a move into place,
+///  which inotify does not mark as a file or a folder.
 fn may_add_folder(kind: &EventKind) -> bool {
     return matches!(
         kind,
@@ -122,8 +151,10 @@ fn may_add_folder(kind: &EventKind) -> bool {
     );
 }
 
-/// Forward one event's path to the language servers when it lies in a folder watched for them, and note
-/// what it does to the folder structure; true when the watch thread must look at that structure.
+/// Forward one event's path to the language servers when it lies in a folder watched for them,
+///  and note
+/// what it does to the folder structure;
+///  true when the watch thread must look at that structure.
 fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool {
     // What: `let Some(feed) = ... else` binds the queue into the language worker, or returns when there is none.
     // Why: Nothing is watched or sent for the servers while none registered file watchers.
@@ -181,7 +212,8 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
     return structure;
 }
 
-/// Wake the watch thread without blocking; a full channel already holds a pending wake.
+/// Wake the watch thread without blocking;
+///  a full channel already holds a pending wake.
 pub(super) fn wake(sender: &SyncSender<()>) {
     // What: `if let Err(TrySendError::Disconnected(()))` matches only the "receiver is gone" failure;
     //       `TrySendError::Full` (a wake is already queued) needs nothing.
@@ -196,7 +228,10 @@ pub(super) fn wake(sender: &SyncSender<()>) {
     }
 }
 
-/// Record a notify error: log it, mark its paths' watches stale, and request a full reread.
+/// Record a notify error:
+///  log it,
+///  mark its paths' watches stale,
+///  and request a full reread.
 fn record_error(shared: &Mutex<Shared>, sender: &SyncSender<()>, error: &notify::Error) {
     tracing::warn!(%error, paths = ?error.paths, "file-change notification error; rereading everything shown");
     let mut guard = lock(shared);
@@ -215,7 +250,10 @@ fn record_error(shared: &Mutex<Shared>, sender: &SyncSender<()>, error: &notify:
     }
 }
 
-/// Record one event, or one error, from notify as invalidations; never touches the filesystem.
+/// Record one event,
+///  or one error,
+///  from notify as invalidations;
+///  never touches the filesystem.
 pub(super) fn record(
     shared: &Mutex<Shared>,
     sender: &SyncSender<()>,

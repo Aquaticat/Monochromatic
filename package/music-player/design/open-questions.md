@@ -111,7 +111,7 @@ and authorizes no dependent implementation.
 All filename investigations exclude matcher choices,
 new IME work and native accessibility acceptance.
 
-- **PROVISIONAL: folded-cover picker P4 (D46).**
+- **PROVISIONAL, revisit in another major version (D46, D104): folded-cover picker P4 with an upward caret while open.**
   The app-bar folder title and caret
   open the picker in the list slot while the deck remains visible.
   The P comparison
@@ -134,7 +134,13 @@ new IME work and native accessibility acceptance.
   with D41/D42 dark structure and D45
   light seams.
   Selection does not authorize production work.
-- **OPEN: revisit the folded-cover picker before 1.x (D46).**
+- **SETTLED (D104), further improvement deferred to another major version: the folded-cover picker (D46).**
+  The human approved P5 without its container: P4 with the caret pointing up while open.
+  They are still unsatisfied and will deal with it in another major version.
+  The built P5 is shown beside P4 in `questions/cover-picker-revisit.html`;
+  the plan is `doc/planning/music-player-cover-picker-revisit.md`.
+  On 2026-10-10 the human asked for the exploration now and left the angle to the agent
+  (one alternative built from the best of the agent's design judgment, then asked to approve).
   The user chose P4 while
   believing a better solution exists.
   Explore alternatives at a future design round,
@@ -376,7 +382,8 @@ new IME work and native accessibility acceptance.
   their activation was settled as D72 to D74 under review task 129,
   but native behavior remains unverified.
   See `evidence/search-result-overflow.md` for bounds and test limitations.
-- **OPEN: remaining Search behavior after D51/D52.**
+- **CLOSED as a design item (D103): remaining Search behavior after D51/D52.**
+  What is left is native verification, which waits for an implementation.
   Keep positive results,
   no-results/unavailable states and open/back behavior distinct;
   do not
@@ -470,7 +477,7 @@ new IME work and native accessibility acceptance.
   do not transfer to Search.
   D25 still reserves Ctrl+F for search and Ctrl+O for the
   picker,
-  pending the whole keyboard map.
+  and D102 accepted the whole keyboard map.
   Cover-specific accessibility remains open;
   D39/D40 settled only the unfolded
   screen.
@@ -534,9 +541,9 @@ new IME work and native accessibility acceptance.
   with information clear of the dent,
   preserve D34/D41 color treatments,
   and do not silently retain fixed 414dp content panes or a blank 24dp stripe.
-- **OPEN: keyboard map revision (section 6):**
-  one revised IntelliJ-aligned map,
-  including what ↑/↓ does after D43 removed the volume popover.
+- Keyboard map revision (section 6) is settled by D102:
+  the IntelliJ-aligned map is accepted as built,
+  and bare ↑/↓ keep their native behavior after D43 removed the volume popover.
 - Android media notification presentation is settled by D82.
   Accept what Android provides;
   no special notification design or variant round remains.
@@ -869,16 +876,15 @@ volume;
  and the
 Android media notification appearance is settled by D82:
 accept the platform presentation with no special design.
-**Status (2026-09-17):**
- the design deliverable is a single revised map brought back as a
-whole;
- implementing it is developer work.
-The requested pass now has a verified whole-map proposal at
-`questions/keyboard-map.prototype.html`.
+**Status (2026-10-10): SETTLED (D102).**
+ The human accepted the whole-map proposal at
+`questions/keyboard-map.prototype.html` as built,
+including the playback-area scope for Space, previous, next and `Ctrl+M`,
+and bare arrows keeping native behavior.
 `evidence/keyboard-map-boundaries.md` separates actual browser behavior
 from unverified OS/native delivery.
-New bindings and the proposed playback-region scope are not accepted defaults;
-there is no per-key ballot or production implementation authority.
+Implementing the map is developer work;
+there is no production implementation authority.
  The custom media-notification design item is closed by D82;
  functional integration remains separate.
 
@@ -1005,10 +1011,8 @@ of decisions.md.
 - **Command bar surface** (D21) — superseded by D47;
    the Search page is active in
    section 0b.
-- **Keyboard map / IntelliJ alignment pass** (D25):
-   see section 6;
-   one revised map is the
-  design deliverable.
+- **Keyboard map / IntelliJ alignment pass** — SETTLED (D102):
+   see section 6.
 - **Accessibility pass — SETTLED for the unfolded screen (D39, D40).**
    Other surfaces
   get their accessibility treatment inside their own rounds.

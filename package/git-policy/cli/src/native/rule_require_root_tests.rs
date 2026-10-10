@@ -1,14 +1,20 @@
-//! What: Exemptions and verdicts of the require-root decision, with every case of
+//! What:
+//!  Exemptions and verdicts of the require-root decision,
+//!  with every case of
 //!       `require-root.unit.test.ts` restated as the facts its fixture would measure.
-//! Why: The incumbent's fixtures build repository shapes on disk; the native core receives
-//!      the measured root instead, so each fixture becomes the measurement it produces.
+//! Why:
+//!  The incumbent's fixtures build repository shapes on disk;
+//!  the native core receives
+//!      the measured root instead,
+//!  so each fixture becomes the measurement it produces.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(resolveRequireRoot({ effectiveDirectory: '/r/sub', repositoryRoot: '/r' }).kind).toBe('not-at-root');
 //! ```
 
-/// The decision, its result types and the argument and real-Git fixture helpers.
+/// The decision,
+///  its result types and the argument and real-Git fixture helpers.
 use super::RequireRootExemption::{ConfigScope, NoCommand, Subcommand};
 use super::{
     NOT_AT_ROOT_CODE, RequireRootDecision, RequireRootFacts, RequireRootVerdict,
@@ -18,7 +24,8 @@ use crate::command_test_support::{fixture, git, os_arguments, remove, repository
 use std::path::PathBuf;
 use std::process::Output;
 
-/// The wrapper-only escape hatch of this policy, as the caller passes it.
+/// The wrapper-only escape hatch of this policy,
+///  as the caller passes it.
 const HATCH: &[u8] = b"--no-enforce-require-root";
 
 /// Decide a space-separated argument list with the policy's own wrapper flag.
@@ -27,7 +34,8 @@ fn decide(line: &str) -> RequireRootDecision {
     return decide_require_root(os_arguments(values.as_slice()).as_slice(), &[HATCH]);
 }
 
-/// Measurements with a known repository root, or with none.
+/// Measurements with a known repository root,
+///  or with none.
 fn facts(directory: &str, root: Option<&str>) -> RequireRootFacts {
     let mut repository_root: Option<PathBuf> = None;
     if let Some(found) = root {
@@ -39,7 +47,8 @@ fn facts(directory: &str, root: Option<&str>) -> RequireRootFacts {
     };
 }
 
-/// The rejection text of the incumbent, verbatim.
+/// The rejection text of the incumbent,
+///  verbatim.
 fn violation(root: &str, directory: &str) -> RequireRootVerdict {
     return RequireRootVerdict::NotAtRoot(RequireRootViolation {
         message: format!(
@@ -48,7 +57,9 @@ fn violation(root: &str, directory: &str) -> RequireRootVerdict {
     });
 }
 
-/// Ported: every incumbent case, as the decision on its arguments plus its measurements.
+/// Ported:
+///  every incumbent case,
+///  as the decision on its arguments plus its measurements.
 #[test]
 fn ports_the_incumbent_cases() {
     // The fixtures run `-C <directory> status`; a nonexempt command needs the measurement.
@@ -83,7 +94,9 @@ fn ports_the_incumbent_cases() {
     assert_eq!(NOT_AT_ROOT_CODE, "not-at-root");
 }
 
-/// The four exempt subcommands, exactly as spelled, after any global prefix.
+/// The four exempt subcommands,
+///  exactly as spelled,
+///  after any global prefix.
 #[test]
 fn exempts_commands_that_need_no_repository() {
     for line in [
@@ -116,7 +129,9 @@ fn exempts_commands_that_need_no_repository() {
     }
 }
 
-/// Divergence: when Git runs no subcommand at all, nothing needs a root.
+/// Divergence:
+///  when Git runs no subcommand at all,
+///  nothing needs a root.
 #[test]
 fn exempts_arguments_that_run_no_subcommand() {
     for line in [
@@ -138,8 +153,10 @@ fn exempts_arguments_that_run_no_subcommand() {
     }
 }
 
-/// `git config` is exempt for the per-user or system file and for listing, in option
-/// position only; a region Git refuses is not exempt.
+/// `git config` is exempt for the per-user or system file and for listing,
+///  in option
+/// position only;
+///  a region Git refuses is not exempt.
 #[test]
 fn exempts_config_by_its_file_scope() {
     for line in [
@@ -190,7 +207,8 @@ fn exempts_config_by_its_file_scope() {
     assert_eq!(refused, RequireRootDecision::NeedsRepositoryRoot);
 }
 
-/// Paths compare by components, and non-UTF-8 directories still produce a diagnostic.
+/// Paths compare by components,
+///  and non-UTF-8 directories still produce a diagnostic.
 #[test]
 fn compares_paths_by_component() {
     assert_eq!(
@@ -224,7 +242,8 @@ fn reports_a_non_utf8_directory() {
     assert_eq!(verdict, violation("/r", "/r/sub\u{fffd}"));
 }
 
-/// `git config list` and `git config --list` print the same thing, so both are listing.
+/// `git config list` and `git config --list` print the same thing,
+///  so both are listing.
 #[test]
 fn config_list_spellings_match_git() {
     let directory: PathBuf = fixture("require-root-config-list");

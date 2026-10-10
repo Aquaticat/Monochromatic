@@ -1,5 +1,9 @@
-//! What:    A 256-bit set of bytes, the leaf alphabet of the engine.
-//! Why:     This file is the Rust module that groups the charset implementation, so the
+//! What:
+//!     A 256-bit set of bytes,
+//!  the leaf alphabet of the engine.
+//! Why:
+//!      This file is the Rust module that groups the charset implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +11,12 @@
 //! // module charset: see exported functions and types below.
 //! ```
 
-/// What:    Imports the serde derives so byte sets can be persisted inside a compiled program.
-/// Why:     The code below uses `Deserialize`, `Serialize` directly; importing from `serde`
+/// What:
+///     Imports the serde derives so byte sets can be persisted inside a compiled program.
+/// Why:
+///      The code below uses `Deserialize`,
+///  `Serialize` directly;
+///  importing from `serde`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +25,10 @@
 /// ```
 use serde::{Deserialize, Serialize};
 
-/// What:    Number of `u64` words needed to hold one bit per possible byte value (256/64).
-/// Why:     The program gives this fixed value a name so every caller uses the same setting.
+/// What:
+///     Number of `u64` words needed to hold one bit per possible byte value (256/64).
+/// Why:
+///      The program gives this fixed value a name so every caller uses the same setting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -26,8 +36,11 @@ use serde::{Deserialize, Serialize};
 /// ```
 const WORDS: usize = 4;
 
-/// What:    Bit width of one `u64`, used to split a byte value into word and bit indices.
-/// Why:     The program gives this fixed value a name so every caller uses the same setting.
+/// What:
+///     Bit width of one `u64`,
+///  used to split a byte value into word and bit indices.
+/// Why:
+///      The program gives this fixed value a name so every caller uses the same setting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,11 +48,19 @@ const WORDS: usize = 4;
 /// ```
 const BITS_PER_WORD: usize = 64;
 
-/// An immutable-by-convention set of byte values, stored as a 256-bit bitmap.
+/// An immutable-by-convention set of byte values,
+///  stored as a 256-bit bitmap.
 ///
-/// What: `[u64; 4]` where bit `b` is set when byte `b` is a member. Why: byte
-/// classes, `.`, single literals, and the `\d \w \s` shorthands are all just
-/// byte sets; membership and complement are O(1) word operations.
+/// What:
+///  `[u64; 4]` where bit `b` is set when byte `b` is a member.
+///  Why:
+///  byte
+/// classes,
+///  `.`,
+///  single literals,
+///  and the `\d \w \s` shorthands are all just
+/// byte sets;
+///  membership and complement are O(1) word operations.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,9 +70,14 @@ const BITS_PER_WORD: usize = 64;
     Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
 )]
 pub struct ByteSet {
-    /// What:    Bitmap words; `words[b / 64]`'s bit `b % 64` is set iff `b` is present.
-    /// Why:     `words` stores bitmap words; `words[b / 64]`'s bit `b % 64` is set iff `b` is
-    ///          present, so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     Bitmap words;
+    ///  `words[b / 64]`'s bit `b % 64` is set iff `b` is present.
+    /// Why:
+    ///      `words` stores bitmap words;
+    ///  `words[b / 64]`'s bit `b % 64` is set iff `b` is
+    ///          present,
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -61,8 +87,12 @@ pub struct ByteSet {
     words: [u64; WORDS],
 }
 
-/// What:    Construction, mutation, and queries for a `ByteSet`.
-/// Why:     The program attaches these functions to the named Rust type so callers can use
+/// What:
+///     Construction,
+///  mutation,
+///  and queries for a `ByteSet`.
+/// Why:
+///      The program attaches these functions to the named Rust type so callers can use
 ///          method syntax.
 ///
 /// In TS you'd write (pseudocode):
@@ -72,7 +102,10 @@ pub struct ByteSet {
 impl ByteSet {
     /// Builds the empty set.
     ///
-    /// What: all words zero. Why: the starting point every class builds up from.
+    /// What:
+    ///  all words zero.
+    ///  Why:
+    ///  the starting point every class builds up from.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -86,8 +119,12 @@ impl ByteSet {
 
     /// Builds the full set of every byte value.
     ///
-    /// What: all 256 bits set. Why: the conservative first-byte set for a back-end
-    /// whose first bytes are not enumerated, so its line-start check is never skipped.
+    /// What:
+    ///  all 256 bits set.
+    ///  Why:
+    ///  the conservative first-byte set for a back-end
+    /// whose first bytes are not enumerated,
+    ///  so its line-start check is never skipped.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -101,7 +138,10 @@ impl ByteSet {
 
     /// Adds a single byte to the set.
     ///
-    /// What: sets the bit for `b`. Why: literals and explicit class members.
+    /// What:
+    ///  sets the bit for `b`.
+    ///  Why:
+    ///  literals and explicit class members.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -123,7 +163,10 @@ impl ByteSet {
 
     /// Adds every byte in the inclusive range `lo..=hi` to the set.
     ///
-    /// What: iterates the range and inserts each. Why: class ranges like `a-z`.
+    /// What:
+    ///  iterates the range and inserts each.
+    ///  Why:
+    ///  class ranges like `a-z`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -146,7 +189,10 @@ impl ByteSet {
 
     /// Merges another set into this one in place.
     ///
-    /// What: bitwise-ORs each word. Why: combining shorthands and members inside
+    /// What:
+    ///  bitwise-ORs each word.
+    ///  Why:
+    ///  combining shorthands and members inside
     /// one character class.
     ///
     /// In TS you'd write (pseudocode):
@@ -169,7 +215,10 @@ impl ByteSet {
 
     /// Returns the complement of this set over all 256 byte values.
     ///
-    /// What: bitwise-NOT each word. Why: negated classes `[^...]` and the
+    /// What:
+    ///  bitwise-NOT each word.
+    ///  Why:
+    ///  negated classes `[^...]` and the
     /// negated shorthands `\D \W \S`.
     ///
     /// In TS you'd write (pseudocode):
@@ -195,7 +244,10 @@ impl ByteSet {
 
     /// Reports whether a byte is a member.
     ///
-    /// What: tests the bit for `b`. Why: the leaf step of a derivative on a class.
+    /// What:
+    ///  tests the bit for `b`.
+    ///  Why:
+    ///  the leaf step of a derivative on a class.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -210,7 +262,10 @@ impl ByteSet {
 
     /// Reports whether the set has no members.
     ///
-    /// What: all words zero. Why: an empty class is the `Fail` language.
+    /// What:
+    ///  all words zero.
+    ///  Why:
+    ///  an empty class is the `Fail` language.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -224,8 +279,13 @@ impl ByteSet {
 
     /// Returns the sole member byte when the set holds exactly one.
     ///
-    /// What: `Some(b)` iff one bit is set across all words, else `None`. Why: a
-    /// singleton class is a literal byte, which the prefilter chains into a required
+    /// What:
+    ///  `Some(b)` iff one bit is set across all words,
+    ///  else `None`.
+    ///  Why:
+    ///  a
+    /// singleton class is a literal byte,
+    ///  which the prefilter chains into a required
     /// literal seed.
     ///
     /// In TS you'd write (pseudocode):
@@ -256,8 +316,14 @@ impl ByteSet {
 
 /// Reports whether a byte is an ASCII word character `[A-Za-z0-9_]`.
 ///
-/// What: the predicate shared by `\w`, `\b`, and byte-class equivalence. Why:
-/// one definition keeps the shorthand, the boundary assertion, and class
+/// What:
+///  the predicate shared by `\w`,
+///  `\b`,
+///  and byte-class equivalence.
+///  Why:
+/// one definition keeps the shorthand,
+///  the boundary assertion,
+///  and class
 /// signatures consistent.
 ///
 /// In TS you'd write (pseudocode):
@@ -270,9 +336,14 @@ pub fn is_word_byte(b: u8) -> bool {
     return b.is_ascii_alphanumeric() || b == b'_'
 }
 
-/// Builds the set matched by `.`: every byte except the newline.
+/// Builds the set matched by `.`:
+///  every byte except the newline.
 ///
-/// What: full universe minus `\n`. Why: dot is non-dotall, matching any single
+/// What:
+///  full universe minus `\n`.
+///  Why:
+///  dot is non-dotall,
+///  matching any single
 /// byte that is not a line terminator.
 ///
 /// In TS you'd write (pseudocode):
@@ -298,7 +369,10 @@ pub fn dot_set() -> ByteSet {
 
 /// Returns `a` with every member of `b` removed.
 ///
-/// What: `a AND NOT b` per word. Why: used to carve `\n` out of the dot set.
+/// What:
+///  `a AND NOT b` per word.
+///  Why:
+///  used to carve `\n` out of the dot set.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -314,9 +388,13 @@ fn intersect_complement(a: &ByteSet, b: &ByteSet) -> ByteSet {
     return out
 }
 
-/// Builds the `\d` set, ASCII digits `[0-9]`.
+/// Builds the `\d` set,
+///  ASCII digits `[0-9]`.
 ///
-/// What: inserts the digit range. Why: the `\d` shorthand and its negation.
+/// What:
+///  inserts the digit range.
+///  Why:
+///  the `\d` shorthand and its negation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -330,9 +408,15 @@ pub fn digit_set() -> ByteSet {
     return set
 }
 
-/// Builds the `\w` set, ASCII word characters `[A-Za-z0-9_]`.
+/// Builds the `\w` set,
+///  ASCII word characters `[A-Za-z0-9_]`.
 ///
-/// What: letters, digits, underscore. Why: the `\w` shorthand and its negation,
+/// What:
+///  letters,
+///  digits,
+///  underscore.
+///  Why:
+///  the `\w` shorthand and its negation,
 /// kept identical to `is_word_byte`.
 ///
 /// In TS you'd write (pseudocode):
@@ -350,9 +434,18 @@ pub fn word_set() -> ByteSet {
     return set
 }
 
-/// Builds the `\s` set, ASCII whitespace `[ \t\n\r\x0c\x0b]`.
+/// Builds the `\s` set,
+///  ASCII whitespace `[ \t\n\r\x0c\x0b]`.
 ///
-/// What: space, tab, newline, carriage return, form feed, vertical tab. Why: the
+/// What:
+///  space,
+///  tab,
+///  newline,
+///  carriage return,
+///  form feed,
+///  vertical tab.
+///  Why:
+///  the
 /// `\s` shorthand and its negation.
 ///
 /// In TS you'd write (pseudocode):
@@ -374,7 +467,10 @@ pub fn space_set() -> ByteSet {
 
 /// Builds a singleton set holding exactly one byte.
 ///
-/// What: empty set plus `b`. Why: every literal byte becomes a one-member class.
+/// What:
+///  empty set plus `b`.
+///  Why:
+///  every literal byte becomes a one-member class.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -388,8 +484,11 @@ pub fn singleton(b: u8) -> ByteSet {
     return set
 }
 
-/// What:    Unit tests for the byte-set primitives, in a sidecar (max-lines exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// What:
+///     Unit tests for the byte-set primitives,
+///  in a sidecar (max-lines exempt).
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):

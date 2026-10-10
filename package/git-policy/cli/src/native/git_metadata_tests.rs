@@ -1,5 +1,8 @@
-//! What: Byte-level controls for captured real-Git queries.
-//! Why: Query output is path bytes; exactly one terminator is removed and nothing is decoded.
+//! What:
+//!  Byte-level controls for captured real-Git queries.
+//! Why:
+//!  Query output is path bytes;
+//!  exactly one terminator is removed and nothing is decoded.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -14,7 +17,8 @@ use std::ffi::OsString;
 use std::os::unix::ffi::OsStringExt;
 use std::path::{Path, PathBuf};
 
-/// Exactly one final LF or CRLF is removed; everything else is value bytes.
+/// Exactly one final LF or CRLF is removed;
+///  everything else is value bytes.
 #[test]
 fn strip_removes_exactly_one_terminator() {
     for (input, expected) in [
@@ -34,7 +38,8 @@ fn strip_removes_exactly_one_terminator() {
     }
 }
 
-/// Path bytes round-trip unchanged; an empty value is not a path.
+/// Path bytes round-trip unchanged;
+///  an empty value is not a path.
 #[test]
 fn path_bytes_round_trip_without_decoding() {
     assert_eq!(path_from_git_bytes(b""), None);
@@ -45,7 +50,9 @@ fn path_bytes_round_trip_without_decoding() {
     );
 }
 
-/// A successful query returns exact stdout bytes; a failed one is an answer, not an error.
+/// A successful query returns exact stdout bytes;
+///  a failed one is an answer,
+///  not an error.
 #[test]
 fn queries_capture_output_and_exit_state() {
     let version: MetadataOutput =
@@ -83,7 +90,9 @@ fn queries_capture_output_and_exit_state() {
     remove(root.as_path());
 }
 
-/// The child receives unchanged arguments and the overlay, reads no input, and its streams are captured.
+/// The child receives unchanged arguments and the overlay,
+///  reads no input,
+///  and its streams are captured.
 #[test]
 fn queries_pass_arguments_and_overlay_and_close_stdin() {
     let root: PathBuf = fixture("metadata-probe");

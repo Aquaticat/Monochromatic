@@ -1,16 +1,27 @@
-//! In-file find rectangles for materialized rows only, from the same geometry path as selection.
+//! In-file find rectangles for materialized rows only,
+//!  from the same geometry path as selection.
 
-/// Match ranges are source character positions, never display columns.
+/// Match ranges are source character positions,
+///  never display columns.
 use crate::find::FindRange;
 /// Binary search limits work to matches intersecting the materialized rows.
 use crate::find_navigation::visible;
-/// Shaped rows own the only glyph geometry; rectangles come from them, not from a second layout.
+/// Shaped rows own the only glyph geometry;
+///  rectangles come from them,
+///  not from a second layout.
 use crate::shaped_text::{ReadingRect, ShapedView};
 
-/// What: `&ShapedView` and `&[FindRange]` borrow the frame and the sorted matches; `Option<FindRange>`
-/// is one range or nothing; `f32` is a 32-bit float (sibling `f64`), the unit of logical pixels here.
-/// Why: Only matches inside the materialized rows and horizontal tile become native rectangles,
-/// so painting cost follows the viewport, not the file. The active match is drawn as the selection.
+/// What:
+///  `&ShapedView` and `&[FindRange]` borrow the frame and the sorted matches;
+///  `Option<FindRange>`
+/// is one range or nothing;
+///  `f32` is a 32-bit float (sibling `f64`),
+///  the unit of logical pixels here.
+/// Why:
+///  Only matches inside the materialized rows and horizontal tile become native rectangles,
+/// so painting cost follows the viewport,
+///  not the file.
+///  The active match is drawn as the selection.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

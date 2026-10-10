@@ -1,7 +1,8 @@
-//! External-reload synchronization: the server's copy of the text must equal the document text
+//! External-reload synchronization:
+//!  the server's copy of the text must equal the document text
 //! for every negotiated synchronization kind and column unit.
 
-use crate::support::{self, Probe, SERVER};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
     reply::{RequestKind, RequestOutcome},
     status::ServerState,
@@ -9,11 +10,13 @@ use ide_app::language::{
 use serde_json::Value;
 use std::path::Path;
 
-/// The first required correspondence example of the accepted scope, before and after.
+/// The first required correspondence example of the accepted scope,
+///  before and after.
 const CAT_BEFORE: &str = "I am a big cat.";
 const CAT_AFTER: &str = "I was a big cat.";
 
-/// The second required correspondence example, before and after.
+/// The second required correspondence example,
+///  before and after.
 const HUMAN_BEFORE: &str = "I am a big cat";
 const HUMAN_AFTER: &str = "I was a big cat, but now I am a human!";
 
@@ -29,7 +32,9 @@ fn of_method<'a>(lines: &'a [Value], method: &str) -> Vec<&'a Value> {
         .collect();
 }
 
-/// Open the first example, apply every reload, and require the server's copy to follow each one.
+/// Open the first example,
+///  apply every reload,
+///  and require the server's copy to follow each one.
 fn follow_reloads(root: &Path, probe: &mut Probe, name: &str) -> Vec<Value> {
     let file = root.join(name);
     probe.open(&file, CAT_BEFORE);
@@ -64,8 +69,11 @@ fn incremental_reload_reaches_the_server_in_each_column_unit() {
     };
     for encoding in ["utf-8", "utf-16", "utf-32", ""] {
         std::fs::remove_file(support::report_path(&root)).unwrap_or_default();
-        let definitions =
-            support::scripted(&root, &[("SYNC", "incremental"), ("ENCODING", encoding)], 3);
+        let definitions = support::scripted(
+            &root,
+            &[("SYNC", "incremental"), ("ENCODING", encoding)],
+            PRODUCT_TIMEOUT,
+        );
         let mut probe = Probe::new(&root, definitions);
         let lines = follow_reloads(&root, &mut probe, "incremental.scripted");
         let changes = of_method(&lines, "textDocument/didChange");
@@ -96,7 +104,10 @@ fn full_reload_sends_the_whole_text() {
         support::run_child("sync::full_reload_sends_the_whole_text", support::standard);
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "full")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("SYNC", "full")], PRODUCT_TIMEOUT),
+    );
     let lines = follow_reloads(&root, &mut probe, "full.scripted");
     let changes = of_method(&lines, "textDocument/didChange");
     assert_eq!(changes.len(), 5);
@@ -116,7 +127,10 @@ fn server_without_change_notifications_is_reopened() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "none")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("SYNC", "none")], PRODUCT_TIMEOUT),
+    );
     let lines = follow_reloads(&root, &mut probe, "none.scripted");
     assert!(
         of_method(&lines, "textDocument/didChange").is_empty(),
@@ -145,7 +159,10 @@ fn server_without_synchronization_becomes_unsynchronized() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("SYNC", "absent")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("SYNC", "absent")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("absent.scripted"), CAT_BEFORE);
     probe.until_ready();
     support::server_text_until(&root, CAT_BEFORE);
@@ -180,7 +197,8 @@ fn server_without_synchronization_becomes_unsynchronized() {
     support::server_text_until(&root, HUMAN_BEFORE);
 }
 
-/// After an external reload the text on disk equals the new text, so `didSave` is sent when asked for.
+/// After an external reload the text on disk equals the new text,
+///  so `didSave` is sent when asked for.
 #[test]
 fn did_save_follows_a_reload_when_the_server_asks_for_it() {
     let Some(root) = support::child_root() else {
@@ -190,7 +208,10 @@ fn did_save_follows_a_reload_when_the_server_asks_for_it() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("SAVE", "1")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("SAVE", "1")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("saved.scripted"), CAT_BEFORE);
     probe.until_ready();
     probe.reload(CAT_AFTER);
@@ -220,13 +241,19 @@ fn reload_during_start_is_delivered_by_the_eventual_did_open() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "600")], 3);
+    // The server answers `initialize` only once the gate file exists, which the test creates
+    // after the reload was sent; the worker takes the reload before the server can be ready.
+    let gate = support::scratch(&root).join("initialize-gate");
+    let gate_text = gate.display().to_string();
+    let definitions =
+        support::scripted(&root, &[("INIT_GATE", gate_text.as_str())], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("slow.scripted"), CAT_BEFORE);
     probe.until("the starting state", |seen| {
         return seen.state(SERVER) == Some(&ServerState::Starting);
     });
     probe.reload(CAT_AFTER);
+    std::fs::write(&gate, "").expect("initialize gate");
     probe.until_ready();
     let lines = support::server_text_until(&root, CAT_AFTER);
     let opens = of_method(&lines, "textDocument/didOpen");
@@ -246,7 +273,7 @@ fn missed_reload_is_recomputed_from_the_synchronized_text() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("missed.scripted"), CAT_BEFORE);
     probe.until_ready();
     support::server_text_until(&root, CAT_BEFORE);

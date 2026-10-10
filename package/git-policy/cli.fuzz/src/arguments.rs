@@ -1,6 +1,12 @@
-//! What: Argument vectors built from fuzz bytes, and the invariants of argument classification.
-//! Why: Git arguments are arbitrary bytes. Classification must never change them, must
-//!      agree with itself, and must never let a mutating `branch` or `tag` form skip
+//! What:
+//!  Argument vectors built from fuzz bytes,
+//!  and the invariants of argument classification.
+//! Why:
+//!  Git arguments are arbitrary bytes.
+//!  Classification must never change them,
+//!  must
+//!      agree with itself,
+//!  and must never let a mutating `branch` or `tag` form skip
 //!      policy configuration.
 //!
 //! In TS you'd write (pseudocode):
@@ -13,9 +19,11 @@ use crate::argument_tables::{BRANCH_MUTATIONS, INSPECTION_COMMANDS, TAG_MUTATION
 /// Import the classification functions under test.
 use git_policy_cli::config_loading::{ConfigLoading, classify_config_loading};
 use git_policy_cli::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
-/// What: `OsString` is owned operating-system text of raw OS bytes (sibling `String`
+/// What:
+///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
-/// Why:  Fuzz input is turned into arguments without any decoding.
+/// Why:
+///   Fuzz input is turned into arguments without any decoding.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -25,9 +33,13 @@ use std::ffi::OsString;
 /// The Unix trait that wraps raw bytes as OS text unchanged.
 use std::os::unix::ffi::OsStringExt;
 
-/// What: Largest generated argument vector.
-///       `usize` is the index and length type of every Rust list (siblings `u32`, `u64`).
-/// Why:  A bound keeps each execution fast; real command lines are far shorter.
+/// What:
+///  Largest generated argument vector.
+///       `usize` is the index and length type of every Rust list (siblings `u32`,
+///  `u64`).
+/// Why:
+///   A bound keeps each execution fast;
+///  real command lines are far shorter.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -35,8 +47,10 @@ use std::os::unix::ffi::OsStringExt;
 /// ```
 pub const MAX_ARGUMENTS: usize = 48;
 
-/// What: Wrap raw bytes as one argument without decoding.
-/// Why:  Every generator builds arguments the same way.
+/// What:
+///  Wrap raw bytes as one argument without decoding.
+/// Why:
+///   Every generator builds arguments the same way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,10 +61,15 @@ fn argument(bytes: &[u8]) -> OsString {
     return OsString::from_vec(bytes.to_vec());
 }
 
-/// What: Split fuzz bytes at NUL into at most `MAX_ARGUMENTS` arguments.
+/// What:
+///  Split fuzz bytes at NUL into at most `MAX_ARGUMENTS` arguments.
 ///       `Vec<OsString>` is an owned list of owned arguments.
-/// Why:  NUL is the only byte an argument cannot contain, so every other byte
-///       sequence, UTF-8 or not, becomes argument content exactly as written.
+/// Why:
+///   NUL is the only byte an argument cannot contain,
+///  so every other byte
+///       sequence,
+///  UTF-8 or not,
+///  becomes argument content exactly as written.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,13 +91,19 @@ pub fn arguments_from_bytes(data: &[u8]) -> Vec<OsString> {
     return result;
 }
 
-/// Named predicate for splitting at NUL; `&u8` borrows one byte.
+/// Named predicate for splitting at NUL;
+///  `&u8` borrows one byte.
 fn is_nul(byte: &u8) -> bool {
     return *byte == 0;
 }
 
-/// What: Map each fuzz byte to one real Git token, up to `MAX_ARGUMENTS`.
-/// Why:  This reaches value options, queries, separators and `branch`/`tag` forms that
+/// What:
+///  Map each fuzz byte to one real Git token,
+///  up to `MAX_ARGUMENTS`.
+/// Why:
+///   This reaches value options,
+///  queries,
+///  separators and `branch`/`tag` forms that
 ///       raw bytes almost never spell.
 ///
 /// In TS you'd write (pseudocode):
@@ -98,10 +123,16 @@ pub fn generated_arguments(data: &[u8]) -> Vec<OsString> {
     return result;
 }
 
-/// What: Assert the invariants of global-argument layout for one argument vector.
+/// What:
+///  Assert the invariants of global-argument layout for one argument vector.
 ///       `&[OsString]` borrows the arguments.
-/// Why:  The layout decides where the subcommand is. It must leave the arguments
-///       untouched, be repeatable, point at a boundary of the right kind, and not be
+/// Why:
+///   The layout decides where the subcommand is.
+///  It must leave the arguments
+///       untouched,
+///  be repeatable,
+///  point at a boundary of the right kind,
+///  and not be
 ///       changed by anything after a decided boundary.
 ///
 /// In TS you'd write (pseudocode):
@@ -178,9 +209,14 @@ pub fn check_global_layout(arguments: &[OsString]) {
     }
 }
 
-/// What: Assert the invariants of configuration-loading classification for one vector.
-/// Why:  Skipping configuration skips policy. Only native queries, option errors and
-///       known inspection commands may skip; any `branch` or `tag` invocation gains a
+/// What:
+///  Assert the invariants of configuration-loading classification for one vector.
+/// Why:
+///   Skipping configuration skips policy.
+///  Only native queries,
+///  option errors and
+///       known inspection commands may skip;
+///  any `branch` or `tag` invocation gains a
 ///       mutating flag in first position must require configuration.
 ///
 /// In TS you'd write (pseudocode):

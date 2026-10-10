@@ -1,13 +1,17 @@
-//! What: Differential harness comparing the tokenizer with `git rev-parse --parseopt`.
-//! Why: That command runs Git 2.56.0's `parse_options` over a caller-supplied table and
-//!      prints the normalized result, so expectations come from the real binary.
+//! What:
+//!  Differential harness comparing the tokenizer with `git rev-parse --parseopt`.
+//! Why:
+//!  That command runs Git 2.56.0's `parse_options` over a caller-supplied table and
+//!      prints the normalized result,
+//!  so expectations come from the real binary.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(render(parseOptions(args))).toBe(await gitParseopt(spec, args));
 //! ```
 
-/// The tokenizer under comparison, its queries and the real-Git fixture helpers.
+/// The tokenizer under comparison,
+///  its queries and the real-Git fixture helpers.
 use super::command_options::{
     Arity, Boundary, OptionError, OptionErrorKind, OptionSpec, ParseMode, ParsedOptions,
     parse_options, row,
@@ -18,7 +22,9 @@ use std::ffi::OsString;
 use std::path::Path;
 use std::process::Output;
 
-/// One row per spelling, arity and negation class; identifiers are unique for rendering.
+/// One row per spelling,
+///  arity and negation class;
+///  identifiers are unique for rendering.
 pub(crate) const PARSEOPT_TABLE: &[OptionSpec] = &[
     row(1, Some(b'a'), Some("all"), Arity::None, true),
     row(2, Some(b'm'), Some("message"), Arity::Required, true),
@@ -46,7 +52,8 @@ pub(crate) const PARSEOPT_TABLE: &[OptionSpec] = &[
     row(18, Some(b'x'), None, Arity::Required, true),
 ];
 
-/// How many comparisons ended in each outcome, to prove a control exercised all three.
+/// How many comparisons ended in each outcome,
+///  to prove a control exercised all three.
 pub(crate) struct Tally {
     pub(crate) parsed: usize,
     pub(crate) refused: usize,
@@ -108,7 +115,8 @@ fn push_quoted(out: &mut Vec<u8>, bytes: &[u8]) {
 }
 
 /// Render a parse exactly as `parseopt_dump` prints it in `--stuck-long` form
-/// (builtin/rev-parse.c:395-412, 554-556).
+/// (builtin/rev-parse.c:395-412,
+///  554-556).
 fn render(arguments: &[OsString], parsed: &ParsedOptions, keep_dashdash: bool) -> Vec<u8> {
     let mut out: Vec<u8> = b"set --".to_vec();
     for occurrence in &parsed.occurrences {
@@ -204,8 +212,10 @@ pub(crate) fn compare(
     tally.parsed += 1;
 }
 
-/// Compare every single token of `alphabet`, and every ordered pair that starts with a
-/// token of `firsts`, under one flag set.
+/// Compare every single token of `alphabet`,
+///  and every ordered pair that starts with a
+/// token of `firsts`,
+///  under one flag set.
 pub(crate) fn compare_singles_and_pairs(
     directory: &Path,
     firsts: &[&str],

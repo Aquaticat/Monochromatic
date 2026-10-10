@@ -1,7 +1,14 @@
-//! What: Self-exclusion and recursion-prevention controls through the built executable.
-//! Why: The wrapper is installed as `git` ahead of real Git. It must never forward to
-//!      itself, to a link to itself, to a copy of itself earlier or later on PATH, or
-//!      to the TypeScript wrapper's launcher, and it must stop instead of looping when
+//! What:
+//!  Self-exclusion and recursion-prevention controls through the built executable.
+//! Why:
+//!  The wrapper is installed as `git` ahead of real Git.
+//!  It must never forward to
+//!      itself,
+//!  to a link to itself,
+//!  to a copy of itself earlier or later on PATH,
+//!  or
+//!      to the TypeScript wrapper's launcher,
+//!  and it must stop instead of looping when
 //!      a different wrapper build is all that PATH offers.
 //!
 //! In TS you'd write (pseudocode):
@@ -36,7 +43,10 @@ fn path_of(fixture: &Fixture, entries: &[&str]) -> OsString {
     return path;
 }
 
-/// Place every form of "this wrapper" in the fixture: hard link, byte copies, link chains.
+/// Place every form of "this wrapper" in the fixture:
+///  hard link,
+///  byte copies,
+///  link chains.
 fn plant_wrapper_forms(fixture: &Fixture) {
     for directory in ["hard", "copy-early", "copy-late", "chain", "nested"] {
         std::fs::create_dir(fixture.root.join(directory)).expect("directory");
@@ -62,7 +72,8 @@ fn plant_wrapper_forms(fixture: &Fixture) {
     .expect("directory link");
 }
 
-/// The bound itself detects a forwarding loop: a self-executing `git` is killed and reported.
+/// The bound itself detects a forwarding loop:
+///  a self-executing `git` is killed and reported.
 #[test]
 fn time_bound_detects_a_forwarding_loop() {
     let fixture: Fixture = fixture("loop-control");
@@ -87,8 +98,12 @@ fn time_bound_detects_a_forwarding_loop() {
     remove(&fixture);
 }
 
-/// Whichever wrapper form is started, with wrapper forms before and after real Git on
-/// PATH (repeated, relative, linked and copied), exactly real Git answers.
+/// Whichever wrapper form is started,
+///  with wrapper forms before and after real Git on
+/// PATH (repeated,
+///  relative,
+///  linked and copied),
+///  exactly real Git answers.
 #[test]
 fn wrapper_never_selects_itself_or_a_copy_of_itself() {
     let fixture: Fixture = fixture("self-exclusion");
@@ -150,7 +165,8 @@ fn wrapper_never_selects_itself_or_a_copy_of_itself() {
     remove(&fixture);
 }
 
-/// With only wrapper forms on PATH nothing is forwarded: a diagnostic and exit status 2.
+/// With only wrapper forms on PATH nothing is forwarded:
+///  a diagnostic and exit status 2.
 #[test]
 fn only_wrappers_on_path_is_a_reported_failure() {
     let fixture: Fixture = fixture("no-real-git");
@@ -178,7 +194,8 @@ fn only_wrappers_on_path_is_a_reported_failure() {
     remove(&fixture);
 }
 
-/// A launcher script of the TypeScript wrapper ahead of real Git is skipped, never executed.
+/// A launcher script of the TypeScript wrapper ahead of real Git is skipped,
+///  never executed.
 #[test]
 fn typescript_wrapper_launcher_is_skipped() {
     let fixture: Fixture = fixture("typescript-shim");
@@ -203,7 +220,8 @@ fn typescript_wrapper_launcher_is_skipped() {
     remove(&fixture);
 }
 
-/// A different wrapper build cannot be recognised by file identity or content; the
+/// A different wrapper build cannot be recognised by file identity or content;
+///  the
 /// forward-target marker makes it stop on arrival instead of forwarding back.
 #[test]
 fn different_wrapper_build_stops_instead_of_looping() {

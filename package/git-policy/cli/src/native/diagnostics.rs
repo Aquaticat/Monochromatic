@@ -1,5 +1,8 @@
-//! What: Render wrapper diagnostics as the JSONL events callers already parse.
-//! Why: Agents and hooks read cli-git's event stream line by line; every wrapper-made
+//! What:
+//!  Render wrapper diagnostics as the JSONL events callers already parse.
+//! Why:
+//!  Agents and hooks read cli-git's event stream line by line;
+//!  every wrapper-made
 //!      event must be one compact JSON object per line with stable field order.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,9 +10,14 @@
 //! // process.stderr.write(JSON.stringify({ schemaVersion: 1, sequence: 0, type: 'engine-failure', ... }) + '\n');
 //! ```
 
-/// What: The event schema version every line carries.
-///       `u32` is an unsigned 32-bit integer (siblings `u8`, `u64`, `usize`).
-/// Why:  Consumers branch on this number; `u32` is ample for a version counter.
+/// What:
+///  The event schema version every line carries.
+///       `u32` is an unsigned 32-bit integer (siblings `u8`,
+///  `u64`,
+///  `usize`).
+/// Why:
+///   Consumers branch on this number;
+///  `u32` is ample for a version counter.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,12 +28,19 @@ pub const SCHEMA_VERSION: u32 = 1;
 /// Code of the warning for a legacy executable configuration left beside a JSONC file.
 pub const LEGACY_CONFIG_IGNORED_CODE: &str = "legacy-config-ignored";
 
-/// What: The stable causes of an engine failure this foundation and its successors report.
-///       `#[derive(...)]` generates copying, debug printing and `==`.
-/// Why:  A closed set keeps the wire spelling in one place. Codes that described
-///       plugins and trust are not carried over. A shipped policy that could not finish
-///       is reported by cause: `ContentUnavailable` when something it had to read could
-///       not be read, `PolicyIncomplete` when its own machinery failed.
+/// What:
+///  The stable causes of an engine failure this foundation and its successors report.
+///       `#[derive(...)]` generates copying,
+///  debug printing and `==`.
+/// Why:
+///   A closed set keeps the wire spelling in one place.
+///  Codes that described
+///       plugins and trust are not carried over.
+///  A shipped policy that could not finish
+///       is reported by cause:
+///  `ContentUnavailable` when something it had to read could
+///       not be read,
+///  `PolicyIncomplete` when its own machinery failed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,17 +48,26 @@ pub const LEGACY_CONFIG_IGNORED_CODE: &str = "legacy-config-ignored";
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum EngineFailureCode {
-    /// Configuration could not be read or validated, including legacy files needing migration.
+    /// Configuration could not be read or validated,
+    ///  including legacy files needing migration.
     ConfigInvalid,
     /// A fixed transform failed unexpectedly.
     CoreIncomplete,
-    /// Something a policy or lifecycle had to read could not be read: a candidate's bytes,
-    /// a repository fact asked of Git, or transaction state. The policy itself is intact;
+    /// Something a policy or lifecycle had to read could not be read:
+    ///  a candidate's bytes,
+    /// a repository fact asked of Git,
+    ///  or transaction state.
+    ///  The policy itself is intact;
     /// its input is missing.
     ContentUnavailable,
-    /// A shipped policy's own machinery failed, so the policy could not finish although
-    /// its input was readable: its rules file could not be loaded, its linter could not
-    /// start, or it hit an internal error. An unreadable candidate or repository fact is
+    /// A shipped policy's own machinery failed,
+    ///  so the policy could not finish although
+    /// its input was readable:
+    ///  its rules file could not be loaded,
+    ///  its linter could not
+    /// start,
+    ///  or it hit an internal error.
+    ///  An unreadable candidate or repository fact is
     /// `ContentUnavailable` instead.
     PolicyIncomplete,
     /// A proposed patch was not valid.
@@ -60,9 +84,11 @@ pub enum EngineFailureCode {
     IndexLockUnprovenOwner,
 }
 
-/// What: The wire spelling of a failure code.
+/// What:
+///  The wire spelling of a failure code.
 ///       `&'static str` borrows text compiled into the executable for its whole run.
-/// Why:  Events print exactly the spellings the incumbent emitted.
+/// Why:
+///   Events print exactly the spellings the incumbent emitted.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -90,11 +116,20 @@ pub fn engine_failure_code_name(code: EngineFailureCode) -> &'static str {
     }
 }
 
-/// What: Encode text as a JSON string literal, exactly as `JSON.stringify` would.
-///       `&str` borrows the text; `String` is the owned, quoted result.
-/// Why:  Messages contain file paths, quotes and user-written keys. Each character is
+/// What:
+///  Encode text as a JSON string literal,
+///  exactly as `JSON.stringify` would.
+///       `&str` borrows the text;
+///  `String` is the owned,
+///  quoted result.
+/// Why:
+///   Messages contain file paths,
+///  quotes and user-written keys.
+///  Each character is
 ///       encoded at this final step so no value can break out of its JSON string or
-///       its line: quotes, backslashes and every control character are escaped.
+///       its line:
+///  quotes,
+///  backslashes and every control character are escaped.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -145,9 +180,12 @@ pub fn json_string(text: &str) -> String {
     return result;
 }
 
-/// What: Render one engine-failure event as a line-terminated JSON object.
+/// What:
+///  Render one engine-failure event as a line-terminated JSON object.
 ///       `u64` is an unsigned 64-bit integer for the per-invocation event number.
-/// Why:  Field order and spelling match the incumbent's `JSON.stringify` output, so
+/// Why:
+///   Field order and spelling match the incumbent's `JSON.stringify` output,
+///  so
 ///       existing consumers parse native events unchanged.
 ///
 /// In TS you'd write (pseudocode):
@@ -163,11 +201,15 @@ pub fn render_engine_failure(sequence: u64, code: EngineFailureCode, message: &s
     );
 }
 
-/// What: Render one configuration-warning event as a line-terminated JSON object.
-/// Why:  A warning about configuration itself (a legacy file left beside the JSONC
-///       file) belongs on the machine stream as an event, never as free prose there.
+/// What:
+///  Render one configuration-warning event as a line-terminated JSON object.
+/// Why:
+///   A warning about configuration itself (a legacy file left beside the JSONC
+///       file) belongs on the machine stream as an event,
+///  never as free prose there.
 ///       Unlike the incumbent's per-policy `warn-unsafe` warning it has no policy or
-///       trigger, so it carries a path instead.
+///       trigger,
+///  so it carries a path instead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

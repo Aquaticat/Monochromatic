@@ -1,11 +1,15 @@
-//! Keyboard caret movement and selection through real window key events, with the view following the caret.
+//! Keyboard caret movement and selection through real window key events,
+//!  with the view following the caret.
 
 /// The production window whose scroll and caret state is read back.
 use super::AppWindow;
 /// The complete reader fixture and real key-event helpers shared with the find tests.
 use super::find_tests::{Reader, chord, key, reader};
-/// What: `Key` names toolkit special keys; `WindowEvent` is what a seat delivers to the window.
-/// Why: Tests dispatch the same encoded keys as the nested compositor's seat.
+/// What:
+///  `Key` names toolkit special keys;
+///  `WindowEvent` is what a seat delivers to the window.
+/// Why:
+///  Tests dispatch the same encoded keys as the nested compositor's seat.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,9 +22,15 @@ use slint::{
 /// Disposable project files back every native window in these tests.
 use std::fs;
 
-/// What: Anchor and head of the reading selection; `(usize, usize)` is a pair of character positions
-/// (`usize` is address-sized; siblings `u32`, `u64`).
-/// Why: Direction matters for Shift movement, so the pair is not sorted.
+/// What:
+///  Anchor and head of the reading selection;
+///  `(usize, usize)` is a pair of character positions
+/// (`usize` is address-sized;
+///  siblings `u32`,
+///  `u64`).
+/// Why:
+///  Direction matters for Shift movement,
+///  so the pair is not sorted.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,7 +41,8 @@ pub(super) fn position(reader: &Reader) -> (usize, usize) {
     return (current.anchor, current.head);
 }
 
-/// Hold Control and Shift around one key, releasing both afterwards.
+/// Hold Control and Shift around one key,
+///  releasing both afterwards.
 fn control_shift(window: &AppWindow, target: Key) {
     window.window().dispatch_event(WindowEvent::KeyPressed {
         text: Key::Control.into(),
@@ -49,7 +60,12 @@ fn repeat(window: &AppWindow, target: Key, count: usize) {
     }
 }
 
-/// Left, Right, Home, End, their Control forms, and every Shift variant.
+/// Left,
+///  Right,
+///  Home,
+///  End,
+///  their Control forms,
+///  and every Shift variant.
 #[test]
 fn horizontal_keys_move_by_grapheme_word_line_and_document_and_extend_with_shift() {
     let fixture = tempfile::tempdir().expect("disposable caret project");
@@ -180,7 +196,10 @@ fn horizontal_keys_move_by_grapheme_word_line_and_document_and_extend_with_shift
     window.hide().expect("close caret window");
 }
 
-/// A long fixture: a full first line, a short and an empty line, then `lines` full lines.
+/// A long fixture:
+///  a full first line,
+///  a short and an empty line,
+///  then `lines` full lines.
 fn tall(lines: usize) -> String {
     // What: `String::from` copies a literal into an owned, growable string (sibling: borrowed `&str`).
     // Why: The fixture is assembled line by line.
@@ -196,7 +215,8 @@ fn tall(lines: usize) -> String {
     return text;
 }
 
-/// Up and Down return to their column across a short and an empty line; a horizontal move forgets it.
+/// Up and Down return to their column across a short and an empty line;
+///  a horizontal move forgets it.
 #[test]
 fn vertical_keys_keep_a_preferred_column_and_extend_with_shift() {
     let fixture = tempfile::tempdir().expect("disposable caret project");
@@ -245,7 +265,8 @@ fn vertical_keys_keep_a_preferred_column_and_extend_with_shift() {
     window.hide().expect("close caret window");
 }
 
-/// PageDown and PageUp move caret and view by the whole lines in view; Shift extends.
+/// PageDown and PageUp move caret and view by the whole lines in view;
+///  Shift extends.
 #[test]
 fn page_keys_move_by_the_visible_height_and_keep_the_caret_in_view() {
     let fixture = tempfile::tempdir().expect("disposable caret project");
@@ -317,7 +338,9 @@ fn caret_in_view(reader: &Reader) -> bool {
     return top >= offset && top + 24.0 <= offset + window.get_viewport_height();
 }
 
-/// Moving past an edge scrolls by the smallest amount; document keys reach both ends; long lines scroll sideways.
+/// Moving past an edge scrolls by the smallest amount;
+///  document keys reach both ends;
+///  long lines scroll sideways.
 #[test]
 fn view_follows_the_caret_with_the_smallest_scroll() {
     let fixture = tempfile::tempdir().expect("disposable caret project");

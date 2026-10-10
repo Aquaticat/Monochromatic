@@ -1,13 +1,22 @@
-//! What: The shared end of every lint mode: output controls, debug notes and the semantic engine.
-//! Why: File mode and standard-input mode differ in where source comes from, not in how findings
-//! are routed, how debug notes are printed, or how the Cargo-backed engine is created.
+//! What:
+//!  The shared end of every lint mode:
+//!  output controls,
+//!  debug notes and the semantic engine.
+//! Why:
+//!  File mode and standard-input mode differ in where source comes from,
+//!  not in how findings
+//! are routed,
+//!  how debug notes are printed,
+//!  or how the Cargo-backed engine is created.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // finish(options, findings, fixedStdin, notes) -> RunOutput; engine(debug) -> RustFileEngine
 //! ```
 
-/// Import the command grammar, the finding model, output routing and the semantic engine.
+/// Import the command grammar,
+///  the finding model,
+///  output routing and the semantic engine.
 use crate::{
     cli_options::CliOptions,
     diagnostic::Diagnostic,
@@ -19,8 +28,10 @@ use crate::{
 /// Import the write trait that provides `writeln!` on standard error.
 use std::io::Write;
 
-/// What: The prefix of every non-finding line this program writes to standard error.
-/// Why: A consumer can separate program messages from JSONL records by this prefix.
+/// What:
+///  The prefix of every non-finding line this program writes to standard error.
+/// Why:
+///  A consumer can separate program messages from JSONL records by this prefix.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,8 +39,11 @@ use std::io::Write;
 /// ```
 pub const PROGRAM: &str = "monochromatic-lint";
 
-/// What: Discard semantic-workspace progress messages.
-/// Why: The engine takes a plain function pointer; without `--debug` progress is not shown.
+/// What:
+///  Discard semantic-workspace progress messages.
+/// Why:
+///  The engine takes a plain function pointer;
+///  without `--debug` progress is not shown.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,8 +51,11 @@ pub const PROGRAM: &str = "monochromatic-lint";
 /// ```
 fn silent_progress(_message: String) {}
 
-/// What: Write semantic-workspace progress to standard error as it happens.
-/// Why: Loading a Cargo workspace can take a while; `--debug` shows that it is working.
+/// What:
+///  Write semantic-workspace progress to standard error as it happens.
+/// Why:
+///  Loading a Cargo workspace can take a while;
+///  `--debug` shows that it is working.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,8 +67,11 @@ fn debug_progress(message: String) {
         writeln!(std::io::stderr(), "{PROGRAM}: debug: {message}");
 }
 
-/// What: Render collected debug notes as prefixed standard-error lines.
-/// Why: Debug information stays off standard output, which carries only JSONL or fixed source.
+/// What:
+///  Render collected debug notes as prefixed standard-error lines.
+/// Why:
+///  Debug information stays off standard output,
+///  which carries only JSONL or fixed source.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,8 +85,12 @@ fn debug_lines(notes: &[String]) -> String {
     return output;
 }
 
-/// What: Collect the output controls from the command options.
-/// Why: Quiet, silent and the warning limit affect display and exit status only, never linting.
+/// What:
+///  Collect the output controls from the command options.
+/// Why:
+///  Quiet,
+///  silent and the warning limit affect display and exit status only,
+///  never linting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,8 +104,11 @@ fn output_options(options: &CliOptions) -> OutputOptions {
     };
 }
 
-/// What: Route findings and add debug notes to standard error when requested.
-/// Why: Every lint mode ends the same way; only the presence of fixed standard-input source differs.
+/// What:
+///  Route findings and add debug notes to standard error when requested.
+/// Why:
+///  Every lint mode ends the same way;
+///  only the presence of fixed standard-input source differs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -103,9 +130,13 @@ pub(crate) fn finish(
     return Ok(output);
 }
 
-/// What: Create the invocation's semantic engine without opening any workspace.
-/// Why: A workspace is loaded only when a selected rule needs it. Source-only preparation never
-/// runs build scripts; no command-line option requests generated-source preparation yet.
+/// What:
+///  Create the invocation's semantic engine without opening any workspace.
+/// Why:
+///  A workspace is loaded only when a selected rule needs it.
+///  Source-only preparation never
+/// runs build scripts;
+///  no command-line option requests generated-source preparation yet.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

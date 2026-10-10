@@ -1,11 +1,22 @@
-//! What: The `rulesFile` option of `security/forbidden-strings`: which file in the
-//!       repository holds the scanner's private rules, written relative to the
+//! What:
+//!  The `rulesFile` option of `security/forbidden-strings`:
+//!  which file in the
+//!       repository holds the scanner's private rules,
+//!  written relative to the
 //!       repository's top level.
-//! Why: The user decided on 2026-10-05 that configuration names the rules file first, then
-//!      `FORBIDDEN_STRINGS_RULES`, then the default file. A configured name is checked
-//!      when the configuration is read: it must stay inside the repository by its words
-//!      alone, so a configuration cannot point the scanner at a file elsewhere on the
-//!      machine. A name that is missing on disk is not a configuration error; loading
+//! Why:
+//!  The user decided on 2026-10-05 that configuration names the rules file first,
+//!  then
+//!      `FORBIDDEN_STRINGS_RULES`,
+//!  then the default file.
+//!  A configured name is checked
+//!      when the configuration is read:
+//!  it must stay inside the repository by its words
+//!      alone,
+//!  so a configuration cannot point the scanner at a file elsewhere on the
+//!      machine.
+//!  A name that is missing on disk is not a configuration error;
+//!  loading
 //!      the rules reports it when the policy runs.
 //!
 //! In TS you'd write (pseudocode):
@@ -13,9 +24,13 @@
 //! // const rulesFile = parseRulesFile(option); // throws RulesFileRefusal
 //! ```
 
-/// What: Why a `rulesFile` value was refused. `#[derive(...)]` generates copying, debug
+/// What:
+///  Why a `rulesFile` value was refused.
+///  `#[derive(...)]` generates copying,
+///  debug
 ///       printing and `==`.
-/// Why:  The configuration error names the key and explains this one reason.
+/// Why:
+///   The configuration error names the key and explains this one reason.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -23,24 +38,35 @@
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RulesFileRefusal {
-    /// The value is empty, so it names no file.
+    /// The value is empty,
+    ///  so it names no file.
     Empty,
-    /// The value starts with `/`, so it does not start at the repository's top level.
+    /// The value starts with `/`,
+    ///  so it does not start at the repository's top level.
     Absolute,
-    /// The value starts with a drive letter and a colon, which Windows reads as another volume.
+    /// The value starts with a drive letter and a colon,
+    ///  which Windows reads as another volume.
     Drive,
-    /// The value holds a backslash, which Windows reads as a separator.
+    /// The value holds a backslash,
+    ///  which Windows reads as a separator.
     Backslash,
-    /// The value holds a NUL character, which no file name can hold.
+    /// The value holds a NUL character,
+    ///  which no file name can hold.
     Nul,
-    /// The value has an empty component: two slashes in a row or a final slash.
+    /// The value has an empty component:
+    ///  two slashes in a row or a final slash.
     EmptyComponent,
-    /// The value has a `.` or `..` component; `..` could leave the repository.
+    /// The value has a `.` or `..` component;
+    ///  `..` could leave the repository.
     DotComponent,
 }
 
-/// What: The explanation of one refusal, completing the sentence "the value ...".
-/// Why:  One place owns the words, so every refusal reads the same.
+/// What:
+///  The explanation of one refusal,
+///  completing the sentence "the value ...".
+/// Why:
+///   One place owns the words,
+///  so every refusal reads the same.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,8 +87,12 @@ pub fn rules_file_refusal_reason(refusal: RulesFileRefusal) -> &'static str {
     }
 }
 
-/// What: Whether one character is `/`, the separator of the option's components.
-/// Why:  A named predicate for `split`, because the repository bans anonymous functions.
+/// What:
+///  Whether one character is `/`,
+///  the separator of the option's components.
+/// Why:
+///   A named predicate for `split`,
+///  because the repository bans anonymous functions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,8 +102,11 @@ fn is_slash(character: char) -> bool {
     return character == '/';
 }
 
-/// What: Whether `text` starts with an ASCII letter and a colon, as `C:` does.
-/// Why:  Joining such a value to the repository's top level on Windows would name
+/// What:
+///  Whether `text` starts with an ASCII letter and a colon,
+///  as `C:` does.
+/// Why:
+///   Joining such a value to the repository's top level on Windows would name
 ///       another volume.
 ///
 /// In TS you'd write (pseudocode):
@@ -86,11 +119,18 @@ fn starts_with_drive(text: &str) -> bool {
     return bytes.len() > 1 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':';
 }
 
-/// What: Check one `rulesFile` value. `Result<(), RulesFileRefusal>` is "accepted" or the
+/// What:
+///  Check one `rulesFile` value.
+///  `Result<(), RulesFileRefusal>` is "accepted" or the
 ///       first reason it is not.
-/// Why:  A value that is relative, uses `/` between non-empty components, and has no `.`
-///       or `..` component names a file inside the repository on every platform, whatever
-///       the file system later holds. The checks run in a fixed order so the first
+/// Why:
+///   A value that is relative,
+///  uses `/` between non-empty components,
+///  and has no `.`
+///       or `..` component names a file inside the repository on every platform,
+///  whatever
+///       the file system later holds.
+///  The checks run in a fixed order so the first
 ///       reason reported is the same on every platform.
 ///
 /// In TS you'd write (pseudocode):

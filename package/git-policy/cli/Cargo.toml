@@ -51,6 +51,7 @@ getrandom = "0.4"
 libc = "0.2"
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

@@ -1,6 +1,10 @@
-//! What: Controls for the typed configuration values themselves.
-//! Why: Rule names are printed in diagnostics and passed to the linter, and the setting
-//!      lookup is what every policy asks, so both are pinned apart from the parser.
+//! What:
+//!  Controls for the typed configuration values themselves.
+//! Why:
+//!  Rule names are printed in diagnostics and passed to the linter,
+//!  and the setting
+//!      lookup is what every policy asks,
+//!  so both are pinned apart from the parser.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -15,7 +19,8 @@ use super::{
 };
 use crate::policy_registry::{POLICY_REGISTRY, PolicyId, Severity};
 
-/// The shipped rule has one exact spelling in both directions; near misses are not rules.
+/// The shipped rule has one exact spelling in both directions;
+///  near misses are not rules.
 #[test]
 fn markdown_rule_names_are_exact_in_both_directions() {
     assert_eq!(
@@ -44,7 +49,9 @@ fn markdown_rule_names_are_exact_in_both_directions() {
     }
 }
 
-/// The severity of a policy the configuration does not name: built-ins at their default, the four optional policies off.
+/// The severity of a policy the configuration does not name:
+///  built-ins at their default,
+///  the four optional policies off.
 #[test]
 fn unlisted_policies_run_only_when_built_in() {
     let mut off: Vec<PolicyId> = Vec::<PolicyId>::new();
@@ -83,7 +90,8 @@ fn unlisted_policies_run_only_when_built_in() {
     );
 }
 
-/// The lookup returns each policy's own row, in the defaults and after a change.
+/// The lookup returns each policy's own row,
+///  in the defaults and after a change.
 #[test]
 fn setting_lookup_returns_each_policy_row() {
     let mut config: PolicyConfig = PolicyConfig::defaults();
@@ -142,7 +150,9 @@ fn setting_lookup_falls_back_to_the_unlisted_severity() {
     }
 }
 
-/// The defaults run the five built-ins, leave the four optional policies off, and carry the incumbent tuning and options.
+/// The defaults run the five built-ins,
+///  leave the four optional policies off,
+///  and carry the incumbent tuning and options.
 #[test]
 fn defaults_run_built_ins_only_with_incumbent_tuning() {
     let defaults: CliGitConfig = CliGitConfig::defaults();

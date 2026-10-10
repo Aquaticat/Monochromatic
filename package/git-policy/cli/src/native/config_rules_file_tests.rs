@@ -1,7 +1,12 @@
-//! What: Controls for the `rulesFile` value check: every refusal, its order and its words,
+//! What:
+//!  Controls for the `rulesFile` value check:
+//!  every refusal,
+//!  its order and its words,
 //!       and the names that stay inside the repository.
-//! Why: A value that escaped the repository would let configuration choose a file
-//!      anywhere on the machine; a refused ordinary name would block a valid setting.
+//! Why:
+//!  A value that escaped the repository would let configuration choose a file
+//!      anywhere on the machine;
+//!  a refused ordinary name would block a valid setting.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,7 +16,8 @@
 /// Import the module under test.
 use super::{RulesFileRefusal, check_rules_file, rules_file_refusal_reason};
 
-/// Relative names of non-empty, non-dot components are accepted.
+/// Relative names of non-empty,
+///  non-dot components are accepted.
 #[test]
 fn names_inside_the_repository_are_accepted() {
     for name in [
@@ -29,7 +35,9 @@ fn names_inside_the_repository_are_accepted() {
     }
 }
 
-/// Each way out of the repository, or out of a portable name, is refused with its reason,
+/// Each way out of the repository,
+///  or out of a portable name,
+///  is refused with its reason,
 /// the first reason in a fixed order.
 #[test]
 fn names_that_could_leave_the_repository_are_refused() {

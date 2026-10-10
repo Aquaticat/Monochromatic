@@ -15,7 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { stripTrailingSlashes, } from './xdg-paths.ts';
+import { stripTrailingSlashes, } from '../dist/final/node/launch.mjs';
 
 /** Trailing-slash count for the long-run case; large enough to exercise the linear scan. */
 const LONG_RUN = 100_000;

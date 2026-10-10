@@ -1,5 +1,8 @@
-//! What: Object-id spelling, pointer and digest controls.
-//! Why: The id written into an object URL is frozen by `package/cli/markdown-lint/src/lfs-oid.unit.test.ts`.
+//! What:
+//!  Object-id spelling,
+//!  pointer and digest controls.
+//! Why:
+//!  The id written into an object URL is frozen by `package/cli/markdown-lint/src/lfs-oid.unit.test.ts`.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +16,8 @@ use crate::markdown_lfs_sha256::sha256_hex;
 /// Declared oid used by the pointer fixtures.
 const DECLARED: &str = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
 
-/// Exactly 64 lowercase hexadecimal characters are an id; everything else is not.
+/// Exactly 64 lowercase hexadecimal characters are an id;
+///  everything else is not.
 #[test]
 fn only_sixty_four_lowercase_hex_characters_are_an_oid() {
     assert!(is_lfs_oid(DECLARED));
@@ -30,7 +34,8 @@ fn only_sixty_four_lowercase_hex_characters_are_an_oid() {
     assert!(!is_lfs_oid(""));
 }
 
-/// Smudged bytes hash to their id; a pointer yields the id it declares.
+/// Smudged bytes hash to their id;
+///  a pointer yields the id it declares.
 #[test]
 fn smudged_bytes_are_hashed_and_pointers_are_read() {
     let bytes: &[u8] = b"PNG not really";
@@ -69,7 +74,8 @@ fn malformed_pointers_are_hashed() {
     );
 }
 
-/// The first well-formed oid line wins, and invalid UTF-8 after the header does not prevent pointer reading.
+/// The first well-formed oid line wins,
+///  and invalid UTF-8 after the header does not prevent pointer reading.
 #[test]
 fn the_first_well_formed_oid_line_is_selected() {
     let second: &str = "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";

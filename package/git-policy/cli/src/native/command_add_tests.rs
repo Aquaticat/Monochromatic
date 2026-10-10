@@ -1,13 +1,18 @@
-//! What: `git add` bulk-staging facts in every spelling Git 2.56.0 accepts, with real-Git
+//! What:
+//!  `git add` bulk-staging facts in every spelling Git 2.56.0 accepts,
+//!  with real-Git
 //!       controls for the table and for the spellings the incumbent missed.
-//! Why: The add-explicit policy is bypassed by any bulk form the parser does not see.
+//! Why:
+//!  The add-explicit policy is bypassed by any bulk form the parser does not see.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // expect(parseAddRegion(['-A']).bulkMatches).toEqual(['-A']);
 //! ```
 
-/// The parser, its table, the oracles and the real-Git fixture helpers.
+/// The parser,
+///  its table,
+///  the oracles and the real-Git fixture helpers.
 use super::{ADD_ESCAPE_HATCH, ADD_TABLE, AddRegion, BulkKind, BulkMatch, parse_add_region};
 use crate::command_options::OptionErrorKind;
 use crate::command_test_completion::{git_completion, render_completion};
@@ -16,7 +21,8 @@ use crate::command_test_support::{
 };
 use std::path::{Path, PathBuf};
 
-/// Parse a region Git accepts, with no other wrapper flags.
+/// Parse a region Git accepts,
+///  with no other wrapper flags.
 fn region(values: &[&str]) -> AddRegion {
     return parse_add_region(os_arguments(values).as_slice(), &[]).expect("valid region");
 }
@@ -30,7 +36,15 @@ fn matches(values: &[&str]) -> Vec<(BulkKind, usize)> {
     return pairs;
 }
 
-/// The incumbent's literal tokens: `.`, `./`, `*`, `:/`, `-A`, `--all`, `-u`, `--update`.
+/// The incumbent's literal tokens:
+///  `.`,
+///  `./`,
+///  `*`,
+///  `:/`,
+///  `-A`,
+///  `--all`,
+///  `-u`,
+///  `--update`.
 #[test]
 fn detects_the_incumbent_bulk_tokens() {
     for (values, kind) in [
@@ -58,7 +72,8 @@ fn detects_the_incumbent_bulk_tokens() {
     );
 }
 
-/// A token in a value position or after `--` is read by position, as the incumbent did.
+/// A token in a value position or after `--` is read by position,
+///  as the incumbent did.
 #[test]
 fn reads_values_and_paths_by_position() {
     assert!(matches(&["--pathspec-from-file", "-A"]).is_empty());
@@ -74,7 +89,9 @@ fn reads_values_and_paths_by_position() {
     assert_eq!(matches(&["--", "-A", "."]), vec![(BulkKind::Pathspec, 2)]);
 }
 
-/// Divergence: clusters, abbreviations and the shared `--ignore-removal` variable.
+/// Divergence:
+///  clusters,
+///  abbreviations and the shared `--ignore-removal` variable.
 #[test]
 fn detects_bulk_flags_in_every_git_spelling() {
     for values in [
@@ -116,7 +133,9 @@ fn detects_bulk_flags_in_every_git_spelling() {
     }
 }
 
-/// Only the four literal pathspecs are bulk matches; other magic is not, as shipped.
+/// Only the four literal pathspecs are bulk matches;
+///  other magic is not,
+///  as shipped.
 #[cfg(unix)]
 #[test]
 fn matches_only_the_literal_bulk_pathspecs() {
@@ -138,7 +157,8 @@ fn matches_only_the_literal_bulk_pathspecs() {
     assert!(bytes.bulk_matches.is_empty());
 }
 
-/// The escape hatch counts in option position only, and `--resolved` is reported.
+/// The escape hatch counts in option position only,
+///  and `--resolved` is reported.
 #[test]
 fn reports_the_escape_hatch_and_resolved() {
     assert_eq!(region(&[ADD_ESCAPE_HATCH, "."]).wrapper.escape, vec![0]);
@@ -187,12 +207,14 @@ fn reports_what_git_refuses() {
     }
 }
 
-/// Paths staged against `HEAD`, one per line.
+/// Paths staged against `HEAD`,
+///  one per line.
 fn staged(root: &Path) -> String {
     return output_text(&git(root, &["diff", "--cached", "--name-only"]));
 }
 
-/// The copied table matches the binary, and Git stages everything for the spellings the
+/// The copied table matches the binary,
+///  and Git stages everything for the spellings the
 /// incumbent did not recognize.
 #[test]
 fn table_and_bulk_spellings_match_git() {

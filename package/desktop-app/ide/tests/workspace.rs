@@ -37,7 +37,8 @@ fn listing_matches_dirents_and_refreshes_from_disk() {
     assert!(second.iter().any(|entry| return entry.name == "new.rs"));
 }
 
-/// Relative paths use the project root, with valid parent segments allowed inside it.
+/// Relative paths use the project root,
+///  with valid parent segments allowed inside it.
 #[test]
 fn contained_relative_and_absolute_paths_resolve() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -96,7 +97,9 @@ fn symbolic_links_do_not_bypass_project_boundary() {
     );
 }
 
-/// Missing paths, file roots, and listing a file report failures rather than empty directories.
+/// Missing paths,
+///  file roots,
+///  and listing a file report failures rather than empty directories.
 #[test]
 fn invalid_directory_inputs_are_errors() {
     let fixture = tempfile::tempdir().expect("disposable project");

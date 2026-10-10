@@ -1,4 +1,6 @@
-//! Real variable coordinates and italic faces must survive source shaping, raster caching, and copying.
+//! Real variable coordinates and italic faces must survive source shaping,
+//!  raster caching,
+//!  and copying.
 
 /// Production source font assets and typography interfaces.
 use ide_app::{

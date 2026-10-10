@@ -5,14 +5,18 @@ use anyhow::{Result, bail};
 /// Typed features preserve OpenType tags and values without an application-specific string syntax.
 use parley::{FontFeature, setting::Tag};
 
-/// Font choices retained for one shaper; creating a new shaper invalidates native frame state.
+/// Font choices retained for one shaper;
+///  creating a new shaper invalidates native frame state.
 #[derive(Clone)]
 pub struct SourceTypography {
-    /// Continuous JetBrains Mono weight within the bundled axis range, not a static-face preset.
+    /// Continuous JetBrains Mono weight within the bundled axis range,
+    ///  not a static-face preset.
     pub weight: f32,
-    /// Choose the real italic font file, rather than skewing roman outlines.
+    /// Choose the real italic font file,
+    ///  rather than skewing roman outlines.
     pub italic: bool,
-    /// Additional OpenType choices; defaults enable programming ligatures through calt.
+    /// Additional OpenType choices;
+    ///  defaults enable programming ligatures through calt.
     pub features: Vec<FontFeature>,
 }
 

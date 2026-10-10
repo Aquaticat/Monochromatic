@@ -1,5 +1,9 @@
-//! What: Which commands the linked-worktree policy guards, and every rejection text.
-//! Why: A harmless form read as destructive blocks an inspection; a destructive form read
+//! What:
+//!  Which commands the linked-worktree policy guards,
+//!  and every rejection text.
+//! Why:
+//!  A harmless form read as destructive blocks an inspection;
+//!  a destructive form read
 //!      as harmless lets `git reset --hard` run in the primary checkout.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,7 +11,8 @@
 //! // expect(decideLinkedWorktree(['clean', '-n'])).toEqual({ kind: 'pass' });
 //! ```
 
-/// The decision, its texts and the argument builder.
+/// The decision,
+///  its texts and the argument builder.
 use super::{
     GuardedCommand, LINKED_WORKTREE_REQUIRED_CODE, LinkedWorktreeDecision, decide_linked_worktree,
     main_worktree_message, outside_worktree_message, resolve_linked_worktree,
@@ -20,7 +25,8 @@ fn decide(values: &[&str]) -> LinkedWorktreeDecision {
     return decide_linked_worktree(os_arguments(values).as_slice());
 }
 
-/// Every stash form, a deleting clean and a file-rewriting reset need the worktree kind.
+/// Every stash form,
+///  a deleting clean and a file-rewriting reset need the worktree kind.
 #[test]
 fn destructive_forms_need_the_worktree_kind() {
     assert_eq!(LINKED_WORKTREE_REQUIRED_CODE, "linked-worktree-required");
@@ -50,7 +56,9 @@ fn destructive_forms_need_the_worktree_kind() {
     }
 }
 
-/// Other commands, dry runs, index-only resets and regions Git refuses pass without a measurement.
+/// Other commands,
+///  dry runs,
+///  index-only resets and regions Git refuses pass without a measurement.
 #[test]
 fn harmless_forms_pass() {
     for values in [
@@ -79,7 +87,8 @@ fn harmless_forms_pass() {
     }
 }
 
-/// Only the main worktree and a place without a worktree are rejected, each with its own text.
+/// Only the main worktree and a place without a worktree are rejected,
+///  each with its own text.
 #[test]
 fn only_main_and_absent_worktrees_are_rejected() {
     for command in [
@@ -110,7 +119,8 @@ fn only_main_and_absent_worktrees_are_rejected() {
     }
 }
 
-/// The six rejection texts are the incumbent's, word for word.
+/// The six rejection texts are the incumbent's,
+///  word for word.
 #[test]
 fn rejection_texts_are_the_incumbent_messages() {
     assert_eq!(

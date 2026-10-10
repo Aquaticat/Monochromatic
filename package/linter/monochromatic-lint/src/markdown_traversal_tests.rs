@@ -1,5 +1,7 @@
-//! What: Deliberately damaged native arenas exercising the source adapter's validation guards.
-//! Why: Parser-generated happy paths cannot prove rejection of corrupt child graphs and byte ranges.
+//! What:
+//!  Deliberately damaged native arenas exercising the source adapter's validation guards.
+//! Why:
+//!  Parser-generated happy paths cannot prove rejection of corrupt child graphs and byte ranges.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,7 +10,8 @@
 
 /// Import the real guard boundary and installed arena construction API.
 use super::{MarkdownError, MarkdownSource, traversal};
-/// Import the finding model and every rule that walks ancestors or descendants, to observe how a walk failure is reported.
+/// Import the finding model and every rule that walks ancestors or descendants,
+///  to observe how a walk failure is reported.
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::markdown_duplicate_headings::no_duplicate_heading;
 use crate::markdown_headings::no_emphasis_as_heading;
@@ -65,7 +68,8 @@ fn child_graph_rejects_duplicate_invalid_and_cyclic_ids() {
     );
 }
 
-/// Every source-range predicate fails independently, not only when several defects happen together.
+/// Every source-range predicate fails independently,
+///  not only when several defects happen together.
 #[test]
 fn source_ranges_reject_reversal_out_of_bounds_and_each_utf8_midpoint() {
     for (start, end) in [(5, 4), (0, 6), (1, 4), (0, 1)] {
@@ -78,7 +82,8 @@ fn source_ranges_reject_reversal_out_of_bounds_and_each_utf8_midpoint() {
     }
 }
 
-/// Missing roots, unknown kinds and a valid-but-wrong entry kind remain distinct diagnostics.
+/// Missing roots,
+///  unknown kinds and a valid-but-wrong entry kind remain distinct diagnostics.
 #[test]
 fn root_and_kind_validation_does_not_assume_a_valid_parser_result() {
     let empty: Arena<Mdast> = Arena::<Mdast>::new(String::from("🚀x"));
@@ -103,14 +108,16 @@ fn child_list_bounds_are_checked_before_borrowing() {
     assert!(rejected(&arena).message.contains("out-of-range child list"));
 }
 
-/// Parse one fixture through the real adapter; these fixtures always parse.
+/// Parse one fixture through the real adapter;
+///  these fixtures always parse.
 fn parsed(source: &str) -> MarkdownSource {
     // `.expect` unwraps `Ok(document)` or fails the test with this message.
     return MarkdownSource::new(String::from("cycle.md"), String::from(source), false)
         .expect("fixture parses");
 }
 
-/// Find the only node of one kind, so corruption below targets real parser output rather than guessed ids.
+/// Find the only node of one kind,
+///  so corruption below targets real parser output rather than guessed ids.
 fn only(document: &MarkdownSource, kind: MdastNodeType) -> u32 {
     // `Option<u32>` holds the match once found; a second match means the fixture is not what the test assumes.
     let mut found: Option<u32> = None;
@@ -123,7 +130,8 @@ fn only(document: &MarkdownSource, kind: MdastNodeType) -> u32 {
     return found.expect("fixture has this node kind");
 }
 
-/// The bounded walk admits the deepest chain a document can hold: every node on one path below the root.
+/// The bounded walk admits the deepest chain a document can hold:
+///  every node on one path below the root.
 #[test]
 fn ancestor_walks_reach_the_root_from_the_deepest_possible_node() {
     let document: MarkdownSource = parsed("*__a__*\n");
@@ -144,9 +152,13 @@ fn ancestor_walks_reach_the_root_from_the_deepest_possible_node() {
 }
 
 /// `traversal` rejects cyclic child graphs before any parent index exists
-/// (`child_graph_rejects_duplicate_invalid_and_cyclic_ids`), so a parent cycle can only appear in the derived
-/// index itself: through a later change to `traversal`, or a mutated `parent` accessor.
-/// This plants one there, then requires the typed error and one processing failure from each ancestry rule.
+/// (`child_graph_rejects_duplicate_invalid_and_cyclic_ids`),
+///  so a parent cycle can only appear in the derived
+/// index itself:
+///  through a later change to `traversal`,
+///  or a mutated `parent` accessor.
+/// This plants one there,
+///  then requires the typed error and one processing failure from each ancestry rule.
 #[test]
 fn a_parent_index_cycle_is_a_typed_error_and_a_processing_failure() {
     let mut document: MarkdownSource = parsed("*a*\n");
@@ -204,14 +216,16 @@ fn a_parent_index_cycle_is_a_typed_error_and_a_processing_failure() {
     }
 }
 
-/// Point a node's first child slot at another node, the way a corrupt child index would.
+/// Point a node's first child slot at another node,
+///  the way a corrupt child index would.
 fn replace_first_child(document: &mut MarkdownSource, node: u32, child: u32) {
     // `as usize` widens ids and offsets to the index type a Vec takes.
     let slot: usize = document.arena.nodes[node as usize].children_start as usize;
     document.arena.children[slot] = child;
 }
 
-/// The bounded descendant walk admits the largest subtree a document can hold: the whole document.
+/// The bounded descendant walk admits the largest subtree a document can hold:
+///  the whole document.
 #[test]
 fn descendant_walks_cover_the_whole_document_from_the_root() {
     let document: MarkdownSource = parsed("# T\n\n*a*\n");
@@ -229,9 +243,12 @@ fn descendant_walks_cover_the_whole_document_from_the_root() {
 }
 
 /// `traversal` rejects a cyclic child graph when a document is built
-/// (`child_graph_rejects_duplicate_invalid_and_cyclic_ids`), so a child cycle can only appear afterwards:
-/// through a later change to `traversal`, or a mutated `children` accessor.
-/// This plants two in a built document, then requires the typed error and one processing failure
+/// (`child_graph_rejects_duplicate_invalid_and_cyclic_ids`),
+///  so a child cycle can only appear afterwards:
+/// through a later change to `traversal`,
+///  or a mutated `children` accessor.
+/// This plants two in a built document,
+///  then requires the typed error and one processing failure
 /// from each rule that reads text below a node.
 #[test]
 fn a_child_index_cycle_is_a_typed_error_and_a_processing_failure() {

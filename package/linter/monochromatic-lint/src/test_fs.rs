@@ -1,5 +1,7 @@
-//! What: Disposable filesystem fixtures owned by one test.
-//! Why: Native I/O verification must not modify a user's files or reuse another test's directory.
+//! What:
+//!  Disposable filesystem fixtures owned by one test.
+//! Why:
+//!  Native I/O verification must not modify a user's files or reuse another test's directory.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -8,10 +10,13 @@
 
 /// Import native paths and the atomic counter used only for unique fixture names.
 use std::path::PathBuf;
+/// Import the atomic counter that gives every fixture directory a unique name.
 use std::sync::atomic::{AtomicU64, Ordering};
 
-/// What: A process-local sequence shared safely by concurrent tests.
-/// Why: PID plus sequence separates fixtures without depending on clock resolution.
+/// What:
+///  A process-local sequence shared safely by concurrent tests.
+/// Why:
+///  PID plus sequence separates fixtures without depending on clock resolution.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,8 +24,10 @@ use std::sync::atomic::{AtomicU64, Ordering};
 /// ```
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
-/// What: A newly created directory and its cleanup ownership.
-/// Why: Only a successful create grants permission to delete this path on disposal.
+/// What:
+///  A newly created directory and its cleanup ownership.
+/// Why:
+///  Only a successful create grants permission to delete this path on disposal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,8 +38,10 @@ pub(crate) struct Fixture {
     pub(crate) path: PathBuf,
 }
 
-/// What: Create a directory whose ownership belongs to this test alone.
-/// Why: Existing paths produce an error rather than being reused or deleted.
+/// What:
+///  Create a directory whose ownership belongs to this test alone.
+/// Why:
+///  Existing paths produce an error rather than being reused or deleted.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,8 +59,11 @@ impl Fixture {
     }
 }
 
-/// What: Remove the owned fixture when its scope exits, including assertion unwinding.
-/// Why: Disposable tests must not leave ordinary successful-run artifacts in the host temporary directory.
+/// What:
+///  Remove the owned fixture when its scope exits,
+///  including assertion unwinding.
+/// Why:
+///  Disposable tests must not leave ordinary successful-run artifacts in the host temporary directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,18 +1,23 @@
-//! What: Public scanner API exercised from a real library consumer with disposable cache state.
-//! Why: Private matcher fixtures do not prove exported loading, cache warnings or native rule-file paths work.
+//! What:
+//!  Public scanner API exercised from a real library consumer with disposable cache state.
+//! Why:
+//!  Private matcher fixtures do not prove exported loading,
+//!  cache warnings or native rule-file paths work.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // Start a bounded child test with its own home/cache, then call the exported Scanner interface.
 //! ```
 
-/// Import only the published library boundary, not private scanner internals.
+/// Import only the published library boundary,
+///  not private scanner internals.
 use forbidden_strings::{CandidateScan, Scanner, ScanFinding};
 /// Import native filesystem and child-process primitives for disposable verification.
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Child consumer selected explicitly by the driver; ordinary test enumeration performs no state mutation here.
+/// Child consumer selected explicitly by the driver;
+///  ordinary test enumeration performs no state mutation here.
 #[test]
 fn embedded_consumer_probe() {
     // The driver controls this variable in a separate process instead of mutating shared process environment.
@@ -62,11 +67,13 @@ fn native_rule_path(root: &Path) {
     assert!(cached.cache_warnings().is_empty());
 }
 
-/// This byte-construction control is Unix-specific; other platforms retain the public API controls.
+/// This byte-construction control is Unix-specific;
+///  other platforms retain the public API controls.
 #[cfg(not(unix))]
 fn native_rule_path(_root: &Path) {}
 
-/// The actual driver proves the public consumer runs with an isolated cache, not just an early-returning probe.
+/// The actual driver proves the public consumer runs with an isolated cache,
+///  not just an early-returning probe.
 #[test]
 fn public_embedding_runs_without_real_user_state() {
     let root: PathBuf = std::env::temp_dir().join(format!("scanner-embedded-{}", std::process::id()));

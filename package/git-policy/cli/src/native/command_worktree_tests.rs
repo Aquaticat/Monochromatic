@@ -1,6 +1,10 @@
-//! What: Which `git worktree` invocations create or move a worktree, with a real-Git control.
-//! Why: The refusal of ignored-state synchronization that is not ported yet hangs on this
-//!      one fact; reading `add` where Git reads something else would forward a creation.
+//! What:
+//!  Which `git worktree` invocations create or move a worktree,
+//!  with a real-Git control.
+//! Why:
+//!  The refusal of ignored-state synchronization that is not ported yet hangs on this
+//!      one fact;
+//!  reading `add` where Git reads something else would forward a creation.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -64,7 +68,8 @@ fn registered(repo: &std::path::Path) -> usize {
     return count;
 }
 
-/// Real Git 2.56.0 takes the word after `worktree` as the action, never an abbreviation or a later word.
+/// Real Git 2.56.0 takes the word after `worktree` as the action,
+///  never an abbreviation or a later word.
 #[test]
 fn real_git_reads_the_word_after_worktree() {
     let root: PathBuf = fixture("worktree-word");

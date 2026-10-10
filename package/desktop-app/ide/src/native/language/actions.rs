@@ -1,13 +1,26 @@
-//! Window callbacks: Ctrl+B, Ctrl+Q, Ctrl+click, the resting pointer, the list, and Escape.
+//! Window callbacks:
+//!  Ctrl+B,
+//!  Ctrl+Q,
+//!  Ctrl+click,
+//!  the resting pointer,
+//!  the list,
+//!  and Escape.
 
-/// The state, the request record, and the steps the callbacks start.
+/// The state,
+///  the request record,
+///  and the steps the callbacks start.
 use super::{Action, Language, Pending, message, outcome, pointer, surface};
-/// The window, the source, and the navigation that opens other files.
+/// The window,
+///  the source,
+///  and the navigation that opens other files.
 use crate::native::{AppWindow, State, navigation::Navigation};
 /// Weak window handles keep callbacks from holding a closed window alive.
 use slint::ComponentHandle;
-/// What: `Rc<RefCell<T>>` is the window's shared, borrow-checked state.
-/// Why: Every callback changes the same language state the timer polls.
+/// What:
+///  `Rc<RefCell<T>>` is the window's shared,
+///  borrow-checked state.
+/// Why:
+///  Every callback changes the same language state the timer polls.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,8 +28,12 @@ use slint::ComponentHandle;
 /// ```
 use std::{cell::RefCell, rc::Rc};
 
-/// What: Start an explicit action at `position`: dismiss what is shown and queue the request.
-/// Why: A new action replaces the previous one, whose late replies are then dropped by number.
+/// What:
+///  Start an explicit action at `position`:
+///  dismiss what is shown and queue the request.
+/// Why:
+///  A new action replaces the previous one,
+///  whose late replies are then dropped by number.
 ///      Without a running worker the reason is shown at once.
 ///
 /// In TS you'd write (pseudocode):
@@ -68,9 +85,13 @@ fn start(
     });
 }
 
-/// What: Run `body` with the language state, unless another callback holds it right now.
+/// What:
+///  Run `body` with the language state,
+///  unless another callback holds it right now.
 ///       `impl FnOnce(&mut Language)` is any closure that runs once with the state lent to it.
-/// Why: A window event delivered while the state is held is skipped and logged, never a panic.
+/// Why:
+///  A window event delivered while the state is held is skipped and logged,
+///  never a panic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,9 +106,12 @@ fn with(language: &Rc<RefCell<Language>>, body: impl FnOnce(&mut Language)) {
     body(&mut current);
 }
 
-/// What: Bind the key callback of an action that starts at the caret: Ctrl+Q for hover,
+/// What:
+///  Bind the key callback of an action that starts at the caret:
+///  Ctrl+Q for hover,
 ///       Ctrl+B for definition.
-/// Why: The two keys differ only in the action they start.
+/// Why:
+///  The two keys differ only in the action they start.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -155,7 +179,9 @@ fn bind_pointer(owner: &AppWindow, source: &Rc<RefCell<State>>, language: &Rc<Re
     });
 }
 
-/// Bind Escape, closing the list, and choosing from it.
+/// Bind Escape,
+///  closing the list,
+///  and choosing from it.
 fn bind_surfaces(
     owner: &AppWindow,
     source: &Rc<RefCell<State>>,
@@ -196,7 +222,9 @@ fn bind_surfaces(
     });
 }
 
-/// Bind the key, pointer, and list callbacks of the language features.
+/// Bind the key,
+///  pointer,
+///  and list callbacks of the language features.
 pub(super) fn bind(
     owner: &AppWindow,
     source: &Rc<RefCell<State>>,

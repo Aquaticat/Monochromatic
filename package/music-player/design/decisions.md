@@ -779,8 +779,8 @@ this behaviour is Android-only by nature.
 
 ## F. Input
 
-### F1. Keyboard map — DRAFT ONLY (candidate keys-a)
-Not reviewed by the user.
+### F1. Keyboard map — DRAFT ONLY (candidate keys-a), superseded by D102
+Not reviewed by the user; the map the human accepted in D102 replaces it.
  Current draft:
 ```text
 Space        play / pause
@@ -1331,6 +1331,8 @@ the seams.
  and L2 pure ramp without hairlines.
 
 ### D46. Cover picker opened state = P4, temporary pre-1.x decision (2026-09-23)
+D104 (2026-10-10) later adds the upward caret while open, drops the pre-1.x revisit and defers further improvement to another major version.
+
 Use P4 as the current design baseline for the folded cover screen:
  the app-bar folder title
 and caret open the picker in the list slot,
@@ -2882,6 +2884,83 @@ and that at 200% text the state now scrolls slightly on both panels.
 `evidence/first-run-access-boundaries.md` holds the study.
 
 No production implementation is authorized by this record.
+
+### D102. The keyboard map is accepted as built (2026-10-10)
+
+Asked whether to accept the whole IntelliJ-aligned keyboard map shown at `questions/keyboard-map.prototype.html`,
+the human answered `Accept as built`.
+This closes D25's request for one whole-map pass and replaces the F1 draft.
+On Windows and Linux, then macOS:
+
+- Search `Ctrl+F` and `Command+F`;
+  the folder picker `Ctrl+O` and `Command+O` (both from D25).
+- Settings `Ctrl+Alt+S` and `Command+Comma`.
+- Jump to the playing track `Ctrl+G` and `Command+L`.
+- Previous and next track `Ctrl+Left` and `Ctrl+Right`, and `Command+Shift+[` and `Command+Shift+]`.
+- Space toggles play and pause, and `Ctrl+M` cycles the end-of-track mode;
+  these and previous and next work only while the playback area has focus,
+  so editing fields and focused controls keep their own keys.
+- Bare arrows keep their native behavior.
+  There is no seek or volume on them,
+  so Up and Down have no special meaning after D43 removed in-app volume.
+- Escape closes the innermost popup, otherwise leaves Search.
+- Media and volume keys stay with the operating system.
+
+Which keys Linux compositors and macOS actually deliver, media-key delivery,
+accessibility traversal and IME behavior were not exercised;
+the implementation has to verify them with their real owners.
+Implementing the map is developer work.
+No production implementation is authorized by this record.
+
+### D103. Remaining Search behavior is closed as a design item (2026-10-10)
+
+Asked whether to close the open-questions entry on Search behavior left after D51 and D52,
+the human chose to close it and keep the verification notes.
+Every design choice in it is decided (D58 to D74).
+Native focus restoration, system Back, IME and TalkBack behavior stay listed as implementation gates
+in `open-questions.md` and the Search evidence records,
+and need verification when an implementation is authorized.
+No production implementation is authorized by this record.
+
+### D104. The folded-cover picker is P5 without its container (2026-10-10)
+
+Asked whether to approve the agent's P5 for the folded cover's folder picker,
+the human answered:
+approve P5, but remove the container,
+with no further build and capture round.
+The human added that they are still unsatisfied with the picker,
+and will deal with that and any further improvement in another major version of the app.
+
+So the design is P4 whose caret points up while the picker is open and down otherwise.
+The title is not wrapped in a tonal container,
+and nothing else about P4 changes:
+the app-bar title and caret open the picker in the list area while the deck stays visible,
+and the folder names, letter rail and deck are as D46 and D17 settle.
+The open state is shown by the caret's direction and by the picker replacing the track list;
+a second marker on the trigger itself was not chosen.
+The captures in `questions/cover-picker-revisit.html` show P5 with its container,
+so they are evidence of the built candidate and not of this decision;
+no capture of the decided state exists,
+and opening, closing, Back, focus return and TalkBack are unmeasured for it.
+D46 stays a provisional baseline that the human has said they will revisit in another major version;
+the before-1.x revisit is closed by this answer.
+
+No production implementation is authorized by this record.
+
+### D105. Move to trash on Android follows what the platform allows (2026-10-10)
+
+Asked how to implement D8's immediate delete with Undo on Android,
+where a delete reaches files by two routes that behave differently,
+the human chose:
+for a folder the user opened through the picker (a persisted storage-access grant)
+the app deletes immediately and Undo copies the file back,
+and for the device-wide system music library the app uses Android's own trash request with its system confirmation.
+The copy-back creates a new document with the same name and bytes,
+so its timestamps and identity change;
+the system library's Undo is Android's own restore, not the in-app overlay.
+D8 stays the design for every source where the platform allows it.
+
+This is a platform-feasibility decision made during production implementation.
 
 ## Pending after the theme picks (2026-09-04)
 

@@ -1,7 +1,11 @@
-//! What: One long-lived `git cat-file --batch` process that answers every object read of an invocation.
-//! Why: Starting Git costs far more than reading one object, so candidate bytes are read
+//! What:
+//!  One long-lived `git cat-file --batch` process that answers every object read of an invocation.
+//! Why:
+//!  Starting Git costs far more than reading one object,
+//!  so candidate bytes are read
 //!      through a single process whose count does not grow with the number of files.
-//!      Blob bytes are remembered by object name: a name always denotes the same bytes,
+//!      Blob bytes are remembered by object name:
+//!  a name always denotes the same bytes,
 //!      so a remembered blob can never become stale.
 //!
 //! In TS you'd write (pseudocode):
@@ -17,9 +21,14 @@ use super::candidate_error::{CandidateError, CandidateFailure};
 use super::candidate_object::ObjectId;
 /// Import the shared child-command builder.
 use super::forwarding::git_command;
-/// What: `HashMap<K, V>` is a key-to-value table (siblings: `BTreeMap`, which keeps keys
-///       sorted, and `Vec` of pairs).
-/// Why:  Remembered blobs are looked up by object name and never listed in order.
+/// What:
+///  `HashMap<K, V>` is a key-to-value table (siblings:
+///  `BTreeMap`,
+///  which keeps keys
+///       sorted,
+///  and `Vec` of pairs).
+/// Why:
+///   Remembered blobs are looked up by object name and never listed in order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,17 +37,31 @@ use super::forwarding::git_command;
 use std::collections::HashMap;
 /// `OsString` is owned operating-system text of raw OS bytes (sibling `String` must be UTF-8).
 use std::ffi::OsString;
-/// `BufReader` adds a read buffer to a pipe; `Write` is the trait that gives pipes `.write_all(..)`.
+/// `BufReader` adds a read buffer to a pipe;
+///  `Write` is the trait that gives pipes `.write_all(..)`.
 use std::io::{BufReader, Write};
 /// `Path` is a borrowed filesystem path of raw OS bytes.
 use std::path::Path;
-/// The child process record, its two pipes, and the stream selector.
+/// The child process record,
+///  its two pipes,
+///  and the stream selector.
 use std::process::{Child, ChildStdin, ChildStdout, Stdio};
-/// What: `Rc<T>` is a shared, read-only handle to one heap value, counted so the value
-///       lives until its last handle is gone (siblings: `Box<T>`, a single owner, and
-///       `Arc<T>`, the thread-safe form).
-/// Why:  The reader keeps a blob while callers also hold it; copying large files for
-///       each holder would double their memory. Nothing here crosses threads, so `Arc`
+/// What:
+///  `Rc<T>` is a shared,
+///  read-only handle to one heap value,
+///  counted so the value
+///       lives until its last handle is gone (siblings:
+///  `Box<T>`,
+///  a single owner,
+///  and
+///       `Arc<T>`,
+///  the thread-safe form).
+/// Why:
+///   The reader keeps a blob while callers also hold it;
+///  copying large files for
+///       each holder would double their memory.
+///  Nothing here crosses threads,
+///  so `Arc`
 ///       would add cost for no benefit.
 ///
 /// In TS you'd write (pseudocode):
@@ -47,9 +70,13 @@ use std::process::{Child, ChildStdin, ChildStdout, Stdio};
 /// ```
 use std::rc::Rc;
 
-/// What: The request and reply pipes of a running reader.
-/// Why:  Both are closed together: after any reply failure the stream can no longer be
-///       trusted, and closing both ends lets the process stop whatever it was doing.
+/// What:
+///  The request and reply pipes of a running reader.
+/// Why:
+///   Both are closed together:
+///  after any reply failure the stream can no longer be
+///       trusted,
+///  and closing both ends lets the process stop whatever it was doing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -58,14 +85,19 @@ use std::rc::Rc;
 struct ReaderPipes {
     /// Where request lines are written.
     input: ChildStdin,
-    /// Where replies are read, through a buffer so header lines do not cost one read per byte.
+    /// Where replies are read,
+    ///  through a buffer so header lines do not cost one read per byte.
     output: BufReader<ChildStdout>,
 }
 
-/// What: A running object reader and the blobs it has already read.
-///       `Option<ReaderPipes>` is "open pipes or nothing"; nothing means closed.
+/// What:
+///  A running object reader and the blobs it has already read.
+///       `Option<ReaderPipes>` is "open pipes or nothing";
+///  nothing means closed.
 ///       `Rc<[u8]>` is a shared read-only byte list.
-/// Why:  One value owns the process for its whole life, so the process is always
+/// Why:
+///   One value owns the process for its whole life,
+///  so the process is always
 ///       stopped and collected when the value is dropped.
 ///
 /// In TS you'd write (pseudocode):
@@ -75,14 +107,19 @@ struct ReaderPipes {
 pub struct ObjectReader {
     /// The `git cat-file --batch` process.
     child: Child,
-    /// Open pipes, or nothing once the reader was closed after a failure.
+    /// Open pipes,
+    ///  or nothing once the reader was closed after a failure.
     pipes: Option<ReaderPipes>,
-    /// Blob bytes already read, by object name.
+    /// Blob bytes already read,
+    ///  by object name.
     blobs: HashMap<ObjectId, Rc<[u8]>>,
 }
 
-/// What: Build the failure for a reader that can no longer answer.
-/// Why:  The message tells the person how to see Git's own explanation, because the
+/// What:
+///  Build the failure for a reader that can no longer answer.
+/// Why:
+///   The message tells the person how to see Git's own explanation,
+///  because the
 ///       reader's error stream is discarded (an unread pipe could stall Git).
 ///
 /// In TS you'd write (pseudocode):
@@ -100,12 +137,17 @@ fn reader_ended(detail: &str) -> CandidateError {
     );
 }
 
-/// What: Start the reader for the repository the caller's global options select.
-///       `&[OsString]` borrows the arguments before the subcommand, unchanged;
+/// What:
+///  Start the reader for the repository the caller's global options select.
+///       `&[OsString]` borrows the arguments before the subcommand,
+///  unchanged;
 ///       `&[(OsString, OsString)]` borrows added environment pairs.
 ///       `Result<T, E>` is "a value or a failure".
-/// Why:  Replaying the global prefix makes the reader open the same repository as the
-///       forwarded command. The overlay may point it at a private object directory, so
+/// Why:
+///   Replaying the global prefix makes the reader open the same repository as the
+///       forwarded command.
+///  The overlay may point it at a private object directory,
+///  so
 ///       one reader is bound to one overlay for its whole life.
 ///
 /// In TS you'd write (pseudocode):
@@ -174,19 +216,30 @@ pub fn start_object_reader(
     });
 }
 
-/// What: `impl ObjectReader { ... }` attaches the read operations, like class methods.
-/// Why:  Only complete object names and the fixed word `HEAD` are ever written as
-///       requests, so no caller text can inject a second request line.
+/// What:
+///  `impl ObjectReader { ... }` attaches the read operations,
+///  like class methods.
+/// Why:
+///   Only complete object names and the fixed word `HEAD` are ever written as
+///       requests,
+///  so no caller text can inject a second request line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class ObjectReader { blob(oid) {} headCommit() {} }
 /// ```
 impl ObjectReader {
-    /// What: Send one request line and read its reply. `&mut self` borrows the reader
-    ///       for changing: its pipes advance and may be closed.
-    /// Why:  Strict alternation (one request, then its whole reply) can never fill a
-    ///       pipe in both directions at once. Any failure closes the pipes, because the
+    /// What:
+    ///  Send one request line and read its reply.
+    ///  `&mut self` borrows the reader
+    ///       for changing:
+    ///  its pipes advance and may be closed.
+    /// Why:
+    ///   Strict alternation (one request,
+    ///  then its whole reply) can never fill a
+    ///       pipe in both directions at once.
+    ///  Any failure closes the pipes,
+    ///  because the
     ///       rest of the stream could be object content that looks like a reply.
     ///
     /// In TS you'd write (pseudocode):
@@ -217,9 +270,13 @@ impl ObjectReader {
         }
     }
 
-    /// What: The exact bytes of one blob, read once and shared afterwards.
+    /// What:
+    ///  The exact bytes of one blob,
+    ///  read once and shared afterwards.
     ///       `Rc::clone(..)` makes another handle to the same bytes without copying them.
-    /// Why:  The same blob often backs several paths and several policies; each further
+    /// Why:
+    ///   The same blob often backs several paths and several policies;
+    ///  each further
     ///       use costs neither a request nor a copy.
     ///
     /// In TS you'd write (pseudocode):
@@ -273,9 +330,13 @@ impl ObjectReader {
         }
     }
 
-    /// What: The commit `HEAD` names, or nothing when the branch has no commit yet.
+    /// What:
+    ///  The commit `HEAD` names,
+    ///  or nothing when the branch has no commit yet.
     ///       `Option<ObjectId>` is "a commit name or nothing".
-    /// Why:  The staged listing compares against this commit. Asking the running
+    /// Why:
+    ///   The staged listing compares against this commit.
+    ///  Asking the running
     ///       reader costs no further process.
     ///
     /// In TS you'd write (pseudocode):
@@ -298,9 +359,12 @@ impl ObjectReader {
     }
 }
 
-/// What: `impl Drop` runs when the value goes out of scope, like a `finally` block
+/// What:
+///  `impl Drop` runs when the value goes out of scope,
+///  like a `finally` block
 ///       attached to the value itself.
-/// Why:  A child that is never waited for stays in the process table as a zombie,
+/// Why:
+///   A child that is never waited for stays in the process table as a zombie,
 ///       which counts against the process limit of long sessions and containers.
 ///
 /// In TS you'd write (pseudocode):
@@ -308,7 +372,9 @@ impl ObjectReader {
 /// [Symbol.dispose]() { this.#pipes = undefined; this.#child.kill(); }
 /// ```
 impl Drop for ObjectReader {
-    /// Close both pipes, which ends the process, then collect it.
+    /// Close both pipes,
+    ///  which ends the process,
+    ///  then collect it.
     fn drop(&mut self) {
         self.pipes = None;
         // `let _ =` discards the exit status: every reply was already checked on its own.
@@ -321,7 +387,9 @@ impl Drop for ObjectReader {
 #[path = "candidate_reader_tests.rs"]
 mod tests;
 
-/// Stand-in programs that cut replies short, mismatch them, or never answer.
+/// Stand-in programs that cut replies short,
+///  mismatch them,
+///  or never answer.
 #[cfg(test)]
 #[path = "candidate_reader_failure_tests.rs"]
 mod failure_tests;

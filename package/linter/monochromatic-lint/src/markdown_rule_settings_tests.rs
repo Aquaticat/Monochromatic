@@ -1,5 +1,9 @@
-//! What: Validated JSONC to typed Markdown selection controls.
-//! Why: Omission, explicit `off` and a selected severity have different meanings, and each
+//! What:
+//!  Validated JSONC to typed Markdown selection controls.
+//! Why:
+//!  Omission,
+//!  explicit `off` and a selected severity have different meanings,
+//!  and each
 //! identifier must reach its own field.
 //!
 //! In TS you'd write (pseudocode):
@@ -18,7 +22,9 @@ fn settings(source: &str) -> MarkdownRuleSettings {
     return markdown_rule_settings(&value).expect("complete valid rule settings");
 }
 
-/// The selected severity of every rule, in registry order, for whole-struct comparison.
+/// The selected severity of every rule,
+///  in registry order,
+///  for whole-struct comparison.
 fn severities(selected: &MarkdownRuleSettings) -> [Option<Severity>; 13] {
     let mut lfs: Option<Severity> = None;
     if let Some(setting) = &selected.lfs_image_url {
@@ -58,7 +64,8 @@ const IDS: [&str; 13] = [
     "markdown/lfs-image-url",
 ];
 
-/// Absent and explicitly disabled rules select nothing; rules of other languages are skipped.
+/// Absent and explicitly disabled rules select nothing;
+///  rules of other languages are skipped.
 #[test]
 fn missing_and_disabled_rules_stay_disabled() {
     assert_eq!(severities(&settings("{}")), [None; 13]);
@@ -70,7 +77,8 @@ fn missing_and_disabled_rules_stay_disabled() {
     assert_eq!(severities(&settings(off.as_str())), [None; 13]);
 }
 
-/// Each identifier sets exactly its own field, with the configured severity.
+/// Each identifier sets exactly its own field,
+///  with the configured severity.
 #[test]
 fn each_identifier_selects_only_its_own_rule() {
     for (index, id) in IDS.iter().enumerate() {
@@ -84,7 +92,8 @@ fn each_identifier_selects_only_its_own_rule() {
     assert_eq!(error.single_h1, Some(Severity::Error));
 }
 
-/// The LFS rule's `exclude` option compiles to a matcher; without the option nothing is excluded.
+/// The LFS rule's `exclude` option compiles to a matcher;
+///  without the option nothing is excluded.
 #[test]
 fn lfs_exclusions_are_compiled_from_the_option() {
     let selected: MarkdownRuleSettings = settings(
@@ -105,7 +114,8 @@ fn lfs_exclusions_are_compiled_from_the_option() {
     );
 }
 
-/// Invalid settings are configuration errors, including an invalid pattern on a disabled rule.
+/// Invalid settings are configuration errors,
+///  including an invalid pattern on a disabled rule.
 #[test]
 fn invalid_settings_are_configuration_errors() {
     for source in [

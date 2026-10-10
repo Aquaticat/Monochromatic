@@ -1,5 +1,9 @@
-//! What: Validate a single atomic processor group, including virtual-to-empty rewrites.
-//! Why: Empty virtual content is allowed; the existing host edit engine still refuses an empty real file.
+//! What:
+//!  Validate a single atomic processor group,
+//!  including virtual-to-empty rewrites.
+//! Why:
+//!  Empty virtual content is allowed;
+//!  the existing host edit engine still refuses an empty real file.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,7 +20,8 @@ fn edit_key(edit: &&crate::edits::Edit) -> (usize, usize) {
     return (edit.start, edit.end);
 }
 
-/// Refuse malformed, internally overlapping or CRLF-bisecting virtual edits.
+/// Refuse malformed,
+///  internally overlapping or CRLF-bisecting virtual edits.
 pub(crate) fn rewrite(mapping: &Mapping, fix: &Fix) -> Result<String, ProcessorError> {
     // Retain references rather than copying replacement strings; sorting never changes caller order.
     let mut ordered: Vec<&crate::edits::Edit> = fix.edits.iter().collect();

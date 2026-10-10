@@ -1,12 +1,18 @@
-//! Rendered annotation pixels in both schemes with measured contrast, repaints only for visible changes, a
-//! scroll range that reaches hints and messages, and virtual rows that keep their place at another display scale.
+//! Rendered annotation pixels in both schemes with measured contrast,
+//!  repaints only for visible changes,
+//!  a
+//! scroll range that reaches hints and messages,
+//!  and virtual rows that keep their place at another display scale.
 //! Which pixels move when rows arrive is pinned in `annotation_stability_tests`.
 
 /// The production window.
 use super::AppWindow;
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
-/// Snapshot builders, the fixture, the painted-record counts, and the text origin shared with the behavior tests.
+/// Snapshot builders,
+///  the fixture,
+///  the painted-record counts,
+///  and the text origin shared with the behavior tests.
 use super::annotation_tests::{
     FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, hint, painted as shown, problem,
 };
@@ -19,18 +25,28 @@ use ide_app::language::{
 };
 /// The heights virtual rows are built from.
 use ide_app::virtual_row::{BLOCK_GAP, ROW_HEIGHT};
-/// What: `ColorScheme` is the toolkit's scheme enum; `WindowInner` is the toolkit's internal side of a window,
+/// What:
+///  `ColorScheme` is the toolkit's scheme enum;
+///  `WindowInner` is the toolkit's internal side of a window,
 ///       reached through its unstable re-export module.
-/// Why: Slint 1.18.1's portal watcher applies a scheme with `set_color_scheme` on the window's context; the
-///      headless backend has no portal, so the test makes the same call.
-/// Gotcha: This module is not stable API; a toolkit upgrade can rename it and break only these tests.
+/// Why:
+///  Slint 1.18.1's portal watcher applies a scheme with `set_color_scheme` on the window's context;
+///  the
+///      headless backend has no portal,
+///  so the test makes the same call.
+/// Gotcha:
+///  This module is not stable API;
+///  a toolkit upgrade can rename it and break only these tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { ColorScheme, windowInternals } from 'slint/private';
 /// ```
 use slint::private_unstable_api::re_exports::{ColorScheme, WindowInner};
-/// Frames, pixels, and toolkit colors are read back from the rendered window; a scale change arrives as a
+/// Frames,
+///  pixels,
+///  and toolkit colors are read back from the rendered window;
+///  a scale change arrives as a
 /// window event.
 use slint::{
     Color, ComponentHandle, Rgba8Pixel, SharedPixelBuffer,
@@ -39,7 +55,8 @@ use slint::{
 /// Disposable fixtures and shared snapshot pointers.
 use std::{fs, sync::Arc};
 
-/// Apply a system color scheme exactly where the portal watcher applies it, then run change handlers.
+/// Apply a system color scheme exactly where the portal watcher applies it,
+///  then run change handlers.
 pub(super) fn switch(window: &AppWindow, scheme: ColorScheme) {
     WindowInner::from_pub(window.window())
         .context()
@@ -52,7 +69,8 @@ pub(super) fn frame(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
     return window.window().take_snapshot().expect("window frame");
 }
 
-/// One frame pixel at whole logical coordinates; the headless window has scale one.
+/// One frame pixel at whole logical coordinates;
+///  the headless window has scale one.
 pub(super) fn pixel(frame: &SharedPixelBuffer<Rgba8Pixel>, x: f32, y: f32) -> Rgba8Pixel {
     let index = y as usize * frame.width() as usize + x as usize;
     return frame.as_slice()[index];
@@ -86,7 +104,8 @@ pub(super) fn near(pixel: Rgba8Pixel, color: Color) -> bool {
         && pixel.b.abs_diff(color.blue()) <= 2;
 }
 
-/// A reader over the shared fixture in a fresh disposable project; the directory lives as long as the reader.
+/// A reader over the shared fixture in a fresh disposable project;
+///  the directory lives as long as the reader.
 pub(super) fn fixture_reader(text: &str) -> (tempfile::TempDir, Reader) {
     let directory = tempfile::tempdir().expect("disposable paint project");
     fs::write(directory.path().join("main.rs"), text).expect("paint fixture");
@@ -95,7 +114,8 @@ pub(super) fn fixture_reader(text: &str) -> (tempfile::TempDir, Reader) {
 }
 
 /// The strongest contrast against `background` among the pixels of the window rectangle starting at (`left`,
-/// `top`), `width` by `height` logical pixels.
+/// `top`),
+///  `width` by `height` logical pixels.
 fn strongest(
     shown: &SharedPixelBuffer<Rgba8Pixel>,
     origin: (f32, f32),
@@ -115,7 +135,9 @@ fn strongest(
 }
 
 /// In both schemes the hint row is painted in the hint ink and every message row in the ink of its severity,
-/// each at least 4.5:1 against the background, and the error underline is drawn in the error ink; contrast is
+/// each at least 4.5:1 against the background,
+///  and the error underline is drawn in the error ink;
+///  contrast is
 /// measured on rendered pixels.
 #[test]
 fn rows_and_marks_render_in_both_schemes_with_measured_contrast() {
@@ -186,7 +208,8 @@ fn rows_and_marks_render_in_both_schemes_with_measured_contrast() {
     assert_ne!(inks[0], inks[1], "the error ink does not follow the scheme");
 }
 
-/// A snapshot whose only change lies outside the materialized rows does not repaint; one inside does;
+/// A snapshot whose only change lies outside the materialized rows does not repaint;
+///  one inside does;
 /// handing back the same snapshots does nothing.
 #[test]
 fn only_visible_annotation_changes_repaint() {
@@ -251,7 +274,8 @@ fn only_visible_annotation_changes_repaint() {
     assert_eq!(painted(), repainted, "the same snapshots repainted");
 }
 
-/// A hint or message that ends past the widest line widens the scroll range, so it can be scrolled into view.
+/// A hint or message that ends past the widest line widens the scroll range,
+///  so it can be scrolled into view.
 #[test]
 fn rows_past_the_widest_line_extend_the_scroll_range() {
     let (_directory, reader) = fixture_reader("a much wider first line of source text\nshort\n");
@@ -287,8 +311,11 @@ fn rows_past_the_widest_line_extend_the_scroll_range() {
     assert!(widened > plain);
 }
 
-/// At twice the display scale every virtual row keeps its logical place: blocks are as tall, hints stand at
-/// the caret x of their positions at that scale, and the image is twice as large in physical pixels.
+/// At twice the display scale every virtual row keeps its logical place:
+///  blocks are as tall,
+///  hints stand at
+/// the caret x of their positions at that scale,
+///  and the image is twice as large in physical pixels.
 #[test]
 fn display_scale_keeps_virtual_rows_in_place() {
     let (_directory, reader) = fixture_reader(FIXTURE);

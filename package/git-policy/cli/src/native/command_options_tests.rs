@@ -1,6 +1,10 @@
-//! What: Every `argv.unit.test.ts` case ported to the tokenizer, plus boundaries and
+//! What:
+//!  Every `argv.unit.test.ts` case ported to the tokenizer,
+//!  plus boundaries and
 //!       wrapper-only flags.
-//! Why: The incumbent test is the behavior specification; cases where it disagrees with
+//! Why:
+//!  The incumbent test is the behavior specification;
+//!  cases where it disagrees with
 //!      Git 2.56.0 are marked as divergences and follow Git.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,7 +12,8 @@
 //! // expect(parseArgv({ args, spec })).toEqual(...)
 //! ```
 
-/// The tokenizer under test, its queries and the shared argument builders.
+/// The tokenizer under test,
+///  its queries and the shared argument builders.
 use super::{
     Arity, Boundary, DEFAULT_MODE, Occurrence, OptionError, OptionErrorKind, OptionSpec,
     OptionValue, ParseMode, ParsedOptions, WrapperOccurrence, parse_options, row,
@@ -19,7 +24,8 @@ use crate::command_test_support::{
 };
 use std::ffi::OsString;
 
-/// The declared surface of the incumbent `argv.unit.test.ts`: one flag and one value option.
+/// The declared surface of the incumbent `argv.unit.test.ts`:
+///  one flag and one value option.
 const INCUMBENT_TABLE: &[OptionSpec] = &[
     row(ALL, Some(b'a'), Some("all"), Arity::None, true),
     row(MESSAGE, Some(b'm'), Some("message"), Arity::Required, true),
@@ -56,7 +62,8 @@ fn all_at(token: usize) -> Occurrence {
     };
 }
 
-/// Ported: "takes a declared option value and keeps following positionals".
+/// Ported:
+///  "takes a declared option value and keeps following positionals".
 #[test]
 fn takes_a_declared_option_value_and_keeps_following_positionals() {
     let parsed: ParsedOptions = parse(&["-m", "msg", "a.txt"], DEFAULT_MODE).expect("valid");
@@ -64,7 +71,8 @@ fn takes_a_declared_option_value_and_keeps_following_positionals() {
     assert_eq!(parsed.leading, vec![2]);
 }
 
-/// Ported: "counts a declared flag ..." and "counts every repeated declared flag occurrence".
+/// Ported:
+///  "counts a declared flag ..." and "counts every repeated declared flag occurrence".
 #[test]
 fn counts_declared_flags_without_consuming_positionals() {
     let single: ParsedOptions = parse(&["-a", "a.txt", "b.txt"], DEFAULT_MODE).expect("valid");
@@ -75,8 +83,11 @@ fn counts_declared_flags_without_consuming_positionals() {
     assert!(repeated.leading.is_empty());
 }
 
-/// Divergence from five incumbent cases: Git 2.56.0 refuses an undeclared option; it never
-/// lets one consume a following plain token (parse-options.c:1164-1165, 1224-1233).
+/// Divergence from five incumbent cases:
+///  Git 2.56.0 refuses an undeclared option;
+///  it never
+/// lets one consume a following plain token (parse-options.c:1164-1165,
+///  1224-1233).
 #[test]
 fn refuses_an_undeclared_option_as_git_does() {
     for values in [
@@ -127,7 +138,9 @@ fn keeps_an_undeclared_option_without_consuming_the_next_token() {
     assert_eq!(plain.occurrences.len(), 1);
 }
 
-/// Ported: "takes a declared joined option value"; also the empty joined value.
+/// Ported:
+///  "takes a declared joined option value";
+///  also the empty joined value.
 #[test]
 fn takes_a_declared_joined_option_value() {
     let arguments: Vec<OsString> = os_arguments(&["--message=msg", "a.txt", "--message="]);
@@ -147,7 +160,8 @@ fn takes_a_declared_joined_option_value() {
     assert_eq!(parsed.leading, vec![1]);
 }
 
-/// Ported: "names the offending token and region when refusing" and
+/// Ported:
+///  "names the offending token and region when refusing" and
 /// "refuses a declared option missing its value".
 #[test]
 fn names_the_offending_token_when_a_value_is_missing() {
@@ -170,7 +184,8 @@ fn names_the_offending_token_when_a_value_is_missing() {
     assert!(error.to_string().contains("MissingValue"), "{error}");
 }
 
-/// Ported: "takes a dash-led token as a declared option value".
+/// Ported:
+///  "takes a dash-led token as a declared option value".
 #[test]
 fn takes_a_dash_led_token_as_a_declared_option_value() {
     let parsed: ParsedOptions = parse(&["-m", "-a"], DEFAULT_MODE).expect("valid");
@@ -180,8 +195,11 @@ fn takes_a_dash_led_token_as_a_declared_option_value() {
     assert_eq!(terminator.leading, vec![2]);
 }
 
-/// Ported: "parses declared options appearing after positionals", "treats a lone dash as
-/// positional", "treats every token after the terminator as positional" and
+/// Ported:
+///  "parses declared options appearing after positionals",
+///  "treats a lone dash as
+/// positional",
+///  "treats every token after the terminator as positional" and
 /// "parses declared flags before the terminator".
 #[test]
 fn separates_options_positionals_and_the_terminator() {
@@ -199,14 +217,16 @@ fn separates_options_positionals_and_the_terminator() {
     assert_eq!(positional_tokens(&before, 3), vec![2]);
 }
 
-/// Ported as a table invariant: "rejects a declared spelling that cannot introduce an option".
+/// Ported as a table invariant:
+///  "rejects a declared spelling that cannot introduce an option".
 #[test]
 #[should_panic(expected = "nodash")]
 fn rejects_a_declared_spelling_that_cannot_introduce_an_option() {
     assert_table_invariants(&[row(ALL, None, Some("-nodash"), Arity::None, true)]);
 }
 
-/// Duplicate letters are table defects, as in Git's `parse_options_check`.
+/// Duplicate letters are table defects,
+///  as in Git's `parse_options_check`.
 #[test]
 #[should_panic(expected = "duplicate short")]
 fn rejects_a_table_with_a_repeated_short_letter() {

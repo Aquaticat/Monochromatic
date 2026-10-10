@@ -1,7 +1,11 @@
-//! Server lifetime: crash and restart, file switches, files outside the project, launch refusal,
+//! Server lifetime:
+//!  crash and restart,
+//!  file switches,
+//!  files outside the project,
+//!  launch refusal,
 //! and shutdown without leftover processes.
 
-use crate::support::{self, Probe, SERVER};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
     config::LanguageSetup,
     launch::{LaunchRequest, ServerLaunch, launch_directly},
@@ -10,7 +14,8 @@ use ide_app::language::{
 };
 use serde_json::Value;
 
-/// Process identifiers of every scripted server that started, in order.
+/// Process identifiers of every scripted server that started,
+///  in order.
 fn started(lines: &[Value]) -> Vec<u64> {
     let mut pids = Vec::new();
     for line in lines {
@@ -21,7 +26,9 @@ fn started(lines: &[Value]) -> Vec<u64> {
     return pids;
 }
 
-/// A crash fails the pending request, removes the server, and the next open starts a new one.
+/// A crash fails the pending request,
+///  removes the server,
+///  and the next open starts a new one.
 #[test]
 fn crash_fails_the_pending_request_and_the_next_open_restarts() {
     let Some(root) = support::child_root() else {
@@ -31,7 +38,10 @@ fn crash_fails_the_pending_request_and_the_next_open_restarts() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("HOVER", "crash")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("HOVER", "crash")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("first.scripted"), "alpha\n");
     probe.until_ready();
     probe.until("diagnostics from the first process", |seen| {
@@ -99,7 +109,7 @@ fn file_switch_closes_the_first_file_and_reuses_the_server() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     let first = root.join("first.scripted");
     let second = root.join("second.scripted");
     probe.open(&first, "alpha\n");
@@ -166,7 +176,7 @@ fn file_outside_the_project_attaches_only_running_servers() {
     };
     let outside = support::scratch(&root).join("dependency.scripted");
     std::fs::write(&outside, "dependency text\n").expect("outside file");
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.display(&outside, "dependency text\n");
     probe.until("the outside-project state", |seen| {
         return seen.status.document == DocumentState::OutsideProject;
@@ -212,7 +222,8 @@ fn refusing(request: &LaunchRequest) -> Result<ServerLaunch, String> {
     return Err(format!("no confinement for {}", request.server));
 }
 
-/// A launch policy that needs a private directory below the project, which the test configures as
+/// A launch policy that needs a private directory below the project,
+///  which the test configures as
 /// the state root itself.
 fn needing_state(request: &LaunchRequest) -> Result<ServerLaunch, String> {
     let mut launch = launch_directly(request)?;
@@ -235,7 +246,7 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
     let refused = LanguageSetup {
         launch: refusing,
         state_root: None,
-        extra_languages: Some(support::scripted(&root, &[], 3)),
+        extra_languages: Some(support::scripted(&root, &[], PRODUCT_TIMEOUT)),
     };
     let mut probe = Probe::with_setup(&root, refused);
     probe.open(&root.join("file.scripted"), "alpha\n");
@@ -253,7 +264,7 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
     let unprepared = LanguageSetup {
         launch: needing_state,
         state_root: Some(root.clone()),
-        extra_languages: Some(support::scripted(&root, &[], 3)),
+        extra_languages: Some(support::scripted(&root, &[], PRODUCT_TIMEOUT)),
     };
     let mut second = Probe::with_setup(&root, unprepared);
     second.open(&root.join("file.scripted"), "alpha\n");
@@ -278,7 +289,8 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
     );
 }
 
-/// Dropping the handle stops every server, including one that never initialized.
+/// Dropping the handle stops every server,
+///  including one that never initialized.
 #[test]
 fn dropping_the_worker_leaves_no_child_process() {
     let Some(root) = support::child_root() else {
@@ -288,7 +300,7 @@ fn dropping_the_worker_leaves_no_child_process() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
     assert_eq!(support::children().len(), 1);
@@ -311,8 +323,11 @@ fn dropping_the_worker_leaves_no_child_process() {
     support::children_until_none();
 }
 
-/// A server that ignores `exit` and the end of its input is killed after the grace, and it is
-/// reaped before the drop returns: no child is left, running or as a zombie.
+/// A server that ignores `exit` and the end of its input is killed after the grace,
+///  and it is
+/// reaped before the drop returns:
+///  no child is left,
+///  running or as a zombie.
 #[test]
 fn server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns() {
     let Some(root) = support::child_root() else {
@@ -322,7 +337,10 @@ fn server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("LINGER", "1")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("LINGER", "1")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
     assert_eq!(support::children().len(), 1);

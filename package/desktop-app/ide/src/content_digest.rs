@@ -1,20 +1,44 @@
 //! The fixed 64-bit FNV-1a digest of some bytes.
 //!
-//! What: One function, shared by the build script (`build.rs` includes this file by path) and the
-//!       application, so a digest recorded at build time is computed the same way at run time.
-//! Why: The single executable records a digest of every embedded language file and checks it before
-//!      use, so a damaged executable or cache is reported instead of loaded. The standard library's
-//!      hasher may change between releases; FNV-1a is fixed by its definition. Changing any one byte
-//!      always changes the digest, because every step (XOR with the byte, then multiplying by an odd
+//! What:
+//!  One function,
+//!  shared by the build script (`build.rs` includes this file by path) and the
+//!       application,
+//!  so a digest recorded at build time is computed the same way at run time.
+//! Why:
+//!  The single executable records a digest of every embedded language file and checks it before
+//!      use,
+//!  so a damaged executable or cache is reported instead of loaded.
+//!  The standard library's
+//!      hasher may change between releases;
+//!  FNV-1a is fixed by its definition.
+//!  Changing any one byte
+//!      always changes the digest,
+//!  because every step (XOR with the byte,
+//!  then multiplying by an odd
 //!      constant modulo 2^64) is reversible.
-//! Gotcha: This detects damage, not tampering. Anyone who can rewrite the cache can also rewrite the
-//!         executable, so a keyed or cryptographic digest would not add protection here.
+//! Gotcha:
+//!  This detects damage,
+//!  not tampering.
+//!  Anyone who can rewrite the cache can also rewrite the
+//!         executable,
+//!  so a keyed or cryptographic digest would not add protection here.
 
-/// What: The 64-bit FNV-1a hash of some bytes. `&[u8]` is a borrowed read-only view of bytes (siblings:
-///       `Vec<u8>`, an owned growable list, and `[u8; N]`, a fixed-size array); `u64` is an unsigned
-///       64-bit integer (siblings `u32`, `i64`). `wrapping_mul` multiplies and keeps the low 64 bits
+/// What:
+///  The 64-bit FNV-1a hash of some bytes.
+///  `&[u8]` is a borrowed read-only view of bytes (siblings:
+///       `Vec<u8>`,
+///  an owned growable list,
+///  and `[u8; N]`,
+///  a fixed-size array);
+///  `u64` is an unsigned
+///       64-bit integer (siblings `u32`,
+///  `i64`).
+///  `wrapping_mul` multiplies and keeps the low 64 bits
 ///       instead of failing on overflow.
-/// Why: A borrowed view lets callers hash embedded bytes and file contents without copying them, and
+/// Why:
+///  A borrowed view lets callers hash embedded bytes and file contents without copying them,
+///  and
 ///      64 bits keep accidental collisions out of reach for the few thousand files involved.
 ///
 /// In TS you'd write (pseudocode):

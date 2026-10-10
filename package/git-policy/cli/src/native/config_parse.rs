@@ -1,5 +1,8 @@
-//! What: Turn `cli-git.config.jsonc` text into validated typed settings.
-//! Why: Every unknown key, wrong type or ambiguous duplicate is rejected before any
+//! What:
+//!  Turn `cli-git.config.jsonc` text into validated typed settings.
+//! Why:
+//!  Every unknown key,
+//!  wrong type or ambiguous duplicate is rejected before any
 //!      policy or transaction reads a setting.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +10,12 @@
 //! // parseConfig(source) returns CliGitConfig or throws ConfigError naming the key.
 //! ```
 
-/// What: `use super::...` imports sibling modules of this crate.
-/// Why:  Parsing combines the error type, the policy section reader, the typed
+/// What:
+///  `use super::...` imports sibling modules of this crate.
+/// Why:
+///   Parsing combines the error type,
+///  the policy section reader,
+///  the typed
 ///       settings and the shared value readers.
 ///
 /// In TS you'd write (pseudocode):
@@ -19,8 +26,10 @@ use super::config_error::ConfigError;
 use super::config_policies::parse_policies;
 use super::config_schema::{CliGitConfig, ConcurrencyConfig};
 use super::config_values::{boolean, member_keys, member_path, safe_integer, wrong_kind};
-/// What: Import the repository's JSONC parser and its value type.
-/// Why:  cli-git reads its configuration through the shared JSONC package only.
+/// What:
+///  Import the repository's JSONC parser and its value type.
+/// Why:
+///   cli-git reads its configuration through the shared JSONC package only.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,9 +37,13 @@ use super::config_values::{boolean, member_keys, member_path, safe_integer, wron
 /// ```
 use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};
 
-/// What: Every accepted top-level key, for the unknown-key diagnostic.
-///       `&str` is borrowed text compiled into the executable (sibling: owned `String`).
-/// Why:  One list keeps the message and the dispatch from drifting apart.
+/// What:
+///  Every accepted top-level key,
+///  for the unknown-key diagnostic.
+///       `&str` is borrowed text compiled into the executable (sibling:
+///  owned `String`).
+/// Why:
+///   One list keeps the message and the dispatch from drifting apart.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,9 +51,13 @@ use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};
 /// ```
 const ACCEPTED_KEYS: &str = "policies, hooks, indexLock, landing";
 
-/// What: Explain a top-level key the schema does not accept.
-/// Why:  `plugins` and `trust` existed in the executable TypeScript configuration; their
-///       authors need the reason and the remedy, not a bare "unknown key".
+/// What:
+///  Explain a top-level key the schema does not accept.
+/// Why:
+///   `plugins` and `trust` existed in the executable TypeScript configuration;
+///  their
+///       authors need the reason and the remedy,
+///  not a bare "unknown key".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -72,11 +89,18 @@ fn unknown_top_level_key(key: &str) -> ConfigError {
     );
 }
 
-/// What: Validate one concurrency section and apply its single optional key.
-///       `Result<T, E>` is "value or error": `Ok(...)` or `Err(...)`.
-/// Why:  `hooks`, `indexLock` and `landing` share one shape: an object whose only
-///       accepted key may be omitted to keep the default. They tune hook serialization,
-///       index-lock patience and landing starvation; none can disable the transaction.
+/// What:
+///  Validate one concurrency section and apply its single optional key.
+///       `Result<T, E>` is "value or error":
+///  `Ok(...)` or `Err(...)`.
+/// Why:
+///   `hooks`,
+///  `indexLock` and `landing` share one shape:
+///  an object whose only
+///       accepted key may be omitted to keep the default.
+///  They tune hook serialization,
+///       index-lock patience and landing starvation;
+///  none can disable the transaction.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -142,9 +166,14 @@ fn apply_concurrency(
     return Ok(result);
 }
 
-/// What: Parse and validate one complete configuration document.
-/// Why:  This is the only way settings enter the native wrapper: data in, typed
-///       settings or one actionable error out. Nothing in the document is executed,
+/// What:
+///  Parse and validate one complete configuration document.
+/// Why:
+///   This is the only way settings enter the native wrapper:
+///  data in,
+///  typed
+///       settings or one actionable error out.
+///  Nothing in the document is executed,
 ///       imported or resolved as a path.
 ///
 /// In TS you'd write (pseudocode):

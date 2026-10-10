@@ -1,6 +1,11 @@
-//! What: Controls for the failure-code mapping, over every variant of every mapped type.
-//! Why: The code decides how an engine failure is reported. A cause mapped to the wrong
-//!      code still fails closed, so only a control that names each cause can notice it.
+//! What:
+//!  Controls for the failure-code mapping,
+//!  over every variant of every mapped type.
+//! Why:
+//!  The code decides how an engine failure is reported.
+//!  A cause mapped to the wrong
+//!      code still fails closed,
+//!  so only a control that names each cause can notice it.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -49,7 +54,8 @@ fn the_two_codes_have_the_decided_names() {
     );
 }
 
-/// Each cause of unreadable content is `content-unavailable`; a stale candidate alone is `policy-incomplete`.
+/// Each cause of unreadable content is `content-unavailable`;
+///  a stale candidate alone is `policy-incomplete`.
 #[test]
 fn every_candidate_failure_has_its_code() {
     for failure in UNREADABLE {
@@ -80,7 +86,8 @@ fn every_scanner_failure_is_policy_incomplete() {
     }
 }
 
-/// A failed pass carries the code of the failure it wraps, whichever layer failed.
+/// A failed pass carries the code of the failure it wraps,
+///  whichever layer failed.
 #[test]
 fn scan_run_errors_carry_the_code_of_the_failure_they_wrap() {
     for failure in UNREADABLE {
@@ -113,7 +120,8 @@ fn scan_run_errors_carry_the_code_of_the_failure_they_wrap() {
     }
 }
 
-/// Matches are violations with no code; the scanner's two fail-closed notices are `policy-incomplete`.
+/// Matches are violations with no code;
+///  the scanner's two fail-closed notices are `policy-incomplete`.
 #[test]
 fn only_findings_that_are_not_matches_carry_a_code() {
     let content: ScanFinding = ScanFinding::Content {

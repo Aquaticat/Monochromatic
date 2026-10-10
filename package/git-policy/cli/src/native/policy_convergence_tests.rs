@@ -1,6 +1,11 @@
-//! What: Every ending of the bounded correction loop, driven by a scripted implementer.
-//! Why: The loop decides whether corrected content is accepted. A wrong bound accepts
-//!      content that never settled or refuses content that did; a missed cycle spins.
+//! What:
+//!  Every ending of the bounded correction loop,
+//!  driven by a scripted implementer.
+//! Why:
+//!  The loop decides whether corrected content is accepted.
+//!  A wrong bound accepts
+//!      content that never settled or refuses content that did;
+//!  a missed cycle spins.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -17,9 +22,11 @@ use super::{
 struct Scripted {
     /// What the pass with each candidate version returns.
     passes: Vec<PassResult>,
-    /// The exact state stored under each snapshot number; number 0 is the initial state.
+    /// The exact state stored under each snapshot number;
+    ///  number 0 is the initial state.
     states: Vec<&'static str>,
-    /// The snapshot number whose `apply` fails, when one does.
+    /// The snapshot number whose `apply` fails,
+    ///  when one does.
     failing_apply: Option<usize>,
     /// Every `run_pass` and `apply` in call order.
     log: Vec<String>,
@@ -57,7 +64,9 @@ fn run(
     return (ending, scripted.log);
 }
 
-/// Nine distinct states: the initial one and one per allowed change, plus one the loop must never store.
+/// Nine distinct states:
+///  the initial one and one per allowed change,
+///  plus one the loop must never store.
 const DISTINCT: [&str; 10] = ["s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9"];
 
 /// `count` proposing passes followed by `last`.
@@ -105,7 +114,8 @@ fn changes_restart_the_pass_until_stable() {
     );
 }
 
-/// A failed pass or a failed application blocks, at the start and after a change.
+/// A failed pass or a failed application blocks,
+///  at the start and after a change.
 #[test]
 fn failures_block() {
     assert_eq!(
@@ -177,7 +187,8 @@ fn returning_to_an_older_state_is_a_cycle() {
     }
 }
 
-/// Eight changes are allowed; the ninth pass may only confirm stability.
+/// Eight changes are allowed;
+///  the ninth pass may only confirm stability.
 #[test]
 fn eight_changes_are_the_limit() {
     assert_eq!(MAXIMUM_CHANGED_PASSES, 8);

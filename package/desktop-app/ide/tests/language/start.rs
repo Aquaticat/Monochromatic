@@ -1,12 +1,18 @@
-//! Start states: nothing to start, missing program, on-demand start, and the three failed starts.
+//! Start states:
+//!  nothing to start,
+//!  missing program,
+//!  on-demand start,
+//!  and the three failed starts.
 
-use crate::support::{self, Probe, SERVER};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
     reply::{RequestKind, RequestOutcome},
     status::{DocumentState, ServerState},
 };
 
-/// A file without a recognized language, and a language without a server, start nothing.
+/// A file without a recognized language,
+///  and a language without a server,
+///  start nothing.
 #[test]
 fn files_without_language_or_server_start_nothing() {
     let Some(root) = support::child_root() else {
@@ -16,7 +22,7 @@ fn files_without_language_or_server_start_nothing() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("notes.unrecognized-extension"), "plain text\n");
     probe.until("the no-language state", |seen| {
         return seen.status.document == DocumentState::NoLanguage;
@@ -49,7 +55,7 @@ fn missing_program_is_reported_without_starting_anything() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[], 3).replace(
+    let definitions = support::scripted(&root, &[], PRODUCT_TIMEOUT).replace(
         env!("CARGO_BIN_EXE_ide-scripted-lsp"),
         "definitely-not-installed-language-server",
     );
@@ -73,7 +79,9 @@ fn missing_program_is_reported_without_starting_anything() {
     assert_eq!(probe.answers(number)[0].outcome, RequestOutcome::NoServer);
 }
 
-/// A server starts when its first file is displayed, and receives `didOpen` once, after `initialized`.
+/// A server starts when its first file is displayed,
+///  and receives `didOpen` once,
+///  after `initialized`.
 #[test]
 fn server_starts_on_demand_and_is_opened_once_after_initialized() {
     let Some(root) = support::child_root() else {
@@ -83,7 +91,7 @@ fn server_starts_on_demand_and_is_opened_once_after_initialized() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.poll();
     assert_eq!(probe.status.document, DocumentState::Closed);
     std::thread::sleep(std::time::Duration::from_millis(200));
@@ -153,7 +161,8 @@ fn server_starts_on_demand_and_is_opened_once_after_initialized() {
     );
 }
 
-/// A request sent while the server is still starting is answered "starting"; nothing reaches the server.
+/// A request sent while the server is still starting is answered "starting";
+///  nothing reaches the server.
 #[test]
 fn request_before_initialize_is_answered_starting_and_nothing_is_sent() {
     let Some(root) = support::child_root() else {
@@ -202,14 +211,14 @@ fn request_before_initialize_is_answered_starting_and_nothing_is_sent() {
             )
             .expect("a request before initialize stopped the language worker")
     );
-    // The start deadline is the server's request timeout (1 s) plus the margin.
+    // The start deadline is the start allowance, three request timeouts (3 s), plus the margin.
     probe.until("the failed-start state", |seen| {
         return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
     });
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::FailedToStart {
-            reason: "scripted-ls did not answer initialize within 1 seconds".to_string()
+            reason: "scripted-ls did not answer initialize within 3 seconds".to_string()
         })
     );
     let received = support::received(&support::report(&root));
@@ -231,7 +240,10 @@ fn exit_during_initialize_is_a_failed_start() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("INIT", "exit")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("INIT", "exit")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until("the failed-start state", |seen| {
         return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
@@ -247,7 +259,8 @@ fn exit_during_initialize_is_a_failed_start() {
     support::children_until_none();
 }
 
-/// A server that answers `initialize` with an error stays alive; only the deadline reveals the failure.
+/// A server that answers `initialize` with an error stays alive;
+///  only the deadline reveals the failure.
 #[test]
 fn error_reply_to_initialize_is_a_failed_start_by_deadline() {
     let Some(root) = support::child_root() else {
@@ -273,4 +286,43 @@ fn error_reply_to_initialize_is_a_failed_start_by_deadline() {
         return seen.state(SERVER) == Some(&ServerState::Starting)
             && seen.status.servers[0].server.instance == 2;
     });
+}
+
+/// A server that answers `initialize` later than its request timeout,
+///  but within its start
+/// allowance of three request timeouts,
+///  is ready;
+///  the late answer is not discarded.
+#[test]
+fn initialize_answered_within_the_start_allowance_is_accepted() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "start::initialize_answered_within_the_start_allowance_is_accepted",
+            support::standard,
+        );
+        return;
+    };
+    // A request timeout of 4 s gives a start allowance of 12 s; the answer comes after 5 s.
+    // The answer can never beat the request timeout, so without the allowance the start fails
+    // every time; with it, a stall of up to 7 s still passes.
+    let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "5000")], 4);
+    let mut probe = Probe::new(&root, definitions);
+    probe.open(&root.join("file.scripted"), "alpha\n");
+    probe.until("the server to be ready or to fail", |seen| {
+        return matches!(
+            seen.state(SERVER),
+            Some(ServerState::Ready | ServerState::FailedToStart { .. })
+        );
+    });
+    assert_eq!(
+        probe.state(SERVER),
+        Some(&ServerState::Ready),
+        "a server that answered initialize within its start allowance was not accepted"
+    );
+    assert_eq!(probe.status.servers[0].server.instance, 1);
+    let started = support::report(&root)
+        .iter()
+        .filter(|line| return !line["started"].is_null())
+        .count();
+    assert_eq!(started, 1, "the server was started more than once");
 }

@@ -1,11 +1,16 @@
 //! Derives LED cap end-corner ownership from Slint's actual wrapped rows.
 //!
-//! Slint owns text shaping and wrapping. Each cap reports its final rectangle through
-//! `LedRowGeometry.report`; this module groups complete reports by measured position and
-//! returns first/last membership. The full-width plate itself stays entirely in Slint.
+//! Slint owns text shaping and wrapping.
+//!  Each cap reports its final rectangle through
+//! `LedRowGeometry.report`;
+//!  this module groups complete reports by measured position and
+//! returns first/last membership.
+//!  The full-width plate itself stays entirely in Slint.
 
-/// What:     `RefCell` provides checked interior mutability on one UI thread.
-/// Why:      Repeated geometry callbacks fill shared state before row classification.
+/// What:
+///      `RefCell` provides checked interior mutability on one UI thread.
+/// Why:
+///       Repeated geometry callbacks fill shared state before row classification.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,8 +18,10 @@
 /// ```
 use std::cell::RefCell;
 
-/// What:     `Ordering` names comparison outcomes used while sorting measured controls.
-/// Why:      Geometry reports can arrive in callback order rather than visual order.
+/// What:
+///      `Ordering` names comparison outcomes used while sorting measured controls.
+/// Why:
+///       Geometry reports can arrive in callback order rather than visual order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,8 +29,11 @@ use std::cell::RefCell;
 /// ```
 use std::cmp::Ordering;
 
-/// What:     `Rc` shares geometry state between registration scope and callbacks.
-/// Why:      Slint callbacks run on one UI thread, so atomic ownership is unnecessary.
+/// What:
+///      `Rc` shares geometry state between registration scope and callbacks.
+/// Why:
+///       Slint callbacks run on one UI thread,
+///  so atomic ownership is unnecessary.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,8 +41,10 @@ use std::cmp::Ordering;
 /// ```
 use std::rc::Rc;
 
-/// What:     Generated window and LED row-global types cross the Rust-to-Slint seam.
-/// Why:      Callback registration reads measured reports and writes row-edge models.
+/// What:
+///      Generated window and LED row-global types cross the Rust-to-Slint seam.
+/// Why:
+///       Callback registration reads measured reports and writes row-edge models.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,8 +52,10 @@ use std::rc::Rc;
 /// ```
 use crate::{AppWindow, LedRowGeometry};
 
-/// What:     Slint handle traits expose weak handles and model adapters.
-/// Why:      Geometry callbacks must not keep the window alive.
+/// What:
+///      Slint handle traits expose weak handles and model adapters.
+/// Why:
+///       Geometry callbacks must not keep the window alive.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -194,10 +208,11 @@ fn completed_update(controls: &[Option<ControlGeometry>]) -> Option<RowUpdate> {
 
 /// Writes complete row ownership or clears it for an empty generation.
 fn update_global(global: &LedRowGeometry<'_>, update: Option<RowUpdate>) {
-    if let Some(update) = update {
+    // The present rows bind as `rows` so they never shadow the `Option` parameter.
+    if let Some(rows) = update {
         tracing::debug!("updating measured LED row-edge ownership");
-        global.set_starts(ModelRc::new(VecModel::from(update.starts)));
-        global.set_ends(ModelRc::new(VecModel::from(update.ends)));
+        global.set_starts(ModelRc::new(VecModel::from(rows.starts)));
+        global.set_ends(ModelRc::new(VecModel::from(rows.ends)));
         return;
     }
     global.set_starts(ModelRc::default());
@@ -213,40 +228,45 @@ pub(crate) fn apply(app: &AppWindow) {
     let global = app.global::<LedRowGeometry>();
     global.on_begin(move |count| {
         tracing::trace!(count, "received LED row generation start");
-        let Ok(count) = usize::try_from(count) else {
+        // The converted count binds apart from the closure's `i32` parameter, and the
+        // upgraded window apart from `apply`'s `app` parameter.
+        let Ok(row_count) = usize::try_from(count) else {
             tracing::warn!(count, "ignoring negative LED row count");
             return begin_state.borrow().generation;
         };
-        let generation = begin_state.borrow_mut().begin(count);
-        if count == 0 && let Some(app) = begin_weak.upgrade() {
-            update_global(&app.global::<LedRowGeometry>(), None);
+        let generation = begin_state.borrow_mut().begin(row_count);
+        if row_count == 0 && let Some(window) = begin_weak.upgrade() {
+            update_global(&window.global::<LedRowGeometry>(), None);
         }
         return generation
     });
     let report_weak = app.as_weak();
     global.on_report(move |generation, index, count, x, y, width| {
         tracing::trace!(generation, index, count, x, y, width, "received LED cap row geometry");
-        let (Ok(index), Ok(count)) = (usize::try_from(index), usize::try_from(count)) else {
+        // The converted index and count bind apart from the closure's `i32` parameters,
+        // the upgraded window apart from `apply`'s `app` parameter, and the borrowed
+        // geometry state apart from the shared `Rc`.
+        let (Ok(row_index), Ok(row_count)) = (usize::try_from(index), usize::try_from(count)) else {
             tracing::warn!(index, count, "ignoring negative LED row index or count");
             return;
         };
-        let Some(app) = report_weak.upgrade() else {
+        let Some(window) = report_weak.upgrade() else {
             return;
         };
         let update = {
-            let mut state = state.borrow_mut();
-            if !state.record(RecordOptions {
+            let mut geometry_state = state.borrow_mut();
+            if !geometry_state.record(RecordOptions {
                 generation,
-                index,
-                count,
+                index: row_index,
+                count: row_count,
                 geometry: ControlGeometry { x, y, width },
             }) {
                 return;
             }
-            completed_update(&state.controls)
+            completed_update(&geometry_state.controls)
         };
         if update.is_some() {
-            update_global(&app.global::<LedRowGeometry>(), update);
+            update_global(&window.global::<LedRowGeometry>(), update);
         }
     });
     global.set_adapter_ready(true);

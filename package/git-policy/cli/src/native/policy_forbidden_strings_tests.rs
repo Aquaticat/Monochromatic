@@ -1,8 +1,17 @@
-//! What: Controls for the forbidden-strings policy over real candidates and a real rules
-//!       file: where the rules come from, which candidates are scanned, how matches are
-//!       redacted, and how a scan that cannot complete fails.
-//! Why: A rules file read from the wrong place, a candidate skipped, a matched string in a
-//!      message or a failed matcher read as clean would each let a secret through. Every
+//! What:
+//!  Controls for the forbidden-strings policy over real candidates and a real rules
+//!       file:
+//!  where the rules come from,
+//!  which candidates are scanned,
+//!  how matches are
+//!       redacted,
+//!  and how a scan that cannot complete fails.
+//! Why:
+//!  A rules file read from the wrong place,
+//!  a candidate skipped,
+//!  a matched string in a
+//!      message or a failed matcher read as clean would each let a secret through.
+//!  Every
 //!      control loads rules in its own process with a disposable home and cache.
 //!
 //! In TS you'd write (pseudocode):
@@ -29,7 +38,8 @@ use std::ffi::{OsStr, OsString};
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
-/// Scripted facts at the top level of `repo`, preparing candidates there with real Git.
+/// Scripted facts at the top level of `repo`,
+///  preparing candidates there with real Git.
 fn facts_in(repo: &Path) -> ScriptedFacts {
     let mut facts: ScriptedFacts = scripted_facts();
     facts.location = Ok(main_worktree(
@@ -58,7 +68,8 @@ fn settings(rules_file: Option<&str>, variable: Option<&OsStr>, builtin: bool) -
     return chosen;
 }
 
-/// The policy's outcome for one lifecycle in `repo`, with a fresh content and scanner.
+/// The policy's outcome for one lifecycle in `repo`,
+///  with a fresh content and scanner.
 fn check(repo: &Path, lifecycle: &LifecycleContent, chosen: &ScannerSettings) -> PolicyOutcome {
     return check_forbidden_strings(
         &mut ContentState::new(),
@@ -88,8 +99,11 @@ fn repository_with_needle(work: &Path) -> PathBuf {
     return repo;
 }
 
-/// The rules file is the configured one, else the variable's, else the default in the
-/// repository's top level; the rules file itself is never scanned.
+/// The rules file is the configured one,
+///  else the variable's,
+///  else the default in the
+/// repository's top level;
+///  the rules file itself is never scanned.
 #[test]
 fn rules_come_from_the_configuration_the_variable_or_the_default_file() {
     run_isolated(
@@ -162,8 +176,10 @@ fn rules_sources(work: &Path) {
     }
 }
 
-/// A rules file that is named and missing fails the policy as incomplete; a missing
-/// default file is tolerated only beside the built-in rules; nothing to scan loads nothing.
+/// A rules file that is named and missing fails the policy as incomplete;
+///  a missing
+/// default file is tolerated only beside the built-in rules;
+///  nothing to scan loads nothing.
 #[test]
 fn missing_rules_files_fail_only_when_something_is_scanned() {
     run_isolated(
@@ -228,8 +244,11 @@ fn missing_rules(work: &Path) {
     assert_eq!(idle.asked, Vec::<String>::new());
 }
 
-/// Matches name the masked path and an opaque rule, never the matched text; the bytes are
-/// what the command would stage; the rules load once per invocation.
+/// Matches name the masked path and an opaque rule,
+///  never the matched text;
+///  the bytes are
+/// what the command would stage;
+///  the rules load once per invocation.
 #[test]
 fn matches_are_redacted_and_read_from_what_would_be_staged() {
     run_isolated(
@@ -337,7 +356,8 @@ fn redacted_matches(work: &Path) {
     assert!(matches!(one, PolicyOutcome::Failed { .. }), "{one:?}");
 }
 
-/// A pathname with a line break cannot be inspected: the policy fails as incomplete and
+/// A pathname with a line break cannot be inspected:
+///  the policy fails as incomplete and
 /// names no pathname.
 #[test]
 fn an_uninspectable_pathname_fails_the_policy() {
@@ -369,7 +389,9 @@ fn line_break(work: &Path) {
     );
 }
 
-/// Failure findings are found before any match is reported, whatever their order; matches
+/// Failure findings are found before any match is reported,
+///  whatever their order;
+///  matches
 /// alone are reported in order.
 #[test]
 fn failure_findings_take_precedence_over_matches() {

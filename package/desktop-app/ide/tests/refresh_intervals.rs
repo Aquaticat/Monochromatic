@@ -1,8 +1,16 @@
-//! How often a folder is reread by timers alone: the safety sweep for watched folders, and the
-//! unwatched timer plus the sweep for folders without a live watch. Simulated in 20 ms native ticks.
+//! How often a folder is reread by timers alone:
+//!  the safety sweep for watched folders,
+//!  and the
+//! unwatched timer plus the sweep for folders without a live watch.
+//!  Simulated in 20 ms native ticks.
 
-/// What: both schedules, the change classification, and the intervals they combine.
-/// Why: The simulation calls the shipped schedule, so the printed intervals are its real behavior.
+/// What:
+///  both schedules,
+///  the change classification,
+///  and the intervals they combine.
+/// Why:
+///  The simulation calls the shipped schedule,
+///  so the printed intervals are its real behavior.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,8 +23,11 @@ use ide_app::{
         UNWATCHED_SOURCE_POLL, WRITE_QUIET,
     },
 };
-/// What: `BTreeMap` maps each folder to its last read time; `Duration`/`Instant` are spans and time points.
-/// Why: The longest gap between two reads of one folder is how stale an unreported change can get.
+/// What:
+///  `BTreeMap` maps each folder to its last read time;
+///  `Duration`/`Instant` are spans and time points.
+/// Why:
+///  The longest gap between two reads of one folder is how stale an unreported change can get.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,11 +39,13 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// One native timer tick; the single directory reader can start at most one read per tick.
+/// One native timer tick;
+///  the single directory reader can start at most one read per tick.
 const TICK: Duration = Duration::from_millis(20);
 
 /// Longest time any of `folders` shown folders goes without a reread when nothing is notified.
-/// `watched` false gives the folders no live watch, so the unwatched timer runs beside the sweep.
+/// `watched` false gives the folders no live watch,
+///  so the unwatched timer runs beside the sweep.
 fn longest_reread_interval(folders: u32, watched: bool) -> Duration {
     let start = Instant::now();
     let mut shown = Vec::new();
@@ -93,7 +106,9 @@ fn longest_reread_interval(folders: u32, watched: bool) -> Duration {
 }
 
 /// One pass over more folders than the sweep interval can read (one read per 20 ms tick) outlasts the
-/// interval. The next pass then waits for the unfinished one, so every folder is reread once per pass;
+/// interval.
+///  The next pass then waits for the unfinished one,
+///  so every folder is reread once per pass;
 /// a pass restarting from the top each interval would never reach the folders late in visible order.
 #[test]
 fn sweep_rereads_every_folder_when_one_pass_outlasts_the_interval() {
@@ -116,8 +131,10 @@ fn sweep_rereads_every_folder_when_one_pass_outlasts_the_interval() {
     );
 }
 
-/// The safety sweep comes due every second, so it regularly coincides with a save in progress.
-/// While an unfinished write is waiting, neither the timer nor a highlighting request reads the file;
+/// The safety sweep comes due every second,
+///  so it regularly coincides with a save in progress.
+/// While an unfinished write is waiting,
+///  neither the timer nor a highlighting request reads the file;
 /// the write wait reads it once the writer goes quiet.
 #[test]
 fn timers_do_not_read_a_file_whose_write_is_unfinished() {
@@ -142,9 +159,13 @@ fn timers_do_not_read_a_file_whose_write_is_unfinished() {
     );
 }
 
-/// Watched folders are reread once per sweep. The unwatched timer shortens that only for a single
-/// unwatched folder; from the folder count where one sweep already outpaces the round robin, it adds
-/// reads without shortening the longest interval. Run with `--nocapture` to print the intervals.
+/// Watched folders are reread once per sweep.
+///  The unwatched timer shortens that only for a single
+/// unwatched folder;
+///  from the folder count where one sweep already outpaces the round robin,
+///  it adds
+/// reads without shortening the longest interval.
+///  Run with `--nocapture` to print the intervals.
 #[test]
 fn unwatched_timer_shortens_the_sweep_interval_only_for_few_folders() {
     for folders in [1, 2, 3, 4, 8, 40] {
@@ -172,7 +193,8 @@ fn unwatched_timer_shortens_the_sweep_interval_only_for_few_folders() {
     }
 }
 
-/// A displayed file outside the project has no watch on purpose, so the safety sweep rereads it,
+/// A displayed file outside the project has no watch on purpose,
+///  so the safety sweep rereads it,
 /// not the 250 ms timer that stands in for a watch that failed.
 #[test]
 fn a_file_outside_the_project_is_reread_on_the_sweep() {

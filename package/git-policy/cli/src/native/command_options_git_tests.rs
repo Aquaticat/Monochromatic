@@ -1,6 +1,10 @@
-//! What: Differential controls of the tokenizer against Git 2.56.0's own option parser.
-//! Why: Every single token of a broad alphabet, and every pair that starts with a
-//!      context-setting token, is compared with the real binary instead of with
+//! What:
+//!  Differential controls of the tokenizer against Git 2.56.0's own option parser.
+//! Why:
+//!  Every single token of a broad alphabet,
+//!  and every pair that starts with a
+//!      context-setting token,
+//!  is compared with the real binary instead of with
 //!      expectations written by hand.
 //!
 //! In TS you'd write (pseudocode):
@@ -8,13 +12,19 @@
 //! // for (const args of cases) expect(render(parseOptions(args))).toBe(await gitParseopt(args));
 //! ```
 
-/// The tokenizer modes, the comparison harness and the fixture helpers.
+/// The tokenizer modes,
+///  the comparison harness and the fixture helpers.
 use super::{DEFAULT_MODE, ParseMode};
 use crate::command_test_parseopt::{Tally, compare, compare_singles_and_pairs, empty_tally};
 use crate::command_test_support::{fixture, remove};
 use std::path::PathBuf;
 
-/// Tokens covering clusters, values, abbreviations, negation, typos, help and boundaries.
+/// Tokens covering clusters,
+///  values,
+///  abbreviations,
+///  negation,
+///  typos,
+///  help and boundaries.
 /// The empty token is added separately because it cannot be written between spaces.
 const ALPHABET: &str = "-a -am -amx -ma -m -u -ua -au -qa -aq -S -Skey -x -xv -ax -U3 -all
     -amend -no-verify -nq -h -ah -z -az - -- --end-of-options file --all --al --a --am
@@ -25,13 +35,17 @@ const ALPHABET: &str = "-a -am -amx -ma -m -u -ua -au -qa -aq -S -Skey -x -xv -a
     --int --inter --inter- --d --dr --da --date --help --help-all --unknown --unknown=v
     --=v --no-dry --no-d";
 
-/// First tokens of every compared pair: each changes how Git reads the token after it
-/// (a pending value, a flag, a positional or a boundary).
+/// First tokens of every compared pair:
+///  each changes how Git reads the token after it
+/// (a pending value,
+///  a flag,
+///  a positional or a boundary).
 const CONTEXTS: &str = "-a -am -ma -m -u -au -S -x - -- --end-of-options file --all
     --no-all --message --message=v --no-message --untracked-files --unified --date
     --no-verify --hard --am --allow-empty --dr --inc";
 
-/// A smaller alphabet for the two flag variants, which change only boundary handling.
+/// A smaller alphabet for the two flag variants,
+///  which change only boundary handling.
 const BOUNDARY_ALPHABET: &str =
     "-a -m -am -u - -- --end-of-options file --all --message=v --no-all --unknown -h";
 
@@ -42,7 +56,12 @@ fn tokens(list: &str) -> Vec<&str> {
     return result;
 }
 
-/// Flags `0`: the mode of commit, add, push, clean, branch and status.
+/// Flags `0`:
+///  the mode of commit,
+///  add,
+///  push,
+///  clean,
+///  branch and status.
 #[test]
 fn default_mode_matches_git_parse_options_on_singles_and_context_pairs() {
     let directory: PathBuf = fixture("parseopt-default");
@@ -62,7 +81,9 @@ fn default_mode_matches_git_parse_options_on_singles_and_context_pairs() {
     remove(directory.as_path());
 }
 
-/// `PARSE_OPT_KEEP_DASHDASH`: the mode of reset, checkout and stash subcommands.
+/// `PARSE_OPT_KEEP_DASHDASH`:
+///  the mode of reset,
+///  checkout and stash subcommands.
 #[test]
 fn keep_dashdash_mode_matches_git_parse_options() {
     let directory: PathBuf = fixture("parseopt-keep-dashdash");
@@ -78,7 +99,8 @@ fn keep_dashdash_mode_matches_git_parse_options() {
     remove(directory.as_path());
 }
 
-/// `PARSE_OPT_STOP_AT_NON_OPTION`: the mode of an assumed `git stash push`.
+/// `PARSE_OPT_STOP_AT_NON_OPTION`:
+///  the mode of an assumed `git stash push`.
 #[test]
 fn stop_at_non_option_mode_matches_git_parse_options() {
     let directory: PathBuf = fixture("parseopt-stop");
@@ -98,7 +120,8 @@ fn stop_at_non_option_mode_matches_git_parse_options() {
     remove(directory.as_path());
 }
 
-/// Longer sequences mixing every feature, as a third layer over singles and pairs.
+/// Longer sequences mixing every feature,
+///  as a third layer over singles and pairs.
 #[test]
 fn curated_sequences_match_git_parse_options() {
     let directory: PathBuf = fixture("parseopt-curated");

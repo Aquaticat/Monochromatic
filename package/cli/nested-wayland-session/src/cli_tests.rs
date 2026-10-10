@@ -30,7 +30,8 @@ fn error_kind(values: &[&str]) -> clap::error::ErrorKind {
     return error.downcast_ref::<clap::Error>().expect("typed clap error").kind();
 }
 
-/// Help is a distinct successful-exit request, even without a child command.
+/// Help is a distinct successful-exit request,
+///  even without a child command.
 #[test]
 fn help_is_not_an_application_error() {
     assert_eq!(error_kind(&["--help"]), clap::error::ErrorKind::DisplayHelp);
