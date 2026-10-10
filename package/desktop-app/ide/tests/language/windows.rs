@@ -1,9 +1,13 @@
-//! Hint windows: an answer for lines the reader no longer shows never replaces the current hints.
+//! Hint windows:
+//!  an answer for lines the reader no longer shows never replaces the current hints.
 //!
 //! The scripted server holds back its answer to the first hint request and writes it right
-//! after the answer to the second, so the earlier window is answered last on the same stream.
-//! The test waits until the report shows both answers written, so nothing depends on when the
-//! worker reads them, and a hover round trip afterwards proves the worker has handled both.
+//! after the answer to the second,
+//!  so the earlier window is answered last on the same stream.
+//! The test waits until the report shows both answers written,
+//!  so nothing depends on when the
+//! worker reads them,
+//!  and a hover round trip afterwards proves the worker has handled both.
 
 use crate::support::{self, Probe};
 use ide_app::language::{
@@ -12,10 +16,14 @@ use ide_app::language::{
 };
 use serde_json::Value;
 
-/// Request timeout of the scripted server, in seconds: Helix's default, the product's bound.
+/// Request timeout of the scripted server,
+///  in seconds:
+///  Helix's default,
+///  the product's bound.
 const TIMEOUT: u64 = 20;
 
-/// The request number of the first `textDocument/inlayHint` request in the report, once it is there.
+/// The request number of the first `textDocument/inlayHint` request in the report,
+///  once it is there.
 fn first_hint_request(lines: &[Value]) -> Option<Value> {
     return lines
         .iter()
@@ -40,7 +48,9 @@ fn hint_answers_sent(lines: &[Value]) -> usize {
         .count();
 }
 
-/// The hints of an earlier window, answered last, do not replace those of the window shown now.
+/// The hints of an earlier window,
+///  answered last,
+///  do not replace those of the window shown now.
 #[test]
 fn late_answer_for_an_earlier_window_does_not_replace_the_current_hints() {
     let Some(root) = support::child_root() else {

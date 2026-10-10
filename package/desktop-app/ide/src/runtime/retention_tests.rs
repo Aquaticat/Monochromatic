@@ -118,9 +118,14 @@ fn the_current_key_is_never_removed_however_long_unused() {
     );
 }
 
-/// What: The current time as the filesystem stamps it: the modification time of a file written now.
-/// Why: The kernel stamps file times from a coarse clock, and `SystemTime::now` reads a finer one,
-///      so a file written right after `SystemTime::now` can carry an earlier time. A start time
+/// What:
+///  The current time as the filesystem stamps it:
+///  the modification time of a file written now.
+/// Why:
+///  The kernel stamps file times from a coarse clock,
+///  and `SystemTime::now` reads a finer one,
+///      so a file written right after `SystemTime::now` can carry an earlier time.
+///  A start time
 ///      taken from the same file clock is never later than a file written after it.
 ///
 /// In TS you'd write (pseudocode):

@@ -1,6 +1,7 @@
 //! Selected-directory search narrows the fixed project rather than creating an unrestricted second root.
 
-/// Disposable fixture directories, in memory when the system has one.
+/// Disposable fixture directories,
+///  in memory when the system has one.
 mod memory_fixture;
 
 /// The public worker API owns cancellation and background directory validation.

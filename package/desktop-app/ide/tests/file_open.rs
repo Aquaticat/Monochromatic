@@ -1,6 +1,7 @@
 //! Source-opening requests resolve in private project fixtures and retain only the latest user intent.
 
-/// Disposable fixture directories, in memory when the system has one.
+/// Disposable fixture directories,
+///  in memory when the system has one.
 mod memory_fixture;
 
 /// Current read errors propagate while stale failures disappear from the consumer boundary.
@@ -19,12 +20,21 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Longest wait for one open: a hang detector, not a latency budget, and the same bound the
+/// Longest wait for one open:
+///  a hang detector,
+///  not a latency budget,
+///  and the same bound the
 /// Language integration tests use for any expected state (`PATIENCE` in `tests/language/support.rs`).
 /// The first open of every opener builds the syntax engine and compiles the language's queries,
-/// once. Measured in a debug build with fixtures in memory, on a loaded machine, that took 0.8 s
-/// at the median and up to 4.2 s with two processors, and 1.9 s at the median and up to 4.2 s
-/// with half a processor; later opens take milliseconds. No product bound exists for opening a
+/// once.
+///  Measured in a debug build with fixtures in memory,
+///  on a loaded machine,
+///  that took 0.8 s
+/// at the median and up to 4.2 s with two processors,
+///  and 1.9 s at the median and up to 4.2 s
+/// with half a processor;
+///  later opens take milliseconds.
+///  No product bound exists for opening a
 /// file.
 const OPEN_PATIENCE: Duration = Duration::from_secs(20);
 

@@ -288,8 +288,11 @@ fn error_reply_to_initialize_is_a_failed_start_by_deadline() {
     });
 }
 
-/// A server that answers `initialize` later than its request timeout, but within its start
-/// allowance of three request timeouts, is ready; the late answer is not discarded.
+/// A server that answers `initialize` later than its request timeout,
+///  but within its start
+/// allowance of three request timeouts,
+///  is ready;
+///  the late answer is not discarded.
 #[test]
 fn initialize_answered_within_the_start_allowance_is_accepted() {
     let Some(root) = support::child_root() else {

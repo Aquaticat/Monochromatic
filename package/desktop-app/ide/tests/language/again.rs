@@ -1,11 +1,19 @@
-//! Requests the worker makes on its own, asked again: an inlay-hint or pull-diagnostics request
-//! the server leaves unanswered for its whole request timeout, or supersedes on every retry,
+//! Requests the worker makes on its own,
+//!  asked again:
+//!  an inlay-hint or pull-diagnostics request
+//! the server leaves unanswered for its whole request timeout,
+//!  or supersedes on every retry,
 //! must not be the last one.
 //!
-//! The scripted server's request steps (`IDE_SCRIPTED_HINT_STEPS`, `IDE_SCRIPTED_PULL_STEPS`)
-//! name exactly which request is left unanswered or superseded, and every other request is
-//! answered at once. So the client's reaction does not depend on how busy the machine is: a
-//! further timeout would need a stall of a whole request timeout, every time.
+//! The scripted server's request steps (`IDE_SCRIPTED_HINT_STEPS`,
+//!  `IDE_SCRIPTED_PULL_STEPS`)
+//! name exactly which request is left unanswered or superseded,
+//!  and every other request is
+//! answered at once.
+//!  So the client's reaction does not depend on how busy the machine is:
+//!  a
+//! further timeout would need a stall of a whole request timeout,
+//!  every time.
 
 use crate::support::{self, PRODUCT_TIMEOUT, Probe};
 use ide_app::language::{
@@ -15,9 +23,14 @@ use ide_app::language::{
 use serde_json::Value;
 use std::{path::Path, time::Instant};
 
-/// Request timeout of the scripted server in the tests where a request must time out, in
-/// seconds. The silent request takes this long to fail; the request sent again is answered at
-/// once, so it fails only if a stall of this length hits it, and the two after it.
+/// Request timeout of the scripted server in the tests where a request must time out,
+///  in
+/// seconds.
+///  The silent request takes this long to fail;
+///  the request sent again is answered at
+/// once,
+///  so it fails only if a stall of this length hits it,
+///  and the two after it.
 const TIMEOUT: u64 = 5;
 
 /// The visible lines every test reports.
@@ -26,15 +39,19 @@ const WINDOW: HintWindow = HintWindow {
     visible_lines: 20,
 };
 
-/// Text displayed first, and the text an external change replaces it with.
+/// Text displayed first,
+///  and the text an external change replaces it with.
 const BEFORE: &str = "plain text line\nsecond\n";
 const AFTER: &str = "longer plain text line\nsecond\nthird\n";
 
-/// The answer to the first hint request is fine; the one after the reload and its three retries
-/// are superseded, and the last of them is followed by a notification.
+/// The answer to the first hint request is fine;
+///  the one after the reload and its three retries
+/// are superseded,
+///  and the last of them is followed by a notification.
 const SUPERSEDED_WITH_NOTIFICATION: &str = "answer,modified,modified,modified,modified-notify";
 
-/// As `SUPERSEDED_WITH_NOTIFICATION`, without the notification.
+/// As `SUPERSEDED_WITH_NOTIFICATION`,
+///  without the notification.
 const SUPERSEDED: &str = "answer,modified,modified,modified,modified";
 
 /// The `textDocument/inlayHint` requests the server received so far.
@@ -45,7 +62,9 @@ fn hint_requests(lines: &[Value]) -> Vec<&Value> {
         .collect();
 }
 
-/// Display `BEFORE`, report the window, and wait for the hints of that text.
+/// Display `BEFORE`,
+///  report the window,
+///  and wait for the hints of that text.
 fn display_with_hints(probe: &mut Probe, root: &Path) {
     probe.open(&root.join("main.scripted"), BEFORE);
     probe.until_ready();
@@ -60,8 +79,10 @@ fn display_with_hints(probe: &mut Probe, root: &Path) {
     });
 }
 
-/// Wait for hints of the reloaded text. Every snapshot handed out after the reload must describe
-/// the new text; `what` names the wait in a failure.
+/// Wait for hints of the reloaded text.
+///  Every snapshot handed out after the reload must describe
+/// the new text;
+///  `what` names the wait in a failure.
 fn wait_for_reloaded_hints(probe: &mut Probe, what: &str) {
     let stamp = probe.stamp();
     probe.until(what, |seen| {
@@ -80,14 +101,16 @@ fn wait_for_reloaded_hints(probe: &mut Probe, what: &str) {
     assert_eq!(hints.hints.len(), 1);
 }
 
-/// Reload to `AFTER` and forget the snapshot of the previous text, so anything seen from here
+/// Reload to `AFTER` and forget the snapshot of the previous text,
+///  so anything seen from here
 /// on was handed out after the reload.
 fn reload(probe: &mut Probe) {
     probe.reload(AFTER);
     probe.hints = None;
 }
 
-/// The first hint request of a displayed file times out; the hints still arrive.
+/// The first hint request of a displayed file times out;
+///  the hints still arrive.
 #[test]
 fn hints_are_asked_again_when_the_first_request_times_out() {
     let Some(root) = support::child_root() else {
@@ -126,7 +149,8 @@ fn hints_are_asked_again_when_the_first_request_times_out() {
     );
 }
 
-/// The hint request that follows a reload times out; hints for the new text still arrive.
+/// The hint request that follows a reload times out;
+///  hints for the new text still arrive.
 #[test]
 fn hints_are_asked_again_after_a_reload_when_the_request_times_out() {
     let Some(root) = support::child_root() else {
@@ -154,7 +178,8 @@ fn hints_are_asked_again_after_a_reload_when_the_request_times_out() {
     );
 }
 
-/// The pull request that follows a reload times out; diagnostics for the new text still arrive.
+/// The pull request that follows a reload times out;
+///  diagnostics for the new text still arrive.
 #[test]
 fn pulled_diagnostics_are_asked_again_after_a_reload_when_the_request_times_out() {
     let Some(root) = support::child_root() else {
@@ -192,7 +217,9 @@ fn pulled_diagnostics_are_asked_again_after_a_reload_when_the_request_times_out(
     );
 }
 
-/// The request after a reload is superseded, and so is every retry; the notification the server
+/// The request after a reload is superseded,
+///  and so is every retry;
+///  the notification the server
 /// sends after the last one makes the worker ask once more.
 #[test]
 fn hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_was_superseded() {
@@ -219,8 +246,11 @@ fn hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_
     assert_eq!(hint_requests(&support::report(&root)).len(), 6);
 }
 
-/// The request after a reload is superseded, and so is every retry, and the server pushes
-/// nothing; its answer to a later hover request makes the worker ask once more.
+/// The request after a reload is superseded,
+///  and so is every retry,
+///  and the server pushes
+/// nothing;
+///  its answer to a later hover request makes the worker ask once more.
 #[test]
 fn hints_are_asked_again_when_the_server_answers_another_request_after_every_retry_was_superseded()
 {

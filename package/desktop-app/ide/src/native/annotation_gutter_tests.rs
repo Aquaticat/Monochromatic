@@ -52,7 +52,8 @@ use slint::{
     Color, LogicalPosition, Model, Rgba8Pixel, SharedPixelBuffer,
     platform::update_timers_and_animations,
 };
-/// Shared snapshot pointers, and the bound on waiting for the first highlighting answer.
+/// Shared snapshot pointers,
+///  and the bound on waiting for the first highlighting answer.
 use std::{
     sync::Arc,
     time::{Duration, Instant},
@@ -63,11 +64,20 @@ const DIGIT: f32 = 9.0;
 /// Space between a line number and the text.
 const NUMBER_GAP: f32 = 12.0;
 
-/// What: Longest wait for the first highlighting answer: a hang detector, not a latency budget, and the same
+/// What:
+///  Longest wait for the first highlighting answer:
+///  a hang detector,
+///  not a latency budget,
+///  and the same
 ///       bound the Language integration tests use for any expected state (`PATIENCE` in
 ///       `tests/language/support.rs`).
-/// Why: The answer needs the syntax engine and the Rust queries, built once per reader on its worker; measured
-///      on a loaded machine with two processors, that took up to 4.2 s. No product bound exists for it.
+/// Why:
+///  The answer needs the syntax engine and the Rust queries,
+///  built once per reader on its worker;
+///  measured
+///      on a loaded machine with two processors,
+///  that took up to 4.2 s.
+///  No product bound exists for it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -75,10 +85,15 @@ const NUMBER_GAP: f32 = 12.0;
 /// ```
 const HIGHLIGHT_PATIENCE: Duration = Duration::from_secs(20);
 
-/// What: Advance timers until the reader shows the highlighting of its displayed revision.
-/// Why: The reload binding asks for highlighting on a timer and applies the answer on a later tick, so a frame
-///      taken right after the reader opens shows plain text, and the answer can land between two frames a test
-///      compares; it colors the text and changes pixels the test expects to stay.
+/// What:
+///  Advance timers until the reader shows the highlighting of its displayed revision.
+/// Why:
+///  The reload binding asks for highlighting on a timer and applies the answer on a later tick,
+///  so a frame
+///      taken right after the reader opens shows plain text,
+///  and the answer can land between two frames a test
+///      compares;
+///  it colors the text and changes pixels the test expects to stay.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

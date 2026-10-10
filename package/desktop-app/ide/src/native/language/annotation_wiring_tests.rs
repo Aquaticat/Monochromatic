@@ -20,7 +20,8 @@ use ide_app::language::{
     hints::{HintKind, HintsSnapshot, InlayHint},
     identity::ServerIdentity,
 };
-/// Snapshots arrive behind shared pointers; a scroll has a moment.
+/// Snapshots arrive behind shared pointers;
+///  a scroll has a moment.
 use std::{
     sync::Arc,
     time::{Duration, Instant},

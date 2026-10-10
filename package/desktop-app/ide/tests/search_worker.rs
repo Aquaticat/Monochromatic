@@ -3,7 +3,8 @@
 //!  native paths,
 //!  and latest-query ownership.
 
-/// Disposable fixture directories, in memory when the system has one.
+/// Disposable fixture directories,
+///  in memory when the system has one.
 mod memory_fixture;
 
 /// Search replies preserve typed source locations and stream-specific errors.

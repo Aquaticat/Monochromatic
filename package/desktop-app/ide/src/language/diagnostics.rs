@@ -18,8 +18,10 @@ use super::position::from_lsp_range;
 use helix_core::Rope;
 /// The protocol's diagnostic record and the column unit of the server that sent it.
 use helix_lsp::{OffsetEncoding, lsp};
-/// What: `Duration` is a time span.
-/// Why: The unversioned-diagnostics hold has a fixed fallback delay.
+/// What:
+///  `Duration` is a time span.
+/// Why:
+///  The unversioned-diagnostics hold has a fixed fallback delay.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,8 +30,13 @@ use helix_lsp::{OffsetEncoding, lsp};
 use std::time::Duration;
 
 /// How long an unversioned-diagnostics hold lasts for a server that answers no request after a
-/// reload. Chosen, not measured: longer than the answers observed in the integration spike for
-/// the first request after a change, short enough that diagnostics do not stay hidden. Public so
+/// reload.
+///  Chosen,
+///  not measured:
+///  longer than the answers observed in the integration spike for
+/// the first request after a change,
+///  short enough that diagnostics do not stay hidden.
+///  Public so
 /// tests can tell whether an observation fell inside the hold.
 pub const HOLD_FALLBACK: Duration = Duration::from_secs(2);
 

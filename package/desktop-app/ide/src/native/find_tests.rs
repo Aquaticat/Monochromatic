@@ -56,15 +56,23 @@ pub(super) struct Reader {
     _timers: [Timer; 3],
 }
 
-/// Memory-backed directory for fixtures, when the system has one.
+/// Memory-backed directory for fixtures,
+///  when the system has one.
 const MEMORY_DIRECTORY: &str = "/dev/shm";
 
-/// What: A fresh disposable project directory, in `/dev/shm` when that exists and the usual
-///       temporary directory otherwise; dropping the `TempDir` removes it.
-/// Why: On btrfs the reload worker's first read of a freshly written file updates its access
-///      time inside a filesystem transaction, which waited for seconds while the machine flushed,
-///      so an external change looked like it was never reloaded. inotify reports changes on
-///      `/dev/shm` like on disk, so the watcher path stays the one exercised.
+/// What:
+///  A fresh disposable project directory,
+///  in `/dev/shm` when that exists and the usual
+///       temporary directory otherwise;
+///  dropping the `TempDir` removes it.
+/// Why:
+///  On btrfs the reload worker's first read of a freshly written file updates its access
+///      time inside a filesystem transaction,
+///  which waited for seconds while the machine flushed,
+///      so an external change looked like it was never reloaded.
+///  inotify reports changes on
+///      `/dev/shm` like on disk,
+///  so the watcher path stays the one exercised.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,12 +88,20 @@ pub(super) fn memory_project(prefix: &str) -> tempfile::TempDir {
     return tempfile::tempdir().expect("disposable project");
 }
 
-/// What: Replace the contents of `path` as an editor's atomic save does: write a hidden sibling
-///       file, then rename it over `path`. `&Path` and `&str` are lent read-only.
-/// Why: An in-place write truncates the file first and writes the text after. A test thread
+/// What:
+///  Replace the contents of `path` as an editor's atomic save does:
+///  write a hidden sibling
+///       file,
+///  then rename it over `path`.
+///  `&Path` and `&str` are lent read-only.
+/// Why:
+///  An in-place write truncates the file first and writes the text after.
+///  A test thread
 ///      descheduled between the two for longer than the 50 ms write-quiet period is read
-///      mid-write by design (`WRITE_QUIET` in `src/refresh_policy.rs`), and the reload of the
-///      empty file loses the selection these tests follow. A rename shows the whole text at once.
+///      mid-write by design (`WRITE_QUIET` in `src/refresh_policy.rs`),
+///  and the reload of the
+///      empty file loses the selection these tests follow.
+///  A rename shows the whole text at once.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

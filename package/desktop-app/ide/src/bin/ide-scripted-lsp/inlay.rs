@@ -1,12 +1,18 @@
-//! The inlay-hint answer, and the scripted steps that leave one unanswered, hold it back, or
+//! The inlay-hint answer,
+//!  and the scripted steps that leave one unanswered,
+//!  hold it back,
+//!  or
 //! supersede it.
 
 /// Framing and the report.
 use crate::framing::Wire;
 /// What a test scripted for this request.
 use crate::script::Step;
-/// What: `Value` is any JSON value; `json!` builds one from literal syntax.
-/// Why: The answer is one JSON object.
+/// What:
+///  `Value` is any JSON value;
+///  `json!` builds one from literal syntax.
+/// Why:
+///  The answer is one JSON object.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -14,10 +20,19 @@ use crate::script::Step;
 /// ```
 use serde_json::{Value, json};
 
-/// What: The fixed answer to one `textDocument/inlayHint` request with request number `id`.
-///       `&Value` lends the number. The answer ignores the requested range.
-/// Why: One hint has label parts, a kind, padding, edits, and resolve data the client must
-///      ignore; the other names a line past the end of every test text, which the client drops.
+/// What:
+///  The fixed answer to one `textDocument/inlayHint` request with request number `id`.
+///       `&Value` lends the number.
+///  The answer ignores the requested range.
+/// Why:
+///  One hint has label parts,
+///  a kind,
+///  padding,
+///  edits,
+///  and resolve data the client must
+///      ignore;
+///  the other names a line past the end of every test text,
+///  which the client drops.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,19 +52,27 @@ fn answer(id: &Value) -> Value {
     ] });
 }
 
-/// Write one message, turning a write failure into a line on standard error.
+/// Write one message,
+///  turning a write failure into a line on standard error.
 fn send(wire: &Wire, message: Value) {
     if let Err(error) = wire.send(message) {
         eprintln!("scripted language server cannot write an inlay-hint answer: {error}");
     }
 }
 
-/// What: Answer one hint request as the test scripted it. `step` is what this request gets;
+/// What:
+///  Answer one hint request as the test scripted it.
+///  `step` is what this request gets;
 ///       `held` is the slot of an answer held back by an earlier request.
 ///       `&mut Option<Value>` lends the slot for changing.
-/// Why: A held answer is written right after the next answer, so the client receives the answer
-///      to its earlier request after the answer to its later one, in that order however busy the
-///      machine is. A superseded answer makes the client send the request again; the
+/// Why:
+///  A held answer is written right after the next answer,
+///  so the client receives the answer
+///      to its earlier request after the answer to its later one,
+///  in that order however busy the
+///      machine is.
+///  A superseded answer makes the client send the request again;
+///  the
 ///      notification after one gives the client a message that is not an answer.
 ///
 /// In TS you'd write (pseudocode):

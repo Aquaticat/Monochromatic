@@ -1,6 +1,7 @@
 //! Bounded background reads update only current tree requests in disposable workspaces.
 
-/// Disposable fixture directories, in memory when the system has one.
+/// Disposable fixture directories,
+///  in memory when the system has one.
 mod memory_fixture;
 
 /// Expected reader failures remain ordinary results in this test helper.
