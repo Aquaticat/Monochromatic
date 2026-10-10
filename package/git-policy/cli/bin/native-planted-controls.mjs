@@ -139,7 +139,7 @@ const plantedControls = [
     name: 'hook status not propagated',
     file: 'src/native/hook_dispatch.rs',
     from: '    return finished.code().unwrap_or(1);',
-    to: '    return finished.code().unwrap_or(0);',
+    to: '    return finished.code().unwrap_or(1).min(1);',
     failing: 'hook::a_failing_hook_propagates_its_status',
   },
   {
