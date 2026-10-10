@@ -468,6 +468,9 @@ pub mod capture_invocation;
 ///  the capture lock, the store identity, the sequence and `captured.json`.
 pub mod capture_order;
 
+/// The shadow repository `config` file and the copied repository format.
+pub mod shadow_config;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
