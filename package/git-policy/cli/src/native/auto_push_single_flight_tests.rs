@@ -25,7 +25,9 @@ fn fixture_environment() -> Vec<(OsString, OsString)> {
         ("GIT_COMMITTER_EMAIL", "fixture@example.invalid"),
     ]
     .iter()
-    .map(|(name, value)| (OsString::from(name), OsString::from(value)))
+    .map(|(name, value)| {
+        return (OsString::from(name), OsString::from(value));
+    })
     .collect();
 }
 
@@ -129,11 +131,11 @@ fn entries(root: &Path) -> Vec<String> {
     let mut names: Vec<String> = std::fs::read_dir(directory)
         .expect("list")
         .map(|entry| {
-            entry
+            return entry
                 .expect("entry")
                 .file_name()
                 .to_string_lossy()
-                .into_owned()
+                .into_owned();
         })
         .collect();
     names.sort();
@@ -169,7 +171,7 @@ fn pushes_the_branch_tip_itself_when_no_push_was_recorded() {
     let mut tips: Vec<String> = Vec::new();
     let outcome = coordinate(&root, &landed, &mut || {
         tips.push(head_of(&root, BRANCH));
-        Ok(success())
+        return Ok(success());
     })
     .expect("coordinates");
     assert_eq!(
@@ -212,7 +214,7 @@ fn joins_a_recorded_successful_push_covering_the_commit_without_taking_the_lock(
     let mut pushes = 0;
     let outcome = coordinate(&root, &older, &mut || {
         pushes += 1;
-        Ok(success())
+        return Ok(success());
     })
     .expect("joins");
     assert_eq!(
@@ -244,7 +246,7 @@ fn pushes_itself_when_the_recorded_successful_push_does_not_cover_the_commit() {
     let mut tips: Vec<String> = Vec::new();
     let outcome = coordinate(&root, &landed, &mut || {
         tips.push(head_of(&root, BRANCH));
-        Ok(success())
+        return Ok(success());
     })
     .expect("coordinates");
     assert_eq!(outcome.kind, SingleFlightKind::Pushed);
@@ -265,7 +267,7 @@ fn retries_a_failed_push_recorded_before_it_waited() {
     let mut pushes = 0;
     let outcome = coordinate(&root, &landed, &mut || {
         pushes += 1;
-        Ok(success())
+        return Ok(success());
     })
     .expect("coordinates");
     assert_eq!(outcome.kind, SingleFlightKind::Pushed);
@@ -290,18 +292,18 @@ where
     let outcome = std::thread::scope(|scope| {
         let handle = scope.spawn(|| {
             let mut pushes = 0;
-            run_single_flight_push(
+            return run_single_flight_push(
                 &git_context,
                 BRANCH,
                 &landed_oid,
                 &mut || {
                     pushes += 1;
-                    Ok(success())
+                    return Ok(success());
                 },
                 &mut || {
                     let _sent = wait_tx.send(());
                 },
-            )
+            );
         });
         let _waiting = wait_rx.recv();
         prepare(&paths.record_path, held.token());
@@ -410,7 +412,7 @@ fn takes_over_the_push_lock_of_a_dead_pusher_and_pushes_itself() {
     let mut pushes = 0;
     let outcome = coordinate(&root, &landed, &mut || {
         pushes += 1;
-        Ok(success())
+        return Ok(success());
     })
     .expect("coordinates");
     assert_eq!(outcome.kind, SingleFlightKind::Pushed);
@@ -428,10 +430,10 @@ fn records_and_reports_its_own_failed_push_with_the_complete_output() {
     let root = repository("sf-own-failure");
     let landed = commit(&root, "one");
     let outcome = coordinate(&root, &landed, &mut || {
-        Ok(PushAttempt {
+        return Ok(PushAttempt {
             exit_code: 1,
             output: "error: failed to push some refs\n".to_owned(),
-        })
+        });
     })
     .expect("coordinates");
     assert_eq!(
@@ -457,7 +459,10 @@ fn reports_a_pushed_tip_that_no_longer_contains_the_landed_commit_as_uncovered()
     let root = repository("sf-uncovered");
     let landed = commit(&root, "dropped");
     git(&root, &["reset", "--quiet", "--hard", "HEAD~1"]);
-    let outcome = coordinate(&root, &landed, &mut || Ok(success())).expect("coordinates");
+    let outcome = coordinate(&root, &landed, &mut || {
+        return Ok(success());
+    })
+    .expect("coordinates");
     assert_eq!(outcome.kind, SingleFlightKind::Pushed);
     assert!(!outcome.covered);
     remove(&root);
@@ -469,7 +474,9 @@ fn coalesces_concurrent_landings_into_fewer_pushes_than_commits() {
     let root = repository("sf-coalesce");
     let landed: Vec<String> = ["c1", "c2", "c3", "c4", "c5"]
         .iter()
-        .map(|message| commit(&root, message))
+        .map(|message| {
+            return commit(&root, message);
+        })
         .collect();
     let pushes = std::sync::atomic::AtomicUsize::new(0);
     let git_context = push_git(&root);
@@ -478,34 +485,38 @@ fn coalesces_concurrent_landings_into_fewer_pushes_than_commits() {
             .iter()
             .map(|oid| {
                 let context = &git_context;
-                let pushes = &pushes;
-                scope.spawn(move || {
-                    run_single_flight_push(
+                let counter = &pushes;
+                return scope.spawn(move || {
+                    return run_single_flight_push(
                         context,
                         BRANCH,
                         oid,
                         &mut || {
-                            pushes.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                            counter.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                             std::thread::sleep(std::time::Duration::from_millis(200));
-                            Ok(success())
+                            return Ok(success());
                         },
                         &mut || {},
                     )
-                    .expect("coordinates")
-                })
+                    .expect("coordinates");
+                });
             })
             .collect();
         return handles
             .into_iter()
-            .map(|handle| handle.join().expect("thread"))
+            .map(|handle| {
+                return handle.join().expect("thread");
+            })
             .collect();
     });
     assert_eq!(pushes.load(std::sync::atomic::Ordering::SeqCst), 1);
-    assert!(outcomes.iter().all(|outcome| outcome.covered
-        && matches!(
-            outcome.kind,
-            SingleFlightKind::Pushed | SingleFlightKind::JoinedPushed
-        )));
+    assert!(outcomes.iter().all(|outcome| {
+        return outcome.covered
+            && matches!(
+                outcome.kind,
+                SingleFlightKind::Pushed | SingleFlightKind::JoinedPushed
+            );
+    }));
     remove(&root);
 }
 

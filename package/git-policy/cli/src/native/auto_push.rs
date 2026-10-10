@@ -101,7 +101,9 @@ pub fn filter_push_output(output: &str, exit_code: i64) -> String {
     }
     return output
         .split('\n')
-        .filter(|line| line.starts_with(REMOTE_LINE_PREFIX))
+        .filter(|line| {
+            return line.starts_with(REMOTE_LINE_PREFIX);
+        })
         .collect::<Vec<&str>>()
         .join("\n");
 }
@@ -307,12 +309,14 @@ pub fn auto_push(
         &format!("auto-pushing {landed_oid} with {push_arguments:?} on {branch_ref}"),
     );
     let coordinated = {
-        let mut push = || run_push_command(git, push_arguments);
+        let mut push = || {
+            return run_push_command(git, push_arguments);
+        };
         let mut on_wait = || {
-            debug(
+            return debug(
                 TAG,
                 &format!("waiting for the in-flight push of {branch_ref}"),
-            )
+            );
         };
         run_single_flight_push(git, &branch_ref, landed_oid, &mut push, &mut on_wait)
     };

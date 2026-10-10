@@ -204,7 +204,9 @@ pub fn git_command(git: &PushGit, arguments: &[OsString]) -> Command {
     command
         .current_dir(&git.cwd)
         .env_clear()
-        .envs(git.environment.iter().map(|(name, value)| (name, value)))
+        .envs(git.environment.iter().map(|pair| {
+            return (&pair.0, &pair.1);
+        }))
         .args(arguments);
     return command;
 }
@@ -218,7 +220,9 @@ pub fn git_command(git: &PushGit, arguments: &[OsString]) -> Command {
 fn describe_arguments(arguments: &[OsString]) -> String {
     return arguments
         .iter()
-        .map(|argument| argument.to_string_lossy().into_owned())
+        .map(|argument| {
+            return argument.to_string_lossy().into_owned();
+        })
         .collect::<Vec<String>>()
         .join(" ");
 }
@@ -398,43 +402,50 @@ pub fn run_single_flight_push(
 ) -> Result<SingleFlightOutcome, SingleFlightError> {
     let paths = resolve_push_coordination_paths(git, branch_ref)?;
     let before = read_record(&paths.record_path)?;
-    if let LastPushedRead::Record(record) = &before {
-        if record.outcome == LastPushedOutcome::Pushed
-            && tip_contains(git, landed_oid, &record.tip)?
+    let early = match &before {
+        LastPushedRead::Record(record)
+            if record.outcome == LastPushedOutcome::Pushed
+                && tip_contains(git, landed_oid, &record.tip)? =>
         {
-            debug(
-                TAG,
-                &format!(
-                    "{landed_oid} already delivered by the push of {}",
-                    record.tip
-                ),
-            );
-            return Ok(joined_outcome(record.clone()));
+            Some(record.clone())
         }
+        LastPushedRead::Record(_) | LastPushedRead::Absent => None,
+    };
+    if let Some(record) = early {
+        debug(
+            TAG,
+            &format!(
+                "{landed_oid} already delivered by the push of {}",
+                record.tip
+            ),
+        );
+        return Ok(joined_outcome(record));
     }
     let mut observer = WaitObserver { on_wait };
     let lock: OwnerLock =
         acquire_owner_lock(&paths.lock_directory, DEFAULT_POLL_DELAY, &mut observer)
             .map_err(SingleFlightError::Lock)?;
     let after = read_record(&paths.record_path)?;
-    if let LastPushedRead::Record(record) = &after {
-        let finished_while_waiting = match &before {
-            LastPushedRead::Absent => true,
-            LastPushedRead::Record(earlier) => earlier.owner_token != record.owner_token,
-        };
-        if (record.outcome == LastPushedOutcome::Pushed || finished_while_waiting)
-            && tip_contains(git, landed_oid, &record.tip)?
+    let late = match &after {
+        LastPushedRead::Record(record)
+            if (record.outcome == LastPushedOutcome::Pushed
+                || finished_while_waiting(&before, record))
+                && tip_contains(git, landed_oid, &record.tip)? =>
         {
-            debug(
-                TAG,
-                &format!(
-                    "{landed_oid} joined the {} push of {}",
-                    record.outcome.as_str(),
-                    record.tip
-                ),
-            );
-            return Ok(joined_outcome(record.clone()));
+            Some(record.clone())
         }
+        LastPushedRead::Record(_) | LastPushedRead::Absent => None,
+    };
+    if let Some(record) = late {
+        debug(
+            TAG,
+            &format!(
+                "{landed_oid} joined the {} push of {}",
+                record.outcome.as_str(),
+                record.tip
+            ),
+        );
+        return Ok(joined_outcome(record));
     }
     let tip = git_output(
         git,
@@ -476,6 +487,20 @@ pub fn run_single_flight_push(
         output: attempt.output,
         covered,
     });
+}
+
+/// Whether a push finished after the commit first read the record: the record's owner changed,
+/// or the first read found nothing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// (before === LAST_PUSHED_ABSENT) || (before.ownerToken !== after.ownerToken)
+/// ```
+fn finished_while_waiting(before: &LastPushedRead, after: &LastPushedRecord) -> bool {
+    return match before {
+        LastPushedRead::Absent => true,
+        LastPushedRead::Record(earlier) => earlier.owner_token != after.owner_token,
+    };
 }
 
 /// Read a record; an I/O failure other than absence stops the coordinator.

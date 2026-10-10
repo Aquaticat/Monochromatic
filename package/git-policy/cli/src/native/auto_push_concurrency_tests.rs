@@ -51,22 +51,41 @@ fn scenario(name: &str, sleep_seconds: &str) -> Scenario {
     let hooks = root.join("hooks");
     let log = root.join("pre-push.log");
     let gate = root.join("pre-push.gate");
-    git(&root, &["init", "--bare", "--quiet", remote.to_str().expect("utf-8")]);
+    git(
+        &root,
+        &["init", "--bare", "--quiet", remote.to_str().expect("utf-8")],
+    );
     let post_receive = remote.join("hooks").join("post-receive");
-    std::fs::write(&post_receive, format!("#!/bin/sh\necho \"{REMOTE_MARKER}\"\n")).expect("hook");
+    std::fs::write(
+        &post_receive,
+        format!("#!/bin/sh\necho \"{REMOTE_MARKER}\"\n"),
+    )
+    .expect("hook");
     std::fs::set_permissions(&post_receive, std::fs::Permissions::from_mode(0o755)).expect("mode");
     std::fs::create_dir_all(&repo).expect("repo");
     git(&repo, &["init", "--quiet", "--initial-branch=main"]);
     git(&repo, &["config", "user.email", "cli-git@example.invalid"]);
     git(&repo, &["config", "user.name", "cli-git concurrency test"]);
-    git(&repo, &["remote", "add", "origin", remote.to_str().expect("utf-8")]);
+    git(
+        &repo,
+        &["remote", "add", "origin", remote.to_str().expect("utf-8")],
+    );
     std::fs::create_dir_all(&hooks).expect("hooks");
     let pre_push = hooks.join("pre-push");
     std::fs::write(&pre_push, pre_push_script(&log, &gate, sleep_seconds)).expect("pre-push");
     std::fs::set_permissions(&pre_push, std::fs::Permissions::from_mode(0o755)).expect("mode");
-    git(&repo, &["config", "core.hooksPath", hooks.to_str().expect("utf-8")]);
-    git(&repo, &["commit", "--quiet", "--allow-empty", "--message=base"]);
-    git(&repo, &["push", "--quiet", "--set-upstream", "origin", "HEAD"]);
+    git(
+        &repo,
+        &["config", "core.hooksPath", hooks.to_str().expect("utf-8")],
+    );
+    git(
+        &repo,
+        &["commit", "--quiet", "--allow-empty", "--message=base"],
+    );
+    git(
+        &repo,
+        &["push", "--quiet", "--set-upstream", "origin", "HEAD"],
+    );
     // The setup push ran the pre-push hook once; forget that run and reset the gate so each case counts only its own pushes.
     let _log_gone = std::fs::remove_file(&log);
     let _gate_gone = std::fs::remove_file(&gate);
@@ -81,7 +100,10 @@ fn scenario(name: &str, sleep_seconds: &str) -> Scenario {
 /// Land one empty commit and return its OID.
 fn land(repo: &Path, message: &str) -> String {
     let argument = format!("--message={message}");
-    git(repo, &["commit", "--quiet", "--allow-empty", argument.as_str()]);
+    git(
+        repo,
+        &["commit", "--quiet", "--allow-empty", argument.as_str()],
+    );
     return String::from_utf8_lossy(&git(repo, &["rev-parse", "HEAD"]).stdout)
         .trim()
         .to_owned();
@@ -90,7 +112,9 @@ fn land(repo: &Path, message: &str) -> String {
 /// Number of pre-push runs so far.
 fn pre_push_runs(log: &Path) -> usize {
     return std::fs::read_to_string(log)
-        .map(|text| text.lines().count())
+        .map(|text| {
+            return text.lines().count();
+        })
         .unwrap_or(0);
 }
 
@@ -116,7 +140,9 @@ fn git_output_status(directory: &Path, arguments: &[&str]) -> bool {
         .env("GIT_CONFIG_GLOBAL", "/nonexistent-global-config")
         .args(arguments)
         .output()
-        .map(|output| output.status.success())
+        .map(|output| {
+            return output.status.success();
+        })
         .unwrap_or(false);
 }
 
@@ -159,7 +185,11 @@ fn start_helper(scenario: &Scenario, landed: &str, result: &Path) -> Child {
 /// Wait for a helper and read its report.
 fn finish(child: Child, result: &Path) -> (Reported, String) {
     let output = child.wait_with_output().expect("helper finished");
-    assert!(output.status.success(), "helper failed: {}", String::from_utf8_lossy(&output.stderr));
+    assert!(
+        output.status.success(),
+        "helper failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let text = std::fs::read_to_string(result).expect("helper wrote its result");
     let mut lines = text.splitn(4, '\n');
     let outcome = lines.next().unwrap_or_default().to_owned();
@@ -200,7 +230,9 @@ fn helper_auto_pushes() {
             ("GIT_COMMITTER_EMAIL", "fixture@example.invalid"),
         ]
         .iter()
-        .map(|(name, value)| (OsString::from(name), OsString::from(value)))
+        .map(|(name, value)| {
+            return (OsString::from(name), OsString::from(value));
+        })
         .collect(),
     };
     std::fs::write(result.with_extension("started"), "").expect("announce start");
@@ -225,27 +257,44 @@ fn helper_auto_pushes() {
 #[test]
 fn racing_processes_coalesce_into_fewer_pushes_than_commits() {
     let scenario = scenario("ap-concurrency-coalesce", "1");
-    let landed: Vec<String> = (1..=5).map(|index| land(&scenario.repo, &format!("c{index}"))).collect();
+    let landed: Vec<String> = (1..=5)
+        .map(|index| {
+            return land(&scenario.repo, &format!("c{index}"));
+        })
+        .collect();
     let results: Vec<PathBuf> = (0..landed.len())
-        .map(|index| scenario.root.join(format!("result-{index}")))
+        .map(|index| {
+            return scenario.root.join(format!("result-{index}"));
+        })
         .collect();
     let children: Vec<Child> = landed
         .iter()
         .zip(&results)
-        .map(|(oid, result)| start_helper(&scenario, oid, result))
+        .map(|(oid, result)| {
+            return start_helper(&scenario, oid, result);
+        })
         .collect();
     let reports: Vec<(Reported, String)> = children
         .into_iter()
         .zip(&results)
-        .map(|(child, result)| finish(child, result))
+        .map(|(child, result)| {
+            return finish(child, result);
+        })
         .collect();
     let runs = pre_push_runs(&scenario.log);
-    assert!(runs < landed.len(), "{runs} pushes for {} commits", landed.len());
+    assert!(
+        runs < landed.len(),
+        "{runs} pushes for {} commits",
+        landed.len()
+    );
     assert!(runs >= 1);
     let tip = landed.last().expect("landed").clone();
     assert_eq!(remote_ref(&scenario.remote, "main"), tip);
     for oid in &landed {
-        assert!(remote_contains(&scenario.remote, oid, &tip), "{oid} missing on remote");
+        assert!(
+            remote_contains(&scenario.remote, oid, &tip),
+            "{oid} missing on remote"
+        );
     }
     for (report, _terminal) in &reports {
         assert_eq!(report.outcome, "pushed", "{report:?}");
@@ -278,7 +327,10 @@ fn a_joined_push_failure_is_reported_by_every_commit_it_covered() {
     let first = start_helper(&scenario, &landed, &result_a);
     let deadline = Instant::now() + Duration::from_secs(20);
     while pre_push_runs(&scenario.log) == 0 {
-        assert!(Instant::now() < deadline, "the first push never reached pre-push");
+        assert!(
+            Instant::now() < deadline,
+            "the first push never reached pre-push"
+        );
         std::thread::sleep(Duration::from_millis(50));
     }
     let second = start_helper(&scenario, &landed, &result_b);
@@ -294,7 +346,10 @@ fn a_joined_push_failure_is_reported_by_every_commit_it_covered() {
     for report in [&report_a, &report_b] {
         assert_eq!(report.outcome, "failed", "{report:?}");
         assert_ne!(report.exit_code, 0);
-        assert!(report.shown.contains("refused-by-concurrency-test"), "{report:?}");
+        assert!(
+            report.shown.contains("refused-by-concurrency-test"),
+            "{report:?}"
+        );
     }
     assert!(report_b.joined, "{report_b:?}");
     assert_eq!(pre_push_runs(&scenario.log), 1);
@@ -312,7 +367,10 @@ fn takes_over_from_a_pusher_killed_mid_push() {
     let group = i32::try_from(killed.id()).expect("pid fits");
     let deadline = Instant::now() + Duration::from_secs(20);
     while pre_push_runs(&scenario.log) == 0 {
-        assert!(Instant::now() < deadline, "the first push never reached pre-push");
+        assert!(
+            Instant::now() < deadline,
+            "the first push never reached pre-push"
+        );
         std::thread::sleep(Duration::from_millis(50));
     }
     // SAFETY: the group is the helper process group that start_helper created, so only the helper and its Git child receive the signal.
@@ -325,7 +383,11 @@ fn takes_over_from_a_pusher_killed_mid_push() {
     let (report, _terminal) = finish(second, &result_second);
     assert_eq!(report.outcome, "pushed", "{report:?}");
     assert_eq!(remote_ref(&scenario.remote, "main"), second_landed);
-    assert!(remote_contains(&scenario.remote, &first_landed, &second_landed));
+    assert!(remote_contains(
+        &scenario.remote,
+        &first_landed,
+        &second_landed
+    ));
     remove(&scenario.root);
 }
 
@@ -333,15 +395,20 @@ fn takes_over_from_a_pusher_killed_mid_push() {
 #[test]
 fn a_branch_without_an_upstream_is_pushed_with_set_upstream() {
     let scenario = scenario("ap-concurrency-set-upstream", "0");
-    git(&scenario.repo, &["checkout", "--quiet", "-b", "feature/new"]);
+    git(
+        &scenario.repo,
+        &["checkout", "--quiet", "-b", "feature/new"],
+    );
     let landed = land(&scenario.repo, "on feature");
     let result = scenario.root.join("result");
     let (report, _terminal) = finish(start_helper(&scenario, &landed, &result), &result);
     assert_eq!(report.outcome, "pushed", "{report:?}");
     assert_eq!(remote_ref(&scenario.remote, "feature/new"), landed);
-    let tracked = String::from_utf8_lossy(&git(&scenario.repo, &["config", "branch.feature/new.remote"]).stdout)
-        .trim()
-        .to_owned();
+    let tracked = String::from_utf8_lossy(
+        &git(&scenario.repo, &["config", "branch.feature/new.remote"]).stdout,
+    )
+    .trim()
+    .to_owned();
     assert_eq!(tracked, "origin");
     remove(&scenario.root);
 }
@@ -377,7 +444,10 @@ fn skips_silently_without_an_upstream_or_an_origin_remote() {
             environment: vec![
                 (OsString::from("PATH"), OsString::from("/usr/bin:/bin")),
                 (OsString::from("GIT_CONFIG_NOSYSTEM"), OsString::from("1")),
-                (OsString::from("GIT_CONFIG_GLOBAL"), OsString::from("/nonexistent-global-config")),
+                (
+                    OsString::from("GIT_CONFIG_GLOBAL"),
+                    OsString::from("/nonexistent-global-config"),
+                ),
             ],
         },
         &landed,

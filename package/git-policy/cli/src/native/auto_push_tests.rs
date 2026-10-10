@@ -21,7 +21,9 @@ fn fixture_environment() -> Vec<(OsString, OsString)> {
         ("GIT_COMMITTER_EMAIL", "fixture@example.invalid"),
     ]
     .iter()
-    .map(|(name, value)| (OsString::from(name), OsString::from(value)))
+    .map(|(name, value)| {
+        return (OsString::from(name), OsString::from(value));
+    })
     .collect();
 }
 
@@ -144,8 +146,8 @@ fn a_failed_push_surfaces_the_full_output() {
 fn skips_when_no_origin_remote_exists() {
     let root = fixture("ap-no-origin");
     init_repo_with_commit(&root);
-    let (result, err) = run(&root, &head_oid(&root));
-    let result = result.expect("auto-push");
+    let (attempted, err) = run(&root, &head_oid(&root));
+    let result = attempted.expect("auto-push");
     assert_eq!(result.outcome, AutoPushOutcome::Skipped);
     assert_eq!(result.exit_code, 0);
     assert_eq!(result.shown, "");
@@ -166,8 +168,8 @@ fn pushes_and_surfaces_only_remote_lines_on_success() {
         &["remote", "add", "origin", remote.to_str().expect("utf-8")],
     );
     let landed = head_oid(&repo);
-    let (result, err) = run(&repo, &landed);
-    let result = result.expect("auto-push");
+    let (attempted, err) = run(&repo, &landed);
+    let result = attempted.expect("auto-push");
     assert_eq!(result.outcome, AutoPushOutcome::Pushed);
     assert_eq!(result.exit_code, 0);
     assert!(
@@ -179,8 +181,12 @@ fn pushes_and_surfaces_only_remote_lines_on_success() {
         result
             .shown
             .split('\n')
-            .filter(|line| !line.is_empty())
-            .all(|line| line.starts_with("remote: ")),
+            .filter(|line| {
+                return !line.is_empty();
+            })
+            .all(|line| {
+                return line.starts_with("remote: ");
+            }),
         "{}",
         result.shown
     );
@@ -201,8 +207,8 @@ fn skips_with_a_note_when_head_is_detached() {
         &["remote", "add", "origin", remote.to_str().expect("utf-8")],
     );
     git(&repo, &["checkout", "--quiet", "--detach", "HEAD"]);
-    let (result, err) = run(&repo, &head_oid(&repo));
-    let result = result.expect("auto-push");
+    let (attempted, err) = run(&repo, &head_oid(&repo));
+    let result = attempted.expect("auto-push");
     assert_eq!(result.outcome, AutoPushOutcome::Skipped);
     assert_eq!(result.exit_code, 0);
     assert!(
@@ -229,8 +235,11 @@ fn pushes_to_an_existing_upstream_without_re_pointing_it_to_origin() {
     git(&repo, &["push", "--quiet", "--set-upstream", "alt", "HEAD"]);
     commit_change(&repo, "second\n");
     let landed = head_oid(&repo);
-    let (result, _err) = run(&repo, &landed);
-    assert_eq!(result.expect("auto-push").outcome, AutoPushOutcome::Pushed);
+    let (attempted, _err) = run(&repo, &landed);
+    assert_eq!(
+        attempted.expect("auto-push").outcome,
+        AutoPushOutcome::Pushed
+    );
     let branch = String::from_utf8_lossy(&git(&repo, &["branch", "--show-current"]).stdout)
         .trim()
         .to_owned();
@@ -262,8 +271,8 @@ fn reports_failure_and_surfaces_full_output_when_the_push_is_rejected() {
             root.join("missing.git").to_str().expect("utf-8"),
         ],
     );
-    let (result, err) = run(&repo, &head_oid(&repo));
-    let result = result.expect("auto-push");
+    let (attempted, err) = run(&repo, &head_oid(&repo));
+    let result = attempted.expect("auto-push");
     assert_eq!(result.outcome, AutoPushOutcome::Failed);
     assert_ne!(result.exit_code, 0);
     assert!(!result.shown.is_empty());
@@ -301,8 +310,8 @@ fn joins_the_recorded_push_when_the_same_commit_is_backed_up_again() {
 fn surfaces_a_failed_pre_push_hook_as_a_failed_push_with_its_full_output() {
     let root = fixture("ap-prepush-fails");
     let (repo, log) = repo_with_remote_and_pre_push(&root, 1);
-    let (result, _err) = run(&repo, &head_oid(&repo));
-    let result = result.expect("auto-push");
+    let (attempted, _err) = run(&repo, &head_oid(&repo));
+    let result = attempted.expect("auto-push");
     assert_eq!(
         (result.outcome, result.joined),
         (AutoPushOutcome::Failed, false)
@@ -320,8 +329,8 @@ fn surfaces_a_push_coordination_failure_as_a_failed_push_instead_of_erroring() {
     let (repo, log) = repo_with_remote_and_pre_push(&root, 0);
     std::fs::create_dir_all(repo.join(".git").join("cli-git")).expect("cli-git");
     std::fs::write(repo.join(".git").join("cli-git").join("push"), "").expect("blocking file");
-    let (result, err) = run(&repo, &head_oid(&repo));
-    let result = result.expect("returns the failure");
+    let (attempted, err) = run(&repo, &head_oid(&repo));
+    let result = attempted.expect("returns the failure");
     assert_eq!(result.outcome, AutoPushOutcome::Failed);
     assert_eq!(result.exit_code, 1);
     assert!(!result.shown.is_empty());

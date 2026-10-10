@@ -38,9 +38,11 @@ fn every_ref_name_round_trips_through_a_flat_key() {
         let key = encode_branch_key(ref_name);
         assert!(!key.contains('/'), "{key}");
         assert!(
-            key.bytes().all(|byte| byte.is_ascii_lowercase()
-                || byte.is_ascii_digit()
-                || b"-_.%ABCDEF".contains(&byte)),
+            key.bytes().all(|byte| {
+                return byte.is_ascii_lowercase()
+                    || byte.is_ascii_digit()
+                    || b"-_.%ABCDEF".contains(&byte);
+            }),
             "{key}"
         );
         assert_eq!(decode_branch_key(&key).expect("decodes"), *ref_name);

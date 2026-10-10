@@ -92,8 +92,11 @@ pub fn encode_branch_key(ref_name: &str) -> String {
 /// ```
 fn decode_escape(key: &[u8], index: usize) -> Result<u8, BranchKeyError> {
     let digits = key.get(index + 1..index + 3).unwrap_or(&[]);
-    let is_upper_hex = |digit: &u8| digit.is_ascii_digit() || (b'A'..=b'F').contains(digit);
-    if digits.len() != 2 || !digits.iter().all(is_upper_hex) {
+    if digits.len() != 2
+        || !digits.iter().all(|digit| {
+            return is_upper_hex(*digit);
+        })
+    {
         return Err(BranchKeyError {
             message: format!(
                 "Push coordination key has a malformed escape at {index}: {}",
@@ -113,6 +116,16 @@ fn decode_escape(key: &[u8], index: usize) -> Result<u8, BranchKeyError> {
         });
     }
     return Ok(byte);
+}
+
+/// Whether a byte is an uppercase hexadecimal digit, the only digits `encode_branch_key` writes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// /[0-9A-F]/.test(digit)
+/// ```
+fn is_upper_hex(digit: u8) -> bool {
+    return digit.is_ascii_digit() || (b'A'..=b'F').contains(&digit);
 }
 
 /// The value of one uppercase hexadecimal digit; the caller has checked the digit.
@@ -159,9 +172,12 @@ pub fn decode_branch_key(key: &str) -> Result<String, BranchKeyError> {
             });
         }
     }
-    return String::from_utf8(decoded).map_err(|error| BranchKeyError {
-        message: format!("Push coordination key is not UTF-8 ({error}): {key}"),
-    });
+    return match String::from_utf8(decoded) {
+        Ok(text) => Ok(text),
+        Err(error) => Err(BranchKeyError {
+            message: format!("Push coordination key is not UTF-8 ({error}): {key}"),
+        }),
+    };
 }
 
 /// Encoding and decoding behave as the incumbent's branch key codec.

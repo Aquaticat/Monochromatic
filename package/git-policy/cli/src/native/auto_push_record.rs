@@ -231,8 +231,9 @@ pub fn write_last_pushed_record(
     let candidate_name = format!("{}.{}.pending", record_path.display(), random_uuid_or_io()?);
     let candidate = Path::new(&candidate_name);
     let bytes = encode_last_pushed_record(record);
-    let published = write_exclusive_synced(candidate, bytes.as_bytes())
-        .and_then(|()| std::fs::rename(candidate, record_path));
+    let published = write_exclusive_synced(candidate, bytes.as_bytes()).and_then(|()| {
+        return std::fs::rename(candidate, record_path);
+    });
     if let Err(error) = published {
         let _removed = std::fs::remove_file(candidate);
         return Err(error);
@@ -247,7 +248,9 @@ pub fn write_last_pushed_record(
 /// randomUUID()
 /// ```
 fn random_uuid_or_io() -> std::io::Result<String> {
-    return random_uuid().map_err(|error| std::io::Error::other(error.0));
+    return random_uuid().map_err(|error| {
+        return std::io::Error::other(error.0);
+    });
 }
 
 /// Parsing, validation, publication and the candidate removal are controlled in the test module.

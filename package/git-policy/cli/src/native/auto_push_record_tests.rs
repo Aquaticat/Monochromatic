@@ -119,11 +119,11 @@ fn a_write_replaces_the_record_by_rename_in_mode_0600() {
     let names: Vec<String> = std::fs::read_dir(&root)
         .expect("list")
         .map(|entry| {
-            entry
+            return entry
                 .expect("entry")
                 .file_name()
                 .to_string_lossy()
-                .into_owned()
+                .into_owned();
         })
         .collect();
     assert_eq!(names, vec!["record.json".to_owned()]);
@@ -143,11 +143,11 @@ fn a_failed_publication_removes_its_candidate_and_reports() {
     let names: Vec<String> = std::fs::read_dir(&root)
         .expect("list")
         .map(|entry| {
-            entry
+            return entry
                 .expect("entry")
                 .file_name()
                 .to_string_lossy()
-                .into_owned()
+                .into_owned();
         })
         .collect();
     assert_eq!(names, vec!["record.json".to_owned()]);
