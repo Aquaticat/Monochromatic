@@ -2910,6 +2910,16 @@ the implementation has to verify them with their real owners.
 Implementing the map is developer work.
 No production implementation is authorized by this record.
 
+### D103. Remaining Search behavior is closed as a design item (2026-10-10)
+
+Asked whether to close the open-questions entry on Search behavior left after D51 and D52,
+the human chose to close it and keep the verification notes.
+Every design choice in it is decided (D58 to D74).
+Native focus restoration, system Back, IME and TalkBack behavior stay listed as implementation gates
+in `open-questions.md` and the Search evidence records,
+and need verification when an implementation is authorized.
+No production implementation is authorized by this record.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

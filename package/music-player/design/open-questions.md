@@ -134,7 +134,9 @@ new IME work and native accessibility acceptance.
   with D41/D42 dark structure and D45
   light seams.
   Selection does not authorize production work.
-- **OPEN: revisit the folded-cover picker before 1.x (D46).**
+- **IN PROGRESS: revisit the folded-cover picker before 1.x (D46).**
+  On 2026-10-10 the human asked for the exploration now and left the angle to the agent
+  (one alternative built from the best of the agent's design judgment, then asked to approve).
   The user chose P4 while
   believing a better solution exists.
   Explore alternatives at a future design round,
@@ -376,7 +378,8 @@ new IME work and native accessibility acceptance.
   their activation was settled as D72 to D74 under review task 129,
   but native behavior remains unverified.
   See `evidence/search-result-overflow.md` for bounds and test limitations.
-- **OPEN: remaining Search behavior after D51/D52.**
+- **CLOSED as a design item (D103): remaining Search behavior after D51/D52.**
+  What is left is native verification, which waits for an implementation.
   Keep positive results,
   no-results/unavailable states and open/back behavior distinct;
   do not
