@@ -196,12 +196,14 @@ object PlayerHostModel {
         durationSec: Double,
         trackRowsTemplate: String,
         playingTemplate: String,
+        measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
     ): PlayerContentModel {
         /** Track rows and subfolder headers of the selected page, each row carrying its template supporting line. */
         val entries: List<TrackListEntry> = trackListEntries(
             folder = pageFolderFor(folderTitle = base.folderTitle, pageItems = pageItems),
             currentIndexInLibrary = currentIndex,
             template = trackRowsTemplate,
+            measuresByIndex = measuresByIndex,
         )
         /** Position of the playing row among the track rows, or -1 when the playing track is not on this page. */
         val rowPosition: Int = entries
@@ -217,6 +219,7 @@ object PlayerHostModel {
             durationSec = durationSec,
             template = playingTemplate,
             fallback = base.deck.subtitle,
+            measure = playingEntry?.let { entry -> measuresByIndex[entry.index] },
         )
         return base.copy(entries = entries, deck = base.deck.copy(subtitle = subtitle))
     }
@@ -274,8 +277,9 @@ object PlayerHostModel {
         placeInFolder: Int?,
         tracksInFolder: Int?,
         lengthSec: Double?,
+        measure: TrackMeasure? = null,
     ): PlayingTrackFields = PlayingTrackFields(
-        track = trackFieldsOf(displayPath = displayPath, lengthSec = lengthSec),
+        track = trackFieldsOf(displayPath = displayPath, lengthSec = lengthSec, measure = measure),
         placeInFolder = placeInFolder,
         tracksInFolder = tracksInFolder,
     )
@@ -296,6 +300,7 @@ object PlayerHostModel {
         durationSec: Double,
         template: String,
         fallback: String,
+        measure: TrackMeasure?,
     ): String {
         if (playingEntry == null || rowPosition < 0) {
             return ""
@@ -305,7 +310,8 @@ object PlayerHostModel {
             displayPath = playingEntry.name,
             placeInFolder = rowPosition + 1,
             tracksInFolder = pageTrackCount,
-            lengthSec = lengthOf(durationSec),
+            lengthSec = lengthOf(durationSec) ?: measure?.durationSec,
+            measure = measure,
         )
         /** Outcome of evaluating the playing template for the playing track. */
         val result: TemplateResult = evaluateTemplate(template, fields, TemplateKind.PLAYING_TRACK.fields)
@@ -326,14 +332,16 @@ object PlayerHostModel {
     private fun lengthOf(durationSec: Double): Double? = if (durationSec > 0.0) durationSec else null
 
     // What:     `private fun trackFieldsOf(...)` gathers the template fields of one track from its display path.
-    // Why:      The playing template needs the same fields as a track row, and the peak is not known to the host.
+    // Why:     The playing template needs the same fields as a track row, and the exact peak comes from the track's
+    //           measure.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // function trackFieldsOf(path: string, len?: number): TrackFields { /* title, file, ext, folder, path */ }
+    // function trackFieldsOf(path: string, len?: number, measure?: TrackMeasure): TrackFields { /* title, file, ext,
+    //   folder, path, peak */ }
     // ```
-    /** Builds the template fields of one track from its display path, with the peak left unknown. */
-    private fun trackFieldsOf(displayPath: String, lengthSec: Double?): TrackFields {
+    /** Builds the template fields of one track from its display path, its duration, and its exact peak. */
+    private fun trackFieldsOf(displayPath: String, lengthSec: Double?, measure: TrackMeasure?): TrackFields {
         /** File name, which is the last segment of the display path. */
         val fileName: String = displayPath.substringAfterLast(PATH_SEPARATOR)
         /** Folder path that holds the file, empty for a file at the library root. */
@@ -349,7 +357,7 @@ object PlayerHostModel {
             folder = folderName,
             path = displayPath,
             len = lengthSec,
-            peak = null,
+            peak = measurePeakText(measure),
         )
     }
 

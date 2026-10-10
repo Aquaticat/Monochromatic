@@ -140,26 +140,15 @@ enum class TrackActionFailure {
     /** The file name could not be placed on the clipboard. */
     CLIPBOARD_FAILED,
 
-    // What:     `REANALYSE_UNAVAILABLE` means the analysis cache cannot be cleared for one track.
-    // Why:      Pretending to re-analyse would leave the old value in place, so the menu says the action is
-    //           unavailable.
+    // What:     `REANALYSE_FAILED` means one track could not be measured again.
+    // Why:      The file was unreadable, or the measurement produced no peak, so the menu says so and names the file.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // REANALYSE_UNAVAILABLE = "REANALYSE_UNAVAILABLE";
+    // REANALYSE_FAILED = "REANALYSE_FAILED";
     // ```
-    /** Re-analysis of one track is not available because the analysis cache has no per-track invalidation. */
-    REANALYSE_UNAVAILABLE,
-
-    // What:     `DETAILS_UNAVAILABLE` means the peak value cannot be read back for the details view.
-    // Why:      The cache holds only a normalization gain, so the menu says details are not available.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // DETAILS_UNAVAILABLE = "DETAILS_UNAVAILABLE";
-    // ```
-    /** File details cannot be shown because no true-peak value is read back from the analysis cache. */
-    DETAILS_UNAVAILABLE,
+    /** Re-analysis of one track failed because its file could not be read or measured. */
+    REANALYSE_FAILED,
 }
 
 // What:     `fun trackActionFailureMessage(...)` builds the error feedback for one failed track action.
@@ -204,11 +193,34 @@ private fun failureText(failure: TrackActionFailure, name: String): String = whe
     TrackActionFailure.FILE_MANAGER_NO_FOLDER ->
         "Could not open the folder of $name.\nThe app has no folder route for this library."
     TrackActionFailure.CLIPBOARD_FAILED -> "Could not copy the file name of $name."
-    TrackActionFailure.REANALYSE_UNAVAILABLE ->
-        "Re-analysis of $name is not available.\nThe analysis cache cannot be cleared for one track yet."
-    TrackActionFailure.DETAILS_UNAVAILABLE ->
-        "File details for $name are not available yet.\nTrue peak values are not read back from the cache."
+    TrackActionFailure.REANALYSE_FAILED -> "Could not re-analyse $name.\nIts file could not be measured."
 }
+
+// What:     `fun trackReanalysingMessage(fileName: String): FeedbackMessage` builds the notice shown while one track is
+//           measured again.
+// Why:      The notice keeps its own id, so the failure and the finished notice never replace each other by mistake.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function trackReanalysingMessage(fileName: string): FeedbackMessage { ... }
+// ```
+/** Returns the notice that one track is being re-analysed, naming the file. */
+fun trackReanalysingMessage(fileName: String): FeedbackMessage = FeedbackMessage(
+    id = TRACK_REANALYSE_ID,
+    text = "Re-analysing ${shortName(fileName)}",
+    kind = FeedbackKind.NOTICE,
+    actionLabel = null,
+)
+
+// What:     `internal const val TRACK_REANALYSE_ID: String` is the id of the re-analysing notice.
+// Why:      The host dismisses the notice by this id once the measurement finishes.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const TRACK_REANALYSE_ID = "track-reanalyse";
+// ```
+/** Id of the notice shown while a track is re-analysed. */
+internal const val TRACK_REANALYSE_ID: String = "track-reanalyse"
 
 // What:     `fun trashUndoMessage(record: TrashRecord): FeedbackMessage` builds the Undo message of one trash.
 // Why:      The message carries the record's own id, so its Undo action finds the right record and no other.

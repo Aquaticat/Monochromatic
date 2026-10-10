@@ -118,6 +118,11 @@ import dev.monochromatic.musicplayer.core.trackActionFailureMessage
 import dev.monochromatic.musicplayer.core.trackMenuActionsFor
 import dev.monochromatic.musicplayer.core.trashRouteFor
 import dev.monochromatic.musicplayer.core.trashUndoMessage
+import dev.monochromatic.musicplayer.core.TRACK_REANALYSE_ID
+import dev.monochromatic.musicplayer.core.TrackMeasure
+import dev.monochromatic.musicplayer.core.measureDetailsValue
+import dev.monochromatic.musicplayer.core.measuresByIndex
+import dev.monochromatic.musicplayer.core.trackReanalysingMessage
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -426,6 +431,32 @@ fun playerHost(
         positionSec = playbackProgress.position,
         durationSec = playbackProgress.duration,
     )
+    /** Library tracks of the selected page, each keyed by the URI that its measure is stored under. */
+    val pageTracks: List<Track> = state.pageItems.mapNotNull { entry ->
+        controller.uriAt(entry.index)?.let { uri -> Track(uri = uri, displayPath = entry.name) }
+    }
+    /** Measures of the selected page's tracks keyed by load-order index, which is how the rows name their tracks. */
+    val pageMeasures: Map<Int, TrackMeasure> = measuresByIndex(
+        pageIndices = state.pageItems.map { entry -> entry.index },
+        uriAt = controller::uriAt,
+        measures = state.measures,
+    )
+    // What:     `LaunchedEffect(pageTracks, SweepProgress.snapshot.done)` reads the page's unmeasured tracks.
+    // Why:      A new page or a sweep step (the sweep reports every few tracks) re-checks the peaks shown on the page,
+    //           and the batches land on screen as each one is read.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { refreshPage(pageTracks, () => measures, publish); }, [pageTracks, sweepDone]);
+    // ```
+    LaunchedEffect(pageTracks, SweepProgress.snapshot.done) {
+        TrackMeasures.refreshPage(
+            context = context,
+            tracks = pageTracks,
+            known = { controller.uiState.measures },
+            publish = { updates -> controller.mergeMeasures(updates) },
+        )
+    }
     /** Player model with the saved track-row and playing-track templates applied. */
     val model: PlayerContentModel = PlayerHostModel.contentWithTemplates(
         base = builtModel,
@@ -434,6 +465,7 @@ fun playerHost(
         durationSec = playbackProgress.duration,
         trackRowsTemplate = templates.lastValid.getValue(TemplateKind.TRACK_ROWS),
         playingTemplate = templates.lastValid.getValue(TemplateKind.PLAYING_TRACK),
+        measuresByIndex = pageMeasures,
     )
     /** Editor view with the preview drawn from the selected page, for Settings and the editor. */
     val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(templates, state.pageItems)
@@ -917,6 +949,35 @@ fun playerHost(
         }
     }
 
+    // What:     `fun reanalyseTrack(target: TrackMenuTarget)` measures one track again and reports the outcome.
+    // Why:     The user asked for a fresh peak, so the notice shows while the file is read and the row updates when
+    //           done.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // async function reanalyseTrack(target: TrackMenuTarget): Promise<void> { ... }
+    // ```
+    /**
+     * Shows a re-analysing notice, measures the track again on the host scope, then publishes its measure or a failure.
+     */
+    fun reanalyseTrack(target: TrackMenuTarget) {
+        /** Name of the track, used in the notice and any failure message. */
+        val name: String = trackFileNameOf(target.track.displayPath)
+        feedback.showFeedback(trackReanalysingMessage(name))
+        scope.launch {
+            /** New measure of the track, or null when the file could not be measured again. */
+            val measure: TrackMeasure? = TrackMeasures.reanalyse(context = context, track = target.track)
+            feedback.dismiss(TRACK_REANALYSE_ID)
+            if (measure == null) {
+                Log.w(LOG_TAG, "player host re-analysis failed index=${target.indexInLibrary}")
+                showFailure(TrackActionFailure.REANALYSE_FAILED, name)
+                return@launch
+            }
+            controller.mergeMeasures(mapOf(target.track.uri to measure))
+            Log.i(LOG_TAG, "player host re-analysis published index=${target.indexInLibrary}")
+        }
+    }
+
     // What:     `fun runMenuAction(...)` routes one selected menu action to its implementation.
     // Why:      Each action has one owner, and the two file-moving actions run on the host's scope while the rest run
     //           here.
@@ -934,8 +995,9 @@ fun playerHost(
             TrackMenuAction.PLAY -> controller.playIndex(target.indexInLibrary)
             TrackMenuAction.SHUFFLE_FROM_HERE ->
                 shuffleFromHere(controller = controller, indexInLibrary = target.indexInLibrary)
-            TrackMenuAction.DETAILS -> showFailure(TrackActionFailure.DETAILS_UNAVAILABLE, name)
-            TrackMenuAction.REANALYSE_TRUE_PEAK -> showFailure(TrackActionFailure.REANALYSE_UNAVAILABLE, name)
+            TrackMenuAction.DETAILS ->
+                Log.i(LOG_TAG, "player host file details shown inline index=${target.indexInLibrary}")
+            TrackMenuAction.REANALYSE_TRUE_PEAK -> reanalyseTrack(target)
             TrackMenuAction.SHOW_IN_FILE_MANAGER ->
                 attempt(name) { showInFileManager(context = context, track = target.track) }
             TrackMenuAction.COPY_FILENAME -> attempt(name) { copyFilename(context = context, track = target.track) }
@@ -1027,7 +1089,7 @@ fun playerHost(
                     trackMenuPopup(
                         actions = trackMenuActionsFor(),
                         title = trackFileNameOf(openTarget.track.displayPath),
-                        detailsValue = null,
+                        detailsValue = measureDetailsValue(state.measures[openTarget.track.uri]),
                         onSelect = { action ->
                             menuTarget = null
                             runMenuAction(action = action, target = openTarget)

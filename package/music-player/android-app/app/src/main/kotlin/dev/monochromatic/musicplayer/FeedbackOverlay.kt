@@ -185,6 +185,7 @@ internal const val FEEDBACK_TEXT_MAX_LINES: Int = 2
 internal fun feedbackDismissDescription(kind: FeedbackKind): String = when (kind) {
     FeedbackKind.ERROR -> "Dismiss message"
     FeedbackKind.UNDO -> "Dismiss Undo message"
+    FeedbackKind.NOTICE -> "Dismiss notice"
 }
 
 // What:     `internal fun feedbackExceedsTextLimit(lineCount, hasVisualOverflow): Boolean` applies the D83 limit.
@@ -279,6 +280,7 @@ private fun feedbackMessageSurface(
     val container = when (message.kind) {
         FeedbackKind.ERROR -> MaterialTheme.colorScheme.errorContainer
         FeedbackKind.UNDO -> MaterialTheme.colorScheme.surfaceContainerHigh
+        FeedbackKind.NOTICE -> MaterialTheme.colorScheme.surfaceContainerHigh
     }
     // What:     `val content` selects the text and glyph color that reads on the container.
     // Why:      Each content color is paired with its container from the same Material role family.
@@ -291,6 +293,7 @@ private fun feedbackMessageSurface(
     val content = when (message.kind) {
         FeedbackKind.ERROR -> MaterialTheme.colorScheme.onErrorContainer
         FeedbackKind.UNDO -> MaterialTheme.colorScheme.onSurface
+        FeedbackKind.NOTICE -> MaterialTheme.colorScheme.onSurface
     }
     Surface(
         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },

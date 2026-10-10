@@ -148,6 +148,15 @@ import dev.monochromatic.musicplayer.core.pageIdentity
 // ```
 import dev.monochromatic.musicplayer.core.paginate
 
+// What:     `import dev.monochromatic.musicplayer.core.TrackMeasure` imports the per-track duration and peak value.
+// Why:      The controller publishes the measures the library rows read.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { TrackMeasure } from "./core/TrackMeasure";
+// ```
+import dev.monochromatic.musicplayer.core.TrackMeasure
+
 // What:     `class PlayerController(private val engine: AudioEngine) { ... }` declares a
 //           class with a PRIMARY CONSTRUCTOR. `private val engine: AudioEngine` is a
 //           constructor parameter that is ALSO a private read-only PROPERTY (the `val`
@@ -1473,6 +1482,32 @@ class PlayerController(private val engine: AudioEngine) {
     /** Returns every library track in load order, rebuilt from the stored URIs and the page entries. */
     fun libraryTracks(): List<Track> = PlayerHostModel.libraryTracksFrom(uris = uris, pages = pages)
 
+    // What:     `fun uriAt(index: Int): String?` returns the URI of the track at one load-order index, or null
+    //           when the index is outside the library.
+    // Why:      The measures are keyed by URI, while the rows and the page name their tracks by index.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // uriAt(index: number): string | null { return this.uris[index] ?? null; }
+    // ```
+    /** Returns the URI of the track at a load-order index, or null when the index is outside the library. */
+    fun uriAt(index: Int): String? = uris.getOrNull(index)
+
+    // What:     `fun mergeMeasures(updates: Map<String, TrackMeasure>)` publishes newly read measures.
+    // Why:      The refresh reads tracks in batches, and each batch replaces only its own keys.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // mergeMeasures(updates): void { this.uiState = { ...this.uiState, measures: { ...old, ...updates } }; }
+    // ```
+    /** Publishes measures read for some tracks, keeping the measures of every other track unchanged. */
+    fun mergeMeasures(updates: Map<String, TrackMeasure>) {
+        if (updates.isEmpty()) {
+            return
+        }
+        uiState = uiState.copy(measures = uiState.measures + updates)
+    }
+
     // What:     `fun snapshot(): PlaybackSnapshot { ... }` declares a public method, block
     //           body, returning a `PlaybackSnapshot`.
     // Why:      Point-in-time view of the current scope and transport for the `MediaSession`
@@ -2003,6 +2038,14 @@ class PlayerController(private val engine: AudioEngine) {
             // volume: this.uiState.volume,
             // ```
             volume = uiState.volume,
+            // What:     `measures = uiState.measures` carries the read track measures forward by name.
+            // Why:      A rebuild of the snapshot must not drop the peaks and durations already read.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // measures: this.uiState.measures,
+            // ```
+            measures = uiState.measures,
             // What:     `queueSize = queue.len()` passes the total track count by name.
             // Why:      Lets the UI tell "empty" from "has tracks".
             //
