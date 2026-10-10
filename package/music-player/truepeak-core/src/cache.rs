@@ -147,6 +147,22 @@ const UPSERT_DECISION: &str = "INSERT INTO decisions (fingerprint, policy_id, me
     WHERE NOT (decisions.kind IN (0, 2) AND excluded.kind = 1)";
 
 /// What:
+///      `const DELETE_DECISION: &str = "...";`.
+///  Remove the row for one exact key,
+///  across all five key columns.
+///  `&str` literal.
+/// Why:
+///       A re-analysis drops one track's decision so the next resolve measures it again,
+///  without touching any other track or identity.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DELETE_DECISION = "DELETE FROM decisions WHERE fingerprint = ?1 AND ...";
+/// ```
+const DELETE_DECISION: &str = "DELETE FROM decisions WHERE fingerprint = ?1 AND policy_id = ?2 \
+    AND meter_id = ?3 AND decoder_stack_id = ?4 AND schema_version = ?5";
+
+/// What:
 ///      `const SELECT_EXACT: &str = "...";`.
 ///  Read every fingerprint whose stored decision
 ///           is exact (kind 0 short or 2 full),
@@ -569,6 +585,55 @@ impl DecisionCache {
         // return;
         // ```
         return Ok(())
+    }
+
+    /// What:
+    ///      `pub async fn remove(&self, fingerprint: u64, identity: CacheIdentity) ->
+    ///           Result<bool, CacheError>`.
+    ///  Delete the stored decision for one exact key,
+    ///  and report whether a row was there.
+    ///  `&self` borrows the cache;
+    ///  the delete writes through its connection.
+    /// Why:
+    ///       A re-analysis clears one track so the next resolve measures it fresh,
+    ///  while every other track keeps its decision.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async remove(fingerprint, identity): Promise<boolean> { ... }
+    /// ```
+    pub async fn remove(&self, fingerprint: u64, identity: CacheIdentity) -> Result<bool, CacheError> {
+        // What:     `let affected = self.conn.execute(DELETE_DECISION, params).await?;`. Run the
+        //           delete with the same five key columns a read or write uses.
+        // Why:      Only the one row for this exact key is removed.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const affected = await conn.execute(DELETE_DECISION, [fingerprint, ...identity]);
+        // ```
+        let affected = self
+            .conn
+            .execute(
+                DELETE_DECISION,
+                (
+                    fingerprint as i64,
+                    identity.policy_id as i64,
+                    identity.meter_id as i64,
+                    identity.decoder_stack_id as i64,
+                    i64::from(identity.schema_version),
+                ),
+            )
+            .await?;
+        // A removed row is logged; a miss is normal (the track was never measured).
+        tracing::debug!(fingerprint, affected, "cache remove");
+        // What:     `Ok(affected > 0)`. True when a row was removed. Tail -> return.
+        // Why:      The caller can tell a real invalidation from a no-op.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return affected > 0;
+        // ```
+        return Ok(affected > 0)
     }
 
     /// What:

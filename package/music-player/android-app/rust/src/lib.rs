@@ -180,6 +180,16 @@ mod truepeak;
 /// ```
 mod service;
 /// What:
+///      `mod peak_cache;` declares the peek and invalidate JNI entries (`peak_cache.rs`).
+/// Why:
+///       Keeps the per-track peak reads out of the service module, which is near its line budget.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as peakCache from "./peak_cache";
+/// ```
+mod peak_cache;
+/// What:
 ///      `mod bench;` declares the decode-benchmark submodule (the sibling file
 ///           `bench.rs`).
 ///  `mod NAME;` pulls that file in as a private child module.

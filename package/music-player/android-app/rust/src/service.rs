@@ -265,6 +265,89 @@ struct Write {
     /// decision: Decision;
     /// ```
     decision: Decision,
+    /// What:
+    ///      `applied: Option<oneshot::Sender<()>>`.
+    ///  Sent once the upsert has run, when the caller waits for it.
+    /// Why:
+    ///       A warm must not return before its decision is readable by the peak read.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// applied: (() => void) | null;
+    /// ```
+    applied: Option<oneshot::Sender<()>>,
+}
+
+/// What:
+///      `struct Forget { fingerprint: u64, reply: oneshot::Sender<bool> }`.
+///  One removal of a track's stored decision,
+///  answered with whether a row was removed.
+/// Why:
+///       A re-analysis must drop the old decision before measuring again,
+///  and the caller waits so the next read cannot see the stale row.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Forget = { fingerprint: bigint; reply: (removed: boolean) => void };
+/// ```
+struct Forget {
+    /// What:
+    ///      `fingerprint: u64`.
+    ///  The cache key of the decision to remove.
+    /// Why:
+    ///       Names the one row to delete.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// fingerprint: bigint;
+    /// ```
+    fingerprint: u64,
+    /// What:
+    ///      `reply: oneshot::Sender<bool>`.
+    ///  Carries whether a row was removed back to the caller.
+    /// Why:
+    ///       The JNI caller blocks on it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// reply: (removed: boolean) => void;
+    /// ```
+    reply: oneshot::Sender<bool>,
+}
+
+/// What:
+///      `enum Mutation { Write(Write), Forget(Forget) }`.
+///  Everything that changes the cache, in the order it was sent.
+/// Why:
+///       One FIFO channel keeps a removal behind any earlier upsert for the same track.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Mutation = { kind: "write"; write: Write } | { kind: "forget"; forget: Forget };
+/// ```
+enum Mutation {
+    /// What:
+    ///      `Write(Write)`.
+    ///  Store or upgrade one decision.
+    /// Why:
+    ///       The cache's precedence applies.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "write", write }
+    /// ```
+    Write(Write),
+    /// What:
+    ///      `Forget(Forget)`.
+    ///  Remove one decision.
+    /// Why:
+    ///       Clears a track before it is measured again.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "forget", forget }
+    /// ```
+    Forget(Forget),
 }
 
 /// What:
@@ -304,7 +387,7 @@ pub struct TruePeakService {
     /// ```ts
     /// writeTx: Sender<Write>;
     /// ```
-    write_tx: UnboundedSender<Write>,
+    write_tx: UnboundedSender<Mutation>,
 }
 
 /// What:
@@ -340,7 +423,7 @@ impl TruePeakService {
         // const [readTx, readRx] = channel(); const [writeTx, writeRx] = channel();
         // ```
         let (read_tx, read_rx) = mpsc::unbounded_channel::<Read>();
-        let (write_tx, write_rx) = mpsc::unbounded_channel::<Write>();
+        let (write_tx, write_rx) = mpsc::unbounded_channel::<Mutation>();
         // What:     Spawn the detached actor thread with a current-thread runtime.
         // Why:      Keep the Turso connection on one thread; the JNI threads stay decode-only.
         //
@@ -378,7 +461,7 @@ impl TruePeakService {
     /// ```ts
     /// get(fingerprint: bigint): Decision | null { ... }
     /// ```
-    fn get(&self, fingerprint: u64) -> Option<Decision> {
+    pub(crate) fn get(&self, fingerprint: u64) -> Option<Decision> {
         // What:     Make the reply pair; send `Read`.
         // Why:      The actor answers on `reply_tx`.
         //
@@ -419,7 +502,7 @@ impl TruePeakService {
     /// ```ts
     /// put(fingerprint: bigint, decision: Decision): void { ... }
     /// ```
-    fn put(&self, fingerprint: u64, decision: Decision) {
+    pub(crate) fn put(&self, fingerprint: u64, decision: Decision) {
         // What:     Send the write; ignore a closed actor.
         // Why:      A dropped cache thread just means nothing is persisted.
         //
@@ -427,7 +510,46 @@ impl TruePeakService {
         // ```ts
         // writeTx.send({ fingerprint, decision });
         // ```
-        let _ = self.write_tx.send(Write { fingerprint, decision });
+        let _ = self.write_tx.send(Mutation::Write(Write { fingerprint, decision, applied: None }));
+    }
+
+    /// What:
+    ///      `pub(crate) fn put_and_wait(&self, fingerprint: u64, decision: Decision)`.
+    ///  Store a decision and block until the actor has applied it.
+    /// Why:
+    ///       A background warm returns only after its exact decision is readable,
+    ///  so the peak read that follows sees the new value.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async putAndWait(fingerprint, decision): Promise<void> { ... }
+    /// ```
+    pub(crate) fn put_and_wait(&self, fingerprint: u64, decision: Decision) {
+        let (applied_tx, applied_rx) = oneshot::channel();
+        let write = Write { fingerprint, decision, applied: Some(applied_tx) };
+        if self.write_tx.send(Mutation::Write(write)).is_err() {
+            return;
+        }
+        let _ = applied_rx.blocking_recv();
+    }
+
+    /// What:
+    ///      `pub(crate) fn forget(&self, fingerprint: u64) -> bool`.
+    ///  Remove one track's stored decision and block until it is gone.
+    /// Why:
+    ///       A re-analysis must not measure while the old exact row is still present.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// forget(fingerprint): boolean { ... }
+    /// ```
+    pub(crate) fn forget(&self, fingerprint: u64) -> bool {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        let request = Forget { fingerprint, reply: reply_tx };
+        if self.write_tx.send(Mutation::Forget(request)).is_err() {
+            return false;
+        }
+        return reply_rx.blocking_recv().unwrap_or(false)
     }
 }
 
@@ -446,7 +568,7 @@ impl TruePeakService {
 /// ```ts
 /// async function run(dbPath, readRx, writeRx) { ... }
 /// ```
-async fn run(db_path: String, mut read_rx: UnboundedReceiver<Read>, mut write_rx: UnboundedReceiver<Write>) {
+async fn run(db_path: String, mut read_rx: UnboundedReceiver<Read>, mut write_rx: UnboundedReceiver<Mutation>) {
     // What:     `let cache = open_cache(&db_path).await;`. The open cache, or `None` (degraded).
     // Why:      A degraded actor still answers every request (misses and drops).
     //
@@ -479,8 +601,14 @@ async fn run(db_path: String, mut read_rx: UnboundedReceiver<Read>, mut write_rx
             Some(request) = read_rx.recv() => {
                 let _ = request.reply.send(get(cache.as_ref(), identity, request.fingerprint).await);
             }
-            Some(request) = write_rx.recv() => {
-                put(cache.as_ref(), identity, request).await;
+            Some(mutation) = write_rx.recv() => {
+                match mutation {
+                    Mutation::Write(request) => put(cache.as_ref(), identity, request).await,
+                    Mutation::Forget(request) => {
+                        let removed = forget(cache.as_ref(), identity, request.fingerprint).await;
+                        let _ = request.reply.send(removed);
+                    }
+                }
             }
             else => break,
         }
@@ -568,28 +696,29 @@ async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint
 /// async function put(cache, identity, request) { ... }
 /// ```
 async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Write) {
-    // What:     `let Some(decision_cache) = cache else { return; };`. Degraded run drops the
-    //           write. The unwrapped reference gets its own name so it never shadows the
-    //           `Option` parameter.
-    // Why:      Nothing to persist to.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (!cache) return;
-    // ```
+    // A degraded run has no cache to write to; the ack below still fires so a waiter is released.
+    if let Some(decision_cache) = cache {
+        // One bad write must not stall the actor, so the error is logged and dropped.
+        if let Err(error) = decision_cache.put(request.fingerprint, identity, &request.decision).await {
+            tracing::warn!(error = %error, "cache put failed; write dropped");
+        }
+    }
+    if let Some(applied) = request.applied {
+        let _ = applied.send(());
+    }
+}
+
+// Remove one track's row; a degraded run has nothing stored, so nothing is removed.
+async fn forget(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint: u64) -> bool {
     let Some(decision_cache) = cache else {
-        return;
+        return false;
     };
-    // What:     `if let Err(error) = decision_cache.put(...).await { ... }`. Upsert; log on
-    //           error.
-    // Why:      One bad write must not stall the actor.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // try { await cache.put(request.fingerprint, identity, request.decision); } catch (e) { warn(e); }
-    // ```
-    if let Err(error) = decision_cache.put(request.fingerprint, identity, &request.decision).await {
-        tracing::warn!(error = %error, "cache put failed; write dropped");
+    match decision_cache.remove(fingerprint, identity).await {
+        Ok(removed) => return removed,
+        Err(error) => {
+            tracing::warn!(error = %error, "cache remove failed; decision kept");
+            return false
+        }
     }
 }
 
@@ -612,7 +741,7 @@ async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Wr
 /// ```ts
 /// function serviceRef(handle) { return handle === 0 ? null : handleTable.get(handle); }
 /// ```
-fn service_ref<'a>(handle: jlong) -> Option<&'a TruePeakService> {
+pub(crate) fn service_ref<'a>(handle: jlong) -> Option<&'a TruePeakService> {
     // What:     `if handle == 0 { return None; }`. The create sentinel means "no service".
     // Why:      Never turn `0` into a pointer and dereference it.
     //
@@ -730,7 +859,11 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
     // ```ts
     // service.put(fingerprint, decision);
     // ```
-    service.put(fingerprint, decision);
+    if full {
+        service.put_and_wait(fingerprint, decision);
+    } else {
+        service.put(fingerprint, decision);
+    }
     // What:     `decision.gain`. The resolved gain. Tail -> return.
     // Why:      Hand it back to Kotlin to apply (foreground) or log (warming).
     //
