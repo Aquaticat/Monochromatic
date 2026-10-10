@@ -13,7 +13,7 @@
 //! ```
 
 /// Shared paths and their entries.
-use super::replay_shared_paths::{SharedPath, SharedPathError, TreeEntry, is_regular_triple, is_text_candidate, list_shared_paths, same_entry};
+use super::replay_shared_paths::{SharedPath, SharedPathError, TreeEntry, is_regular_triple, is_text_candidate, same_entry};
 /// Capture order's per-path decision.
 use super::replay_capture_order::CaptureOrderDecision;
 /// The text half of the check.
@@ -244,7 +244,7 @@ pub fn is_identical(shared: &SharedPath) -> bool {
 }
 
 /// What:
-///  Computes the effective merge base of one replay.
+///  Computes the effective merge base of one replay from the shared paths the caller listed once.
 /// Why:
 ///   The result carries the synthetic base when any path settles before the merge, otherwise the preparation base.
 ///
@@ -260,12 +260,9 @@ pub fn subsume_landed_changes(
     directory: &Path,
     replay: u64,
     merge_base: &str,
-    current: &str,
-    prepared: &str,
+    shared: &[SharedPath],
     order: &BTreeMap<String, CaptureOrderDecision>,
 ) -> Result<SubsumptionBase, SubsumptionError> {
-    let shared: Vec<SharedPath> = list_shared_paths(context, shadow, cwd, merge_base, current, prepared)
-        .map_err(SubsumptionError::Shared)?;
     let decision_of = |shared_path: &SharedPath| -> CaptureOrderDecision {
         return order.get(&shared_path.path).copied().unwrap_or(CaptureOrderDecision::Unordered);
     };

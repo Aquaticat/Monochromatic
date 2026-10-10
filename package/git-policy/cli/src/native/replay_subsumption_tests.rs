@@ -3,12 +3,19 @@
 //!  with identical, one-sided, far-apart, delete-against-modify, and capture-ordered paths.
 
 use super::*;
+use crate::replay_shared_paths::list_shared_paths;
 use crate::test_support::{fixture, git, git_context, git_text, remove, repository};
 use std::path::PathBuf;
 
 /// The commit or blob a revision names, trimmed.
 fn rev(repo: &std::path::Path, spec: &str) -> String {
     return git_text(repo, &["rev-parse", spec]).trim().to_string();
+}
+
+/// The shared paths of a repository's scenario, listed once as replay's caller does.
+fn shared_of(repo: &Path, base: &str, current: &str, prepared: &str) -> Vec<SharedPath> {
+    return list_shared_paths(&git_context(), repo.join(".git").as_path(), repo, base, current, prepared)
+        .expect("shared paths");
 }
 
 /// An entry with a mode and object of the given text.
@@ -120,8 +127,7 @@ fn the_scenario_settles_each_path_by_its_rule() {
         scratch.as_path(),
         1,
         base.as_str(),
-        current.as_str(),
-        prepared.as_str(),
+        &shared_of(repo.as_path(), base.as_str(), current.as_str(), prepared.as_str()),
         &order,
     )
     .expect("subsumption");
@@ -164,8 +170,7 @@ fn no_settled_path_keeps_the_preparation_base() {
         scratch.as_path(),
         1,
         base.as_str(),
-        current.as_str(),
-        prepared.as_str(),
+        &shared_of(repo.as_path(), base.as_str(), current.as_str(), prepared.as_str()),
         &BTreeMap::new(),
     )
     .expect("subsumption");
@@ -216,8 +221,7 @@ fn identical_gitlinks_and_binary_blobs_are_subsumed_only_when_identical() {
         scratch.as_path(),
         1,
         base.as_str(),
-        current.as_str(),
-        prepared.as_str(),
+        &shared_of(repo.as_path(), base.as_str(), current.as_str(), prepared.as_str()),
         &BTreeMap::new(),
     )
     .expect("subsumption");

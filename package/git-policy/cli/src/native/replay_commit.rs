@@ -217,8 +217,7 @@ pub fn replay_commit(request: &ReplayRequest<'_>) -> Result<ReplayOutcome, Repla
         request.transaction_directory,
         request.replay,
         &merge_base,
-        request.current,
-        request.prepared,
+        &shared,
         &order,
     )
     .map_err(ReplayError::Subsumption)?;
