@@ -174,6 +174,16 @@ fn start_holder(lock: &Path) -> Child {
         .expect("start holder");
 }
 
+/// Whether a holder list names this PID.
+fn holds_pid(holders: &[Holder], pid: i64) -> bool {
+    for holder in holders {
+        if holder.pid == pid {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// A real child holding the lock open is found by the host scan with its command name, and the
 /// test's own open descriptor never counts as a holder.
 #[test]
@@ -196,9 +206,8 @@ fn a_real_child_holding_the_lock_is_found_on_linux() {
     let _ = child.wait();
     drop(own_open);
     assert_eq!(evidence.method, "proc-fd");
-    let found: Option<&Holder> = evidence.holders.iter().find(|holder| holder.pid == child_pid);
-    assert!(found.is_some(), "the child holding the lock must be a holder: {evidence:?}");
-    assert!(evidence.holders.iter().all(|holder| holder.pid != i64::from(std::process::id())));
+    assert!(holds_pid(evidence.holders.as_slice(), child_pid), "the child holding the lock must be a holder: {evidence:?}");
+    assert!(!holds_pid(evidence.holders.as_slice(), i64::from(std::process::id())));
     remove(root.as_path());
 }
 

@@ -60,11 +60,20 @@ pub enum PidOwner {
     /// No such process runs, or it is a zombie.
     Missing,
     /// A process runs that started no later than the lock changed.
-    StartedBeforeLock(f64),
+    StartedBeforeLock(
+        /// Start time in milliseconds since the epoch.
+        f64,
+    ),
     /// A process runs that started after the lock changed: the PID was reused.
-    StartedAfterLock(f64),
+    StartedAfterLock(
+        /// Start time in milliseconds since the epoch.
+        f64,
+    ),
     /// A process runs whose start time is unreadable.
-    StartUnknown(String),
+    StartUnknown(
+        /// Why the start time could not be read.
+        String,
+    ),
 }
 
 /// What: Git's `core.lockfilePid` file beside the lock.
@@ -79,11 +88,22 @@ pub enum PidFile {
     /// No PID file exists.
     Absent,
     /// The file does not hold `pid <n>`; the first characters of its text.
-    Malformed(String),
+    Malformed(
+        /// The first characters of the text.
+        String,
+    ),
     /// The file exists but could not be read.
-    Unreadable(String),
+    Unreadable(
+        /// The reason the file could not be read.
+        String,
+    ),
     /// The file names a PID.
-    Owner(i64, PidOwner),
+    Owner(
+        /// The PID the file names.
+        i64,
+        /// What the process named by the PID is now.
+        PidOwner,
+    ),
 }
 
 /// What: The evidence of one attempt.
@@ -124,7 +144,10 @@ pub enum Verdict {
         command: Option<String>,
     },
     /// The PID file names a process that no longer runs.
-    Dead(i64),
+    Dead(
+        /// The PID of the process that no longer runs.
+        i64,
+    ),
     /// Nothing proves a live owner or a dead one.
     EvidenceFree,
 }
@@ -144,6 +167,7 @@ pub fn read_lock_metadata(lock_path: &Path) -> std::io::Result<Option<LockMetada
     };
     #[cfg(unix)]
     {
+        /// The Unix metadata accessors, for the device, inode and change time.
         use std::os::unix::fs::MetadataExt;
         return Ok(Some(LockMetadata {
             device: metadata.dev(),

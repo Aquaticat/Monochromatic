@@ -129,7 +129,8 @@ fn is_space(byte: u8) -> bool {
 pub fn split_alias_command(value: &[u8]) -> Option<Vec<Vec<u8>>> {
     let mut words: Vec<Vec<u8>> = Vec::new();
     let mut current: Vec<u8> = Vec::new();
-    let mut started: bool = false;
+    // Starts true as the incumbent's `splitAliasCommand` does, so an empty value is one empty word.
+    let mut started: bool = true;
     let mut quote: u8 = 0;
     let mut escaped: bool = false;
     for &byte in value {
@@ -281,6 +282,7 @@ fn os_words(words: Vec<Vec<u8>>) -> Vec<OsString> {
     for word in words {
         #[cfg(unix)]
         {
+            /// The Unix byte-to-string conversion for command words.
             use std::os::unix::ffi::OsStringExt;
             owned.push(OsString::from_vec(word));
         }

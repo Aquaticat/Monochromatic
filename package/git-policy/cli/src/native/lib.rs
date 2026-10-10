@@ -423,6 +423,9 @@ pub mod git_version;
 /// Processes holding a lock file open, found by device and inode.
 pub mod index_lock_holders;
 
+/// Parsers of `lsof -F pcDi` records and Restart Manager lines, matched by device and inode.
+pub mod index_lock_holder_parsers;
+
 /// Evidence about a foreign `index.lock` and the verdict it supports.
 pub mod index_lock_evidence;
 

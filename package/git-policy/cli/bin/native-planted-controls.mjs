@@ -86,6 +86,34 @@ const plantedControls = [
     to: 'let _ = first;',
     failing: 'config_file::tests::legacy_configuration_alone_requires_migration',
   },
+  {
+    name: 'git version minimum',
+    file: 'src/native/git_version.rs',
+    from: 'if version < MINIMUM_GIT_VERSION {',
+    to: 'if false {',
+    failing: 'git_version::tests::an_older_release_is_refused',
+  },
+  {
+    name: 'PID file proof skips the holder scan',
+    file: 'src/native/index_lock_evidence.rs',
+    from: 'if let PidFile::Owner(pid, PidOwner::StartedBeforeLock(_)) = &pid_file {',
+    to: 'if let PidFile::Owner(pid, PidOwner::Missing) = &pid_file {',
+    failing: 'index_lock_evidence::tests::gathering_skips_the_scan_only_for_a_proven_live_owner',
+  },
+  {
+    name: 'open descriptor precedence over the PID file',
+    file: 'src/native/index_lock_evidence.rs',
+    from: 'if let Some(scan) = &evidence.holders',
+    to: 'if let Some(scan) = &None::<HolderEvidence>',
+    failing: 'index_lock_evidence::tests::classification_prefers_a_descriptor_then_the_pid_file',
+  },
+  {
+    name: 'safe-integer bound on process start ticks',
+    file: 'src/native/process_start.rs',
+    from: 'if ticks > super::json_record::MAX_SAFE_INTEGER {',
+    to: 'if ticks > i64::MAX {',
+    failing: 'process_start::tests::a_start_tick_beyond_the_safe_integers_is_refused',
+  },
 ];
 
 /**

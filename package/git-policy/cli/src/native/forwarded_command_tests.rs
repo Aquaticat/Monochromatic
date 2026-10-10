@@ -31,16 +31,23 @@ fn args(words: &[&str]) -> Vec<OsString> {
     return words.iter().map(OsString::from).collect();
 }
 
+/// One word as the bytes the splitter produces for it.
+fn word_bytes(word: &&str) -> Vec<u8> {
+    return word.as_bytes().to_vec();
+}
+
 /// Alias value words as bytes, for comparing the splitter's output.
 fn words(list: &[&str]) -> Option<Vec<Vec<u8>>> {
-    return Some(list.iter().map(|word| word.as_bytes().to_vec()).collect());
+    return Some(list.iter().map(word_bytes).collect());
 }
 
 /// Whitespace separates words; quotes group; backslashes escape outside single quotes.
 #[test]
 fn alias_values_split_as_git_splits_them() {
     assert_eq!(split_alias_command(b"commit -a"), words(&["commit", "-a"]));
-    assert_eq!(split_alias_command(b"  a \t  b\n"), words(&["a", "b"]));
+    assert_eq!(split_alias_command(b"a \t  b"), words(&["a", "b"]));
+    // The incumbent trims before splitting; untrimmed leading whitespace yields an empty first word.
+    assert_eq!(split_alias_command(b"  a"), words(&["", "a"]));
     assert_eq!(split_alias_command(b"'a b' c"), words(&["a b", "c"]));
     assert_eq!(split_alias_command(b"\"x y\""), words(&["x y"]));
     assert_eq!(split_alias_command(b"a\\ b"), words(&["a b"]));
@@ -49,11 +56,12 @@ fn alias_values_split_as_git_splits_them() {
     assert_eq!(split_alias_command(b"''"), words(&[""]));
 }
 
-/// An empty value yields no words, and an unfinished quote or a trailing backslash yields none at all.
+/// An empty value is one empty word, as the incumbent splits it, and an unfinished quote or a
+/// trailing backslash yields no words at all.
 #[test]
-fn empty_and_unfinished_values_split_to_nothing_or_fail() {
-    assert_eq!(split_alias_command(b""), Some(Vec::new()));
-    assert_eq!(split_alias_command(b"   "), Some(Vec::new()));
+fn empty_and_unfinished_values_split_to_one_empty_word_or_fail() {
+    assert_eq!(split_alias_command(b""), words(&[""]));
+    assert_eq!(split_alias_command(b"   "), words(&[""]));
     assert_eq!(split_alias_command(b"'a"), None);
     assert_eq!(split_alias_command(b"\"a"), None);
     assert_eq!(split_alias_command(b"a\\"), None);
@@ -165,7 +173,10 @@ fn an_empty_alias_value_is_unresolved() {
 
 /// A chain of `length` aliases, each naming the next, the last naming `commit`.
 fn chain_context(length: usize) -> (GitContext, OsString) {
-    let names: Vec<String> = (0..length).map(|index| format!("fixturechain{index}")).collect();
+    let mut names: Vec<String> = Vec::new();
+    for index in 0..length {
+        names.push(format!("fixturechain{index}"));
+    }
     let mut pairs: Vec<(String, String)> = Vec::new();
     for index in 0..length {
         let target: String = if index + 1 < length {
@@ -175,7 +186,10 @@ fn chain_context(length: usize) -> (GitContext, OsString) {
         };
         pairs.push((names[index].clone(), target));
     }
-    let pair_refs: Vec<(&str, &str)> = pairs.iter().map(|(a, b)| (a.as_str(), b.as_str())).collect();
+    let mut pair_refs: Vec<(&str, &str)> = Vec::new();
+    for (name, target) in &pairs {
+        pair_refs.push((name.as_str(), target.as_str()));
+    }
     return (context_with_aliases(pair_refs.as_slice()), OsString::from(names[0].as_str()));
 }
 

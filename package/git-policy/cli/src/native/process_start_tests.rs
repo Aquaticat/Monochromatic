@@ -3,7 +3,7 @@
 
 use super::*;
 use crate::test_support::{fixture, remove};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// A `/proc/<pid>/stat` line with the given command and state; start tick 4200.
 fn stat_line(command: &str, state: &str) -> String {
@@ -14,7 +14,7 @@ fn stat_line(command: &str, state: &str) -> String {
 }
 
 /// Write a fake proc root with one process `pid` in `state` and an uptime of `uptime`.
-fn plant_proc(root: &PathBuf, pid: i64, stat: &str, uptime: &str) {
+fn plant_proc(root: &Path, pid: i64, stat: &str, uptime: &str) {
     let directory: PathBuf = root.join(pid.to_string());
     std::fs::create_dir_all(&directory).expect("fake process directory");
     std::fs::write(directory.join("stat"), stat).expect("fake stat");

@@ -51,7 +51,10 @@ pub enum ProcessStart {
     /// No such process runs, or it is a zombie.
     Missing,
     /// The process may run but its start time is unreadable.
-    Unknown(String),
+    Unknown(
+        /// Why the start time is not known.
+        String,
+    ),
 }
 
 /// What: The state letter and start ticks of a `/proc/<pid>/stat` line.

@@ -17,8 +17,11 @@ use std::sync::OnceLock;
 /// The oldest supported Git release.
 pub const MINIMUM_GIT_VERSION: (u64, u64, u64) = (2, 56, 0);
 
+/// A Git release as its major, minor and patch numbers.
+pub type GitRelease = (u64, u64, u64);
+
 /// The answer of this process's one check.
-static CHECKED: OnceLock<Result<(u64, u64, u64), String>> = OnceLock::new();
+static CHECKED: OnceLock<Result<GitRelease, String>> = OnceLock::new();
 
 /// What: The release numbers of `git version` output, such as `git version 2.56.0.windows.1`.
 /// Why:  Only the first three dotted numbers decide support; platform suffixes vary.
@@ -102,12 +105,28 @@ pub fn ask_git_version(context: &GitContext) -> Result<(u64, u64, u64), String> 
 /// await requireSupportedGit({ gitPath });
 /// ```
 pub fn check_git_version(context: &GitContext) -> Result<(u64, u64, u64), String> {
-    if let Some(known) = CHECKED.get() {
+    return check_once(&CHECKED, context, ask_git_version);
+}
+
+/// What: Return the answer already stored in `cell`, or ask once and store the answer.
+/// Why:  `check_git_version` keeps one answer per process; a separate cell lets the controls
+///       prove the ask runs once without sharing the process-wide answer.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const checked ??= await askGitVersion(context);
+/// ```
+pub fn check_once(
+    cell: &OnceLock<Result<GitRelease, String>>,
+    context: &GitContext,
+    ask: fn(&GitContext) -> Result<GitRelease, String>,
+) -> Result<GitRelease, String> {
+    if let Some(known) = cell.get() {
         return known.clone();
     }
-    let answer: Result<(u64, u64, u64), String> = ask_git_version(context);
+    let answer: Result<(u64, u64, u64), String> = ask(context);
     // Another thread may have set it meanwhile; the first answer stands.
-    let _ = CHECKED.set(answer.clone());
+    let _ = cell.set(answer.clone());
     return answer;
 }
 

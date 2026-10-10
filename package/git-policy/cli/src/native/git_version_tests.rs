@@ -5,6 +5,7 @@ use super::*;
 use crate::test_support::{executable, fixture, git_context, remove};
 use crate::transaction_git::GitContext;
 use std::path::PathBuf;
+use std::sync::OnceLock;
 
 /// The release lines `git version` prints, with the release each one carries.
 #[test]
@@ -111,4 +112,38 @@ fn a_missing_git_is_refused() {
     let refusal: String = ask_git_version(&context).expect_err("a missing Git must be refused");
     assert!(refusal.contains("nothing ("));
     remove(root.as_path());
+}
+
+/// Asks made by the counting fixture, so the controls can prove how many Git processes were run.
+static ASKS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+/// A version answer that counts its calls and reports a supported release.
+fn counting_supported(_context: &GitContext) -> Result<(u64, u64, u64), String> {
+    ASKS.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+    return Ok((2, 56, 0));
+}
+
+/// The first answer is kept, so later dependent steps in the same process never ask Git again.
+#[test]
+fn the_answer_is_asked_once_and_then_reused() {
+    let cell: OnceLock<Result<(u64, u64, u64), String>> = OnceLock::new();
+    let context: GitContext = git_context();
+    let before: usize = ASKS.load(std::sync::atomic::Ordering::SeqCst);
+    assert_eq!(check_once(&cell, &context, counting_supported), Ok((2, 56, 0)));
+    assert_eq!(check_once(&cell, &context, counting_supported), Ok((2, 56, 0)));
+    assert_eq!(ASKS.load(std::sync::atomic::Ordering::SeqCst) - before, 1);
+}
+
+/// A refusal is kept as well, so an unsupported Git is reported the same way every time.
+#[test]
+fn a_refusal_is_reused_without_asking_again() {
+    fn refused(context: &GitContext) -> Result<(u64, u64, u64), String> {
+        return Err(unsupported_message(context, "version 2.55.0"));
+    }
+    let cell: OnceLock<Result<(u64, u64, u64), String>> = OnceLock::new();
+    let context: GitContext = git_context();
+    let first: Result<(u64, u64, u64), String> = check_once(&cell, &context, refused);
+    let second: Result<(u64, u64, u64), String> = check_once(&cell, &context, counting_supported);
+    assert_eq!(first, second);
+    assert!(first.expect_err("refused").contains("version 2.55.0"));
 }

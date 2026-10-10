@@ -49,7 +49,10 @@ pub enum ReadRefusal {
     /// The file holds more bytes than the caller allows.
     TooLarge,
     /// The operating system refused the read for another reason.
-    Io(std::io::Error),
+    Io(
+        /// The operating-system error that refused the read.
+        std::io::Error,
+    ),
 }
 
 /// What: Open options for an exclusive, no-follow, private-mode creation.
@@ -68,6 +71,7 @@ fn exclusive_options() -> OpenOptions {
     #[cfg(unix)]
     {
         // The trait adds `.mode` and `.custom_flags` to open options on Unix.
+        /// The Unix open-option extensions, for the mode and no-follow flags.
         use std::os::unix::fs::OpenOptionsExt;
         options
             .mode(PRIVATE_FILE_MODE)
@@ -91,6 +95,7 @@ pub fn protect_path(path: &Path, mode: u32) -> std::io::Result<()> {
     #[cfg(unix)]
     {
         // The trait adds `.from_mode` to permissions on Unix.
+        /// The Unix permission extensions, for the mode.
         use std::os::unix::fs::PermissionsExt;
         std::fs::set_permissions(path, std::fs::Permissions::from_mode(mode))?;
     }
@@ -141,15 +146,38 @@ pub fn write_exclusive_synced(path: &Path, bytes: &[u8]) -> std::io::Result<()> 
 /// await mkdir(path, { mode: 0o700 });
 /// ```
 pub fn create_private_directory(path: &Path) -> std::io::Result<()> {
-    // `mut` allows the builder to be configured step by step.
+    return private_directory_builder().create(path);
+}
+
+/// What: The directory builder that creates private directories on this platform.
+/// Why:  Only Unix configures a mode; a separate function per platform keeps each body free of
+///       a `mut` the other platform would leave unused.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const builder = { mode: 0o700 };
+/// ```
+#[cfg(unix)]
+fn private_directory_builder() -> std::fs::DirBuilder {
+    // The trait adds `.mode` to directory builders on Unix.
+    /// The Unix directory-builder extensions, for the mode.
+    use std::os::unix::fs::DirBuilderExt;
+    // `mut` allows the builder to be configured before it is returned.
     let mut builder: std::fs::DirBuilder = std::fs::DirBuilder::new();
-    #[cfg(unix)]
-    {
-        // The trait adds `.mode` to directory builders on Unix.
-        use std::os::unix::fs::DirBuilderExt;
-        builder.mode(PRIVATE_DIRECTORY_MODE);
-    }
-    return builder.create(path);
+    builder.mode(PRIVATE_DIRECTORY_MODE);
+    return builder;
+}
+
+/// What: The directory builder that creates private directories on this platform.
+/// Why:  Windows has no mode to configure, as `private_directory_builder` on Unix explains.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const builder = {};
+/// ```
+#[cfg(not(unix))]
+fn private_directory_builder() -> std::fs::DirBuilder {
+    return std::fs::DirBuilder::new();
 }
 
 /// What: Make a directory's entries durable, where the platform supports directory handles.
@@ -203,6 +231,7 @@ fn open_no_follow(path: &Path) -> std::io::Result<File> {
     #[cfg(unix)]
     {
         // The trait adds `.custom_flags` to open options on Unix.
+        /// The Unix open-option extensions, for the no-follow flag.
         use std::os::unix::fs::OpenOptionsExt;
         options.custom_flags(libc::O_NOFOLLOW);
     }
