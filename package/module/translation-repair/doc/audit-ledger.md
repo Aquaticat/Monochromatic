@@ -34307,7 +34307,7 @@ except two:
 the merge of the input-order change left four cases failing on main,
 and a stale "running" line left two agents' work undone for four days.
 
-- The page of choices open to the owner's veto was published as a claude.ai Artifact,
+- The page listing the choices the owner may veto was published as a claude.ai Artifact,
   with a stored database,
   without asking.
   The owner,
