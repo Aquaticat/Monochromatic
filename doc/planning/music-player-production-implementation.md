@@ -24,6 +24,12 @@ The work happens on the branch `feat/music-player-production`, in the worktree `
 - Model choice: Haiku 5.5 by default.
   The human gave the authority (2026-10-10) to elevate to Sonnet 5.5 whenever its results show Haiku is not good enough;
   the orchestrator decides that from the results, and records each elevation and its reason here.
+- Trust, set by the human on 2026-10-10: once there is enough evidence that Haiku is good enough for a specific kind of task,
+  the orchestrator does not repeat that kind of work as if it distrusted them.
+  Evidence so far: pure-logic ports with a tested reference (packages 1 and 2) compiled, mirrored every case, passed the unit
+  tests and, after one round, detekt, and the orchestrator's own re-run agreed with the agents' reports.
+  For that kind of task the orchestrator accepts the agent's own test and detekt results from the logs and runs the suite once before committing.
+  Compose UI packages have no evidence yet and keep the full verification, including native captures.
 - Haiku subagents write code and tests for one bounded work package each, in the shared worktree, in disjoint files.
   They never run Gradle, never commit and never touch another package's files.
 - The orchestrator (this session) builds and runs the unit tests in a capped container, reviews every diff,
