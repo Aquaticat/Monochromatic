@@ -21,7 +21,6 @@ use ide_app::{
         config::LanguageSetup,
         enter_project_directory,
         launch::{LaunchPolicy, launch_directly},
-        status::ServerState,
     },
     workspace::Workspace,
 };
@@ -44,6 +43,9 @@ use std::{
     rc::Rc,
     time::{Duration, Instant},
 };
+
+/// Waiting for timers and for the scripted server, in their own module.
+pub(super) use super::test_waits::{eventually, ready};
 
 /// Name of the scripted server definition.
 pub(super) const SERVER: &str = "scripted-ls";
@@ -73,7 +75,10 @@ pub(super) struct Project {
 
 /// Create a disposable project with `files` (relative path and text) and an outside directory.
 pub(super) fn project(files: &[(&str, &str)]) -> Project {
-    let guard = tempfile::tempdir().expect("disposable directory");
+    // The project lives in memory when `/dev/shm` exists (see `memory_project`): on btrfs, the first
+    // read of a fresh file and the creation of files wait for filesystem transactions, which took
+    // longer than the waits of these tests while the machine flushed.
+    let guard = crate::native::find_tests::memory_project("ide-native-language-");
     let base = guard.path().canonicalize().expect("canonical base");
     let root = base.join("project");
     let outside = base.join("outside");
@@ -259,33 +264,6 @@ pub(super) fn reader_with(
         binding: Some(binding),
         _timers: [refresh, finder, project_timer],
     };
-}
-
-/// Advance timers until `ready` holds, failing with `message` after ten seconds.
-pub(super) fn eventually(message: &str, mut ready: impl FnMut() -> bool) {
-    let start = Instant::now();
-    loop {
-        slint::platform::update_timers_and_animations();
-        if ready() {
-            return;
-        }
-        assert!(start.elapsed() < Duration::from_secs(10), "{message}");
-        std::thread::sleep(Duration::from_millis(2));
-    }
-}
-
-/// Wait until the scripted server is ready for the displayed file, as the binding polled it.
-pub(super) fn ready(reader: &LanguageReader) {
-    eventually("the scripted server did not become ready", || {
-        // `let Some(...) = ... else` leaves with false after the binding was closed.
-        let Some(binding) = reader.binding.as_ref() else {
-            return false;
-        };
-        let language = binding.language.borrow();
-        return language.status.servers.iter().any(|row| {
-            return row.server.name == SERVER && row.state == ServerState::Ready;
-        });
-    });
 }
 
 /// Advance timers for `millis` milliseconds without expecting anything.

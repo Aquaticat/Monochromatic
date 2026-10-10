@@ -1,5 +1,8 @@
 //! Selected-directory search narrows the fixed project rather than creating an unrestricted second root.
 
+/// Disposable fixture directories, in memory when the system has one.
+mod memory_fixture;
+
 /// The public worker API owns cancellation and background directory validation.
 use ide_app::{
     search_worker::{SearchReply, SearchWorker},
@@ -32,7 +35,7 @@ fn reply(worker: &mut SearchWorker) -> Arc<SearchReply> {
 /// Equal queries in different scopes retain the newest scope and never include a sibling's results.
 #[test]
 fn selected_directory_is_validated_and_bound_to_query_generation() {
-    let fixture = tempfile::tempdir().expect("disposable project");
+    let fixture = memory_fixture::directory("ide-search-scope-");
     for directory in ["a", "b"] {
         fs::create_dir(fixture.path().join(directory)).expect("subdirectory");
         fs::write(
@@ -86,7 +89,7 @@ fn selected_directory_is_validated_and_bound_to_query_generation() {
 /// Outside links, parent escapes, files, and missing scopes yield diagnostics without starting an outside search.
 #[test]
 fn invalid_scope_is_an_error_and_a_later_valid_scope_recovers() {
-    let fixture = tempfile::tempdir().expect("disposable parent");
+    let fixture = memory_fixture::directory("ide-search-scope-");
     let root = fixture.path().join("project");
     let outside = fixture.path().join("outside");
     fs::create_dir(&root).expect("project root");

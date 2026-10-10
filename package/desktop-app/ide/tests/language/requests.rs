@@ -1,13 +1,14 @@
 //! The five feature paths against the scripted server: targets, hover, hints, diagnostics, and
 //! the request states (unsupported, failed, superseded, empty, timeout, stale).
 
-use crate::support::{self, Probe, SERVER};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
-    diagnostics::Freshness,
+    diagnostics::{Freshness, HOLD_FALLBACK},
     hints::{HintKind, HintWindow},
     reply::{RequestFailure, RequestKind, RequestOutcome, Target},
     target::TargetRefusal,
 };
+use std::time::{Duration, Instant};
 
 /// Line 0 has an accented letter and an astral character before offset 14; line 2 starts with both.
 const SOURCE: &str = "caf\u{e9} \u{1F600} hello world\n\n\u{e9}\u{1F600}cdef tail\n";
@@ -28,7 +29,7 @@ fn definition_targets_are_validated_and_converted() {
     let definitions = support::scripted(
         &root,
         &[("ENCODING", "utf-8"), ("OUTSIDE", outside_text.as_str())],
-        3,
+        PRODUCT_TIMEOUT,
     );
     let mut probe = Probe::new(&root, definitions);
     let file = root.join("main.scripted");
@@ -92,7 +93,7 @@ fn failed_request_carries_the_servers_error_code() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
     let number = probe.request(RequestKind::References, 3);
@@ -128,7 +129,7 @@ fn hover_position_and_range_use_the_negotiated_column_unit() {
         std::fs::remove_file(support::report_path(&root)).unwrap_or_default();
         let mut probe = Probe::new(
             &root,
-            support::scripted(&root, &[("ENCODING", encoding)], 3),
+            support::scripted(&root, &[("ENCODING", encoding)], PRODUCT_TIMEOUT),
         );
         probe.open(&root.join("main.scripted"), SOURCE);
         probe.until_ready();
@@ -163,7 +164,7 @@ fn hover_on_a_blank_line_is_an_empty_result() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
     let blank = SOURCE
@@ -188,7 +189,7 @@ fn missing_capabilities_are_reported_per_request() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("FEATURES", "minimal")], 3);
+    let definitions = support::scripted(&root, &[("FEATURES", "minimal")], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
@@ -241,7 +242,10 @@ fn superseded_request_is_retried_then_reported_as_superseded() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("HOVER", "modified")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("HOVER", "modified")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
     let number = probe.request(RequestKind::Hover, 3);
@@ -259,7 +263,7 @@ fn superseded_request_is_retried_then_reported_as_superseded() {
     assert_eq!(hovers, 4, "one request and three bounded retries");
     drop(probe);
     std::fs::remove_file(support::report_path(&root)).expect("previous report");
-    let once = support::scripted(&root, &[("HOVER", "modified-once")], 3);
+    let once = support::scripted(&root, &[("HOVER", "modified-once")], PRODUCT_TIMEOUT);
     let mut recovering = Probe::new(&root, once);
     recovering.open(&root.join("main.scripted"), SOURCE);
     recovering.until_ready();
@@ -287,6 +291,32 @@ fn unanswered_request_times_out() {
     );
 }
 
+/// A request keeps the request timeout although the server may take three request timeouts to
+/// start: an answer that comes after the request timeout is a timeout.
+#[test]
+fn request_keeps_the_request_timeout_while_the_start_allowance_is_longer() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "requests::request_keeps_the_request_timeout_while_the_start_allowance_is_longer",
+            support::standard,
+        );
+        return;
+    };
+    // A request timeout of 3 s gives helix-lsp a start allowance of 9 s; the hover answer comes
+    // after 7 s. A stall of up to 4 s still ends in the timeout this test expects, and without
+    // the worker's own bound the answer arrives 2 s before helix-lsp would give up.
+    let definitions = support::scripted(&root, &[("HOVER_DELAY_MS", "7000")], 3);
+    let mut probe = Probe::new(&root, definitions);
+    probe.open(&root.join("main.scripted"), SOURCE);
+    probe.until_ready();
+    let number = probe.request(RequestKind::Hover, 3);
+    assert_eq!(
+        probe.answers(number)[0].outcome,
+        RequestOutcome::Failed(RequestFailure::Timeout),
+        "a request waited longer than its request timeout"
+    );
+}
+
 /// A reply overtaken by a reload or a file switch is dropped when it is read.
 #[test]
 fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
@@ -297,7 +327,7 @@ fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("HOVER_DELAY_MS", "400")], 3);
+    let definitions = support::scripted(&root, &[("HOVER_DELAY_MS", "400")], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
@@ -359,7 +389,7 @@ fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     let definitions = support::scripted(
         &root,
         &[("HOVER", "modified"), ("HOVER_DELAY_MS", "400")],
-        3,
+        PRODUCT_TIMEOUT,
     );
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), SOURCE);
@@ -391,9 +421,6 @@ fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     );
 }
 
-/// Request timeout of the scripted server in the hint test, in seconds.
-const HINT_TIMEOUT_SECONDS: u64 = 3;
-
 /// Hints are shaped for drawing, tagged with their text, and asked for again after a reload.
 #[test]
 fn inlay_hints_are_shaped_and_follow_reloads() {
@@ -404,7 +431,7 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], HINT_TIMEOUT_SECONDS));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), "plain text line\nsecond\n");
     probe.until_ready();
     let window = HintWindow {
@@ -443,7 +470,7 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
     // Exactly one request per displayed text. Only a request the server left unanswered for its
     // whole timeout is sent again, so each further request needs one more elapsed timeout; on a
     // machine that did not stall for that long the count is exactly two.
-    let timeouts = usize::try_from(asked.elapsed().as_secs() / HINT_TIMEOUT_SECONDS);
+    let timeouts = usize::try_from(asked.elapsed().as_secs() / PRODUCT_TIMEOUT);
     let allowed = 2 + timeouts.expect("small count");
     let requests = support::received(&support::report(&root))
         .iter()
@@ -465,7 +492,10 @@ fn versioned_diagnostics_follow_the_displayed_version() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[("DIAG_VERSION", "1")], 3));
+    let mut probe = Probe::new(
+        &root,
+        support::scripted(&root, &[("DIAG_VERSION", "1")], PRODUCT_TIMEOUT),
+    );
     probe.open(&root.join("main.scripted"), "first\n");
     probe.until("diagnostics for the first text", |seen| {
         return seen.messages() == ["TEXT:first\n"];
@@ -491,18 +521,18 @@ fn versioned_diagnostics_follow_the_displayed_version() {
     });
 }
 
-/// Unversioned pushes are held after a reload until the server answers something for the new text.
+/// An unversioned set pushed right after a reload is kept back while the hold lasts and shown once
+/// the server answers a request for the new text, without any further push.
 #[test]
-fn unversioned_diagnostics_are_held_after_a_reload() {
+fn unversioned_set_pushed_during_the_hold_is_shown_once_the_server_answers() {
     let Some(root) = support::child_root() else {
         support::run_child(
-            "requests::unversioned_diagnostics_are_held_after_a_reload",
+            "requests::unversioned_set_pushed_during_the_hold_is_shown_once_the_server_answers",
             support::standard,
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("PUSH_AFTER_HOVER", "1")], 3);
-    let mut probe = Probe::new(&root, definitions);
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), "first\n");
     probe.until("diagnostics for the first text", |seen| {
         return seen.messages() == ["TEXT:first\n"];
@@ -512,9 +542,10 @@ fn unversioned_diagnostics_are_held_after_a_reload() {
         snapshot.groups[0].items[0].freshness,
         Freshness::Unversioned
     );
+    let reloaded = Instant::now();
     probe.reload("second\n");
     let stamp = probe.stamp();
-    // The server pushes at once for the change; that set arrives inside the hold and is discarded.
+    // The server pushes once, at once, for the change; that set arrives inside the hold.
     support::server_text_until(&root, "second\n");
     probe.until(
         "the previous revision's diagnostics to leave the display",
@@ -525,19 +556,66 @@ fn unversioned_diagnostics_are_held_after_a_reload() {
                 .is_some_and(|found| return found.stamp == stamp);
         },
     );
-    std::thread::sleep(std::time::Duration::from_millis(300));
+    std::thread::sleep(Duration::from_millis(300));
     probe.poll();
-    assert!(
-        probe.messages().is_empty(),
-        "an unversioned set that arrived during the hold was displayed: {:?}",
-        probe.messages()
-    );
-    // The hover answer ends the hold; the push that follows it is accepted.
+    // The hold ends by its fixed delay at the earliest `HOLD_FALLBACK` after the reload was sent,
+    // because nothing is asked of the server after the reload. Only an observation made before
+    // that can show that the set is kept back; a later one is skipped, never weakened.
+    if reloaded.elapsed() < HOLD_FALLBACK {
+        assert!(
+            probe.messages().is_empty(),
+            "an unversioned set that arrived during the hold was displayed before the hold ended: {:?}",
+            probe.messages()
+        );
+    } else {
+        eprintln!(
+            "the check inside the hold was skipped: {:?} passed since the reload",
+            reloaded.elapsed()
+        );
+    }
+    // The hover answer ends the hold; the kept set is shown, and the server pushes nothing more.
     let number = probe.request(RequestKind::Hover, 1);
     probe.answers(number);
-    probe.until("the unversioned set that followed the answer", |seen| {
-        return seen.messages() == ["TEXT:second\n"];
+    probe.until(
+        "the set pushed during the hold, shown once the server answered",
+        |seen| {
+            return seen.messages() == ["TEXT:second\n"]
+                && seen
+                    .diagnostics
+                    .as_ref()
+                    .is_some_and(|found| return found.stamp == stamp);
+        },
+    );
+}
+
+/// An unversioned set pushed right after a reload is shown when the hold's fixed delay passes,
+/// although nothing is asked of the server after the reload and it pushes nothing else.
+#[test]
+fn unversioned_set_pushed_during_the_hold_is_shown_when_the_hold_expires() {
+    let Some(root) = support::child_root() else {
+        support::run_child(
+            "requests::unversioned_set_pushed_during_the_hold_is_shown_when_the_hold_expires",
+            support::standard,
+        );
+        return;
+    };
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
+    probe.open(&root.join("main.scripted"), "first\n");
+    probe.until("diagnostics for the first text", |seen| {
+        return seen.messages() == ["TEXT:first\n"];
     });
+    probe.reload("second\n");
+    let stamp = probe.stamp();
+    probe.until(
+        "the set pushed during the hold, shown when its fixed delay passed",
+        |seen| {
+            return seen.messages() == ["TEXT:second\n"]
+                && seen
+                    .diagnostics
+                    .as_ref()
+                    .is_some_and(|found| return found.stamp == stamp);
+        },
+    );
 }
 
 /// Pull diagnostics are requested after open and after every reload, and fenced by stamp.
@@ -550,7 +628,7 @@ fn pulled_diagnostics_follow_open_and_reload() {
         );
         return;
     };
-    let definitions = support::scripted(&root, &[("PULL", "1"), ("PUSH", "0")], 3);
+    let definitions = support::scripted(&root, &[("PULL", "1"), ("PUSH", "0")], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), "first\n");
     probe.until_ready();

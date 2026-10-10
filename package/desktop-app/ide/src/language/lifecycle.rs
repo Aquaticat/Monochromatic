@@ -1,5 +1,7 @@
 //! Document synchronization: `didOpen`, `didChange` with its fallbacks, `didSave`, and `didClose`.
 
+/// The fixed fallback delay of the unversioned-diagnostics hold.
+use super::diagnostics::HOLD_FALLBACK;
 /// A reload renews what each server may be asked again for.
 use super::owed::Owed;
 /// Requests that follow every open and change.
@@ -28,19 +30,6 @@ use crate::change_watch::{ServerChange, ServerChangeKind};
 use helix_core::diff::compare_ropes;
 /// helix-lsp's client handle and the protocol's data types.
 use helix_lsp::{Client, lsp};
-/// What: `Duration` is a time span.
-/// Why: The diagnostics hold has a fixed fallback delay.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const HOLD_FALLBACK_MS = 2000;
-/// ```
-use std::time::Duration;
-
-/// How long an unversioned-diagnostics hold lasts for a server that answers no request after a
-/// reload. Chosen, not measured: longer than the answers observed in the integration spike for
-/// the first request after a change, short enough that diagnostics do not stay hidden.
-const HOLD_FALLBACK: Duration = Duration::from_secs(2);
 
 /// What: Build the address a document is announced under. `Option<lsp::Url>` is "an address,
 ///       or nothing" for a path that cannot be expressed as a `file` address.

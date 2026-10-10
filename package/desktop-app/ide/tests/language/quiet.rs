@@ -6,7 +6,7 @@
 //! same subscriber and the same bridge that re-labels helix-lsp's `log` records. Only the writer is
 //! replaced, and the level is set here, because these tests read records below the default.
 
-use crate::support::{self, Probe, SERVER};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
     reply::{RequestKind, RequestOutcome},
     status::{DocumentState, ServerState},
@@ -106,7 +106,7 @@ fn log_of_a_clean_lifetime(root: &Path) -> String {
         ("STDERR", "context canceled"),
         ("HOVER", "modified-once"),
     ];
-    let mut probe = Probe::new(root, support::scripted(root, &variables, 3));
+    let mut probe = Probe::new(root, support::scripted(root, &variables, PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
     assert_eq!(support::children().len(), 1);
@@ -234,7 +234,7 @@ fn a_crashed_server_is_logged_with_its_last_stderr_lines() {
         ("STDERR", "panicked at the hover request"),
         ("HOVER", "crash"),
     ];
-    let mut probe = Probe::new(&root, support::scripted(&root, &variables, 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &variables, PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
     let _crashing = probe.request(RequestKind::Hover, 1);
@@ -272,7 +272,7 @@ fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
         ("STDERR_AT_START", "cannot read the configuration"),
         ("INIT", "exit"),
     ];
-    let mut probe = Probe::new(&root, support::scripted(&root, &variables, 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &variables, PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until("the failed-start state", |seen| {
         return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
@@ -309,18 +309,25 @@ fn a_timed_out_start_is_logged_with_its_stderr_lines() {
         ("STDERR", "asked to stop"),
         ("INIT", "hang"),
     ];
+    // A request timeout of 1 s gives a start allowance of three request timeouts, 3 s.
     let mut probe = Probe::new(&root, support::scripted(&root, &variables, 1));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until("the failed-start state", |seen| {
         return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
     });
+    assert_eq!(
+        probe.state(SERVER),
+        Some(&ServerState::FailedToStart {
+            reason: "scripted-ls did not answer initialize within 3 seconds".to_string()
+        })
+    );
     drop(probe);
     support::children_until_none();
     let text = capture.text();
     assert_record(
         &text,
         "ERROR",
-        "language server did not answer initialize in time and is stopped server=scripted-ls seconds=1",
+        "language server did not answer initialize in time and is stopped server=scripted-ls seconds=3",
     );
     assert_record(
         &text,

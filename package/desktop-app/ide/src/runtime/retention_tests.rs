@@ -112,12 +112,30 @@ fn the_current_key_is_never_removed_however_long_unused() {
     );
 }
 
+/// What: The current time as the filesystem stamps it: the modification time of a file written now.
+/// Why: The kernel stamps file times from a coarse clock, and `SystemTime::now` reads a finer one,
+///      so a file written right after `SystemTime::now` can carry an earlier time. A start time
+///      taken from the same file clock is never later than a file written after it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function fileClockNow(directory: string): Date { writeFileSync(probe, ''); return statSync(probe).mtime; }
+/// ```
+fn file_clock_now(directory: &Path) -> SystemTime {
+    let probe = directory.join("file-clock");
+    fs::write(&probe, b"").expect("file clock probe");
+    return fs::metadata(&probe)
+        .expect("file clock probe")
+        .modified()
+        .expect("file clock time");
+}
+
 #[test]
 fn a_marker_renewed_by_a_running_copy_keeps_its_folder() {
     let base = tempfile::tempdir().expect("disposable cache");
     let runtime = base.path().join("runtime");
     let older = "00000000000000a1";
-    let started = SystemTime::now();
+    let started = file_clock_now(base.path());
     key_folder(&runtime, older, Some(started - days(31)));
     // The older copy loads a parser: the marker is renewed before the library is compared.
     let library = unpack_marked(&runtime.join(older), "sql", b"library").expect("parser load");

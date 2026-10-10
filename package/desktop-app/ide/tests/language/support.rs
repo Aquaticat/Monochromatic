@@ -35,6 +35,11 @@ pub const SERVER: &str = "scripted-ls";
 /// Longest wait for any expected state.
 const PATIENCE: Duration = Duration::from_secs(20);
 
+/// Request timeout of the scripted server, in seconds, in tests whose assertions do not depend on
+/// it: Helix's default, which the product uses for every server without its own value
+/// (`default_timeout` in `helix-core/src/syntax/config.rs`, and `Languages::timeout`).
+pub const PRODUCT_TIMEOUT: u64 = 20;
+
 /// When set in the environment, the child process prints the worker's debug log and helix-lsp's
 /// protocol log to standard error, with wall-clock times. An intermittent failure is diagnosed
 /// from that log together with the scripted server's report.
@@ -81,10 +86,32 @@ pub fn child_root() -> Option<PathBuf> {
     return std::env::var_os(ROOT_VARIABLE).map(PathBuf::from);
 }
 
+/// Memory-backed directory for the files of a test, when the system has one.
+const MEMORY_DIRECTORY: &str = "/dev/shm";
+
+/// A fresh directory for one test's project and report, in memory when possible.
+///
+/// The scripted server appends a line to its report for every message it reads or writes, and
+/// it answers only after the line is written. On a disk that the rest of the machine keeps busy,
+/// one such write can block for seconds; the late answers then look like a slow server, and the
+/// server cannot even be killed until the write returns. Memory-backed files never wait for the
+/// disk. Elsewhere the usual temporary directory is used.
+fn test_directory() -> tempfile::TempDir {
+    let memory = Path::new(MEMORY_DIRECTORY);
+    if memory.is_dir()
+        && let Ok(directory) = tempfile::Builder::new()
+            .prefix("ide-language-")
+            .tempdir_in(memory)
+    {
+        return directory;
+    }
+    return tempfile::tempdir().expect("test directory");
+}
+
 /// Run the named test again in a child process laid out by `layout`, and require it to pass.
 /// `test` is the full test name, including its module.
 pub fn run_child(test: &str, layout: fn(&Path) -> Layout) {
-    let directory = tempfile::tempdir().expect("test directory");
+    let directory = test_directory();
     let base = directory
         .path()
         .canonicalize()
