@@ -14,6 +14,7 @@ publish = false
 description = "Shared true-peak meter, attenuate-only gain math, and versioned policy identity for the desktop and Android music players. Catmull-Rom inter-sample peak estimation feeding a -1 dBTP normalization gain."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

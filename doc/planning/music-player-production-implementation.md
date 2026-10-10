@@ -24,6 +24,12 @@ The work happens on the branch `feat/music-player-production`, in the worktree `
 - Model choice: Haiku 5.5 by default.
   The human gave the authority (2026-10-10) to elevate to Sonnet 5.5 whenever its results show Haiku is not good enough;
   the orchestrator decides that from the results, and records each elevation and its reason here.
+- Trust, set by the human on 2026-10-10: once there is enough evidence that Haiku is good enough for a specific kind of task,
+  the orchestrator does not repeat that kind of work as if it distrusted them.
+  Evidence so far: pure-logic ports with a tested reference (packages 1 and 2) compiled, mirrored every case, passed the unit
+  tests and, after one round, detekt, and the orchestrator's own re-run agreed with the agents' reports.
+  For that kind of task the orchestrator accepts the agent's own test and detekt results from the logs and runs the suite once before committing.
+  Compose UI packages have no evidence yet and keep the full verification, including native captures.
 - Haiku subagents write code and tests for one bounded work package each, in the shared worktree, in disjoint files.
   They never run Gradle, never commit and never touch another package's files.
 - The orchestrator (this session) builds and runs the unit tests in a capped container, reviews every diff,
@@ -57,8 +63,23 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
 11. Keyboard wiring on top of package 2.
 12. Desktop app inheriting the Fold visual choices.
 
+## Log
+
+- Packages 1 and 2 (Haiku 5.5): both ports compiled on the first build and mirrored every JS case;
+  detekt then found 97 findings in them, mostly missing KDoc on local values, which a second Haiku round fixed.
+  Verified by the orchestrator: `testDebugUnitTest` and detekt both green, landed on `main` as `cc2b1c49e`.
+- The human disabled detekt's whole complexity rule set on 2026-10-10 (`7ed98539d`); a Haiku audit of oxlint and clippy was started.
+- Model rule, set by the human on 2026-10-10: without evidence, assume Haiku can handle everything,
+  and escalate to Sonnet 5.5 only when Haiku is proven bad by its results.
+  An earlier entry here that elevated packages 3 and 4 to Sonnet before any result was wrong and is withdrawn;
+  packages 3 and 4 start on Haiku.
+- Verification tooling: `~/temp/agent/run-production-task.ts` runs a Gradle or shell command for the production worktree in a
+  capped container (6 GiB, 2 CPUs); mise's own task path fails with "Failed to find Build Tools revision 36.0.0" there while the
+  same Gradle command through `raw:` passes, a difference not yet explained.
+
 ## Queue
 
-- [ ] Package 1.
-- [ ] Package 2.
-- [ ] Packages 3 to 12, each started only when the previous one it builds on is committed.
+- [x] Package 1.
+- [x] Package 2.
+- [ ] Packages 3 and 4 (on Haiku): player screens (cover and unfolded) and the folder picker, with a debug host for native captures.
+- [ ] Packages 5 to 12, each started only when the previous one it builds on is committed.

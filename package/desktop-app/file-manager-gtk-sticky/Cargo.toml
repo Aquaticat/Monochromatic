@@ -34,6 +34,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Canonical lint policy, enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
