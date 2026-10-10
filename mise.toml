@@ -112,7 +112,7 @@ cargo-binstall = "latest"
 # new version can add or change rules, which must land together with the repository's
 # monochromatic-lint.config.jsonc. The cargo backend resolves through cargo-binstall
 # to the prebuilt release archive when one exists for the platform.
-"cargo:monochromatic-lint" = "0.1.0"
+"cargo:monochromatic-lint" = "0.1.1"
 
 # CMake for building vendored C libraries from Rust -sys crates. music-player's
 # `opus` dependency (pinned to opus-rs git HEAD in
@@ -276,6 +276,11 @@ uvx = true
 
 [settings.npm]
 package_manager = "pnpm"
+
+# Cargo tools install through the cargo-binstall this file declares, never through mise's
+# built-in installer, which mise 2027.7.0 turns on by default when cargo-binstall is absent.
+[settings.cargo]
+binstall_native = false
 
 [hooks]
 # Runs at first `cd` before any tool is installed, so it must be cross-platform
