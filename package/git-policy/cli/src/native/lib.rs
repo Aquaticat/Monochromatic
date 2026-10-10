@@ -474,6 +474,9 @@ pub mod shadow_config;
 /// The shadow repository links to the real shared entries.
 pub mod shadow_links;
 
+/// The shadow ref store: snapshot, private target, symbolic refs and `HEAD`.
+pub mod shadow_refs;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
