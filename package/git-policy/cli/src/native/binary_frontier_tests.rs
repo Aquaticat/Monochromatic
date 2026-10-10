@@ -383,11 +383,10 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
         silent_success()
     );
     let registry: PathBuf = registered_transaction(repo.as_path(), true);
+    // A live transaction no longer refuses a guarded command that writes no index.
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &guarded),
-        stopped_with(
-            unported_notice(&Unported::TransactionRecovery(registry.clone()), "reset").as_str()
-        )
+        silent_success()
     );
     // The linked worktree has its own registry, so it is not stopped by the main one.
     assert_eq!(

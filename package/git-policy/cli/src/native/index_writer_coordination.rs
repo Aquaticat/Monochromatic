@@ -36,7 +36,8 @@ use super::owner_lock::{DEFAULT_POLL_DELAY, OwnerLock, SilentWait, acquire_owner
 /// The landing lease and its variable.
 use super::transaction_lease::{LANDING_LEASE_VARIABLE, format_landing_lease, has_valid_landing_lease};
 /// Registry names and creation.
-use super::transaction_registry::{LANDING_LOCK_NAME, ensure_transaction_root};
+use super::transaction_registry::{LANDING_LOCK_NAME, TRANSACTION_ROOT_NAME, ensure_transaction_root};
+use super::commit_recovery::recovery_directories;
 /// The resolved forwarded command.
 use super::forwarded_command::ResolvedCommand;
 /// The repository shape the invocation selects.
@@ -199,7 +200,7 @@ fn acquire_landing(context: &GitContext, identity: &WorktreeIdentity, location: 
 /// ```ts
 /// await waitForIndexLock({ realIndexPath, timeoutMs, consequence, attempt });
 /// ```
-fn wait_for_lock(
+pub fn wait_for_lock(
     real_index: &Path,
     timeout_ms: u64,
     consequence: &str,
@@ -280,6 +281,36 @@ pub fn coordinate_index_writer(input: &CoordinationInput<'_>) -> Result<Option<C
 /// ```
 fn command_name(command: &ResolvedCommand) -> String {
     return String::from_utf8_lossy(command.word()).into_owned();
+}
+
+/// What:
+///  Take the landing lock of a worktree's repository for a direct fix,
+///  after recovery.
+/// Why:
+///   A direct fix changes the repository,
+///  so no landing may run beside it;
+///  outside a repository
+///       there is no landing to exclude.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await acquireSelectedLandingLock({ gitPath, globalArgs });
+/// ```
+pub fn hold_landing_lock(
+    context: &GitContext,
+    identity: &WorktreeIdentity,
+) -> Result<Option<OwnerLock>, CoordinationFailure> {
+    let Some((git_dir, _)) = recovery_directories(identity) else {
+        return Ok(None);
+    };
+    let location: LandingLocation = LandingLocation {
+        git_dir: git_dir.to_path_buf(),
+        index_path: git_dir.join("index"),
+        real_index_path: git_dir.join("index"),
+        registry_root: git_dir.join(TRANSACTION_ROOT_NAME),
+    };
+    let lock: OwnerLock = acquire_landing(context, identity, &location)?;
+    return Ok(Some(lock));
 }
 
 /// What:

@@ -528,3 +528,7 @@ pub mod index_writer_coordination;
 /// Running a coordinated forwarded index writer:
 ///  the landing lock held while real Git runs as a child.
 pub mod index_writer_forward;
+
+/// The real index.lock a landing creates,
+///  identifies and releases only while it is the same file.
+pub mod real_index_lock;

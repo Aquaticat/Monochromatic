@@ -276,17 +276,11 @@ fn prepare_guarded_command<F: RepositoryFacts>(
             });
         }
     };
-    // Dead transactions are recovered before configuration loads; a live one still refuses a
-    // guarded command, which would otherwise race it.
+    // Dead transactions are recovered before configuration loads. A live transaction no longer
+    // refuses a guarded command: an index writer waits for its landing lock when it is forwarded,
+    // and a commit still stops at its own frontier below.
     match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
-        Gate::Clear => {}
-        Gate::Live(registry) => {
-            return Err(refused(
-                String::new(),
-                &Unported::TransactionRecovery(registry),
-                command,
-            ));
-        }
+        Gate::Clear | Gate::Live(_) => {}
         Gate::Stop(stderr) => {
             return Err(WrappedOutcome::Exit {
                 code: ENGINE_FAILURE_EXIT_CODE,

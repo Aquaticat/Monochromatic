@@ -338,14 +338,16 @@ fn a_guarded_command_is_prepared_in_order() {
             location_only()
         )
     );
-    // 3. A live transaction is reported before the invalid configuration.
-    assert_eq!(
-        run(&["commit", "-m", "x"], at_root(root.as_path()), &[]),
-        (
-            refuses(&Unported::TransactionRecovery(registry.clone()), "commit"),
-            location_only()
-        )
-    );
+    // 3. A live transaction no longer refuses a guarded command, so the configuration is read next.
+    let (outcome, touched): (WrappedOutcome, Vec<String>) =
+        run(&["commit", "-m", "x"], at_root(root.as_path()), &[]);
+    assert_eq!(touched, location_only());
+    match outcome {
+        WrappedOutcome::Exit { code: 2, stderr } => {
+            assert!(stderr.contains("\"code\":\"config-invalid\""), "{stderr}");
+        }
+        other => panic!("expected the configuration to stop the command, got {other:?}"),
+    }
     // A dead one is recovered and no longer stops the command.
     std::fs::remove_dir_all(&registry).expect("remove registry");
     registered(root.as_path(), false);

@@ -48,7 +48,9 @@ use super::repository_location::RepositoryLocation;
 use super::scanner_selection::RULES_VARIABLE;
 /// Startup recovery as a command step.
 use super::transaction_gate::{Gate, recover_for_command};
-use super::unported::{Unported, unported_from_unavailable, unported_notice};
+use super::index_writer_coordination::hold_landing_lock;
+use super::owner_lock::OwnerLock;
+use super::unported::{unported_from_unavailable, unported_notice};
 /// The worktree's top level,
 ///  where a fix installs corrected files.
 use super::worktree_identity::worktree_root;
@@ -456,17 +458,7 @@ pub fn plan_management(
     // A direct command forwards nothing, so only commit transactions matter here: dead ones
     // are recovered, and a live one still refuses, since a fix would race its landing.
     match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
-        Gate::Clear => {}
-        Gate::Live(registry) => {
-            return Action::Exit {
-                code: ENGINE_FAILURE_EXIT_CODE,
-                stdout: String::new(),
-                stderr: unported_notice(
-                    &Unported::TransactionRecovery(registry),
-                    direct_command(fix).as_str(),
-                ),
-            };
-        }
+        Gate::Clear | Gate::Live(_) => {}
         Gate::Stop(stderr) => {
             return Action::Exit {
                 code: ENGINE_FAILURE_EXIT_CODE,
@@ -475,19 +467,32 @@ pub fn plan_management(
             };
         }
     }
-    match load_identity_config(&location.identity) {
-        Ok(loaded) => {
-            return run_direct_command(
-                fix,
-                selected,
-                controls,
-                &loaded,
-                &mut checks,
-                worktree_root(&location.identity),
-            );
+    // The direct fix runs under the landing lock, so no landing commits beside it.
+    let held: Option<OwnerLock> = match hold_landing_lock(&checks.facts.transaction_context(), &location.identity) {
+        Ok(found) => found,
+        Err(failure) => {
+            return Action::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stdout: String::new(),
+                stderr: failure.stderr(),
+            };
         }
-        Err(error) => return direct_config_failure(&error),
+    };
+    let action: Action = match load_identity_config(&location.identity) {
+        Ok(loaded) => run_direct_command(
+            fix,
+            selected,
+            controls,
+            &loaded,
+            &mut checks,
+            worktree_root(&location.identity),
+        ),
+        Err(error) => direct_config_failure(&error),
+    };
+    if let Some(lock) = held && let Err(reason) = lock.release() {
+        super::diagnostic_log::debug("directFix", format!("landing lock release failed: {reason}").as_str());
     }
+    return action;
 }
 
 /// Decision controls stay out of the release executable.
