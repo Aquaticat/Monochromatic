@@ -55,6 +55,27 @@
       },
     },
   },
+  // Scope of the incumbent Rust gate, not a rule judgement. `package/git-policy/cli/src/native` was
+  // checked only by the manual `native:lint:rust` task, which the gate never ran (see
+  // doc/handover/cli-git-native-policy-engine.md, section "The repository's Rust linter is not part of
+  // the gate"). No package task covers `doc/troubleshooting`: the root `lint:rust` fanout visits only
+  // `//package/` tasks (main mise.toml, `fanout_packages`). `doc/audit/**/*.rs` is already exempt above.
+  {
+    "name": "old-gate-scope",
+    "files": [
+      "package/git-policy/cli/src/native/**/*.rs",
+      "doc/troubleshooting/**/*.rs",
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.mdx/**",
+    ],
+    "rules": {
+      "rust/require-rustdoc": {
+        "severity": "off",
+      },
+    },
+  },
   {
     "name": "markdown",
     "files": [
