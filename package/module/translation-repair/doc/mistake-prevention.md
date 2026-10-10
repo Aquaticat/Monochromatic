@@ -102,6 +102,12 @@ and a count expected to be zero leading an `&&` chain it then stopped;
 and agents chained three more reads or writes with `;` (ledger M116,
 M139).
 A background command of the lead's chained the source scans and the lint with `;` (ledger M140).
+On 2026-10-10 (UTC) a `git add` of the lead's ran from inside the package directory,
+and the git policy refused it as not at the root (ledger M141);
+the agents writing the changes of ledger B365 to B378 chained six read-only calls with `;`,
+one ran a heredoc and then `node` in one call,
+and one edited files through inline `node --eval` scripts,
+one of which lost its backticks to the shell.
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
@@ -267,6 +273,11 @@ The bench-draw cases held three `toContain` assertions where each whole value wa
 A case on arming a deadline inside a queue's slot passed whichever way the deadline was armed,
 since its transport ignored the signal the deadline aborts (ledger B362):
 a scripted transport honours the signal a case means to see fire.
+The pass republish case read the page it expected from the output it was checking,
+so it passed whichever page the line named;
+it now names the original page,
+and a mutant reading the English page first fails it (ledger B368).
+A case never takes its expectation from the value under test.
 
 The rule:
 a red guard is read case by case before the fix,
@@ -548,6 +559,9 @@ and a note tied a bound to another entry's list before checking which bound that
 a message describing a run is written from the run's log line by line,
 and a link between two records is checked before it is written,
 or written as unverified.
+A standing summary counted the digests whose rounds were judged,
+so a digest whose rounds drew no ballot was counted nowhere (ledger B372):
+every population a filter drops is counted on a line.
 
 The rule:
 every number,
@@ -1005,6 +1019,15 @@ where the environment for its child is built
 (`LC_ALL=C` for the corpus git children),
 and a case runs the real program under another locale
 beside a control showing that the program translates there.
+The corpus reader's search ceiling held the parent of the clone directory as named,
+while git compares the list with its real working directory,
+so a clone directory that is a link read the repository it points into (ledger B369);
+and git splits that list at colons,
+so a parent path holding one voided the ceiling (ledger B370).
+A path handed to another program is resolved as that program resolves it,
+and a value written into a list the program splits at a delimiter is refused,
+before the program runs,
+when it holds the delimiter.
 
 What enforces it:
 the type checker:
@@ -1044,7 +1067,11 @@ which close the item ledger B291 left open);
 and reads from the child's own side that no key or setting arrived.
 `src/corpus-git-context.unit.test.ts` asserts the corpus environment whole
 and reads real git's refusal in English under a German locale,
-beside a control that fails on a host whose git does not translate (ledger B347).
+beside a control that fails on a host whose git does not translate (ledger B347);
+`src/corpus-source.unit.test.ts` refuses a clone directory that links to a plain directory inside a repository,
+still reads through a link to a real clone,
+and refuses a clone whose parent's real path holds a colon (ledger B369,
+B370).
 `task-runner-guard.ts` refuses a built command started in a process that holds a key
 unless that process names the command (ledger B319),
 and `src/task-runner-guard-reach.unit.test.ts`,
@@ -1104,11 +1131,30 @@ a window
 or a stream bound
 that the test arms itself or hands to production code that arms it.
 
+The seven deferred files were read on 2026-10-10 (UTC),
+34 findings in 15 keys,
+six more than the census counted from cases added since its base (ledger B378).
+Six grace windows in the round test bounded rounds that end before them,
+since every case there passes at a window of 0,
+and went to the hang stop.
+The round test held its quorum mark under 125 ms past the first answer,
+which failed in 2 of 4 runs beside other new cases (ledger B365),
+and a whole-roster round's grace under its window;
+a stall of 300 ms broke each.
+The quorum mark is now held to the span from the round's start to the next turn of the event loop,
+which the microtasks before the mark cannot outlast,
+and the grace to the span from the last answer to a timer armed after that voice's own and as long;
+each new shape passes under the stall,
+and fails when quorum waits for the slow voice,
+or when the round waits out a window.
+
 The rule:
 a real-clock case asserts only bounds that load can widen and not break;
 a case that needs a caller asleep uses a window no stall outlasts;
 a grace window a case relies on is one the round never reaches,
 and the case is shown failing at a window of 0;
+a window a round ends before is the hang stop,
+and the case is shown passing at a window of 0;
 a bound that only stops a hang is `HANG_STOP_MS` of `hang-stop.test-fixture.ts`,
 60,000 ms,
 never a number of its own;
@@ -1117,7 +1163,10 @@ work that ends only on its own abort or a sleep armed after the bound and longer
 a meter or a sleep that must overlap or order other work is shown in place within one turn of the event loop,
 or gives way to a gate the case opens;
 elapsed time is asserted only as a lower bound,
-and synchronous work is timed on the process's CPU clock;
+or as no more than a span the case reads itself over the same work,
+up to a turn of the event loop or a timer armed after the work's own and as long,
+which no stall can make shorter than what it bounds;
+synchronous work is timed on the process's CPU clock;
 a new timing case counts as passing only once the whole suite has run it.
 A bound on scripted work is a stop for a hang,
 which no case waits for,
@@ -1132,18 +1181,18 @@ What enforces it:
 among the source scans,
 fails a bound a test or fixture sets on the real clock other than the shared hang stop
 unless it is listed with its class and reason,
-and fails a listed bound or a deferred file the source no longer holds;
+and fails a listed bound or a deferred file the source no longer holds,
+with no file deferred since ledger B378;
 the whole unit suite run before a batch's work is called done.
+No scan reads an upper bound on elapsed time;
+review holds each to a span the case reads itself.
 Open,
-as the census merged on 2026-10-10 (UTC) left it (ledger B358):
-the seven deferred files,
-28 reads,
-wait for the changes in flight on them;
-two upper bounds on elapsed time in `stage-round.unit.test.ts`,
-which the scan does not read,
-can break under load;
-and the logger package's own sink check is bounded at 5,000 ms,
-which timed out in one suite run without failing a case.
+as the follow-up merged on 2026-10-10 (UTC) left it (ledger B358,
+B378):
+the logger package's own sink verification is bounded at 5,000 ms,
+which timed out 15 to 34 times per whole-suite run in the agents' runs that counted it,
+and 12 times in one run of the source scans,
+without failing a case.
 
 ## Copies of shared code
 
@@ -1762,10 +1811,23 @@ A patch whose base predates commits touching the modules it changes,
 or their consumers' cases,
 gets the whole suite on the merged tree before its fix commit,
 not only its own files by name.
+The port of the runner observations change onto a main that had rewritten its files
+met three conflicts and four breaks with no conflict marker:
+a case calling a builder without the parameter the change made required,
+which only the type check found,
+a fixture building an error without a field the change made required,
+and cases expecting a kind and a remedy the change had split (ledger B366).
+A port runs the type check and the cases of every user of each API it changes,
+found by a search,
+not only the files it changed.
 Review of the combinator scan found declarations without TSDoc
 and `@param` and `@returns` lines that said what a value is (ledger B356):
 a destructuring or a loop's binding carries TSDoc as any declaration does,
 and a parameter or a result line says why.
+Review of the runner observations change found the same lines,
+a `@returns` naming ids for a count,
+and TSDoc describing a message language `LC_ALL=C` no longer lets through (ledger B377):
+added TSDoc is read against the code it sits on after every merge.
 
 The rule:
 read a region with the Read tool before editing it.
@@ -1932,6 +1994,22 @@ A package task started from the main repository's root,
 not the worktree holding the branch,
 found no such task (ledger M134);
 every package task names its worktree as its directory in the call.
+A gate started as a user unit under `mise exec` met a `git` without the worktree flag its setup uses,
+failed in its first seconds,
+and was found about twenty minutes later,
+since the waiter armed on its log's last line never fired;
+and a unit wrote its log into a folder not made yet,
+and failed at setting up its output (ledger M141).
+The agent porting the runner observations change ran a lint beside the source scans,
+which rebuilt `dist` under it,
+and counted that lint void (ledger B366),
+the shared build directory of M63 again:
+a run that reads `dist` never runs beside one that rebuilds it.
+The first lines of a started run's log are read before a waiter is armed,
+a waiter watches the failure line as well as the success line,
+and the folder a unit writes to exists before the unit starts;
+a gate runs in the plain shell,
+since it makes worktrees with the shell's `git`.
 
 The rule:
 a task that must not run with a fan-out parent is named outside the parent's prefix,
@@ -2125,6 +2203,12 @@ M137).
 A value that belongs to a key is carried with that key,
 and a read that cannot miss throws if it does.
 
+A commit probe that threw in the process,
+its working directory removed before git ran,
+replaced the failure of the read it was asked about with its own (ledger B374).
+A failure caught while another is being handled is carried with it,
+as an `AggregateError` of both.
+
 The rule:
 a call states every input that decides what a floor refuses,
 what a sheet shows or whether a text may ship,
@@ -2223,6 +2307,11 @@ An authored account says only what holds for every cause it covers,
 and names the possibilities where it cannot tell them apart:
 the lookups' first wording said the network had failed,
 which is untrue of a request the transport will not send.
+The corpus reader read a commit probe's exit of 128 as a clone git could not open,
+where git exits 128 too for a corrupt object in a clone it opens,
+so the refusal sent the operator to check that the directory is a repository (ledger B371).
+An exit status is read for every cause the tool gives it,
+and a second question to the tool tells them apart where the refusal's advice differs.
 
 A census of every place a caught value becomes text found 22 functions that logged or stored one whole:
 a parse refusal quoting a reply's opening,
@@ -2409,6 +2498,10 @@ so two checkers skipping one issue left the same line twice,
 and an issue answered only with an unknown verdict read the same as one never mentioned (ledger B215).
 A finding one of several voices leaves names the voice,
 the item by its id and the cause.
+The DONE line's `offPin=` also counted finished entries the pin holds whose English page it lacks,
+and is now `unpairedArtifacts=` (ledger B375):
+a field's name says the population it counts,
+every part of it.
 
 The rule:
 a message naming a label,
@@ -2616,6 +2709,9 @@ A report printed the first 400 units of a candidate and no word that it was cut,
 so a reader took the opening for the whole (ledger B279).
 An excerpt shown as evidence says that it is one,
 and how much of the whole it shows.
+A corpus read's failure text was cut at its cap and the kind and remedy appended with no mark,
+so a cut path read as whole (ledger B373):
+a cut followed by more text ends in a mark inside its cap.
 
 The rule:
 a check that vouches for a whole block's kind
@@ -3122,6 +3218,11 @@ and made the pace read its list of starts between two entries (ledger B292).
 Text a message may quote is never searched for a phrase the message uses as structure,
 and a count of places is a whole number of one or more,
 or is refused where it is read.
+The same held for the ledger:
+the lead's tooling lists a ledger passage as a choice awaiting the owner by a marker phrase,
+and two passages of a process entry that quoted the phrase were listed as such choices (ledger M141).
+A record that quotes a marker phrase its tooling matches on is reworded,
+or the match is anchored where the marker stands.
 
 The rule:
 a reader of a number in text accepts only the spelling its writer writes,
@@ -3199,6 +3300,9 @@ one of them not even which part of the line was wrong.
 An `--only` naming an entry a runner could not reach was dropped without a word,
 so the runner ran over nothing,
 or over the rest when the stray stood beside real entries (ledger B76).
+The line a pass prints for an `--only` said every entry it names runs,
+where a named entry that has finished does not (ledger B376):
+an operator line is read against every state of what it names.
 
 The rule:
 a runner declares what it reads in `corpus-run/command-lines.ts`
@@ -3806,6 +3910,8 @@ That defect,
 is ledger B309,
 with four more runners' counts before a fixed plural,
 all fixed in `8206fa5c6`.
+The standing reader's off-roster note then read "1 of these artifacts name",
+its verb fixed in the plural (ledger B377).
 
 The rule:
 a noun after a count that can be one is chosen by `wordForCount`,
@@ -4176,6 +4282,14 @@ A gather round raced its asks,
 and once the caller stopped it two asks could reject with failures of their own,
 so the round reported whichever ended first
 and the other failure reached no line (ledger B352).
+That fix logged the failure it replaced by its class alone,
+the status and the provider's words dropped,
+and only for the ask that ended first:
+a refusal ending after an ask that ended in the caller's reason reached no line,
+and a stop after quorum stood let the wait on the grace window swallow every failure;
+four cases pinning the provider's words in the line a stop writes failed at the gate (ledger B365).
+The runner observations change put the bench draw's rethrow in the catch of a `Promise.all`,
+so an entry was skipped or refused by which of its reads ended first (ledger B367).
 Until review,
 the scan written to hold the rule passed what it was meant to fail:
 a listed reason's anchor held to the call's top-level statement,
@@ -4213,7 +4327,14 @@ the statement making the call and the code feeding it,
 every catch inside the call,
 or the handler of a `try` around it.
 A failure a shared reason replaces is logged,
-not dropped.
+not dropped:
+each ask's own failure is written by the ask that owns it,
+as it ends,
+with the provider's words a log line may carry (`exchangeFailureLogText`);
+a round that throws a shared reason in place of a failure is never the only place that failure is logged.
+A walker that skips some failures steps past a missing object alone,
+decided at the read,
+and reports every other failure first in input order.
 Voices are ordered by roster,
 ties by a stated key,
 and a case asserts the order exactly,
@@ -4233,6 +4354,10 @@ such as a reflective or computed read off a value other than `Promise`.
 and each moved site with a parameter over what it reads has a case scripting the later member failing first,
 `settled-carve.unit.test.ts`,
 `bench-sample-draw.unit.test.ts` and `stage-round.unit.test.ts` among them;
+`stage-round.unit.test.ts` also holds the line of a refusal ending before an ask that ended in the caller's reason,
+after one,
+and after quorum stood,
+each whole (ledger B365);
 `repair-edit-stages.unit.test.ts` holds the roster order whichever seats lost their first answer,
 `refine-recheck.unit.test.ts` and `refine-slice-settle.unit.test.ts`
 assert the recheck's order as the stage returns it,

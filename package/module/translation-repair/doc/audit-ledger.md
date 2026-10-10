@@ -31421,6 +31421,7 @@ the round now throws the abort reason and logs the failure it replaces through `
 so those words reach no line (M140).
 The same four fail at `4cca8c301`,
 and the change that fixes them is not merged there.
+Closed since by B365 in `fba9c5b60`.
 
 Open to the owner's veto:
 The line is written only when the caught value is not the caller's reason,
@@ -31628,6 +31629,9 @@ which the scan does not read and which load can break,
 are left for the lead to restructure;
 and the logger package's own sink verification bound of 5,000 ms timed out 34 times in the agent's suite run
 without failing a case.
+Closed since by B378 in `b7244804f`,
+except the logger package's sink check,
+which stays open.
 
 Open to the owner's veto:
 The name `HANG_STOP_MS`,
@@ -31837,6 +31841,668 @@ so a stage that comes to arm them waits a minute.
 
 Open to the owner's veto:
 Per-call deadlines that are never armed moved to the hang stop anyway.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
+
+### B365: a stopped gather round logged a refusal by its class alone, or not at all
+
+Red in `154da3c68`,
+fixed in `fba9c5b60`.
+
+Found on 2026-10-06 (UTC) by the gate on `ce2654b2c`,
+which failed four cases the credential work had added,
+each pinning the provider's words in the line a stop writes (ledger B352).
+`nextSettled` (`stage-round.ts`) threw the caller's reason in place of the ask's failure,
+so the catch sites printed the reason alone,
+and it logged the failure it replaced through `refusalText`,
+which names the class and drops the status and the provider's words.
+By the agent's probe on the build of `4cca8c301`,
+whose production source is that of `ce2654b2c`,
+the refine,
+slice-buy,
+translate and pick paths each wrote `refused by SyntheticHttpError` and nothing of the reply.
+The cause went beyond the lead's reading:
+the round logged only the rejection that ended first,
+so a refusal ending after an ask that ended in the caller's own reason reached no line,
+which lost the words before `ce2654b2c` too;
+and a stop after quorum stood let the wait on the grace window swallow each failure unlogged,
+in `settleWithin(Promise.allSettled(asks))`.
+The red commit fails eight cases against the stage round of `ce2654b2c`,
+run on `4cca8c301` with the production code unchanged:
+the four gate cases,
+renamed so each name states what it checks,
+each asserting every line its call writes;
+and four cases of `runGatherRound`,
+each failing on the line it asserts whole:
+a refusal ending before an ask that ended in the caller's reason,
+a refusal ending after such an ask,
+a refusal ending after quorum stood,
+and the updated pin on the failure that ends after the round rejected.
+The reason assertion of every case passes.
+
+The fix:
+`askOnce` writes the call's own failure when the caller has aborted and the failure is not the caller's reason,
+through `exchangeFailureLogText` with the seat's name,
+then rethrows as before;
+`nextSettled` keeps only the substitution of the caller's reason,
+and loses its stage and logger parameters,
+as `awaitHeard` does.
+The five catch sites are unchanged.
+Each failure is written once,
+by the ask that owns it,
+as it ends,
+whichever order the asks end in.
+The new cases bound their rounds with the hang stop and wait one turn of the event loop.
+Since the line moved to `askOnce`,
+B352's choice of a line tagged `nextSettled` no longer describes the code.
+Run on the merged tree before the fix commit:
+lint clean,
+49 scans passing,
+and the suite at 2,028 passing with no failure.
+
+Open:
+`repairInvalidCandidates` (`translate-repair.ts`) reads its re-asks through `allInInputOrder`,
+so when two invalid candidates' re-asks both fail as the caller stops,
+only the first failure in input order reaches the catch site,
+and the other reaches no line;
+this is the agent's reading,
+not run.
+It waits for a GitHub issue or a later change.
+`runPick` under a stop still prints its slice as refused by `AbortError` and returns `refused`,
+unchanged from the base,
+which tells a log reader the stop ended the arms.
+
+Open to the owner's veto:
+The translate case shows three lines of the provider's words,
+one per seat,
+because its scripted client throws the same refusal from every call,
+where a real client forwards the already aborted reason after the first
+(the agent's inference from `call-deadline.ts`,
+not measured);
+the alternative is a client in that case that throws `request.signal.reason` once its signal has aborted,
+a change of one line.
+Deduplicating the lines by the thrown object's identity was rejected,
+since the seat a line names would then depend on arrival order.
+The stage-round test file runs its top-level describe with `concurrency: 1`,
+since its timing case failed in 2 of 4 runs beside the new cases and passed in 5 of 5 after,
+a cause the agent infers,
+with the base's spread from run to run unmeasured;
+the report names no alternative.
+Lines appear in the order the asks end,
+so in production a seat's line can land after the catch site's line;
+the report names no alternative.
+The four gate cases were renamed so each name states what it checks,
+and each asserts the whole list of lines;
+the report names no alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B366: the runner observations change met main's rewrite of its files when it was ported
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-10 (UTC) by the agent porting the runner observations change onto `4cca8c301`,
+from its base `f3c2bae13`.
+Of the change's 77 modified files,
+15 had changed on main,
+and three conflicted.
+`corpus-run/bench-sample.ts` conflicted because main had replaced `sliceOne`,
+which held the change's only hunk there,
+with `textOf`,
+`pageOf` and `stepOf` under `allInInputOrder`;
+main's file was kept,
+and the change's rule moved into `textOf` (B367).
+`corpus-git-context.ts` conflicted on two TSDoc paragraphs added at one place,
+main's on `LC_ALL` and the change's on `GIT_CEILING_DIRECTORIES`,
+and both were kept;
+`corpus-run/bench-sample-draw.unit.test.ts` conflicted where both sides appended cases,
+and the clean part of its merge doubled an import.
+Four more broke on main's code with no conflict marker:
+main's case of `corpus-git-context` called the builder without `cloneDir`,
+which the type check found;
+main's `ordered-page-reads.test-fixture.ts` built a `CorpusReadError` without the `commit` the change requires;
+two of main's `rendering-audit-settled-input` cases named a lacked commit while expecting `missing-object`;
+and main's bench draw cases read one remedy where the change gives two.
+On the port build,
+by the agent's run,
+61 of 62 named test files passed,
+and the one holding the change's own case on a lost object failed as expected,
+since that case needs the rethrow of B367.
+The red commit fails 51 of the 65 named test files
+against `4cca8c301`'s production code plus the fix of `fba9c5b60`,
+four of them without running a case,
+since they import exports the fix adds
+(`code-points`,
+`corpus-git-context`,
+`editor-calibrate-standing` and the new `editor-standing-absence`);
+the other 14 pass either way,
+and the red commit leaves the type check failing on those exports.
+
+The fix:
+the fixture takes `commit` from its case,
+the two settled-input cases expect `missing-commit`,
+and `CLONE_ADVICE` is split into `ABSENT_PAGE_ADVICE` and `OTHER_FAILURE_ADVICE`,
+with the findings of the review of the change fixed beside the port (B367 to B377).
+`corpus-source.ts` and `editor-standing-read.ts` went over the line cap,
+so the commit probe moved to `corpus-commit-probe.ts`
+and `noJudgedRoundLine` to `corpus-run/editor-standing-absence.ts`,
+each with a test file of its own;
+two barrel lines export `gitSearchCeiling` and `noJudgedRoundLine` for tests.
+Run on the merged tree before the fix commit:
+lint clean,
+49 scans passing,
+and the suite at 2,030 passing with no failure.
+
+Open to the owner's veto:
+The DONE line gains `declined=`,
+the `--only` parenthetical and one more English read per finished entry;
+the report names no alternative.
+`countSettled` and `judgedAuthors` are removed;
+the report names no alternative.
+The two splits at the line cap add the modules `corpus-commit-probe.ts` and `corpus-run/editor-standing-absence.ts`;
+the report names no alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Lint and edits".
+
+### B367: the bench draw decided between a skip and a refusal by which read ended first
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its first finding.
+The change rethrew a read failure inside the catch of a `Promise.all`,
+so an entry whose original was absent and whose English page git could not produce
+was skipped or refused depending on which read ended first.
+The port kept main's `textOf`,
+which had no rethrow,
+and two of main's cases named the skip of an entry unreadable for another reason.
+By the agent's run on the port build,
+five cases fail,
+each because the draw returned where it should refuse:
+two new cases scripting the later read failing first,
+within one entry and across two;
+main's two cases,
+renamed to refuse;
+and the change's own case on a lost object.
+
+The fix:
+`textOf`'s catch rethrows every read failure except `isMissingCorpusObject`,
+failures that are no `CorpusReadError` among them,
+decided at the read,
+and `allInInputOrder` reports the first in input order,
+so which read ended first no longer decides a skip or a refusal.
+Parse and alignment failures stay skips,
+since they happen in `stepOf`.
+The TSDoc and `@throws` of `textOf`,
+`sliceEntry`,
+`sliceListedEntries` and `sampleBenchSlices` say so.
+
+Open to the owner's veto:
+The draw refuses every read failure except a page absent at a commit the clone holds,
+faults that are no corpus read refusal included;
+the alternative is the narrowing of the change's second report,
+which rethrew a `CorpusReadError` alone and skipped any other failure.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B368: the republish case accepted either page
+
+Pinned in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+whose change is fixed in `cfac5b981`;
+nothing at the red commit can fail the case,
+since main's `readPinnedPair` already reads in input order,
+so its red is the agent's mutant.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its second finding.
+The pass republish case read the page name it expected from the output it was checking,
+so it passed whichever page the `REPUBLISH LEFT` line named.
+It now expects `page.md`,
+the original page,
+and its name says so.
+By the agent's mutant,
+which lists `page.en.md` first in `readPinnedPair`,
+the case fails,
+as does the case writing the missing page,
+since the swap trades source and target;
+the file was restored and checked unchanged with `git diff --quiet`.
+
+Open to the owner's veto:
+The `REPUBLISH LEFT` line keeps its shape and its `because=refused by <Class>`,
+and now always names `page.md` when both pages fail;
+the report names no alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
+### B369: a clone directory that is itself a link escaped git's search ceiling
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its third finding,
+and measured with git 2.55 by the agent porting it.
+`GIT_CEILING_DIRECTORIES` held the parent of the clone directory as named,
+while git compares the list with its real working directory,
+so a clone directory that is a link to a plain directory inside a repository read that repository's page.
+By the agent's run on the port build,
+the corpus-source case on such a link fails,
+the read returning where it should refuse;
+and at the environment level,
+before the interface changed,
+the ceiling held the scratch directory where the case expected the link's real parent.
+
+The fix:
+`gitSearchCeiling({ cloneDir })` in `corpus-git-context.ts` returns the parent of the clone's real path,
+and falls back to the parent of the path as named only for `ENOENT`,
+`ENOTDIR`,
+`EACCES` and `ELOOP`,
+each of which ends git at its own `-C` with exit 128,
+by the agent's probe;
+any other failure of `realpath` is rethrown.
+The keyless scan requires every spawn to build its environment inline,
+which a first asynchronous version failed,
+so `corpusGitEnvironment` stays synchronous and takes `{ searchCeiling }`,
+which every read in `corpus-source.ts` resolves before its `try`.
+A new case pins the fallback for a clone directory that does not exist,
+and the TSDoc sentence saying git resolves a link in the list is corrected.
+
+Open to the owner's veto:
+The fallback covers four codes;
+the alternative is the review's,
+`ENOENT` alone,
+where the agent measured the other three ending git at its own `-C` as well.
+`unreadable-clone` covers an enclosed directory,
+and now also a clone directory that is a link to one;
+the report names no alternative.
+A failure of `realpath` outside the four measured codes surfaces as a fault at exit 5,
+not as `unreadable-clone`;
+the report names no alternative.
+`corpusGitEnvironment` takes `{ searchCeiling }` and `gitSearchCeiling` is exported;
+the alternative is the merge plan's note to pass `{ cloneDir }`,
+which this supersedes.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B370: a parent path holding a colon voided git's search ceiling
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its fourth finding.
+Git splits its ceiling list at colons,
+so by the agent's probe a plain directory under `a:b` read the enclosing repository,
+and a page absent there read as git's words for a missing object;
+a link to that directory keeps the colon in its real path,
+and a real clone under `c:d` reads correctly without the ceiling.
+By the agent's run on the port build,
+the case reading a page,
+its bytes and a listing under such a parent fails,
+each read returning where it should refuse.
+
+The fix:
+`gitSearchCeiling` throws a `StatedRefusalError` before any git call
+when the real parent path holds a colon,
+naming the clone and the parent,
+and saying to move the clone to a directory whose path holds no colon.
+`doc/configuration.md` says so beside `TRANSLATION_REPAIR_CORPUS_CLONE_DIR`.
+
+Open to the owner's veto:
+The refusal says to move the clone only;
+the alternative is the review's remedy,
+to move or link it,
+where by the agent's measurement a link keeps the colon in the real path.
+A clone whose real parent path holds a colon is refused as stated,
+working clones there included,
+by the agent's measurement;
+the report names no alternative.
+The paragraph in `doc/configuration.md` goes beyond what the review asked and was kept,
+lint clean;
+the alternative is to drop it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B371: exit 128 read as a clone git could not open
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its fifth finding.
+By the agent's probe with a corrupt commit object,
+`show`,
+the commit probe and `ls-tree` all exit 128 with `inflate: data stream error`,
+while `rev-parse --git-dir` exits 0 there,
+and 128 for a plain or a missing directory.
+The reader took the probe's 128 as a clone git could not open,
+and the refusal told the operator to check that the directory is a repository.
+By the agent's run on the port build,
+the case naming a commit git cannot inflate in a clone it opens fails,
+reading `unreadable-clone` where it expects `other`.
+
+The fix:
+on a commit probe's exit of 128,
+`probeGitDir` asks for the git directory:
+128 means `unopened`;
+0 means `unasked` keeping the 128 failure,
+so the kind is `other`;
+and any other failure means `unasked` with both failures.
+The `unasked` arm carries its failures,
+and the TSDoc of `unreadable-clone`,
+`unopened`,
+`unasked`,
+`GIT_FATAL` and the probe says what 128 means.
+The `AggregateError` now reads "the corpus read failed,
+and the probe of its commit got no answer about it",
+since its old wording,
+that the probe got no exit status it reads,
+became false;
+two stand-in git cases changed on that sentence alone.
+
+Open to the owner's veto:
+The remedy wordings are unchanged,
+and a clone git opens but cannot read is now `other`,
+whose remedy is to run the same git read by hand;
+the alternative is the old kind,
+`unreadable-clone`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Messages a marked class carries".
+
+### B372: the standing reader counted no digest whose rounds drew no ballot
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its sixth finding.
+The summary printed `digestsWithRounds=`,
+so beside a judged digest,
+a digest whose rounds drew no ballot was counted nowhere.
+By the agent's run on the port build,
+a run of two digests,
+one judged and one with no ballot,
+printed `digestsWithRounds=1` and no trace of the second.
+
+The fix:
+the summary prints `digestsJudged=`,
+`digestsUnjudged=` and `unjudgedDigestRounds=` in its place,
+and the case compares all four runs in one object;
+`child-environment.unit.test.ts`,
+outside the change,
+quotes the summary line and moved with it.
+
+Open to the owner's veto:
+`editor-standing-read` still exits 1 for rounds with no ballot,
+with the summary fields `digestsJudged`,
+`digestsUnjudged` and `unjudgedDigestRounds`,
+and an off-roster note that follows its count;
+the report names no alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+### B373: a cut failure text read as whole
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its seventh finding.
+`cappedFailureText` cut a corpus read's opening at its cap,
+then appended the kind and the remedy with no mark,
+so a cut path read as the whole path.
+By the agent's run on the port build,
+the two cases with a long id,
+in `tally-error-text` and `sentinel-probe-line`,
+fail,
+since each now expects the cut to end in the mark.
+
+The fix:
+an opening longer than the cap is cut one unit short of it and ends in `CUT_MARK`,
+the ellipsis character,
+before the kind and the remedy,
+and the TSDoc of `TALLY_ERROR_CAP` says so.
+By the agent's measurement,
+the closing texts run to 92,
+105,
+140 and 93 units,
+so a corpus read line's error text is at most 200 plus 140 units.
+
+Open to the owner's veto:
+The error text of the PROBE,
+TALLY and CLEANUP lines can run up to 140 units past the cut,
+and a cut opening ends in the mark within the cap;
+the report names no alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Checks that vouch for a whole block".
+
+### B374: a commit probe that threw in the process dropped the read's failure
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its eighth finding.
+A working directory removed under the process made the probe throw `ENOENT` before git ran,
+and the read's own failure was lost:
+by the agent's run on the port build,
+the case removing the working directory saw an `Error` with the code `ENOENT` alone.
+
+The fix:
+`probeKeepingRead` wraps any probe failure that is not a child's
+in an `AggregateError` holding the read's failure and the probe's,
+with the probe's as its cause,
+still no `CorpusReadError`;
+the case,
+renamed for stopping with both failures,
+asserts the name,
+the message and both members,
+code 128 and then `ENOENT`.
+
+Open to the owner's veto:
+A probe failure in the process surfaces as an `AggregateError` holding both failures,
+still a fault at exit 5;
+the report names no alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
+
+### B375: `offPin` counted artifacts its name did not say
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its ninth finding.
+The DONE line's `offPin=`,
+named for artifacts of entries off the pin,
+also counted the artifact of a finished entry whose English page the pin lacks,
+though the pin holds that entry.
+By the agent's run on the port build,
+a new case putting such an entry through the DONE line fails,
+with the renamed expectations.
+
+The fix:
+the field is `unpairedArtifacts`,
+and its TSDoc names both populations it counts.
+
+Open to the owner's veto:
+The DONE line's field is `unpairedArtifacts=`;
+the alternative is the old name,
+`offPin=`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Labels a message names".
+
+### B376: the `--only` line said a finished entry runs
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its tenth finding.
+The line said the entries it names run,
+where a named entry that has finished does not.
+By the agent's run on the port build,
+a new case naming one finished entry beside one pending fails,
+with four other expectations of the line.
+
+The fix:
+the verb comes from `wordForCount`,
+"if still pending it runs" for one entry and "those still pending run" for more,
+and the TSDoc says why.
+
+Open to the owner's veto:
+The `--only` line's verb reads "if still pending it runs" or "those still pending run";
+the report names no alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Command lines".
+
+### B377: TSDoc and wording defects in the runner observations change
+
+Red in `bb2a8b9ad1e164974e54d2750432a25b267ef0de`,
+fixed in `cfac5b981`.
+
+Found on 2026-10-06 (UTC) by the review of the runner observations change,
+its eleventh finding.
+`countAmong`'s `@returns` named ids for a count;
+`@param` and `@returns` lines of `countAmong`,
+`classifyCorpusReadFailure`,
+`kindOfFailure`,
+`corpusReadRefusal`,
+`codePointLength` and `roundWasJudged` said what and not why;
+a test helper's name opened with an article;
+the TSDoc of `MISSING_OBJECT_PHRASES` and of the `other` kind
+described a message language `LC_ALL=C` no longer lets through;
+and the off-roster note of `noJudgedRoundLine` read "1 of these artifacts name".
+By the agent's run on the port build,
+the case at one off-roster artifact fails on that note;
+the TSDoc has nothing a case can fail.
+
+The fix:
+each is corrected,
+and the off-roster sentence goes through `wordForCount`.
+
+Recurrence:
+`mistake-prevention.md`,
+"Lint and edits" and "Counts in printed text".
+
+### B378: the seven files the clock census deferred, and two ceilings on elapsed time in the round test
+
+Red in `37c3419ea`,
+fixed in `b7244804f`.
+
+Found on 2026-10-10 (UTC) by the follow-up the census of B358 left open.
+With `DEFERRED` emptied and no other edit,
+`real-clock-bounds.unit.test.ts` fails with 34 findings in 15 keys,
+all in the seven files
+(`coverage-probe-run`,
+`recall-benchmark-run`,
+`sentinel-probe-run`,
+`settled-carve`,
+`translate-probe-run`,
+`window-trial-probe-run` and `stage-round`),
+by the measurement of the agent that wrote the change:
+six more than the census counted at its base,
+from cases added to `stage-round.unit.test.ts` in `d1e6af41c` and `154da3c68`.
+That file held the round's quorum mark under 125 ms past its first answer,
+which failed in 2 of 4 runs beside the stop cases (B365),
+and held the grace of a round whose roster all answered under its 250 ms window.
+By the agent's controls,
+a busy loop of 300 ms between the first answer and the quorum mark fails the first,
+and the same stall as the round cuts its seats fails the second.
+
+The fix:
+22 reads that only stopped a hang read `HANG_STOP_MS`;
+12 stay listed with a class and a reason:
+one window the case that loses a voice reaches,
+seven values read back
+(`recall-benchmark-run`,
+`sentinel-probe-run`,
+`settled-carve`),
+and four other.
+Six of the round test's grace windows moved to the hang stop,
+since those rounds end before their window:
+by the agent's probe,
+every case passes at a window of 0,
+where at the old shape only the case that loses a voice fails there.
+The quorum mark is held to the span from the round's start to the next turn of the event loop,
+which the microtasks between the first answer and the mark cannot outlast;
+the whole-roster round's line is read at a timer armed after its last voice's own and as long,
+and its grace is held to the span from that answer to that turn.
+By the agent's controls,
+each new shape passes under the same stall,
+and fails when quorum waits for the slow voice,
+or when the round waits out a window.
+`DEFERRED` is empty,
+with TSDoc saying why;
+`DEFERRED_REASON`,
+which nothing read,
+and `QUORUM_MARK_SLACK_MS` are gone.
+The lower bounds and the round's bound of an hour stay as the census left them.
+Run on the merged tree before the fix commit:
+lint clean,
+49 scans passing,
+and the suite at 2,030 passing with no failure.
+
+Found on the way:
+the per-call deadline of `translate-probe-run.ts` is armed as the whole slice round's signal,
+and no case reaches it;
+the other per-call deadlines in these files go to scripted stages or clients that never arm them.
+
+Open:
+the logger package's own sink verification bound of 5,000 ms timed out 21 times in the agent's suite run,
+without failing a case.
+
+Open to the owner's veto:
+`concurrency: 1` stays on the round test's top-level describe,
+its comment rewritten to give its history;
+the alternative is to drop it,
+now that the timing case no longer breaks beside other work.
+The second case's ordering instrument is a `wait(SLOW_MS)` the case arms,
+listed as class 4;
+the alternative is a `setImmediate` started from the slow seat's answer through a hook on `scheduledClient`,
+which adds no bound for the guard to read.
+The second case's window moved from 250 ms to `HANG_STOP_MS`;
+the alternative is to keep 250 as a value of class 1,
+since the ordering check makes the window's length irrelevant there.
+`CALL_TIMEOUT_MS` of `sentinel-probe-run`,
+1,234 ms,
+stays a distinctive value listed as read back;
+the alternative is `HANG_STOP_MS`,
+which the read-back would still match but which no longer marks the value as the test's own.
+Two reason constants are new,
+`RECALL_CALL_CONFIG` and `SENTINEL_DEADLINE`;
+the alternative is reason strings written inline.
+The round test's file TSDoc gains a paragraph,
+"NO CEILING ON THE CLOCK";
+the alternative is to leave the rule to `mistake-prevention.md` alone.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -34490,6 +35156,51 @@ the rule beside each slip.
 "Escapes and the layer that reads them",
 "Shell commands",
 "Lint and edits" and "Current-state docs".
+
+### M141: the lead's own slips in the follow-up of docs batch eight and the work of B365 to B378
+
+Status:
+happened on 2026-10-10 (UTC),
+by the lead's notes for docs batch nine.
+Each was caught before the commit it would have reached,
+or touched no commit,
+except the last,
+which reached `3fc486167` and was mended in `dba82d535` and `59f4b4769`.
+
+- The gate on the provider-words fix (`fba9c5b60`) was started as a user unit under `mise exec`,
+  where the `git` found first lacks `worktree add --no-worktree-copy`,
+  so `setup-worktrees.ts` failed in its first seconds and the gate never ran.
+  It was found about twenty minutes later,
+  when the waiter armed on the log's last line never fired and the log was read.
+  Rule:
+  the first lines of a started run's log are read before a waiter is armed,
+  and the waiter is armed on the failure line as well as the success line;
+  a gate runs in the plain shell,
+  since it makes worktrees with the shell's `git`.
+- A user unit for a named run wrote its log into a folder that did not exist yet,
+  and failed with exit 209 at setting up its output;
+  it was seen at once.
+  Rule:
+  the folder a unit writes its output to exists before the unit starts.
+- A `git add` run from inside the package directory was refused by the git policy as not at the root,
+  and was run again with `git -C` naming the root.
+  Rule:
+  every git call in the worktrees names the root with `-C`.
+- The first draft of docs batch eight left two M140 passages that quoted the phrase
+  the veto index and the review page match on,
+  so M140 appeared as a choice awaiting the owner's decision;
+  the page build listed it,
+  and two follow-up commits reworded the passages.
+  Rule:
+  a ledger passage that quotes a marker phrase the tooling matches on is reworded,
+  or the match is anchored where the marker stands.
+
+Prevention:
+the rule beside each slip.
+`mistake-prevention.md`,
+"Tasks,
+builds and bulk output",
+"Shell commands" and "Numbers read back from text".
 
 ### M79: a coverage census measuring compressed code
 
