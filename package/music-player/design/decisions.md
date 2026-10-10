@@ -2947,6 +2947,21 @@ the before-1.x revisit is closed by this answer.
 
 No production implementation is authorized by this record.
 
+### D105. Move to trash on Android follows what the platform allows (2026-10-10)
+
+Asked how to implement D8's immediate delete with Undo on Android,
+where a delete reaches files by two routes that behave differently,
+the human chose:
+for a folder the user opened through the picker (a persisted storage-access grant)
+the app deletes immediately and Undo copies the file back,
+and for the device-wide system music library the app uses Android's own trash request with its system confirmation.
+The copy-back creates a new document with the same name and bytes,
+so its timestamps and identity change;
+the system library's Undo is Android's own restore, not the in-app overlay.
+D8 stays the design for every source where the platform allows it.
+
+This is a platform-feasibility decision made during production implementation.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

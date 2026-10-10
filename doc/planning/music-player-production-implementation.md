@@ -77,6 +77,16 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
   capped container (6 GiB, 2 CPUs); mise's own task path fails with "Failed to find Build Tools revision 36.0.0" there while the
   same Gradle command through `raw:` passes, a difference not yet explained.
 
+- Landed on the branch by 2026-10-10, each with its own unit tests and a clean detekt run: the folder rail and index,
+  the transport deck, the track list pane, the folder picker pane with the app bars and icons, the assembled cover and unfolded
+  player screens with a debug host, the feedback queue and overlay, the scan indicator, the first-run pane, the track menu,
+  the template editor and Settings page, and the Search matcher, results and page.
+  Native captures of the player screen found one defect (text and icons drawn black on the dark canvas because no content
+  color was provided); it is fixed and a recapture is running.
+- Decision D105 (trash): folder grants delete immediately with a copy-back Undo; the system library uses Android's trash request.
+- Open and next: wiring first-run, scan, feedback and the track menu into the host, the real trash and Undo implementations,
+  keyboard wiring, then the desktop app.
+
 ## Queue
 
 - [x] Package 1.
