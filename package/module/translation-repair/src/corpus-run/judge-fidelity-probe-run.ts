@@ -103,7 +103,14 @@ function requestedSpecs(
         cause: error,
       },);
     }
-    throw error;
+    // Every refusal of `reviewedFidelityRequest` and of the
+    // `selectReviewedFidelitySpecs` it calls is a `FidelityReferenceError`,
+    // and what else they do (comparisons, a `Set`, a `structuredClone` of the
+    // checked-in manifest) throws nothing for any request.
+    throw new Error(
+      'unreachable: checking a fidelity request threw something other than its own refusal, though every refusal it gives is a FidelityReferenceError',
+      { cause: error, },
+    );
   }
 }
 

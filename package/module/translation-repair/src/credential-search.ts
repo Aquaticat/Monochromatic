@@ -267,7 +267,13 @@ function linkFallbacks({ states, }: { readonly states: readonly State[]; },): vo
         states,
         at: child,
       },);
-      own.fallback = (target === child) ? 0 : target;
+      // The queue holds states one or more units deep, so `child` is two or
+      // more deep, and `target` is at most one deeper than the parent's
+      // fallback, which is shallower than the parent: never the child itself.
+      // A state falling back to itself would keep `stepFrom` in its loop.
+      if (target === child)
+        throw new Error(`unreachable: state ${String(child,)} of the automaton fell back to itself, though every fallback is shallower than the state it belongs to`,);
+      own.fallback = target;
       own.ending
         .push(...stateAt({
           states,

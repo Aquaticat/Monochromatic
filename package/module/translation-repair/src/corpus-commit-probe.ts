@@ -160,7 +160,9 @@ type GitDirAnswer =
  @returns Whether git named the clone's git directory, could not open the
  clone, or failed another way, with that failure
 
- @throws Whatever nano-spawn's preparation of the call throws, unchanged
+ @throws Error naming the broken invariant where nano-spawn's preparation of
+ the call throws, which preparing the probe of the commit already did without
+ a throw
 
  @example
  ```ts
@@ -193,8 +195,16 @@ async function probeGitDir(
     return { kind: 'named', };
   }
   catch (error) {
+    // nano-spawn throws raw only while preparing a call: reading the working
+    // directory, which the probe of the commit read just before and node keeps
+    // until a `process.chdir` this package never makes, and naming the command
+    // parts, which that probe named too (`getOptions`, `getContext`). The
+    // environment handed it is built by code that throws nothing.
     if (!(error instanceof SubprocessError))
-      throw error;
+      throw new Error(
+        'unreachable: preparing the probe of the clone\'s git directory threw before git ran, though preparing the probe of its commit, with the same working directory and command parts, did not',
+        { cause: error, },
+      );
     if (error.exitCode === GIT_FATAL)
       return { kind: 'unopened', };
     return {
@@ -239,7 +249,9 @@ async function probeGitDir(
  that left the probe without one; a probe that ends any way but exit status
  0, 1 or 128 is never read as the commit being held or absent
 
- @throws Whatever nano-spawn's preparation of either call throws, unchanged
+ @throws Whatever nano-spawn's preparation of the probe of the commit throws,
+ unchanged, and an Error naming the broken invariant where only the
+ preparation of the probe of the git directory throws
 
  @example
  ```ts

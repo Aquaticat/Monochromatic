@@ -96,16 +96,23 @@ const UNRESOLVED_CLONE_CODES: ReadonlySet<string> = new Set([
  @returns Whether git then stops at the directory itself, so no ceiling is
  read
 
+ @throws Error naming the broken invariant where what resolving threw is no
+ error carrying a code, which every rejection of node's `realpath` carries
+ (measured on node 26.10.0: a missing path, a path through a file, a link to
+ itself, a name too long and a NUL byte each rejected with an `Error` whose
+ `code` is a string)
+
  @example
  ```ts
  if (!gitStopsAtTheClone({ error, },)) throw error;
  ```
  */
 function gitStopsAtTheClone({ error, }: { readonly error: unknown; },): boolean {
-  if (!Error.isError(error,))
-    return false;
-  if (!('code' in error))
-    return false;
+  if (!(Error.isError(error,) && ('code' in error)))
+    throw new Error(
+      'unreachable: resolving a clone directory\'s real path failed with something other than an error carrying a code, which every rejection of node\'s realpath carries',
+      { cause: error, },
+    );
 
   /**
    The system's code for the failure, which is all that is read of it.

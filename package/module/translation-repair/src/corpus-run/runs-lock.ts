@@ -189,7 +189,10 @@ async function linkedInPlace(
 
  A REMOVAL THAT FAILS is said on a warning naming the file and the filesystem
  code rather than thrown: the claim's own answer, won, lost or refused, is
- what the starter acts on, and the file left is one name nothing reads.
+ what the starter acts on, and the file left is one name nothing reads. The
+ warning says the file stands only if the claim wrote it, since a write that
+ failed (a name too long for the system, say) fails the removal the same way
+ with nothing left; until 2026-10-10 it said the file was left either way.
 
  @param staged - name only that claim knows, absent where its write failed
  before creating it
@@ -213,7 +216,10 @@ function stagedRemoval(
         );
       }
       catch (error) {
-        lockLog.warn(`${staged} is left after a claim and could not be removed (${failureName({ error, },)})`,);
+        lockLog.warn(
+          `${staged} could not be removed after a claim (${failureName({ error, },)}); it stands beside the lock if `
+            + 'the claim wrote it',
+        );
       }
     },
   };
