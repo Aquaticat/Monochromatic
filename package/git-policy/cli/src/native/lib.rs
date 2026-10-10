@@ -471,6 +471,9 @@ pub mod capture_order;
 /// The shadow repository `config` file and the copied repository format.
 pub mod shadow_config;
 
+/// The shadow repository links to the real shared entries.
+pub mod shadow_links;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
