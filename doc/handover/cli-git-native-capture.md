@@ -203,3 +203,35 @@ To rerun when the host is idle:
 `systemd-run --user --unit=<name> --collect --property=MemoryMax=12G --working-directory=<worktree>`
 `node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture`
 with the ten files listed above. The mutation run has not produced any caught, missed, unviable or timed-out result yet.
+
+## Drained state
+
+This section records the state when work paused for the scratch directory move.
+The scratch directory was `~/temp`, and no command was started from or wrote to it after the drain.
+
+Final container gate on `53d159159a`, image `localhost/git-policy-native-test:capture` id `95cd1be38f39`:
+the library suite passed (933 passed, 2 ignored, 0 failed) and the binary and other suites passed.
+Clippy failed only in `entry_tests.rs`, `index_lock_wait_tests.rs` and `index_writer_coordination_tests.rs`,
+which this lane does not change and which the transactions branch is fixing.
+No lane file is in the Clippy output.
+
+Changes after the gate: the mutation per-run timeout was raised from 90 to 300 seconds in
+`bin/mutate-native-container.mjs` (its own commit), and nine planted controls were added for the lane's guards
+(`bin/native-planted-controls.mjs`).
+The `shadow_links` control first named the linked-worktree test, which does not notice the removed guard,
+so its failing test is now `shadow_links::tests::shared_entries_link_and_private_entries_stay_absent`.
+
+Mutation, in flight when drained: the scoped run over the ten source files was systemd unit
+`cli-git-capture-mut-all`. It ran the planted controls in order. Eight were noticed, and
+`a linked worktree keeps its info directory private` was not noticed by the old test name.
+cargo-mutants never ran, because the campaign stops on an unnoticed control. The unit has ended.
+Mutants tested: 0. Caught, missed, unviable and timed-out counts: none yet.
+
+Remaining work, in order:
+
+1. Rerun the scoped mutation over the ten files, with the image tag set:
+   `systemd-run --user --unit=cli-git-capture-mut-all --collect --property=MemoryMax=12G --working-directory=<worktree> node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/capture_invocation.rs --file src/native/capture_order.rs --file src/native/shadow_config.rs --file src/native/shadow_links.rs --file src/native/shadow_refs.rs --file src/native/conclusion_copy.rs --file src/native/shadow_create.rs --file src/native/commit_args.rs --file src/native/commit_index.rs --file src/native/commit_preparation.rs`
+   The unit exits with a nonzero status when any mutant survives or the campaign stops.
+2. Rerun any file whose mutants timed out, once alone, with the same command and only that `--file`.
+3. Justify each missed mutant with a code-based proof, or add a test that catches it.
+4. Record the mutation totals (caught, missed, unviable, timeout) and each justification in this section.

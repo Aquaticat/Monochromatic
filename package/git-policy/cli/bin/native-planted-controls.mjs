@@ -154,7 +154,7 @@ const plantedControls = [
     file: "src/native/shadow_links.rs",
     from: "if !mixed_info {",
     to: "if false {",
-    failing: "shadow_links::tests::linked_worktree_copies_its_per_worktree_entries",
+    failing: "shadow_links::tests::shared_entries_link_and_private_entries_stay_absent",
   },
   {
     name: "the sequencer is copied into the shadow",
