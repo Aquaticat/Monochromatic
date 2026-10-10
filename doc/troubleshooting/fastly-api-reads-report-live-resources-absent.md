@@ -473,13 +473,40 @@ that does not name the rejected flag.
 
 ## Upstream filing decision
 
-`.out-of-scope/` was checked and holds no exemption matching Fastly,
+`.out-of-scope/` was checked:
+eleven files,
+none matching Fastly,
 a CDN or
 DNS provider,
 or this bug class.
-The six-constraint check ends at do not file
-for the API findings,
-and at do not file for the CLI findings.
+
+The upstream tracker was searched for a duplicate before drafting,
+with
+`gh search issues` against `fastly/cli` for "domain create json",
+"missing json
+output",
+and "json flag create".
+Only one thread came back,
+[fastly/cli#1353](https://github.com/fastly/cli/issues/1353),
+which is about a different command and is closed.
+That single hit doubles as the
+positive control proving the search runs rather than failing silently.
+No
+existing issue covers `domain create`.
+
+The six-constraint check splits by finding.
+The API findings end at do not
+file.
+The CLI `--json` finding ends at fileable,
+and its draft is kept below.
+An earlier version of this section recorded "do not file" for both and rated
+constraint 6 not applicable;
+that audit was written before the
+auto-prototype requirement in
+`.agents/skills/troubleshooting-doc/SKILL.md`
+had been read,
+and before #1353 had been found.
+Both are corrected here.
 
 1.  **Is it really upstream's fault?**
     Split.
@@ -500,11 +527,21 @@ and at do not file for the CLI findings.
     but it is silent,
     and silence is what makes
     it costly.
-    The `--json` asymmetry is a design choice,
-    not a defect:
-    a
-    create command that returns a success line has less need for structured
-    output than a list command.
+    The `--json` asymmetry was first
+    recorded here as a design choice rather than a defect.
+    That reading does
+    not survive the tracker:
+    [fastly/cli#1353](https://github.com/fastly/cli/issues/1353),
+    "Missing JSON output for service-version clone command",
+    is labelled
+    `bug` **and** `good first issue`,
+    was closed as fixed on 2025-11-06,
+    and
+    its reporter's use case is scripting a create-then-read sequence,
+    the same
+    shape as `domain create`.
+    Upstream therefore already classifies a
+    subcommand lacking the `--json` its siblings carry as a bug.
 2.  **Can upstream fix it?**
     The API items,
     yes,
@@ -543,45 +580,164 @@ and at do not file for the CLI findings.
     reports to a private process.
     No ban on external or AI-assisted reports
     was found in any of the three.
-    The `--json` asymmetry is neither
-    incorrect output nor a documented-flag failure,
-    so it fits
-    `ISSUES.md`'s Feature Request type rather than its Bug type.
+    The `--json` finding fits
+    `ISSUES.md`'s Bug type on the strength of #1353's labels,
+    not its Feature
+    Request type as first recorded here.
 5.  **Will they likely fix it?**
-    No signal.
+    Split.
+    For the CLI `--json` finding,
+    yes:
+    #1353 is the same bug class on a sibling command and it was fixed
+    and closed.
+    For the API findings,
+    no signal.
     The API behaviours are
     long-standing enough that four separate paths share them,
     which suggests
     they are settled surface rather than regressions.
-    No tracker search was
-    run for the API side because there is no public tracker for it.
+    There is no public
+    tracker for `api.fastly.com`,
+    so no search is possible and none was run;
+    the searches recorded at the head of this section covered the CLI side.
+    Per
+    the skill,
+    absence of signal is not a fail.
 6.  **Have we prototyped a minimal fix?**
-    Not applicable.
-    The API side has
-    no consumer-side patch:
-    the workarounds in this document are reading
-    discipline,
-    not code.
-    The CLI side would be a one-line flag
-    registration,
-    but constraint 1 rates it a design choice and constraint 5
-    offers no signal,
-    so the auto-prototype trigger does not fire.
+    Split.
+    For the API findings,
+    genuinely not applicable:
+    there is no source to patch,
+    and the
+    workarounds in this document are reading discipline rather than code.
+    For
+    the CLI `--json` finding,
+    yes,
+    and the earlier "not applicable" was
+    wrong because it rested on the constraint 1 and 5 readings corrected above.
 
-Decision:
+    Prototyped in the same disposable clone used for
+    [`fastly-cli-profile-list-prints-api-token.md`](fastly-cli-profile-list-prints-api-token.md),
+    origin verified as `https://github.com/fastly/cli.git` at `bb93017`.
+    The
+    fix follows `pkg/commands/service/version/clone.go`,
+    which is how #1353
+    was fixed:
+    embed `argparser.JSONOutput`,
+    register `c.JSONFlag()`,
+    add
+    the `--verbose`/`--json` guard that 388 files in the tree already carry,
+    and call `c.WriteJSON(out, d)` before the `text.Success` line.
+    Two files
+    change,
+    `pkg/commands/domain/create.go` and its existing test.
+
+    The diff is
+    [`fastly-api-reads-report-live-resources-absent.json-flag.patch`](fastly-api-reads-report-live-resources-absent.json-flag.patch),
+    86 lines.
+    It was confirmed to forward-apply to pristine `bb93017` bytes
+    extracted with `git show`,
+    and the applied result was confirmed
+    byte-identical to the tree the tests ran against.
+
+    ```bash
+    go test ./pkg/commands/domain/ -run TestDomainCreate -count=1
+    ```
+
+    Pre-patch,
+     with the original `create.go` and the updated test:
+
+    ```text
+    --- FAIL: TestDomainCreate/#03
+        want no error, have "error parsing arguments: unknown long flag '--json'"
+    --- FAIL: TestDomainCreate/#04
+        want "invalid flag combination, --verbose and --json",
+        have "error parsing arguments: unknown long flag '--json'"
+    ```
+
+    Post-patch:
+
+    ```text
+    ok  	github.com/fastly/cli/pkg/commands/domain	0.139s
+    ```
+
+    `go vet ./pkg/commands/domain/` is clean and `go build ./...` succeeds.
+
+Decision,
+ API findings:
 do not file.
-The durable output is this document.
-The one finding
-worth escalating if it recurs is the 500 for an unsupported query parameter on
-`GET /service`,
-and the channel for it is Fastly support rather than the CLI
-tracker,
+There is no public source repository and
+no public tracker for `api.fastly.com`.
+The one finding worth escalating if it
+recurs is the 500 for an unsupported query parameter on `GET /service`,
+and the
+channel for it is Fastly support,
 because the fault is server-side.
+
+Decision,
+ CLI `--json` finding:
+all six constraints hold,
+ so the draft below is
+fileable as-is.
+It has **not** been filed.
+Opening an issue on a third-party
+tracker is an external action,
+ and this repository's agent guidance requires
+authorization for that rather than treating it as implied by writing the draft.
+
+~~~md
+Title: `fastly domain create` has no `--json`, unlike `fastly domain list` and the other create commands
+
+Labels: bug, good first issue
+
+**Version**
+
+Fastly CLI version 16.1.0
+Source read at commit bb93017.
+
+**What happened**
+
+`fastly domain list` registers a JSON output flag at `pkg/commands/domain/list.go:41`:
+
+    c.RegisterFlagBool(c.JSONFlag()) // --json
+
+`fastly domain create` registers only `description`, `fqdn`, and `service-id`, at `pkg/commands/domain/create.go:36` to `:45`. Passing `--json` prints the usage block and creates nothing, without naming the rejected flag:
+
+    $ fastly domain create --fqdn mirror.example.com --service-id <id> --json
+    USAGE
+      fastly domain create --fqdn=FQDN [<flags>]
+
+This is the same gap as #1353, which was fixed for `service-version clone` by following the `WriteJSON` pattern. The scripting case is the one #1353's reporter described: create a resource, then need its identifier without parsing prose or making a second call. `domain create` already prints the domain-id in its success line, so the value is available internally and only the structured form is missing.
+
+**Reproduction**
+
+    fastly domain create --fqdn does-not-matter.example.com --json
+
+Prints usage and exits without creating anything. Compare `fastly domain list --json`, which emits structured output.
+
+**Suggested fix**
+
+Mirror `pkg/commands/service/version/clone.go`:
+
+1. Embed `argparser.JSONOutput` in `CreateCommand`.
+2. Add `c.RegisterFlagBool(c.JSONFlag())` in `NewCreateCommand`.
+3. Add the `--verbose`/`--json` guard at the top of `Exec`, as 388 files in the tree already do.
+4. Call `c.WriteJSON(out, d)` before the existing `text.Success` line.
+
+A patch implementing exactly this, with pre-patch and post-patch `go test ./pkg/commands/domain/ -run TestDomainCreate -count=1` output and two added scenarios, is available on request. Prepared with AI assistance; the reproduction and the test runs above were executed against a real install and a real clone at bb93017.
+~~~
 
 ## References
 
 - Fastly TLS API reference index:
   <https://www.fastly.com/documentation/reference/api/tls>
+- The prototyped `--json` fix recorded under constraint 6:
+  [`fastly-api-reads-report-live-resources-absent.json-flag.patch`](fastly-api-reads-report-live-resources-absent.json-flag.patch)
+- Precedent for that fix,
+  the same bug class on a sibling command,
+  closed
+  as fixed:
+  <https://github.com/fastly/cli/issues/1353>
 - Fastly TLS subscriptions API reference,
   which documents the `include`
   values that make authorizations reachable:
