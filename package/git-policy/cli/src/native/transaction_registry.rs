@@ -1,9 +1,20 @@
-//! What: The per-worktree registry of commit-transaction directories,
-//!       `<git-dir>/cli-git-transactions/`: entry names, publication by rename, removal by
-//!       rename, and the strict listing recovery reads.
-//! Why: Each transaction owns `<registry>/<uuid>/`, published only once `owner.json` is
-//!      complete, so every published directory names its owner; removal renames it to a
-//!      retired name first, so a reader never sees a published directory lose its owner. Both
+//! What:
+//!  The per-worktree registry of commit-transaction directories,
+//!       `<git-dir>/cli-git-transactions/`:
+//!  entry names,
+//!  publication by rename,
+//!  removal by
+//!       rename,
+//!  and the strict listing recovery reads.
+//! Why:
+//!  Each transaction owns `<registry>/<uuid>/`,
+//!  published only once `owner.json` is
+//!      complete,
+//!  so every published directory names its owner;
+//!  removal renames it to a
+//!      retired name first,
+//!  so a reader never sees a published directory lose its owner.
+//!  Both
 //!      wrappers create and read the same registry (`src/policy-engine/commit-transaction-registry.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -11,7 +22,9 @@
 //! const directory = await publishTransactionDirectory({ root, transactionId, ownerBytes });
 //! ```
 
-/// Private creation, writing, syncing and removal.
+/// Private creation,
+///  writing,
+///  syncing and removal.
 use super::private_storage::{
     PRIVATE_DIRECTORY_MODE, create_private_directory, protect_path, remove_tree, sync_directory,
     write_private_file,
@@ -42,9 +55,12 @@ pub const LANDING_LOCK_NAME: &str = "landing.lock";
 /// Landing reservation lock directory name inside the registry.
 pub const RESERVATION_LOCK_NAME: &str = "reservation.lock";
 
-/// What: Whether a registry entry is one of the registry's own locks or a candidate or stale
-///       copy of one, rather than a transaction.
-/// Why:  `landing.lock` and `reservation.lock` and their `.<uuid>.pending` / `.<uuid>.stale`
+/// What:
+///  Whether a registry entry is one of the registry's own locks or a candidate or stale
+///       copy of one,
+///  rather than a transaction.
+/// Why:
+///   `landing.lock` and `reservation.lock` and their `.<uuid>.pending` / `.<uuid>.stale`
 ///       siblings live beside transactions and are never classified as transactions.
 ///
 /// In TS you'd write (pseudocode):
@@ -60,8 +76,10 @@ pub fn is_registry_lock_name(name: &str) -> bool {
     return false;
 }
 
-/// What: Whether text starts with a dot.
-/// Why:  A named function keeps the check out of a closure.
+/// What:
+///  Whether text starts with a dot.
+/// Why:
+///   A named function keeps the check out of a closure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -71,8 +89,14 @@ fn starts_with_dot(rest: &str) -> bool {
     return rest.starts_with('.');
 }
 
-/// What: Whether a name is exactly one canonical lowercase UUID, as `randomUUID` prints it.
-/// Why:  Only such a name is a published transaction; any other name is staging, retired, or
+/// What:
+///  Whether a name is exactly one canonical lowercase UUID,
+///  as `randomUUID` prints it.
+/// Why:
+///   Only such a name is a published transaction;
+///  any other name is staging,
+///  retired,
+///  or
 ///       unexpected state.
 ///
 /// In TS you'd write (pseudocode):
@@ -98,8 +122,13 @@ pub fn is_transaction_id(name: &str) -> bool {
     return true;
 }
 
-/// What: How recovery treats one registry entry, by its name.
-/// Why:  A staging candidate never started capture, a retired directory finished, and a
+/// What:
+///  How recovery treats one registry entry,
+///  by its name.
+/// Why:
+///   A staging candidate never started capture,
+///  a retired directory finished,
+///  and a
 ///       published one must be recovered or skipped.
 ///
 /// In TS you'd write (pseudocode):
@@ -116,8 +145,12 @@ pub enum EntryKind {
     Retired,
 }
 
-/// What: One classified registry entry.
-/// Why:  Recovery needs the kind, the transaction ID shared by every name form, and the path.
+/// What:
+///  One classified registry entry.
+/// Why:
+///   Recovery needs the kind,
+///  the transaction ID shared by every name form,
+///  and the path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -133,8 +166,11 @@ pub struct RegistryEntry {
     pub path: PathBuf,
 }
 
-/// What: The transaction ID of a `<uuid><suffix>` name, or nothing.
-/// Why:  Staging and retired names carry the ID of the transaction they belong to.
+/// What:
+///  The transaction ID of a `<uuid><suffix>` name,
+///  or nothing.
+/// Why:
+///   Staging and retired names carry the ID of the transaction they belong to.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -148,9 +184,14 @@ fn suffixed_transaction_id<'a>(name: &'a str, suffix: &str) -> Option<&'a str> {
     return None;
 }
 
-/// What: Classify one entry by its name, given that it is a real directory.
-/// Why:  A name that is neither a transaction, a staging candidate nor a retired directory is
-///       unexpected state, which recovery refuses to guess about.
+/// What:
+///  Classify one entry by its name,
+///  given that it is a real directory.
+/// Why:
+///   A name that is neither a transaction,
+///  a staging candidate nor a retired directory is
+///       unexpected state,
+///  which recovery refuses to guess about.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -185,9 +226,12 @@ pub fn classify_entry_name(root: &Path, name: &str) -> Result<RegistryEntry, Rec
     )));
 }
 
-/// What: Whether a path exists as a real directory, not a link.
+/// What:
+///  Whether a path exists as a real directory,
+///  not a link.
 ///       `Ok(false)` means nothing is there.
-/// Why:  The registry and its entries are trusted only as real directories.
+/// Why:
+///   The registry and its entries are trusted only as real directories.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -201,9 +245,16 @@ fn real_directory(path: &Path) -> Result<Option<bool>, std::io::Error> {
     }
 }
 
-/// What: Every registry entry except the registry's own locks, sorted by name, without
-///       following links; an absent registry has none.
-/// Why:  Recovery must see every transaction; a link, a file or an unexpected name in the
+/// What:
+///  Every registry entry except the registry's own locks,
+///  sorted by name,
+///  without
+///       following links;
+///  an absent registry has none.
+/// Why:
+///   Recovery must see every transaction;
+///  a link,
+///  a file or an unexpected name in the
 ///       registry fails closed with its path named.
 ///
 /// In TS you'd write (pseudocode):
@@ -273,9 +324,13 @@ pub fn list_transaction_entries(root: &Path) -> Result<Vec<RegistryEntry>, Recov
     return Ok(entries);
 }
 
-/// What: Order two entries by path bytes.
-/// Why:  A named comparison keeps the sort free of closures; the order only needs to be
-///       stable, because recovery orders transactions by their owners' creation times.
+/// What:
+///  Order two entries by path bytes.
+/// Why:
+///   A named comparison keeps the sort free of closures;
+///  the order only needs to be
+///       stable,
+///  because recovery orders transactions by their owners' creation times.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -285,10 +340,13 @@ fn compare_entry_paths(left: &RegistryEntry, right: &RegistryEntry) -> std::cmp:
     return left.path.cmp(&right.path);
 }
 
-/// What: Create the registry when absent and prove it is a real directory under a canonical
+/// What:
+///  Create the registry when absent and prove it is a real directory under a canonical
 ///       parent.
-/// Why:  A link anywhere on the way could redirect transaction state outside the Git
-///       directory; the incumbent refuses a non-canonical parent and a linked registry.
+/// Why:
+///   A link anywhere on the way could redirect transaction state outside the Git
+///       directory;
+///  the incumbent refuses a non-canonical parent and a linked registry.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -355,10 +413,16 @@ pub fn ensure_transaction_root(root: &Path) -> Result<(), RecoveryError> {
     }
 }
 
-/// What: Publish one transaction directory holding its complete owner record.
+/// What:
+///  Publish one transaction directory holding its complete owner record.
 ///       Returns the published directory.
-/// Why:  The directory is built under its staging name, made durable, then renamed; a
-///       failure before the rename removes the candidate, so nothing half-built is published.
+/// Why:
+///   The directory is built under its staging name,
+///  made durable,
+///  then renamed;
+///  a
+///       failure before the rename removes the candidate,
+///  so nothing half-built is published.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -402,8 +466,11 @@ pub fn publish_transaction_directory(
     return Ok(directory);
 }
 
-/// What: Protect a fresh candidate and write its owner record durably.
-/// Why:  Everything before the publishing rename, so a failure can remove the candidate.
+/// What:
+///  Protect a fresh candidate and write its owner record durably.
+/// Why:
+///   Everything before the publishing rename,
+///  so a failure can remove the candidate.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -435,10 +502,15 @@ fn fill_candidate(staging: &Path, owner_bytes: &[u8]) -> Result<(), RecoveryErro
     return Ok(());
 }
 
-/// What: Remove a transaction directory: a registry directory is renamed to its retired name
-///       first, any other directory (the legacy journal) is removed in place.
-/// Why:  A reader listing the registry must never see a published directory without its
-///       owner record; the retired name is ignored by every reader.
+/// What:
+///  Remove a transaction directory:
+///  a registry directory is renamed to its retired name
+///       first,
+///  any other directory (the legacy journal) is removed in place.
+/// Why:
+///   A reader listing the registry must never see a published directory without its
+///       owner record;
+///  the retired name is ignored by every reader.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -488,8 +560,10 @@ pub fn remove_transaction_directory(directory: &Path) -> Result<(), RecoveryErro
     return sync_parent(parent);
 }
 
-/// What: Whether a directory name is the registry's name.
-/// Why:  A named function keeps the check out of a closure.
+/// What:
+///  Whether a directory name is the registry's name.
+/// Why:
+///   A named function keeps the check out of a closure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -499,8 +573,11 @@ fn is_registry_name(name: &std::ffi::OsStr) -> bool {
     return name == TRANSACTION_ROOT_NAME;
 }
 
-/// What: Sync a parent directory, naming it on failure.
-/// Why:  Removal steps sync the registry after each rename and deletion.
+/// What:
+///  Sync a parent directory,
+///  naming it on failure.
+/// Why:
+///   Removal steps sync the registry after each rename and deletion.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

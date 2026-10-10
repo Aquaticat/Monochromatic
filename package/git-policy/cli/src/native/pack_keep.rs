@@ -1,7 +1,11 @@
-//! What: The `.keep` files that protect a landing's migrated pack until the compare-and-swap,
+//! What:
+//!  The `.keep` files that protect a landing's migrated pack until the compare-and-swap,
 //!       named by the message `cli-git <transaction-id>`.
-//! Why: `git index-pack --keep=<message>` writes the `.keep` before the pack becomes visible, so
-//!      no prune or repack drops the objects mid-landing; recovery finds a dead transaction's
+//! Why:
+//!  `git index-pack --keep=<message>` writes the `.keep` before the pack becomes visible,
+//!  so
+//!      no prune or repack drops the objects mid-landing;
+//!  recovery finds a dead transaction's
 //!      `.keep` by its message even before a landing record names the pack
 //!      (`src/policy-engine/commit-landing-objects.ts`).
 //!
@@ -17,8 +21,10 @@ use super::recovery_files::remove_file_if_present;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// What: The keep message naming one transaction.
-/// Why:  Recovery matches `.keep` contents against it.
+/// What:
+///  The keep message naming one transaction.
+/// Why:
+///   Recovery matches `.keep` contents against it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,8 +34,12 @@ pub fn transaction_keep_message(transaction_id: &str) -> String {
     return format!("cli-git {transaction_id}");
 }
 
-/// What: Remove the `.keep` of one migrated pack.
-/// Why:  `removePackKeep`: after `ref-updated.json`, and after a failed compare-and-swap.
+/// What:
+///  Remove the `.keep` of one migrated pack.
+/// Why:
+///   `removePackKeep`:
+///  after `ref-updated.json`,
+///  and after a failed compare-and-swap.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,8 +54,14 @@ pub fn remove_pack_keep(object_directory: &Path, pack_name: &str) -> Result<(), 
     );
 }
 
-/// What: Remove every `.keep` whose message names the transaction; returns how many.
-/// Why:  `removeTransactionKeeps`: a `.keep` holds the message and a newline, exactly; a file
+/// What:
+///  Remove every `.keep` whose message names the transaction;
+///  returns how many.
+/// Why:
+///   `removeTransactionKeeps`:
+///  a `.keep` holds the message and a newline,
+///  exactly;
+///  a file
 ///       that vanished meanwhile is skipped.
 ///
 /// In TS you'd write (pseudocode):

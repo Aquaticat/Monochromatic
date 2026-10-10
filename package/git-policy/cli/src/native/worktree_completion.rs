@@ -1,9 +1,17 @@
-//! What: Bringing each added path's worktree copy to the landed bytes after a commit landed, with
+//! What:
+//!  Bringing each added path's worktree copy to the landed bytes after a commit landed,
+//!  with
 //!       descriptor-bound checks that never overwrite a concurrent edit.
-//! Why: An added path's committed bytes differ from its worktree copy (a policy corrected it); the
-//!      copy is replaced only while it still holds the original bytes, through a same-directory
-//!      temporary file. A copy holding neither is kept and reported, since the commit already
-//!      landed (`src/policy-engine/commit-transaction-added-paths.ts`, `-worktree-check.ts`,
+//! Why:
+//!  An added path's committed bytes differ from its worktree copy (a policy corrected it);
+//!  the
+//!      copy is replaced only while it still holds the original bytes,
+//!  through a same-directory
+//!      temporary file.
+//!  A copy holding neither is kept and reported,
+//!  since the commit already
+//!      landed (`src/policy-engine/commit-transaction-added-paths.ts`,
+//!  `-worktree-check.ts`,
 //!      `-worktree-replace.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -30,8 +38,10 @@ use std::io::{Read, Write};
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// What: The identity of an unchanged original worktree file.
-/// Why:  The replacement is installed only while the file still has exactly this identity.
+/// What:
+///  The identity of an unchanged original worktree file.
+/// Why:
+///   The replacement is installed only while the file still has exactly this identity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,8 +63,10 @@ pub struct WorktreeFileIdentity {
     pub mode: u32,
 }
 
-/// What: The exact post-commit state of one worktree copy.
-/// Why:  `WorktreeFileState`.
+/// What:
+///  The exact post-commit state of one worktree copy.
+/// Why:
+///   `WorktreeFileState`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -62,16 +74,22 @@ pub struct WorktreeFileIdentity {
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum WorktreeFileState {
-    /// The original bytes, unchanged since the check began.
+    /// The original bytes,
+    ///  unchanged since the check began.
     Original(WorktreeFileIdentity),
     /// Already the landed bytes.
     Intended,
-    /// Missing, linked, replaced, edited or of the wrong kind.
+    /// Missing,
+    ///  linked,
+    ///  replaced,
+    ///  edited or of the wrong kind.
     Conflict,
 }
 
-/// What: Rewritten and kept paths of one completion.
-/// Why:  `AddedWorktreeInstallResult`.
+/// What:
+///  Rewritten and kept paths of one completion.
+/// Why:
+///   `AddedWorktreeInstallResult`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,8 +103,14 @@ pub struct InstallResult {
     pub conflicted: Vec<String>,
 }
 
-/// What: Whether an error means "the worktree changed under us" rather than a failure.
-/// Why:  `WORKTREE_CONFLICT_CODES`: `ENOENT`, `ENOTDIR`, `ELOOP`, `EACCES`.
+/// What:
+///  Whether an error means "the worktree changed under us" rather than a failure.
+/// Why:
+///   `WORKTREE_CONFLICT_CODES`:
+///  `ENOENT`,
+///  `ENOTDIR`,
+///  `ELOOP`,
+///  `EACCES`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -111,8 +135,11 @@ pub fn is_conflict_error(error: &std::io::Error) -> bool {
     }
 }
 
-/// What: The identity fields of metadata.
-/// Why:  Compared before and after the read, and again before the replacement.
+/// What:
+///  The identity fields of metadata.
+/// Why:
+///   Compared before and after the read,
+///  and again before the replacement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -157,8 +184,11 @@ fn identity_of(metadata: &std::fs::Metadata) -> WorktreeFileIdentity {
     }
 }
 
-/// What: The link count of metadata; 1 where the platform does not report one.
-/// Why:  A hard-linked copy is shared with another path and is never rewritten.
+/// What:
+///  The link count of metadata;
+///  1 where the platform does not report one.
+/// Why:
+///   A hard-linked copy is shared with another path and is never rewritten.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -177,8 +207,10 @@ fn link_count(metadata: &std::fs::Metadata) -> u64 {
     }
 }
 
-/// What: Whether the directory of `destination` is its own canonical path.
-/// Why:  A directory replaced by a link after the check would redirect the write.
+/// What:
+///  Whether the directory of `destination` is its own canonical path.
+/// Why:
+///   A directory replaced by a link after the check would redirect the write.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -191,8 +223,10 @@ fn directory_is_canonical(destination: &Path) -> std::io::Result<bool> {
     return Ok(std::fs::canonicalize(parent)? == parent);
 }
 
-/// What: Open a file for reading without following a link or blocking on a FIFO.
-/// Why:  A FIFO swapped in after the `lstat` must not hang the wrapper.
+/// What:
+///  Open a file for reading without following a link or blocking on a FIFO.
+/// Why:
+///   A FIFO swapped in after the `lstat` must not hang the wrapper.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -209,8 +243,13 @@ fn open_nonblocking(destination: &Path) -> std::io::Result<std::fs::File> {
     return options.open(destination);
 }
 
-/// What: Classify a worktree copy as original, intended or conflict.
-/// Why:  `inspectWorktreeFile`: missing, linked and concurrently replaced paths are conflicts,
+/// What:
+///  Classify a worktree copy as original,
+///  intended or conflict.
+/// Why:
+///   `inspectWorktreeFile`:
+///  missing,
+///  linked and concurrently replaced paths are conflicts,
 ///       not recovery failures.
 ///
 /// In TS you'd write (pseudocode):
@@ -230,8 +269,11 @@ pub fn inspect_worktree_file(
     }
 }
 
-/// What: The inspection steps, with every error returned.
-/// Why:  `inspect_worktree_file` turns the conflict errors into a conflict.
+/// What:
+///  The inspection steps,
+///  with every error returned.
+/// Why:
+///   `inspect_worktree_file` turns the conflict errors into a conflict.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -286,8 +328,10 @@ fn inspect_or_fail(
     return Ok(WorktreeFileState::Original(opened_identity));
 }
 
-/// What: Write `bytes` with `mode` into a fresh same-directory file.
-/// Why:  The replacement is prepared completely before the destination is checked again.
+/// What:
+///  Write `bytes` with `mode` into a fresh same-directory file.
+/// Why:
+///   The replacement is prepared completely before the destination is checked again.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -307,9 +351,13 @@ fn write_prepared(prepared: &Path, bytes: &[u8], mode: u32) -> std::io::Result<(
     return super::private_storage::protect_path(prepared, mode);
 }
 
-/// What: Replace one unchanged worktree file through a same-directory temporary file; returns
+/// What:
+///  Replace one unchanged worktree file through a same-directory temporary file;
+///  returns
 ///       whether it was installed without an observed conflict.
-/// Why:  `replaceWorktreeFile`: the destination is checked again after the replacement is ready.
+/// Why:
+///   `replaceWorktreeFile`:
+///  the destination is checked again after the replacement is ready.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -356,8 +404,10 @@ pub fn replace_worktree_file(
     return outcome;
 }
 
-/// What: The replacement steps for a prepared name.
-/// Why:  `replace_worktree_file` removes the prepared file on every outcome but success.
+/// What:
+///  The replacement steps for a prepared name.
+/// Why:
+///   `replace_worktree_file` removes the prepared file on every outcome but success.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -405,9 +455,13 @@ fn replace_through(
     return Ok(true);
 }
 
-/// What: Bring every added path's worktree copy to its landed bytes.
-/// Why:  `installAddedWorktreeFiles`: a copy already holding the landed bytes is left alone,
-///       which makes recovery idempotent; a changed copy is kept and reported.
+/// What:
+///  Bring every added path's worktree copy to its landed bytes.
+/// Why:
+///   `installAddedWorktreeFiles`:
+///  a copy already holding the landed bytes is left alone,
+///       which makes recovery idempotent;
+///  a changed copy is kept and reported.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

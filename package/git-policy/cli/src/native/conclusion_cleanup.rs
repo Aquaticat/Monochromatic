@@ -1,9 +1,18 @@
-//! What: Native conclusion cleanup reproduced in the owning worktree's Git directory after a
-//!       merge, cherry-pick or revert conclusion lands, and the names of that state.
-//! Why: Native `git commit` removes `MERGE_HEAD` and its siblings in the shadow; the real
-//!      worktree must end the same way, but an entry is removed only while it still holds the
-//!      bytes or value copied at preparation, because a changed entry belongs to a later command
-//!      (`src/shadow-repository/shadow-conclusion-cleanup.ts`, `-files.ts`, `-names.ts`).
+//! What:
+//!  Native conclusion cleanup reproduced in the owning worktree's Git directory after a
+//!       merge,
+//!  cherry-pick or revert conclusion lands,
+//!  and the names of that state.
+//! Why:
+//!  Native `git commit` removes `MERGE_HEAD` and its siblings in the shadow;
+//!  the real
+//!      worktree must end the same way,
+//!  but an entry is removed only while it still holds the
+//!      bytes or value copied at preparation,
+//!  because a changed entry belongs to a later command
+//!      (`src/shadow-repository/shadow-conclusion-cleanup.ts`,
+//!  `-files.ts`,
+//!  `-names.ts`).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -64,8 +73,11 @@ pub const CONCLUSION_COPY_DIRECTORY: &str = "conclusion";
 /// Record of the store-held pseudoref values copied at preparation.
 pub const STORE_RECORD_FILENAME: &str = "store-held.json";
 
-/// What: Whether an entry lives in the ref store under this backend.
-/// Why:  `isStoreHeld`: reftable keeps three pseudorefs in the store.
+/// What:
+///  Whether an entry lives in the ref store under this backend.
+/// Why:
+///   `isStoreHeld`:
+///  reftable keeps three pseudorefs in the store.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -75,8 +87,11 @@ pub fn is_store_held(format: RefFormat, name: &str) -> bool {
     return format == RefFormat::Reftable && STORE_HELD_PSEUDOREFS.contains(&name);
 }
 
-/// What: Resolve a pseudoref with `git rev-parse --verify --quiet`, or nothing when absent.
-/// Why:  `resolvePseudoref`.
+/// What:
+///  Resolve a pseudoref with `git rev-parse --verify --quiet`,
+///  or nothing when absent.
+/// Why:
+///   `resolvePseudoref`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -91,8 +106,12 @@ pub fn resolve_pseudoref(context: &GitContext, request: GitRequest) -> Option<St
     return Some(String::from(super::js_text::trim_javascript(text)));
 }
 
-/// What: Every regular file under a directory, by path relative to it.
-/// Why:  `readTree`: the sequencer copy and the real sequencer are compared whole.
+/// What:
+///  Every regular file under a directory,
+///  by path relative to it.
+/// Why:
+///   `readTree`:
+///  the sequencer copy and the real sequencer are compared whole.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -138,9 +157,13 @@ fn read_tree(root: &Path) -> Result<BTreeMap<PathBuf, Vec<u8>>, RecoveryError> {
     return Ok(files);
 }
 
-/// What: Whether two directory trees hold the same regular files with the same bytes, and are
+/// What:
+///  Whether two directory trees hold the same regular files with the same bytes,
+///  and are
 ///       not empty.
-/// Why:  `sameTree`: the sequencer is removed only while it is exactly the copied state.
+/// Why:
+///   `sameTree`:
+///  the sequencer is removed only while it is exactly the copied state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -152,8 +175,12 @@ pub fn same_tree(left: &Path, right: &Path) -> Result<bool, RecoveryError> {
     return Ok(!first.is_empty() && first == second);
 }
 
-/// What: The store-held values copied at preparation, from `store-held.json`.
-/// Why:  A value that is not text is no copy; the record itself must be valid UTF-8 JSON.
+/// What:
+///  The store-held values copied at preparation,
+///  from `store-held.json`.
+/// Why:
+///   A value that is not text is no copy;
+///  the record itself must be valid UTF-8 JSON.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -174,9 +201,11 @@ fn read_store_record(copies: &Path) -> Result<serde_json::Value, RecoveryError> 
     }
 }
 
-/// What: Remove one store-held pseudoref from the owning worktree when the shadow no longer
+/// What:
+///  Remove one store-held pseudoref from the owning worktree when the shadow no longer
 ///       holds it and the worktree still holds the copied value.
-/// Why:  A reftable repository deletes it with `git update-ref -d <name> <copied value>`.
+/// Why:
+///   A reftable repository deletes it with `git update-ref -d <name> <copied value>`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -212,9 +241,15 @@ fn clean_store_held(
     return Ok(());
 }
 
-/// What: Reproduce native conclusion cleanup in the owning worktree's Git directory.
-/// Why:  `reproduceConclusionCleanup`: removed entries, `MERGE_RR` copied back, `ORIG_HEAD`
-///       kept, and `sequencer/` removed only when native Git removed the shadow copy.
+/// What:
+///  Reproduce native conclusion cleanup in the owning worktree's Git directory.
+/// Why:
+///   `reproduceConclusionCleanup`:
+///  removed entries,
+///  `MERGE_RR` copied back,
+///  `ORIG_HEAD`
+///       kept,
+///  and `sequencer/` removed only when native Git removed the shadow copy.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

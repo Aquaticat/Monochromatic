@@ -1,6 +1,10 @@
-//! What: Which directory contents count as an interrupted worktree copy, for each kind of
+//! What:
+//!  Which directory contents count as an interrupted worktree copy,
+//!  for each kind of
 //!       location.
-//! Why: Missing a journal would run a command beside an unfinished copy; seeing one that
+//! Why:
+//!  Missing a journal would run a command beside an unfinished copy;
+//!  seeing one that
 //!      does not exist would refuse every command in a quiet repository.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,7 +14,8 @@
 //! ```
 #![cfg(unix)]
 
-/// The check under test, the refusal it returns and the disposable-directory helpers.
+/// The check under test,
+///  the refusal it returns and the disposable-directory helpers.
 use super::pending_state;
 use crate::test_support::{fixture, remove};
 use crate::unported::Unported;
@@ -53,7 +58,8 @@ fn directories(name: &str) -> (PathBuf, PathBuf, PathBuf) {
     return (root, common, linked);
 }
 
-/// Nothing recorded, an empty registry and an empty journal directory are all quiet.
+/// Nothing recorded,
+///  an empty registry and an empty journal directory are all quiet.
 #[test]
 fn quiet_directories_hold_no_state() {
     let (root, common, linked): (PathBuf, PathBuf, PathBuf) = directories("pending-quiet");
@@ -82,7 +88,8 @@ fn quiet_directories_hold_no_state() {
     remove(root.as_path());
 }
 
-/// Commit transactions are recovered elsewhere, so registry entries and the legacy directory
+/// Commit transactions are recovered elsewhere,
+///  so registry entries and the legacy directory
 /// are not state here.
 #[test]
 fn transaction_entries_are_not_state_here() {
@@ -100,7 +107,8 @@ fn transaction_entries_are_not_state_here() {
     remove(root.as_path());
 }
 
-/// A journal stops a linked worktree and a bare repository, but not the main worktree or an opted-out caller.
+/// A journal stops a linked worktree and a bare repository,
+///  but not the main worktree or an opted-out caller.
 #[test]
 fn worktree_copy_journals_are_state_where_copies_are_synchronized() {
     let (root, common, linked): (PathBuf, PathBuf, PathBuf) = directories("pending-copies");

@@ -122,10 +122,14 @@ pub(crate) fn executable(path: &Path, content: &[u8]) {
         .expect("mark candidate executable");
 }
 
-/// What: Variables that isolate a Git child started through the production runners from the
-///       real system and global configuration, with the fixed fixture identity.
-/// Why:  Production runners add an overlay to the inherited environment instead of clearing
-///       it, so tests pass these pairs as that overlay.
+/// What:
+///  Variables that isolate a Git child started through the production runners from the
+///       real system and global configuration,
+///  with the fixed fixture identity.
+/// Why:
+///   Production runners add an overlay to the inherited environment instead of clearing
+///       it,
+///  so tests pass these pairs as that overlay.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -150,8 +154,10 @@ pub(crate) fn isolated_overlay() -> Vec<(std::ffi::OsString, std::ffi::OsString)
     return pairs;
 }
 
-/// What: A transaction Git context running the real fixture Git with the isolating overlay.
-/// Why:  Recovery and landing tests start Git through the production runner.
+/// What:
+///  A transaction Git context running the real fixture Git with the isolating overlay.
+/// Why:
+///   Recovery and landing tests start Git through the production runner.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -165,8 +171,11 @@ pub(crate) fn git_context() -> crate::transaction_git::GitContext {
     };
 }
 
-/// What: Real Git's standard output with one trailing newline removed, as text.
-/// Why:  Tests compare object IDs and ref values.
+/// What:
+///  Real Git's standard output with one trailing newline removed,
+///  as text.
+/// Why:
+///   Tests compare object IDs and ref values.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

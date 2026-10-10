@@ -3,7 +3,8 @@
 use super::*;
 use crate::test_support::{fixture, git, git_context, git_text, remove, repository};
 
-/// A real worktree Git directory, a shadow and a transaction directory with copies.
+/// A real worktree Git directory,
+///  a shadow and a transaction directory with copies.
 struct Scene {
     /// Fixture root.
     root: PathBuf,
@@ -74,7 +75,9 @@ fn absent_copies_change_nothing() {
     remove(scene.root.as_path());
 }
 
-/// An entry is removed only while copied, gone from the shadow, and unchanged in the worktree.
+/// An entry is removed only while copied,
+///  gone from the shadow,
+///  and unchanged in the worktree.
 #[test]
 fn entries_are_removed_only_while_unchanged() {
     let scene: Scene = scene("conclusion-files");

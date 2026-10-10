@@ -1,7 +1,12 @@
-//! What: Deciding whether a dead transaction's landing attempt landed, and installing or
+//! What:
+//!  Deciding whether a dead transaction's landing attempt landed,
+//!  and installing or
 //!       recognizing its recorded post-index.
-//! Why: Before `ref-updated.json` the only proof of a landing is the nonce entry in the target's
-//!      reflog; missing or contradictory evidence fails closed. Artifacts are pinned under
+//! Why:
+//!  Before `ref-updated.json` the only proof of a landing is the nonce entry in the target's
+//!      reflog;
+//!  missing or contradictory evidence fails closed.
+//!  Artifacts are pinned under
 //!      stable names by inode before use (`src/policy-engine/commit-transaction-recovery-completion.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -11,7 +16,9 @@
 
 /// The fail-closed recovery failure.
 use super::recovery_error::RecoveryError;
-/// Exact reads, owned links, lock release and index installation.
+/// Exact reads,
+///  owned links,
+///  lock release and index installation.
 use super::recovery_files::{
     create_owned_file_link, files_equal, install_recovered_index, read_recovery_file,
     recovery_path_exists, release_owned_lock, remove_file_if_present,
@@ -30,8 +37,11 @@ use super::transaction_journal_parse::parse_ref_updated;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// What: What recovery did to the real index of a landed commit.
-/// Why:  Reported per transaction, as the incumbent's recovery action names.
+/// What:
+///  What recovery did to the real index of a landed commit.
+/// Why:
+///   Reported per transaction,
+///  as the incumbent's recovery action names.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,8 +55,10 @@ pub enum IndexCompletion {
     AlreadyInstalled,
 }
 
-/// What: The nonce-bearing reflog subject prefix of a transaction.
-/// Why:  The landing writes `commit (cli-git <nonce>): <subject>`.
+/// What:
+///  The nonce-bearing reflog subject prefix of a transaction.
+/// Why:
+///   The landing writes `commit (cli-git <nonce>): <subject>`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -56,11 +68,19 @@ pub fn nonce_subject_prefix(transaction_id: &str) -> String {
     return format!("commit (cli-git {transaction_id}):");
 }
 
-/// What: Decide whether a commit landing record's attempt landed.
-///       `Ok(true)` means landed; `Ok(false)` means the target never moved to it.
-/// Why:  `commitLanded`: `ref-updated.json` is exact proof; otherwise one nonce entry naming the
-///       recorded commit is proof, several are contradictory, one naming another commit is
-///       contradictory, and none while the commit is reachable anyway is contradictory too.
+/// What:
+///  Decide whether a commit landing record's attempt landed.
+///       `Ok(true)` means landed;
+///  `Ok(false)` means the target never moved to it.
+/// Why:
+///   `commitLanded`:
+///  `ref-updated.json` is exact proof;
+///  otherwise one nonce entry naming the
+///       recorded commit is proof,
+///  several are contradictory,
+///  one naming another commit is
+///       contradictory,
+///  and none while the commit is reachable anyway is contradictory too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,8 +155,11 @@ pub fn commit_landed(
     return Ok(false);
 }
 
-/// What: Pin a transaction artifact under `<name>.recovery` after proving its recorded identity.
-/// Why:  `stabilizeArtifact`: the stable name keeps the exact inode even if the original name
+/// What:
+///  Pin a transaction artifact under `<name>.recovery` after proving its recorded identity.
+/// Why:
+///   `stabilizeArtifact`:
+///  the stable name keeps the exact inode even if the original name
 ///       is replaced meanwhile.
 ///
 /// In TS you'd write (pseudocode):
@@ -159,10 +182,15 @@ fn stabilize_artifact(
     return Ok(stable);
 }
 
-/// What: Install or recognize the recorded post-index after a landing.
-/// Why:  `completeIndex`: a present `index-installed` marker or a real index already equal to
-///       the post-index means done (the owned lock is released); otherwise the real index must
-///       still equal the pre-landing snapshot, or recovery fails closed.
+/// What:
+///  Install or recognize the recorded post-index after a landing.
+/// Why:
+///   `completeIndex`:
+///  a present `index-installed` marker or a real index already equal to
+///       the post-index means done (the owned lock is released);
+///  otherwise the real index must
+///       still equal the pre-landing snapshot,
+///  or recovery fails closed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

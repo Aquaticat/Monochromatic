@@ -1,9 +1,19 @@
-//! What: Processes holding a lock file open, found by device and inode: `/proc/<pid>/fd` on
-//!       Linux, `lsof` on macOS, the Restart Manager on Windows.
-//! Why: An open descriptor proves a live owner. Matching by device and inode, never by path text,
-//!      means bind mounts and renamed paths cannot fake or hide a holder. Processes the scan
+//! What:
+//!  Processes holding a lock file open,
+//!  found by device and inode:
+//!  `/proc/<pid>/fd` on
+//!       Linux,
+//!  `lsof` on macOS,
+//!  the Restart Manager on Windows.
+//! Why:
+//!  An open descriptor proves a live owner.
+//!  Matching by device and inode,
+//!  never by path text,
+//!      means bind mounts and renamed paths cannot fake or hide a holder.
+//!  Processes the scan
 //!      cannot read are partial evidence (`src/index-lock/index-lock-holders-linux.ts`,
-//!      `-darwin.ts`, `-win32.ts`).
+//!      `-darwin.ts`,
+//!  `-win32.ts`).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,18 +22,22 @@
 
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::Path;
-/// `PathBuf` is an owned filesystem path, used by the Unix proc scan.
+/// `PathBuf` is an owned filesystem path,
+///  used by the Unix proc scan.
 #[cfg(unix)]
 use std::path::PathBuf;
 
-/// The incumbent's Restart Manager script, byte for byte.
+/// The incumbent's Restart Manager script,
+///  byte for byte.
 pub const RESTART_MANAGER_SCRIPT: &str = include_str!("index_lock_restart_manager.ps1");
 
 /// Partial-evidence note every unprivileged macOS scan carries.
 pub const SILENT_DENIAL_NOTE: &str = "lsof omits other users' processes on macOS without reporting it";
 
-/// What: One process holding the lock open.
-/// Why:  `LockHolderProcess`.
+/// What:
+///  One process holding the lock open.
+/// Why:
+///   `LockHolderProcess`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,8 +51,12 @@ pub struct Holder {
     pub command: Option<String>,
 }
 
-/// What: The scan mechanism, its holders, and what it could not see.
-/// Why:  `LockHolderEvidence`.
+/// What:
+///  The scan mechanism,
+///  its holders,
+///  and what it could not see.
+/// Why:
+///   `LockHolderEvidence`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,8 +72,11 @@ pub struct HolderEvidence {
     pub partial: Vec<String>,
 }
 
-/// What: Whether a directory name is a decimal PID.
-/// Why:  `/proc` also holds `self`, `sys` and others.
+/// What:
+///  Whether a directory name is a decimal PID.
+/// Why:
+///   `/proc` also holds `self`,
+///  `sys` and others.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -66,8 +87,10 @@ fn is_pid_name(name: &str) -> bool {
     return !name.is_empty() && name.bytes().all(is_digit);
 }
 
-/// What: Whether a byte is an ASCII digit.
-/// Why:  A named predicate keeps the scans free of closures.
+/// What:
+///  Whether a byte is an ASCII digit.
+/// Why:
+///   A named predicate keeps the scans free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,8 +101,11 @@ fn is_digit(byte: u8) -> bool {
     return byte.is_ascii_digit();
 }
 
-/// What: Whether an error means the process exited during the scan.
-/// Why:  `ENOENT` and `ESRCH` are expected races, never partial evidence.
+/// What:
+///  Whether an error means the process exited during the scan.
+/// Why:
+///   `ENOENT` and `ESRCH` are expected races,
+///  never partial evidence.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,8 +126,11 @@ fn exited(error: &std::io::Error) -> bool {
     }
 }
 
-/// What: The device and inode a path names after following links, as numbers.
-/// Why:  A descriptor link resolves to the open file itself.
+/// What:
+///  The device and inode a path names after following links,
+///  as numbers.
+/// Why:
+///   A descriptor link resolves to the open file itself.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -109,14 +138,19 @@ fn exited(error: &std::io::Error) -> bool {
 /// ```
 #[cfg(unix)]
 fn followed_identity(path: &Path) -> std::io::Result<(u64, u64)> {
-    /// The Unix metadata accessors, for the device and inode.
+    /// The Unix metadata accessors,
+    ///  for the device and inode.
     use std::os::unix::fs::MetadataExt;
     let metadata: std::fs::Metadata = std::fs::metadata(path)?;
     return Ok((metadata.dev(), metadata.ino()));
 }
 
-/// What: Whether one process holds the file open, and why its descriptors were unreadable.
-/// Why:  `scanProcess`: the first unreadable descriptor's reason is kept.
+/// What:
+///  Whether one process holds the file open,
+///  and why its descriptors were unreadable.
+/// Why:
+///   `scanProcess`:
+///  the first unreadable descriptor's reason is kept.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -156,10 +190,16 @@ fn scan_process(proc_root: &Path, pid: &str, device: u64, inode: u64) -> (bool, 
     return (holds, partial);
 }
 
-/// What: Every process other than this one holding a file open, by device and inode, through a
+/// What:
+///  Every process other than this one holding a file open,
+///  by device and inode,
+///  through a
 ///       proc root.
-/// Why:  `scanProcFdHolders`; processes are scanned one after another (the incumbent runs 16 at
-///       once; the result is the same set).
+/// Why:
+///   `scanProcFdHolders`;
+///  processes are scanned one after another (the incumbent runs 16 at
+///       once;
+///  the result is the same set).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -212,8 +252,10 @@ pub fn scan_proc_fd_holders(proc_root: &Path, device: u64, inode: u64, self_pid:
     return evidence;
 }
 
-/// What: Text without surrounding whitespace.
-/// Why:  A named function keeps `map` free of closures.
+/// What:
+///  Text without surrounding whitespace.
+/// Why:
+///   A named function keeps `map` free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -224,8 +266,10 @@ fn trimmed(text: String) -> String {
     return String::from(super::js_text::trim_javascript(text.as_str()));
 }
 
-/// What: Scan for open holders with the host's mechanism.
-/// Why:  `scanPlatformHolders`.
+/// What:
+///  Scan for open holders with the host's mechanism.
+/// Why:
+///   `scanPlatformHolders`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -257,8 +301,12 @@ pub fn scan_platform_holders(lock_path: &Path, device: u64, inode: u64) -> Holde
     }
 }
 
-/// What: Holders through `lsof -n -P -w -F pcDi -- <lock>`; exit 1 with output means "no match".
-/// Why:  `scanLsofHolders`; an unprivileged scan always notes that macOS hides other users.
+/// What:
+///  Holders through `lsof -n -P -w -F pcDi -- <lock>`;
+///  exit 1 with output means "no match".
+/// Why:
+///   `scanLsofHolders`;
+///  an unprivileged scan always notes that macOS hides other users.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -300,8 +348,11 @@ fn scan_lsof_holders(lock_path: &Path, device: u64, inode: u64) -> HolderEvidenc
     };
 }
 
-/// What: Holders through the Restart Manager script, the path passed in `CLI_GIT_RM_TARGET`.
-/// Why:  `scanRestartManagerHolders`.
+/// What:
+///  Holders through the Restart Manager script,
+///  the path passed in `CLI_GIT_RM_TARGET`.
+/// Why:
+///   `scanRestartManagerHolders`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -339,7 +390,8 @@ fn scan_restart_manager_holders(lock_path: &Path) -> HolderEvidence {
     }
 }
 
-/// Holders found by the parsers, re-exported for the scans and their controls.
+/// Holders found by the parsers,
+///  re-exported for the scans and their controls.
 pub use super::index_lock_holder_parsers::{LsofProcess, matching_holders, parse_lsof_fields, parse_lsof_number, parse_restart_manager_output};
 
 /// Holder-scan controls stay out of the release executable.

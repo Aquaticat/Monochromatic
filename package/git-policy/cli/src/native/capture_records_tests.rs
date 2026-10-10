@@ -1,4 +1,6 @@
-//! Controls for capture records, landed records, recording and pruning.
+//! Controls for capture records,
+//!  landed records,
+//!  recording and pruning.
 
 use super::*;
 use crate::capture_store::{SEQUENCE_FILENAME, WORKTREE_ID_FILENAME};
@@ -18,7 +20,8 @@ fn captured(worktree_id: &str, next: i64) -> CapturedRecord {
     };
 }
 
-/// `captured.json` has the incumbent's field order and round-trips; malformed fields fail.
+/// `captured.json` has the incumbent's field order and round-trips;
+///  malformed fields fail.
 #[test]
 fn captured_records_round_trip() {
     let record: CapturedRecord = captured("w", 2);
@@ -115,7 +118,8 @@ fn landed_records_round_trip() {
     );
 }
 
-/// A landed record is written once from `captured.json`, with the next sequence after landing.
+/// A landed record is written once from `captured.json`,
+///  with the next sequence after landing.
 #[test]
 fn landings_record_their_capture_once() {
     let root: PathBuf = fixture("capture-records-record");
@@ -217,7 +221,8 @@ fn landed(git_dir: &Path, commit: &str, worktree_id: &str, next: i64) {
     .expect("landed");
 }
 
-/// The landed record names left in a directory, sorted.
+/// The landed record names left in a directory,
+///  sorted.
 fn left(git_dir: &Path) -> Vec<String> {
     let mut names: Vec<String> = list_landed_record_names(git_dir).expect("names");
     names.sort();

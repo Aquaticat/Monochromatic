@@ -13,7 +13,8 @@ fn ids(items: &[&str]) -> Vec<String> {
     return owned;
 }
 
-/// Headers need three fields, a blob and a canonical size.
+/// Headers need three fields,
+///  a blob and a canonical size.
 #[test]
 fn headers_are_strict() {
     assert_eq!(
@@ -60,7 +61,8 @@ fn second(header: (String, usize)) -> usize {
     return header.1;
 }
 
-/// Output is read by size, never by delimiters inside content.
+/// Output is read by size,
+///  never by delimiters inside content.
 #[test]
 fn output_is_read_by_size() {
     let output: &[u8] = b"a blob 3\nx\ny\nb blob 0\n\n";
@@ -117,7 +119,8 @@ fn output_is_read_by_size() {
     assert_eq!(parse_batch_output(b"", &[]), Ok(HashMap::new()));
 }
 
-/// Real Git supplies every distinct blob, including ones only a private store holds.
+/// Real Git supplies every distinct blob,
+///  including ones only a private store holds.
 #[test]
 fn real_git_supplies_blobs() {
     let root: PathBuf = fixture("blob-batch-real");

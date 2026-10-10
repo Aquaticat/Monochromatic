@@ -1,9 +1,18 @@
-//! What: The wall-clock start time of a process, with its resolution, for comparing a Git lock
+//! What:
+//!  The wall-clock start time of a process,
+//!  with its resolution,
+//!  for comparing a Git lock
 //!       PID file's owner with the lock's change time.
-//! Why: A PID file names a live owner only when that process started no later than the lock
-//!      changed; a younger process reused the PID. Linux derives the start from
-//!      `/proc/<pid>/stat` field 22, `/proc/uptime` and the current time; macOS reads
-//!      `ps -o lstart=`; Windows reads `Get-Process` `StartTime`
+//! Why:
+//!  A PID file names a live owner only when that process started no later than the lock
+//!      changed;
+//!  a younger process reused the PID.
+//!  Linux derives the start from
+//!      `/proc/<pid>/stat` field 22,
+//!  `/proc/uptime` and the current time;
+//!  macOS reads
+//!      `ps -o lstart=`;
+//!  Windows reads `Get-Process` `StartTime`
 //!      (`src/index-lock/process-start-time.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -17,13 +26,16 @@ use super::process_identity::signal_probe;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// Clock ticks per second in `/proc/<pid>/stat`, the kernel's fixed `USER_HZ`.
+/// Clock ticks per second in `/proc/<pid>/stat`,
+///  the kernel's fixed `USER_HZ`.
 pub const LINUX_USER_HZ: i64 = 100;
 
-/// Resolution of a Linux start time: one tick plus the centisecond resolution of `/proc/uptime`.
+/// Resolution of a Linux start time:
+///  one tick plus the centisecond resolution of `/proc/uptime`.
 pub const LINUX_RESOLUTION_MS: i64 = 2 * (1000 / LINUX_USER_HZ);
 
-/// Resolution of `ps -o lstart=`, which prints whole seconds.
+/// Resolution of `ps -o lstart=`,
+///  which prints whole seconds.
 pub const DARWIN_RESOLUTION_MS: i64 = 1000;
 
 /// Resolution granted to Windows start times.
@@ -32,8 +44,11 @@ pub const WINDOWS_RESOLUTION_MS: i64 = 1;
 /// Index of the start-tick field among the fields after the command name (field 22 overall).
 pub const START_TICKS_FIELD_INDEX: usize = 19;
 
-/// What: When a process started, or why that is not known.
-/// Why:  `ProcessStart`.
+/// What:
+///  When a process started,
+///  or why that is not known.
+/// Why:
+///   `ProcessStart`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,7 +63,8 @@ pub enum ProcessStart {
         /// Clock granularity to allow for when comparing.
         resolution_ms: i64,
     },
-    /// No such process runs, or it is a zombie.
+    /// No such process runs,
+    ///  or it is a zombie.
     Missing,
     /// The process may run but its start time is unreadable.
     Unknown(
@@ -57,8 +73,12 @@ pub enum ProcessStart {
     ),
 }
 
-/// What: The state letter and start ticks of a `/proc/<pid>/stat` line.
-/// Why:  `parseLinuxStat`: the command name ends at the last `)`; field 22 must be a safe
+/// What:
+///  The state letter and start ticks of a `/proc/<pid>/stat` line.
+/// Why:
+///   `parseLinuxStat`:
+///  the command name ends at the last `)`;
+///  field 22 must be a safe
 ///       integer as `Number` reads it.
 ///
 /// In TS you'd write (pseudocode):
@@ -81,8 +101,10 @@ pub fn parse_linux_stat(stat: &str) -> Option<(String, i64)> {
     return Some((String::from(state), ticks));
 }
 
-/// What: Whether a byte is an ASCII digit.
-/// Why:  A named predicate keeps the scan free of closures.
+/// What:
+///  Whether a byte is an ASCII digit.
+/// Why:
+///   A named predicate keeps the scan free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -92,8 +114,11 @@ fn is_digit(byte: u8) -> bool {
     return byte.is_ascii_digit();
 }
 
-/// What: The seconds since boot in `/proc/uptime` text, its first field.
-/// Why:  The start is `now - uptime + ticks / USER_HZ`.
+/// What:
+///  The seconds since boot in `/proc/uptime` text,
+///  its first field.
+/// Why:
+///   The start is `now - uptime + ticks / USER_HZ`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -110,8 +135,10 @@ pub fn parse_uptime(text: &str) -> Option<f64> {
     return Some(seconds);
 }
 
-/// What: The current time in milliseconds since the epoch.
-/// Why:  `Date.now()`.
+/// What:
+///  The current time in milliseconds since the epoch.
+/// Why:
+///   `Date.now()`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -124,8 +151,11 @@ pub fn now_ms() -> f64 {
     }
 }
 
-/// What: A Linux process's start from a proc root.
-/// Why:  `linuxStart`; a vanished stat file or a zombie is a missing process.
+/// What:
+///  A Linux process's start from a proc root.
+/// Why:
+///   `linuxStart`;
+///  a vanished stat file or a zombie is a missing process.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -159,12 +189,23 @@ pub fn linux_start(pid: i64, proc_root: &Path, now: f64) -> ProcessStart {
     };
 }
 
-/// What: Month numbers of the C locale's abbreviated month names.
-/// Why:  `ps -o lstart=` prints `Fri Sep 26 10:00:00 2026`.
+/// What:
+///  Month numbers of the C locale's abbreviated month names.
+/// Why:
+///   `ps -o lstart=` prints `Fri Sep 26 10:00:00 2026`.
 const MONTHS: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/// What: The fields of a `ps -o lstart=` line: year, month (0 to 11), day, hour, minute, second.
-/// Why:  `Date.parse` reads this local-time form; the conversion to an instant happens apart.
+/// What:
+///  The fields of a `ps -o lstart=` line:
+///  year,
+///  month (0 to 11),
+///  day,
+///  hour,
+///  minute,
+///  second.
+/// Why:
+///   `Date.parse` reads this local-time form;
+///  the conversion to an instant happens apart.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -188,8 +229,10 @@ pub fn parse_lstart(text: &str) -> Option<(i32, i32, i32, i32, i32, i32)> {
     return Some((year, month, day, hour, minute, second));
 }
 
-/// What: The month number (0 to 11) of a C-locale abbreviated month name.
-/// Why:  A named search keeps the parser free of closures.
+/// What:
+///  The month number (0 to 11) of a C-locale abbreviated month name.
+/// Why:
+///   A named search keeps the parser free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -204,8 +247,11 @@ fn month_number(name: &str) -> Option<i32> {
     return None;
 }
 
-/// What: Whether a process with this PID exists; a permission denial means it does.
-/// Why:  `processExists`.
+/// What:
+///  Whether a process with this PID exists;
+///  a permission denial means it does.
+/// Why:
+///   `processExists`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -226,8 +272,10 @@ pub fn process_exists(pid: i64) -> bool {
     }
 }
 
-/// What: Whether a PID names a running process and when it started.
-/// Why:  `resolveProcessStart` with the host's mechanism.
+/// What:
+///  Whether a PID names a running process and when it started.
+/// Why:
+///   `resolveProcessStart` with the host's mechanism.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -255,8 +303,12 @@ pub fn resolve_process_start(pid: i64) -> ProcessStart {
     }
 }
 
-/// What: A macOS process's start through `ps -o lstart=`, read as local time.
-/// Why:  `darwinStart`; `mktime` applies the local time zone as `Date.parse` does.
+/// What:
+///  A macOS process's start through `ps -o lstart=`,
+///  read as local time.
+/// Why:
+///   `darwinStart`;
+///  `mktime` applies the local time zone as `Date.parse` does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -297,8 +349,11 @@ fn darwin_start(pid: i64) -> ProcessStart {
     };
 }
 
-/// What: A Windows process's start through PowerShell, in .NET ticks.
-/// Why:  `win32Start`.
+/// What:
+///  A Windows process's start through PowerShell,
+///  in .NET ticks.
+/// Why:
+///   `win32Start`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

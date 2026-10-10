@@ -1,9 +1,19 @@
-//! What: Recovery of one dead-owner transaction from its schema-version-2 records.
-//! Why: Without a landing record the real index and refs were never touched: recovery releases
-//!      the `index.lock` the transaction provably created and removes its `.keep` files, shadow and
-//!      directory. With a landing record (the caller holds the landing lock) it decides from
-//!      `ref-updated.json` or the reflog nonce whether the commit landed, then discards the
-//!      attempt or completes it: index, conclusion cleanup, added-path copies. Missing evidence
+//! What:
+//!  Recovery of one dead-owner transaction from its schema-version-2 records.
+//! Why:
+//!  Without a landing record the real index and refs were never touched:
+//!  recovery releases
+//!      the `index.lock` the transaction provably created and removes its `.keep` files,
+//!  shadow and
+//!      directory.
+//!  With a landing record (the caller holds the landing lock) it decides from
+//!      `ref-updated.json` or the reflog nonce whether the commit landed,
+//!  then discards the
+//!      attempt or completes it:
+//!  index,
+//!  conclusion cleanup,
+//!  added-path copies.
+//!  Missing evidence
 //!      fails closed and keeps the directory (`src/policy-engine/commit-transaction-recovery-landing.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -50,8 +60,11 @@ use std::path::{Path, PathBuf};
 /// Prepared-journal filename written only by unreleased builds in registry directories.
 pub const UNRELEASED_JOURNAL_FILENAME: &str = "journal.json";
 
-/// What: What recovery did for one transaction directory.
-/// Why:  `CommitTransactionRecoveryAction`, reported in debug output.
+/// What:
+///  What recovery did for one transaction directory.
+/// Why:
+///   `CommitTransactionRecoveryAction`,
+///  reported in debug output.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,7 +72,8 @@ pub const UNRELEASED_JOURNAL_FILENAME: &str = "journal.json";
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RecoveryAction {
-    /// The commit never landed; the attempt was discarded.
+    /// The commit never landed;
+    ///  the attempt was discarded.
     CommitNotCreated,
     /// An interrupted normalization's index was completed.
     NormalizationInstalled,
@@ -67,7 +81,8 @@ pub enum RecoveryAction {
     IndexInstalled,
     /// A landed commit's post-index was already installed.
     AlreadyInstalled,
-    /// The owner still runs; nothing was touched.
+    /// The owner still runs;
+    ///  nothing was touched.
     OwnerActive,
     /// The directory disappeared while recovery listed it.
     Vanished,
@@ -79,8 +94,10 @@ pub enum RecoveryAction {
     RetiredRemoved,
 }
 
-/// What: The incumbent's name of an action.
-/// Why:  Debug output lists outcomes by these names.
+/// What:
+///  The incumbent's name of an action.
+/// Why:
+///   Debug output lists outcomes by these names.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,8 +117,10 @@ pub fn action_name(action: RecoveryAction) -> &'static str {
     }
 }
 
-/// What: Where recovery runs Git and finds the shared Git directory.
-/// Why:  Every recovery step asks Git in the invocation's repository.
+/// What:
+///  Where recovery runs Git and finds the shared Git directory.
+/// Why:
+///   Every recovery step asks Git in the invocation's repository.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,8 +136,13 @@ pub struct RecoveryPlace {
     pub common_dir: PathBuf,
 }
 
-/// What: Remove everything a dead transaction left: `.keep` files, the shadow, the directory.
-/// Why:  `discardTransaction`.
+/// What:
+///  Remove everything a dead transaction left:
+///  `.keep` files,
+///  the shadow,
+///  the directory.
+/// Why:
+///   `discardTransaction`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -137,8 +161,11 @@ fn discard_transaction(
     return remove_transaction_directory(directory);
 }
 
-/// What: The invocation capture record, or nothing when the owner died before writing it.
-/// Why:  `readPreparing`.
+/// What:
+///  The invocation capture record,
+///  or nothing when the owner died before writing it.
+/// Why:
+///   `readPreparing`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -154,8 +181,11 @@ fn read_preparing(directory: &Path) -> Result<Option<PreparingRecord>, RecoveryE
     )?));
 }
 
-/// What: Whether the target still resolves to the base an interrupted normalization recorded.
-/// Why:  A normalization never moves the target; one that moved belongs to someone else.
+/// What:
+///  Whether the target still resolves to the base an interrupted normalization recorded.
+/// Why:
+///   A normalization never moves the target;
+///  one that moved belongs to someone else.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -180,9 +210,13 @@ fn target_unmoved(place: &RecoveryPlace, preparing: &PreparingRecord, expected: 
     return current == *expected;
 }
 
-/// What: Recover one dead-owner transaction; a caller recovering one with a landing record must
+/// What:
+///  Recover one dead-owner transaction;
+///  a caller recovering one with a landing record must
 ///       hold the landing lock.
-/// Why:  `recoverDeadTransaction`, step for step.
+/// Why:
+///   `recoverDeadTransaction`,
+///  step for step.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,8 +1,12 @@
-//! What: UTC timestamps in the exact form of JavaScript's `Date.prototype.toISOString`:
+//! What:
+//!  UTC timestamps in the exact form of JavaScript's `Date.prototype.toISOString`:
 //!       `YYYY-MM-DDTHH:MM:SS.mmmZ`.
-//! Why: Transaction owner records carry `createdAt` and capture records `invokedAt` in this
-//!      form; recovery orders dead transactions and the reservation grants turns by comparing
-//!      these strings, so both wrappers must write the same shape.
+//! Why:
+//!  Transaction owner records carry `createdAt` and capture records `invokedAt` in this
+//!      form;
+//!  recovery orders dead transactions and the reservation grants turns by comparing
+//!      these strings,
+//!  so both wrappers must write the same shape.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -12,9 +16,15 @@
 /// Milliseconds in one day.
 const MILLISECONDS_PER_DAY: i64 = 86_400_000;
 
-/// What: The civil date of a day count since 1970-01-01, as (year, month, day).
+/// What:
+///  The civil date of a day count since 1970-01-01,
+///  as (year,
+///  month,
+///  day).
 ///       `(i64, u32, u32)` is a tuple of three numbers.
-/// Why:  Howard Hinnant's `civil_from_days`, exact for the proleptic Gregorian calendar
+/// Why:
+///   Howard Hinnant's `civil_from_days`,
+///  exact for the proleptic Gregorian calendar
 ///       JavaScript dates use.
 ///
 /// In TS you'd write (pseudocode):
@@ -40,8 +50,11 @@ pub fn civil_from_days(days: i64) -> (i64, u32, u32) {
     return (year, month as u32, day as u32);
 }
 
-/// What: Format milliseconds since the Unix epoch as `toISOString` does for years 0 to 9999.
-/// Why:  The wrapper only formats the current time; the four-digit year form covers it.
+/// What:
+///  Format milliseconds since the Unix epoch as `toISOString` does for years 0 to 9999.
+/// Why:
+///   The wrapper only formats the current time;
+///  the four-digit year form covers it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,8 +73,10 @@ pub fn format_iso_milliseconds(milliseconds: i64) -> String {
     );
 }
 
-/// What: The current time as `toISOString` text.
-/// Why:  Owner and capture records record when the invocation started.
+/// What:
+///  The current time as `toISOString` text.
+/// Why:
+///   Owner and capture records record when the invocation started.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

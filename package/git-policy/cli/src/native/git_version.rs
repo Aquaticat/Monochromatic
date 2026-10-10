@@ -1,8 +1,15 @@
-//! What: The real Git version check, run once per invocation before work that depends on Git's
-//!       behavior: a commit, hooks and locks.
-//! Why: The native tables and protocols follow Git 2.56.0; the owner settled that 2.56.0 or newer
+//! What:
+//!  The real Git version check,
+//!  run once per invocation before work that depends on Git's
+//!       behavior:
+//!  a commit,
+//!  hooks and locks.
+//! Why:
+//!  The native tables and protocols follow Git 2.56.0;
+//!  the owner settled that 2.56.0 or newer
 //!      counts as supported and that read-only commands are never checked
-//!      (`doc/handover/cli-git-rust-implementation.md`, "Adopted without a question").
+//!      (`doc/handover/cli-git-rust-implementation.md`,
+//!  "Adopted without a question").
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -17,14 +24,19 @@ use std::sync::OnceLock;
 /// The oldest supported Git release.
 pub const MINIMUM_GIT_VERSION: (u64, u64, u64) = (2, 56, 0);
 
-/// A Git release as its major, minor and patch numbers.
+/// A Git release as its major,
+///  minor and patch numbers.
 pub type GitRelease = (u64, u64, u64);
 
 /// The answer of this process's one check.
 static CHECKED: OnceLock<Result<GitRelease, String>> = OnceLock::new();
 
-/// What: The release numbers of `git version` output, such as `git version 2.56.0.windows.1`.
-/// Why:  Only the first three dotted numbers decide support; platform suffixes vary.
+/// What:
+///  The release numbers of `git version` output,
+///  such as `git version 2.56.0.windows.1`.
+/// Why:
+///   Only the first three dotted numbers decide support;
+///  platform suffixes vary.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,8 +55,10 @@ pub fn parse_git_version(output: &[u8]) -> Option<(u64, u64, u64)> {
     return Some((major, minor, patch));
 }
 
-/// What: Whether a character is not an ASCII digit.
-/// Why:  A named predicate keeps the search free of closures.
+/// What:
+///  Whether a character is not an ASCII digit.
+/// Why:
+///   A named predicate keeps the search free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,8 +68,10 @@ fn not_digit(character: char) -> bool {
     return !character.is_ascii_digit();
 }
 
-/// What: The message for an unsupported or unreadable Git.
-/// Why:  The person must know which Git was asked and what to do.
+/// What:
+///  The message for an unsupported or unreadable Git.
+/// Why:
+///   The person must know which Git was asked and what to do.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -70,8 +86,11 @@ pub fn unsupported_message(context: &GitContext, found: &str) -> String {
     );
 }
 
-/// What: Ask Git its version and decide support, without the cache.
-/// Why:  `check_git_version` remembers this answer.
+/// What:
+///  Ask Git its version and decide support,
+///  without the cache.
+/// Why:
+///   `check_git_version` remembers this answer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -97,8 +116,12 @@ pub fn ask_git_version(context: &GitContext) -> Result<(u64, u64, u64), String> 
     return Ok(version);
 }
 
-/// What: Require a supported Git, asking at most once per process.
-/// Why:  The check costs a Git process, so later dependent steps reuse the answer.
+/// What:
+///  Require a supported Git,
+///  asking at most once per process.
+/// Why:
+///   The check costs a Git process,
+///  so later dependent steps reuse the answer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -108,8 +131,12 @@ pub fn check_git_version(context: &GitContext) -> Result<(u64, u64, u64), String
     return check_once(&CHECKED, context, ask_git_version);
 }
 
-/// What: Return the answer already stored in `cell`, or ask once and store the answer.
-/// Why:  `check_git_version` keeps one answer per process; a separate cell lets the controls
+/// What:
+///  Return the answer already stored in `cell`,
+///  or ask once and store the answer.
+/// Why:
+///   `check_git_version` keeps one answer per process;
+///  a separate cell lets the controls
 ///       prove the ask runs once without sharing the process-wide answer.
 ///
 /// In TS you'd write (pseudocode):

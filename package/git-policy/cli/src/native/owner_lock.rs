@@ -1,9 +1,19 @@
-//! What: Rename-published owner-lock directories with process-birth ownership: acquisition
-//!       with dead-owner retirement, an unbounded wait while the owner lives, and release by
+//! What:
+//!  Rename-published owner-lock directories with process-birth ownership:
+//!  acquisition
+//!       with dead-owner retirement,
+//!  an unbounded wait while the owner lives,
+//!  and release by
 //!       rename before deletion.
-//! Why: The landing, reservation, hook, capture and push locks all work this way in the
-//!      incumbent (`src/owner-lock/owner-lock.ts`) and in its hook dispatcher, and both
-//!      wrappers contend on the same directories while both are installed. A published lock
+//! Why:
+//!  The landing,
+//!  reservation,
+//!  hook,
+//!  capture and push locks all work this way in the
+//!      incumbent (`src/owner-lock/owner-lock.ts`) and in its hook dispatcher,
+//!  and both
+//!      wrappers contend on the same directories while both are installed.
+//!  A published lock
 //!      always names its owner because its candidate is complete before the rename.
 //!
 //! In TS you'd write (pseudocode):
@@ -11,7 +21,8 @@
 //! await using lock = await acquireOwnerLock({ lockDirectory });
 //! ```
 
-/// The owner record, its reading and owner liveness.
+/// The owner record,
+///  its reading and owner liveness.
 use super::owner_lock_record::{
     OWNER_LOCK_RECORD_FILENAME, OwnerLockRecord, OwnerRecordError, PublishedOwner,
     encode_owner_lock_record, owner_lock_holder_is_alive, read_owner_lock_record,
@@ -30,8 +41,11 @@ use std::time::Duration;
 /// Delay between acquisition attempts while a live owner holds the lock.
 pub const DEFAULT_POLL_DELAY: Duration = Duration::from_millis(20);
 
-/// What: Why an owner-lock operation failed.
-/// Why:  Each failure stops the caller with the lock named; none is a reason to delete a
+/// What:
+///  Why an owner-lock operation failed.
+/// Why:
+///   Each failure stops the caller with the lock named;
+///  none is a reason to delete a
 ///       lock that might belong to a live owner.
 ///
 /// In TS you'd write (pseudocode):
@@ -42,13 +56,15 @@ pub const DEFAULT_POLL_DELAY: Duration = Duration::from_millis(20);
 pub enum OwnerLockError {
     /// The blocking lock's record is malformed or unreadable.
     Record(OwnerRecordError),
-    /// The current process has no identity, or an owner's liveness could not be decided.
+    /// The current process has no identity,
+    ///  or an owner's liveness could not be decided.
     Identity(ProcessIdentityError),
     /// No random token could be made.
     Random(RandomSourceError),
     /// A filesystem step failed.
     Io {
-        /// What the step was doing, in words.
+        /// What the step was doing,
+        ///  in words.
         operation: &'static str,
         /// The path it acted on.
         path: PathBuf,
@@ -59,8 +75,10 @@ pub enum OwnerLockError {
     OwnershipChanged(PathBuf),
 }
 
-/// What: Human-readable text for each failure.
-/// Why:  Diagnostics name the lock and the reason.
+/// What:
+///  Human-readable text for each failure.
+/// Why:
+///   Diagnostics name the lock and the reason.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -104,8 +122,10 @@ impl std::fmt::Display for OwnerLockError {
     }
 }
 
-/// What: Wrap a filesystem error with the step and path that failed.
-/// Why:  One constructor keeps every filesystem failure named the same way.
+/// What:
+///  Wrap a filesystem error with the step and path that failed.
+/// Why:
+///   One constructor keeps every filesystem failure named the same way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -119,9 +139,12 @@ fn io_error(operation: &'static str, path: &Path, error: std::io::Error) -> Owne
     };
 }
 
-/// What: Whether a rename failed because another directory already holds the name.
-/// Why:  `rename` onto a non-empty directory fails with `EEXIST` or `ENOTEMPTY` on Unix and
-///       with an access-denied error on Windows (Node's `EPERM`); the incumbent's
+/// What:
+///  Whether a rename failed because another directory already holds the name.
+/// Why:
+///   `rename` onto a non-empty directory fails with `EEXIST` or `ENOTEMPTY` on Unix and
+///       with an access-denied error on Windows (Node's `EPERM`);
+///  the incumbent's
 ///       `isOccupiedError` accepts exactly these.
 ///
 /// In TS you'd write (pseudocode):
@@ -137,8 +160,10 @@ pub fn is_occupied_error(error: &std::io::Error) -> bool {
     );
 }
 
-/// What: A unique sibling name `<lock>.<uuid>.<suffix>` for a candidate or a retired lock.
-/// Why:  Candidates (`.pending`) and retired locks (`.stale`) never collide with each other,
+/// What:
+///  A unique sibling name `<lock>.<uuid>.<suffix>` for a candidate or a retired lock.
+/// Why:
+///   Candidates (`.pending`) and retired locks (`.stale`) never collide with each other,
 ///       and every reader ignores both names.
 ///
 /// In TS you'd write (pseudocode):
@@ -153,8 +178,11 @@ fn sibling_name(lock_directory: &Path, suffix: &str) -> Result<PathBuf, OwnerLoc
     return Ok(PathBuf::from(name));
 }
 
-/// What: Read a lock's owner, turning record failures into lock failures.
-/// Why:  Every step of acquisition and release reads the owner the same way.
+/// What:
+///  Read a lock's owner,
+///  turning record failures into lock failures.
+/// Why:
+///   Every step of acquisition and release reads the owner the same way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -164,9 +192,12 @@ fn read_owner(lock_directory: &Path) -> Result<PublishedOwner, OwnerLockError> {
     return read_owner_lock_record(lock_directory).map_err(OwnerLockError::Record);
 }
 
-/// What: A held owner lock. Releasing it proves the lock still names this holder first.
+/// What:
+///  A held owner lock.
+///  Releasing it proves the lock still names this holder first.
 ///       Dropping an unreleased lock releases it and ignores a failure.
-/// Why:  An early return or an unwinding error must not leave a live-looking lock behind;
+/// Why:
+///   An early return or an unwinding error must not leave a live-looking lock behind;
 ///       an explicit `release` reports a changed owner.
 ///
 /// In TS you'd write (pseudocode):
@@ -185,8 +216,10 @@ pub struct OwnerLock {
 
 /// Accessors and release of a held lock.
 impl OwnerLock {
-    /// What: The published lock directory.
-    /// Why:  Leases and diagnostics name the lock.
+    /// What:
+    ///  The published lock directory.
+    /// Why:
+    ///   Leases and diagnostics name the lock.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -196,8 +229,10 @@ impl OwnerLock {
         return self.directory.as_path();
     }
 
-    /// What: The token this holder published.
-    /// Why:  A lease proves which acquisition it belongs to.
+    /// What:
+    ///  The token this holder published.
+    /// Why:
+    ///   A lease proves which acquisition it belongs to.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -207,9 +242,13 @@ impl OwnerLock {
         return self.token.as_str();
     }
 
-    /// What: Release the lock, failing when it no longer names this holder.
-    ///       `mut self` takes ownership: a released lock cannot be used again.
-    /// Why:  The release is the incumbent's `releaseHeldLock`.
+    /// What:
+    ///  Release the lock,
+    ///  failing when it no longer names this holder.
+    ///       `mut self` takes ownership:
+    ///  a released lock cannot be used again.
+    /// Why:
+    ///   The release is the incumbent's `releaseHeldLock`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -223,8 +262,12 @@ impl OwnerLock {
 
 /// Dropping an unreleased lock releases it.
 impl Drop for OwnerLock {
-    /// What: Release the lock unless `release` already did; a failure is ignored.
-    /// Why:  Nothing can be reported from a drop, and a lock that changed owner is not this
+    /// What:
+    ///  Release the lock unless `release` already did;
+    ///  a failure is ignored.
+    /// Why:
+    ///   Nothing can be reported from a drop,
+    ///  and a lock that changed owner is not this
     ///       holder's to remove.
     ///
     /// In TS you'd write (pseudocode):
@@ -239,10 +282,14 @@ impl Drop for OwnerLock {
     }
 }
 
-/// What: Move a renamed-away directory back to the published name when it turned out to
+/// What:
+///  Move a renamed-away directory back to the published name when it turned out to
 ///       belong to someone else.
-/// Why:  A race can move a live replacement aside; putting it back is all that can be done,
-///       and an occupied name means a newer owner already published, which is left alone.
+/// Why:
+///   A race can move a live replacement aside;
+///  putting it back is all that can be done,
+///       and an occupied name means a newer owner already published,
+///  which is left alone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -256,10 +303,15 @@ fn restore_moved(moved: &Path, lock_directory: &Path) -> Result<(), OwnerLockErr
     }
 }
 
-/// What: Release a held lock by renaming it away, then deleting the renamed copy.
-/// Why:  Emptying the published directory in place would let a concurrent acquirer's rename
-///       replace it mid-removal and lose the next owner's record; the rename frees the name
-///       atomically. A lock that names another owner before or after the move is reported.
+/// What:
+///  Release a held lock by renaming it away,
+///  then deleting the renamed copy.
+/// Why:
+///   Emptying the published directory in place would let a concurrent acquirer's rename
+///       replace it mid-removal and lose the next owner's record;
+///  the rename frees the name
+///       atomically.
+///  A lock that names another owner before or after the move is reported.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -278,9 +330,12 @@ fn release_held_lock(lock_directory: &Path, token: &str) -> Result<(), OwnerLock
     return settle_moved_release(retired.as_path(), lock_directory, token);
 }
 
-/// What: Finish a release after the lock was renamed away: delete it when it is this holder's,
+/// What:
+///  Finish a release after the lock was renamed away:
+///  delete it when it is this holder's,
 ///       or put it back and report the change when a race moved someone else's lock.
-/// Why:  Between the owner check and the rename another process may have replaced the lock;
+/// Why:
+///   Between the owner check and the rename another process may have replaced the lock;
 ///       the moved copy is checked again before anything is deleted.
 ///
 /// In TS you'd write (pseudocode):
@@ -304,8 +359,10 @@ fn settle_moved_release(
     return Ok(());
 }
 
-/// What: Whether a read owner is present and published `token`.
-/// Why:  Release and retirement both ask whether the lock still holds a given acquisition.
+/// What:
+///  Whether a read owner is present and published `token`.
+/// Why:
+///   Release and retirement both ask whether the lock still holds a given acquisition.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -318,10 +375,17 @@ fn names_token(owner: &PublishedOwner, token: &str) -> bool {
     }
 }
 
-/// What: Retire a lock whose owner was found dead, unless it changed owner meanwhile.
-/// Why:  The liveness check took time, during which the dead-looking owner may have released
-///       and a live acquirer published. The lock is renamed to a unique stale name, and a live
-///       replacement moved by the race is restored. The caller retries afterwards either way.
+/// What:
+///  Retire a lock whose owner was found dead,
+///  unless it changed owner meanwhile.
+/// Why:
+///   The liveness check took time,
+///  during which the dead-looking owner may have released
+///       and a live acquirer published.
+///  The lock is renamed to a unique stale name,
+///  and a live
+///       replacement moved by the race is restored.
+///  The caller retries afterwards either way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -346,9 +410,13 @@ fn retire_dead_lock(lock_directory: &Path, dead_token: &str) -> Result<(), Owner
     return settle_moved_retirement(stale.as_path(), lock_directory, dead_token);
 }
 
-/// What: Finish a retirement after the lock was renamed away: delete the dead owner's lock,
+/// What:
+///  Finish a retirement after the lock was renamed away:
+///  delete the dead owner's lock,
 ///       or put back a live replacement that a race moved instead.
-/// Why:  A concurrent acquirer may have published between the owner check and the rename; a
+/// Why:
+///   A concurrent acquirer may have published between the owner check and the rename;
+///  a
 ///       moved lock that names another token is not the dead owner's to delete.
 ///
 /// In TS you'd write (pseudocode):
@@ -371,8 +439,11 @@ fn settle_moved_retirement(
     return Ok(());
 }
 
-/// What: Write a complete unpublished candidate: a private directory and its owner record.
-/// Why:  Publication by rename makes a lock appear with its owner record already complete.
+/// What:
+///  Write a complete unpublished candidate:
+///  a private directory and its owner record.
+/// Why:
+///   Publication by rename makes a lock appear with its owner record already complete.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -394,9 +465,16 @@ fn write_candidate(candidate: &Path, record: &OwnerLockRecord) -> Result<(), Own
     return Ok(());
 }
 
-/// What: One publication attempt: publish a fresh candidate, or retire a dead owner's lock
-///       that blocks it. `Ok(None)` means busy: try again.
-/// Why:  The incumbent's `attemptAcquire`, step for step.
+/// What:
+///  One publication attempt:
+///  publish a fresh candidate,
+///  or retire a dead owner's lock
+///       that blocks it.
+///  `Ok(None)` means busy:
+///  try again.
+/// Why:
+///   The incumbent's `attemptAcquire`,
+///  step for step.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -439,8 +517,10 @@ fn attempt_acquire(
     return Ok(None);
 }
 
-/// What: A fresh owner record for the current process.
-/// Why:  Every acquisition publishes a new token with this process's PID and birth identity.
+/// What:
+///  A fresh owner record for the current process.
+/// Why:
+///   Every acquisition publishes a new token with this process's PID and birth identity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -456,9 +536,14 @@ fn current_owner_record(transaction_id: Option<&str>) -> Result<OwnerLockRecord,
     });
 }
 
-/// What: One publication attempt without waiting. `Ok(None)` means another owner holds the
-///       lock, or a dead owner's lock was just retired and the caller should try again.
-/// Why:  The reservation is taken this way, by a requester that re-checks its turn between
+/// What:
+///  One publication attempt without waiting.
+///  `Ok(None)` means another owner holds the
+///       lock,
+///  or a dead owner's lock was just retired and the caller should try again.
+/// Why:
+///   The reservation is taken this way,
+///  by a requester that re-checks its turn between
 ///       attempts.
 ///
 /// In TS you'd write (pseudocode):
@@ -472,9 +557,12 @@ pub fn try_acquire_owner_lock(
     return attempt_acquire(lock_directory, &current_owner_record(transaction_id)?);
 }
 
-/// What: Retire a lock whose recorded owner is dead; an absent lock or a live owner's lock is
+/// What:
+///  Retire a lock whose recorded owner is dead;
+///  an absent lock or a live owner's lock is
 ///       left alone.
-/// Why:  Recovery retires a dead reservation holder's lock this way.
+/// Why:
+///   Recovery retires a dead reservation holder's lock this way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -490,21 +578,29 @@ pub fn retire_lock_of_dead_owner(lock_directory: &Path) -> Result<(), OwnerLockE
     return retire_dead_lock(lock_directory, published.token.as_str());
 }
 
-/// What: Something told once that an acquirer has to wait, such as a stderr notice.
+/// What:
+///  Something told once that an acquirer has to wait,
+///  such as a stderr notice.
 ///       A `trait` is an interface a type implements.
-/// Why:  A waiter may tell the user whose lock it waits for; the lock module stays silent.
+/// Why:
+///   A waiter may tell the user whose lock it waits for;
+///  the lock module stays silent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type OnWait = () => void;
 /// ```
 pub trait WaitNotice {
-    /// Called once, when the first attempt finds the lock held.
+    /// Called once,
+    ///  when the first attempt finds the lock held.
     fn waiting(&mut self);
 }
 
-/// What: The notice that says nothing.
-/// Why:  Most acquirers wait silently, as the incumbent's default.
+/// What:
+///  The notice that says nothing.
+/// Why:
+///   Most acquirers wait silently,
+///  as the incumbent's default.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -519,11 +615,17 @@ impl WaitNotice for SilentWait {
     fn waiting(&mut self) {}
 }
 
-/// What: Acquire a lock, waiting without bound while a live owner holds it.
-///       `notice` is told once, when the first attempt finds the lock busy;
+/// What:
+///  Acquire a lock,
+///  waiting without bound while a live owner holds it.
+///       `notice` is told once,
+///  when the first attempt finds the lock busy;
 ///       `&mut dyn WaitNotice` lends any value implementing that interface.
-/// Why:  The wait is unbounded by contract while the owner lives; a dead owner's lock is
-///       retired on the next attempt. One process record is used for every attempt.
+/// Why:
+///   The wait is unbounded by contract while the owner lives;
+///  a dead owner's lock is
+///       retired on the next attempt.
+///  One process record is used for every attempt.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -549,7 +651,8 @@ pub fn acquire_owner_lock(
     }
 }
 
-/// Lock contention, retirement and release controls stay out of the release executable.
+/// Lock contention,
+///  retirement and release controls stay out of the release executable.
 #[cfg(test)]
 #[path = "owner_lock_tests.rs"]
 mod tests;

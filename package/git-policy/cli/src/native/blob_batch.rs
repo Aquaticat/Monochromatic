@@ -1,6 +1,11 @@
-//! What: Loading many blobs through one `git cat-file --batch`, optionally from a private object
-//!       store, with strict parsing of the batch output.
-//! Why: Post-landing completion reads the original and intended bytes of every added path; one
+//! What:
+//!  Loading many blobs through one `git cat-file --batch`,
+//!  optionally from a private object
+//!       store,
+//!  with strict parsing of the batch output.
+//! Why:
+//!  Post-landing completion reads the original and intended bytes of every added path;
+//!  one
 //!      batch replaces a Git start per object (`src/policy-engine/blob-batch.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -15,8 +20,14 @@ use std::collections::HashMap;
 /// `Path` is a borrowed filesystem path.
 use std::path::Path;
 
-/// What: One successful batch header: the object ID and its byte length.
-/// Why:  `parseBatchHeader`: `<oid> blob <size>`, exactly three space-separated fields, a blob,
+/// What:
+///  One successful batch header:
+///  the object ID and its byte length.
+/// Why:
+///   `parseBatchHeader`:
+///  `<oid> blob <size>`,
+///  exactly three space-separated fields,
+///  a blob,
 ///       and a canonical decimal size.
 ///
 /// In TS you'd write (pseudocode):
@@ -53,8 +64,10 @@ pub fn parse_batch_header(header: &str) -> Result<(String, usize), String> {
     ));
 }
 
-/// What: Whether a byte is an ASCII digit.
-/// Why:  A named predicate keeps the scan free of closures.
+/// What:
+///  Whether a byte is an ASCII digit.
+/// Why:
+///   A named predicate keeps the scan free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,10 +77,16 @@ fn is_ascii_digit(byte: u8) -> bool {
     return byte.is_ascii_digit();
 }
 
-/// What: Parse ordered batch output for the requested objects, never reading blob bytes as
+/// What:
+///  Parse ordered batch output for the requested objects,
+///  never reading blob bytes as
 ///       delimiters.
-/// Why:  `parseBatchOutput`: every header names the requested object, every content ends with a
-///       newline, and nothing trails.
+/// Why:
+///   `parseBatchOutput`:
+///  every header names the requested object,
+///  every content ends with a
+///       newline,
+///  and nothing trails.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -116,8 +135,10 @@ pub fn parse_batch_output(
     return Ok(blobs);
 }
 
-/// What: Whether a byte is a newline.
-/// Why:  A named predicate keeps the search free of closures.
+/// What:
+///  Whether a byte is a newline.
+/// Why:
+///   A named predicate keeps the search free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -127,9 +148,13 @@ fn is_newline(byte: &u8) -> bool {
     return *byte == b'\n';
 }
 
-/// What: Load every distinct requested blob through one batch, optionally reading a private
+/// What:
+///  Load every distinct requested blob through one batch,
+///  optionally reading a private
 ///       object store (whose alternates still reach the real one).
-/// Why:  `loadBlobBatch`; request order is first-seen order.
+/// Why:
+///   `loadBlobBatch`;
+///  request order is first-seen order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

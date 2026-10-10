@@ -1,7 +1,14 @@
-//! What: Parsers of the holder-scan output that is not `/proc`: `lsof -F pcDi` records and the
-//!       Restart Manager script lines, both matched to a lock by device and inode.
-//! Why: The parsers are pure text functions, so their controls run on every host, whichever scan
-//!      produced the text (`src/index-lock/index-lock-holders-darwin.ts`, `-win32.ts`).
+//! What:
+//!  Parsers of the holder-scan output that is not `/proc`:
+//!  `lsof -F pcDi` records and the
+//!       Restart Manager script lines,
+//!  both matched to a lock by device and inode.
+//! Why:
+//!  The parsers are pure text functions,
+//!  so their controls run on every host,
+//!  whichever scan
+//!      produced the text (`src/index-lock/index-lock-holders-darwin.ts`,
+//!  `-win32.ts`).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,9 +18,13 @@
 /// The holder record type the parsers produce.
 use super::index_lock_holders::Holder;
 
-/// What: One `lsof -F pcDi` process record: its PID, command and the device and inode of every
+/// What:
+///  One `lsof -F pcDi` process record:
+///  its PID,
+///  command and the device and inode of every
 ///       listed file (each field present when parsable).
-/// Why:  `LsofProcess`.
+/// Why:
+///   `LsofProcess`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,7 +32,8 @@ use super::index_lock_holders::Holder;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LsofProcess {
-    /// Process ID as `Number` reads it; `None` when it is not a number.
+    /// Process ID as `Number` reads it;
+    ///  `None` when it is not a number.
     pub pid: Option<i64>,
     /// Command name.
     pub command: Option<String>,
@@ -29,8 +41,14 @@ pub struct LsofProcess {
     pub files: Vec<(Option<u128>, Option<u128>)>,
 }
 
-/// What: An `lsof` number as `BigInt` reads it: decimal, or `0x`, `0o` or `0b` prefixed.
-/// Why:  Device numbers come `0x`-prefixed, inodes decimal.
+/// What:
+///  An `lsof` number as `BigInt` reads it:
+///  decimal,
+///  or `0x`,
+///  `0o` or `0b` prefixed.
+/// Why:
+///   Device numbers come `0x`-prefixed,
+///  inodes decimal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,8 +71,11 @@ pub fn parse_lsof_number(text: &str) -> Option<u128> {
     return u128::from_str_radix(digits, radix).ok();
 }
 
-/// What: The first field with this identifier among lines, parsed as a number.
-/// Why:  `numberField`.
+/// What:
+///  The first field with this identifier among lines,
+///  parsed as a number.
+/// Why:
+///   `numberField`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,8 +90,11 @@ fn number_field(lines: &[&str], identifier: char) -> Option<u128> {
     return None;
 }
 
-/// What: Lines grouped under each line starting with `identifier`; earlier lines are dropped.
-/// Why:  `groupsStartingAt`.
+/// What:
+///  Lines grouped under each line starting with `identifier`;
+///  earlier lines are dropped.
+/// Why:
+///   `groupsStartingAt`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -88,8 +112,10 @@ fn groups<'a>(lines: &[&'a str], identifier: char) -> Vec<Vec<&'a str>> {
     return grouped;
 }
 
-/// What: Parse `lsof -F pcDi` output into process records.
-/// Why:  `parseLsofFields`.
+/// What:
+///  Parse `lsof -F pcDi` output into process records.
+/// Why:
+///   `parseLsofFields`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -119,8 +145,10 @@ pub fn parse_lsof_fields(output: &str) -> Vec<LsofProcess> {
     return processes;
 }
 
-/// What: Processes whose listed file matches the lock's device and inode.
-/// Why:  `matchingHolders`.
+/// What:
+///  Processes whose listed file matches the lock's device and inode.
+/// Why:
+///   `matchingHolders`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -143,8 +171,10 @@ pub fn matching_holders(processes: &[LsofProcess], device: u64, inode: u64) -> V
     return holders;
 }
 
-/// What: Parse the Restart Manager script's `<pid>\t<application name>` lines.
-/// Why:  `parseRestartManagerOutput`.
+/// What:
+///  Parse the Restart Manager script's `<pid>\t<application name>` lines.
+/// Why:
+///   `parseRestartManagerOutput`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

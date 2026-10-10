@@ -1,9 +1,17 @@
-//! What: The preparation and landing leases: capabilities a running wrapper passes to the
-//!       Git it starts, so a nested wrapper invocation from a hook or `rebase --exec` proceeds
+//! What:
+//!  The preparation and landing leases:
+//!  capabilities a running wrapper passes to the
+//!       Git it starts,
+//!  so a nested wrapper invocation from a hook or `rebase --exec` proceeds
 //!       under its ancestor instead of waiting for it.
-//! Why: Without a lease a nested invocation would wait for the hook lock or landing lock its own
-//!      ancestor holds, forever. Both wrappers format and validate the same leases
-//!      (`src/hook-dispatch/preparation-lease.ts`, `src/index-lock/landing-lease.ts`), because a
+//! Why:
+//!  Without a lease a nested invocation would wait for the hook lock or landing lock its own
+//!      ancestor holds,
+//!  forever.
+//!  Both wrappers format and validate the same leases
+//!      (`src/hook-dispatch/preparation-lease.ts`,
+//!  `src/index-lock/landing-lease.ts`),
+//!  because a
 //!      hook started by one wrapper may run the other.
 //!
 //! In TS you'd write (pseudocode):
@@ -37,8 +45,11 @@ pub const LANDING_LEASE_VARIABLE: &str = "CLI_GIT_LANDING_LEASE";
 /// Largest plan or owner record a lease check reads.
 const LEASE_RECORD_LIMIT: u64 = 1024 * 1024;
 
-/// What: Format a preparation lease naming the transaction directory and a fresh token.
-/// Why:  `formatPreparationLease`: `JSON.stringify({ directory, token })`.
+/// What:
+///  Format a preparation lease naming the transaction directory and a fresh token.
+/// Why:
+///   `formatPreparationLease`:
+///  `JSON.stringify({ directory, token })`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -51,8 +62,11 @@ pub fn format_preparation_lease(directory: &str, token: &str) -> String {
     return writer.finish();
 }
 
-/// What: Format a landing lease naming the held lock directory and its owner token.
-/// Why:  `formatLandingLease`: `JSON.stringify({ lockDirectory, token })`.
+/// What:
+///  Format a landing lease naming the held lock directory and its owner token.
+/// Why:
+///   `formatLandingLease`:
+///  `JSON.stringify({ lockDirectory, token })`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,8 +81,12 @@ pub fn format_landing_lease(lock_directory: &str, token: &str) -> String {
     return writer.finish();
 }
 
-/// What: The value of one variable in an injected environment, when present and not empty.
-/// Why:  An empty lease is no lease, as `(lease === undefined) || (lease === '')`.
+/// What:
+///  The value of one variable in an injected environment,
+///  when present and not empty.
+/// Why:
+///   An empty lease is no lease,
+///  as `(lease === undefined) || (lease === '')`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -89,8 +107,13 @@ fn nonempty_variable(environment: &[(OsString, OsString)], name: &str) -> Option
     return Some(String::from(text));
 }
 
-/// What: Read a small record as text, or nothing when it is missing, unsafe or not UTF-8.
-/// Why:  Every failure to read makes a lease invalid; it is never an error of the command.
+/// What:
+///  Read a small record as text,
+///  or nothing when it is missing,
+///  unsafe or not UTF-8.
+/// Why:
+///   Every failure to read makes a lease invalid;
+///  it is never an error of the command.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,10 +124,17 @@ fn read_text(path: &Path) -> Option<String> {
     return Some(String::from(decode_fatal(bytes.as_slice())?));
 }
 
-/// What: Whether the environment carries a valid preparation lease of a live outer transaction.
-/// Why:  The incumbent's `hasValidInheritedLease`: the lease names a directory whose
-///       `hooks/plan.json` still carries exactly this lease, and whose owner is alive. Any
-///       malformed, stale or foreign lease is invalid, never an error.
+/// What:
+///  Whether the environment carries a valid preparation lease of a live outer transaction.
+/// Why:
+///   The incumbent's `hasValidInheritedLease`:
+///  the lease names a directory whose
+///       `hooks/plan.json` still carries exactly this lease,
+///  and whose owner is alive.
+///  Any
+///       malformed,
+///  stale or foreign lease is invalid,
+///  never an error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -145,8 +175,12 @@ pub fn has_valid_preparation_lease(environment: &[(OsString, OsString)]) -> bool
     );
 }
 
-/// What: Whether the environment carries a lease for `lock_directory` that its owner still holds.
-/// Why:  The incumbent's `hasValidLandingLease`: the lease must name exactly this lock, and the
+/// What:
+///  Whether the environment carries a lease for `lock_directory` that its owner still holds.
+/// Why:
+///   The incumbent's `hasValidLandingLease`:
+///  the lease must name exactly this lock,
+///  and the
 ///       lock's current owner token must be the lease's token.
 ///
 /// In TS you'd write (pseudocode):

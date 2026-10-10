@@ -1,4 +1,6 @@
-//! Controls for the journal parsers: every refusal the incumbent makes, with its message.
+//! Controls for the journal parsers:
+//!  every refusal the incumbent makes,
+//!  with its message.
 
 use super::*;
 use crate::transaction_journal_encode::{encode_landing, encode_preparing};
@@ -57,7 +59,8 @@ fn the_head_must_match() {
     );
 }
 
-/// `preparing.json`: unknown enumerations and malformed nested objects are refused.
+/// `preparing.json`:
+///  unknown enumerations and malformed nested objects are refused.
 #[test]
 fn preparing_refusals_name_the_field() {
     let good: String =
@@ -206,7 +209,9 @@ fn preparing_refusals_name_the_field() {
     );
 }
 
-/// `landing-<n>.json`: operations, attempts and nested records are checked.
+/// `landing-<n>.json`:
+///  operations,
+///  attempts and nested records are checked.
 #[test]
 fn landing_refusals_name_the_field() {
     let good: String = encode_landing(&LandingRecord {

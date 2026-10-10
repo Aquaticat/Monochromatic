@@ -1,10 +1,19 @@
-//! What: Process-birth identities: a string that names one process for its whole life and
-//!       changes when its PID is reused, in the incumbent's exact spelling.
-//! Why: Every lock and transaction records its owner's PID and birth identity; an owner is
-//!      alive only while its PID names a process with the recorded identity. Both wrappers
-//!      judge each other's locks, so the strings must agree byte for byte
-//!      (`src/policy-engine/commit-transaction-process-identity.ts`; the decision in
-//!      `doc/handover/cli-git-rust-implementation.md`, "Adopted without a question").
+//! What:
+//!  Process-birth identities:
+//!  a string that names one process for its whole life and
+//!       changes when its PID is reused,
+//!  in the incumbent's exact spelling.
+//! Why:
+//!  Every lock and transaction records its owner's PID and birth identity;
+//!  an owner is
+//!      alive only while its PID names a process with the recorded identity.
+//!  Both wrappers
+//!      judge each other's locks,
+//!  so the strings must agree byte for byte
+//!      (`src/policy-engine/commit-transaction-process-identity.ts`;
+//!  the decision in
+//!      `doc/handover/cli-git-rust-implementation.md`,
+//!  "Adopted without a question").
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -16,9 +25,14 @@ use super::js_text::trim_javascript;
 /// `OnceLock` holds a value computed at most once per process.
 use std::sync::OnceLock;
 
-/// What: Why a birth identity could not be decided. Absence (the process exited) is not an
-///       error; these are states the incumbent also throws on.
-/// Why:  A lock acquirer that cannot tell whether an owner lives must stop, not guess.
+/// What:
+///  Why a birth identity could not be decided.
+///  Absence (the process exited) is not an
+///       error;
+///  these are states the incumbent also throws on.
+/// Why:
+///   A lock acquirer that cannot tell whether an owner lives must stop,
+///  not guess.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,12 +54,15 @@ pub enum ProcessIdentityError {
     },
     /// This platform has no identity source.
     UnsupportedPlatform,
-    /// The current process has no identity, so it cannot own a lock.
+    /// The current process has no identity,
+    ///  so it cannot own a lock.
     CurrentUnavailable,
 }
 
-/// What: Human-readable text for each failure.
-/// Why:  Diagnostics name the process and the reason in plain words.
+/// What:
+///  Human-readable text for each failure.
+/// Why:
+///   Diagnostics name the process and the reason in plain words.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -83,8 +100,10 @@ impl std::fmt::Display for ProcessIdentityError {
     }
 }
 
-/// What: The one way a `/proc/<pid>/stat` text can be malformed for this purpose.
-/// Why:  The caller knows the PID and turns this into a named error.
+/// What:
+///  The one way a `/proc/<pid>/stat` text can be malformed for this purpose.
+/// Why:
+///   The caller knows the PID and turns this into a named error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -93,19 +112,32 @@ impl std::fmt::Display for ProcessIdentityError {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct MalformedStat;
 
-/// Linux process states of a process that has exited: zombie and dead.
+/// Linux process states of a process that has exited:
+///  zombie and dead.
 const EXITED_LINUX_STATES: [&str; 2] = ["Z", "X"];
 
-/// Index of the start-time field among the fields after the command name: field 22 is the
-/// 20th field counted from field 3, the state.
+/// Index of the start-time field among the fields after the command name:
+///  field 22 is the
+/// 20th field counted from field 3,
+///  the state.
 const LINUX_START_FIELD_INDEX: usize = 19;
 
-/// What: The birth identity in one `/proc/<pid>/stat` text, or nothing for an exited process.
-///       `Result<Option<String>, MalformedStat>` is "an identity, nothing, or a malformed record".
-/// Why:  The incumbent cuts after the last `)` (the command name may hold spaces and `)`),
-///       skips `) `, trims, splits on single spaces, treats states `Z` and `X` as exited
-///       (a zombie under a container init that never reaps keeps its PID forever), and
-///       answers `linux:` plus the start tick. An empty start field is malformed.
+/// What:
+///  The birth identity in one `/proc/<pid>/stat` text,
+///  or nothing for an exited process.
+///       `Result<Option<String>, MalformedStat>` is "an identity,
+///  nothing,
+///  or a malformed record".
+/// Why:
+///   The incumbent cuts after the last `)` (the command name may hold spaces and `)`),
+///       skips `) `,
+///  trims,
+///  splits on single spaces,
+///  treats states `Z` and `X` as exited
+///       (a zombie under a container init that never reaps keeps its PID forever),
+///  and
+///       answers `linux:` plus the start tick.
+///  An empty start field is malformed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -130,10 +162,15 @@ pub fn linux_identity_from_stat(stat: &str) -> Result<Option<String>, MalformedS
     }
 }
 
-/// What: The identity a platform inspector printed, as `<prefix>:<trimmed output>`, or nothing
+/// What:
+///  The identity a platform inspector printed,
+///  as `<prefix>:<trimmed output>`,
+///  or nothing
 ///       when it printed only whitespace.
 ///       `&[u8]` borrows the raw standard output.
-/// Why:  On macOS and Windows the incumbent runs a command and trims its output; empty output
+/// Why:
+///   On macOS and Windows the incumbent runs a command and trims its output;
+///  empty output
 ///       means the process is gone.
 ///
 /// In TS you'd write (pseudocode):
@@ -150,10 +187,14 @@ pub fn command_identity(prefix: &str, stdout: &[u8]) -> Option<String> {
     return Some(format!("{prefix}:{value}"));
 }
 
-/// What: The arguments the incumbent passes to PowerShell for one PID on Windows.
+/// What:
+///  The arguments the incumbent passes to PowerShell for one PID on Windows.
 ///       `Vec<String>` is an owned list of owned text.
-/// Why:  The Windows identity is whatever this exact command prints, so running the same
-///       command reproduces it by construction; the conversion through `GetProcessTimes`
+/// Why:
+///   The Windows identity is whatever this exact command prints,
+///  so running the same
+///       command reproduces it by construction;
+///  the conversion through `GetProcessTimes`
 ///       that would avoid PowerShell is unproven (`doc/handover/cli-git-native-transactions.md`).
 ///
 /// In TS you'd write (pseudocode):
@@ -170,8 +211,11 @@ pub fn windows_identity_arguments(pid: i64) -> Vec<String> {
     ];
 }
 
-/// What: The arguments the incumbent passes to `ps` for one PID on macOS.
-/// Why:  `ps -o lstart=` prints the start time in the C locale; running it reproduces the
+/// What:
+///  The arguments the incumbent passes to `ps` for one PID on macOS.
+/// Why:
+///   `ps -o lstart=` prints the start time in the C locale;
+///  running it reproduces the
 ///       incumbent's string by construction.
 ///
 /// In TS you'd write (pseudocode):
@@ -187,8 +231,10 @@ pub fn darwin_identity_arguments(pid: i64) -> Vec<String> {
     ];
 }
 
-/// What: Run a platform inspector in the C locale and read its identity line.
-/// Why:  The incumbent's `nano-spawn` call adds `LC_ALL=C` to the inherited environment and
+/// What:
+///  Run a platform inspector in the C locale and read its identity line.
+/// Why:
+///   The incumbent's `nano-spawn` call adds `LC_ALL=C` to the inherited environment and
 ///       maps every failure to start or finish (a non-zero exit) to "absent".
 ///
 /// In TS you'd write (pseudocode):
@@ -216,9 +262,13 @@ fn inspector_identity(command: &str, arguments: &[String], prefix: &str) -> Opti
     return command_identity(prefix, output.stdout.as_slice());
 }
 
-/// What: Read `/proc/<pid>/stat` and decide the Linux identity.
-/// Why:  A missing record (`ENOENT`) or a process that exits mid-read (`ESRCH`) is an exited
-///       process; any other read failure is an error, as in the incumbent.
+/// What:
+///  Read `/proc/<pid>/stat` and decide the Linux identity.
+/// Why:
+///   A missing record (`ENOENT`) or a process that exits mid-read (`ESRCH`) is an exited
+///       process;
+///  any other read failure is an error,
+///  as in the incumbent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -244,9 +294,12 @@ fn linux_identity(pid: i64) -> Result<Option<String>, ProcessIdentityError> {
     }
 }
 
-/// What: The birth identity of the process `pid` names now, or nothing when none runs.
+/// What:
+///  The birth identity of the process `pid` names now,
+///  or nothing when none runs.
 ///       `i64` holds any PID a record can carry.
-/// Why:  This is the one question every liveness check asks.
+/// Why:
+///   This is the one question every liveness check asks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -280,11 +333,17 @@ pub fn process_birth_identity(pid: i64) -> Result<Option<String>, ProcessIdentit
     }
 }
 
-/// The current process's identity, computed once: it never changes while the process runs.
+/// The current process's identity,
+///  computed once:
+///  it never changes while the process runs.
 static CURRENT_IDENTITY: OnceLock<String> = OnceLock::new();
 
-/// What: The birth identity of this process, computed once per process.
-/// Why:  Every lock this process takes records it, and on macOS and Windows each computation
+/// What:
+///  The birth identity of this process,
+///  computed once per process.
+/// Why:
+///   Every lock this process takes records it,
+///  and on macOS and Windows each computation
 ///       starts a process.
 ///
 /// In TS you'd write (pseudocode):
@@ -303,10 +362,15 @@ pub fn current_birth_identity() -> Result<String, ProcessIdentityError> {
     return Ok(computed);
 }
 
-/// What: Whether a signal could be sent to `pid` (it names some process), on Unix.
-///       `Ok(false)` means no such process; an error is a refusal such as `EPERM`.
-/// Why:  The incumbent's `processIsAlive` asks `kill(pid, 0)` before comparing identities;
-///       a process of another account answers `EPERM`, which callers judge themselves.
+/// What:
+///  Whether a signal could be sent to `pid` (it names some process),
+///  on Unix.
+///       `Ok(false)` means no such process;
+///  an error is a refusal such as `EPERM`.
+/// Why:
+///   The incumbent's `processIsAlive` asks `kill(pid, 0)` before comparing identities;
+///       a process of another account answers `EPERM`,
+///  which callers judge themselves.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

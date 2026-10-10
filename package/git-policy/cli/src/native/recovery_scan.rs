@@ -1,5 +1,9 @@
-//! What: Startup recovery across every per-transaction directory of one worktree.
-//! Why: Live owners are skipped; dead owners are recovered oldest first; dead transactions that
+//! What:
+//!  Startup recovery across every per-transaction directory of one worktree.
+//! Why:
+//!  Live owners are skipped;
+//!  dead owners are recovered oldest first;
+//!  dead transactions that
 //!      entered the landing critical section are recovered only while holding the landing lock,
 //!      so recovery never races a live lander (`src/policy-engine/commit-transaction-recovery-scan.ts`,
 //!      `commit-landing-lock.ts`).
@@ -34,8 +38,10 @@ use super::transaction_registry::{
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// What: What recovery did for one directory.
-/// Why:  `CommitTransactionRecoveryOutcome`.
+/// What:
+///  What recovery did for one directory.
+/// Why:
+///   `CommitTransactionRecoveryOutcome`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,13 +51,17 @@ use std::path::{Path, PathBuf};
 pub struct RecoveryOutcome {
     /// The directory examined.
     pub directory: PathBuf,
-    /// What recovery did, or why it left the directory.
+    /// What recovery did,
+    ///  or why it left the directory.
     pub action: RecoveryAction,
 }
 
-/// What: Recover or skip one inspected entry without a landing record, or one whose landing the
+/// What:
+///  Recover or skip one inspected entry without a landing record,
+///  or one whose landing the
 ///       caller serializes.
-/// Why:  `recoverInspectedEntry`.
+/// Why:
+///   `recoverInspectedEntry`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,8 +131,10 @@ pub fn recover_inspected_entry(
     }
 }
 
-/// What: Whether an inspected entry is a dead published transaction holding a landing record.
-/// Why:  `needsLandingLock`.
+/// What:
+///  Whether an inspected entry is a dead published transaction holding a landing record.
+/// Why:
+///   `needsLandingLock`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,10 +147,15 @@ fn needs_landing_lock(inspected: &InspectedEntry) -> Result<bool, RecoveryError>
     return has_landing_record(inspected.entry.path.as_path());
 }
 
-/// What: Recover every dead published transaction that entered the landing critical section; the
+/// What:
+///  Recover every dead published transaction that entered the landing critical section;
+///  the
 ///       caller holds the landing lock.
-/// Why:  `recoverDeadLandings`: an owner killed while holding the landing lock and `index.lock`
-///       has no landing record yet, and its `index.lock` would block the next landing.
+/// Why:
+///   `recoverDeadLandings`:
+///  an owner killed while holding the landing lock and `index.lock`
+///       has no landing record yet,
+///  and its `index.lock` would block the next landing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -181,8 +198,11 @@ pub fn recover_dead_landings(
     return Ok(outcomes);
 }
 
-/// What: Take the landing lock, waiting while a live owner holds it.
-/// Why:  Recovery of a landing must never race a live lander.
+/// What:
+///  Take the landing lock,
+///  waiting while a live owner holds it.
+/// Why:
+///   Recovery of a landing must never race a live lander.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -198,8 +218,10 @@ pub fn acquire_registry_lock(root: &Path, name: &str) -> Result<OwnerLock, Recov
     }
 }
 
-/// What: Whether an outcome already names a directory.
-/// Why:  The landing pass may have recovered an entry the main pass would visit again.
+/// What:
+///  Whether an outcome already names a directory.
+/// Why:
+///   The landing pass may have recovered an entry the main pass would visit again.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -214,11 +236,17 @@ fn recovered_already(outcomes: &[RecoveryOutcome], path: &Path) -> bool {
     return false;
 }
 
-/// What: Recover every dead-owner transaction of one worktree registry and remove retired
-///       leftovers; a dead reservation holder's lock is retired too.
-/// Why:  `recoverRegisteredTransactions`. Unlike the incumbent, an entry the landing pass already
+/// What:
+///  Recover every dead-owner transaction of one worktree registry and remove retired
+///       leftovers;
+///  a dead reservation holder's lock is retired too.
+/// Why:
+///   `recoverRegisteredTransactions`.
+///  Unlike the incumbent,
+///  an entry the landing pass already
 ///       recovered is not recovered a second time (the incumbent would fail reading its removed
-///       directory; recorded in `doc/handover/cli-git-native-transactions.md`).
+///       directory;
+///  recorded in `doc/handover/cli-git-native-transactions.md`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

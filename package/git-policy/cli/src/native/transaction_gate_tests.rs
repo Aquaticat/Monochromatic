@@ -13,7 +13,9 @@ fn identity(scene: &Scene) -> WorktreeIdentity {
     };
 }
 
-/// Live transactions, recovered ones, legacy directories and failures each give their gate.
+/// Live transactions,
+///  recovered ones,
+///  legacy directories and failures each give their gate.
 #[test]
 fn gates_follow_recovery() {
     let live: Scene = Scene::new("transaction-gate-live", true);

@@ -15,7 +15,8 @@ fn names(items: &[&str]) -> Vec<String> {
     return owned;
 }
 
-/// Attempts are positive decimal numbers between the prefix and the suffix, ascending.
+/// Attempts are positive decimal numbers between the prefix and the suffix,
+///  ascending.
 #[test]
 fn attempts_are_positive_decimals() {
     let found: Vec<i64> = attempt_numbers(
@@ -94,7 +95,8 @@ fn pid_files_are_removed_only_for_the_owner() {
     remove(root.as_path());
 }
 
-/// Recorded locks are released when owned and kept when foreign; the PID file follows.
+/// Recorded locks are released when owned and kept when foreign;
+///  the PID file follows.
 #[test]
 fn recorded_locks_are_released_by_identity() {
     let root: PathBuf = fixture("recovery-evidence-release");

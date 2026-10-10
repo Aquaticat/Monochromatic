@@ -1,10 +1,13 @@
-//! Controls for the nonce reflog search, parsed and against real reflogs.
+//! Controls for the nonce reflog search,
+//!  parsed and against real reflogs.
 
 use super::*;
 use crate::test_support::{fixture, git, git_context, git_text, remove, repository};
 use std::path::PathBuf;
 
-/// Only subjects that start with the prefix count, each commit once, in order.
+/// Only subjects that start with the prefix count,
+///  each commit once,
+///  in order.
 #[test]
 fn nonce_lines_parse_strictly() {
     let output: &str = "aaa\0commit (cli-git n): one\n\

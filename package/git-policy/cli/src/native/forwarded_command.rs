@@ -1,8 +1,17 @@
-//! What: The Git command a forwarded invocation actually runs, after ordinary alias expansion.
-//! Why: Git expands an alias only when no built-in has that name, reads it from `alias.<name>`
-//!      or `alias.<name>.command`, splits it with `split_cmdline` quoting, lets its leading words
-//!      be global options, and expands again when the result is an alias. Index-writer
-//!      coordination and the commit rules decide from the expanded command, so
+//! What:
+//!  The Git command a forwarded invocation actually runs,
+//!  after ordinary alias expansion.
+//! Why:
+//!  Git expands an alias only when no built-in has that name,
+//!  reads it from `alias.<name>`
+//!      or `alias.<name>.command`,
+//!  splits it with `split_cmdline` quoting,
+//!  lets its leading words
+//!      be global options,
+//!  and expands again when the result is an alias.
+//!  Index-writer
+//!      coordination and the commit rules decide from the expanded command,
+//!  so
 //!      `git -c alias.c=commit c` is a commit (`src/forwarded-command.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -25,11 +34,14 @@ use std::ffi::OsString;
 /// `Path` is a borrowed filesystem path.
 use std::path::Path;
 
-/// Alias expansions followed before giving up, well above any realistic chain.
+/// Alias expansions followed before giving up,
+///  well above any realistic chain.
 pub const MAX_ALIAS_EXPANSIONS: usize = 16;
 
-/// What: How the command was reached.
-/// Why:  A shell alias or an unresolved name is never classified as a built-in.
+/// What:
+///  How the command was reached.
+/// Why:
+///   A shell alias or an unresolved name is never classified as a built-in.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,13 +55,21 @@ pub enum Route {
     Alias,
     /// An alias running a shell command (`!...`).
     ShellAlias,
-    /// An external command, an unknown name, an alias loop or a malformed alias value.
+    /// An external command,
+    ///  an unknown name,
+    ///  an alias loop or a malformed alias value.
     Unresolved,
 }
 
-/// What: The resolved command: the arguments after expansion, where the subcommand is, its
-///       name, and the route.
-/// Why:  `ResolvedGitCommand`.
+/// What:
+///  The resolved command:
+///  the arguments after expansion,
+///  where the subcommand is,
+///  its
+///       name,
+///  and the route.
+/// Why:
+///   `ResolvedGitCommand`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,11 +77,14 @@ pub enum Route {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ResolvedCommand {
-    /// Arguments after expansion, global options included.
+    /// Arguments after expansion,
+    ///  global options included.
     pub arguments: Vec<OsString>,
     /// Index of the subcommand in `arguments`.
     pub subcommand_index: usize,
-    /// The subcommand, or nothing for a bare `git` or a help, version or error form.
+    /// The subcommand,
+    ///  or nothing for a bare `git` or a help,
+    ///  version or error form.
     pub subcommand: Option<OsString>,
     /// How it was reached.
     pub route: Route,
@@ -69,8 +92,11 @@ pub struct ResolvedCommand {
 
 /// Methods over a resolved command.
 impl ResolvedCommand {
-    /// What: The subcommand as bytes, empty when there is none.
-    /// Why:  Classification compares names.
+    /// What:
+    ///  The subcommand as bytes,
+    ///  empty when there is none.
+    /// Why:
+    ///   Classification compares names.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -83,8 +109,10 @@ impl ResolvedCommand {
         }
     }
 
-    /// What: The arguments after the subcommand.
-    /// Why:  Option classification reads them.
+    /// What:
+    ///  The arguments after the subcommand.
+    /// Why:
+    ///   Option classification reads them.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -94,8 +122,10 @@ impl ResolvedCommand {
         return self.arguments.get(self.subcommand_index + 1..).unwrap_or(&[]);
     }
 
-    /// What: Whether this is a built-in reached directly or through aliases.
-    /// Why:  Shell aliases and unresolved names are never index writers or commits.
+    /// What:
+    ///  Whether this is a built-in reached directly or through aliases.
+    /// Why:
+    ///   Shell aliases and unresolved names are never index writers or commits.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -106,8 +136,10 @@ impl ResolvedCommand {
     }
 }
 
-/// What: Whether a byte is whitespace as C `isspace` sees it in the C locale.
-/// Why:  `split_cmdline` separates words on exactly these.
+/// What:
+///  Whether a byte is whitespace as C `isspace` sees it in the C locale.
+/// Why:
+///   `split_cmdline` separates words on exactly these.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,10 +149,17 @@ fn is_space(byte: u8) -> bool {
     return matches!(byte, b' ' | b'\t' | b'\n' | b'\r' | 0x0b | 0x0c);
 }
 
-/// What: Split an alias value as Git's `split_cmdline` does: whitespace separates words outside
-///       quotes, single and double quotes group, and a backslash escapes the next byte except
-///       inside single quotes. `None` is an unclosed quote or a trailing backslash.
-/// Why:  `splitAliasCommand`; bytes are kept as they are.
+/// What:
+///  Split an alias value as Git's `split_cmdline` does:
+///  whitespace separates words outside
+///       quotes,
+///  single and double quotes group,
+///  and a backslash escapes the next byte except
+///       inside single quotes.
+///  `None` is an unclosed quote or a trailing backslash.
+/// Why:
+///   `splitAliasCommand`;
+///  bytes are kept as they are.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -165,9 +204,15 @@ pub fn split_alias_command(value: &[u8]) -> Option<Vec<Vec<u8>>> {
     return Some(words);
 }
 
-/// What: An alias value with surrounding whitespace removed, as JavaScript's `.trim()` does for
-///       text; a value that is not UTF-8 loses only ASCII whitespace.
-/// Why:  The incumbent trims `git config --get` output, newline included, before splitting.
+/// What:
+///  An alias value with surrounding whitespace removed,
+///  as JavaScript's `.trim()` does for
+///       text;
+///  a value that is not UTF-8 loses only ASCII whitespace.
+/// Why:
+///   The incumbent trims `git config --get` output,
+///  newline included,
+///  before splitting.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -182,8 +227,10 @@ pub fn trim_alias_value(value: &[u8]) -> Vec<u8> {
     return value[start..end].to_vec();
 }
 
-/// What: Whether a byte is not ASCII whitespace.
-/// Why:  A named predicate keeps the trimming free of closures.
+/// What:
+///  Whether a byte is not ASCII whitespace.
+/// Why:
+///   A named predicate keeps the trimming free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -193,8 +240,10 @@ fn is_not_ascii_space(byte: &u8) -> bool {
     return !is_space(*byte);
 }
 
-/// What: The index after `index`.
-/// Why:  A named function keeps `map_or` free of closures.
+/// What:
+///  The index after `index`.
+/// Why:
+///   A named function keeps `map_or` free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -204,9 +253,13 @@ fn next_index(index: usize) -> usize {
     return index + 1;
 }
 
-/// What: The value of one config key through `git config --get`, or nothing when Git reports
+/// What:
+///  The value of one config key through `git config --get`,
+///  or nothing when Git reports
 ///       none or cannot be asked.
-/// Why:  `readAliasKey`: every failure of the lookup is "no alias".
+/// Why:
+///   `readAliasKey`:
+///  every failure of the lookup is "no alias".
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -231,8 +284,11 @@ fn read_config_value(context: &GitContext, global: &[OsString], key: &OsString) 
     }
 }
 
-/// What: An alias value in either of Git's spellings, `alias.<name>` first.
-/// Why:  `lookupAlias`.
+/// What:
+///  An alias value in either of Git's spellings,
+///  `alias.<name>` first.
+/// Why:
+///   `lookupAlias`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -249,8 +305,10 @@ pub fn lookup_alias(context: &GitContext, global: &[OsString], name: &OsString) 
     return read_config_value(context, global, &spelled);
 }
 
-/// What: The resolved command for the current arguments with a route.
-/// Why:  Every ending of the expansion builds one.
+/// What:
+///  The resolved command for the current arguments with a route.
+/// Why:
+///   Every ending of the expansion builds one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -270,8 +328,10 @@ fn resolved(arguments: &[OsString], layout: &GlobalLayout, route: Route) -> Reso
     };
 }
 
-/// What: Words of an alias value as arguments.
-/// Why:  The expansion replaces the alias name with them.
+/// What:
+///  Words of an alias value as arguments.
+/// Why:
+///   The expansion replaces the alias name with them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -294,9 +354,13 @@ fn os_words(words: Vec<Vec<u8>>) -> Vec<OsString> {
     return owned;
 }
 
-/// What: Resolve the command a forwarded invocation runs, expanding aliases up to
-///       `MAX_ALIAS_EXPANSIONS` times; a built-in name starts no Git process.
-/// Why:  `resolveForwardedCommand`.
+/// What:
+///  Resolve the command a forwarded invocation runs,
+///  expanding aliases up to
+///       `MAX_ALIAS_EXPANSIONS` times;
+///  a built-in name starts no Git process.
+/// Why:
+///   `resolveForwardedCommand`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -351,8 +415,12 @@ pub fn resolve_forwarded_command(context: &GitContext, arguments: &[OsString]) -
     return resolved(current.as_slice(), &layout, Route::Unresolved);
 }
 
-/// What: Whether a resolved command creates or moves linked worktrees.
-/// Why:  `createsOrMovesWorktrees`: `git worktree add` and `git worktree move`, decided by the
+/// What:
+///  Whether a resolved command creates or moves linked worktrees.
+/// Why:
+///   `createsOrMovesWorktrees`:
+///  `git worktree add` and `git worktree move`,
+///  decided by the
 ///       first positional token after `worktree`.
 ///
 /// In TS you'd write (pseudocode):

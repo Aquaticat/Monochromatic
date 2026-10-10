@@ -25,7 +25,9 @@ fn requests_start_empty() {
     assert_eq!(command_text(&[]), "git");
 }
 
-/// Output, exit codes and input reach the caller; failures name the command.
+/// Output,
+///  exit codes and input reach the caller;
+///  failures name the command.
 #[test]
 fn runs_capture_output_and_feed_input() {
     let root: PathBuf = fixture("transaction-git-run");
@@ -80,7 +82,11 @@ fn runs_capture_output_and_feed_input() {
     remove(root.as_path());
 }
 
-/// The global prefix, the overlay, removals, additions, index and store reach Git in order.
+/// The global prefix,
+///  the overlay,
+///  removals,
+///  additions,
+///  index and store reach Git in order.
 #[test]
 fn environment_and_prefix_reach_git() {
     let root: PathBuf = fixture("transaction-git-environment");

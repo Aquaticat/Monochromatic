@@ -2,7 +2,8 @@
 
 use super::*;
 
-/// A diagnostic is one line, whatever its message holds.
+/// A diagnostic is one line,
+///  whatever its message holds.
 #[test]
 fn a_diagnostic_is_one_line() {
     assert_eq!(

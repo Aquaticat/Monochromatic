@@ -1,11 +1,15 @@
-//! Controls for process start times: the `/proc` stat and uptime parsers, the `ps -o lstart=`
-//! parser, and the Linux reader run against a fixture proc root and against this process.
+//! Controls for process start times:
+//!  the `/proc` stat and uptime parsers,
+//!  the `ps -o lstart=`
+//! parser,
+//!  and the Linux reader run against a fixture proc root and against this process.
 
 use super::*;
 use crate::test_support::{fixture, remove};
 use std::path::{Path, PathBuf};
 
-/// A `/proc/<pid>/stat` line with the given command and state; start tick 4200.
+/// A `/proc/<pid>/stat` line with the given command and state;
+///  start tick 4200.
 fn stat_line(command: &str, state: &str) -> String {
     return format!(
         "4242 ({command}) {state} 1 4242 4242 0 -1 4194560 100 0 0 0 1 2 0 0 20 0 1 0 4200 \
@@ -21,7 +25,8 @@ fn plant_proc(root: &Path, pid: i64, stat: &str, uptime: &str) {
     std::fs::write(root.join("uptime"), uptime).expect("fake uptime");
 }
 
-/// The start-tick field is found after the last `)`, whatever the command name holds.
+/// The start-tick field is found after the last `)`,
+///  whatever the command name holds.
 #[test]
 fn the_start_tick_follows_the_last_parenthesis() {
     assert_eq!(
@@ -38,7 +43,9 @@ fn the_start_tick_follows_the_last_parenthesis() {
     );
 }
 
-/// A stat line without a `)`, with too few fields, or with a non-digit start tick is refused.
+/// A stat line without a `)`,
+///  with too few fields,
+///  or with a non-digit start tick is refused.
 #[test]
 fn malformed_stat_lines_are_refused() {
     assert_eq!(parse_linux_stat("4242 git S 1 2 3"), None);
@@ -49,7 +56,8 @@ fn malformed_stat_lines_are_refused() {
     assert_eq!(parse_linux_stat(stat_line("git", "S").replace("4200", "42x").as_str()), None);
 }
 
-/// A start tick above the largest safe integer is refused, as the incumbent's `Number` read would lose it.
+/// A start tick above the largest safe integer is refused,
+///  as the incumbent's `Number` read would lose it.
 #[test]
 fn a_start_tick_beyond_the_safe_integers_is_refused() {
     let beyond: String = stat_line("git", "S").replace("4200", "9007199254740992");
@@ -61,7 +69,8 @@ fn a_start_tick_beyond_the_safe_integers_is_refused() {
     );
 }
 
-/// The uptime is the first field of `/proc/uptime`, and a non-finite or non-numeric one is refused.
+/// The uptime is the first field of `/proc/uptime`,
+///  and a non-finite or non-numeric one is refused.
 #[test]
 fn uptime_reads_its_first_field_only() {
     assert_eq!(parse_uptime("12345.67 890.12\n"), Some(12345.67));
@@ -90,7 +99,9 @@ fn lstart_fields_are_read_in_order() {
     );
 }
 
-/// Other word counts, unknown month names, short clocks and non-numeric fields are refused.
+/// Other word counts,
+///  unknown month names,
+///  short clocks and non-numeric fields are refused.
 #[test]
 fn malformed_lstart_text_is_refused() {
     assert_eq!(parse_lstart(""), None);
@@ -102,7 +113,8 @@ fn malformed_lstart_text_is_refused() {
     assert_eq!(parse_lstart("Fri Sep 26 10:00:00 year"), None);
 }
 
-/// A Linux start is the boot-relative time subtracted from now, plus the start ticks.
+/// A Linux start is the boot-relative time subtracted from now,
+///  plus the start ticks.
 #[test]
 fn a_running_process_starts_at_now_minus_uptime_plus_its_ticks() {
     let root: PathBuf = fixture("process-start-running");
@@ -119,7 +131,8 @@ fn a_running_process_starts_at_now_minus_uptime_plus_its_ticks() {
     remove(root.as_path());
 }
 
-/// A zombie or dead process is missing, whichever state letter it shows.
+/// A zombie or dead process is missing,
+///  whichever state letter it shows.
 #[test]
 fn zombie_and_dead_processes_are_missing() {
     let root: PathBuf = fixture("process-start-exited");
@@ -130,7 +143,8 @@ fn zombie_and_dead_processes_are_missing() {
     remove(root.as_path());
 }
 
-/// A PID with no stat file is missing, and an unreadable directory entry is unknown.
+/// A PID with no stat file is missing,
+///  and an unreadable directory entry is unknown.
 #[test]
 fn an_absent_stat_file_is_missing() {
     let root: PathBuf = fixture("process-start-absent");
@@ -138,7 +152,8 @@ fn an_absent_stat_file_is_missing() {
     remove(root.as_path());
 }
 
-/// A malformed stat line or uptime file is unknown, never a guessed start time.
+/// A malformed stat line or uptime file is unknown,
+///  never a guessed start time.
 #[test]
 fn malformed_proc_files_are_unknown() {
     let root: PathBuf = fixture("process-start-malformed");
@@ -155,7 +170,8 @@ fn malformed_proc_files_are_unknown() {
     remove(root.as_path());
 }
 
-/// This test process is a live process with a known Linux start, and no missing PID is live.
+/// This test process is a live process with a known Linux start,
+///  and no missing PID is live.
 #[test]
 #[cfg(target_os = "linux")]
 fn this_process_has_a_start_on_the_host() {

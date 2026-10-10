@@ -1,6 +1,11 @@
-//! What: The exact encoding of every schema-version-2 journal record: compact JSON in the
-//!       incumbent's field order, one record per line.
-//! Why: `writeJournalRecord` writes `JSON.stringify(record)` and a newline; the native wrapper
+//! What:
+//!  The exact encoding of every schema-version-2 journal record:
+//!  compact JSON in the
+//!       incumbent's field order,
+//!  one record per line.
+//! Why:
+//!  `writeJournalRecord` writes `JSON.stringify(record)` and a newline;
+//!  the native wrapper
 //!      writes the same bytes for the same values so either wrapper can recover the other's
 //!      transactions.
 //!
@@ -18,8 +23,10 @@ use super::transaction_journal::{
     SymbolicHead, TransactionMode,
 };
 
-/// What: Encode a base as its tagged object.
-/// Why:  Shared by `preparing.json` and `landing-<n>.json`.
+/// What:
+///  Encode a base as its tagged object.
+/// Why:
+///   Shared by `preparing.json` and `landing-<n>.json`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,8 +45,10 @@ fn encode_base(base: &Base) -> String {
     return writer.finish();
 }
 
-/// What: Encode a file identity.
-/// Why:  Shared by landing artifacts and locks.
+/// What:
+///  Encode a file identity.
+/// Why:
+///   Shared by landing artifacts and locks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,8 +62,10 @@ fn encode_identity(identity: &FileIdentity) -> String {
     return writer.finish();
 }
 
-/// What: Encode a lock identity.
-/// Why:  Shared by `index-lock-<n>.json` and `landing-<n>.json`.
+/// What:
+///  Encode a lock identity.
+/// Why:
+///   Shared by `index-lock-<n>.json` and `landing-<n>.json`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,8 +80,10 @@ fn encode_lock(lock: &LockIdentity) -> String {
     return writer.finish();
 }
 
-/// What: Encode a list of added-path records.
-/// Why:  Shared by `prepared.json` and `landing-<n>.json`.
+/// What:
+///  Encode a list of added-path records.
+/// Why:
+///   Shared by `prepared.json` and `landing-<n>.json`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -94,8 +107,11 @@ fn encode_added_paths(records: &[AddedPath]) -> String {
     return text;
 }
 
-/// What: The common head of every record: schema version and state discriminator.
-/// Why:  Every record starts with the same two fields.
+/// What:
+///  The common head of every record:
+///  schema version and state discriminator.
+/// Why:
+///   Every record starts with the same two fields.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -109,8 +125,10 @@ fn record_head(state: &str) -> ObjectWriter {
     return writer;
 }
 
-/// What: The wire spelling of a mode.
-/// Why:  Shared by encoding and its tests.
+/// What:
+///  The wire spelling of a mode.
+/// Why:
+///   Shared by encoding and its tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -123,8 +141,10 @@ pub fn mode_name(mode: TransactionMode) -> &'static str {
     }
 }
 
-/// What: The wire spelling of a conclusion kind.
-/// Why:  Shared by encoding and its tests.
+/// What:
+///  The wire spelling of a conclusion kind.
+/// Why:
+///   Shared by encoding and its tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -140,8 +160,10 @@ pub fn conclusion_name(conclusion: Conclusion) -> &'static str {
     }
 }
 
-/// What: The wire spelling of a ref format.
-/// Why:  Shared by encoding and its tests.
+/// What:
+///  The wire spelling of a ref format.
+/// Why:
+///   Shared by encoding and its tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -154,8 +176,10 @@ pub fn ref_format_name(format: RefFormat) -> &'static str {
     }
 }
 
-/// What: Encode `preparing.json` with its trailing newline.
-/// Why:  `writeJournalRecord` writes `JSON.stringify(record)` and a newline.
+/// What:
+///  Encode `preparing.json` with its trailing newline.
+/// Why:
+///   `writeJournalRecord` writes `JSON.stringify(record)` and a newline.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -195,8 +219,10 @@ pub fn encode_preparing(record: &PreparingRecord) -> String {
     return format!("{}\n", writer.finish());
 }
 
-/// What: Encode `prepared.json` with its trailing newline.
-/// Why:  See `encode_preparing`.
+/// What:
+///  Encode `prepared.json` with its trailing newline.
+/// Why:
+///   See `encode_preparing`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -224,8 +250,10 @@ pub fn encode_prepared(record: &PreparedRecord) -> String {
     return format!("{}\n", writer.finish());
 }
 
-/// What: Encode `index-lock-<n>.json` with its trailing newline.
-/// Why:  See `encode_preparing`.
+/// What:
+///  Encode `index-lock-<n>.json` with its trailing newline.
+/// Why:
+///   See `encode_preparing`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -239,9 +267,13 @@ pub fn encode_index_lock(record: &IndexLockRecord) -> String {
     return format!("{}\n", writer.finish());
 }
 
-/// What: Encode `landing-<n>.json` with its trailing newline; optional fields are omitted when
-///       absent, as `JSON.stringify` omits `undefined`.
-/// Why:  See `encode_preparing`.
+/// What:
+///  Encode `landing-<n>.json` with its trailing newline;
+///  optional fields are omitted when
+///       absent,
+///  as `JSON.stringify` omits `undefined`.
+/// Why:
+///   See `encode_preparing`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -283,8 +315,10 @@ pub fn encode_landing(record: &LandingRecord) -> String {
     return format!("{}\n", writer.finish());
 }
 
-/// What: Encode `ref-updated.json` with its trailing newline.
-/// Why:  See `encode_preparing`.
+/// What:
+///  Encode `ref-updated.json` with its trailing newline.
+/// Why:
+///   See `encode_preparing`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

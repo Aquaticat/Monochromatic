@@ -31,7 +31,9 @@ fn live_owner() -> Vec<u8> {
     return encode_transaction_owner(&owner).into_bytes();
 }
 
-/// Leases are `JSON.stringify` of their two fields, in order, with escapes.
+/// Leases are `JSON.stringify` of their two fields,
+///  in order,
+///  with escapes.
 #[test]
 fn leases_have_the_incumbent_spelling() {
     assert_eq!(
@@ -99,7 +101,8 @@ fn preparation_leases_need_the_plan_and_a_live_owner() {
     remove(root.as_path());
 }
 
-/// A dead, malformed or missing owner invalidates a lease whose plan still matches.
+/// A dead,
+///  malformed or missing owner invalidates a lease whose plan still matches.
 #[test]
 fn preparation_leases_die_with_their_owner() {
     let root: PathBuf = fixture("lease-owner");

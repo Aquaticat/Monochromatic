@@ -1,8 +1,14 @@
-//! What: The per-worktree capture store: its location, its sequence file and its identity file,
+//! What:
+//!  The per-worktree capture store:
+//!  its location,
+//!  its sequence file and its identity file,
 //!       read as the incumbent reads them.
-//! Why: Every commit transaction captures under a short per-worktree lock and takes the next
-//!      sequence number, so sequence numbers order the captured disk states of one worktree.
-//!      Recovery and pruning read the store; both wrappers share it
+//! Why:
+//!  Every commit transaction captures under a short per-worktree lock and takes the next
+//!      sequence number,
+//!  so sequence numbers order the captured disk states of one worktree.
+//!      Recovery and pruning read the store;
+//!  both wrappers share it
 //!      (`src/policy-engine/commit-capture-order-store.ts`):
 //!      `<git-dir>/cli-git-captures/{capture.lock/, worktree-id, sequence, landed/<oid>.json}`.
 //!
@@ -34,8 +40,12 @@ pub const WORKTREE_ID_FILENAME: &str = "worktree-id";
 /// Sequence filename inside the store.
 pub const SEQUENCE_FILENAME: &str = "sequence";
 
-/// What: A malformed or unreadable capture-order state, with its message.
-/// Why:  The incumbent's `CaptureOrderRecordError` and `TypeError`s of the store; recovery and
+/// What:
+///  A malformed or unreadable capture-order state,
+///  with its message.
+/// Why:
+///   The incumbent's `CaptureOrderRecordError` and `TypeError`s of the store;
+///  recovery and
 ///       pruning report them and continue.
 ///
 /// In TS you'd write (pseudocode):
@@ -45,8 +55,10 @@ pub const SEQUENCE_FILENAME: &str = "sequence";
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CaptureError(pub String);
 
-/// What: The message as display text.
-/// Why:  Warnings quote it.
+/// What:
+///  The message as display text.
+/// Why:
+///   Warnings quote it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,8 +71,10 @@ impl std::fmt::Display for CaptureError {
     }
 }
 
-/// What: The capture store directory of a worktree.
-/// Why:  `captureStorePath`.
+/// What:
+///  The capture store directory of a worktree.
+/// Why:
+///   `captureStorePath`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -70,10 +84,17 @@ pub fn capture_store_path(git_dir: &Path) -> PathBuf {
     return git_dir.join(CAPTURE_STORE_NAME);
 }
 
-/// What: The value of a sequence file: canonical decimal digits of a safe integer, then one
+/// What:
+///  The value of a sequence file:
+///  canonical decimal digits of a safe integer,
+///  then one
 ///       newline.
-/// Why:  `parseSequence`: `String(Number.parseInt(digits, 10)) === digits` admits no sign, no
-///       leading zero and no whitespace; anything else is a malformed store.
+/// Why:
+///   `parseSequence`:
+///  `String(Number.parseInt(digits, 10)) === digits` admits no sign,
+///  no
+///       leading zero and no whitespace;
+///  anything else is a malformed store.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,8 +122,10 @@ pub fn parse_sequence(bytes: &[u8], path: &Path) -> Result<i64, CaptureError> {
     return Ok(value);
 }
 
-/// What: The failure for a malformed sequence file.
-/// Why:  Every malformed spelling reports the same message.
+/// What:
+///  The failure for a malformed sequence file.
+/// Why:
+///   Every malformed spelling reports the same message.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -115,9 +138,14 @@ fn malformed_sequence(path: &Path) -> CaptureError {
     ));
 }
 
-/// What: The next capture sequence number the store would allocate, read without the lock; an
+/// What:
+///  The next capture sequence number the store would allocate,
+///  read without the lock;
+///  an
 ///       absent store or sequence file reads as 1.
-/// Why:  `readNextCaptureSequence`: landings record it after their compare-and-swap.
+/// Why:
+///   `readNextCaptureSequence`:
+///  landings record it after their compare-and-swap.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -143,8 +171,12 @@ pub fn read_next_capture_sequence(git_dir: &Path) -> Result<i64, CaptureError> {
     }
 }
 
-/// What: Create the store directory as a private, non-linked directory when it is missing.
-/// Why:  `ensureCaptureStore`, through the registry's root creation.
+/// What:
+///  Create the store directory as a private,
+///  non-linked directory when it is missing.
+/// Why:
+///   `ensureCaptureStore`,
+///  through the registry's root creation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -158,9 +190,14 @@ pub fn ensure_capture_store(git_dir: &Path) -> Result<PathBuf, CaptureError> {
     return Ok(store);
 }
 
-/// What: The text of a small regular store file read without following a link, decoded as
+/// What:
+///  The text of a small regular store file read without following a link,
+///  decoded as
 ///       UTF-8 with replacement characters.
-/// Why:  `readStoreFile` reads with `'utf8'`, which never fails on bytes. A missing file is
+/// Why:
+///   `readStoreFile` reads with `'utf8'`,
+///  which never fails on bytes.
+///  A missing file is
 ///       `Ok(None)`.
 ///
 /// In TS you'd write (pseudocode):
@@ -192,11 +229,17 @@ pub fn read_store_file(path: &Path) -> Result<Option<String>, CaptureError> {
     }
 }
 
-/// Largest store file read: records list captured paths, so they can be large.
+/// Largest store file read:
+///  records list captured paths,
+///  so they can be large.
 const STORE_FILE_LIMIT: u64 = 256 * 1024 * 1024;
 
-/// What: The store's worktree identity without creating one, or nothing when absent.
-/// Why:  `readWorktreeId`: a record of another store generation is unusable.
+/// What:
+///  The store's worktree identity without creating one,
+///  or nothing when absent.
+/// Why:
+///   `readWorktreeId`:
+///  a record of another store generation is unusable.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -33,7 +33,8 @@ fn action_for(outcomes: &[RecoveryOutcome], directory: &Path) -> Option<Recovery
     return None;
 }
 
-/// Every kind of entry gets its outcome, and dead landings are recovered under the landing lock.
+/// Every kind of entry gets its outcome,
+///  and dead landings are recovered under the landing lock.
 #[test]
 fn every_entry_gets_its_outcome() {
     let scene: Scene = Scene::new("recovery-scan-mixed", false);
@@ -103,7 +104,8 @@ fn every_entry_gets_its_outcome() {
     scene.finish();
 }
 
-/// A dead transaction with only an index-lock record is recovered once, by the landing pass,
+/// A dead transaction with only an index-lock record is recovered once,
+///  by the landing pass,
 /// when another dead landing takes the landing lock.
 #[test]
 fn landing_pass_entries_are_recovered_once() {
@@ -138,7 +140,8 @@ fn landing_pass_entries_are_recovered_once() {
     scene.finish();
 }
 
-/// Without landing records nothing takes the landing lock, so a held one does not block.
+/// Without landing records nothing takes the landing lock,
+///  so a held one does not block.
 #[test]
 fn transactions_without_landings_need_no_landing_lock() {
     let scene: Scene = Scene::new("recovery-scan-no-landing", false);

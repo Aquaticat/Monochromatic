@@ -62,7 +62,8 @@ struct Scene {
     second: String,
 }
 
-/// Build a scene; the landing commit exists but `main` has not moved to it.
+/// Build a scene;
+///  the landing commit exists but `main` has not moved to it.
 fn scene(name: &str) -> Scene {
     let root: PathBuf = fixture(name);
     let repo: PathBuf = repository(root.as_path(), "repo");
@@ -92,7 +93,8 @@ fn scene(name: &str) -> Scene {
     };
 }
 
-/// A landing whose marker names its commit landed; a marker naming another fails closed.
+/// A landing whose marker names its commit landed;
+///  a marker naming another fails closed.
 #[test]
 fn markers_prove_a_landing() {
     let scene: Scene = scene("completion-marker");
@@ -153,7 +155,9 @@ fn markers_prove_a_landing() {
     remove(scene.root.as_path());
 }
 
-/// Without a marker, the reflog nonce decides, and a reachable commit without one fails closed.
+/// Without a marker,
+///  the reflog nonce decides,
+///  and a reachable commit without one fails closed.
 #[test]
 fn reflog_nonces_prove_a_landing() {
     let scene: Scene = scene("completion-reflog");
@@ -329,7 +333,8 @@ fn indexes_install_from_the_pre_landing_state() {
     remove(scene.root.as_path());
 }
 
-/// An installed post-index is recognized and the owned lock released; a changed index fails closed.
+/// An installed post-index is recognized and the owned lock released;
+///  a changed index fails closed.
 #[test]
 fn installed_or_changed_indexes_are_recognized() {
     let scene: Scene = scene("completion-installed");

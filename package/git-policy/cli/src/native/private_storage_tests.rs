@@ -1,10 +1,12 @@
-//! Controls for the private file primitives, each in its own disposable directory.
+//! Controls for the private file primitives,
+//!  each in its own disposable directory.
 
 use super::*;
 use crate::test_support::{fixture, remove};
 use std::path::PathBuf;
 
-/// The permission bits of a path, without its file type.
+/// The permission bits of a path,
+///  without its file type.
 #[cfg(unix)]
 fn mode_of(path: &Path) -> u32 {
     use std::os::unix::fs::PermissionsExt;
@@ -15,7 +17,9 @@ fn mode_of(path: &Path) -> u32 {
         & 0o7777;
 }
 
-/// A private file holds exactly the bytes, mode `0600`, and is never replaced.
+/// A private file holds exactly the bytes,
+///  mode `0600`,
+///  and is never replaced.
 #[test]
 fn a_private_file_is_created_once_with_its_exact_bytes() {
     let root: PathBuf = fixture("private-write");
@@ -31,7 +35,8 @@ fn a_private_file_is_created_once_with_its_exact_bytes() {
     remove(root.as_path());
 }
 
-/// Neither writer follows a planted final link, so the link's target is never created.
+/// Neither writer follows a planted final link,
+///  so the link's target is never created.
 #[cfg(unix)]
 #[test]
 fn writers_refuse_a_planted_link() {
@@ -103,7 +108,8 @@ fn directory_sync_needs_the_directory() {
     remove(root.as_path());
 }
 
-/// Removing a tree removes it, and an absent tree counts as removed.
+/// Removing a tree removes it,
+///  and an absent tree counts as removed.
 #[test]
 fn tree_removal_tolerates_an_absent_tree() {
     let root: PathBuf = fixture("private-remove");
@@ -116,7 +122,8 @@ fn tree_removal_tolerates_an_absent_tree() {
     remove(root.as_path());
 }
 
-/// A file inside a file-named parent cannot be removed as a tree: the error is reported.
+/// A file inside a file-named parent cannot be removed as a tree:
+///  the error is reported.
 #[cfg(unix)]
 #[test]
 fn tree_removal_reports_other_errors() {
@@ -166,7 +173,8 @@ fn reads_refuse_unsafe_and_oversized_paths() {
     remove(root.as_path());
 }
 
-/// An unreadable file is an input-output refusal, distinct from a missing one.
+/// An unreadable file is an input-output refusal,
+///  distinct from a missing one.
 #[cfg(unix)]
 #[test]
 fn an_unreadable_file_is_an_io_refusal() {
@@ -201,7 +209,9 @@ fn a_file_below_the_limit_is_read_whole() {
 }
 
 /// A file whose size reads as zero but which yields more than the limit (as a growing file
-/// would) is still refused: the read itself is capped, not only the size check.
+/// would) is still refused:
+///  the read itself is capped,
+///  not only the size check.
 #[cfg(target_os = "linux")]
 #[test]
 fn the_read_is_capped_beyond_the_reported_size() {

@@ -1,6 +1,10 @@
-//! What: The reflog search that proves which commit an interrupted transaction landed.
-//! Why: Before `ref-updated.json` exists, a landing counts as landed only when the target's
-//!      reflog holds the transaction's nonce entry; the search covers the whole reflog because
+//! What:
+//!  The reflog search that proves which commit an interrupted transaction landed.
+//! Why:
+//!  Before `ref-updated.json` exists,
+//!  a landing counts as landed only when the target's
+//!      reflog holds the transaction's nonce entry;
+//!  the search covers the whole reflog because
 //!      later landings push the entry down (`src/policy-engine/commit-transaction-recovery-reflog.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -15,10 +19,15 @@ use super::transaction_git::{GitContext, GitOutput, GitRequest, run_git};
 /// `Path` is a borrowed filesystem path.
 use std::path::Path;
 
-/// What: The distinct commits of `%H%x00%gs` reflog lines whose subject starts with
-///       `subject_prefix`, in first-seen order.
-/// Why:  Git's `--grep-reflog` matches anywhere in the subject; only an entry that starts with
-///       the nonce-bearing action is the transaction's own movement. A line without a NUL is
+/// What:
+///  The distinct commits of `%H%x00%gs` reflog lines whose subject starts with
+///       `subject_prefix`,
+///  in first-seen order.
+/// Why:
+///   Git's `--grep-reflog` matches anywhere in the subject;
+///  only an entry that starts with
+///       the nonce-bearing action is the transaction's own movement.
+///  A line without a NUL is
 ///       malformed output.
 ///
 /// In TS you'd write (pseudocode):
@@ -45,9 +54,13 @@ pub fn nonce_oids(output: &str, subject_prefix: &str) -> Result<Vec<String>, Rec
     return Ok(oids);
 }
 
-/// What: The distinct commits whose reflog entries on `reference` carry the nonce-bearing
-///       subject prefix, at any depth.
-/// Why:  `listNonceReflogOids`: a reflog Git cannot read fails closed.
+/// What:
+///  The distinct commits whose reflog entries on `reference` carry the nonce-bearing
+///       subject prefix,
+///  at any depth.
+/// Why:
+///   `listNonceReflogOids`:
+///  a reflog Git cannot read fails closed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

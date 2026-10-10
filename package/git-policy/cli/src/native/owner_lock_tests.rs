@@ -1,5 +1,9 @@
-//! Controls for owner locks between real processes: a helper process started from this test
-//! binary holds a lock, and this process waits for it, retires it once it is dead, or finds
+//! Controls for owner locks between real processes:
+//!  a helper process started from this test
+//! binary holds a lock,
+//!  and this process waits for it,
+//!  retires it once it is dead,
+//!  or finds
 //! it changed.
 
 use super::*;
@@ -13,10 +17,16 @@ use std::time::Instant;
 const HELPER_LOCK: &str = "OWNER_LOCK_TEST_HELPER_LOCK";
 /// Variable naming the file the helper writes once it holds the lock.
 const HELPER_READY: &str = "OWNER_LOCK_TEST_HELPER_READY";
-/// Variable holding how long, in milliseconds, the helper holds the lock before releasing.
+/// Variable holding how long,
+///  in milliseconds,
+///  the helper holds the lock before releasing.
 const HELPER_HOLD_MS: &str = "OWNER_LOCK_TEST_HELPER_HOLD_MS";
 
-/// Helper process body, started by other tests: hold the lock, announce it, release later.
+/// Helper process body,
+///  started by other tests:
+///  hold the lock,
+///  announce it,
+///  release later.
 #[test]
 #[ignore = "started as a helper process by the owner-lock tests"]
 fn helper_holds_a_lock() {
@@ -61,7 +71,9 @@ fn start_holder(root: &Path, lock_directory: &Path, hold_ms: u64) -> Child {
     return child;
 }
 
-/// The entries of a directory, sorted, for leftover checks.
+/// The entries of a directory,
+///  sorted,
+///  for leftover checks.
 fn entries(directory: &Path) -> Vec<String> {
     let mut names: Vec<String> = Vec::new();
     for entry in std::fs::read_dir(directory).expect("list") {
@@ -116,7 +128,8 @@ impl WaitNotice for WaitCounter {
     }
 }
 
-/// A live holder blocks a try, and a waiting acquirer gets the lock once it is released,
+/// A live holder blocks a try,
+///  and a waiting acquirer gets the lock once it is released,
 /// after exactly one wait notice.
 #[test]
 fn a_live_holder_blocks_until_it_releases() {
@@ -156,7 +169,8 @@ fn a_live_holder_blocks_until_it_releases() {
     remove(root.as_path());
 }
 
-/// A killed and reaped holder is dead: the next acquirer retires its lock and takes it.
+/// A killed and reaped holder is dead:
+///  the next acquirer retires its lock and takes it.
 #[test]
 fn a_killed_holders_lock_is_retired() {
     let root: PathBuf = fixture("owner-lock-killed");
@@ -177,7 +191,8 @@ fn a_killed_holders_lock_is_retired() {
     remove(root.as_path());
 }
 
-/// A killed holder that nobody reaped is a zombie, and a zombie is dead.
+/// A killed holder that nobody reaped is a zombie,
+///  and a zombie is dead.
 #[cfg(target_os = "linux")]
 #[test]
 fn a_zombie_holders_lock_is_retired() {
@@ -211,7 +226,8 @@ fn a_zombie_holders_lock_is_retired() {
     remove(root.as_path());
 }
 
-/// A lock whose PID now names a younger process (here this one, with another birth) is dead.
+/// A lock whose PID now names a younger process (here this one,
+///  with another birth) is dead.
 #[test]
 fn a_reused_pid_is_a_dead_owner() {
     let root: PathBuf = fixture("owner-lock-reused");
@@ -308,7 +324,8 @@ fn plant_record(path: &Path, token: &str) {
     std::fs::write(path, encode_owner_lock_record(&record)).expect("record");
 }
 
-/// After the rename, a moved lock that is someone else's goes back and the release fails;
+/// After the rename,
+///  a moved lock that is someone else's goes back and the release fails;
 /// this holder's moved lock is deleted.
 #[test]
 fn a_release_settles_the_moved_copy() {
@@ -332,8 +349,10 @@ fn a_release_settles_the_moved_copy() {
     remove(root.as_path());
 }
 
-/// After the rename, a retirement deletes the dead owner's moved lock but restores a live
-/// replacement moved by a race; an occupied published name is left to its new owner.
+/// After the rename,
+///  a retirement deletes the dead owner's moved lock but restores a live
+/// replacement moved by a race;
+///  an occupied published name is left to its new owner.
 #[test]
 fn a_retirement_settles_the_moved_copy() {
     let root: PathBuf = fixture("owner-lock-settle-retire");
@@ -367,7 +386,9 @@ fn a_retirement_settles_the_moved_copy() {
     remove(root.as_path());
 }
 
-/// A lock that changed owner, or vanished, before the retirement's rename is left alone.
+/// A lock that changed owner,
+///  or vanished,
+///  before the retirement's rename is left alone.
 #[test]
 fn a_retirement_rechecks_the_owner_first() {
     let root: PathBuf = fixture("owner-lock-recheck");
@@ -412,7 +433,8 @@ fn a_malformed_blocking_record_stops_the_acquirer() {
     remove(root.as_path());
 }
 
-/// A lock whose parent is missing cannot be published, and the failure names the step.
+/// A lock whose parent is missing cannot be published,
+///  and the failure names the step.
 #[test]
 fn a_missing_parent_is_an_io_failure() {
     let root: PathBuf = fixture("owner-lock-parent");
@@ -480,8 +502,11 @@ fn failures_are_described() {
     );
 }
 
-/// Interoperability probe, run by `native-interop/owner-locks.mjs` in the interoperability
-/// image: one native lock or identity operation chosen by `INTEROP_ACTION`, its answer on
+/// Interoperability probe,
+///  run by `native-interop/owner-locks.mjs` in the interoperability
+/// image:
+///  one native lock or identity operation chosen by `INTEROP_ACTION`,
+///  its answer on
 /// standard output for the driver to compare with the incumbent.
 #[test]
 #[ignore = "run by the interoperability drivers, which set INTEROP_ACTION"]

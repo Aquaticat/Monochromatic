@@ -1,9 +1,20 @@
-//! What: No-follow file operations recovery and landing share: existence probes, exact reads,
-//!       byte comparison, owner-preserving hard links, proof that a real `index.lock` is the
-//!       exact file a transaction created, and installing an index through such a lock.
-//! Why: Recovery removes or installs through a real `index.lock` only when the journal proves the
-//!      lock is the transaction's own, by device, inode and filesystem identity, never by path;
-//!      the incumbent's `commit-transaction-recovery-files.ts`, `-validation.ts` and
+//! What:
+//!  No-follow file operations recovery and landing share:
+//!  existence probes,
+//!  exact reads,
+//!       byte comparison,
+//!  owner-preserving hard links,
+//!  proof that a real `index.lock` is the
+//!       exact file a transaction created,
+//!  and installing an index through such a lock.
+//! Why:
+//!  Recovery removes or installs through a real `index.lock` only when the journal proves the
+//!      lock is the transaction's own,
+//!  by device,
+//!  inode and filesystem identity,
+//!  never by path;
+//!      the incumbent's `commit-transaction-recovery-files.ts`,
+//!  `-validation.ts` and
 //!      `commit-transaction-install-link.ts` define these steps.
 //!
 //! In TS you'd write (pseudocode):
@@ -26,12 +37,17 @@ use std::io::Write;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// Largest recovery artifact read whole: indexes of very large repositories stay well below it.
+/// Largest recovery artifact read whole:
+///  indexes of very large repositories stay well below it.
 pub const RECOVERY_FILE_LIMIT: u64 = 2 * 1024 * 1024 * 1024;
 
-/// What: Whether anything exists at `path`, following links, as Node's `access` does.
+/// What:
+///  Whether anything exists at `path`,
+///  following links,
+///  as Node's `access` does.
 ///       Any error other than "missing" is reported.
-/// Why:  The incumbent's `recoveryPathExists`.
+/// Why:
+///   The incumbent's `recoveryPathExists`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -45,8 +61,10 @@ pub fn recovery_path_exists(path: &Path) -> Result<bool, RecoveryError> {
     }
 }
 
-/// What: Whether anything exists at `path` without following a final link.
-/// Why:  The incumbent's `pathPresent` and `pathExists` (both `lstat`).
+/// What:
+///  Whether anything exists at `path` without following a final link.
+/// Why:
+///   The incumbent's `pathPresent` and `pathExists` (both `lstat`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,8 +78,12 @@ pub fn path_present(path: &Path) -> Result<bool, RecoveryError> {
     }
 }
 
-/// What: The exact bytes of a regular recovery file, read without following a link.
-/// Why:  `readRegularRecoveryFile`: a link or a non-regular file is unsafe state.
+/// What:
+///  The exact bytes of a regular recovery file,
+///  read without following a link.
+/// Why:
+///   `readRegularRecoveryFile`:
+///  a link or a non-regular file is unsafe state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,9 +108,13 @@ pub fn read_recovery_file(path: &Path) -> Result<Vec<u8>, RecoveryError> {
     }
 }
 
-/// What: The device and inode of a path as decimal text, without following a link, with
+/// What:
+///  The device and inode of a path as decimal text,
+///  without following a link,
+///  with
 ///       whether it is a regular file.
-/// Why:  Identities are recorded and compared as the incumbent's `String(metadata.dev)`.
+/// Why:
+///   Identities are recorded and compared as the incumbent's `String(metadata.dev)`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -99,8 +125,11 @@ pub fn file_identity_of(path: &Path) -> std::io::Result<(String, String, bool)> 
     return Ok(metadata_identity(&metadata));
 }
 
-/// What: The device, inode and regular-file flag of metadata.
-/// Why:  Shared by path and descriptor identities.
+/// What:
+///  The device,
+///  inode and regular-file flag of metadata.
+/// Why:
+///   Shared by path and descriptor identities.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -124,10 +153,17 @@ pub fn metadata_identity(metadata: &std::fs::Metadata) -> (String, String, bool)
     }
 }
 
-/// What: Whether two files hold the same bytes, streamed in fixed chunks through no-follow
-///       handles; a file that cannot be opened is a failure.
-/// Why:  `snapshotFilesEqual`: recovery compares the real index with recorded snapshots, which
-///       can be large, so neither is read whole.
+/// What:
+///  Whether two files hold the same bytes,
+///  streamed in fixed chunks through no-follow
+///       handles;
+///  a file that cannot be opened is a failure.
+/// Why:
+///   `snapshotFilesEqual`:
+///  recovery compares the real index with recorded snapshots,
+///  which
+///       can be large,
+///  so neither is read whole.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -162,8 +198,11 @@ pub fn files_equal(left: &Path, right: &Path) -> Result<bool, RecoveryError> {
 /// Bytes compared per chunk.
 const COMPARISON_CHUNK: usize = 64 * 1024;
 
-/// What: Read until `buffer` is full or the file ends; returns how many bytes were read.
-/// Why:  A short read must not end the comparison early.
+/// What:
+///  Read until `buffer` is full or the file ends;
+///  returns how many bytes were read.
+/// Why:
+///   A short read must not end the comparison early.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -182,8 +221,10 @@ fn fill(file: &mut std::fs::File, buffer: &mut [u8]) -> std::io::Result<usize> {
     return Ok(total);
 }
 
-/// What: Open an existing file for reading without following a final link.
-/// Why:  Snapshots and the real index are compared as the files themselves.
+/// What:
+///  Open an existing file for reading without following a final link.
+/// Why:
+///   Snapshots and the real index are compared as the files themselves.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -203,8 +244,12 @@ fn open_no_follow(path: &Path) -> Result<std::fs::File, RecoveryError> {
     }
 }
 
-/// What: A file's bytes, following links as Node's `readFile` does, or nothing when missing.
-/// Why:  Conclusion entries and index snapshots may be absent.
+/// What:
+///  A file's bytes,
+///  following links as Node's `readFile` does,
+///  or nothing when missing.
+/// Why:
+///   Conclusion entries and index snapshots may be absent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -218,8 +263,12 @@ pub fn read_optional(path: &Path) -> Result<Option<Vec<u8>>, RecoveryError> {
     }
 }
 
-/// What: Hard-link `source` at `linked` and prove the new name is the expected regular file.
-/// Why:  `createOwnedFileLink`: an install or a stabilized artifact keeps the exact inode, so a
+/// What:
+///  Hard-link `source` at `linked` and prove the new name is the expected regular file.
+/// Why:
+///   `createOwnedFileLink`:
+///  an install or a stabilized artifact keeps the exact inode,
+///  so a
 ///       file swapped in under the old name is detected instead of installed.
 ///
 /// In TS you'd write (pseudocode):
@@ -252,8 +301,11 @@ pub fn create_owned_file_link(
     return Ok(());
 }
 
-/// What: Remove one file, treating a missing one as removed.
-/// Why:  `rm(path, { force: true })` for single files.
+/// What:
+///  Remove one file,
+///  treating a missing one as removed.
+/// Why:
+///   `rm(path, { force: true })` for single files.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -267,11 +319,21 @@ pub fn remove_file_if_present(path: &Path) -> Result<(), RecoveryError> {
     }
 }
 
-/// What: Why `lock_path` is not the exact `index.lock` the journal recorded, or nothing when it
-///       is: a regular file, not a link, with the recorded device, inode and filesystem identity.
-///       A failure to inspect it is an error, never a mismatch.
-/// Why:  The incumbent's `assertOwnedLock` throws its recovery error only for a mismatch; an
-///       `lstat` or filesystem-identity failure propagates, and `releaseOwnedLock` treats only the
+/// What:
+///  Why `lock_path` is not the exact `index.lock` the journal recorded,
+///  or nothing when it
+///       is:
+///  a regular file,
+///  not a link,
+///  with the recorded device,
+///  inode and filesystem identity.
+///       A failure to inspect it is an error,
+///  never a mismatch.
+/// Why:
+///   The incumbent's `assertOwnedLock` throws its recovery error only for a mismatch;
+///  an
+///       `lstat` or filesystem-identity failure propagates,
+///  and `releaseOwnedLock` treats only the
 ///       mismatch as another owner's lock.
 ///
 /// In TS you'd write (pseudocode):
@@ -307,8 +369,11 @@ pub fn owned_lock_mismatch(
     return Ok(None);
 }
 
-/// What: Require `lock_path` to be the exact `index.lock` the journal recorded.
-/// Why:  `assertOwnedLock`: cli-git never deletes or installs through a foreign lock.
+/// What:
+///  Require `lock_path` to be the exact `index.lock` the journal recorded.
+/// Why:
+///   `assertOwnedLock`:
+///  cli-git never deletes or installs through a foreign lock.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -321,8 +386,11 @@ pub fn assert_owned_lock(journal: &LockIdentity, lock_path: &Path) -> Result<(),
     return Ok(());
 }
 
-/// What: What happened when a lock the transaction no longer needs was released.
-/// Why:  Callers log it; only an owned lock is removed.
+/// What:
+///  What happened when a lock the transaction no longer needs was released.
+/// Why:
+///   Callers log it;
+///  only an owned lock is removed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -338,8 +406,11 @@ pub enum LockRelease {
     Foreign,
 }
 
-/// What: The incumbent's name of a release outcome.
-/// Why:  Debug lines read `attempt 1 lock released`, as the incumbent's do.
+/// What:
+///  The incumbent's name of a release outcome.
+/// Why:
+///   Debug lines read `attempt 1 lock released`,
+///  as the incumbent's do.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -353,8 +424,11 @@ pub fn lock_release_name(release: LockRelease) -> &'static str {
     }
 }
 
-/// What: Remove the real-index lock only when it is still the exact file the transaction made.
-/// Why:  `releaseOwnedLock`: a lock another process holds now is left alone.
+/// What:
+///  Remove the real-index lock only when it is still the exact file the transaction made.
+/// Why:
+///   `releaseOwnedLock`:
+///  a lock another process holds now is left alone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -388,9 +462,13 @@ pub fn release_owned_lock(
     return Ok(LockRelease::Released);
 }
 
-/// What: Give an open file the access and modification times of `source`.
-/// Why:  `applyIndexTimestamps`: an installed index keeps the times of the index it was
-///       computed from, so Git's racy-entry protection still re-hashes same-second edits.
+/// What:
+///  Give an open file the access and modification times of `source`.
+/// Why:
+///   `applyIndexTimestamps`:
+///  an installed index keeps the times of the index it was
+///       computed from,
+///  so Git's racy-entry protection still re-hashes same-second edits.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -404,10 +482,17 @@ pub fn apply_timestamps(source: &Path, file: &std::fs::File) -> std::io::Result<
     return file.set_times(times);
 }
 
-/// What: Install a recorded post-index through the exact owned lock: write it into the lock,
-///       link the lock under a private name, rename that name over the real index, then remove
+/// What:
+///  Install a recorded post-index through the exact owned lock:
+///  write it into the lock,
+///       link the lock under a private name,
+///  rename that name over the real index,
+///  then remove
 ///       the lock.
-/// Why:  `installRecoveredIndex`: the install never goes through the mutable lock path, and the
+/// Why:
+///   `installRecoveredIndex`:
+///  the install never goes through the mutable lock path,
+///  and the
 ///       lock is proven to be the owned one before and after each step.
 ///
 /// In TS you'd write (pseudocode):
@@ -472,8 +557,13 @@ pub fn install_recovered_index(
     return Ok(());
 }
 
-/// What: The parent directory of a path, or the path itself when it has none.
-/// Why:  Recorded paths are absolute files, so they always have a parent; a path without one
+/// What:
+///  The parent directory of a path,
+///  or the path itself when it has none.
+/// Why:
+///   Recorded paths are absolute files,
+///  so they always have a parent;
+///  a path without one
 ///       names itself instead of panicking.
 ///
 /// In TS you'd write (pseudocode):
@@ -487,8 +577,11 @@ fn parent_of(path: &Path) -> &Path {
     }
 }
 
-/// What: Open an existing lock for reading and writing without following a link.
-/// Why:  The lock must be the file itself, never a planted link.
+/// What:
+///  Open an existing lock for reading and writing without following a link.
+/// Why:
+///   The lock must be the file itself,
+///  never a planted link.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -508,8 +601,12 @@ fn open_lock_no_follow(lock_path: &Path) -> Result<std::fs::File, RecoveryError>
     }
 }
 
-/// What: Replace a lock's contents with `bytes`, give it the source's times, and sync it.
-/// Why:  The steps between the identity checks of `install_recovered_index`.
+/// What:
+///  Replace a lock's contents with `bytes`,
+///  give it the source's times,
+///  and sync it.
+/// Why:
+///   The steps between the identity checks of `install_recovered_index`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -526,8 +623,13 @@ fn write_lock_contents(
     return lock.sync_all();
 }
 
-/// What: The path of Git's owner PID file for a lock, `<base>~pid.lock` beside `<base>.lock`.
-/// Why:  With `core.lockfilePid=true`, Git writes `index~pid.lock` beside `index.lock`; the
+/// What:
+///  The path of Git's owner PID file for a lock,
+///  `<base>~pid.lock` beside `<base>.lock`.
+/// Why:
+///   With `core.lockfilePid=true`,
+///  Git writes `index~pid.lock` beside `index.lock`;
+///  the
 ///       incumbent's `lockPidPath` names it this way.
 ///
 /// In TS you'd write (pseudocode):

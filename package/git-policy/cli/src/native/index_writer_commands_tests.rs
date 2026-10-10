@@ -1,11 +1,17 @@
-//! Controls for index-writer classification: each always-writing command, the option-dependent
-//! forms of `restore`, `reset` and `apply`, abbreviations, separators and non-built-in routes.
+//! Controls for index-writer classification:
+//!  each always-writing command,
+//!  the option-dependent
+//! forms of `restore`,
+//!  `reset` and `apply`,
+//!  abbreviations,
+//!  separators and non-built-in routes.
 
 use super::*;
 use crate::forwarded_command::{ResolvedCommand, Route};
 use std::ffi::OsString;
 
-/// A resolved command whose subcommand is the first word, reached directly.
+/// A resolved command whose subcommand is the first word,
+///  reached directly.
 fn direct(words: &[&str]) -> ResolvedCommand {
     return ResolvedCommand {
         arguments: words.iter().map(OsString::from).collect(),
@@ -31,7 +37,8 @@ fn every_always_writing_command_writes_the_index() {
     }
 }
 
-/// Commands that never write the real index, including `commit` whose transaction coordinates itself.
+/// Commands that never write the real index,
+///  including `commit` whose transaction coordinates itself.
 #[test]
 fn readers_and_the_commit_path_do_not_coordinate_as_index_writers() {
     assert!(!writes(&["status"]));
@@ -42,7 +49,9 @@ fn readers_and_the_commit_path_do_not_coordinate_as_index_writers() {
     assert!(!writes(&["clean", "-fd"]));
 }
 
-/// `restore` writes the index only with `--staged` or `-S`, in full, abbreviated or clustered form.
+/// `restore` writes the index only with `--staged` or `-S`,
+///  in full,
+///  abbreviated or clustered form.
 #[test]
 fn restore_writes_the_index_only_when_staged() {
     assert!(writes(&["restore", "--staged", "x"]));
@@ -56,7 +65,8 @@ fn restore_writes_the_index_only_when_staged() {
     assert!(!writes(&["restore", "--", "--staged"]));
 }
 
-/// `reset` writes the index unless `--soft` is named, whether in full or as an accepted prefix.
+/// `reset` writes the index unless `--soft` is named,
+///  whether in full or as an accepted prefix.
 #[test]
 fn reset_writes_the_index_except_when_soft() {
     assert!(writes(&["reset"]));
@@ -67,7 +77,8 @@ fn reset_writes_the_index_except_when_soft() {
     assert!(!writes(&["reset", "--s"]));
 }
 
-/// `apply` writes the index with `--cached` or `--index`; an ambiguous prefix does not count.
+/// `apply` writes the index with `--cached` or `--index`;
+///  an ambiguous prefix does not count.
 #[test]
 fn apply_writes_the_index_only_when_cached_or_indexed() {
     assert!(!writes(&["apply", "x.patch"]));
@@ -80,7 +91,8 @@ fn apply_writes_the_index_only_when_cached_or_indexed() {
     assert!(!writes(&["apply", "--in", "x.patch"]));
 }
 
-/// Options after `--` are file names, so they never change a classification.
+/// Options after `--` are file names,
+///  so they never change a classification.
 #[test]
 fn options_after_the_separator_are_not_options() {
     assert!(!writes(&["restore", "--", "-S"]));
@@ -88,7 +100,8 @@ fn options_after_the_separator_are_not_options() {
     assert!(!writes(&["apply", "--", "--cached"]));
 }
 
-/// A lone `-` is a positional word, not an option.
+/// A lone `-` is a positional word,
+///  not an option.
 #[test]
 fn a_lone_dash_is_not_an_option() {
     let command: ResolvedCommand = direct(&["restore", "-", "x"]);
@@ -96,7 +109,8 @@ fn a_lone_dash_is_not_an_option() {
     assert!(!is_index_writer(&command));
 }
 
-/// A long option matches by its full name or an accepted prefix, with an attached value ignored.
+/// A long option matches by its full name or an accepted prefix,
+///  with an attached value ignored.
 #[test]
 fn long_options_match_full_names_and_accepted_prefixes() {
     assert!(matches_long(b"--staged", RESTORE_STAGED));
@@ -119,7 +133,9 @@ fn clusters_set_letters_until_a_value_letter() {
     assert!(!cluster_has(b"S", b'S', b"s"));
 }
 
-/// Only a built-in route can write the index: aliases to a built-in do, shell and unresolved routes never.
+/// Only a built-in route can write the index:
+///  aliases to a built-in do,
+///  shell and unresolved routes never.
 #[test]
 fn only_builtin_routes_can_write_the_index() {
     let alias: ResolvedCommand = ResolvedCommand {
@@ -144,7 +160,8 @@ fn only_builtin_routes_can_write_the_index() {
     assert!(!is_index_writer(&query));
 }
 
-/// Global options before the subcommand are not part of the option list, and the subcommand is still classified.
+/// Global options before the subcommand are not part of the option list,
+///  and the subcommand is still classified.
 #[test]
 fn global_options_before_the_subcommand_do_not_hide_it() {
     let command: ResolvedCommand = ResolvedCommand {

@@ -18,7 +18,9 @@ fn every_javascript_whitespace_is_trimmed() {
     }
 }
 
-/// Characters Rust or older Unicode count as whitespace, and ordinary text, are kept.
+/// Characters Rust or older Unicode count as whitespace,
+///  and ordinary text,
+///  are kept.
 #[test]
 fn other_characters_are_kept() {
     for character in ['\u{0085}', '\u{180e}', '\u{200b}', 'x', '\u{0}', '\u{1f}'] {
@@ -29,7 +31,8 @@ fn other_characters_are_kept() {
     assert_eq!(trim_javascript(" \t\n"), "");
 }
 
-/// Trailing whitespace goes and leading whitespace stays, as `trimEnd` does.
+/// Trailing whitespace goes and leading whitespace stays,
+///  as `trimEnd` does.
 #[test]
 fn trailing_whitespace_only_is_trimmed() {
     assert_eq!(trim_javascript_end("  x y \t\n"), "  x y");

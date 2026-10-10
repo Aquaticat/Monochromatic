@@ -9,7 +9,8 @@ use std::path::Path;
 /// The transaction ID the fixtures use.
 const ID: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
 
-/// Owner bytes of the current process, live or with a foreign identity.
+/// Owner bytes of the current process,
+///  live or with a foreign identity.
 pub(crate) fn owner_bytes(id: &str, created_at: &str, live: bool) -> Vec<u8> {
     let mut owner: TransactionOwner = current_transaction_owner(id, created_at).expect("owner");
     if !live {
@@ -18,7 +19,8 @@ pub(crate) fn owner_bytes(id: &str, created_at: &str, live: bool) -> Vec<u8> {
     return encode_transaction_owner(&owner).into_bytes();
 }
 
-/// A registry entry for a directory name under `root`, created with `owner`.
+/// A registry entry for a directory name under `root`,
+///  created with `owner`.
 fn entry(root: &Path, name: &str, owner: Option<&[u8]>) -> RegistryEntry {
     std::fs::create_dir_all(root.join(name)).expect("entry directory");
     if let Some(bytes) = owner {
@@ -27,7 +29,8 @@ fn entry(root: &Path, name: &str, owner: Option<&[u8]>) -> RegistryEntry {
     return classify_entry_name(root, name).expect("classified");
 }
 
-/// Live and dead owners are told apart; staging candidates may be unattributed.
+/// Live and dead owners are told apart;
+///  staging candidates may be unattributed.
 #[test]
 fn owners_are_classified() {
     let root: PathBuf = fixture("recovery-inspect-owners");
@@ -79,7 +82,8 @@ fn owner_pid(record: &TransactionOwner) -> i64 {
     return record.owner_pid;
 }
 
-/// Published directories without a valid matching owner fail closed, naming the directory.
+/// Published directories without a valid matching owner fail closed,
+///  naming the directory.
 #[cfg(unix)]
 #[test]
 fn published_owners_must_be_valid() {
@@ -132,7 +136,9 @@ fn published_owners_must_be_valid() {
     remove(root.as_path());
 }
 
-/// Entries are ordered by creation time, unattributed ones last, ties by path.
+/// Entries are ordered by creation time,
+///  unattributed ones last,
+///  ties by path.
 #[test]
 fn recovery_runs_oldest_first() {
     let root: PathBuf = fixture("recovery-inspect-order");

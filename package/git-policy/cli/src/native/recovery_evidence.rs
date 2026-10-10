@@ -1,6 +1,11 @@
-//! What: Durable evidence a dead transaction left: its numbered attempt records, the real
-//!       `index.lock` files those records prove it created, and Git's PID file naming it.
-//! Why: Recovery releases exactly what the dead owner held and nothing else
+//! What:
+//!  Durable evidence a dead transaction left:
+//!  its numbered attempt records,
+//!  the real
+//!       `index.lock` files those records prove it created,
+//!  and Git's PID file naming it.
+//! Why:
+//!  Recovery releases exactly what the dead owner held and nothing else
 //!      (`src/policy-engine/commit-transaction-recovery-evidence.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -12,7 +17,8 @@
 use super::diagnostic_log::debug;
 /// The fail-closed recovery failure.
 use super::recovery_error::{RecoveryError, io_failure};
-/// Exact reads, owned-lock release and the PID file path.
+/// Exact reads,
+///  owned-lock release and the PID file path.
 use super::recovery_files::{
     LockRelease, lock_pid_path, lock_release_name, read_recovery_file, release_owned_lock,
     remove_file_if_present,
@@ -29,10 +35,19 @@ pub const INDEX_LOCK_RECORD_PREFIX: &str = "index-lock-";
 /// Numbered record suffix.
 pub const RECORD_SUFFIX: &str = ".json";
 
-/// What: The ascending attempt numbers of one numbered record kind among directory entries.
-/// Why:  `attemptNumbers`: `<prefix><n>.json` with `n` a positive safe integer. The incumbent
-///       reads `n` with `Number`, which also accepts spellings no wrapper writes (whitespace,
-///       a sign, exponents, `0x`); here `n` must be ASCII digits, the only form either wrapper
+/// What:
+///  The ascending attempt numbers of one numbered record kind among directory entries.
+/// Why:
+///   `attemptNumbers`:
+///  `<prefix><n>.json` with `n` a positive safe integer.
+///  The incumbent
+///       reads `n` with `Number`,
+///  which also accepts spellings no wrapper writes (whitespace,
+///       a sign,
+///  exponents,
+///  `0x`);
+///  here `n` must be ASCII digits,
+///  the only form either wrapper
 ///       writes (recorded in `doc/handover/cli-git-native-transactions.md`).
 ///
 /// In TS you'd write (pseudocode):
@@ -54,8 +69,10 @@ pub fn attempt_numbers(names: &[String], prefix: &str) -> Vec<i64> {
     return attempts;
 }
 
-/// What: The text before the record suffix.
-/// Why:  A named function keeps the chain free of closures.
+/// What:
+///  The text before the record suffix.
+/// Why:
+///   A named function keeps the chain free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,8 +82,14 @@ fn strip_record_suffix(rest: &str) -> Option<&str> {
     return rest.strip_suffix(RECORD_SUFFIX);
 }
 
-/// What: The positive safe integer an all-digit text spells, or nothing.
-/// Why:  Leading zeros read as `Number` reads them; an empty text, a zero, a non-digit or a
+/// What:
+///  The positive safe integer an all-digit text spells,
+///  or nothing.
+/// Why:
+///   Leading zeros read as `Number` reads them;
+///  an empty text,
+///  a zero,
+///  a non-digit or a
 ///       value beyond 2^53 - 1 is no attempt.
 ///
 /// In TS you'd write (pseudocode):
@@ -84,8 +107,10 @@ pub fn decimal_attempt(text: &str) -> Option<i64> {
     return Some(value);
 }
 
-/// What: Whether a byte is an ASCII digit.
-/// Why:  A named predicate keeps the scan free of closures.
+/// What:
+///  Whether a byte is an ASCII digit.
+/// Why:
+///   A named predicate keeps the scan free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -95,8 +120,10 @@ fn is_ascii_digit(byte: u8) -> bool {
     return byte.is_ascii_digit();
 }
 
-/// What: The entry names of a transaction directory.
-/// Why:  Attempt records are found by name.
+/// What:
+///  The entry names of a transaction directory.
+/// Why:
+///   Attempt records are found by name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -117,8 +144,11 @@ pub fn directory_names(directory: &Path) -> Result<Vec<String>, RecoveryError> {
     return Ok(names);
 }
 
-/// What: Whether a transaction directory holds a landing record.
-/// Why:  `hasLandingRecord`: such a transaction is recovered only under the landing lock.
+/// What:
+///  Whether a transaction directory holds a landing record.
+/// Why:
+///   `hasLandingRecord`:
+///  such a transaction is recovered only under the landing lock.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -129,9 +159,15 @@ pub fn has_landing_record(directory: &Path) -> Result<bool, RecoveryError> {
     return Ok(!attempt_numbers(names.as_slice(), LANDING_RECORD_PREFIX).is_empty());
 }
 
-/// What: Whether a transaction entered the landing critical section: it recorded a real
-///       `index.lock` it created, or a landing attempt.
-/// Why:  `enteredLanding`: a dead owner past this point may still hold `index.lock`, which only
+/// What:
+///  Whether a transaction entered the landing critical section:
+///  it recorded a real
+///       `index.lock` it created,
+///  or a landing attempt.
+/// Why:
+///   `enteredLanding`:
+///  a dead owner past this point may still hold `index.lock`,
+///  which only
 ///       a recovery under the landing lock may release.
 ///
 /// In TS you'd write (pseudocode):
@@ -146,8 +182,12 @@ pub fn entered_landing(directory: &Path) -> Result<bool, RecoveryError> {
     );
 }
 
-/// What: Remove Git's PID file beside the real index lock when it still names the dead owner.
-/// Why:  `removeDeadPidFile`: the transaction wrote `pid <owner>\n` there; any other content
+/// What:
+///  Remove Git's PID file beside the real index lock when it still names the dead owner.
+/// Why:
+///   `removeDeadPidFile`:
+///  the transaction wrote `pid <owner>\n` there;
+///  any other content
 ///       belongs to someone else.
 ///
 /// In TS you'd write (pseudocode):
@@ -167,9 +207,13 @@ pub fn remove_dead_pid_file(real_index: &Path, owner_pid: i64) -> Result<(), Rec
     return Ok(());
 }
 
-/// What: Release every real `index.lock` the transaction's lock records prove it created, then
+/// What:
+///  Release every real `index.lock` the transaction's lock records prove it created,
+///  then
 ///       its PID file.
-/// Why:  `releaseRecordedLocks`: attempts are checked in order against the one lock path.
+/// Why:
+///   `releaseRecordedLocks`:
+///  attempts are checked in order against the one lock path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

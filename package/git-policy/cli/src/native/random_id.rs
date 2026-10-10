@@ -1,6 +1,10 @@
-//! What: Random identifiers in the layout of the incumbent's `randomUUID`: lock tokens,
+//! What:
+//!  Random identifiers in the layout of the incumbent's `randomUUID`:
+//!  lock tokens,
 //!       transaction IDs and stale-name suffixes.
-//! Why: A lock token must be unguessable and unique per acquisition, and a transaction ID
+//! Why:
+//!  A lock token must be unguessable and unique per acquisition,
+//!  and a transaction ID
 //!      names a registry directory that the incumbent accepts only in the canonical layout
 //!      (`isTransactionId` in `src/policy-engine/commit-transaction-registry.ts`).
 //!
@@ -9,8 +13,12 @@
 //! import { randomUUID } from 'node:crypto'; const token = randomUUID();
 //! ```
 
-/// What: Why no identifier could be made: the operating system's random source failed.
-/// Why:  Without randomness no unguessable token exists, so the caller must stop.
+/// What:
+///  Why no identifier could be made:
+///  the operating system's random source failed.
+/// Why:
+///   Without randomness no unguessable token exists,
+///  so the caller must stop.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,13 +27,19 @@
 #[derive(Debug)]
 pub struct RandomSourceError(pub String);
 
-/// Lowercase hexadecimal digits, the alphabet `randomUUID` prints.
+/// Lowercase hexadecimal digits,
+///  the alphabet `randomUUID` prints.
 const HEX_DIGITS: &[u8; 16] = b"0123456789abcdef";
 
-/// What: Format 16 bytes as a version-4 UUID in canonical lowercase layout.
+/// What:
+///  Format 16 bytes as a version-4 UUID in canonical lowercase layout.
 ///       `[u8; 16]` is a fixed array of sixteen bytes.
-/// Why:  RFC 9562 version 4: the version nibble is 4 and the variant bits are `10`, exactly
-///       what `randomUUID` produces; the formatting is pure so tests can fix the input.
+/// Why:
+///   RFC 9562 version 4:
+///  the version nibble is 4 and the variant bits are `10`,
+///  exactly
+///       what `randomUUID` produces;
+///  the formatting is pure so tests can fix the input.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,9 +62,12 @@ pub fn format_uuid_v4(bytes: [u8; 16]) -> String {
     return text;
 }
 
-/// What: A fresh random version-4 UUID from the operating system's source.
-///       `Result<String, RandomSourceError>` is "the identifier, or why not".
-/// Why:  Tokens and transaction IDs must not be predictable or collide between processes.
+/// What:
+///  A fresh random version-4 UUID from the operating system's source.
+///       `Result<String, RandomSourceError>` is "the identifier,
+///  or why not".
+/// Why:
+///   Tokens and transaction IDs must not be predictable or collide between processes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,8 +81,10 @@ pub fn random_uuid() -> Result<String, RandomSourceError> {
     return Ok(format_uuid_v4(bytes));
 }
 
-/// What: Describe a random-source failure.
-/// Why:  A named function keeps the conversion out of a closure.
+/// What:
+///  Describe a random-source failure.
+/// Why:
+///   A named function keeps the conversion out of a closure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

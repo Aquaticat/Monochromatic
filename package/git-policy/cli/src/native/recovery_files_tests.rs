@@ -4,7 +4,8 @@ use super::*;
 use crate::test_support::{fixture, remove};
 use crate::transaction_journal::FileIdentity;
 
-/// The recorded identity of an existing file, as a landing records it.
+/// The recorded identity of an existing file,
+///  as a landing records it.
 pub(crate) fn lock_identity_of(path: &Path) -> LockIdentity {
     let (device, inode, _) = file_identity_of(path).expect("identity");
     return LockIdentity {
@@ -39,7 +40,8 @@ fn existence_probes_report_failures() {
     remove(root.as_path());
 }
 
-/// Recovery files are read exactly, never through links.
+/// Recovery files are read exactly,
+///  never through links.
 #[cfg(unix)]
 #[test]
 fn recovery_files_are_regular() {
@@ -112,7 +114,8 @@ fn comparison_streams_whole_files() {
     remove(root.as_path());
 }
 
-/// Owned links keep the inode, and a link to another inode is removed and refused.
+/// Owned links keep the inode,
+///  and a link to another inode is removed and refused.
 #[test]
 fn owned_links_prove_their_inode() {
     let root: PathBuf = fixture("recovery-files-link");
@@ -161,7 +164,9 @@ fn owned_links_prove_their_inode() {
     remove(root.as_path());
 }
 
-/// Only the exact recorded lock is owned; inspection failures are errors, not mismatches.
+/// Only the exact recorded lock is owned;
+///  inspection failures are errors,
+///  not mismatches.
 #[test]
 fn owned_locks_match_every_recorded_identity() {
     let root: PathBuf = fixture("recovery-files-owned");

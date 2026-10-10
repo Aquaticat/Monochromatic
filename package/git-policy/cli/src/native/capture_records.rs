@@ -1,9 +1,14 @@
-//! What: `captured.json` (a transaction's position in its worktree's capture order) and the
-//!       landed-capture records, with recording after a landing and pruning.
-//! Why: Replay decides a path both a prepared commit and an earlier-landed commit captured from
-//!      this worktree by capture order; a landed record is kept while any published transaction
+//! What:
+//!  `captured.json` (a transaction's position in its worktree's capture order) and the
+//!       landed-capture records,
+//!  with recording after a landing and pruning.
+//! Why:
+//!  Replay decides a path both a prepared commit and an earlier-landed commit captured from
+//!      this worktree by capture order;
+//!  a landed record is kept while any published transaction
 //!      may replay over it and pruned after (`src/policy-engine/commit-capture-order-journal.ts`,
-//!      `commit-capture-order-records.ts`, `commit-capture-order-prune.ts`).
+//!      `commit-capture-order-records.ts`,
+//!  `commit-capture-order-prune.ts`).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -11,7 +16,8 @@
 //! await pruneLandedCaptures({ gitDir, registryRoot });
 //! ```
 
-/// The store's location, files and failure.
+/// The store's location,
+///  files and failure.
 use super::capture_store::{
     CaptureError, capture_store_path, ensure_capture_store, read_next_capture_sequence,
     read_store_file, read_worktree_id,
@@ -47,9 +53,13 @@ pub const LANDED_RECORD_SUFFIX: &str = ".json";
 /// Landed-record schema version.
 pub const LANDED_SCHEMA_VERSION: i64 = 1;
 
-/// What: `captured.json`: the capture stamp, the next sequence read before the preparation base,
+/// What:
+///  `captured.json`:
+///  the capture stamp,
+///  the next sequence read before the preparation base,
 ///       and the Latin-1 decoded paths the capture read from the worktree.
-/// Why:  The record pins landed records against pruning and names the captured paths.
+/// Why:
+///   The record pins landed records against pruning and names the captured paths.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -59,16 +69,22 @@ pub const LANDED_SCHEMA_VERSION: i64 = 1;
 pub struct CapturedRecord {
     /// Identity of the store that allocated the sequence number.
     pub worktree_id: String,
-    /// Capture sequence number, from 1.
+    /// Capture sequence number,
+    ///  from 1.
     pub sequence: i64,
     /// Next sequence number read before the preparation base.
     pub next_sequence_before_base: i64,
-    /// Paths whose bytes the capture read from the worktree, Latin-1 decoded, in Git order.
+    /// Paths whose bytes the capture read from the worktree,
+    ///  Latin-1 decoded,
+    ///  in Git order.
     pub worktree_paths: Vec<String>,
 }
 
-/// What: One landed-capture record.
-/// Why:  `LandedCaptureRecord`, written right after a compare-and-swap.
+/// What:
+///  One landed-capture record.
+/// Why:
+///   `LandedCaptureRecord`,
+///  written right after a compare-and-swap.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,12 +102,17 @@ pub struct LandedCaptureRecord {
     pub sequence: i64,
     /// Next capture sequence number read after the compare-and-swap.
     pub next_sequence_after_landing: i64,
-    /// Paths the landing transaction captured from the worktree, Latin-1 decoded.
+    /// Paths the landing transaction captured from the worktree,
+    ///  Latin-1 decoded.
     pub worktree_paths: Vec<String>,
 }
 
-/// What: Parse a JSON object record, or fail naming it.
-/// Why:  `parseObject`: arrays and scalars are not records.
+/// What:
+///  Parse a JSON object record,
+///  or fail naming it.
+/// Why:
+///   `parseObject`:
+///  arrays and scalars are not records.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -104,8 +125,10 @@ fn record_object(text: &str, name: &str) -> Result<Map<String, Value>, CaptureEr
     }
 }
 
-/// What: The failure for a malformed field.
-/// Why:  Every field reader reports the same shape.
+/// What:
+///  The failure for a malformed field.
+/// Why:
+///   Every field reader reports the same shape.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -115,8 +138,10 @@ fn malformed(name: &str, key: &str) -> CaptureError {
     return CaptureError(format!("{name} has a malformed {key} field."));
 }
 
-/// What: A required non-empty string field.
-/// Why:  `stringField`.
+/// What:
+///  A required non-empty string field.
+/// Why:
+///   `stringField`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -129,8 +154,10 @@ fn text_field(map: &Map<String, Value>, key: &str, name: &str) -> Result<String,
     }
 }
 
-/// What: A required positive safe integer field.
-/// Why:  `positiveField`.
+/// What:
+///  A required positive safe integer field.
+/// Why:
+///   `positiveField`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -143,8 +170,10 @@ fn positive_field(map: &Map<String, Value>, key: &str, name: &str) -> Result<i64
     }
 }
 
-/// What: A required array of non-empty strings.
-/// Why:  `pathsField`.
+/// What:
+///  A required array of non-empty strings.
+/// Why:
+///   `pathsField`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -169,8 +198,10 @@ fn paths_field(
     return Ok(paths);
 }
 
-/// What: Parse `captured.json`.
-/// Why:  `parseCapturedRecord`.
+/// What:
+///  Parse `captured.json`.
+/// Why:
+///   `parseCapturedRecord`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -197,8 +228,11 @@ pub fn parse_captured_record(text: &str) -> Result<CapturedRecord, CaptureError>
     });
 }
 
-/// What: Encode `captured.json` in the incumbent's field order, with a newline.
-/// Why:  The capture writes exactly these bytes.
+/// What:
+///  Encode `captured.json` in the incumbent's field order,
+///  with a newline.
+/// Why:
+///   The capture writes exactly these bytes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -220,8 +254,11 @@ pub fn encode_captured_record(record: &CapturedRecord) -> String {
     return format!("{}\n", writer.finish());
 }
 
-/// What: A transaction's `captured.json`, or nothing when it has not captured yet.
-/// Why:  `readCapturedRecord`.
+/// What:
+///  A transaction's `captured.json`,
+///  or nothing when it has not captured yet.
+/// Why:
+///   `readCapturedRecord`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -234,8 +271,10 @@ pub fn read_captured_record(directory: &Path) -> Result<Option<CapturedRecord>, 
     }
 }
 
-/// What: The landed-record directory of a worktree.
-/// Why:  `landedRecordDirectory`.
+/// What:
+///  The landed-record directory of a worktree.
+/// Why:
+///   `landedRecordDirectory`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -245,8 +284,10 @@ pub fn landed_record_directory(git_dir: &Path) -> PathBuf {
     return capture_store_path(git_dir).join(LANDED_DIRECTORY_NAME);
 }
 
-/// What: Parse one landed record.
-/// Why:  `parseLandedCaptureRecord`.
+/// What:
+///  Parse one landed record.
+/// Why:
+///   `parseLandedCaptureRecord`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -272,8 +313,11 @@ pub fn parse_landed_capture_record(
     });
 }
 
-/// What: Encode a landed record in the incumbent's field order, with a newline.
-/// Why:  `landedRecordOf` builds the object in this order before `JSON.stringify`.
+/// What:
+///  Encode a landed record in the incumbent's field order,
+///  with a newline.
+/// Why:
+///   `landedRecordOf` builds the object in this order before `JSON.stringify`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -299,9 +343,15 @@ pub fn encode_landed_capture_record(record: &LandedCaptureRecord) -> String {
     return format!("{}\n", writer.finish());
 }
 
-/// What: Record the capture of a commit that just landed, or that recovery found landed; returns
-///       whether the transaction had a capture to record. An existing record is kept.
-/// Why:  `recordLandedCapture`: only after the compare-and-swap succeeded.
+/// What:
+///  Record the capture of a commit that just landed,
+///  or that recovery found landed;
+///  returns
+///       whether the transaction had a capture to record.
+///  An existing record is kept.
+/// Why:
+///   `recordLandedCapture`:
+///  only after the compare-and-swap succeeded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -373,9 +423,14 @@ pub fn record_landed_capture(
     return Ok(true);
 }
 
-/// What: Record a landed capture as `record_landed_capture` does, but report a failure as a
+/// What:
+///  Record a landed capture as `record_landed_capture` does,
+///  but report a failure as a
 ///       warning instead of returning it.
-/// Why:  `recordLandedCaptureOrWarn`: the commit already landed; a missing record only sends its
+/// Why:
+///   `recordLandedCaptureOrWarn`:
+///  the commit already landed;
+///  a missing record only sends its
 ///       paths through subsumption in later replays.
 ///
 /// In TS you'd write (pseudocode):
@@ -403,8 +458,11 @@ pub fn record_landed_capture_or_warn(
     }
 }
 
-/// What: The landed-record filenames, or none when the directory is absent.
-/// Why:  `listLandedRecordNames`.
+/// What:
+///  The landed-record filenames,
+///  or none when the directory is absent.
+/// Why:
+///   `listLandedRecordNames`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -444,10 +502,14 @@ pub fn list_landed_record_names(git_dir: &Path) -> Result<Vec<String>, CaptureEr
     return Ok(names);
 }
 
-/// What: The smallest next sequence number a published transaction of this store generation
-///       read before its base; `None` keeps every record (a published transaction has not
-///       captured yet); `Some(i64::MAX)` stands for the incumbent's `Infinity`.
-/// Why:  `pinningBound`.
+/// What:
+///  The smallest next sequence number a published transaction of this store generation
+///       read before its base;
+///  `None` keeps every record (a published transaction has not
+///       captured yet);
+///  `Some(i64::MAX)` stands for the incumbent's `Infinity`.
+/// Why:
+///   `pinningBound`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -477,9 +539,16 @@ fn pinning_bound(
     return Ok(Some(bound));
 }
 
-/// What: Whether one landed-record file can go: not a record, unreadable, of another store
-///       generation, or recorded a next number below the bound.
-/// Why:  `prunable`: a malformed record is reported and removed.
+/// What:
+///  Whether one landed-record file can go:
+///  not a record,
+///  unreadable,
+///  of another store
+///       generation,
+///  or recorded a next number below the bound.
+/// Why:
+///   `prunable`:
+///  a malformed record is reported and removed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -511,10 +580,15 @@ fn prunable(directory: &Path, name: &str, worktree_id: Option<&str>, bound: i64)
     }
 }
 
-/// What: Remove every landed record no published transaction can replay over; returns how many.
-///       Never fails: a failure is reported and the records stay for the next pruning.
-/// Why:  `pruneLandedCaptures` runs after every transaction removes its directory and after
-///       startup recovery, so the last transaction leaves no record behind.
+/// What:
+///  Remove every landed record no published transaction can replay over;
+///  returns how many.
+///       Never fails:
+///  a failure is reported and the records stay for the next pruning.
+/// Why:
+///   `pruneLandedCaptures` runs after every transaction removes its directory and after
+///       startup recovery,
+///  so the last transaction leaves no record behind.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -537,8 +611,11 @@ pub fn prune_landed_captures(git_dir: &Path, registry_root: &Path) -> usize {
     }
 }
 
-/// What: The pruning steps, with failures returned.
-/// Why:  `prune_landed_captures` turns any failure into a warning.
+/// What:
+///  The pruning steps,
+///  with failures returned.
+/// Why:
+///   `prune_landed_captures` turns any failure into a warning.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

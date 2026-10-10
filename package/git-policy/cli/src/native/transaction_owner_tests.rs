@@ -16,7 +16,8 @@ fn incumbent_owner() -> TransactionOwner {
     };
 }
 
-/// The incumbent's record parses, and encoding reproduces its bytes.
+/// The incumbent's record parses,
+///  and encoding reproduces its bytes.
 #[test]
 fn incumbent_owner_records_round_trip() {
     assert_eq!(
@@ -35,7 +36,8 @@ fn incumbent_owner_records_round_trip() {
     );
 }
 
-/// Every shape `parseTransactionOwner` refuses is refused, and its odd acceptances accepted.
+/// Every shape `parseTransactionOwner` refuses is refused,
+///  and its odd acceptances accepted.
 #[test]
 fn malformed_owner_records_are_refused() {
     for text in [
@@ -79,7 +81,8 @@ fn the_current_owner_is_this_process() {
     );
 }
 
-/// A reused PID, an exited process and a zombie are dead owners.
+/// A reused PID,
+///  an exited process and a zombie are dead owners.
 #[cfg(target_os = "linux")]
 #[test]
 fn dead_owners_are_dead() {
@@ -119,7 +122,8 @@ fn dead_owners_are_dead() {
     );
 }
 
-/// A refused existence probe is an error, never a verdict.
+/// A refused existence probe is an error,
+///  never a verdict.
 #[cfg(target_os = "linux")]
 #[test]
 fn a_refused_probe_is_an_error() {

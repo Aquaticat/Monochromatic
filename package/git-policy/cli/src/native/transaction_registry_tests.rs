@@ -1,4 +1,7 @@
-//! Controls for the transaction registry: names, publication, listing and removal.
+//! Controls for the transaction registry:
+//!  names,
+//!  publication,
+//!  listing and removal.
 
 use super::*;
 use crate::test_support::{fixture, remove};
@@ -49,7 +52,8 @@ fn lock_names_are_recognized() {
     }
 }
 
-/// Names classify into the three kinds, and anything else is unexpected.
+/// Names classify into the three kinds,
+///  and anything else is unexpected.
 #[test]
 fn names_classify_by_suffix() {
     let root: &Path = Path::new("/repo/.git/cli-git-transactions");
@@ -84,7 +88,8 @@ fn names_classify_by_suffix() {
     }
 }
 
-/// Publication renames a complete candidate; listing sees it and nothing half-built.
+/// Publication renames a complete candidate;
+///  listing sees it and nothing half-built.
 #[test]
 fn publication_and_listing() {
     let git_dir: PathBuf = fixture("registry-publish");
@@ -202,7 +207,8 @@ fn a_non_utf8_entry_is_unexpected() {
     remove(git_dir.as_path());
 }
 
-/// Removal retires a registry directory first; other directories are removed in place.
+/// Removal retires a registry directory first;
+///  other directories are removed in place.
 #[test]
 fn removal_retires_registry_directories() {
     let git_dir: PathBuf = fixture("registry-remove");

@@ -52,7 +52,8 @@ fn conflict_errors_are_the_incumbent_codes() {
     )));
 }
 
-/// Inspection tells original, intended and every conflict apart.
+/// Inspection tells original,
+///  intended and every conflict apart.
 #[cfg(unix)]
 #[test]
 fn inspection_classifies_worktree_copies() {
@@ -203,7 +204,8 @@ fn replacement_needs_the_exact_original() {
     remove(root.as_path());
 }
 
-/// Completion rewrites originals, keeps edits and skips completed copies.
+/// Completion rewrites originals,
+///  keeps edits and skips completed copies.
 #[cfg(unix)]
 #[test]
 fn completion_rewrites_only_originals() {

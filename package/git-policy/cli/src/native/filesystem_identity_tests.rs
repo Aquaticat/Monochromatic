@@ -1,9 +1,11 @@
-//! Controls for filesystem-identity parsing and the Linux resolver, checked against the
+//! Controls for filesystem-identity parsing and the Linux resolver,
+//!  checked against the
 //! incumbent's `package/module/fs-id` parser tests and real `findmnt`/`stat` output.
 
 use super::*;
 
-/// Payloads are trimmed, lowercased and limited to safe ASCII.
+/// Payloads are trimmed,
+///  lowercased and limited to safe ASCII.
 #[test]
 fn payloads_normalize_as_the_incumbent_does() {
     assert_eq!(
@@ -83,7 +85,8 @@ fn df_rows_yield_the_device() {
     assert_eq!(parse_df_device(""), None);
 }
 
-/// The plist's `VolumeUUID` string is normalized; anything missing is nothing.
+/// The plist's `VolumeUUID` string is normalized;
+///  anything missing is nothing.
 #[test]
 fn diskutil_plists_yield_the_volume_uuid() {
     assert_eq!(
@@ -113,7 +116,8 @@ fn diskutil_plists_yield_the_volume_uuid() {
     );
 }
 
-/// Drive roots need a letter, a colon and a separator.
+/// Drive roots need a letter,
+///  a colon and a separator.
 #[test]
 fn windows_paths_need_a_drive_root() {
     assert_eq!(windows_drive_root("c:\\repo").as_deref(), Some("C:\\"));
@@ -166,7 +170,8 @@ fn linux_identities_match_the_platform_commands() {
     );
 }
 
-/// A failing command is no answer, and `stat` is the fallback.
+/// A failing command is no answer,
+///  and `stat` is the fallback.
 #[cfg(target_os = "linux")]
 #[test]
 fn failing_commands_are_no_answer() {

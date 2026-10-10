@@ -1,9 +1,18 @@
-//! What: Evidence about a foreign `index.lock` and the verdict it supports: proven alive, dead,
+//! What:
+//!  Evidence about a foreign `index.lock` and the verdict it supports:
+//!  proven alive,
+//!  dead,
 //!       or evidence-free.
-//! Why: A live owner is proven by a process holding the lock open (device and inode), or by Git's
+//! Why:
+//!  A live owner is proven by a process holding the lock open (device and inode),
+//!  or by Git's
 //!      `core.lockfilePid` file naming a running process that started no later than the lock
-//!      changed. A PID file naming a gone process proves a dead owner. Everything else is
-//!      evidence-free; an absent open holder never proves abandonment, because native
+//!      changed.
+//!  A PID file naming a gone process proves a dead owner.
+//!  Everything else is
+//!      evidence-free;
+//!  an absent open holder never proves abandonment,
+//!  because native
 //!      `git commit` keeps `index.lock` without a descriptor through its hooks and editor
 //!      (`src/index-lock/index-lock-evidence.ts`).
 //!
@@ -25,14 +34,20 @@ use super::recovery_files::lock_pid_path;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// Longest PID file text quoted in evidence, in UTF-16 code units for ASCII text.
+/// Longest PID file text quoted in evidence,
+///  in UTF-16 code units for ASCII text.
 const QUOTED_TEXT_LIMIT: usize = 64;
 
 /// Partial-evidence reasons quoted before the rest are summarized.
 const QUOTED_REASON_LIMIT: usize = 3;
 
-/// What: A lock's identity and change time, read without following links.
-/// Why:  `LockFileMetadata`; the change time is whole milliseconds, as `Number(stat.ctimeMs)`.
+/// What:
+///  A lock's identity and change time,
+///  read without following links.
+/// Why:
+///   `LockFileMetadata`;
+///  the change time is whole milliseconds,
+///  as `Number(stat.ctimeMs)`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,8 +63,11 @@ pub struct LockMetadata {
     pub ctime_ms: i64,
 }
 
-/// What: The process a PID file names, now.
-/// Why:  `PidOwnerEvidence`.
+/// What:
+///  The process a PID file names,
+///  now.
+/// Why:
+///   `PidOwnerEvidence`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -57,14 +75,16 @@ pub struct LockMetadata {
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub enum PidOwner {
-    /// No such process runs, or it is a zombie.
+    /// No such process runs,
+    ///  or it is a zombie.
     Missing,
     /// A process runs that started no later than the lock changed.
     StartedBeforeLock(
         /// Start time in milliseconds since the epoch.
         f64,
     ),
-    /// A process runs that started after the lock changed: the PID was reused.
+    /// A process runs that started after the lock changed:
+    ///  the PID was reused.
     StartedAfterLock(
         /// Start time in milliseconds since the epoch.
         f64,
@@ -76,8 +96,10 @@ pub enum PidOwner {
     ),
 }
 
-/// What: Git's `core.lockfilePid` file beside the lock.
-/// Why:  `PidFileEvidence`.
+/// What:
+///  Git's `core.lockfilePid` file beside the lock.
+/// Why:
+///   `PidFileEvidence`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -87,7 +109,8 @@ pub enum PidOwner {
 pub enum PidFile {
     /// No PID file exists.
     Absent,
-    /// The file does not hold `pid <n>`; the first characters of its text.
+    /// The file does not hold `pid <n>`;
+    ///  the first characters of its text.
     Malformed(
         /// The first characters of the text.
         String,
@@ -106,8 +129,11 @@ pub enum PidFile {
     ),
 }
 
-/// What: The evidence of one attempt.
-/// Why:  `IndexLockEvidence`; the holder scan is skipped once the PID file proves a live owner.
+/// What:
+///  The evidence of one attempt.
+/// Why:
+///   `IndexLockEvidence`;
+///  the holder scan is skipped once the PID file proves a live owner.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,12 +147,15 @@ pub struct Evidence {
     pub lock: LockMetadata,
     /// PID file evidence.
     pub pid_file: PidFile,
-    /// Open-holder scan, absent when the PID file proved a live owner.
+    /// Open-holder scan,
+    ///  absent when the PID file proved a live owner.
     pub holders: Option<HolderEvidence>,
 }
 
-/// What: The classification of a foreign lock's owner.
-/// Why:  `IndexLockVerdict`.
+/// What:
+///  The classification of a foreign lock's owner.
+/// Why:
+///   `IndexLockVerdict`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -134,7 +163,9 @@ pub struct Evidence {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Verdict {
-    /// A live owner is proven; `true` when by an open descriptor, `false` by the PID file.
+    /// A live owner is proven;
+    ///  `true` when by an open descriptor,
+    ///  `false` by the PID file.
     ProvenAlive {
         /// Owner PID.
         pid: i64,
@@ -152,8 +183,11 @@ pub enum Verdict {
     EvidenceFree,
 }
 
-/// What: A lock's metadata without following links, or nothing when it does not exist.
-/// Why:  `readLockMetadata`.
+/// What:
+///  A lock's metadata without following links,
+///  or nothing when it does not exist.
+/// Why:
+///   `readLockMetadata`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -167,7 +201,9 @@ pub fn read_lock_metadata(lock_path: &Path) -> std::io::Result<Option<LockMetada
     };
     #[cfg(unix)]
     {
-        /// The Unix metadata accessors, for the device, inode and change time.
+        /// The Unix metadata accessors,
+        ///  for the device,
+        ///  inode and change time.
         use std::os::unix::fs::MetadataExt;
         return Ok(Some(LockMetadata {
             device: metadata.dev(),
@@ -188,8 +224,11 @@ pub fn read_lock_metadata(lock_path: &Path) -> std::io::Result<Option<LockMetada
     }
 }
 
-/// What: Whether an error means the path does not exist.
-/// Why:  `isMissing`: `ENOENT` and `ENOTDIR`.
+/// What:
+///  Whether an error means the path does not exist.
+/// Why:
+///   `isMissing`:
+///  `ENOENT` and `ENOTDIR`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -199,9 +238,14 @@ fn is_missing(error: &std::io::Error) -> bool {
     return matches!(error.kind(), std::io::ErrorKind::NotFound | std::io::ErrorKind::NotADirectory);
 }
 
-/// What: The PID in Git's `pid <n>` text, as `read_lock_pid` reads it: trailing whitespace
-///       trimmed, then `pid ` and decimal digits of a positive safe integer.
-/// Why:  `parsePidFileText`.
+/// What:
+///  The PID in Git's `pid <n>` text,
+///  as `read_lock_pid` reads it:
+///  trailing whitespace
+///       trimmed,
+///  then `pid ` and decimal digits of a positive safe integer.
+/// Why:
+///   `parsePidFileText`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -213,8 +257,11 @@ pub fn parse_pid_file_text(text: &str) -> Option<i64> {
     return super::recovery_evidence::decimal_attempt(digits);
 }
 
-/// What: The owner evidence of a PID's start against the lock's change time.
-/// Why:  `ownerEvidence`: started no later than the change plus the start's resolution.
+/// What:
+///  The owner evidence of a PID's start against the lock's change time.
+/// Why:
+///   `ownerEvidence`:
+///  started no later than the change plus the start's resolution.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -233,8 +280,12 @@ pub fn owner_evidence(start: ProcessStart, lock: &LockMetadata) -> PidOwner {
     }
 }
 
-/// What: The first characters of a text, as `slice(0, 64)` keeps them.
-/// Why:  A malformed PID file is quoted, not dumped whole.
+/// What:
+///  The first characters of a text,
+///  as `slice(0, 64)` keeps them.
+/// Why:
+///   A malformed PID file is quoted,
+///  not dumped whole.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -253,8 +304,11 @@ fn quoted_prefix(text: &str) -> String {
     return prefix;
 }
 
-/// What: The PID file beside a lock and the process it names.
-/// Why:  `readPidFileEvidence`; the text is read with replacement characters as `'utf8'` does.
+/// What:
+///  The PID file beside a lock and the process it names.
+/// Why:
+///   `readPidFileEvidence`;
+///  the text is read with replacement characters as `'utf8'` does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -272,9 +326,14 @@ pub fn read_pid_file_evidence(pid_path: &Path, lock: &LockMetadata, resolve: fn(
     return PidFile::Owner(pid, owner_evidence(resolve(pid), lock));
 }
 
-/// What: Classify gathered evidence.
-/// Why:  `classifyIndexLock`: an open holder first, then a PID file of a process that started
-///       before the lock, then one naming a gone process.
+/// What:
+///  Classify gathered evidence.
+/// Why:
+///   `classifyIndexLock`:
+///  an open holder first,
+///  then a PID file of a process that started
+///       before the lock,
+///  then one naming a gone process.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -303,8 +362,11 @@ pub fn classify_index_lock(evidence: &Evidence) -> Verdict {
     }
 }
 
-/// What: Gather one attempt's evidence with the given start-time source and holder scan.
-/// Why:  `gatherIndexLockEvidence`; nothing when the lock is gone.
+/// What:
+///  Gather one attempt's evidence with the given start-time source and holder scan.
+/// Why:
+///   `gatherIndexLockEvidence`;
+///  nothing when the lock is gone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -338,8 +400,10 @@ pub fn gather_with(
     }));
 }
 
-/// What: Gather one attempt's evidence with the host's sources.
-/// Why:  The production gather.
+/// What:
+///  Gather one attempt's evidence with the host's sources.
+/// Why:
+///   The production gather.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -349,8 +413,10 @@ pub fn gather_index_lock_evidence(real_index: &Path) -> std::io::Result<Option<E
     return gather_with(real_index, resolve_process_start, scan_platform_holders);
 }
 
-/// What: The PID file evidence as prose.
-/// Why:  `describePidFile`.
+/// What:
+///  The PID file evidence as prose.
+/// Why:
+///   `describePidFile`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -380,8 +446,10 @@ pub fn describe_pid_file(pid_file: &PidFile) -> String {
     }
 }
 
-/// What: The holder scan as prose.
-/// Why:  `describeHolders`.
+/// What:
+///  The holder scan as prose.
+/// Why:
+///   `describeHolders`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -414,8 +482,10 @@ pub fn describe_holders(evidence: &Evidence) -> String {
     return format!("{} scan found {found}{partial}", scan.method);
 }
 
-/// What: `PID <n>` with the command in parentheses when known.
-/// Why:  Shared by the evidence and the waiting line.
+/// What:
+///  `PID <n>` with the command in parentheses when known.
+/// Why:
+///   Shared by the evidence and the waiting line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -428,8 +498,11 @@ fn holder_name(pid: i64, command: Option<&str>) -> String {
     }
 }
 
-/// What: The evidence as one line of prose.
-/// Why:  `describeIndexLockEvidence`, quoted in the unproven-owner failure.
+/// What:
+///  The evidence as one line of prose.
+/// Why:
+///   `describeIndexLockEvidence`,
+///  quoted in the unproven-owner failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -447,8 +520,12 @@ pub fn describe_index_lock_evidence(evidence: &Evidence) -> String {
     );
 }
 
-/// What: The one standard-error line naming a proven-alive holder.
-/// Why:  `provenHolderLine`: the wait is unbounded, so the person learns what it waits for.
+/// What:
+///  The one standard-error line naming a proven-alive holder.
+/// Why:
+///   `provenHolderLine`:
+///  the wait is unbounded,
+///  so the person learns what it waits for.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

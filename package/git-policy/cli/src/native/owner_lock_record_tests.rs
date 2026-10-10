@@ -1,15 +1,21 @@
-//! Controls for the owner record: the incumbent's accepted and rejected shapes, its exact
-//! encoding, reading a published lock, and owner liveness.
+//! Controls for the owner record:
+//!  the incumbent's accepted and rejected shapes,
+//!  its exact
+//! encoding,
+//!  reading a published lock,
+//!  and owner liveness.
 
 use super::*;
 use crate::test_support::{fixture, remove};
 use std::path::PathBuf;
 
-/// The record the incumbent's `writeCandidate` writes for the hook lock, byte for byte.
+/// The record the incumbent's `writeCandidate` writes for the hook lock,
+///  byte for byte.
 const INCUMBENT_HOOK_LOCK: &str = "{\"schemaVersion\":1,\"token\":\"0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10\",\
 \"ownerPid\":4242,\"ownerBirthIdentity\":\"linux:8423337\"}\n";
 
-/// The record the incumbent writes for the landing reservation, with its transaction.
+/// The record the incumbent writes for the landing reservation,
+///  with its transaction.
 const INCUMBENT_RESERVATION: &str = "{\"schemaVersion\":1,\"token\":\"t\",\"ownerPid\":1,\
 \"ownerBirthIdentity\":\"darwin:Mon Oct  6 16:34:01 2026\",\
 \"transactionId\":\"11111111-2222-4333-8444-555555555555\"}\n";
@@ -24,7 +30,8 @@ fn hook_lock_record() -> OwnerLockRecord {
     };
 }
 
-/// Records written by the incumbent parse, and re-encode to the same bytes.
+/// Records written by the incumbent parse,
+///  and re-encode to the same bytes.
 #[test]
 fn incumbent_records_round_trip_byte_for_byte() {
     assert_eq!(
@@ -93,7 +100,10 @@ fn equivalent_spellings_are_accepted() {
     );
 }
 
-/// Reading a lock: a vanished lock is busy, a valid record is its owner, anything else fails.
+/// Reading a lock:
+///  a vanished lock is busy,
+///  a valid record is its owner,
+///  anything else fails.
 #[test]
 fn reading_a_published_lock() {
     let root: PathBuf = fixture("owner-record-read");
@@ -131,7 +141,9 @@ fn reading_a_published_lock() {
     remove(root.as_path());
 }
 
-/// A record that is a link, a directory or an oversized file is malformed, never followed.
+/// A record that is a link,
+///  a directory or an oversized file is malformed,
+///  never followed.
 #[cfg(unix)]
 #[test]
 fn unsafe_records_are_malformed() {
@@ -161,7 +173,8 @@ fn unsafe_records_are_malformed() {
     remove(root.as_path());
 }
 
-/// Invalid UTF-8 is replaced before parsing, as Node's `readFile(path, 'utf8')` does.
+/// Invalid UTF-8 is replaced before parsing,
+///  as Node's `readFile(path, 'utf8')` does.
 #[test]
 fn invalid_bytes_in_a_record_are_replaced() {
     let root: PathBuf = fixture("owner-record-bytes");

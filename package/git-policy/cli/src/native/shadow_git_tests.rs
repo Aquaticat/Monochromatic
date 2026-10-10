@@ -13,7 +13,8 @@ fn shadow_paths_derive_from_the_id() {
     );
 }
 
-/// Shadow requests select the shadow, disable hooks and remove redirecting variables.
+/// Shadow requests select the shadow,
+///  disable hooks and remove redirecting variables.
 #[test]
 fn shadow_requests_select_only_the_shadow() {
     let request: GitRequest =

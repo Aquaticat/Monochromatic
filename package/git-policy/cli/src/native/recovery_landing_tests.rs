@@ -1,4 +1,5 @@
-//! Controls for dead-transaction recovery against real repositories, and the scene builder the
+//! Controls for dead-transaction recovery against real repositories,
+//!  and the scene builder the
 //! registry and entry tests share.
 
 use super::*;
@@ -37,14 +38,17 @@ pub(crate) struct Scene {
     pub(crate) shadow: PathBuf,
     /// `HEAD` before the transaction.
     pub(crate) base: String,
-    /// The commit the transaction prepared, not on any branch yet.
+    /// The commit the transaction prepared,
+    ///  not on any branch yet.
     pub(crate) prepared: String,
 }
 
 /// Methods building transaction state in a scene.
 impl Scene {
-    /// What: A fresh scene whose transaction is owned by a live or dead owner.
-    /// Why:  Every recovery case starts from a published directory.
+    /// What:
+    ///  A fresh scene whose transaction is owned by a live or dead owner.
+    /// Why:
+    ///   Every recovery case starts from a published directory.
     pub(crate) fn new(name: &str, live: bool) -> Scene {
         let root: PathBuf = fixture(name);
         let repo: PathBuf = repository(root.as_path(), "repo");
@@ -85,8 +89,10 @@ impl Scene {
         };
     }
 
-    /// What: The preparing record of this scene.
-    /// Why:  Recovery reads every path from it.
+    /// What:
+    ///  The preparing record of this scene.
+    /// Why:
+    ///   Recovery reads every path from it.
     pub(crate) fn preparing(&self) -> PreparingRecord {
         let mut record: PreparingRecord = sample_preparing();
         record.transaction_id = String::from(ID);
@@ -100,8 +106,10 @@ impl Scene {
         return record;
     }
 
-    /// What: Write `preparing.json` and create the shadow repository directory.
-    /// Why:  A transaction past capture.
+    /// What:
+    ///  Write `preparing.json` and create the shadow repository directory.
+    /// Why:
+    ///   A transaction past capture.
     pub(crate) fn capture(&self) {
         std::fs::write(
             self.directory.join(PREPARING_FILENAME),
@@ -117,8 +125,10 @@ impl Scene {
         .expect("alternates");
     }
 
-    /// What: Create the real `index.lock` and record it as attempt 1.
-    /// Why:  A transaction inside the landing critical section.
+    /// What:
+    ///  Create the real `index.lock` and record it as attempt 1.
+    /// Why:
+    ///   A transaction inside the landing critical section.
     pub(crate) fn lock_index(&self) -> LockIdentity {
         let lock: PathBuf = self.git_dir.join("index.lock");
         std::fs::write(&lock, b"").expect("index lock");
@@ -139,8 +149,10 @@ impl Scene {
         return identity;
     }
 
-    /// What: Write landing attempt 1 for a commit (or a normalization) with both index snapshots.
-    /// Why:  A transaction that reached the compare-and-swap.
+    /// What:
+    ///  Write landing attempt 1 for a commit (or a normalization) with both index snapshots.
+    /// Why:
+    ///   A transaction that reached the compare-and-swap.
     pub(crate) fn land(&self, operation: LandingOperation, added: Vec<AddedPath>) -> LandingRecord {
         let lock: LockIdentity = self.lock_index();
         let real_index: PathBuf = self.git_dir.join("index");
@@ -172,8 +184,11 @@ impl Scene {
         return record;
     }
 
-    /// What: Move `main` to the prepared commit with the nonce reflog entry, as the landing does.
-    /// Why:  A transaction whose compare-and-swap succeeded.
+    /// What:
+    ///  Move `main` to the prepared commit with the nonce reflog entry,
+    ///  as the landing does.
+    /// Why:
+    ///   A transaction whose compare-and-swap succeeded.
     pub(crate) fn move_branch(&self) {
         let message: String = format!("commit (cli-git {ID}): prepared");
         git(
@@ -189,8 +204,10 @@ impl Scene {
         );
     }
 
-    /// What: The recovery place of this scene.
-    /// Why:  Recovery runs Git in the repository.
+    /// What:
+    ///  The recovery place of this scene.
+    /// Why:
+    ///   Recovery runs Git in the repository.
     pub(crate) fn place(&self) -> RecoveryPlace {
         return RecoveryPlace {
             git: git_context(),
@@ -199,8 +216,10 @@ impl Scene {
         };
     }
 
-    /// What: Remove the fixture.
-    /// Why:  Every test cleans up after itself.
+    /// What:
+    ///  Remove the fixture.
+    /// Why:
+    ///   Every test cleans up after itself.
     pub(crate) fn finish(self) {
         remove(self.root.as_path());
     }
@@ -271,7 +290,9 @@ fn unreleased_journals_fail_closed() {
     scene.finish();
 }
 
-/// Without a landing record the owned lock, PID file, keeps and shadow go.
+/// Without a landing record the owned lock,
+///  PID file,
+///  keeps and shadow go.
 #[test]
 fn deaths_before_landing_discard_the_attempt() {
     let scene: Scene = Scene::new("recovery-landing-prelanding", false);
@@ -328,7 +349,9 @@ fn unlanded_attempts_are_discarded() {
     scene.finish();
 }
 
-/// A landed commit gets its index, landed record, added-path copies and cleanup.
+/// A landed commit gets its index,
+///  landed record,
+///  added-path copies and cleanup.
 #[test]
 fn landed_commits_are_completed() {
     let scene: Scene = Scene::new("recovery-landing-landed", false);
@@ -391,7 +414,8 @@ fn landed_commits_are_completed() {
     scene.finish();
 }
 
-/// The marker filename, spelled out so a renamed constant fails this test.
+/// The marker filename,
+///  spelled out so a renamed constant fails this test.
 const REF_UPDATED_FILENAME_FOR_TEST: &str = "ref-updated.json";
 
 /// A landed commit whose index was already installed is recognized.

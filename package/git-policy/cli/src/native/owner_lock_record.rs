@@ -1,8 +1,18 @@
-//! What: The owner record inside every owner-lock directory (`owner.json`, schema version 1):
-//!       its strict parser, its exact encoding, and the owner-liveness rule.
-//! Why: The landing, reservation, hook, capture and push locks are directories holding this
-//!      record. The incumbent and its hook dispatcher write and read the same record
-//!      (`src/owner-lock/owner-lock-record.ts`), so both wrappers contend on one lock and each
+//! What:
+//!  The owner record inside every owner-lock directory (`owner.json`,
+//!  schema version 1):
+//!       its strict parser,
+//!  its exact encoding,
+//!  and the owner-liveness rule.
+//! Why:
+//!  The landing,
+//!  reservation,
+//!  hook,
+//!  capture and push locks are directories holding this
+//!      record.
+//!  The incumbent and its hook dispatcher write and read the same record
+//!      (`src/owner-lock/owner-lock-record.ts`),
+//!  so both wrappers contend on one lock and each
 //!      retires the other's dead lock.
 //!
 //! In TS you'd write (pseudocode):
@@ -27,13 +37,20 @@ pub const OWNER_LOCK_RECORD_FILENAME: &str = "owner.json";
 /// Owner-lock record schema version.
 pub const OWNER_LOCK_SCHEMA_VERSION: i64 = 1;
 
-/// Largest owner record read; a record is about 150 bytes, so anything near this is corrupt.
+/// Largest owner record read;
+///  a record is about 150 bytes,
+///  so anything near this is corrupt.
 pub const OWNER_LOCK_RECORD_LIMIT: u64 = 64 * 1024;
 
-/// What: The durable owner of one published lock.
-///       A `struct` groups named fields; `Option<String>` is "text or nothing".
-/// Why:  The token distinguishes this acquisition from every other; the PID and birth
-///       identity prove liveness; the reservation lock also names its transaction.
+/// What:
+///  The durable owner of one published lock.
+///       A `struct` groups named fields;
+///  `Option<String>` is "text or nothing".
+/// Why:
+///   The token distinguishes this acquisition from every other;
+///  the PID and birth
+///       identity prove liveness;
+///  the reservation lock also names its transaction.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -47,14 +64,24 @@ pub struct OwnerLockRecord {
     pub owner_pid: i64,
     /// Process-birth identity of the owner.
     pub owner_birth_identity: String,
-    /// Commit transaction the lock is held for, recorded by the landing reservation.
+    /// Commit transaction the lock is held for,
+    ///  recorded by the landing reservation.
     pub transaction_id: Option<String>,
 }
 
-/// What: Parse an owner record's text, or nothing when it is malformed.
-/// Why:  The incumbent's `parseOwnerLockRecord` accepts exactly: schema version 1, a
-///       non-empty token, a safe-integer PID of at least 1, a non-empty birth identity, and
-///       an optional non-empty transaction ID. Anything else is malformed.
+/// What:
+///  Parse an owner record's text,
+///  or nothing when it is malformed.
+/// Why:
+///   The incumbent's `parseOwnerLockRecord` accepts exactly:
+///  schema version 1,
+///  a
+///       non-empty token,
+///  a safe-integer PID of at least 1,
+///  a non-empty birth identity,
+///  and
+///       an optional non-empty transaction ID.
+///  Anything else is malformed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,9 +112,13 @@ pub fn parse_owner_lock_record(text: &str) -> Option<OwnerLockRecord> {
     });
 }
 
-/// What: Encode an owner record exactly as the incumbent's `writeCandidate` does: compact
-///       JSON in field order, with a trailing newline.
-/// Why:  Records written by either wrapper are byte-identical for the same values.
+/// What:
+///  Encode an owner record exactly as the incumbent's `writeCandidate` does:
+///  compact
+///       JSON in field order,
+///  with a trailing newline.
+/// Why:
+///   Records written by either wrapper are byte-identical for the same values.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -107,10 +138,16 @@ pub fn encode_owner_lock_record(record: &OwnerLockRecord) -> String {
     return format!("{}\n", writer.finish());
 }
 
-/// What: What reading a published lock found. `Busy` means the lock vanished while it was
-///       read, so the caller must look again.
-/// Why:  A release or retirement renames the directory away at any moment; that is a race to
-///       retry, not corruption.
+/// What:
+///  What reading a published lock found.
+///  `Busy` means the lock vanished while it was
+///       read,
+///  so the caller must look again.
+/// Why:
+///   A release or retirement renames the directory away at any moment;
+///  that is a race to
+///       retry,
+///  not corruption.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -124,9 +161,13 @@ pub enum PublishedOwner {
     Busy,
 }
 
-/// What: Why a lock's record could not be judged.
-/// Why:  A malformed or unreadable record must stop the acquirer: it might belong to a live
-///       owner, and the wrapper never deletes a lock it cannot prove dead.
+/// What:
+///  Why a lock's record could not be judged.
+/// Why:
+///   A malformed or unreadable record must stop the acquirer:
+///  it might belong to a live
+///       owner,
+///  and the wrapper never deletes a lock it cannot prove dead.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -140,8 +181,12 @@ pub enum OwnerRecordError {
     Unreadable(std::path::PathBuf, std::io::Error),
 }
 
-/// What: Read the owner of a published lock directory.
-/// Why:  A missing record or directory means the lock vanished (`ENOENT`, `ENOTDIR`), which
+/// What:
+///  Read the owner of a published lock directory.
+/// Why:
+///   A missing record or directory means the lock vanished (`ENOENT`,
+///  `ENOTDIR`),
+///  which
 ///       the incumbent reports as busy so the caller retries.
 ///
 /// In TS you'd write (pseudocode):
@@ -166,9 +211,14 @@ pub fn read_owner_lock_record(lock_directory: &Path) -> Result<PublishedOwner, O
     }
 }
 
-/// What: Whether a recorded owner still runs with the same process birth.
-/// Why:  A PID that names no process, a zombie, or a younger process reusing the PID is a
-///       dead owner. The incumbent's `ownerLockHolderIsAlive` compares identities only.
+/// What:
+///  Whether a recorded owner still runs with the same process birth.
+/// Why:
+///   A PID that names no process,
+///  a zombie,
+///  or a younger process reusing the PID is a
+///       dead owner.
+///  The incumbent's `ownerLockHolderIsAlive` compares identities only.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -182,7 +232,8 @@ pub fn owner_lock_holder_is_alive(record: &OwnerLockRecord) -> Result<bool, Proc
     }
 }
 
-/// Parser, encoding and liveness controls stay out of the release executable.
+/// Parser,
+///  encoding and liveness controls stay out of the release executable.
 #[cfg(test)]
 #[path = "owner_lock_record_tests.rs"]
 mod tests;

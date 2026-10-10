@@ -370,7 +370,8 @@ pub mod scanner_failure_code;
 #[cfg(test)]
 mod scanner_test_support;
 
-/// Private, crash-safe file primitives shared by every durable record.
+/// Private,
+///  crash-safe file primitives shared by every durable record.
 pub mod private_storage;
 
 /// Compact JSON records read and written with the incumbent's `JSON` semantics.
@@ -418,7 +419,8 @@ pub mod iso_time;
 /// The filesystem identity recorded with every real `index.lock` a transaction creates.
 pub mod filesystem_identity;
 
-/// Running real Git for transaction, recovery and landing work.
+/// Running real Git for transaction,
+///  recovery and landing work.
 pub mod transaction_git;
 
 /// The preparation and landing leases nested wrapper invocations inherit.
@@ -427,13 +429,16 @@ pub mod transaction_lease;
 /// No-follow file operations recovery and landing share.
 pub mod recovery_files;
 
-/// Durable evidence a dead transaction left: attempt records, owned locks and Git's PID file.
+/// Durable evidence a dead transaction left:
+///  attempt records,
+///  owned locks and Git's PID file.
 pub mod recovery_evidence;
 
 /// The reflog search that proves which commit an interrupted transaction landed.
 pub mod recovery_reflog;
 
-/// Deciding whether a landing landed, and installing its recorded post-index.
+/// Deciding whether a landing landed,
+///  and installing its recorded post-index.
 pub mod recovery_completion;
 
 /// The `.keep` files protecting a landing's migrated pack.
@@ -445,10 +450,14 @@ pub mod shadow_git;
 /// Native conclusion cleanup reproduced in the owning worktree.
 pub mod conclusion_cleanup;
 
-/// The per-worktree capture store: location, sequence and identity.
+/// The per-worktree capture store:
+///  location,
+///  sequence and identity.
 pub mod capture_store;
 
-/// `captured.json`, landed-capture records, their recording and pruning.
+/// `captured.json`,
+///  landed-capture records,
+///  their recording and pruning.
 pub mod capture_records;
 
 /// Loading many blobs through one `git cat-file --batch`.
@@ -472,22 +481,27 @@ pub mod commit_recovery;
 /// Startup recovery as a step of a wrapped or direct command.
 pub mod transaction_gate;
 
-/// Process start times for lock owners, read from `/proc`, `ps` or the Windows process table.
+/// Process start times for lock owners,
+///  read from `/proc`,
+///  `ps` or the Windows process table.
 pub mod process_start;
 
 /// The Git version check run once before work that depends on Git's behavior.
 pub mod git_version;
 
-/// Processes holding a lock file open, found by device and inode.
+/// Processes holding a lock file open,
+///  found by device and inode.
 pub mod index_lock_holders;
 
-/// Parsers of `lsof -F pcDi` records and Restart Manager lines, matched by device and inode.
+/// Parsers of `lsof -F pcDi` records and Restart Manager lines,
+///  matched by device and inode.
 pub mod index_lock_holder_parsers;
 
 /// Evidence about a foreign `index.lock` and the verdict it supports.
 pub mod index_lock_evidence;
 
-/// The Git command a forwarded invocation runs, after ordinary alias expansion.
+/// The Git command a forwarded invocation runs,
+///  after ordinary alias expansion.
 pub mod forwarded_command;
 
 /// Index-writer classification and the commands that coordinate with a landing.

@@ -1,9 +1,17 @@
-//! What: Startup recovery as a step of a wrapped or direct command: recover, then report how the
+//! What:
+//!  Startup recovery as a step of a wrapped or direct command:
+//!  recover,
+//!  then report how the
 //!       command may go on.
-//! Why: Every command that reads the repository location recovers dead transactions first. A
+//! Why:
+//!  Every command that reads the repository location recovers dead transactions first.
+//!  A
 //!      guarded command beside a live transaction is still refused until index writers coordinate
-//!      with live transactions; a read-only command goes on. A legacy directory or a recovery
-//!      failure stops the command with exit 2, as the incumbent's `content-unavailable` engine
+//!      with live transactions;
+//!  a read-only command goes on.
+//!  A legacy directory or a recovery
+//!      failure stops the command with exit 2,
+//!  as the incumbent's `content-unavailable` engine
 //!      failure does.
 //!
 //! In TS you'd write (pseudocode):
@@ -27,8 +35,11 @@ use super::worktree_identity::WorktreeIdentity;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// What: How a command may go on after recovery.
-/// Why:  Callers refuse, stop or continue from this.
+/// What:
+///  How a command may go on after recovery.
+/// Why:
+///   Callers refuse,
+///  stop or continue from this.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -40,12 +51,16 @@ pub enum Gate {
     Clear,
     /// Live transactions remain in this registry.
     Live(PathBuf),
-    /// Recovery stopped the command; this is its standard error.
+    /// Recovery stopped the command;
+    ///  this is its standard error.
     Stop(String),
 }
 
-/// What: Recover the invocation's worktree and say how the command may go on.
-/// Why:  Shared by wrapped commands, read-only commands and direct commands.
+/// What:
+///  Recover the invocation's worktree and say how the command may go on.
+/// Why:
+///   Shared by wrapped commands,
+///  read-only commands and direct commands.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

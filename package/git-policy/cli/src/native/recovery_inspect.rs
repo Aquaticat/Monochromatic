@@ -1,8 +1,15 @@
-//! What: Owner inspection of one transaction registry entry, and the oldest-first recovery order.
-//! Why: Live owners are skipped, dead owners recovered, and a published directory without a valid
-//!      owner record fails closed; recovery runs oldest first because a later transaction was
+//! What:
+//!  Owner inspection of one transaction registry entry,
+//!  and the oldest-first recovery order.
+//! Why:
+//!  Live owners are skipped,
+//!  dead owners recovered,
+//!  and a published directory without a valid
+//!      owner record fails closed;
+//!  recovery runs oldest first because a later transaction was
 //!      prepared against the state an earlier one left
-//!      (`src/policy-engine/commit-transaction-recovery-inspect.ts`, `commit-landing-lock.ts`).
+//!      (`src/policy-engine/commit-transaction-recovery-inspect.ts`,
+//!  `commit-landing-lock.ts`).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -27,8 +34,12 @@ use super::transaction_registry::{EntryKind, OWNER_FILENAME, RegistryEntry};
 /// `PathBuf` is an owned filesystem path.
 use std::path::PathBuf;
 
-/// What: An entry's owner evidence: its record and liveness, or why none can be attributed.
-/// Why:  `InspectedEntry['owner']`.
+/// What:
+///  An entry's owner evidence:
+///  its record and liveness,
+///  or why none can be attributed.
+/// Why:
+///   `InspectedEntry['owner']`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,14 +49,17 @@ use std::path::PathBuf;
 pub enum OwnerEvidence {
     /// A complete owner record and whether its process still runs.
     Owned(TransactionOwner, OwnerLiveness),
-    /// The directory disappeared while recovery listed it: its owner finished.
+    /// The directory disappeared while recovery listed it:
+    ///  its owner finished.
     Vanished,
     /// A staging candidate without a complete owner record.
     Unattributed,
 }
 
-/// What: One registry entry with its owner evidence.
-/// Why:  `InspectedEntry`.
+/// What:
+///  One registry entry with its owner evidence.
+/// Why:
+///   `InspectedEntry`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,8 +75,11 @@ pub struct InspectedEntry {
 
 /// Methods over an inspected entry.
 impl InspectedEntry {
-    /// What: The owner record of a dead owner, or nothing.
-    /// Why:  Only dead owners are recovered.
+    /// What:
+    ///  The owner record of a dead owner,
+    ///  or nothing.
+    /// Why:
+    ///   Only dead owners are recovered.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -76,8 +93,11 @@ impl InspectedEntry {
     }
 }
 
-/// What: Classify an owner, reporting a failed probe as a recovery failure.
-/// Why:  Recovery cannot decide liveness without the probe.
+/// What:
+///  Classify an owner,
+///  reporting a failed probe as a recovery failure.
+/// Why:
+///   Recovery cannot decide liveness without the probe.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -101,8 +121,13 @@ fn liveness(record: &TransactionOwner) -> Result<OwnerLiveness, RecoveryError> {
     }
 }
 
-/// What: Read and classify an entry's owner, tolerating a live owner removing its own directory.
-/// Why:  `inspectRegistryEntry`: a published directory needs a valid matching owner record; a
+/// What:
+///  Read and classify an entry's owner,
+///  tolerating a live owner removing its own directory.
+/// Why:
+///   `inspectRegistryEntry`:
+///  a published directory needs a valid matching owner record;
+///  a
 ///       staging candidate may hold a torn one.
 ///
 /// In TS you'd write (pseudocode):
@@ -169,8 +194,10 @@ pub fn inspect_registry_entry(entry: &RegistryEntry) -> Result<InspectedEntry, R
     });
 }
 
-/// What: An entry whose owner cannot be attributed.
-/// Why:  Shared by the missing and torn staging cases.
+/// What:
+///  An entry whose owner cannot be attributed.
+/// Why:
+///   Shared by the missing and torn staging cases.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -183,9 +210,14 @@ fn unattributed(entry: &RegistryEntry) -> InspectedEntry {
     };
 }
 
-/// What: An entry's recovery-order key: `<createdAt> <path>` when attributed, otherwise
-///       `~<path>`, after every ISO time.
-/// Why:  `creationKey`.
+/// What:
+///  An entry's recovery-order key:
+///  `<createdAt> <path>` when attributed,
+///  otherwise
+///       `~<path>`,
+///  after every ISO time.
+/// Why:
+///   `creationKey`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -199,9 +231,15 @@ pub fn creation_key(inspected: &InspectedEntry) -> String {
     }
 }
 
-/// What: Order inspected entries oldest first, stably.
-/// Why:  `oldestFirst`: JavaScript compares the keys by UTF-16 code units; for the ASCII
-///       timestamps and registry paths the wrappers write, byte order is the same order.
+/// What:
+///  Order inspected entries oldest first,
+///  stably.
+/// Why:
+///   `oldestFirst`:
+///  JavaScript compares the keys by UTF-16 code units;
+///  for the ASCII
+///       timestamps and registry paths the wrappers write,
+///  byte order is the same order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -221,8 +259,10 @@ pub fn oldest_first(entries: Vec<InspectedEntry>) -> Vec<InspectedEntry> {
     return ordered;
 }
 
-/// What: Compare two keyed entries by key.
-/// Why:  A named comparator keeps the sort free of closures.
+/// What:
+///  Compare two keyed entries by key.
+/// Why:
+///   A named comparator keeps the sort free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

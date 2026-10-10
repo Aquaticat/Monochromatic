@@ -1,4 +1,5 @@
-//! Controls for `toISOString` formatting, checked against values Node 24 prints.
+//! Controls for `toISOString` formatting,
+//!  checked against values Node 24 prints.
 
 use super::*;
 
@@ -31,7 +32,9 @@ fn known_instants_match_to_iso_string() {
     );
 }
 
-/// Every day of four years, crossing a leap year, maps to consecutive dates.
+/// Every day of four years,
+///  crossing a leap year,
+///  maps to consecutive dates.
 #[test]
 fn consecutive_days_are_consecutive_dates() {
     let mut previous: (i64, u32, u32) = civil_from_days(10_957);

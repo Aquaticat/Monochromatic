@@ -2,7 +2,8 @@
 
 use super::*;
 
-/// Only an object is a record; every other document is refused.
+/// Only an object is a record;
+///  every other document is refused.
 #[test]
 fn only_objects_are_records() {
     assert!(parse_object("{\"a\":1}").is_some());
@@ -18,7 +19,8 @@ fn only_objects_are_records() {
     assert!(parse_object("{/* c */\"a\":1}").is_none());
 }
 
-/// The last duplicate key wins, as in `JSON.parse`.
+/// The last duplicate key wins,
+///  as in `JSON.parse`.
 #[test]
 fn the_last_duplicate_key_wins() {
     let map: Map<String, Value> = parse_object("{\"a\":\"first\",\"a\":\"last\"}").expect("object");
@@ -78,7 +80,9 @@ fn number_equality_compares_values() {
     assert!(!number_equals(&map, "missing", 2));
 }
 
-/// The fatal decoder accepts valid UTF-8, drops one leading mark, and refuses invalid bytes.
+/// The fatal decoder accepts valid UTF-8,
+///  drops one leading mark,
+///  and refuses invalid bytes.
 #[test]
 fn the_fatal_decoder_matches_text_decoder() {
     assert_eq!(decode_fatal(b"{}"), Some("{}"));
@@ -90,7 +94,8 @@ fn the_fatal_decoder_matches_text_decoder() {
     assert_eq!(decode_fatal(b"{\xff}"), None);
 }
 
-/// The writer reproduces `JSON.stringify` for every field kind, in insertion order.
+/// The writer reproduces `JSON.stringify` for every field kind,
+///  in insertion order.
 #[test]
 fn the_writer_matches_json_stringify() {
     let mut writer: ObjectWriter = ObjectWriter::new();

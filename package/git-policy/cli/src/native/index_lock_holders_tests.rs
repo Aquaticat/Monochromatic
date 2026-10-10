@@ -1,5 +1,9 @@
-//! Controls for open-holder scans: the `/proc/<pid>/fd` scan against a fixture proc root, a real
-//! child process holding the lock open, the `lsof -F` and Restart Manager parsers, and the
+//! Controls for open-holder scans:
+//!  the `/proc/<pid>/fd` scan against a fixture proc root,
+//!  a real
+//! child process holding the lock open,
+//!  the `lsof -F` and Restart Manager parsers,
+//!  and the
 //! number reader that `BigInt` text follows.
 
 use super::*;
@@ -8,13 +12,16 @@ use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 
-/// Device and inode of a file, as the scan matches them.
+/// Device and inode of a file,
+///  as the scan matches them.
 fn identity_of(path: &Path) -> (u64, u64) {
     let metadata: std::fs::Metadata = std::fs::metadata(path).expect("lock metadata");
     return (metadata.dev(), metadata.ino());
 }
 
-/// Number text as `BigInt` reads it, decimal, prefixed and malformed.
+/// Number text as `BigInt` reads it,
+///  decimal,
+///  prefixed and malformed.
 #[test]
 fn lsof_numbers_follow_bigint_spelling() {
     assert_eq!(parse_lsof_number("42"), Some(42));
@@ -31,7 +38,8 @@ fn lsof_numbers_follow_bigint_spelling() {
     assert_eq!(parse_lsof_number("1_000"), None);
 }
 
-/// Process records start at each `p` line; their command and file descriptors follow.
+/// Process records start at each `p` line;
+///  their command and file descriptors follow.
 #[test]
 fn lsof_output_groups_files_under_their_process() {
     let output: &str = "p42\ncgit commit\nf3\nD0x1000011\ni77\nn/tmp/x\nf4\nD0x2\ni9\n\
@@ -45,7 +53,8 @@ fn lsof_output_groups_files_under_their_process() {
     assert_eq!(processes[1].files, vec![(Some(0x1000011), Some(77))]);
 }
 
-/// A process whose PID is not a number keeps no PID, and a missing field stays absent.
+/// A process whose PID is not a number keeps no PID,
+///  and a missing field stays absent.
 #[test]
 fn lsof_records_keep_unreadable_fields_absent() {
     let processes: Vec<LsofProcess> = parse_lsof_fields("pabc\ncx\nf1\ni\n");
@@ -55,7 +64,8 @@ fn lsof_records_keep_unreadable_fields_absent() {
     assert_eq!(processes[0].files, vec![(None, Some(0))]);
 }
 
-/// Output without any `p` line names no process, and text before the first `p` is ignored.
+/// Output without any `p` line names no process,
+///  and text before the first `p` is ignored.
 #[test]
 fn lsof_output_without_a_process_names_nobody() {
     assert!(parse_lsof_fields("").is_empty());
@@ -63,7 +73,8 @@ fn lsof_output_without_a_process_names_nobody() {
     assert_eq!(parse_lsof_fields("junk\np7\n").len(), 1);
 }
 
-/// Only the processes with a file of the same device and inode match; a missing PID never matches.
+/// Only the processes with a file of the same device and inode match;
+///  a missing PID never matches.
 #[test]
 fn matching_holders_compare_device_and_inode() {
     let processes: Vec<LsofProcess> = vec![
@@ -93,7 +104,9 @@ fn matching_holders_compare_device_and_inode() {
     );
 }
 
-/// Restart Manager lines carry the PID, a tab and the application name; the name may be absent.
+/// Restart Manager lines carry the PID,
+///  a tab and the application name;
+///  the name may be absent.
 #[test]
 fn restart_manager_lines_are_parsed() {
     let holders: Vec<Holder> = parse_restart_manager_output("4242\tgit.exe\r\n\n  7  \nbad\tname\n");
@@ -112,8 +125,10 @@ fn restart_manager_lines_are_parsed() {
     );
 }
 
-/// The proc scan finds the holders of the lock by device and inode, reads their command names,
-/// skips the scanning process itself, and reports only unreadable descriptor directories.
+/// The proc scan finds the holders of the lock by device and inode,
+///  reads their command names,
+/// skips the scanning process itself,
+///  and reports only unreadable descriptor directories.
 #[test]
 fn the_proc_scan_matches_descriptors_by_identity() {
     let root: PathBuf = fixture("holders-proc-scan");
@@ -152,7 +167,8 @@ fn the_proc_scan_matches_descriptors_by_identity() {
     remove(root.as_path());
 }
 
-/// A proc root that cannot be listed is partial evidence with its path, never a silent absence.
+/// A proc root that cannot be listed is partial evidence with its path,
+///  never a silent absence.
 #[test]
 fn an_unlistable_proc_root_is_partial() {
     let root: PathBuf = fixture("holders-proc-missing");
@@ -184,7 +200,8 @@ fn holds_pid(holders: &[Holder], pid: i64) -> bool {
     return false;
 }
 
-/// A real child holding the lock open is found by the host scan with its command name, and the
+/// A real child holding the lock open is found by the host scan with its command name,
+///  and the
 /// test's own open descriptor never counts as a holder.
 #[test]
 #[cfg(target_os = "linux")]
@@ -211,7 +228,8 @@ fn a_real_child_holding_the_lock_is_found_on_linux() {
     remove(root.as_path());
 }
 
-/// A lock nobody holds has no holders, on the host scan of this platform.
+/// A lock nobody holds has no holders,
+///  on the host scan of this platform.
 #[test]
 #[cfg(target_os = "linux")]
 fn an_unheld_lock_has_no_holders() {

@@ -1,9 +1,15 @@
-//! What: The filesystem identity recorded with every real `index.lock` a transaction creates,
+//! What:
+//!  The filesystem identity recorded with every real `index.lock` a transaction creates,
 //!       spelled exactly as the incumbent's `@monochromatic-dev/module-fs-id` spells it.
-//! Why: Recovery removes a real `index.lock` only when its device, inode and filesystem
-//!      identity all match the journal; the incumbent compares the recorded `fsId` with the one
-//!      it resolves now, so both wrappers must resolve the same text for the same filesystem
-//!      (`package/module/fs-id/src/platform-resolvers.ts`, `parsers.ts`).
+//! Why:
+//!  Recovery removes a real `index.lock` only when its device,
+//!  inode and filesystem
+//!      identity all match the journal;
+//!  the incumbent compares the recorded `fsId` with the one
+//!      it resolves now,
+//!  so both wrappers must resolve the same text for the same filesystem
+//!      (`package/module/fs-id/src/platform-resolvers.ts`,
+//!  `parsers.ts`).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -25,8 +31,12 @@ const SAFE_PAYLOAD_CHARACTERS: &str = "abcdefghijklmnopqrstuvwxyz0123456789-.";
 const SAFE_DEVICE_CHARACTERS: &str =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/_-.";
 
-/// What: The mechanism that supplied an identity, which names its prefix.
-/// Why:  `SOURCE_PREFIXES` in the incumbent: stable sources and degraded fallbacks are told
+/// What:
+///  The mechanism that supplied an identity,
+///  which names its prefix.
+/// Why:
+///   `SOURCE_PREFIXES` in the incumbent:
+///  stable sources and degraded fallbacks are told
 ///       apart in the text itself.
 ///
 /// In TS you'd write (pseudocode):
@@ -47,8 +57,10 @@ pub enum FsIdSource {
     DeviceNumber,
 }
 
-/// What: The prefix of one source.
-/// Why:  The identity text is `<prefix><payload>`.
+/// What:
+///  The prefix of one source.
+/// Why:
+///   The identity text is `<prefix><payload>`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,9 +76,15 @@ pub fn source_prefix(source: FsIdSource) -> &'static str {
     }
 }
 
-/// What: Normalize one command-supplied payload: trim, lowercase, then accept only non-empty
+/// What:
+///  Normalize one command-supplied payload:
+///  trim,
+///  lowercase,
+///  then accept only non-empty
 ///       safe ASCII up to 512 characters that is not a lone `-`.
-/// Why:  `normalizeIdentityPayload`; anything else is no identity.
+/// Why:
+///   `normalizeIdentityPayload`;
+///  anything else is no identity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -92,8 +110,10 @@ pub fn normalize_identity_payload(value: &str) -> Option<String> {
     return Some(normalized);
 }
 
-/// What: The identity text `<prefix><payload>` for a normalized payload.
-/// Why:  `createFsId`.
+/// What:
+///  The identity text `<prefix><payload>` for a normalized payload.
+/// Why:
+///   `createFsId`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -107,9 +127,12 @@ pub fn create_fs_id(source: FsIdSource, payload: &str) -> Option<String> {
     ));
 }
 
-/// What: The mounted device node in POSIX `df -P` output: the first field of the last
+/// What:
+///  The mounted device node in POSIX `df -P` output:
+///  the first field of the last
 ///       non-empty row that starts with `/dev/` and holds only safe characters.
-/// Why:  `parseDfDevice` on macOS.
+/// Why:
+///   `parseDfDevice` on macOS.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -132,8 +155,10 @@ pub fn parse_df_device(output: &str) -> Option<String> {
     return found;
 }
 
-/// What: Whether a character may appear in a device-node path.
-/// Why:  A named predicate keeps the scan free of closures.
+/// What:
+///  Whether a character may appear in a device-node path.
+/// Why:
+///   A named predicate keeps the scan free of closures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -143,8 +168,11 @@ fn is_safe_device_character(character: char) -> bool {
     return SAFE_DEVICE_CHARACTERS.contains(character);
 }
 
-/// What: The `VolumeUUID` string of a `diskutil info -plist` property list, normalized.
-/// Why:  `parseDiskutilVolumeUuid` on macOS.
+/// What:
+///  The `VolumeUUID` string of a `diskutil info -plist` property list,
+///  normalized.
+/// Why:
+///   `parseDiskutilVolumeUuid` on macOS.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -161,8 +189,12 @@ pub fn parse_diskutil_volume_uuid(output: &str) -> Option<String> {
     return normalize_identity_payload(&output[value_start..value_end]);
 }
 
-/// What: The uppercase drive root `X:\` of a Windows path, or nothing for a path without one.
-/// Why:  `windowsDriveRoot`: the drive letter feeds a fixed PowerShell query.
+/// What:
+///  The uppercase drive root `X:\` of a Windows path,
+///  or nothing for a path without one.
+/// Why:
+///   `windowsDriveRoot`:
+///  the drive letter feeds a fixed PowerShell query.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -179,9 +211,13 @@ pub fn windows_drive_root(path: &str) -> Option<String> {
     return Some(format!("{}:\\", letter.to_ascii_uppercase()));
 }
 
-/// What: Run one platform command and return its standard output as text, or nothing when it
+/// What:
+///  Run one platform command and return its standard output as text,
+///  or nothing when it
 ///       cannot start or exits unsuccessfully.
-/// Why:  The incumbent's `nano-spawn` call throws on either; both send it to the fallback.
+/// Why:
+///   The incumbent's `nano-spawn` call throws on either;
+///  both send it to the fallback.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -200,9 +236,14 @@ fn command_output(command: &str, arguments: &[&std::ffi::OsStr]) -> Option<Strin
     return Some(String::from_utf8_lossy(output.stdout.as_slice()).into_owned());
 }
 
-/// What: The Linux identity: the filesystem UUID from `findmnt`, or the degraded `f_fsid`
+/// What:
+///  The Linux identity:
+///  the filesystem UUID from `findmnt`,
+///  or the degraded `f_fsid`
 ///       from GNU `stat`.
-/// Why:  `resolveLinuxFsId`, step for step.
+/// Why:
+///   `resolveLinuxFsId`,
+///  step for step.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -237,9 +278,12 @@ fn linux_fs_id(path: &Path) -> Option<String> {
     return create_fs_id(FsIdSource::FFsid, fallback.as_str());
 }
 
-/// What: The filesystem identity of the filesystem holding `path`, or nothing when no
+/// What:
+///  The filesystem identity of the filesystem holding `path`,
+///  or nothing when no
 ///       mechanism answers.
-/// Why:  The incumbent canonicalizes the path first and then asks the platform's mechanism;
+/// Why:
+///   The incumbent canonicalizes the path first and then asks the platform's mechanism;
 ///       on macOS and Windows the commands are the incumbent's own.
 ///
 /// In TS you'd write (pseudocode):
@@ -267,9 +311,14 @@ pub fn filesystem_identity(path: &Path) -> Option<String> {
     }
 }
 
-/// What: The macOS identity: the Volume UUID through `df -P` and `diskutil info -plist`, or the
+/// What:
+///  The macOS identity:
+///  the Volume UUID through `df -P` and `diskutil info -plist`,
+///  or the
 ///       degraded device number from BSD `stat -f %d`.
-/// Why:  `resolveDarwinFsId`, step for step.
+/// Why:
+///   `resolveDarwinFsId`,
+///  step for step.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -303,8 +352,12 @@ fn darwin_fs_id(path: &Path) -> Option<String> {
     return create_fs_id(FsIdSource::DeviceNumber, number.as_str());
 }
 
-/// What: The Windows identity: the volume serial number through PowerShell.
-/// Why:  `resolveWindowsFsId`'s preferred step; its device-number fallback is not ported
+/// What:
+///  The Windows identity:
+///  the volume serial number through PowerShell.
+/// Why:
+///   `resolveWindowsFsId`'s preferred step;
+///  its device-number fallback is not ported
 ///       (recorded in `doc/handover/cli-git-native-transactions.md`).
 ///
 /// In TS you'd write (pseudocode):

@@ -2,7 +2,9 @@
 
 use super::*;
 
-/// The message is printed unchanged, and filesystem failures name step, path and reason.
+/// The message is printed unchanged,
+///  and filesystem failures name step,
+///  path and reason.
 #[test]
 fn messages_name_the_step_and_path() {
     assert_eq!(

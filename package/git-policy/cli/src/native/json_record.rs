@@ -1,8 +1,16 @@
-//! What: Reading and writing the compact JSON records both wrappers share, with the
+//! What:
+//!  Reading and writing the compact JSON records both wrappers share,
+//!  with the
 //!       incumbent's `JSON.parse` and `JSON.stringify` semantics.
-//! Why: Lock, owner, journal and capture records written by either wrapper are read by the
-//!      other. A record must be read the way the incumbent reads it (numbers are doubles, a
-//!      whole number in safe-integer range is an integer, the last duplicate key wins) and
+//! Why:
+//!  Lock,
+//!  owner,
+//!  journal and capture records written by either wrapper are read by the
+//!      other.
+//!  A record must be read the way the incumbent reads it (numbers are doubles,
+//!  a
+//!      whole number in safe-integer range is an integer,
+//!  the last duplicate key wins) and
 //!      written with the same field order and escaping.
 //!
 //! In TS you'd write (pseudocode):
@@ -10,8 +18,11 @@
 //! const value: unknown = JSON.parse(text); const bytes = `${JSON.stringify(record)}\n`;
 //! ```
 
-/// What: `Map` is a JSON object's key/value table and `Value` any JSON value.
-/// Why:  Records are untrusted until each field is checked, so they are parsed into the
+/// What:
+///  `Map` is a JSON object's key/value table and `Value` any JSON value.
+/// Why:
+///   Records are untrusted until each field is checked,
+///  so they are parsed into the
 ///       general form first.
 ///
 /// In TS you'd write (pseudocode):
@@ -20,12 +31,19 @@
 /// ```
 use serde_json::{Map, Value};
 
-/// The largest whole number a double holds exactly, JavaScript's `Number.MAX_SAFE_INTEGER`.
+/// The largest whole number a double holds exactly,
+///  JavaScript's `Number.MAX_SAFE_INTEGER`.
 pub const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 
-/// What: Parse record text into a JSON object, or nothing for any other document.
-///       `Option<Map<String, Value>>` is "an object, or nothing".
-/// Why:  Every record is an object; an array, a scalar or text that is not JSON is malformed.
+/// What:
+///  Parse record text into a JSON object,
+///  or nothing for any other document.
+///       `Option<Map<String, Value>>` is "an object,
+///  or nothing".
+/// Why:
+///   Every record is an object;
+///  an array,
+///  a scalar or text that is not JSON is malformed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,10 +57,15 @@ pub fn parse_object(text: &str) -> Option<Map<String, Value>> {
     }
 }
 
-/// What: Decode record bytes the way a `fatal` `TextDecoder` does: valid UTF-8 only, with one
+/// What:
+///  Decode record bytes the way a `fatal` `TextDecoder` does:
+///  valid UTF-8 only,
+///  with one
 ///       leading byte-order mark removed.
-/// Why:  The incumbent decodes owner and journal records with `new TextDecoder('utf-8',
-///       { fatal: true })`, which rejects invalid bytes and drops a leading mark.
+/// Why:
+///   The incumbent decodes owner and journal records with `new TextDecoder('utf-8',
+///       { fatal: true })`,
+///  which rejects invalid bytes and drops a leading mark.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -54,8 +77,11 @@ pub fn decode_fatal(bytes: &[u8]) -> Option<&str> {
     return Some(text.strip_prefix('\u{feff}').unwrap_or(text));
 }
 
-/// What: Read a field as text, or nothing when it is absent or not a string.
-/// Why:  `typeof value.key === 'string'` is the incumbent's check.
+/// What:
+///  Read a field as text,
+///  or nothing when it is absent or not a string.
+/// Why:
+///   `typeof value.key === 'string'` is the incumbent's check.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,10 +91,16 @@ pub fn string_field<'a>(map: &'a Map<String, Value>, key: &str) -> Option<&'a st
     return map.get(key)?.as_str();
 }
 
-/// What: Read a field as a JavaScript safe integer, or nothing.
+/// What:
+///  Read a field as a JavaScript safe integer,
+///  or nothing.
 ///       `i64` is a signed 64-bit integer.
-/// Why:  `typeof value === 'number' && Number.isSafeInteger(value)` accepts `1`, `1.0` and
-///       `1e0` alike, because JavaScript has only doubles; anything with a fraction or beyond
+/// Why:
+///   `typeof value === 'number' && Number.isSafeInteger(value)` accepts `1`,
+///  `1.0` and
+///       `1e0` alike,
+///  because JavaScript has only doubles;
+///  anything with a fraction or beyond
 ///       2^53 - 1 is refused.
 ///
 /// In TS you'd write (pseudocode):
@@ -79,8 +111,10 @@ pub fn safe_integer_field(map: &Map<String, Value>, key: &str) -> Option<i64> {
     return safe_integer(map.get(key)?);
 }
 
-/// What: The safe-integer reading of one JSON value.
-/// Why:  Shared by object fields and array items.
+/// What:
+///  The safe-integer reading of one JSON value.
+/// Why:
+///   Shared by object fields and array items.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -107,8 +141,10 @@ pub fn safe_integer(value: &Value) -> Option<i64> {
     return Some(double as i64);
 }
 
-/// What: Keep a whole number only when it lies within the safe range.
-/// Why:  `Number.isSafeInteger` rejects magnitudes beyond 2^53 - 1.
+/// What:
+///  Keep a whole number only when it lies within the safe range.
+/// Why:
+///   `Number.isSafeInteger` rejects magnitudes beyond 2^53 - 1.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,8 +157,11 @@ fn in_safe_range(whole: i64) -> Option<i64> {
     return Some(whole);
 }
 
-/// What: Whether a field holds exactly the JSON number `expected`.
-/// Why:  `value.schemaVersion !== 1` compares doubles, so `1.0` matches `1`.
+/// What:
+///  Whether a field holds exactly the JSON number `expected`.
+/// Why:
+///   `value.schemaVersion !== 1` compares doubles,
+///  so `1.0` matches `1`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -132,10 +171,16 @@ pub fn number_equals(map: &Map<String, Value>, key: &str, expected: i64) -> bool
     return safe_integer_field(map, key) == Some(expected);
 }
 
-/// What: Builder of one compact JSON object in insertion order, as `JSON.stringify` writes it.
-///       A `struct` groups named fields; this one holds the text written so far.
-/// Why:  Records must list their fields in the incumbent's order so the bytes match for the
-///       same values; escaping comes from `serde_json`, which escapes the same characters
+/// What:
+///  Builder of one compact JSON object in insertion order,
+///  as `JSON.stringify` writes it.
+///       A `struct` groups named fields;
+///  this one holds the text written so far.
+/// Why:
+///   Records must list their fields in the incumbent's order so the bytes match for the
+///       same values;
+///  escaping comes from `serde_json`,
+///  which escapes the same characters
 ///       `JSON.stringify` does.
 ///
 /// In TS you'd write (pseudocode):
@@ -150,8 +195,10 @@ pub struct ObjectWriter {
 
 /// Methods that append one field each and finish the object.
 impl ObjectWriter {
-    /// What: Start an empty object.
-    /// Why:  Every record starts the same way.
+    /// What:
+    ///  Start an empty object.
+    /// Why:
+    ///   Every record starts the same way.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -163,8 +210,10 @@ impl ObjectWriter {
         };
     }
 
-    /// What: Append the separator and the quoted key of the next field.
-    /// Why:  Every field kind starts the same way.
+    /// What:
+    ///  Append the separator and the quoted key of the next field.
+    /// Why:
+    ///   Every field kind starts the same way.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -178,8 +227,10 @@ impl ObjectWriter {
         self.text.push(':');
     }
 
-    /// What: Append a text field.
-    /// Why:  Most record fields are text.
+    /// What:
+    ///  Append a text field.
+    /// Why:
+    ///   Most record fields are text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -191,8 +242,11 @@ impl ObjectWriter {
         return self;
     }
 
-    /// What: Append a whole-number field.
-    /// Why:  Schema versions, process IDs and attempt numbers.
+    /// What:
+    ///  Append a whole-number field.
+    /// Why:
+    ///   Schema versions,
+    ///  process IDs and attempt numbers.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -204,8 +258,10 @@ impl ObjectWriter {
         return self;
     }
 
-    /// What: Append a boolean field.
-    /// Why:  Flags such as whether a prepared commit is signed.
+    /// What:
+    ///  Append a boolean field.
+    /// Why:
+    ///   Flags such as whether a prepared commit is signed.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -217,8 +273,10 @@ impl ObjectWriter {
         return self;
     }
 
-    /// What: Append a field whose value is already complete JSON text.
-    /// Why:  Nested objects and arrays are built by their own writers.
+    /// What:
+    ///  Append a field whose value is already complete JSON text.
+    /// Why:
+    ///   Nested objects and arrays are built by their own writers.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -230,8 +288,10 @@ impl ObjectWriter {
         return self;
     }
 
-    /// What: The finished object text.
-    /// Why:  Callers add the record's line terminator themselves.
+    /// What:
+    ///  The finished object text.
+    /// Why:
+    ///   Callers add the record's line terminator themselves.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -242,8 +302,11 @@ impl ObjectWriter {
     }
 }
 
-/// What: Quote text as a JSON string literal.
-/// Why:  `serde_json` escapes `"`, `\` and control characters as `JSON.stringify` does;
+/// What:
+///  Quote text as a JSON string literal.
+/// Why:
+///   `serde_json` escapes `"`,
+///  `\` and control characters as `JSON.stringify` does;
 ///       serializing a `&str` cannot fail.
 ///
 /// In TS you'd write (pseudocode):
@@ -255,8 +318,10 @@ pub fn quote(text: &str) -> String {
     return serde_json::to_string(text).unwrap_or_default();
 }
 
-/// What: A JSON array of text items.
-/// Why:  Pathspec and path lists in journal records.
+/// What:
+///  A JSON array of text items.
+/// Why:
+///   Pathspec and path lists in journal records.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

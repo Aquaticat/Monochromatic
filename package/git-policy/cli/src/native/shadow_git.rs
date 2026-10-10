@@ -1,10 +1,17 @@
-//! What: Git commands run against a transaction's shadow repository, and its location and
+//! What:
+//!  Git commands run against a transaction's shadow repository,
+//!  and its location and
 //!       removal.
-//! Why: The shadow lives at `<git-common-dir>/cli-git/shadow/<transaction-id>`, derived from the
-//!      transaction ID so recovery finds it before `prepared.json` exists. cli-git's own shadow
+//! Why:
+//!  The shadow lives at `<git-common-dir>/cli-git/shadow/<transaction-id>`,
+//!  derived from the
+//!      transaction ID so recovery finds it before `prepared.json` exists.
+//!  cli-git's own shadow
 //!      commands remove every variable that would redirect Git elsewhere and point hooks at an
-//!      absent directory, so no hook observes private shadow writes
-//!      (`src/shadow-repository/shadow-refs.ts`, `runShadowGit`).
+//!      absent directory,
+//!  so no hook observes private shadow writes
+//!      (`src/shadow-repository/shadow-refs.ts`,
+//!  `runShadowGit`).
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -24,7 +31,8 @@ use std::ffi::OsString;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// Variables that would redirect a shadow command to another repository, index or store.
+/// Variables that would redirect a shadow command to another repository,
+///  index or store.
 pub const REPOSITORY_REDIRECT_VARIABLES: [&str; 5] = [
     "GIT_DIR",
     "GIT_WORK_TREE",
@@ -36,8 +44,11 @@ pub const REPOSITORY_REDIRECT_VARIABLES: [&str; 5] = [
 /// Absent shadow directory named as the hooks path of cli-git's own shadow commands.
 pub const NO_HOOKS_DIRECTORY: &str = "no-hooks";
 
-/// What: The shadow repository path of a transaction.
-/// Why:  `shadowRepositoryPath`: derived from the ID alone.
+/// What:
+///  The shadow repository path of a transaction.
+/// Why:
+///   `shadowRepositoryPath`:
+///  derived from the ID alone.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,9 +61,16 @@ pub fn shadow_repository_path(common_dir: &Path, transaction_id: &str) -> PathBu
         .join(transaction_id);
 }
 
-/// What: A request running `arguments` against the shadow: `--git-dir=<shadow>`, hooks pointed
-///       at an absent directory, redirecting variables removed, in `cwd`.
-/// Why:  Every cli-git shadow command looks the same; the caller adds input or variables.
+/// What:
+///  A request running `arguments` against the shadow:
+///  `--git-dir=<shadow>`,
+///  hooks pointed
+///       at an absent directory,
+///  redirecting variables removed,
+///  in `cwd`.
+/// Why:
+///   Every cli-git shadow command looks the same;
+///  the caller adds input or variables.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,8 +98,12 @@ pub fn shadow_request<S: AsRef<std::ffi::OsStr>>(
     return request;
 }
 
-/// What: Remove a shadow repository, treating an absent one as removed.
-/// Why:  `removeShadowRepository`: a shadow never outlives its transaction directory.
+/// What:
+///  Remove a shadow repository,
+///  treating an absent one as removed.
+/// Why:
+///   `removeShadowRepository`:
+///  a shadow never outlives its transaction directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

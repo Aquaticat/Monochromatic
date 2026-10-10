@@ -70,7 +70,8 @@ fn legacy_directories_stop_with_instructions() {
     scene.finish();
 }
 
-/// An absent or empty registry needs no further work; a registry that is a file is unsafe.
+/// An absent or empty registry needs no further work;
+///  a registry that is a file is unsafe.
 #[test]
 fn empty_registries_cost_one_read() {
     let scene: Scene = Scene::new("commit-recovery-empty", false);
@@ -101,7 +102,9 @@ fn empty_registries_cost_one_read() {
     scene.finish();
 }
 
-/// A dead transaction is recovered, outcomes are reported, and landed records are pruned.
+/// A dead transaction is recovered,
+///  outcomes are reported,
+///  and landed records are pruned.
 #[test]
 fn dead_transactions_are_recovered_and_records_pruned() {
     let scene: Scene = Scene::new("commit-recovery-dead", false);
@@ -145,7 +148,9 @@ fn dead_transactions_are_recovered_and_records_pruned() {
     scene.finish();
 }
 
-/// A live owner is skipped, counts as live, and pins its landed records.
+/// A live owner is skipped,
+///  counts as live,
+///  and pins its landed records.
 #[test]
 fn live_transactions_are_skipped() {
     let scene: Scene = Scene::new("commit-recovery-live", true);

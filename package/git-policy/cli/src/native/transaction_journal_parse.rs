@@ -1,6 +1,10 @@
-//! What: Strict parsers of every schema-version-2 journal record.
-//! Why: Recovery reads records either wrapper wrote; every missing or mistyped field fails
-//!      closed with the record and field named, exactly as the incumbent's
+//! What:
+//!  Strict parsers of every schema-version-2 journal record.
+//! Why:
+//!  Recovery reads records either wrapper wrote;
+//!  every missing or mistyped field fails
+//!      closed with the record and field named,
+//!  exactly as the incumbent's
 //!      `commit-transaction-journal-parse.ts` and `commit-transaction-journal-reader.ts` do.
 //!
 //! In TS you'd write (pseudocode):
@@ -19,8 +23,11 @@ use super::transaction_journal::{
     PreparedRecord, PreparingRecord, REF_UPDATED_FILENAME, RefFormat, SymbolicHead,
     TransactionMode,
 };
-/// What: `Map` is a JSON object's table, `Value` any JSON value.
-/// Why:  Records are checked field by field from the general form.
+/// What:
+///  `Map` is a JSON object's table,
+///  `Value` any JSON value.
+/// Why:
+///   Records are checked field by field from the general form.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,8 +35,12 @@ use super::transaction_journal::{
 /// ```
 use serde_json::{Map, Value};
 
-/// What: A field reader over one untrusted record object, naming the record in failures.
-/// Why:  The incumbent's `createRecordReader`: each accessor fails closed with
+/// What:
+///  A field reader over one untrusted record object,
+///  naming the record in failures.
+/// Why:
+///   The incumbent's `createRecordReader`:
+///  each accessor fails closed with
 ///       "Transaction record <name> has a malformed <key> field."
 ///
 /// In TS you'd write (pseudocode):
@@ -37,16 +48,20 @@ use serde_json::{Map, Value};
 /// type RecordReader = { string(key): string; ... };
 /// ```
 pub struct RecordReader<'a> {
-    /// Record name used in diagnostics, `#`-joined for nested objects.
+    /// Record name used in diagnostics,
+    ///  `#`-joined for nested objects.
     name: String,
     /// The record object.
     map: &'a Map<String, Value>,
 }
 
-/// Typed accessors, each failing closed with the field named.
+/// Typed accessors,
+///  each failing closed with the field named.
 impl<'a> RecordReader<'a> {
-    /// What: A reader over a parsed object.
-    /// Why:  Nested objects get their own reader with a `#`-joined name.
+    /// What:
+    ///  A reader over a parsed object.
+    /// Why:
+    ///   Nested objects get their own reader with a `#`-joined name.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -59,8 +74,10 @@ impl<'a> RecordReader<'a> {
         };
     }
 
-    /// What: The malformed-field failure.
-    /// Why:  Every accessor reports the same sentence.
+    /// What:
+    ///  The malformed-field failure.
+    /// Why:
+    ///   Every accessor reports the same sentence.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -73,8 +90,13 @@ impl<'a> RecordReader<'a> {
         ));
     }
 
-    /// What: A required text field; any text, empty included, as `typeof === 'string'`.
-    /// Why:  The incumbent's `readString`.
+    /// What:
+    ///  A required text field;
+    ///  any text,
+    ///  empty included,
+    ///  as `typeof === 'string'`.
+    /// Why:
+    ///   The incumbent's `readString`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -87,8 +109,12 @@ impl<'a> RecordReader<'a> {
         }
     }
 
-    /// What: An optional text field: absent is `None`, present must be text.
-    /// Why:  The incumbent's `optionalString` (`key in value`).
+    /// What:
+    ///  An optional text field:
+    ///  absent is `None`,
+    ///  present must be text.
+    /// Why:
+    ///   The incumbent's `optionalString` (`key in value`).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -101,8 +127,10 @@ impl<'a> RecordReader<'a> {
         return Ok(Some(self.string(key)?));
     }
 
-    /// What: A required boolean field.
-    /// Why:  The incumbent's `boolean`.
+    /// What:
+    ///  A required boolean field.
+    /// Why:
+    ///   The incumbent's `boolean`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -115,8 +143,10 @@ impl<'a> RecordReader<'a> {
         }
     }
 
-    /// What: A required safe integer of at least 1.
-    /// Why:  The incumbent's `positiveInteger`.
+    /// What:
+    ///  A required safe integer of at least 1.
+    /// Why:
+    ///   The incumbent's `positiveInteger`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -129,8 +159,10 @@ impl<'a> RecordReader<'a> {
         }
     }
 
-    /// What: A required array of text.
-    /// Why:  The incumbent's `strings`.
+    /// What:
+    ///  A required array of text.
+    /// Why:
+    ///   The incumbent's `strings`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -150,8 +182,12 @@ impl<'a> RecordReader<'a> {
         return Ok(texts);
     }
 
-    /// What: A required nested object, as its own reader.
-    /// Why:  The incumbent's `object`; arrays and `null` are not objects here.
+    /// What:
+    ///  A required nested object,
+    ///  as its own reader.
+    /// Why:
+    ///   The incumbent's `object`;
+    ///  arrays and `null` are not objects here.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -169,8 +205,12 @@ impl<'a> RecordReader<'a> {
         }
     }
 
-    /// What: A required base.
-    /// Why:  The incumbent's `base`: `unborn`, or `commit` with an `oid`.
+    /// What:
+    ///  A required base.
+    /// Why:
+    ///   The incumbent's `base`:
+    ///  `unborn`,
+    ///  or `commit` with an `oid`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -188,8 +228,10 @@ impl<'a> RecordReader<'a> {
         return Ok(Base::Commit(nested.string("oid")?));
     }
 
-    /// What: A required file identity.
-    /// Why:  The incumbent's `identity`.
+    /// What:
+    ///  A required file identity.
+    /// Why:
+    ///   The incumbent's `identity`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -203,8 +245,10 @@ impl<'a> RecordReader<'a> {
         });
     }
 
-    /// What: A required lock identity.
-    /// Why:  The incumbent's `lock`.
+    /// What:
+    ///  A required lock identity.
+    /// Why:
+    ///   The incumbent's `lock`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -217,8 +261,11 @@ impl<'a> RecordReader<'a> {
         });
     }
 
-    /// What: A required list of added-path records.
-    /// Why:  The incumbent's `addedPaths`: each item an object with a regular or executable mode.
+    /// What:
+    ///  A required list of added-path records.
+    /// Why:
+    ///   The incumbent's `addedPaths`:
+    ///  each item an object with a regular or executable mode.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -253,10 +300,18 @@ impl<'a> RecordReader<'a> {
     }
 }
 
-/// What: Parse a record's bytes into its object after checking schema version and state.
-///       Returns the parsed object; the caller builds a reader over it.
-/// Why:  The incumbent's `openRecord`: fatal UTF-8, a JSON object, version 2, the expected
-///       state; anything else fails with the record named.
+/// What:
+///  Parse a record's bytes into its object after checking schema version and state.
+///       Returns the parsed object;
+///  the caller builds a reader over it.
+/// Why:
+///   The incumbent's `openRecord`:
+///  fatal UTF-8,
+///  a JSON object,
+///  version 2,
+///  the expected
+///       state;
+///  anything else fails with the record named.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -284,8 +339,10 @@ pub fn open_record(
     return Ok(map);
 }
 
-/// What: Parse `preparing.json`.
-/// Why:  The incumbent's `parsePreparingRecord`.
+/// What:
+///  Parse `preparing.json`.
+/// Why:
+///   The incumbent's `parsePreparingRecord`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -339,8 +396,10 @@ pub fn parse_preparing(bytes: &[u8]) -> Result<PreparingRecord, RecoveryError> {
     });
 }
 
-/// What: The mode a wire spelling names.
-/// Why:  Unknown spellings are malformed.
+/// What:
+///  The mode a wire spelling names.
+/// Why:
+///   Unknown spellings are malformed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -354,8 +413,10 @@ fn parse_mode(text: &str) -> Option<TransactionMode> {
     }
 }
 
-/// What: The conclusion kind a wire spelling names.
-/// Why:  Unknown spellings are malformed.
+/// What:
+///  The conclusion kind a wire spelling names.
+/// Why:
+///   Unknown spellings are malformed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -372,8 +433,10 @@ fn parse_conclusion(text: &str) -> Option<Conclusion> {
     }
 }
 
-/// What: The ref format a wire spelling names.
-/// Why:  Unknown spellings are malformed.
+/// What:
+///  The ref format a wire spelling names.
+/// Why:
+///   Unknown spellings are malformed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -387,8 +450,10 @@ fn parse_ref_format(text: &str) -> Option<RefFormat> {
     }
 }
 
-/// What: Parse `prepared.json`.
-/// Why:  The incumbent's `parsePreparedRecord`.
+/// What:
+///  Parse `prepared.json`.
+/// Why:
+///   The incumbent's `parsePreparedRecord`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -408,8 +473,10 @@ pub fn parse_prepared(bytes: &[u8]) -> Result<PreparedRecord, RecoveryError> {
     });
 }
 
-/// What: Parse `index-lock-<n>.json`.
-/// Why:  The incumbent's `parseIndexLockRecord`.
+/// What:
+///  Parse `index-lock-<n>.json`.
+/// Why:
+///   The incumbent's `parseIndexLockRecord`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -425,8 +492,11 @@ pub fn parse_index_lock(bytes: &[u8]) -> Result<IndexLockRecord, RecoveryError> 
     });
 }
 
-/// What: Parse `landing-<n>.json`.
-/// Why:  The incumbent's `parseLandingRecord`: a commit landing must name its new OID.
+/// What:
+///  Parse `landing-<n>.json`.
+/// Why:
+///   The incumbent's `parseLandingRecord`:
+///  a commit landing must name its new OID.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -463,8 +533,10 @@ pub fn parse_landing(bytes: &[u8]) -> Result<LandingRecord, RecoveryError> {
     });
 }
 
-/// What: Parse `ref-updated.json` into the landed commit.
-/// Why:  The incumbent's `parseRefUpdatedRecord`.
+/// What:
+///  Parse `ref-updated.json` into the landed commit.
+/// Why:
+///   The incumbent's `parseRefUpdatedRecord`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

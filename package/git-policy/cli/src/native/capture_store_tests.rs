@@ -38,7 +38,8 @@ fn sequences_are_canonical_decimals() {
     );
 }
 
-/// The next sequence is one past the file, or 1 without one.
+/// The next sequence is one past the file,
+///  or 1 without one.
 #[test]
 fn next_sequences_follow_the_file() {
     let root: PathBuf = fixture("capture-store-sequence");
@@ -67,7 +68,9 @@ fn next_sequences_follow_the_file() {
     remove(root.as_path());
 }
 
-/// Store files are regular, read without following links, and decoded with replacements.
+/// Store files are regular,
+///  read without following links,
+///  and decoded with replacements.
 #[cfg(unix)]
 #[test]
 fn store_files_are_regular() {
@@ -103,7 +106,8 @@ fn store_files_are_regular() {
     remove(root.as_path());
 }
 
-/// The worktree identity is trimmed, absent before the first capture.
+/// The worktree identity is trimmed,
+///  absent before the first capture.
 #[test]
 fn worktree_identities_are_trimmed() {
     let root: PathBuf = fixture("capture-store-identity");

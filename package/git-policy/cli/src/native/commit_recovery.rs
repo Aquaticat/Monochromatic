@@ -1,9 +1,18 @@
-//! What: Startup recovery of interrupted commit transactions for the invocation's worktree.
-//! Why: Before configuration loads, and before read-only commands that already asked Git for the
-//!      repository location, every dead owner's transaction is recovered or fails closed; live
-//!      owners are skipped. The legacy single-journal directory is not recovered here: the
+//! What:
+//!  Startup recovery of interrupted commit transactions for the invocation's worktree.
+//! Why:
+//!  Before configuration loads,
+//!  and before read-only commands that already asked Git for the
+//!      repository location,
+//!  every dead owner's transaction is recovered or fails closed;
+//!  live
+//!      owners are skipped.
+//!  The legacy single-journal directory is not recovered here:
+//!  the
 //!      command stops and says how to recover it with the previous executable (the owner's
-//!      verdict, `doc/planning/cli-git-rust-open-decisions.md`, "Legacy single-journal directory").
+//!      verdict,
+//!  `doc/planning/cli-git-rust-open-decisions.md`,
+//!  "Legacy single-journal directory").
 //!      An empty registry costs one directory read and no Git process
 //!      (`src/policy-engine/commit-transaction-recovery.ts`).
 //!
@@ -35,8 +44,10 @@ use super::worktree_identity::WorktreeIdentity;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// What: Why recovery stopped the command.
-/// Why:  The legacy directory and a recovery failure are reported differently.
+/// What:
+///  Why recovery stopped the command.
+/// Why:
+///   The legacy directory and a recovery failure are reported differently.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -50,8 +61,10 @@ pub enum RecoveryStop {
     Failure(RecoveryError),
 }
 
-/// What: The message for the legacy single-journal directory.
-/// Why:  The owner chose to stop with instructions instead of porting its recovery.
+/// What:
+///  The message for the legacy single-journal directory.
+/// Why:
+///   The owner chose to stop with instructions instead of porting its recovery.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -66,8 +79,10 @@ pub fn legacy_notice(directory: &Path) -> String {
     );
 }
 
-/// What: The outcomes as the incumbent's debug JSON.
-/// Why:  `JSON.stringify(outcomes)` in the recovery debug line.
+/// What:
+///  The outcomes as the incumbent's debug JSON.
+/// Why:
+///   `JSON.stringify(outcomes)` in the recovery debug line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,8 +100,11 @@ pub fn outcomes_json(outcomes: &[RecoveryOutcome]) -> String {
     return format!("[{}]", items.join(","));
 }
 
-/// What: Whether a registry root holds nothing: absent or empty.
-/// Why:  The common case needs no further reads and no Git process.
+/// What:
+///  Whether a registry root holds nothing:
+///  absent or empty.
+/// Why:
+///   The common case needs no further reads and no Git process.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -111,9 +129,13 @@ fn registry_is_empty(root: &Path) -> Result<bool, RecoveryError> {
     }
 }
 
-/// What: The Git directory whose registry this invocation recovers, or nothing outside a worktree
+/// What:
+///  The Git directory whose registry this invocation recovers,
+///  or nothing outside a worktree
 ///       and in a bare repository.
-/// Why:  `resolveCommitTransactionTargets`: only worktrees hold transactions.
+/// Why:
+///   `resolveCommitTransactionTargets`:
+///  only worktrees hold transactions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,9 +157,14 @@ pub fn recovery_directories(identity: &WorktreeIdentity) -> Option<(&Path, &Path
     }
 }
 
-/// What: Recover every interrupted transaction of the invocation's worktree; returns the
-///       outcomes, empty when there was nothing to do.
-/// Why:  `recoverCommitTransaction`, with the legacy directory stopping the command.
+/// What:
+///  Recover every interrupted transaction of the invocation's worktree;
+///  returns the
+///       outcomes,
+///  empty when there was nothing to do.
+/// Why:
+///   `recoverCommitTransaction`,
+///  with the legacy directory stopping the command.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -190,8 +217,10 @@ pub fn recover_commit_transactions(
     return Ok(outcomes);
 }
 
-/// What: Whether any outcome did more than skip a live owner.
-/// Why:  Pruning runs only after a recovery changed something.
+/// What:
+///  Whether any outcome did more than skip a live owner.
+/// Why:
+///   Pruning runs only after a recovery changed something.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -206,10 +235,15 @@ fn has_recovered(outcomes: &[RecoveryOutcome]) -> bool {
     return false;
 }
 
-/// What: Whether outcomes leave a transaction another process may still be running.
-/// Why:  Until index writers coordinate with live transactions, a guarded command beside one is
-///       refused instead of racing it. A dead owner's kept staging candidate touched nothing and
-///       does not count; an unattributed one may still be written by a live owner.
+/// What:
+///  Whether outcomes leave a transaction another process may still be running.
+/// Why:
+///   Until index writers coordinate with live transactions,
+///  a guarded command beside one is
+///       refused instead of racing it.
+///  A dead owner's kept staging candidate touched nothing and
+///       does not count;
+///  an unattributed one may still be written by a live owner.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

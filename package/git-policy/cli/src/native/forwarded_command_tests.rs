@@ -1,11 +1,17 @@
-//! Controls for forwarded-command resolution: alias value splitting, alias lookup through Git's
-//! `GIT_CONFIG_*` overlay, expansion limits, loops, shell aliases and worktree creation.
+//! Controls for forwarded-command resolution:
+//!  alias value splitting,
+//!  alias lookup through Git's
+//! `GIT_CONFIG_*` overlay,
+//!  expansion limits,
+//!  loops,
+//!  shell aliases and worktree creation.
 
 use super::*;
 use crate::test_support::isolated_overlay;
 use crate::transaction_git::GitContext;
 
-/// A context whose only aliases are the given name and value pairs, read by real Git.
+/// A context whose only aliases are the given name and value pairs,
+///  read by real Git.
 fn context_with_aliases(pairs: &[(&str, &str)]) -> GitContext {
     let mut overlay: Vec<(OsString, OsString)> = isolated_overlay();
     overlay.push((OsString::from("GIT_CONFIG_COUNT"), OsString::from(pairs.len().to_string())));
@@ -36,12 +42,15 @@ fn word_bytes(word: &&str) -> Vec<u8> {
     return word.as_bytes().to_vec();
 }
 
-/// Alias value words as bytes, for comparing the splitter's output.
+/// Alias value words as bytes,
+///  for comparing the splitter's output.
 fn words(list: &[&str]) -> Option<Vec<Vec<u8>>> {
     return Some(list.iter().map(word_bytes).collect());
 }
 
-/// Whitespace separates words; quotes group; backslashes escape outside single quotes.
+/// Whitespace separates words;
+///  quotes group;
+///  backslashes escape outside single quotes.
 #[test]
 fn alias_values_split_as_git_splits_them() {
     assert_eq!(split_alias_command(b"commit -a"), words(&["commit", "-a"]));
@@ -56,7 +65,9 @@ fn alias_values_split_as_git_splits_them() {
     assert_eq!(split_alias_command(b"''"), words(&[""]));
 }
 
-/// An empty value is one empty word, as the incumbent splits it, and an unfinished quote or a
+/// An empty value is one empty word,
+///  as the incumbent splits it,
+///  and an unfinished quote or a
 /// trailing backslash yields no words at all.
 #[test]
 fn empty_and_unfinished_values_split_to_one_empty_word_or_fail() {
@@ -67,7 +78,8 @@ fn empty_and_unfinished_values_split_to_one_empty_word_or_fail() {
     assert_eq!(split_alias_command(b"a\\"), None);
 }
 
-/// Surrounding ASCII whitespace goes; invalid UTF-8 keeps its non-space bytes.
+/// Surrounding ASCII whitespace goes;
+///  invalid UTF-8 keeps its non-space bytes.
 #[test]
 fn alias_values_are_trimmed_before_splitting() {
     assert_eq!(trim_alias_value(b"  commit \n"), b"commit".to_vec());
@@ -97,7 +109,8 @@ fn a_query_has_no_subcommand() {
     assert!(!resolved.is_builtin());
 }
 
-/// An alias to a built-in expands to its words, with the rest of the original arguments after them.
+/// An alias to a built-in expands to its words,
+///  with the rest of the original arguments after them.
 #[test]
 fn an_alias_expands_to_its_words_then_the_rest() {
     let context: GitContext = context_with_aliases(&[("fixturecommit", "commit -v")]);
@@ -118,7 +131,8 @@ fn chained_aliases_resolve_to_the_builtin_at_the_end() {
     assert_eq!(resolved.arguments, args(&["commit", "-a"]));
 }
 
-/// A built-in name is never replaced by an alias of the same name, as Git ignores such aliases.
+/// A built-in name is never replaced by an alias of the same name,
+///  as Git ignores such aliases.
 #[test]
 fn a_builtin_name_is_not_shadowed_by_an_alias() {
     let context: GitContext = context_with_aliases(&[("commit", "status")]);
@@ -127,7 +141,8 @@ fn a_builtin_name_is_not_shadowed_by_an_alias() {
     assert_eq!(resolved.word(), b"commit");
 }
 
-/// A `!` alias runs a shell command, so it is never a built-in whatever its text says.
+/// A `!` alias runs a shell command,
+///  so it is never a built-in whatever its text says.
 #[test]
 fn a_shell_alias_is_never_a_builtin() {
     let context: GitContext = context_with_aliases(&[("fixtureshell", "!git commit -a")]);
@@ -137,7 +152,9 @@ fn a_shell_alias_is_never_a_builtin() {
     assert!(!creates_or_moves_worktrees(&resolved));
 }
 
-/// An alias that names itself, directly or through another, is an unresolved loop.
+/// An alias that names itself,
+///  directly or through another,
+///  is an unresolved loop.
 #[test]
 fn an_alias_loop_is_unresolved() {
     let context: GitContext = context_with_aliases(&[("fixtureloopa", "fixtureloopb"), ("fixtureloopb", "fixtureloopa")]);
@@ -155,7 +172,8 @@ fn an_unknown_name_is_unresolved() {
     assert!(!resolved.is_builtin());
 }
 
-/// A value whose quoting cannot be split is unresolved, not guessed.
+/// A value whose quoting cannot be split is unresolved,
+///  not guessed.
 #[test]
 fn a_malformed_alias_value_is_unresolved() {
     let context: GitContext = context_with_aliases(&[("fixturebad", "'commit")]);
@@ -171,7 +189,9 @@ fn an_empty_alias_value_is_unresolved() {
     assert_eq!(resolved.route, Route::Unresolved);
 }
 
-/// A chain of `length` aliases, each naming the next, the last naming `commit`.
+/// A chain of `length` aliases,
+///  each naming the next,
+///  the last naming `commit`.
 fn chain_context(length: usize) -> (GitContext, OsString) {
     let mut names: Vec<String> = Vec::new();
     for index in 0..length {
@@ -193,7 +213,10 @@ fn chain_context(length: usize) -> (GitContext, OsString) {
     return (context_with_aliases(pair_refs.as_slice()), OsString::from(names[0].as_str()));
 }
 
-/// Sixteen chained aliases, each one expansion, reach the built-in; the limit is 16 expansions.
+/// Sixteen chained aliases,
+///  each one expansion,
+///  reach the built-in;
+///  the limit is 16 expansions.
 #[test]
 fn sixteen_chained_aliases_reach_the_builtin() {
     assert_eq!(MAX_ALIAS_EXPANSIONS, 16);
@@ -212,7 +235,8 @@ fn seventeen_chained_aliases_are_unresolved() {
     assert!(!resolved.is_builtin());
 }
 
-/// `worktree add` and `worktree move` create or move a linked worktree; other forms do not.
+/// `worktree add` and `worktree move` create or move a linked worktree;
+///  other forms do not.
 #[test]
 fn only_worktree_add_and_move_create_or_move_worktrees() {
     let context: GitContext = context_with_aliases(&[]);

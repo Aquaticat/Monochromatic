@@ -1,7 +1,12 @@
-//! What: Whether a repository holds an interrupted worktree copy the installed cli-git would
+//! What:
+//!  Whether a repository holds an interrupted worktree copy the installed cli-git would
 //!       finish before running a command.
-//! Why: Finishing an interrupted worktree copy is not ported; running a repository-changing
-//!      command beside one could race it, so the caller refuses instead. Commit transactions
+//! Why:
+//!  Finishing an interrupted worktree copy is not ported;
+//!  running a repository-changing
+//!      command beside one could race it,
+//!  so the caller refuses instead.
+//!  Commit transactions
 //!      are recovered by `commit_recovery.rs` before this check.
 //!
 //! In TS you'd write (pseudocode):
@@ -9,9 +14,13 @@
 //! // const pending = await pendingState(identity, skipWorktreeCopy); if (pending) refuse(pending);
 //! ```
 
-/// What: `use` brings names from sibling files into this file; `super::` means "the parent
-///       module", where every sibling file of this crate is declared.
-/// Why:  The state lives under the Git directories that the identity query reported.
+/// What:
+///  `use` brings names from sibling files into this file;
+///  `super::` means "the parent
+///       module",
+///  where every sibling file of this crate is declared.
+/// Why:
+///   The state lives under the Git directories that the identity query reported.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -21,9 +30,13 @@ use super::unported::Unported;
 use super::worktree_identity::WorktreeIdentity;
 /// `OsStr` is borrowed operating-system text of raw bytes.
 use std::ffi::OsStr;
-/// What: `Path` is a borrowed filesystem path of raw bytes and `PathBuf` its owned form.
-///       Sibling the reader might expect: `&str`/`String`, which must be valid UTF-8.
-/// Why:  Git directories are joined and inspected without decoding.
+/// What:
+///  `Path` is a borrowed filesystem path of raw bytes and `PathBuf` its owned form.
+///       Sibling the reader might expect:
+///  `&str`/`String`,
+///  which must be valid UTF-8.
+/// Why:
+///   Git directories are joined and inspected without decoding.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -31,9 +44,14 @@ use std::ffi::OsStr;
 /// ```
 use std::path::{Path, PathBuf};
 
-/// What: The directory, inside the common Git directory, where the installed wrapper
-///       journals a worktree copy until it is complete, as path segments.
-/// Why:  A journal there means a copy was interrupted.
+/// What:
+///  The directory,
+///  inside the common Git directory,
+///  where the installed wrapper
+///       journals a worktree copy until it is complete,
+///  as path segments.
+/// Why:
+///   A journal there means a copy was interrupted.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -41,13 +59,21 @@ use std::path::{Path, PathBuf};
 /// ```
 pub const WORKTREE_COPY_JOURNAL_SEGMENTS: &[&str] = &["cli-git-worktree-copy", "v1"];
 
-/// The lock directory beside the journals; it is not a journal and may outlive every copy.
+/// The lock directory beside the journals;
+///  it is not a journal and may outlive every copy.
 pub const SETTLEMENT_LOCK_NAME: &str = "settlement.lock";
 
-/// What: Whether `directory` holds any entry other than `ignored`. `Option<&str>` is "a
-///       name or nothing"; `bool` is true or false.
-/// Why:  A missing directory holds nothing. A directory that cannot be listed might hold
-///       anything, so it counts as holding state: the caller refuses instead of guessing.
+/// What:
+///  Whether `directory` holds any entry other than `ignored`.
+///  `Option<&str>` is "a
+///       name or nothing";
+///  `bool` is true or false.
+/// Why:
+///   A missing directory holds nothing.
+///  A directory that cannot be listed might hold
+///       anything,
+///  so it counts as holding state:
+///  the caller refuses instead of guessing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,10 +108,16 @@ fn holds_entries(directory: &Path, ignored: Option<&str>) -> bool {
     return false;
 }
 
-/// What: Whether an entry name is the one name the caller asked to ignore. `&OsStr`
-///       borrows raw operating-system text. Sibling the reader might expect: `&str`,
+/// What:
+///  Whether an entry name is the one name the caller asked to ignore.
+///  `&OsStr`
+///       borrows raw operating-system text.
+///  Sibling the reader might expect:
+///  `&str`,
 ///       which must be valid UTF-8.
-/// Why:  Directory entries are raw bytes; comparing them undecoded can never mistake a
+/// Why:
+///   Directory entries are raw bytes;
+///  comparing them undecoded can never mistake a
 ///       name that is not UTF-8 for the ignored one.
 ///
 /// In TS you'd write (pseudocode):
@@ -100,8 +132,12 @@ fn is_ignored(name: &OsStr, ignored: Option<&str>) -> bool {
     }
 }
 
-/// What: The interrupted worktree copies under one common Git directory, if any.
-/// Why:  Journals are shared by every worktree of a repository; the settlement lock beside
+/// What:
+///  The interrupted worktree copies under one common Git directory,
+///  if any.
+/// Why:
+///   Journals are shared by every worktree of a repository;
+///  the settlement lock beside
 ///       them is not a journal.
 ///
 /// In TS you'd write (pseudocode):
@@ -120,11 +156,16 @@ fn pending_worktree_copies(common_dir: &Path) -> Option<Unported> {
     return None;
 }
 
-/// What: The interrupted worktree copy the installed wrapper would act on for this
-///       repository location. `&WorktreeIdentity` borrows Git's answer about the location;
+/// What:
+///  The interrupted worktree copy the installed wrapper would act on for this
+///       repository location.
+///  `&WorktreeIdentity` borrows Git's answer about the location;
 ///       `skip_worktree_copy` is true when the caller passed `--no-worktree-copy`.
-/// Why:  Worktree copies are checked only where the installed wrapper synchronizes them: a
-///       linked worktree or a bare repository, and not when the caller opted out.
+/// Why:
+///   Worktree copies are checked only where the installed wrapper synchronizes them:
+///  a
+///       linked worktree or a bare repository,
+///  and not when the caller opted out.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

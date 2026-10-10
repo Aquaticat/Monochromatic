@@ -1,10 +1,15 @@
-//! What: The schema-version-2 journal records of one commit transaction and their filenames;
+//! What:
+//!  The schema-version-2 journal records of one commit transaction and their filenames;
 //!       encoding and parsing live in `transaction_journal_encode.rs` and
 //!       `transaction_journal_parse.rs`.
-//! Why: State files are created exclusively and never rewritten, so a crash leaves the newest
-//!      complete state readable; recovery in either wrapper reads the records the other wrote
+//! Why:
+//!  State files are created exclusively and never rewritten,
+//!  so a crash leaves the newest
+//!      complete state readable;
+//!  recovery in either wrapper reads the records the other wrote
 //!      (`src/policy-engine/commit-transaction-journal-states.ts` and
-//!      `commit-transaction-journal-parse.ts`). Every missing or mistyped field fails closed
+//!      `commit-transaction-journal-parse.ts`).
+//!  Every missing or mistyped field fails closed
 //!      with the record and field named.
 //!
 //! In TS you'd write (pseudocode):
@@ -23,8 +28,12 @@ pub const REF_UPDATED_FILENAME: &str = "ref-updated.json";
 /// Index installation completion marker filename.
 pub const INDEX_INSTALLED_FILENAME: &str = "index-installed";
 
-/// What: The target at invocation, or the expected old target of a landing.
-/// Why:  An unborn branch has no commit; compare-and-swap then expects the all-zero OID.
+/// What:
+///  The target at invocation,
+///  or the expected old target of a landing.
+/// Why:
+///   An unborn branch has no commit;
+///  compare-and-swap then expects the all-zero OID.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -38,8 +47,10 @@ pub enum Base {
     Commit(String),
 }
 
-/// What: The symbolic `HEAD` target at invocation.
-/// Why:  A branch switch between preparation and landing fails the commit.
+/// What:
+///  The symbolic `HEAD` target at invocation.
+/// Why:
+///   A branch switch between preparation and landing fails the commit.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -53,8 +64,11 @@ pub enum SymbolicHead {
     Detached,
 }
 
-/// What: How the commit selects its content.
-/// Why:  Explicit-path commits build the tree from the base plus selected paths; index
+/// What:
+///  How the commit selects its content.
+/// Why:
+///   Explicit-path commits build the tree from the base plus selected paths;
+///  index
 ///       commits use the captured index.
 ///
 /// In TS you'd write (pseudocode):
@@ -69,8 +83,10 @@ pub enum TransactionMode {
     Index,
 }
 
-/// What: The commit kind that decides whether a moved target fails instead of replaying.
-/// Why:  An amend or a conclusion cannot replay onto a moved branch.
+/// What:
+///  The commit kind that decides whether a moved target fails instead of replaying.
+/// Why:
+///   An amend or a conclusion cannot replay onto a moved branch.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -90,8 +106,10 @@ pub enum Conclusion {
     Revert,
 }
 
-/// What: The ref storage backend of the real repository.
-/// Why:  The shadow ref snapshot and the conclusion pseudorefs differ by backend.
+/// What:
+///  The ref storage backend of the real repository.
+/// Why:
+///   The shadow ref snapshot and the conclusion pseudorefs differ by backend.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -105,8 +123,12 @@ pub enum RefFormat {
     Reftable,
 }
 
-/// What: A file identity recorded without hashes: device and inode as decimal text.
-/// Why:  Recovery proves an artifact is the exact file written, not one put in its place.
+/// What:
+///  A file identity recorded without hashes:
+///  device and inode as decimal text.
+/// Why:
+///   Recovery proves an artifact is the exact file written,
+///  not one put in its place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -120,8 +142,10 @@ pub struct FileIdentity {
     pub inode: String,
 }
 
-/// What: The identity of the real `index.lock` a transaction created.
-/// Why:  Recovery removes a real `index.lock` only when it is provably the transaction's own.
+/// What:
+///  The identity of the real `index.lock` a transaction created.
+/// Why:
+///   Recovery removes a real `index.lock` only when it is provably the transaction's own.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,9 +159,15 @@ pub struct LockIdentity {
     pub fs_id: String,
 }
 
-/// What: One policy-added path, or one selected path whose worktree copy receives settled
-///       bytes: its mode, the blob before the commit and the blob the commit lands.
-/// Why:  After landing, the worktree copy is replaced only while it still holds the original.
+/// What:
+///  One policy-added path,
+///  or one selected path whose worktree copy receives settled
+///       bytes:
+///  its mode,
+///  the blob before the commit and the blob the commit lands.
+/// Why:
+///   After landing,
+///  the worktree copy is replaced only while it still holds the original.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -149,14 +179,18 @@ pub struct AddedPath {
     pub path: String,
     /// `100644` or `100755`.
     pub git_mode: String,
-    /// Blob at `HEAD`, in the real index and in the worktree before the commit.
+    /// Blob at `HEAD`,
+    ///  in the real index and in the worktree before the commit.
     pub original_oid: String,
     /// Blob the commit lands and the worktree receives.
     pub intended_oid: String,
 }
 
-/// What: `preparing.json`: invocation capture facts written before any Git mutation.
-/// Why:  Recovery learns from it where every piece of the transaction lives.
+/// What:
+///  `preparing.json`:
+///  invocation capture facts written before any Git mutation.
+/// Why:
+///   Recovery learns from it where every piece of the transaction lives.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -164,7 +198,8 @@ pub struct AddedPath {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PreparingRecord {
-    /// Transaction ID, also the reflog nonce.
+    /// Transaction ID,
+    ///  also the reflog nonce.
     pub transaction_id: String,
     /// Commit selection mode.
     pub mode: TransactionMode,
@@ -198,8 +233,12 @@ pub struct PreparingRecord {
     pub invoked_at: String,
 }
 
-/// What: `prepared.json`: the verified prepared commit in the shadow repository.
-/// Why:  Landing and recovery need the commit, its tree and the worktree completions.
+/// What:
+///  `prepared.json`:
+///  the verified prepared commit in the shadow repository.
+/// Why:
+///   Landing and recovery need the commit,
+///  its tree and the worktree completions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -215,7 +254,8 @@ pub struct PreparedRecord {
     pub signed: bool,
     /// Intended tree the prepared commit was verified against.
     pub intended_tree_oid: String,
-    /// Paths the commit carries, including policy-added paths.
+    /// Paths the commit carries,
+    ///  including policy-added paths.
     pub committed_paths: Vec<String>,
     /// Policy-added paths with original and intended blobs.
     pub added_paths: Vec<AddedPath>,
@@ -223,9 +263,12 @@ pub struct PreparedRecord {
     pub selected_worktree_paths: Vec<AddedPath>,
 }
 
-/// What: `index-lock-<n>.json`: identity of the real `index.lock` attempt `n` created,
+/// What:
+///  `index-lock-<n>.json`:
+///  identity of the real `index.lock` attempt `n` created,
 ///       written right after creating it.
-/// Why:  Recovery can prove ownership of the lock before any landing record exists.
+/// Why:
+///   Recovery can prove ownership of the lock before any landing record exists.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -233,15 +276,21 @@ pub struct PreparedRecord {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct IndexLockRecord {
-    /// Landing attempt number, from 1.
+    /// Landing attempt number,
+    ///  from 1.
     pub attempt: i64,
     /// Created lock identity.
     pub lock: LockIdentity,
 }
 
-/// What: What a landing attempt installs: a commit, or a normalization that installs only index
+/// What:
+///  What a landing attempt installs:
+///  a commit,
+///  or a normalization that installs only index
 ///       and worktree bytes.
-/// Why:  A normalization never moves the target, so recovery checks it did not move.
+/// Why:
+///   A normalization never moves the target,
+///  so recovery checks it did not move.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -255,8 +304,11 @@ pub enum LandingOperation {
     NormalizeOnly,
 }
 
-/// What: `landing-<n>.json`: one landing attempt inside the critical section.
-/// Why:  Recovery decides from it whether the attempt landed and completes or discards it.
+/// What:
+///  `landing-<n>.json`:
+///  one landing attempt inside the critical section.
+/// Why:
+///   Recovery decides from it whether the attempt landed and completes or discards it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -264,13 +316,15 @@ pub enum LandingOperation {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LandingRecord {
-    /// Landing attempt number, from 1.
+    /// Landing attempt number,
+    ///  from 1.
     pub attempt: i64,
     /// Landing kind.
     pub operation: LandingOperation,
     /// Expected old target value for compare-and-swap.
     pub expected_old: Base,
-    /// New target value; absent for a normalization.
+    /// New target value;
+    ///  absent for a normalization.
     pub new_oid: Option<String>,
     /// Tree the landing installs into the real index.
     pub landed_tree_oid: String,
@@ -280,7 +334,8 @@ pub struct LandingRecord {
     pub post_index: FileIdentity,
     /// Real `index.lock` identity.
     pub lock: LockIdentity,
-    /// Migrated pack name; absent for a normalization.
+    /// Migrated pack name;
+    ///  absent for a normalization.
     pub pack_name: Option<String>,
     /// Policy-added path records.
     pub added_paths: Vec<AddedPath>,
@@ -288,8 +343,10 @@ pub struct LandingRecord {
     pub selected_worktree_paths: Vec<AddedPath>,
 }
 
-/// What: The numbered artifact and record filenames of one landing attempt.
-/// Why:  Every writer and reader names them the same way.
+/// What:
+///  The numbered artifact and record filenames of one landing attempt.
+/// Why:
+///   Every writer and reader names them the same way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -299,8 +356,10 @@ pub fn pre_landing_index_filename(attempt: i64) -> String {
     return format!("pre-landing-{attempt}.index");
 }
 
-/// What: The post-index artifact filename of one attempt.
-/// Why:  See `pre_landing_index_filename`.
+/// What:
+///  The post-index artifact filename of one attempt.
+/// Why:
+///   See `pre_landing_index_filename`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -310,8 +369,10 @@ pub fn post_index_filename(attempt: i64) -> String {
     return format!("post-{attempt}.index");
 }
 
-/// What: The landing record filename of one attempt.
-/// Why:  See `pre_landing_index_filename`.
+/// What:
+///  The landing record filename of one attempt.
+/// Why:
+///   See `pre_landing_index_filename`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -321,8 +382,10 @@ pub fn landing_record_filename(attempt: i64) -> String {
     return format!("landing-{attempt}.json");
 }
 
-/// What: The index-lock record filename of one attempt.
-/// Why:  See `pre_landing_index_filename`.
+/// What:
+///  The index-lock record filename of one attempt.
+/// Why:
+///   See `pre_landing_index_filename`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

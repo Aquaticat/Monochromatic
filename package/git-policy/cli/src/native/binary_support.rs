@@ -319,9 +319,13 @@ pub fn copy_executable(from: &Path, to: &Path) {
 /// The transaction ID registry fixtures use.
 pub const TRANSACTION_ID: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
 
-/// What: Publish a transaction in a repository's registry, owned by this test process with its
+/// What:
+///  Publish a transaction in a repository's registry,
+///  owned by this test process with its
 ///       real birth identity (live) or with an identity no process has (dead).
-/// Why:  The wrapper decides liveness from the record, so this process stands in for an owner.
+/// Why:
+///   The wrapper decides liveness from the record,
+///  so this process stands in for an owner.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

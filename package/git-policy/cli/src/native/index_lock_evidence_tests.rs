@@ -1,5 +1,10 @@
-//! Controls for foreign `index.lock` evidence: PID file text and owner comparison, lock metadata
-//! without following links, classification precedence, the gather with injected sources, and the
+//! Controls for foreign `index.lock` evidence:
+//!  PID file text and owner comparison,
+//!  lock metadata
+//! without following links,
+//!  classification precedence,
+//!  the gather with injected sources,
+//!  and the
 //! prose the wrapper prints.
 
 use super::*;
@@ -7,7 +12,8 @@ use crate::index_lock_holders::Holder;
 use crate::test_support::{fixture, remove};
 use std::path::PathBuf;
 
-/// A lock whose change time is one second after the epoch, with a 20 ms start resolution window.
+/// A lock whose change time is one second after the epoch,
+///  with a 20 ms start resolution window.
 fn lock_changed_at_1000() -> LockMetadata {
     return LockMetadata {
         device: 3,
@@ -51,7 +57,8 @@ fn scan_nothing(_path: &Path, _device: u64, _inode: u64) -> HolderEvidence {
     };
 }
 
-/// A holder scan that finds one process, PID 55 named `git`.
+/// A holder scan that finds one process,
+///  PID 55 named `git`.
 fn scan_one(_path: &Path, _device: u64, _inode: u64) -> HolderEvidence {
     return HolderEvidence {
         method: "proc-fd",
@@ -63,12 +70,14 @@ fn scan_one(_path: &Path, _device: u64, _inode: u64) -> HolderEvidence {
     };
 }
 
-/// A holder scan that must never run; reaching it fails the test.
+/// A holder scan that must never run;
+///  reaching it fails the test.
 fn scan_never(_path: &Path, _device: u64, _inode: u64) -> HolderEvidence {
     panic!("the holder scan must not run once the PID file proves a live owner");
 }
 
-/// Evidence with the given PID file, holders and the fixed lock.
+/// Evidence with the given PID file,
+///  holders and the fixed lock.
 fn evidence_with(pid_file: PidFile, holders: Option<HolderEvidence>) -> Evidence {
     return Evidence {
         lock_path: PathBuf::from("/repo/index.lock"),
@@ -78,7 +87,9 @@ fn evidence_with(pid_file: PidFile, holders: Option<HolderEvidence>) -> Evidence
     };
 }
 
-/// Decimal PID text: a trailing newline is allowed, anything else around the digits is not.
+/// Decimal PID text:
+///  a trailing newline is allowed,
+///  anything else around the digits is not.
 #[test]
 fn pid_file_text_names_a_positive_safe_integer() {
     assert_eq!(parse_pid_file_text("pid 42\n"), Some(42));
@@ -95,7 +106,9 @@ fn pid_file_text_names_a_positive_safe_integer() {
     assert_eq!(parse_pid_file_text(""), None);
 }
 
-/// A live process that started no later than the change, plus its resolution, owns the lock.
+/// A live process that started no later than the change,
+///  plus its resolution,
+///  owns the lock.
 #[test]
 fn owner_evidence_compares_start_with_the_change_time() {
     let lock: LockMetadata = lock_changed_at_1000();
@@ -121,7 +134,8 @@ fn owner_evidence_compares_start_with_the_change_time() {
     assert_eq!(owner_evidence(past_edge, &lock), PidOwner::StartedAfterLock(1021.0));
 }
 
-/// An absent PID file is absent evidence, and a directory in its place is unreadable.
+/// An absent PID file is absent evidence,
+///  and a directory in its place is unreadable.
 #[test]
 fn the_pid_file_is_absent_or_unreadable() {
     let root: PathBuf = fixture("evidence-pid-file-kinds");
@@ -162,7 +176,8 @@ fn the_pid_file_names_an_owner_classified_by_its_start() {
     remove(root.as_path());
 }
 
-/// Text that is not `pid <n>` is malformed, and its quoted prefix is at most 64 UTF-16 units.
+/// Text that is not `pid <n>` is malformed,
+///  and its quoted prefix is at most 64 UTF-16 units.
 #[test]
 fn malformed_pid_files_quote_at_most_sixty_four_units() {
     let root: PathBuf = fixture("evidence-pid-file-malformed");
@@ -186,7 +201,8 @@ fn malformed_pid_files_quote_at_most_sixty_four_units() {
     remove(root.as_path());
 }
 
-/// A lock's metadata is its own link-free identity; a symbolic link is judged by the link.
+/// A lock's metadata is its own link-free identity;
+///  a symbolic link is judged by the link.
 #[test]
 fn lock_metadata_does_not_follow_links() {
     let root: PathBuf = fixture("evidence-lock-metadata");
@@ -206,7 +222,10 @@ fn lock_metadata_does_not_follow_links() {
     remove(root.as_path());
 }
 
-/// A missing lock, or a path under a regular file, is no lock; other failures are errors.
+/// A missing lock,
+///  or a path under a regular file,
+///  is no lock;
+///  other failures are errors.
 #[test]
 fn an_absent_lock_is_not_an_error() {
     let root: PathBuf = fixture("evidence-lock-absent");
@@ -219,8 +238,10 @@ fn an_absent_lock_is_not_an_error() {
     remove(root.as_path());
 }
 
-/// A proven live owner by descriptor beats every PID file; then a PID file that started before the
-/// lock proves a live owner; then one naming a gone process proves a dead owner.
+/// A proven live owner by descriptor beats every PID file;
+///  then a PID file that started before the
+/// lock proves a live owner;
+///  then one naming a gone process proves a dead owner.
 #[test]
 fn classification_prefers_a_descriptor_then_the_pid_file() {
     let holder: HolderEvidence = HolderEvidence {
@@ -266,7 +287,10 @@ fn classification_prefers_a_descriptor_then_the_pid_file() {
     );
 }
 
-/// Without a holder scan, a PID file alone decides, and a malformed, unreadable or unknown one does not.
+/// Without a holder scan,
+///  a PID file alone decides,
+///  and a malformed,
+///  unreadable or unknown one does not.
 #[test]
 fn a_skipped_scan_leaves_only_the_pid_file() {
     assert_eq!(
@@ -295,7 +319,9 @@ fn a_skipped_scan_leaves_only_the_pid_file() {
     );
 }
 
-/// No lock gives no evidence, a PID file proving a live owner skips the scan, and any other lock is scanned.
+/// No lock gives no evidence,
+///  a PID file proving a live owner skips the scan,
+///  and any other lock is scanned.
 #[test]
 fn gathering_skips_the_scan_only_for_a_proven_live_owner() {
     let root: PathBuf = fixture("evidence-gather");
@@ -331,7 +357,8 @@ fn the_host_gather_reports_no_lock_when_none_exists() {
     remove(root.as_path());
 }
 
-/// Each PID file state has its own sentence, quoting malformed text.
+/// Each PID file state has its own sentence,
+///  quoting malformed text.
 #[test]
 fn pid_file_prose_names_each_state() {
     assert_eq!(
@@ -356,7 +383,9 @@ fn pid_file_prose_names_each_state() {
     assert!(reused.ends_with("so the PID was reused"));
 }
 
-/// Holder prose names the holders with commands, the scan method, and only the first partial notes.
+/// Holder prose names the holders with commands,
+///  the scan method,
+///  and only the first partial notes.
 #[test]
 fn holder_prose_names_holders_and_limits_partial_notes() {
     let none: Evidence = evidence_with(PidFile::Absent, Some(scan_nothing(Path::new("/"), 0, 0)));
@@ -376,7 +405,9 @@ fn holder_prose_names_holders_and_limits_partial_notes() {
     );
 }
 
-/// The evidence line names the lock, its identity, its change time and both sources.
+/// The evidence line names the lock,
+///  its identity,
+///  its change time and both sources.
 #[test]
 fn the_evidence_line_names_the_lock_and_its_sources() {
     let line: String = describe_index_lock_evidence(&evidence_with(PidFile::Absent, Some(scan_nothing(Path::new("/"), 0, 0))));
@@ -385,7 +416,8 @@ fn the_evidence_line_names_the_lock_and_its_sources() {
     assert!(line.ends_with("proc-fd scan found no process holding it open"));
 }
 
-/// The waiting line names the proof and ends with a newline; a missing command is not invented.
+/// The waiting line names the proof and ends with a newline;
+///  a missing command is not invented.
 #[test]
 fn the_proven_holder_line_names_its_proof() {
     let descriptor: String = proven_holder_line(55, true, Some("git"), Path::new("/repo/index.lock"));

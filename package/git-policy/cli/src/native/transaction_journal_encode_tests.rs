@@ -1,4 +1,5 @@
-//! Controls for journal record encoding: exact bytes and round trips through the parsers.
+//! Controls for journal record encoding:
+//!  exact bytes and round trips through the parsers.
 
 use super::*;
 use crate::transaction_journal_parse::{
