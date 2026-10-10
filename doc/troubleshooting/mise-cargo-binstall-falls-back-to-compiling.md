@@ -1,7 +1,7 @@
 # mise 2026.10.0 installs a `cargo:` tool by compiling it when its release tag and archive names differ from cargo-binstall's defaults
 
-A crate that publishes prebuilt archives to GitHub releases is still compiled from source by `mise install cargo:<crate>`
-unless the crate's `Cargo.toml` tells `cargo-binstall` where the archives are.
+A crate that publishes prebuilt archives to GitHub releases is still compiled from source
+by `mise install cargo:<crate>` unless the crate's `Cargo.toml` tells `cargo-binstall` where the archives are.
 The compile takes minutes and prints almost nothing,
 and while it runs every `mise` command in the same project waits on its install lock.
 The case here is `monochromatic-lint` 0.1.0,
@@ -226,6 +226,12 @@ Nothing is filed.
 
 ## Repository status
 
-- `mise.no-env.toml` declares `"cargo:monochromatic-lint"` pinned, so the first working install needs the 0.1.1 release
-  that carries the metadata.
-  The result of that install is recorded in this section once the release exists.
+- `mise.no-env.toml` declares `"cargo:monochromatic-lint"` pinned to 0.1.1,
+  the first version whose published manifest carries the metadata
+  (release `monochromatic-lint-v0.1.1`, eight archives).
+- Confirmed on 2026-10-10 with `MISE_CARGO_BINSTALL_ONLY=1 mise install cargo:monochromatic-lint`,
+  which fails instead of compiling when no archive is found:
+  `cargo-binstall` printed
+  `The package monochromatic-lint v0.1.1 (x86_64-unknown-linux-gnu) has been downloaded from github.com`
+  and `mise` finished in 11.5 s.
+  `monochromatic-lint --version` printed `monochromatic-lint 0.1.1`.

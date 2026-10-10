@@ -444,6 +444,10 @@ backend = "cargo:fastmod"
 version = "10.5.0"
 backend = "cargo:fd-find"
 
+[[tools."cargo:monochromatic-lint"]]
+version = "0.1.1"
+backend = "cargo:monochromatic-lint"
+
 [[tools."cargo:slint-lsp"]]
 version = "1.18.1"
 backend = "cargo:slint-lsp"
