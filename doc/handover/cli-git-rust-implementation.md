@@ -899,6 +899,9 @@ State found on 2026-10-10:
   A justification must rest on code (the call chain that makes the mutant equivalent), not on failed probes,
   so the delegate was told to trace every producer of the filtered list and either write that proof or kill the mutant with a test.
   The commit path finished slice 3's leaf modules (829 library tests, planted controls, fuzz) and keeps going.
+- The user's instruction of 2026-10-10: focus on finishing cli-git; pre-existing Markdown lint findings can wait.
+  The fenced-code false-positive fix for the linter (123 findings, repro `~/temp/agent/momoa-probe/fence.md`)
+  was started and stopped before any commit, and is deferred with step 8.
 - Landing order decided on 2026-10-10: Markdown autofix first, then dependent-version wiring (both edit
   `src/native/policy_checks.rs`; each needs a gate rerun on the merge with main, because the cutover changed
   `package/git-policy`), then the commit path.
