@@ -2263,6 +2263,7 @@ and turns each reversed choice into a pointer on the page,
 or removes it,
 before the page is rebuilt,
 then drives the page again.
+The owner ruled on 2026-10-10 (UTC) that a choice left unmarked on the page of veto choices counts as kept.
 
 What enforces it:
 habit,

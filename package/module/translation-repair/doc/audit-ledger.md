@@ -7443,6 +7443,13 @@ The lead's ruling,
 open to the owner's veto:
 it stays as a defence the owner decided,
 and the final census is expected to list exactly this stretch in library source.
+The owner ruled on 2026-10-10 (UTC),
+asked in this form,
+that the refusal stays as it is,
+over turning it into an `unreachable:` throw,
+which would crash where a run must ship,
+and over removing it;
+the card for B113 on the review page states the same call.
 
 The runner entry files came next,
 the work this entry had left for after the library.
