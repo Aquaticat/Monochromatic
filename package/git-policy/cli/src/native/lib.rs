@@ -475,6 +475,9 @@ pub mod replay_object;
 /// Replay: capture order over the landed first-parent history and the per-path decision (`replay_capture_order`).
 pub mod replay_capture_order;
 
+/// Replay: the starvation reservation of the next landing slot (`replay_reservation`).
+pub mod replay_reservation;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
