@@ -466,6 +466,9 @@ pub mod replay_patch;
 /// Replay: the exact strict reverse check of subsumption (`replay_reverse_apply`).
 pub mod replay_reverse_apply;
 
+/// Replay: the one-sided extension of subsumption over zero-context hunks (`replay_containment`).
+pub mod replay_containment;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
