@@ -107,6 +107,13 @@ cargo-binstall = "latest"
 # container filesystem does not see host mise tools.
 "cargo:cargo-nextest" = "latest"
 
+# The unified Rust, Markdown and MDX linter behind the root lint:monochromatic-lint
+# and format:monochromatic-lint tasks and the Markdown commit policy. Pinned because a
+# new version can add or change rules, which must land together with the repository's
+# monochromatic-lint.config.jsonc. The cargo backend resolves through cargo-binstall
+# to the prebuilt release archive when one exists for the platform.
+"cargo:monochromatic-lint" = "0.1.0"
+
 # CMake for building vendored C libraries from Rust -sys crates. music-player's
 # `opus` dependency (pinned to opus-rs git HEAD in
 # package/music-player/desktop-app/Cargo.toml) uses opusic-sys, whose `bundled`
