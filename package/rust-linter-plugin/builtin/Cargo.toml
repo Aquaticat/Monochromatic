@@ -20,6 +20,7 @@ repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "The rules monochromatic-rust-linter ships with: max-lines, require-rustdoc, and the declarative pattern rule driver."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

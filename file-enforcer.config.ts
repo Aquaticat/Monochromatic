@@ -1426,7 +1426,8 @@ const CARGO_README_FILENAME = 'README.md';
  `Result::unwrap` (the root `clippy.toml` supplies the disallowed-methods
  list), denies implicit returns and the three `clippy::shadow_*` name-rebinding
  lints (`shadow_reuse`, `shadow_same`, `shadow_unrelated`), and allows explicit
- returns.
+ returns. Allows the whole `clippy::complexity` group (maintainer decision of
+ 2026-10-10: complexity lints are not wanted), at priority -1 so any individual lint still overrides it.
  
  @example
  ```ts
@@ -1435,6 +1436,7 @@ const CARGO_README_FILENAME = 'README.md';
  */
 const CARGO_LINTS_BLOCK = `# Canonical lint policy, enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

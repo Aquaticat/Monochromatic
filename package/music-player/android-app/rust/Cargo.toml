@@ -5,6 +5,7 @@ edition = "2024"
 publish = false
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

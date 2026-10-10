@@ -7,6 +7,7 @@ publish = false
 description = "Minimal Wayland + PipeWire music player built with Slint. Ad-hoc queue, broad codec support (symphonia + Opus)."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
