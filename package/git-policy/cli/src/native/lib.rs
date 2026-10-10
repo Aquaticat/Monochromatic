@@ -484,6 +484,9 @@ pub mod replay_shadow;
 /// Replay: shared paths of the landed history and the prepared commit, with their three entries (`replay_shared_paths`).
 pub mod replay_shared_paths;
 
+/// Replay: the text half of subsumption over index-named blobs and hunks (`replay_subsumption_text`).
+pub mod replay_subsumption_text;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
