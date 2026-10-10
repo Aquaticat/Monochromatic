@@ -1,10 +1,10 @@
 //! Read-only project boundary and lazy directory snapshots;
 //!  no mutation operations are exposed.
 
-/// Every failure identifies the operation and affected input.
-use anyhow::{Context, Result, bail};
 /// Sibling names sort in the order the tree shows them.
 use crate::name_order::name_key;
+/// Every failure identifies the operation and affected input.
+use anyhow::{Context, Result, bail};
 /// Paths retain native filenames rather than round-tripping lossy UI strings.
 use std::{
     ffi::OsString,

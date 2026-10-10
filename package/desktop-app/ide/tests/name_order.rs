@@ -31,8 +31,20 @@ fn case_is_folded_and_kinds_are_mixed() {
 #[test]
 fn digit_runs_compare_as_numbers() {
     assert_eq!(
-        sorted(&["file10.txt", "file2.txt", "file1.txt", "file02.txt", "file100.txt"]),
-        ["file1.txt", "file02.txt", "file2.txt", "file10.txt", "file100.txt"]
+        sorted(&[
+            "file10.txt",
+            "file2.txt",
+            "file1.txt",
+            "file02.txt",
+            "file100.txt"
+        ]),
+        [
+            "file1.txt",
+            "file02.txt",
+            "file2.txt",
+            "file10.txt",
+            "file100.txt"
+        ]
     );
 }
 
@@ -67,7 +79,15 @@ fn a_name_that_is_not_text_still_sorts_deterministically() {
 #[test]
 fn huge_numbers_do_not_overflow() {
     assert_eq!(
-        sorted(&["n99999999999999999999999999", "n100000000000000000000000000", "n5"]),
-        ["n5", "n99999999999999999999999999", "n100000000000000000000000000"]
+        sorted(&[
+            "n99999999999999999999999999",
+            "n100000000000000000000000000",
+            "n5"
+        ]),
+        [
+            "n5",
+            "n99999999999999999999999999",
+            "n100000000000000000000000000"
+        ]
     );
 }
