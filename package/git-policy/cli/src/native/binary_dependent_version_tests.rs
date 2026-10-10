@@ -274,3 +274,29 @@ fn a_staged_deletion_does_not_block_the_check() {
     );
     remove(&fixture);
 }
+
+/// Under `GIT_LITERAL_PATHSPECS=1` a direct check of one raised manifest refuses with
+/// `content-unavailable` and exit 2: the tracked listing is read with pathspec magic, which
+/// literal mode turns off, so it does not hold the candidate. This pins that refusal until the
+/// listing honours literal mode, and it is the control that tells the wired filter in
+/// `policy_dependent_version.rs` apart from a filter that checks nothing.
+#[test]
+fn literal_pathspecs_refuse_a_direct_check_until_the_listing_honours_them() {
+    let fixture: Fixture = fixture("dependent-version-literal");
+    let repo: PathBuf = workspace(&fixture);
+    let literal: Observed = observe(
+        wrapped(&fixture)
+            .current_dir(repo.as_path())
+            .env("GIT_LITERAL_PATHSPECS", "1")
+            .args(["cli-git", "check", "--", "package/module/a/package.json"]),
+        b"",
+    );
+    assert_eq!(literal.code, Some(2));
+    assert!(
+        String::from_utf8_lossy(&literal.stdout)
+            .contains("\"type\":\"engine-failure\",\"code\":\"content-unavailable\""),
+        "{}",
+        String::from_utf8_lossy(&literal.stdout)
+    );
+    remove(&fixture);
+}
