@@ -36,6 +36,8 @@ pub mod row_map;
 ///  hit-test,
 ///  and range geometry.
 pub mod shaped_row;
+/// Shaped source rows kept by line, so a re-centered tile shapes only lines it has not shaped.
+pub mod shaped_row_cache;
 
 /// Shared shaping for mixed-script source rows,
 ///  caret,
