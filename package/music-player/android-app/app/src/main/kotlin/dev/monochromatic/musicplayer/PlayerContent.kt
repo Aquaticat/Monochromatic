@@ -207,6 +207,8 @@ data class PlayerContentActions(
     val onPlay: (Int) -> Unit,
     /** Transport deck callbacks for seek, previous, play or pause, next, and mode selection. */
     val deck: TransportDeckActions,
+    /** Opens the Search page, where the Search action is tapped, or null when no Search action is offered. */
+    val onSearch: (() -> Unit)? = null,
 )
 
 // What:     `internal fun isCoverLayout(widthDp: Float): Boolean` picks the folded cover layout for narrow widths.
@@ -280,7 +282,7 @@ private fun coverLayout(
             onToggleFolderPicker = actions.onToggleFolderPicker,
             onOpen = actions.onOpen,
             onSettings = actions.onSettings,
-            onSearch = null,
+            onSearch = actions.onSearch,
         )
         seamLine(color = seam)
         if (pickerOpen) {
@@ -340,7 +342,7 @@ private fun unfoldedLayout(
             unfoldedTrackHeader(
                 folderTitle = model.folderTitle,
                 onSettings = actions.onSettings,
-                onSearch = null,
+                onSearch = actions.onSearch,
             )
             trackListPane(
                 entries = model.entries,

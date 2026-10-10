@@ -201,6 +201,18 @@ import dev.monochromatic.musicplayer.core.PlayerContentModel
 import dev.monochromatic.musicplayer.core.buildPlayerContent
 import dev.monochromatic.musicplayer.core.paginate
 
+// What:     `import dev.monochromatic.musicplayer.core.SearchState` and the Search and template types the scenes draw.
+// Why:      The Search scenes build their state from the sample library, and the template scenes open the editor.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { searchLibrary, SearchState, TemplateEditorState, TemplateKind } from "./core";
+// ```
+import dev.monochromatic.musicplayer.core.SearchState
+import dev.monochromatic.musicplayer.core.TemplateEditorState
+import dev.monochromatic.musicplayer.core.TemplateKind
+import dev.monochromatic.musicplayer.core.searchLibrary
+
 // What:     `const val EXTRA_PICKER: String = "picker"` is the intent extra that starts the cover picker open.
 // Why:      The screenshot runs need the picker open without tapping, so the extra sets the starting state.
 //
@@ -210,6 +222,97 @@ import dev.monochromatic.musicplayer.core.paginate
 // ```
 /** Intent extra name for opening the folder picker at launch. */
 private const val EXTRA_PICKER: String = "picker"
+
+// What:     `private const val EXTRA_SCENE: String = "scene"` is the intent extra that picks the scene to draw.
+// Why:      The screenshot runs reach each Search, Settings, and editor state by name, without tapping through.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const EXTRA_SCENE = "scene";
+// ```
+/** Intent extra name for choosing the scene the host draws. */
+private const val EXTRA_SCENE: String = "scene"
+
+// What:     `private const val SCENE_PLAYER: String = "player"` is the default scene, the production player.
+// Why:      A launch without the scene extra draws the player, as the host always has.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_PLAYER = "player";
+// ```
+/** Scene name of the production player screen, which is the default. */
+private const val SCENE_PLAYER: String = "player"
+
+// What:     `private const val SCENE_SEARCH_RESULTS: String = "search-results"` draws Search with a matching query.
+// Why:      The captures need the Results state, with the query "cam" that matches the Camellia sample folder.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_SEARCH_RESULTS = "search-results";
+// ```
+/** Scene name of the Search page with the Results state. */
+private const val SCENE_SEARCH_RESULTS: String = "search-results"
+
+// What:     `private const val SCENE_SEARCH_EMPTY: String = "search-empty"` draws Search with an empty query.
+// Why:      The captures need the EmptyQuery invitation, which a blank query shows (D70).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_SEARCH_EMPTY = "search-empty";
+// ```
+/** Scene name of the Search page with the EmptyQuery invitation. */
+private const val SCENE_SEARCH_EMPTY: String = "search-empty"
+
+// What:     `private const val SCENE_SEARCH_NONE: String = "search-none"` draws Search with a query no name matches.
+// Why:      The captures need the NoMatch state, which a finished search with no hit shows (D70).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_SEARCH_NONE = "search-none";
+// ```
+/** Scene name of the Search page with the NoMatch state. */
+private const val SCENE_SEARCH_NONE: String = "search-none"
+
+// What:     `private const val SCENE_SETTINGS: String = "settings"` draws the Settings page with its two templates.
+// Why:      The captures need the Templates heading and the two template rows.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_SETTINGS = "settings";
+// ```
+/** Scene name of the Settings page. */
+private const val SCENE_SETTINGS: String = "settings"
+
+// What:     `private const val SCENE_TEMPLATE_EDITOR: String = "template-editor"` draws the Track rows editor.
+// Why:      The captures need the editor open on the Track rows template with the stand-in values.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_TEMPLATE_EDITOR = "template-editor";
+// ```
+/** Scene name of the template editor opened on the Track rows template. */
+private const val SCENE_TEMPLATE_EDITOR: String = "template-editor"
+
+// What:     `private const val SEARCH_NONE_QUERY: String = "zqxvj"` is a query no sample name contains.
+// Why:      The NoMatch scene must search a query that no folder or track name matches, so the letters are unlikely
+//           in any sample name.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SEARCH_NONE_QUERY = "zqxvj";
+// ```
+/** Query that matches no sample folder or track name, which the NoMatch scene searches. */
+private const val SEARCH_NONE_QUERY: String = "zqxvj"
+
+// What:     `private const val SEARCH_RESULTS_QUERY: String = "cam"` is the query the Results scene searches.
+// Why:      "cam" matches the Camellia folder and its tracks, as the captures show.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SEARCH_RESULTS_QUERY = "cam";
+// ```
+/** Query that the Results scene searches, which matches the Camellia folder. */
+private const val SEARCH_RESULTS_QUERY: String = "cam"
 
 // What:     `private const val SAMPLE_POSITION_SEC: Double = 66.0` is the fixed playhead of the sample track.
 // Why:      The screenshots show the first track one minute and six seconds in.
@@ -385,6 +488,16 @@ private val SAMPLE_SELECTED_PAGE: Int = SAMPLE_PAGE_LABELS.indexOf("Camellia")
 /** Load-order index of the first Camellia track, which plays at launch. */
 private val SAMPLE_CURRENT_INDEX: Int = SAMPLE_LIBRARY_PATHS.indexOf("Camellia/Another Xronixle.flac")
 
+// What:     `private val SAMPLE_TRACKS: List<Track>` is the authored library as tracks, in load order.
+// Why:      Search reads the library as tracks, so the Search scenes search the same sample paths the pages use.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SAMPLE_TRACKS: Track[] = SAMPLE_LIBRARY_PATHS.map((path) => ({ uri: "", displayPath: path }));
+// ```
+/** Authored library as tracks in load order, with empty URIs because no playback happens in this host. */
+private val SAMPLE_TRACKS: List<Track> = SAMPLE_LIBRARY_PATHS.map { path -> Track(uri = "", displayPath = path) }
+
 // What:     `class ProductionScreenActivity : ComponentActivity()` is the debug host activity.
 // Why:      A separate debug activity lets the screenshot runs render the production screen without the service.
 //
@@ -408,26 +521,29 @@ class ProductionScreenActivity : ComponentActivity() {
         enableEdgeToEdge()
         /** Whether the folder picker starts open, from the `picker` intent extra. */
         val startWithPicker: Boolean = intent.getBooleanExtra(EXTRA_PICKER, false)
+        /** Scene to draw, from the `scene` intent extra, or the player when the extra is absent. */
+        val scene: String = intent.getStringExtra(EXTRA_SCENE) ?: SCENE_PLAYER
         setContent {
             /** Color scheme matching the production activity for the current appearance. */
             val colorScheme: ColorScheme = sampleColorScheme()
             MaterialTheme(colorScheme = colorScheme) {
-                ProductionScreenHost(startWithPicker = startWithPicker)
+                ProductionScreenHost(startWithPicker = startWithPicker, scene = scene)
             }
         }
     }
 }
 
-// What:     `@Composable private fun ProductionScreenHost(startWithPicker: Boolean)` draws the sample screen.
-// Why:      The host keeps the picker and the selected page as local state and builds the model from fixed values.
+// What:     `@Composable private fun ProductionScreenHost(startWithPicker: Boolean, scene: String)` draws one scene.
+// Why:      The host keeps the picker and the selected page as local state for the player, and draws the Search,
+//           Settings, and editor scenes from fixed sample values.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ProductionScreenHost(props: { startWithPicker: boolean }): UIElement { /* ... */ }
+// function ProductionScreenHost(props: { startWithPicker: boolean; scene: string }): UIElement { /* ... */ }
 // ```
-/** Renders the production player screen over the authored library with fixed playback values. */
+/** Renders one scene of the production screens over the authored library with fixed playback values. */
 @Composable
-private fun ProductionScreenHost(startWithPicker: Boolean) {
+private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
     /** Whether the folder picker is open on the folded cover, starting from the launch extra. */
     var pickerOpen: Boolean by remember { mutableStateOf(startWithPicker) }
     /** Index of the page the host shows, starting on Camellia. */
@@ -457,6 +573,7 @@ private fun ProductionScreenHost(startWithPicker: Boolean) {
         onOpen = {},
         onSettings = {},
         onPlay = {},
+        onSearch = {},
         deck = TransportDeckActions(
             onSeek = {},
             onPrevious = {},
@@ -468,9 +585,63 @@ private fun ProductionScreenHost(startWithPicker: Boolean) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         /** Layout name the production screen would choose at this width, for the composition log. */
         val layout: String = if (isCoverLayout(maxWidth.value)) "cover" else "unfolded"
-        Log.i(LOG_TAG, "ProductionScreen.composed layout=$layout pickerOpen=$pickerOpen")
-        playerContent(model = model, pickerOpen = pickerOpen, actions = actions)
+        Log.i(LOG_TAG, "ProductionScreen.composed layout=$layout pickerOpen=$pickerOpen scene=$scene")
+        when (scene) {
+            SCENE_PLAYER -> playerContent(model = model, pickerOpen = pickerOpen, actions = actions)
+            SCENE_SEARCH_RESULTS -> sampleSearchPage(query = SEARCH_RESULTS_QUERY, model = model, actions = actions)
+            SCENE_SEARCH_EMPTY -> sampleSearchPage(query = "", model = model, actions = actions)
+            SCENE_SEARCH_NONE -> sampleSearchPage(query = SEARCH_NONE_QUERY, model = model, actions = actions)
+            SCENE_SETTINGS -> settingsPageContent(
+                templateLines = TemplateEditorState.initial(emptyList()).settingsLines,
+                onBack = {},
+                onOpenTemplate = {},
+            )
+            SCENE_TEMPLATE_EDITOR -> templateEditor(
+                state = TemplateEditorState.initial(emptyList()).open(TemplateKind.TRACK_ROWS),
+                actions = TemplateEditorActions(
+                    onEdit = {},
+                    onFocusChanged = {},
+                    onInsertField = {},
+                    onReset = {},
+                    onBack = {},
+                ),
+            )
+            else -> throw IllegalArgumentException("Unknown ProductionScreenActivity scene: $scene")
+        }
     }
+}
+
+// What:     `@Composable private fun sampleSearchPage(...)` draws Search for one query over the sample library.
+// Why:      The captures need each Search state drawn with the deck and folder browser that the inner layout keeps.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SampleSearchPage(props: { query: string; model: Model; actions: Actions }): UIElement { /* ... */ }
+// ```
+/** Draws Search for one query over the sample library, with the deck and folder browser of the inner layout. */
+@Composable
+private fun sampleSearchPage(query: String, model: PlayerContentModel, actions: PlayerContentActions) {
+    /** Search state the page draws for the query over the sample library. */
+    val results: SearchState = searchLibrary(query = query, tracks = SAMPLE_TRACKS, available = true)
+    searchPage(
+        state = results,
+        query = query,
+        onQueryChange = {},
+        onBack = {},
+        onClear = {},
+        onOpenResult = {},
+        currentTrackIndex = SAMPLE_CURRENT_INDEX,
+        deck = { transportDeck(model = model.deck, actions = actions.deck) },
+        isPlaying = true,
+        folderBrowser = { browserModifier ->
+            folderPickerPane(
+                sections = model.sections,
+                currentFolder = model.currentFolder,
+                onSelectFolder = {},
+                modifier = browserModifier,
+            )
+        },
+    )
 }
 
 // What:     `@Composable private fun sampleColorScheme(): ColorScheme` picks the scheme the production activity uses.

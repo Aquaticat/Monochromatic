@@ -148,16 +148,6 @@ import android.util.Log
 // ```
 import androidx.activity.ComponentActivity
 
-// What:     `import androidx.activity.compose.BackHandler` intercepts system Back while
-//           a composable-controlled subpage is visible.
-// Why:      Back from Settings should return to the library instead of closing the app.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { BackHandler } from "androidx/activity/compose";
-// ```
-import androidx.activity.compose.BackHandler
-
 // What:     `import androidx.activity.compose.rememberLauncherForActivityResult` pulls in
 //           the Compose helper that registers an activity-result launcher INSIDE a
 //           composition (the permission prompt below uses it).
@@ -322,18 +312,6 @@ import androidx.compose.foundation.layout.BoxScope
 // ```
 import androidx.compose.foundation.layout.Column
 
-// What:     `import androidx.compose.foundation.layout.ColumnScope` pulls in
-//           `ColumnScope`, the RECEIVER type for code running inside a `Column`'s
-//           children block (it exposes column-only modifiers like `weight`).
-// Why:      `trackPager` is declared as an EXTENSION on `ColumnScope` so it can use
-//           `Modifier.weight(...)`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { ColumnScope } from "androidx/compose/foundation/layout";
-// ```
-import androidx.compose.foundation.layout.ColumnScope
-
 // What:     `import androidx.compose.foundation.layout.ExperimentalLayoutApi` pulls in the
 //           `ExperimentalLayoutApi` annotation marking unstable layout APIs (`FlowRow`).
 // Why:      `@OptIn(ExperimentalLayoutApi::class)` references it where `FlowRow` is used.
@@ -491,15 +469,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 // import { WindowInsets } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.WindowInsets
-
-// What:     `import androidx.compose.foundation.layout.safeDrawing` names the system-bar and cutout insets.
-// Why:      The Settings page keeps its own system-bar padding because the Scaffold no longer supplies it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { safeDrawing } from "androidx/compose/foundation/layout";
-// ```
-import androidx.compose.foundation.layout.safeDrawing
 
 // What:     `import androidx.compose.foundation.layout.windowInsetsPadding` pads a node by the given insets.
 // Why:      The Settings page pads itself by the safe drawing insets.
@@ -977,24 +946,6 @@ import dev.monochromatic.musicplayer.core.PageEntry
 // import { PlaybackMode } from "./core/PlaybackMode";
 // ```
 import dev.monochromatic.musicplayer.core.PlaybackMode
-
-// What:     `import dev.monochromatic.musicplayer.core.PlayerContentModel` names the screen model snapshot.
-// Why:      `playerScreen` builds one model per composition and passes it to `playerContent`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { PlayerContentModel } from "./core/PlayerContentModel";
-// ```
-import dev.monochromatic.musicplayer.core.PlayerContentModel
-
-// What:     `import dev.monochromatic.musicplayer.core.buildPlayerContent` builds the screen model.
-// Why:      `playerScreen` turns the controller snapshot into the model the screen draws.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { buildPlayerContent } from "./core/PlayerContentModel";
-// ```
-import dev.monochromatic.musicplayer.core.buildPlayerContent
 
 // What:     `import dev.monochromatic.musicplayer.core.rowDisplay` imports the
 //           `rowDisplay(label, name)` FUNCTION that strips a folder tab's `<label>/` prefix
@@ -2056,7 +2007,7 @@ private fun musicPlayerColorScheme(): ColorScheme {
 }
 
 /** Holds live seek position and duration sampled from current controller. */
-private data class PlaybackProgress(
+internal data class PlaybackProgress(
     /** Stores elapsed playback seconds. */
     val position: Double,
     /** Stores current track duration seconds. */
@@ -2065,7 +2016,7 @@ private data class PlaybackProgress(
 
 /** Returns Compose-observable playback progress retargeted when controller changes. */
 @Composable
-private fun rememberPlaybackProgress(controller: PlayerController): PlaybackProgress {
+internal fun rememberPlaybackProgress(controller: PlayerController): PlaybackProgress {
     /** Holds live playback position. */
     var position: Double by remember { mutableDoubleStateOf(0.0) }
     /** Holds live track duration. */
@@ -2080,9 +2031,9 @@ private fun rememberPlaybackProgress(controller: PlayerController): PlaybackProg
     return PlaybackProgress(position = position, duration = duration)
 }
 
-// What:     `@Composable fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit)` draws the
-//           production player screen from the controller snapshot and routes each action back to the controller.
-// Why:      The folder picker and the settings page are local screen state, while every playback and browsing
+// What:     `@Composable fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit)` hosts the
+//           production player screen and its Search, Settings, and template destinations.
+// Why:      The host in PlayerHost.kt owns the route and the screen state, while every playback and browsing
 //           change goes through the controller so the snapshot stays the single source of truth.
 //
 // In TS you'd write (pseudocode):
@@ -2092,84 +2043,23 @@ private fun rememberPlaybackProgress(controller: PlayerController): PlaybackProg
 /** Draws the production player screen from the controller state and routes each action to the controller. */
 @Composable
 fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
-    /** Holds the current Android context for preference persistence. */
-    val context = LocalContext.current
-    /** Holds the selected page-control treatment, which the Settings page still edits. */
-    var pageControlStyle by remember { mutableStateOf(SessionStore.loadPageControlStyle(context)) }
-    /** Tracks whether the settings page is visible. */
-    var showingSettings by remember { mutableStateOf(false) }
-    /** Tracks whether the folder picker is open on the folded cover, collapsed again once a folder is chosen. */
-    var pickerOpen by remember { mutableStateOf(false) }
-    BackHandler(enabled = showingSettings) { showingSettings = false }
-    /** Samples live seek values without keeping a polling loop inside the screen layout function. */
-    val playbackProgress: PlaybackProgress = rememberPlaybackProgress(controller)
-    /** Holds the controller snapshot the screen is built from. */
-    val state: PlayerUiState = controller.uiState
-    /** Builds the screen model from the controller snapshot and the sampled progress. */
-    val model: PlayerContentModel = buildPlayerContent(
-        pageLabels = state.pageLabels,
-        selectedPage = state.selectedPage,
-        pageItems = state.pageItems,
-        currentIndex = state.currentIndex,
-        playing = state.playing,
-        mode = state.playbackMode,
-        positionSec = playbackProgress.position,
-        durationSec = playbackProgress.duration,
-    )
-    /** Routes each screen action to the controller or to the local screen state. */
-    val actions = PlayerContentActions(
-        onToggleFolderPicker = { pickerOpen = !pickerOpen },
-        onSelectFolder = { folder ->
-            /** Page index of the chosen folder in tab order, or -1 when no page has that name. */
-            val page: Int = controller.uiState.pageLabels.indexOf(folder)
-            if (page >= 0) {
-                controller.selectPage(page)
-            }
-            pickerOpen = false
-        },
-        onOpen = onChooseFolder,
-        onSettings = { showingSettings = true },
-        onPlay = { index -> controller.playIndex(index) },
-        deck = TransportDeckActions(
-            onSeek = { position -> controller.seek(position) },
-            onPrevious = { controller.prev() },
-            onTogglePlay = { controller.togglePlay() },
-            onNext = { controller.next() },
-            onSelectMode = { mode -> controller.setPlaybackMode(mode) },
-        ),
-    )
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0)) { innerPadding ->
-        if (showingSettings) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
-                    .padding(horizontal = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                settingsPage(
-                    style = pageControlStyle,
-                    onSelectStyle = { style ->
-                        pageControlStyle = style
-                        SessionStore.savePageControlStyle(context, style)
-                        Log.i(LOG_TAG, "page control style=${style.name}")
-                    },
-                    onBack = { showingSettings = false },
-                )
-            }
-        } else {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-                playerContent(model = model, pickerOpen = pickerOpen, actions = actions)
-                if (state.queueSize == 0) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        if (state.loading) {
-                            loadingNotice()
-                        } else {
-                            Text("No music found in your audio library.")
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            playerHost(
+                controller = controller,
+                onChooseFolder = onChooseFolder,
+                emptyNotice = { state ->
+                    if (state.queueSize == 0) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            if (state.loading) {
+                                loadingNotice()
+                            } else {
+                                Text("No music found in your audio library.")
+                            }
                         }
                     }
-                }
-            }
+                },
+            )
         }
     }
 }
@@ -2209,40 +2099,6 @@ private fun radioOption(label: String, selected: Boolean, onSelect: () -> Unit) 
         // The indicator is display-only because the parent row owns the one action.
         RadioButton(selected = selected, onClick = null)
         Text(text = label, modifier = Modifier.padding(end = 8.dp))
-    }
-}
-
-// What:     `settingsPage` is a weighted Column child showing every page-control
-//           choice and a route back to the library.
-// Why:      The Settings button needs a dedicated page where the preference is explicit.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function SettingsPage(props: SettingsProps) { ... }
-// ```
-/** Displays page-control preferences in place of the music library. */
-@Composable
-private fun ColumnScope.settingsPage(
-    style: PageControlStyle,
-    onSelectStyle: (PageControlStyle) -> Unit,
-    onBack: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .weight(1.0f, fill = true),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(text = "Page controls", style = MaterialTheme.typography.headlineSmall)
-        Text("Choose how library pages are shown.")
-        PageControlStyle.includedStyles.forEach { includedStyle ->
-            radioOption(
-                label = includedStyle.displayLabel,
-                selected = style == includedStyle,
-                onSelect = { onSelectStyle(includedStyle) },
-            )
-        }
-        Button(onClick = onBack) { Text("Back to library") }
     }
 }
 
