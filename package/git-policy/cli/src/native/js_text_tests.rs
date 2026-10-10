@@ -28,3 +28,12 @@ fn other_characters_are_kept() {
     assert_eq!(trim_javascript(""), "");
     assert_eq!(trim_javascript(" \t\n"), "");
 }
+
+/// Trailing whitespace goes and leading whitespace stays, as `trimEnd` does.
+#[test]
+fn trailing_whitespace_only_is_trimmed() {
+    assert_eq!(trim_javascript_end("  x y \t\n"), "  x y");
+    assert_eq!(trim_javascript_end("\u{feff}pid 1\u{2029}"), "\u{feff}pid 1");
+    assert_eq!(trim_javascript_end("\u{85}"), "\u{85}");
+    assert_eq!(trim_javascript_end(""), "");
+}

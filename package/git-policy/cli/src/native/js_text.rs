@@ -56,6 +56,18 @@ pub fn trim_javascript(text: &str) -> &str {
     return text.trim_matches(is_javascript_whitespace);
 }
 
+/// What: Remove trailing JavaScript whitespace, as `String.prototype.trimEnd`.
+///       `&str` borrows text; the result borrows a slice of it.
+/// Why:  Git's PID file text is trimmed at the end only before its `pid ` prefix is read.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function trimJavascriptEnd(text: string): string { return text.trimEnd(); }
+/// ```
+pub fn trim_javascript_end(text: &str) -> &str {
+    return text.trim_end_matches(is_javascript_whitespace);
+}
+
 /// The whitespace table stays out of the release executable.
 #[cfg(test)]
 #[path = "js_text_tests.rs"]

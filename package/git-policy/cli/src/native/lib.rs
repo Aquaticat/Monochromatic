@@ -413,3 +413,21 @@ pub mod commit_recovery;
 
 /// Startup recovery as a step of a wrapped or direct command.
 pub mod transaction_gate;
+
+/// Process start times for lock owners, read from `/proc`, `ps` or the Windows process table.
+pub mod process_start;
+
+/// The Git version check run once before work that depends on Git's behavior.
+pub mod git_version;
+
+/// Processes holding a lock file open, found by device and inode.
+pub mod index_lock_holders;
+
+/// Evidence about a foreign `index.lock` and the verdict it supports.
+pub mod index_lock_evidence;
+
+/// The Git command a forwarded invocation runs, after ordinary alias expansion.
+pub mod forwarded_command;
+
+/// Index-writer classification and the commands that coordinate with a landing.
+pub mod index_writer_commands;
