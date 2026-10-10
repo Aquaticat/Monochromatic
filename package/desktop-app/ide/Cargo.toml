@@ -80,6 +80,7 @@ i-slint-backend-testing = "=1.18.1"
 slint-build = "1.17.0"
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"

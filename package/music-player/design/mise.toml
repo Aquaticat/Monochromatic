@@ -614,3 +614,23 @@ description = "Validate the historical folded-cover P questionnaire"
 dir = "{{config_root}}"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_cover_question}}"
+
+[tasks."build:cover-picker:revisit"]
+description = "Build the offline folded-cover picker review (D46 revisit) from inspected native witnesses"
+dir = "{{config_root}}"
+run = "node cover-picker-revisit.mjs build"
+
+[tasks."lint:cover-picker:revisit"]
+description = "Validate the cover picker review, its image geometry, drawn text and no-ballot boundary"
+dir = "{{config_root}}"
+run = "node cover-picker-revisit.mjs validate"
+
+[tasks."verify:cover-picker:revisit"]
+description = "Build the cover picker review before validating its exact committed output"
+dir = "{{config_root}}"
+run = ["node cover-picker-revisit.mjs build", "node cover-picker-revisit.mjs validate"]
+
+[tasks."test:cover-picker:revisit"]
+description = "Exercise cover picker review image, metadata, cohort and ballot guards in disposable fixtures; `-- <guard>` deletes one"
+dir = "{{config_root}}"
+run = "node cover-picker-revisit-test.mjs"

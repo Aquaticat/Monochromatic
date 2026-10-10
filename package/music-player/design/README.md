@@ -26,6 +26,11 @@ Read these files in order:
 
 ## Active design continuation
 
+The D46 folded-cover picker revisit is in
+[`questions/cover-picker-revisit.html`](questions/cover-picker-revisit.html):
+P4 beside the agent's P5, eight inspected native views,
+not a ballot.
+
 The first-run/no-library study is in
 [`evidence/first-run-access-boundaries.md`](evidence/first-run-access-boundaries.md).
 Its [verified offline review](questions/first-run-access.html) presents

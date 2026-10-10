@@ -862,6 +862,24 @@ State found on 2026-10-10:
   the first publication needs a crates.io API token, which only the user can create
   (`doc/handover/unified-linter-cutover.md`, section `Blocker`).
   The cutover cannot land before that publication, so the linter stays out of the relaunch.
+- Linter publication, done the same day after the user created a crates.io token with the publish-new,
+  publish-update and trusted-publishing scopes:
+  `monochromatic-lint` 0.1.0 was published from the cutover branch,
+  the trusted publisher (`Aquaticat/Monochromatic`, `cargo-publish.yml`, no environment) was added through the crates.io API
+  with that token, and the workflow dispatched with dry-run off created the 0.1.0 release with eight archives over OIDC.
+  `mise` then compiled the crate instead of downloading an archive,
+  because `cargo-binstall` does not look under a `monochromatic-lint-v<version>` tag.
+  0.1.1 carries `[package.metadata.binstall]` and installs in 11.5 s;
+  `mise` also no longer may use its built-in installer (`binstall_native = false`).
+  Evidence: `doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md` on `feat/linter-cutover`.
+  The branch has main merged (39 conflicts: the five deleted packages, rustdoc style edits and `mise.no-env.toml`)
+  and the comment-only Rust fixes re-applied.
+  A delegate is producing the consumer differential (old and new linter findings on the same tree).
+  Landing still needs the choreography below: the installed commit wrapper hardcodes
+  `package/cli/markdown-lint/src/cli.ts`, so after the deletion lands every commit with a Markdown file fails in
+  `markdown/autofix` until the wrapper's `dist` is rebuilt from the landed source.
+- Delegates relaunched on 2026-10-10 on the Haiku model, as the user asked: dependent-version wiring, Markdown autofix
+  with `pathBytes`, the commit path from slice 3, and the consumer differential.
 - Commit path: slices 0 to 2 committed (HEAD `4397a98c8`), seven untracked files of the next slice.
 - Markdown autofix and `pathBytes`: committed through merge `b89b38252`, evidence file untracked.
 - Dependent-version wiring: wiring and controls committed (HEAD `cd344723a`), tree clean.

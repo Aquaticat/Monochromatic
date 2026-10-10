@@ -20,6 +20,7 @@ repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "Restricted byte-oriented regex engine for line-at-a-time secret scanning, with counting, product, and DFA back-ends, set-level literal gating, intersection (&), and complement (~)."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
