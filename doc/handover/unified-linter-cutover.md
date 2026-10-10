@@ -34,26 +34,14 @@ or with a correction to a named entry.
 
 ## Blocker
 
-`monochromatic-lint` 0.1.0 cannot be published from this session.
-
-crates.io Trusted Publishing can only be configured for a crate that already exists.
-The current crates.io source states it in `svelte/src/routes/docs/trusted-publishing/+page.svelte`,
-read through the GitHub API on 2026-10-06:
-"Your crate must already be published to crates.io (initial publish requires an API token)".
-The token stored in `~/.cargo/credentials.toml` (modified 2026-09-26) is no longer valid:
-a request with it to `https://crates.io/api/v1/me` returned `403` with `authentication failed`.
-In the crates.io source,
-`src/auth.rs` returns exactly that message from `authenticate_via_token` when the token is not found,
-while a valid token on that cookie-only endpoint returns
-"this action can only be performed on the crates.io website" instead.
-`gh secret list` held no crates.io token when
-[`doc/runbook/publish-crate-first-time.md`](../runbook/publish-crate-first-time.md) was written,
-and creating a token needs the owner's crates.io sign-in.
-
-The owner action is the runbook's `monochromatic-lint` entry in
-[`doc/runbook/publish-crate-first-time.md`](../runbook/publish-crate-first-time.md).
-Everything after the owner's `cargo login` and the Trusted Publishing form is agent work,
-listed under `Landing choreography`.
+Resolved on 2026-10-10.
+The user created a crates.io token with the publish-new, publish-update and trusted-publishing scopes and ran `cargo login`.
+`cargo publish --dry-run` (with the verifying build) passed, then `cargo publish --no-verify` from the cutover branch
+published `monochromatic-lint` 0.1.0.
+The trusted publisher (`Aquaticat/Monochromatic`, `cargo-publish.yml`, no environment, id 24613)
+was added through `POST /api/v1/trusted_publishing/github_configs` with that token,
+which the endpoint's source accepts for the trusted-publishing scope (`src/controllers/trustpub/github_configs/create.rs`).
+The token is still in `~/.cargo/credentials.toml`; revoking the bootstrap token is the user's step.
 
 ## Publications
 
@@ -132,8 +120,14 @@ so it was discarded.
 
 ### monochromatic-lint 0.1.0
 
-Not published;
-see `Blocker`.
+Published on 2026-10-10 from the cutover branch.
+The 0.1.0 release (dispatch run 38051569901, OIDC, eight archives) installs only by compiling,
+because `cargo-binstall` does not look under a `monochromatic-lint-v<version>` tag.
+0.1.1 adds `[package.metadata.binstall]` and is the version the repository pins:
+dispatch run 38053428535 published it and created the release with eight archives,
+and `MISE_CARGO_BINSTALL_ONLY=1 mise install cargo:monochromatic-lint` finished in 11.5 s.
+Evidence and root cause:
+[`doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md`](../troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md).
 
 ## Publish workflow
 
@@ -192,16 +186,38 @@ and the before-and-after evidence:
 
 ## Release targets
 
-Pending:
-dry run 37535699410 on `a9eb803b1`.
+Both releases carry eight archives:
+`aarch64-apple-darwin`, `aarch64-pc-windows-msvc`, `aarch64-unknown-linux-gnu`, `aarch64-unknown-linux-musl`,
+`x86_64-apple-darwin`, `x86_64-pc-windows-msvc`, `x86_64-unknown-linux-gnu` and `x86_64-unknown-linux-musl`
+(`gh release view monochromatic-lint-v0.1.1`).
+Only `x86_64-unknown-linux-gnu` was installed and run.
 
 ## Landing choreography
 
-Pending.
+Landed on 2026-10-10 as a fast-forward to merge `b111c0ca39`, pushed.
+The order that avoided a window in which commits failed:
+
+1. Built the wrapper's `dist` in the branch worktree from the branch tree
+   (`mise run //package/git-policy/cli:build:js:node`).
+   The installed wrapper runs the repository's `dist`, whose old Markdown policy runs the deleted CLI, so it had to be replaced
+   at the same moment the deletion landed.
+2. Committed two files other sessions had left uncommitted in the main checkout
+   (`pnpm-lock.yaml`, `package/config/pnpr/config.yaml`), with the user's approval, because the fast-forward touched both.
+3. Fast-forwarded `main`, copied the built `dist` over the live one by rename, ran `git cli-git trust --yes`
+   for the changed `cli-git.config.ts` (the user approved this on 2026-10-10) and ran the pinned tool install.
+
+The user approved the trust step.
+Commits made on the branch used `--no-enforce-markdown/autofix` while the installed wrapper still ran the deleted CLI.
 
 ## Cutover change
 
-Pending.
+The `markdown/autofix` options in `cli-git.config.ts` now take the policy defaults:
+`monochromatic-lint` on `PATH` and the `markdown/lfs-image-url` rule, with `package/ssg/` excluded.
+A smoke test in a disposable repository with a disposable home passed (`git add` of a Markdown file exits 0).
+The tool is declared as `"cargo:monochromatic-lint" = "0.1.1"` in `mise.no-env.toml`
+with `binstall_native = false` under `[settings.cargo]`.
+Leftovers: `package/cli/markdown-lint/dist` and similar ignored build directories of the deleted packages remain on disk
+in the main checkout and are not tracked.
 
 ## AGENTS.md rules
 
