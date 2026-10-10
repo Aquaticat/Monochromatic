@@ -16,6 +16,8 @@ use super::support::{Fixture, Observed, fixture, git, observe, remove, repositor
 use std::ffi::OsStr;
 /// Borrowed and owned filesystem paths.
 use std::path::{Path, PathBuf};
+/// The captured result of a finished process.
+use std::process::Output;
 
 /// The configuration that turns the policy on.
 const CONFIGURATION: &str = "{ \"policies\": { \"mono/dependent-version-bump\": \"error\" } }\n";
@@ -193,6 +195,38 @@ fn a_narrow_fix_changes_unselected_dependents_only_when_they_match_head() {
     assert_eq!(
         read(repo.as_path(), "c"),
         manifest("@s/c", "3.0.1", Some("@s/a"))
+    );
+    remove(&fixture);
+}
+
+/// `git add` of the raised manifest, with the policy enabled and that manifest a candidate,
+/// stages it and says nothing: the pre-forward trigger plans only for `commit`, as the
+/// incumbent does, so the command is never refused.
+#[test]
+fn add_of_a_raised_manifest_is_not_refused() {
+    let fixture: Fixture = fixture("dependent-version-add");
+    let repo: PathBuf = workspace(&fixture);
+    let added: Observed = run_wrapped(
+        &fixture,
+        repo.as_path(),
+        &["add", "--", "package/module/a/package.json"],
+    );
+    assert_eq!(
+        added,
+        Observed {
+            code: Some(0),
+            stdout: Vec::new(),
+            stderr: Vec::new(),
+        }
+    );
+    let staged: Output = git(
+        &fixture,
+        repo.as_path(),
+        &["diff", "--cached", "--name-only"],
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&staged.stdout),
+        "package/module/a/package.json\n"
     );
     remove(&fixture);
 }
