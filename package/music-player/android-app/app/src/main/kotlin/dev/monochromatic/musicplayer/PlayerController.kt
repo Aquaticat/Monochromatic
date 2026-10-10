@@ -84,6 +84,15 @@ import androidx.compose.runtime.setValue
 // ```
 import dev.monochromatic.musicplayer.core.Page
 
+// What:     `import dev.monochromatic.musicplayer.core.PlayerHostModel` brings in the pure library rebuild.
+// Why:      `libraryTracks()` delegates the load-order rebuild to the pure rule, which is unit-tested.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { libraryTracksFrom } from "./core/PlayerHostModel";
+// ```
+import dev.monochromatic.musicplayer.core.PlayerHostModel
+
 // What:     `import dev.monochromatic.musicplayer.core.Queue` imports the ported `Queue`
 //           type (the play queue: ordered tracks plus a cursor, with shuffle/repeat).
 // Why:      The controller owns a `Queue`.
@@ -1452,6 +1461,17 @@ class PlayerController(private val engine: AudioEngine) {
      * its call shape and effects.
      */
     fun durationSec(): Double = engine.durationSec()
+
+    // What:     `fun libraryTracks(): List<Track>` returns every library track in load order.
+    // Why:      Search and the template preview read the library as tracks, and each track's position in the list
+    //           is its load-order index, which playback uses.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // libraryTracks(): Track[] { return libraryTracksFrom(this.uris, this.pages); }
+    // ```
+    /** Returns every library track in load order, rebuilt from the stored URIs and the page entries. */
+    fun libraryTracks(): List<Track> = PlayerHostModel.libraryTracksFrom(uris = uris, pages = pages)
 
     // What:     `fun snapshot(): PlaybackSnapshot { ... }` declares a public method, block
     //           body, returning a `PlaybackSnapshot`.

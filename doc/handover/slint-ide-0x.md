@@ -216,14 +216,32 @@ the items after it are the record of 2026-10-05 and older.
   The other nine guard scripts passed at `bd1ad9ad4`, which differs from the landed tree in one test file.
   One `inspect:bundle` run at load 40 failed `lone-copy-highlights`
   (the application took longer than the compositor's 2 s to close) and three reruns passed.
-- Left for the user to decide or for later:
-  - The IDE package has no `cargo fmt --check` task, so `:lint` does not catch formatter drift
-    (`package/linter/monochromatic-lint/mise.toml` has `lint:rustfmt`).
+- Landed on `main` as `0b81ef2da1` (first parent chain through `25b52185f3`):
+  a `lint:rustfmt` task (`cargo fmt --check`) in the package's `lint` task, the user's answer of 2026-10-10.
+  It passes on the clean tree and fails, printing the diff, with a misformatted function appended to
+  `src/launcher.rs` (restored afterwards).
+  The merge kept main's `monochromatic-lint` step beside it.
+  Gate on IDE tree `dc5a8828df8594a874b27eada1f0639f9029f055`:
+  lint:clippy, lint:rustfmt, lint:slint, lint:release, test, test:cli, test:native 124 of 124, bundle,
+  inspect:bundle, inspect:bundle-guards.
+- The package's combined `lint` task is red on `main` since the linter cutover of another session:
+  `monochromatic-lint package/desktop-app/ide` exits 1 with 570 `markdown/semantic-line-breaks` errors
+  and 821 `rust/no-anonymous-functions` warnings.
+  None of it comes from the IDE work of this handover; the cutover owns it.
+- The user approved installing into the real home on 2026-10-10:
+  `bin/install.mjs` put `dist/monochromatic-ide` at `~/.local/bin/monochromatic-ide`
+  (identical bytes, hash checked) and the launcher entry at `~/.local/share/applications/monochromatic.ide.desktop`
+  (`desktop-file-validate` accepts it).
+  `inspect:bundle` against the installed file passed 10 of 10.
+- The cutover changed the git policy configuration, so git in the landing worktree stopped with
+  `config-changed`; with the user's approval and after reading the diff of `cli-git.config.ts`,
+  `git cli-git trust --yes` was run in `.claude/worktrees/ide-land` only.
+- Still open:
   - Lazy server lookup was measured and not built:
     locating servers is 12 ms of a 210 ms registry build.
   - Fixtures of other native tests still use `tempfile::tempdir()` on btrfs.
-  - A consumer check of the installed single file needs the user's approval to install into the real home.
-  - Finished worktrees whose branches are pushed can be removed.
+  - The `.claude/worktrees/ide-integrate` worktree was removed with its half finished merge of `main`
+    (git there was blocked by the same `config-changed` stop); the branch `integrate/ide-language-core` remains.
 - Inotify:
   on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
   about 462000 of them by `git fsmonitor--daemon` processes

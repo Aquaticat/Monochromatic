@@ -511,3 +511,14 @@ and the frames under `package/desktop-app/ide/design/screenshots/2026-10-06-ui-b
   helix-lsp drops a late answer,
   and the start failures were the most common gate failure (24 of 200 runs before, 0 of 200 after).
   Cost: a server that really hangs is reported after 62 s instead of 22 s.
+
+### Install check and Rust format check
+
+- The user allowed installing the single executable and its launcher entry into the real home
+  to check the installed copy (answered 2026-10-10, "Yes, install and check").
+  `~/.local/bin/monochromatic-ide` and `~/.local/share/applications/monochromatic.ide.desktop` were installed
+  with `bin/install.mjs`; the installed file passed `inspect:bundle` 10 of 10.
+- The package's `lint` task runs a new `lint:rustfmt` task (`cargo fmt --check`)
+  (answered 2026-10-10, "Add the check").
+  Reason: formatter drift had surfaced only as separate cleanup commits.
+  Cost: a few seconds in `lint`.

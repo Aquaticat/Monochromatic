@@ -878,6 +878,33 @@ State found on 2026-10-10:
   Landing still needs the choreography below: the installed commit wrapper hardcodes
   `package/cli/markdown-lint/src/cli.ts`, so after the deletion lands every commit with a Markdown file fails in
   `markdown/autofix` until the wrapper's `dist` is rebuilt from the landed source.
+- Linter cutover landed on 2026-10-10 as `b111c0ca39` (fast-forward, pushed); evidence in
+  `doc/handover/unified-linter-cutover.md`.
+  The five incumbent linter packages are deleted, `cli-git.config.ts` takes the Markdown policy defaults,
+  `monochromatic-lint` 0.1.1 is pinned in `mise.no-env.toml` and installed, and the wrapper `dist` in the main checkout was replaced
+  by the one built from the landed source.
+  The user approved `git cli-git trust --yes` for the changed config and committing the two uncommitted files
+  (`pnpm-lock.yaml`, `package/config/pnpr/config.yaml`) that blocked the fast-forward.
+  Open from it: the new linter reports 123 `semantic-line-breaks` findings on `///` lines inside fenced Rust blocks
+  (the incumbent treated fences as code), which needs a linter fix and a 0.1.2;
+  about 56,000 shared Markdown findings remain (step 8), and the old Markdown gate was already red on main.
+- Delegate reports of 2026-10-10 (all pushed feature branches by auto-push, which is fine):
+  Markdown autofix with `pathBytes` passes the container gate (633 unit, 43 binary, 1 consumer) and fuzz,
+  and its mutation campaign left one real survivor in `markdown_exclude.rs:95:39` that needs a test;
+  the two `event_path.rs:173` base64 survivors are equivalent.
+  Dependent-version wiring passes (680 unit, 43 binary, 1 consumer; release-bump differential identical in four scenarios)
+  with one survivor, `policy_dependent_version.rs:255:66`, in a filter no probe could reach with a deleted candidate.
+  The user corrected the gate on 2026-10-10: it requires every mutant to be caught or justified as impossible to catch,
+  not exactly zero missed.
+  A justification must rest on code (the call chain that makes the mutant equivalent), not on failed probes,
+  so the delegate was told to trace every producer of the filtered list and either write that proof or kill the mutant with a test.
+  The commit path finished slice 3's leaf modules (829 library tests, planted controls, fuzz) and keeps going.
+- The user's instruction of 2026-10-10: focus on finishing cli-git; pre-existing Markdown lint findings can wait.
+  The fenced-code false-positive fix for the linter (123 findings, repro `~/temp/agent/momoa-probe/fence.md`)
+  was started and stopped before any commit, and is deferred with step 8.
+- Landing order decided on 2026-10-10: Markdown autofix first, then dependent-version wiring (both edit
+  `src/native/policy_checks.rs`; each needs a gate rerun on the merge with main, because the cutover changed
+  `package/git-policy`), then the commit path.
 - Delegates relaunched on 2026-10-10 on the Haiku model, as the user asked: dependent-version wiring, Markdown autofix
   with `pathBytes`, the commit path from slice 3, and the consumer differential.
 - Commit path: slices 0 to 2 committed (HEAD `4397a98c8`), seven untracked files of the next slice.
@@ -1495,7 +1522,35 @@ that is verification, not a decision for the user.
   the rest adopted under the standing instruction (`User decisions 2026-10-05`).
 - [x] Cutover decisions: all adopted under the standing instruction and open to veto
   (`User decisions 2026-10-05`, section `Adopted without a question`).
-- [ ] Before cutover: this host's Git must be 2.56.0 or newer (it is 2.55.0); the user's system, not ours to change.
+- [x] Git version: the user decided on 2026-10-10 that Git 2.55.0 (this host) is acceptable,
+  so the native minimum is lowered from 2.56.0 to 2.55.0 and Git-dependent behavior is probed against 2.55.0 too.
+- [ ] Commit path, run as parallel lanes from 2026-10-10 (user: no hybrid, the old TypeScript implementation goes,
+  wait for the native commit path and parallelize better).
+  Lanes branch from `feat/cli-git-native-transactions` at `0faec78d77`,
+  each with its own evidence file `doc/handover/cli-git-native-<lane>.md` and worktree `.claude/worktrees/cli-git-lane-<lane>`:
+  `hooks` (slice 4), `capture` (slice 5), `replay-core` (slice 8 without the landing lock),
+  `auto-push` (slice 9 auto-push, post-commit lifecycle, manual-push listings), `signals` (slice 10 and maintenance),
+  `worktree-copy` (slice 11).
+  The transactions branch finishes slice 3, then the lanes are merged into it,
+  and the remaining serial slices (6 preparation policies, 7 landing, 9 integration) follow.
+  Heavy gates run through `~/temp/agent/gate-slot.ts` (four host-wide slots).
+  At most five delegates run at once.
+- [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
+  the Windows checks and the release-artifact performance gates;
+  the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);
+  the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
+  mutation campaigns on non-core modules (hooks plumbing, auto-push, automatic maintenance, signals);
+  and the `pathBytes` field for non-UTF-8 paths in events.
+  Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
+  keep full mutation gating.
+  Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
+  Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
+  Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
+  Right after it, without a pause, the queue continues with these gates in the order listed
+  (the interop matrix and the old-format fixtures first, then fuzz campaigns, non-core mutation,
+  the `pathBytes` field, the Windows checks and the release-artifact performance gates),
+  each recorded and closed like any other gate,
+  and then the retirement of the old TypeScript implementation is verified complete.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).

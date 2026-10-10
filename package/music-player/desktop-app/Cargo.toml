@@ -118,6 +118,11 @@ symphonia = { version = "0.6", features = ["all"] }
 # queued writes). NOT `rt-multi-thread`: one actor thread is enough and the spike
 # confirmed a current-thread runtime drives Turso's local futures.
 tokio = { version = "1", features = ["rt", "sync", "macros"] }
+# Unicode normalization for search and folder collation (src/folder_rail.rs, src/search_matcher.rs,
+# src/non_spacing_mark.rs). NFD decomposition plus the combining-mark test let accented and
+# decomposed names sort and match the same way the Kotlin app does, so the search page and the
+# folder rail agree on which tracks match a query.
+unicode-normalization = "0.1"
 # The logging facade and its subscriber (src/logging.rs). tracing mirrors the shared
 # truepeak-core logging; tracing-subscriber installs the stderr sink with an env-filter
 # (RUST_LOG, default `info`). Both already resolve transitively (turso -> tracing), so this
