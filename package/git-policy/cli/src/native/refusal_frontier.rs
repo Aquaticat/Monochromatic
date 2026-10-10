@@ -83,6 +83,23 @@ pub const LEASE_VARIABLES: &[&str] = &[
 ];
 
 /// What:
+///  The lease variables whose holders are not ported yet,
+///  so an inherited value still stops a guarded
+///  command.
+///  The landing lease is not here:
+///  an index writer honours it through coordination.
+/// Why:
+///   A nested `git add` inside a coordinated `git rebase --exec` inherits the landing lease and must
+///   proceed;
+///  refusing it would deadlock the rebase.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const REFUSED_LEASE_VARIABLES = ['CLI_GIT_PREPARATION_LEASE', 'CLI_GIT_WORKTREE_COPY_LEASE'];
+/// ```
+pub const REFUSED_LEASE_VARIABLES: &[&str] = &["CLI_GIT_PREPARATION_LEASE", "CLI_GIT_WORKTREE_COPY_LEASE"];
+
+/// What:
 ///  The first lease variable present in the environment,
 ///  if any.
 ///       `&[(OsString, OsString)]` borrows the environment as name/value pairs;
@@ -97,8 +114,8 @@ pub const LEASE_VARIABLES: &[&str] = &[
 /// function inheritedLease(environment: [string, string][]): string | undefined;
 /// ```
 pub fn inherited_lease(environment: &[(OsString, OsString)]) -> Option<&'static str> {
-    // `for variable in LEASE_VARIABLES` borrows each name; `*variable` copies it out.
-    for variable in LEASE_VARIABLES {
+    // `for variable in REFUSED_LEASE_VARIABLES` borrows each name; `*variable` copies it out.
+    for variable in REFUSED_LEASE_VARIABLES {
         if environment_value(environment, variable).is_some() {
             // `Some(x)` is the "present" case of `Option`.
             return Some(*variable);

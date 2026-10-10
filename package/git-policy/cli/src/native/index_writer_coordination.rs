@@ -22,6 +22,7 @@ use super::index_lock_wait::{WaitFailure, unproven_owner_message, wait_for_index
 use super::index_lock_wait_host::HostWaitEffects;
 /// Index-writer classification of a resolved command.
 use super::index_writer_commands::is_index_writer;
+use super::diagnostic_log::debug;
 /// The landing-location query.
 use super::landing_location::{LandingLocation, resolve_landing_location};
 /// The engine failure event,
@@ -263,12 +264,17 @@ pub fn coordinate_index_writer_checked(
     version: fn(&GitContext) -> Result<GitRelease, String>,
 ) -> Result<Option<Coordination>, CoordinationFailure> {
     if !is_index_writer(input.command) {
+        debug("coordinateIndexWriter", "not an index writer; no coordination");
         return Ok(None);
     }
     let location: LandingLocation = match coordinated_location(input.context, input.command, input.environment)? {
         Some(found) => found,
-        None => return Ok(None),
+        None => {
+            debug("coordinateIndexWriter", "no real-index landing location, or an inherited lease; no coordination");
+            return Ok(None);
+        }
     };
+    debug("coordinateIndexWriter", format!("coordinating git {} with {}", command_name(input.command), location.registry_root.display()).as_str());
     // The version check runs once per process, before the first work that depends on Git's behavior.
     if let Err(reason) = version(input.context) {
         return Err(CoordinationFailure::Stop(reason));

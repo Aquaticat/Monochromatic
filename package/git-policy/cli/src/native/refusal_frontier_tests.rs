@@ -15,7 +15,7 @@
 
 /// The frontier under test,
 ///  its inputs and the argument builders.
-use super::{LEASE_VARIABLES, command_frontier, inherited_lease};
+use super::{LEASE_VARIABLES, REFUSED_LEASE_VARIABLES, command_frontier, inherited_lease};
 use crate::command_test_support::{byte_argument, os_arguments};
 use crate::unported::Unported;
 use crate::worktree_identity::WorktreeIdentity;
@@ -235,7 +235,13 @@ fn an_inherited_lease_is_found_by_name() {
     ];
     assert_eq!(inherited_lease(&[]), None);
     assert_eq!(inherited_lease(unrelated.as_slice()), None);
-    for variable in LEASE_VARIABLES {
+    // The landing lease is honoured by coordination, not refused here.
+    let landing: Vec<(OsString, OsString)> = vec![(
+        OsString::from("CLI_GIT_LANDING_LEASE"),
+        OsString::from("token"),
+    )];
+    assert_eq!(inherited_lease(landing.as_slice()), None);
+    for variable in REFUSED_LEASE_VARIABLES {
         for value in ["", "token"] {
             let mut environment: Vec<(OsString, OsString)> = unrelated.clone();
             environment.push((OsString::from(variable), OsString::from(value)));
@@ -247,14 +253,14 @@ fn an_inherited_lease_is_found_by_name() {
         }
     }
     let both: Vec<(OsString, OsString)> = vec![
+        (OsString::from("CLI_GIT_LANDING_LEASE"), OsString::from("b")),
         (
             OsString::from("CLI_GIT_WORKTREE_COPY_LEASE"),
             OsString::from("a"),
         ),
-        (OsString::from("CLI_GIT_LANDING_LEASE"), OsString::from("b")),
     ];
     assert_eq!(
         inherited_lease(both.as_slice()),
-        Some("CLI_GIT_LANDING_LEASE")
+        Some("CLI_GIT_WORKTREE_COPY_LEASE")
     );
 }
