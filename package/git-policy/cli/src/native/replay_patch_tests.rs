@@ -134,3 +134,14 @@ fn a_truncated_hunk_fails_the_whole_patch() {
     let files: BTreeMap<Vec<u8>, Vec<PatchHunk>> = parse_indexed_patch(text).expect("patch");
     assert!(files.contains_key(b"10".as_slice()));
 }
+
+/// A removal after an addition still counts against the old side, so a hunk whose old side ends with removals
+///  reads those removals as its body and stops where the counts say.
+#[test]
+fn a_removal_after_an_addition_still_counts_the_old_side() {
+    let lines: Vec<Vec<u8>> = split_keeping_newlines(b"@@ -1,2 +1,1 @@\n+x\n-a\n-b\nnext\n");
+    let (hunk, next): (PatchHunk, usize) = parse_hunk(&lines, 0).expect("hunk");
+    assert_eq!(hunk.lines.len(), 3);
+    assert_eq!(next, 4);
+    assert_eq!(lines[next], b"next\n".to_vec());
+}

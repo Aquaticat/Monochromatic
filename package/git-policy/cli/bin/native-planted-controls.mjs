@@ -120,14 +120,14 @@ const plantedControls = [
     file: 'src/native/replay_reverse_apply.rs',
     from: 'if !incomplete_last || match_end {',
     to: 'if true {',
-    failing: 'replay_reverse_apply::tests::strict_reverse_agrees_with_git_apply_on_seeded_cases',
+    failing: 'replay_reverse_apply::tests::an_incomplete_preimage_line_matches_past_whitespace_when_not_anchored',
   },
   {
     name: 'patch hunk count for removals',
     file: 'src/native/replay_patch.rs',
     from: 'if marker != b\'+\' {',
     to: 'if true {',
-    failing: 'replay_patch::tests::one_hunk_reads_its_body_and_stops',
+    failing: 'replay_patch::tests::a_removal_after_an_addition_still_counts_the_old_side',
   },
   {
     name: 'capture order unread-path guard',
