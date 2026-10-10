@@ -621,7 +621,7 @@ execFileSync('node', ['bin/inspect-language-confinement.mjs'], { stdio: 'inherit
 """
 
 [tasks."inspect:language-guards"]
-description = "Remove Language fencing, readiness, edit-refusal, and ask-again guards only in a disposable copy and observe named regression failures"
+description = "Remove Language fencing, readiness, edit-refusal, ask-again, hint-window, diagnostics-hold, and start-allowance guards only in a disposable copy and observe named regression failures"
 usage = '''
 arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"

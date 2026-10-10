@@ -15,8 +15,11 @@ use ide_app::language::{
     hints::{HintKind, HintsSnapshot, InlayHint},
     identity::ServerIdentity,
 };
-/// Snapshots arrive behind shared pointers.
-use std::sync::Arc;
+/// Snapshots arrive behind shared pointers; a scroll has a moment.
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 /// Two lines. The scripted server warns about the first character of the first line
 /// and returns one hint after `alpha`.
@@ -69,6 +72,20 @@ fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
         rows(&reader) == (0, 0),
         "the delayed server answered before highlighting settled; the repaints cannot be told apart"
     );
+    // What: `Some(...)` records the reader as having scrolled at a moment a minute from now; a moment not
+    //       yet reached counts as no time passed, so the repaints on the source refresh timer, which wait
+    //       out 200 ms after a scroll, wait for a minute.
+    // Why: Since `rows::due`, that timer also paints a store that holds rows no frame shows yet, a tick
+    //      after the store changed. Left running it would paint what a poll stored without repainting,
+    //      and removing the poll's repaint would go unnoticed. This comes before the server is ready
+    //      because the first snapshots can be stored while that wait is still running. The poll's own
+    //      repaint is not held back: the view is at the top, so the rows move nothing visible.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // source.current.scrolledAt = now() + 60_000;
+    // ```
+    reader.source.borrow_mut().scrolled_at = Some(Instant::now() + Duration::from_secs(60));
     ready(&reader);
     eventually(
         "accepted hints and diagnostics were stored but never painted",

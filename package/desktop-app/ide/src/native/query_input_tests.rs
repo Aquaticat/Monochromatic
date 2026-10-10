@@ -11,6 +11,8 @@ use super::find_tests::{chord, key, status, type_text};
 use super::query_input_paint_tests::ink_range;
 /// Rendered frames and single pixels, shared with the sidebar paint tests.
 use super::sidebar_paint_tests::{frame, pixel};
+/// Pointer helpers and the pinned width of the divider's line.
+use super::sidebar_tests::{DIVIDER, press, release, settle};
 /// The scheme switch the desktop-settings watcher makes, and color bytes.
 use super::theme_tests::{rgba, switch};
 /// What: `ColorScheme` is the toolkit's scheme enum (`Unknown`, `Dark`, `Light`), reached through its unstable
@@ -23,8 +25,6 @@ use super::theme_tests::{rgba, switch};
 /// import { ColorScheme } from 'slint/private';
 /// ```
 use slint::private_unstable_api::re_exports::ColorScheme;
-/// Pointer helpers and the pinned width of the divider's line.
-use super::sidebar_tests::{DIVIDER, press, release, settle};
 /// What: `Rgba8Pixel` is one pixel of four bytes; `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
 /// (the `<...>` names the element type, like `Array<Pixel>`); `WindowEvent` is the union of events a
 /// windowing backend reports.
@@ -356,7 +356,10 @@ fn find_box_selection_uses_the_ink_chosen_from_the_fill() {
         let filled = pixels(&shown, glyphs)
             .iter()
             .any(|found| return [found.r, found.g, found.b, found.a] == fill);
-        assert!(filled, "{label}: selected find text has no selection fill behind it");
+        assert!(
+            filled,
+            "{label}: selected find text has no selection fill behind it"
+        );
         // The box's own fill far right of the text, left of the count.
         let (darkest, lightest) = ink_range(&shown, glyphs, pixel(&shown, start + 300, top + 24));
         assert!(

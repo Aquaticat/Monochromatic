@@ -528,12 +528,14 @@ fn caret_problems_follow_the_caret_and_are_spelled_out_in_full() {
 /// is given up when its time has passed without new annotations.
 #[test]
 fn stale_snapshots_disappear_after_reload_and_file_switch() {
-    let fixture = tempfile::tempdir().expect("disposable stale project");
+    let fixture = super::find_tests::memory_project("ide-stale-annotations-");
     let path = fixture.path().join("main.rs");
     fs::write(&path, FIXTURE).expect("stale fixture");
     fs::write(fixture.path().join("other.rs"), "fn other() {}\n").expect("second fixture");
     let reader = reader(fixture.path(), "main.rs");
     let window = &reader.window;
+    // The external changes below reach the reader through its live watch, not the sweep.
+    super::navigation_tests::wait_until(|| return reader.source.borrow().refresh.is_watched());
     annotate(&reader);
     for _ in 0..12 {
         key(window, Key::RightArrow);
@@ -546,7 +548,7 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
         .collect();
     let revision = reader.source.borrow().document.revision();
     // The change appends a line, so every annotated line keeps its number.
-    fs::write(&path, format!("{FIXTURE}// changed\n")).expect("external change");
+    super::find_tests::replace_file(&path, &format!("{FIXTURE}// changed\n"));
     eventually("the external change was not reloaded", || {
         return reader.source.borrow().document.revision() > revision;
     });
@@ -573,7 +575,7 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
     assert_eq!(returned, tops, "returning annotations moved a line");
     // A second change with no annotations for its text: the space is held, then given up.
     let second = reader.source.borrow().document.revision();
-    fs::write(&path, format!("{FIXTURE}// changed again\n")).expect("second external change");
+    super::find_tests::replace_file(&path, &format!("{FIXTURE}// changed again\n"));
     eventually("the second external change was not reloaded", || {
         return reader.source.borrow().document.revision() > second;
     });

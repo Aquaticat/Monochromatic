@@ -1,7 +1,7 @@
 //! Workspace roots: the project root is the only acceptable server root, whatever the working
 //! directory and the surrounding tree look like.
 
-use crate::support::{self, Layout, Probe, SERVER};
+use crate::support::{self, Layout, PRODUCT_TIMEOUT, Probe, SERVER};
 use ide_app::language::{
     reply::{RequestKind, RequestOutcome, Target},
     status::ServerState,
@@ -38,7 +38,7 @@ fn working_directory_elsewhere_is_refused() {
         support::run_child("roots::working_directory_elsewhere_is_refused", elsewhere);
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until("the wrong-working-directory state", |seen| {
         return matches!(
@@ -84,7 +84,7 @@ fn nested_project_without_root_marker_is_refused() {
         );
         return;
     };
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until("the root-outside-project state", |seen| {
         return matches!(
@@ -118,7 +118,8 @@ fn nested_project_with_root_marker_is_rooted_at_the_project() {
     };
     fs::write(root.join("marker.toml"), "").expect("project marker");
     fs::write(root.parent().expect("tree").join("marker.toml"), "").expect("tree marker");
-    let definitions = support::scripted_with_roots(&root, &[], 3, r#"["marker.toml"]"#);
+    let definitions =
+        support::scripted_with_roots(&root, &[], PRODUCT_TIMEOUT, r#"["marker.toml"]"#);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("sub/file.scripted"), "alpha\n");
     probe.until_ready();
@@ -146,7 +147,8 @@ fn marker_in_a_subdirectory_roots_the_server_inside_the_project() {
         return;
     };
     fs::write(root.join("sub/marker.toml"), "").expect("subdirectory marker");
-    let definitions = support::scripted_with_roots(&root, &[], 3, r#"["marker.toml"]"#);
+    let definitions =
+        support::scripted_with_roots(&root, &[], PRODUCT_TIMEOUT, r#"["marker.toml"]"#);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("sub/file.scripted"), "alpha\n");
     probe.until_ready();
@@ -189,7 +191,7 @@ fn project_reached_through_a_linked_working_directory_is_rooted_at_the_project()
         std::env::var_os("PWD").as_deref(),
         Some(spelled.as_os_str())
     );
-    let mut probe = Probe::new(&root, support::scripted(&root, &[], 3));
+    let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     let file = root.join("file.scripted");
     probe.open(&file, "alpha\nbeta\ngamma line\n");
     probe.until_ready();

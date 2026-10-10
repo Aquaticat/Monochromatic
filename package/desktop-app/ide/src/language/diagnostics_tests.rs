@@ -388,3 +388,148 @@ fn ranges_use_the_column_unit_of_the_sending_server() {
         (1, 2)
     );
 }
+
+/// Push one unversioned set from server `a` with a single item on line 0.
+fn push_unversioned(store: &mut DiagnosticStore, message: &str) -> PushVerdict {
+    return store.push(
+        &server("a"),
+        OffsetEncoding::Utf16,
+        None,
+        vec![item(0, "lint", message)],
+        4,
+    );
+}
+
+#[test]
+fn set_pushed_during_the_hold_is_shown_when_the_server_answers() {
+    let text = text();
+    let mut store = DiagnosticStore::new();
+    store.open(FIRST, 0);
+    store.reload(SECOND, 1, &[server("a")]);
+    assert_eq!(push_unversioned(&mut store, "only push"), PushVerdict::Held);
+    assert!(
+        messages(&store, &text).is_empty(),
+        "a set pushed during the hold was shown before the hold ended"
+    );
+    assert!(store.answered(&server("a"), SECOND));
+    let snapshot = store.snapshot(&text).expect("snapshot");
+    assert_eq!(snapshot.stamp, SECOND);
+    assert_eq!(
+        messages(&store, &text),
+        vec!["only push".to_string()],
+        "the set pushed during the hold was dropped when the hold ended"
+    );
+    assert_eq!(
+        snapshot.groups[0].items[0].freshness,
+        Freshness::Unversioned
+    );
+}
+
+#[test]
+fn set_pushed_during_the_hold_is_shown_when_the_fixed_delay_passes() {
+    let text = text();
+    let mut store = DiagnosticStore::new();
+    store.open(FIRST, 0);
+    let serial = store.reload(SECOND, 1, &[server("a")]);
+    push_unversioned(&mut store, "first during hold");
+    push_unversioned(&mut store, "latest during hold");
+    assert!(messages(&store, &text).is_empty());
+    assert!(store.hold_expired(serial));
+    assert_eq!(
+        messages(&store, &text),
+        vec!["latest during hold".to_string()],
+        "the latest set pushed during the hold was not the one shown"
+    );
+}
+
+#[test]
+fn newer_set_replaces_the_one_kept_during_the_hold() {
+    let text = text();
+    let mut store = DiagnosticStore::new();
+    store.open(FIRST, 0);
+    store.reload(SECOND, 1, &[server("a")]);
+    push_unversioned(&mut store, "kept");
+    assert_eq!(
+        store.push(
+            &server("a"),
+            OffsetEncoding::Utf16,
+            Some(1),
+            vec![item(1, "rustc", "versioned")],
+            4
+        ),
+        PushVerdict::AcceptedVersioned
+    );
+    assert!(store.answered(&server("a"), SECOND));
+    assert_eq!(
+        messages(&store, &text),
+        vec!["versioned".to_string()],
+        "a set kept during the hold replaced a newer versioned set when the hold ended"
+    );
+    assert_eq!(
+        push_unversioned(&mut store, "after hold"),
+        PushVerdict::AcceptedUnversioned
+    );
+    assert_eq!(messages(&store, &text), vec!["after hold".to_string()]);
+}
+
+#[test]
+fn kept_set_ends_with_its_revision_its_server_and_its_file() {
+    let text = text();
+    let third = DocumentStamp {
+        file: 1,
+        revision: 2,
+    };
+    let mut store = DiagnosticStore::new();
+    store.open(FIRST, 0);
+    store.reload(SECOND, 1, &[server("a")]);
+    push_unversioned(&mut store, "for the second revision");
+    store.reload(third, 2, &[server("a")]);
+    assert!(store.answered(&server("a"), third));
+    assert!(
+        messages(&store, &text).is_empty(),
+        "a set kept during an earlier revision's hold was shown for a later revision"
+    );
+    store.reload(
+        DocumentStamp {
+            file: 1,
+            revision: 3,
+        },
+        3,
+        &[server("a")],
+    );
+    push_unversioned(&mut store, "from an ended process");
+    store.server_exited(&server("a"));
+    assert!(!store.is_held(&server("a")));
+    assert!(messages(&store, &text).is_empty());
+    store.open(
+        DocumentStamp {
+            file: 2,
+            revision: 0,
+        },
+        0,
+    );
+    assert!(!store.is_held(&server("a")));
+}
+
+#[test]
+fn set_with_a_missing_line_is_not_kept_during_the_hold() {
+    let text = text();
+    let mut store = DiagnosticStore::new();
+    store.open(FIRST, 0);
+    let serial = store.reload(SECOND, 1, &[server("a")]);
+    assert_eq!(
+        store.push(
+            &server("a"),
+            OffsetEncoding::Utf16,
+            None,
+            vec![item(9, "lint", "past the end")],
+            4
+        ),
+        PushVerdict::LineOutOfRange
+    );
+    assert!(store.hold_expired(serial));
+    assert!(
+        messages(&store, &text).is_empty(),
+        "a set naming a line the text lacks was kept and shown"
+    );
+}

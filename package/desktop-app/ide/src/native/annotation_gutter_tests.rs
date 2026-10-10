@@ -26,13 +26,54 @@ use slint::{
     Color, LogicalPosition, Model, Rgba8Pixel, SharedPixelBuffer,
     platform::update_timers_and_animations,
 };
-/// Shared snapshot pointers.
-use std::sync::Arc;
+/// Shared snapshot pointers, and the bound on waiting for the first highlighting answer.
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 /// Advance of one JetBrains Mono digit or letter at the gutter's 15 px.
 const DIGIT: f32 = 9.0;
 /// Space between a line number and the text.
 const NUMBER_GAP: f32 = 12.0;
+
+/// What: Longest wait for the first highlighting answer: a hang detector, not a latency budget, and the same
+///       bound the Language integration tests use for any expected state (`PATIENCE` in
+///       `tests/language/support.rs`).
+/// Why: The answer needs the syntax engine and the Rust queries, built once per reader on its worker; measured
+///      on a loaded machine with two processors, that took up to 4.2 s. No product bound exists for it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const HIGHLIGHT_PATIENCE_MS = 20_000;
+/// ```
+const HIGHLIGHT_PATIENCE: Duration = Duration::from_secs(20);
+
+/// What: Advance timers until the reader shows the highlighting of its displayed revision.
+/// Why: The reload binding asks for highlighting on a timer and applies the answer on a later tick, so a frame
+///      taken right after the reader opens shows plain text, and the answer can land between two frames a test
+///      compares; it colors the text and changes pixels the test expects to stay.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function untilHighlighted(reader: Reader): void { while (reader.syntaxRevision !== reader.revision) tick(); }
+/// ```
+fn until_highlighted(reader: &super::find_tests::Reader) {
+    let start = Instant::now();
+    loop {
+        update_timers_and_animations();
+        let current = reader.source.borrow();
+        if current.syntax_revision == Some(current.document.revision()) {
+            return;
+        }
+        drop(current);
+        assert!(
+            start.elapsed() < HIGHLIGHT_PATIENCE,
+            "the first highlighting answer was not applied within {HIGHLIGHT_PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
+}
 
 /// Window x of the left edge of the line number of source line `line` (0-based) in a file of fewer than 1000 lines.
 fn number_left(line: usize) -> f32 {
@@ -281,7 +322,8 @@ fn gutter_letters_show_the_worst_severity_in_front_of_the_line_number() {
 fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
     let (_directory, reader) = fixture_reader(&numbered(300));
     let window = &reader.window;
-    update_timers_and_animations();
+    // Both frames show the highlighted text, so they differ only by the diagnostics.
+    until_highlighted(&reader);
     let plain = frame(window);
     let background = pixel(&plain, TEXT_LEFT - GUTTER + 2.0, TEXT_TOP + 12.0);
     errors_on(&reader, &[0, 9, 99]);

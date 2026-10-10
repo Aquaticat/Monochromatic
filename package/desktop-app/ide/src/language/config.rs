@@ -32,6 +32,7 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
+    time::Instant,
 };
 
 /// rust-analyzer hears about file changes from the IDE instead of watching the project itself.
@@ -119,11 +120,22 @@ pub(super) enum Unavailable {
     ),
 }
 
+/// How many request timeouts a server may take to answer `initialize`.
+///
+/// helix-lsp sends `initialize` with the same timeout as every request, and a client whose
+/// `initialize` timed out can never be used: the late answer is discarded and helix-lsp does not
+/// ask again. A server that is merely slow to start, for example on a busy machine, would then
+/// stay failed until the next file is displayed. Chosen, not measured: three request timeouts
+/// keep a hung server reported as failed within a minute at Helix's default of 20 seconds.
+const START_FACTOR: u64 = 3;
+
 /// What the registry remembers about one server definition besides what Helix holds.
 struct Definition {
     /// Command as configured, before resolution and before the launch policy.
     command: String,
-    /// Seconds a request, including `initialize`, may take. `u64` is an unsigned 64-bit integer.
+    /// Seconds a request may take, as configured. `u64` is an unsigned 64-bit integer.
+    /// helix-lsp is given `START_FACTOR` times this, the start allowance, and the worker bounds
+    /// every request it sends by this value itself.
     timeout: u64,
     /// The launch the policy produced; absent for an unavailable server.
     launch: Option<ServerLaunch>,
@@ -188,6 +200,8 @@ fn locate(server: &str, command: &str, root: &Path) -> Result<PathBuf, Unavailab
 /// function build(root: string, setup: LanguageSetup): Built
 /// ```
 fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
+    // `Instant::now` reads the monotonic clock; the phases below are logged with their durations.
+    let started = Instant::now();
     // The built-in `languages.toml` of the pinned Helix revision, compiled into helix-loader.
     let defaults = helix_loader::config::default_lang_config();
     let merged = match &setup.extra_languages {
@@ -233,6 +247,7 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
         .filter(|spelling| return spelling.as_path() != root)
         .into_iter()
         .collect();
+    let decoded = started.elapsed();
     let mut unavailable: HashMap<String, Unavailable> = HashMap::new();
     let mut definitions: HashMap<String, Definition> = HashMap::new();
     // `iter_mut` walks the table handing out modifiable borrows of each definition.
@@ -274,7 +289,17 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
                 launch,
             },
         );
+        // What: `saturating_mul` multiplies and stops at the largest value instead of overflowing.
+        // Why: helix-lsp applies its timeout to `initialize` and to every request alike; it gets
+        //      the start allowance, and the worker applies the request timeout on its own.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // definition.timeout = definition.timeout * START_FACTOR;
+        // ```
+        definition.timeout = definition.timeout.saturating_mul(START_FACTOR);
     }
+    let located = started.elapsed();
     let mut configured: HashMap<String, Vec<String>> = HashMap::new();
     for language in configuration.language.iter_mut() {
         let mut names = Vec::new();
@@ -294,6 +319,22 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
             .retain(|features| return !unavailable.contains_key(&features.name));
     }
     let loader = Loader::new(configuration).context("Cannot build the language registry")?;
+    // What: `as_millis` gives whole milliseconds; `saturating_sub` cannot go below zero.
+    // Why: Building the registry resolves every server program on PATH and compiles every
+    //      language's patterns; the log shows which part a slow start spent its time in.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // log.debug({ definitions, unavailable, decodeMs, locateMs, loaderMs }, 'built the language registry');
+    // ```
+    tracing::debug!(
+        definitions = definitions.len(),
+        unavailable = unavailable.len(),
+        decode_ms = decoded.as_millis(),
+        locate_ms = located.saturating_sub(decoded).as_millis(),
+        loader_ms = started.elapsed().saturating_sub(located).as_millis(),
+        "built the language registry"
+    );
     // `Ok(...)` is the success variant of `Result`.
     return Ok(Built {
         loader,
@@ -339,12 +380,17 @@ impl Languages {
         return self.unavailable.get(server);
     }
 
-    /// Seconds a server may take to answer `initialize`; Helix's default when the server is unknown.
+    /// Seconds a request to the server may take; Helix's default when the server is unknown.
     pub(super) fn timeout(&self, server: &str) -> u64 {
         return self
             .definitions
             .get(server)
             .map_or(20, |definition| return definition.timeout);
+    }
+
+    /// Seconds a server may take to answer `initialize`: `START_FACTOR` request timeouts.
+    pub(super) fn start_timeout(&self, server: &str) -> u64 {
+        return self.timeout(server).saturating_mul(START_FACTOR);
     }
 
     /// The launch the policy produced for a server, when it is available.

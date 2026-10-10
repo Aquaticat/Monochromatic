@@ -2,8 +2,9 @@
 
 /// Conversion of each answer against the ticket's text.
 use super::convert::{definition_outcome, hover_outcome, references_outcome};
-/// The request types this module completes, and asking again for what a server still owes.
-use super::{Answer, Ask, Payload, Ticket, catch_up};
+/// The request types this module completes, asking again for what a server still owes, and
+/// the hint lines wanted now.
+use super::{Answer, Ask, Payload, Ticket, catch_up, hint_ask};
 /// Hint shaping.
 use crate::language::hints;
 /// Replies and their outcomes.
@@ -268,8 +269,9 @@ fn pulled(
 
 /// What: Store one server's hints for the displayed text, or send a superseded or timed-out
 ///       request again.
-/// Why: Hints are latest-value state: an answer for another revision is simply dropped, and so
-///      is its failure, because the reload that replaced the text asked afresh.
+/// Why: Hints are latest-value state: an answer for another revision, or for lines that are no
+///      longer wanted, is simply dropped, and so is its failure, because a later request asked
+///      afresh.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -291,6 +293,21 @@ fn hinted(
     else {
         return;
     };
+    // What: `hint_ask` names the lines wanted now; `Some(ticket.ask)` wraps this request's own
+    //       lines for the comparison.
+    // Why: Two requests for different windows of the same text can be in flight at once, and
+    //      the server may answer the older one last. Its answer, and its failure, belong to lines
+    //      the reader no longer shows; the request for the current lines settles them, so this
+    //      one is neither stored nor sent again, and what the server owes is left unchanged.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (!sameAsk(hintAsk(worker.session), ticket.ask)) return;
+    // ```
+    if hint_ask(&worker.session) != Some(ticket.ask) {
+        tracing::debug!(server = %ticket.server.name, first_line, last_line, "dropped inlay hints for lines that are no longer wanted");
+        return;
+    }
     match result {
         Ok(found) => {
             record(worker, &ticket, false);

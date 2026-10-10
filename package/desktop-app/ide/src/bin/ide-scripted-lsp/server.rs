@@ -5,7 +5,7 @@ use crate::document::{apply_change, line_at, offset_at};
 /// Framing, the report, and pending client replies.
 use crate::framing::{Wire, read_message};
 /// Settings of this run.
-use crate::script::{Hover, Init, Script};
+use crate::script::{Hover, Init, Script, Step, step_for};
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
 /// What: `HashMap` is a key-value table; `Arc` is a thread-safe shared pointer (siblings: `Rc`
@@ -16,7 +16,7 @@ use serde_json::{Value, json};
 /// ```ts
 /// const documents = new Map<string, string>();
 /// ```
-use std::{collections::HashMap, io, sync::Arc, thread, time::Duration};
+use std::{collections::HashMap, io, path::Path, sync::Arc, thread, time::Duration};
 
 /// What: The loop's own state. `String` owns its text (sibling: borrowed `&str`).
 /// Why: Only the main thread reads and edits documents, so no lock is needed for them.
@@ -36,8 +36,32 @@ struct Session {
     probed: bool,
     /// Number of hover requests seen.
     hovers: u64,
-    /// Whether the scripted stall already happened.
-    stalled: bool,
+    /// Number of inlay-hint requests seen.
+    inlay_hints: u64,
+    /// Number of pull-diagnostics requests seen.
+    pulls: u64,
+    /// What: The answer to a held-back hint request while it waits. `Option<Value>` is
+    ///       "a JSON answer, or nothing".
+    /// Why: It is written right after the next hint answer.
+    held_hint: Option<Value>,
+}
+
+/// What: Wait until a file exists, checking every 5 ms, for at most one minute. `&Path` lends
+///       the path (sibling: owned `PathBuf`).
+/// Why: The read loop holds `initialize` until the test allows the start; a test that never
+///      creates the file still ends, because the client's start deadline stops the server.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function waitFor(gate: string) { for (let i = 0; i < 12_000 && !existsSync(gate); i++) sleepSync(5); }
+/// ```
+fn wait_for(gate: &Path) {
+    for _ in 0..12_000 {
+        if gate.exists() {
+            return;
+        }
+        thread::sleep(Duration::from_millis(5));
+    }
 }
 
 /// Capabilities announced in the `initialize` answer.
@@ -81,24 +105,6 @@ impl Session {
         if let Err(error) = self.wire.send(message) {
             eprintln!("scripted language server cannot write: {error}");
         }
-    }
-
-    /// What: Sleep once, on the read loop itself, before the first message of the scripted
-    ///       method is handled. `&mut self` allows remembering that the stall happened.
-    /// Why: Unlike a delayed hover answer, which a helper thread sends late, this holds back
-    ///      everything: the message itself and all the client sends after it wait unread, so
-    ///      a request sent meanwhile can pass its timeout before the server reads it.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// stall(method: string) { if (!this.stalled && method === script.stallAt) { this.stalled = true; sleepSync(script.stall); } }
-    /// ```
-    fn stall(&mut self, method: &str) {
-        if self.stalled || self.script.stall == 0 || method != self.script.stall_at {
-            return;
-        }
-        self.stalled = true;
-        thread::sleep(Duration::from_millis(self.script.stall));
     }
 
     /// Record the server's copy of a document and, when configured, push diagnostics that quote it.
@@ -217,6 +223,10 @@ impl Session {
                     json!({ "id": id, "error": { "code": -32603, "message": "scripted initialize failure" } }),
                 ),
                 Init::Ok => {
+                    // A gated start waits for the test's file, for at most one minute.
+                    if let Some(gate) = &self.script.init_gate {
+                        wait_for(gate);
+                    }
                     // A slow start: the client must not send anything else in the meantime.
                     thread::sleep(Duration::from_millis(self.script.init_delay));
                     self.send(json!({ "id": id, "result": {
@@ -260,18 +270,17 @@ impl Session {
         } else if method == "textDocument/references" {
             self.send(json!({ "id": id, "error": { "code": -32603, "message": "scripted internal failure" } }));
         } else if method == "textDocument/inlayHint" {
-            self.send(json!({ "id": id, "result": [
-                {
-                    "position": { "line": 0, "character": 5 },
-                    "label": [{ "value": "part-a" }, { "value": "-part-b", "command": { "title": "x", "command": "scripted.command" } }],
-                    "kind": 1,
-                    "paddingLeft": true,
-                    "textEdits": [{ "range": { "start": { "line": 0, "character": 5 }, "end": { "line": 0, "character": 5 } }, "newText": ": T" }],
-                    "data": { "resolveMe": true },
-                },
-                { "position": { "line": 99, "character": 0 }, "label": "past-end" },
-            ] }));
+            self.inlay_hints += 1;
+            // `&self.script.hint_steps` lends the scripted list; the count picks this request's step.
+            let step = step_for(&self.script.hint_steps, self.inlay_hints);
+            // `&mut self.held_hint` lends the slot of a held-back answer, which `respond` fills or empties.
+            crate::inlay::respond(&self.wire, id, step, &mut self.held_hint);
         } else if method == "textDocument/diagnostic" {
+            self.pulls += 1;
+            // A scripted silence leaves this pull unanswered; the client's timeout decides.
+            if step_for(&self.script.pull_steps, self.pulls) == Step::Silent {
+                return;
+            }
             let text = self
                 .documents
                 .get(uri)
@@ -357,7 +366,9 @@ pub fn run(script: Script) -> io::Result<()> {
         documents: HashMap::new(),
         probed: false,
         hovers: 0,
-        stalled: false,
+        inlay_hints: 0,
+        pulls: 0,
+        held_hint: None,
     };
     // `lock()` on standard input returns a buffered reader this thread owns.
     let mut input = io::stdin().lock();
@@ -370,8 +381,6 @@ pub fn run(script: Script) -> io::Result<()> {
                 session
                     .wire
                     .record(json!({ "received": name, "id": id, "params": message["params"] }));
-                // The report shows the message as received before the scripted stall holds it back.
-                session.stall(name);
                 if id.is_null() {
                     session.notification(name, &message["params"]);
                 } else {

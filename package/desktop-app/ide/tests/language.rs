@@ -26,6 +26,10 @@ mod sync;
 #[path = "language/requests.rs"]
 mod requests;
 
+/// Hint answers for lines the reader no longer shows.
+#[path = "language/windows.rs"]
+mod windows;
+
 /// Hint and pull-diagnostics requests asked again after a timeout.
 #[path = "language/again.rs"]
 mod again;

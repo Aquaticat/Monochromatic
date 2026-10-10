@@ -1,25 +1,24 @@
 //! Requests the worker makes on its own, asked again: an inlay-hint or pull-diagnostics request
-//! the server leaves unanswered for its whole request timeout must not be the last one.
+//! the server leaves unanswered for its whole request timeout, or supersedes on every retry,
+//! must not be the last one.
 //!
-//! The scripted server's stall holds its read loop, so whatever the client sends meanwhile waits
-//! unread in the server's input. That is what a server process that stopped running for a
-//! while looks like to the client, and it needs no load on the machine to happen.
+//! The scripted server's request steps (`IDE_SCRIPTED_HINT_STEPS`, `IDE_SCRIPTED_PULL_STEPS`)
+//! name exactly which request is left unanswered or superseded, and every other request is
+//! answered at once. So the client's reaction does not depend on how busy the machine is: a
+//! further timeout would need a stall of a whole request timeout, every time.
 
-use crate::support::{self, Probe};
+use crate::support::{self, PRODUCT_TIMEOUT, Probe};
 use ide_app::language::{
     hints::HintWindow,
     reply::{RequestKind, RequestOutcome},
 };
+use serde_json::Value;
 use std::{path::Path, time::Instant};
 
-/// Request timeout of the scripted server in these tests, in seconds.
-const TIMEOUT: u64 = 1;
-
-/// One and a half request timeouts: the first request times out, the one sent again is answered.
-const STALL: &str = "1500";
-
-/// Longer than the first request and its three retries together, which end after four timeouts.
-const LONG_STALL: &str = "4600";
+/// Request timeout of the scripted server in the tests where a request must time out, in
+/// seconds. The silent request takes this long to fail; the request sent again is answered at
+/// once, so it fails only if a stall of this length hits it, and the two after it.
+const TIMEOUT: u64 = 5;
 
 /// The visible lines every test reports.
 const WINDOW: HintWindow = HintWindow {
@@ -31,12 +30,19 @@ const WINDOW: HintWindow = HintWindow {
 const BEFORE: &str = "plain text line\nsecond\n";
 const AFTER: &str = "longer plain text line\nsecond\nthird\n";
 
-/// How many `textDocument/inlayHint` requests the server received so far.
-fn hint_requests(root: &Path) -> usize {
-    return support::received(&support::report(root))
+/// The answer to the first hint request is fine; the one after the reload and its three retries
+/// are superseded, and the last of them is followed by a notification.
+const SUPERSEDED_WITH_NOTIFICATION: &str = "answer,modified,modified,modified,modified-notify";
+
+/// As `SUPERSEDED_WITH_NOTIFICATION`, without the notification.
+const SUPERSEDED: &str = "answer,modified,modified,modified,modified";
+
+/// The `textDocument/inlayHint` requests the server received so far.
+fn hint_requests(lines: &[Value]) -> Vec<&Value> {
+    return lines
         .iter()
-        .filter(|method| return method.as_str() == "textDocument/inlayHint")
-        .count();
+        .filter(|line| return line["received"] == "textDocument/inlayHint")
+        .collect();
 }
 
 /// Display `BEFORE`, report the window, and wait for the hints of that text.
@@ -54,14 +60,10 @@ fn display_with_hints(probe: &mut Probe, root: &Path) {
     });
 }
 
-/// Reload to `AFTER` and wait for hints of the new text. Every snapshot handed out after the
-/// reload must describe the new text; `what` names the wait in a failure.
-fn reload_and_wait_for_hints(probe: &mut Probe, what: &str) {
-    probe.reload(AFTER);
+/// Wait for hints of the reloaded text. Every snapshot handed out after the reload must describe
+/// the new text; `what` names the wait in a failure.
+fn wait_for_reloaded_hints(probe: &mut Probe, what: &str) {
     let stamp = probe.stamp();
-    // Forget the snapshot of the previous text, so anything seen from here on was handed out
-    // after the reload.
-    probe.hints = None;
     probe.until(what, |seen| {
         let Some(hints) = seen.hints.as_ref() else {
             return false;
@@ -78,6 +80,13 @@ fn reload_and_wait_for_hints(probe: &mut Probe, what: &str) {
     assert_eq!(hints.hints.len(), 1);
 }
 
+/// Reload to `AFTER` and forget the snapshot of the previous text, so anything seen from here
+/// on was handed out after the reload.
+fn reload(probe: &mut Probe) {
+    probe.reload(AFTER);
+    probe.hints = None;
+}
+
 /// The first hint request of a displayed file times out; the hints still arrive.
 #[test]
 fn hints_are_asked_again_when_the_first_request_times_out() {
@@ -88,11 +97,7 @@ fn hints_are_asked_again_when_the_first_request_times_out() {
         );
         return;
     };
-    let definitions = support::scripted(
-        &root,
-        &[("STALL_AT", "textDocument/inlayHint"), ("STALL_MS", STALL)],
-        TIMEOUT,
-    );
+    let definitions = support::scripted(&root, &[("HINT_STEPS", "silent")], TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), BEFORE);
     probe.until_ready();
@@ -114,9 +119,9 @@ fn hints_are_asked_again_when_the_first_request_times_out() {
     assert_eq!((hints.first_line, hints.last_line), (0, 3));
     // A request is sent again only after a whole request timeout passed without an answer.
     let allowed = 1 + usize::try_from(asked.elapsed().as_secs() / TIMEOUT).expect("small count");
-    let requests = hint_requests(&root);
+    let requests = hint_requests(&support::report(&root)).len();
     assert!(
-        (1..=allowed).contains(&requests),
+        (2..=allowed).contains(&requests),
         "{requests} hint requests were sent where at most {allowed} can follow from timeouts"
     );
 }
@@ -131,23 +136,20 @@ fn hints_are_asked_again_after_a_reload_when_the_request_times_out() {
         );
         return;
     };
-    let definitions = support::scripted(
-        &root,
-        &[("STALL_AT", "textDocument/didChange"), ("STALL_MS", STALL)],
-        TIMEOUT,
-    );
+    let definitions = support::scripted(&root, &[("HINT_STEPS", "answer,silent")], TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     display_with_hints(&mut probe, &root);
     let reloaded = Instant::now();
-    reload_and_wait_for_hints(
+    reload(&mut probe);
+    wait_for_reloaded_hints(
         &mut probe,
         "hints for the reloaded text after the request timed out",
     );
     // One request for the first text, one for the new text, and one more per elapsed timeout.
     let allowed = 2 + usize::try_from(reloaded.elapsed().as_secs() / TIMEOUT).expect("small count");
-    let requests = hint_requests(&root);
+    let requests = hint_requests(&support::report(&root)).len();
     assert!(
-        (2..=allowed).contains(&requests),
+        (3..=allowed).contains(&requests),
         "{requests} hint requests were sent where at most {allowed} can follow from timeouts"
     );
 }
@@ -167,8 +169,7 @@ fn pulled_diagnostics_are_asked_again_after_a_reload_when_the_request_times_out(
         &[
             ("PULL", "1"),
             ("PUSH", "0"),
-            ("STALL_AT", "textDocument/didChange"),
-            ("STALL_MS", STALL),
+            ("PULL_STEPS", "answer,silent"),
         ],
         TIMEOUT,
     );
@@ -191,82 +192,79 @@ fn pulled_diagnostics_are_asked_again_after_a_reload_when_the_request_times_out(
     );
 }
 
-/// Every retry times out during a long stall; the server's next notification makes the worker
-/// ask once more.
+/// The request after a reload is superseded, and so is every retry; the notification the server
+/// sends after the last one makes the worker ask once more.
 #[test]
-fn hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_timed_out() {
+fn hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_was_superseded() {
     let Some(root) = support::child_root() else {
         support::run_child(
-            "again::hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_timed_out",
+            "again::hints_are_asked_again_when_the_server_sends_a_notification_after_every_retry_was_superseded",
             support::standard,
         );
         return;
     };
-    // The server pushes diagnostics for the change as soon as its stall ends.
     let definitions = support::scripted(
         &root,
-        &[
-            ("STALL_AT", "textDocument/didChange"),
-            ("STALL_MS", LONG_STALL),
-        ],
-        TIMEOUT,
+        &[("HINT_STEPS", SUPERSEDED_WITH_NOTIFICATION)],
+        PRODUCT_TIMEOUT,
     );
     let mut probe = Probe::new(&root, definitions);
     display_with_hints(&mut probe, &root);
-    reload_and_wait_for_hints(
+    reload(&mut probe);
+    wait_for_reloaded_hints(
         &mut probe,
-        "hints for the reloaded text after the server's notification followed the timed-out retries",
+        "hints for the reloaded text after the server's notification followed the superseded retries",
     );
+    // The first text, the request after the reload, three retries, and the one catch-up ask.
+    assert_eq!(hint_requests(&support::report(&root)).len(), 6);
 }
 
-/// Every retry times out during a long stall and the server pushes nothing; its answer to a
-/// later hover request makes the worker ask once more.
+/// The request after a reload is superseded, and so is every retry, and the server pushes
+/// nothing; its answer to a later hover request makes the worker ask once more.
 #[test]
-fn hints_are_asked_again_when_the_server_answers_another_request_after_every_retry_timed_out() {
+fn hints_are_asked_again_when_the_server_answers_another_request_after_every_retry_was_superseded()
+{
     let Some(root) = support::child_root() else {
         support::run_child(
-            "again::hints_are_asked_again_when_the_server_answers_another_request_after_every_retry_timed_out",
+            "again::hints_are_asked_again_when_the_server_answers_another_request_after_every_retry_was_superseded",
             support::standard,
         );
         return;
     };
     let definitions = support::scripted(
         &root,
-        &[
-            ("PUSH", "0"),
-            ("STALL_AT", "textDocument/didChange"),
-            ("STALL_MS", LONG_STALL),
-        ],
-        TIMEOUT,
+        &[("PUSH", "0"), ("HINT_STEPS", SUPERSEDED)],
+        PRODUCT_TIMEOUT,
     );
     let mut probe = Probe::new(&root, definitions);
     display_with_hints(&mut probe, &root);
-    probe.reload(AFTER);
-    let stamp = probe.stamp();
-    probe.hints = None;
-    // When the stall ends the server reads the request sent with the change and its three
-    // retries, which the client had all given up. Wait until it has read them, so the hover
-    // answer is the first thing the worker hears from it. Hints seen this early mean a retry
-    // was still waiting when the stall ended, which only a delayed worker thread produces.
-    probe.until("the server to read every timed-out hint request", |seen| {
-        return seen.hints.is_some() || hint_requests(&root) >= 5;
+    reload(&mut probe);
+    // Wait until the server wrote its answer to the last retry. The hover is sent after that,
+    // so its answer follows on the stream, and the worker has given up asking by then.
+    support::report_until(&root, "the answer to the last retry", |seen| {
+        let requests = hint_requests(seen);
+        // `get(4)` is the fifth request: the request after the reload plus three retries.
+        let Some(last) = requests.get(4) else {
+            return false;
+        };
+        return seen
+            .iter()
+            .any(|line| return line["sent"]["id"] == last["id"]);
     });
+    // Nothing but the hover can make the worker ask again now: the server sends no other message.
+    probe.poll();
+    assert!(
+        probe.hints.is_none(),
+        "hints arrived although every request for the reloaded text was superseded"
+    );
     let number = probe.request(RequestKind::Hover, 3);
     assert!(matches!(
         probe.answers(number)[0].outcome,
         RequestOutcome::Hover(_)
     ));
-    probe.until(
-        "hints for the reloaded text after the server's hover answer followed the timed-out retries",
-        |seen| {
-            let Some(hints) = seen.hints.as_ref() else {
-                return false;
-            };
-            assert_eq!(
-                hints.stamp, stamp,
-                "a hint snapshot for other text was handed out after the reload"
-            );
-            return true;
-        },
+    wait_for_reloaded_hints(
+        &mut probe,
+        "hints for the reloaded text after the server's hover answer followed the superseded retries",
     );
+    assert_eq!(hint_requests(&support::report(&root)).len(), 6);
 }

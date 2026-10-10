@@ -33,7 +33,7 @@ use helix_lsp::Client;
 /// ```
 use std::{sync::Arc, time::Duration};
 
-/// Seconds added to a server's request timeout before its start is declared failed.
+/// Seconds added to a server's start allowance before its start is declared failed.
 const START_MARGIN: u64 = 2;
 
 /// Translate a root refusal into the state shown for a server.
@@ -79,7 +79,7 @@ async fn adopt(worker: &mut Worker, name: String, client: Arc<Client>, view: &Ro
                 // `Owed::default()` builds the empty record: nothing was asked yet.
                 owed: Owed::default(),
             });
-            let seconds = worker.languages.timeout(client.name()) + START_MARGIN;
+            let seconds = worker.languages.start_timeout(client.name()) + START_MARGIN;
             worker.timer(
                 Duration::from_secs(seconds),
                 Internal::StartDeadline(client.id()),

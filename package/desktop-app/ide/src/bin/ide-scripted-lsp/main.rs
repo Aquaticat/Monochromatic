@@ -11,6 +11,8 @@ mod audit;
 mod document;
 /// Message framing on standard input and output, plus the report file.
 mod framing;
+/// The inlay-hint answer and its optional delay.
+mod inlay;
 /// Requests this server sends to the client, to check the client's replies.
 mod probe;
 /// Environment-variable settings.

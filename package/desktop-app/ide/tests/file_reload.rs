@@ -1,5 +1,8 @@
 //! External file updates are prepared in disposable fixtures and applied to current reading state.
 
+/// Disposable fixture directories, in memory when the system has one.
+mod memory_fixture;
+
 /// Application consumers share the same read/diff and bounded worker APIs.
 use ide_app::{
     document::{Document, ReadingPosition},
@@ -8,6 +11,14 @@ use ide_app::{
 };
 /// Bound worker waits instead of hanging an unattended regression run.
 use std::time::{Duration, Instant};
+
+/// Longest wait for one reply: a hang detector, not a latency budget, and the same bound as
+/// `OPEN_PATIENCE` in `tests/file_open.rs` and the Language tests' `PATIENCE`. Before its first
+/// reply the worker builds the syntax engine, processor work that takes far longer when the
+/// machine is busy: the reload worker was seen waiting 6 s for a processor while it ran for
+/// 0.2 s, and with a quarter processor 1 of 300 suite runs passed the 3 s bound this replaces.
+/// No product bound exists for a reload.
+const REPLY_PATIENCE: Duration = Duration::from_secs(20);
 
 /// Wait for a single test reply while retaining an explicit failure deadline.
 fn reply(worker: &mut ReloadWorker) -> ReloadReply {
@@ -24,8 +35,8 @@ fn reply(worker: &mut ReloadWorker) -> ReloadReply {
             return response;
         }
         assert!(
-            start.elapsed() < Duration::from_secs(3),
-            "source worker did not reply"
+            start.elapsed() < REPLY_PATIENCE,
+            "source worker did not reply within {REPLY_PATIENCE:?}"
         );
         std::thread::sleep(Duration::from_millis(2));
     }
@@ -34,7 +45,7 @@ fn reply(worker: &mut ReloadWorker) -> ReloadReply {
 /// A byte-identical read produces no new revision or diff to apply.
 #[test]
 fn unchanged_disk_source_has_no_reload() {
-    let fixture = tempfile::tempdir().expect("disposable source directory");
+    let fixture = memory_fixture::directory("ide-file-reload-");
     let path = fixture.path().join("source.txt");
     std::fs::write(&path, "a\r\n猫").expect("write fixture source");
     let document = Document::new("a\r\n猫");
@@ -49,7 +60,7 @@ fn unchanged_disk_source_has_no_reload() {
 /// An external replacement follows the selected region rather than a later literal match.
 #[test]
 fn disk_replacement_preserves_corresponding_selection() {
-    let fixture = tempfile::tempdir().expect("disposable source directory");
+    let fixture = memory_fixture::directory("ide-file-reload-");
     let path = fixture.path().join("source.txt");
     std::fs::write(&path, "I was a big cat, but now I am a human!")
         .expect("external fixture update");
@@ -69,7 +80,7 @@ fn disk_replacement_preserves_corresponding_selection() {
 /// Read errors retain the caller's source instead of installing empty or lossy text.
 #[test]
 fn absent_non_regular_and_non_utf8_sources_fail_without_mutating_document() {
-    let fixture = tempfile::tempdir().expect("disposable source directory");
+    let fixture = memory_fixture::directory("ide-file-reload-");
     let path = fixture.path().join("source.txt");
     let document = Document::new("retained source");
     assert!(read_reload(&document, &path).is_err());
@@ -82,7 +93,7 @@ fn absent_non_regular_and_non_utf8_sources_fail_without_mutating_document() {
 /// A second request cannot accumulate while the previous response remains unread.
 #[test]
 fn worker_bounds_requests_and_maps_the_latest_caret() {
-    let fixture = tempfile::tempdir().expect("disposable source directory");
+    let fixture = memory_fixture::directory("ide-file-reload-");
     let path = fixture.path().join("source.txt");
     std::fs::write(&path, "I was a big cat.").expect("external fixture update");
     let mut document = Document::new("I am a big cat.");
@@ -137,7 +148,7 @@ fn worker_bounds_requests_and_maps_the_latest_caret() {
 /// Failed reads do not terminate the worker or prevent a later successful poll.
 #[test]
 fn worker_recovers_after_source_reappears() {
-    let fixture = tempfile::tempdir().expect("disposable source directory");
+    let fixture = memory_fixture::directory("ide-file-reload-");
     let path = fixture.path().join("source.txt");
     let document = Document::new("same source");
     let mut worker = ReloadWorker::new().expect("start source worker");
@@ -173,7 +184,7 @@ fn worker_recovers_after_source_reappears() {
 /// Initial and changed syntax describe the exact source revision; unchanged accepted syntax is not reparsed.
 #[test]
 fn worker_classifies_initial_and_changed_source_revisions() {
-    let fixture = tempfile::tempdir().expect("disposable source directory");
+    let fixture = memory_fixture::directory("ide-file-reload-");
     let path = fixture.path().join("source.rs");
     std::fs::write(&path, "fn main() {}\n").expect("initial Rust source");
     let mut document = Document::new("fn main() {}\n");
@@ -247,7 +258,7 @@ fn worker_classifies_initial_and_changed_source_revisions() {
 /// Closing a worker with an unread job/reply joins it without a channel deadlock.
 #[test]
 fn worker_shutdown_does_not_require_consuming_the_last_reply() {
-    let fixture = tempfile::tempdir().expect("disposable source directory");
+    let fixture = memory_fixture::directory("ide-file-reload-");
     let path = fixture.path().join("source.txt");
     std::fs::write(&path, "changed source").expect("write fixture");
     let mut worker = ReloadWorker::new().expect("start source worker");
