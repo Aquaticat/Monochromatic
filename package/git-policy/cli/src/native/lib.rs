@@ -493,6 +493,9 @@ pub mod replay_subsumption;
 /// Replay: capture-order history and the per-path decisions from the transaction's and landed records (`replay_capture_history`).
 pub mod replay_capture_history;
 
+/// Replay: the merge tree, the first conflicting landed commit, and the replayed commit rebuild (`replay_merge`).
+pub mod replay_merge;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
