@@ -919,7 +919,15 @@ The three timeouts were rerun alone, as the rule for timeouts requires:
   The `projected_scope` mutant (`Ok(vec![])`) timed out again at the 90-second test limit.
   Applied by hand on the host, it fails 28 lib tests in 10.6 seconds and 12 binary tests in 12.6 seconds,
   so the suite detects it; the timeout is the container's test phase.
-  It stays an open timeout in the campaign record, and the owner decides how to classify it.
+  Rerun with a 300-second per-mutant test limit, on the same gate image (evidence `native-mutation-ClAzBS`):
+  the runner was edited in the working tree for this one run to pass `--timeout 300` and `--re projected_scope`
+  (the committed runner still passes `--timeout 90` and no `--re`), and it was restored with `git checkout` afterwards.
+  The run ran through `node ~/temp/agent/gate-slot.ts` with the runner command
+  `mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/candidate_prediction.rs'`.
+  Result: 2 mutants, 1 caught (`replace projected_scope -> ... with Ok(vec![])`, listed in `mutants.out/caught.txt`), 1 unviable,
+  0 timeouts, 0 missed; the baseline took 47 seconds to test.
+  Its verdict is caught by cargo-mutants itself, so the timeout is closed.
+  The hand evidence above (28 lib tests and 12 binary tests failing, in 10.6 and 12.6 seconds) shows the same detection.
 
 The mutant is `policy_dependent_version.rs:255:66`: `!=` replaced by `==` in the filter that builds `listed`.
 `listed` reaches the tracked listing only through `LifecycleWorkspace` (`dependent_version_lifecycle.rs:87`),
