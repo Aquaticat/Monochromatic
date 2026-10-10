@@ -469,6 +469,9 @@ pub mod replay_reverse_apply;
 /// Replay: the one-sided extension of subsumption over zero-context hunks (`replay_containment`).
 pub mod replay_containment;
 
+/// Replay: raw commit objects as bytes, the unsigned rewrite and signed-rebuild inputs (`replay_object`).
+pub mod replay_object;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
