@@ -532,3 +532,15 @@ pub mod index_writer_forward;
 /// The real index.lock a landing creates,
 ///  identifies and releases only while it is the same file.
 pub mod real_index_lock;
+
+/// The per-branch push coordination file name: a reversible, flat, case-safe key.
+pub mod auto_push_branch_key;
+
+/// The per-branch `last-pushed` record: validation, tolerant reads and atomic publication.
+pub mod auto_push_record;
+
+/// Single-flight push coordination per branch: owner lock, record joins and the push itself.
+pub mod auto_push_single_flight;
+
+/// Post-commit auto-push of a landed commit: the push argv, the surfaced output and the failure reporting.
+pub mod auto_push;
