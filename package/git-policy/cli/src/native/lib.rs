@@ -496,6 +496,9 @@ pub mod replay_capture_history;
 /// Replay: the merge tree, the first conflicting landed commit, and the replayed commit rebuild (`replay_merge`).
 pub mod replay_merge;
 
+/// Replay: the replayed index, the shadow HEAD move, and the pre-commit re-run decision of revalidation (`replay_revalidation`).
+pub mod replay_revalidation;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
