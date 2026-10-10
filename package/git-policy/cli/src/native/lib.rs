@@ -499,6 +499,9 @@ pub mod replay_merge;
 /// Replay: the replayed index, the shadow HEAD move, and the pre-commit re-run decision of revalidation (`replay_revalidation`).
 pub mod replay_revalidation;
 
+/// Replay: one replay of a prepared commit onto a moved target, the integrator's replay result (`replay_commit`).
+pub mod replay_commit;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
