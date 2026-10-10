@@ -12,6 +12,27 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
+## Handoff: the design is in production (2026-10-10)
+
+Purpose:
+tell the next session that design rounds are closed and the accepted design is being implemented,
+and where the live state is kept.
+This section is newer than every section below it.
+
+The human closed the design rounds (D102 keyboard map accepted, D103 Search closed, D104 cover picker, D105 trash)
+and then said to go to production on Android first and desktop second, with finished products on both by the end of the session.
+The live record is `doc/planning/music-player-production-implementation.md`:
+its Log lists what landed, what was verified how, and the known gaps.
+Work happens in the worktree branch `feat/music-player-production` and each verified package is fast-forwarded into `main`.
+
+What is verified and what is not, as of this entry:
+Android unit tests, detekt and the debug APK pass for every landed piece, and native emulator captures of the player,
+the folder picker, Search, Settings and the template editor match the design.
+The trash flows, the file manager intent, the clipboard, the popup position, hardware-keyboard focus and the native library
+on a device have not been exercised.
+The desktop app has the same logic ported and tested (521 tests, clippy clean) and a new window composed from Slint components;
+the real window has not been run against a library, and its engine does not yet send per-track length, peak or sweep progress.
+
 ## Handoff: Settings withdrawn, template editor round open (2026-10-05)
 
 Purpose:
