@@ -543,3 +543,7 @@ and the frames under `package/desktop-app/ide/design/screenshots/2026-10-06-ui-b
 - For the open soft-wrap decisions (the gutter indicator, where lines break, continuation indent,
   Home, End, Up, Down, and caret placement at a wrap), the IDE follows what JetBrains IntelliJ IDEA Community does,
   read from its source (the user's answer of 2026-10-10: "go with what JetBrains does. IDEA is OSS").
+- Choppy scrolling is a defect to fix, not a symptom of host load:
+  the user said that even under extreme host load choppiness is not excusable (2026-10-10).
+  A scroll step must therefore not depend on UI-thread CPU work that can miss a frame;
+  measurements under load count as evidence against the app, not as noise to wait out.
