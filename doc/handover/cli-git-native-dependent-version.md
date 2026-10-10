@@ -21,7 +21,7 @@ What to inspect:
   in section "Wiring into the native executable";
 - the mutation evidence,
   where two timeouts were caught on their one rerun
-  and one mutant survives on the wired code,
+  and the one mutant that the first run missed is killed on the final commit,
   in section "Mutation of the wired code";
 - the intentional differences, each with its reason,
   in section "Intentional differences";
@@ -798,26 +798,13 @@ the planner selects paths itself.
 In this repository that is 11,443 paths per planning run,
 and planning starts only for a commit that modifies a workspace manifest.
 
-### How to close the surviving mutant of the wired filter
+### How the surviving mutant was closed
 
-The mutant is `policy_dependent_version.rs:255:66` (section "The surviving mutant").
-Options, best first:
-
-- Keep the filter, record that no reachable input has a `Deleted` candidate, and accept the survivor in this document.
-  Pro: the code states the contract, and nothing changes.
-  Con: the campaign reports one missed mutant until a reachable deletion is shown or the owner accepts the survivor.
-- Partition the candidates by change into two lists, and require only the non-deleted list in the listing.
-  Pro: the mutated expression disappears without a behavior change.
-  Con: it adds structure for a case no probe reaches.
-- Drop the filter and require every candidate in the listing.
-  Pro: the simplest code.
-  Con: a `Deleted` candidate that a correct listing lacks would refuse the plan,
-  so the behavior would change once one is reachable.
-
-Ranking: keep > partition > drop,
-because keeping the contract costs nothing today,
-partition removes the survivor only by reshaping code for an unreachable case,
-and dropping the filter is wrong the moment a deletion candidate arrives.
+Decided by the coordinator on 2026-10-10: the gate accepts a mutant that is caught or justified as impossible to catch.
+This mutant is caught by the literal-pathspec control (section "The surviving mutant, now killed").
+The equivalent-mutant reasoning that would justify keeping it uncaught
+holds only after the candidate-layer fix described there,
+so the control is the answer for now.
 
 ## Wiring into the native executable
 
@@ -890,13 +877,16 @@ so a difference in bytes would be seen.
 ### Gate on the final commit
 
 `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli:native:test:container`
-on `ff6162190`, image `localhost/git-policy-native-test:dependent-version`,
-evidence `package/git-policy/cli/target/verification/native-wqRmpp`:
+on `d0a65058b6`, image `localhost/git-policy-native-test:dependent-version`,
+evidence `package/git-policy/cli/target/verification/native-vBmFHL` (`passed.json`: tests and Clippy true):
 
 - 680 unit tests passed, 1 ignored (`corpus_from_environment`, which only the driver runs);
-- 43 binary-level tests passed;
+- 44 binary-level tests passed;
 - 1 consumer test passed;
-- Clippy with warnings denied passed (`passed.json`: tests and clippy true).
+- Clippy with warnings denied passed.
+
+The same gate on `ff6162190` (before the merge of `main` at `9ece20bd66`) is evidence `native-wqRmpp`:
+680 unit, 43 binary, 1 consumer, Clippy passed.
 
 ### Mutation of the wired code
 
@@ -913,26 +903,56 @@ on the gate image of `8c82803a1`, evidence `package/git-policy/cli/target/verifi
 Rerun of the files with the timeouts, and of the file with the missed mutant, on the gate image of `ff6162190`
 (evidence `native-mutation-GkjgYs`):
 47 mutants, 33 caught, 13 unviable, 0 timeouts, 1 missed.
-Both timeouts were caught on the one rerun; the missed mutant survives both runs.
+Both timeouts were caught on the one rerun; the missed mutant survived both runs and is killed on the final commit
+(section "The surviving mutant, now killed").
 
-#### The surviving mutant
+#### The surviving mutant, now killed
 
-The filter at `policy_dependent_version.rs:255` keeps every candidate that is not `Deleted`,
-and the result is the list the tracked listing must hold (`dependent_version_lifecycle.rs`, `index()`).
-The mutant keeps only `Deleted` candidates.
-A `Deleted` candidate is absent from the private index, so the mutant would refuse with `UNLISTED`
-in that case, and with no `Deleted` candidate it checks nothing.
-Every probe reached the planner without a `Deleted` candidate:
-`check --all` with a staged deletion, `check --all` with a worktree deletion,
-`check` over a pathspec naming a deleted file (`git add` refuses it),
-and `ContentState::version` over `:/` in a disposable repository with a staged deletion.
-Each listed only `Modified` entries.
-`candidate_stage.rs` keeps a deletion only when the baseline lists one;
-no probe reached that branch.
-Until a reachable `Deleted` candidate is shown, the mutant changes no result of the direct commands,
-and no binary-level control can kill it.
-The campaigns that ran before the wiring ended with zero missed mutants;
-this one does not, and how to close it is open (section "How to close the surviving mutant of the wired filter").
+The mutant is `policy_dependent_version.rs:255:66`: `!=` replaced by `==` in the filter that builds `listed`.
+`listed` is the set of candidate paths that the tracked listing must hold
+(`dependent_version_lifecycle.rs:181`, the loop in `index()` that refuses with `UNLISTED`).
+The mutant keeps only `Deleted` candidates, so it changes the outcome only when a candidate is missing from the listing.
+
+Producers of the candidate list, traced in the code:
+
+- A direct check or fix builds `CandidateRequest::Direct` at `management.rs:445`.
+  `prepare_candidates` (`candidate_prediction.rs:480`) stages the selected paths with `projected_scope`
+  (`candidate_prediction.rs:385`) and keeps `scope_candidates` (`candidate_stage.rs:482`).
+  That function takes the entries of `ls-files --stage -- <pathspecs>` and assigns only `Added` or `Modified`.
+  A deleted path has no stage entry, so no direct request yields a `Deleted` candidate.
+- A forwarded `git add` builds `CandidateRequest::Add` at `wrapped_command.rs:297`.
+  Its records come from `delta_candidates` (`candidate_stage.rs:416`), which can yield `Deleted`,
+  but `check_dependent_version` returns before reading any candidate for `Trigger::PreForward`
+  (`policy_dependent_version.rs:228`).
+  `policy_trigger.rs:131` lists that trigger for this policy, with `DirectCheck` and `DirectFix`.
+- A `git commit` cannot reach the planner:
+  the commit transaction is unported (section "Wiring into the native executable").
+
+So for every trigger that reaches the filter, no candidate is `Deleted`.
+The correct filter then lists every candidate, the mutant lists none, and the two differ only in the `UNLISTED` refusal.
+
+That refusal fires when the listing misses a candidate. The candidate paths come from `ls-files --stage -- <pathspecs>`
+(`candidate_store.rs:407`), and the listing reads `ls-files --stage -- :/` from the same private index
+(`dependent_version_lifecycle.rs:166`), so every candidate is listed, unless pathspec magic is off.
+The direct store does not add `--no-literal-pathspecs`, unlike the `add` store (`candidate_prediction.rs:465`).
+Under `GIT_LITERAL_PATHSPECS=1`, `:/` matches nothing, and the refusal fires.
+
+Control `literal_pathspecs_refuse_a_direct_check_until_the_listing_honours_them` (binary, commit `d0a65058b6`) runs
+`git cli-git check -- package/module/a/package.json` with that variable set.
+The correct code exits 2 with `content-unavailable`; the mutant reports the dependent as stale.
+Applied by hand to the committed tree, the control failed, and after `git checkout` of the file it passed.
+Single-file campaign on the gate image of `d0a65058b6` (evidence `native-mutation-7MbluT`):
+13 mutants, 5 caught, 8 unviable, 0 missed.
+
+Defect found on the way, not fixed here: a legitimate `check -- <path>` under `GIT_LITERAL_PATHSPECS=1`
+refuses with `content-unavailable` instead of reporting the dependents.
+The fix belongs to the candidate layer:
+the direct store should list with `--no-literal-pathspecs`, as the `add` store does,
+or the listing should avoid pathspec magic.
+After such a fix the refusal cannot fire, the mutant becomes equivalent again, and the control must be retargeted.
+Under `GIT_LITERAL_PATHSPECS=1`, `check --all` fails sooner with `transaction-failed`
+(`git add failed: pathspec ':/' did not match`),
+which is existing candidate-layer behavior and was not changed.
 
 ### Fuzz smoke on the final commit
 
@@ -1083,4 +1103,8 @@ On `feat/cli-git-native-dependent-version`, oldest first, first parent only:
 - `f41098875` the merge of `main` at `c3a4fd284`, without conflicts.
 - `8c82803a1` the `git add` binary control.
 - `ff6162190` the staged-deletion binary control.
+- `e5a7b608e7` the merge of `main` at `9ece20bd66`, with six conflicts resolved
+  (doc-comment reflow, the wiring replacing the dependent-version refusal, and the candidate-tree declaration kept).
+- `5e3a2f7158` the handover cleanup: the dependent-version refusal is gone from two handover documents.
+- `d0a65058b6` the literal-pathspec control that kills the surviving mutant.
 - The commit that adds the section "Wiring into the native executable" and this paragraph.
