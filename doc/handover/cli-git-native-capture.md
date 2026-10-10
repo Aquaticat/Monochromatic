@@ -201,5 +201,5 @@ The gate itself passed its library tests under the same image.
 
 To rerun when the host is idle:
 `systemd-run --user --unit=<name> --collect --property=MemoryMax=12G --working-directory=<worktree>`
-`node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/<file>.rs ...`
+`node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture`
 with the ten files listed above. The mutation run has not produced any caught, missed, unviable or timed-out result yet.
