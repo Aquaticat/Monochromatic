@@ -9,15 +9,20 @@ in the native wrapper:
 the release task will call `git cli-git fix`,
 and the TypeScript planning code under `package/git-policy/repository/src` is deleted at cutover
 (`doc/planning/cli-git-rust-open-decisions.md`, section "TypeScript utilities beside the wrapper").
-This branch builds the planner and the equivalence evidence.
-It does not wire the planner into the policy engine;
-section "What the wiring step needs" lists what that later step must do.
+This branch builds the planner and the equivalence evidence,
+then wires it into the native executable for `git add`, `git cli-git check` and `git cli-git fix`
+(section "Wiring into the native executable").
+Section "What the wiring step needed" is the list the wiring was written against.
 
 What to inspect:
 
+- the wiring, the removed refusal and its guard proof,
+  and the release-task differential,
+  in section "Wiring into the native executable";
 - the mutation evidence,
-  where one timeout of the final campaign was caught on its one rerun,
-  in section "Mutation";
+  where two timeouts were caught on their one rerun
+  and one mutant survives on the wired code,
+  in section "Mutation of the wired code";
 - the intentional differences, each with its reason,
   in section "Intentional differences";
 - the choices open to veto,
@@ -793,7 +798,153 @@ the planner selects paths itself.
 In this repository that is 11,443 paths per planning run,
 and planning starts only for a commit that modifies a workspace manifest.
 
-## What the wiring step needs
+### How to close the surviving mutant of the wired filter
+
+The mutant is `policy_dependent_version.rs:255:66` (section "The surviving mutant").
+Options, best first:
+
+- Keep the filter, record that no reachable input has a `Deleted` candidate, and accept the survivor in this document.
+  Pro: the code states the contract, and nothing changes.
+  Con: the campaign reports one missed mutant until a reachable deletion is shown or the owner accepts the survivor.
+- Partition the candidates by change into two lists, and require only the non-deleted list in the listing.
+  Pro: the mutated expression disappears without a behavior change.
+  Con: it adds structure for a case no probe reaches.
+- Drop the filter and require every candidate in the listing.
+  Pro: the simplest code.
+  Con: a `Deleted` candidate that a correct listing lacks would refuse the plan,
+  so the behavior would change once one is reachable.
+
+Ranking: keep > partition > drop,
+because keeping the contract costs nothing today,
+partition removes the survivor only by reshaping code for an unreachable case,
+and dropping the filter is wrong the moment a deletion candidate arrives.
+
+## Wiring into the native executable
+
+The planner is wired into `policy_checks::ShippedChecks` for `git add`, `git cli-git check` and `git cli-git fix`.
+Commits `0186be5bc`, `c49201e47` and `cd344723a` added the arm and its first controls.
+Merge `f41098875` brought in the current `main`, with its content policies and candidate layers, without conflicts.
+Commits `8c82803a1` and `ff6162190` added the binary-level controls for `git add` and for a staged deletion.
+
+### The refusal is gone
+
+`ShippedChecks::check` sends `PolicyId::DependentVersionBump` to `check_dependent_version`.
+The only policy still answered by `unported_content` is `markdown/autofix`.
+These binary-level controls in `binary_dependent_version_tests.rs` show the executable no longer refuses:
+
+- `check_reports_and_fix_bumps_every_dependent`:
+  `check --all` exits 1 with the two stale findings,
+  and `fix --all` exits 0 with one `fix-summary`, with nothing on standard error.
+- `add_of_a_raised_manifest_is_not_refused`:
+  `git add` of the raised manifest exits 0, prints nothing, and stages the manifest.
+- `a_staged_deletion_does_not_block_the_check`:
+  a staged deletion of an unrelated file does not stop `check --all` from reporting both dependents.
+
+Guard proof:
+a refusal line placed before the `check_dependent_version` call made the three controls present at the time
+(`check_reports_and_fix_bumps_every_dependent`, `a_narrow_fix_changes_unselected_dependents_only_when_they_match_head`
+and `add_of_a_raised_manifest_is_not_refused`) fail with exit 2.
+After `policy_checks.rs` was restored from `HEAD`, all three passed again.
+
+### What each entry point does
+
+- Direct `check` and `fix` run the planner over the candidate state.
+  `fix` installs corrections through the engine's atomic install, as the other content policies do.
+- `git add` plans nothing.
+  `check_dependent_version` returns no findings for the pre-forward trigger unless the forwarded command is `commit`,
+  the same condition as the incumbent at
+  `package/git-policy/cli/src/optional/repository-policy/dependent-version-bump-policy.ts:182`.
+- `git commit` cannot reach the planner yet.
+  The native executable refuses it with exit 2 and the message that the commit transaction
+  "is not implemented in this native development executable".
+  `check_dependent_version` also returns early for every pre-forward trigger
+  and passes `forwards_commit: false`.
+  Commit planning changes both together, and belongs to the commit transaction port.
+
+### Release task differential
+
+The release task (`bump:dependents`, called by `changeset:version` in the root `mise.toml`)
+and the native `git cli-git fix --all` must write the same bytes.
+A scratch driver outside the repository runs both over the same disposable repository, so the driver is not committed.
+Each scenario builds two copies of a repository committed as five publishable packages and one private package.
+In the worktree, `@s/a` is raised from `1.0.0` to `1.1.0`, the way `changeset version` leaves it.
+One copy runs `node package/git-policy/repository/src/bump-dependents.ts` with its working directory in the copy.
+The other runs `git cli-git fix --all` through a `git`-named link to the native executable,
+with `mono/dependent-version-bump` set to `error`.
+The driver then compares every file byte for byte.
+
+- `standard-lf`: both exit 0.
+  The release task changes `@s/b`, `@s/d` and `@s/e`, and the native fix changes the same files with identical bytes.
+- `standard-crlf`: the same result with CRLF manifests.
+- `two-raised`: `@s/a` and `@s/c` are raised.
+  Both sides change `@s/b`, `@s/d` and `@s/e` with identical bytes.
+- `only-private-dependent`: the private `@s/p` is raised.
+  Neither side changes a file.
+
+The driver's summary was `{"scenarios":4,"identical":4,"failed":[]}`,
+in scratch run `run-KbE5dZ`.
+Positive control: the same driver with `/bin/true` standing in for the native executable
+reported differences in `standard-lf`, `standard-crlf` and `two-raised` (summary `identical` 1 of 4),
+so a difference in bytes would be seen.
+
+### Gate on the final commit
+
+`GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli:native:test:container`
+on `ff6162190`, image `localhost/git-policy-native-test:dependent-version`,
+evidence `package/git-policy/cli/target/verification/native-wqRmpp`:
+
+- 680 unit tests passed, 1 ignored (`corpus_from_environment`, which only the driver runs);
+- 43 binary-level tests passed;
+- 1 consumer test passed;
+- Clippy with warnings denied passed (`passed.json`: tests and clippy true).
+
+### Mutation of the wired code
+
+The scoped campaign was
+`mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/policy_checks.rs' --file 'src/native/policy_dependent_version.rs' --file 'src/native/dependent_version_*.rs'`
+on the gate image of `8c82803a1`, evidence `package/git-policy/cli/target/verification/native-mutation-edbNIJ`:
+260 mutants, 208 caught, 49 unviable, 2 timeouts, 1 missed.
+
+- Timeouts:
+  `dependent_version_paths.rs:77:5` (`package_directory` replaced by `Vec::leak(vec![0])`)
+  and `dependent_version_manifest.rs:198:5` (`dependency_names` replaced by `()`).
+- Missed: `policy_dependent_version.rs:255:66`, `!=` replaced by `==` in the filter that builds `listed`.
+
+Rerun of the files with the timeouts, and of the file with the missed mutant, on the gate image of `ff6162190`
+(evidence `native-mutation-GkjgYs`):
+47 mutants, 33 caught, 13 unviable, 0 timeouts, 1 missed.
+Both timeouts were caught on the one rerun; the missed mutant survives both runs.
+
+#### The surviving mutant
+
+The filter at `policy_dependent_version.rs:255` keeps every candidate that is not `Deleted`,
+and the result is the list the tracked listing must hold (`dependent_version_lifecycle.rs`, `index()`).
+The mutant keeps only `Deleted` candidates.
+A `Deleted` candidate is absent from the private index, so the mutant would refuse with `UNLISTED`
+in that case, and with no `Deleted` candidate it checks nothing.
+Every probe reached the planner without a `Deleted` candidate:
+`check --all` with a staged deletion, `check --all` with a worktree deletion,
+`check` over a pathspec naming a deleted file (`git add` refuses it),
+and `ContentState::version` over `:/` in a disposable repository with a staged deletion.
+Each listed only `Modified` entries.
+`candidate_stage.rs` keeps a deletion only when the baseline lists one;
+no probe reached that branch.
+Until a reachable `Deleted` candidate is shown, the mutant changes no result of the direct commands,
+and no binary-level control can kill it.
+The campaigns that ran before the wiring ended with zero missed mutants;
+this one does not, and how to close it is open (section "How to close the surviving mutant of the wired filter").
+
+### Fuzz smoke on the final commit
+
+`GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli.fuzz:smoke`
+on `ff6162190`, 30 seconds per target, evidence `package/git-policy/cli.fuzz/target/verification/campaign-8DFFYG`:
+all nine targets exited 0 with no crash artifact.
+`dependent_version` ran 59,530 executions.
+
+## What the wiring step needed
+
+Every item below landed as described in section "Wiring into the native executable".
+The list stays as the reference for what the wiring covers.
 
 - A second failing `policy_engine::PolicyOutcome` variant for `policy-incomplete`
   and one more arm in `run_policy_stage`,
@@ -866,20 +1017,20 @@ The planner modules and their tests are byte for byte those of the gated commit 
 
 ## Not verified
 
-- The wiring does not exist,
-  so the ledger's consumer-level test
-  (three manifests in the standard fixture,
-  a commit of one raised manifest)
-  has not run.
+- The ledger's consumer-level test (three manifests in the standard fixture, a commit of one raised manifest)
+  has not run, because `git commit` is refused by the native executable until the commit transaction is ported
+  (section "Wiring into the native executable").
+- The release task itself was not switched to `git cli-git fix`;
+  the differential runs the task and the native fix side by side in disposable repositories.
+- The release workflow end to end (`changeset version`, then the fix in CI) was not run;
+  the differential simulates the `changeset version` result by writing the raised manifest.
 - The incumbent ran over a fake policy context,
   not the wrapper's candidate layer,
   and its pathspecs were matched literally;
   section "Source files are selected by a literal prefix" is the one place real pathspec semantics differ.
-- The release workflow end to end
-  (`changeset version`, then the direct fix)
-  was not run.
 - Only Linux was exercised.
-- `main` moved again after the final gate:
+- Superseded by merge `f41098875`, which took the `main` of that time (`c3a4fd284`).
+  Recorded as it stood then: `main` moved again after the final gate:
   at `a2c7b8ec0` it has eight commits under `package/git-policy/` that this branch does not merge
   (`git log 439672ddf..a2c7b8ec0 -- package/git-policy/`).
   `git merge-tree` shows conflicts in the same five `cli.fuzz` files as the first merge,
@@ -928,4 +1079,8 @@ On `feat/cli-git-native-dependent-version`, oldest first, first parent only:
 - `bba8c3100` `doc/troubleshooting/libfuzzer-dictionary-escapes.md`.
 - `fe9cbc5fe`, `ae70c7c8f` this document: final gate, mutation, fuzzing.
 - `c2772ecbb` the planted differential copy includes the scanner crates.
-- Later commits: this document.
+- `0186be5bc`, `c49201e47`, `cd344723a` the wiring into `ShippedChecks` and its first controls.
+- `f41098875` the merge of `main` at `c3a4fd284`, without conflicts.
+- `8c82803a1` the `git add` binary control.
+- `ff6162190` the staged-deletion binary control.
+- The commit that adds the section "Wiring into the native executable" and this paragraph.
