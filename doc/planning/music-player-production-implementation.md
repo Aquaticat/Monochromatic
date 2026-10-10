@@ -57,8 +57,22 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
 11. Keyboard wiring on top of package 2.
 12. Desktop app inheriting the Fold visual choices.
 
+## Log
+
+- Packages 1 and 2 (Haiku 5.5): both ports compiled on the first build and mirrored every JS case;
+  detekt then found 97 findings in them, mostly missing KDoc on local values, which a second Haiku round fixed.
+  Verified by the orchestrator: `testDebugUnitTest` and detekt both green, landed on `main` as `cc2b1c49e`.
+- The human disabled detekt's whole complexity rule set on 2026-10-10 (`7ed98539d`); a Haiku audit of oxlint and clippy was started.
+- Elevation to Sonnet 5.5 for packages 3 and 4 (player screens and picker): Haiku did well on pure ports with a reference,
+  but these packages are Compose UI work that needs design judgment, a domain mapping from the production page model to folders,
+  and fidelity to captured screens; recorded here as the orchestrator's decision under the human's standing authority.
+- Verification tooling: `~/temp/agent/run-production-task.ts` runs a Gradle or shell command for the production worktree in a
+  capped container (6 GiB, 2 CPUs); mise's own task path fails with "Failed to find Build Tools revision 36.0.0" there while the
+  same Gradle command through `raw:` passes, a difference not yet explained.
+
 ## Queue
 
-- [ ] Package 1.
-- [ ] Package 2.
-- [ ] Packages 3 to 12, each started only when the previous one it builds on is committed.
+- [x] Package 1.
+- [x] Package 2.
+- [ ] Packages 3 and 4: player screens (cover and unfolded) and the folder picker, with a debug host for native captures.
+- [ ] Packages 5 to 12, each started only when the previous one it builds on is committed.
