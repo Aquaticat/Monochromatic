@@ -178,18 +178,18 @@ pub fn decide_capture_order(
     // Landed commits that changed the path.
     let touching: Vec<&LandedChange> = history
         .iter()
-        .filter(|change| change.paths.contains(path))
+        .filter(|change| { return change.paths.contains(path); })
         .collect();
     // Their captures of the path from this worktree; a commit without one leaves the list shorter.
     let ordered: Vec<&CaptureView> = touching
         .iter()
-        .filter_map(|change| landed.get(&change.commit))
-        .filter(|record| record.worktree_id == captured.worktree_id && record.paths.contains(path))
+        .filter_map(|change| { return landed.get(&change.commit); })
+        .filter(|record| { return record.worktree_id == captured.worktree_id && record.paths.contains(path); })
         .collect();
     if touching.is_empty() || ordered.len() != touching.len() {
         return CaptureOrderDecision::Unordered;
     }
-    let latest: i64 = ordered.iter().map(|record| record.sequence).max().unwrap_or(i64::MIN);
+    let latest: i64 = ordered.iter().map(|record| { return record.sequence; }).max().unwrap_or(i64::MIN);
     if captured.sequence > latest {
         return CaptureOrderDecision::Prepared;
     }

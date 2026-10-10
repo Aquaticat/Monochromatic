@@ -22,12 +22,12 @@ fn rev(repo: &Path, spec: &str) -> String {
 /// Twelve lines with `second` on line 2 and `third` on line 3 and `eleventh` on line 11.
 fn file(second: &str, third: &str, eleventh: &str) -> String {
     return (1..=12)
-        .map(|number| match number {
+        .map(|number| { return match number {
             2 => format!("{second}\n"),
             3 => format!("{third}\n"),
             11 => format!("{eleventh}\n"),
             _ => format!("line {number}\n"),
-        })
+        }; })
         .collect();
 }
 
@@ -205,13 +205,12 @@ fn the_reservation_is_granted_after_the_configured_lost_races() {
     let configured: u64 = 2;
     let mut reservation: LandingReservation = LandingReservation::open(registry.as_path(), transaction.as_path(), "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10", false);
     let mut granted_at: Option<u64> = None;
-    let mut current: String = fixtures.current.clone();
     for lost in 1..=configured {
         // Another landing moves the target between this transaction's preparation and its landing.
         std::fs::write(fixtures.repo.join(format!("other-{lost}.txt")), "other\n").expect("other file");
         git(fixtures.repo.as_path(), &["add", "--all"]);
         git(fixtures.repo.as_path(), &["commit", "--quiet", "--message=other landing"]);
-        current = rev(fixtures.repo.as_path(), "HEAD");
+        let current: String = rev(fixtures.repo.as_path(), "HEAD");
         let moved = ReplayRequest {
             current: current.as_str(),
             ..request(&context, &fixtures, transaction.as_path(), &globals)

@@ -150,7 +150,7 @@ fn a_landing_takes_the_landing_lock_once_the_reservation_is_free() {
     let lock: OwnerLock = acquire_reserved_landing_lock(&waiter, || {
         let acquired = try_acquire_owner_lock(landing_lock.as_path(), Some(SECOND))
             .map_err(ReservationError::Lock)?;
-        return acquired.ok_or_else(|| ReservationError::Registry(RecoveryError(String::from("landing lock busy"))));
+        return acquired.ok_or_else(|| { return ReservationError::Registry(RecoveryError(String::from("landing lock busy"))); });
     })
     .expect("landing lock after the reservation is free");
     lock.release().expect("released landing lock");

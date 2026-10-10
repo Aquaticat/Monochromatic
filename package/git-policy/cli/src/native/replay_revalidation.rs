@@ -51,7 +51,7 @@ pub fn read_replayed_index(
 ) -> Result<(), GitFailure> {
     if let Some(parent) = index_path.parent() {
         create_private_directory(parent).map_err(|error| {
-            GitFailure(format!("creating {} failed: {error}", parent.display()))
+            return GitFailure(format!("creating {} failed: {error}", parent.display()));
         })?;
     }
     let mut request: GitRequest = GitRequest::new(cwd, &["read-tree", merged_tree]);

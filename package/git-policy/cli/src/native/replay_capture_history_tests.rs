@@ -34,7 +34,7 @@ fn write_capture(transaction: &Path, sequence: i64, paths: &[&str]) {
         worktree_id: String::from("w"),
         sequence,
         next_sequence_before_base: sequence,
-        worktree_paths: paths.iter().map(|path| String::from(*path)).collect(),
+        worktree_paths: paths.iter().map(|path| { return String::from(*path); }).collect(),
     };
     std::fs::write(transaction.join(CAPTURED_FILENAME), encode_captured_record(&record)).expect("captured.json");
 }
@@ -49,7 +49,7 @@ fn write_landed(git_dir: &Path, commit: &str, sequence: i64, paths: &[&str]) {
         worktree_id: String::from("w"),
         sequence,
         next_sequence_after_landing: sequence + 1,
-        worktree_paths: paths.iter().map(|path| String::from(*path)).collect(),
+        worktree_paths: paths.iter().map(|path| { return String::from(*path); }).collect(),
     };
     std::fs::write(directory.join(format!("{commit}.json")), encode_landed_capture_record(&record)).expect("landed record");
 }

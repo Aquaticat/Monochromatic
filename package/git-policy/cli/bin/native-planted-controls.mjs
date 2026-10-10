@@ -114,6 +114,49 @@ const plantedControls = [
     to: 'if ticks > i64::MAX {',
     failing: 'process_start::tests::a_start_tick_beyond_the_safe_integers_is_refused',
   },
+
+  {
+    name: 'strict reverse check line match guard',
+    file: 'src/native/replay_reverse_apply.rs',
+    from: 'if !incomplete_last || match_end {',
+    to: 'if true {',
+    failing: 'replay_reverse_apply::tests::strict_reverse_agrees_with_git_apply_on_seeded_cases',
+  },
+  {
+    name: 'patch hunk count for removals',
+    file: 'src/native/replay_patch.rs',
+    from: 'if marker != b\'+\' {',
+    to: 'if true {',
+    failing: 'replay_patch::tests::one_hunk_reads_its_body_and_stops',
+  },
+  {
+    name: 'capture order unread-path guard',
+    file: 'src/native/replay_capture_order.rs',
+    from: 'if !captured.paths.contains(path) {',
+    to: 'if false {',
+    failing: 'replay_capture_order::tests::an_unread_path_is_unordered',
+  },
+  {
+    name: 'reservation earned at the configured count',
+    file: 'src/native/replay_reservation.rs',
+    from: 'lost_races >= reserve_after',
+    to: 'lost_races > reserve_after',
+    failing: 'replay_reservation::tests::the_reservation_is_earned_at_the_configured_count',
+  },
+  {
+    name: 'replayed header names listed once',
+    file: 'src/native/replay_object.rs',
+    from: ' && !names.contains(&header.name) {',
+    to: ' {',
+    failing: 'replay_object::tests::dropped_headers_are_the_custom_names_in_order',
+  },
+  {
+    name: 'subsumption text verdict per path',
+    file: 'src/native/replay_subsumption.rs',
+    from: 'text.contains(&entry.path)',
+    to: 'false',
+    failing: 'replay_subsumption::tests::the_scenario_settles_each_path_by_its_rule',
+  },
 ];
 
 /**

@@ -73,7 +73,7 @@ fn an_adjacent_own_edit_is_rejected_by_strict_context() {
 /// A far-apart own edit leaves the landed hunk's context intact and reverses.
 #[test]
 fn a_far_apart_own_edit_reverses() {
-    let base: Vec<u8> = (1..=12).map(|number| format!("line {number}\n")).collect::<String>().into_bytes();
+    let base: Vec<u8> = (1..=12).map(|number| { return format!("line {number}\n"); }).collect::<String>().into_bytes();
     let landed: Vec<u8> = String::from_utf8_lossy(&base).replace("line 2\n", "LANDED\n").into_bytes();
     let prepared: Vec<u8> = String::from_utf8_lossy(&landed).replace("line 11\n", "OWN\n").into_bytes();
     let hunks: Vec<PatchHunk> = hunks_between("reverse-far-apart", &base, &landed, 3);

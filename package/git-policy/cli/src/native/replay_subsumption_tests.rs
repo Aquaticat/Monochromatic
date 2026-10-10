@@ -68,7 +68,7 @@ fn ordered_edits_take_the_side_they_keep() {
 fn scenario(name: &str) -> (PathBuf, PathBuf, String, String, String) {
     let root: PathBuf = fixture(name);
     let repo: PathBuf = repository(root.as_path(), "repo");
-    let twelve: String = (1..=12).map(|number| format!("line {number}\n")).collect();
+    let twelve: String = (1..=12).map(|number| { return format!("line {number}\n"); }).collect();
     std::fs::write(repo.join("a.txt"), "x\n").expect("a");
     std::fs::write(repo.join("b.txt"), "a\nb\nc\nd\n").expect("b");
     std::fs::write(repo.join("c.txt"), &twelve).expect("c");

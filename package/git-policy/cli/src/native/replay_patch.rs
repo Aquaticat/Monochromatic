@@ -98,7 +98,7 @@ pub fn split_keeping_newlines(text: &[u8]) -> Vec<Vec<u8>> {
     let mut lines: Vec<Vec<u8>> = Vec::new();
     let mut start: usize = 0;
     while start < text.len() {
-        let stop: usize = match text[start..].iter().position(|byte| *byte == b'\n') {
+        let stop: usize = match text[start..].iter().position(|byte| { return *byte == b'\n'; }) {
             Some(offset) => start + offset + 1,
             None => text.len(),
         };
@@ -120,7 +120,7 @@ pub fn split_keeping_newlines(text: &[u8]) -> Vec<Vec<u8>> {
 /// Number(text) // must be a safe integer
 /// ```
 fn parse_number(text: &[u8]) -> Option<i64> {
-    if text.is_empty() || !text.iter().all(|byte| byte.is_ascii_digit()) {
+    if text.is_empty() || !text.iter().all(|byte| { return byte.is_ascii_digit(); }) {
         return None;
     }
     // `to_str` is safe here: every byte is an ASCII digit.
@@ -141,7 +141,7 @@ fn parse_number(text: &[u8]) -> Option<i64> {
 /// ```
 fn parse_range(range: &[u8]) -> Result<(i64, i64), ReplayPatchFormatError> {
     let body: &[u8] = &range[1..];
-    let (start_text, count_text): (&[u8], &[u8]) = match body.iter().position(|byte| *byte == b',') {
+    let (start_text, count_text): (&[u8], &[u8]) = match body.iter().position(|byte| { return *byte == b','; }) {
         Some(comma) => (&body[..comma], &body[comma + 1..]),
         None => (body, b"1"),
     };
@@ -164,7 +164,7 @@ fn parse_range(range: &[u8]) -> Result<(i64, i64), ReplayPatchFormatError> {
 /// ```ts
 /// markIncomplete(parsed); // throws when no line precedes the marker
 /// ```
-fn mark_incomplete(parsed: &mut Vec<PatchLine>) -> Result<(), ReplayPatchFormatError> {
+fn mark_incomplete(parsed: &mut [PatchLine]) -> Result<(), ReplayPatchFormatError> {
     let last: &mut PatchLine = match parsed.last_mut() {
         Some(line) => line,
         None => {
@@ -203,7 +203,7 @@ fn parse_hunk(lines: &[Vec<u8>], start: usize) -> Result<(PatchHunk, usize), Rep
         }
     };
     let ranges: &[u8] = &header[3..end];
-    let (old_range, new_range): (&[u8], &[u8]) = match ranges.iter().position(|byte| *byte == b' ') {
+    let (old_range, new_range): (&[u8], &[u8]) = match ranges.iter().position(|byte| { return *byte == b' '; }) {
         Some(space) => (&ranges[..space], &ranges[space + 1..]),
         None => {
             return Err(ReplayPatchFormatError(format!(
@@ -244,7 +244,7 @@ fn parse_hunk(lines: &[Vec<u8>], start: usize) -> Result<(PatchHunk, usize), Rep
         let text: Vec<u8> = if line == b"\n" { b"\n".to_vec() } else { line[1..].to_vec() };
         parsed.push(PatchLine { op: marker, text });
     }
-    if lines.get(cursor).is_some_and(|line| line.starts_with(b"\\")) {
+    if lines.get(cursor).is_some_and(|line| { return line.starts_with(b"\\"); }) {
         mark_incomplete(&mut parsed)?;
         cursor += 1;
     }
@@ -293,7 +293,7 @@ fn find_bytes(haystack: &[u8], needle: &[u8], from: usize) -> Option<usize> {
     if haystack.len() < needle.len() {
         return None;
     }
-    return (from..=haystack.len() - needle.len()).find(|index| &haystack[*index..*index + needle.len()] == needle);
+    return (from..=haystack.len() - needle.len()).find(|index| { return &haystack[*index..*index + needle.len()] == needle; });
 }
 
 /// What:
@@ -331,7 +331,7 @@ pub fn parse_indexed_patch(
             }
             hunks.clear();
             let rest: &[u8] = &line[SECTION_HEADER.len()..];
-            let name_end: usize = match rest.iter().position(|byte| *byte == b' ') {
+            let name_end: usize = match rest.iter().position(|byte| { return *byte == b' '; }) {
                 Some(space) => space,
                 None => {
                     return Err(ReplayPatchFormatError(format!(

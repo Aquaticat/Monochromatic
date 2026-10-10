@@ -58,7 +58,7 @@ pub fn list_landed_changes(
     base: Option<&str>,
     current: &str,
 ) -> Result<Vec<LandedChange>, CaptureHistoryError> {
-    let exclusion: String = base.map(|oid| format!("^{oid}")).unwrap_or_default();
+    let exclusion: String = base.map(|oid| { return format!("^{oid}"); }).unwrap_or_default();
     // `mut` lets the exclusion be included only for a committed base.
     let mut arguments: Vec<&str> = vec!["rev-list", "--first-parent", current];
     if base.is_some() {
@@ -90,8 +90,8 @@ pub fn list_landed_changes(
         &[],
     )
     .map_err(CaptureHistoryError::Git)?;
-    let text: String = changes.stdout.iter().map(|byte| char::from(*byte)).collect();
-    return parse_commit_changes(text.as_str()).map_err(|error| CaptureHistoryError::Record(error.0));
+    let text: String = changes.stdout.iter().map(|byte| { return char::from(*byte); }).collect();
+    return parse_commit_changes(text.as_str()).map_err(|error| { return CaptureHistoryError::Record(error.0); });
 }
 
 /// What:
@@ -111,12 +111,12 @@ fn read_landed_captures(git_dir: &Path, commits: &[LandedChange]) -> Result<BTre
     for change in commits {
         let name: String = format!("{}.json", change.commit);
         let text: Option<String> = read_store_file(directory.join(&name).as_path())
-            .map_err(|error| CaptureHistoryError::Record(error.0))?;
+            .map_err(|error| { return CaptureHistoryError::Record(error.0); })?;
         let Some(found) = text else {
             continue;
         };
         let record = parse_landed_capture_record(found.as_str(), &format!("landed/{name}"))
-            .map_err(|error| CaptureHistoryError::Record(error.0))?;
+            .map_err(|error| { return CaptureHistoryError::Record(error.0); })?;
         views.insert(
             change.commit.clone(),
             capture_view(record.worktree_id.as_str(), record.sequence, &record.worktree_paths),
@@ -146,12 +146,12 @@ pub fn decide_shared_paths(
     current: &str,
     paths: &[String],
 ) -> Result<BTreeMap<String, CaptureOrderDecision>, CaptureHistoryError> {
-    let captured = match read_captured_record(transaction_directory).map_err(|error| CaptureHistoryError::Record(error.0))? {
+    let captured = match read_captured_record(transaction_directory).map_err(|error| { return CaptureHistoryError::Record(error.0); })? {
         Some(found) => found,
         None => return Ok(BTreeMap::new()),
     };
     let own: CaptureView = capture_view(captured.worktree_id.as_str(), captured.sequence, &captured.worktree_paths);
-    let candidates: Vec<&String> = paths.iter().filter(|path| own.paths.contains(path.as_str())).collect();
+    let candidates: Vec<&String> = paths.iter().filter(|path| { return own.paths.contains(path.as_str()); }).collect();
     if candidates.is_empty() {
         return Ok(BTreeMap::new());
     }

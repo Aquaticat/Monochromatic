@@ -36,7 +36,7 @@ fn a_signature_header_keeps_its_continuation_lines() {
     let extra: &str = "gpgsig -----BEGIN SSH SIGNATURE-----\n abc\n -----END SSH SIGNATURE-----";
     let commit: RawCommit = parse_raw_commit(&commit_bytes(extra, b"signed\n")).expect("commit");
     assert!(commit.signed);
-    let signature: &RawCommitHeader = commit.headers.iter().find(|header| header.name == "gpgsig").expect("gpgsig");
+    let signature: &RawCommitHeader = commit.headers.iter().find(|header| { return header.name == "gpgsig"; }).expect("gpgsig");
     assert!(signature.bytes.ends_with(b" -----END SSH SIGNATURE-----\n"));
     assert!(parse_raw_commit(&commit_bytes("gpgsig-sha256 x", b"m\n")).expect("commit").signed);
 }

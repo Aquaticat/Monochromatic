@@ -113,7 +113,7 @@ pub struct BaseEdit {
 fn oid_width(shared: &SharedPath) -> usize {
     return [&shared.base, &shared.landed, &shared.prepared]
         .iter()
-        .find_map(|entry| entry.as_ref().map(|present| present.oid.len()))
+        .find_map(|entry| { return entry.as_ref().map(|present| { return present.oid.len(); }); })
         .unwrap_or(0);
 }
 
@@ -129,7 +129,7 @@ fn oid_width(shared: &SharedPath) -> usize {
 /// ```
 pub fn subsumed_record(shared: &SharedPath) -> Vec<u8> {
     let Some(landed) = &shared.landed else {
-        let width: usize = shared.base.as_ref().map(|entry| entry.oid.len()).unwrap_or(0);
+        let width: usize = shared.base.as_ref().map(|entry| { return entry.oid.len(); }).unwrap_or(0);
         return format!("0 {}\t{}\0", "0".repeat(width), shared.path).into_bytes();
     };
     let mode: &str = match &shared.base {
@@ -271,19 +271,19 @@ pub fn subsume_landed_changes(
     };
     let unordered: Vec<&SharedPath> = shared
         .iter()
-        .filter(|entry| decision_of(entry) == CaptureOrderDecision::Unordered)
+        .filter(|entry| { return decision_of(entry) == CaptureOrderDecision::Unordered; })
         .collect();
     let text_candidates: Vec<SharedPath> = unordered
         .iter()
-        .filter(|entry| is_text_candidate(entry) && !is_identical(entry))
-        .map(|entry| (*entry).clone())
+        .filter(|entry| { return is_text_candidate(entry) && !is_identical(entry); })
+        .map(|entry| { return (*entry).clone(); })
         .collect();
     let text: Vec<String> = subsumed_text_paths(context, shadow, cwd, object_directory, &text_candidates)
         .map_err(SubsumptionError::Text)?;
     // Every synthetic base edit in Git order.
     let edits: Vec<BaseEdit> = shared
         .iter()
-        .filter_map(|entry| match decision_of(entry) {
+        .filter_map(|entry| { return match decision_of(entry) {
             CaptureOrderDecision::Prepared => Some(BaseEdit { shared: entry.clone(), rule: BaseRule::Prepared }),
             CaptureOrderDecision::Landed => Some(BaseEdit { shared: entry.clone(), rule: BaseRule::Landed }),
             CaptureOrderDecision::Unordered => {
@@ -293,17 +293,17 @@ pub fn subsume_landed_changes(
                 }
                 return None;
             }
-        })
+        }; })
         .collect();
     let subsumed_paths: Vec<String> = edits
         .iter()
-        .filter(|edit| edit.rule != BaseRule::Landed)
-        .map(|edit| edit.shared.path.clone())
+        .filter(|edit| { return edit.rule != BaseRule::Landed; })
+        .map(|edit| { return edit.shared.path.clone(); })
         .collect();
     let kept_landed_paths: Vec<String> = edits
         .iter()
-        .filter(|edit| edit.rule == BaseRule::Landed)
-        .map(|edit| edit.shared.path.clone())
+        .filter(|edit| { return edit.rule == BaseRule::Landed; })
+        .map(|edit| { return edit.shared.path.clone(); })
         .collect();
     if edits.is_empty() {
         return Ok(SubsumptionBase {

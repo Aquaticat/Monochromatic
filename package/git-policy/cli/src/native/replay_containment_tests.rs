@@ -7,7 +7,7 @@ use super::*;
 fn base() -> Vec<Vec<u8>> {
     return ["a\n", "b\n", "c\n", "d\n", "e\n"]
         .iter()
-        .map(|line| line.as_bytes().to_vec())
+        .map(|line| { return line.as_bytes().to_vec(); })
         .collect();
 }
 
@@ -18,10 +18,10 @@ fn hunk(old_start: i64, new_start: i64, lines: &[(u8, &str)]) -> PatchHunk {
         new_start,
         lines: lines
             .iter()
-            .map(|(op, text)| PatchLine {
+            .map(|(op, text)| { return PatchLine {
                 op: *op,
                 text: text.as_bytes().to_vec(),
-            })
+            }; })
             .collect(),
     };
 }

@@ -50,7 +50,7 @@ fn regular_file_modes_are_the_only_regular_files() {
 ///  and the base regular or absent.
 #[test]
 fn the_predicates_follow_the_entries() {
-    let regular = |oid: &str| entry("100644", oid);
+    let regular = |oid: &str| { return entry("100644", oid); };
     let all = SharedPath {
         path: String::from("p"),
         base: regular("a"),
@@ -119,7 +119,7 @@ fn shared_paths_list_the_paths_both_sides_changed() {
         prepared.as_str(),
     )
     .expect("shared paths");
-    let paths: Vec<&str> = shared.iter().map(|entry| entry.path.as_str()).collect();
+    let paths: Vec<&str> = shared.iter().map(|entry| { return entry.path.as_str(); }).collect();
     assert_eq!(paths, vec!["d.txt", "f.txt"]);
     assert!(shared[0].base.is_some() && shared[0].landed.is_some() && shared[0].prepared.is_some());
     assert_eq!(shared[1].landed, None);

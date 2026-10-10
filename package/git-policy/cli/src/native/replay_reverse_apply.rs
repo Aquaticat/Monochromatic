@@ -49,7 +49,7 @@ fn hash_key(text: &[u8]) -> Vec<u8> {
     return text
         .iter()
         .copied()
-        .filter(|byte| !matches!(*byte, b' ' | b'\t' | b'\n' | 0x0b | 0x0c | b'\r'))
+        .filter(|byte| { return !matches!(*byte, b' ' | b'\t' | b'\n' | 0x0b | 0x0c | b'\r'); })
         .collect();
 }
 
@@ -171,19 +171,19 @@ fn reverse_hunk(image: &[ImageLine], hunk: &PatchHunk) -> Option<Vec<ImageLine>>
     let preimage: Vec<Vec<u8>> = hunk
         .lines
         .iter()
-        .filter(|line| line.op != b'-')
-        .map(|line| line.text.clone())
+        .filter(|line| { return line.op != b'-'; })
+        .map(|line| { return line.text.clone(); })
         .collect();
     let postimage: Vec<ImageLine> = hunk
         .lines
         .iter()
-        .filter(|line| line.op != b'+')
-        .map(|line| ImageLine {
+        .filter(|line| { return line.op != b'+'; })
+        .map(|line| { return ImageLine {
             text: line.text.clone(),
             patched: true,
-        })
+        }; })
         .collect();
-    let trailing: usize = match hunk.lines.iter().rposition(|line| line.op != b' ') {
+    let trailing: usize = match hunk.lines.iter().rposition(|line| { return line.op != b' '; }) {
         Some(last_change) => hunk.lines.len() - 1 - last_change,
         None => hunk.lines.len(),
     };
@@ -216,10 +216,10 @@ pub fn reverse_applies(hunks: &[PatchHunk], prepared: &[u8]) -> bool {
     // `mut` lets the image be replaced by each hunk's result.
     let mut image: Vec<ImageLine> = split_keeping_newlines(prepared)
         .into_iter()
-        .map(|text| ImageLine {
+        .map(|text| { return ImageLine {
             text,
             patched: false,
-        })
+        }; })
         .collect();
     for hunk in hunks {
         match reverse_hunk(&image, hunk) {

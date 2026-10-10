@@ -20,7 +20,7 @@ fn blob(repo: &Path, scratch: &Path, name: &str, bytes: &[u8]) -> Option<TreeEnt
 /// A shared path whose three sides are the given bytes, or absent when `None`.
 fn shared(repo: &Path, scratch: &Path, sides: [Option<&[u8]>; 3]) -> SharedPath {
     let entry = |index: usize, name: &str| -> Option<TreeEntry> {
-        return sides[index].and_then(|bytes| blob(repo, scratch, name, bytes));
+        return sides[index].and_then(|bytes| { return blob(repo, scratch, name, bytes); });
     };
     return SharedPath {
         path: String::from("p.txt"),

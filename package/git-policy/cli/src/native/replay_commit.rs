@@ -177,7 +177,7 @@ fn prepared_commit(request: &ReplayRequest<'_>) -> Result<RawCommit, ReplayError
         &[],
     )
     .map_err(ReplayError::Git)?;
-    return parse_raw_commit(&output.stdout).map_err(|error| ReplayError::Object(error.0));
+    return parse_raw_commit(&output.stdout).map_err(|error| { return ReplayError::Object(error.0); });
 }
 
 /// What:
@@ -197,7 +197,7 @@ pub fn replay_commit(request: &ReplayRequest<'_>) -> Result<ReplayOutcome, Repla
         .map_err(ReplayError::Merge)?;
     let shared = list_shared_paths(request.context, request.shadow, request.worktree_root, &merge_base, request.current, request.prepared)
         .map_err(ReplayError::Shared)?;
-    let names: Vec<String> = shared.iter().map(|entry| entry.path.clone()).collect();
+    let names: Vec<String> = shared.iter().map(|entry| { return entry.path.clone(); }).collect();
     let order: BTreeMap<String, CaptureOrderDecision> = decide_shared_paths(
         request.context,
         request.shadow,

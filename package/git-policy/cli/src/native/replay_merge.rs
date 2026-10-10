@@ -119,7 +119,7 @@ pub fn replay_merge_base(
 /// ```
 fn strict_utf8(bytes: &[u8]) -> Result<&str, ReplayMergeError> {
     return std::str::from_utf8(bytes)
-        .map_err(|error| ReplayMergeError::Encoding(format!("merge output is not UTF-8: {error}")));
+        .map_err(|error| { return ReplayMergeError::Encoding(format!("merge output is not UTF-8: {error}")); });
 }
 
 /// What:
@@ -156,7 +156,7 @@ pub fn merge_replay_tree(
         ],
     );
     let output = run_git(context, &request).map_err(|error| {
-        ReplayMergeError::Git(GitFailure(format!("git merge-tree could not start: {error}")))
+        return ReplayMergeError::Git(GitFailure(format!("git merge-tree could not start: {error}")));
     })?;
     let code: Option<i32> = output.code;
     if code != Some(0) && code != Some(MERGE_CONFLICT_EXIT) {
@@ -177,11 +177,11 @@ pub fn merge_replay_tree(
         if field.is_empty() {
             break;
         }
-        if !paths.iter().any(|known| known == field) {
+        if !paths.iter().any(|known| { return known == field; }) {
             paths.push(String::from(field));
         }
     }
-    paths.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
+    paths.sort_by(|left, right| { return left.as_bytes().cmp(right.as_bytes()); });
     return Ok(ReplayMerge::Conflict { paths });
 }
 
@@ -202,8 +202,8 @@ pub fn first_commit_touching(
     current: &str,
     paths: &[String],
 ) -> Result<String, ReplayMergeError> {
-    let exclusion: String = base.map(|oid| format!("^{oid}")).unwrap_or_default();
-    let pathspecs: Vec<String> = paths.iter().map(|path| format!(":(top,literal){path}")).collect();
+    let exclusion: String = base.map(|oid| { return format!("^{oid}"); }).unwrap_or_default();
+    let pathspecs: Vec<String> = paths.iter().map(|path| { return format!(":(top,literal){path}"); }).collect();
     // `mut` lets the arguments be assembled in order.
     let mut arguments: Vec<&str> = vec!["rev-list", "--reverse", current];
     if base.is_some() {
@@ -217,9 +217,9 @@ pub fn first_commit_touching(
     let text: &str = strict_utf8(&listed.stdout)?;
     return Ok(text
         .lines()
-        .find(|line| !line.is_empty())
+        .find(|line| { return !line.is_empty(); })
         .map(String::from)
-        .unwrap_or_else(|| String::from(current)));
+        .unwrap_or_else(|| { return String::from(current); }));
 }
 
 /// What:
@@ -279,8 +279,8 @@ pub fn write_replayed_commit(
     }
     let message_path: PathBuf = directory.join(format!("replay-message-{attempt}"));
     write_private_file(message_path.as_path(), &commit.message)
-        .map_err(|error| ReplayMergeError::Rebuild(format!("message file {}: {error}", message_path.display())))?;
-    let encoding: String = commit.encoding.clone().unwrap_or_else(|| String::from("utf8"));
+        .map_err(|error| { return ReplayMergeError::Rebuild(format!("message file {}: {error}", message_path.display())); })?;
+    let encoding: String = commit.encoding.clone().unwrap_or_else(|| { return String::from("utf8"); });
     let signed_key: String = format!("-S{}", signing_key.unwrap_or(""));
     let encoding_option: String = format!("i18n.commitEncoding={encoding}");
     let message_text: String = message_path.to_string_lossy().into_owned();
@@ -299,7 +299,7 @@ pub fn write_replayed_commit(
     ]);
     let mut environment: Vec<(OsString, OsString)> = Vec::new();
     for role in ["author", "committer"] {
-        let identity = identity_environment(commit, role).map_err(|error| ReplayMergeError::Rebuild(error.0))?;
+        let identity = identity_environment(commit, role).map_err(|error| { return ReplayMergeError::Rebuild(error.0); })?;
         for (name, value) in identity {
             environment.push((OsString::from(name), OsString::from(value)));
         }

@@ -82,7 +82,7 @@ fn empty_blob_for(
     cwd: &Path,
     candidates: &[SharedPath],
 ) -> Result<String, TextSubsumptionError> {
-    if !candidates.iter().any(|shared| shared.base.is_none()) {
+    if !candidates.iter().any(|shared| { return shared.base.is_none(); }) {
         return Ok(String::new());
     }
     let output = run_shadow_checked(
@@ -182,7 +182,7 @@ fn indexed_hunks(
     )
     .map_err(TextSubsumptionError::Git)?;
     return parse_indexed_patch(&output.stdout)
-        .map_err(|error| TextSubsumptionError::Format(error.0));
+        .map_err(|error| { return TextSubsumptionError::Format(error.0); });
 }
 
 /// What:
@@ -209,49 +209,49 @@ pub fn subsumed_text_paths(
     // Every present blob of every candidate, in candidate order.
     let oids: Vec<String> = candidates
         .iter()
-        .flat_map(|shared| [&shared.base, &shared.landed, &shared.prepared])
-        .filter_map(|entry| entry.as_ref().map(|present| present.oid.clone()))
+        .flat_map(|shared| { return [&shared.base, &shared.landed, &shared.prepared]; })
+        .filter_map(|entry| { return entry.as_ref().map(|present| { return present.oid.clone(); }); })
         .collect();
     let blobs: HashMap<String, Vec<u8>> = load_blob_batch(context, cwd, &oids, Some(object_directory))
         .map_err(TextSubsumptionError::Blob)?;
     let blob_of = |entry: &Option<TreeEntry>| -> Option<Vec<u8>> {
-        return entry.as_ref().map(|present| blobs.get(&present.oid).cloned().unwrap_or_default());
+        return entry.as_ref().map(|present| { return blobs.get(&present.oid).cloned().unwrap_or_default(); });
     };
     // Candidates whose present blobs are all text; a blob the batch did not return counts as binary.
     let text: Vec<&SharedPath> = candidates
         .iter()
         .filter(|shared| {
-            [&shared.base, &shared.landed, &shared.prepared].iter().all(|entry| {
-                let blob = entry.as_ref().map(|present| blobs.get(&present.oid));
+            return [&shared.base, &shared.landed, &shared.prepared].iter().all(|entry| {
+                let blob = entry.as_ref().map(|present| { return blobs.get(&present.oid); });
                 return match blob {
                     None => true,
                     Some(Some(bytes)) => !is_binary(bytes),
                     Some(None) => false,
                 };
-            })
+            });
         })
         .collect();
     if text.is_empty() {
         return Ok(Vec::new());
     }
-    let owned: Vec<SharedPath> = text.iter().map(|shared| (*shared).clone()).collect();
+    let owned: Vec<SharedPath> = text.iter().map(|shared| { return (*shared).clone(); }).collect();
     let base_tree: String = indexed_tree(
         context,
         shadow,
         cwd,
-        &owned.iter().map(|shared| side_oid(&shared.base, &empty_blob)).collect::<Vec<String>>(),
+        &owned.iter().map(|shared| { return side_oid(&shared.base, &empty_blob); }).collect::<Vec<String>>(),
     )?;
     let landed_tree: String = indexed_tree(
         context,
         shadow,
         cwd,
-        &owned.iter().map(|shared| side_oid(&shared.landed, &empty_blob)).collect::<Vec<String>>(),
+        &owned.iter().map(|shared| { return side_oid(&shared.landed, &empty_blob); }).collect::<Vec<String>>(),
     )?;
     let prepared_tree: String = indexed_tree(
         context,
         shadow,
         cwd,
-        &owned.iter().map(|shared| side_oid(&shared.prepared, &empty_blob)).collect::<Vec<String>>(),
+        &owned.iter().map(|shared| { return side_oid(&shared.prepared, &empty_blob); }).collect::<Vec<String>>(),
     )?;
     let strict: BTreeMap<Vec<u8>, Vec<PatchHunk>> =
         indexed_hunks(context, shadow, cwd, &base_tree, &landed_tree, STRICT_CONTEXT)?;

@@ -46,7 +46,7 @@ struct BaseChange {
 /// baseChange(hunk);
 /// ```
 fn base_change(hunk: &PatchHunk) -> BaseChange {
-    let removed: usize = hunk.lines.iter().filter(|line| line.op == b'-').count();
+    let removed: usize = hunk.lines.iter().filter(|line| { return line.op == b'-'; }).count();
     let start: usize = if removed == 0 {
         usize::try_from(hunk.old_start).unwrap_or(0)
     } else {
@@ -58,8 +58,8 @@ fn base_change(hunk: &PatchHunk) -> BaseChange {
         added: hunk
             .lines
             .iter()
-            .filter(|line: &&PatchLine| line.op == b'+')
-            .map(|line| line.text.clone())
+            .filter(|line: &&PatchLine| { return line.op == b'+'; })
+            .map(|line| { return line.text.clone(); })
             .collect(),
     };
 }
@@ -154,18 +154,18 @@ pub fn contains_landed_change(
         .map(|change| {
             let cover: Option<usize> = prepared_changes
                 .iter()
-                .position(|candidate| candidate.start <= change.start && change.end <= candidate.end);
+                .position(|candidate| { return candidate.start <= change.start && change.end <= candidate.end; });
             return (cover, change);
         })
         .collect();
-    if covered.iter().any(|(cover, _)| cover.is_none()) {
+    if covered.iter().any(|(cover, _)| { return cover.is_none(); }) {
         return false;
     }
     return prepared_changes.iter().enumerate().all(|(index, change)| {
         let inside: Vec<BaseChange> = covered
             .iter()
-            .filter(|(cover, _)| *cover == Some(index))
-            .map(|(_, landed_change)| landed_change.clone())
+            .filter(|(cover, _)| { return *cover == Some(index); })
+            .map(|(_, landed_change)| { return landed_change.clone(); })
             .collect();
         return inside.is_empty() || region_contains(change, &inside, base);
     });

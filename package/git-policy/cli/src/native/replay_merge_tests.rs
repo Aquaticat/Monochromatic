@@ -17,11 +17,11 @@ fn rev(repo: &Path, spec: &str) -> String {
 /// A twelve-line file with one edit on line 2 (`landed`) or line 11 (`own`), or none.
 fn lines(second: &str, eleventh: &str) -> String {
     return (1..=12)
-        .map(|number| match number {
+        .map(|number| { return match number {
             2 => format!("{second}\n"),
             11 => format!("{eleventh}\n"),
             _ => format!("line {number}\n"),
-        })
+        }; })
         .collect();
 }
 

@@ -113,8 +113,8 @@ pub fn live_requesters(registry_root: &Path) -> Result<Vec<String>, ReservationE
     }
     return Ok(oldest_first(requesting)
         .into_iter()
-        .filter(|inspected| matches!(inspected.owner, OwnerEvidence::Owned(_, OwnerLiveness::Alive)))
-        .map(|inspected| inspected.entry.transaction_id)
+        .filter(|inspected| { return matches!(inspected.owner, OwnerEvidence::Owned(_, OwnerLiveness::Alive)); })
+        .map(|inspected| { return inspected.entry.transaction_id; })
         .collect());
 }
 
@@ -135,7 +135,7 @@ pub fn live_holder(lock_directory: &Path) -> Result<Option<OwnerLockRecord>, Res
         PublishedOwner::Busy => return Ok(None),
     };
     let alive: bool = owner_lock_holder_is_alive(&record)
-        .map_err(|error| ReservationError::Identity(format!("{error:?}")))?;
+        .map_err(|error| { return ReservationError::Identity(format!("{error:?}")); })?;
     return Ok(if alive { Some(record) } else { None });
 }
 
@@ -250,13 +250,15 @@ impl LandingReservation {
             let lock_directory: PathBuf = self.lock_directory();
             let free: bool = live_holder(lock_directory.as_path())?.is_none();
             let first: bool = live_requesters(self.registry_root.as_path())?.first() == Some(&self.transaction_id);
-            if free && first {
-                if let Some(lock) = try_acquire_owner_lock(lock_directory.as_path(), Some(self.transaction_id.as_str()))
+            let granted: Option<OwnerLock> = if free && first {
+                try_acquire_owner_lock(lock_directory.as_path(), Some(self.transaction_id.as_str()))
                     .map_err(ReservationError::Lock)?
-                {
-                    self.held = Some(lock);
-                    return Ok(true);
-                }
+            } else {
+                None
+            };
+            if let Some(lock) = granted {
+                self.held = Some(lock);
+                return Ok(true);
             }
             std::thread::sleep(RESERVATION_POLL);
         }

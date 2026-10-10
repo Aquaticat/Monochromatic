@@ -132,5 +132,5 @@ fn a_truncated_hunk_fails_the_whole_patch() {
     assert!(parse_indexed_patch(b"diff --git a/0 b/0\n@@ -1,3 +1 @@\n-a\n").is_err());
     let text: &[u8] = b"diff --git a/10 b/10\n@@ -1 +1 @@\n-a\n+b\n";
     let files: BTreeMap<Vec<u8>, Vec<PatchHunk>> = parse_indexed_patch(text).expect("patch");
-    assert!(files.contains_key(&b"10".to_vec()));
+    assert!(files.contains_key(b"10".as_slice()));
 }

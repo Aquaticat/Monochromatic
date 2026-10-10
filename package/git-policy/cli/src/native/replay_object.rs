@@ -125,18 +125,18 @@ fn split_headers(header_bytes: &[u8]) -> Vec<RawCommitHeader> {
     }
     let header_starts: Vec<usize> = line_starts
         .into_iter()
-        .filter(|start| header_bytes[*start] != b' ')
+        .filter(|start| { return header_bytes[*start] != b' '; })
         .collect();
     let mut headers: Vec<RawCommitHeader> = Vec::new();
     for (index, start) in header_starts.iter().enumerate() {
         let stop: usize = header_starts.get(index + 1).copied().unwrap_or(header_bytes.len());
         let bytes: Vec<u8> = header_bytes[*start..stop].to_vec();
-        let name_end: usize = match bytes.iter().position(|byte| *byte == b' ') {
+        let name_end: usize = match bytes.iter().position(|byte| { return *byte == b' '; }) {
             Some(space) => space,
             None => bytes.len() - 1,
         };
         headers.push(RawCommitHeader {
-            name: bytes[..name_end].iter().map(|byte| char::from(*byte)).collect(),
+            name: bytes[..name_end].iter().map(|byte| { return char::from(*byte); }).collect(),
             bytes,
         });
     }
@@ -153,24 +153,24 @@ fn split_headers(header_bytes: &[u8]) -> Vec<RawCommitHeader> {
 /// parseRawCommit(bytes); // throws TypeError without a tree header
 /// ```
 pub fn parse_raw_commit(bytes: &[u8]) -> Result<RawCommit, ReplayObjectError> {
-    let blank: Option<usize> = bytes.windows(2).position(|pair| pair == b"\n\n");
+    let blank: Option<usize> = bytes.windows(2).position(|pair| { return pair == b"\n\n"; });
     let (header_bytes, message): (&[u8], Vec<u8>) = match blank {
         Some(index) => (&bytes[..index + 1], bytes[index + 2..].to_vec()),
         None => (bytes, Vec::new()),
     };
     let headers: Vec<RawCommitHeader> = split_headers(header_bytes);
-    let tree: &RawCommitHeader = match headers.iter().find(|header| header.name == "tree") {
+    let tree: &RawCommitHeader = match headers.iter().find(|header| { return header.name == "tree"; }) {
         Some(found) => found,
         None => return Err(ReplayObjectError(String::from("Commit object has no tree header."))),
     };
     let tree_oid: String = header_value(tree);
     let encoding: Option<String> = headers
         .iter()
-        .find(|header| header.name == "encoding")
+        .find(|header| { return header.name == "encoding"; })
         .map(header_value);
     let signed: bool = headers
         .iter()
-        .any(|header| header.name == "gpgsig" || header.name == "gpgsig-sha256");
+        .any(|header| { return header.name == "gpgsig" || header.name == "gpgsig-sha256"; });
     return Ok(RawCommit {
         headers,
         message,
@@ -240,7 +240,7 @@ pub fn identity_environment(
     commit: &RawCommit,
     role: &str,
 ) -> Result<Vec<(String, String)>, ReplayObjectError> {
-    let header: &RawCommitHeader = match commit.headers.iter().find(|candidate| candidate.name == role) {
+    let header: &RawCommitHeader = match commit.headers.iter().find(|candidate| { return candidate.name == role; }) {
         Some(found) => found,
         None => {
             return Err(ReplayObjectError(format!("Commit object has no {role} header.")));

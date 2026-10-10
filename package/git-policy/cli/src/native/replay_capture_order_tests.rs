@@ -7,13 +7,13 @@ use super::*;
 fn landed_change(commit: &str, paths: &[&str]) -> LandedChange {
     return LandedChange {
         commit: String::from(commit),
-        paths: paths.iter().map(|path| String::from(*path)).collect(),
+        paths: paths.iter().map(|path| { return String::from(*path); }).collect(),
     };
 }
 
 /// A capture from `worktree` with sequence `sequence` that read the given paths.
 fn capture(worktree: &str, sequence: i64, paths: &[&str]) -> CaptureView {
-    let owned: Vec<String> = paths.iter().map(|path| String::from(*path)).collect();
+    let owned: Vec<String> = paths.iter().map(|path| { return String::from(*path); }).collect();
     return capture_view(worktree, sequence, &owned);
 }
 
@@ -21,7 +21,7 @@ fn capture(worktree: &str, sequence: i64, paths: &[&str]) -> CaptureView {
 fn landed_records(entries: &[(&str, CaptureView)]) -> BTreeMap<String, CaptureView> {
     return entries
         .iter()
-        .map(|(commit, view)| (String::from(*commit), view.clone()))
+        .map(|(commit, view)| { return (String::from(*commit), view.clone()); })
         .collect();
 }
 

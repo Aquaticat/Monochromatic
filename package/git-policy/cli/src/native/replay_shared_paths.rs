@@ -182,7 +182,7 @@ fn raw_changes(
         &[],
     )
     .map_err(SharedPathError::Git)?;
-    let text: String = output.stdout.iter().map(|byte| char::from(*byte)).collect();
+    let text: String = output.stdout.iter().map(|byte| { return char::from(*byte); }).collect();
     return parse_raw_changes(text.as_str()).map_err(SharedPathError::Format);
 }
 
@@ -227,7 +227,7 @@ pub fn list_shared_paths(
     let shared: Vec<SharedPath> = landed
         .into_iter()
         .filter_map(|change| {
-            let own: &RawChange = mine.iter().find(|candidate| candidate.path == change.path)?;
+            let own: &RawChange = mine.iter().find(|candidate| { return candidate.path == change.path; })?;
             return Some(SharedPath {
                 path: change.path,
                 base: change.from,
@@ -264,7 +264,7 @@ pub fn same_entry(left: &Option<TreeEntry>, right: &Option<TreeEntry>) -> bool {
 pub fn is_regular_triple(shared: &SharedPath) -> bool {
     return [&shared.base, &shared.landed, &shared.prepared]
         .iter()
-        .all(|side| side.as_ref().is_some_and(|entry| is_regular_mode(entry.mode.as_str())));
+        .all(|side| { return side.as_ref().is_some_and(|entry| { return is_regular_mode(entry.mode.as_str()); }); });
 }
 
 /// What:
@@ -280,7 +280,7 @@ pub fn is_regular_triple(shared: &SharedPath) -> bool {
 pub fn is_text_candidate(shared: &SharedPath) -> bool {
     let changed_regular: bool = [&shared.landed, &shared.prepared]
         .iter()
-        .all(|side| side.as_ref().is_some_and(|entry| is_regular_mode(entry.mode.as_str())));
+        .all(|side| { return side.as_ref().is_some_and(|entry| { return is_regular_mode(entry.mode.as_str()); }); });
     let base_regular: bool = match &shared.base {
         None => true,
         Some(entry) => is_regular_mode(entry.mode.as_str()),
