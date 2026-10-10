@@ -124,7 +124,7 @@ const plantedControls = [
   {
     name: 'disabled events still start Git',
     file: 'src/native/hook_dispatch.rs',
-    from: '    if plan.disabled_events.iter().any(|name| name == target.event) {',
+    from: '    if plan.disabled_events.iter().any(|name| { return name == target.event; }) {',
     to: '    if false {',
     failing: 'hook_dispatch::tests::a_disabled_event_succeeds_without_starting_git',
   },

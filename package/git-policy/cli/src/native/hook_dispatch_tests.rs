@@ -102,6 +102,12 @@ fn every_other_start_name_is_not_a_dispatch() {
         .join("hooks")
         .join("pre-commit");
     assert_eq!(dispatch_target_for_start_name(wrong_root.as_path()), None);
+    // A plan beside the entry leaves only the registry root name to refuse the start name.
+    let wrong_root_hooks: PathBuf = wrong_root.parent().expect("hooks").to_path_buf();
+    std::fs::create_dir_all(&wrong_root_hooks).expect("wrong root hooks");
+    std::fs::write(wrong_root_hooks.join(PLAN_FILENAME), format!("{}\n", encode_hook_dispatch_plan(&plan)))
+        .expect("wrong root plan");
+    assert_eq!(dispatch_target_for_start_name(wrong_root.as_path()), None);
     std::fs::remove_file(hooks.join(PLAN_FILENAME)).expect("remove plan");
     assert_eq!(dispatch_target_for_start_name(hooks.join("pre-commit").as_path()), None);
     std::fs::create_dir(hooks.join(PLAN_FILENAME)).expect("plan as a directory");
