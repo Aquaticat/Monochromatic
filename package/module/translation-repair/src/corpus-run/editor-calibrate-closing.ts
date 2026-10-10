@@ -1,6 +1,7 @@
 import { wordForCount, } from '../count-word.ts';
 import type { RosterModelId, } from '../roster-id.ts';
 import type { SliceRounds, } from './editor-calibrate-slice.ts';
+import { roundWasJudged, } from './editor-calibrate-standing.ts';
 
 //region Editor calibrate closing
 // THE TWO CLOSING PARAGRAPHS of the editor calibration's report, after both
@@ -15,6 +16,10 @@ import type { SliceRounds, } from './editor-calibrate-slice.ts';
  slice can buy the whole accuracy lane and reach no refiner. Without this an
  empty refiner standing reads as a rewriter roster that answered nothing,
  which is a different and much worse fact.
+
+ THE CLAUSE ABOUT THE OTHER SLICES IS PRINTED ONLY WHEN THERE ARE ANY, and
+ counts them: until 2026-10-06 it said "the rest" carried nothing to rewrite
+ when every slice had reached a rewriter.
 
  @param perSlice - what every slice produced
 
@@ -33,6 +38,30 @@ export function printEditorCalibrateRefineReach(
     return slice.refineAsked;
   },);
 
+  /**
+   Slices that carried no such paragraph.
+   */
+  const unreached = perSlice.length - asked.length;
+
+  /**
+   Clause naming those slices, empty when there are none.
+   */
+  const restClause = (unreached === 0)
+    ? ''
+    : `; ${String(unreached,)} ${
+      wordForCount({
+        count: unreached,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } carried no paragraph over the eligibility floor, so no refiner was asked there and ${
+      wordForCount({
+        count: unreached,
+        one: 'its',
+        many: 'their',
+      },)
+    } silence is not evidence about any model`;
+
   console.log(
     `  reached a rewriter on ${String(asked.length,)} of ${String(perSlice.length,)} ${
       wordForCount({
@@ -40,9 +69,7 @@ export function printEditorCalibrateRefineReach(
         one: 'slice',
         many: 'slices',
       },)
-    }; `
-      + 'the rest carried no paragraph over the eligibility floor, so no refiner was asked '
-      + 'and their silence is not evidence about any model',
+    }${restClause}`,
   );
 }
 
@@ -70,14 +97,21 @@ export function printEditorCalibrateShipped(
   { perSlice, }: { readonly perSlice: readonly SliceRounds[]; },
 ): void {
   /**
-   Slices that shipped a repair without any editor round being judged.
+   Slices that shipped a repair without any editor round being judged, a
+   round with no ballot counting as none (`roundWasJudged`), as the standing
+   counts it.
    */
   const unvoted = perSlice.filter(function converged(slice,): boolean {
-    return (slice.editor
+    /**
+     Whether any editor round on this slice drew a ballot.
+     */
+    const judged = slice.editor
+      .some(function drewBallot(round,): boolean {
+        return roundWasJudged({ round, },);
+      },);
+    return (!judged) && (slice.editorShipped
       .length
-      === 0) && (slice.editorShipped
-        .length
-        > 0);
+      > 0);
   },);
 
   /**

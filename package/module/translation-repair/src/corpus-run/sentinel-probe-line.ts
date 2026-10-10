@@ -1,9 +1,6 @@
-import {
-  compareCodePoints,
-  wholeOpening,
-} from '../code-points.ts';
-import { refusalText, } from '../refusal-text.ts';
+import { compareCodePoints, } from '../code-points.ts';
 import type { RepairTranslationResult, } from '../repair-result.ts';
+import { cappedFailureText, } from './tally-error-text.ts';
 
 //region Sentinel probe line
 // What one PROBE line says about one probed entry, as text and nothing else.
@@ -14,8 +11,9 @@ import type { RepairTranslationResult, } from '../repair-result.ts';
 // model asked.
 
 /**
- Most UTF-16 units of an error message kept in a PROBE line, ending on a
- whole character (`wholeOpening`).
+ Most UTF-16 units of an error message's opening kept in a PROBE line, ending
+ on a whole character (`wholeOpening`); a corpus read's kind and remedy follow
+ it uncut (`cappedFailureText`).
  */
 const ERROR_MESSAGE_CAP = 200;
 
@@ -150,7 +148,8 @@ export function probeResultLine(
  @param elapsedMs - duration of this entry's probe
 
  @returns One line: a marked class in its own words, anything else by name
- only, capped at {@link ERROR_MESSAGE_CAP} units on a whole character
+ only, capped at {@link ERROR_MESSAGE_CAP} units on a whole character, a
+ corpus read's kind and remedy kept whole after the cut
 
  @example
  ```ts
@@ -171,8 +170,8 @@ export function probeErrorLine(
   /**
    Failure text for the PROBE line.
    */
-  const message = wholeOpening({
-    text: refusalText({ error, },),
+  const message = cappedFailureText({
+    error,
     units: ERROR_MESSAGE_CAP,
   },);
   return `PROBE ${id} status=ERROR ms=${String(elapsedMs,)} error=${message}`;

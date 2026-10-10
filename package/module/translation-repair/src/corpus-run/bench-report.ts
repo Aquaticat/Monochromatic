@@ -11,6 +11,7 @@ import type {
 import { resolveRunsDir, } from './run-config.ts';
 import { wordForCount, } from '../count-word.ts';
 import { describeSelfPreference, } from '../self-preference-line.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
   type SelectionRound,
   selfPreference,
@@ -28,24 +29,37 @@ import type { BenchRow, } from './roster-bench-row.ts';
 /**
  Raised when a roster cannot be benched because nothing in it varies.
 
+ A STATED REFUSAL BY CLASS. The roster is the operator's, so a roster too
+ narrow to vary is the operator's to widen, and every printer reports it as
+ the command declining to run rather than as a fault with frames. Until
+ 2026-10-06 the class was a plain `Error` and `roster-bench` wrapped it by
+ hand; a caller without the wrap printed it at exit 5.
+
  @example
  ```ts
- throw new BenchReportError({ message: 'a roster of 1 cannot be benched: nothing to vary', },);
+ throw new BenchReportError({ seats: 1, },);
  ```
  */
-export class BenchReportError extends Error {
+export class BenchReportError extends StatedRefusalError {
   /**
-   Builds refusal carrying what could not hold.
+   Declares this message safe to forward: it names the roster's size and
+   writes the rest itself.
+   */
+  override readonly messageNamesOnly: true = true;
 
-   @param message - what leaves nothing for one bench run to compare
+  /**
+   Builds the refusal from the roster's size.
+
+   @param seats - how many models the roster holds, fewer than the
+   narrowest width a bench compares
 
    @example
    ```ts
-   throw new BenchReportError({ message: 'a roster of 1 cannot be benched: nothing to vary', },);
+   throw new BenchReportError({ seats: 1, },);
    ```
    */
-  public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  public constructor({ seats, }: { readonly seats: number; },) {
+    super({ says: `a roster of ${String(seats,)} cannot be benched: nothing to vary`, },);
     this.name = 'BenchReportError';
   }
 }
@@ -115,7 +129,8 @@ function distinctAscending(
  @returns Every width from the narrowest to the whole roster, plus the width
  whose repeat measures the run-to-run band
 
- @throws Error when the roster is too small to vary at all
+ @throws {@link BenchReportError} when the roster is too small to vary at
+ all, a stated refusal naming the roster's size
 
  @example
  ```ts
@@ -144,9 +159,7 @@ export function benchWidths(
     },
   );
   if (widths.length === 0)
-    throw new BenchReportError({
-      message: `a roster of ${String(roster.length,)} cannot be benched: nothing to vary`,
-    },);
+    throw new BenchReportError({ seats: roster.length, },);
 
   return {
     widths,

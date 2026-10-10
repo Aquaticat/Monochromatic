@@ -21,6 +21,17 @@ import { spendCeilingOverrideNote, } from './spend-ceiling.ts';
 /**
  Lines saying which entries a pass was restricted to.
 
+ WHAT `--only` BYPASSES IS THE CHOICE, NOT THE ORDER. Unrestricted, the pass
+ runs every pending pair at the pin; restricted, it runs the entries the
+ operator named (`corpus-pass-select.ts`), and those still pending run in the
+ pass's own order, cached progress first and then the size bands by rank
+ (`corpus-pass-order.ts`). Until 2026-10-06 the line said the ordering was
+ bypassed.
+
+ A NAMED ENTRY FINISHED BEFORE DOES NOT RUN, so the line says the named
+ entries run only if still pending; it is printed before the selection reads
+ which of them are, and until 2026-10-10 it said every named entry runs.
+
  @param onlyIds - entry ids the command line named, empty when it named none
 
  @returns The one line, or none when the pass was not restricted
@@ -42,9 +53,14 @@ export function passOnlyLines({ onlyIds, }: { readonly onlyIds: ReadonlySet<stri
 
   return [
     [
-      `ONLY ${chosen} (ordering is bypassed; run `,
-      'this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked ',
-      'entry never enters a pool later draws treat as natural accumulation)',
+      `ONLY ${chosen} (chosen by hand in place of every pending pair at the pin; `,
+      wordForCount({
+        count: onlyIds.size,
+        one: 'if still pending it runs',
+        many: 'those still pending run',
+      },),
+      ' in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a ',
+      'hand-picked entry never enters a pool later draws treat as natural accumulation)',
     ].join('',),
   ];
 }
@@ -279,15 +295,93 @@ export function passPlanLine(
 }
 
 /**
+ The complete pairs the pass's own walk found, which its closing line counts
+ the artifacts and the declined entries over.
+
+ COUNTED, NEVER WRITTEN DOWN, AND ONE POPULATION. Until 2026-10-06 the closing
+ line read against a literal 92, the pairs at the commit the milestone pinned,
+ on any clone and any pin; then for a while it divided every artifact file in
+ the runs directory, whatever pin it came from, by a count that took in
+ declined entries, which never get an artifact, and finished entries whose
+ English page it never read.
+
+ @example
+ ```ts
+ const pairs: PassPairs = { walked: 'every-entry', ids: new Set(['tabby',],), };
+ ```
+ */
+export type PassPairs = {
+  /**
+   Whether the walk read every entry at the pin, or only those `--only`
+   named, which the line says since its figures are then about those alone.
+   */
+  readonly walked: 'every-entry' | 'named-entries';
+
+  /**
+   Entries whose original and English pages the pin both holds, those still
+   to run and those finished before alike.
+   */
+  readonly ids: ReadonlySet<string>;
+};
+
+/**
+ How many of a set's ids another set holds.
+
+ @param ids - pairs the walk found, the population every count of the DONE
+ line is over
+
+ @param among - entries carrying an artifact or a decline record after the
+ pass, whose share of the pairs the line reports
+
+ @returns Count of the pairs the second set holds, which never exceeds the
+ pairs counted
+
+ @example
+ ```ts
+ const settled = countAmong({ ids: pairs.ids, among: settledIds, },);
+ ```
+ */
+function countAmong(
+  {
+    ids,
+    among,
+  }: {
+    readonly ids: Iterable<string>;
+    readonly among: ReadonlySet<string>;
+  },
+): number {
+  return [...ids,].filter(function held(id,): boolean {
+    return among.has(id,);
+  },)
+    .length;
+}
+
+/**
  The line that closes a pass's report.
 
- @param processed - entries this pass finished
+ THE ARTIFACTS ARE COUNTED AMONG THE PAIRS THE WALK FOUND, a pair declined and
+ carrying no artifact is counted apart and out of the denominator, since it
+ never gets one, and an artifact for an entry the walk found no complete pair
+ for is counted apart too (`unpairedArtifacts`, printed where the walk read
+ every entry: an artifact settled at an earlier pin for an entry this pin does
+ not hold, and the artifact of a finished entry whose English page this pin
+ lacks alike),
+ so `artifacts=N/M` reads as the pairs this pin can still settle and N never
+ passes M.
 
- @param pending - entries it set out to run
+ @param processed - entries this pass finished, which the line names first
+ since it is what this run did
 
- @param total - artifacts present after the pass
+ @param pending - entries it set out to run, which `processed` is read against
 
- @param target - artifacts the whole corpus would hold
+ @param pairs - complete pairs the walk found, the population every count
+ after `processed` is over
+
+ @param settledIds - entries carrying an artifact after the pass, read as the
+ scheduler reads them, so a count of them cannot drift from what it skips
+
+ @param declinedIds - entries carrying a decline record after the pass, which
+ never get an artifact and so leave the denominator
 
  @param elapsedMs - time the processing loop took
 
@@ -295,27 +389,59 @@ export function passPlanLine(
 
  @example
  ```ts
- const line = passDoneLine({ processed: 1, pending: 2, total: 40, target: 92, elapsedMs: 5, },);
+ const line = passDoneLine({ processed: 1, pending: 2, pairs, settledIds, declinedIds, elapsedMs: 5, },);
  ```
  */
 export function passDoneLine(
   {
     processed,
     pending,
-    total,
-    target,
+    pairs,
+    settledIds,
+    declinedIds,
     elapsedMs,
   }: {
     readonly processed: number;
     readonly pending: number;
-    readonly total: number;
-    readonly target: number;
+    readonly pairs: PassPairs;
+    readonly settledIds: ReadonlySet<string>;
+    readonly declinedIds: ReadonlySet<string>;
     readonly elapsedMs: number;
   },
 ): string {
-  return `DONE processed=${String(processed,)} of pending=${String(pending,)}; artifacts=${String(total,)}/${
-    String(target,)
-  } elapsed=${String(elapsedMs,)}ms`;
+  /**
+   Which entries the walk read, and the complete pairs it found among them.
+   */
+  const {
+    walked,
+    ids,
+  } = pairs;
+
+  /**
+   Pairs carrying an artifact.
+   */
+  const settled = countAmong({
+    ids,
+    among: settledIds,
+  },);
+
+  /**
+   Pairs declined and carrying no artifact, which no later run settles.
+   */
+  const declined = [...ids,].filter(function declinedOnly(id,): boolean {
+    return declinedIds.has(id,) && (!settledIds.has(id,));
+  },)
+    .length;
+
+  /**
+   What the counts are over, as the walk read it.
+   */
+  const scope = (walked === 'every-entry')
+    ? ` unpairedArtifacts=${String(settledIds.size - settled,)}`
+    : ' (pairs counted over the entries --only named, not every pair at the pin)';
+  return `DONE processed=${String(processed,)} of pending=${String(pending,)}; artifacts=${String(settled,)}/${
+    String(ids.size - declined,)
+  } declined=${String(declined,)}${scope} elapsed=${String(elapsedMs,)}ms`;
 }
 
 //endregion Corpus pass lines

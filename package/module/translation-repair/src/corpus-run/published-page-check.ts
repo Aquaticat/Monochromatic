@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { codePointLength, } from '../code-points.ts';
 import type { ParsedArchiveText, } from './artifact-two-lane-read-contract.ts';
 import {
   type WouldShipSlice,
@@ -23,6 +24,11 @@ import { PublishedPageDisagreesError, } from './published-page-disagreement.ts';
 // NOTHING HERE PRINTS A PASSAGE. Every finding names a slice by index and a size
 // by character count, because these reports are read beside a corpus whose text
 // may not leave the run directory.
+//
+// A CHARACTER IS A CODE POINT (`codePointLength`), which is what the findings call
+// it. Until 2026-10-06 every size here was a UTF-16 length, so a character beyond
+// the first plane (a rare CJK character, an emoji) counted as two. Only the
+// scan's cursor stays in UTF-16 units, since it is an index into the page.
 //
 // WHAT THIS CANNOT CHECK, stated so nobody reads more into a clean report than
 // it carries. The exact check is to splice the artifact's readings over its
@@ -67,7 +73,7 @@ export type MissingWording = {
   readonly sliceIndex: number;
 
   /**
-   How long that wording is, in UTF-16 code units.
+   How long that wording is, in characters (code points).
    */
   readonly characters: number;
 };
@@ -130,12 +136,12 @@ export type PageLengthCheck = {
   readonly kind: 'weighed';
 
   /**
-   Characters the archive plus every slice change comes to.
+   Characters (code points) the archive plus every slice change comes to.
    */
   readonly expected: number;
 
   /**
-   Characters the page on disk actually has.
+   Characters (code points) the page on disk actually has.
    */
   readonly actual: number;
 
@@ -178,7 +184,9 @@ function sliceDelta(
   /**
    Characters the archive held there, none at an anchor.
    */
-  const held = (nonNullishOrThrow(incumbentBySlice.get(slice.sliceIndex,),)).length;
+  const held = codePointLength({
+    text: nonNullishOrThrow(incumbentBySlice.get(slice.sliceIndex,),),
+  },);
 
   /**
    What this slice would carry, or that it carries nothing.
@@ -194,11 +202,12 @@ function sliceDelta(
    (class seventy-five), so a lane's trailing newline is not counted as a
    character the page then lost.
    */
-  const ships = matchSpanEdges({
-    replaced: nonNullishOrThrow(incumbentBySlice.get(slice.sliceIndex,),),
-    text: reading.text,
-  },)
-    .length;
+  const ships = codePointLength({
+    text: matchSpanEdges({
+      replaced: nonNullishOrThrow(incumbentBySlice.get(slice.sliceIndex,),),
+      text: reading.text,
+    },),
+  },);
 
   return ships - held;
 }
@@ -326,13 +335,12 @@ export function pageWeighsWhatItShould(
   /**
    Characters the archive itself came to.
    */
-  const archiveChars = archive.text
-    .length;
+  const archiveChars = codePointLength({ text: archive.text, },);
 
   return {
     kind: 'weighed',
     expected: archiveChars + net,
-    actual: pageText.length,
+    actual: codePointLength({ text: pageText, },),
     exact: !inserted,
   };
 }
@@ -458,14 +466,15 @@ export function pageCarriesEveryWording(
     if (at === NOT_IN_PAGE) {
       missing.push({
         sliceIndex: slice.sliceIndex,
-        characters: wording.length,
+        characters: codePointLength({ text: wording, },),
       },);
       continue;
     }
 
     // PAST THIS WORDING RATHER THAN PAST ITS START, so the next slice cannot
     // match inside it. Two adjacent slices whose wordings share a suffix and
-    // a prefix would otherwise both find the same stretch of page.
+    // a prefix would otherwise both find the same stretch of page. An index
+    // into the page, so in UTF-16 units, as `indexOf` counts.
     cursor.at = at + wording.length;
   }
 

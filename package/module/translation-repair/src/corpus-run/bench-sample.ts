@@ -3,6 +3,7 @@ import { allInInputOrder, } from '../all-in-input-order.ts';
 import { alignDocumentSections, } from '../chunk-document.ts';
 import {
   type CorpusPin,
+  isMissingCorpusObject,
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
@@ -73,7 +74,7 @@ export type BenchSlice = {
 
  @example
  ```ts
- const skipped: SkippedStep = { kind: 'skipped', line: 'BENCH skipping Mittens: people/Mittens/page.md could not be read: refused by Error', };
+ const skipped: SkippedStep = { kind: 'skipped', line: 'BENCH skipping Mittens: people/Mittens/page.md could not be parsed: refused by Error', };
  ```
  */
 type SkippedStep = {
@@ -220,8 +221,16 @@ function stepOf<Value,>(
 }
 
 /**
- Reads one page of an entry, holding a refused read as the entry's skip line
- naming the page.
+ Reads one page of an entry, holding a page absent at a commit the clone
+ holds as the entry's skip line naming the page.
+
+ ONLY THAT ONE FAILURE IS A SKIP. A page absent at a held commit is an entry
+ missing one side, an ordinary state of this corpus that the census reports
+ too. A read that failed any other way (an object git cannot produce, a
+ commit the clone lacks, a clone git cannot open, a failure that is no corpus
+ read refusal at all) says nothing about the entry and something about the
+ clone or this process, so it refuses the draw: skipped, it dropped the entry
+ from a sample that then compared widths over a corpus it never read whole.
 
  @param entryId - entry a failure's line names
 
@@ -234,6 +243,9 @@ function stepOf<Value,>(
 
  @returns The page's text, or the skip line naming it, held as data so the pair is reported in input
  order whichever page failed first
+
+ @throws Whatever the read failed with, unchanged, unless it is a page absent
+ at a commit the clone holds (`isMissingCorpusObject`)
 
  @example
  ```ts
@@ -263,6 +275,8 @@ async function textOf(
     };
   }
   catch (error) {
+    if (!isMissingCorpusObject(error,))
+      throw error;
     return skippedAt({
       entryId,
       where: `${relPath} could not be read`,
@@ -403,8 +417,9 @@ function pairSlices(
 /**
  Cuts one entry into slices, or says why it cannot.
 
- An entry missing one side is simply not sampled: the census reports the
- same gap.
+ An entry missing one side, a page absent at a commit the clone holds, is
+ simply not sampled: the census reports the same gap. A read that failed any
+ other way refuses the draw (`textOf`).
 
  @param entryId - corpus entry, whose two pages are read under `people/<entryId>/`
 
@@ -414,7 +429,12 @@ function pairSlices(
  @param readFile - reads one page at the pin, passed in so a case scripts which refusal ends first
 
  @returns Every slice of that entry, or its skip line: of two pages that
- fail, the original's failure, read or parse, regardless of which ended first
+ fail, the original's failure, an absent page or a parse, regardless of which
+ ended first
+
+ @throws Whatever a page's read failed with, unchanged, unless the page is
+ absent at a commit the clone holds (`textOf`); of two such failures, the
+ one first in input order
 
  @example
  ```ts
@@ -489,7 +509,8 @@ function printSkipLine(line: string,): void {
 
  An entry missing one side is not a bench failure: the census reports the
  same gap, and refusing to draw a sample over it would make the bench depend
- on corpus completeness it does not need.
+ on corpus completeness it does not need. A read that failed any other way
+ is no gap in the corpus, and refuses the draw (`textOf`).
 
  @param entryIds - entries at the pin, in the order the corpus lists them
 
@@ -502,6 +523,10 @@ function printSkipLine(line: string,): void {
  draw prints and their order; a draw prints them on the terminal
 
  @returns Every slice of every entry cut, in listing order
+
+ @throws Whatever a page's read failed with, unchanged, unless the page is
+ absent at a commit the clone holds (`textOf`); of several such failures,
+ the first in listing order, and within an entry the original's
 
  @example
  ```ts
@@ -524,7 +549,10 @@ export async function sliceListedEntries(
   },
 ): Promise<readonly BenchSlice[]> {
   /**
-   Every entry sliced, or the line that says why it was skipped.
+   Every entry sliced, or the line that says why it was skipped: a page
+   absent at a commit the clone holds, a page that does not parse, or a pair
+   that cannot be aligned or cut. Any other read failure refuses here, the
+   first in listing order.
 
    The line names the entry, the page and the step that failed on it, or says
    that no one page is known, then the failure through `refusalText`: a
@@ -569,6 +597,11 @@ export async function sliceListedEntries(
  @throws {@link StatedRefusalError} when the pinned corpus yields no slice at
  all, since a bench drawn over nothing would report widths as
  indistinguishable while having compared them on no work
+
+ @throws Whatever a page's read failed with, unchanged, unless the page is
+ absent at a commit the clone holds, since only that is an entry missing one
+ side; a draw over a clone missing an object, or one git cannot read, would
+ otherwise compare widths over a corpus it never read whole
 
  @example
  ```ts

@@ -93,10 +93,12 @@ const RUN_BUDGET_MS = BUDGET_HOURS
  file at the start and dates its end
 
  @throws {@link import('../stated-refusal.ts').StatedRefusalError} when the
- benchmark dispatched no entry or planted no seed, after keeping its record
+ corpus at the pin yields no entry to seed, with or without `--plan`, before
+ any client is built or anything is kept
 
- @throws {@link import('../stated-refusal.ts').StatedRefusalError} when the
- setup check (`--plan`) chose no entry to seed, before any client is built
+ @throws {@link import('../stated-refusal.ts').StatedRefusalError} when a run
+ over chosen entries dispatched none or planted no seed, after keeping its
+ record
 
  @example
  ```ts
@@ -124,10 +126,6 @@ export async function runRecallBenchmark(
    When this run began, which names its scorecard file.
    */
   const startedAt = now();
-  await mkdir(
-    runsDir,
-    { recursive: true, },
-  );
 
   /**
    Pipeline tip recorded into the scorecard.
@@ -149,16 +147,21 @@ export async function runRecallBenchmark(
     budgetMs: RUN_BUDGET_MS,
   },),);
 
-  // A PLAN OVER NOTHING IS NOT OK. The setup check exists to catch a wrong
-  // clone or commit before a twelve-hour run, and a corpus that yields no
-  // entry is exactly that; a run over it would plant no seed and refuse at the
-  // end, so the check says so now.
-  if (line.switched('plan',) && (chosen.length === 0))
+  // A RUN OVER NOTHING IS REFUSED HERE, WITH OR WITHOUT `--plan`, before a
+  // client is built or anything is kept. A corpus that yields no entry is a
+  // wrong clone or commit, and a run over it would plant no seed and measure
+  // nothing. Until 2026-10-06 only the plan refused here; the run built a
+  // client, ran nothing, kept an empty scorecard and refused after it.
+  if (chosen.length === 0)
     throw new StatedRefusalError({
-      says: 'the plan chose no entry to seed, so a run would plant no seed and measure nothing; '
+      says: 'no entry at the pin can be seeded, so the benchmark would plant no seed and measure nothing; '
         + 'check that the corpus clone and commit it reads hold entries with both pages and a sentence '
         + 'worth deleting',
     },);
+  await mkdir(
+    runsDir,
+    { recursive: true, },
+  );
 
   /**
    Shared client using measured production provider concurrency.

@@ -106,11 +106,6 @@ export const HARD_CAP_MINUTES: number = 420;
 export const SOFT_BUDGET_MS: number = SOFT_BUDGET_MINUTES * PASS_MS_PER_MINUTE;
 
 /**
- Complete zh/en pairs present at the pinned commit; the run target.
- */
-export const CORPUS_PAIR_TARGET: number = 92;
-
-/**
  Entry ids previewed on the `--plan` line.
  */
 export const PLAN_PREVIEW_COUNT: number = 5;

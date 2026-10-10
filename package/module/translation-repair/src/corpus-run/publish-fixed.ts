@@ -16,6 +16,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type {
   ChunkPair,
 } from '../chunk-document.ts';
+import { codePointLength, } from '../code-points.ts';
 import { wordForCount, } from '../count-word.ts';
 import {
   type SliceReplacement,
@@ -454,6 +455,13 @@ export async function publishFixedPage(
     path,
     text: pageText,
   },);
+
+  /**
+   Characters the page holds, counted as code points as the published page
+   check counts the same page; until 2026-10-06 this was its UTF-16 length,
+   which counts a character beyond the first plane twice.
+   */
+  const pageCharacters = codePointLength({ text: pageText, },);
   l.info(
     `publish: wrote ${String(replacements.length,)} ${
       wordForCount({
@@ -462,9 +470,9 @@ export async function publishFixedPage(
         many: 'slices',
       },)
     } into a page of `
-      + `${String(pageText.length,)} ${
+      + `${String(pageCharacters,)} ${
         wordForCount({
-          count: pageText.length,
+          count: pageCharacters,
           one: 'character',
           many: 'characters',
         },)

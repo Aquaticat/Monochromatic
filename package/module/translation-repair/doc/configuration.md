@@ -346,7 +346,10 @@ These two are command-line flags rather than variables,
 passed after `--`:
 
 -   `--only Id1,Id2`.
-    Restricts the invocation to the named entries and bypasses the ordering.
+    Restricts the invocation to the named entries,
+    chosen by hand in place of every pending pair at the pin;
+    those still pending run in the pass's own order,
+    cached progress first and then the size bands by rank.
     Run it into a throwaway `TRANSLATION_REPAIR_RUNS_DIR`,
     so a hand-picked entry never joins a pool that later draws treat as natural accumulation.
     A flag with no value,
@@ -443,6 +446,12 @@ because a run against the wrong corpus would record its conclusions as the pinne
     the clone must hold the pinned commit.
     Defaults to `one-among-us/data` under the running user's home.
     A relative path is refused.
+    Git searches for a repository no higher than the clone,
+    so the directory must be the top of the clone itself.
+    A clone whose parent directory's real path holds a colon is refused at its first read,
+    since git's list of directories it stops at is split at colons:
+    move the clone,
+    since a link to it keeps the colon in the real path.
 
 -   `TRANSLATION_REPAIR_CORPUS_COMMIT`.
     Commit every read resolves against,

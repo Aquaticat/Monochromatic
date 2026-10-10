@@ -19,6 +19,8 @@ import {
   type DigestGroup,
   groupByDigest,
 } from './digest-group.ts';
+import { judgedRoundsOf, } from './editor-calibrate-standing.ts';
+import { noJudgedRoundLine, } from './editor-standing-absence.ts';
 import {
   type ArtifactFileName,
   ARTIFACTS_DIR,
@@ -59,7 +61,8 @@ import type { CommandLineOf, } from './command-lines.ts';
 // message, which quotes the text it disagrees about.
 
 /**
- Exit code left behind when no artifact carried a round at all.
+ Exit code left behind when no artifact carried a judged round: none carried a
+ round at all, or every round it carried drew no ballot.
  */
 const NOTHING_RECORDED = 1;
 
@@ -284,6 +287,12 @@ async function readOne(
 /**
  Prints one seat's standing within one digest.
 
+ JUDGED MEANS A BALLOT WAS CAST, read through `judgedRoundsOf` and so
+ `roundWasJudged`, the predicate the calibration's standing and closing
+ paragraph read. Until 2026-10-06 this
+ counted every recorded round as judged, so a slate of one candidate, which
+ needs no vote, printed as a judged round with an `UNJUDGED` row.
+
  @param seat - seat the standing is about
 
  @param perChunk - that seat's rounds, grouped by the chunk that bought them
@@ -303,16 +312,28 @@ function reportSeat(
   },
 ): void {
   /**
-   Every round this seat produced under this digest.
+   Every round this seat produced under this digest, judged or not.
    */
-  const rounds = perChunk.flat();
+  const bought = perChunk.flat();
 
   /**
-   Chunks that produced any round, which the round count alone hides: a
+   The rounds a ballot was cast on.
+   */
+  const rounds = judgedRoundsOf({ rounds: bought, },);
+
+  /**
+   Rounds no ballot was cast on, counted beside the judged ones.
+   */
+  const unjudged = bought.length - rounds.length;
+
+  /**
+   Chunks that produced a judged round, which the round count alone hides: a
    chunk carrying no accepted issue never asks an editor to write.
    */
   const paid = perChunk.filter(function contributed(chunk,): boolean {
-    return chunk.length > 0;
+    return judgedRoundsOf({ rounds: chunk, },)
+      .length
+      > 0;
   },);
 
   console.log(
@@ -329,6 +350,16 @@ function reportSeat(
           one: 'chunk',
           many: 'chunks',
         },)
+      }${
+        (unjudged === 0)
+          ? ''
+          : `; ${String(unjudged,)} ${
+            wordForCount({
+              count: unjudged,
+              one: 'round',
+              many: 'rounds',
+            },)
+          } drew no ballot`
       }`,
   );
 
@@ -388,6 +419,27 @@ function reportGroup(
       perChunk: seat.perChunk,
     },);
   }
+}
+
+/**
+ Every round one artifact recorded, at either seat.
+
+ @param reading - artifact read under the current roster
+
+ @returns Its editor rounds, then its refiner rounds, judged or not
+
+ @example
+ ```ts
+ const rounds = everyRound({ reading, },);
+ ```
+ */
+function everyRound({ reading, }: { readonly reading: ArtifactReading; },): readonly SelectionRound[] {
+  return [
+    ...reading.editor
+      .flat(),
+    ...reading.refiner
+      .flat(),
+  ];
 }
 
 /**
@@ -455,28 +507,72 @@ async function reportStandings({ line, }: { readonly line: CommandLineOf<'editor
     .length;
 
   /**
-   Groups carrying at least one judged round, since a group with none says
-   nothing and would otherwise fill the report.
+   Every round the readings recorded, at either seat, judged or not.
    */
-  const groups = groupByDigest({ readings, },)
-    .filter(function judged(group,): boolean {
-      return group
-        .readings
-        .some(function any(reading,): boolean {
-          return (reading.editor
-            .flat()
-            .length
-            + reading.refiner
-            .flat()
-            .length) > 0;
-        },);
+  const recorded = readings.flatMap(function roundsOf(reading,): readonly SelectionRound[] {
+    return everyRound({ reading, },);
+  },);
+
+  /**
+   Every digest the readings were built by, each with whether any of its
+   rounds drew a ballot.
+   */
+  const digests = groupByDigest({ readings, },)
+    .map(function judgedOrNot(group,): {
+      readonly group: DigestGroup<ArtifactReading>;
+      readonly judged: boolean;
+    } {
+      return {
+        group,
+        judged: group
+          .readings
+          .some(function any(reading,): boolean {
+            return judgedRoundsOf({ rounds: everyRound({ reading, },), },)
+              .length
+              > 0;
+          },),
+      };
     },);
+
+  /**
+   Groups carrying at least one judged round, the ones a standing is printed
+   for.
+   */
+  const groups = digests
+    .filter(function judged(digest,): boolean {
+      return digest.judged;
+    },)
+    .map(function groupOf(digest,): DigestGroup<ArtifactReading> {
+      return digest.group;
+    },);
+
+  /**
+   Groups none of whose rounds drew a ballot, which print no standing and are
+   counted on the summary line instead, so their rounds are counted somewhere.
+   Until 2026-10-10 they were dropped whenever another digest had a judged
+   round, and the line's `digestsWithRounds` counted the judged ones alone.
+   */
+  const unjudged = digests.filter(function unjudgedDigest(digest,): boolean {
+    return !digest.judged;
+  },);
+
+  /**
+   Rounds the unjudged groups recorded, none of which drew a ballot.
+   */
+  const unjudgedDigestRounds = unjudged.flatMap(function roundsOfDigest(digest,): readonly SelectionRound[] {
+    return digest.group
+      .readings
+      .flatMap(function roundsOf(reading,): readonly SelectionRound[] {
+        return everyRound({ reading, },);
+      },);
+  },);
 
   console.log(
     `editor-standing-read: archives=${String(roots.length,)} artifacts=${String(paths.length,)} `
       + `read=${String(readings.length,)} earlierRoster=${String(offRoster,)} `
       + `earlierSchema=${String(earlierSchema,)} `
-      + `digestsWithRounds=${String(groups.length,)}`,
+      + `digestsJudged=${String(groups.length,)} digestsUnjudged=${String(unjudged.length,)} `
+      + `unjudgedDigestRounds=${String(unjudgedDigestRounds.length,)}`,
   );
   console.log(
     '  OBSERVATIONAL. Only models that held a seat ever wrote a candidate, so an absent model '
@@ -485,15 +581,10 @@ async function reportStandings({ line, }: { readonly line: CommandLineOf<'editor
   );
 
   if (groups.length === 0) {
-    console.log(
-      (offRoster > 0)
-        ? `  NO ROUNDS UNDER THE CURRENT ROSTER. ${String(offRoster,)} of these artifacts name a `
-          + 'model the roster no longer seats, so they were settled under an earlier one and are '
-          + 'not evidence about the models seated now. This is an absent measurement, not a poor one.'
-        : '  NO ROUNDS. Nothing read here recorded a judged round. Artifacts settled before the '
-          + 'rounds were stored carry none, and an entry whose every chunk was left unchanged '
-          + 'carries none either.',
-    );
+    console.log(noJudgedRoundLine({
+      offRoster,
+      unjudged: recorded.length,
+    },),);
     process.exitCode = NOTHING_RECORDED;
     return;
   }

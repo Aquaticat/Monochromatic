@@ -24,10 +24,11 @@ export {
   tallyErrorText,
 } from './corpus-run/tally-error-text.ts';
 export {
-  judgedAuthors,
+  slatedAuthors,
   sliceStandingLines,
   standingReportLines,
 } from './corpus-run/editor-calibrate-standing.ts';
+export { noJudgedRoundLine, } from './corpus-run/editor-standing-absence.ts';
 export {
   shippedAuthors,
   type SliceRounds,
@@ -305,10 +306,7 @@ export {
   WindowEvidenceError,
   witnessSheets,
 } from './corpus-run/window-trial-witness.ts';
-export {
-  artifactBackedIds,
-  countSettled,
-} from './corpus-run/pass-settled.ts';
+export { artifactBackedIds, } from './corpus-run/pass-settled.ts';
 export {
   protocolDigest,
   type SliceYield,

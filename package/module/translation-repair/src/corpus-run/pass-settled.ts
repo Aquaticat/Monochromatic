@@ -48,25 +48,4 @@ export async function artifactBackedIds(
   );
 }
 
-/**
- How many entries this directory holds, for the against-target line.
-
- @param artifactsDir - directory holding one JSON per settled entry
-
- @returns Count of artifacts present
-
- @internal
-
- @example
- ```ts
- const total = await countSettled({ artifactsDir, },);
- ```
- */
-export async function countSettled(
-  { artifactsDir, }: { readonly artifactsDir: string; },
-): Promise<number> {
-  return (await listArtifactFiles({ artifactsDir, },))
-    .length;
-}
-
 //endregion Pass settled

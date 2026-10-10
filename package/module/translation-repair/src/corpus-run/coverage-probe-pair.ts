@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type CorpusPin,
+  isMissingCorpusObject,
   readCorpusFile,
 } from '../corpus-source.ts';
 
@@ -41,9 +42,11 @@ export type PairRead = {
 /**
  Reads both sides of one entry at the pin.
 
- READS THAT FAIL ARE SKIPPED AND LOGGED rather than thrown, since an entry
- with only one side is an ordinary state of this corpus. That also swallows an
- unreadable clone, which shows up as every entry skipping.
+ A PAGE ABSENT AT A COMMIT THE CLONE HOLDS IS SKIPPED AND LOGGED rather than
+ thrown, since an entry with only one side is an ordinary state of this
+ corpus. Every other failure propagates: until 2026-10-06 every failed read
+ was skipped, so a clone git could not open or a commit the clone lacks read
+ as every entry having one side.
 
  @param pin - corpus clone and commit the reads resolve against
 
@@ -51,7 +54,10 @@ export type PairRead = {
 
  @param log - logger the skip is written to
 
- @returns Both texts, or `missing` when either read failed
+ @returns Both texts, or `missing` when either page is absent at the pin
+
+ @throws {@link CorpusReadError} for any read failure other than a page
+ absent at a commit the clone holds
 
  @example
  ```ts
@@ -83,6 +89,8 @@ export async function readPair(
     };
   }
   catch (error) {
+    if (!isMissingCorpusObject(error,))
+      throw error;
     log.info(`${entryId}: skipped, ${String(error,)}`,);
     return { kind: 'missing', };
   }

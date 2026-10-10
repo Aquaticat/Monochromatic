@@ -382,10 +382,14 @@ function scratchCopyName({ assetName, }: { readonly assetName: string; },): stri
  TOLD APART, since they are different problems for whoever reads the run: a
  machine missing a decoder needs it installed, and a picture a decoder
  refuses is expected of every format that decoder does not read. Read off
- the failure's code through `isMissingPathError`, as the OCR reader's
- failure is. Both used to print as `refused by Error`, under the scratch
- copy's path rather than the asset's name, which told a reader neither
- which picture nor which problem.
+ the failure's code, as the OCR reader's failure is: `isMissingPathError`
+ for a decoder not installed, and `LocalProgramFailedError` for the exit
+ code or filesystem code of one that ran, never the rejection's own words,
+ which quote the scratch paths and whatever the decoder printed. Both used
+ to print as `refused by Error`, under the scratch copy's path rather than
+ the asset's name, which told a reader neither which picture nor which
+ problem; until 2026-10-06 the second still printed `refused by Error`, its
+ exit code lost.
 
  @param assetName - picture the decoder was run on
 
@@ -393,7 +397,8 @@ function scratchCopyName({ assetName, }: { readonly assetName: string; },): stri
 
  @param error - what running it raised
 
- @returns The line, naming the asset, the decoder and which of the two it was
+ @returns Line naming the asset, the decoder and which of the two it
+ was, with the code a decoder that ran failed with
 
  @example
  ```ts
@@ -413,7 +418,16 @@ function decoderFailureLine(
 ): string {
   if (isMissingPathError({ error, },))
     return `${assetName}: ${program} is not installed`;
-  return `${assetName}: ${program} did not decode it (${refusalText({ error, },)})`;
+
+  /**
+   The failure as an account authored from its code.
+   */
+  const failure = new LocalProgramFailedError({
+    program,
+    failure: localProgramFailureOf({ error, },),
+    cause: error,
+  },);
+  return `${assetName}: ${program} did not decode it (${refusalText({ error: failure, },)})`;
 }
 
 /**
@@ -671,11 +685,10 @@ export async function readImageWithOcr(
   }
   catch (error) {
     /**
-     Whether the tool is absent rather than unhappy, which are different
-     problems for whoever reads the run: a spawn of a program not installed
-     fails with `ENOENT`, a run that fails carries its exit code instead. Read
-     off the code, not the error's text, which carries the tool's own output
-     and the paths it was handed.
+     The failure as an account authored from its code: not installed, a
+     filesystem code, or the exit code of a run that failed. Read off the
+     code, not the error's text, which carries the tool's own output and the
+     paths it was handed.
      */
     const failure = new LocalProgramFailedError({
       program: OCR_READER,
@@ -683,7 +696,9 @@ export async function readImageWithOcr(
       cause: error,
     },);
     /**
-     Whether the reader is not installed, which names the reason the reading carries.
+     Whether the reader is not installed rather than unhappy, which names the
+     reason the reading carries: they are different problems for whoever reads
+     the run, and a spawn of a program not installed fails with `ENOENT`.
      */
     const missing = isMissingPathError({ error, },);
     ol.warn(`${assetName}: ${refusalText({ error: failure, },)}`,);

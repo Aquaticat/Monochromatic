@@ -1,12 +1,12 @@
 import { contextRoot, } from '../log-context.ts';
 import { readAttemptMap, } from './attempt-store.ts';
 import {
-  CORPUS_PAIR_TARGET,
   HARD_CAP_MINUTES,
   PLAN_PREVIEW_COUNT,
   SOFT_BUDGET_MS,
 } from './corpus-pass-limits.ts';
 import type { CorpusPassInput, } from './corpus-pass-input.ts';
+import { declinedEntryIds, } from './declined-entries.ts';
 import {
   passDoneLine,
   passLaunchLines,
@@ -23,7 +23,7 @@ import {
 } from './pass-finished.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
 import { republishRunPages, } from './pass-republish.ts';
-import { countSettled, } from './pass-settled.ts';
+import { artifactBackedIds, } from './pass-settled.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import {
   assertRequiredProvidersReady,
@@ -147,9 +147,13 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
 
   /**
    Pending entries in run order, the restriction and the pairs it could not
-   read already said (`corpus-pass-select.ts`).
+   read already said (`corpus-pass-select.ts`), and the complete pairs the
+   walk found, which the closing line counts its artifacts and declines over.
    */
-  const pending = await selectPendingEntries({
+  const {
+    pending,
+    pairs,
+  } = await selectPendingEntries({
     line,
     pin,
     done,
@@ -265,9 +269,15 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
   },);
 
   /**
-   Artifacts present after this run, against the pair target.
+   Entries carrying an artifact after this run, read as the scheduler reads
+   them.
    */
-  const total = await countSettled({ artifactsDir, },);
+  const settledIds = await artifactBackedIds({ artifactsDir, },);
+
+  /**
+   Entries carrying a decline record after this run.
+   */
+  const declinedIds = await declinedEntryIds({ declinedDir, },);
 
   /**
    Entries this run finished, an artifact or a decline each.
@@ -280,8 +290,9 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
   console.log(passDoneLine({
     processed,
     pending: pending.length,
-    total,
-    target: CORPUS_PAIR_TARGET,
+    pairs,
+    settledIds,
+    declinedIds,
     elapsedMs: now() - start,
   },),);
 }

@@ -1,7 +1,7 @@
 import type { RosterModelId, } from '../roster-id.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 import {
-  judgedAuthors,
+  slatedAuthors,
   standingReportLines,
 } from './editor-calibrate-standing.ts';
 import type { SliceRounds, } from './editor-calibrate-slice.ts';
@@ -54,7 +54,7 @@ export function printEditorCalibrateStandings(
       // proposed the same text ships it with no round at all, and a model seen
       // only there wrote something no ballot names.
       produced: [
-        ...judgedAuthors({ perSlice: editorPerSlice, },),
+        ...slatedAuthors({ perSlice: editorPerSlice, },),
         ...perSlice.flatMap(function shippingEditors(rounds,): readonly RosterModelId[] {
           return rounds.editorShipped;
         },),
@@ -75,7 +75,7 @@ export function printEditorCalibrateStandings(
       roster,
       perSlice: refinerPerSlice,
       produced: [
-        ...judgedAuthors({ perSlice: refinerPerSlice, },),
+        ...slatedAuthors({ perSlice: refinerPerSlice, },),
         ...perSlice.flatMap(function shippingRefiners(rounds,): readonly RosterModelId[] {
           return rounds.refinerShipped;
         },),

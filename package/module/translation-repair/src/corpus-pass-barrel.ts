@@ -4,7 +4,6 @@
 // runs them is `corpus-run/corpus-pass.ts`.
 
 export {
-  CORPUS_PAIR_TARGET,
   HARD_CAP_MINUTES,
   PASS_MS_PER_MINUTE,
   PLAN_PREVIEW_COUNT,

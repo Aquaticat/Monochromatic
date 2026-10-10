@@ -4,8 +4,8 @@ import { join, } from 'node:path';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { wordForCount, } from '../count-word.ts';
-import { errorName, } from '../error-name.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
+import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { artifactFileNameOf, } from './artifact-file-name.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
@@ -118,7 +118,11 @@ export type RepublishOutcome =
     why: 'disagreed' | 'missing' | 'unreadable';
 
     /**
-     What refused: a class name, or where the carve moved.
+     What refused, through `refusalText`: a marked refusal in its own words
+     (a corpus read names its kind and remedy, so a commit the clone lacks
+     reads apart from a page absent at one it holds), any other class by name
+     alone, or where the carve moved. Until 2026-10-06 every refusal was its
+     class name, and every kind of corpus read read `CorpusReadError`.
      */
     because: string;
   }>;
@@ -290,7 +294,7 @@ async function rebuildPage(
     return {
       kind: 'left',
       why,
-      because: errorName({ error, },),
+      because: refusalText({ error, },),
     };
   }
 }
@@ -381,7 +385,7 @@ async function republishOne(
     return {
       kind: 'left',
       why: 'unreadable',
-      because: errorName({ error, },),
+      because: refusalText({ error, },),
     };
   }
 }
@@ -444,7 +448,7 @@ export async function republishSettledPages(
     if (outcome.kind === 'republished')
       l.info(`REPUBLISHED entry=${entryId} why=${outcome.why}: page rewritten from its artifact`,);
     if (outcome.kind === 'left')
-      l.warn(`REPUBLISH LEFT entry=${entryId} why=${outcome.why} because=${outcome.because}: page left as it was`,);
+      l.warn(`REPUBLISH LEFT entry=${entryId} why=${outcome.why}: page left as it was; because=${outcome.because}`,);
   }
   /**
    Pages rewritten.

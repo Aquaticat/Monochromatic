@@ -1,3 +1,5 @@
+import { compareCodePoints, } from '../code-points.ts';
+import { wordForCount, } from '../count-word.ts';
 import type { EntryCensus, } from './slice-census-entry.ts';
 import { sliceCensusTotal, } from './slice-census-total.ts';
 
@@ -13,12 +15,42 @@ import { sliceCensusTotal, } from './slice-census-total.ts';
 const UNPAIRED_ENTRIES_LISTED = 5;
 
 /**
+ Unpaired characters of both sides of one entry, which the list ranks by.
+
+ A SUM OVER TWO SCRIPTS, BY DESIGN. A Chinese source says in one character
+ what its English translation says in several, so the same passage left
+ unpaired weighs more on the target side, and the sum favours entries whose
+ unpaired text is English. The list ranks by how much text the aligner left
+ unpaired, not by how much of the entry it carries, and every row prints each
+ side's figure so a reader weighs them apart.
+
+ @param row - measured entry, whose two figures the list ranks by together
+
+ @returns Its unpaired source and target characters together, the key the
+ list sorts on before the entry id
+
+ @example
+ ```ts
+ const held = unpairedCharsOf({ row, },);
+ ```
+ */
+function unpairedCharsOf({ row, }: { readonly row: EntryCensus; },): number {
+  return row.unpairedSourceChars + row.unpairedTargetChars;
+}
+
+/**
  The census lines for the sections the aligner would not pair.
+
+ BOTH SIDES RANK TOGETHER. Until 2026-10-06 the list ranked by unpaired source
+ characters alone, so an entry whose unpaired text was all on the target side
+ ranked last and fell off the list. Entries holding as much break their tie by
+ id in code point order, and a list that leaves entries out says how many.
 
  @param rows - measured entries
 
  @returns The totals line, then one line for each of the entries holding the
- most unpaired source characters, at most five
+ most unpaired characters of both sides together, at most five, then a line
+ counting the entries with unpaired text the list left out, when it left any
 
  @example
  ```ts
@@ -35,6 +67,14 @@ export function sliceCensusUnpairedLines(
     return (row.unpairedSourceSections > 0)
       || (row.unpairedTargetSections > 0);
   },);
+
+  /**
+   Entries with unpaired text the list leaves out.
+   */
+  const leftOut = Math.max(
+    0,
+    unpaired.length - UNPAIRED_ENTRIES_LISTED,
+  );
   return [
     `CENSUS unpaired sections reaching no slice: source ${
       String(sliceCensusTotal({
@@ -62,7 +102,11 @@ export function sliceCensusUnpairedLines(
         left,
         right,
       ): number {
-        return right.unpairedSourceChars - left.unpairedSourceChars;
+        return (unpairedCharsOf({ row: right, },) - unpairedCharsOf({ row: left, },))
+          || compareCodePoints({
+            left: left.entryId,
+            right: right.entryId,
+          },);
       },)
       .slice(
         0,
@@ -75,6 +119,17 @@ export function sliceCensusUnpairedLines(
           String(row.unpairedTargetSections,)
         } (chars: ${String(row.unpairedTargetChars,)})`;
       },),
+    ...((leftOut === 0)
+      ? []
+      : [
+        `CENSUS   and ${String(leftOut,)} more ${
+          wordForCount({
+            count: leftOut,
+            one: 'entry',
+            many: 'entries',
+          },)
+        } with unpaired text, left out of this list`,
+      ]),
   ];
 }
 

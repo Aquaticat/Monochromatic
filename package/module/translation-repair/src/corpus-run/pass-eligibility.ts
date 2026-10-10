@@ -64,6 +64,14 @@ export type PassEligibility = {
    Entries with one side absent at the pin, which reach no pool.
    */
   readonly incomplete: readonly IncompleteEntry[];
+
+  /**
+   Entries whose original and English pages the pin both holds, pending or
+   settled, in walk order: the population a pass's closing line counts over.
+   A settled entry whose English page the pin lacks is sized for ranking and
+   is no pair here.
+   */
+  readonly paired: readonly string[];
 };
 
 /**
@@ -81,7 +89,8 @@ export type PassEligibility = {
 
  @param pin - clone and commit to read at
 
- @returns Pairs, settled sizes, and the entries that could not be paired
+ @returns Pairs, settled sizes, the entries that could not be paired, and
+ every entry the pin holds as a complete pair
 
  @throws {@link CorpusReadError} for any read failure other than a missing
  object at the pin
@@ -122,6 +131,11 @@ export async function collectEligiblePairs(
    */
   const incomplete: IncompleteEntry[] = [];
 
+  /**
+   Entries with both sides at the pin, pending or settled.
+   */
+  const paired: string[] = [];
+
   /* oxlint-disable no-await-in-loop -- corpus reads are sequential git shows; the list is small and this runs once at setup */
   for (const id of ids) {
     /**
@@ -147,6 +161,16 @@ export async function collectEligiblePairs(
         id,
         sourceBytes,
       },);
+      // A FINISHED ENTRY IS A COMPLETE PAIR ONLY WHERE THE PIN HOLDS ITS
+      // ENGLISH PAGE TOO, read for that alone: its source size in `settled` is
+      // all the ranking needs, and no line names its absence, as none did
+      // before.
+      if ((await readSide({
+        pin,
+        id,
+        side: 'target',
+      },)).kind === 'read')
+        paired.push(id,);
       continue;
     }
 
@@ -167,12 +191,14 @@ export async function collectEligiblePairs(
       sourceText: source.text,
       targetText: target.text,
     },);
+    paired.push(id,);
   }
   /* oxlint-enable no-await-in-loop */
   return {
     eligible,
     settled,
     incomplete,
+    paired,
   };
 }
 

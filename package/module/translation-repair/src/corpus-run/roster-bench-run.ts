@@ -1,11 +1,9 @@
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { wordForCount, } from '../count-word.ts';
 import type { RosterModelId, } from '../roster-id.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
 import { readAskedCount, } from './asked-count.ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import {
-  BenchReportError,
   benchWidths,
   summarizeBench,
   type writeBenchReport,
@@ -36,46 +34,6 @@ import type { BenchRow, } from './roster-bench-row.ts';
 const DEFAULT_SLICES = 10;
 
 /**
- Reads the widths a roster supports, refusing as the command's own words a
- roster too narrow to vary.
-
- `BenchReportError` IS NOT MARKED AS A STATED REFUSAL, so left to escape it
- printed as a fault in the command with stack frames and exit 5, for a message
- that names only a count and says what to fix.
-
- @param roster - models the widths are cut from
-
- @returns Every width and the one run twice
-
- @throws {@link StatedRefusalError} when the roster is too small to vary at
- all, with the report's own error as its cause
-
- @example
- ```ts
- const { widths, repeated, } = widthsOrRefusal({ roster, },);
- ```
- */
-function widthsOrRefusal(
-  { roster, }: { readonly roster: readonly RosterModelId[]; },
-): ReturnType<typeof benchWidths> {
-  try {
-    return benchWidths({ roster, },);
-  } catch (error) {
-    // THE SENTENCE IS WRITTEN HERE FROM THE ROSTER'S SIZE rather than copied
-    // out of the caught error, which is not marked as free of quoted content.
-    if (error instanceof BenchReportError)
-      throw new StatedRefusalError({
-        says: `a roster of ${String(roster.length,)} cannot be benched: nothing to vary`,
-        cause: error,
-      },);
-    throw new Error(
-      'unreachable: benchWidths threw something other than its own report error, which is all it raises',
-      { cause: error, },
-    );
-  }
-}
-
-/**
  Runs the whole bench and writes its report.
 
  @param line - the bench's command line, read whole by `reportingRefusals`
@@ -97,9 +55,9 @@ function widthsOrRefusal(
  @param clock - source of the instants each row's duration is read from
 
  @throws {@link StatedRefusalError} when the slice count is not a count of at
- least one or the roster is too narrow to vary, both before the corpus is
- drawn; and whatever building a row's client refuses with, such as a missing
- provider key
+ least one, and its subclass `BenchReportError` when the roster is too narrow
+ to vary, both before the corpus is drawn; and whatever building a row's
+ client refuses with, such as a missing provider key
 
  @example
  ```ts
@@ -135,12 +93,14 @@ export async function runRosterBench(
   },);
 
   /**
-   Widths this roster supports, and which of them is run twice.
+   Widths this roster supports, and which of them is run twice; a roster too
+   narrow to vary is refused here by `BenchReportError`, a stated refusal by
+   class, before the corpus is drawn.
    */
   const {
     widths,
     repeated,
-  } = widthsOrRefusal({ roster, },);
+  } = benchWidths({ roster, },);
 
   /**
    Slices every width sees.

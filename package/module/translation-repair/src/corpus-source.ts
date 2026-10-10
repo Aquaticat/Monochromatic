@@ -5,8 +5,13 @@ import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable
 import spawn, { SubprocessError, } from 'nano-spawn';
 
 import {
+  type CorpusCommitState,
+  probeKeepingRead,
+} from './corpus-commit-probe.ts';
+import {
   CORPUS_GIT_FLAGS,
   corpusGitEnvironment,
+  gitSearchCeiling,
 } from './corpus-git-context.ts';
 import { foldCarriageReturns, } from './line-endings.ts';
 import { StatedRefusalError, } from './stated-refusal.ts';
@@ -86,7 +91,9 @@ export type CorpusPin = {
 };
 
 /**
- What kind of failure a corpus read met.
+ What kind of failure a corpus read met, each one thing a walker or an
+ operator acts on in one way: only a path absent at a commit the clone holds
+ may be stepped past, and each kind's refusal names its own remedy.
 
  @example
  ```ts
@@ -95,22 +102,50 @@ export type CorpusPin = {
  */
 export type CorpusReadFailure =
   /**
-   Git found the commit and the path is not in it, which is what an
+   The clone holds the commit and the path is not in it, which is what an
    incomplete pair looks like: `fatal: path 'x' does not exist in 'sha'`.
    */
   | 'missing-object'
   /**
-   Anything else: an unreadable clone, a spawn failure, an oversized blob,
-   a listing that failed.
+   The clone holds no commit by the revision asked for: a full hash never
+   fetched into it, an abbreviation or a name that resolves to no commit in
+   it, or the id of an object that is no commit, such as a tree. Git prints
+   the same `does not exist in` text for a full hash it lacks as for a path
+   absent at a commit it holds, so only a probe of the commit tells the two
+   apart.
+   */
+  | 'missing-commit'
+  /**
+   Git could not open the clone as a repository, as the probe of the commit
+   and the probe of the clone's own git directory both found (exit status
+   128): the directory is missing, is not the top of one (git searches no
+   higher than the clone, `corpus-git-context.ts`, so a directory inside
+   another repository is no clone), or is one git refuses to read. A clone git
+   opens and then dies in is `other`.
+   */
+  | 'unreadable-clone'
+  /**
+   Anything else at a clone git could open: a blob over the read ceiling, an
+   object git cannot inflate, a git child stopped by a signal or never
+   started. Git's words are read in the C locale (`corpus-git-context.ts`
+   sets `LC_ALL=C`), so no message language turns an absent page into this
+   kind.
    */
   | 'other';
 
 /**
  Stderr phrases with which git reports a path absent at a commit.
 
- MEASURED against git 2.55 rather than recalled: a missing path and an
- unknown commit both say `does not exist in`, and a path present in the
- working tree but not at the commit says `exists on disk, but not in`.
+ MEASURED against git 2.55 rather than recalled: a missing path and a full
+ hash the clone lacks both say `does not exist in`, and a path present in the
+ working tree but not at the commit says `exists on disk, but not in`
+ (also for a hash the clone lacks). The phrases therefore say the path was
+ not found, never that the commit is held: the probe of the commit decides.
+
+ THESE ARE GIT'S ENGLISH WORDS, and git prints them whatever the operator's
+ locale says: `corpus-git-context.ts` hands every corpus git child
+ `LC_ALL=C`, which overrides `LANG`, `LANGUAGE` and `LC_MESSAGES`. Measured
+ with git 2.55, `LANGUAGE=de` alone had git word an absent path in German.
  */
 const MISSING_OBJECT_PHRASES: readonly string[] = [
   'does not exist in',
@@ -127,7 +162,8 @@ const MISSING_OBJECT_PHRASES: readonly string[] = [
 
  @param cause - underlying subprocess failure
 
- @returns Failure kind
+ @returns Failure kind git's text alone supports, which `kindOfFailure` reads
+ beside the probe of the commit before any refusal names it
 
  @example
  ```ts
@@ -177,12 +213,72 @@ function stderrText({ stderr, }: { readonly stderr: unknown; },): string {
 }
 
 /**
- Signals a corpus read that git refused:
- missing clone, unknown commit, or absent path at the pinned commit.
+ What each kind says was found and the one remedy that fits it.
+
+ THE KIND AND ITS SENTENCE CLOSE THE MESSAGE AND A LINE NEVER CUTS THEM: a
+ `PROBE`, `TALLY` or `CLEANUP` line cuts a refusal's opening at a fixed
+ length (`sentinel-probe-line.ts`, `tally-error-text.ts`) and prints this
+ closing whole after it, since a long entry id or picture name once pushed
+ the remedy past the cut.
+ */
+const REMEDY_SENTENCES: Readonly<Record<CorpusReadFailure, string>> = {
+  'missing-object': 'the commit has no such path: check the path, or pin a commit that has it.',
+  'missing-commit': 'the clone holds no commit by that revision: fetch it, or pin a commit the clone holds.',
+  'unreadable-clone': 'git could not open the clone: check that the directory exists, is the top of a git '
+    + 'repository, and is one git may read.',
+  other: 'the read failed another way: run the same git read in the clone by hand to see why.',
+};
+
+/**
+ Decides the kind from git's text and the probe of the commit.
+
+ A PATH-ABSENT TEXT IS A MISSING OBJECT ONLY WHEN THE COMMIT IS HELD: a probe
+ that found the commit lacking makes the kind `missing-commit` whatever git
+ printed, a probe git could not run in the clone makes it `unreadable-clone`,
+ and a probe that got no answer leaves the failure `other`, since nothing then
+ says the commit is held and a walker must not step past it. Git's text alone
+ decides only at a commit the probe found held.
+
+ @param reading - git's stderr alone, which can say an object is absent but
+ never whether the commit holding it is
+
+ @param commit - probe's answer, which decides every kind but the two git's
+ text tells apart at a held commit
+
+ @returns Failure kind the refusal names, the one fact a walker reads to step
+ past an entry or stop
 
  @example
  ```ts
- throw new CorpusReadError({ detail: 'people/whiskers/page.md at a41fc60', cause: error, },);
+ const kind = kindOfFailure({ reading: 'missing-object', commit: 'lacking', },); // 'missing-commit'
+ ```
+ */
+function kindOfFailure(
+  {
+    reading,
+    commit,
+  }: {
+    readonly reading: CorpusReadFailure;
+    readonly commit: CorpusCommitState;
+  },
+): CorpusReadFailure {
+  if (commit === 'held')
+    return reading;
+  if (commit === 'lacking')
+    return 'missing-commit';
+  if (commit === 'unopened')
+    return 'unreadable-clone';
+  return 'other';
+}
+
+/**
+ Signals a corpus read that git refused: an absent path at a commit the clone
+ holds, a commit the clone lacks, a clone git could not open, or another
+ failure, each named by its kind with the remedy that fits it.
+
+ @example
+ ```ts
+ throw new CorpusReadError({ detail: 'people/whiskers/page.md at a41fc60', cause: error, commit: 'held', },);
  ```
  */
 export class CorpusReadError extends StatedRefusalError {
@@ -192,7 +288,8 @@ export class CorpusReadError extends StatedRefusalError {
   override readonly messageNamesOnly: true = true;
 
   /**
-   Which failure git reported, read off its stderr.
+   Which failure git reported, read off its stderr and the probe of the
+   commit.
 
    THE FIELD EVERY CATCHER NEEDED. Until it existed a non-zero git exit, a
    spawn failure, an unreadable clone and an oversized blob all reached a
@@ -203,44 +300,69 @@ export class CorpusReadError extends StatedRefusalError {
   readonly kind: CorpusReadFailure;
 
   /**
+   The kind in brackets and its remedy sentence, which close the message: a
+   line that cuts the message at a fixed length cuts what precedes this and
+   prints this whole.
+   */
+  readonly kindAndRemedy: string;
+
+  /**
    Builds failure naming what was read and why git refused.
 
-   @param detail - object spec or listing that failed
+   @param detail - object spec or listing that failed, which the message names
+   so the operator knows which page or revision to check
 
-   @param cause - underlying subprocess failure carrying git stderr
+   @param cause - underlying subprocess failure, whose git stderr tells a path
+   absent at a held commit from every other failure
+
+   @param commit - probe's answer about the pinned commit, required since
+   git's text alone reads a commit the clone lacks as an absent page, which a
+   walker would step past; a reader a case scripts states the answer it stands
+   for
 
    @example
    ```ts
-   new CorpusReadError({ detail: 'people/ at deadbeef', cause: error, },);
+   new CorpusReadError({ detail: 'people/ at deadbeef', cause: error, commit: 'held', },);
    ```
    */
   public constructor(
     {
       detail,
       cause,
+      commit,
     }: {
       readonly detail: string;
       readonly cause: unknown;
+      readonly commit: CorpusCommitState;
     },
   ) {
     /**
-     What git's stderr says the failure was.
+     What git's stderr and the probe of the commit say the failure was.
      */
-    const kind = classifyCorpusReadFailure({ cause, },);
+    const kind = kindOfFailure({
+      reading: classifyCorpusReadFailure({ cause, },),
+      commit,
+    },);
+
+    /**
+     The closing a cut leaves whole.
+     */
+    const kindAndRemedy = `(${kind}); ${REMEDY_SENTENCES[kind]}`;
     super({
-      says: `corpus read failed for ${detail} (${kind});`
-        + ' check that the clone exists and the pinned commit is present.',
+      says: `corpus read failed for ${detail} ${kindAndRemedy}`,
       cause,
     },);
     this.name = 'CorpusReadError';
     this.kind = kind;
+    this.kindAndRemedy = kindAndRemedy;
   }
 }
 
 /**
- Whether a caught value is a corpus read that failed because the object is
- not at the pin, which is the one failure a walk over the corpus may step
- past: an entry with one side is an ordinary state of this corpus.
+ Whether a caught value is a corpus read that failed because the path is not
+ at a commit the clone holds, which is the one failure a walk over the corpus
+ may step past: an entry with one side is an ordinary state of this corpus,
+ and a commit the clone lacks is not one.
 
  POSITIONAL, since a type predicate cannot narrow a destructured binding.
 
@@ -258,6 +380,77 @@ export function isMissingCorpusObject(error: unknown,): error is CorpusReadError
 }
 
 /**
+ Builds the refusal for a failed read, with the probe of the commit its kind
+ depends on.
+
+ A PROBE THAT GOT NO ANSWER IS KEPT BESIDE THE READ: the refusal's cause is
+ then every failure, the read's first, since the kind it names (`other`)
+ says nothing of why the probe failed.
+
+ A PROBE THAT FAILED IN THIS PROCESS STOPS WITH BOTH: nano-spawn's
+ preparation of the probe throws before any child exists (a working
+ directory removed under this process), which is no fact about the clone, so
+ no refusal is built; what stops the caller holds the read's failure first
+ and the probe's after it, so neither is lost.
+
+ @param pin - clone and commit the failed read resolved against, which the
+ probe asks about
+
+ @param gitPath - git binary the failed read ran, which the probe runs too
+
+ @param detail - object spec or listing that failed, which the message names
+
+ @param cause - failure the read raised, whose git stderr the kind is read from
+
+ @returns Refusal the caller throws in place of the read's failure, its kind
+ decided by the probe, so a walker steps past a page absent at a held commit
+ and nothing else
+
+ @throws AggregateError holding the read's failure and then what the probe's
+ preparation threw, when the probe failed before any git child ran
+
+ @example
+ ```ts
+ throw await corpusReadRefusal({ pin, gitPath, detail: spec, cause: error, },);
+ ```
+ */
+async function corpusReadRefusal(
+  {
+    pin,
+    gitPath,
+    detail,
+    cause,
+  }: {
+    readonly pin: CorpusPin;
+    readonly gitPath: string;
+    readonly detail: string;
+    readonly cause: unknown;
+  },
+): Promise<CorpusReadError> {
+  /**
+   What the probe of the pinned commit came to.
+   */
+  const probe = await probeKeepingRead({
+    pin,
+    gitPath,
+    cause,
+  },);
+  return new CorpusReadError({
+    detail,
+    cause: (probe.state === 'unasked')
+      ? new AggregateError(
+        [
+          cause,
+          ...probe.failures,
+        ],
+        'the corpus read failed, and the probe of its commit got no answer about it',
+      )
+      : cause,
+    commit: probe.state,
+  },);
+}
+
+/**
  Runs one git command against the clone, returning stdout.
 
  @param pin - clone and commit reads resolve against
@@ -270,6 +463,12 @@ export function isMissingCorpusObject(error: unknown,): error is CorpusReadError
 
  @throws {@link CorpusReadError} when the git subprocess fails: a non-zero
  exit, a signal, or a spawn the system refused
+
+ @throws {@link StatedRefusalError} when the clone's real parent path holds a
+ colon, before any git child runs (`corpus-git-context.ts`)
+
+ @throws AggregateError holding the read's failure and what the probe of the
+ commit threw, when the probe failed in this process before git ran
 
  @throws Whatever the subprocess layer's preparation of the call throws,
  unchanged: a fault of this process, such as a working directory removed
@@ -297,6 +496,12 @@ async function gitOutput(
    */
   const gitPath = pin.gitPath ?? await resolveGit();
 
+  /**
+   Where git's search for a repository stops, resolved before the call so a
+   clone refused there is refused as itself.
+   */
+  const searchCeiling = await gitSearchCeiling({ cloneDir: pin.cloneDir, },);
+
   try {
     /**
      Subprocess result; only stdout is consumed.
@@ -309,7 +514,7 @@ async function gitOutput(
         pin.cloneDir,
         ...args,
       ],
-      { env: corpusGitEnvironment(), },
+      { env: corpusGitEnvironment({ searchCeiling, },), },
     );
     return stdout;
   }
@@ -327,12 +532,15 @@ async function gitOutput(
     // `CorpusReadError` gives, to check the clone and the pin, would misname
     // them, so they propagate as themselves. The `corpus-source.unit.test.ts`
     // case on a working directory removed under the process holds this. The
-    // kind field keeps the distinction callers read: `missing-object` where
-    // git says the object is absent, `other` for every other subprocess
-    // failure.
+    // kind field keeps the distinction callers read: `missing-object` only
+    // where git says the object is absent at a commit the probe found held,
+    // and a kind of its own for a commit the clone lacks, a clone git could
+    // not open, and every other subprocess failure.
     if (!(error instanceof SubprocessError))
       throw error;
-    throw new CorpusReadError({
+    throw await corpusReadRefusal({
+      pin,
+      gitPath,
       detail,
       cause: error,
     },);
@@ -354,7 +562,15 @@ async function gitOutput(
 
  @returns File content at the pinned commit, with CRLF folded to LF
 
- @throws {@link CorpusReadError} when the path is absent at the pinned commit
+ @throws {@link CorpusReadError} when git cannot produce the file: the path
+ absent at a commit the clone holds (`missing-object`), a commit the clone
+ lacks, a clone git cannot open, or another failure, each its own kind
+
+ @throws {@link StatedRefusalError} when the clone's real parent path holds a
+ colon, before any git child runs (`corpus-git-context.ts`)
+
+ @throws AggregateError holding the read's failure and what the probe of the
+ commit threw, when the probe failed in this process before git ran
 
  @example
  ```ts
@@ -380,6 +596,12 @@ export async function readCorpusFile(
    */
   const gitPath = pin.gitPath ?? await resolveGit();
 
+  /**
+   Where git's search for a repository stops, resolved before the call so a
+   clone refused there is refused as itself and never read as a failed read.
+   */
+  const searchCeiling = await gitSearchCeiling({ cloneDir: pin.cloneDir, },);
+
   try {
     /**
      Physical blob bytes captured without any newline normalization or lazy fetch.
@@ -396,7 +618,7 @@ export async function readCorpusFile(
       {
         encoding: 'buffer',
         maxBuffer: MAX_BLOB_BYTES,
-        env: corpusGitEnvironment(),
+        env: corpusGitEnvironment({ searchCeiling, },),
       },
     );
     /**
@@ -407,7 +629,9 @@ export async function readCorpusFile(
     return text;
   }
   catch (error) {
-    throw new CorpusReadError({
+    throw await corpusReadRefusal({
+      pin,
+      gitPath,
       detail: spec,
       cause: error,
     },);
@@ -429,6 +653,12 @@ export async function readCorpusFile(
  @returns Blob bytes exactly as committed
 
  @throws {@link CorpusReadError} when git cannot produce that blob
+
+ @throws {@link StatedRefusalError} when the clone's real parent path holds a
+ colon, before any git child runs (`corpus-git-context.ts`)
+
+ @throws AggregateError holding the read's failure and what the probe of the
+ commit threw, when the probe failed in this process before git ran
 
  @example
  ```ts
@@ -454,6 +684,12 @@ export async function readCorpusBytes(
    */
   const gitPath = pin.gitPath ?? await resolveGit();
 
+  /**
+   Where git's search for a repository stops, resolved before the call so a
+   clone refused there is refused as itself and never read as a failed read.
+   */
+  const searchCeiling = await gitSearchCeiling({ cloneDir: pin.cloneDir, },);
+
   try {
     /**
      Physical blob bytes exactly as committed, without replacement refs or lazy fetch.
@@ -470,13 +706,15 @@ export async function readCorpusBytes(
       {
         encoding: 'buffer',
         maxBuffer: MAX_BLOB_BYTES,
-        env: corpusGitEnvironment(),
+        env: corpusGitEnvironment({ searchCeiling, },),
       },
     );
     return stdout;
   }
   catch (error) {
-    throw new CorpusReadError({
+    throw await corpusReadRefusal({
+      pin,
+      gitPath,
       detail: spec,
       cause: error,
     },);
@@ -490,7 +728,14 @@ export async function readCorpusBytes(
 
  @returns Entry ids in git listing order
 
- @throws {@link CorpusReadError} when the clone or commit is unreadable
+ @throws {@link CorpusReadError} when the clone lacks the commit, git cannot
+ open the clone, or the listing fails another way
+
+ @throws {@link StatedRefusalError} when the clone's real parent path holds a
+ colon, before any git child runs (`corpus-git-context.ts`)
+
+ @throws AggregateError holding the read's failure and what the probe of the
+ commit threw, when the probe failed in this process before git ran
 
  @example
  ```ts

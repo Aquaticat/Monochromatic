@@ -42,7 +42,10 @@ export {
 } from './corpus-run/slice-cache-namespace.ts';
 export { verifyArtifactMeasurements, } from './corpus-run/artifact-two-lane-corpus-verify.ts';
 export { resolveGit, } from './corpus-run/git-command.ts';
-export { corpusGitEnvironment, } from './corpus-git-context.ts';
+export {
+  corpusGitEnvironment,
+  gitSearchCeiling,
+} from './corpus-git-context.ts';
 export {
   type HostIdentity,
   hostIdentity,

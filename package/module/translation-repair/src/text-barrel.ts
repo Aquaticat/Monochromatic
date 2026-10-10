@@ -25,6 +25,7 @@ export {
   codePointAt,
   codePointBefore,
   codePointCount,
+  codePointLength,
   compareCodePoints,
   textsInCodePointOrder,
   wholeOpening,

@@ -8,6 +8,7 @@ import type { CommandLineOf, } from './command-lines.ts';
 import {
   passIncompleteLine,
   passOnlyLines,
+  type PassPairs,
 } from './corpus-pass-lines.ts';
 import { orderPendingEntries, } from './corpus-pass-order.ts';
 import { readOnlyIds, } from './entry-filter.ts';
@@ -33,13 +34,15 @@ import { listResumableEntries, } from './slice-cache-store.ts';
 
  @param sliceCacheDir - root of the per-entry slice caches, where cached progress is found
 
- @returns The pairs to run, in run order
+ @returns Pairs to run, in run order, and the complete pairs the walk
+ found, which the pass's closing line counts its artifacts and declines
+ over; under `--only` the walk read the named entries alone, and says so
 
  @throws {@link StatedRefusalError} when `--only` names an entry the corpus does not hold or names none
 
  @example
  ```ts
- const pending = await selectPendingEntries({ line, pin, done, attempts, sliceCacheDir, },);
+ const { pending, pairs, } = await selectPendingEntries({ line, pin, done, attempts, sliceCacheDir, },);
  ```
  */
 export async function selectPendingEntries(
@@ -56,7 +59,10 @@ export async function selectPendingEntries(
     readonly attempts: AttemptMap;
     readonly sliceCacheDir: string;
   },
-): Promise<readonly CorpusPair[]> {
+): Promise<{
+  readonly pending: readonly CorpusPair[];
+  readonly pairs: PassPairs;
+}> {
   /**
    Every person id at the pinned commit.
    */
@@ -85,6 +91,7 @@ export async function selectPendingEntries(
     eligible,
     settled,
     incomplete,
+    paired,
   } = await collectEligiblePairs({
     ids: askedAmong({
       asked: [...onlyIds,],
@@ -115,13 +122,21 @@ export async function selectPendingEntries(
    */
   const resumableIds = await listResumableEntries({ dir: sliceCacheDir, },);
 
-  // In run order (`corpus-pass-order.ts`).
-  return orderPendingEntries({
-    eligible,
-    settled,
-    resumableIds,
-    attempts,
-  },);
+  return {
+    // In run order (`corpus-pass-order.ts`).
+    pending: orderPendingEntries({
+      eligible,
+      settled,
+      resumableIds,
+      attempts,
+    },),
+    // THE WALK'S OWN PAIRS, the pending ones and those finished before whose
+    // two pages the pin holds, over every entry or the named ones alone.
+    pairs: {
+      walked: (onlyIds.size === 0) ? 'every-entry' : 'named-entries',
+      ids: new Set(paired,),
+    },
+  };
 }
 
 //endregion Corpus pass select

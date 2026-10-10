@@ -88,7 +88,54 @@ export function codePointBefore({
 }
 
 /**
- Counts code points rather than UTF-16 units.
+ Counts every code point of a text, surrounding whitespace included: the
+ characters a line calls a text's size.
+
+ An index scan stepping one whole code point at a time ({@link codePointAt}),
+ rather than spreading or `Array.from`, both of which the linter refuses over
+ strings for breaking grapheme clusters. A pair counts once and a lone half
+ counts once, as the string's own iteration reads them (ledger B22).
+
+ SPLIT OUT OF {@link codePointCount} on 2026-10-06 for a page's size, where
+ the whitespace at either end is part of the page: the page check called its
+ UTF-16 length characters.
+
+ @param text - page or line whose size is printed under the word characters,
+ whitespace at either end included since it is part of what was written
+
+ @returns Code points in the whole text, the unit a reader means by
+ characters, which a character beyond the first plane counts once
+
+ @example
+ ```ts
+ const count = codePointLength({ text: ' 其一 ', },); // 4
+ ```
+ */
+export function codePointLength({ text, }: { readonly text: string; },): number {
+  /**
+   Offset reached and code points passed, mutated only inside this function.
+   */
+  const cursor = {
+    at: 0,
+    points: 0,
+  };
+  while (cursor.at < text.length) {
+    /**
+     Whole code point under the cursor, one unit or a pair.
+     */
+    const point = codePointAt({
+      text,
+      at: cursor.at,
+    },);
+    cursor.at += point.length;
+    cursor.points += 1;
+  }
+  return cursor.points;
+}
+
+/**
+ Counts code points rather than UTF-16 units, after trimming surrounding
+ whitespace.
 
  `length` counts surrogate halves, so a rare CJK character measures twice on
  one side of a ratio and once on the other. Every comparison this serves runs
@@ -96,12 +143,9 @@ export function codePointBefore({
  that asymmetry lands, and it lands in the unsafe direction: a doubled source
  size halves a ratio and passes a pairing a guard would otherwise refuse.
 
- An index scan stepping one whole code point at a time ({@link codePointAt}),
- rather than spreading or `Array.from`, both of which the linter refuses over
- strings for breaking grapheme clusters. A pair counts once and a lone half
- counts once, as the string's own iteration reads them (ledger B22): counting
- every unit that is not a second half, as this did, read a lone second half
- as nothing.
+ Counted by {@link codePointLength} over the trimmed text, so a pair counts
+ once and a lone half counts once (ledger B22): counting every unit that is
+ not a second half, as this once did, read a lone second half as nothing.
 
  @param text - text to measure
 
@@ -113,30 +157,7 @@ export function codePointBefore({
  ```
  */
 export function codePointCount({ text, }: { readonly text: string; },): number {
-  /**
-   Trimmed text, since surrounding whitespace is content on neither side.
-   */
-  const trimmed = text.trim();
-
-  /**
-   Offset reached and code points passed, mutated only inside this function.
-   */
-  const cursor = {
-    at: 0,
-    points: 0,
-  };
-  while (cursor.at < trimmed.length) {
-    /**
-     Whole code point under the cursor, one unit or a pair.
-     */
-    const point = codePointAt({
-      text: trimmed,
-      at: cursor.at,
-    },);
-    cursor.at += point.length;
-    cursor.points += 1;
-  }
-  return cursor.points;
+  return codePointLength({ text: text.trim(), },);
 }
 
 /**
