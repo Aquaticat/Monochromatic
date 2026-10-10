@@ -139,10 +139,14 @@ fn a_live_foreign_owner_is_waited_for_and_named() {
     std::fs::write(repo.join("a.txt"), b"content\n").expect("file to add");
     let lock: PathBuf = repo.join(".git/index.lock");
     // The owner starts before it takes the lock, as Git does, so its start precedes the lock's change.
+    // The holder's output goes nowhere and it execs its sleep, so killing it leaves no orphan holding a pipe.
     let mut holder: Child = Command::new("sh")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .args([
             "-c",
-            "while [ ! -e \"$0\" ]; do sleep 0.05; done; exec 3<\"$0\"; sleep 30",
+            "while [ ! -e \"$0\" ]; do sleep 0.05; done; exec 3<\"$0\"; exec sleep 30",
             lock.to_str().expect("UTF-8 path"),
         ])
         .spawn()
