@@ -129,6 +129,20 @@ const plantedControls = [
     failing: 'index_lock_wait::tests::gathering_evidence_counts_toward_the_budget',
   },
   {
+    name: 'the Git version is not checked before an index writer locks',
+    file: 'src/native/index_writer_coordination.rs',
+    from: 'if let Err(reason) = version(input.context) {',
+    to: 'if let Err(reason) = Ok::<crate::git_version::GitRelease, String>((2, 55, 0)) {',
+    failing: 'index_writer_coordination::tests::an_older_git_refuses_an_index_writer_before_the_landing_lock',
+  },
+  {
+    name: 'a replaced real index lock is released',
+    file: 'src/native/real_index_lock.rs',
+    from: '        self.assert_identity()?;\n        if let Err(error) = std::fs::remove_file(&self.lock_path) {',
+    to: '        if let Err(error) = std::fs::remove_file(&self.lock_path) {',
+    failing: 'real_index_lock::tests::a_replaced_lock_is_never_released',
+  },
+  {
     name: 'safe-integer bound on process start ticks',
     file: 'src/native/process_start.rs',
     from: 'if ticks > super::json_record::MAX_SAFE_INTEGER {',
