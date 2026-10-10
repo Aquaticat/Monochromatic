@@ -8009,6 +8009,45 @@ which the rewritten case still does.
 `corpus-run/artifact-eligible.unit.test.ts` still reads this checkout's root commit and `HEAD`,
 now open under B393.
 
+The whole-suite census of 2026-10-10 (UTC) at `116bf6f4bba63f7375181dfddfef4e251eb10d34`,
+the head after the follow-up round of B391 to B400 and its docs,
+ran twice.
+The first run (`census-F4BjiD`) stopped on three failing test files:
+nine as-built cases,
+three in each of the suites `draw-sample as built`,
+`displacement-probe as built` and `editor-calibrate as built`,
+failed because the logger's own line
+`logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`
+reached the stderr of the child each case started,
+and each case pins that stderr whole,
+by the run's suite log (T9).
+The lead's gate on the same code had passed,
+the suite at 2,047 passing and 0 failing,
+so the census's own load,
+an instrumented build with the whole suite under V8 coverage,
+brought the line on.
+The second run (`census-VnXJNm`) passed,
+with the unit suite at 2,047 passes,
+and reads:
+library source,
+4 files,
+10 stretches over 30 lines,
+0 functions never called;
+entry files,
+4 files,
+4 stretches over 4 lines;
+invariant throws counted apart,
+98 stretches;
+and 0 bundles no test loaded.
+Its library files are the four of the census at `f5ea0872bf9f4e8d551b92c64aeba925cf1933e2`,
+`translate-slice.ts` with 1 stretch,
+`footnote-unpositioned-runs.ts` with 7,
+`footnote-protected-ranges.ts` with 1 and `parse-mdx.ts` with 1,
+and its entry stretches are the same four entry tails,
+now at `corpus-run/damage-sample.ts` 50,
+`corpus-run/model-health.ts` 30,
+`corpus-run/roster-bench.ts` 60 and `corpus-run/editor-width-probe.ts` 56.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -8022,6 +8061,23 @@ most of that count is the deliberate `translation-repair-runs*` run directories;
 the logs themselves are 34,919 top-level `*.log.jsonl` files (846 MB with the runs),
 about 22 added per unit suite run,
 and the logger's file sink (`package/module/logger/src/sink/file.ts`) reads no switch that could turn it off in tests.
+
+Added on 2026-10-10 (UTC):
+the logger's sink verification,
+bounded at 5,000 ms,
+writes a line of its own into a process's stderr when it times out,
+`logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`,
+and in the first run of the whole-suite census at `116bf6f4bba63f7375181dfddfef4e251eb10d34`
+that line failed nine as-built cases,
+each pinning its child's stderr whole
+(the T8 passage "The runner and git cluster of the final census").
+It is the logger's defect,
+open as GitHub issue 573 of `module-logger`,
+on which the lead put the evidence.
+The package does not filter the line in tests:
+a case it reaches fails,
+is reported,
+and is run again (M145).
 
 ## Page assembly and the corpus-run driver
 
@@ -33957,6 +34013,15 @@ and the `INCOMPLETE` detail for an ordinary absent page still tells the operator
 a path the pass builds itself,
 where the alternative is to reword it locally in `passIncompleteLine` and `readSide`.
 
+Closed on 2026-10-10 (UTC) for the dates and the configuration page,
+by `34f669155d47ad0de95d674b21d8740b51ddff0d`:
+the TSDoc in `corpus-run/corpus-pass-lines.ts` says "Until 2026-10-10" for both,
+and the corpus pin paragraph of `doc/configuration.md` names `readRunCorpusPinSetting`
+and says each command reads the pin once,
+at the start of its run and inside its refusal boundary,
+where it said the pin was read when `run-config.ts` loads.
+The `INCOMPLETE` detail stays open.
+
 Open to the owner's veto:
 commands that never read the corpus now run past a malformed setting;
 the alternative is to read it in every entry.
@@ -34139,6 +34204,21 @@ whose `graceMs:` key the scan reads,
 and the `WriterGrace` literals of `editor-calibrate-run.unit.test.ts` are out of its reach;
 the alternative is to add both keys and list the literals of a reader's output.
 
+Closed on 2026-10-10 (UTC) by B401 and B402
+(`7285b3c98c55a4654832943f3c444569cb536182`,
+and `e749bca51e21079a2ee4289ad20ae73206900c7e` for B401's production code):
+`corpus-pass.ts` reads the cap,
+the ceiling and the drift opt-in over `process.env` and hands each in,
+and none of the three library functions reads the process's environment (B401);
+and the scan keys `roundMs` and `writerMs`,
+with each value it finds under them listed with its reason (B402).
+The example this entry's open item named could not have fired:
+the `WriterGrace` literals of `editor-calibrate-run.unit.test.ts` are `HANG_STOP_MS`,
+which the scan leaves alone,
+and were so in this entry's red commit.
+`resolveRunsDir()` (`corpus-run/run-config.ts`) still reads `process.env` itself,
+recorded under B401.
+
 Open to the owner's veto:
 one `StageSettings` value for both windows and the ledger;
 the alternative is separate `graceMs` and `contestLedger` parameters.
@@ -34251,6 +34331,152 @@ and `slice-overlap-dial.test-fixture.ts` gains `PASS_FALLBACK_OVERLAP`.
 Recurrence:
 `mistake-prevention.md`,
 "Two layers reading one refusal" and "Tests touching the real world".
+
+### B401: the cap, the ceiling and the drift opt-in were read by library code
+
+Red in `7285b3c98c55a4654832943f3c444569cb536182`,
+fixed in `e749bca51e21079a2ee4289ad20ae73206900c7e`.
+
+Found on 2026-10-10 (UTC) by the agent working the open items B398 left.
+`resolveHardCapMinutes` (`corpus-run/cap-override.ts`) and `resolveSpendCeilingUsd` (`corpus-run/spend-ceiling.ts`)
+read `process.env` in the default of `raw`,
+and `readDriftOptIn` (`corpus-run/pass-generation-guard.ts`) read it in its body;
+`corpus-pass.ts` is each one's only production caller,
+and the barrels re-export them.
+By the agent's run against the base build,
+`readDriftOptIn` handed `env: {}` with the process's variable at `yes` returned true,
+and the walk case handed `yes` returned false:
+two cases of `pass-generation-guard.unit.test.ts` fail at the base,
+the one test file of the four named that the red commit's message counts failing.
+The two resolvers already honoured a `raw` they were handed,
+so their move is a signature change the type checker holds:
+by the agent's account,
+the two base cases that read the environment
+("READS THE ENVIRONMENT when the caller names no raw text ..." in `cap-override.unit.test.ts`
+and "READS THE DIAL FROM THE ENVIRONMENT when no value is handed in ..." in `spend-ceiling.unit.test.ts`)
+give TS2741 against the new declarations,
+and the new case in each file,
+"READS ONLY THE TEXT IT IS HANDED,
+never the process's own variable",
+passes at the base.
+
+The fix:
+`raw` is required on both resolvers,
+with no default that reads the environment;
+`readDriftOptIn({ env })` reads the environment it is handed,
+taking `env` rather than `raw`,
+since `ALLOW_DRIFT_VAR` is private to its module;
+and `corpus-pass.ts` reads all three over `process.env`,
+in the order it read them before,
+the opt-in now after the corpus pin and ahead of `resolveRunsDir()`,
+a move no refusal can observe,
+since the read cannot throw.
+What each setting means and every refusal text are unchanged.
+The TSDoc of `runCorpusPass` lists the drift opt-in among the reads made inside the refusal boundary,
+and names the four library modules that read no environment for them.
+This closes the first open item of B398.
+The lead's gate on `e749bca51e21079a2ee4289ad20ae73206900c7e` passed:
+the suite at 2,047 passing and 0 failing,
+lint with no warnings or errors,
+and 49 source scans passing.
+
+Open,
+seen by the agent and left:
+`resolveRunsDir()` (`corpus-run/run-config.ts`) still reads `process.env` itself,
+left since every production call of it is in an entry file,
+or in a procedure an entry hands it to as a function
+(`resolveRuns`,
+or `resolveRunsDir` for `runCoverageProbe`),
+by a search made for this entry;
+and `streamBoundMs`,
+which `bedrock-client.ts` arms a stream with,
+is not a key of the real clock scan,
+though no test or fixture sets it.
+
+Open to the owner's veto:
+the drift opt-in is read ahead of the runs directory,
+where reading it after the runs directory,
+inline as before,
+is the alternative;
+`readDriftOptIn` takes `env`,
+where taking `raw` and exporting `ALLOW_DRIFT_VAR` is the alternative;
+and the cap and ceiling cases point the process's own variable elsewhere to show the read never consults it,
+so they write `process.env` and run one at a time,
+where relying on the type checker alone is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### B402: the real clock scan did not read the windows a stage settings value carries
+
+Found and closed in `7285b3c98c55a4654832943f3c444569cb536182`,
+the red commit of B401:
+the scan lives in its own test file,
+so it passes against any production code,
+and `e749bca51e21079a2ee4289ad20ae73206900c7e` does not touch it.
+
+Found on 2026-10-10 (UTC) by the agent working the open items B398 left.
+`real-clock-bounds.unit.test.ts` keyed `graceMs` but not `roundMs` or `writerMs`.
+Production hands every round its window from `stageSettings.grace.roundMs` or `stageSettings.grace.writerMs`
+as `graceMs`,
+so those are the other names the straggler window goes by.
+`CalibrationGrace.effectiveMs` and the `builtInMs` of `graceOverrideNote` are only printed,
+and stay out of the keys,
+as the TSDoc of `BOUND_KEYS` says.
+The red is the scan's own fixture case:
+by the agent's control,
+a fixture text with two new `grace` literals fails
+"FINDS a bare or local bound ..."
+with 12 findings against the 14 it expects until both keys are added.
+With both keys added,
+the package-wide case lists 30 values not listed:
+2 in `stage-settings.test-fixture.ts#scriptedStageSettingsWaiting`,
+4 in `stage-settings.unit.test.ts#<module>`
+and 24 in `writer-grace-override.unit.test.ts#<module>`.
+The 28 in the two unit test files are windows a case reads back,
+and no round runs under them.
+The 2 in the fixture hand on its `graceMs` parameter,
+whose callers' `graceMs:` values the scan already reads where they stand.
+So none was a bound on the real clock the scan had missed,
+and none moved to `HANG_STOP_MS`;
+each is listed in the scan's `LISTED` with its reason:
+`HANDED_ON` for the fixture's two;
+`READER_OUTPUT`,
+the output of `readStageSettings` asserted whole,
+for the four of `stage-settings.unit.test.ts`;
+and `WRITER_GRACE_READ_BACK`,
+an output of `readWriterGrace` asserted whole,
+or a grace handed to `writerGraceOverrideNote` and read back in its line,
+for the 24.
+The example B398 gave,
+the `WriterGrace` literals of `editor-calibrate-run.unit.test.ts`,
+cannot fire:
+they are already `HANG_STOP_MS`.
+By the agent's controls,
+each reverted:
+deleting one listed entry fails the scan with the finding
+"found and not listed" for the `roundMs: 90_000` value of `stage-settings.unit.test.ts`;
+and dropping `roundMs` from `BOUND_KEYS` fails the fixture case
+and reports each listed `roundMs` key as "listed and not found".
+One of the agent's controls set a literal bound in the tree for one run and put it back,
+against the brief;
+the lead found that file's `git diff` empty.
+This closes the second open item of B398.
+
+Open to the owner's veto:
+one reason covers both the note inputs and the reader outputs of `writer-grace-override.unit.test.ts`,
+where splitting the cases into named functions,
+so the keys tell them apart,
+is the alternative;
+`effectiveMs` and `builtInMs` stay out of the keys,
+where keying them and listing every printed value is the alternative;
+and no value the scan found moved to `HANG_STOP_MS`,
+where moving them is the alternative.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
 
 ## Process mistakes in this audit
 
@@ -37041,6 +37267,62 @@ the briefs name which agent owns each statement of it,
 and the lead merges each patch's red commit before its fix.
 `mistake-prevention.md`,
 "Copies of shared code".
+
+### M145: a shared brief called a known defect of another package noise
+
+Status:
+happened on 2026-10-10 (UTC),
+by the lead's notes for docs batch thirteen;
+it touched no commit.
+The shared brief of the follow-up round of B391 to B400 called the logger's sink verification lines noise,
+not a failure.
+The whole-suite census at `116bf6f4bba63f7375181dfddfef4e251eb10d34`
+then showed such a line failing nine as-built cases,
+each of which pins its child's whole stderr
+(T9,
+and the T8 passage "The runner and git cluster of the final census").
+The advisor caught the label;
+the lead corrected the brief and put the evidence on GitHub issue 573 of `module-logger`.
+
+Prevention:
+a brief names a known defect of another package as a defect,
+with the cases it is known to fail,
+and tells the agent to report such a case and run it again,
+never to ignore it.
+`mistake-prevention.md`,
+"Tests touching the real world".
+
+### M146: closing notes the review page does not collect left reversed choices on it
+
+Status:
+happened on 2026-10-10 (UTC),
+by the lead's notes for docs batch thirteen;
+caught by the advisor before the page was handed to the owner.
+The closing notes docs batch twelve added
+(each beginning "Closed on 2026-10-10 (UTC)")
+were not read by the page of veto choices for the owner,
+which collects paragraphs by a marker phrase,
+so the old veto paragraphs of B379,
+B381 and the artifact pool case in the T8 passage "The runner and git cluster of the final census"
+stayed on the page as live cards,
+though that round had reversed what they state:
+the owner would have been asked to keep or veto behaviour that no longer exists.
+One batch of the page's choices lost 8 to pointers
+(the page's items T8-5 choice c,
+B379-1,
+and B381-1 choices b to g),
+and the page then held 397 choices and 13 pointers.
+
+Prevention:
+when a later round takes the alternative of a recorded veto,
+the lead writes the closing note,
+lists the item ids the page holds for the old paragraph,
+and turns each reversed choice into a pointer on the page,
+or removes it,
+before the page is rebuilt,
+then drives the page again.
+`mistake-prevention.md`,
+"Questions to the owner".
 
 ### M79: a coverage census measuring compressed code
 

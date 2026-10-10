@@ -965,6 +965,15 @@ filtered or rebuilt by hand.
 Three as-built suites still started their command through `runKeyless` with a path each built itself,
 without the start marker `runBuiltCommand` adds (ledger B386);
 a test starts a built command through `runBuiltCommand` alone.
+A shared brief called the logger's sink verification lines noise,
+not a failure,
+and the first run of the whole-suite census at `116bf6f4b` then failed nine as-built cases on such a line,
+since each pins the stderr of the child it starts whole (ledger M145,
+T9).
+A brief names a known defect of another package as a defect,
+with the cases it is known to fail,
+and tells the agent to report such a case and run it again,
+never to ignore it.
 
 Production code then started its own children with the run's whole environment:
 git children,
@@ -1018,12 +1027,18 @@ B399);
 the slice overlap was read for each entry (ledger B400).
 Each is now read by the entry file and handed down as a value,
 and no production code writes `process.env`.
-Three reads stay in library code,
-each with `corpus-pass.ts` as its only production caller:
-the defaults of `resolveHardCapMinutes` (`corpus-run/cap-override.ts`)
+The cap,
+the spend ceiling and the drift opt-in were still read in library code,
+in the defaults of `resolveHardCapMinutes` (`corpus-run/cap-override.ts`)
 and of `resolveSpendCeilingUsd` (`corpus-run/spend-ceiling.ts`),
-and `readDriftOptIn` (`corpus-run/pass-generation-guard.ts`),
-open under ledger B398.
+and in the body of `readDriftOptIn` (`corpus-run/pass-generation-guard.ts`);
+`corpus-pass.ts`,
+each one's only production caller,
+now reads all three over `process.env` and hands them in (ledger B401).
+One read stays in library code:
+`resolveRunsDir()` (`corpus-run/run-config.ts`) reads `process.env` itself,
+and every production call of it is in an entry file,
+or in a procedure an entry hands it to as a function (ledger B401).
 The width probe built its run client before its draw,
 so a process holding no key refused before every refusal that needs no provider,
 and its as-built cases never reached the draw (ledger B391).
@@ -1061,8 +1076,10 @@ the process's own values are named in the entry file,
 inside its refusal boundary
 (`createRunClient`,
 the `outsideReadsFrom` calls of `corpus-pass.ts` and `rendering-audit-settled.ts`,
-and `readStageSettings`,
-`readRunCorpusPinSetting` and `readPassOverlap` over `process.env`),
+`readStageSettings`,
+`readRunCorpusPinSetting`,
+`readPassOverlap` and `readDriftOptIn` over `process.env`,
+and the cap and ceiling texts `corpus-pass.ts` hands to `resolveHardCapMinutes` and `resolveSpendCeilingUsd`),
 and in TSDoc examples;
 no module builds one while it loads (ledger B394).
 A client a run builds is handed in as a factory
@@ -1133,6 +1150,8 @@ ledger B398,
 B399);
 `settleEntry` requires the pin and the overlap setting (ledger B394,
 B400);
+`resolveHardCapMinutes` and `resolveSpendCeilingUsd` require `raw`,
+and `readDriftOptIn` requires `env` (ledger B401);
 and the pool and its readers require `repository`,
 which tests that require no commit pass as `UNASKED_REPOSITORY` (`corpus-run/pool-policy.test-fixture.ts`,
 ledger B393).
@@ -1180,6 +1199,8 @@ and the as-built conflict cases of the five pooling commands hold the pool's ref
 The cases of the window readers,
 the contest ledger and the overlap readers hand each its own environment
 beside a process that holds another value (ledger B398 to B400),
+as do the cases of the cap,
+the ceiling and the drift opt-in (ledger B401),
 and `corpus-run/corpus-pin-override.unit.test.ts` writes no `process.env` (ledger B394).
 `corpus-run/editor-width-probe-run.unit.test.ts` holds the order of the draw,
 the client and the control,
@@ -1299,12 +1320,17 @@ review holds each to a span the case reads itself.
 Since the stage windows became a `StageSettings` value (ledger B398),
 tests hand them through `SCRIPTED_STAGE_SETTINGS` or `scriptedStageSettingsWaiting({ graceMs })`
 (`stage-settings.test-fixture.ts`),
-whose `graceMs:` key the scan reads;
-it does not key the `roundMs` or `writerMs` of a `StageSettings`,
-so a window written there,
-such as the `WriterGrace` literals of `corpus-run/editor-calibrate-run.unit.test.ts`,
-is out of its reach,
-open under ledger B398.
+whose `graceMs:` key the scan reads.
+The scan also keys `roundMs` and `writerMs`,
+the two windows a `WriterGrace` carries inside a `StageSettings`,
+from which every stage hands one to its round as `graceMs` (ledger B402);
+the values it finds under them that keep their own,
+a window handed on from its caller,
+a reader's output asserted whole,
+or a grace read back in its launch note,
+are listed with their reasons.
+A calibration grace's `effectiveMs` and a note's `builtInMs` are not keys,
+since production only prints them.
 Open,
 as the follow-up merged on 2026-10-10 (UTC) left it (ledger B358,
 B378):
@@ -1312,6 +1338,15 @@ the logger package's own sink verification is bounded at 5,000 ms,
 which timed out 15 to 34 times per whole-suite run in the agents' runs that counted it,
 and 12 times in one run of the source scans,
 without failing a case.
+A timeout can fail a case all the same:
+the logger then writes `logger internal error: sink verification failed ...` into the process's stderr,
+and in the first run of the whole-suite census at `116bf6f4b` that line failed nine as-built cases,
+which pin their child's stderr whole (ledger T9,
+M145).
+It is the logger's defect,
+open as GitHub issue 573;
+a case it fails is reported and run again,
+never ignored (the rule in "Tests touching the real world").
 
 ## Copies of shared code
 
@@ -2206,6 +2241,12 @@ an adopted reading parked in docs across a compaction (M7);
 a measurable question asked instead of measured (M8);
 a fix started against a ruling (M15);
 quality calls put to the owner as design questions (M30).
+Later rounds took the alternatives of recorded vetoes,
+and the page of veto choices for the owner,
+which collects paragraphs by a marker phrase,
+did not read their closing notes,
+so the old veto paragraphs stayed on that page as live cards,
+asking the owner to keep or veto behaviour that no longer existed (ledger M146).
 
 The rule:
 measure what can be measured before asking.
@@ -2215,6 +2256,13 @@ recorded,
 and open to veto.
 A ruling goes into [the design commitments](design-commitments.md) the turn it is given,
 and a finding is checked against them before any fix starts.
+When a later round takes the alternative of a recorded veto,
+the lead writes the closing note,
+lists the item ids the page of veto choices holds for the old paragraph,
+and turns each reversed choice into a pointer on the page,
+or removes it,
+before the page is rebuilt,
+then drives the page again.
 
 What enforces it:
 habit,
