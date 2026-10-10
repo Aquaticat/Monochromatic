@@ -21,7 +21,7 @@ What to inspect:
   in section "Wiring into the native executable";
 - the mutation evidence,
   where two timeouts were caught on their one rerun
-  and the one mutant that the first run missed is killed on the final commit,
+  and the one mutant that the first run missed is equivalent after the candidate fix,
   in section "Mutation of the wired code";
 - the intentional differences, each with its reason,
   in section "Intentional differences";
@@ -800,11 +800,10 @@ and planning starts only for a commit that modifies a workspace manifest.
 
 ### How the surviving mutant was closed
 
-Decided by the coordinator on 2026-10-10: the gate accepts a mutant that is caught or justified as impossible to catch.
-This mutant is caught by the literal-pathspec control (section "The surviving mutant, now killed").
-The equivalent-mutant reasoning that would justify keeping it uncaught
-holds only after the candidate-layer fix described there,
-so the control is the answer for now.
+The gate accepts a mutant that is caught or justified as impossible to catch.
+The survivor is justified by the equivalence argument in section "The surviving mutant is equivalent after the
+candidate fix".
+The literal-pathspec controls are regression tests for the defect that the same section records.
 
 ## Wiring into the native executable
 
@@ -877,16 +876,15 @@ so a difference in bytes would be seen.
 ### Gate on the final commit
 
 `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version mise run //package/git-policy/cli:native:test:container`
-on `d0a65058b6`, image `localhost/git-policy-native-test:dependent-version`,
-evidence `package/git-policy/cli/target/verification/native-vBmFHL` (`passed.json`: tests and Clippy true):
+on `1899e041ef` (the candidate fix; the gated commit), image `localhost/git-policy-native-test:dependent-version`,
+evidence `package/git-policy/cli/target/verification/native-ExrjxD` (`passed.json`: tests and Clippy true):
 
 - 680 unit tests passed, 1 ignored (`corpus_from_environment`, which only the driver runs);
-- 44 binary-level tests passed;
+- 45 binary-level tests passed, including the two literal-pathspec controls;
 - 1 consumer test passed;
 - Clippy with warnings denied passed.
 
-The same gate on `ff6162190` (before the merge of `main` at `9ece20bd66`) is evidence `native-wqRmpp`:
-680 unit, 43 binary, 1 consumer, Clippy passed.
+Earlier gates: `d0a65058b6` (evidence `native-vBmFHL`, 44 binary) and `ff6162190` (evidence `native-wqRmpp`, 43 binary).
 
 ### Mutation of the wired code
 
@@ -903,56 +901,82 @@ on the gate image of `8c82803a1`, evidence `package/git-policy/cli/target/verifi
 Rerun of the files with the timeouts, and of the file with the missed mutant, on the gate image of `ff6162190`
 (evidence `native-mutation-GkjgYs`):
 47 mutants, 33 caught, 13 unviable, 0 timeouts, 1 missed.
-Both timeouts were caught on the one rerun; the missed mutant survived both runs and is killed on the final commit
-(section "The surviving mutant, now killed").
+Both timeouts were caught on the one rerun; the missed mutant survived both runs and is equivalent after the candidate
+fix
+(section "The surviving mutant is equivalent after the candidate fix").
 
-#### The surviving mutant, now killed
+#### The surviving mutant is equivalent after the candidate fix
+
+Campaign on the final candidate fix `1899e041ef` (gate image of that commit, evidence `native-mutation-jmgEl0`):
+`candidate_prediction.rs` and `policy_dependent_version.rs`, 27 mutants: 8 caught, 15 unviable, 3 timeouts, 1 missed.
+The missed mutant is `policy_dependent_version.rs:255:66`, below.
+The three timeouts were rerun alone, as the rule for timeouts requires:
+
+- `policy_dependent_version.rs` alone (evidence `native-mutation-dZ9eEY`): 13 mutants, 4 caught, 8 unviable, 1 missed,
+  and no timeout; the `correction_of` mutant that timed out in the first run was caught on its rerun.
+- `candidate_prediction.rs` alone (evidence `native-mutation-dZgsWV`): 14 mutants, 6 caught, 7 unviable, 1 timeout.
+  The `predicted_add` mutant that timed out in the first run was caught on its rerun.
+  The `projected_scope` mutant (`Ok(vec![])`) timed out again at the 90-second test limit.
+  Applied by hand on the host, it fails 28 lib tests in 10.6 seconds and 12 binary tests in 12.6 seconds,
+  so the suite detects it; the timeout is the container's test phase.
+  It stays an open timeout in the campaign record, and the owner decides how to classify it.
 
 The mutant is `policy_dependent_version.rs:255:66`: `!=` replaced by `==` in the filter that builds `listed`.
-`listed` is the set of candidate paths that the tracked listing must hold
-(`dependent_version_lifecycle.rs:181`, the loop in `index()` that refuses with `UNLISTED`).
-The mutant keeps only `Deleted` candidates, so it changes the outcome only when a candidate is missing from the listing.
+`listed` reaches the tracked listing only through `LifecycleWorkspace` (`dependent_version_lifecycle.rs:87`),
+whose only reader is the loop in `index()` (`dependent_version_lifecycle.rs:181`).
+That loop returns `UNLISTED` (`:185`) when a listed path is missing from `ls-files --stage -z --full-name -- :/`
+(`:166`).
+The original filter lists every non-deleted candidate; the mutant lists the deleted candidates only.
+The two differ in outcome only if the loop can refuse, so the question is whether any route can produce an unlisted
+candidate.
 
-Producers of the candidate list, traced in the code:
+Every route that gives candidates to the planner, traced in the code:
 
-- A direct check or fix builds `CandidateRequest::Direct` at `management.rs:445`.
-  `prepare_candidates` (`candidate_prediction.rs:480`) stages the selected paths with `projected_scope`
-  (`candidate_prediction.rs:385`) and keeps `scope_candidates` (`candidate_stage.rs:482`).
-  That function takes the entries of `ls-files --stage -- <pathspecs>` and assigns only `Added` or `Modified`.
-  A deleted path has no stage entry, so no direct request yields a `Deleted` candidate.
-- A forwarded `git add` builds `CandidateRequest::Add` at `wrapped_command.rs:297`.
-  Its records come from `delta_candidates` (`candidate_stage.rs:416`), which can yield `Deleted`,
-  but `check_dependent_version` returns before reading any candidate for `Trigger::PreForward`
-  (`policy_dependent_version.rs:228`).
-  `policy_trigger.rs:131` lists that trigger for this policy, with `DirectCheck` and `DirectFix`.
-- A `git commit` cannot reach the planner:
-  the commit transaction is unported (section "Wiring into the native executable").
+1. Direct check or fix. `management.rs:445` builds `CandidateRequest::Direct(scope)`.
+   `prepare_candidates` (`candidate_prediction.rs:480`) builds one store whose prefix is the global arguments
+   plus `--no-literal-pathspecs` (`:481-483`).
+   `projected_scope` (`candidate_prediction.rs:385`) stages the selection with that same prefix (`:486-491`),
+   and `scope_candidates` (`candidate_stage.rs:482`) turns the entries of `ls-files --stage -- <pathspecs>`
+   (`candidate_prediction.rs:405`, `candidate_store.rs:407-420`) into records that are `Added` or `Modified`.
+   The listing reads `ls-files --stage -- :/` from the same store, prefix and private index.
+   The staging is the only index write, and it finishes before either read.
+   An entry matched by the pathspecs is an entry of `:/`, so every candidate is listed.
+   A non-zero stage is refused on both sides (`candidate_stage.rs` `UnmergedPath`,
+   `dependent_version_lifecycle.rs:172`).
+   Direct fix passes reuse the same prepared store (`policy_content.rs:308`), so they follow this route.
+2. Forwarded `git add`. `wrapped_command.rs:297` builds `CandidateRequest::Add`, and the forwarded stage runs with
+   `Trigger::PreForward` (`wrapped_command.rs:352`).
+   `check_dependent_version` returns clean for that trigger before it reads any candidate
+   (`policy_dependent_version.rs:228-230`).
+   Add records can contain `Deleted` from `delta_candidates` (`candidate_stage.rs:416`), but they never reach the
+   filter.
+3. Forwarded `git commit`. Only the `add` branch sets candidates (`wrapped_command.rs:296-299`),
+   and the trigger is `PreForward`, so the planner returns clean.
 
-So for every trigger that reaches the filter, no candidate is `Deleted`.
-The correct filter then lists every candidate, the mutant lists none, and the two differ only in the `UNLISTED` refusal.
+On route 1 every candidate is listed by construction, and on routes 2 and 3 the filter is never reached.
+So the listing loop cannot refuse in any reachable run, and the mutant's changed set changes no outcome.
+The mutant is equivalent for every reachable input, and it is justified as impossible to catch on that basis.
 
-That refusal fires when the listing misses a candidate. The candidate paths come from `ls-files --stage -- <pathspecs>`
-(`candidate_store.rs:407`), and the listing reads `ls-files --stage -- :/` from the same private index
-(`dependent_version_lifecycle.rs:166`), so every candidate is listed, unless pathspec magic is off.
-The direct store does not add `--no-literal-pathspecs`, unlike the `add` store (`candidate_prediction.rs:465`).
-Under `GIT_LITERAL_PATHSPECS=1`, `:/` matches nothing, and the refusal fires.
+Before the fix in `1899e041ef`, route 1 did not hold under `GIT_LITERAL_PATHSPECS=1`:
+the listing read `:/` with literal semantics and found no entry, so the loop refused and the mutant was detectable.
+That defect is the one the controls below pin; it is fixed, and the controls stay as regression tests.
 
-Control `literal_pathspecs_refuse_a_direct_check_until_the_listing_honours_them` (binary, commit `d0a65058b6`) runs
-`git cli-git check -- package/module/a/package.json` with that variable set.
-The correct code exits 2 with `content-unavailable`; the mutant reports the dependent as stale.
-Applied by hand to the committed tree, the control failed, and after `git checkout` of the file it passed.
-Single-file campaign on the gate image of `d0a65058b6` (evidence `native-mutation-7MbluT`):
-13 mutants, 5 caught, 8 unviable, 0 missed.
+Defect and fix. A direct check of one named manifest, and `check --all`, under `GIT_LITERAL_PATHSPECS=1`
+refused with `content-unavailable` (exit 2) and `transaction-failed` respectively.
+Cause: the direct prediction's listing and staging used the caller's literal pathspec mode, so `:/` matched nothing,
+and `git add --all -- :/` failed. Commit `1899e041ef` gives the direct prediction the add prediction's magic-enabled
+prefix.
+Controls (binary, `binary_dependent_version_tests.rs`):
+`literal_pathspecs_check_a_named_manifest_like_plain_mode` and `literal_pathspecs_check_all_like_plain_mode`
+were committed first in `da49a81e62`, where both failed against the unfixed code with exit 2, then fixed in
+`1899e041ef`.
+They replace the pinning control of `d0a65058b6`, which asserted the refusal.
 
-Defect found on the way, not fixed here: a legitimate `check -- <path>` under `GIT_LITERAL_PATHSPECS=1`
-refuses with `content-unavailable` instead of reporting the dependents.
-The fix belongs to the candidate layer:
-the direct store should list with `--no-literal-pathspecs`, as the `add` store does,
-or the listing should avoid pathspec magic.
-After such a fix the refusal cannot fire, the mutant becomes equivalent again, and the control must be retargeted.
-Under `GIT_LITERAL_PATHSPECS=1`, `check --all` fails sooner with `transaction-failed`
-(`git add failed: pathspec ':/' did not match`),
-which is existing candidate-layer behavior and was not changed.
+Choice open to veto. Under `GIT_LITERAL_PATHSPECS=1`, user pathspecs in the direct prediction now have glob meaning,
+so a literal name containing `*`, `?` or `[` can match more files than literal mode would.
+Checks then see a superset of the literal candidates, and a fix could correct more files.
+The alternative is to wrap each user pathspec as `:(literal)` in literal mode only, which needs the mode detected from
+the environment.
 
 ### Fuzz smoke on the final commit
 
@@ -1106,5 +1130,9 @@ On `feat/cli-git-native-dependent-version`, oldest first, first parent only:
 - `e5a7b608e7` the merge of `main` at `9ece20bd66`, with six conflicts resolved
   (doc-comment reflow, the wiring replacing the dependent-version refusal, and the candidate-tree declaration kept).
 - `5e3a2f7158` the handover cleanup: the dependent-version refusal is gone from two handover documents.
-- `d0a65058b6` the literal-pathspec control that kills the surviving mutant.
+- `d0a65058b6` the literal-pathspec control that asserted the refusal (replaced by `da49a81e62`).
+- `da49a81e62` the two literal-pathspec controls, committed failing against the unfixed code.
+- `1899e041ef` the candidate fix: the direct prediction reads pathspecs with the add prediction's magic-enabled
+prefix. Gated commit.
+- The commit that adds the section "The surviving mutant is equivalent after the candidate fix" and this list.
 - The commit that adds the section "Wiring into the native executable" and this paragraph.
