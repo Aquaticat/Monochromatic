@@ -1123,18 +1123,37 @@ Strict TLS verification reported `ssl_verify_result` 0 everywhere,
 and each
 certificate's subject alternative names cover the hostname served.
 
-The strongest evidence is the issuance for `mirror.fastly.aquati.cat`.
-That
-name has no CAA of its own,
-and its CNAME target `x.sni.global.fastly.net`
-answers empty for CAA,
-so its climb terminated at `fastly.aquati.cat`'s new
-record and never read the apex.
-Certainly issued anyway.
-A leaf CAA record at
-`fastly.aquati.cat` is therefore sufficient on its own,
-proven by issuance
-rather than inferred from RFC 8659.
+The issuance for `mirror.fastly.aquati.cat` is the most interesting result,
+but it is worth being precise about what it proves,
+because it is **not** a
+differential test.
+That name has no CAA of its own,
+and its CNAME target
+`x.sni.global.fastly.net` answers `NOERROR` with `ANSWER: 0` for CAA,
+which is
+a genuine empty RRset rather than a failed lookup,
+so the climb moved to
+`fastly.aquati.cat` and found `0 issue "certainly.com"` there.
+RFC 8659
+section 3 makes that the Relevant RRset,
+and the apex is not consulted.
+The
+issuance confirms Certainly accepted that set in practice.
+It does not by
+itself exclude the apex as the authorizing node,
+because Certainly issued at
+2026-10-09 22:51 UTC and the apex record was not deleted until roughly 23:45
+UTC,
+so both nodes authorized Certainly at that moment.
+What carries the
+conclusion is the measured climb,
+not the issuance.
+
+Deleting the apex record then turned the next renewal into the differential
+test the issuance could not be.
+From that point the only node that can
+authorize Certainly for `fastly.aquati.cat` or `mirror.fastly.aquati.cat` is
+`fastly.aquati.cat` itself.
 
 The retired name was verified with controls rather than by assertion alone.
 The zone holds a wildcard `*` HTTPS record advertising `alpn="h3"`,
@@ -1173,6 +1192,17 @@ rather than a CNAME or the four addresses in its
 can only be settled by that renewal,
 due around
 2026-10-16 for a certificate expiring 2026-10-26.
+
+That renewal now settles two things at once rather than one.
+Because the apex
+record is already gone,
+a successful re-issuance is also the differential
+proof that the CAA record at `fastly.aquati.cat` authorizes Certainly on its
+own,
+which the earlier `mirror.fastly.aquati.cat` issuance could not provide.
+A failure would leave the two causes entangled,
+and separating them would mean
+applying the fallback below and watching the next attempt.
 
 The maintainer accepted deleting the apex record before that renewal,
 on the
