@@ -41,34 +41,49 @@ const OVERLAP_VAR = 'TRANSLATION_REPAIR_SLICE_OVERLAP';
 
 await describe({
   name: readOverlap.name,
-  // ONE AT A TIME. Every case here writes the same process-wide variable, and
-  // `describe` runs its children concurrently by default, so two cases would
-  // read each other's setting and the file would fail in a way that looks like
-  // the code under test.
+  // ONE AT A TIME. The case showing the reader takes the environment it is
+  // handed points the process-wide variable elsewhere, and `describe` runs its
+  // children concurrently by default.
   concurrency: 1,
   children: [
     it({
       name: 'RETURNS THE CALLER\'S FALLBACK when nobody asked, so a driver decided to run sequentially '
         + 'still does and the control arm of any comparison is the same program',
       fn: async () => {
-        using dial = dialSaying({},);
-
-        expect(readOverlap({ fallback: 1, },),).toBe(1,);
-        expect(readOverlapSetting({ fallback: 1, },),).toEqual({
+        expect(readOverlap({ fallback: 1, env: {}, },),).toBe(1,);
+        expect(readOverlapSetting({ fallback: 1, env: {}, },),).toEqual({
           overlap: 1,
           source: 'fallback',
         },);
-        expect(process.env[OVERLAP_VAR],).toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'READS THE ENVIRONMENT IT IS HANDED, not the process\'s own variable, whose unreadable value would '
+        + 'refuse the read',
+      fn: async () => {
+        using dial = dialSaying({ says: 'several', },);
+
+        expect(readOverlapSetting({
+          fallback: 1,
+          env: { [OVERLAP_VAR]: '2', },
+        },),).toEqual({
+          overlap: 2,
+          source: OVERLAP_VAR,
+        },);
       },
     },),
 
     it({
       name: 'READS a whole number, which is the case the dial exists for',
       fn: async () => {
-        using dial = dialSaying({ says: '4', },);
+        /**
+         Environment the reader is handed.
+         */
+        const env = { [OVERLAP_VAR]: '4', };
 
-        expect(readOverlap({ fallback: 1, },),).toBe(4,);
-        expect(readOverlapSetting({ fallback: 1, },),).toEqual({
+        expect(readOverlap({ fallback: 1, env, },),).toBe(4,);
+        expect(readOverlapSetting({ fallback: 1, env, },),).toEqual({
           overlap: 4,
           source: OVERLAP_VAR,
         },);
@@ -79,9 +94,12 @@ await describe({
       name: 'READS a whole number written with a leading zero as the number it names, by the one rule every '
         + 'count reader in the package now shares (ledger B73)',
       fn: async () => {
-        using dial = dialSaying({ says: '04', },);
+        /**
+         Environment the reader is handed.
+         */
+        const env = { [OVERLAP_VAR]: '04', };
 
-        expect(readOverlap({ fallback: 1, },),).toBe(4,);
+        expect(readOverlap({ fallback: 1, env, },),).toBe(4,);
       },
     },),
 
@@ -90,9 +108,12 @@ await describe({
         + 'grace, writer grace, cap, spend ceiling, credit and request pace dials do, since blanks ask for no '
         + 'overlap at all; it read them as an unreadable value and refused (ledger B73)',
       fn: async () => {
-        using dial = dialSaying({ says: '  ', },);
+        /**
+         Environment the reader is handed.
+         */
+        const env = { [OVERLAP_VAR]: '  ', };
 
-        expect(readOverlapSetting({ fallback: 1, },),).toEqual({
+        expect(readOverlapSetting({ fallback: 1, env, },),).toEqual({
           overlap: 1,
           source: 'fallback',
         },);
@@ -104,13 +125,16 @@ await describe({
         + 'that quietly became sequential would produce a comparison of two identical runs and a '
         + 'recorded conclusion that overlapping units changes nothing',
       fn: async () => {
-        using dial = dialSaying({ says: 'four', },);
+        /**
+         Environment the reader is handed.
+         */
+        const env = { [OVERLAP_VAR]: 'four', };
 
         /**
          What the reader threw on a value nothing could read.
          */
         const refusal = caught(function readsProse() {
-          readOverlap({ fallback: 1, },);
+          readOverlap({ fallback: 1, env, },);
         },);
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
@@ -123,9 +147,13 @@ await describe({
       name: 'REFUSES a fractional value rather than truncating it into another arm, '
         + 'because overlap 1.5 is neither overlap 1 nor overlap 2',
       fn: async () => {
-        using dial = dialSaying({ says: '1.5', },);
+        /**
+         Environment the reader is handed.
+         */
+        const env = { [OVERLAP_VAR]: '1.5', };
+
         const refusal = caught(function readsFraction() {
-          readOverlap({ fallback: 1, },);
+          readOverlap({ fallback: 1, env, },);
         },);
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain('whole number',);
@@ -149,9 +177,11 @@ await describe({
           '-0',
         ];
         for (const spelling of spellings) {
-          using dial = dialSaying({ says: spelling, },);
           const refusal = caught(function readsNotDigits() {
-            readOverlap({ fallback: 1, },);
+            readOverlap({
+              fallback: 1,
+              env: { [OVERLAP_VAR]: spelling, },
+            },);
           },);
           expect(refusal,).toBeInstanceOf(StatedRefusalError,);
           expect((refusal as Error).message,).toBe(
@@ -166,13 +196,16 @@ await describe({
       name: 'REFUSES zero, which is not a smaller amount of work but no work at all: a limit of zero '
         + 'admits nothing and the run would wait forever having said nothing about why',
       fn: async () => {
-        using dial = dialSaying({ says: '0', },);
+        /**
+         Environment the reader is handed.
+         */
+        const env = { [OVERLAP_VAR]: '0', };
 
         /**
          What the reader threw on a limit that admits nothing.
          */
         const refusal = caught(function readsZero() {
-          readOverlap({ fallback: 1, },);
+          readOverlap({ fallback: 1, env, },);
         },);
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
@@ -184,10 +217,8 @@ await describe({
       name: 'GIVES THE CALIBRATION FOUR when nobody asked, which is the owner\'s decision of 2026-08-26 '
         + 'on arm B against arms A and A2, and lets the variable bring it back down to one',
       fn: async () => {
-        using dial = dialSaying({},);
-
         expect(CALIBRATION_OVERLAP,).toBe(4,);
-        expect(readOverlap({ fallback: CALIBRATION_OVERLAP, },),).toBe(4,);
+        expect(readOverlap({ fallback: CALIBRATION_OVERLAP, env: {}, },),).toBe(4,);
       },
     },),
 
@@ -195,9 +226,12 @@ await describe({
       name: 'LETS A LAUNCH BRING THE CALIBRATION BACK TO ONE, so the sequential arm of a comparison is '
         + 'still one variable away',
       fn: async () => {
-        using dial = dialSaying({ says: '1', },);
+        /**
+         Environment the reader is handed.
+         */
+        const env = { [OVERLAP_VAR]: '1', };
 
-        expect(readOverlap({ fallback: CALIBRATION_OVERLAP, },),).toBe(1,);
+        expect(readOverlap({ fallback: CALIBRATION_OVERLAP, env, },),).toBe(1,);
       },
     },),
   ],

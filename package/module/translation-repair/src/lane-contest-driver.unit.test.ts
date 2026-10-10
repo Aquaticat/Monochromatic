@@ -49,6 +49,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { ARCHIVE_NAP, catRow, } from './two-lane-comparison-row.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Roster of three, the smallest that can produce a two-to-one split.
@@ -575,6 +576,7 @@ async function drive(
     // Whole bench, one round: these cases count the calls a memo saves, over
     // a bench every seat of which is scripted the same way.
     fanOut: 'whole-bench',
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     calls,
@@ -692,6 +694,7 @@ async function contestOneSlice(
     l,
     fanOut: 'whole-bench',
     ...((beforeSlice === undefined) ? {} : { beforeSlice, }),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -1465,6 +1468,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               l: capturingLogger({ messages, },),
               fanOut: 'whole-bench',
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect({
               asked: prompts.length > 0,

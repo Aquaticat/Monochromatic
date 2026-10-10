@@ -48,6 +48,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { chunkCandidate, } from './whole-chunk-candidate.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the selection under test.
@@ -165,6 +166,7 @@ async function select({ named, }: { readonly named: readonly RosterModelId[]; },
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     shipped: patch.patchedText,

@@ -61,6 +61,7 @@ import {
   sunbathingOutcome,
 } from './sunbathing-recheck.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the recheck under test.
@@ -361,6 +362,7 @@ async function recheck(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return verdict;
 }

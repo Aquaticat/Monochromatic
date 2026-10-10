@@ -39,6 +39,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Pairing roster accepted by canned client.
@@ -258,6 +259,7 @@ await describe({
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
           outsideReads: NO_OUTSIDE_READS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(paired.prepared.targetText,).toContain('Translator: Cat Friend.');
@@ -305,6 +307,7 @@ await describe({
               overlap: 1,
             },],]);
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(paired.prepared.targetText,).toContain(translation,);

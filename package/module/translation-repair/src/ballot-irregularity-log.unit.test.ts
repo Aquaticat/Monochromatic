@@ -38,6 +38,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Invented original.
@@ -173,6 +174,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(namesVoice({ lines, irregularity: 'duplicate-check (1)', },),).toBe(true,);
       },
@@ -192,6 +194,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(namesVoice({ lines, irregularity: 'duplicate-verdict (1)', },),).toBe(true,);
       },

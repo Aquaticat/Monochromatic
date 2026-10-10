@@ -39,6 +39,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Markers no other section uses, so a sheet can be attributed to the slice it
@@ -224,6 +225,7 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
     },
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
   return asked.map(function split(sheet,): SplitSheet {

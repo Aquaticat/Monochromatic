@@ -44,6 +44,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the phase under test.
@@ -524,6 +525,7 @@ async function runPhase(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -628,6 +630,7 @@ async function runCachedPhase(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     phase,
@@ -722,6 +725,7 @@ async function runReseatedPhase(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     phase,
@@ -1139,6 +1143,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               overlap: 0,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },),)
               .rejects
               .toThrow(OverlapRefusedError,);
@@ -1212,6 +1217,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               overlap: 1,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -1238,6 +1244,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               overlap: 2,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(serial.peak,).toBe(1,);
             expect(overlapped.peak,).toBe(2,);
@@ -1312,6 +1319,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               overlap: 2,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(phase.askedRewriters,).toBe(true,);
           },
@@ -1370,6 +1378,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
             expect(phase.outcomes[0]?.changed,).toBe(false,);
@@ -1407,6 +1416,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },),).rejects.toThrow(UnpreparedSliceError,);
             expect(calls.count,).toBe(0,);
           },
@@ -1451,6 +1461,7 @@ await describe({
               signal: controller.signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },),).rejects.toThrow(Error,);
             expect(stored.size,).toBe(0,);
           },
@@ -1537,6 +1548,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               overlap: 2,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(calls.count,).toBeGreaterThan(0,);
             expect(phase.askedRewriters,).toBe(true,);

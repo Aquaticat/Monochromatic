@@ -47,6 +47,7 @@ import {
   sunbathingOutcome,
 } from './sunbathing-recheck.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the step under test.
@@ -143,6 +144,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },),).rejects.toBeInstanceOf(UnpreparedSliceError,);
       },
     },),
@@ -163,6 +165,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },),).rejects.toBeInstanceOf(CheckerIndependenceError,);
       },
     },),
@@ -211,6 +214,7 @@ await describe({
             signal: stop.signal,
             perCallTimeoutMs: HANG_STOP_MS,
             l: levelCapturingLogger({ lines, },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         },);
 

@@ -43,6 +43,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger for the comparison under test.
@@ -186,6 +187,7 @@ async function ballotSheets(): Promise<readonly string[]> {
     judgeModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
   return asked;

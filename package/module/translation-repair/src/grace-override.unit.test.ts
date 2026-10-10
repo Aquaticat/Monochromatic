@@ -25,6 +25,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   adoptCalibrationGrace,
+  type CalibrationGrace,
   CALIBRATION_STRAGGLER_GRACE_MS,
   graceOverrideNote,
   isTimerWindow,
@@ -364,48 +365,60 @@ await describe({
 
     describe({
       name: adoptCalibrationGrace.name,
-      // ONE AT A TIME: every case writes the same process-wide variable.
+      // ONE AT A TIME: every case points the process's own variable elsewhere,
+      // to show the reader takes the environment it is handed instead.
       concurrency: 1,
       children: [
         it({
-          name: 'ADOPTS the calibration window through the variable when nothing was set, so every stage '
-            + 'round the calibration drives reads it by the path a launch already has',
+          name: 'ADOPTS the calibration window when the environment it is handed sets none, and writes no '
+            + 'variable of the process, since the window now reaches the rounds as a value',
           fn: async () => {
             using dial = windowSaying({},);
 
-            expect(adoptCalibrationGrace(),).toStrictEqual({
-              effectiveMs: CALIBRATION_STRAGGLER_GRACE_MS,
-              source: 'calibration-default',
+            expect({
+              grace: adoptCalibrationGrace({ env: {}, },),
+              processVariable: process.env[STRAGGLER_GRACE_VAR],
+            },).toStrictEqual({
+              grace: {
+                effectiveMs: CALIBRATION_STRAGGLER_GRACE_MS,
+                source: 'calibration-default',
+              },
+              processVariable: undefined,
             },);
-            expect(process.env[STRAGGLER_GRACE_VAR],).toBe(String(CALIBRATION_STRAGGLER_GRACE_MS,),);
-            expect(resolveStragglerGraceMs({ fallback: FALLBACK, },),).toBe(CALIBRATION_STRAGGLER_GRACE_MS,);
           },
         },),
 
         it({
-          name: 'HONORS a launch that set the variable, as an override, and leaves it as set',
-          fn: async () => {
-            using dial = windowSaying({ says: '180000', },);
-
-            expect(adoptCalibrationGrace(),).toStrictEqual({
-              effectiveMs: FALLBACK,
-              source: 'override',
-            },);
-            expect(process.env[STRAGGLER_GRACE_VAR],).toBe('180000',);
-          },
-        },),
-
-        it({
-          name: 'REFUSES an unreadable launch value the way the dial does, instead of adopting over it',
+          name: 'HONORS the override in the environment it is handed, not the value the process holds',
           fn: async () => {
             using dial = windowSaying({ says: 'five minutes', },);
 
-            const refusal = caught(function adoptsProse() {
-              adoptCalibrationGrace();
+            expect(adoptCalibrationGrace({ env: { [STRAGGLER_GRACE_VAR]: '180000', }, },),).toStrictEqual({
+              effectiveMs: FALLBACK,
+              source: 'override',
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES an unreadable value in the environment it is handed the way the dial does, instead of '
+            + 'adopting over it, while the process holds no value at all',
+          fn: async () => {
+            using dial = windowSaying({},);
+
+            /**
+             What the adoption threw on a value nothing could read.
+             */
+            const refusal = caught(function adoptsProse(): CalibrationGrace {
+              return adoptCalibrationGrace({ env: { [STRAGGLER_GRACE_VAR]: 'five minutes', }, },);
             },);
 
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-            expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
+            expect(String(refusal,),).toBe(
+              `StatedRefusalError: ${STRAGGLER_GRACE_VAR} must be a whole number of milliseconds from 1 to `
+                + `${String(MAX_TIMER_DELAY_MS,)}, and "five minutes" is not; leave it unset to run under the `
+                + 'built-in window',
+            );
           },
         },),
       ],

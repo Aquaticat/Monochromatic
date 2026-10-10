@@ -25,6 +25,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
 import { translateLaneClient, } from './translate-lane-script.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Archive wording the slice already carries.
@@ -100,6 +101,7 @@ await describe({
             needle: 'dozes',
           },),
           clock: quarterSecondClock(),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(row,).toEqual({
@@ -234,6 +236,7 @@ await describe({
             needle: 'sleeping',
           },),
           clock: quarterSecondClock(),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect({

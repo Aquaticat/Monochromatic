@@ -7,6 +7,9 @@
  @module
  */
 
+import { readdir, } from 'node:fs/promises';
+import { join, } from 'node:path';
+
 import {
   type Logger,
   tagged,
@@ -54,6 +57,10 @@ import {
   TARGET_TEXT,
 } from './editor-candidate-envelope.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { runsDirPointedAt, } from './corpus-run/runs-dir-pointed.test-fixture.ts';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import { windowDialUnreadable, } from './window-dial-unreadable.test-fixture.ts';
 
 /**
  Logger for the stages under test.
@@ -309,6 +316,7 @@ async function runSelection(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l: logger,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     outcome,
@@ -396,6 +404,7 @@ async function runCollapsedSelection(
       signal: new AbortController().signal,
       perCallTimeoutMs: HANG_STOP_MS,
       l,
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },),
     calls: counter.calls,
   };
@@ -465,6 +474,7 @@ async function runShortBench(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -472,6 +482,80 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: `${selectBestCandidate.name} beside the process's own variables`,
+      // ONE AT A TIME: the case points the process's round window and runs
+      // directory variables elsewhere.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'JUDGES UNDER THE ROUND WINDOW ITS SETTINGS NAME AND RECORDS THE CONTEST UNDER THE RUNS DIRECTORY '
+            + 'THEY NAME, while the process holds a round window no dial can read and names another runs directory',
+          fn: async () => {
+            /**
+             Runs directory the settings name.
+             */
+            await using kept = await scratchDir({ prefix: 'select-kept-', },);
+            /**
+             Runs directory the process's variable names, which must stay empty.
+             */
+            await using elsewhere = await scratchDir({ prefix: 'select-elsewhere-', },);
+            using pointed = runsDirPointedAt({ path: elsewhere.path, },);
+            using round = windowDialUnreadable({ variable: 'TRANSLATION_REPAIR_STRAGGLER_GRACE_MS', },);
+
+            /**
+             Verdict of judges who all back the second candidate.
+             */
+            const outcome = await selectBestCandidate({
+              client: scriptedJudges({
+                ballots: Object.fromEntries(JUDGES.map(function backsSecond(modelId,): readonly [string, number,] {
+                  return [
+                    modelId,
+                    2,
+                  ];
+                },),),
+                counter: { calls: 0, },
+              },),
+              candidates: STRING_CANDIDATES,
+              judgeModelIds: JUDGES,
+              fanOut: 'whole-bench',
+              task: 'Pick one.',
+              criteria: ['Faithful.',],
+              evidence: [
+                {
+                  label: 'ORIGINAL',
+                  text: SOURCE_TEXT,
+                },
+              ],
+              signal: new AbortController().signal,
+              perCallTimeoutMs: HANG_STOP_MS,
+              l,
+              stageSettings: {
+                ...SCRIPTED_STAGE_SETTINGS,
+                contestLedger: {
+                  kind: 'kept',
+                  runsDir: kept.path,
+                },
+              },
+            },);
+
+            expect({
+              chosen: (outcome.kind === 'selected') ? outcome.value : outcome.kind,
+              kept: (await readdir(join(
+                kept.path,
+                'ledger',
+              ),)).length,
+              elsewhere: await readdir(elsewhere.path,),
+            },).toEqual({
+              chosen: 'second',
+              kept: 1,
+              elsewhere: [],
+            },);
+          },
+        },),
+      ],
+    },),
+
     describe({
       name: 'selection on a bench short of quorum',
       concurrency: DEFAULT_CONCURRENCY,
@@ -796,6 +880,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             await expect(refused,).rejects.toBeInstanceOf(ProducerRosterError,);
             expect(counter.calls,).toBe(0,);
@@ -851,6 +936,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(counter.calls,).toBe(0,);
             expect(selection.soleCount,).toBe(1,);
@@ -900,6 +986,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(counter.calls,).toBeGreaterThan(0,);
             expect(selection.declinedCount,).toBe(1,);
@@ -957,6 +1044,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(patch.patchedText,).toContain('The cat chases butterflies.',);
             expect(patch.applied.length,).toBe(1,);
@@ -1010,6 +1098,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(patch.patchedText,).toBe(TARGET_TEXT,);
             expect(patch.applied.length,).toBe(0,);
@@ -1063,6 +1152,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(counter.calls,).toBe(0,);
             expect(patch.patchedText,).toContain('The cat chases butterflies.',);

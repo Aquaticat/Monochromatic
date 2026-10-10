@@ -39,6 +39,7 @@ import {
   makeProbeCorpus,
   refusalOf,
 } from './probes-b-built-command.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Original of three sections against a translation of one: three section
@@ -298,6 +299,7 @@ async function runOver(
         return instants.shift() ?? '';
       },
       log: levelCapturingLogger({ lines: logged, },),
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },);
   }
 

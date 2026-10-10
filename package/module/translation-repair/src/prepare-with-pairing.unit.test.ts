@@ -45,6 +45,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Original side, two blocks so the section is worth a question.
@@ -267,6 +268,7 @@ async function roundsAsked(
         },
       }
       : {}),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asks;
 }
@@ -303,6 +305,7 @@ async function targetSlicesUnder(
     exchangeTimeoutMs: HANG_STOP_MS,
     l,
     ...((sliceCharBudget === undefined) ? {} : { sliceCharBudget, }),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return prepared.slices
     .map(function targetOf(slice,): string {
@@ -337,6 +340,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(prepared.blockPairing,).toEqual([{
               sectionIndex: 0,
@@ -411,6 +415,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             const resumed = await prepareDocumentPairWithRoster({
               client: refusingClient(),
@@ -421,6 +426,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(first.prepared.unclaimedTargetBlocks,).toEqual([]);
@@ -469,6 +475,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(stored.size,).toBe(0,);
 
@@ -489,6 +496,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(recovered.prepared.blockPairing?.at(0,)?.pairs,).toEqual([
@@ -518,6 +526,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
               pairingCache: memoryPairingCache({ stored, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(stored.size,).toBe(0,);
@@ -544,6 +553,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -575,6 +585,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(prepared.blockPairing,).toEqual([],);
             expect(findings,).toContain('block-pairing section 0 fell back to scoring',);
@@ -615,6 +626,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               pairingCache: memoryPairingCache({ stored, },),
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             // POSITIVE CONTROL. Two empty lists compare equal, so a replay that lost
@@ -643,6 +655,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               pairingCache: memoryPairingCache({ stored, },),
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(calls,).toBe(0,);

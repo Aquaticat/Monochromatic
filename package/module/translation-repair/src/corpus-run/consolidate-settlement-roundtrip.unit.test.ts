@@ -42,6 +42,7 @@ import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { ballot, } from '../structural-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Roster of three, the smallest that can produce a two-to-one split.
@@ -383,6 +384,7 @@ async function settleScenario(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages: [], },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 

@@ -29,6 +29,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the probes under test.
@@ -161,6 +162,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(prompts,).toHaveLength(0,);
         expect(report,).toEqual(EMPTY_INTRODUCED_DEFECT_REPORT,);
@@ -183,6 +185,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(report.heardProbers,).toBe(2,);
         expect(report.configuredProbers,).toBe(3,);
@@ -207,6 +210,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(report.findings,).toEqual([`${SEAT_HYPER_OPENROUTER_UNMEASURED}: duplicate-check (1)`,],);
         expect(report.regions[0]
@@ -232,6 +236,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(report.regions[0]
           ?.contradicted,).toBe(PROBERS.length,);
@@ -261,6 +266,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /** Single sheet the one prober received. */
@@ -292,6 +298,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /** Single sheet the one prober received. */

@@ -48,6 +48,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 //region Deep reply floor tests
 
@@ -184,6 +185,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l: capturingLogger({ messages, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(result.changed,).toBe(true,);
@@ -237,6 +239,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'deep-reply-floors-test', },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(polish.kind,).toBe('settled',);
@@ -288,6 +291,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'deep-reply-floors-test', },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(produced.validity
@@ -353,6 +357,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'deep-reply-floors-test', },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(outcome.kind,).toBe('revised',);

@@ -36,6 +36,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /** Four seats let two producers receive disinterested selection ballots. */
 const ROSTER = [
@@ -383,6 +384,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome.kind,).toBe('retained');
@@ -432,6 +434,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.kind,).toBe('retained',);
         expect(outcome.text,).toBe('The cat sleeps quietly by the window.',);
@@ -470,6 +473,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(asked.size,).toBe(ROSTER.length,);
         expect(outcome.kind,).toBe('retained',);
@@ -508,6 +512,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // The review gather itself counted every refusal.
         expect(outcome.findings,).toContain(
@@ -559,6 +564,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.kind,).toBe('retained',);
         expect(outcome.findings.join('\n',),).not.toContain('archive review left the block unresolved',);
@@ -596,6 +602,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.kind,).toBe('revised',);
         expect(outcome.text,).toBe(restored,);
@@ -633,6 +640,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.kind,).toBe('revised',);
         expect(outcome.text,).toBe(corrected,);
@@ -669,6 +677,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome.text,).toBe('The cat sleeps by the window.');
@@ -722,6 +731,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome.text,).toBe(label);
@@ -766,6 +776,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome.text,).toBe(note);
@@ -828,6 +839,7 @@ await describe({
             signal: new AbortController().signal,
             exchangeTimeoutMs: HANG_STOP_MS,
             l,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
           return {
             outcome,
@@ -894,6 +906,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // Every candidate dropped the authoritative identity, so the slate is
         // empty, the selection declines without a call, and the original ships.
@@ -935,6 +948,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // The reviewer verdict is evidence, not withholding authority: the
@@ -984,6 +998,7 @@ await describe({
             signal: new AbortController().signal,
             exchangeTimeoutMs: HANG_STOP_MS,
             l,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
           expect(outcome.kind,).toBe('retained',);
           return {
@@ -1043,6 +1058,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // Archive wording is the shipping default; the decline is recorded
         // evidence and the stage never re-asks.
@@ -1086,6 +1102,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /** Prompts of the review round. */
         const reviews = prompts.filter(function isReview(prompt,): boolean {
@@ -1136,6 +1153,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.kind,).toBe('retained',);
         expect(outcome.text,).toBe(SISTER_BLOCK,);
@@ -1180,6 +1198,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
           },),);
         for (const outcome of outcomes) {

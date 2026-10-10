@@ -465,6 +465,7 @@ await describe({
           validate: isMeowReply,
           stage: 'critic',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(3,);
         expect(gather.quorumMet,).toBe(true,);
@@ -491,6 +492,7 @@ await describe({
             validate: isMeowReply,
             stage: 'panel',
             l,
+            graceMs: HANG_STOP_MS,
           },);
         },);
         expect(refusal,).toBeInstanceOf(StageRosterRepeatError,);
@@ -526,6 +528,7 @@ await describe({
             validate: isMeowReply,
             stage: 'page-title',
             l,
+            graceMs: HANG_STOP_MS,
           },);
         },);
         expect(refusal,).toBeInstanceOf(StageRosterRepeatError,);
@@ -560,6 +563,7 @@ await describe({
           stage: 'select',
           l,
           fanOut: 'whole-bench',
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(2,);
         expect([...gather.unreachable,],).toEqual([SEAT_HYPER_ONLY,],);
@@ -592,6 +596,7 @@ await describe({
           validate: isMeowReply,
           stage: 'archive-block-review',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.voices,).toHaveLength(4,);
@@ -629,6 +634,7 @@ await describe({
             stage: 'archive-block-review',
             l,
             fanOut: 'whole-bench',
+            graceMs: HANG_STOP_MS,
           },);
           return {
             quorum: gather.quorum,
@@ -671,6 +677,7 @@ await describe({
           stage: 'archive-block-review',
           l,
           fanOut: 'whole-bench',
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.quorumMet,).toBe(false,);
         expect(gather.voices,).toHaveLength(0,);
@@ -698,6 +705,7 @@ await describe({
           validate: isMeowReply,
           stage: 'panel',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
@@ -778,6 +786,7 @@ await describe({
           validate: isMeowReply,
           stage: 'panel',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         // The recovery round heard the voice the first round could not read.
         expect(gather.voices,).toHaveLength(3,);
@@ -840,6 +849,7 @@ await describe({
           validate: isMeowReply,
           stage: 'panel',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
@@ -874,6 +884,7 @@ await describe({
           validate: isMeowReply,
           stage: 'panel',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         // 2 of 4 is exactly half. The superseded "strictly more than half"
         // rule would have called this short and burned every retry round;
@@ -920,6 +931,7 @@ await describe({
           validate: isMeowReply,
           stage: 'critic',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.findings,).toContain('stage-voice-lost (critic hf:moonshotai/Kimi-K3)',);
@@ -944,6 +956,7 @@ await describe({
           validate: isMeowReply,
           stage: 'critic',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.findings,).toHaveLength(0,);
       },
@@ -977,6 +990,7 @@ await describe({
           validate: isMeowReply,
           stage: 'panel',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(false,);
@@ -1019,6 +1033,7 @@ await describe({
           validate: isMeowReply,
           stage: 'critic',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.voices.length,).toBeGreaterThanOrEqual(3,);
@@ -1067,6 +1082,7 @@ await describe({
           validate: isMeowReply,
           stage: 'critic',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.voices,).toHaveLength(4,);
@@ -1099,6 +1115,7 @@ await describe({
           validate: isMeowReply,
           stage: 'checker',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(false,);
@@ -1133,6 +1150,7 @@ await describe({
           validate: isMeowReply,
           stage: 'critic',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
@@ -1167,6 +1185,7 @@ await describe({
           validate: isMeowReply,
           stage: 'panel',
           l,
+          graceMs: HANG_STOP_MS,
         },);
 
         // Quorum (2 of 3) stood after the first round, so the quorum loop was
@@ -1352,6 +1371,7 @@ await describe({
           validate: isMeowReply,
           stage: 'panel',
           l,
+          graceMs: HANG_STOP_MS,
         },);
 
         expect(gather.voices,).toHaveLength(2,);
@@ -1426,6 +1446,7 @@ await describe({
           validate: isMeowReply,
           stage: 'editor',
           l,
+          graceMs: HANG_STOP_MS,
         },);
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(true,);

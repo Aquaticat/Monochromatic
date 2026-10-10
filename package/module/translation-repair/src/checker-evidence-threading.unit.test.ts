@@ -50,6 +50,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the drivers under test.
@@ -320,6 +321,7 @@ async function stageSheets({ evidence, }: { readonly evidence: Evidence; },): Pr
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return checkerSheets;
 }
@@ -352,6 +354,7 @@ async function repairLaneSheets({ evidence, }: { readonly evidence: Evidence; },
     models: MODELS,
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return checkerSheets;
 }
@@ -456,6 +459,7 @@ async function refineSheets({ evidence, }: { readonly evidence: Evidence; },): P
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return checkerSheets;
 }

@@ -40,6 +40,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the chunk under test.
@@ -341,6 +342,7 @@ async function runChunk(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     outcome,
@@ -559,6 +561,7 @@ await describe({
               models: MODELS,
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect([
               result.repairedText,

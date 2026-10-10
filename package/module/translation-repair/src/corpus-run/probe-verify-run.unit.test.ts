@@ -45,6 +45,7 @@ import { napCase, } from '../relabel-case.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Pin naming a clone that exists nowhere, since the scripted gatherers read none.
@@ -246,6 +247,7 @@ await describe({
               pin: PIN,
               newClient,
               gather: gathering.gather,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -335,6 +337,7 @@ await describe({
                 damaged: [DAMAGED_CASE,],
                 controls: [],
               },).gather,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines,).toEqual([
@@ -398,6 +401,7 @@ await describe({
                 pin: PIN,
                 newClient,
                 gather: gathering.gather,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             },);
 
@@ -451,6 +455,7 @@ await describe({
                   damaged: [DAMAGED_CASE,],
                   controls: [],
                 },).gather,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             },);
 

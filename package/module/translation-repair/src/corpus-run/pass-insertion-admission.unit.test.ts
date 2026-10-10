@@ -41,6 +41,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Production-shaped test roster.
@@ -243,6 +244,7 @@ async function runAdmission(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -702,6 +704,7 @@ async function deficitAdmission(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages, },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     admission,
@@ -801,6 +804,7 @@ async function coverageSeatsAsked(
     perCallTimeoutMs: HANG_STOP_MS,
     l,
     ...((beforeCandidate === undefined) ? {} : { beforeCandidate, }),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;
 }
@@ -948,6 +952,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect([...admission.positions,].toSorted(function ascending(
               left,
@@ -984,6 +989,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect([...admission.positions,],).toEqual([],);
             expect(
@@ -1061,6 +1067,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect([...admission.positions,].toSorted(function ascending(
               left,
@@ -1095,6 +1102,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect([...admission.positions,],).toEqual([0,],);
             expect(
@@ -1124,6 +1132,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect([...admission.positions,],).toEqual([1,],);
             expect(
@@ -1146,6 +1155,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect([...admission.positions,],).toEqual([],);
           },

@@ -36,6 +36,7 @@ import {
 } from '../introduced-defect-scripted-client.test-fixture.ts';
 import { napCase, } from '../relabel-case.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Builds a client in which every prober casts the same check.
@@ -150,6 +151,7 @@ await describe({
               cases: [],
               kind: 'damaged',
               newClient,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },),).toEqual([],);
             expect(printed.lines,).toEqual([],);
             expect(built(),).toBe(0,);
@@ -200,6 +202,7 @@ await describe({
               cases,
               kind: 'damaged',
               newClient,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -250,6 +253,7 @@ await describe({
               cases: [control,],
               kind: 'control',
               newClient: successiveClients({ clients: [everyProberCasts({ check: ADDITION_CHECK, },),], },).newClient,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines,).toEqual([
@@ -293,6 +297,7 @@ await describe({
                   everyProberCasts({ check: UNANCHORED_CHECK, },),
                 ],
               },).newClient,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(items,).toEqual([],);
@@ -332,6 +337,7 @@ await describe({
               ],
               kind: 'damaged',
               newClient,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(built(),).toBe(2,);

@@ -26,6 +26,7 @@ import {
 import { benchSliceOf, } from './editor-calibrate-rounds.test-fixture.ts';
 import { shippingLaneClient, } from './editor-lane-script.test-fixture.ts';
 import { scriptedClient, } from './scripted-width-client.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 await describe({
   name: '',
@@ -44,6 +45,7 @@ await describe({
             const rounds = await runEditorLane({
               slice: benchSliceOf({ entryId: 'mittens', index: 0, },),
               client: scriptedClient({ script: { critic_report: { issues: [], }, }, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(rounds,).toEqual({
@@ -67,6 +69,7 @@ await describe({
             const rounds = await runEditorLane({
               slice: benchSliceOf({ entryId: 'mittens', index: 0, },),
               client: shippingLaneClient(),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**

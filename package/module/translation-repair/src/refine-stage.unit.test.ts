@@ -5,6 +5,9 @@
  @module
  */
 
+import { readdir, } from 'node:fs/promises';
+import { join, } from 'node:path';
+
 import {
   type Logger,
   tagged,
@@ -23,8 +26,13 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type RosterModelId,
+  type StageSettings,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { runsDirPointedAt, } from './corpus-run/runs-dir-pointed.test-fixture.ts';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import { windowDialUnreadable, } from './window-dial-unreadable.test-fixture.ts';
 import {
   type AskedSheet,
   askedSheetOf,
@@ -274,11 +282,13 @@ async function runFixture(
     referenceContext,
     repairedText = REPAIRED_TEXT,
     logger = l,
+    stageSettings = SCRIPTED_STAGE_SETTINGS,
   }: {
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly repairedText?: string;
     readonly logger?: Logger;
+    readonly stageSettings?: StageSettings;
   } = {},
 ) {
   /** Envelopes and definitions of the slice. */
@@ -299,6 +309,7 @@ async function runFixture(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l: logger,
+    stageSettings,
   },);
 }
 
@@ -306,6 +317,58 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: `${runRefineStage.name} beside the process's own variables`,
+      // ONE AT A TIME: the case points the process's writer window and runs
+      // directory variables elsewhere.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'WAITS UNDER THE WRITER WINDOW ITS SETTINGS NAME AND RECORDS ITS CONTEST UNDER THE RUNS DIRECTORY THEY '
+            + 'NAME, while the process holds a writer window no dial can read and names another runs directory',
+          fn: async () => {
+            /**
+             Runs directory the settings name.
+             */
+            await using kept = await scratchDir({ prefix: 'refine-kept-', },);
+            /**
+             Runs directory the process's variable names, which must stay empty.
+             */
+            await using elsewhere = await scratchDir({ prefix: 'refine-elsewhere-', },);
+            using pointed = runsDirPointedAt({ path: elsewhere.path, },);
+            using writer = windowDialUnreadable({ variable: 'TRANSLATION_REPAIR_WRITER_GRACE_MS', },);
+
+            /** Run where the rewriter proposes and judges agree. */
+            const result = await runFixture(scriptedRefiner({
+              newText: SMOOTH_TEXT,
+              ballot: 1,
+            },), {
+              stageSettings: {
+                ...SCRIPTED_STAGE_SETTINGS,
+                contestLedger: {
+                  kind: 'kept',
+                  runsDir: kept.path,
+                },
+              },
+            },);
+
+            expect({
+              refinedText: result.refinedText,
+              kept: (await readdir(join(
+                kept.path,
+                'ledger',
+              ),)).length,
+              elsewhere: await readdir(elsewhere.path,),
+            },).toEqual({
+              refinedText: SMOOTH_TEXT,
+              kept: 1,
+              elsewhere: [],
+            },);
+          },
+        },),
+      ],
+    },),
+
     describe({
       name: deriveRefinableEnvelopes.name,
       concurrency: DEFAULT_CONCURRENCY,
@@ -595,6 +658,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(result.changed,).toBe(false,);
             expect(result.refinedText,).toBe(REPAIRED_WITH_AGE,);
@@ -701,6 +765,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(result.changed,).toBe(false,);
             expect(result.refinedText,).toBe(withAlias,);
@@ -750,6 +815,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(result.changed,).toBe(true,);
           },
@@ -788,6 +854,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(result.changed,).toBe(false,);
             expect(result.refinedText,).toBe(REPAIRED_TEXT,);
@@ -849,6 +916,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(result.changed,).toBe(false,);
             expect(result.refinedText,).toBe(REPAIRED_TEXT,);
@@ -884,6 +952,7 @@ await describe({
                 signal: new AbortController().signal,
                 perCallTimeoutMs: HANG_STOP_MS,
                 l,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },),
             ).rejects.toThrow(ProducerRosterError,);
           },

@@ -40,6 +40,7 @@ import {
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Picture marker the archive carries on its own line, which lets a trailing
@@ -346,6 +347,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.text,).toBe(FRESH,);
         expect(result.findings.some(function withheldCopy(finding,): boolean {

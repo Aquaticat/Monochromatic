@@ -40,6 +40,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Slice the phase refines. Zero, since a slice's index is its position; a
@@ -220,6 +221,7 @@ await describe({
           perCallTimeoutMs: HANG_STOP_MS,
           // A logger reading the log context, as `repairPreparedDocument` passes it.
           l: sliceTagged({ l: logger, },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /**
          Stage round lines the phase wrote.

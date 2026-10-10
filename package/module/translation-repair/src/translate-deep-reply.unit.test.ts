@@ -40,6 +40,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 //region Deep reply tests
 
@@ -215,6 +216,7 @@ async function runDeepVoiceStage(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages, },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     result,

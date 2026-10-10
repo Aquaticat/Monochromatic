@@ -33,6 +33,7 @@ import {
   makeProbeCorpus,
   refusalOf,
 } from './probes-b-built-command.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Translators asked: two seats.
@@ -185,6 +186,7 @@ async function probeOver(
       editorModelIds: roster,
       perCallTimeoutMs: HANG_STOP_MS,
       log: logger,
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },);
   }
 

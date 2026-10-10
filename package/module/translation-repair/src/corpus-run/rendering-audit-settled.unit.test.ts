@@ -48,6 +48,7 @@ import { infoLinesDuring, } from '../console-warn-lines.test-fixture.ts';
 import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { rejectionOf, } from './rejection-of.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Original every subject carries.
@@ -502,6 +503,7 @@ await describe({
                 asked,
                 shown,
               },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(row.runSet,).toBe(RUN_SET,);
@@ -544,6 +546,7 @@ await describe({
                 asked: [],
                 shown: shownDeclared,
               },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -561,6 +564,7 @@ await describe({
                 asked: [],
                 shown: shownNone,
               },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(shownDeclared.join('\n',)
@@ -587,6 +591,7 @@ await describe({
               subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
               references: { kind: 'cited', context: REFERENCE_CONTEXT, },
               client: quietClient({ asked: [], shown: shownCited, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             /**
              What it was shown with none.
@@ -599,6 +604,7 @@ await describe({
               subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
               references: { kind: 'none', },
               client: quietClient({ asked: [], shown: shownNone, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             /**
              What it was shown where the page links pages nobody could read.
@@ -611,6 +617,7 @@ await describe({
               subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
               references: { kind: 'unread', links: 1, },
               client: quietClient({ asked: [], shown: shownUnread, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(shownCited.join('\n',),).toContain(REFERENCE_CONTEXT,);
             expect(shownUnread.join('\n',),).not

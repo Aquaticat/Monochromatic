@@ -35,6 +35,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Roster with the naturalness lane off, checkers apart from the editors.
@@ -118,6 +119,7 @@ await describe({
               tag: 'repair-slice-buy-test',
               l: levelCapturingLogger({ lines, },),
             },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         },);
 

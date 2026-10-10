@@ -49,6 +49,7 @@ import {
 } from './editor-candidate-envelope.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the selection under test.
@@ -223,6 +224,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect({
               contributors: selection.contributors,

@@ -13,6 +13,7 @@ import {
   auditScriptedClient,
 } from './audit-scripted-client.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 //region Audit report
 // A REAL RENDERING AUDIT REPORT OVER A SCRIPTED ROSTER, for the cases that
@@ -69,6 +70,7 @@ export async function auditReportOver(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'audit-report-fixture', },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 

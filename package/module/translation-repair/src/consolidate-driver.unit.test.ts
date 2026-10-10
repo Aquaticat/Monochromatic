@@ -73,6 +73,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the driver writes through, whose output is not under test.
@@ -762,6 +763,7 @@ async function driveWith(
     ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     l: (messages === undefined) ? l : capturingLogger({ messages, },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
   return {

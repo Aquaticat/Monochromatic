@@ -56,6 +56,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 //region Editor width slice tests
 
@@ -434,6 +435,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // Two arms would cost five calls at these rosters, three cost seven, so
@@ -468,6 +470,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(row.comparison,).toBe('nothing-shipped',);
@@ -494,6 +497,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(row.verdict,).toBe('not-run',);
@@ -522,6 +526,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(row.narrowRepeatAgreed,).toBe(false,);
@@ -557,6 +562,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(row.verdict,).toBe('position-decided',);
@@ -581,6 +587,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(ISSUES.length,).toBe(2,);
@@ -604,6 +611,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(row.entryId,).toBe(INPUT.entryId,);
@@ -630,6 +638,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // Both shared seats proposed identical wording, so the candidate they

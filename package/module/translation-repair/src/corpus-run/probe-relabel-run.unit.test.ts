@@ -28,6 +28,7 @@ import {
 } from '../introduced-defect-scripted-client.test-fixture.ts';
 import { napCase, } from '../relabel-case.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Pin naming a clone that exists nowhere, since the scripted gatherers read none.
@@ -161,6 +162,7 @@ await describe({
                 damagedCalls,
                 controlCalls,
               },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -231,6 +233,7 @@ await describe({
                 damagedCalls: [],
                 controlCalls: [],
               },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(built(),).toBe(0,);
@@ -288,6 +291,7 @@ await describe({
                 damagedCalls: [],
                 controlCalls: [],
               },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines.filter(function isHeading(line,): boolean {

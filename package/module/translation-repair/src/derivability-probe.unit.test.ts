@@ -27,6 +27,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -210,6 +211,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             // Odd count: the median of not<partially<derivable is partially-derivable.
             expect(derivability['seed/omission-0']?.verdict,).toBe('partially-derivable',);
@@ -236,6 +238,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             // Upper median of [not-derivable, derivable] is derivable: the
             // excuse, not the pipeline, carries the burden of proof.
@@ -259,6 +262,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             // Unjudged defaults to derivable so a lost probe never excuses.
             expect(derivability['seed/omission-0']?.judged,).toBe(false,);
@@ -285,6 +289,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(derivability,).toEqual({
               'seed/omission-0': {
@@ -313,6 +318,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(Object.keys(derivability,),).toHaveLength(0,);
           },

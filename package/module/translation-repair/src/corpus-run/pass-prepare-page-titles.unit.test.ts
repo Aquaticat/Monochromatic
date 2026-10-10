@@ -36,6 +36,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger the preparation writes to, whose lines are not under test.
@@ -138,6 +139,7 @@ async function prepared({ sourceText, }: { readonly sourceText: string; },) {
     l,
     beforeItem: async (): Promise<BenchSeating> => ({ modelIds: RESEATED, }),
     outsideReads: NO_OUTSIDE_READS,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     identityContext: paired.prepared.identityContext ?? '',

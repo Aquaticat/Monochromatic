@@ -47,6 +47,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { ballot, } from './structural-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the stage writes through, whose output is not under test.
@@ -354,6 +355,7 @@ async function settleWith(
     perCallTimeoutMs: HANG_STOP_MS,
     lineStructured,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
   return {

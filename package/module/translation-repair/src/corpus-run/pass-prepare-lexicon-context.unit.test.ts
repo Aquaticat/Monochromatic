@@ -37,6 +37,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger the preparation writes to, whose lines are not under test.
@@ -151,6 +152,7 @@ await describe({
             ...NO_OUTSIDE_READS,
             workTitles: async () => [LOOKUP_LINE,],
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // The lexicon ran, so the case reads calls that exist.
         expect(lexicon.length,).toBeGreaterThan(0,);
@@ -182,6 +184,7 @@ await describe({
             ...NO_OUTSIDE_READS,
             corpusNames: async () => [{ source: '小猫', renderings: ['Little Cat',], entryId: 'OtherCat', },],
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // The lexicon ran, so the case reads calls that exist.
         expect(lexicon.length,).toBeGreaterThan(0,);

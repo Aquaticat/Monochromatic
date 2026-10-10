@@ -37,6 +37,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Original with three sections, headed in Chinese.
@@ -290,6 +291,7 @@ async function runRound(
         persisted.set(key, serialized,);
       },
     },
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     round,

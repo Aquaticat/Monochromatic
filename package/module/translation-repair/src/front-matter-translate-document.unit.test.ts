@@ -30,6 +30,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Source metadata under translation.
@@ -121,6 +122,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'front-matter-translate-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(prepared.slices,).toHaveLength(1,);

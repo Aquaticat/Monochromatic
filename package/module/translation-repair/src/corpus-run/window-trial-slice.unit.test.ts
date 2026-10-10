@@ -41,6 +41,7 @@ import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Words the judges' sheet carries when the slice has no existing translation.
@@ -273,6 +274,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(rows.length,).toBe(3,);
@@ -303,6 +305,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -335,6 +338,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect((await readTrialLedger({ path: ledgerPath, },)).map(function toArm(row,) {
@@ -370,6 +374,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(rows.length,).toBe(0,);
@@ -404,6 +409,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(rows.length,).toBe(0,);
@@ -439,6 +445,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -461,6 +468,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(rows.length,).toBe(0,);
@@ -489,6 +497,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         for (const row of rows) {
@@ -520,6 +529,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /**
          What the attempt refused with.
@@ -560,6 +570,7 @@ await describe({
             signal: AbortSignal.timeout(HANG_STOP_MS,),
             perCallTimeoutMs: HANG_STOP_MS,
             l,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         },);
         expect(refusal,).toBeInstanceOf(TrialSliceRefusalError,);
@@ -603,6 +614,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /**
          Trial over the same source with the target side an insertion.
@@ -631,6 +643,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(present.translateSheets
           .join('\n',)

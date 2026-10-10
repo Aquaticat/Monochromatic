@@ -656,7 +656,6 @@ const ALLOWLIST: readonly string[] = [
   'src/corpus-run/pass-footnote-relabel-read.ts',
   'src/corpus-run/pass-insertion-reseat.ts',
   'src/corpus-run/pass-lanes.ts',
-  'src/corpus-run/pass-overlap.ts',
   'src/corpus-run/pass-page-assembly.ts',
   'src/corpus-run/pass-page-guards.ts',
   'src/corpus-run/pass-pictures-reseat.ts',

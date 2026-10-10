@@ -44,6 +44,10 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { ballot, } from './structural-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import {
+  SCRIPTED_STAGE_SETTINGS,
+  scriptedStageSettingsWaiting,
+} from './stage-settings.test-fixture.ts';
 
 /**
  One contested slice, standing in for a corpus passage.
@@ -238,6 +242,7 @@ async function contest(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -300,6 +305,7 @@ async function contestWithNoArchive(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -374,7 +380,7 @@ await describe({
               },
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               exchangeTimeoutMs: HANG_STOP_MS,
-              graceMs: 0,
+              stageSettings: scriptedStageSettingsWaiting({ graceMs: 0, },),
               l,
             },);
             expect(outcome.usable,).toBe(2,);
@@ -418,7 +424,7 @@ await describe({
               // FAR LONGER THAN THE DELAYS, since the round ends when every voice
               // has answered and so never waits this long. A window a loaded
               // machine can outrun would fail the case on a slow timer alone.
-              graceMs: HANG_STOP_MS,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
               l,
             },);
             expect(outcome.usable,).toBe(4,);
@@ -525,6 +531,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(outcome.choice,).toBe('repair',);
             expect(outcome.usable,).toBe(SIX_SEAT_ROSTER.length - refused.length,);

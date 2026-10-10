@@ -27,6 +27,7 @@ import {
 import { checkerScriptedClient, } from '../checker-scripted-client.test-fixture.ts';
 import { successiveClients, } from '../introduced-defect-scripted-client.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Checkers the roster seats, which every scripted client answers for.
@@ -74,6 +75,7 @@ await describe({
               patchedText: 'The cat sleeps.',
               expectation: 'fixed',
               client: everyCheckerCasts({ verdicts: ['fixed',], },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines,).toEqual([
@@ -93,12 +95,14 @@ await describe({
               patchedText: 'The cat is doing the sleeping.',
               expectation: 'not-fixed',
               client: everyCheckerCasts({ verdicts: ['not-fixed',], },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             await checkOne({
               label: 'fixed-but-damaged',
               patchedText: 'The cat sleeps.',
               expectation: 'fixed-or-worse',
               client: everyCheckerCasts({ verdicts: ['worse',], },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines,).toEqual([
@@ -129,6 +133,7 @@ await describe({
                   'worse',
                 ],
               },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines,).toEqual([
@@ -160,6 +165,7 @@ await describe({
                   'not-fixed',
                 ],
               },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines,).toEqual([
@@ -205,7 +211,7 @@ await describe({
               ],
             },);
 
-            await runCheckerSensitivity({ newClient, },);
+            await runCheckerSensitivity({ newClient, stageSettings: SCRIPTED_STAGE_SETTINGS, },);
 
             expect(built(),).toBe(5,);
             expect(printed.lines,).toEqual([

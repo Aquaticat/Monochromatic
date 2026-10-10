@@ -27,6 +27,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -193,6 +194,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             // restored/partial/absent sorts to absent<partial<restored; lower median is partial.
             expect(judgments['seed/omission-0']?.verdict,).toBe('partial',);
@@ -220,6 +222,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             // Two heard is still quorum over three; lower median of [absent, restored] is absent.
             expect(judgments['seed/omission-0']?.judged,).toBe(true,);
@@ -243,6 +246,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(judgments['seed/omission-0']?.judged,).toBe(false,);
             expect(judgments['seed/omission-1']?.judged,).toBe(false,);
@@ -262,6 +266,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(Object.keys(judgments,),).toHaveLength(0,);
           },
@@ -290,6 +295,7 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(judgments,).toEqual({
               'seed/omission-0': { verdict: 'restored', judged: true, votes: 3, },

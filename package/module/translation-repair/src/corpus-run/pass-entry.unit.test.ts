@@ -56,7 +56,11 @@ import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { NO_PICTURE_SOURCES, } from './pass-picture-sources.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
-import { dialSaying, } from './slice-overlap-dial.test-fixture.ts';
+import {
+  dialSaying,
+  PASS_FALLBACK_OVERLAP,
+} from './slice-overlap-dial.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Built pipeline these fixtures claim to have run under.
@@ -1141,16 +1145,16 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'reads the environment overlap once per entry and threads it through repair, '
-        + 'translate, contest, and consolidation, after sequential positive controls prove '
-        + 'each stage instrument distinguishes one slice from two',
+      name: 'THREADS THE OVERLAP IT IS HANDED through repair, translate, contest, and consolidation, while '
+        + 'the process\'s overlap variable holds a value no dial can read, after sequential positive controls '
+        + 'prove each stage instrument distinguishes one slice from two',
       fn: async () => {
         /**
          Activity with explicit sequential control arm.
          */
         const serial = emptyPassConcurrency();
         {
-          using dial = dialSaying({ says: '1', },);
+          using dial = dialSaying({ says: 'several', },);
           await using dirs = await throwawayDirs();
           await settleEntry({
             client: entryClient({
@@ -1172,15 +1176,20 @@ await describe({
             pictureSources: NO_PICTURE_SOURCES,
             hardCapMs: HANG_STOP_MS,
             baseSignal: new AbortController().signal,
+            overlap: {
+              overlap: 1,
+              source: 'TRANSLATION_REPAIR_SLICE_OVERLAP',
+            },
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         }
 
         /**
-         Activity with two slices requested by environment.
+         Activity with two slices handed in.
          */
         const overlapped = emptyPassConcurrency();
         {
-          using dial = dialSaying({ says: '2', },);
+          using dial = dialSaying({ says: 'several', },);
           await using dirs = await throwawayDirs();
           await settleEntry({
             client: entryClient({
@@ -1202,6 +1211,11 @@ await describe({
             pictureSources: NO_PICTURE_SOURCES,
             hardCapMs: HANG_STOP_MS,
             baseSignal: new AbortController().signal,
+            overlap: {
+              overlap: 2,
+              source: 'TRANSLATION_REPAIR_SLICE_OVERLAP',
+            },
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         }
 
@@ -1251,6 +1265,8 @@ await describe({
               },
               hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
+              overlap: PASS_FALLBACK_OVERLAP,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
           },
           method: 'log',
@@ -1310,6 +1326,8 @@ await describe({
               overlap: 1,
             },],]);
           },
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(archiveReviewSheets.length,).toBeGreaterThan(0,);
         expect(archiveReviewSheets.every(function supported(sheet,): boolean {
@@ -1357,6 +1375,8 @@ await describe({
               },
             ],]);
           },
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(served,).toContain('coverage_report',);
         expect(served,).toContain('critic_report',);
@@ -1389,6 +1409,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual(['CatEntry1.json',],);
 
@@ -1564,6 +1586,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(asked.workTitles.length,).toBeGreaterThan(0,);
@@ -1607,6 +1631,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -1673,6 +1699,8 @@ await describe({
               pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
+              overlap: PASS_FALLBACK_OVERLAP,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
           },
           method: 'log',
@@ -1760,6 +1788,8 @@ await describe({
               pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
+              overlap: PASS_FALLBACK_OVERLAP,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
           },
           method: 'warn',
@@ -1847,6 +1877,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /**
          Serialized artifact through production parser.
@@ -1918,6 +1950,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect({
@@ -2031,6 +2065,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /** Serialized artifact text for absence proof. */
         const artifactText = await readFile(
@@ -2092,6 +2128,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         const page = await readFile(fixedPagePath({
           publishDir: dirs.publishDir,
@@ -2130,6 +2168,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -2187,6 +2227,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome,).toEqual({ kind: 'settled', },);
         /**
@@ -2234,6 +2276,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome,).toEqual({ kind: 'settled', },);
         const page = await readFile(fixedPagePath({
@@ -2264,6 +2308,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         const artifact = await readFile(
@@ -2316,6 +2362,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // Nothing reached the artifacts directory, which is the rule that makes
@@ -2363,6 +2411,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // Nothing says this entry settled, so a later pass attempts it again.
@@ -2409,6 +2459,8 @@ await describe({
               pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
+              overlap: PASS_FALLBACK_OVERLAP,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
           },
           method: 'log',
@@ -2448,6 +2500,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome,).toEqual({ kind: 'settled', },);
@@ -2485,6 +2539,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome,).toEqual({ kind: 'stopped', },);
@@ -2520,6 +2576,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(served,).toContain('coverage_report',);
@@ -2573,6 +2631,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(served.length,).toBeGreaterThan(0,);
       },
@@ -2606,6 +2666,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual(['CatEntry1.json',],);
 
@@ -2681,6 +2743,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(bought.length,).toBeGreaterThan(0,);
 
@@ -2709,6 +2773,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: controller.signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // NOTHING WAS BOUGHT, which is what makes this the interesting case:
@@ -2760,6 +2826,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(await artifactNames({ artifactsDir: dirs.sliceCacheDir, },),).toEqual([CLEANUP_ENTRY.id,],);
 
@@ -2794,6 +2862,8 @@ await describe({
               pictureSources: NO_PICTURE_SOURCES,
               hardCapMs: HANG_STOP_MS,
               baseSignal: new AbortController().signal,
+              overlap: PASS_FALLBACK_OVERLAP,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
           },
           method: 'log',
@@ -2899,6 +2969,8 @@ await describe({
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,
           baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**

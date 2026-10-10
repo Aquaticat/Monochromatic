@@ -34,6 +34,7 @@ import {
   scriptedDrawing,
 } from './scripted-bench-seams.test-fixture.ts';
 import { translateLaneClient, } from './translate-lane-script.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Models the widths are cut from, which also judge.
@@ -193,6 +194,7 @@ await describe({
               },),
               ...drawing,
               ...seams,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(asked,).toEqual({
@@ -259,6 +261,7 @@ await describe({
               },),
               ...drawing,
               ...seams,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(asked.draws,).toEqual([{ count: 10, },],);
@@ -300,6 +303,7 @@ await describe({
                 },),
                 ...drawing,
                 ...seams,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             },);
 
@@ -335,6 +339,7 @@ await describe({
                 ...drawing,
                 ...seams,
                 roster: [SEAT_HYPER_VISION,],
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             },);
 

@@ -48,6 +48,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /** Four-seat review and selection roster. */
 const ROSTER = [
@@ -259,6 +260,7 @@ async function reviewsAsked(
         },
       }
       : {}),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asks;
 }
@@ -315,6 +317,7 @@ async function reviewPrompts(
     signal: new AbortController().signal,
     exchangeTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return prompts;
 }
@@ -515,6 +518,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             // CLASS NINETY-FOUR: a removal takes its own separator with it, so
@@ -553,6 +557,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(repaired.targetText,).toBe(`${first}\n\nThe dog sleeps.`);
@@ -590,6 +595,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(repaired.targetText,).toBe(`${front}\n\n${kept}\n\nThe cat wakes.`);
@@ -680,6 +686,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l: levelCapturingLogger({ lines, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             /** The page as the later block's revision leaves it. */
             const afterLater = `${earlier}\n\n${laterRevision}\n\n${note}`;
@@ -739,6 +746,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
               outsideReads: NO_OUTSIDE_READS,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(paired.prepared
               .targetText

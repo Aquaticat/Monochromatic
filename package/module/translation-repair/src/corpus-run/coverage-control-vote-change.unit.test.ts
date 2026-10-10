@@ -64,6 +64,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger for the control under test.
@@ -264,6 +265,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // Every case was damageable, so all three reached the after round and
@@ -323,6 +325,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(control,).toEqual({
           held: false,
@@ -362,6 +365,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(control,).toEqual({
           held: false,
@@ -397,6 +401,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(control,).toEqual({
           held: false,
@@ -434,6 +439,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // The targeted cut moved every vote, so only the decoy half is
@@ -492,6 +498,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // One decoy was taken and it moved every vote, so the decoy half has
@@ -547,6 +554,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(control,).toEqual({
           held: true,

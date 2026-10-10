@@ -49,6 +49,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the lanes under test write their progress to.
@@ -354,6 +355,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -408,6 +410,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(slate.candidates
               .map(function textOf(candidate,): string {
@@ -450,6 +453,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(produced.validityBefore
               .map(function kindOf(entry,): string {

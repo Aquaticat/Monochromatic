@@ -36,6 +36,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
 import { replyWith, } from '../scripted-reply-outcome.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger for the arms under test.
@@ -187,6 +188,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: new AbortController().signal,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(arm.text,).toBe('',);
@@ -234,6 +236,7 @@ await describe({
           judgeModelIds: JUDGES,
           signal: new AbortController().signal,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(arm.text,).toBe(

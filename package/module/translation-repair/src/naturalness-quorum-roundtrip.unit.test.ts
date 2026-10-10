@@ -23,6 +23,7 @@ import {
   SEAT_OPENROUTER_ONLY,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /** Asked seats matching the live failure's provider-independent shape. */
 const ROSTER = [
@@ -83,7 +84,7 @@ function requestFor(client: SyntheticClient,): Parameters<typeof reviewAbsoluteN
     subject: { lineStructured: false, sourceText: '猫睡在窗台上。', candidateText: TEXT, paragraphs: [TEXT,], },
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
-    graceMs: HANG_STOP_MS,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
     fanOut: 'whole-bench',
     l: tagged({ tag: 'naturalness-quorum-roundtrip', },),
   };

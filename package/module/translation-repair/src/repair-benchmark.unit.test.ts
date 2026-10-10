@@ -43,6 +43,7 @@ import {
 } from './wall-clock-stub.test-fixture.ts';
 import { sliceCoversApplication, } from './slice-covers-application.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Clean fixture translation the seed deletes from.
@@ -846,6 +847,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               repair: restoringRepair,
               judge: restoringJudge,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(records[0]?.outcomeKind,).toBe('ok',);
             expect(records[0]?.seedJudgments['seed/omission-0']?.verdict,).toBe('restored',);
@@ -880,6 +882,7 @@ await describe({
               runBudgetMs: 0,
               repair: throwingRepair,
               judge: restoringJudge,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(skipped.records[0]?.outcomeKind,).toBe('skipped',);
             expect(skipped.scorecard.coverage,).toBe(0,);
@@ -900,6 +903,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               repair: throwingRepair,
               judge: restoringJudge,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(errored.records[0]?.outcomeKind,).toBe('error',);
             expect(errored.records[0]?.detail,).toBe('refused by Error',);
@@ -929,6 +933,7 @@ await describe({
                 throw quotingFailure();
               },
               judge: restoringJudge,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             /** Benchmark whose repair raises a provider status failure carrying a body excerpt. */
             const statusRefusal = await runRepairBenchmark({
@@ -945,6 +950,7 @@ await describe({
                 },);
               },
               judge: restoringJudge,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(headerRefusal.records[0]?.detail,).toBe('refused by TypeError',);
             expect(statusRefusal.records[0]?.detail,).toBe('refused by SyntheticHttpError with HTTP 429',);
@@ -975,6 +981,7 @@ await describe({
                     throw new SyntheticHttpError({ status: 429, bodyText: 'the cat is over its weekly credit', },);
                   },
                   judge: restoringJudge,
+                  stageSettings: SCRIPTED_STAGE_SETTINGS,
                 },),
             },);
             expect(warned.filter(function thrown(line,): boolean {
@@ -1095,6 +1102,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               repair: reportingRepair,
               judge: restoringJudge,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect([
               records[0]?.issueCount,
@@ -1132,6 +1140,7 @@ await describe({
               perCallTimeoutMs: HANG_STOP_MS,
               repair: abortedRepair,
               judge: restoringJudge,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },),).rejects.toBe(stop,);
           },
         },),
@@ -1176,6 +1185,7 @@ await describe({
               runBudgetMs: HOUR_MS,
               repair: steppingRepair,
               judge: restoringJudge,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(records.map(function kindOf(record,): string {
               return record.outcomeKind;

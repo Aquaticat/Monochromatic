@@ -19,6 +19,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 await describe({
   name: confirmAbsoluteNaturalness.name,
@@ -65,6 +66,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'absolute-confirmation-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(confirmed.review.verdict,).toBe('acceptable',);
         expect(confirmed.confirmations,).toHaveLength(1,);

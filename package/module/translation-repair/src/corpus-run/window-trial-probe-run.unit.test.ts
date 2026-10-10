@@ -56,6 +56,7 @@ import {
 } from './window-trial-probe-draw.test-fixture.ts';
 import { armRow, } from './window-trial-probe-rows.test-fixture.ts';
 import { scriptedTrialClient, } from './window-trial-scripted-client.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Head the protocol digest is of, in every case.
@@ -312,6 +313,7 @@ await describe({
           roster: ROSTER,
           perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(walkLines({ lines, },),).toEqual([
@@ -396,6 +398,7 @@ await describe({
           roster: ROSTER,
           perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(walkLines({ lines, },),).toEqual([
@@ -442,6 +445,7 @@ await describe({
           roster: ROSTER,
           perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(clients.length,).toBe(2,);
@@ -484,6 +488,7 @@ await describe({
             roster: ROSTER,
             perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },),
         },);
 
@@ -533,6 +538,7 @@ await describe({
           roster: ROSTER,
           perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(walkLines({ lines, },),).toEqual([
@@ -583,6 +589,7 @@ await describe({
             roster: ROSTER,
             perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },),
         },);
 
@@ -623,6 +630,7 @@ await describe({
             roster: ROSTER,
             perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },),
         },);
 
@@ -681,6 +689,7 @@ await describe({
             roster: ROSTER,
             perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },),
         },);
 
@@ -725,6 +734,7 @@ await describe({
             roster: ROSTER,
             perCallTimeoutMs: HANG_STOP_MS,
             l: logger,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },),
         },);
 
@@ -755,6 +765,7 @@ await describe({
           roster: ROSTER,
           perCallTimeoutMs: HANG_STOP_MS,
           l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(lines,).toEqual([

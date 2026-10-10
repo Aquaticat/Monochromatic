@@ -49,6 +49,7 @@ import {
 } from '../roster-seats.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger the preparation writes to, whose lines are not under test.
@@ -344,6 +345,7 @@ await describe({
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
               outsideReads,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             /**
              What every slice sheet reads about the page.

@@ -50,6 +50,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 //region Fixtures
 
@@ -254,6 +255,7 @@ async function settle(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages: said, },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     record,

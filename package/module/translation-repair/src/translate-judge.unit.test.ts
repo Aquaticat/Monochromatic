@@ -38,6 +38,7 @@ import {
   TranslateAbsenceError,
 } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the halves write their progress to.
@@ -237,6 +238,7 @@ async function judgeSheetFor(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
   /**
@@ -258,6 +260,7 @@ async function judgeSheetFor(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
   return rig.judgeSheets
@@ -336,6 +339,7 @@ async function refusalOverAnchor(
       signal: AbortSignal.timeout(HANG_STOP_MS,),
       perCallTimeoutMs: HANG_STOP_MS,
       l,
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },);
     return undefined;
   } catch (error) {
@@ -371,6 +375,7 @@ async function keptOverBlank(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -537,6 +542,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(produced.candidates
               .length,).toBeGreaterThan(1,);
@@ -557,6 +563,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -575,6 +582,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -618,6 +626,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             const beforeNarrow = rig.judgeSheets.length;
@@ -632,6 +641,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             const betweenArms = rig.judgeSheets.length;
 
@@ -647,6 +657,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -685,6 +696,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             const beforeBare = rig.judgeSheets.length;
@@ -699,6 +711,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             const betweenArms = rig.judgeSheets.length;
 
@@ -714,6 +727,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -754,6 +768,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -771,6 +786,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -789,6 +805,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -911,6 +928,7 @@ await describe({
                 signal: AbortSignal.timeout(HANG_STOP_MS,),
                 perCallTimeoutMs: HANG_STOP_MS,
                 l,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             }
             catch (error) {

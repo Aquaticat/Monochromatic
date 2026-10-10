@@ -54,6 +54,7 @@ import {
   TARGET_PAGE,
   writeArtifact,
 } from './settled-archive.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Digest every run claims, ending in the eight characters a kept file's name carries.
@@ -263,6 +264,7 @@ async function driveOver(
       },
       pipelineDigest: DIGEST,
       runnerClosure: CLOSURE,
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },);
   }
   catch (error) {

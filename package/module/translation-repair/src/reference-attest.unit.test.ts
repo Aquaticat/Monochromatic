@@ -46,6 +46,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the stage.
@@ -695,6 +696,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(prompts.length >= 2,).toBe(true,);
         expect(prompts[0],).toContain('ARCHIVE RENDERING',);

@@ -32,6 +32,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { scriptedStageSettingsWaiting, } from './stage-settings.test-fixture.ts';
 
 /**
  Invented reviewer roster.
@@ -226,7 +227,7 @@ async function runReview(
     },
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
-    graceMs,
+    stageSettings: scriptedStageSettingsWaiting({ graceMs, },),
     l: (messages === undefined)
       ? tagged({ tag: 'absolute-review-test', },)
       : capturingLogger({ messages, },),

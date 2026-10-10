@@ -27,6 +27,7 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Test logger.
@@ -186,6 +187,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(prompts.some(function isConfirm(sheet,) {
               return sheet.includes('CANDIDATE',) && sheet.includes(BROTHER_ITEM.referenceQuote,);
@@ -216,6 +218,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(attestation.details,).toHaveLength(0,);
           },
@@ -241,6 +244,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(prompts.some(function isConfirm(sheet,) {
               return sheet.includes('CANDIDATE',);
@@ -349,6 +353,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(attestation.details,).toHaveLength(0,);
           },
@@ -379,6 +384,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(attestation.details.map(function quoteOf(detail,): string {
               return detail.archiveQuote;

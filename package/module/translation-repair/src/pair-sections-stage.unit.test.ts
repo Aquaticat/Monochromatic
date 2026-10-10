@@ -39,6 +39,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Three original sections standing in for a Chinese page.
@@ -113,6 +114,7 @@ async function roundOf(replyByModel: readonly string[],) {
     signal: new AbortController().signal,
     exchangeTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -171,6 +173,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.usable,).toBe(3,);
         expect(outcome.pairs,).toEqual([
@@ -320,6 +323,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.usable,).toBe(MIN_STAGE_VOICES,);
         expect(outcome.pairs,).toEqual([{
@@ -357,6 +361,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.usable,).toBe(FOUR_SEAT_ROSTER.length,);
         expect(outcome.pairs,).toEqual([],);

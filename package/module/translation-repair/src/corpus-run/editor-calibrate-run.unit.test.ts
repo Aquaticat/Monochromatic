@@ -32,6 +32,7 @@ import {
   StatedRefusalError,
   type WriterGrace,
 } from '../../dist/final/node/index.mjs';
+import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
@@ -76,11 +77,12 @@ const DEFAULT_GRACE: CalibrationGrace = {
 };
 
 /**
- Writer window that follows every other round, which prints no note.
+ Writer window that follows every other round, which prints no note; both
+ windows are the hang stop, since the lane's rounds run under them.
  */
 const ROUND_WINDOW_WRITERS: WriterGrace = {
-  writerMs: 300_000,
-  roundMs: 300_000,
+  writerMs: HANG_STOP_MS,
+  roundMs: HANG_STOP_MS,
   source: 'round-window',
 };
 
@@ -194,6 +196,7 @@ async function calibrateWith(
       reaches.events.push('client',);
       return newClient();
     },
+    contestLedger: { kind: 'unkept', },
   },);
 }
 
@@ -286,9 +289,11 @@ await describe({
                 effectiveMs: 1_234,
                 source: 'override',
               },
+              // THE HANG STOP FOR BOTH WINDOWS, since the lane's rounds run under
+              // them; the note names whatever the dial set.
               writers: {
-                writerMs: 5_678,
-                roundMs: 1_234,
+                writerMs: HANG_STOP_MS,
+                roundMs: HANG_STOP_MS,
                 source: 'writer-dial',
               },
               newClient: function quiet(): SyntheticClient {
@@ -302,7 +307,7 @@ await describe({
               `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 1 slice in flight`,
               'straggler window 1234ms (TRANSLATION_REPAIR_STRAGGLER_GRACE_MS override)',
               'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '
-              + 'translate, produceConsolidations) abandon stragglers 5678ms after quorum rather than the 1234ms '
+              + 'translate, produceConsolidations) abandon stragglers 60000ms after quorum rather than the 60000ms '
               + 'every other round waits',
             ],);
           },
@@ -427,6 +432,7 @@ await describe({
                   reaches.events.push('client',);
                   return shippingLaneClient();
                 },
+                contestLedger: { kind: 'unkept', },
               },);
             },);
 
@@ -475,6 +481,7 @@ await describe({
                   reaches.events.push('client',);
                   return shippingLaneClient();
                 },
+                contestLedger: { kind: 'unkept', },
               },);
             },);
 

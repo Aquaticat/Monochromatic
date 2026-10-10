@@ -36,6 +36,7 @@ import {
   widthInputOf,
   widthRowOf,
 } from './editor-width-probe.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  One report as the loop asked for it to be written.
@@ -130,6 +131,7 @@ async function spend(
       },);
       return Promise.resolve(`/runs/editor-width-${input.draw}.md`,);
     },
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 

@@ -17,6 +17,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 const roster = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,] as const;
 const l = tagged({ tag: 'one-parent-preparation-test', },);
@@ -53,7 +54,7 @@ function fixture({ sourceText = '猫睡了。\n\n它喜欢盒子。', targetText
   },);
   return { stored, writes, calls, input: {
     client, modelIds: roster, pair, pairIndex: 7, targetContainers: target.containers,
-    signal: new AbortController().signal, exchangeTimeoutMs: HANG_STOP_MS, l,
+    signal: new AbortController().signal, exchangeTimeoutMs: HANG_STOP_MS, l, stageSettings: SCRIPTED_STAGE_SETTINGS,
     ...(cache ? { pairingCache } : {}),
   } };
 }

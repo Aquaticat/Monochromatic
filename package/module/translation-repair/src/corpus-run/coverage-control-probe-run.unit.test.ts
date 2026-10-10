@@ -28,6 +28,7 @@ import {
   makeProbeCorpus,
   refusalOf,
 } from './probes-b-built-command.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Original of three sections against a translation of one.
@@ -190,6 +191,7 @@ async function runOver(
       roster: ROSTER,
       exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
       l: logger,
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },);
   }
 

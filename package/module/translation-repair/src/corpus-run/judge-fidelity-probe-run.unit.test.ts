@@ -59,6 +59,7 @@ import { replyWith, } from '../scripted-reply-outcome.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Both judges the cases run alone, written the way the flag takes them.
@@ -323,6 +324,7 @@ async function probeIn(
           chunks.push(text,);
         },
       },
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },);
   }
   catch (error) {

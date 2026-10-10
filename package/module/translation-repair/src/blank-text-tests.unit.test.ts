@@ -998,7 +998,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'candidate-ledger.ts#recordContest': {
+  'candidate-ledger.ts#readContestLedger': {
     tests: 1,
     why: SETTING,
   },

@@ -41,6 +41,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 //region Deep edit tests
 
@@ -419,6 +420,7 @@ async function runChunkWithDeepEdit(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages, },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     outcome,
@@ -458,6 +460,7 @@ async function runLongDocumentWithDeepRewrite(
     },
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -485,6 +488,7 @@ async function runDocumentWithDeepEdit(
     models: MODELS,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -573,6 +577,7 @@ await describe({
               models: MODELS,
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(result.repairedText,).toBe(

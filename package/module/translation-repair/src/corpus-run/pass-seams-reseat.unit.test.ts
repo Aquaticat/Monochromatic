@@ -49,6 +49,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger the seams write to, whose lines are not under test.
@@ -310,6 +311,7 @@ async function contestAsked({ later, }: { readonly later: BudgetView; },): Promi
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     overlap: 1,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;
 }
@@ -364,6 +366,7 @@ async function consolidationAsked({ later, }: { readonly later: BudgetView; },):
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     overlap: 1,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;
 }
@@ -455,6 +458,7 @@ async function admissionAsked({ later, }: { readonly later: BudgetView; },): Pro
     overlap: 1,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     entryId: 'CatEntry',
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;
 }
@@ -492,6 +496,7 @@ async function preparationAsked({ later, }: { readonly later: BudgetView; },): P
     targetText: `${ARCHIVE}\n\nIt dreamed of fish.`,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     outsideReads: NO_OUTSIDE_READS,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;
 }
@@ -535,6 +540,7 @@ async function archiveReviewAsked({ later, }: { readonly later: BudgetView; },):
     targetText: `${ARCHIVE}\n\nIt dreamed of fish.\n\nThe cat won an award.`,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     outsideReads: NO_OUTSIDE_READS,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return reviewed;
 }
@@ -632,6 +638,7 @@ async function lanesAsked({ later, }: { readonly later: BudgetView; },): Promise
     pictureReadings: new Map(),
     signal,
     entryId: 'CatEntry',
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;
 }

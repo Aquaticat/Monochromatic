@@ -42,6 +42,7 @@ import {
   widthRowOf,
 } from './editor-width-probe.test-fixture.ts';
 import { scriptedClient, } from './scripted-width-client.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 //region Fixtures
 
@@ -204,6 +205,7 @@ async function probeWith(
       reaches.events.push('write',);
       return Promise.resolve(`/runs/editor-width-${draw}.md`,);
     },
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 

@@ -1,6 +1,12 @@
+import type { OverlapSetting, } from '../../dist/final/node/index.mjs';
+
 //region Slice overlap dial
-// SETS THE SLICE OVERLAP VARIABLE FOR ONE CASE, for the cases whose code under
-// test reads `TRANSLATION_REPAIR_SLICE_OVERLAP` itself.
+// SETS THE SLICE OVERLAP VARIABLE FOR ONE CASE, for the cases showing that a
+// reader handed its environment, or a pass entry handed its overlap, reads
+// that rather than `TRANSLATION_REPAIR_SLICE_OVERLAP` as the process holds it.
+//
+// AND THE OVERLAP A CORPUS PASS READS WHEN NOTHING SETS THE VARIABLE, which a
+// case hands `settleEntry` and the pass when it is not about the overlap.
 //
 // TEST SUPPORT, NOT PACKAGE SOURCE. Two test files kept a copy each, since the
 // global-writes scan once followed a writer only within its own file (ledger
@@ -13,6 +19,20 @@
  Environment variable naming how many slices may run at once.
  */
 const OVERLAP_VAR = 'TRANSLATION_REPAIR_SLICE_OVERLAP';
+
+/**
+ Four slices in flight from the pass's own fallback, as `readPassOverlap`
+ reads an environment that sets no overlap.
+
+ @example
+ ```ts
+ const outcome = await settleEntry({ ...entryInput, overlap: PASS_FALLBACK_OVERLAP, },);
+ ```
+ */
+export const PASS_FALLBACK_OVERLAP: OverlapSetting = {
+  overlap: 4,
+  source: 'fallback',
+};
 
 /**
  Sets the dial for the duration of one case, restoring whatever was there.

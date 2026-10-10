@@ -39,6 +39,7 @@ import {
 import { ballot, } from './structural-ballot.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  One gated slice, standing in for a corpus passage.
@@ -145,6 +146,7 @@ async function gate(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -181,6 +183,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(outcome.choice,).toBe('consolidated',);
             expect(outcome.ships,).toBe('consolidated',);
@@ -304,6 +307,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(outcome.ships,).toBe('consolidated',);
             expect(outcome.findings,).toContain('stage-short-bench (consolidate-gate reachable 2 of 5, quorum 2)',);

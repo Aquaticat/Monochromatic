@@ -50,6 +50,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { ballot, } from './structural-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the stage writes through, whose output is not under test.
@@ -614,6 +615,7 @@ async function settleWith(
     laneTexts,
     runoffOverStanding,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
   return {
@@ -820,6 +822,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(settled.terminal,).toBe('slate-declined-standing',);
         expect(settled.text,).toBe(WRAPPED_POLISHED_STANDING,);
@@ -862,6 +865,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(settled.terminal,).toBe('slate-declined-standing',);
         expect(settled.text,).toBe(POLISHABLE_STANDING,);

@@ -37,6 +37,7 @@ import {
 import { criticClient, } from './critic-scripted-client.test-fixture.ts';
 import { proposerIdsOf, } from './claim-attribution-proposer-ids.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -120,6 +121,7 @@ async function runStage(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 

@@ -31,6 +31,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the judgings under test.
@@ -255,6 +256,7 @@ async function judgedUnder(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
   /**
@@ -272,6 +274,7 @@ async function judgedUnder(
       signal: AbortSignal.timeout(HANG_STOP_MS,),
       perCallTimeoutMs: HANG_STOP_MS,
       l,
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },
   },);
   return {

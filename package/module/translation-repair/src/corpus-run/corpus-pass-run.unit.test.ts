@@ -52,6 +52,8 @@ import { makeCorpusPassClone, } from './corpus-pass-clone.test-fixture.ts';
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { NO_PICTURE_SOURCES, } from './pass-picture-sources.test-fixture.ts';
 import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
+import { PASS_FALLBACK_OVERLAP, } from './slice-overlap-dial.test-fixture.ts';
 
 /**
  Tip the scripted git read answers.
@@ -232,6 +234,8 @@ async function runPass(
       return instants.shift() ?? LAST_INSTANT;
     },
     ...overrides,
+    overlap: PASS_FALLBACK_OVERLAP,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 

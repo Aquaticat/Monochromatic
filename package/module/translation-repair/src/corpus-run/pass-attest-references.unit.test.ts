@@ -39,6 +39,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger the round writes to, whose lines are not under test.
@@ -156,6 +157,7 @@ async function attestationAsked(
     signal: new AbortController().signal,
     exchangeTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     asked,
@@ -255,6 +257,7 @@ async function preparationAsked(
       ...NO_OUTSIDE_READS,
       references: async () => REFERENCE_LINES,
     },
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     asked,

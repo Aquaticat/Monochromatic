@@ -55,6 +55,7 @@ import {
 import { candidateNumber, } from '../archive-selection.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger for the control under test.
@@ -204,6 +205,7 @@ await describe({
             judgeModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             signal: AbortSignal.timeout(HANG_STOP_MS,),
             l,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         },);
 
@@ -245,6 +247,7 @@ await describe({
             ],
             signal: AbortSignal.timeout(HANG_STOP_MS,),
             l,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         }
         expect(await holdsFor('intact',),).toBe(true,);

@@ -38,6 +38,7 @@ import {
   LONG_FENCE_RUN,
 } from './sheet-fence.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the stage writes to, whose lines are not under test.
@@ -140,6 +141,7 @@ async function settled(
     exchangeTimeoutMs: HANG_STOP_MS,
     l,
     fanOut: 'whole-bench',
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     lexicon,
@@ -277,6 +279,7 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect({ asked, titles: lexicon.titles, heard: lexicon.heard, },).toEqual({ asked: [], titles: [], heard: 0, },);
           },

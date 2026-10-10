@@ -31,6 +31,7 @@ import {
 } from '../introduced-defect-scripted-client.test-fixture.ts';
 import { napCase, } from '../relabel-case.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Heading the rendered prompt gives the list of issues, which a withheld or
@@ -203,6 +204,7 @@ await describe({
                   },),
                 ],
               },).newClient,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -278,6 +280,7 @@ await describe({
                   },),
                 ],
               },).newClient,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(
@@ -339,6 +342,7 @@ await describe({
               },),
               production: 'withheld',
               newClient,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(built(),).toBe(3,);

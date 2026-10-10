@@ -38,6 +38,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { proposerIdsOf, } from './claim-attribution-proposer-ids.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Original document of the fixture pair.
@@ -476,6 +477,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.status,).toBe('repaired',);
         expect(result.repairedText,).toContain('The cat also loves chasing butterflies.',);
@@ -503,6 +505,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(result.sliceCritics.length,).toBeGreaterThan(0,);
@@ -540,6 +543,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /** Chunk indexes in recorded order. */
@@ -599,6 +603,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // The assertion is vacuous unless attribution actually exists, so this
@@ -660,6 +665,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /** Record of the issue no envelope could serve. */
@@ -694,6 +700,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /** Record of the issue an applied operation served. */
@@ -738,6 +745,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /** Record of the issue an applied operation served. */
@@ -770,6 +778,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /** Record of the issue an applied operation served. */
@@ -798,6 +807,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.status,).toBe('unchanged',);
         expect(result.repairedText,).toBe(TARGET_TEXT,);
@@ -818,6 +828,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.status,).toBe('unchanged',);
         expect(result.repairedText,).toBe(TARGET_TEXT,);
@@ -859,6 +870,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.status,).not
           .toBe('blocked-non-translation',);
@@ -930,6 +942,7 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.status,).not.toBe('blocked-non-translation',);
         expect(result.findings
@@ -1005,6 +1018,7 @@ await describe({
               );
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(calls.count,).toBeGreaterThan(0,);
         expect(store.size,).toBeGreaterThan(0,);
@@ -1038,6 +1052,7 @@ await describe({
               throw new Error('a fully cached run must not persist',);
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // A fully cached document makes no further model call.
         expect(calls.count,).toBe(callsBeforeResume,);
@@ -1105,6 +1120,7 @@ Meow meow meow meow.
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.status,).toBe('repaired',);
         // THE STANDING REGION IS REPAIRED NOW RATHER THAN SHIPPED UNCHANGED.
@@ -1155,6 +1171,7 @@ Meow meow meow meow.
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           overlap: 1,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         await repairTranslation({
           client: steeringClient({
@@ -1169,6 +1186,7 @@ Meow meow meow meow.
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           overlap: 2,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(serial.peak,).toBe(MODELS.criticModelIds
           .length,);
@@ -1208,6 +1226,7 @@ Meow meow meow meow.
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           overlap: 1,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -1230,6 +1249,7 @@ Meow meow meow meow.
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           overlap: 2,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(serial.peak,).toBe(1,);
         expect(overlapped.peak,).toBe(2,);
@@ -1255,6 +1275,7 @@ Meow meow meow meow.
             before.calls += 1;
             return {};
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // AT LEAST ONCE PER SLICE: the checker stage asks again (class one hundred nine).
         expect(before.calls,).toBeGreaterThanOrEqual(prepared.slices.length,);
@@ -1300,6 +1321,7 @@ Meow meow meow meow.
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           beforeSlice: async (): Promise<RepairSliceSeating> => ({ repairModels: reseated, }),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(asked.length,).toBeGreaterThan(0,);
         expect(asked,).toContain(SEAT_OPENROUTER_ONLY_CHECKER,);
@@ -1354,6 +1376,7 @@ Meow meow meow meow.
             hook.calls += 1;
             return (hook.calls === 1) ? {} : { repairModels: reseated, };
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(asked.length,).toBeGreaterThan(0,);
         expect(asked,).toContain(SEAT_OPENROUTER_ONLY_CHECKER,);
@@ -1386,6 +1409,7 @@ Meow meow meow meow.
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -1398,6 +1422,7 @@ Meow meow meow meow.
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(fromPrepared.status,).toBe('repaired',);
         expect(fromPrepared.repairedText,).toBe(fromTexts.repairedText,);
@@ -1500,6 +1525,7 @@ Meow meow meow meow.
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -1511,6 +1537,7 @@ Meow meow meow meow.
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // NOT ONE MORE EXCHANGE for the extra slice, which is the whole point:
         // an anchor is answered rather than asked about.
@@ -1587,6 +1614,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // The document keeps the archive's text, marker and all.
         expect(result.repairedText,).toContain('The cat hates butterflies[^1].',);
@@ -1658,6 +1686,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
               );
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },),)
           .rejects
           .toBe(ENTRY_DEADLINE_FAILURE,);
@@ -1692,6 +1721,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           signal: controller.signal,
           perCallTimeoutMs: HANG_STOP_MS,
           overlap: 2,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },),)
           .rejects
           .toBe(ENTRY_DEADLINE_FAILURE,);
@@ -1738,6 +1768,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           models: refining,
           signal: controller.signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },),)
           .rejects
           .toBe(ENTRY_DEADLINE_FAILURE,);
@@ -1777,6 +1808,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
               );
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -1819,6 +1851,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
               throw new Error('a fully cached run must not persist',);
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(second.repairedText,).toBe(first.repairedText,);
         expect(second.status,).toBe(first.status,);
@@ -1858,6 +1891,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             signal: new AbortController().signal,
             perCallTimeoutMs: HANG_STOP_MS,
             overlap,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
 
           /** Critic calls twin document costs. */
@@ -1889,6 +1923,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
                 );
               },
             },
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
           expect(result.sliceCount,).toBe(2,);
           expect(twin.critic,).toBe(single.critic,);
@@ -1947,6 +1982,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             signal: new AbortController().signal,
             perCallTimeoutMs: HANG_STOP_MS,
             overlap,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
 
           /**
@@ -1983,6 +2019,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
                 );
               },
             },
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
           expect(result.sliceCount,).toBe(2,);
           expect(twin.critic,).toBe(single.critic * 2,);
@@ -2030,6 +2067,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
               );
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // The document still ships: an unexamined slice keeps its translation.
         expect(result.repairedText,).toBe(TARGET_TWO_SECTIONS,);
@@ -2071,6 +2109,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
               );
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(store.size,).toBeGreaterThan(0,);
 
@@ -2111,6 +2150,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
               throw new Error('a fully cached run must not persist',);
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(resumedRun.repairedText,).toBe(first.repairedText,);
         expect(resumedRun.changedSliceIndices,).toEqual(first.changedSliceIndices,);
@@ -2156,6 +2196,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
               );
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(store.size,).toBeGreaterThan(0,);
 
@@ -2206,6 +2247,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
               );
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // Every slice was bought again, and stored as the first run stored it.
         expect(rewritten,).toEqual(store,);
@@ -2239,6 +2281,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           },
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },),).rejects.toBeInstanceOf(CheckerIndependenceError,);
       },
     },),
@@ -2269,6 +2312,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           },
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },),).rejects.toBeInstanceOf(CheckerIndependenceError,);
       },
     },),
@@ -2291,6 +2335,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.status,).toBe('unchanged',);
 
@@ -2355,6 +2400,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           models: MODELS,
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(result.status,).toBe('unchanged',);
 
@@ -2433,6 +2479,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             models: MODELS,
             signal: new AbortController().signal,
             perCallTimeoutMs: HANG_STOP_MS,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
           return ballots;
         }
@@ -2501,6 +2548,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
               messages.push(message,);
             },
           },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /**
          Start lines, one per slice.

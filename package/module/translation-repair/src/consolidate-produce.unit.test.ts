@@ -26,6 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the producers under test.
@@ -157,6 +158,7 @@ async function producedUnder(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     produced,

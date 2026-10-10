@@ -45,6 +45,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { replyWith, } from './scripted-reply-outcome.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the stages under test.
@@ -196,6 +197,7 @@ await describe({
             signal: new AbortController().signal,
             perCallTimeoutMs: HANG_STOP_MS,
             l,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },),
         ).rejects.toThrow(ProducerRosterError,);
       },
@@ -228,6 +230,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(result.patch.patchedText,).toBe(TARGET_TEXT,);
@@ -273,6 +276,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(result.patch.patchedText,).toBe(TARGET_TEXT,);
@@ -308,6 +312,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(
@@ -472,6 +477,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         // NEITHER EDITOR'S OWN PATCH CARRIES BOTH FIXES: only the composite

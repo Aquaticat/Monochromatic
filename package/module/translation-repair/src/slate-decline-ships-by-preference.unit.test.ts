@@ -44,6 +44,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the stages write through, whose output is not under test.
@@ -280,6 +281,7 @@ async function judgedRejecting(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   /**
    Slate with both lane texts after the proposals, as the consolidation
@@ -310,6 +312,7 @@ async function judgedRejecting(
       signal: AbortSignal.timeout(HANG_STOP_MS,),
       perCallTimeoutMs: HANG_STOP_MS,
       l,
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },
   },);
 }
@@ -377,6 +380,7 @@ async function settleRejected(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -528,6 +532,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(RENDERINGS.includes(result.text,),).toBe(true,);
         expect(result.findings.includes(`${SHIPPED_PAST_DECLINE} (slate order)`,),).toBe(true,);

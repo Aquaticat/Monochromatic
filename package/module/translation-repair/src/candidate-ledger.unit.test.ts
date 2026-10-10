@@ -47,12 +47,8 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
 } from './roster-seats.test-fixture.ts';
+import { runsDirPointedAt, } from './corpus-run/runs-dir-pointed.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
-
-/**
- Variable naming the run directory, matching the module under test.
- */
-const RUNS_DIR_VARIABLE = 'TRANSLATION_REPAIR_RUNS_DIR';
 
 /**
  Directory the recorder writes under, matching the module under test.
@@ -108,76 +104,6 @@ const BALLOTS: readonly SelectionBallot[] = [
     selfVote: true,
   },
 ];
-
-/**
- Points the run directory at a throwaway for as long as the binding lives.
-
- A `Disposable` RATHER THAN `try...finally`, which this codebase bans: the
- restore has to happen even when a case fails, and `using` guarantees it.
-
- `Reflect.deleteProperty` RATHER THAN `delete`, because the key is held in a
- named constant and deleting a computed key is banned.
-
- @param dir - directory the recorder should write under
-
- @returns Directory, plus the handle restoring the previous value
-
- @example
- ```ts
- using pointed = runsDirPointedAt({ dir, },);
- ```
- */
-function runsDirPointedAt(
-  { dir, }: { readonly dir: string; },
-): Disposable & { readonly dir: string; } {
-  /**
-   Whatever the variable held before this case.
-   */
-  const before = process.env[RUNS_DIR_VARIABLE];
-  process.env[RUNS_DIR_VARIABLE] = dir;
-
-  return {
-    dir,
-    [Symbol.dispose](): void {
-      if (before === undefined)
-        Reflect.deleteProperty(
-          process.env,
-          RUNS_DIR_VARIABLE,
-        );
-      else
-        process.env[RUNS_DIR_VARIABLE] = before;
-    },
-  };
-}
-
-/**
- Clears the run directory for as long as the binding lives.
-
- @returns Whether the variable was cleared, plus the restoring handle
-
- @example
- ```ts
- using cleared = runsDirCleared();
- ```
- */
-function runsDirCleared(): Disposable & { readonly cleared: boolean; } {
-  /**
-   Whatever the variable held before this case.
-   */
-  const before = process.env[RUNS_DIR_VARIABLE];
-  Reflect.deleteProperty(
-    process.env,
-    RUNS_DIR_VARIABLE,
-  );
-
-  return {
-    cleared: true,
-    [Symbol.dispose](): void {
-      if (before !== undefined)
-        process.env[RUNS_DIR_VARIABLE] = before;
-    },
-  };
-}
 
 /**
  Lists the ledger directory, reporting an absent one as empty.
@@ -278,24 +204,26 @@ async function recordedRounds(
   await using scratch = await scratchDir({ prefix: `ledger-${mark}-`, },);
   const dir = scratch.path;
 
-  using pointed = runsDirPointedAt({ dir, },);
-
   await recordContest({
     task: 'render this passage',
     candidates: CANDIDATES,
     ballots: BALLOTS,
     selectedIndex,
     l,
+    contestLedger: {
+      kind: 'kept',
+      runsDir: dir,
+    },
   },);
 
-  return await ledgerIn({ dir: pointed.dir, },);
+  return await ledgerIn({ dir, },);
 }
 
 await describe({
   name: recordContest.name,
-  // ONE AT A TIME: cases point and clear the one process-wide runs directory,
-  // and a restore finishing out of order could leave a sibling's value set
-  // (ledger B79).
+  // ONE AT A TIME: the cases showing the recorder writes where its ledger says
+  // point the one process-wide runs directory variable elsewhere, and a
+  // restore finishing out of order could leave a sibling's value set (ledger B79).
   concurrency: 1,
   children: [
     it({
@@ -380,16 +308,15 @@ await describe({
     },),
 
     it({
-      name: 'WRITES nothing at all with no run directory named, which is what '
-        + 'every unit run and every probe does',
+      name: 'WRITES nothing at all with its ledger unkept, even while the process\'s runs directory variable names '
+        + 'a directory, which is what every unit run and every probe launched without one does',
       fn: async () => {
         /**
-         Throwaway that must stay empty.
+         Throwaway the process's variable names, which must stay empty.
          */
         await using scratch = await scratchDir({ prefix: 'ledger-unset-', },);
         const dir = scratch.path;
-
-        using cleared = runsDirCleared();
+        using pointed = runsDirPointedAt({ path: dir, },);
 
         await recordContest({
           task: 'render this passage',
@@ -397,16 +324,45 @@ await describe({
           ballots: BALLOTS,
           selectedIndex: 2,
           l,
+          contestLedger: { kind: 'unkept', },
+        },);
+
+        expect(await namesUnder({ dir, },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'WRITES UNDER THE RUNS DIRECTORY ITS LEDGER NAMES, not under the one the process\'s variable names',
+      fn: async () => {
+        /**
+         Runs directory the ledger names.
+         */
+        await using kept = await scratchDir({ prefix: 'ledger-kept-', },);
+        /**
+         Runs directory the process's variable names, which must stay empty.
+         */
+        await using elsewhere = await scratchDir({ prefix: 'ledger-elsewhere-', },);
+        using pointed = runsDirPointedAt({ path: elsewhere.path, },);
+
+        await recordContest({
+          task: 'render this passage',
+          candidates: CANDIDATES,
+          ballots: BALLOTS,
+          selectedIndex: 2,
+          l,
+          contestLedger: {
+            kind: 'kept',
+            runsDir: kept.path,
+          },
         },);
 
         expect({
-          cleared: cleared.cleared,
-          rounds: (await ledgerIn({ dir, },)).length,
-        },)
-          .toEqual({
-            cleared: true,
-            rounds: 0,
-          },);
+          kept: (await namesUnder({ dir: kept.path, },)).length,
+          elsewhere: await namesUnder({ dir: elsewhere.path, },),
+        },).toEqual({
+          kept: 1,
+          elsewhere: [],
+        },);
       },
     },),
 
@@ -429,17 +385,19 @@ await describe({
           'utf8',
         );
 
-        using pointed = runsDirPointedAt({ dir, },);
-
         await recordContest({
           task: 'render this passage',
           candidates: CANDIDATES,
           ballots: BALLOTS,
           selectedIndex: 2,
           l,
+          contestLedger: {
+            kind: 'kept',
+            runsDir: dir,
+          },
         },);
 
-        expect((await ledgerIn({ dir: pointed.dir, },)).length,)
+        expect((await ledgerIn({ dir, },)).length,)
           .toBe(0,);
       },
     },),
@@ -452,7 +410,6 @@ await describe({
          */
         await using scratch = await scratchDir({ prefix: 'ledger-context-', },);
         const dir = scratch.path;
-        using pointed = runsDirPointedAt({ dir, },);
         await inEntryLogContext({
           entry: 'Tabby',
           generation: 'nap-3',
@@ -467,12 +424,16 @@ await describe({
                   ballots: BALLOTS,
                   selectedIndex: 2,
                   l,
+                  contestLedger: {
+                    kind: 'kept',
+                    runsDir: dir,
+                  },
                 },);
               },
             },);
           },
         },);
-        expect((await ledgerIn({ dir: pointed.dir, },)).map(function contextOf(round,): unknown {
+        expect((await ledgerIn({ dir, },)).map(function contextOf(round,): unknown {
           return (round as { readonly context?: unknown; }).context;
         },),).toStrictEqual([{
           entry: 'Tabby',

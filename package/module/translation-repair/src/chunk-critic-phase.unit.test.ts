@@ -43,6 +43,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { criticClient, } from './critic-scripted-client.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the phases under test.
@@ -157,6 +158,7 @@ async function runPhase(
     // critic; production asks the window of quorum plus one, pinned in
     // `stage-quorum.unit.test.ts`.
     fanOut: 'whole-bench',
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 

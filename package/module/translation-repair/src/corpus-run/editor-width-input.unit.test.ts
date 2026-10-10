@@ -35,6 +35,7 @@ import {
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger for the probe under test.
@@ -119,6 +120,7 @@ await describe({
           slice: SLICE,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         if (outcome.kind !== 'skipped')

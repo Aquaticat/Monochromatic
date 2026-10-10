@@ -23,6 +23,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  CALIBRATION_STRAGGLER_GRACE_MS,
+  MAX_TIMER_DELAY_MS,
   readWriterGrace,
   resolveWriterGraceMs,
   STRAGGLER_GRACE_MS,
@@ -31,8 +33,8 @@ import {
   WRITER_GRACE_MS,
   WRITER_GRACE_VAR,
   WRITER_STAGE_LABELS,
+  type WriterGrace,
   writerGraceOverrideNote,
-  writerRoundGraceMs,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -213,42 +215,6 @@ await describe({
     },),
 
     describe({
-      name: `${resolveWriterGraceMs.name} reading the launch's environment`,
-      // ONE AT A TIME: every case writes the same process-wide variable.
-      concurrency: 1,
-      children: [
-        it({
-          name: 'READS THE WRITER VARIABLE WHEN NO TEXT IS HANDED IN, and falls back to the window it was handed '
-            + 'when the variable is unset, which is how an ordinary launch reaches it',
-          fn: async () => {
-            /**
-             Window read with the variable set.
-             */
-            const whenSet = (function readSet(): number {
-              using writer = dialSaying({
-                variable: WRITER_GRACE_VAR,
-                says: String(WRITER,),
-              },);
-              return resolveWriterGraceMs({ fallback: ROUND, },);
-            })();
-            /**
-             Window read with the variable unset.
-             */
-            const whenUnset = (function readUnset(): number {
-              using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
-              return resolveWriterGraceMs({ fallback: ROUND, },);
-            })();
-
-            expect({ whenSet, whenUnset, },).toEqual({
-              whenSet: WRITER,
-              whenUnset: ROUND,
-            },);
-          },
-        },),
-      ],
-    },),
-
-    describe({
       name: writerGraceOverrideNote.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
@@ -267,9 +233,8 @@ await describe({
         },),
 
         it({
-          name: 'SAYS NOTHING on the source alone, even when the two numbers differ, because the two '
-            + 'are read from mutable environment and a note inferred from their difference could blame '
-            + 'a dial nobody set',
+          name: 'SAYS NOTHING on the source alone, even when the two numbers differ, because a note '
+            + 'inferred from their difference could blame a dial nobody set',
           fn: async () => {
             expect(writerGraceOverrideNote({
               grace: {
@@ -336,22 +301,20 @@ await describe({
 
     describe({
       name: readWriterGrace.name,
-      // ONE AT A TIME: every case writes the same process-wide variables.
-      concurrency: 1,
+      concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
           name: 'RUNS writers under their built-in window when neither dial is set, which is every '
             + 'ordinary run and the configuration every shipped page ran (2026-09-06)',
           fn: async () => {
-            using round = dialSaying({ variable: STRAGGLER_GRACE_VAR, },);
-            using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
-
-            expect(readWriterGrace(),).toStrictEqual({
+            expect(readWriterGrace({
+              env: {},
+              roundFallback: STRAGGLER_GRACE_MS,
+            },),).toStrictEqual({
               writerMs: WRITER_GRACE_MS,
               roundMs: STRAGGLER_GRACE_MS,
               source: 'built-in',
             },);
-            expect(writerRoundGraceMs(),).toBe(WRITER_GRACE_MS,);
           },
         },),
 
@@ -359,13 +322,10 @@ await describe({
           name: 'HOLDS writers at their built-in when the round dial shortens every other round, which '
             + 'is the 2026-09-02 launch that cut the top editor mid-reply at 60 s',
           fn: async () => {
-            using round = dialSaying({
-              variable: STRAGGLER_GRACE_VAR,
-              says: String(ROUND,),
-            },);
-            using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
-
-            expect(readWriterGrace(),).toStrictEqual({
+            expect(readWriterGrace({
+              env: { [STRAGGLER_GRACE_VAR]: String(ROUND,), },
+              roundFallback: STRAGGLER_GRACE_MS,
+            },),).toStrictEqual({
               writerMs: WRITER_GRACE_MS,
               roundMs: ROUND,
               source: 'built-in',
@@ -377,18 +337,29 @@ await describe({
           name: 'FOLLOWS the round window when it is the longer one, which is the editor calibration\'s '
             + '300000 ms of 2026-08-26, so the built-in never shortens a writer round',
           fn: async () => {
-            using round = dialSaying({
-              variable: STRAGGLER_GRACE_VAR,
-              says: String(LONG_ROUND,),
-            },);
-            using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
-
-            expect(readWriterGrace(),).toStrictEqual({
+            expect(readWriterGrace({
+              env: { [STRAGGLER_GRACE_VAR]: String(LONG_ROUND,), },
+              roundFallback: STRAGGLER_GRACE_MS,
+            },),).toStrictEqual({
               writerMs: LONG_ROUND,
               roundMs: LONG_ROUND,
               source: 'round-window',
             },);
-            expect(writerRoundGraceMs(),).toBe(LONG_ROUND,);
+          },
+        },),
+
+        it({
+          name: 'GIVES the calibration\'s writers its 300000 ms round window when nothing is set, by the round '
+            + 'fallback it is handed, where the calibration once wrote the round variable for its rounds to read',
+          fn: async () => {
+            expect(readWriterGrace({
+              env: {},
+              roundFallback: CALIBRATION_STRAGGLER_GRACE_MS,
+            },),).toStrictEqual({
+              writerMs: CALIBRATION_STRAGGLER_GRACE_MS,
+              roundMs: CALIBRATION_STRAGGLER_GRACE_MS,
+              source: 'round-window',
+            },);
           },
         },),
 
@@ -396,16 +367,13 @@ await describe({
           name: 'TREATS a blank writer dial as unset while the round dial is set, since an '
             + 'exported-but-empty variable is a shell accident rather than an intention',
           fn: async () => {
-            using round = dialSaying({
-              variable: STRAGGLER_GRACE_VAR,
-              says: String(ROUND,),
-            },);
-            using writer = dialSaying({
-              variable: WRITER_GRACE_VAR,
-              says: '  ',
-            },);
-
-            expect(readWriterGrace(),).toStrictEqual({
+            expect(readWriterGrace({
+              env: {
+                [STRAGGLER_GRACE_VAR]: String(ROUND,),
+                [WRITER_GRACE_VAR]: '  ',
+              },
+              roundFallback: STRAGGLER_GRACE_MS,
+            },),).toStrictEqual({
               writerMs: WRITER_GRACE_MS,
               roundMs: ROUND,
               source: 'built-in',
@@ -417,21 +385,17 @@ await describe({
           name: 'PREFERS the writer dial over the round dial when both are set, which is the launch '
             + 'this dial was made for, and says so in the source',
           fn: async () => {
-            using round = dialSaying({
-              variable: STRAGGLER_GRACE_VAR,
-              says: String(ROUND,),
-            },);
-            using writer = dialSaying({
-              variable: WRITER_GRACE_VAR,
-              says: String(WRITER,),
-            },);
-
-            expect(readWriterGrace(),).toStrictEqual({
+            expect(readWriterGrace({
+              env: {
+                [STRAGGLER_GRACE_VAR]: String(ROUND,),
+                [WRITER_GRACE_VAR]: String(WRITER,),
+              },
+              roundFallback: STRAGGLER_GRACE_MS,
+            },),).toStrictEqual({
               writerMs: WRITER,
               roundMs: ROUND,
               source: 'writer-dial',
             },);
-            expect(writerRoundGraceMs(),).toBe(WRITER,);
           },
         },),
 
@@ -439,13 +403,10 @@ await describe({
           name: 'LETS the writer dial shorten the writers below their built-in, since a launch that '
             + 'asks for a window gets that window and the note says who asked',
           fn: async () => {
-            using round = dialSaying({ variable: STRAGGLER_GRACE_VAR, },);
-            using writer = dialSaying({
-              variable: WRITER_GRACE_VAR,
-              says: String(ROUND,),
-            },);
-
-            expect(readWriterGrace(),).toStrictEqual({
+            expect(readWriterGrace({
+              env: { [WRITER_GRACE_VAR]: String(ROUND,), },
+              roundFallback: STRAGGLER_GRACE_MS,
+            },),).toStrictEqual({
               writerMs: ROUND,
               roundMs: STRAGGLER_GRACE_MS,
               source: 'writer-dial',
@@ -454,47 +415,64 @@ await describe({
         },),
 
         it({
-          name: 'FOLLOWS the environment as it stands at each read, since the calibration writes the '
-            + 'round variable after launch and a value captured at import would miss it',
+          name: 'REFUSES when the writer dial is unreadable, rather than running the writers under a window '
+            + 'nobody chose',
           fn: async () => {
-            using round = dialSaying({ variable: STRAGGLER_GRACE_VAR, },);
-            using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
-
-            expect(readWriterGrace().roundMs,).toBe(STRAGGLER_GRACE_MS,);
-            process.env[STRAGGLER_GRACE_VAR] = String(LONG_ROUND,);
-            expect(readWriterGrace(),).toStrictEqual({
-              writerMs: LONG_ROUND,
-              roundMs: LONG_ROUND,
-              source: 'round-window',
-            },);
-          },
-        },),
-
-        it({
-          name: 'REFUSES at the gather when the writer dial is unreadable, rather than running the '
-            + 'writers under a window nobody chose',
-          fn: async () => {
-            using round = dialSaying({ variable: STRAGGLER_GRACE_VAR, },);
-            using writer = dialSaying({
-              variable: WRITER_GRACE_VAR,
-              says: '180s',
-            },);
-
             /**
-             What the gather's read threw.
+             What the read threw.
              */
-            const refusal = caught(function readUnit(): number {
-              return writerRoundGraceMs();
+            const refusal = caught(function readUnit(): WriterGrace {
+              return readWriterGrace({
+                env: { [WRITER_GRACE_VAR]: '180s', },
+                roundFallback: STRAGGLER_GRACE_MS,
+              },);
             },);
 
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-            expect((refusal as Error).message,).toContain(WRITER_GRACE_VAR,);
+            expect(String(refusal,),).toBe(
+              `StatedRefusalError: ${WRITER_GRACE_VAR} must be a whole number of milliseconds from 1 to `
+                + `${String(MAX_TIMER_DELAY_MS,)}, and "180s" is not; leave it unset to give writer rounds the `
+                + 'built-in writer window, or the round window when that is longer',
+            );
           },
         },),
 
         it({
           name: 'NAMES the round dial first when both are unreadable, since the writer window is '
             + 'measured against the round window and the round dial is read first',
+          fn: async () => {
+            /**
+             What the read threw with both dials wrong.
+             */
+            const refusal = caught(function readBoth(): WriterGrace {
+              return readWriterGrace({
+                env: {
+                  [STRAGGLER_GRACE_VAR]: 'one minute',
+                  [WRITER_GRACE_VAR]: 'three minutes',
+                },
+                roundFallback: STRAGGLER_GRACE_MS,
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(refusal,),).toBe(
+              `StatedRefusalError: ${STRAGGLER_GRACE_VAR} must be a whole number of milliseconds from 1 to `
+                + `${String(MAX_TIMER_DELAY_MS,)}, and "one minute" is not; leave it unset to run under the `
+                + 'built-in window',
+            );
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${readWriterGrace.name} beside the process's own variables`,
+      // ONE AT A TIME: every case points the process's own variables elsewhere.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'READS BOTH DIALS FROM THE ENVIRONMENT IT IS HANDED, not from the process, whose unreadable '
+            + 'values would refuse the read',
           fn: async () => {
             using round = dialSaying({
               variable: STRAGGLER_GRACE_VAR,
@@ -505,15 +483,17 @@ await describe({
               says: 'three minutes',
             },);
 
-            /**
-             What the read threw with both dials wrong.
-             */
-            const refusal = caught(function readBoth(): number {
-              return writerRoundGraceMs();
+            expect(readWriterGrace({
+              env: {
+                [STRAGGLER_GRACE_VAR]: String(ROUND,),
+                [WRITER_GRACE_VAR]: String(WRITER,),
+              },
+              roundFallback: STRAGGLER_GRACE_MS,
+            },),).toStrictEqual({
+              writerMs: WRITER,
+              roundMs: ROUND,
+              source: 'writer-dial',
             },);
-
-            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-            expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
           },
         },),
       ],

@@ -168,12 +168,8 @@ function scriptedClient(
 
  @param maxAnswerChars - answer cap handed to every request, absent for none
 
- @param graceMs - how long a round waits for stragglers, 50 ms unless a case
- says otherwise, so a seat that never answers holds no case for the
- production grace or for whatever the environment sets it to
-
- @param productionGrace - hands the rounds no grace at all, so they take
- production's own; only for a bench whose every seat answers at once
+ @param graceMs - how long a round waits for stragglers, the hang stop unless a
+ case says otherwise
 
  @returns Outcomes, the quorum closed on and the seats counted out of reach,
  plus the seats asked in call order
@@ -190,14 +186,12 @@ async function runBench(
     quorumOver,
     maxAnswerChars,
     graceMs = HANG_STOP_MS,
-    productionGrace = false,
   }: {
     readonly script: Parameters<typeof scriptedClient>[0];
     readonly fanOut?: 'window' | 'whole-bench';
     readonly quorumOver?: number;
     readonly maxAnswerChars?: number;
     readonly graceMs?: number;
-    readonly productionGrace?: boolean;
   },
 ) {
   const { client, asked, requests, } = scriptedClient(script,);
@@ -215,7 +209,7 @@ async function runBench(
     validate: isMeowReply,
     stage: 'meow',
     l,
-    ...(productionGrace ? {} : { graceMs, }),
+    graceMs,
     ...((fanOut === undefined) ? {} : { fanOut, }),
     ...((quorumOver === undefined) ? {} : { quorumOver, }),
     ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
@@ -242,7 +236,7 @@ await describe({
   children: [
     it({
       name: 'CARRIES the maxAnswerChars knob on every request when the caller sets one, and carries no '
-        + 'such field when it does not, on a healthy bench taking production\'s own grace',
+        + 'such field when it does not',
       fn: async () => {
         /**
          Runs with the knob and without it, and reads both request shapes.
@@ -253,7 +247,6 @@ await describe({
         },);
         const withoutKnob = await runBench({
           script: { failsOnce: [], failsAlways: [], unreadable: [], },
-          productionGrace: true,
         },);
         /**
          Requests a healthy bench makes: its first window and no more.

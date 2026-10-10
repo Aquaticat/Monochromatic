@@ -21,6 +21,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /** Source remains raw Markdown throughout canonical pipeline state. */
 const SOURCE = '> 猫醒了。  \n> 鸟唱了。';
@@ -76,6 +77,7 @@ await describe({
           signal: new AbortController().signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'source-break-stage-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(seen.writers,).toBe(2,);
         expect(seen.judges,).toBeGreaterThan(0,);

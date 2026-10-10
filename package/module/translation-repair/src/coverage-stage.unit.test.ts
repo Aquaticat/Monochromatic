@@ -28,6 +28,7 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.
@@ -162,6 +163,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(answer.verdict
           .asked,).toBe(4,);
@@ -207,6 +209,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(answer.verdict
           .kind,).toBe('carried',);
@@ -245,6 +248,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(answer.verdict
           .asked,).toBe(firstRoundWindow({ benchSize: ROSTER.length, },),);
@@ -300,6 +304,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(JSON.stringify(asked,).includes('partly-carried',),).toBe(true,);
         /**
@@ -318,6 +323,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(JSON.stringify(plain,).includes('partly-carried',),).toBe(false,);
       },
@@ -353,6 +359,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(JSON.stringify(asked,).includes('喵工作室',),).toBe(true,);
         /**
@@ -380,6 +387,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(JSON.stringify(plain,).includes('喵工作室',),).toBe(false,);
       },
@@ -421,6 +429,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(answer.verdict,).toEqual({
           kind: 'split',

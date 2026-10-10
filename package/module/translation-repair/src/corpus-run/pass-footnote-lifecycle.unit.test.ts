@@ -21,6 +21,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 const roster = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER] as const;
 const l = tagged({ tag: 'pass-footnote-lifecycle-test' });
@@ -76,7 +77,7 @@ await describe({
         assertPipelineDigest(generation);
         const input = { client, entryId: 'invented-footnote-entry', entryCacheDir, pipelineDigest: generation,
           modelIds: roster, sourceText, targetText: archiveText, signal: new AbortController().signal, exchangeTimeoutMs: HANG_STOP_MS, l,
-          outsideReads: NO_OUTSIDE_READS };
+          outsideReads: NO_OUTSIDE_READS, stageSettings: SCRIPTED_STAGE_SETTINGS };
         const cold = await preparePassEntry(input);
         expect(cold.prepared.targetText).toBe(expectedText);
         expect(calls.map(call => call.phase)).toEqual(protectedOriginal ? ['initial', 'initial'] : ['initial', 'initial', 'changed', 'changed']);

@@ -24,6 +24,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Invented-size roster for every polish role.
@@ -144,6 +145,7 @@ await describe({
             signal: AbortSignal.timeout(HANG_STOP_MS,),
             perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'contributor-baseline-floor-test', },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         }
         catch (error) {
@@ -189,6 +191,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'polish-dispute-note-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(gateSheets.length,).toBeGreaterThan(0,);
         expect(gateSheets.every(function carriesNote(sheet,): boolean {
@@ -237,6 +240,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'polish-disputed-wording-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(final.text,).toBe(base,);
       },
@@ -278,6 +282,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'polish-references-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /**
          For each role, how many sheets it was sent and how many carried the
@@ -359,6 +364,7 @@ await describe({
             signal: AbortSignal.timeout(HANG_STOP_MS,),
             perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'polish-declared-pairs-test', },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
           return {
             text: final.text,

@@ -20,6 +20,7 @@ import {
   ARCHIVE_TEST_SOURCE,
 } from './archive-selection.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Runs the real stage with a caller-local source/target pair and no provider access.
@@ -39,6 +40,7 @@ async function runFixture(fixture: ReturnType<typeof archiveSelectionFixture>,):
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'archive-selection-boundary', },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -143,6 +145,7 @@ await describe({
           priorFindings: ['Earlier independent concern.',],
           signal: AbortSignal.timeout(HANG_STOP_MS,), exchangeTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'archive-prior-evidence-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         const message = fixture.selections[0] ?? '';
         expect(message,).toContain('EARLIER REVIEW FINDINGS, prior opinions only',);

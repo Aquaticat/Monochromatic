@@ -52,6 +52,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -368,6 +369,7 @@ async function runLane(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l: (messages === undefined) ? l : capturingLogger({ messages, },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     result,
@@ -560,6 +562,7 @@ await describe({
                 signal: new AbortController().signal,
                 perCallTimeoutMs: HANG_STOP_MS,
                 l,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             }
             catch (error) {

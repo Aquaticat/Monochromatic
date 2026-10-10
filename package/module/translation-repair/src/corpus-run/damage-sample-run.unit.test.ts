@@ -50,6 +50,7 @@ import {
   NO_POOL_POLICY,
   UNASKED_REPOSITORY,
 } from './pool-policy.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Probers every case asks.
@@ -158,6 +159,7 @@ async function drawWith(
     proberModelIds: PROBERS,
     perCallTimeoutMs: HANG_STOP_MS,
     l: tagged({ tag: 'damage-sample-test', },),
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
     lines: [...capture.lines,],
@@ -308,6 +310,7 @@ await describe({
             proberModelIds: PROBERS,
             perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'damage-sample-test', },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         },);
 

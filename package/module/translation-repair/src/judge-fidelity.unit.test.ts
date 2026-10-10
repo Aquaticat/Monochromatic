@@ -28,6 +28,7 @@ import {
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Logger the trial writes its progress to.
@@ -230,6 +231,7 @@ async function runScripted(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 

@@ -33,6 +33,7 @@ import {
 import { successiveClients, } from '../introduced-defect-scripted-client.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Digest the run stamps, whose last eight characters name the file.
@@ -107,6 +108,7 @@ await describe({
               },
               pipelineDigest: DIGEST,
               runnerClosure: CLOSURE,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**
@@ -196,6 +198,7 @@ await describe({
               },
               pipelineDigest: DIGEST,
               runnerClosure: CLOSURE,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines.at(-1,),).toBe(

@@ -33,6 +33,7 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Two blocks standing in for an original side.
@@ -107,6 +108,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.pairs,).toEqual([{ source: 0, target: 0, }, { source: 1, target: 1, },],);
         expect(outcome.heard,).toBe(ROSTER.length,);
@@ -131,6 +133,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.pairs,).toEqual([
           { source: 0, target: 0, },
@@ -156,6 +159,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.pairs,).toEqual([
           { source: 0, target: 0, },
@@ -183,6 +187,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.usable,).toBe(3,);
         expect(outcome.pairs.length,).toBe(2,);
@@ -207,6 +212,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.pairs.length,).toBe(1,);
         expect(outcome.pairs[0]?.source,).toBe(0,);
@@ -230,6 +236,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.pairs.length,).toBe(0,);
         expect(outcome.usable,).toBe(0,);
@@ -253,6 +260,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.pairs,).toEqual([],);
         expect(outcome.heard,).toBe(0,);
@@ -290,6 +298,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(outcome.usable,).toBe(MIN_STAGE_VOICES,);
         expect(outcome.pairs,).toEqual([{ source: 0, target: 0, }, { source: 1, target: 1, },],);

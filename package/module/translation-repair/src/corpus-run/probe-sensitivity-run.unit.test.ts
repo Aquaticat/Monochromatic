@@ -27,6 +27,7 @@ import {
   type SensitivityArm,
   sensitivityNotes,
 } from '../../dist/final/node/index.mjs';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Replaced wording of the region both arms ask about.
@@ -89,6 +90,7 @@ await describe({
               },),
               arms: [WITHHELD_ARM,],
               production: 'withheld',
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines,).toEqual([
@@ -130,6 +132,7 @@ await describe({
                 NONE_ARM,
               ],
               production: 'none',
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             /**

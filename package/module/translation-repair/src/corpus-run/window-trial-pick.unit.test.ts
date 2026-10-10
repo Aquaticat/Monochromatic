@@ -38,6 +38,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Logger the pick writes to.
@@ -143,6 +144,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome.kind,).toBe('refused',);
@@ -170,6 +172,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: warningRecordingLogger({ base: l, warnings, },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(warnings,).toEqual([
@@ -236,6 +239,7 @@ await describe({
           signal: stop.signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l: warningRecordingLogger({ base: l, warnings, },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome.kind,).toBe('refused',);
@@ -277,6 +281,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(outcome.kind,).toBe('bought',);

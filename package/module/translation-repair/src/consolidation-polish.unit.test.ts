@@ -37,6 +37,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 /**
  Active invented-size roster for every synthetic role.
@@ -411,6 +412,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(polish.kind,).toBe('settled',);
         if (polish.kind !== 'settled')
@@ -490,6 +492,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-wrap-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(wrapped.kind,).toBe('settled',);
         if (wrapped.kind !== 'settled')
@@ -517,6 +520,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-governed-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(governed.kind,).toBe('settled',);
         if (governed.kind !== 'settled')
@@ -536,6 +540,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-rewrap-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(rewrapOnly.kind,).toBe('settled',);
         if (rewrapOnly.kind !== 'settled')
@@ -566,6 +571,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-soft-break-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(softOnly.kind,).toBe('settled',);
         if (softOnly.kind !== 'settled')
@@ -590,6 +596,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(polish.kind,).toBe('settled',);
         expect(polish.kind === 'settled' ? polish.text : '',).toBe(SHORT_POLISHED,);
@@ -610,6 +617,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-contributor-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(polish.kind,).toBe('settled',);
         if (polish.kind !== 'settled')
@@ -633,6 +641,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-rejection-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // The reviewer verdict is evidence, not authority: the gated text
         // ships and the located problem lives on the findings. The scripted
@@ -675,6 +684,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-confirmation-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         // Discovery accepted, the acceptance challenge rejected: the decisive
         // rejection is recorded beside the earlier acceptance and nothing is
@@ -714,6 +724,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-quorum-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(polish.kind,).toBe('settled',);
         if (polish.kind !== 'settled')
@@ -754,6 +765,7 @@ await describe({
             signal: AbortSignal.timeout(HANG_STOP_MS,),
             perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'consolidation-polish-roundtrip-rejection-test', },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },),
           polishConsolidation({
             client: singleRoundClient({ reviewAcceptableByRound: [], },),
@@ -766,6 +778,7 @@ await describe({
             signal: AbortSignal.timeout(HANG_STOP_MS,),
             perCallTimeoutMs: HANG_STOP_MS,
             l: tagged({ tag: 'consolidation-polish-roundtrip-quorum-test', },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },),
         ],);
         expect(rejected.kind,).toBe('settled',);
@@ -985,6 +998,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-blockquote-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(polish.kind,).toBe('settled',);
         if (polish.kind !== 'settled')
@@ -1013,6 +1027,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(polish,).toEqual({
           kind: 'not-run',
@@ -1046,6 +1061,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         if (polish.kind !== 'settled')
           throw new Error(`expected a settled polish, got ${polish.kind}`,);
@@ -1083,6 +1099,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: tagged({ tag: 'consolidation-polish-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         if (polish.kind !== 'settled')
           throw new Error(`expected a settled polish, got ${polish.kind}`,);
@@ -1131,6 +1148,7 @@ await describe({
               signal: AbortSignal.timeout(HANG_STOP_MS,),
               perCallTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'consolidation-polish-test', },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             if (polish.kind !== 'settled')
               throw new Error(`expected a settled polish, got ${polish.kind}`,);

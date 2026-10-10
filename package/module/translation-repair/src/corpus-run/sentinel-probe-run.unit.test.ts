@@ -28,6 +28,7 @@ import {
   makeProbeCorpus,
   refusalOf,
 } from './probes-b-built-command.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Roster handed to every scripted repair, only ever compared by identity.
@@ -166,6 +167,7 @@ async function probeWith(
       now: function tick(): number {
         return readings.shift() ?? 0;
       },
+      stageSettings: SCRIPTED_STAGE_SETTINGS,
     },);
   }
 

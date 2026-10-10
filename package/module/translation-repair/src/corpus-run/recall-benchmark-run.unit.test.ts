@@ -32,6 +32,7 @@ import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { benchWorld, } from './bench-world.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Commit the scripted tip reports.
@@ -154,6 +155,7 @@ await describe({
           runsDir,
           pin: world.pin,
           ...scriptedSeams({ seen, },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         /**
@@ -306,6 +308,7 @@ await describe({
           runsDir: world.runsDir,
           pin: world.pin,
           ...scriptedSeams({ seen, },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
         expect(printed.lines,).toEqual([
@@ -343,6 +346,7 @@ await describe({
             ),
             pin: world.pin,
             ...scriptedSeams({ seen, },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         },);
 
@@ -387,6 +391,7 @@ await describe({
             ),
             pin: world.pin,
             ...scriptedSeams({ seen, },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         },);
 

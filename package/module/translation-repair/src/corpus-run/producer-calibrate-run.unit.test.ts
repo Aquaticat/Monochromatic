@@ -35,6 +35,7 @@ import {
   scriptedDrawing,
 } from './scripted-bench-seams.test-fixture.ts';
 import { translateLaneClient, } from './translate-lane-script.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
 /**
  Models the calibration runs, named after `--candidates` and run alone so the
@@ -90,6 +91,7 @@ async function runWhereEveryClientFails(
     },),
     newClient: successiveClients({ clients: [], },).newClient,
     ...seams,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 }
 
@@ -130,6 +132,7 @@ await describe({
               },),
               newClient,
               ...seams,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(asked.draws,).toEqual([{ count: 2, },],);
@@ -175,6 +178,7 @@ await describe({
               },),
               newClient,
               ...seams,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines,).toEqual([
@@ -215,6 +219,7 @@ await describe({
               },),
               newClient,
               ...seams,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(asked.draws,).toEqual([{ count: 10, },],);
@@ -245,6 +250,7 @@ await describe({
               },),
               newClient,
               ...seams,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
             expect(printed.lines
@@ -273,6 +279,7 @@ await describe({
                 },),
                 newClient: successiveClients({ clients: [], },).newClient,
                 ...seams,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             },);
 
@@ -298,6 +305,7 @@ await describe({
                 },),
                 newClient: successiveClients({ clients: [], },).newClient,
                 ...seams,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             },);
 
@@ -326,6 +334,7 @@ await describe({
                 },),
                 newClient: successiveClients({ clients: [], },).newClient,
                 ...seams,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             },);
 
@@ -358,6 +367,7 @@ await describe({
                   throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);
                 },
                 ...seams,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
             },);
 
