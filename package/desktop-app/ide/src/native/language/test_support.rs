@@ -75,7 +75,10 @@ pub(super) struct Project {
 
 /// Create a disposable project with `files` (relative path and text) and an outside directory.
 pub(super) fn project(files: &[(&str, &str)]) -> Project {
-    let guard = tempfile::tempdir().expect("disposable directory");
+    // The project lives in memory when `/dev/shm` exists (see `memory_project`): on btrfs, the first
+    // read of a fresh file and the creation of files wait for filesystem transactions, which took
+    // longer than the waits of these tests while the machine flushed.
+    let guard = crate::native::find_tests::memory_project("ide-native-language-");
     let base = guard.path().canonicalize().expect("canonical base");
     let root = base.join("project");
     let outside = base.join("outside");
