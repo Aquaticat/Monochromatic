@@ -25,6 +25,10 @@ import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
 import {
+  CONFLICTING_POOL_SAYS,
+  CONFLICTING_POOL_VARIABLES,
+} from './pool-policy.test-fixture.ts';
+import {
   ATTRIBUTED_CAT_ARTIFACTS,
   writeScoreArtifacts,
 } from './score-artifacts.test-fixture.ts';
@@ -174,6 +178,36 @@ await describe({
               'require an earlier commit that the settled entries actually contain.',
               '',
             ].join('\n',),);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A REQUIRED COMMIT AND A MIXED POOL ASKED FOR TOGETHER in its own words, read from the '
+            + 'environment it runs in, exiting 6 after the source line',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'score-attribution-', },);
+            await writeScoreArtifacts({
+              runsDir: scratch.path,
+              artifacts: {},
+            },);
+
+            /**
+             What the command wrote.
+             */
+            const run = await runBuiltCommand({
+              command: COMMAND,
+              args: [],
+              env: {
+                TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
+                ...CONFLICTING_POOL_VARIABLES,
+              },
+            },);
+
+            expect(run,).toEqual({
+              code: REFUSED_AS_STATED,
+              stdout: `SOURCE ${scratch.path}/artifacts\n`,
+              stderr: `score-attribution: ${CONFLICTING_POOL_SAYS}\n`,
+            },);
           },
         },),
 

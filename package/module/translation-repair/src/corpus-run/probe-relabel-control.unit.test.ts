@@ -11,9 +11,8 @@
 
  FIXTURES ARE INVENTED AND CAT-THEMED, in Simplified Chinese against English,
  and the corpus pages live in a throwaway git clone the pin points at, since
- the real inputs are unlicensed corpus pages. The runs directory and the
- artifact files are process-wide, so every case here runs at `concurrency: 1`
- and puts its own back.
+ the real inputs are unlicensed corpus pages. Each case hands the gatherer its
+ own throwaway runs directory.
 
  @module
  */
@@ -36,38 +35,6 @@ import {
 import { namingFixtureGit, } from '../archive-naming.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-
-/**
- Points the runs directory variable at a path until the handle's scope ends.
-
- The directory itself is the caller's own `scratchDir`, bound first so it is
- removed after the variable is restored.
-
- @param path - directory the variable names meanwhile
-
- @returns Disposable handle restoring the variable as it stood
-
- @example
- ```ts
- using pointed = runsDirPointedAt({ path: runs.path, },);
- ```
- */
-function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
-  /**
-   Runs directory standing before this case ran.
-   */
-  const before = process.env
-    .TRANSLATION_REPAIR_RUNS_DIR;
-  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-  return {
-    [Symbol.dispose]: function restore(): void {
-      if (before === undefined)
-        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-      else
-        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
-    },
-  };
-}
 
 //region Control gathering tests
 // What the GATHERER does with regions it must not pick and regions it cannot.
@@ -237,7 +204,6 @@ async function controlsFor(
     },),),
   );
   await mkdir(join(runs.path, 'artifacts',), { recursive: true, },);
-  using pointed = runsDirPointedAt({ path: runs.path, },);
   await writeFile(
     join(runs.path, 'artifacts', `${entryId}.json`,),
     JSON.stringify({
@@ -280,6 +246,7 @@ async function controlsFor(
     manifestPath,
     damaged: damagedCases({ entryId, },),
     pin,
+    runsDir: runs.path,
   },);
 }
 

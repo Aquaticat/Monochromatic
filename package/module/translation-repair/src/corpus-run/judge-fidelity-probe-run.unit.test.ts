@@ -47,6 +47,7 @@ import {
 import { capturingLoggerPair, } from '../capturing-logger.test-fixture.ts';
 import {
   expectRefusal,
+  refusalMessage,
   REVIEW_REFERENCE,
   REVIEW_SOURCE,
 } from '../fidelity-reference.test-fixture.ts';
@@ -147,6 +148,12 @@ type ProbeRunSeen = {
    What the run threw, empty when it completed.
    */
   readonly failures: readonly unknown[];
+
+  /**
+   For each clock reading, in order, how many reference reads the invented
+   reader had been handed by then.
+   */
+  readonly readsBeforeClock: readonly number[];
 };
 
 /**
@@ -265,6 +272,10 @@ async function probeIn(
    */
   const failures: unknown[] = [];
   /**
+   Reference reads seen at each clock reading.
+   */
+  const readsBeforeClock: number[] = [];
+  /**
    Clock readings still to give.
    */
   const instants = [
@@ -300,6 +311,7 @@ async function probeIn(
         return firstPositionClient({ asked, },);
       },
       now: function nextInstant(): string {
+        readsBeforeClock.push(readFor.length,);
         return nonNullishOrThrow(instants.shift(),);
       },
       pipelineDigest: DIGEST,
@@ -326,6 +338,7 @@ async function probeIn(
     clientBuilds,
     runsAsked,
     failures,
+    readsBeforeClock,
   };
 }
 
@@ -532,7 +545,8 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'REFUSES UNREVIEWED CONTEXT before it logs, reads, asks for a directory or builds a client',
+          name: 'REFUSES UNREVIEWED CONTEXT AS STATED, the reviewed-reference refusal kept as its cause, before it '
+            + 'logs, reads, asks for a directory or builds a client',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'judge-fidelity-run-', },);
             const seen = await probeIn({
@@ -543,8 +557,19 @@ await describe({
               ],
             },);
             expect(seen.failures.length,).toBe(1,);
+            /**
+             What the run threw.
+             */
+            const [refusal,] = seen.failures;
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(refusal,),).toBe(`StatedRefusalError: ${
+              refusalMessage({
+                referenceId: 'unreviewed context',
+                operation: 'request',
+              },)
+            }`,);
             expectRefusal({
-              refusal: seen.failures[0],
+              refusal: Error.isError(refusal,) ? refusal.cause : refusal,
               referenceId: 'unreviewed context',
               operation: 'request',
             },);
@@ -795,6 +820,30 @@ await describe({
               runDir,
               'row-3.json',
             ),)).mode & 0o777,).toBe(0o600,);
+          },
+        },),
+        it({
+          name: 'READS THE START OF THE RUN BEFORE IT READS ANY REFERENCE and the finish after the last row, so the '
+            + 'plan and the kept run date the whole run and not the end of the corpus read',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'judge-fidelity-run-', },);
+            const seen = await probeIn({
+              runsDir: scratch.path,
+              typed: [
+                ...ASKING_TWO_JUDGES,
+                '--cap',
+                '1',
+              ],
+            },);
+            expect({
+              failures: seen.failures,
+              readFor: seen.readFor,
+              readsBeforeClock: seen.readsBeforeClock,
+            },).toEqual({
+              failures: [],
+              readFor: [[SPEC,],],
+              readsBeforeClock: [0, 1,],
+            },);
           },
         },),
         it({

@@ -483,12 +483,8 @@ await describe({
             ],
             judge: async function throwsSecondFirst({ entryId, },): Promise<never> {
               return await ((entryId === catEntry({ index: 1, },))
-                ? refuseAfterThat(new UnansweredContestSliceError({
-                  message: 'slice 3 differs across lanes and the contest names it nowhere',
-                },),)
-                : refuseAtOnce(new UnansweredContestSliceError({
-                  message: 'slice 5 differs across lanes and the contest names it nowhere',
-                },),));
+                ? refuseAfterThat(new UnansweredContestSliceError({ sliceIndex: 3, },),)
+                : refuseAtOnce(new UnansweredContestSliceError({ sliceIndex: 5, },),));
             },
           },),
         },);

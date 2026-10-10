@@ -21,9 +21,8 @@
  "REFUSES to quote the text it could not find" case is that guard, and it is the reason this file is worth its length.
 
  FIXTURES ARE INVENTED AND CAT-THEMED, in Simplified Chinese against English,
- because the real inputs are unlicensed corpus pages. The runs directory and
- the artifact file are process-wide, so every case here runs at
- `concurrency: 1` and puts its own back.
+ because the real inputs are unlicensed corpus pages. Each case hands the
+ gatherer its own throwaway runs directory.
 
  @module
  */
@@ -45,38 +44,6 @@ import {
   locateSlice,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-
-/**
- Points the runs directory variable at a path until the handle's scope ends.
-
- The directory itself is the caller's own `scratchDir`, bound first so it is
- removed after the variable is restored.
-
- @param path - directory the variable names meanwhile
-
- @returns Disposable handle restoring the variable as it stood
-
- @example
- ```ts
- using pointed = runsDirPointedAt({ path: runs.path, },);
- ```
- */
-function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
-  /**
-   Runs directory standing before this case ran.
-   */
-  const before = process.env
-    .TRANSLATION_REPAIR_RUNS_DIR;
-  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-  return {
-    [Symbol.dispose]: function restore(): void {
-      if (before === undefined)
-        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-      else
-        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
-    },
-  };
-}
 
 //region Relabel case location tests
 
@@ -326,7 +293,6 @@ await describe({
               },),),
             );
             await mkdir(join(runs.path, 'artifacts',), { recursive: true, },);
-            using pointed = runsDirPointedAt({ path: runs.path, },);
             /**
              Where the artifact of the drawn entry sits.
              */
@@ -361,6 +327,7 @@ await describe({
             expect(await gatherRelabelCases({
               manifestPath,
               pin,
+              runsDir: runs.path,
             },),).toEqual([],);
             // THE CONTROL: with the drawn id settled, the gatherer goes on to
             // the page, which the absent clone refuses. So the empty answer
@@ -384,6 +351,7 @@ await describe({
             await expect(gatherRelabelCases({
               manifestPath,
               pin,
+              runsDir: runs.path,
             },),).rejects
               .toThrow(
                 'corpus read failed for deadbeef:people/Kitten/page.md (unreadable-clone); git could not open the '

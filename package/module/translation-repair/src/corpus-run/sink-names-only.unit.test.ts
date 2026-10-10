@@ -46,7 +46,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runKeyless, } from '../child-environment.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import {
   gatherAttributionEntries,
   lockRunsDir,
@@ -54,6 +54,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from '../roster-seats.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
 
 //region Sink naming tests
 
@@ -73,7 +74,8 @@ type CommandStreams = {
 };
 
 /**
- Runs one command and returns both its streams, whatever it exited with.
+ Runs one built command and returns both its streams, whatever it exited
+ with.
 
  A NON-ZERO EXIT IS NOT A FAILURE TO RUN HERE. `editor-standing-read` exits 1
  on a fixture that recorded no judged rounds, which is its own verdict and has
@@ -82,7 +84,9 @@ type CommandStreams = {
  promisified `execFile`: that one rejects on any non-zero exit and hides the streams
  on the rejection.
 
- @param args - argv the command receives, entry point first
+ @param command - built command to run
+
+ @param args - arguments the command receives after its script
 
  @returns Both streams as the command left them
 
@@ -90,18 +94,24 @@ type CommandStreams = {
 
  @example
  ```ts
- const { stderr, } = await streamsOf({ args: [STANDING_ENTRY, dir,], },);
+ const { stderr, } = await streamsOf({ command: STANDING_COMMAND, args: [dir,], },);
  ```
  */
 async function streamsOf(
-  { args, }: { readonly args: readonly string[]; },
+  {
+    command,
+    args,
+  }: {
+    readonly command: string;
+    readonly args: readonly string[];
+  },
 ): Promise<CommandStreams> {
   /**
    Command as it finished, or why it never started.
    */
-  const finished = await runKeyless({
-    file: process.execPath,
-    args: [...args,],
+  const finished = await runBuiltCommand({
+    command,
+    args,
   },);
 
 
@@ -122,25 +132,11 @@ const UNREADABLE = 'Basket.json';
 const LOCK_FILE = 'pass.lock';
 
 /**
- Command whose sink the CLI case exercises.
+ Command whose sink the CLI case exercises. Its module exports nothing, so
+ its sink is reachable only by running it, which is also how an operator
+ meets it.
  */
 const STANDING_COMMAND = 'editor-standing-read';
-
-/**
- Built entry point for {@link STANDING_COMMAND}.
-
- The module exports nothing, so its sink is reachable only by running it,
- which is also how an operator meets it.
- */
-const STANDING_ENTRY = join(
-  import.meta.dirname,
-  '..',
-  '..',
-  'dist',
-  'final',
-  'node',
-  `${STANDING_COMMAND}.mjs`,
-);
 
 /**
  Opening a filesystem error used to print, which must appear nowhere.
@@ -372,6 +368,7 @@ await describe({
          What the directory yielded.
          */
         const { malformed, } = await gatherAttributionEntries({
+          policy: NO_POOL_POLICY,
           artifactsDir: scratch.path,
         },);
 
@@ -407,6 +404,7 @@ await describe({
          What the directory yielded.
          */
         const { malformed, } = await gatherAttributionEntries({
+          policy: NO_POOL_POLICY,
           artifactsDir: scratch.path,
         },);
 
@@ -505,10 +503,8 @@ await describe({
          What the command printed, on both streams.
          */
         const { stderr, } = await streamsOf({
-          args: [
-            STANDING_ENTRY,
-            scratch.path,
-          ],
+          command: STANDING_COMMAND,
+          args: [scratch.path,],
         },);
 
         expect(stderr.includes(

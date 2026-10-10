@@ -1162,8 +1162,8 @@ const HELD_TESTS: Readonly<Record<string, {
   },
   'corpus-run/artifact-pool.ts#resolvePool': {
     tests: 4,
-    why: 'a required commit read from the environment, and the full id the function resolved it to, which '
-      + 'it leaves empty when none was required',
+    why: 'a required commit as the invoker wrote it, which the entry reads from its environment and hands in, '
+      + 'and the full id the function resolved it to, which it leaves empty when none was required',
   },
   'corpus-run/artifact-provenance.ts#assertArtifactProvenance': {
     tests: 2,

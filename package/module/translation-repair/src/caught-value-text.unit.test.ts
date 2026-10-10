@@ -131,6 +131,8 @@ const HELD: Readonly<Record<string, string>> = {
     'reads the message of a CorpusReadError that isMissingCorpusObject narrowed, a marked class',
   'corpus-run/git-command.ts#detectGit':
     'an access check of one fixed system path, which fails with a filesystem code and that path',
+  'corpus-run/judge-fidelity-probe-run.ts#requestedSpecs':
+    'reads the message of a FidelityReferenceError, the only class its catch lets through, which declares it safe',
   'corpus-run/pass-eligibility.ts#readSide':
     'reads the message of a CorpusReadError that isMissingCorpusObject narrowed, a marked class',
   'corpus-run/producer-calibrate-run.ts#refuseUnjudgeableRoster':

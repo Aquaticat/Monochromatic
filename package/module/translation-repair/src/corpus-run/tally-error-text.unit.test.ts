@@ -15,10 +15,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  CollapsedHeadingError,
   CorpusReadError,
   StatedRefusalError,
   TALLY_ERROR_CAP,
   tallyErrorText,
+  UnansweredContestSliceError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -93,6 +95,26 @@ await describe({
           'Error: unreachable: a corpus read refusal\'s message does not end on its kind and remedy, which its '
             + 'constructor writes as the message\'s closing',
         );
+      },
+    },),
+
+    it({
+      name: 'SAYS WHICH SLICE A CONTEST LEFT UNANSWERED, as it says the sentence of a sibling refusal that stops an '
+        + 'entry, rather than naming the class alone',
+      fn: async () => {
+        expect({
+          collapsed: tallyErrorText({
+            error: new CollapsedHeadingError({
+              entryId: 'Mittens',
+              sourceDistinct: 2,
+              pageDistinct: 1,
+            },),
+          },),
+          unanswered: tallyErrorText({ error: new UnansweredContestSliceError({ sliceIndex: 3, },), },),
+        },).toEqual({
+          collapsed: 'entry Mittens would render 2 distinct source heading(s) as 1 distinct page heading(s)',
+          unanswered: 'slice 3 differs across lanes and the contest names it nowhere',
+        },);
       },
     },),
 

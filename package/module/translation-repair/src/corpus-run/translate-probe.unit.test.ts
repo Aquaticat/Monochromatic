@@ -18,14 +18,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ChildRun,
-  runBuiltCommand,
-} from '../child-environment.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
   corpusEnvOf,
   makeProbeCorpus,
+  runProbeOver,
 } from './probes-b-built-command.test-fixture.ts';
 
 /**
@@ -48,49 +46,14 @@ const SOURCE_PAGE = '# 星\n\n星睡觉。\n\n星吃鱼。\n';
  */
 const TARGET_PAGE = '# Star\n\nStar naps.\n';
 
-/**
- Runs the built command over a corpus holding the given pages of the
- command's entry, with no provider key.
-
- @param files - corpus files by path
-
- @param args - arguments after the command
-
- @returns Exit code and both streams
-
- @example
- ```ts
- const run = await runOver({ files: {}, args: [], },);
- ```
- */
-async function runOver(
-  {
-    files,
-    args,
-  }: {
-    readonly files: Readonly<Record<string, string>>;
-    readonly args: readonly string[];
-  },
-): Promise<ChildRun> {
-  await using corpus = await makeProbeCorpus({ files, },);
-  await using runs = await scratchDir({ prefix: 'translate-probe-runs-', },);
-  return await runBuiltCommand({
-    command: 'translate-probe',
-    args,
-    env: {
-      ...corpusEnvOf({ corpus, },),
-      TRANSLATION_REPAIR_RUNS_DIR: runs.path,
-    },
-  },);
-}
-
 await describe({
   name: 'translate-probe as built',
   children: [
     it({
       name: 'RUNS TO ITS END on an entry with nothing to carve, saying so, and exits 0',
       fn: async () => {
-        expect(await runOver({
+        expect(await runProbeOver({
+          command: 'translate-probe',
           files: {
             [`people/${ENTRY}/page.md`]: '',
             [`people/${ENTRY}/page.en.md`]: '',
@@ -126,7 +89,8 @@ await describe({
     it({
       name: 'REFUSES a flag it does not read, and exits 6 with its usage line',
       fn: async () => {
-        expect(await runOver({
+        expect(await runProbeOver({
+          command: 'translate-probe',
           files: {
             [`people/${ENTRY}/page.md`]: SOURCE_PAGE,
             [`people/${ENTRY}/page.en.md`]: TARGET_PAGE,
@@ -142,7 +106,8 @@ await describe({
     it({
       name: 'PRINTS the section it chose and its slice, then REFUSES as stated for want of a key and exits 6, before any call',
       fn: async () => {
-        expect(await runOver({
+        expect(await runProbeOver({
+          command: 'translate-probe',
           files: {
             [`people/${ENTRY}/page.md`]: SOURCE_PAGE,
             [`people/${ENTRY}/page.en.md`]: TARGET_PAGE,

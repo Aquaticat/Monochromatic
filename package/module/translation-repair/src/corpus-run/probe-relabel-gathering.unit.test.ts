@@ -436,15 +436,18 @@ type Rig = AsyncDisposable & {
    Path the drawn manifest was written to.
    */
   readonly manifestPath: string;
+
+  /**
+   Throwaway runs directory holding the settled artifact.
+   */
+  readonly runsDir: string;
 };
 
 /**
  Stands up a throwaway corpus clone, a throwaway runs directory holding one
  settled artifact, and a manifest naming two drawn items.
 
- The runs directory is pointed at through the environment, which is
- process-wide, so every case here runs at `concurrency: 1` and the disposer
- puts the variable back however the case ends.
+ The runs directory is handed to each gatherer as the rig's `runsDir`.
 
  @param alsoDrawn - issues the manifest draws after its two items, none by
  default
@@ -459,12 +462,6 @@ type Rig = AsyncDisposable & {
 async function gatheringRig(
   { alsoDrawn = [], }: { readonly alsoDrawn?: readonly string[]; } = {},
 ): Promise<Rig> {
-  /**
-   Runs directory standing before this case ran.
-   */
-  const before = process.env
-    .TRANSLATION_REPAIR_RUNS_DIR;
-
   /**
    Throwaway corpus clone, built and guarded on its own: a throw anywhere in
    its own setup already removes it, through scratchDirWith's own `catch`.
@@ -598,22 +595,14 @@ async function gatheringRig(
       },
     },);
 
-    // SET ONLY AFTER `runs` SUCCEEDS, so nothing between here and the return
-    // can throw and leave the variable pointing at a directory this
-    // function is about to remove.
-    process.env.TRANSLATION_REPAIR_RUNS_DIR = runs.path;
-
     return {
       pin: {
         cloneDir: corpus.path,
         commitSha: corpus.commitSha,
       },
       manifestPath: runs.manifestPath,
+      runsDir: runs.path,
       [Symbol.asyncDispose]: async function removeRig() {
-        if (before === undefined)
-          delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-        else
-          process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
         await runs[Symbol.asyncDispose]();
         await corpus[Symbol.asyncDispose]();
       },
@@ -664,6 +653,7 @@ await describe({
             const cases = await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             // The manifest names two items and the artifact carries four edits.
@@ -680,6 +670,7 @@ await describe({
             expect((await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },))[0]?.positions,).toEqual([DAMAGED_POSITION,],);
           },
         },),
@@ -705,6 +696,7 @@ await describe({
             const cases = await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             expect(cases.map(function toDraws(gathered,) {
@@ -736,6 +728,7 @@ await describe({
             const [gathered,] = await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             expect(gathered?.baselineText.includes(DAMAGED_BEFORE,),).toBe(true,);
@@ -755,6 +748,7 @@ await describe({
             const [gathered,] = await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             expect(gathered?.issues.map(function toId(issue,) {
@@ -784,6 +778,7 @@ await describe({
             const damaged = await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             /**
@@ -793,6 +788,7 @@ await describe({
               manifestPath: rig.manifestPath,
               damaged,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             expect(envelopesOf({ cases: controls, },)
@@ -815,6 +811,7 @@ await describe({
             const damaged = await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             /**
@@ -824,6 +821,7 @@ await describe({
               manifestPath: rig.manifestPath,
               damaged,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             expect(envelopesOf({ cases: controls, },),).toEqual([
@@ -846,6 +844,7 @@ await describe({
             const damaged = await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             /**
@@ -855,6 +854,7 @@ await describe({
               manifestPath: rig.manifestPath,
               damaged,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             expect(controls.length,).toBe(2,);
@@ -878,6 +878,7 @@ await describe({
             const damaged = await gatherRelabelCases({
               manifestPath: rig.manifestPath,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             /**
@@ -887,6 +888,7 @@ await describe({
               manifestPath: rig.manifestPath,
               damaged,
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },);
 
             for (const control of controls) {
@@ -910,6 +912,7 @@ await describe({
               manifestPath: rig.manifestPath,
               damaged: [],
               pin: rig.pin,
+              runsDir: rig.runsDir,
             },),).toEqual([],);
           },
         },),

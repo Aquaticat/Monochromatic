@@ -104,6 +104,7 @@ async function spend(
     controlHeld: true,
     draw: 'b',
     headSha: 'f00dcafe1234',
+    runsDir: '/cattery/runs',
     gather: function scriptedGather(): Promise<WidthInputOutcome> {
       /**
        Outcome scripted for this slice.

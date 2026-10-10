@@ -146,6 +146,7 @@ async function probeWith(
       command: 'editor-width-probe',
       typed,
     },),
+    runsDir: '/cattery/runs',
     client: scriptedClient({ script: {}, },),
     drawSample: function drawn({
       count,

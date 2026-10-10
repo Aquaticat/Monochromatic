@@ -25,10 +25,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  runBuiltCommand,
-  runKeyless,
-} from '../child-environment.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import {
@@ -43,60 +40,9 @@ import {
 } from './published-run.test-fixture.ts';
 
 /**
- The built verifier.
- */
-const VERIFIER = join(
-  import.meta.dirname,
-  '..',
-  '..',
-  'dist',
-  'final',
-  'node',
-  'verify-published.mjs',
-);
-
-/**
  Exit code the shared fixture reports for a child a signal ended.
  */
 const SIGNALLED = -1;
-
-/**
- Runs the verifier over one runs directory.
-
- @param runsDir - directory to verify
-
- @returns Its exit code and what it printed
-
- @throws {@link Error} when a signal ended it, which leaves no exit code to read, or it never started
-
- @example
- ```ts
- const { status, stdout, } = await verify({ runsDir, },);
- ```
- */
-async function verify(
-  { runsDir, }: { readonly runsDir: string; },
-): Promise<{
-  readonly status: number;
-  readonly stdout: string;
-}> {
-  /**
-   The finished process.
-   */
-  const done = await runKeyless({
-    file: process.execPath,
-    args: [VERIFIER,],
-    extra: {
-      TRANSLATION_REPAIR_RUNS_DIR: runsDir,
-    },
-  },);
-  if (done.code === SIGNALLED)
-    throw new Error('verify-published ended on a signal',);
-  return {
-    status: done.code,
-    stdout: done.stdout,
-  };
-}
 
 /**
  What the built verifier printed and how it ended, with the runs directory
@@ -132,6 +78,38 @@ async function builtVerifier(
     args,
     env: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, },
   },);
+}
+
+/**
+ Runs the verifier over one runs directory.
+
+ @param runsDir - directory to verify
+
+ @returns Its exit code and what it printed
+
+ @throws {@link Error} when a signal ended it, which leaves no exit code to read, or it never started
+
+ @example
+ ```ts
+ const { status, stdout, } = await verify({ runsDir, },);
+ ```
+ */
+async function verify(
+  { runsDir, }: { readonly runsDir: string; },
+): Promise<{
+  readonly status: number;
+  readonly stdout: string;
+}> {
+  /**
+   The finished process.
+   */
+  const done = await builtVerifier({ runsDir, },);
+  if (done.code === SIGNALLED)
+    throw new Error('verify-published ended on a signal',);
+  return {
+    status: done.code,
+    stdout: done.stdout,
+  };
 }
 
 await describe({

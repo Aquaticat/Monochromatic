@@ -1,7 +1,10 @@
 /**
  Tests for the compiled `judge-fidelity-probe` command's zero-call preflight:
  which requests it refuses before any corpus or provider access, with which
- exit status and first stderr line, and what it prints when it accepts one.
+ exit status and stderr, and what it prints when it accepts one. A request the
+ reviewed references refuse is the operator's to mend, so it is a stated
+ refusal at exit six with its one line, as the command's other refusals of
+ what was typed are.
 
  Each run is the built command in an owned empty directory with no provider
  key set, `--cap 0`, so no case can read a corpus or spend. The entries the
@@ -28,11 +31,6 @@ import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 //region Preflight runs
 // The built command, run for its zero-call preflight only.
-
-/**
- Exit status the command gives a fault in its own request.
- */
-const REQUEST_FAULT_STATUS = 5;
 
 /**
  Exit status the command gives a refusal it states in its own words.
@@ -163,7 +161,7 @@ async function preflight(extra: readonly string[],): Promise<PreflightRun> {
 }
 
 /**
- The first stderr line of a refused request: the command's name and the refusal's whole message.
+ The stderr line of a refused request: the command's name and the refusal's whole message.
 
  @param referenceId - identifier the refusal names
 
@@ -171,7 +169,7 @@ async function preflight(extra: readonly string[],): Promise<PreflightRun> {
 
  @example
  ```ts
- expect(run.stderr[0],).toBe(refusedLine({ referenceId: 'unreviewed context', },),);
+ expect(run.stderr,).toEqual([refusedLine({ referenceId: 'unreviewed context', },),],);
  ```
  */
 function refusedLine({ referenceId, }: { readonly referenceId: string; },): string {
@@ -272,39 +270,46 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'REFUSES an entry with no reviewed reference, naming it on the first stderr line, with exit status '
-            + 'five and nothing on stdout',
+          name: 'REFUSES AS STATED an entry with no reviewed reference, naming it on its one stderr line, with exit '
+            + 'status six and nothing on stdout',
           fn: async () => {
             const run = await preflight([
               '--only',
               'not-reviewed-fixture',
             ],);
-            expect(run.code,).toBe(REQUEST_FAULT_STATUS,);
-            expect(run.stdout,).toEqual([],);
-            expect(run.stderr[0],).toBe(refusedLine({ referenceId: 'not-reviewed-fixture', },),);
+            expect(run,).toEqual({
+              code: REFUSED_AS_STATED,
+              stdout: [],
+              stderr: [refusedLine({ referenceId: 'not-reviewed-fixture', },),],
+            },);
           },
         },),
         it({
-          name: 'REFUSES unreviewed context, naming it, rather than changing what a gold comparison means',
+          name: 'REFUSES AS STATED unreviewed context, naming it on its one stderr line with exit status six, rather '
+            + 'than changing what a gold comparison means',
           fn: async () => {
             const run = await preflight(['--context',],);
-            expect(run.code,).toBe(REQUEST_FAULT_STATUS,);
-            expect(run.stdout,).toEqual([],);
-            expect(run.stderr[0],).toBe(refusedLine({ referenceId: 'unreviewed context', },),);
+            expect(run,).toEqual({
+              code: REFUSED_AS_STATED,
+              stdout: [],
+              stderr: [refusedLine({ referenceId: 'unreviewed context', },),],
+            },);
           },
         },),
         it({
-          name: 'REFUSES the default families for an entry with no reviewed alteration, naming the missing family, '
-            + 'rather than silently dropping it',
+          name: 'REFUSES AS STATED the default families for an entry with no reviewed alteration, naming the missing '
+            + 'family on its one stderr line with exit status six, rather than silently dropping it',
           fn: async () => {
             const { entryId, } = entryWithoutAlteration();
             const run = await preflight([
               '--only',
               entryId,
             ],);
-            expect(run.code,).toBe(REQUEST_FAULT_STATUS,);
-            expect(run.stdout,).toEqual([],);
-            expect(run.stderr[0],).toBe(refusedLine({ referenceId: 'damage selection (alteration)', },),);
+            expect(run,).toEqual({
+              code: REFUSED_AS_STATED,
+              stdout: [],
+              stderr: [refusedLine({ referenceId: 'damage selection (alteration)', },),],
+            },);
           },
         },),
         it({

@@ -1,5 +1,6 @@
 /**
- Tests that the artifact pool REFUSES two pools asked for at once.
+ Tests that the artifact pool reads its policy as the value an entry hands
+ it, and REFUSES two pools asked for at once.
 
  WHAT THE TWO REQUESTS ARE. `TRANSLATION_REPAIR_REQUIRED_COMMIT` filters the
  pool to entries whose recorded pipeline contains a commit; setting
@@ -8,19 +9,22 @@
  chose, and the report printed above the resulting number would name that
  policy as though it had been requested.
 
+ THE ENTRY READS THE ENVIRONMENT, AND THE POOL READS A VALUE. `readPoolPolicy`
+ is what an entry file calls with the environment it runs in, and
+ `resolvePool` takes what it returned. Until 2026-10-10 `resolvePool` read
+ the environment itself, so every library caller pooled under whatever the
+ shell exported and these cases had to write the process's environment.
+
  WHAT WAS MEASURED. On 2026-08-25, inverting the comparison that reads the
  pool-all variable failed no test in this package. A reader that mistook
  PRESENCE for the accepted VALUE would refuse ordinary invocations and admit
- the contradictory one, which is why both directions are pinned in this file rather
- than the refusal alone.
+ the contradictory one, which is why the reader is pinned on the accepted
+ value, on another wording and on an exported-but-empty variable.
 
- THE SECOND CASE IS THE DISCRIMINATING ONE. A variable exported with any other
- value is an ordinary shell accident, and folding it together with the request
- it does not make is what separates reading a value from noticing a name.
+ NO NETWORK, and no shared state: no case writes the process's environment,
+ and the refused pool names a directory nothing reads.
 
- NO NETWORK, and no shared state: the environment is edited through a
- disposable that puts back whatever was there, and the pool is read out of a
- throwaway directory rather than any real artifacts.
+ Fixtures are cat-themed invention. No corpus content appears here.
 
  @module
  */
@@ -33,9 +37,13 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { resolvePool, } from '../../dist/final/node/index.mjs';
+import {
+  readPoolPolicy,
+  resolvePool,
+  StatedRefusalError,
+} from '../../dist/final/node/index.mjs';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { CONFLICTING_POOL_SAYS, } from './pool-policy.test-fixture.ts';
 
 //region Fixtures
 
@@ -49,120 +57,104 @@ const REQUIRED_COMMIT_VAR = 'TRANSLATION_REPAIR_REQUIRED_COMMIT';
  */
 const POOL_ALL_VAR = 'TRANSLATION_REPAIR_POOL_ALL';
 
-/**
- Wording the refusal carries, kept here so both cases ask about the same one.
- */
-const CONFLICT_WORDING = 'are both set';
-
-/**
- Points two environment variables at given values until disposed.
-
- ABSENCE IS SPELT AS THE EMPTY STRING rather than removing the name, which the
- reader itself folds together with absence: an exported-but-empty variable is
- an ordinary shell accident, and the module says so where it reads them.
-
- @param values - variable names mapped to what they should say
-
- @returns Edit holding what each name now says, which puts them back on disposal
-
- @example
- ```ts
- using edited = environmentSaying({ values: { [POOL_ALL_VAR]: 'yes', }, },);
- ```
- */
-function environmentSaying(
-  { values, }: { readonly values: Readonly<Record<string, string>>; },
-): { readonly saying: Readonly<Record<string, string>>; } & Disposable {
-  /**
-   What each edited name said beforehand, with absence spelt as empty.
-   */
-  const before: Record<string, string> = Object.fromEntries(
-    Object.keys(values,)
-      .map(function priorOf(name,): [string, string,] {
-        return [
-          name,
-          process.env[name] ?? '',
-        ];
-      },),
-  );
-
-  for (const [name, value,] of Object.entries(values,))
-    process.env[name] = value;
-
-  return {
-    saying: values,
-    [Symbol.dispose]: () => {
-      for (const [name, value,] of Object.entries(before,))
-        process.env[name] = value;
-    },
-  };
-}
-
 //endregion Fixtures
 
 await describe({
-  name: resolvePool.name,
-  // ONE AT A TIME: both cases set the same process-wide pool variables, one
-  // of them after an await, and a restore finishing out of order could leave
-  // the other's value set (ledger B79).
+  name: 'artifact pool policy',
   concurrency: 1,
   children: [
-    it({
-      name: 'REFUSES a filtered pool and an unfiltered one asked for together, rather than picking '
-        + 'one and printing its name above a number nobody requested',
-      fn: async () => {
-        using edited = environmentSaying({
-          values: {
-            [REQUIRED_COMMIT_VAR]: 'HEAD',
-            [POOL_ALL_VAR]: 'yes',
+    describe({
+      name: readPoolPolicy.name,
+      concurrency: 1,
+      children: [
+        it({
+          name: 'READS NEITHER REQUEST from an environment that sets neither variable',
+          fn: async () => {
+            expect(readPoolPolicy({ env: { PURR_LEVEL: 'loud', }, },),).toEqual({
+              requiredCommit: '',
+              poolAll: false,
+            },);
           },
-        },);
-        expect(process.env[POOL_ALL_VAR],).toBe(edited.saying[POOL_ALL_VAR],);
+        },),
 
-        /**
-         What the reader said about the pair.
-         */
-        const refusal = await rejectionOf(async function overBothPools() {
-          await resolvePool({ artifactsDir: join(
-            tmpdir(),
-            'translation-repair-pool-conflict-unread',
-          ), },);
-        },);
+        it({
+          name: 'READS THE REQUIRED COMMIT as the invoker wrote it and the pool-all request by its one accepted '
+            + 'value',
+          fn: async () => {
+            expect(readPoolPolicy({
+              env: {
+                [REQUIRED_COMMIT_VAR]: 'tabby-tip',
+                [POOL_ALL_VAR]: 'yes',
+              },
+            },),).toEqual({
+              requiredCommit: 'tabby-tip',
+              poolAll: true,
+            },);
+          },
+        },),
 
-        expect(refusal,).toBeInstanceOf(Error,);
-        expect((refusal as Error).message,).toContain(CONFLICT_WORDING,);
-        expect((refusal as Error).message,).toContain(POOL_ALL_VAR,);
-      },
+        it({
+          name: 'READS A POOL-ALL VARIABLE EXPORTED WITH ANY OTHER WORDING AS NO REQUEST, since a reader noticing '
+            + 'the NAME rather than the value it accepts would refuse ordinary invocations',
+          fn: async () => {
+            expect(readPoolPolicy({
+              env: {
+                [REQUIRED_COMMIT_VAR]: 'tabby-tip',
+                [POOL_ALL_VAR]: 'no',
+              },
+            },),).toEqual({
+              requiredCommit: 'tabby-tip',
+              poolAll: false,
+            },);
+          },
+        },),
+
+        it({
+          name: 'READS AN EXPORTED-BUT-EMPTY REQUIRED COMMIT AS NONE, an ordinary shell accident',
+          fn: async () => {
+            expect(readPoolPolicy({
+              env: {
+                [REQUIRED_COMMIT_VAR]: '',
+                [POOL_ALL_VAR]: '',
+              },
+            },),).toEqual({
+              requiredCommit: '',
+              poolAll: false,
+            },);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ADMITS a pool-all variable exported with any other wording, since a reader noticing the '
-        + 'NAME rather than the value it accepts would refuse ordinary invocations',
-      fn: async () => {
-        /**
-         Throwaway artifacts directory, empty, so nothing real is read.
-         */
-        await using scratch = await scratchDir({ prefix: 'translation-repair-pool-', },);
-        const artifactsDir = scratch.path;
+    describe({
+      name: resolvePool.name,
+      concurrency: 1,
+      children: [
+        it({
+          name: 'REFUSES AS STATED a filtered pool and an unfiltered one asked for together in the policy it is '
+            + 'handed, rather than picking one and printing its name above a number nobody requested',
+          fn: async () => {
+            /**
+             What the reader said about the pair.
+             */
+            const refusal = await rejectionOf(async function overBothPools() {
+              await resolvePool({
+                artifactsDir: join(
+                  tmpdir(),
+                  'translation-repair-pool-conflict-unread',
+                ),
+                policy: {
+                  requiredCommit: 'tabby-tip',
+                  poolAll: true,
+                },
+              },);
+            },);
 
-        using edited = environmentSaying({
-          values: {
-            [REQUIRED_COMMIT_VAR]: 'HEAD',
-            [POOL_ALL_VAR]: 'no',
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(refusal,),).toBe(`StatedRefusalError: ${CONFLICTING_POOL_SAYS}`,);
           },
-        },);
-        expect(process.env[POOL_ALL_VAR],).toBe(edited.saying[POOL_ALL_VAR],);
-
-        /**
-         What the reader said when only one pool was actually requested.
-         */
-        const refusal = await rejectionOf(async function overAnEmptyPool() {
-          await resolvePool({ artifactsDir, },);
-        },);
-
-        expect(refusal,).toBeInstanceOf(Error,);
-        expect((refusal as Error).message,).not.toContain(CONFLICT_WORDING,);
-      },
+        },),
+      ],
     },),
   ],
 },);

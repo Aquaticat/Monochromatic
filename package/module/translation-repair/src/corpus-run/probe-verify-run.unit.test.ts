@@ -208,8 +208,8 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'GATHERS both sets from the manifest in the runs directory and the pin, probes each, and writes '
-            + 'the blind sheet and its manifest',
+          name: 'GATHERS both sets from the manifest and the artifacts in the runs directory it is handed and the '
+            + 'pin, probes each, and writes the blind sheet and its manifest',
           fn: async (ctx,) => {
             using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
             await using scratch = await scratchDir({ prefix: 'probe-verify-run-', },);
@@ -272,6 +272,7 @@ await describe({
               {
                 manifestPath,
                 pin: PIN,
+                runsDir: scratch.path,
               },
             ],);
             expect(gathering.controlCalls,).toEqual([
@@ -279,6 +280,7 @@ await describe({
                 manifestPath,
                 damaged: [DAMAGED_CASE,],
                 pin: PIN,
+                runsDir: scratch.path,
               },
             ],);
             expect(built(),).toBe(2,);

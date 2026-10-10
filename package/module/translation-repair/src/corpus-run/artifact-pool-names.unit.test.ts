@@ -35,18 +35,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { resolvePool, } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
 
 //region Fixtures
-
-/**
- Environment variable naming the commit an eligible pipeline must contain.
- */
-const REQUIRED_COMMIT_VAR = 'TRANSLATION_REPAIR_REQUIRED_COMMIT';
-
-/**
- Environment variable opting into a deliberately mixed pool.
- */
-const POOL_ALL_VAR = 'TRANSLATION_REPAIR_POOL_ALL';
 
 /**
  Commit both fixtures record, shaped as a full object id because anything
@@ -104,56 +95,10 @@ async function placeArtifact(
   );
 }
 
-/**
- Clears both generation-policy variables for the duration of one case, so a
- shell that exported either cannot decide what this test measures.
-
- @returns Disposable restoring whatever was there before
-
- @example
- ```ts
- using quiet = withoutPoolPolicy();
- ```
- */
-function withoutPoolPolicy(): Disposable {
-  // NAMED ONE BY ONE rather than looped over. A loop reaches these through a
-  // computed key, and a computed key on `process.env` is exactly what
-  // `typescript(no-dynamic-delete)` refuses; spelling both out also puts the
-  // two variable names in front of a reader of this helper.
-  /**
-   Required commit as the invoking shell left it.
-   */
-  const commitBefore = process.env.TRANSLATION_REPAIR_REQUIRED_COMMIT;
-
-  /**
-   Mixed-pool opt-in as the invoking shell left it.
-   */
-  const poolAllBefore = process.env.TRANSLATION_REPAIR_POOL_ALL;
-
-  delete process.env.TRANSLATION_REPAIR_REQUIRED_COMMIT;
-  delete process.env.TRANSLATION_REPAIR_POOL_ALL;
-
-  return {
-    [Symbol.dispose]: () => {
-      if (commitBefore === undefined)
-        delete process.env.TRANSLATION_REPAIR_REQUIRED_COMMIT;
-      else
-        process.env.TRANSLATION_REPAIR_REQUIRED_COMMIT = commitBefore;
-
-      if (poolAllBefore === undefined)
-        delete process.env.TRANSLATION_REPAIR_POOL_ALL;
-      else
-        process.env.TRANSLATION_REPAIR_POOL_ALL = poolAllBefore;
-    },
-  };
-}
-
 //endregion Fixtures
 
 await describe({
   name: resolvePool.name,
-  // ONE AT A TIME: its case clears the process-wide pool variables across
-  // awaits (ledger B79).
   concurrency: 1,
   children: [
     it({
@@ -161,8 +106,6 @@ await describe({
         + 'the census that classifies those files are looking at one view of it rather than two, '
         + 'which is the whole reason the listing travels with the call',
       fn: async () => {
-        using quiet = withoutPoolPolicy();
-
         /**
          Throwaway artifacts directory, so nothing real is read or written.
          */
@@ -178,16 +121,13 @@ await describe({
         const eligible = await resolvePool({
           artifactsDir,
           names: [`${ASKED}.json`,],
+          policy: NO_POOL_POLICY,
         },);
 
         // The unasked entry is on disk and would be pooled by a census that
         // listed the directory for itself. Its absence here is the forwarding.
         expect(eligible.entryIds,).toStrictEqual([ASKED,],);
         expect(eligible.malformedIds,).toStrictEqual([],);
-        // Both policy variables were absent for the whole call, so nothing an
-        // invoking shell exported chose the pool that was just measured.
-        expect(process.env[REQUIRED_COMMIT_VAR],).toBe(undefined,);
-        expect(process.env[POOL_ALL_VAR],).toBe(undefined,);
       },
     },),
   ],

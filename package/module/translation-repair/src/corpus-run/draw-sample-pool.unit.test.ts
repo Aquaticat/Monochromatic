@@ -30,6 +30,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import { writeSettledArtifact, } from './settled-v1-pool.test-fixture.ts';
+import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
 
 await describe({
   name: readDrawPool.name,
@@ -68,6 +69,7 @@ await describe({
         using capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
         const pool = await readDrawPool({
+          policy: NO_POOL_POLICY,
           runsDir: scratch.path,
           readSource: async function readPage({ relPath, },): Promise<string> {
             asked.push(relPath,);
@@ -141,6 +143,7 @@ await describe({
          */
         const refusal = await rejectionOf({
           promise: readDrawPool({
+            policy: NO_POOL_POLICY,
             runsDir: scratch.path,
             readSource: async function refusesTabbyFirst({ relPath, },): Promise<string> {
               if (relPath === 'people/tabby/page.md') {

@@ -56,6 +56,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { withFreshRunSeats, } from './fresh-run-seats.test-fixture.ts';
 
 /**
  Environment variable that overrides the runs directory.
@@ -287,26 +288,6 @@ function recordingTransport(): {
       return { status: REFUSED_OUTRIGHT, bodyText: '{}', };
     },
     urls,
-  };
-}
-
-/**
- Empties the run-wide seat tally for the life of a scope and again on exit,
- so a case reads only what it caused and leaves nothing for the next one.
-
- @returns Disposable emptying the tally again
-
- @example
- ```ts
- using _fresh = withFreshRunSeats();
- ```
- */
-function withFreshRunSeats(): Disposable {
-  RUN_SEATS.reset();
-  return {
-    [Symbol.dispose](): void {
-      RUN_SEATS.reset();
-    },
   };
 }
 

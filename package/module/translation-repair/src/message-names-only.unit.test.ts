@@ -189,6 +189,7 @@ const MARKED_CLASSES: readonly string[] = [
   'TrialLedgerLineError',
   'TrialSliceRefusalError',
   'TransportRequestFailedError',
+  'UnansweredContestSliceError',
   'UnfoldedTranslationError',
   'UnknownArtifactGenerationError',
   'UnmeasurableRepairError',
@@ -847,6 +848,14 @@ const FORWARDING_SITES: readonly (Forwarding & {
     narrowedTo: ['DeliveryCoherenceError', 'WordingCoherenceError',],
     kind: 'forwards',
     names: 'a slice index and fault and outcome kinds',
+  },
+  {
+    file: 'corpus-run/judge-fidelity-probe-run.ts',
+    className: 'StatedRefusalError',
+    narrowedTo: ['FidelityReferenceError',],
+    kind: 'forwards',
+    names: 'a reviewed reference id, an entry id the operator named, a fixed request label or the missing damage '
+      + 'families, and a closed operation name',
   },
   {
     file: 'corpus-run/producer-calibrate-run.ts',

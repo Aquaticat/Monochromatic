@@ -1,12 +1,14 @@
 /**
- What the package's own root logger warned while one piece of work ran, for
- cases whose reader takes no logger and writes through its module's root.
+ What the package's own root logger warned, or logged at the info level,
+ while one piece of work ran, for cases whose reader takes no logger and
+ writes through its module's root.
 
  TEST SUPPORT, NOT PACKAGE SOURCE. The built package carries its own logger,
- whose `warn` sink looks `console.warn` up by name at each write, so the
- divert here is what it calls. That logger is flushed through a root the
- build itself hands out before `console.warn` is put back: a line still
- waiting on a sink when the divert ended would be printed instead of kept.
+ whose console sink looks `console.warn` and `console.info` up by name at
+ each write, so the divert here is what it calls. That logger is flushed
+ through a root the build itself hands out before the diverted method is put
+ back: a line still waiting on a sink when the divert ended would be printed
+ instead of kept.
 
  THE LOGGER STARTS BEFORE THE DIVERT (ledger B140). It is built on a
  process's first line and verifies its sinks then, and it reports a sink it
@@ -52,7 +54,7 @@ const TAG_END = '] ';
  @throws Error when the line carries no level and timestamp tags, which the
  console sink writes on every line: such a line is no line the package
  logged, but the logger reporting a sink that failed during the work, or a
- direct `console.warn` call
+ direct call of the diverted method
 
  @example
  ```ts
@@ -74,10 +76,49 @@ function messageOf({ line, }: { readonly line: string; },): string {
   );
   if ((levelEnd === (-1)) || (stampEnd === (-1)))
     throw new Error(
-      'console.warn received a line without the console sink\'s level and timestamp tags, so no line the '
-        + `package logged: ${line}`,
+      'a diverted console method received a line without the console sink\'s level and timestamp tags, so no '
+        + `line the package logged: ${line}`,
     );
   return line.slice(stampEnd + TAG_END.length,);
+}
+
+/**
+ Waits out both loggers' pending lines and sink checks, so what either says
+ about a sink it could not verify reaches the console it was written for.
+
+ @example
+ ```ts
+ await flushBothLoggers();
+ ```
+ */
+async function flushBothLoggers(): Promise<void> {
+  await contextRoot({ tag: 'console-warn-lines', },)
+    .flush();
+  await frameworkLogger.flush();
+}
+
+/**
+ Every line one diverted console method was handed, each from its first tag
+ on.
+
+ @param calls - each text the method was called with; the sink joins the
+ lines of one turn into one call and passes that one text
+
+ @returns The lines in the order written
+
+ @example
+ ```ts
+ const lines = messagesOf({ calls, },);
+ ```
+ */
+function messagesOf({ calls, }: { readonly calls: readonly string[]; },): readonly string[] {
+  return calls.flatMap(function linesOf(call,): readonly string[] {
+    return call
+      .split('\n',)
+      .map(function toMessage(line,): string {
+        return messageOf({ line, },);
+      },);
+  },);
 }
 
 /**
@@ -105,12 +146,9 @@ export async function warnLinesDuring<ResultT,>(
 }> {
   // Both loggers verify their sinks before `console.warn` is replaced, so what
   // either says about one it could not verify is not taken for the work's.
-  await contextRoot({ tag: 'console-warn-lines', },)
-    .flush();
-  await frameworkLogger.flush();
+  await flushBothLoggers();
   /**
-   Each text `console.warn` was called with; the sink joins the lines of one
-   turn into one call and passes that one text.
+   Each text `console.warn` was called with.
    */
   const calls: string[] = [];
   /**
@@ -136,12 +174,63 @@ export async function warnLinesDuring<ResultT,>(
     .flush();
   return {
     result,
-    warned: calls.flatMap(function linesOf(call,): readonly string[] {
-      return call
-        .split('\n',)
-        .map(function toMessage(line,): string {
-          return messageOf({ line, },);
-        },);
-    },),
+    warned: messagesOf({ calls, },),
+  };
+}
+
+/**
+ Runs one piece of work with `console.info` diverted, and hands back what
+ the work returned beside every line the package's root logger wrote at the
+ info level meanwhile, for a case on what a reader logs and in which order.
+
+ @param run - work that may log
+
+ @returns What the work returned, and the info lines in the order written,
+ each from its first tag on
+
+ @throws whatever the work throws, after `console.info` is put back
+
+ @example
+ ```ts
+ const { result, logged, } = await infoLinesDuring({ run: async () => withCitedReferences({ subjects, reader, },), },);
+ ```
+ */
+export async function infoLinesDuring<ResultT,>(
+  { run, }: { readonly run: () => Promise<ResultT>; },
+): Promise<{
+  readonly result: ResultT;
+  readonly logged: readonly string[];
+}> {
+  // Both loggers verify their sinks before `console.info` is replaced, so a
+  // line either had pending is printed rather than taken for the work's.
+  await flushBothLoggers();
+  /**
+   Each text `console.info` was called with.
+   */
+  const calls: string[] = [];
+  /**
+   `console.info` as it was, put back when this returns or throws.
+   */
+  const real = console.info;
+  console.info = function keep(text: unknown,): void {
+    calls.push(String(text,),);
+  };
+  /**
+   Puts `console.info` back when this scope ends, however it ends.
+   */
+  using _restore = {
+    [Symbol.dispose]: function putBack(): void {
+      console.info = real;
+    },
+  };
+  /**
+   What the work returned.
+   */
+  const result = await run();
+  await contextRoot({ tag: 'console-warn-lines', },)
+    .flush();
+  return {
+    result,
+    logged: messagesOf({ calls, },),
   };
 }

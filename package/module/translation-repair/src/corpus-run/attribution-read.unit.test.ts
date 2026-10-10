@@ -38,6 +38,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
 
 /**
  Pipeline commit every fixture artifact carries unless its case sets one.
@@ -201,7 +202,7 @@ async function refusalsByFile(
   /**
    What the directory yielded.
    */
-  const { malformed, } = await gatherAttributionEntries({ artifactsDir, },);
+  const { malformed, } = await gatherAttributionEntries({ artifactsDir, policy: NO_POOL_POLICY, },);
 
   return new Map(malformed.map(function toNameAndReason({ name, reason, },): [string, string,] {
     return [
@@ -245,7 +246,7 @@ await describe({
             /**
              Entries as the CLI would gather them.
              */
-            const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+            const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },);
 
             /**
              Chunk record the artifact carried.
@@ -278,7 +279,7 @@ await describe({
             /**
              Entries as the CLI would gather them.
              */
-            const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+            const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },);
 
             // Undefined, NOT an empty array. An empty array would read as an entry
             // whose critics raised nothing, which is the exact conflation the
@@ -322,7 +323,7 @@ await describe({
             /**
              What the directory yielded.
              */
-            const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+            const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },);
 
             // The sound sibling still produces its own entry, so Mittens' absence
             // from `entries` is the refusal under test and not a pool-wide failure.
@@ -559,6 +560,7 @@ await describe({
              What the directory yielded.
              */
             const { entries, malformed, } = await gatherAttributionEntries({
+              policy: NO_POOL_POLICY,
               artifactsDir: scratch.dir,
             },);
 
@@ -591,7 +593,7 @@ await describe({
               },);
 
               expect(
-                (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
+                (await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },)).malformed[0]
                   ?.reason,
               ).toContain('chunkCritics',);
             },),);
@@ -621,7 +623,7 @@ await describe({
               },);
 
               expect(
-                (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
+                (await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },)).malformed[0]
                   ?.reason,
               ).toContain('chunkIndex',);
             },),);
@@ -649,7 +651,7 @@ await describe({
               },
             },);
             expect(
-                (await gatherAttributionEntries({ artifactsDir: heard.dir, },)).malformed[0]
+                (await gatherAttributionEntries({ artifactsDir: heard.dir, policy: NO_POOL_POLICY, },)).malformed[0]
                   ?.reason,
               ).toContain('distinct',);
 
@@ -667,7 +669,7 @@ await describe({
               },
             },);
             expect(
-                (await gatherAttributionEntries({ artifactsDir: chunks.dir, },)).malformed[0]
+                (await gatherAttributionEntries({ artifactsDir: chunks.dir, policy: NO_POOL_POLICY, },)).malformed[0]
                   ?.reason,
               ).toContain('one record per chunk',);
 
@@ -692,7 +694,7 @@ await describe({
               },
             },);
             expect(
-                (await gatherAttributionEntries({ artifactsDir: proposers.dir, },)).malformed[0]
+                (await gatherAttributionEntries({ artifactsDir: proposers.dir, policy: NO_POOL_POLICY, },)).malformed[0]
                   ?.reason,
               ).toContain('one entry per critic',);
           },
@@ -722,7 +724,7 @@ await describe({
               },
             },);
             expect(
-                (await gatherAttributionEntries({ artifactsDir: claims.dir, },)).malformed[0]
+                (await gatherAttributionEntries({ artifactsDir: claims.dir, policy: NO_POOL_POLICY, },)).malformed[0]
                   ?.reason,
               ).toContain('one entry per claim',);
           },
@@ -901,7 +903,7 @@ await describe({
             },);
 
             expect(
-                (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
+                (await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },)).malformed[0]
                   ?.reason,
               ).toContain('emissionCount',);
           },
@@ -967,7 +969,7 @@ await describe({
             /**
              Entries as the CLI would gather them.
              */
-            const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+            const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },);
 
             // ELIGIBLE, which is the half that decides the population. Reading the
             // root left this undefined and moved the entry into the pre-feature
@@ -1033,7 +1035,7 @@ await describe({
             /**
              Entries as the CLI would gather them.
              */
-            const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+            const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },);
 
             expect(entries[0]?.sliceCritics,).toBeDefined();
 
@@ -1092,7 +1094,7 @@ await describe({
             /**
              Entries as the CLI would gather them.
              */
-            const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+            const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, },);
 
             expect(malformed,).toStrictEqual([],);
             expect(entries[0]?.sliceCritics?.[0]?.sliceIndex,).toBe(3,);

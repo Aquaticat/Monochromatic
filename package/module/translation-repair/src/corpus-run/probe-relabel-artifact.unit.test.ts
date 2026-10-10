@@ -13,10 +13,11 @@
  an absent field and refuses. So the discriminating fixture is the ordinary
  one, and no malformed input is needed to make the point.
 
- THE RUNS DIRECTORY COMES FROM THE ENVIRONMENT, and `process.env` is
- process-wide, so every case here runs at `concurrency: 1` and puts the
- variable back however it ends. The runner spawns a process per test file, so
- nothing outside this file is touched.
+ THE RUNS DIRECTORY IS HANDED IN. Until 2026-10-10 the reader took it from
+ the environment, whatever directory its caller was reading, so one case
+ points the environment at another directory and shows it unread; that case
+ writes `process.env`, which is process-wide, so every case here runs at
+ `concurrency: 1` and the variable is put back however it ends.
 
  FIXTURES ARE INVENTED AND CAT-THEMED, written into a throwaway directory that
  removes itself. A real run directory holds unlicensed corpus wording.
@@ -43,6 +44,7 @@ import {
   readArtifactRecords,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { runsDirPointedAt, } from './runs-dir-pointed.test-fixture.ts';
 
 //region Probe relabel artifact reading tests
 
@@ -307,39 +309,6 @@ function issueRecord(
 }
 
 /**
- Points the runs directory variable at a path until the handle's scope ends.
-
- The directory itself is the caller's own `scratchDir`, bound first so it is
- removed after the variable is restored.
-
- @param path - directory the variable names meanwhile
-
- @returns Disposable handle restoring the variable as it stood
-
- @example
- ```ts
- await using runs = await scratchDir({ prefix: 'whiskers-relabel-artifact-', },);
- using pointed = runsDirPointedAt({ path: runs.path, },);
- ```
- */
-function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
-  /**
-   Runs directory standing before this case ran.
-   */
-  const before = process.env
-    .TRANSLATION_REPAIR_RUNS_DIR;
-  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-  return {
-    [Symbol.dispose]: function restore(): void {
-      if (before === undefined)
-        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-      else
-        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
-    },
-  };
-}
-
-/**
  Builds an artifact of the generation before schema versions, the shape the
  round-three draw consists of: no version field and the issue records at the
  root.
@@ -401,8 +370,6 @@ async function recordsOf(
     ),
     { recursive: true, },
   );
-  using pointed = runsDirPointedAt({ path: runs.path, },);
-
   await writeFile(
     join(
       runs.path,
@@ -412,7 +379,10 @@ async function recordsOf(
     JSON.stringify(artifact,),
     'utf8',
   );
-  return await readArtifactRecords({ entryId: ENTRY_ID, },);
+  return await readArtifactRecords({
+    runsDir: runs.path,
+    entryId: ENTRY_ID,
+  },);
 }
 
 await describe({
@@ -424,6 +394,15 @@ await describe({
         // A reader looking at `artifact.issues` meets an absent field on this
         // ordinary artifact and refuses. That was the defect: every call
         // refused a well-formed run, and the probe gathered nothing.
+        expect(await recordsOf({ artifact: settledArtifact({ issues: [], },), },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'READS THE RUNS DIRECTORY IT IS HANDED, not the one the environment names, so a caller reading one run '
+        + 'reads that run\'s artifacts',
+      fn: async () => {
+        await using elsewhere = await scratchDir({ prefix: 'whiskers-relabel-elsewhere-', },);
+        using pointed = runsDirPointedAt({ path: elsewhere.path, },);
         expect(await recordsOf({ artifact: settledArtifact({ issues: [], },), },),).toEqual([],);
       },
     },),
@@ -545,7 +524,6 @@ await describe({
           },);
           return records[0]?.recorded ?? 'no record';
         }
-        // One after the other: the runs directory lives in process.env.
         expect(await recordedOf(null,),).toEqual({},);
         expect(await recordedOf({},),).toEqual({},);
       },

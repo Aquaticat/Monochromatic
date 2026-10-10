@@ -95,4 +95,80 @@ export async function captureReport(
   };
 }
 
+/**
+ What one run of a report that returns its exit code printed, returned and
+ left on the process.
+
+ @example
+ ```ts
+ const captured: CodedReportCapture = { lines: ['meter-report: logs=1 readings=0 unread=0',], returned: 1, left: 'unset', };
+ ```
+ */
+export type CodedReportCapture = {
+  /**
+   Lines printed with `console.log`, in order, each as `console.log` prints it.
+   */
+  readonly lines: readonly string[];
+
+  /**
+   What the report returned, read unchecked so a case compares it whole with
+   the code it expects.
+   */
+  readonly returned: unknown;
+
+  /**
+   Exit code the report set on the process itself, `unset` where it left
+   none, which is what a report that returns its code leaves.
+   */
+  readonly left: number | 'unset';
+};
+
+/**
+ Runs a report that returns its exit code, with its printing diverted and the
+ process's exit code held, so a case reads both the code it returned and
+ whether it set one on the process as well.
+
+ @param sinon - calling case's own sandbox (`ctx.sinon`)
+
+ @param run - report to run, answering with the exit code it returns
+
+ @returns Lines it printed, the code it returned and the code it left
+
+ @throws Whatever the report throws, after the exit code is put back
+
+ @example
+ ```ts
+ const captured = await captureCodedReport({ sinon: ctx.sinon, run: async () => reportMeters({ line, },), },);
+ ```
+ */
+export async function captureCodedReport(
+  {
+    sinon,
+    run,
+  }: {
+    readonly sinon: DisposableSandbox;
+    readonly run: () => Promise<number>;
+  },
+): Promise<CodedReportCapture> {
+  /**
+   The code the report returned, kept by the run it is handed to.
+   */
+  const returned: unknown[] = [];
+
+  /**
+   What it printed and what it left on the process.
+   */
+  const captured = await captureReport({
+    sinon,
+    run: async function keepingCode(): Promise<void> {
+      returned.push(await run(),);
+    },
+  },);
+  return {
+    lines: captured.lines,
+    returned: returned.at(0,),
+    left: captured.exitCode,
+  };
+}
+
 //endregion Report run capture

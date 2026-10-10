@@ -73,6 +73,7 @@ import {
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../roster-seats.test-fixture.ts';
+import { withFreshRunSeats, } from './fresh-run-seats.test-fixture.ts';
 
 //region CLI refusal tests
 
@@ -240,26 +241,6 @@ const CONFIG_VARIABLE = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY';
  that class may ever say.
  */
 const CONFIG_MESSAGE = `${CONFIG_VARIABLE} is not set; run under mise so sops injects it`;
-
-/**
- Empties the run-wide seat tally for the life of a scope and again on exit,
- so a case reads only what it caused and leaves nothing for the next one.
-
- @returns Disposable emptying the tally again
-
- @example
- ```ts
- using _fresh = withFreshRunSeats();
- ```
- */
-function withFreshRunSeats(): Disposable {
-  RUN_SEATS.reset();
-  return {
-    [Symbol.dispose](): void {
-      RUN_SEATS.reset();
-    },
-  };
-}
 
 /**
  What a directory of settled entries holds across two built pipelines.

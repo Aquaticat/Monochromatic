@@ -26,8 +26,15 @@ import type {
   SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 import { namingFixtureGit, } from '../archive-naming.test-fixture.ts';
+import {
+  type ChildRun,
+  runBuiltCommand,
+} from '../child-environment.test-fixture.ts';
 import { criticClient, } from '../critic-scripted-client.test-fixture.ts';
-import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import {
+  scratchDir,
+  scratchDirWith,
+} from '../scratch-dir.test-fixture.ts';
 
 /**
  Native executable, never the current repository's command-policy wrapper.
@@ -168,6 +175,62 @@ export function corpusEnvOf(
     TRANSLATION_REPAIR_CORPUS_CLONE_DIR: corpus.cloneDir,
     TRANSLATION_REPAIR_CORPUS_COMMIT: corpus.commitSha,
   };
+}
+
+/**
+ A corpus of one entry whose page and translation both hold one line, for an
+ as-built case that needs an entry to name and nothing more.
+ */
+export const ONE_ENTRY_CORPUS: Readonly<Record<string, string>> = {
+  'people/Mittens/page.md': 'Mittens naps.\n',
+  'people/Mittens/page.en.md': 'Mittens naps.\n',
+};
+
+/**
+ Runs a built probe against a throwaway corpus of the files given, with a
+ runs directory of its own and no provider key, for the probes' as-built
+ suites; until 2026-10-10 three of them kept a copy each.
+
+ @param command - built probe to run
+
+ @param files - corpus files by repository-relative path
+
+ @param args - arguments after the command
+
+ @returns Exit code and both streams
+
+ @example
+ ```ts
+ const run = await runProbeOver({ command: 'coverage-probe', files: { 'people/Mittens/page.md': 'Mittens naps.\n', }, args: ['--cap', '2',], },);
+ ```
+ */
+export async function runProbeOver(
+  {
+    command,
+    files,
+    args,
+  }: {
+    readonly command: string;
+    readonly files: Readonly<Record<string, string>>;
+    readonly args: readonly string[];
+  },
+): Promise<ChildRun> {
+  /**
+   Throwaway corpus the probe reads.
+   */
+  await using corpus = await makeProbeCorpus({ files, },);
+  /**
+   Throwaway runs directory the probe may write under.
+   */
+  await using runs = await scratchDir({ prefix: `${command}-runs-`, },);
+  return await runBuiltCommand({
+    command,
+    args,
+    env: {
+      ...corpusEnvOf({ corpus, },),
+      TRANSLATION_REPAIR_RUNS_DIR: runs.path,
+    },
+  },);
 }
 
 /**

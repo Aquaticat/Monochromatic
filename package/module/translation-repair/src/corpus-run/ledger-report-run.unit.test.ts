@@ -1,11 +1,15 @@
 /**
  Tests for the ledger report's procedure: what it reads, what it prints and
- which exit code each state leaves.
+ which exit code each state returns.
 
- EACH STATE LEAVES ITS OWN EXIT CODE. A run that wrote no ledger, a run whose
+ EACH STATE RETURNS ITS OWN EXIT CODE. A run that wrote no ledger, a run whose
  ledger was read in part and a run whose every file refused answer a roster
  question differently, and a gate reading the code must tell them apart, so
  every case here asserts the code beside the whole of what was printed.
+
+ THE PROCEDURE SETS NO EXIT CODE ON THE PROCESS. It returns the code and the
+ entry file sets it, so every case also asserts the process's own code unset;
+ `ledger-report.unit.test.ts` holds the code the built command exits with.
 
  THE RUNS DIRECTORY IS HANDED IN. Every case writes its own ledger under a
  scratch directory and names it, so nothing here reads a real run.
@@ -39,8 +43,8 @@ import {
   writeContest,
 } from './ledger-report.test-fixture.ts';
 import {
-  captureReport,
-  type ReportCapture,
+  captureCodedReport,
+  type CodedReportCapture,
 } from './report-run-capture.test-fixture.ts';
 
 /**
@@ -61,8 +65,8 @@ const NOTHING_RECORDED_LINE = 'NOTHING RECORDED. This run wrote no ledger, which
   + 'launched without TRANSLATION_REPAIR_RUNS_DIR set.';
 
 /**
- Runs the report over the logs named, with its printing diverted and its exit
- code held.
+ Runs the report over the runs directory named, with its printing diverted and
+ the process's exit code held.
 
  @param sinon - calling case's own sandbox (`ctx.sinon`)
 
@@ -70,7 +74,8 @@ const NOTHING_RECORDED_LINE = 'NOTHING RECORDED. This run wrote no ledger, which
 
  @param runsDir - runs directory the report reads
 
- @returns What it printed and the exit code it left
+ @returns What it printed, the exit code it returned and the one it left on
+ the process
 
  @example
  ```ts
@@ -87,11 +92,11 @@ async function reportedByLedger(
     readonly typed: readonly string[];
     readonly runsDir: string;
   },
-): Promise<ReportCapture> {
-  return await captureReport({
+): Promise<CodedReportCapture> {
+  return await captureCodedReport({
     sinon,
-    run: async function reportedByLedgerRun(): Promise<void> {
-      await reportLedger({
+    run: async function reportedByLedgerRun(): Promise<number> {
+      return await reportLedger({
         line: lineOf({
           command: 'ledger-report',
           typed,
@@ -107,12 +112,13 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'SAYS NOTHING WAS RECORDED and leaves exit code 1 when the run has no ledger directory',
+      name: 'SAYS NOTHING WAS RECORDED and returns exit code 1, setting none on the process, when the run has no '
+        + 'ledger directory',
       fn: async (ctx) => {
         await using scratch = await scratchDir({ prefix: 'ledger-report-run-', },);
 
         /**
-         What the report printed and the code it left.
+         What the report printed, the code it returned and the code it left.
          */
         const captured = await reportedByLedger({
           sinon: ctx.sinon,
@@ -125,13 +131,15 @@ await describe({
             `ledger-report: 0 contests under ${scratch.path}`,
             NOTHING_RECORDED_LINE,
           ],
-          exitCode: 1,
+          returned: 1,
+          left: 'unset',
         },);
       },
     },),
 
     it({
-      name: 'SAYS NOTHING WAS RECORDED and leaves exit code 1 when the ledger directory holds no contest file',
+      name: 'SAYS NOTHING WAS RECORDED and returns exit code 1, setting none on the process, when the ledger '
+        + 'directory holds no contest file',
       fn: async (ctx) => {
         await using scratch = await scratchDir({ prefix: 'ledger-report-run-', },);
         await mkdir(join(
@@ -140,7 +148,7 @@ await describe({
         ),);
 
         /**
-         What the report printed and the code it left.
+         What the report printed, the code it returned and the code it left.
          */
         const captured = await reportedByLedger({
           sinon: ctx.sinon,
@@ -153,13 +161,15 @@ await describe({
             `ledger-report: 0 contests under ${scratch.path}`,
             NOTHING_RECORDED_LINE,
           ],
-          exitCode: 1,
+          returned: 1,
+          left: 'unset',
         },);
       },
     },),
 
     it({
-      name: 'SAYS NOTHING WAS COUNTED and leaves exit code 2 when every ledger file refused to read',
+      name: 'SAYS NOTHING WAS COUNTED and returns exit code 2, setting none on the process, when every ledger file '
+        + 'refused to read',
       fn: async (ctx) => {
         await using scratch = await scratchDir({ prefix: 'ledger-report-run-', },);
         await writeContest({
@@ -169,7 +179,7 @@ await describe({
         },);
 
         /**
-         What the report printed and the code it left.
+         What the report printed, the code it returned and the code it left.
          */
         const captured = await reportedByLedger({
           sinon: ctx.sinon,
@@ -185,13 +195,15 @@ await describe({
             'NOTHING COUNTED. Every ledger file this run wrote refused to read, so this is a run whose '
             + 'record was lost rather than a run that recorded nothing.',
           ],
-          exitCode: 2,
+          returned: 2,
+          left: 'unset',
         },);
       },
     },),
 
     it({
-      name: 'PRINTS the summary of one contest in the singular and leaves no exit code when every file read',
+      name: 'PRINTS the summary of one contest in the singular and returns exit code 0, setting none on the '
+        + 'process, when every file read',
       fn: async (ctx) => {
         await using scratch = await scratchDir({ prefix: 'ledger-report-run-', },);
         await writeContest({
@@ -201,7 +213,7 @@ await describe({
         },);
 
         /**
-         What the report printed and the code it left.
+         What the report printed, the code it returned and the code it left.
          */
         const captured = await reportedByLedger({
           sinon: ctx.sinon,
@@ -217,13 +229,15 @@ await describe({
             '  calico-2: 1 candidate, 0 chosen, 0.0% of 1 disinterested ballot, 0 self-votes',
             `\n${SUMMARY_POINTER}`,
           ],
-          exitCode: 'unset',
+          returned: 0,
+          left: 'unset',
         },);
       },
     },),
 
     it({
-      name: 'PRINTS the summary over the files that read and leaves exit code 2 when another file refused',
+      name: 'PRINTS the summary over the files that read and returns exit code 2, setting none on the process, '
+        + 'when another file refused',
       fn: async (ctx) => {
         await using scratch = await scratchDir({ prefix: 'ledger-report-run-', },);
         await writeContest({
@@ -238,7 +252,7 @@ await describe({
         },);
 
         /**
-         What the report printed and the code it left.
+         What the report printed, the code it returned and the code it left.
          */
         const captured = await reportedByLedger({
           sinon: ctx.sinon,
@@ -256,13 +270,15 @@ await describe({
             '  calico-2: 1 candidate, 0 chosen, 0.0% of 3 disinterested ballots, 0 self-votes',
             `\n${SUMMARY_POINTER}`,
           ],
-          exitCode: 2,
+          returned: 2,
+          left: 'unset',
         },);
       },
     },),
 
     it({
-      name: 'PRINTS the named seat\'s candidates instead of the summary and leaves no exit code',
+      name: 'PRINTS the named seat\'s candidates instead of the summary and returns exit code 0, setting none on '
+        + 'the process',
       fn: async (ctx) => {
         await using scratch = await scratchDir({ prefix: 'ledger-report-run-', },);
         await writeContest({
@@ -272,7 +288,7 @@ await describe({
         },);
 
         /**
-         What the report printed and the code it left.
+         What the report printed, the code it returned and the code it left.
          */
         const captured = await reportedByLedger({
           sinon: ctx.sinon,
@@ -288,13 +304,15 @@ await describe({
             'A cat sleeps where the sun is.',
             '  (no disinterested judge named this candidate)',
           ],
-          exitCode: 'unset',
+          returned: 0,
+          left: 'unset',
         },);
       },
     },),
 
     it({
-      name: 'PRINTS the named seat\'s candidates and leaves exit code 2 when another file refused',
+      name: 'PRINTS the named seat\'s candidates and returns exit code 2, setting none on the process, when '
+        + 'another file refused',
       fn: async (ctx) => {
         await using scratch = await scratchDir({ prefix: 'ledger-report-run-', },);
         await writeContest({
@@ -309,7 +327,7 @@ await describe({
         },);
 
         /**
-         What the report printed and the code it left.
+         What the report printed, the code it returned and the code it left.
          */
         const captured = await reportedByLedger({
           sinon: ctx.sinon,
@@ -327,7 +345,8 @@ await describe({
             'The cat naps in the sun.',
             '  siamese-3: keeps the sun and the nap',
           ],
-          exitCode: 2,
+          returned: 2,
+          left: 'unset',
         },);
       },
     },),

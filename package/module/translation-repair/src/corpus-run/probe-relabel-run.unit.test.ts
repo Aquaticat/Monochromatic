@@ -135,8 +135,8 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'REBUILDS both sets from the manifest in the runs directory, probes the damaged set then the control '
-            + 'set, and closes with the two notes',
+          name: 'REBUILDS both sets from the manifest and the artifacts in the runs directory it is handed, probes the '
+            + 'damaged set then the control set, and closes with the two notes',
           fn: async (ctx,) => {
             using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
             /**
@@ -171,6 +171,7 @@ await describe({
               {
                 manifestPath,
                 pin: PIN,
+                runsDir: '/cats/runs',
               },
             ],);
             expect(controlCalls,).toEqual([
@@ -178,6 +179,7 @@ await describe({
                 manifestPath,
                 damaged: [DAMAGED_CASE,],
                 pin: PIN,
+                runsDir: '/cats/runs',
               },
             ],);
             expect(built(),).toBe(6,);

@@ -229,6 +229,46 @@ await describe({
       },
     },),
     it({
+      name: 'LOGS EACH ENTRY IT SKIPS IN THE ORDER THE ENTRIES ARE LISTED when the later entry\'s carve ends first, '
+        + 'so two walks over one archive log the same lines',
+      fn: async () => {
+        /**
+         Opened by the later entry's carve as it ends, which the earlier
+         entry's carve waits for.
+         */
+        const laterCarved = Promise.withResolvers<undefined>();
+        /**
+         Lines logged, each behind its level.
+         */
+        const lines: string[] = [];
+        await probeDisplacement({
+          log: levelCapturingLogger({ lines, },),
+          listEntryIds: function listEntries(): Promise<readonly string[]> {
+            return Promise.resolve([
+              'Mittens',
+              'Tabby',
+            ],);
+          },
+          carve: async function carvesTabbyFirst(entryId,): Promise<SettledCarve> {
+            if (entryId === 'Tabby') {
+              laterCarved.resolve(undefined,);
+              return { kind: 'unsettled', };
+            }
+            await laterCarved.promise;
+            return { kind: 'legacy', };
+          },
+          writeOut: function keep(): void {},
+        },);
+        expect(lines.slice(
+          0,
+          2,
+        ),).toEqual([
+          'info Mittens: skipped, legacy artifact records no recipe',
+          'info Tabby: skipped, unsettled artifact records no recipe',
+        ],);
+      },
+    },),
+    it({
       name: 'REFUSES with the first listed entry\'s refusal when two entries are refused and the later one is '
         + 'refused first',
       fn: async () => {

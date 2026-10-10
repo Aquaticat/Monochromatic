@@ -35,6 +35,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { writeSettledArtifact, } from './settled-v1-pool.test-fixture.ts';
+import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
 
 /**
  Seed the gate draw's files are named after.
@@ -80,6 +81,7 @@ async function refusalOfFinalDraw(
 ): Promise<unknown> {
   return await rejectionOf(async function drawFinal(): Promise<void> {
     await drawGradingSample({
+      policy: NO_POOL_POLICY,
       line: lineOf({
         command: 'draw-sample',
         typed: ['--final',],
@@ -140,6 +142,7 @@ await describe({
         using capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
         await drawGradingSample({
+          policy: NO_POOL_POLICY,
           line: lineOf({
             command: 'draw-sample',
             typed: [],
@@ -180,6 +183,7 @@ await describe({
         using _capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
         await drawGradingSample({
+          policy: NO_POOL_POLICY,
           line: lineOf({
             command: 'draw-sample',
             typed: [],
@@ -218,6 +222,7 @@ await describe({
         using capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
         await drawGradingSample({
+          policy: NO_POOL_POLICY,
           line: lineOf({
             command: 'draw-sample',
             typed: ['--final',],
@@ -291,6 +296,7 @@ await describe({
         using capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
         await drawGradingSample({
+          policy: NO_POOL_POLICY,
           line: lineOf({
             command: 'draw-sample',
             typed: [],
@@ -313,6 +319,7 @@ await describe({
 
         const refusal = await rejectionOf(async function drawAbsent(): Promise<void> {
           await drawGradingSample({
+            policy: NO_POOL_POLICY,
             line: lineOf({
               command: 'draw-sample',
               typed: [],
@@ -363,6 +370,7 @@ await describe({
         using capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
         await drawGradingSample({
+          policy: NO_POOL_POLICY,
           line: lineOf({
             command: 'draw-sample',
             typed: [],

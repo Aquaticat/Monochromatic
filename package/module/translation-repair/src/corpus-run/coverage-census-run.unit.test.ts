@@ -754,6 +754,71 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES A SUITE THAT EXITED CLEAN WITH NO PASS MARKER as stated, naming its log and why a suite that ran '
+        + 'no test is not counted, reading nothing of its coverage, rather than printing a census of nothing',
+      fn: async (ctx) => {
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+        await using built = await readablePackage();
+        const { logger, } = capturingLoggerPair();
+        const { steps, calls, } = scriptedSteps({
+          suite: {
+            passes: 0,
+            failures: 0,
+            exitCode: 0,
+          },
+          head: 'abc123def',
+          clean: true,
+        },);
+        try {
+          await runCoverageCensus({
+            line: lineOf({
+              command: 'coverage-census',
+              typed: [],
+            },),
+            packageDirectory: built.path,
+            env: {
+              XDG_CACHE_HOME: join(
+                built.path,
+                'cache',
+              ),
+            },
+            steps,
+            l: logger,
+          },);
+        }
+        catch (error) {
+          expect(error,).toBeInstanceOf(StatedRefusalError,);
+
+          /**
+           Where the scripted suite was told to write its log.
+           */
+          const logPath = calls.suites[0]?.logPath ?? '';
+          expect(String(error,),).toBe(
+            `StatedRefusalError: the suite printed no PASS marker, so it ran no test; its log is ${logPath}; a `
+              + 'census of a suite that ran nothing would count every line of the package as code no test ran',
+          );
+          expect({
+            tallies: calls.tallies,
+            placements: calls.placements,
+            printed: printed.lines,
+            kept: (await readdir(join(
+              built.path,
+              'cache',
+              'translation-repair',
+              'coverage',
+            ),)).length,
+          },).toEqual({
+            tallies: [],
+            placements: [],
+            printed: [],
+            kept: 1,
+          },);
+          return;
+        }
+        throw new Error(`the census counted a suite that ran no test, printing: ${printed.lines.join(' | ',)}`,);
+      },
+    },),
+    it({
       name: 'REFUSES with the first named baseline\'s refusal when two baselines cannot be read and the second '
         + 'baseline\'s read is refused first',
       fn: async () => {

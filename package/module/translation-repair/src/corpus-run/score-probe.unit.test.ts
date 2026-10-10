@@ -33,6 +33,10 @@ import { writeScoreArtifacts, } from './score-artifacts.test-fixture.ts';
 import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
 import {
+  CONFLICTING_POOL_SAYS,
+  CONFLICTING_POOL_VARIABLES,
+} from './pool-policy.test-fixture.ts';
+import {
   probeArtifactText,
   probedRecord,
   probeRegion,
@@ -319,6 +323,36 @@ await describe({
               UNSCORED_NOTE,
               '',
             ].join('\n',),);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A REQUIRED COMMIT AND A MIXED POOL ASKED FOR TOGETHER in its own words, read from the '
+            + 'environment it runs in, exiting 6 after the source line',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'score-probe-', },);
+            await writeScoreArtifacts({
+              runsDir: scratch.path,
+              artifacts: {},
+            },);
+
+            /**
+             What the command wrote.
+             */
+            const run = await runBuiltCommand({
+              command: COMMAND,
+              args: [],
+              env: {
+                TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
+                ...CONFLICTING_POOL_VARIABLES,
+              },
+            },);
+
+            expect(run,).toEqual({
+              code: 6,
+              stdout: `SOURCE ${scratch.path}/artifacts\n`,
+              stderr: `score-probe: ${CONFLICTING_POOL_SAYS}\n`,
+            },);
           },
         },),
 

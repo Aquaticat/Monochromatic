@@ -31,6 +31,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { runsDirPointedAt, } from './runs-dir-pointed.test-fixture.ts';
 
 /**
  One slice benched at width two, first pass, whose archive already held a
@@ -84,36 +85,25 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'LANDS roster-bench/rows.json under the runs directory carrying the commit, the widths, the repeat '
-            + 'and the roster beside the rows, readable as JSON',
+          name: 'LANDS roster-bench/rows.json under the runs directory it is handed, not the one the environment '
+            + 'names, carrying the commit, the widths, the repeat and the roster beside the rows, readable as JSON',
           fn: async () => {
             /**
-             The variable as this process found it.
+             Directory the environment names, which the writer must not use.
              */
-            const found = process.env.TRANSLATION_REPAIR_RUNS_DIR;
+            await using elsewhere = await scratchDir({ prefix: 'bench-report-elsewhere-', },);
+            using pointed = runsDirPointedAt({ path: elsewhere.path, },);
             /**
-             Disposable runs directory the writer resolves through the variable.
+             Disposable runs directory the writer is handed.
              */
             await using scratch = await scratchDir({ prefix: 'bench-report-', },);
             /**
              Working path of the runs directory.
              */
             const runsDir = scratch.path;
-            // PUT BACK when the case ends, disposed before `scratch` removes the
-            // directory: the case left the variable pointing at its directory
-            // for the rest of the process, and the directory on disk (ledger
-            // B79).
-            using restore = {
-              [Symbol.dispose]: function restoreRunsDir(): void {
-                if (found === undefined)
-                  Reflect.deleteProperty(process.env, 'TRANSLATION_REPAIR_RUNS_DIR',);
-                else
-                  process.env.TRANSLATION_REPAIR_RUNS_DIR = found;
-              },
-            };
-            process.env.TRANSLATION_REPAIR_RUNS_DIR = runsDir;
 
             await writeBenchReport({
+              runsDir,
               rows: [],
               headSha: 'a'.repeat(40,),
               widths: [

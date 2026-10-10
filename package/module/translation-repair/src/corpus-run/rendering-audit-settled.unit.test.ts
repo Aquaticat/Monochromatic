@@ -44,6 +44,7 @@ import {
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 import { directoryRefusalText, } from '../cache-file-refusal.test-fixture.ts';
+import { infoLinesDuring, } from '../console-warn-lines.test-fixture.ts';
 import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { rejectionOf, } from './rejection-of.test-fixture.ts';
@@ -630,7 +631,9 @@ await describe({
 
     describe({
       name: withCitedReferences.name,
-      concurrency: DEFAULT_CONCURRENCY,
+      // ONE AT A TIME: two cases divert the process's console.info across an
+      // await to read what the reads logged.
+      concurrency: 1,
       children: [
         it({
           name: 'READS EACH PAGE ONCE and pairs every bought subject with its own page\'s references, in buying order',
@@ -667,6 +670,68 @@ await describe({
               { kind: 'cited', context: REFERENCE_CONTEXT, },
               { kind: 'none', },
               { kind: 'cited', context: REFERENCE_CONTEXT, },
+            ],);
+          },
+        },),
+        it({
+          name: 'LOGS WHAT EACH PAGE CITES IN BUYING ORDER when the later page\'s read ends first, so two runs over '
+            + 'one archive log the same lines',
+          fn: async () => {
+            /**
+             Opened by the later page's read as it ends, which the earlier
+             page's read waits for.
+             */
+            const laterRead = Promise.withResolvers<undefined>();
+            /**
+             What the reads logged at the info level.
+             */
+            const { logged, } = await infoLinesDuring({
+              run: async function boughtOverTwoPages() {
+                return await withCitedReferences({
+                  subjects: [
+                    subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+                    subjectAt({ entryId: 'tabby', sliceIndex: 0, auditsArchiveText: false, pageSourceText: OTHER_PAGE_TEXT, },),
+                  ],
+                  reader: async function readsTabbyFirst({ sourceText, },): Promise<string> {
+                    if (sourceText === OTHER_PAGE_TEXT) {
+                      laterRead.resolve(undefined,);
+                      return 'Reference 1 (https://example.org/tabby): Tabby suns on the roof.';
+                    }
+                    await laterRead.promise;
+                    return REFERENCE_CONTEXT;
+                  },
+                },);
+              },
+            },);
+            expect(logged.filter(function isCited(line,): boolean {
+              return line.includes('CITED REFERENCES',);
+            },),).toEqual([
+              '[rendering-audit-settled:withCitedReferences] CITED REFERENCES entry=mittens cited, characters=77',
+              '[rendering-audit-settled:withCitedReferences] CITED REFERENCES entry=tabby cited, characters=64',
+            ],);
+          },
+        },),
+        it({
+          name: 'COUNTS WHAT A PAGE CITES IN CHARACTERS, a character outside the basic plane once, as the line names '
+            + 'its unit',
+          fn: async () => {
+            /**
+             What the read logged at the info level.
+             */
+            const { logged, } = await infoLinesDuring({
+              run: async function boughtOverOnePage() {
+                return await withCitedReferences({
+                  subjects: [subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),],
+                  reader: async function readsACat(): Promise<string> {
+                    return '\u{1F408} naps.';
+                  },
+                },);
+              },
+            },);
+            expect(logged.filter(function isCited(line,): boolean {
+              return line.includes('CITED REFERENCES',);
+            },),).toEqual([
+              '[rendering-audit-settled:withCitedReferences] CITED REFERENCES entry=mittens cited, characters=7',
             ],);
           },
         },),

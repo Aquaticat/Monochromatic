@@ -30,7 +30,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runKeyless, } from '../child-environment.test-fixture.ts';
+import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -43,19 +43,6 @@ import {
  Command under test.
  */
 const STANDING_COMMAND = 'editor-standing-read';
-
-/**
- Built entry point for {@link STANDING_COMMAND}.
- */
-const STANDING_ENTRY = join(
-  import.meta.dirname,
-  '..',
-  '..',
-  'dist',
-  'final',
-  'node',
-  `${STANDING_COMMAND}.mjs`,
-);
 
 /**
  What the command left on its two streams.
@@ -162,12 +149,9 @@ async function standingOver(
   /**
    Command as it finished, or why it never started.
    */
-  const finished = await runKeyless({
-    file: process.execPath,
-    args: [
-      STANDING_ENTRY,
-      archive,
-    ],
+  const finished = await runBuiltCommand({
+    command: STANDING_COMMAND,
+    args: [archive,],
   },);
 
 
@@ -597,10 +581,9 @@ await describe({
             return { archive: path, };
           },
         },);
-        const finished = await runKeyless({
-          file: process.execPath,
-          args: [STANDING_ENTRY,],
-          extra: { TRANSLATION_REPAIR_RUNS_DIR: fixture.archive, },
+        const finished = await runBuiltCommand({
+          command: STANDING_COMMAND,
+          env: { TRANSLATION_REPAIR_RUNS_DIR: fixture.archive, },
         },);
         // The summary names one artifact and the refusal names the fixture's own file, which a
         // read of the default runs directory could not.

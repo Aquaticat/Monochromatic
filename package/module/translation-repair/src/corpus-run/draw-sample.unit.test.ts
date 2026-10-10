@@ -32,6 +32,10 @@ import {
 } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { writeSettledArtifact, } from './settled-v1-pool.test-fixture.ts';
+import {
+  CONFLICTING_POOL_SAYS,
+  CONFLICTING_POOL_VARIABLES,
+} from './pool-policy.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -252,6 +256,33 @@ await describe({
           ].join('\n',),
         );
         expect(held,).toEqual(['artifacts',],);
+      },
+    },),
+    it({
+      name: 'REFUSES A REQUIRED COMMIT AND A MIXED POOL ASKED FOR TOGETHER in its own words, read from the '
+        + 'environment it runs in, exiting 6 and writing nothing',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'draw-sample-built-', },);
+        await mkdir(join(
+          scratch.path,
+          'artifacts',
+        ),);
+
+        const run = await runBuiltCommand({
+          command: 'draw-sample',
+          args: [],
+          env: {
+            TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
+            ...CONFLICTING_POOL_VARIABLES,
+          },
+        },);
+
+        expect(run,).toEqual({
+          code: REFUSED_AS_STATED,
+          stdout: '',
+          stderr: `draw-sample: ${CONFLICTING_POOL_SAYS}\n`,
+        },);
+        expect(await readdir(scratch.path,),).toEqual(['artifacts',],);
       },
     },),
     it({

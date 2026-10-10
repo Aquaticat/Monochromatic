@@ -19,13 +19,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChildRun,
-  runBuiltCommand,
-} from '../child-environment.test-fixture.ts';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import {
-  corpusEnvOf,
-  makeProbeCorpus,
+  ONE_ENTRY_CORPUS,
+  runProbeOver,
 } from './probes-b-built-command.test-fixture.ts';
 
 /**
@@ -34,44 +29,16 @@ import {
 const REFUSED_AS_STATED = 6;
 
 /**
+ Built command under test.
+ */
+const COMMAND = 'coverage-probe';
+
+/**
  Line the missing key refuses with.
  */
 const KEY_REFUSAL = 'coverage-probe: TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
   + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or TRANSLATION_REPAIR_OPENROUTER_API_KEY is not set; '
   + 'run under mise so sops injects it\n';
-
-/**
- Runs the built command against a one-entry corpus with no provider key,
- and returns what it did together with whether it kept anything.
-
- @param args - arguments after the command
-
- @returns Exit code and both streams
-
- @example
- ```ts
- const run = await runOverOneEntry({ args: ['--cap', '2',], },);
- ```
- */
-async function runOverOneEntry(
-  { args, }: { readonly args: readonly string[]; },
-): Promise<ChildRun> {
-  await using corpus = await makeProbeCorpus({
-    files: {
-      'people/Mittens/page.md': 'Mittens naps.\n',
-      'people/Mittens/page.en.md': 'Mittens naps.\n',
-    },
-  },);
-  await using runs = await scratchDir({ prefix: 'coverage-probe-runs-', },);
-  return await runBuiltCommand({
-    command: 'coverage-probe',
-    args,
-    env: {
-      ...corpusEnvOf({ corpus, },),
-      TRANSLATION_REPAIR_RUNS_DIR: runs.path,
-    },
-  },);
-}
 
 await describe({
   name: 'coverage-probe as built',
@@ -79,7 +46,15 @@ await describe({
     it({
       name: 'REFUSES as stated and exits 6 once no provider key is set, before any call and with nothing printed',
       fn: async () => {
-        expect(await runOverOneEntry({ args: ['--only', 'Mittens', '--cap', '2',], },),).toEqual({
+        /**
+         What the command did.
+         */
+        const run = await runProbeOver({
+          command: COMMAND,
+          files: ONE_ENTRY_CORPUS,
+          args: ['--only', 'Mittens', '--cap', '2',],
+        },);
+        expect(run,).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: KEY_REFUSAL,
@@ -89,7 +64,15 @@ await describe({
     it({
       name: 'REFUSES a flag it does not read, and exits 6 with its usage line',
       fn: async () => {
-        expect(await runOverOneEntry({ args: ['--bogus',], },),).toEqual({
+        /**
+         What the command did.
+         */
+        const run = await runProbeOver({
+          command: COMMAND,
+          files: ONE_ENTRY_CORPUS,
+          args: ['--bogus',],
+        },);
+        expect(run,).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: 'coverage-probe: --bogus is not a flag this command reads. '
@@ -100,7 +83,15 @@ await describe({
     it({
       name: 'REFUSES a cap that is no whole number before the key is asked for, and exits 6',
       fn: async () => {
-        expect(await runOverOneEntry({ args: ['--cap', 'x',], },),).toEqual({
+        /**
+         What the command did.
+         */
+        const run = await runProbeOver({
+          command: COMMAND,
+          files: ONE_ENTRY_CORPUS,
+          args: ['--cap', 'x',],
+        },);
+        expect(run,).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: 'coverage-probe: --cap needs a whole number written in digits, at most 9007199254740991, '

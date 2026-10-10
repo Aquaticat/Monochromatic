@@ -8,7 +8,9 @@
  two readings, however alike their stamps and their first two providers.
 
  A LOG WITH NO READING IS SAID, WITH ITS OWN EXIT CODE, and the count of
- records that would not read is printed beside it.
+ records that would not read is printed beside it. The procedure returns the
+ code and sets none on the process, which the entry file does;
+ `meter-report.unit.test.ts` holds the code the built command exits with.
 
  Every log is written under a scratch directory and named by path, so nothing
  here reads a real run.
@@ -47,8 +49,9 @@ import {
   SYNTHETIC_DRY,
 } from './meter-report.test-fixture.ts';
 import {
+  captureCodedReport,
   captureReport,
-  type ReportCapture,
+  type CodedReportCapture,
 } from './report-run-capture.test-fixture.ts';
 
 /**
@@ -57,14 +60,15 @@ import {
 const FIRST_AT = BASE_AT;
 
 /**
- Runs the report over the logs named, with its printing diverted and its exit
- code held.
+ Runs the report over the logs named, with its printing diverted and the
+ process's exit code held.
 
  @param sinon - calling case's own sandbox (`ctx.sinon`)
 
  @param typed - arguments typed after the runner
 
- @returns What it printed and the exit code it left
+ @returns What it printed, the exit code it returned and the one it left on
+ the process
 
  @example
  ```ts
@@ -79,11 +83,11 @@ async function reportedByMeters(
     readonly sinon: DisposableSandbox;
     readonly typed: readonly string[];
   },
-): Promise<ReportCapture> {
-  return await captureReport({
+): Promise<CodedReportCapture> {
+  return await captureCodedReport({
     sinon,
-    run: async function reportedByMetersRun(): Promise<void> {
-      await reportMeters({
+    run: async function reportedByMetersRun(): Promise<number> {
+      return await reportMeters({
         line: lineOf({
           command: 'meter-report',
           typed,
@@ -219,7 +223,8 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'SAYS NOTHING WAS RECORDED and leaves exit code 1 for a log with no reading',
+          name: 'SAYS NOTHING WAS RECORDED and returns exit code 1, setting none on the process, for a log with no '
+            + 'reading',
           fn: async (ctx) => {
             await using scratch = await scratchDir({ prefix: 'meter-report-run-', },);
             /**
@@ -235,7 +240,7 @@ await describe({
             );
 
             /**
-             What the report printed and the code it left.
+             What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
           sinon: ctx.sinon,
@@ -247,13 +252,15 @@ await describe({
                 'meter-report: logs=1 readings=0 unread=0',
                 NOTHING_RECORDED_LINE,
               ],
-              exitCode: 1,
+              returned: 1,
+              left: 'unset',
             },);
           },
         },),
 
         it({
-          name: 'COUNTS the records that would not read and still says NOTHING WAS RECORDED when no other reading stands',
+          name: 'COUNTS the records that would not read and still says NOTHING WAS RECORDED, returning exit code 1 '
+            + 'and setting none on the process, when no other reading stands',
           fn: async (ctx) => {
             await using scratch = await scratchDir({ prefix: 'meter-report-run-', },);
             /**
@@ -269,7 +276,7 @@ await describe({
             );
 
             /**
-             What the report printed and the code it left.
+             What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
           sinon: ctx.sinon,
@@ -281,13 +288,15 @@ await describe({
                 'meter-report: logs=1 readings=0 unread=2',
                 NOTHING_RECORDED_LINE,
               ],
-              exitCode: 1,
+              returned: 1,
+              left: 'unset',
             },);
           },
         },),
 
         it({
-          name: 'REPORTS the window the readings cover and each provider in the order the record names them',
+          name: 'REPORTS the window the readings cover and each provider in the order the record names them, '
+            + 'returning exit code 0 and setting none on the process',
           fn: async (ctx) => {
             await using scratch = await scratchDir({ prefix: 'meter-report-run-', },);
             /**
@@ -303,14 +312,20 @@ await describe({
             );
 
             /**
-             What the report printed and the code it left.
+             What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
           sinon: ctx.sinon,
           typed: [log,],
         },);
 
-            expect(captured.exitCode,).toBe('unset',);
+            expect({
+              returned: captured.returned,
+              left: captured.left,
+            },).toEqual({
+              returned: 0,
+              left: 'unset',
+            },);
             expect(captured.lines.slice(
               0,
               3,
@@ -371,7 +386,7 @@ await describe({
             );
 
             /**
-             What the report printed and the code it left.
+             What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
           sinon: ctx.sinon,
@@ -400,7 +415,7 @@ await describe({
             );
 
             /**
-             What the report printed and the code it left.
+             What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
           sinon: ctx.sinon,

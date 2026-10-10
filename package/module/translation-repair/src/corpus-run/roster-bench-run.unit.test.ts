@@ -59,6 +59,12 @@ const RENDERINGS = {
 } as const;
 
 /**
+ Runs directory every scripted run is handed, which no case creates: the
+ writer is scripted, so the path is only carried to it.
+ */
+const CATTERY_RUNS = '/cattery/runs';
+
+/**
  What the report writer is handed, as the run types it.
  */
 type ReportInput = Parameters<Parameters<typeof runRosterBench>[0]['writeReport']>[0];
@@ -76,7 +82,7 @@ type Written = Omit<ReportInput, 'rows'> & {
 
 /**
  Everything a run is handed that a case scripts: clients that answer, a report
- writer and a clock that each keep a record.
+ writer and a clock that each keep a record, and the runs directory.
 
  @param rows - how many rows the run will make, one client each
 
@@ -103,6 +109,7 @@ function scriptedRun(
     readonly newClient: () => ReturnType<typeof translateLaneClient>;
     readonly writeReport: (input: ReportInput,) => Promise<void>;
     readonly clock: { readonly now: () => number; };
+    readonly runsDir: string;
   };
   readonly built: () => number;
   readonly written: Written[];
@@ -134,6 +141,7 @@ function scriptedRun(
       newClient,
       writeReport: function keepReport(input,): Promise<void> {
         written.push({
+          runsDir: input.runsDir,
           rows: input.rows.length,
           headSha: input.headSha,
           widths: input.widths,
@@ -148,6 +156,7 @@ function scriptedRun(
           return reading.at;
         },
       },
+      runsDir: CATTERY_RUNS,
     },
     built,
     written,
@@ -164,7 +173,7 @@ await describe({
       children: [
         it({
           name: 'RUNS every width on every slice, the repeated width twice, one client a row, and writes the report '
-            + 'after each row',
+            + 'into the runs directory it is handed after each row',
           fn: async (ctx,) => {
             using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
             const { asked, seams: drawing, } = scriptedDrawing({ slices: 2, },);
@@ -200,6 +209,7 @@ await describe({
               6,
             ].map(function afterRow(rows,): Written {
               return {
+                runsDir: CATTERY_RUNS,
                 rows,
                 headSha: SCRIPTED_HEAD,
                 widths: [

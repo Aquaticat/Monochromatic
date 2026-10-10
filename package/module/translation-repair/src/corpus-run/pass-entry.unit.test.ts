@@ -56,16 +56,12 @@ import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { NO_PICTURE_SOURCES, } from './pass-picture-sources.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { dialSaying, } from './slice-overlap-dial.test-fixture.ts';
 
 /**
  Built pipeline these fixtures claim to have run under.
  */
 const DIGEST = `sha256-tree-v1:${'c'.repeat(64,)}` as PipelineDigest;
-
-/**
- Environment variable selecting pass slice overlap.
- */
-const OVERLAP_VAR = 'TRANSLATION_REPAIR_SLICE_OVERLAP';
 
 /**
  Successful model calls in flight for one pass stage.
@@ -85,36 +81,6 @@ type PassConcurrency = {
   readonly contest: PassStageConcurrency;
   readonly consolidate: PassStageConcurrency;
 };
-
-/**
- Sets overlap dial until disposal and restores invoking value.
-
- @param says - value one measurement arm requests
-
- @returns Disposable restoring prior environment
-
- @example
- ```ts
- using dial = overlapDial({ says: '2', },);
- ```
- */
-function overlapDial(
-  { says, }: { readonly says: string; },
-): Disposable {
-  /**
-   Invoking environment value restored on disposal.
-   */
-  const before = process.env[OVERLAP_VAR];
-  process.env[OVERLAP_VAR] = says;
-  return {
-    [Symbol.dispose]: () => {
-      if (before === undefined)
-        delete process.env.TRANSLATION_REPAIR_SLICE_OVERLAP;
-      else
-        process.env[OVERLAP_VAR] = before;
-    },
-  };
-}
 
 /**
  Builds zeroed instruments for one pass arm.
@@ -1175,7 +1141,7 @@ await describe({
          */
         const serial = emptyPassConcurrency();
         {
-          using dial = overlapDial({ says: '1', },);
+          using dial = dialSaying({ says: '1', },);
           await using dirs = await throwawayDirs();
           await settleEntry({
             client: entryClient({
@@ -1204,7 +1170,7 @@ await describe({
          */
         const overlapped = emptyPassConcurrency();
         {
-          using dial = overlapDial({ says: '2', },);
+          using dial = dialSaying({ says: '2', },);
           await using dirs = await throwawayDirs();
           await settleEntry({
             client: entryClient({

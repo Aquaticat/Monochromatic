@@ -28,6 +28,7 @@
  */
 
 import { readFile, } from 'node:fs/promises';
+import { dirname, } from 'node:path';
 
 import {
   describe,
@@ -49,6 +50,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { runsDirPointedAt, } from './runs-dir-pointed.test-fixture.ts';
 
 //region Editor width report tests
 
@@ -160,41 +162,6 @@ const SKIPPED: Readonly<Record<string, number>> = { 'no accepted issue': 5, };
 const RUNS_PREFIX = 'whiskers-width-report-';
 
 /**
- Points the runs directory variable at a path until the handle's scope ends.
-
- `process.env` is process-wide, so every case here runs at `concurrency: 1`
- and the disposer puts the variable back however the case ends. The
- directory itself is the case's own `scratchDir`, bound first so it is
- removed after the variable is restored.
-
- @param path - directory the variable names meanwhile
-
- @returns Disposable handle restoring the variable as it stood
-
- @example
- ```ts
- await using runs = await scratchDir({ prefix: RUNS_PREFIX, },);
- using pointed = runsDirPointedAt({ path: runs.path, },);
- ```
- */
-function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
-  /**
-   Runs directory standing before this case ran.
-   */
-  const before = process.env
-    .TRANSLATION_REPAIR_RUNS_DIR;
-  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-  return {
-    [Symbol.dispose]: function restore(): void {
-      if (before === undefined)
-        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-      else
-        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
-    },
-  };
-}
-
-/**
  Writes one report and reads back what landed on disk.
 
  @param controlHeld - whether the panel passed its own positive control
@@ -223,12 +190,12 @@ async function reportFor(
   readonly text: string;
 }> {
   await using runs = await scratchDir({ prefix: RUNS_PREFIX, },);
-  using pointed = runsDirPointedAt({ path: runs.path, },);
 
   /**
    Where the writer says it put the report.
    */
   const path = await writeWidthReport({
+    runsDir: runs.path,
     rows,
     skipped: SKIPPED,
     headSha: HEAD_SHA,
@@ -268,7 +235,6 @@ async function bothDraws(): Promise<readonly {
   readonly text: string;
 }[]> {
   await using runs = await scratchDir({ prefix: RUNS_PREFIX, },);
-  using pointed = runsDirPointedAt({ path: runs.path, },);
 
   /**
    Draws to write, in order, into the one directory.
@@ -292,6 +258,7 @@ async function bothDraws(): Promise<readonly {
      Where this draw put its report.
      */
     const path = await writeWidthReport({
+      runsDir: runs.path,
       rows: ROWS,
       skipped: SKIPPED,
       headSha: HEAD_SHA,
@@ -318,6 +285,29 @@ async function bothDraws(): Promise<readonly {
 await describe({
   name: writeWidthReport.name,
   children: [
+    it({
+      name: 'WRITES INTO THE RUNS DIRECTORY IT IS HANDED, not the one the environment names',
+      fn: async () => {
+        await using elsewhere = await scratchDir({ prefix: RUNS_PREFIX, },);
+        using pointed = runsDirPointedAt({ path: elsewhere.path, },);
+        await using runs = await scratchDir({ prefix: RUNS_PREFIX, },);
+        /**
+         Where the writer says it put the report.
+         */
+        const path = await writeWidthReport({
+          runsDir: runs.path,
+          rows: ROWS,
+          skipped: SKIPPED,
+          headSha: HEAD_SHA,
+          narrowEditorIds: NARROW,
+          wideEditorIds: WIDE,
+          judgeModelIds: PANEL,
+          controlHeld: true,
+          draw: 'a',
+        },);
+        expect(dirname(path,),).toBe(runs.path,);
+      },
+    },),
     it({
       name: 'SAYS THE COUNTS ARE UNREADABLE when the panel failed its own positive control, '
         + 'rather than printing them in the same voice as a sound reading',

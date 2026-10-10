@@ -67,7 +67,7 @@ await describe({
           exact: true,
         },
       },),
-      new UnansweredContestSliceError({ message: 'slice 3 differs across lanes and the contest names it nowhere', },),
+      new UnansweredContestSliceError({ sliceIndex: 3, },),
       new SliceSpliceError({ message: 'two replacements name one slice', },),
     ] as const).map(function stoppedError(error,) {
       return it({

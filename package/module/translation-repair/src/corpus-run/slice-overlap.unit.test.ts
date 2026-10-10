@@ -28,6 +28,7 @@ import {
   readOverlapSetting,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { dialSaying, } from './slice-overlap-dial.test-fixture.ts';
 
 //region Fixtures
 
@@ -35,39 +36,6 @@ import {
  Environment variable naming how many slices may run at once.
  */
 const OVERLAP_VAR = 'TRANSLATION_REPAIR_SLICE_OVERLAP';
-
-/**
- Sets the dial for the duration of one case, restoring whatever was there.
-
- @param says - value to set, or nothing to clear it
-
- @returns Disposable putting the invoker's own value back
-
- @example
- ```ts
- using dial = dialSaying({ says: '4', },);
- ```
- */
-function dialSaying({ says, }: { readonly says?: string; },): Disposable {
-  /**
-   Value as the invoking shell left it.
-   */
-  const before = process.env[OVERLAP_VAR];
-
-  if (says === undefined)
-    delete process.env.TRANSLATION_REPAIR_SLICE_OVERLAP;
-  else
-    process.env[OVERLAP_VAR] = says;
-
-  return {
-    [Symbol.dispose]: () => {
-      if (before === undefined)
-        delete process.env.TRANSLATION_REPAIR_SLICE_OVERLAP;
-      else
-        process.env[OVERLAP_VAR] = before;
-    },
-  };
-}
 
 //endregion Fixtures
 

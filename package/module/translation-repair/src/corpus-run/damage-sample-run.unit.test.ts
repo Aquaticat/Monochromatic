@@ -46,6 +46,7 @@ import {
 } from './model-reply-scripted-client.test-fixture.ts';
 import { writeSettledV2, } from './settled-v2-pool.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
 
 /**
  Probers every case asks.
@@ -128,6 +129,7 @@ async function drawWith(
   const opened = { count: 0, };
   using capture = divertingConsoleLog({ sinon, },);
   await sampleDamage({
+    policy: NO_POOL_POLICY,
     runsDir,
     seed: 'damage-round-one',
     openClient: function openScriptedClient() {
@@ -291,6 +293,7 @@ await describe({
         const refusal = await rejectionOf(async function drawNothing(): Promise<void> {
           using _capture = divertingConsoleLog({ sinon: ctx.sinon, },);
           await sampleDamage({
+            policy: NO_POOL_POLICY,
             runsDir: scratch.path,
             seed: 'damage-round-one',
             openClient: function refuseToOpen() {
