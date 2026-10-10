@@ -15,6 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CorpusReadError,
   probeErrorLine,
   type ProbedResult,
   probeResultLine,
@@ -139,6 +140,34 @@ await describe({
               error: new RangeError('secret whisker text',),
               elapsedMs: 4,
             },),).toBe('PROBE Mittens1 status=ERROR ms=4 error=refused by RangeError',);
+          },
+        },),
+        it({
+          name: 'KEEPS A CORPUS READ\'S KIND AND REMEDY WHOLE after a long entry id, cutting only the path and '
+            + 'revision before them at the cap and marking the cut with an ellipsis inside it',
+          fn: async () => {
+            /**
+             Entry id long enough to push the kind past the cap.
+             */
+            const id = 'tabby'.repeat(40,);
+
+            /**
+             Commit the page was asked for at.
+             */
+            const pinned = 'c'.repeat(40,);
+            expect(probeErrorLine({
+              id,
+              error: new CorpusReadError({
+                detail: `${pinned}:people/${id}/page.en.md`,
+                cause: { stderr: `fatal: path 'people/${id}/page.en.md' does not exist in '${pinned}'`, },
+                commit: 'lacking',
+              },),
+              elapsedMs: 8,
+            },),).toBe(
+              `PROBE ${id} status=ERROR ms=8 error=corpus read failed for ${pinned}:people/${'tabby'.repeat(25,)}tab… `
+                + '(missing-commit); the clone holds no commit by that revision: fetch it, or pin '
+                + 'a commit the clone holds.',
+            );
           },
         },),
         it({

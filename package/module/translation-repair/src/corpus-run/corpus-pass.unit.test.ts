@@ -166,12 +166,13 @@ await describe({
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe([
-              'ONLY mittens,tabby (ordering is bypassed; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR '
-              + 'so a hand-picked entry never enters a pool later draws treat as natural accumulation)',
+              'ONLY mittens,tabby (chosen by hand in place of every pending pair at the pin; those still pending '
+              + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+              + 'entry never enters a pool later draws treat as natural accumulation)',
               [
                 `INCOMPLETE mittens: target page absent at the pin (corpus read failed for ${clone.commitSha}:`,
-                'people/mittens/page.en.md (missing-object); check that the clone exists and the pinned commit ',
-                'is present.)',
+                'people/mittens/page.en.md (missing-object); the commit has no such path: ',
+                'check the path, or pin a commit that has it.)',
               ].join('',),
               await startLine({
                 pending: 1,
@@ -226,7 +227,7 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES AN ENTRY THE CORPUS DOES NOT HOLD at exit 6, after saying it would bypass the ordering',
+          name: 'REFUSES AN ENTRY THE CORPUS DOES NOT HOLD at exit 6, after naming the entries chosen by hand',
           fn: async () => {
             await using clone = await makeCorpusPassClone({ entries: ENTRIES, },);
             await using runs = await scratchDir({ prefix: 'corpus-pass-runs-', },);
@@ -248,8 +249,9 @@ await describe({
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe(
-              'ONLY nobody (ordering is bypassed; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a '
-              + 'hand-picked entry never enters a pool later draws treat as natural accumulation)\n',
+              'ONLY nobody (chosen by hand in place of every pending pair at the pin; if still pending it runs in '
+              + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+              + 'entry never enters a pool later draws treat as natural accumulation)\n',
             );
             expect(run.stderr,).toBe(
               'corpus-pass: --only asks for "nobody", which the corpus at the pin does not hold\n',

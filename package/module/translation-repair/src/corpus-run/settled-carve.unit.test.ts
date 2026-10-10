@@ -827,11 +827,13 @@ await describe({
               }: Parameters<typeof readCorpusFile>[0],
             ): Promise<string> {
               /**
-               What git says of a path the commit does not carry.
+               What the real reader says of a full hash the clone lacks: git's
+               words for it, and the probe of the commit finding none.
                */
               const refusal = new CorpusReadError({
                 detail: `${pin.commitSha}:${relPath}`,
                 cause: { stderr: `fatal: path '${relPath}' does not exist in '${pin.commitSha}'`, },
+                commit: 'lacking',
               },);
               if (relPath.endsWith('/page.en.md',)) {
                 archiveRefused.resolve(undefined,);
@@ -854,8 +856,9 @@ await describe({
             },);
             expect(refusal,).toBeInstanceOf(CorpusReadError,);
             expect(String(refusal,),).toBe(
-              `CorpusReadError: corpus read failed for ${lackedCommit}:people/${ENTRY_ID}/page.md (missing-object); `
-                + 'check that the clone exists and the pinned commit is present.',
+              `CorpusReadError: corpus read failed for ${lackedCommit}:people/${ENTRY_ID}/page.md (missing-commit); `
+                + 'the clone holds no commit by that revision: fetch it, or pin '
+                + 'a commit the clone holds.',
             );
           },
         },),

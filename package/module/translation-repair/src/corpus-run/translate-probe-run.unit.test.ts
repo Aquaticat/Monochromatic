@@ -441,7 +441,7 @@ await describe({
         expect(probed.built,).toBe(0,);
         expect(probed.lines,).toEqual([],);
         expect(probed.refusal.startsWith('CorpusReadError: corpus read failed for ',),).toBe(true,);
-        expect(probed.refusal.endsWith(':people/Mittens/page.en.md (missing-object); check that the clone exists and the pinned commit is present.',),).toBe(true,);
+        expect(probed.refusal.endsWith(':people/Mittens/page.en.md (missing-object); the commit has no such path: check the path, or pin a commit that has it.',),).toBe(true,);
       },
     },),
   ],

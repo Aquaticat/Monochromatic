@@ -186,6 +186,32 @@ const REFUSING_DECODER = failingProgram({
 },);
 
 /**
+ A program stand-in on a machine whose scratch device is full: it rejects as
+ Node does, with the filesystem code and a message that quotes a path.
+
+ @returns Never
+
+ @throws {@link Error} carrying the code `ENOSPC`, always
+
+ @example
+ ```ts
+ const programs = new Map([['tesseract', fullDisk,],],);
+ ```
+ */
+async function fullDisk(): Promise<void> {
+  /**
+   Rejection a disk with no space left raises.
+   */
+  const failure = new Error('ENOSPC: no space left on device, write \'/scratch/reading.txt\'',);
+  Object.defineProperty(
+    failure,
+    'code',
+    { value: 'ENOSPC', },
+  );
+  throw failure;
+}
+
+/**
  Bytes a damaged decode leaves behind: 32 characters of words that are not
  the letter's, enough to come back as a reading were they ever read.
  */
@@ -435,7 +461,8 @@ await describe({
 
         it({
           name: 'FALLS BACK to the second decoder when the first refuses the picture: runs both in '
-            + 'order, logs at debug which decoder refused, and reads what the fallback decoded',
+            + 'order, logs at debug which decoder refused and the exit code it refused with, and reads what '
+            + 'the fallback decoded',
           fn: async () => {
             /**
              A reading on a machine whose first decoder refuses the letter.
@@ -470,7 +497,7 @@ await describe({
                 TESSERACT_RUN,
               ],
               lines: [
-                `debug [readImageWithOcr] ${LETTER}: dwebp did not decode it (refused by Error)`,
+                `debug [readImageWithOcr] ${LETTER}: dwebp did not decode it (dwebp exited with code 1)`,
                 LETTER_READ_LINE,
               ],
             },);
@@ -509,8 +536,8 @@ await describe({
                 MAGICK_RUN,
               ],
               lines: [
-                `debug [readImageWithOcr] ${LETTER}: dwebp did not decode it (refused by Error)`,
-                `debug [readImageWithOcr] ${LETTER}: magick did not decode it (refused by Error)`,
+                `debug [readImageWithOcr] ${LETTER}: dwebp did not decode it (dwebp exited with code 1)`,
+                `debug [readImageWithOcr] ${LETTER}: magick did not decode it (magick exited with code 1)`,
                 `warn [readImageWithOcr] ${LETTER}: neither dwebp nor magick could decode it`,
               ],
             },);
@@ -542,7 +569,7 @@ await describe({
 
             expect(shown.lines,).toEqual([
               `debug [readImageWithOcr] ${LETTER}: dwebp is not installed`,
-              `debug [readImageWithOcr] ${LETTER}: magick did not decode it (refused by Error)`,
+              `debug [readImageWithOcr] ${LETTER}: magick did not decode it (magick exited with code 1)`,
               `warn [readImageWithOcr] ${LETTER}: neither dwebp nor magick could decode it`,
             ],);
           },
@@ -644,24 +671,48 @@ await describe({
                 ],
                 [
                   'tesseract',
-                  async function fullDisk(): Promise<void> {
-                    /**
-                     Rejection a disk with no space left raises.
-                     */
-                    const failure = new Error('ENOSPC: no space left on device, write \'/scratch/reading.txt\'',);
-                    Object.defineProperty(
-                      failure,
-                      'code',
-                      { value: 'ENOSPC', },
-                    );
-                    throw failure;
-                  },
+                  fullDisk,
                 ],
               ],),
             },);
 
             expect(shown.lines,).toEqual([
               `warn [readImageWithOcr] ${LETTER}: tesseract failed with filesystem code ENOSPC`,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'LOGS the filesystem code a decoder failed with, and never the message that quotes a path, '
+            + 'as it logs the OCR reader\'s',
+          fn: async () => {
+            /**
+             A reading on a machine whose scratch device fills up under the
+             first decoder.
+             */
+            const { shown, } = await observedReading({
+              assetName: LETTER,
+              words: WORDS,
+              programs: new Map([
+                [
+                  'dwebp',
+                  fullDisk,
+                ],
+                [
+                  'magick',
+                  copyingDecoder,
+                ],
+                [
+                  'tesseract',
+                  transcribingReader,
+                ],
+              ],),
+            },);
+
+            expect(shown.lines,).toEqual([
+              `debug [readImageWithOcr] ${LETTER}: dwebp did not decode it (dwebp failed with filesystem code `
+              + 'ENOSPC)',
+              LETTER_READ_LINE,
             ],);
           },
         },),
@@ -846,7 +897,7 @@ await describe({
                 TESSERACT_RUN,
               ],
               lines: [
-                'debug [readImageWithOcr] mittens-letter.png: dwebp did not decode it (refused by Error)',
+                'debug [readImageWithOcr] mittens-letter.png: dwebp did not decode it (dwebp exited with code 1)',
                 'info [readImageWithOcr] mittens-letter.png: read 30 characters without a model',
               ],
             },);
@@ -891,7 +942,7 @@ await describe({
                 TESSERACT_RUN,
               ],
               lines: [
-                `debug [readImageWithOcr] ${LETTER}: dwebp did not decode it (refused by Error)`,
+                `debug [readImageWithOcr] ${LETTER}: dwebp did not decode it (dwebp exited with code 1)`,
                 LETTER_READ_LINE,
               ],
             },);

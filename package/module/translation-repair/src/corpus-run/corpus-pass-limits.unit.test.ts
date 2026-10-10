@@ -14,7 +14,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  CORPUS_PAIR_TARGET,
   HARD_CAP_MINUTES,
   PASS_MS_PER_MINUTE,
   PLAN_PREVIEW_COUNT,
@@ -39,9 +38,8 @@ await describe({
       },
     },),
     it({
-      name: 'TARGETS ninety-two pairs and PREVIEWS five entry ids on the plan line',
+      name: 'PREVIEWS five entry ids on the plan line',
       fn: async () => {
-        expect(CORPUS_PAIR_TARGET,).toBe(92,);
         expect(PLAN_PREVIEW_COUNT,).toBe(5,);
       },
     },),

@@ -314,7 +314,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(CorpusReadError,);
             expect(String(refusal,),).toBe(
               `CorpusReadError: corpus read failed for ${corpus.pin.commitSha}:${SOURCE_PAGE} (missing-object);`
-                + ' check that the clone exists and the pinned commit is present.',
+                + ' the commit has no such path: check the path, or pin a commit that has it.',
             );
           },
         },),
@@ -366,7 +366,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(CorpusReadError,);
             expect(String(refusal,),).toBe(
               `CorpusReadError: corpus read failed for ${commitSha}:${corpus.relPath} (missing-object);`
-                + ' check that the clone exists and the pinned commit is present.',
+                + ' the commit has no such path: check the path, or pin a commit that has it.',
             );
           },
         },),
@@ -387,7 +387,7 @@ await describe({
             },),);
             expect(String(refusal,),).toBe(
               `CorpusReadError: corpus read failed for ${corpus.pin.commitSha}:${SOURCE_PAGE} (missing-object);`
-                + ' check that the clone exists and the pinned commit is present.',
+                + ' the commit has no such path: check the path, or pin a commit that has it.',
             );
           },
         },),

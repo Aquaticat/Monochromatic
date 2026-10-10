@@ -18,6 +18,12 @@
  repository in a temporary directory, commits into it, and reads it back at
  that commit.
 
+ ONLY A PAGE ABSENT AT A COMMIT THE CLONE HOLDS IS SKIPPED AT ITS READ. A
+ read that failed any other way (an object git cannot produce, a failure
+ that is no corpus read refusal) refuses the whole draw with that failure,
+ the first in the order the corpus lists the entries and, within an entry,
+ the original's before the English page's, whichever ended first.
+
  THE SKIP LINE SAYS WHICH PAGE AND WHY. An entry that cannot be cut into
  slices is skipped with a line naming the entry, the page, the step that
  failed on it (its read or its parse) and the failure, in the words the
@@ -46,6 +52,7 @@ import { fileURLToPath, } from 'node:url';
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   mkdir,
+  rm,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -69,6 +76,7 @@ import {
 import { runKeyless, } from '../child-environment.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { pageReadsRefusingLastFor, } from './ordered-page-reads.test-fixture.ts';
+import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
@@ -84,6 +92,18 @@ const ENTRY_ID = 'mittens';
  like where nobody has written the English side yet.
  */
 const HALF_ENTRY_ID = 'whiskers';
+
+/**
+ Entry carrying both pages whose English page's stored object a case removes,
+ which is what a clone fetched without every object looks like.
+ */
+const LOST_ENTRY_ID = 'biscuit';
+
+/**
+ English page of that entry, worded apart from every other page so its stored
+ object is its own and removing it takes no other page with it.
+ */
+const LOST_TARGET_PAGE = '## The windowsill\n\nBiscuit dozes on the windowsill.\n';
 
 /**
  Original page of that entry.
@@ -261,9 +281,16 @@ const SCRIPTED_PIN: CorpusPin = {
 };
 
 /**
- Words the corpus reader ends every refusal with.
+ Words the corpus reader ends its refusal of a page absent at a commit the
+ clone holds with.
  */
-const CLONE_ADVICE = 'check that the clone exists and the pinned commit is present.';
+const ABSENT_PAGE_ADVICE = 'the commit has no such path: check the path, or pin a commit that has it.';
+
+/**
+ Words the corpus reader ends its refusal of a read that failed any other way
+ with.
+ */
+const OTHER_FAILURE_ADVICE = 'the read failed another way: run the same git read in the clone by hand to see why.';
 
 /**
  Makes a reader that serves both pages except one path, which it refuses.
@@ -298,6 +325,7 @@ function readerRefusing(
       throw new CorpusReadError({
         detail: `${pin.commitSha}:${relPath}`,
         cause,
+        commit: 'held',
       },);
     }
     return relPath.endsWith('/page.en.md',) ? TARGET_PAGE : SOURCE_PAGE;
@@ -385,10 +413,91 @@ function readerMixingFailures(
 }
 
 /**
+ One page a scripted reader refuses, and what git printed for it.
+ */
+type ScriptedRefusal = {
+  /**
+   Path whose read fails.
+   */
+  readonly relPath: string;
+
+  /**
+   Git's stderr for that read, which decides the failure's kind at a commit
+   the clone holds.
+   */
+  readonly stderr: string;
+};
+
+/**
+ Makes a reader under which two pages are refused, one refusal ending before
+ the other by construction, and every other page is served.
+
+ @param refusedFirst - page whose refusal ends first, though a draw may list it later
+
+ @param refusedLast - page whose refusal ends only after that one has
+
+ @returns A reader to pass in place of `readCorpusFile`
+
+ @example
+ ```ts
+ const readFile = readerRefusingInOrder({ refusedFirst: { relPath: 'people/whiskers/page.en.md', stderr: 'fatal: bad object', }, refusedLast: { relPath: 'people/whiskers/page.md', stderr: 'fatal: path does not exist in the commit', }, },);
+ ```
+ */
+function readerRefusingInOrder(
+  {
+    refusedFirst,
+    refusedLast,
+  }: {
+    readonly refusedFirst: ScriptedRefusal;
+    readonly refusedLast: ScriptedRefusal;
+  },
+): typeof readCorpusFile {
+  /**
+   The two refusals the reads end in.
+   */
+  const {
+    refuseAtOnce,
+    refuseAfterThat,
+  } = refusalOrder();
+  return async function refusesInOrder(
+    {
+      pin,
+      relPath,
+    }: Parameters<typeof readCorpusFile>[0],
+  ): Promise<string> {
+    /**
+     The refusal of this path, as the corpus reader raises it at a commit the
+     clone holds.
+     */
+    const refusal = new CorpusReadError({
+      detail: `${pin.commitSha}:${relPath}`,
+      cause: { stderr: (relPath === refusedFirst.relPath) ? refusedFirst.stderr : refusedLast.stderr, },
+      commit: 'held',
+    },);
+    if (relPath === refusedFirst.relPath)
+      return await refuseAtOnce(refusal,);
+    if (relPath === refusedLast.relPath)
+      return await refuseAfterThat(refusal,);
+    return relPath.endsWith('/page.en.md',) ? TARGET_PAGE : SOURCE_PAGE;
+  };
+}
+
+/**
+ Git's words for an object it could not produce at a commit the clone holds,
+ which the corpus reader classes as a failure of another kind.
+ */
+const LOST_OBJECT_STDERR = 'fatal: bad object';
+
+/**
+ Git's words for a path absent at a commit the clone holds.
+ */
+const ABSENT_PATH_STDERR = 'fatal: path does not exist in the commit';
+
+/**
  The skip line of the entry whose original page git found missing.
  */
 const ORIGINAL_MISSING_LINE = `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.md could not be read: `
-  + `corpus read failed for ${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.md (missing-object); ${CLONE_ADVICE}`;
+  + `corpus read failed for ${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.md (missing-object); ${ABSENT_PAGE_ADVICE}`;
 
 /**
  The skip line of the entry whose original page cannot be parsed.
@@ -608,7 +717,7 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         expect(slices,).toEqual([],);
         expect(lines,).toEqual([
           `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.en.md could not be read: corpus read failed for `
-            + `${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.en.md (missing-object); ${CLONE_ADVICE}`,
+            + `${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.en.md (missing-object); ${ABSENT_PAGE_ADVICE}`,
         ],);
       },
     },),
@@ -638,58 +747,68 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
       },
     },),
     it({
-      name: 'SKIPS AN ENTRY UNREADABLE FOR ANOTHER REASON and says the entry, the page and that the failure was another kind, whole',
+      name: 'REFUSES THE DRAW OVER AN ENTRY UNREADABLE FOR ANOTHER REASON with the read\'s own refusal of the kind '
+        + 'other, printing no skip line, since only a page absent at a commit the clone holds is an entry missing '
+        + 'one side',
       fn: async () => {
         /**
          Lines the draw printed.
          */
         const lines: string[] = [];
         /**
-         Slices drawn over the one entry.
+         What the draw refused with.
          */
-        const slices = await sliceListedEntries({
-          entryIds: [HALF_ENTRY_ID,],
-          pin: SCRIPTED_PIN,
-          readFile: readerRefusing({
-            refusedPath: `people/${HALF_ENTRY_ID}/page.en.md`,
-            cause: { stderr: 'fatal: not a git repository', },
-          },),
-          report: function collect(line,): void {
-            lines.push(line,);
-          },
+        const refusal = await rejectionOf(async function overAnUnreadablePage() {
+          await sliceListedEntries({
+            entryIds: [HALF_ENTRY_ID,],
+            pin: SCRIPTED_PIN,
+            readFile: readerRefusing({
+              refusedPath: `people/${HALF_ENTRY_ID}/page.en.md`,
+              cause: { stderr: 'fatal: not a git repository', },
+            },),
+            report: function collect(line,): void {
+              lines.push(line,);
+            },
+          },);
         },);
-        expect(slices,).toEqual([],);
-        expect(lines,).toEqual([
-          `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.en.md could not be read: corpus read failed for `
-            + `${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.en.md (other); ${CLONE_ADVICE}`,
-        ],);
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('other',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.en.md `
+            + `(other); ${OTHER_FAILURE_ADVICE}`,
+        );
+        expect(lines,).toEqual([],);
       },
     },),
     it({
-      name: 'SKIPS AN ENTRY WHOSE READ FAILS WITH NO CORPUS READ REFUSAL and names the page and only the failure\'s '
-        + 'class, quoting nothing it said',
+      name: 'REFUSES THE DRAW OVER AN ENTRY WHOSE READ FAILS WITH NO CORPUS READ REFUSAL with that failure as '
+        + 'itself, printing no skip line, since nothing then says the page is absent',
       fn: async () => {
         /**
          Lines the draw printed.
          */
         const lines: string[] = [];
         /**
-         Slices drawn over the one entry.
+         What the reader threw for every page.
          */
-        const slices = await sliceListedEntries({
-          entryIds: [HALF_ENTRY_ID,],
-          pin: SCRIPTED_PIN,
-          readFile: async function knocksTheClone(): Promise<string> {
-            throw new RangeError('the cat knocked the clone off the shelf',);
-          },
-          report: function collect(line,): void {
-            lines.push(line,);
-          },
+        const knocked = new RangeError('the cat knocked the clone off the shelf',);
+        /**
+         What the draw refused with.
+         */
+        const refusal = await rejectionOf(async function overAKnockedClone() {
+          await sliceListedEntries({
+            entryIds: [HALF_ENTRY_ID,],
+            pin: SCRIPTED_PIN,
+            readFile: async function knocksTheClone(): Promise<string> {
+              throw knocked;
+            },
+            report: function collect(line,): void {
+              lines.push(line,);
+            },
+          },);
         },);
-        expect(slices,).toEqual([],);
-        expect(lines,).toEqual([
-          `BENCH skipping ${HALF_ENTRY_ID}: people/${HALF_ENTRY_ID}/page.md could not be read: refused by RangeError`,
-        ],);
+        expect(refusal,).toBe(knocked,);
+        expect(lines,).toEqual([],);
       },
     },),
     it({
@@ -706,7 +825,10 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         const slices = await sliceListedEntries({
           entryIds: ['cat-alpha', 'cat-beta',],
           pin: SCRIPTED_PIN,
-          readFile: pageReadsRefusingLastFor({ endsLast: 'people/cat-alpha/', },),
+          readFile: pageReadsRefusingLastFor({
+            endsLast: 'people/cat-alpha/',
+            commit: 'held',
+          },),
           report: function collect(line,): void {
             lines.push(line,);
           },
@@ -714,9 +836,9 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         expect(slices,).toEqual([],);
         expect(lines,).toEqual([
           `BENCH skipping cat-alpha: people/cat-alpha/page.md could not be read: corpus read failed for `
-            + `${SCRIPTED_COMMIT}:people/cat-alpha/page.md (missing-object); ${CLONE_ADVICE}`,
+            + `${SCRIPTED_COMMIT}:people/cat-alpha/page.md (missing-object); ${ABSENT_PAGE_ADVICE}`,
           `BENCH skipping cat-beta: people/cat-beta/page.md could not be read: corpus read failed for `
-            + `${SCRIPTED_COMMIT}:people/cat-beta/page.md (missing-object); ${CLONE_ADVICE}`,
+            + `${SCRIPTED_COMMIT}:people/cat-beta/page.md (missing-object); ${ABSENT_PAGE_ADVICE}`,
         ],);
       },
     },),
@@ -734,13 +856,94 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         const slices = await sliceListedEntries({
           entryIds: [HALF_ENTRY_ID,],
           pin: SCRIPTED_PIN,
-          readFile: pageReadsRefusingLastFor({ endsLast: '/page.md', },),
+          readFile: pageReadsRefusingLastFor({
+            endsLast: '/page.md',
+            commit: 'held',
+          },),
           report: function collect(line,): void {
             lines.push(line,);
           },
         },);
         expect(slices,).toEqual([],);
         expect(lines,).toEqual([ORIGINAL_MISSING_LINE,],);
+      },
+    },),
+    it({
+      name: 'REFUSES THE DRAW WITH THE ENGLISH PAGE\'S FAILURE OF ANOTHER KIND when the original is absent at a '
+        + 'commit the clone holds and its refusal ends last, never skipping the entry as one missing a side',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         What the draw refused with.
+         */
+        const refusal = await rejectionOf(async function overALostEnglishPage() {
+          await sliceListedEntries({
+            entryIds: [HALF_ENTRY_ID,],
+            pin: SCRIPTED_PIN,
+            readFile: readerRefusingInOrder({
+              refusedFirst: {
+                relPath: `people/${HALF_ENTRY_ID}/page.en.md`,
+                stderr: LOST_OBJECT_STDERR,
+              },
+              refusedLast: {
+                relPath: `people/${HALF_ENTRY_ID}/page.md`,
+                stderr: ABSENT_PATH_STDERR,
+              },
+            },),
+            report: function collect(line,): void {
+              lines.push(line,);
+            },
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('other',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${SCRIPTED_COMMIT}:people/${HALF_ENTRY_ID}/page.en.md `
+            + `(other); ${OTHER_FAILURE_ADVICE}`,
+        );
+        expect(lines,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES THE DRAW WITH THE FIRST LISTED ENTRY\'S FAILURE when two entries\' originals fail another way '
+        + 'and the later entry\'s refusal ends first, since the draw reports in the order the corpus lists them',
+      fn: async () => {
+        /**
+         Lines the draw printed.
+         */
+        const lines: string[] = [];
+        /**
+         What the draw refused with.
+         */
+        const refusal = await rejectionOf(async function overTwoLostOriginals() {
+          await sliceListedEntries({
+            entryIds: ['cat-alpha', 'cat-beta',],
+            pin: SCRIPTED_PIN,
+            readFile: readerRefusingInOrder({
+              refusedFirst: {
+                relPath: 'people/cat-beta/page.md',
+                stderr: LOST_OBJECT_STDERR,
+              },
+              refusedLast: {
+                relPath: 'people/cat-alpha/page.md',
+                stderr: LOST_OBJECT_STDERR,
+              },
+            },),
+            report: function collect(line,): void {
+              lines.push(line,);
+            },
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('other',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${SCRIPTED_COMMIT}:people/cat-alpha/page.md `
+            + `(other); ${OTHER_FAILURE_ADVICE}`,
+        );
+        expect(lines,).toEqual([],);
       },
     },),
     it({
@@ -871,8 +1074,65 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
           return line.startsWith(`BENCH skipping ${halfEntry}:`,);
         },),).toEqual([
           `BENCH skipping ${halfEntry}: people/${halfEntry}/page.en.md could not be read: corpus read failed for `
-            + `${pin.commitSha}:people/${halfEntry}/page.en.md (missing-object); ${CLONE_ADVICE}`,
+            + `${pin.commitSha}:people/${halfEntry}/page.en.md (missing-object); ${ABSENT_PAGE_ADVICE}`,
         ],);
+      },
+    },),
+    it({
+      name: 'REFUSES A DRAW WHOSE PAGE GIT CANNOT PRODUCE at a commit the clone holds, naming the page and the '
+        + 'kind other, rather than skipping the entry as one missing a side',
+      fn: async () => {
+        /**
+         Clone carrying two complete entries, the second's English page stored
+         apart from every other page.
+         */
+        await using pin = await clonedCorpusHolding({
+          files: {
+            [`people/${ENTRY_ID}/page.md`]: SOURCE_PAGE,
+            [`people/${ENTRY_ID}/page.en.md`]: TARGET_PAGE,
+            [`people/${LOST_ENTRY_ID}/page.md`]: SOURCE_PAGE,
+            [`people/${LOST_ENTRY_ID}/page.en.md`]: LOST_TARGET_PAGE,
+          },
+        },);
+
+        /**
+         Object id of the second entry's English page, whose stored object is
+         then removed, as a clone fetched without its blobs would lack it.
+         */
+        const blob = await git({
+          cwd: pin.cloneDir,
+          args: [
+            'rev-parse',
+            `${pin.commitSha}:people/${LOST_ENTRY_ID}/page.en.md`,
+          ],
+        },);
+        await rm(join(
+          pin.cloneDir,
+          '.git',
+          'objects',
+          blob.slice(
+            0,
+            2,
+          ),
+          blob.slice(2,),
+        ),);
+
+        /**
+         What the draw refused with.
+         */
+        const refusal = await rejectionOf(async function overALostObject() {
+          await sampleBenchSlices({
+            count: 2,
+            pin,
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('other',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${pin.commitSha}:people/${LOST_ENTRY_ID}/page.en.md `
+            + `(other); ${OTHER_FAILURE_ADVICE}`,
+        );
       },
     },),
   ],

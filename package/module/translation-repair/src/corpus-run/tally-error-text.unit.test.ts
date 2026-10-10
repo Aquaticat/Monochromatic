@@ -9,15 +9,38 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  CorpusReadError,
   StatedRefusalError,
   TALLY_ERROR_CAP,
   tallyErrorText,
 } from '../../dist/final/node/index.mjs';
+
+/**
+ Commit a long entry's page was asked for at.
+ */
+const PINNED = 'c'.repeat(40,);
+
+/**
+ Entry id long enough to push a corpus read's kind past the cap, as a long
+ picture name or a long id does.
+ */
+const LONG_ID = 'tabby'.repeat(40,);
+
+/**
+ A corpus read of the long entry's English page that found no such path at a
+ commit the clone holds.
+ */
+const LONG_ID_REFUSAL = new CorpusReadError({
+  detail: `${PINNED}:people/${LONG_ID}/page.en.md`,
+  cause: { stderr: `fatal: path 'people/${LONG_ID}/page.en.md' does not exist in '${PINNED}'`, },
+  commit: 'held',
+},);
 
 await describe({
   name: tallyErrorText.name,
@@ -31,6 +54,45 @@ await describe({
         const error = new StatedRefusalError({ says: 'x'.repeat(TALLY_ERROR_CAP * 2,), },);
 
         expect(tallyErrorText({ error, },),).toHaveLength(TALLY_ERROR_CAP,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS A CORPUS READ\'S KIND AND REMEDY WHOLE after a long entry id, cutting only the path and '
+        + 'revision before them at the cap and marking the cut with an ellipsis inside it',
+      fn: async () => {
+        expect(tallyErrorText({ error: LONG_ID_REFUSAL, },),).toBe(
+          `corpus read failed for ${PINNED}:people/${'tabby'.repeat(25,)}tab… (missing-object); the commit has `
+            + 'no such path: check the path, or pin a commit that has it.',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES AS UNREACHABLE a corpus read whose message no longer ends on the kind and remedy its class '
+        + 'built it with, rather than cutting a closing it cannot find',
+      fn: async () => {
+        /**
+         A corpus read whose message was written over after it was built.
+         */
+        const rewritten = new CorpusReadError({
+          detail: 'people/tabby/page.md at deadbeef',
+          cause: { stderr: "fatal: path 'people/tabby/page.md' does not exist in 'deadbeef'", },
+          commit: 'held',
+        },);
+        rewritten.message = 'corpus read failed for people/tabby/page.md at deadbeef';
+
+        /**
+         What rendering it threw.
+         */
+        const refusal = caught(function render(): unknown {
+          return tallyErrorText({ error: rewritten, },);
+        },);
+        expect(refusal,).toBeInstanceOf(Error,);
+        expect(String(refusal,),).toBe(
+          'Error: unreachable: a corpus read refusal\'s message does not end on its kind and remedy, which its '
+            + 'constructor writes as the message\'s closing',
+        );
       },
     },),
 

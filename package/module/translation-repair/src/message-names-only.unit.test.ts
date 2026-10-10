@@ -85,6 +85,7 @@ const MARKED_CLASSES: readonly string[] = [
   'BedrockLedgerShapeError',
   'BlockOutsideArchiveError',
   'BedrockModelNotServedError',
+  'BenchReportError',
   'BlankSelectionError',
   'CacheAccountLogError',
   'CacheAccountReadError',
@@ -403,6 +404,9 @@ const NAMED_PARTS: Record<string, string> = {
   'unavailableCount': 'count of source-referenced assets without usable visual evidence',
   'clauses.join(\'; \',)': 'bench names, seat counts and the floor, built by the seat reading and quoting nothing',
   'yamlRefusalSite({ cause, },)': 'position, built to state a place and quote nothing',
+  'kindAndRemedy': 'a corpus read failure kind in brackets and the one of four fixed remedy sentences keyed by '
+    + 'that closed union (CorpusReadError, REMEDY_SENTENCES), quoting no path, revision or content',
+  'String(seats,)': 'count of seats in the roster the bench was handed (BenchReportError)',
 };
 
 /**

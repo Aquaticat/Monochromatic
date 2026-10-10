@@ -358,8 +358,8 @@ await describe({
           },
         },),
         it({
-          name: 'STOPS AT AN EMPTY CLONE after naming its judge, with the reference it could not read and no row '
-            + 'written, since the pinned commit is nowhere in it',
+          name: 'STOPS AT A CLONE DIRECTORY THAT IS NO REPOSITORY after naming its judge, with the reference it '
+            + 'could not read and no row written, since git cannot open it',
           fn: async () => {
             const run = await runAsBuilt({
               args: [
@@ -377,8 +377,9 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toEqual([`[info] [judge-fidelity-probe] judges: ${SEAT_HYPER_OPENROUTER_UNMEASURED}`,],);
             expect(run.stderr,).toEqual([
-              `judge-fidelity-probe: corpus read failed for ${first.corpusSha}:people/${first.entryId}/page.md (other); `
-              + 'check that the clone exists and the pinned commit is present.',
+              `judge-fidelity-probe: corpus read failed for ${first.corpusSha}:people/${first.entryId}/page.md `
+              + '(unreadable-clone); git could not open the clone: check that the directory exists, is the top of '
+              + 'a git repository, and is one git may read.',
             ],);
           },
         },),

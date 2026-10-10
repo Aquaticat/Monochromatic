@@ -34,6 +34,7 @@ import {
   digestPipeline,
   type EntryOutcome,
   lockRunsDir,
+  prepareDocumentPair,
   prepareRunsLayout,
   RunsDirectoryBusyError,
   runClientFrom,
@@ -50,6 +51,7 @@ import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { makeCorpusPassClone, } from './corpus-pass-clone.test-fixture.ts';
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { NO_PICTURE_SOURCES, } from './pass-picture-sources.test-fixture.ts';
+import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
 
 /**
  Tip the scripted git read answers.
@@ -109,6 +111,7 @@ type Overrides = {
    HTTP the required providers' meters are read over.
    */
   readonly transport?: CorpusPassInput['transport'];
+
 };
 
 /**
@@ -325,7 +328,7 @@ await describe({
         expect(printed.lines,).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=0 `
           + 'soft=259200000ms hard=25200000ms',
-          'DONE processed=1 of pending=1; artifacts=1/92 elapsed=42ms',
+          'DONE processed=1 of pending=1; artifacts=1/1 declined=0 unpairedArtifacts=0 elapsed=42ms',
         ],);
         expect(watched.settled,).toEqual(['tabby',],);
         expect(watched.clients,).toEqual([
@@ -333,6 +336,230 @@ await describe({
             runs.path,
             'prompt-payloads',
           ),
+        ],);
+      },
+    },),
+    it({
+      name: 'CLOSES OVER THE COMPLETE PAIRS ITS OWN WALK FOUND, counting an entry declined before apart and out '
+        + 'of the pairs still to settle, and an entry with no English page in neither',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'biscuit',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+          {
+            id: 'mittens',
+            sourceText: '猫睡觉。\n',
+          },
+          {
+            id: 'mochi',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         Paths the procedure keeps under the runs directory.
+         */
+        const layout = await prepareRunsLayout({ runsDir: runs.path, },);
+        await writeDeclinedEntry({
+          declinedDir: layout.declinedDir,
+          record: {
+            id: 'mochi',
+            tip: TIP,
+            pipelineDigest: built.digest,
+            corpusSha: clone.commitSha,
+            timestamp: '2026-09-08T21:00:00.000Z',
+            reason: 'archive-original',
+            note: 'The cat wrote this herself.',
+          },
+        },);
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched: nothingWatched(),
+          overrides: {},
+        },);
+
+        expect(printed.lines,).toEqual([
+          `INCOMPLETE mittens: target page absent at the pin (corpus read failed for ${clone.commitSha}:`
+          + 'people/mittens/page.en.md (missing-object); the commit has no such path: check the path, or pin a '
+          + 'commit that has it.)',
+          `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=2 done=1 `
+          + 'soft=259200000ms hard=25200000ms',
+          'DONE processed=2 of pending=2; artifacts=2/2 declined=1 unpairedArtifacts=0 elapsed=42ms',
+        ],);
+      },
+    },),
+    it({
+      name: 'COUNTS AN ARTIFACT SETTLED AT AN EARLIER PIN for an entry this pin does not hold apart, as an '
+        + 'artifact with no complete pair, never among the pairs, so the artifacts never outnumber the pairs',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [{
+          id: 'tabby',
+          sourceText: '猫睡觉。\n',
+          targetText: 'The cat naps.\n',
+        },], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         Paths the procedure keeps under the runs directory.
+         */
+        const layout = await prepareRunsLayout({ runsDir: runs.path, },);
+        await writeFile(
+          join(
+            layout.artifactsDir,
+            'ghost.json',
+          ),
+          JSON.stringify({
+            ...JSON.parse(settledArtifactText({
+              prepared: prepareDocumentPair({
+                sourceText: '猫睡觉。\n',
+                targetText: 'The cat naps.\n',
+                includeFrontMatter: true,
+                sealArchiveOriginal: true,
+              },),
+              entryId: 'ghost',
+            },),),
+            pipelineDigest: built.digest,
+          },),
+        );
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched: nothingWatched(),
+          overrides: {},
+        },);
+
+        // The republish lines the earlier artifact draws (its pair is read at
+        // a commit this clone lacks) are another case's; this one reads the
+        // run's opening and closing lines.
+        expect(printed.lines.filter(function openingOrClosing(line,): boolean {
+          return line.startsWith('START ',) || line.startsWith('DONE ',);
+        },),).toEqual([
+          `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=1 `
+          + 'soft=259200000ms hard=25200000ms',
+          'DONE processed=1 of pending=1; artifacts=1/1 declined=0 unpairedArtifacts=1 elapsed=42ms',
+        ],);
+      },
+    },),
+    it({
+      name: 'COUNTS THE ARTIFACT OF A FINISHED ENTRY WHOSE ENGLISH PAGE THE PIN LACKS apart, as an artifact with no '
+        + 'complete pair, though the pin holds its original',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'mittens',
+            sourceText: '猫睡觉。\n',
+          },
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         Paths the procedure keeps under the runs directory.
+         */
+        const layout = await prepareRunsLayout({ runsDir: runs.path, },);
+        await writeFile(
+          join(
+            layout.artifactsDir,
+            'mittens.json',
+          ),
+          JSON.stringify({
+            ...JSON.parse(settledArtifactText({
+              prepared: prepareDocumentPair({
+                sourceText: '猫睡觉。\n',
+                targetText: 'The cat naps.\n',
+                includeFrontMatter: true,
+                sealArchiveOriginal: true,
+              },),
+              entryId: 'mittens',
+            },),),
+            pipelineDigest: built.digest,
+          },),
+        );
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched: nothingWatched(),
+          overrides: {},
+        },);
+
+        // The republish lines the finished entry's artifact draws are another
+        // case's; this one reads the run's opening and closing lines.
+        expect(printed.lines.filter(function openingOrClosing(line,): boolean {
+          return line.startsWith('START ',) || line.startsWith('DONE ',);
+        },),).toEqual([
+          `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=1 `
+          + 'soft=259200000ms hard=25200000ms',
+          'DONE processed=1 of pending=1; artifacts=1/1 declined=0 unpairedArtifacts=1 elapsed=42ms',
+        ],);
+      },
+    },),
+    it({
+      name: 'CLOSES OVER THE PAIRS AMONG THE NAMED ENTRIES under --only, saying so, since its walk read them '
+        + 'alone',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'biscuit',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+
+        await runPass({
+          typed: [
+            '--only',
+            'tabby',
+          ],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched: nothingWatched(),
+          overrides: {},
+        },);
+
+        expect(printed.lines,).toEqual([
+          'ONLY tabby (chosen by hand in place of every pending pair at the pin; if still pending it runs in '
+          + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+          + 'entry never enters a pool later draws treat as natural accumulation)',
+          `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=0 `
+          + 'soft=259200000ms hard=25200000ms',
+          'DONE processed=1 of pending=1; artifacts=1/1 declined=0 (pairs counted over the entries --only named, '
+          + 'not every pair at the pin) elapsed=42ms',
         ],);
       },
     },),
@@ -372,7 +599,7 @@ await describe({
           'a straggler note',
           'a writer note',
           'REQUIRED-PROVIDERS hyper status=wet',
-          'DONE processed=0 of pending=0; artifacts=0/92 elapsed=0ms',
+          'DONE processed=0 of pending=0; artifacts=0/0 declined=0 unpairedArtifacts=0 elapsed=0ms',
         ],);
       },
     },),

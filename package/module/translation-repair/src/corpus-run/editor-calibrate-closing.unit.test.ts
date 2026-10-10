@@ -29,10 +29,10 @@ import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { unjudgedRounds, } from './editor-calibrate-rounds.test-fixture.ts';
 
 /**
- Closing sentence of the reach line, which names why the unreached slices say nothing.
+ Closing clause of the reach line when one slice carried nothing to rewrite.
  */
-const REACH_TAIL = '; the rest carried no paragraph over the eligibility floor, so no refiner was asked '
-  + 'and their silence is not evidence about any model';
+const ONE_UNREACHED = '; 1 slice carried no paragraph over the eligibility floor, so no refiner was asked '
+  + 'there and its silence is not evidence about any model';
 
 /**
  Closing sentence the shipped paragraph ends on whenever something shipped.
@@ -61,7 +61,60 @@ await describe({
               ],
             },);
 
-            expect(printed.lines,).toEqual([`  reached a rewriter on 2 of 3 slices${REACH_TAIL}`,],);
+            expect(printed.lines,).toEqual([`  reached a rewriter on 2 of 3 slices${ONE_UNREACHED}`,],);
+          },
+        },),
+
+        it({
+          name: 'PRINTS NO CLAUSE ABOUT THE REST when every slice reached a rewriter, since there is no rest',
+          fn: async (ctx,) => {
+            using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+
+            printEditorCalibrateRefineReach({
+              perSlice: [
+                unjudgedRounds({ shippers: [], refineAsked: true, },),
+                unjudgedRounds({ shippers: [], refineAsked: true, },),
+              ],
+            },);
+
+            expect(printed.lines,).toEqual(['  reached a rewriter on 2 of 2 slices',],);
+          },
+        },),
+
+        it({
+          name: 'NAMES BOTH SLICES, in the plural, as carrying nothing to rewrite when neither of two reached a '
+            + 'rewriter',
+          fn: async (ctx,) => {
+            using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+
+            printEditorCalibrateRefineReach({
+              perSlice: [
+                unjudgedRounds({ shippers: [], refineAsked: false, },),
+                unjudgedRounds({ shippers: [], refineAsked: false, },),
+              ],
+            },);
+
+            expect(printed.lines,).toEqual([
+              '  reached a rewriter on 0 of 2 slices; 2 slices carried no paragraph over the eligibility floor, so '
+              + 'no refiner was asked there and their silence is not evidence about any model',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'NAMES THE ONE SLICE, in the singular, that carried nothing to rewrite when one of two reached a '
+            + 'rewriter',
+          fn: async (ctx,) => {
+            using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+
+            printEditorCalibrateRefineReach({
+              perSlice: [
+                unjudgedRounds({ shippers: [], refineAsked: false, },),
+                unjudgedRounds({ shippers: [], refineAsked: true, },),
+              ],
+            },);
+
+            expect(printed.lines,).toEqual([`  reached a rewriter on 1 of 2 slices${ONE_UNREACHED}`,],);
           },
         },),
 
@@ -74,7 +127,7 @@ await describe({
               perSlice: [unjudgedRounds({ shippers: [], refineAsked: false, },),],
             },);
 
-            expect(printed.lines,).toEqual([`  reached a rewriter on 0 of 1 slice${REACH_TAIL}`,],);
+            expect(printed.lines,).toEqual([`  reached a rewriter on 0 of 1 slice${ONE_UNREACHED}`,],);
           },
         },),
       ],
@@ -131,7 +184,8 @@ await describe({
         },),
 
         it({
-          name: 'COUNTS only the slices that shipped with no editor round judged, and prints the slice noun in the singular',
+          name: 'COUNTS A SLICE WHOSE EDITOR ROUND DREW NO BALLOT among those that shipped with no editor round '
+            + 'judged, as a lone composite candidate leaves it, and prints the slice noun in the singular',
           fn: async (ctx,) => {
             using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
 
@@ -143,6 +197,47 @@ await describe({
                     {
                       producers: [],
                       ballots: [],
+                    },
+                  ],
+                },
+              ],
+            },);
+
+            expect(printed.lines,).toEqual([
+              '\nEDITORS SHIPPED on 1 of 1 slice, 1 of them with no editor round judged at all',
+              `  ${SEAT_HYPER_VISION}: wrote shipping text on 1 of 1 slice`,
+              NOT_A_PREFERENCE,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A SLICE WHOSE EDITOR ROUND DREW A BALLOT out of those that shipped with no editor round '
+            + 'judged',
+          fn: async (ctx,) => {
+            using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+
+            printEditorCalibrateShipped({
+              perSlice: [
+                {
+                  ...unjudgedRounds({ shippers: [SEAT_HYPER_VISION,], refineAsked: false, },),
+                  editor: [
+                    {
+                      producers: [
+                        {
+                          kind: 'model',
+                          modelId: SEAT_HYPER_VISION,
+                        },
+                      ],
+                      ballots: [
+                        {
+                          modelId: SEAT_HYPER_TEXT_BEDROCK,
+                          best: 1,
+                          reason: 'scripted',
+                          weight: 1,
+                          selfVote: false,
+                        },
+                      ],
                     },
                   ],
                 },

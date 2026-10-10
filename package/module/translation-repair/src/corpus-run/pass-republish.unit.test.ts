@@ -194,8 +194,8 @@ await describe({
       },
     },),
     it({
-      name: 'LEAVES THE PAGE ABSENT AND SAYS WHY when the commit its artifact records is not in the clone, and '
-        + 'does not stop',
+      name: 'LEAVES THE PAGE ABSENT AND SAYS WHY when the commit its artifact records is not in the clone, naming '
+        + 'the original page, that kind of failure and its remedy, and does not stop',
       fn: async () => {
         await using clone = await makeCorpusPassClone({ entries: [], },);
         await using scratch = await scratchDir({ prefix: 'pass-republish-', },);
@@ -221,8 +221,13 @@ await describe({
           l: capturingLogger({ messages, },),
         },);
 
+        // Both reads of the pair fail and start together; the reader reports
+        // them in input order, so the original's refusal is the one named
+        // whichever ended first.
         expect(messages,).toEqual([
-          'REPUBLISH LEFT entry=CatEntry1 why=missing because=CorpusReadError: page left as it was',
+          `REPUBLISH LEFT entry=CatEntry1 why=missing: page left as it was; because=corpus read failed for `
+          + `${ABSENT_COMMIT}:people/CatEntry1/page.md (missing-commit); the clone holds no commit by `
+          + 'that revision: fetch it, or pin a commit the clone holds.',
           'republish: 1 settled page judged, 0 rewritten, 1 left',
         ],);
         await expect(readFile(

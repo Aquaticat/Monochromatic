@@ -95,8 +95,8 @@ const NO_ROUNDS_NOTE = '  NO ROUNDS. This seat judged nothing across the sample,
 /**
  Closing paragraph on the slices that reached a rewriter, for a sample of one that reached none.
  */
-const REACH_LINE = '  reached a rewriter on 0 of 1 slice; the rest carried no paragraph over the eligibility floor, '
-  + 'so no refiner was asked and their silence is not evidence about any model';
+const REACH_LINE = '  reached a rewriter on 0 of 1 slice; 1 slice carried no paragraph over the eligibility floor, '
+  + 'so no refiner was asked there and its silence is not evidence about any model';
 
 /**
  Everything a run reached for, recorded in the order it reached.
@@ -309,8 +309,8 @@ await describe({
         },),
 
         it({
-          name: 'PRINTS every editor that wrote the shipped edit, with the unjudged candidate counted as a round, '
-            + 'when every stage agrees on one edit',
+          name: 'PRINTS every editor that wrote the shipped edit when every stage agrees on one edit, and both '
+            + 'printers read the lone composite candidate no ballot was cast on as no judged round',
           fn: async (ctx,) => {
             using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
 
@@ -336,9 +336,14 @@ await describe({
             ];
 
             expect(printed.lines.slice(2,).filter(function standingOrShipping(line,): boolean {
-              return line.includes('wrote shipping text',) || line.startsWith('\nEDITORS',);
+              return line.includes('wrote shipping text',) || line.startsWith('\nEDITOR',)
+                || line.startsWith('  NO JUDGED ROUNDS',);
             },),).toEqual([
-              '\nEDITORS SHIPPED on 1 of 1 slice, 0 of them with no editor round judged at all',
+              '\nEDITOR standing over 0 judged rounds, from 0 of 1 slice; 1 round drew no ballot',
+              '  NO JUDGED ROUNDS. The seat has no standing, since no ballot was cast on any round it produced: a '
+              + 'slate of one candidate, which is what every producer proposing the same wording leaves, needs no '
+              + 'vote, and a panel whose every judge abstained or failed casts none. Draw more slices.',
+              '\nEDITORS SHIPPED on 1 of 1 slice, 1 of them with no editor round judged at all',
               ...shippers.map(function credited(modelId,): string {
                 return `  ${modelId}: wrote shipping text on 1 of 1 slice`;
               },),

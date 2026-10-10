@@ -17,7 +17,13 @@ import {
 import {
   CorpusReadError,
   drawEntry,
+  readCorpusFile,
 } from '../../dist/final/node/index.mjs';
+import {
+  LACKED_COMMIT_SHA,
+  makeCloneHoldingOneCommit,
+  PAIRED_ENTRY,
+} from '../corpus-lacked-commit.test-fixture.ts';
 import { capturingLoggerPair, } from '../capturing-logger.test-fixture.ts';
 import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import {
@@ -63,6 +69,7 @@ function scriptedPages(
       return Promise.reject(new CorpusReadError({
         detail: `${relPath} at ${CAT_PIN.commitSha}`,
         cause: { stderr: `fatal: path '${relPath}' does not exist in '${CAT_PIN.commitSha}'`, },
+        commit: 'held',
       },),);
     return Promise.resolve(held,);
   };
@@ -178,7 +185,8 @@ await describe({
         },);
         expect(lines,).toEqual([
           'Mittens: skipped, CorpusReadError: corpus read failed for people/Mittens/page.en.md at '
-          + `${CAT_PIN.commitSha} (missing-object); check that the clone exists and the pinned commit is present.`,
+          + `${CAT_PIN.commitSha} (missing-object); the commit has no such path: check the path, or pin a `
+          + 'commit that has it.',
         ],);
       },
     },),
@@ -198,6 +206,7 @@ await describe({
               return Promise.reject(new CorpusReadError({
                 detail: 'people/Mittens/page.md',
                 cause: new Error('spawn failed',),
+                commit: 'unasked',
               },),);
             },
             l: logger,
@@ -207,7 +216,39 @@ await describe({
         expect(refusal,).toBeInstanceOf(CorpusReadError,);
         expect(String(refusal,),).toBe(
           'CorpusReadError: corpus read failed for people/Mittens/page.md (other); '
-          + 'check that the clone exists and the pinned commit is present.',
+          + 'the read failed another way: run the same git read in the clone by hand to see why.',
+        );
+        expect(lines,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES a pin whose commit the clone lacks, read through the real page reader, instead of '
+        + 'skipping the entry as one with a single side',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        const { logger, lines, } = capturingLoggerPair();
+
+        /**
+         What the draw rejected with.
+         */
+        const refusal = await rejectionOf({
+          promise: drawEntry({
+            entryId: PAIRED_ENTRY,
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: LACKED_COMMIT_SHA,
+            },
+            readPage: readCorpusFile,
+            l: logger,
+          },),
+        },);
+
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('missing-commit',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/${PAIRED_ENTRY}/page.md (missing-commit); `
+            + 'the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
         );
         expect(lines,).toEqual([],);
       },

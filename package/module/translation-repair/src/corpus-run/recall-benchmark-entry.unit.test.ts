@@ -18,6 +18,7 @@ import {
   FrontMatterParseError,
   seedRecallEntry,
 } from '../../dist/final/node/index.mjs';
+import { LACKED_COMMIT_SHA, } from '../corpus-lacked-commit.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { benchWorld, } from './bench-world.test-fixture.ts';
 
@@ -176,6 +177,38 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a pin whose commit the clone lacks instead of setting the entry aside as an incomplete pair',
+      fn: async () => {
+        await using world = await benchWorld({
+          entries: {},
+          originalOnly: { napping: SMALL_SOURCE, },
+        },);
+
+        /**
+         What seeding an entry at a commit the clone lacks refused with.
+         */
+        const refusal = await rejectionOf(async function readLackedCommit(): Promise<unknown> {
+          return await seedRecallEntry({
+            id: 'napping',
+            sizer: new TextEncoder(),
+            pin: {
+              cloneDir: world.pin.cloneDir,
+              commitSha: LACKED_COMMIT_SHA,
+            },
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('missing-commit',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/napping/page.md (missing-commit); `
+            + 'the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        );
+      },
+    },),
+
+    it({
       name: 'REFUSES a clone that cannot be read instead of setting the entry aside',
       fn: async () => {
         await using world = await benchWorld({ entries: {}, },);
@@ -193,8 +226,9 @@ await describe({
 
         expect(refusal,).toBeInstanceOf(CorpusReadError,);
         expect(String(refusal,),).toBe(
-          `CorpusReadError: corpus read failed for ${world.pin.commitSha}:people/purring/page.md (other); `
-            + 'check that the clone exists and the pinned commit is present.',
+          `CorpusReadError: corpus read failed for ${world.pin.commitSha}:people/purring/page.md (unreadable-clone); `
+            + 'git could not open the clone: check that the directory exists, is the top of a git repository, and '
+            + 'is one git may read.',
         );
       },
     },),

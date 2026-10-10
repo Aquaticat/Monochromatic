@@ -1,7 +1,9 @@
 /**
  Tests for the environment every corpus git child runs in: the caller's, with
  its repository routing, its credentials and the package's settings stated
- absent, the clone's own objects pinned, and git's messages in the C locale.
+ absent, the clone's own objects pinned, git's search for a repository
+ stopped at the ceiling `gitSearchCeiling` resolves from the clone's real
+ path, and git's messages in the C locale.
 
  WHY THE LOCALE IS SET. The corpus reader tells a page a pinned commit lacks
  from every other failed read by the English words git prints (`does not exist
@@ -20,7 +22,16 @@
  @module
  */
 
+import {
+  mkdir,
+  realpath,
+  symlink,
+} from 'node:fs/promises';
 import { devNull, } from 'node:os';
+import {
+  dirname,
+  join,
+} from 'node:path';
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
@@ -29,9 +40,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { corpusGitEnvironment, } from '../dist/final/node/index.mjs';
+import {
+  corpusGitEnvironment,
+  gitSearchCeiling,
+} from '../dist/final/node/index.mjs';
 import { makeNamingArchive, } from './archive-naming.test-fixture.ts';
 import { runKeyless, } from './child-environment.test-fixture.ts';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  Native executable, never the current repository's command-policy wrapper.
@@ -67,7 +82,7 @@ const CALLER_LOCALE: Readonly<Record<string, string>> = {
 
  @example
  ```ts
- const extra = variablesSet({ environment: corpusGitEnvironment({ environment: CALLER_LOCALE, },), },);
+ const extra = variablesSet({ environment: corpusGitEnvironment({ searchCeiling: '/home/tabby', environment: CALLER_LOCALE, },), },);
  ```
  */
 function variablesSet({ environment, }: { readonly environment: NodeJS.ProcessEnv; },): Readonly<Record<string, string>> {
@@ -91,10 +106,12 @@ await describe({
   children: [
     it({
       name: 'BUILDS THE CORPUS ENVIRONMENT WHOLE: the caller\'s plain variables and locale kept, its repository '
-        + 'routing, its credential and its setting stated absent, the clone\'s own objects pinned, and git\'s '
-        + 'messages held to the C locale over every locale variable the caller sets',
+        + 'routing, its credential and its setting stated absent, the clone\'s own objects pinned, git\'s search '
+        + 'for a repository stopped at the ceiling it is handed, and git\'s messages held to the C locale over '
+        + 'every locale variable the caller sets',
       fn: async () => {
         expect(corpusGitEnvironment({
+          searchCeiling: '/home/tabby',
           environment: {
             PATH: '/usr/bin',
             HOME: '/home/tabby',
@@ -119,12 +136,63 @@ await describe({
           GIT_DIR: undefined,
           GIT_CONFIG_KEY_0: undefined,
           GIT_CONFIG_VALUE_0: undefined,
+          GIT_CEILING_DIRECTORIES: '/home/tabby',
           GIT_GRAFT_FILE: devNull,
           GIT_NO_REPLACE_OBJECTS: '1',
           GIT_NO_LAZY_FETCH: '1',
           WHISKER_API_KEY: undefined,
           TRANSLATION_REPAIR_RUNS_DIR: undefined,
         },);
+      },
+    },),
+    it({
+      name: 'RESOLVES THE SEARCH CEILING OF A LINKED CLONE (gitSearchCeiling) TO THE PARENT OF THE DIRECTORY '
+        + 'THE LINK NAMES, which is where git starts, never to the parent of the link itself',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'translation-repair-ceiling-', },);
+        /**
+         Directory the link names, two levels below the scratch root.
+         */
+        const target = join(
+          scratch.path,
+          'basket',
+          'clone',
+        );
+        await mkdir(
+          target,
+          { recursive: true, },
+        );
+        /**
+         Link named as the clone, beside the basket rather than in it.
+         */
+        const link = join(
+          scratch.path,
+          'linked-clone',
+        );
+        await symlink(
+          target,
+          link,
+        );
+        /**
+         Where the link leads, as git sees it from inside.
+         */
+        const real = await realpath(target,);
+        expect(await gitSearchCeiling({ cloneDir: link, },),).toBe(dirname(real,),);
+      },
+    },),
+    it({
+      name: 'RESOLVES THE SEARCH CEILING OF A CLONE DIRECTORY THAT DOES NOT EXIST (gitSearchCeiling) TO THE '
+        + 'PARENT OF THE PATH AS NAMED, since git stops at such a directory before reading any ceiling',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'translation-repair-ceiling-', },);
+        /**
+         Clone directory never made, under a parent that exists.
+         */
+        const absent = join(
+          scratch.path,
+          'no-such-clone',
+        );
+        expect(await gitSearchCeiling({ cloneDir: absent, },),).toBe(scratch.path,);
       },
     },),
     it({
@@ -148,7 +216,12 @@ await describe({
         const corpusRead = await runKeyless({
           file: REAL_GIT,
           args,
-          extra: variablesSet({ environment: corpusGitEnvironment({ environment: CALLER_LOCALE, },), },),
+          extra: variablesSet({
+            environment: corpusGitEnvironment({
+              searchCeiling: await gitSearchCeiling({ cloneDir: archive.pin.cloneDir, },),
+              environment: CALLER_LOCALE,
+            },),
+          },),
         },);
         /**
          The same read in the caller's locale alone, the control showing this

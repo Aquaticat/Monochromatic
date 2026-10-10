@@ -217,7 +217,7 @@ await describe({
         catch (error) {
           expect(String(error,),).toBe(
             `CorpusReadError: corpus read failed for ${corpus.commitSha}:people/Cat1/page.en.md (missing-object); `
-              + 'check that the clone exists and the pinned commit is present.',
+              + 'the commit has no such path: check the path, or pin a commit that has it.',
           );
         }
       },

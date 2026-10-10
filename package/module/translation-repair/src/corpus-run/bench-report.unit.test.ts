@@ -25,6 +25,7 @@ import {
   BenchReportError,
   benchWidths,
   type BenchRow,
+  StatedRefusalError,
   summarizeBench,
   writeBenchReport,
 } from '../../dist/final/node/index.mjs';
@@ -174,8 +175,8 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES a roster of no seat and a roster of one, each by the count of its seats, since neither '
-            + 'leaves a width to vary',
+          name: 'REFUSES a roster of no seat and a roster of one as stated refusals, each by the count of its '
+            + 'seats, since neither leaves a width to vary and the roster is the operator\'s to widen',
           fn: async () => {
             /**
              What the empty roster raised.
@@ -184,6 +185,7 @@ await describe({
               return benchWidths({ roster: [], },);
             },);
             expect(empty,).toBeInstanceOf(BenchReportError,);
+            expect(empty,).toBeInstanceOf(StatedRefusalError,);
             expect(String(empty,),).toBe('BenchReportError: a roster of 0 cannot be benched: nothing to vary',);
 
             /**
@@ -193,6 +195,7 @@ await describe({
               return benchWidths({ roster: ['mao-1',], },);
             },);
             expect(lone,).toBeInstanceOf(BenchReportError,);
+            expect(lone,).toBeInstanceOf(StatedRefusalError,);
             expect(String(lone,),).toBe('BenchReportError: a roster of 1 cannot be benched: nothing to vary',);
           },
         },),

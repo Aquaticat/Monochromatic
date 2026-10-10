@@ -65,25 +65,28 @@ await describe({
           },
         },),
         it({
-          name: 'NAMES ONE ENTRY the pass was restricted to, with what bypassing the ordering means',
+          name: 'NAMES ONE ENTRY the pass was restricted to, saying the operator chose it in place of every '
+            + 'pending pair and that it runs in the pass\'s own order if still pending, in the singular',
           fn: async () => {
             expect(passOnlyLines({ onlyIds: new Set(['tabby',],), },),).toEqual([
-              'ONLY tabby (ordering is bypassed; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a '
-              + 'hand-picked entry never enters a pool later draws treat as natural accumulation)',
+              'ONLY tabby (chosen by hand in place of every pending pair at the pin; if still pending it runs in '
+              + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+              + 'entry never enters a pool later draws treat as natural accumulation)',
             ],);
           },
         },),
         it({
           name: 'NAMES SEVERAL ENTRIES in code point order, whatever order they were written in, so two runs of '
-            + 'one selection log alike',
+            + 'one selection log alike, saying those of them still pending run in the pass\'s own order',
           fn: async () => {
             expect(passOnlyLines({ onlyIds: new Set([
               '😺',
               'mittens',
               'Tabby',
             ],), },),).toEqual([
-              'ONLY Tabby,mittens,😺 (ordering is bypassed; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR '
-              + 'so a hand-picked entry never enters a pool later draws treat as natural accumulation)',
+              'ONLY Tabby,mittens,😺 (chosen by hand in place of every pending pair at the pin; those still pending '
+              + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+              + 'entry never enters a pool later draws treat as natural accumulation)',
             ],);
           },
         },),
@@ -359,15 +362,69 @@ await describe({
       name: passDoneLine.name,
       children: [
         it({
-          name: 'REPORTS what the pass finished of what it set out to run, the artifacts present and the time taken',
+          name: 'REPORTS what the pass finished of what it set out to run, the artifacts among the pairs its walk '
+            + 'over every entry found, against those pairs less the declined ones, the declined pairs and the '
+            + 'artifacts of entries the walk found no complete pair for apart, and the time taken',
           fn: async () => {
             expect(passDoneLine({
               processed: 1,
               pending: 2,
-              total: 40,
-              target: 92,
+              pairs: {
+                walked: 'every-entry',
+                ids: new Set([
+                  'biscuit',
+                  'mochi',
+                  'tabby',
+                  'tama',
+                ],),
+              },
+              settledIds: new Set([
+                'biscuit',
+                'ghost',
+                'tabby',
+              ],),
+              declinedIds: new Set(['mochi',],),
               elapsedMs: 5,
-            },),).toBe('DONE processed=1 of pending=2; artifacts=40/92 elapsed=5ms',);
+            },),).toBe('DONE processed=1 of pending=2; artifacts=2/3 declined=1 unpairedArtifacts=1 elapsed=5ms',);
+          },
+        },),
+        it({
+          name: 'COUNTS A PAIR CARRYING BOTH AN ARTIFACT AND A DECLINE RECORD once, among the artifacts',
+          fn: async () => {
+            expect(passDoneLine({
+              processed: 0,
+              pending: 0,
+              pairs: {
+                walked: 'every-entry',
+                ids: new Set(['tabby',],),
+              },
+              settledIds: new Set(['tabby',],),
+              declinedIds: new Set(['tabby',],),
+              elapsedMs: 5,
+            },),).toBe('DONE processed=0 of pending=0; artifacts=1/1 declined=0 unpairedArtifacts=0 elapsed=5ms',);
+          },
+        },),
+        it({
+          name: 'SAYS THE PAIRS WERE COUNTED OVER THE NAMED ENTRIES ALONE when --only kept the walk to them, and '
+            + 'counts no artifact apart for want of a pair, since the walk read no other entry',
+          fn: async () => {
+            expect(passDoneLine({
+              processed: 1,
+              pending: 1,
+              pairs: {
+                walked: 'named-entries',
+                ids: new Set(['tabby',],),
+              },
+              settledIds: new Set([
+                'biscuit',
+                'tabby',
+              ],),
+              declinedIds: new Set<string>(),
+              elapsedMs: 5,
+            },),).toBe(
+              'DONE processed=1 of pending=1; artifacts=1/1 declined=0 (pairs counted over the entries --only '
+                + 'named, not every pair at the pin) elapsed=5ms',
+            );
           },
         },),
       ],

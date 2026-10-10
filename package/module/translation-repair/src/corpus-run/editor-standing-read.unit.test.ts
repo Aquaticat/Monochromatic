@@ -32,7 +32,10 @@ import {
 
 import { runKeyless, } from '../child-environment.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
-import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '../roster-seats.test-fixture.ts';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../roster-seats.test-fixture.ts';
 
 //region Editor standing read listing tests
 
@@ -58,6 +61,11 @@ const STANDING_ENTRY = join(
  What the command left on its two streams.
  */
 type StandingStreams = {
+  /**
+   Exit code the command left behind, its own verdict on what it read.
+   */
+  readonly code: number;
+
   /**
    Everything the command wrote to stdout, where the summary line goes.
    */
@@ -164,8 +172,53 @@ async function standingOver(
 
 
   return {
+    code: finished.code,
     stdout: finished.stdout,
     stderr: finished.stderr,
+  };
+}
+
+/**
+ Writes one throwaway run carrying the artifacts named, and runs the command
+ over it.
+
+ @param artifacts - artifact values by the file name each is written as, so
+ a case lays out several digests in one run
+
+ @returns Both streams as the command left them
+
+ @throws Error where the command never started
+
+ @example
+ ```ts
+ const { stdout, } = await standingOverArtifacts({ artifacts: { 'Mittens.json': artifact, }, },);
+ ```
+ */
+async function standingOverArtifacts(
+  { artifacts, }: { readonly artifacts: Readonly<Record<string, unknown>>; },
+): Promise<StandingStreams> {
+  /**
+   The run directory and what the command left, the directory removed when
+   this returns.
+   */
+  await using run = await scratchDirWith({
+    prefix: 'editor-standing-read-',
+    setup: async function seeded({ path, },): Promise<StandingStreams> {
+      await mkdir(join(path, 'artifacts',), { recursive: true, },);
+      await Promise.all(Object.entries(artifacts,).map(async function written([name, artifact,],): Promise<void> {
+        await writeFile(
+          join(path, 'artifacts', name,),
+          JSON.stringify(artifact,),
+          'utf8',
+        );
+      },),);
+      return await standingOver({ archive: path, },);
+    },
+  },);
+  return {
+    code: run.code,
+    stdout: run.stdout,
+    stderr: run.stderr,
   };
 }
 
@@ -181,24 +234,13 @@ async function standingOver(
 
  @example
  ```ts
- const { stdout, } = standingOverArtifact({ artifact, },);
+ const { stdout, } = await standingOverArtifact({ artifact, },);
  ```
  */
 async function standingOverArtifact(
   { artifact, }: { readonly artifact: unknown; },
 ): Promise<StandingStreams> {
-  return await scratchDirWith({
-    prefix: 'editor-standing-read-',
-    setup: async function seeded({ path, },): Promise<StandingStreams> {
-      await mkdir(join(path, 'artifacts',), { recursive: true, },);
-      await writeFile(
-        join(path, 'artifacts', 'Mittens.json',),
-        JSON.stringify(artifact,),
-        'utf8',
-      );
-      return await standingOver({ archive: path, },);
-    },
-  },);
+  return await standingOverArtifacts({ artifacts: { 'Mittens.json': artifact, }, },);
 }
 
 await describe({
@@ -243,7 +285,10 @@ await describe({
     it({
       name: 'COUNTS an artifact whose chunks the schema predates as earlier-schema, one naming a '
         + 'model the roster dropped as off-roster, and one naming a seated model as read, rendering its '
-        + 'standing',
+        + 'standing over the round a ballot was cast on, and says no round was judged, at exit 1, where '
+        + 'the seated model\'s only round drew no ballot, and beside a judged digest counts a digest whose only '
+        + 'round drew no ballot, and that round, on the summary line rather than dropping both, and names one '
+        + 'off-roster artifact with the verb in the singular',
       fn: async () => {
         // The settled artifact the schema walk of 2026-10-04 mapped, with the
         // rounds the repair lane records under its result.
@@ -387,11 +432,35 @@ await describe({
         expect(offRoster.stdout.includes('earlierRoster=1',),).toBe(true,);
 
         /**
-         Run whose round names a seated model, so the standing and its
-         report render.
+         The seated model's round as the repair lane records it, no ballot
+         cast over its one candidate.
          */
-        const seated = await standingOverArtifact({
-          artifact: {
+        const seatedRound = {
+          ...round,
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+          slate: [{
+            index: 1,
+            producer: { kind: 'model', modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },
+            rendered: 'y',
+            hash: 'h',
+          },],
+        };
+
+        /**
+         The settled artifact carrying one seated round as its only round.
+
+         @param seatedOnly - round the artifact's one chunk records, with or
+         without a ballot as the comparison needs
+
+         @returns Artifact value written as the run's one artifact
+
+         @example
+         ```ts
+         const artifact = carrying({ seatedOnly: seatedRound, },);
+         ```
+         */
+        function carrying({ seatedOnly, }: { readonly seatedOnly: unknown; },): Readonly<Record<string, unknown>> {
+          return {
             ...withoutRounds,
             lanes: {
               ...withoutRounds.lanes,
@@ -399,35 +468,121 @@ await describe({
                 ...withoutRounds.lanes.repair,
                 result: {
                   ...withoutRounds.lanes.repair.result,
-                  chunks: [{
-                    rounds: [{
-                      ...round,
-                      modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-                      slate: [{
-                        index: 1,
-                        producer: { kind: 'model', modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },
-                        rendered: 'y',
-                        hash: 'h',
-                      },],
-                    },],
-                  },],
+                  chunks: [{ rounds: [seatedOnly,], },],
                 },
               },
             },
+          };
+        }
+
+        /**
+         Opening lines every report over the one seated artifact prints.
+         */
+        const opening = 'editor-standing-read: archives=1 artifacts=1 read=1 earlierRoster=0 earlierSchema=0 ';
+
+        /**
+         The note every report prints under its summary line.
+         */
+        const observational = '  OBSERVATIONAL. Only models that held a seat ever wrote a candidate, so an absent model is '
+          + 'unmeasured rather than last. Rounds inside one entry are correlated, so read the entry count, '
+          + 'not the round count. Digests are never pooled.\n';
+
+        /**
+         The artifact whose one round a ballot was cast on.
+         */
+        const judged = carrying({
+          seatedOnly: {
+            ...seatedRound,
+            ballots: [{
+              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              best: 1,
+              reason: 'x',
+              weight: 1,
+              selfVote: false,
+            },],
           },
         },);
-        expect(seated.stderr,).toBe('',);
-        expect(seated.stdout,).toBe(
-          'editor-standing-read: archives=1 artifacts=1 read=1 earlierRoster=0 earlierSchema=0 digestsWithRounds=1\n'
-          + '  OBSERVATIONAL. Only models that held a seat ever wrote a candidate, so an absent model is '
-          + 'unmeasured rather than last. Rounds inside one entry are correlated, so read the entry count, '
-          + 'not the round count. Digests are never pooled.\n'
-          + '\n'
-          + `sha256-tree-v1:${'0'.repeat(64,)} over 1 entry\n`
+
+        /**
+         The report of that artifact's digest, which every run carrying it
+         prints.
+         */
+        const judgedReport = `sha256-tree-v1:${'0'.repeat(64,)} over 1 entry\n`
           + '  EDITOR : 1 judged round from 1 of 1 chunk\n'
-          + `      ${SEAT_SYNTHETIC_VISION_WITHHELD}: UNJUDGED (0 of 0 disinterested ballots, over 1 candidate)\n`
-          + '  REFINER: 0 judged rounds from 0 of 1 chunk\n',
-        );
+          + `      ${SEAT_SYNTHETIC_VISION_WITHHELD}: 100.0% (1 of 1 disinterested ballot, over 1 candidate)\n`
+          + '  REFINER: 0 judged rounds from 0 of 1 chunk\n';
+
+        /**
+         A round a ballot was cast on: the standing and its report render.
+         */
+        const judgedAlone = await standingOverArtifact({ artifact: judged, },);
+
+        /**
+         That artifact beside one built by another pipeline, whose one round
+         drew no ballot: the second digest has no standing to print, and the
+         summary counts it and its round rather than dropping both.
+         */
+        const judgedBesideUnjudged = await standingOverArtifacts({
+          artifacts: {
+            'Mittens.json': judged,
+            'Tabby.json': {
+              ...carrying({ seatedOnly: seatedRound, },),
+              id: 'Tabby',
+              pipelineDigest: `sha256-tree-v1:${'1'.repeat(64,)}`,
+            },
+          },
+        },);
+
+        /**
+         The same round with no ballot alone: no round was judged, and the
+         report says so rather than rendering a standing over it.
+         */
+        const unjudgedAlone = await standingOverArtifact({ artifact: carrying({ seatedOnly: seatedRound, },), },);
+
+        // Every run's streams compared at once and side by side, so a
+        // difference in one never hides what the others printed; the run whose
+        // one artifact names a model the roster dropped names its absence with
+        // the count of one in the singular.
+        expect({
+          codes: [
+            judgedAlone.code,
+            judgedBesideUnjudged.code,
+            unjudgedAlone.code,
+          ],
+          stderrs: [
+            judgedAlone.stderr,
+            judgedBesideUnjudged.stderr,
+            unjudgedAlone.stderr,
+          ],
+          judgedAlone: judgedAlone.stdout,
+          judgedBesideUnjudged: judgedBesideUnjudged.stdout,
+          unjudgedAlone: unjudgedAlone.stdout,
+          offRoster: offRoster.stdout,
+        },).toEqual({
+          codes: [
+            0,
+            0,
+            1,
+          ],
+          stderrs: [
+            '',
+            '',
+            '',
+          ],
+          judgedAlone: `${opening}digestsJudged=1 digestsUnjudged=0 unjudgedDigestRounds=0\n`
+            + `${observational}\n${judgedReport}`,
+          judgedBesideUnjudged: 'editor-standing-read: archives=1 artifacts=2 read=2 earlierRoster=0 earlierSchema=0 '
+            + `digestsJudged=1 digestsUnjudged=1 unjudgedDigestRounds=1\n${observational}\n${judgedReport}`,
+          unjudgedAlone: `${opening}digestsJudged=0 digestsUnjudged=1 unjudgedDigestRounds=1\n${observational}`
+            + '  NO JUDGED ROUNDS. 1 round was recorded here and drew no ballot: a slate of one candidate, which '
+            + 'is what every producer proposing the same wording leaves, needs no vote, and a panel whose every '
+            + 'judge abstained or failed casts none.\n',
+          offRoster: 'editor-standing-read: archives=1 artifacts=1 read=0 earlierRoster=1 earlierSchema=0 '
+            + `digestsJudged=0 digestsUnjudged=0 unjudgedDigestRounds=0\n${observational}`
+            + '  NO ROUNDS UNDER THE CURRENT ROSTER. 1 of these artifacts names a model the roster no longer seats, '
+            + 'so it was settled under an earlier one and is not evidence about the models seated now. This is an '
+            + 'absent measurement, not a poor one.\n',
+        },);
       },
     },),
 
@@ -450,7 +605,8 @@ await describe({
         // The summary names one artifact and the refusal names the fixture's own file, which a
         // read of the default runs directory could not.
         expect(finished.stdout.split('\n',).at(0,),).toBe(
-          'editor-standing-read: archives=0 artifacts=1 read=0 earlierRoster=0 earlierSchema=0 digestsWithRounds=0',
+          'editor-standing-read: archives=0 artifacts=1 read=0 earlierRoster=0 earlierSchema=0 digestsJudged=0 '
+            + 'digestsUnjudged=0 unjudgedDigestRounds=0',
         );
         expect(finished.stderr,).toBe(
           `editor-standing-read: ${join(fixture.archive, 'artifacts', 'Mittens.json',)} refused, `

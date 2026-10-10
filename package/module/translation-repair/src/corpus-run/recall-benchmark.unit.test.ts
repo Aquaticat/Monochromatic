@@ -125,7 +125,8 @@ await describe({
         },),
 
         it({
-          name: 'CHOOSES no entry from a corpus with nobody in it, and still refuses for the missing key',
+          name: 'REFUSES A RUN over a corpus with nobody in it as stated, where --plan refuses and before it '
+            + 'needs a key, rather than building a client that refuses for the missing key',
           fn: async () => {
             await using world = await benchWorld({ entries: {}, },);
 
@@ -143,7 +144,11 @@ await describe({
               `START tip=${await readHeadSha()} entries=0 seeds=0 `
               + 'perBand={"small":0,"medium":0,"large":0} budget=43200000ms\n',
             );
-            expect(run.stderr,).toBe(noKeyRefusal({ command: 'recall-benchmark', },),);
+            expect(run.stderr,).toBe(
+              'recall-benchmark: no entry at the pin can be seeded, so the benchmark would plant no seed and '
+              + 'measure nothing; check that the corpus clone and commit it reads hold entries with both pages and '
+              + 'a sentence worth deleting\n',
+            );
           },
         },),
 
@@ -168,9 +173,9 @@ await describe({
               + 'perBand={"small":0,"medium":0,"large":0} budget=43200000ms\n',
             );
             expect(run.stderr,).toBe(
-              'recall-benchmark: the plan chose no entry to seed, so a run would plant no seed and measure nothing; '
-              + 'check that the corpus clone and commit it reads hold entries with both pages and a sentence worth '
-              + 'deleting\n',
+              'recall-benchmark: no entry at the pin can be seeded, so the benchmark would plant no seed and '
+              + 'measure nothing; check that the corpus clone and commit it reads hold entries with both pages and '
+              + 'a sentence worth deleting\n',
             );
           },
         },),

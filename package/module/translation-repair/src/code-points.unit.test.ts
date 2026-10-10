@@ -20,6 +20,7 @@ import {
   codePointAt,
   codePointBefore,
   codePointCount,
+  codePointLength,
   compareCodePoints,
   textsInCodePointOrder,
   wholeOpening,
@@ -44,6 +45,27 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: codePointLength.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS A CHARACTER PAST THE FIRST PLANE ONCE, and keeps the whitespace around the text',
+          fn: async () => {
+            expect(codePointLength({ text: `\u{732B}${ASTRAL}`, },),).toBe(2,);
+            expect(codePointLength({ text: '  \u{5176}\u{4E00}\u{FF1A}  ', },),).toBe(7,);
+            expect(codePointLength({ text: '', },),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'COUNTS A LONE HALF AS ONE CODE POINT, before or after its partner\'s place',
+          fn: async () => {
+            expect(codePointLength({ text: ` ${LONE_LOW}${LONE_HIGH} `, },),).toBe(4,);
+            expect(codePointLength({ text: `${LONE_HIGH}${ASTRAL}`, },),).toBe(2,);
+          },
+        },),
+      ],
+    },),
     describe({
       name: codePointCount.name,
       concurrency: DEFAULT_CONCURRENCY,

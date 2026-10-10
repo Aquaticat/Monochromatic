@@ -5,7 +5,7 @@
  the console. What they pin: a seat with no rounds says so instead of
  rendering an empty table, a seat with rounds renders its standings and then
  its coverage gaps with the answered-but-unslated state kept apart from the
- silent one, and `judgedAuthors` names every stakeholder of every slate in
+ silent one, and `slatedAuthors` names every stakeholder of every slate in
  slate order, composites included.
 
  Fixtures are model ids and ballots, so there is no passage here to invent.
@@ -20,7 +20,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  judgedAuthors,
+  slatedAuthors,
   sliceStandingLines,
   standingReportLines,
   type RosterModelId,
@@ -86,7 +86,8 @@ const VOTED_ROUND: SelectionRound = {
 };
 
 /**
- Round whose slate carries a composite candidate beside a plain one.
+ Round whose slate carries a composite candidate beside a plain one, with no
+ ballot cast over it.
  */
 const COMPOSITE_ROUND: SelectionRound = {
   producers: [
@@ -100,6 +101,39 @@ const COMPOSITE_ROUND: SelectionRound = {
     {
       kind: 'model',
       modelId: JUDGE,
+    },
+  ],
+  ballots: [],
+};
+
+/**
+ The same slate with the judge's ballot for the composite cast over it.
+ */
+const JUDGED_COMPOSITE_ROUND: SelectionRound = {
+  producers: COMPOSITE_ROUND.producers,
+  ballots: [
+    {
+      modelId: JUDGE,
+      best: 1,
+      reason: 'scripted',
+      weight: 1,
+      selfVote: false,
+    },
+  ],
+};
+
+/**
+ Round whose slate is one composite candidate every editor proposed, which no
+ ballot was cast over, as the run that found the two printers disagreeing had.
+ */
+const LONE_COMPOSITE_ROUND: SelectionRound = {
+  producers: [
+    {
+      kind: 'composite',
+      contributors: [
+        WRITER,
+        JUDGE,
+      ],
     },
   ],
   ballots: [],
@@ -139,6 +173,59 @@ await describe({
         },),
 
         it({
+          name: 'COUNTS A ROUND WHOSE LONE COMPOSITE CANDIDATE DREW NO BALLOT as no judged round, the heading '
+            + 'counting it apart, and says no ballot was cast rather than that the seat had no round',
+          fn: async () => {
+            expect(standingReportLines({
+              seat: 'EDITOR',
+              roster: ROSTER,
+              perSlice: [[LONE_COMPOSITE_ROUND,],],
+              produced: [
+                WRITER,
+                JUDGE,
+              ],
+              answered: { kind: 'unrecorded', },
+            },),).toEqual([
+              '\nEDITOR standing over 0 judged rounds, from 0 of 1 slice; 1 round drew no ballot',
+              '  NO JUDGED ROUNDS. The seat has no standing, since no ballot was cast on any round it produced: a '
+              + 'slate of one candidate, which is what every producer proposing the same wording leaves, needs no '
+              + 'vote, and a panel whose every judge abstained or failed casts none. Draw more slices.',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS ONLY THE JUDGED ROUNDS in the table and the slice lines when a seat\'s rounds are judged on '
+            + 'one slice and drew no ballot on another, the heading counting the round no ballot was cast on '
+            + 'apart, and naming the writer the table leaves out',
+          fn: async () => {
+            expect(standingReportLines({
+              seat: 'EDITOR',
+              roster: [
+                WRITER,
+                JUDGE,
+              ],
+              perSlice: [
+                [VOTED_ROUND,],
+                [LONE_COMPOSITE_ROUND,],
+              ],
+              produced: [
+                WRITER,
+                JUDGE,
+              ],
+              answered: { kind: 'unrecorded', },
+            },),).toEqual([
+              '\nEDITOR standing over 1 judged round, from 1 of 2 slices; 1 round drew no ballot',
+              `  ${WRITER}: 100.0% (1 of 1 disinterested ballot, over 1 candidate)`,
+              `  WROTE AND WAS NEVER VOTED ON: ${JUDGE}. Their text reached a slate and no disinterested ballot `
+              + 'was cast over it, which is what a slice where every producer proposed the same wording does: it '
+              + 'ships unjudged. The table says nothing about them either way, and more slices are what would.',
+              `  slice 1: 1 judged round; ${WRITER} 1/1 over 1`,
+            ],);
+          },
+        },),
+
+        it({
           name: 'renders the standings, then the answered-but-unslated seat, then the silent seat, '
             + 'each on its own line',
           fn: async () => {
@@ -171,7 +258,7 @@ await describe({
             expect(lines[3],).toContain('ANSWERED NOTHING USABLE',);
             expect(lines[3],).toContain(IDLE,);
             expect(lines[3],).not.toContain(JUDGE,);
-            expect(lines.at(-1,),).toBe(`  slice 1: 1 round; ${WRITER} 1/1 over 1`,);
+            expect(lines.at(-1,),).toBe(`  slice 1: 1 judged round; ${WRITER} 1/1 over 1`,);
             expect(lines.slice(1, -1,).some(function isSliceLine(line,): boolean {
               return line.startsWith('  slice ',);
             },),).toBe(false,);
@@ -179,24 +266,26 @@ await describe({
         },),
 
         it({
-          name: 'ends with one counts line per slice that bought a round, in sample order, '
-            + 'crediting every author of a composite and skipping slices that bought nothing',
+          name: 'ends with one counts line per slice that bought a judged round, in sample order, '
+            + 'crediting every author of a composite and skipping slices that bought nothing or only a round no '
+            + 'ballot was cast over',
           fn: async () => {
             /**
-             Per-slice lines for a voted slice, an empty slice, and a composite
-             slice nobody voted on.
+             Per-slice lines for a voted slice, an empty slice, a composite
+             slice nobody voted on and the same slate voted on.
              */
             const lines = sliceStandingLines({
               perSlice: [
                 [VOTED_ROUND,],
                 [],
                 [COMPOSITE_ROUND,],
+                [JUDGED_COMPOSITE_ROUND,],
               ],
             },);
 
             expect(lines,).toStrictEqual([
-              `  slice 1: 1 round; ${WRITER} 1/1 over 1`,
-              `  slice 3: 1 round; ${WRITER} 0/0 over 1; ${PARTNER} 0/0 over 1; ${JUDGE} 0/0 over 1`,
+              `  slice 1: 1 judged round; ${WRITER} 1/1 over 1`,
+              `  slice 4: 1 judged round; ${WRITER} 1/1 over 1; ${PARTNER} 1/1 over 1; ${JUDGE} 0/0 over 1`,
             ],);
           },
         },),
@@ -225,7 +314,7 @@ await describe({
     },),
 
     describe({
-      name: judgedAuthors.name,
+      name: slatedAuthors.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
@@ -234,7 +323,7 @@ await describe({
             /**
              Authors across two slices, the second carrying a composite.
              */
-            const authors = judgedAuthors({
+            const authors = slatedAuthors({
               perSlice: [
                 [VOTED_ROUND,],
                 [COMPOSITE_ROUND,],
@@ -253,7 +342,7 @@ await describe({
         it({
           name: 'names nobody for slices that bought no round',
           fn: async () => {
-            expect(judgedAuthors({
+            expect(slatedAuthors({
               perSlice: [
                 [],
                 [],

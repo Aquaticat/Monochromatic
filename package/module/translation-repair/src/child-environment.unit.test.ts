@@ -235,7 +235,8 @@ await describe({
           + 'artifact parse failed at artifact.artifactSchemaVersion: expected a number.\n',
         );
         expect(run.stdout.split('\n',).at(0,),).toBe(
-          'editor-standing-read: archives=0 artifacts=1 read=0 earlierRoster=0 earlierSchema=0 digestsWithRounds=0',
+          'editor-standing-read: archives=0 artifacts=1 read=0 earlierRoster=0 earlierSchema=0 digestsJudged=0 '
+          + 'digestsUnjudged=0 unjudgedDigestRounds=0',
         );
       },
     },),

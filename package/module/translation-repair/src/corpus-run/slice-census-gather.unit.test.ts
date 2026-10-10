@@ -17,10 +17,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CorpusReadError,
   FrontMatterParseError,
   gatherSliceCensus,
   type SliceCensusRecipeReading,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from './rejection-of.test-fixture.ts';
+import {
+  LACKED_COMMIT_SHA,
+  makeCloneHoldingOneCommit,
+  ONE_PAGE_ENTRY,
+  PAIRED_ENTRY,
+} from '../corpus-lacked-commit.test-fixture.ts';
 import {
   FIRST_SECTION_ONLY_TARGET,
   makeCensusCorpus,
@@ -194,33 +202,26 @@ await describe({
     },),
     it({
       name: 'READS A SETTLED ENTRY AT THE COMMIT ITS ARTIFACT NAMES and carves it through the recorded recipe, '
-        + 'while an unsettled entry is read at the run pin, which holds nothing here',
+        + 'under a run pin whose commit the clone lacks',
       fn: async () => {
         await using corpus = await makeCensusCorpus({
           files: {
             'people/mochi/page.md': ONE_BLOCK_SOURCE,
             'people/mochi/page.en.md': ONE_BLOCK_PLUS_ADDED_TARGET,
-            'people/nori/page.md': ONE_BLOCK_SOURCE,
-            'people/nori/page.en.md': ONE_BLOCK_PLUS_ADDED_TARGET,
           },
         },);
 
         /**
-         What the gatherer made of the settled entry and the unsettled one,
-         under a run pin whose commit holds neither.
+         What the gatherer made of the settled entry, under a run pin whose
+         commit the clone lacks.
          */
         const gathered = await gatherSliceCensus({
           pin: {
             cloneDir: corpus.cloneDir,
             commitSha: NO_SUCH_COMMIT,
           },
-          entryIds: [
-            'mochi',
-            'nori',
-          ],
-          readRecipe: async function readMochiSettled({ entryId, },): Promise<SliceCensusRecipeReading> {
-            if (entryId !== 'mochi')
-              return await unsettled();
+          entryIds: ['mochi',],
+          readRecipe: async function readMochiSettled(): Promise<SliceCensusRecipeReading> {
             return {
               kind: 'settled',
               corpusSha: corpus.commitSha,
@@ -264,9 +265,85 @@ await describe({
           incomplete: gathered.incomplete,
           legacy: gathered.legacy,
         },).toEqual({
-          incomplete: ['nori',],
+          incomplete: [],
           legacy: [],
         },);
+      },
+    },),
+    it({
+      name: 'REFUSES an unsettled entry read at a run pin whose commit the clone lacks, naming the commit and '
+        + 'the page, and an entry with one page at a held commit stays incomplete',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        /**
+         What the gatherer threw for an entry read at a commit the clone lacks.
+         */
+        const refusal = await rejectionOf({
+          promise: gatherSliceCensus({
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: LACKED_COMMIT_SHA,
+            },
+            entryIds: [ONE_PAGE_ENTRY,],
+            readRecipe: unsettled,
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('missing-commit',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/${ONE_PAGE_ENTRY}/page.md (missing-commit); `
+            + 'the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        );
+        expect(await gatherSliceCensus({
+          pin: {
+            cloneDir: clone.cloneDir,
+            commitSha: clone.commitSha,
+          },
+          entryIds: [ONE_PAGE_ENTRY,],
+          readRecipe: unsettled,
+        },),).toEqual({
+          rows: [],
+          incomplete: [ONE_PAGE_ENTRY,],
+          legacy: [],
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES A SETTLED ENTRY WHOSE ARTIFACT NAMES A COMMIT THE CLONE LACKS, naming that commit and the '
+        + 'page, under a run pin the clone holds, instead of setting the entry aside as incomplete',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        /**
+         What the gatherer threw for a settled entry read at the commit its
+         artifact names.
+         */
+        const refusal = await rejectionOf({
+          promise: gatherSliceCensus({
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: clone.commitSha,
+            },
+            entryIds: [PAIRED_ENTRY,],
+            readRecipe: async function readSettledAtLackedCommit(): Promise<SliceCensusRecipeReading> {
+              return {
+                kind: 'settled',
+                corpusSha: LACKED_COMMIT_SHA,
+                recipe: {
+                  blockPairings: new Map(),
+                  unrecorded: ['sectionPairing',],
+                },
+              };
+            },
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('missing-commit',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/${PAIRED_ENTRY}/page.md (missing-commit); `
+            + 'the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        );
       },
     },),
     it({

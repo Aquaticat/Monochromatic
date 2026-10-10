@@ -22,8 +22,15 @@ import {
   CorpusReadError,
   corpusNameLines,
   corpusNamesOf,
+  readCorpusFile,
   readCorpusNames,
 } from '../dist/final/node/index.mjs';
+import {
+  LACKED_COMMIT_SHA,
+  makeCloneHoldingOneCommit,
+  ONE_PAGE_ENTRY,
+  PAIRED_ENTRY,
+} from './corpus-lacked-commit.test-fixture.ts';
 import { rejectionOf, } from './corpus-run/rejection-of.test-fixture.ts';
 
 /**
@@ -156,6 +163,7 @@ await describe({
             throw new CorpusReadError({
               detail: relPath,
               cause: { stderr: `fatal: path '${relPath}' does not exist in 'deadbeef'`, },
+              commit: 'held',
             },);
           },
         },);
@@ -236,6 +244,7 @@ await describe({
               throw new CorpusReadError({
                 detail: relPath,
                 cause: { stderr: 'fatal: ambiguous argument', },
+                commit: 'held',
               },);
             },
           },);
@@ -246,7 +255,7 @@ await describe({
         expect(caught,).toBeInstanceOf(CorpusReadError,);
         expect(String(caught,),).toBe(
           'CorpusReadError: corpus read failed for people/gum/page.md (other); '
-            + 'check that the clone exists and the pinned commit is present.',
+            + 'the read failed another way: run the same git read in the clone by hand to see why.',
         );
         if (!(caught instanceof CorpusReadError))
           throw new Error('the read failure must reach the caller as a CorpusReadError',);
@@ -276,6 +285,7 @@ await describe({
               const failure = new CorpusReadError({
                 detail: relPath,
                 cause: { stderr: 'fatal: ambiguous argument', },
+                commit: 'held',
               },);
               if (relPath.startsWith('people/tabby/',)) {
                 laterRefused.resolve(undefined,);
@@ -289,7 +299,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(CorpusReadError,);
         expect(String(refusal,),).toBe(
           'CorpusReadError: corpus read failed for people/gum/page.md (other); '
-            + 'check that the clone exists and the pinned commit is present.',
+            + 'the read failed another way: run the same git read in the clone by hand to see why.',
         );
       },
     },),
@@ -316,6 +326,7 @@ await describe({
               const failure = new CorpusReadError({
                 detail: relPath,
                 cause: { stderr: 'fatal: ambiguous argument', },
+                commit: 'held',
               },);
               if (relPath.endsWith('/page.en.md',)) {
                 archiveRefused.resolve(undefined,);
@@ -329,7 +340,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(CorpusReadError,);
         expect(String(refusal,),).toBe(
           'CorpusReadError: corpus read failed for people/gum/page.md (other); '
-            + 'check that the clone exists and the pinned commit is present.',
+            + 'the read failed another way: run the same git read in the clone by hand to see why.',
         );
       },
     },),
@@ -351,15 +362,64 @@ await describe({
               throw new CorpusReadError({
                 detail: relPath,
                 cause: { stderr: 'fatal: ambiguous argument', },
+                commit: 'held',
               },);
             }
             await archiveRefused.promise;
             throw new CorpusReadError({
               detail: relPath,
               cause: { stderr: `fatal: path '${relPath}' does not exist in 'deadbeef'`, },
+              commit: 'held',
             },);
           },
         },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES a pin whose commit the clone lacks, read through the real page reader, instead of '
+        + 'indexing nothing as if every listed entry had one page',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+
+        /**
+         What the index of a commit the clone lacks refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: readCorpusNames({
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: LACKED_COMMIT_SHA,
+            },
+            listPeople: async function listedByHand(): Promise<readonly string[]> {
+              return [PAIRED_ENTRY, ONE_PAGE_ENTRY,];
+            },
+            readFile: readCorpusFile,
+          },),
+        },);
+
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('missing-commit',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/${PAIRED_ENTRY}/page.md (missing-commit); `
+            + 'the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        );
+      },
+    },),
+    it({
+      name: 'STEPS PAST an entry with one page at a commit the clone holds, indexing the entry that has both',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        expect(await readCorpusNames({
+          pin: {
+            cloneDir: clone.cloneDir,
+            commitSha: clone.commitSha,
+          },
+          listPeople: async function listedByHand(): Promise<readonly string[]> {
+            return [PAIRED_ENTRY, ONE_PAGE_ENTRY,];
+          },
+          readFile: readCorpusFile,
+        },),).toEqual(corpusNamesOf({ entries: [], },),);
       },
     },),
   ],

@@ -1043,10 +1043,6 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
-  'code-points.ts#codePointCount': {
-    tests: 1,
-    why: 'a loop bound over the text being counted, no test of whether it is blank',
-  },
   'community-glossary.ts#departuresOf': {
     tests: 1,
     why: ARCHIVE_ABSENT,

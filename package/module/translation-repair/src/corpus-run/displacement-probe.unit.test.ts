@@ -246,7 +246,8 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: `displacement-probe: corpus read failed for ${CLAIMED_COMMIT}:people/Mittens/page.md `
-            + '(missing-object); check that the clone exists and the pinned commit is present.\n',
+            + '(missing-commit); the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.\n',
         },);
       },
     },),

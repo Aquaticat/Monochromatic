@@ -33,6 +33,7 @@ import {
   collectEligiblePairs,
   CorpusReadError,
 } from '../../dist/final/node/index.mjs';
+import { LACKED_COMMIT_SHA, } from '../corpus-lacked-commit.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
@@ -188,9 +189,9 @@ await describe({
   children: [
     it({
       name:
-        'SORTS the walk into complete pairs, settled sizes and named gaps: a settled entry is sized and '
-        + 'not paired, and the entry missing its translation is reported by name and side rather than '
-        + 'dropped in silence',
+        'SORTS the walk into complete pairs to run, settled sizes, named gaps and every complete pair at the '
+        + 'pin: a settled entry is sized and counted a pair but not run, and the entry missing its translation '
+        + 'is reported by name and side rather than dropped in silence',
       fn: async () => {
         await using corpus = await throwawayCorpus();
 
@@ -224,6 +225,38 @@ await describe({
             return `${gap.id}:${gap.side}`;
           },),).toEqual([`${HALF_ENTRY}:target`,],);
         expect(walked.incomplete[0]?.detail,).toContain('missing-object',);
+        expect(walked.paired,).toEqual([
+          'whiskers',
+          'mittens',
+        ],);
+      },
+    },),
+    it({
+      name: 'SIZES A SETTLED ENTRY WHOSE ENGLISH PAGE THE PIN LACKS for ranking and counts it no complete pair, '
+        + 'naming no gap for an entry that runs no more',
+      fn: async () => {
+        await using corpus = await throwawayCorpus();
+
+        /**
+         The walk over a settled entry whose English page the pin lacks.
+         */
+        const walked = await collectEligiblePairs({
+          ids: [
+            'whiskers',
+            HALF_ENTRY,
+          ],
+          done: new Set([HALF_ENTRY,],),
+          pin: {
+            cloneDir: corpus.cloneDir,
+            commitSha: corpus.commitSha,
+          },
+        },);
+        expect(walked.settled
+          .map(function toId(entry,): string {
+            return entry.id;
+          },),).toEqual([HALF_ENTRY,],);
+        expect(walked.incomplete,).toEqual([],);
+        expect(walked.paired,).toEqual(['whiskers',],);
       },
     },),
     it({
@@ -276,7 +309,42 @@ await describe({
           caught = error;
         }
         expect(caught instanceof CorpusReadError,).toBe(true,);
-        expect((caught as CorpusReadError).kind,).toBe('other',);
+        expect((caught as CorpusReadError).kind,).toBe('unreadable-clone',);
+      },
+    },),
+    it({
+      name: 'REFUSES a pin whose commit the clone lacks, naming the commit and the first page, instead of '
+        + 'naming every entry as missing its source side',
+      fn: async () => {
+        await using corpus = await throwawayCorpus();
+
+        /**
+         What the walk over a commit the clone lacks raised.
+         */
+        let caught: unknown;
+        try {
+          await collectEligiblePairs({
+            ids: [
+              'whiskers',
+              'mittens',
+            ],
+            done: new Set(),
+            pin: {
+              cloneDir: corpus.cloneDir,
+              commitSha: LACKED_COMMIT_SHA,
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(CorpusReadError,);
+        expect((caught instanceof CorpusReadError) && caught.kind,).toBe('missing-commit',);
+        expect(String(caught,),).toBe(
+          `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/whiskers/page.md (missing-commit); `
+            + 'the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        );
       },
     },),
   ],

@@ -1,12 +1,13 @@
 //region Ordered page reads
 // A PAGE READER WHOSE REFUSALS END IN AN ORDER A CASE CHOOSES.
 //
-// TEST SUPPORT, NOT PACKAGE SOURCE. A site that reads several pages of a
-// commit the clone lacks gets one refusal per page, each naming its own page.
-// A case hands the site this reader in place of `readCorpusFile`: every read
-// refuses as git does for an absent path, the reads whose path holds
-// `endsLast` refuse only after every other read has, and the rest refuse at
-// once.
+// TEST SUPPORT, NOT PACKAGE SOURCE. A site that reads several pages gets one
+// refusal per page, each naming its own page. A case hands the site this
+// reader in place of `readCorpusFile`: every read refuses with git's text for
+// an absent path and the probe's answer the case names (a commit the clone
+// holds, so each page is absent there, or one it lacks), the reads whose path
+// holds `endsLast` refuse only after every other read has, and the rest refuse
+// at once.
 
 import {
   CorpusReadError,
@@ -19,15 +20,25 @@ import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 
  @param endsLast - text a path holds when its read refuses after the others
 
+ @param commit - what the probe of the pinned commit found, which decides
+ whether each refusal is a page absent at a held commit or a commit the clone
+ lacks
+
  @returns A reader to pass in place of `readCorpusFile`
 
  @example
  ```ts
- const readFile = pageReadsRefusingLastFor({ endsLast: '/page.md', },);
+ const readFile = pageReadsRefusingLastFor({ endsLast: '/page.md', commit: 'held', },);
  ```
  */
 export function pageReadsRefusingLastFor(
-  { endsLast, }: { readonly endsLast: string; },
+  {
+    endsLast,
+    commit,
+  }: {
+    readonly endsLast: string;
+    readonly commit: ConstructorParameters<typeof CorpusReadError>[0]['commit'];
+  },
 ): typeof readCorpusFile {
   /**
    The two refusals the reads end in.
@@ -43,11 +54,13 @@ export function pageReadsRefusingLastFor(
     }: Parameters<typeof readCorpusFile>[0],
   ): Promise<string> {
     /**
-     What git says of a path the commit does not carry.
+     What git says of a path the commit does not carry, with the probe's
+     answer the case named.
      */
     const absent = new CorpusReadError({
       detail: `${pin.commitSha}:${relPath}`,
       cause: { stderr: `fatal: path '${relPath}' does not exist in '${pin.commitSha}'`, },
+      commit,
     },);
     return await (relPath.includes(endsLast,) ? refuseAfterThat(absent,) : refuseAtOnce(absent,));
   };

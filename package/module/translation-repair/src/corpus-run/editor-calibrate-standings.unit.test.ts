@@ -154,7 +154,7 @@ await describe({
               `  NO CANDIDATE OF THEIRS REACHED ANY SLATE: ${IDLE}, so the table covers 1 of 3 seats. This seat does `
               + `not record who answered, so a model that answered and was dropped before judging and a provider `
               + `that failed every call look alike from here; ${SEAT_LINES_POINTER}`,
-              `  slice 1: 1 round; ${WRITER} 1/1 over 1`,
+              `  slice 1: 1 judged round; ${WRITER} 1/1 over 1`,
               '\nREFINER standing over 1 judged round, from 1 of 2 slices',
               WRITER_ROW,
               `  ANSWERED AND WAS NEVER SLATED: ${JUDGE}. At least one usable answer of theirs was heard and none `
@@ -165,7 +165,7 @@ await describe({
               `  ANSWERED NOTHING USABLE: ${IDLE}. No answer of theirs was heard at this seat, so the table covers `
               + `1 of 3 seats. A provider out of budget, a refused sheet and a call that timed out all look like this `
               + `from here; ${SEAT_LINES_POINTER}`,
-              `  slice 2: 1 round; ${WRITER} 1/1 over 1`,
+              `  slice 2: 1 judged round; ${WRITER} 1/1 over 1`,
             ],);
           },
         },),

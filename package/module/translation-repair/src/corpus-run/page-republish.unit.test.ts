@@ -27,6 +27,7 @@ import {
 
 import {
   type CorpusPairReader,
+  CorpusReadError,
   pageAgreement,
   parseSettledTwoLaneArtifact,
   prepareDocumentPair,
@@ -516,7 +517,33 @@ await describe({
         },),).toStrictEqual({
           kind: 'left',
           why: 'missing',
-          because: 'LitterBoxClosedError',
+          because: 'refused by LitterBoxClosedError',
+        },);
+      },
+    },),
+    it({
+      name: 'LEAVES a page whose pair is at a commit the clone lacks, saying the kind of the read\'s failure and '
+        + 'its remedy in the refusal\'s own words rather than its class name',
+      fn: async () => {
+        await using run = await settledRun({ strip: [], },);
+
+        expect(await republishIn({
+          run,
+          readPair: async function atLackedCommit({
+            entryId,
+            corpusSha,
+          },) {
+            throw new CorpusReadError({
+              detail: `${corpusSha}:people/${entryId}/page.md`,
+              cause: { stderr: `fatal: path 'people/${entryId}/page.md' does not exist in '${corpusSha}'`, },
+              commit: 'lacking',
+            },);
+          },
+        },),).toStrictEqual({
+          kind: 'left',
+          why: 'missing',
+          because: `corpus read failed for ${'b'.repeat(40,)}:people/${ENTRY}/page.md (missing-commit); the clone `
+            + 'holds no commit by that revision: fetch it, or pin a commit the clone holds.',
         },);
       },
     },),

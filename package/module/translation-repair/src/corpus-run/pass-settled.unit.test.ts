@@ -3,8 +3,8 @@
 
  The module note records a past silent defect: a directory or a symlink named
  `<id>.json` once marked the entry settled, and the entry was never run again.
- These cases hold that line, and the agreement between the id set and the
- count that the against-target line reads.
+ These cases hold that line. The pass's closing line counts this same id set
+ rather than a count of its own, so the two cannot drift apart.
 
  Fixtures are cat-themed invention.
 
@@ -25,10 +25,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  artifactBackedIds,
-  countSettled,
-} from '../../dist/final/node/index.mjs';
+import { artifactBackedIds, } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
@@ -95,30 +92,6 @@ await describe({
               'tabby',
               'whiskers',
             ],);
-          },
-        },),
-      ],
-    },),
-
-    describe({
-      name: countSettled.name,
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
-        it({
-          name: 'counts exactly the ids the scheduler would skip, so the against-target line and the '
-            + 'skip set cannot drift apart again',
-          fn: async () => {
-            /**
-             One directory read by both.
-             */
-            await using scratch = await scratchDir({ prefix: 'pass-settled-', },);
-            const artifactsDir = scratch.path;
-            await mixedDirectory({ dir: artifactsDir, },);
-
-            expect(await countSettled({ artifactsDir, },),).toBe(
-              (await artifactBackedIds({ artifactsDir, },)).size,
-            );
-            expect(await countSettled({ artifactsDir, },),).toBe(2,);
           },
         },),
       ],

@@ -202,6 +202,7 @@ async function readScripted({ relPath, }: { readonly relPath: string; },): Promi
     throw new CorpusReadError({
       detail: `${relPath} at ${CAT_PIN.commitSha}`,
       cause: { stderr: `fatal: path '${relPath}' does not exist in '${CAT_PIN.commitSha}'`, },
+      commit: 'held',
     },);
   return held;
 }
@@ -315,7 +316,8 @@ await describe({
           `Mittens/1 (untranslated): ${ armsOf({ sliceIndex: 1, },) }`,
           `Mittens/2 (control-unflagged): ${ armsOf({ sliceIndex: 2, },) }`,
           'Whiskers: skipped, CorpusReadError: corpus read failed for people/Whiskers/page.en.md at '
-          + `${CAT_PIN.commitSha} (missing-object); check that the clone exists and the pinned commit is present.`,
+          + `${CAT_PIN.commitSha} (missing-object); the commit has no such path: check the path, or pin a `
+          + 'commit that has it.',
           'bought 2 slices this run; 0 refused',
           'ledger read for this report: 6 rows under every protocol; 0 whole lines left out as no trial row of this build; '
           + 'last line whole',

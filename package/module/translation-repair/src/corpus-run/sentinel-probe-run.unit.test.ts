@@ -265,7 +265,7 @@ await describe({
           `PROBE start corpus=${probed.commitSha} targets=Anilovr,Mittens`,
           'PROBE Anilovr status=unchanged issues=0 accepted=0 repairs=none refinedIssues=0 findings=0 ms=5',
           `PROBE Mittens status=ERROR ms=8 error=corpus read failed for ${probed.commitSha}:people/Mittens/page.en.md `
-            + '(missing-object); check that the clone exists and the pinned commit is present.',
+            + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
           'PROBE done',
         ],);
       },

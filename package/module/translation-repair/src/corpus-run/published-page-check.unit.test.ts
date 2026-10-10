@@ -200,6 +200,28 @@ const SWAPPED_PAGE = ARCHIVE_PAGE.replace(
 );
 
 /**
+ Archive English carrying two characters beyond the first plane, each two
+ UTF-16 units and one character: 120 characters, 122 units.
+ */
+const ASTRAL_ARCHIVE_PAGE = `# Mittens \u{1F408}\n\n${OLD_NAP}\n\n`
+  + 'She has worked the shop since the spring \u{1F43E}, and nobody decided anything about that.\n';
+
+/**
+ Wording a slice ships in place of {@link OLD_NAP}, ending on a character
+ beyond the first plane: 38 characters, 39 units.
+ */
+const ASTRAL_NAP = `${FIRST_NAP} \u{1F63A}`;
+
+/**
+ Page a correct publish produces from {@link ASTRAL_ARCHIVE_PAGE} with
+ {@link ASTRAL_NAP} in place of {@link OLD_NAP}: 137 characters, 140 units.
+ */
+const ASTRAL_PAGE = ASTRAL_ARCHIVE_PAGE.replace(
+  OLD_NAP,
+  ASTRAL_NAP,
+);
+
+/**
  {@link artifactOver} under {@link ONE_SWAP}, carrying the archive it stored
  or the statement that it stored none.
 
@@ -259,6 +281,23 @@ await describe({
       name: pageCarriesEveryWording.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'SIZES A MISSING WORDING BEYOND THE FIRST PLANE IN CHARACTERS, one for each, never in the UTF-16 '
+            + 'units that count each as two',
+          fn: async () => {
+            expect(pageCarriesEveryWording({
+              artifact: artifactShipping([ASTRAL_NAP,],),
+              pageText: ASTRAL_ARCHIVE_PAGE,
+            },),).toEqual({
+              wordings: 1,
+              silentSlices: 0,
+              missing: [{
+                sliceIndex: 0,
+                characters: 38,
+              },],
+            },);
+          },
+        },),
         it({
           name:
             'FINDS NOTHING MISSING in a page that carries every wording in slice order, which is the '
@@ -403,6 +442,29 @@ await describe({
               exact: true,
             },);
             expect(pageWeightRefutes({ weight, },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'WEIGHS A PAGE CARRYING CHARACTERS BEYOND THE FIRST PLANE IN CHARACTERS, each one, on both sides of '
+            + 'the arithmetic, never in the UTF-16 units that count each as two',
+          fn: async () => {
+            expect(pageWeighsWhatItShould({
+              artifact: artifactOver([{
+                incumbent: OLD_NAP,
+                ships: ASTRAL_NAP,
+              },],),
+              archive: {
+                kind: 'stored',
+                text: ASTRAL_ARCHIVE_PAGE,
+              },
+              pageText: ASTRAL_PAGE,
+            },),).toEqual({
+              kind: 'weighed',
+              expected: 137,
+              actual: 137,
+              exact: true,
+            },);
           },
         },),
 
@@ -621,6 +683,34 @@ await describe({
       name: refusePageThatDisagrees.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'REFUSES A PAGE TWO CHARACTERS BEYOND THE FIRST PLANE LONGER than its artifact accounts for, '
+            + 'naming two characters off the page\'s weight in characters, never four UTF-16 units',
+          fn: async () => {
+            /**
+             Refusal of a correct page with two more characters at its end.
+             */
+            const refusal = caught(function publishTwoExtraPaws(): void {
+              refusePageThatDisagrees({
+                artifact: artifactOver([{
+                  incumbent: OLD_NAP,
+                  ships: ASTRAL_NAP,
+                },],),
+                archive: {
+                  kind: 'stored',
+                  text: ASTRAL_ARCHIVE_PAGE,
+                },
+                pageText: `${ASTRAL_PAGE}\u{1F43E}\u{1F43E}`,
+                entryId: 'Mittens',
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(PublishedPageDisagreesError,);
+            expect(String(refusal,),).toBe(
+              'PublishedPageDisagreesError: Mittens: page is 2 characters off the 137 the archive plus every '
+                + 'slice change comes to. Text no slice decided on was lost or added',
+            );
+          },
+        },),
         it({
           name:
             'PUBLISHES A CORRECT PAGE WITHOUT COMPLAINT, which is the control the refusals rest on: a '

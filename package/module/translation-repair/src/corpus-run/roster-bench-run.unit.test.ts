@@ -304,7 +304,8 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES a roster too narrow to vary as stated, before the corpus is drawn or any client is built',
+          name: 'REFUSES a roster too narrow to vary as stated, by the report\'s own refusal with no wrap around '
+            + 'it, before the corpus is drawn or any client is built',
           fn: async () => {
             const { asked, seams: drawing, } = scriptedDrawing({ slices: 1, },);
             const {
@@ -329,7 +330,7 @@ await describe({
 
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
-              'StatedRefusalError: a roster of 1 cannot be benched: nothing to vary',
+              'BenchReportError: a roster of 1 cannot be benched: nothing to vary',
             );
             expect(asked,).toEqual({
               draws: [],

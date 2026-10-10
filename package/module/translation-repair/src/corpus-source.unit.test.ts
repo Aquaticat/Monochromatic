@@ -8,6 +8,8 @@
 
 import {
   mkdir,
+  realpath,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -27,11 +29,17 @@ import {
   listCorpusPeople,
   readCorpusBytes,
   readCorpusFile,
+  StatedRefusalError,
 } from '../dist/final/node/index.mjs';
 import { spawnKeyless, } from './child-environment.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from './hermetic-git-run.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
-import { scratchDirWith, } from './scratch-dir.test-fixture.ts';
+import { scratchDir, scratchDirWith, } from './scratch-dir.test-fixture.ts';
+import {
+  LACKED_COMMIT_SHA,
+  makeCloneHoldingOneCommit,
+  PAIRED_ENTRY,
+} from './corpus-lacked-commit.test-fixture.ts';
 
 /**
  Invented zh page content committed into the throwaway clone.
@@ -157,6 +165,34 @@ async function makeThrowawayClone(): Promise<
   },);
 }
 
+/**
+ What a corpus read that must refuse threw, as the kind it names and the
+ whole sentence it prints.
+
+ @param act - read expected to reject with a corpus read refusal
+
+ @returns Kind and printed sentence
+
+ @example
+ ```ts
+ const failure = await failureOf(async function reads() { return await readCorpusFile({ pin, relPath, },); },);
+ ```
+ */
+async function failureOf(
+  act: () => Promise<unknown>,
+): Promise<{ readonly kind: string; readonly says: string; }> {
+  /**
+   What the read threw.
+   */
+  const refusal = await rejectionOf(act,);
+  if (!(refusal instanceof CorpusReadError))
+    throw new Error(`the read must refuse with a CorpusReadError, and it refused with ${String(refusal,)}`,);
+  return {
+    kind: refusal.kind,
+    says: String(refusal,),
+  };
+}
+
 await describe({
   name: readCorpusFile.name,
   children: [
@@ -279,14 +315,15 @@ await describe({
         expect(isMissingCorpusObject(refusal,),).toBe(true,);
         expect(String(refusal,),).toBe(
           `CorpusReadError: corpus read failed for ${fixture.commitSha}:people/mittens/photos/intro.webp `
-            + '(missing-object); check that the clone exists and the pinned commit is present.',
+            + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
         );
       },
     },),
 
     it({
-      name: 'throws CorpusReadError when the clone directory does not exist, and NAMES THE FAILURE other: an '
-        + 'unreadable clone is a fault in the run, not a fact about the corpus, and no walk may step past it',
+      name: 'throws CorpusReadError when the clone directory does not exist, and NAMES THE FAILURE '
+        + 'unreadable-clone: an unreadable clone is a fault in the run, not a fact about the corpus, and no '
+        + 'walk may step past it',
       fn: async () => {
         /** Value caught from read against a nonexistent clone. */
         let caught: unknown;
@@ -306,14 +343,14 @@ await describe({
           caught = error;
         }
         expect(caught instanceof CorpusReadError,).toBe(true,);
-        expect((caught as CorpusReadError).kind,).toBe('other',);
+        expect((caught as CorpusReadError).kind,).toBe('unreadable-clone',);
         expect(isMissingCorpusObject(caught,),).toBe(false,);
       },
     },),
 
     it({
-      name: 'NAMES A LISTING FAILURE other too, since the listing goes through the other subprocess layer and '
-        + 'a clone that cannot be listed is the same fault in the run',
+      name: 'NAMES A LISTING FAILURE unreadable-clone too, since the listing goes through the other subprocess '
+        + 'layer and a clone that cannot be listed is the same fault in the run',
       fn: async () => {
         /** Value caught from a listing against a nonexistent clone. */
         let caught: unknown;
@@ -332,7 +369,7 @@ await describe({
           caught = error;
         }
         expect(caught instanceof CorpusReadError,).toBe(true,);
-        expect((caught as CorpusReadError).kind,).toBe('other',);
+        expect((caught as CorpusReadError).kind,).toBe('unreadable-clone',);
       },
     },),
 
@@ -385,38 +422,616 @@ await describe({
     },),
 
     it({
-      name: 'CLASSIFIES a cause that is no object, or null, or one with no stderr as other, since none '
-        + 'of them holds git stderr to read',
+      name: 'CLASSIFIES a cause that is no object, or null, or one with no stderr as other at a commit the '
+        + 'probe found held, since none of them holds git stderr to read',
       fn: async () => {
         expect(new CorpusReadError({
           detail: 'people/gum/page.md at deadbeef',
           cause: 'a plain string',
+          commit: 'held',
         },).kind,).toBe('other',);
         expect(new CorpusReadError({
           detail: 'people/gum/page.md at deadbeef',
           cause: null,
+          commit: 'held',
         },).kind,).toBe('other',);
         expect(new CorpusReadError({
           detail: 'people/gum/page.md at deadbeef',
           cause: { code: 1, },
+          commit: 'held',
         },).kind,).toBe('other',);
       },
     },),
 
     it({
-      name: 'READS a string stderr as its text, so a missing-object phrase lands on the kind, and one '
-        + 'that is neither buffer nor string as no stderr at all',
+      name: 'READS a string stderr as its text, so a missing-object phrase lands on the kind at a commit the '
+        + 'probe found held, and one that is neither buffer nor string as no stderr at all',
       fn: async () => {
         expect(new CorpusReadError({
           detail: 'people/gum/page.md at deadbeef',
           cause: {
             stderr: "fatal: path 'people/gum/page.md' does not exist in 'deadbeef'",
           },
+          commit: 'held',
         },).kind,).toBe('missing-object',);
         expect(new CorpusReadError({
           detail: 'people/gum/page.md at deadbeef',
           cause: { stderr: 42, },
+          commit: 'held',
         },).kind,).toBe('other',);
+      },
+    },),
+    it({
+      name: 'CLASSIFIES both texts git 2.55 prints for a path absent at a commit the probe found held as a '
+        + 'missing object',
+      fn: async () => {
+        expect(new CorpusReadError({
+          detail: 'people/gum/page.en.md at deadbeef',
+          cause: { stderr: "fatal: path 'people/gum/page.en.md' does not exist in 'deadbeef'\n", },
+          commit: 'held',
+        },).kind,).toBe('missing-object',);
+        expect(new CorpusReadError({
+          detail: 'people/gum/page.en.md at deadbeef',
+          cause: { stderr: "fatal: path 'people/gum/page.en.md' exists on disk, but not in 'deadbeef'\n", },
+          commit: 'held',
+        },).kind,).toBe('missing-object',);
+      },
+    },),
+
+    it({
+      name: 'READS no absent path in any text git 2.55 prints for a revision it cannot resolve or a clone it '
+        + 'cannot open, so at a commit the probe found held each is other and the probe alone names them',
+      fn: async () => {
+        expect([
+          "fatal: invalid object name 'abcdef1'.\n",
+          'fatal: Not a valid object name abcdef1',
+          'fatal: not a tree object',
+          "fatal: cannot change to '/no/such/clone': No such file or directory\n",
+          'fatal: not a git repository (or any parent up to mount point /)\n'
+          + 'Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).\n',
+        ].map(function kindOfStderr(stderr,): string {
+          return new CorpusReadError({
+            detail: 'people/gum/page.md at deadbeef',
+            cause: { stderr, },
+            commit: 'held',
+          },).kind;
+        },),).toEqual([
+          'other',
+          'other',
+          'other',
+          'other',
+          'other',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES the kind a commit the clone lacks as missing-commit, not missing-object, when the probe '
+        + 'of the commit says it is not there, whatever stderr git printed',
+      fn: async () => {
+        /**
+         Refusal of a read whose commit the probe found lacking, though
+         git printed what it prints for an absent path.
+         */
+        const lacking = new CorpusReadError({
+          detail: 'people/gum/page.md at deadbeef',
+          cause: { stderr: "fatal: path 'people/gum/page.md' does not exist in 'deadbeef'\n", },
+          commit: 'lacking',
+        },);
+        expect(lacking.kind,).toBe('missing-commit',);
+        expect(isMissingCorpusObject(lacking,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'NAMES the kind unreadable-clone when git could not open the clone for the probe, and other when '
+        + 'the probe got no answer, never missing-object, whatever stderr the read printed',
+      fn: async () => {
+        /**
+         Probe answers that say nothing of the path.
+         */
+        const unanswered = [
+          'unopened',
+          'unasked',
+        ] as const;
+        expect(unanswered.map(function kindAfterProbe(commit,): readonly [string, boolean,] {
+          /**
+           The refusal of a read whose own text says the path is absent.
+           */
+          const refusal = new CorpusReadError({
+            detail: 'people/gum/page.md at deadbeef',
+            cause: { stderr: "fatal: path 'people/gum/page.md' does not exist in 'deadbeef'\n", },
+            commit,
+          },);
+          return [
+            refusal.kind,
+            isMissingCorpusObject(refusal,),
+          ];
+        },),).toEqual([
+          [
+            'unreadable-clone',
+            false,
+          ],
+          [
+            'other',
+            false,
+          ],
+        ],);
+      },
+    },),
+
+    it({
+      name: 'PRINTS for each kind what was found and the one remedy that fits it, naming only the path and the revision',
+      fn: async () => {
+        expect([
+          new CorpusReadError({
+            detail: 'people/gum/page.en.md at deadbeef',
+            cause: { stderr: "fatal: path 'people/gum/page.en.md' does not exist in 'deadbeef'\n", },
+            commit: 'held',
+          },),
+          new CorpusReadError({
+            detail: 'people/gum/page.en.md at deadbeef',
+            cause: { stderr: "fatal: path 'people/gum/page.en.md' does not exist in 'deadbeef'\n", },
+            commit: 'lacking',
+          },),
+          new CorpusReadError({
+            detail: 'people/gum/page.en.md at deadbeef',
+            cause: { stderr: 'fatal: not a git repository\n', },
+            commit: 'unopened',
+          },),
+          new CorpusReadError({
+            detail: 'people/gum/page.en.md at deadbeef',
+            cause: { stderr: 'fatal: unable to read the object\n', },
+            commit: 'held',
+          },),
+        ].map(String,),).toEqual([
+          'CorpusReadError: corpus read failed for people/gum/page.en.md at deadbeef (missing-object);'
+          + ' the commit has no such path: check the path, or pin a commit that has it.',
+          'CorpusReadError: corpus read failed for people/gum/page.en.md at deadbeef (missing-commit);'
+          + ' the clone holds no commit by that revision: fetch it, or pin '
+          + 'a commit the clone holds.',
+          'CorpusReadError: corpus read failed for people/gum/page.en.md at deadbeef (unreadable-clone);'
+          + ' git could not open the clone: check that the directory exists, is the top of a git repository, and'
+          + ' is one git may read.',
+          'CorpusReadError: corpus read failed for people/gum/page.en.md at deadbeef (other);'
+          + ' the read failed another way: run the same git read in the clone by hand to see why.',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a full hash the clone lacks as missing-commit for a text read, a byte read and a listing, '
+        + 'whether the path is on disk or not, and a held commit with an absent path stays a missing object',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        /**
+         Pin at a commit the clone lacks.
+         */
+        const lacked = {
+          cloneDir: clone.cloneDir,
+          commitSha: LACKED_COMMIT_SHA,
+        };
+        /**
+         Pin at the commit the clone holds.
+         */
+        const held = {
+          cloneDir: clone.cloneDir,
+          commitSha: clone.commitSha,
+        };
+        expect(await failureOf(async function readsPathOnDisk(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: lacked,
+            relPath: `people/${PAIRED_ENTRY}/page.md`,
+          },);
+        },),).toEqual({
+          kind: 'missing-commit',
+          says: `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/${PAIRED_ENTRY}/page.md `
+            + '(missing-commit); the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        },);
+        expect(await failureOf(async function readsPathOffDisk(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: lacked,
+            relPath: 'people/ghost/page.md',
+          },);
+        },),).toEqual({
+          kind: 'missing-commit',
+          says: `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/ghost/page.md (missing-commit);`
+            + ' the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        },);
+        expect((await failureOf(async function readsBytes(): Promise<unknown> {
+          return await readCorpusBytes({
+            pin: lacked,
+            relPath: `people/${PAIRED_ENTRY}/photos/intro.webp`,
+          },);
+        },)).kind,).toBe('missing-commit',);
+        expect(await failureOf(async function lists(): Promise<unknown> {
+          return await listCorpusPeople({ pin: lacked, },);
+        },),).toEqual({
+          kind: 'missing-commit',
+          says: `CorpusReadError: corpus read failed for people/ at ${LACKED_COMMIT_SHA} (missing-commit);`
+            + ' the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        },);
+        expect(await failureOf(async function readsAbsentPath(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: held,
+            relPath: 'people/ghost/page.md',
+          },);
+        },),).toEqual({
+          kind: 'missing-object',
+          says: `CorpusReadError: corpus read failed for ${clone.commitSha}:people/ghost/page.md (missing-object);`
+            + ' the commit has no such path: check the path, or pin a commit that has it.',
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES an abbreviated hash the clone lacks and a name that is no revision as missing-commit',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        expect((await failureOf(async function readsAbbreviated(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: 'abcdef1',
+            },
+            relPath: `people/${PAIRED_ENTRY}/page.md`,
+          },);
+        },)).kind,).toBe('missing-commit',);
+        expect((await failureOf(async function readsNoRevision(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: 'no-such-branch',
+            },
+            relPath: `people/${PAIRED_ENTRY}/page.md`,
+          },);
+        },)).kind,).toBe('missing-commit',);
+        expect((await failureOf(async function listsAbbreviated(): Promise<unknown> {
+          return await listCorpusPeople({
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: 'abcdef1',
+            },
+          },);
+        },)).kind,).toBe('missing-commit',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A REVISION THAT NAMES A TREE the clone holds as missing-commit where a page is absent, saying '
+        + 'the clone holds no commit by it rather than that it lacks the revision',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        /**
+         Id of the tree the one commit records, an object the clone holds that
+         is no commit.
+         */
+        const treeId = (await fixtureGit({
+          cloneDir: clone.cloneDir,
+          args: [
+            'rev-parse',
+            `${clone.commitSha}^{tree}`,
+          ],
+        },))
+          .trim();
+        expect(await failureOf(async function readsAtTree(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: treeId,
+            },
+            relPath: 'people/ghost/page.md',
+          },);
+        },),).toEqual({
+          kind: 'missing-commit',
+          says: `CorpusReadError: corpus read failed for ${treeId}:people/ghost/page.md (missing-commit); the clone `
+            + 'holds no commit by that revision: fetch it, or pin a commit the clone holds.',
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a clone directory that does not exist and a directory that is no repository as '
+        + 'unreadable-clone, for a text read, a byte read and a listing, since git could not open either',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        await using bare = await scratchDir({ prefix: 'translation-repair-no-repository-', },);
+        /**
+         Directories git cannot read a corpus from.
+         */
+        const unreadable = [
+          join(
+            clone.cloneDir,
+            'no-such-clone',
+          ),
+          bare.path,
+        ];
+        for (const cloneDir of unreadable) {
+          /* oxlint-disable no-await-in-loop -- two directories, each read once in order */
+          expect(await failureOf(async function readsUnreadable(): Promise<unknown> {
+            return await readCorpusFile({
+              pin: {
+                cloneDir,
+                commitSha: clone.commitSha,
+              },
+              relPath: `people/${PAIRED_ENTRY}/page.md`,
+            },);
+          },),).toEqual({
+            kind: 'unreadable-clone',
+            says: `CorpusReadError: corpus read failed for ${clone.commitSha}:people/${PAIRED_ENTRY}/page.md `
+              + '(unreadable-clone); git could not open the clone: check that the directory exists, is the top '
+              + 'of a git repository, and is one git may read.',
+          },);
+          expect((await failureOf(async function readsUnreadableBytes(): Promise<unknown> {
+            return await readCorpusBytes({
+              pin: {
+                cloneDir,
+                commitSha: clone.commitSha,
+              },
+              relPath: `people/${PAIRED_ENTRY}/photos/intro.webp`,
+            },);
+          },)).kind,).toBe('unreadable-clone',);
+          expect((await failureOf(async function listsUnreadable(): Promise<unknown> {
+            return await listCorpusPeople({
+              pin: {
+                cloneDir,
+                commitSha: clone.commitSha,
+              },
+            },);
+          },)).kind,).toBe('unreadable-clone',);
+          /* oxlint-enable no-await-in-loop */
+        }
+      },
+    },),
+
+    it({
+      name: 'REFUSES A DIRECTORY THAT IS NO REPOSITORY INSIDE ANOTHER as unreadable-clone, for a page the '
+        + 'enclosing repository holds, a page it lacks, a commit it lacks and a listing, and when reached through '
+        + 'a symbolic link, never reading the enclosing repository in its place',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        /**
+         Plain directory inside the throwaway repository, named as a clone.
+         */
+        const inner = join(
+          clone.cloneDir,
+          'not-a-clone',
+        );
+        await mkdir(inner,);
+        expect(await failureOf(async function readsEnclosedPage(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: inner,
+              commitSha: clone.commitSha,
+            },
+            relPath: `people/${PAIRED_ENTRY}/page.md`,
+          },);
+        },),).toEqual({
+          kind: 'unreadable-clone',
+          says: `CorpusReadError: corpus read failed for ${clone.commitSha}:people/${PAIRED_ENTRY}/page.md `
+            + '(unreadable-clone); git could not open the clone: check that the directory exists, is the top of '
+            + 'a git repository, and is one git may read.',
+        },);
+        expect((await failureOf(async function readsEnclosedAbsentPage(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: inner,
+              commitSha: clone.commitSha,
+            },
+            relPath: 'people/ghost/page.md',
+          },);
+        },)).kind,).toBe('unreadable-clone',);
+        expect((await failureOf(async function readsEnclosedLackedCommit(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: inner,
+              commitSha: LACKED_COMMIT_SHA,
+            },
+            relPath: `people/${PAIRED_ENTRY}/page.md`,
+          },);
+        },)).kind,).toBe('unreadable-clone',);
+        expect((await failureOf(async function listsEnclosed(): Promise<unknown> {
+          return await listCorpusPeople({
+            pin: {
+              cloneDir: inner,
+              commitSha: clone.commitSha,
+            },
+          },);
+        },)).kind,).toBe('unreadable-clone',);
+        await using links = await scratchDir({ prefix: 'translation-repair-clone-link-', },);
+        /**
+         A symbolic link to the throwaway repository, so the directory is
+         named through a path git must resolve to compare with its own.
+         */
+        const linked = join(
+          links.path,
+          'linked-clone',
+        );
+        await symlink(
+          clone.cloneDir,
+          linked,
+        );
+        expect((await failureOf(async function readsEnclosedThroughLink(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: join(
+                linked,
+                'not-a-clone',
+              ),
+              commitSha: clone.commitSha,
+            },
+            relPath: `people/${PAIRED_ENTRY}/page.md`,
+          },);
+        },)).kind,).toBe('unreadable-clone',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A CLONE DIRECTORY THAT IS ITSELF A SYMBOLIC LINK to a plain directory inside a repository as '
+        + 'unreadable-clone, for a page the repository holds, a page it lacks and a listing, while a link to a real '
+        + 'clone still reads',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        await using links = await scratchDir({ prefix: 'translation-repair-clone-link-', },);
+        /**
+         Plain directory inside the throwaway repository.
+         */
+        const inner = join(
+          clone.cloneDir,
+          'not-a-clone',
+        );
+        await mkdir(inner,);
+        /**
+         Symbolic link to that directory, named as the clone, so the
+         directory git starts in has no ancestor in common with the link's
+         own parent but the scratch root.
+         */
+        const linkedInner = join(
+          links.path,
+          'linked-not-a-clone',
+        );
+        await symlink(
+          inner,
+          linkedInner,
+        );
+        /**
+         Symbolic link to the real clone, the control that a linked clone
+         still reads.
+         */
+        const linkedClone = join(
+          links.path,
+          'linked-clone',
+        );
+        await symlink(
+          clone.cloneDir,
+          linkedClone,
+        );
+        expect(await failureOf(async function readsThroughLinkedDirectory(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: linkedInner,
+              commitSha: clone.commitSha,
+            },
+            relPath: `people/${PAIRED_ENTRY}/page.md`,
+          },);
+        },),).toEqual({
+          kind: 'unreadable-clone',
+          says: `CorpusReadError: corpus read failed for ${clone.commitSha}:people/${PAIRED_ENTRY}/page.md `
+            + '(unreadable-clone); git could not open the clone: check that the directory exists, is the top of '
+            + 'a git repository, and is one git may read.',
+        },);
+        expect((await failureOf(async function readsAbsentThroughLinkedDirectory(): Promise<unknown> {
+          return await readCorpusFile({
+            pin: {
+              cloneDir: linkedInner,
+              commitSha: clone.commitSha,
+            },
+            relPath: 'people/ghost/page.md',
+          },);
+        },)).kind,).toBe('unreadable-clone',);
+        expect((await failureOf(async function listsThroughLinkedDirectory(): Promise<unknown> {
+          return await listCorpusPeople({
+            pin: {
+              cloneDir: linkedInner,
+              commitSha: clone.commitSha,
+            },
+          },);
+        },)).kind,).toBe('unreadable-clone',);
+        expect(await readCorpusFile({
+          pin: {
+            cloneDir: linkedClone,
+            commitSha: clone.commitSha,
+          },
+          relPath: `people/${PAIRED_ENTRY}/page.en.md`,
+        },),).toBe('The cat likes the sun.\n',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES AS STATED A CLONE WHOSE PARENT\'S REAL PATH HOLDS A COLON before git reads anything, naming '
+        + 'the clone and its parent and saying to move it, for a page, its bytes and a listing, since git splits '
+        + 'its ceiling list at colons and would read a repository around the clone in its place',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        /**
+         Plain directory inside the throwaway repository, under a parent whose
+         name holds a colon.
+         */
+        const colonParent = join(
+          clone.cloneDir,
+          'tabby:mittens',
+        );
+        /**
+         The directory named as the clone.
+         */
+        const inner = join(
+          colonParent,
+          'not-a-clone',
+        );
+        await mkdir(
+          inner,
+          { recursive: true, },
+        );
+        /**
+         The pin over that directory, at the commit the repository around it
+         holds.
+         */
+        const pin = {
+          cloneDir: inner,
+          commitSha: clone.commitSha,
+        };
+        /**
+         The whole refusal each read must end in.
+         */
+        const expected = `StatedRefusalError: corpus clone ${inner} lies under ${await realpath(colonParent,)}, a `
+          + 'path holding a colon, which git\'s ceiling list cannot carry since git splits it at colons, so git '
+          + 'could read a repository around the clone in its place: move the clone to a directory whose path '
+          + 'holds no colon.';
+        /**
+         What each read refused with.
+         */
+        const refusals = [
+          await rejectionOf(async function readsUnderAColon(): Promise<unknown> {
+            return await readCorpusFile({
+              pin,
+              relPath: `people/${PAIRED_ENTRY}/page.md`,
+            },);
+          },),
+          await rejectionOf(async function readsBytesUnderAColon(): Promise<unknown> {
+            return await readCorpusBytes({
+              pin,
+              relPath: `people/${PAIRED_ENTRY}/photos/intro.webp`,
+            },);
+          },),
+          await rejectionOf(async function listsUnderAColon(): Promise<unknown> {
+            return await listCorpusPeople({ pin, },);
+          },),
+        ];
+        expect(refusals.map(function facts(refusal,): {
+          readonly stated: boolean;
+          readonly says: string;
+        } {
+          return {
+            stated: refusal instanceof StatedRefusalError,
+            says: String(refusal,),
+          };
+        },),).toEqual([
+          {
+            stated: true,
+            says: expected,
+          },
+          {
+            stated: true,
+            says: expected,
+          },
+          {
+            stated: true,
+            says: expected,
+          },
+        ],);
       },
     },),
   ],

@@ -40,8 +40,15 @@ import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import {
   type ChunkPair,
   type CorpusPin,
+  CorpusReadError,
   gatherEntryPictures,
 } from '../../dist/final/node/index.mjs';
+import {
+  LACKED_COMMIT_SHA,
+  makeCloneHoldingOneCommit,
+  PAIRED_ENTRY,
+  PAIRED_PICTURE,
+} from '../corpus-lacked-commit.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 import { sliceOf, } from '../content-slice-of.test-fixture.ts';
 import {
@@ -332,9 +339,12 @@ await describe({
           },),
         },);
 
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('unreadable-clone',);
         expect(String(refusal,),).toBe(
-          `CorpusReadError: corpus read failed for ${'c'.repeat(40,)}:people/mittens/photos/nap.webp (other); `
-            + 'check that the clone exists and the pinned commit is present.',
+          `CorpusReadError: corpus read failed for ${'c'.repeat(40,)}:people/mittens/photos/nap.webp (unreadable-clone); `
+            + 'git could not open the clone: check that the directory exists, is the top of a git repository, and '
+            + 'is one git may read.',
         );
       },
     },),
@@ -656,6 +666,36 @@ await describe({
         }
 
         expect(caught,).toBe(planted,);
+      },
+    },),
+    it({
+      name: 'REFUSES NAMING THE COMMIT when the clone lacks it, instead of warning that every picture is not in the corpus',
+      fn: async () => {
+        await using clone = await makeCloneHoldingOneCommit();
+        /**
+         What the gather refused with.
+         */
+        const refusal = await rejectionOf({
+          promise: gatherEntryPictures({
+            pin: {
+              cloneDir: clone.cloneDir,
+              commitSha: LACKED_COMMIT_SHA,
+            },
+            entryId: PAIRED_ENTRY,
+            slices: [sliceOf({
+              text: `${photoElement({ assetNames: [PAIRED_PICTURE,], },)}\n`,
+              sliceIndex: 0,
+            },),],
+            l,
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(CorpusReadError,);
+        expect((refusal instanceof CorpusReadError) && refusal.kind,).toBe('missing-commit',);
+        expect(String(refusal,),).toBe(
+          `CorpusReadError: corpus read failed for ${LACKED_COMMIT_SHA}:people/${PAIRED_ENTRY}/photos/${PAIRED_PICTURE} `
+            + '(missing-commit); the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
+        );
       },
     },),
   ],

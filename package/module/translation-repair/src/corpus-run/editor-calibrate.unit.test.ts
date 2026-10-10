@@ -215,8 +215,9 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
-              'editor-calibrate: corpus read failed for people/ at aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (other); '
-                + 'check that the clone exists and the pinned commit is present.\n',
+              'editor-calibrate: corpus read failed for people/ at aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (unreadable-clone); '
+                + 'git could not open the clone: check that the directory exists, is the top of a git repository, '
+                + 'and is one git may read.\n',
             );
           },
         },),

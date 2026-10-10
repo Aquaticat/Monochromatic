@@ -81,16 +81,17 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'CHOOSES EVERY COMPLETE PAIR in the corpus, and says nothing when nothing is restricted or missing',
+      name: 'CHOOSES EVERY COMPLETE PAIR in the corpus, hands them on as the pairs its walk over every entry '
+        + 'found, and says nothing when nothing is restricted or missing',
       fn: async (ctx) => {
         using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
         await using clone = await makeCorpusPassClone({ entries: COMPLETE, },);
         await using scratch = await scratchDir({ prefix: 'corpus-pass-select-', },);
 
         /**
-         What the pass would run.
+         What the pass would run, and the complete pairs its walk found.
          */
-        const pending = await selectPendingEntries({
+        const selected = await selectPendingEntries({
           line: lineOf({
             command: 'corpus-pass',
             typed: [],
@@ -101,15 +102,21 @@ await describe({
           sliceCacheDir: scratch.path,
         },);
 
-        expect(idsOf({ pairs: pending, },),).toEqual([
+        expect(idsOf({ pairs: selected.pending, },),).toEqual([
           'biscuit',
           'tabby',
         ],);
+        expect(selected.pairs,).toEqual({
+          walked: 'every-entry',
+          ids: new Set(idsOf({ pairs: COMPLETE, },),),
+        },);
         expect(printed.lines,).toEqual([],);
       },
     },),
     it({
-      name: 'LEAVES OUT AN ENTRY FINISHED BEFORE and one with no English page, and names the second',
+      name: 'LEAVES OUT AN ENTRY FINISHED BEFORE and one with no English page, naming the entry with no English '
+        + 'page, and hands on the finished entry among the complete pairs its walk found but not the entry with '
+        + 'no English page',
       fn: async (ctx) => {
         using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
         await using clone = await makeCorpusPassClone({ entries: [
@@ -122,9 +129,9 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'corpus-pass-select-', },);
 
         /**
-         What the pass would run.
+         What the pass would run, and the complete pairs its walk found.
          */
-        const pending = await selectPendingEntries({
+        const selected = await selectPendingEntries({
           line: lineOf({
             command: 'corpus-pass',
             typed: [],
@@ -135,26 +142,31 @@ await describe({
           sliceCacheDir: scratch.path,
         },);
 
-        expect(idsOf({ pairs: pending, },),).toEqual(['tabby',],);
+        expect(idsOf({ pairs: selected.pending, },),).toEqual(['tabby',],);
+        expect(selected.pairs,).toEqual({
+          walked: 'every-entry',
+          ids: new Set(idsOf({ pairs: COMPLETE, },),),
+        },);
         expect(printed.lines,).toEqual([
           `INCOMPLETE mittens: target page absent at the pin (corpus read failed for ${clone.commitSha}:`
-          + 'people/mittens/page.en.md (missing-object); check that the clone exists and the pinned commit '
-          + 'is present.)',
+          + 'people/mittens/page.en.md (missing-object); the commit has no such path: check the path, or pin a '
+          + 'commit that has it.)',
         ],);
       },
     },),
     it({
-      name: 'CHOOSES ONLY THE ENTRIES THE COMMAND LINE NAMES and says it bypassed the ordering, naming them in '
-        + 'code point order',
+      name: 'CHOOSES ONLY THE ENTRIES THE COMMAND LINE NAMES and says they were chosen by hand and run in the '
+        + 'pass\'s own order, naming them in code point order, and hands on the pairs its walk over the named '
+        + 'entries alone found',
       fn: async (ctx) => {
         using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
         await using clone = await makeCorpusPassClone({ entries: COMPLETE, },);
         await using scratch = await scratchDir({ prefix: 'corpus-pass-select-', },);
 
         /**
-         What the pass would run.
+         What the pass would run, and the complete pairs its walk found.
          */
-        const pending = await selectPendingEntries({
+        const selected = await selectPendingEntries({
           line: lineOf({
             command: 'corpus-pass',
             typed: [
@@ -168,11 +180,92 @@ await describe({
           sliceCacheDir: scratch.path,
         },);
 
-        expect(idsOf({ pairs: pending, },),).toEqual(['tabby',],);
+        expect(idsOf({ pairs: selected.pending, },),).toEqual(['tabby',],);
+        expect(selected.pairs,).toEqual({
+          walked: 'named-entries',
+          ids: new Set(['tabby',],),
+        },);
         expect(printed.lines,).toEqual([
-          'ONLY tabby (ordering is bypassed; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a '
-          + 'hand-picked entry never enters a pool later draws treat as natural accumulation)',
+          'ONLY tabby (chosen by hand in place of every pending pair at the pin; if still pending it runs in '
+          + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+          + 'entry never enters a pool later draws treat as natural accumulation)',
         ],);
+      },
+    },),
+    it({
+      name: 'SAYS ONLY THE NAMED ENTRIES STILL PENDING RUN where the command line names one finished before beside '
+        + 'one pending, and runs the pending one alone',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: COMPLETE, },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-select-', },);
+
+        /**
+         What the pass would run, and the complete pairs its walk found.
+         */
+        const selected = await selectPendingEntries({
+          line: lineOf({
+            command: 'corpus-pass',
+            typed: [
+              '--only',
+              'biscuit,tabby',
+            ],
+          },),
+          pin: clone,
+          done: new Set(['biscuit',],),
+          attempts: new Map(),
+          sliceCacheDir: scratch.path,
+        },);
+
+        expect(idsOf({ pairs: selected.pending, },),).toEqual(['tabby',],);
+        expect(selected.pairs,).toEqual({
+          walked: 'named-entries',
+          ids: new Set(idsOf({ pairs: COMPLETE, },),),
+        },);
+        expect(printed.lines,).toEqual([
+          'ONLY biscuit,tabby (chosen by hand in place of every pending pair at the pin; those still pending '
+          + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+          + 'entry never enters a pool later draws treat as natural accumulation)',
+        ],);
+      },
+    },),
+    it({
+      name: 'COUNTS A FINISHED ENTRY WHOSE ENGLISH PAGE THE PIN LACKS AS NO COMPLETE PAIR, and names no gap for '
+        + 'it, since it runs no more',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          ...COMPLETE,
+          {
+            id: 'whiskers',
+            sourceText: SMALL_PAGE,
+          },
+        ], },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-select-', },);
+
+        /**
+         What the pass would run, and the complete pairs its walk found.
+         */
+        const selected = await selectPendingEntries({
+          line: lineOf({
+            command: 'corpus-pass',
+            typed: [],
+          },),
+          pin: clone,
+          done: new Set([
+            'biscuit',
+            'whiskers',
+          ],),
+          attempts: new Map(),
+          sliceCacheDir: scratch.path,
+        },);
+
+        expect(idsOf({ pairs: selected.pending, },),).toEqual(['tabby',],);
+        expect(selected.pairs,).toEqual({
+          walked: 'every-entry',
+          ids: new Set(idsOf({ pairs: COMPLETE, },),),
+        },);
+        expect(printed.lines,).toEqual([],);
       },
     },),
     it({
@@ -217,9 +310,9 @@ await describe({
         );
 
         /**
-         What the pass would run.
+         What the pass would run, and the complete pairs its walk found.
          */
-        const pending = await selectPendingEntries({
+        const selected = await selectPendingEntries({
           line: lineOf({
             command: 'corpus-pass',
             typed: [],
@@ -230,7 +323,7 @@ await describe({
           sliceCacheDir: scratch.path,
         },);
 
-        expect(idsOf({ pairs: pending, },),).toEqual([
+        expect(idsOf({ pairs: selected.pending, },),).toEqual([
           'tabby',
           'biscuit',
         ],);
@@ -243,9 +336,9 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'corpus-pass-select-', },);
 
         /**
-         What the pass would run.
+         What the pass would run, and the complete pairs its walk found.
          */
-        const pending = await selectPendingEntries({
+        const selected = await selectPendingEntries({
           line: lineOf({
             command: 'corpus-pass',
             typed: [],
@@ -261,7 +354,7 @@ await describe({
           sliceCacheDir: scratch.path,
         },);
 
-        expect(idsOf({ pairs: pending, },),).toEqual([
+        expect(idsOf({ pairs: selected.pending, },),).toEqual([
           'tabby',
           'biscuit',
         ],);

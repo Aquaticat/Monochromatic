@@ -47,6 +47,7 @@ import {
 
 import {
   BedrockCreditOverrideError,
+  BenchReportError,
   CorpusReadError,
   createSeatTally,
   EmptyPoolError,
@@ -319,7 +320,9 @@ const OPERATOR_MISTAKES: readonly Error[] = [
   new CorpusReadError({
     detail: 'people/whiskers/page.md at feedfac',
     cause: new Error('fatal: not a git repository',),
+    commit: 'unopened',
   },),
+  new BenchReportError({ seats: 1, },),
 ];
 
 await describe({

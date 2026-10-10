@@ -119,7 +119,7 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: `translate-probe: corpus read failed for ${corpus.commitSha}:people/${ENTRY}/page.md (missing-object); `
-            + 'check that the clone exists and the pinned commit is present.\n',
+            + 'the commit has no such path: check the path, or pin a commit that has it.\n',
         },);
       },
     },),

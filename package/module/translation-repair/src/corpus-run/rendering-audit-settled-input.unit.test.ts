@@ -595,13 +595,16 @@ await describe({
                 runSet: 'first',
                 artifactFile: `${ENTRY_ID}.json`,
                 cloneDir: '/nonexistent/clone',
-                readFile: pageReadsRefusingLastFor({ endsLast: '/page.md', },),
+                readFile: pageReadsRefusingLastFor({
+                  endsLast: '/page.md',
+                  commit: 'lacking',
+                },),
               },),
             },);
 
             expect(String(refusal,),).toBe(
-              `CorpusReadError: corpus read failed for ${LACKED_COMMIT}:people/${ENTRY_ID}/page.md (missing-object); `
-                + 'check that the clone exists and the pinned commit is present.',
+              `CorpusReadError: corpus read failed for ${LACKED_COMMIT}:people/${ENTRY_ID}/page.md (missing-commit); `
+                + 'the clone holds no commit by that revision: fetch it, or pin a commit the clone holds.',
             );
           },
         },),
@@ -881,14 +884,17 @@ await describe({
               promise: readArchiveSubjects({
                 archiveDir: archive.path,
                 cloneDir: '/nonexistent/clone',
-                readFile: pageReadsRefusingLastFor({ endsLast: 'people/cat-alpha/', },),
+                readFile: pageReadsRefusingLastFor({
+                  endsLast: 'people/cat-alpha/',
+                  commit: 'lacking',
+                },),
                 listFiles: listArtifactFiles,
               },),
             },);
 
             expect(String(refusal,),).toBe(
-              `CorpusReadError: corpus read failed for ${LACKED_COMMIT}:people/cat-alpha/page.md (missing-object); `
-                + 'check that the clone exists and the pinned commit is present.',
+              `CorpusReadError: corpus read failed for ${LACKED_COMMIT}:people/cat-alpha/page.md (missing-commit); `
+                + 'the clone holds no commit by that revision: fetch it, or pin a commit the clone holds.',
             );
           },
         },),
@@ -931,7 +937,10 @@ await describe({
               promise: readArchiveSubjects({
                 archiveDir: archive.path,
                 cloneDir: '/nonexistent/clone',
-                readFile: pageReadsRefusingLastFor({ endsLast: 'no such page', },),
+                readFile: pageReadsRefusingLastFor({
+                  endsLast: 'no such page',
+                  commit: 'lacking',
+                },),
                 listFiles: async function listsRunSetsOutOfOrder(
                   { artifactsDir, }: Parameters<typeof listArtifactFiles>[0],
                 ): Promise<Awaited<ReturnType<typeof listArtifactFiles>>> {

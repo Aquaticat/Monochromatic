@@ -321,7 +321,8 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES --plan over a corpus that offers no entry to seed, before building a client',
+      name: 'REFUSES --plan over a corpus that offers no entry to seed, before building a client or making its '
+        + 'runs directory',
       fn: async (ctx,) => {
         using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
         await using world = await benchWorld({ entries: {}, },);
@@ -336,7 +337,10 @@ await describe({
               command: 'recall-benchmark',
               typed: ['--plan',],
             },),
-            runsDir: world.runsDir,
+            runsDir: join(
+              world.runsDir,
+              'recall-runs',
+            ),
             pin: world.pin,
             ...scriptedSeams({ seen, },),
           },);
@@ -344,18 +348,25 @@ await describe({
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
-          'StatedRefusalError: the plan chose no entry to seed, so a run would plant no seed and measure nothing; '
-          + 'check that the corpus clone and commit it reads hold entries with both pages and a sentence worth deleting',
+          'StatedRefusalError: no entry at the pin can be seeded, so the benchmark would plant no seed and measure '
+          + 'nothing; check that the corpus clone and commit it reads hold entries with both pages and a sentence '
+          + 'worth deleting',
         );
         expect(printed.lines,).toEqual([
           `START tip=${TIP} entries=0 seeds=0 perBand={"small":0,"medium":0,"large":0} budget=43200000ms`,
         ],);
-        expect(seen.clients,).toBe(0,);
+        expect(seen,).toEqual({
+          clients: 0,
+          reads: 1,
+        },);
+        // The runs directory the run was handed is still absent from its parent.
+        expect(await readdir(world.runsDir,),).toEqual([],);
       },
     },),
 
     it({
-      name: 'REFUSES after keeping the record when the corpus offers no entry to seed, naming where it is kept',
+      name: 'REFUSES A RUN over a corpus that offers no entry to seed where --plan refuses, before building a '
+        + 'client or making its runs directory, so no scorecard is kept',
       fn: async (ctx,) => {
         using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
         await using world = await benchWorld({ entries: {}, },);
@@ -370,28 +381,30 @@ await describe({
               command: 'recall-benchmark',
               typed: [],
             },),
-            runsDir: world.runsDir,
+            runsDir: join(
+              world.runsDir,
+              'recall-runs',
+            ),
             pin: world.pin,
             ...scriptedSeams({ seen, },),
           },);
         },);
 
-        /**
-         Directory the refused run still kept its scorecard in.
-         */
-        const keptIn = join(
-          world.runsDir,
-          'recall-scorecard',
-        );
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
-          'StatedRefusalError: the bench dispatched 0 entries and planted 0 seeds, so none of its rates '
-          + `measures anything; the scorecard is kept at ${keptIn}/2026-10-05T10-00-00.000Z-bbbbbbbb.json`,
+          'StatedRefusalError: no entry at the pin can be seeded, so the benchmark would plant no seed and measure '
+          + 'nothing; check that the corpus clone and commit it reads hold entries with both pages and a sentence '
+          + 'worth deleting',
         );
         expect(printed.lines,).toEqual([
           `START tip=${TIP} entries=0 seeds=0 perBand={"small":0,"medium":0,"large":0} budget=43200000ms`,
         ],);
-        expect(await readdir(keptIn,),).toEqual(['2026-10-05T10-00-00.000Z-bbbbbbbb.json',],);
+        expect(seen,).toEqual({
+          clients: 0,
+          reads: 1,
+        },);
+        // The runs directory the run was handed is still absent from its parent.
+        expect(await readdir(world.runsDir,),).toEqual([],);
       },
     },),
   ],

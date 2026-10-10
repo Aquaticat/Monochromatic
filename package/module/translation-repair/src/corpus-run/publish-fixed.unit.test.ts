@@ -60,6 +60,7 @@ import {
   wrapReplacementText,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
+import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { artifactWithAnUnfilledAnchor, } from './would-ship-unfilled-anchor.test-fixture.ts';
 
@@ -78,6 +79,13 @@ const OPENING = '## Description\n\nA tabby who kept the bookshop company for ele
  Middle paragraph, the slice the deciders act on.
  */
 const ARCHIVE_MIDDLE = '\nShe slept on the counter by the till.\n';
+
+/**
+ Decided wording ending on two characters beyond the first plane, each two
+ UTF-16 units and one character: the page it makes is 180 characters, 182
+ units.
+ */
+const PAWED_MIDDLE = '\nShe slept on the counter by the till, paws up \u{1F43E}\u{1F43E}.\n';
 
 /**
  Closing paragraph, which no case replaces either.
@@ -524,6 +532,30 @@ await describe({
             expect(text,).toBe(`${OPENING}${DECIDED_MIDDLE}${CLOSING}`,);
             expect(text.startsWith(OPENING,),).toBe(true,);
             expect(text.endsWith(CLOSING,),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS THE PAGE IT WROTE IN CHARACTERS, one for each character beyond the first plane, as the '
+            + 'published page check counts the same page, never in the UTF-16 units that count each as two',
+          fn: async () => {
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
+            /**
+             What the publisher logged.
+             */
+            const messages: string[] = [];
+
+            await publishFixedPage({
+              artifact: artifactShipping({ translateText: PAWED_MIDDLE, },),
+              slices: documentSlices(),
+              archiveText: ARCHIVE,
+              sourceText: SOURCE_PAGE,
+              entryId: 'BookshopCat',
+              publishDir: tree.path,
+              l: capturingLogger({ messages, },),
+            },);
+
+            expect(messages,).toEqual(['publish: wrote 1 slice into a page of 180 characters',],);
           },
         },),
 
