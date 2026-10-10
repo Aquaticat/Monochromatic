@@ -1331,6 +1331,8 @@ the seams.
  and L2 pure ramp without hairlines.
 
 ### D46. Cover picker opened state = P4, temporary pre-1.x decision (2026-09-23)
+D104 (2026-10-10) later adds the upward caret while open, drops the pre-1.x revisit and defers further improvement to another major version.
+
 Use P4 as the current design baseline for the folded cover screen:
  the app-bar folder title
 and caret open the picker in the list slot,
@@ -2918,6 +2920,31 @@ Every design choice in it is decided (D58 to D74).
 Native focus restoration, system Back, IME and TalkBack behavior stay listed as implementation gates
 in `open-questions.md` and the Search evidence records,
 and need verification when an implementation is authorized.
+No production implementation is authorized by this record.
+
+### D104. The folded-cover picker is P5 without its container (2026-10-10)
+
+Asked whether to approve the agent's P5 for the folded cover's folder picker,
+the human answered:
+approve P5, but remove the container,
+with no further build and capture round.
+The human added that they are still unsatisfied with the picker,
+and will deal with that and any further improvement in another major version of the app.
+
+So the design is P4 whose caret points up while the picker is open and down otherwise.
+The title is not wrapped in a tonal container,
+and nothing else about P4 changes:
+the app-bar title and caret open the picker in the list area while the deck stays visible,
+and the folder names, letter rail and deck are as D46 and D17 settle.
+The open state is shown by the caret's direction and by the picker replacing the track list;
+a second marker on the trigger itself was not chosen.
+The captures in `questions/cover-picker-revisit.html` show P5 with its container,
+so they are evidence of the built candidate and not of this decision;
+no capture of the decided state exists,
+and opening, closing, Back, focus return and TalkBack are unmeasured for it.
+D46 stays a provisional baseline that the human has said they will revisit in another major version;
+the before-1.x revisit is closed by this answer.
+
 No production implementation is authorized by this record.
 
 ## Pending after the theme picks (2026-09-04)

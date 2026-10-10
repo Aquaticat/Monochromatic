@@ -111,7 +111,7 @@ and authorizes no dependent implementation.
 All filename investigations exclude matcher choices,
 new IME work and native accessibility acceptance.
 
-- **PROVISIONAL: folded-cover picker P4 (D46).**
+- **PROVISIONAL, revisit in another major version (D46, D104): folded-cover picker P4 with an upward caret while open.**
   The app-bar folder title and caret
   open the picker in the list slot while the deck remains visible.
   The P comparison
@@ -134,9 +134,11 @@ new IME work and native accessibility acceptance.
   with D41/D42 dark structure and D45
   light seams.
   Selection does not authorize production work.
-- **AWAITING APPROVAL: revisit the folded-cover picker before 1.x (D46).**
-  The agent's P5 (P4 whose trigger shows the open state) is built and shown beside P4 in
-  `questions/cover-picker-revisit.html`; the plan is `doc/planning/music-player-cover-picker-revisit.md`.
+- **SETTLED (D104), further improvement deferred to another major version: the folded-cover picker (D46).**
+  The human approved P5 without its container: P4 with the caret pointing up while open.
+  They are still unsatisfied and will deal with it in another major version.
+  The built P5 is shown beside P4 in `questions/cover-picker-revisit.html`;
+  the plan is `doc/planning/music-player-cover-picker-revisit.md`.
   On 2026-10-10 the human asked for the exploration now and left the angle to the agent
   (one alternative built from the best of the agent's design judgment, then asked to approve).
   The user chose P4 while

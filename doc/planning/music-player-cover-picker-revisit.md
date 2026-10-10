@@ -52,7 +52,9 @@ Larger changes were considered and not built:
 - [x] Add P5 to the debug candidate host in `prototype/music-player-cover-picker`.
 - [x] Capture P4 and P5 side by side on the owned Fold cover in light and dark at 100% and 200% text.
 - [x] Inspect every capture, remove the status strip, and publish a review page.
-- [ ] Ask the human to approve P5, keep P4, or name a different problem, through the question tool.
+- [x] Ask the human to approve P5, keep P4, or name a different problem, through the question tool.
+  Answer (D104): approve P5 but remove the container; no further build and capture round;
+  still unsatisfied, to be dealt with in another major version.
 
 ## Result
 
