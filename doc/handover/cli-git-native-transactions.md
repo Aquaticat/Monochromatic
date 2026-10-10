@@ -584,6 +584,58 @@ Differences the existing tables expose on 2.55.0 (the 2.56.0-derived tables are 
 Open: making the option tables version-aware for 2.55.0 is not done.
 Until it is, a command that uses one of the 2.56.0-only options on 2.55.0 is classified as 2.56.0 would classify it.
 
+### Slice 3 completion and gates
+
+Commits on this branch: `48cb7d2d3c` (leaf modules), `d5cea8637c` (review gaps),
+`0ba5c42467` (regenerated comments), `0faec78d77` (merge of main), `0faec78d77` onward for coordination,
+`84d2e5daad` (real index lock, direct fixes under the landing lock, live transactions stop refusing),
+`2070cf6fa1` (Git 2.55.0 minimum and the lock-path version check), `c740d902f7` (nested lease, rebase control).
+
+Behaviour now: a forwarded index writer inside a repository takes the landing lock after recovery,
+checks the Git version, waits for a foreign `index.lock` (unbounded for a proven owner,
+budgeted otherwise, `index-lock-unproven-owner` at exit 2), and runs real Git as a child that inherits
+`CLI_GIT_LANDING_LEASE`; the lock is released when Git returns.
+A nested wrapper with the lease proceeds; `CLI_GIT_PREPARATION_LEASE` and `CLI_GIT_WORKTREE_COPY_LEASE`
+still refuse.
+A direct fix holds the landing lock.
+A live commit transaction no longer refuses a guarded command; commits still stop at their frontier.
+
+Divergences from the incumbent, recorded for review:
+
+- Recovery runs before the landing lock is taken, not under it, because the native recovery takes the
+  landing lock itself.
+- The real index lock's journal write waits for the landing slice, since transaction directories do not exist yet.
+  The primitive (`real_index_lock.rs`) creates, identifies and releases the lock only while it is the same file.
+- A direct fix holds the landing lock but has no control of its own that waits behind a live landing.
+
+Corrections found by probing:
+
+- The plan's premise that a commit waiting in its editor holds `index.lock` is false on Git 2.55.0 and 2.56.0 (probe run in both).
+  The wait controls use a live holder that keeps the lock file open.
+- `git rebase --exec 'git add'` resolves `git` to real Git, not the wrapper, because rebase puts its libexec
+  directory first on PATH.
+  The rebase control names the wrapper's path, so the nested invocation really goes through the wrapper.
+- A stale `landing.lock.<id>.pending` staging directory left by a killed acquirer does not block a later
+  acquisition; the recovery of such staging directories is not ported and is open.
+
+Gates run for slice 3 (container gate on Git 2.56.0 at the tree before `c740d902f7`):
+861 library tests, 43 binary tests, the candidate consumer, Clippy, and planted-guard phase 1 (noticed for every
+planted removal at that tree, including the version check and the real-lock identity).
+Host runs on Git 2.55.0: 851 library tests passed with 10 failures and 39 binary tests passed with 4 failures,
+the failures being the recorded 2.56.0-output comparisons (see the 2.55.0 evidence section).
+
+### Git 2.55.0 evidence, trailing gates
+
+Trailing gates (owner decision, 2026-10-10; these trail the cutover and are not spent on now):
+
+- Mixed incumbent and native interoperability matrix for locks, the landing lock and the real index lock.
+  One-direction fixtures where the incumbent writes and the native wrapper reads are kept only where a control already exists.
+- Long fuzz campaigns; the `index_lock_records` target and the existing targets keep a 30-second smoke run and planted controls.
+- The non-UTF-8 path field.
+- Windows checks beyond the Clippy type-check of the `#[cfg(not(unix))]` branches.
+- Release performance gates.
+- Mutation gating on non-core modules; the slice 3 files for locks, the index lock and coordination keep full gating.
+
 ## Dependencies
 
 Added to `package/git-policy/cli/Cargo.toml`, all already in the lockfile:
