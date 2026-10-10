@@ -34419,7 +34419,6 @@ and a stale "running" line left two agents' work undone for four days.
   a page is driven over its full data before it is shown.
 - The page builder cut each veto paragraph at its blank line,
   so the 23 paragraphs that end in a colon and list their calls after it
-  ("Calls made here are open to veto:")
   showed only that lead-in as their ledger wording.
   Spot-checking cards against the ledger found it;
   the list now joins,
