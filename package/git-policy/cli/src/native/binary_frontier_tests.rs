@@ -4,7 +4,11 @@
 //!       this executable does not do stops with exit status 2,
 //!  names what is missing and
 //!       leaves the repository untouched.
-//! Why: A commit, a `git add` the unported content policy should check, a real push, a worktree copy or a command beside
+//! Why:
+//!  A commit,
+//!  a `git add` the unported content policy should check,
+//!  a real push,
+//!  a worktree copy or a command beside
 //!      a landing transaction that reached Git would run without the installed wrapper's
 //!      protection,
 //!  and nothing would show it.
@@ -23,8 +27,6 @@ use super::support::{
     Fixture, Observed, fixture, git, observe, porcelain, remove, repository, run_direct,
     run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
 };
-use git_policy_cli::policy_checks::MARKDOWN_AUTOFIX_NEEDS;
-use git_policy_cli::policy_registry::PolicyId;
 use git_policy_cli::policy_trigger::Trigger;
 use git_policy_cli::refusal_frontier::LEASE_VARIABLES;
 use git_policy_cli::unported::{Unported, unported_notice};
@@ -140,10 +142,14 @@ const FILE_WARNING: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"findi
 /// The forbidden-root-context error of `git add` about the top-level `CONTEXT.md`.
 const CONTEXT_ERROR: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n";
 
-/// `git add` runs the ported content policies over what it would stage, and is refused
-/// while the unported content policy is on.
+/// `git add` runs the ported content policies over what it would stage.
+///  The built-in policy warns,
+/// a listed root-context policy refuses,
+///  and a listed Markdown or dependent-version policy refuses nothing:
+/// Markdown checks no Markdown file here,
+///  and the dependent-version policy plans only for a forwarded commit.
 #[test]
-fn add_runs_ported_content_policies_and_refuses_unported_ones() {
+fn add_runs_the_content_policies_over_what_it_stages() {
     let fixture: Fixture = fixture("frontier-add");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     std::fs::write(repo.join("file.txt"), b"no final newline").expect("file");
@@ -177,7 +183,11 @@ fn add_runs_ported_content_policies_and_refuses_unported_ones() {
             stderr: CONTEXT_ERROR.as_bytes().to_vec(),
         }
     );
-    // The unported content policy refuses under its own name, and nothing is staged.
+    assert_eq!(
+        porcelain(&fixture, repo.as_path()),
+        "A  file.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n?? second.txt\n"
+    );
+    // A listed Markdown policy at error checks a file that is not Markdown: the add stages it.
     std::fs::write(
         &configuration,
         "{ \"policies\": { \"markdown/autofix\": \"error\" } }\n",
@@ -185,47 +195,26 @@ fn add_runs_ported_content_policies_and_refuses_unported_ones() {
     .expect("configuration");
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &["add", "--", "second.txt"]),
-        stopped_with(
-            unported_notice(
-                &Unported::PolicyNeeds {
-                    policy: PolicyId::MarkdownAutofix,
-                    needs: MARKDOWN_AUTOFIX_NEEDS,
-                },
-                "add"
-            )
-            .as_str()
-        )
-    );
-    assert_eq!(
-        porcelain(&fixture, repo.as_path()),
-        "A  file.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n?? second.txt\n"
-    );
-    // Positive control: with the unported policy escaped, the same command stages the file.
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            repo.as_path(),
-            &["add", "--no-enforce-markdown/autofix", "--", "second.txt"]
-        ),
         silent_success()
     );
     assert_eq!(
         porcelain(&fixture, repo.as_path()),
         "A  file.txt\nA  second.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n"
     );
-    // The ported dependent-version policy plans only for a commit, so `git add` stages.
+    // A listed dependent-version policy at error plans only for a forwarded commit: the add stages.
+    std::fs::write(repo.join("third.txt"), b"third\n").expect("third file");
     std::fs::write(
         &configuration,
         "{ \"policies\": { \"mono/dependent-version-bump\": \"error\" } }\n",
     )
     .expect("configuration");
     assert_eq!(
-        run_wrapped(&fixture, repo.as_path(), &["add", "--", "CONTEXT.md"]),
+        run_wrapped(&fixture, repo.as_path(), &["add", "--", "third.txt"]),
         silent_success()
     );
     assert_eq!(
         porcelain(&fixture, repo.as_path()),
-        "A  CONTEXT.md\nA  file.txt\nA  second.txt\n?? cli-git.config.jsonc\n"
+        "A  file.txt\nA  second.txt\nA  third.txt\n?? CONTEXT.md\n?? cli-git.config.jsonc\n"
     );
     remove(&fixture);
 }

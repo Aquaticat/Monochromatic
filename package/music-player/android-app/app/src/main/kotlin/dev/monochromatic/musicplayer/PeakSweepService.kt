@@ -24,6 +24,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -69,27 +70,42 @@ class PeakSweepService : Service() {
 
     /** Loads the library and measures every uncached track across the parallel decode pool. */
     private suspend fun runSweep(): Boolean {
+        // A previous sweep's counts must not carry into this one, or a full count would hide the new bar.
+        SweepProgress.reset()
         /** The production track enumeration, the exact list the background worker also walks. */
         val tracks = LibrarySource.load(applicationContext)
         if (tracks.isEmpty()) {
             Log.i(TAG, "PeakSweepService found no library to index")
             return false
         }
+        // The total is known once the library is, so the scan indicator shows zero of the total before any flush.
+        SweepProgress.report(done = 0, total = tracks.size)
         /** Outcome tally from the shared parallel coordinator over the foreground decode pool. */
-        val tally = sweepTracksInParallel(
-            items = tracks,
-            workers = FOREGROUND_SWEEP_WORKERS,
-            dispatcher = foregroundSweepDispatcher,
-            flushBatch = FLUSH_BATCH,
-            notifyEvery = NOTIFY_EVERY,
-            maxTracks = Int.MAX_VALUE,
-            process = { track ->
-                measureAndCache(applicationContext, track.uri.toUri(), foregroundSweepDispatcher)
-            },
-            // The native decision cache commits each write itself, so there is nothing to flush.
-            onFlush = { },
-            onProgress = { done, total -> postProgress(done, total) },
-        )
+        val tally = try {
+            sweepTracksInParallel(
+                items = tracks,
+                workers = FOREGROUND_SWEEP_WORKERS,
+                dispatcher = foregroundSweepDispatcher,
+                flushBatch = FLUSH_BATCH,
+                notifyEvery = NOTIFY_EVERY,
+                maxTracks = Int.MAX_VALUE,
+                process = { track ->
+                    measureAndCache(applicationContext, track.uri.toUri(), foregroundSweepDispatcher)
+                },
+                // The native decision cache commits each write itself, so there is nothing to flush.
+                onFlush = { },
+                onProgress = { done, total ->
+                    SweepProgress.report(done = done, total = total)
+                    postProgress(done, total)
+                },
+            )
+        } catch (cancellation: CancellationException) {
+            // A stopped sweep must not leave its last count on the scan indicator.
+            SweepProgress.reset()
+            throw cancellation
+        }
+        // The sweep returned, so every track it was given is visited and the indicator reads done of total.
+        SweepProgress.report(done = tally.total, total = tally.total)
         Log.i(TAG, "PeakSweepService indexed ${tally.processed} of ${tally.total} tracks")
         return true
     }

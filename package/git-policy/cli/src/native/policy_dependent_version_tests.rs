@@ -1,7 +1,13 @@
-//! What: Controls for the dependent-version check over real candidates: findings on every
-//!       lifecycle, corrections on a direct fix, files a narrow fix did not select, and
+//! What:
+//!  Controls for the dependent-version check over real candidates:
+//!  findings on every
+//!       lifecycle,
+//!  corrections on a direct fix,
+//!  files a narrow fix did not select,
+//!  and
 //!       failures by cause.
-//! Why: These are the decisions the installed wrapper's policy and its direct fix make;
+//! Why:
+//!  These are the decisions the installed wrapper's policy and its direct fix make;
 //!      each control mirrors one of them.
 //!
 //! In TS you'd write (pseudocode):
@@ -18,9 +24,11 @@ use crate::candidate_object::CandidateMode;
 use crate::candidate_prediction::CandidateRequest;
 /// The engine's failure codes.
 use crate::diagnostics::EngineFailureCode;
-/// The shared candidates, corrections and lifecycle content.
+/// The shared candidates,
+///  corrections and lifecycle content.
 use crate::policy_content::{ContentState, Correction, LifecycleContent};
 /// The finding and outcome types of a check.
+use crate::event_path::EventPath;
 use crate::policy_engine::{PolicyFinding, PolicyOutcome};
 /// Scripted facts that prepare candidates with real Git.
 use crate::policy_test_support::{ScriptedFacts, main_worktree, scripted_facts};
@@ -47,7 +55,8 @@ fn manifest(name: &str, version: &str, dependency: Option<&str>) -> String {
     );
 }
 
-/// Write a file below the repository, creating its directory.
+/// Write a file below the repository,
+///  creating its directory.
 fn write(repo: &Path, path: &str, text: &str) {
     let file: PathBuf = repo.join(path);
     std::fs::create_dir_all(file.parent().expect("parent")).expect("directories");
@@ -59,8 +68,11 @@ fn path_of(name: &str) -> String {
     return format!("package/module/{name}/package.json");
 }
 
-/// A committed workspace of `@s/a`, its dependents `@s/b` and `@s/c`, and the registry
-/// configuration; then `@s/a` raised to `1.1.0` in the worktree.
+/// A committed workspace of `@s/a`,
+///  its dependents `@s/b` and `@s/c`,
+///  and the registry
+/// configuration;
+///  then `@s/a` raised to `1.1.0` in the worktree.
 fn workspace(root: &Path) -> PathBuf {
     let repo: PathBuf = repository(root, "repo");
     write(
@@ -118,7 +130,7 @@ fn stale(name: &str, from: &str, to: &str) -> PolicyFinding {
         message: format!(
             "@s/{name} reaches a package bumped in this commit (@s/a); bump it from {from} to {to} in the same commit."
         ),
-        path: Some(path_of(name)),
+        path: Some(EventPath::display(&path_of(name))),
         location: None,
         fix_available: true,
     };
@@ -134,8 +146,10 @@ fn bump(name: &str, from: &str, to: &str) -> Correction {
     };
 }
 
-/// A direct check reports each dependent with a fix available and proposes nothing; a
-/// direct fix proposes each correction; the next pass reads them back and is clean.
+/// A direct check reports each dependent with a fix available and proposes nothing;
+///  a
+/// direct fix proposes each correction;
+///  the next pass reads them back and is clean.
 #[test]
 fn direct_check_reports_and_direct_fix_corrects_every_dependent() {
     let root: PathBuf = fixture("dependent-check-fix");
@@ -170,7 +184,8 @@ fn direct_check_reports_and_direct_fix_corrects_every_dependent() {
     remove(root.as_path());
 }
 
-/// `git add` reads nothing; a scope without a workspace manifest plans nothing.
+/// `git add` reads nothing;
+///  a scope without a workspace manifest plans nothing.
 #[test]
 fn pre_forward_and_scopes_without_manifests_plan_nothing() {
     let root: PathBuf = fixture("dependent-nothing");
@@ -255,7 +270,8 @@ fn staged_edit(repo: &Path) {
     git(repo, &["add", path_of("b").as_str()]);
 }
 
-/// Remove `@s/b`'s worktree copy, keeping its index entry.
+/// Remove `@s/b`'s worktree copy,
+///  keeping its index entry.
 fn missing_copy(repo: &Path) {
     std::fs::remove_file(repo.join(path_of("b"))).expect("remove");
 }
@@ -274,6 +290,7 @@ fn a_narrow_fix_refuses_unselected_dependents_that_differ_from_head() {
         return PolicyOutcome::Failed {
             code: EngineFailureCode::PatchConflict,
             message: crate::policy_added_path::added_path_message(&path_of("b"), reason),
+            path: None,
         };
     };
     assert_eq!(
@@ -294,7 +311,8 @@ fn a_narrow_fix_refuses_unselected_dependents_that_differ_from_head() {
     );
 }
 
-/// The outcome of one check of `trigger` over `lifecycle` after `change`, and the
+/// The outcome of one check of `trigger` over `lifecycle` after `change`,
+///  and the
 /// proposals it left.
 fn checked(
     name: &str,
@@ -353,7 +371,9 @@ fn conflict_elsewhere(repo: &Path) {
     let _ = crate::test_support::git_output(repo, &["merge", "--quiet", "side"]);
 }
 
-/// Content the planner cannot use, content it cannot read, and an unsupported dependent
+/// Content the planner cannot use,
+///  content it cannot read,
+///  and an unsupported dependent
 /// each end the check with their own outcome.
 #[test]
 fn failures_follow_their_cause() {
@@ -365,7 +385,7 @@ fn failures_follow_their_cause() {
         &all,
         Trigger::DirectCheck,
     );
-    let PolicyOutcome::Failed { code, message } = broken else {
+    let PolicyOutcome::Failed { code, message, .. } = broken else {
         panic!("expected a failure, got {broken:?}");
     };
     assert_eq!(code, EngineFailureCode::PolicyIncomplete);
@@ -396,6 +416,7 @@ fn failures_follow_their_cause() {
     let PolicyOutcome::Failed {
         code: unmerged_code,
         message: unmerged_message,
+        ..
     } = conflicted
     else {
         panic!("expected a failure, got {conflicted:?}");
@@ -420,6 +441,7 @@ fn failures_follow_their_cause() {
                     "mono/dependent-version-bump could not read the worktree copy of \
                      package/module/b/package.json: Permission denied (os error 13)."
                 ),
+                path: None,
             }
         );
     }
@@ -443,6 +465,7 @@ fn a_fix_without_a_location_reports_it() {
         PolicyOutcome::Failed {
             code: EngineFailureCode::ContentUnavailable,
             message: String::from("cli-git could not locate the repository"),
+            path: None,
         }
     );
     remove(root.as_path());

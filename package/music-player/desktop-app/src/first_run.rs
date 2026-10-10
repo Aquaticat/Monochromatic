@@ -1,0 +1,268 @@
+//! First-run screen copy,
+//!  ported from `FirstRunState.kt`.
+//!
+//! The three first-run screens explain an open source that cannot be read or has
+//! no audio.
+//!  Every string and action order lives in `first_run_copy`,
+//!  so the pane
+//! and the tests read the same source.
+//!  No Slint or I/O is used.
+
+/// What:
+///      `pub const ALLOW_ACCESS_LABEL` names the filled action that asks for music access.
+/// Why:
+///      The copy and the pane both refer to this label,
+///  so one constant keeps them in step.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const ALLOW_ACCESS_LABEL = "Allow access";
+/// ```
+pub const ALLOW_ACCESS_LABEL: &str = "Allow access";
+
+/// What:
+///      `pub const OPEN_FOLDER_LABEL` names the action that chooses another folder.
+/// Why:
+///      Two states offer this action,
+///  and the pane maps the label to one callback.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const OPEN_FOLDER_LABEL = "Open a folder";
+/// ```
+pub const OPEN_FOLDER_LABEL: &str = "Open a folder";
+
+/// What:
+///      `pub const SETTINGS_LABEL` names the in-app Settings action.
+/// Why:
+///      Settings is in-app Settings,
+///  not Android's permission page,
+///  so its label stays separate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SETTINGS_LABEL = "Settings";
+/// ```
+pub const SETTINGS_LABEL: &str = "Settings";
+
+/// What:
+///      `pub const ANALYSIS_EXPLANATION` holds the true-peak sentence shown under the declined state's actions.
+/// Why:
+///      Analysis runs automatically,
+///  so the explanation states that it runs without offering a choice.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const ANALYSIS_EXPLANATION = "True peak is measured automatically for every audio file. ...";
+/// ```
+pub const ANALYSIS_EXPLANATION: &str = concat!(
+    "True peak is measured automatically for every audio file. ",
+    "Analysis uses CPU and battery; playback remains available while it runs.",
+);
+
+/// What:
+///      `pub enum FirstRunState` declares the three first-run screens.
+/// Why:
+///      Each screen explains an open source that cannot be read or has no audio,
+///  and the set is closed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type FirstRunState = "DECLINED" | "SYSTEM_NO_AUDIO" | "FOLDER_NO_AUDIO";
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FirstRunState {
+    /// The device music library is open,
+    ///  but access to music on this device was not granted.
+    Declined,
+    /// The device music library was read completely and holds no audio.
+    SystemNoAudio,
+    /// The chosen folder was read completely and holds no supported audio file.
+    FolderNoAudio,
+}
+
+/// Methods of `FirstRunState`.
+impl FirstRunState {
+    /// What:
+    ///      `pub const ALL` lists the three screens in declaration order.
+    /// Why:
+    ///      Tests walk every state,
+    ///  and this list keeps that walk exhaustive.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const ALL: readonly FirstRunState[] = ["DECLINED", "SYSTEM_NO_AUDIO", "FOLDER_NO_AUDIO"];
+    /// ```
+    pub const ALL: [FirstRunState; 3] = [
+        FirstRunState::Declined,
+        FirstRunState::SystemNoAudio,
+        FirstRunState::FolderNoAudio,
+    ];
+}
+
+/// What:
+///      `pub struct FirstRunCopy` is the immutable copy for one first-run state.
+/// Why:
+///      The pane draws exactly these strings and actions,
+///  and tests compare them directly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type FirstRunCopy = { title: string; body: string; primaryAction: string | null;
+///   secondaryActions: string[]; explainsAnalysis: boolean };
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FirstRunCopy {
+    /// Headline that names the source the state is about.
+    pub title: String,
+    /// Explanation of the open source and what the actions do.
+    pub body: String,
+    /// Label of the filled action,
+    ///  or `None` when the state draws no filled action.
+    pub primary_action: Option<&'static str>,
+    /// Labels of the outlined actions,
+    ///  in the order they are drawn.
+    pub secondary_actions: Vec<&'static str>,
+    /// True when the true-peak explanation belongs below the actions.
+    pub explains_analysis: bool,
+}
+
+/// What:
+///      `pub enum FirstRunError` is the failure of `first_run_copy`.
+/// Why:
+///      A headline without a folder name would be wrong,
+///  so the folder state refuses to build one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class FirstRunError extends Error { /* "The folder no-audio state needs a non-blank folder name." */ }
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FirstRunError {
+    /// The folder no-audio state received no folder name,
+    ///  or one that is blank.
+    BlankFolderName,
+}
+
+/// Display text for `FirstRunError`.
+impl std::fmt::Display for FirstRunError {
+    /// What:
+    ///      `fmt` writes the message for a missing or blank folder name.
+    /// Why:
+    ///      Callers and the tests compare this exact text.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// toString(): string { return "The folder no-audio state needs a non-blank folder name."; }
+    /// ```
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        return match self {
+            Self::BlankFolderName => {
+                formatter.write_str("The folder no-audio state needs a non-blank folder name.")
+            }
+        };
+    }
+}
+
+/// Marks `FirstRunError` as a standard error.
+impl std::error::Error for FirstRunError {}
+
+/// What:
+///      `pub fn first_run_copy` returns the copy for one first-run state.
+/// Why:
+///      One pure function owns every string,
+///  so the pane and the tests read the same source.
+///      `folder_name` is required only by the folder no-audio state,
+///  and is ignored by the others.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function firstRunCopy(state: FirstRunState, folderName: string | null): FirstRunCopy { ... }
+/// ```
+///
+/// # Errors
+///
+/// Returns `FirstRunError::BlankFolderName` when `state` is the folder no-audio state and
+/// `folder_name` is absent or blank.
+pub fn first_run_copy(
+    state: FirstRunState,
+    folder_name: Option<&str>,
+) -> Result<FirstRunCopy, FirstRunError> {
+    return match state {
+        FirstRunState::Declined => Ok(FirstRunCopy {
+            title: "The device music library can't be read".to_owned(),
+            body: concat!(
+                "It is open as your library, but access to music on this device was not granted. ",
+                "Allow access, or open a folder instead.",
+            )
+            .to_owned(),
+            primary_action: Some(ALLOW_ACCESS_LABEL),
+            secondary_actions: vec![OPEN_FOLDER_LABEL, SETTINGS_LABEL],
+            explains_analysis: true,
+        }),
+        FirstRunState::SystemNoAudio => Ok(FirstRunCopy {
+            title: "No audio found in the device music library".to_owned(),
+            body: concat!(
+                "The device music library was checked completely. ",
+                "You can open a folder that is not listed there.",
+            )
+            .to_owned(),
+            primary_action: Some(OPEN_FOLDER_LABEL),
+            secondary_actions: vec![SETTINGS_LABEL],
+            explains_analysis: false,
+        }),
+        FirstRunState::FolderNoAudio => folder_no_audio_copy(folder_name),
+    };
+}
+
+/// What:
+///      `folder_no_audio_copy` builds the folder no-audio copy,
+///  naming the chosen folder in the headline.
+/// Why:
+///      The headline must name the folder that was checked,
+///  so a usable name is required here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// case "FOLDER_NO_AUDIO": return { title: `No audio found in ${folderName}`, ... };
+/// ```
+fn folder_no_audio_copy(folder_name: Option<&str>) -> Result<FirstRunCopy, FirstRunError> {
+    let name = non_blank_folder_name(folder_name)?;
+    return Ok(FirstRunCopy {
+        title: format!("No audio found in {name}"),
+        body: concat!(
+            "The chosen folder was checked completely and contains no supported audio files. ",
+            "Opening a different folder changes the music source.",
+        )
+        .to_owned(),
+        primary_action: Some(OPEN_FOLDER_LABEL),
+        secondary_actions: vec![SETTINGS_LABEL],
+        explains_analysis: false,
+    });
+}
+
+/// What:
+///      `non_blank_folder_name` returns the folder name when it is present and not blank.
+/// Why:
+///      A missing or blank name would print an empty headline,
+///  so the function refuses it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function nonBlankFolderName(folderName: string | null): string {
+///   if (folderName === null || folderName.trim() === "") throw new Error("Folder name is required");
+///   return folderName;
+/// }
+/// ```
+fn non_blank_folder_name(folder_name: Option<&str>) -> Result<&str, FirstRunError> {
+    return match folder_name {
+        Some(name) if !name.trim().is_empty() => Ok(name),
+        _ => Err(FirstRunError::BlankFolderName),
+    };
+}
+
+/// Unit tests in `first_run_tests.rs`,
+///  pulled in at this point.
+#[cfg(test)]
+#[path = "first_run_tests.rs"]
+mod tests;

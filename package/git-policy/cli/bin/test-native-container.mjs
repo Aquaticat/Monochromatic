@@ -18,6 +18,12 @@ import {
 } from 'node:path';
 
 import {
+  linterCopyLines,
+  linterSnapshotEntries,
+  linterStageLines,
+  vendorLinterDependencies,
+} from './native-linter-snapshot.mjs';
+import {
   scannerSnapshotEntries,
   vendorLockedDependencies,
 } from './native-scanner-snapshot.mjs';
@@ -82,6 +88,7 @@ async function copySourceSnapshot({ context }) {
       };
     }),
     ...scannerSnapshotEntries({ context }),
+    ...linterSnapshotEntries({ context }),
     {
       from: resolve('../../../clippy.toml'),
       to: join(
@@ -126,13 +133,17 @@ async function main() {
   const base = '6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a';
   await copySourceSnapshot({ context: context.path });
   await vendorLockedDependencies({ context: context.path });
+  await vendorLinterDependencies({ context: context.path });
   await writeFile(
     join(
       context.path,
       'Containerfile',
     ),
     [
+      // The Markdown policy's linter is built from this snapshot in its own stage; only its executable is kept.
+      ...linterStageLines({ base }),
       `FROM ${base}`,
+      ...linterCopyLines(),
       'COPY package /work/package',
       // Some crate archives carry files only their owner may read, so the tester must own the vendored copy.
       'COPY --chown=1000:1000 vendor /work/vendor',

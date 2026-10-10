@@ -3,12 +3,18 @@
 //!  one check per policy,
 //!  built from
 //!       the pure rule cores and the repository facts they ask for.
-//! Why: The engine owns order, severity and stopping; the rule cores own decisions from
-//!      arguments; this module joins them and fetches a repository fact only when a core
-//!      asks. The content policies read the lifecycle's candidates: they report nothing
-//!      where a lifecycle has none. The content policy that is not ported is unavailable
-//!      wherever a lifecycle has candidates, so an unchecked file can never read as a
-//!      clean one.
+//! Why:
+//!  The engine owns order,
+//!  severity and stopping;
+//!  the rule cores own decisions from
+//!      arguments;
+//!  this module joins them and fetches a repository fact only when a core
+//!      asks.
+//!  The content policies read the lifecycle's candidates:
+//!  they report nothing
+//!      where a lifecycle has none.
+//!  The Markdown policy checks the candidates it is given
+//!      with the native Markdown linter.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -28,14 +34,19 @@
 /// import { decideRequireRoot, resolveRequireRoot } from './rule_require_root.ts';
 /// ```
 use super::diagnostics::EngineFailureCode;
-/// Which worktree a command targets, for the linked-worktree rule.
+/// Which worktree a command targets,
+///  for the linked-worktree rule.
 use super::effective_target::{EffectiveTarget, classify_effective_target};
+/// The Markdown autofix check,
+///  its state and the linter the executable gives it.
+use super::markdown_linter::executable_linter;
 /// What the lifecycle offers content policies,
 ///  and its prepared candidates.
 use super::policy_content::{ContentState, LifecycleContent};
 /// The dependent-version check over the candidate state.
 use super::policy_dependent_version::check_dependent_version;
-/// The engine's check interface, findings and outcomes.
+/// The engine's check interface,
+///  findings and outcomes.
 use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 /// The built-in final-newline check over candidates.
 use super::policy_final_newline::check_final_newline;
@@ -45,6 +56,7 @@ use super::policy_forbidden_strings::{
     ScannerSettings, ScannerState, check_forbidden_strings, default_scanner_settings,
     unloaded_scanner,
 };
+use super::policy_markdown::{MarkdownState, check_markdown, markdown_state};
 /// The typed policy identities.
 use super::policy_registry::PolicyId;
 /// The optional root-context check over candidates.
@@ -53,7 +65,8 @@ use super::policy_root_context::check_root_context;
 use super::policy_trigger::Trigger;
 /// The facts interface every check asks.
 use super::repository_facts::RepositoryFacts;
-/// Where a command runs, and the directory Git works in.
+/// Where a command runs,
+///  and the directory Git works in.
 use super::repository_location::{RepositoryLocation, effective_directory};
 /// The add-explicit rule core.
 use super::rule_add_explicit::{BULK_ADD_CODE, decide_add_explicit};
@@ -90,18 +103,22 @@ use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path of raw bytes.
 use std::path::PathBuf;
 
-/// What the Markdown autofix policy needs that is not ported.
-pub const MARKDOWN_AUTOFIX_NEEDS: &str = "the native Markdown linter";
-
-/// What: The shipped policies over one invocation. `<F: RepositoryFacts>` says the record
-///       works with any one type `F` that provides the facts interface, chosen where the
-///       record is built: real Git in the executable, a script in tests.
-/// Why:  Holding the provider by value keeps its remembered answers and its query count
-///       for the whole invocation, and lets a test read them back afterwards.
+/// What:
+///  The shipped policies over one invocation.
+///  `<F: RepositoryFacts>` says the record
+///       works with any one type `F` that provides the facts interface,
+///  chosen where the
+///       record is built:
+///  real Git in the executable,
+///  a script in tests.
+/// Why:
+///   Holding the provider by value keeps its remembered answers and its query count
+///       for the whole invocation,
+///  and lets a test read them back afterwards.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type ShippedChecks<F extends RepositoryFacts> = { facts: F; arguments: string[]; candidates: LifecycleContent; allowedWorktreeDirs: string[]; content: ContentState };
+/// type ShippedChecks<F extends RepositoryFacts> = { facts: F; arguments: string[]; candidates: LifecycleContent; allowedWorktreeDirs: string[]; content: ContentState; markdown: MarkdownState };
 /// ```
 pub struct ShippedChecks<F: RepositoryFacts> {
     /// Where repository facts come from.
@@ -124,6 +141,9 @@ pub struct ShippedChecks<F: RepositoryFacts> {
     /// The forbidden-strings scanner once loaded,
     ///  shared by every later scan.
     pub scanner: ScannerState,
+    /// The Markdown autofix policy's options,
+    ///  linter and exclude patterns.
+    pub markdown: MarkdownState,
 }
 
 /// What:
@@ -153,6 +173,9 @@ pub fn shipped_checks<F: RepositoryFacts>(
         content: ContentState::new(),
         scanner_settings: default_scanner_settings(),
         scanner: unloaded_scanner(),
+        // An empty environment has no PATH: until a lifecycle gives the invocation's
+        // environment, a Markdown candidate fails as unchecked rather than passing.
+        markdown: markdown_state(Box::new(executable_linter(&[]))),
     };
 }
 
@@ -173,6 +196,8 @@ fn fact_unavailable(message: String) -> PolicyOutcome {
     return PolicyOutcome::Failed {
         code: EngineFailureCode::ContentUnavailable,
         message,
+        // `None`: a repository fact is about no single file.
+        path: None,
     };
 }
 
@@ -353,28 +378,6 @@ fn check_add_explicit(arguments: &[OsString]) -> PolicyOutcome {
 }
 
 /// What:
-///  The check of a content policy that is not ported.
-///  `&LifecycleContent` borrows
-///       what the lifecycle offers;
-///  `needs` names what is missing.
-/// Why:
-///   No candidates means no findings;
-///  candidates nobody can check mean the policy
-///       cannot answer,
-///  which refuses the command instead of letting it through.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const unportedContent = (candidates, needs) => candidates.kind === 'none' ? clean() : { kind: 'unavailable', needs };
-/// ```
-fn unported_content(candidates: &LifecycleContent, needs: &'static str) -> PolicyOutcome {
-    match candidates {
-        LifecycleContent::None => return clean(),
-        LifecycleContent::Requested(_) => return PolicyOutcome::Unavailable(needs),
-    }
-}
-
-/// What:
 ///  `impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F>` provides the engine's
 ///       interface for the shipped policies,
 ///  for any facts provider `F`.
@@ -387,8 +390,10 @@ fn unported_content(candidates: &LifecycleContent, needs: &'static str) -> Polic
 /// check(policy: PolicyId, trigger: PolicyTrigger): Promise<PolicyOutcome> { switch (policy) { /* ... */ } }
 /// ```
 impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
-    /// What: The outcome of one policy at one lifecycle point.
-    /// Why:  Each arm calls the one check that owns the policy.
+    /// What:
+    ///  The outcome of one policy at one lifecycle point.
+    /// Why:
+    ///   Each arm calls the one check that owns the policy.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -423,7 +428,13 @@ impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
                 return check_root_context(&mut self.content, &self.candidates, &mut self.facts);
             }
             PolicyId::MarkdownAutofix => {
-                return unported_content(&self.candidates, MARKDOWN_AUTOFIX_NEEDS);
+                return check_markdown(
+                    &mut self.content,
+                    &self.candidates,
+                    &mut self.facts,
+                    &mut self.markdown,
+                    trigger,
+                );
             }
             PolicyId::DependentVersionBump => {
                 return check_dependent_version(

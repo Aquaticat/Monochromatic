@@ -18,6 +18,10 @@ run = "cargo mutants --list --no-config"
 description = "Generate the standalone native wrapper Cargo lockfile"
 run = "cargo generate-lockfile --offline"
 
+[tasks."native:lock:members"]
+description = "Record a changed dependency list of the native wrapper in its lockfile without moving any other locked version"
+run = "cargo update --offline --workspace"
+
 [tasks."native:format"]
 description = "Format native wrapper Rust source without changing TypeScript"
 run = "cargo fmt"

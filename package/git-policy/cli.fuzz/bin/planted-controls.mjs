@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import { dependentVersionPlants } from './planted-dependent-version.mjs';
+import { markdownPlants } from './planted-markdown.mjs';
 
 /** Preserve the failed verification boundary rather than masking it with a cleanup error. */
 class PlantedControlError extends Error {}
@@ -145,6 +146,7 @@ const plants = [
     }],
   },
   ...dependentVersionPlants,
+  ...markdownPlants,
 ];
 
 /** Run the generator controls in the disposable sidecar; report status and the failing control names. */

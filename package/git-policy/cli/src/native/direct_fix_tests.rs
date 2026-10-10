@@ -31,7 +31,9 @@ use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
-use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+/// The event form of a pathname.
+use crate::event_path::EventPath;
+use crate::policy_checks::{ShippedChecks, shipped_checks};
 use crate::policy_content::{Correction, LifecycleContent};
 use crate::policy_convergence::{
     Convergence, FIX_PASS_LIMIT_MESSAGE, FixPasses, PassResult as ConvergencePass,
@@ -74,9 +76,9 @@ fn fix_checks(repo: &Path) -> ShippedChecks<ScriptedFacts> {
 
 /// The fix summary of `passes` changed passes over these paths.
 fn summary(passes: u64, paths: &[&str]) -> PolicyEvent {
-    let mut changed_paths: Vec<String> = Vec::new();
+    let mut changed_paths: Vec<EventPath> = Vec::new();
     for path in paths {
-        changed_paths.push(String::from(*path));
+        changed_paths.push(EventPath::from_git_bytes(path.as_bytes()));
     }
     return PolicyEvent::FixSummary {
         trigger: Trigger::DirectFix,
@@ -227,34 +229,22 @@ fn a_clean_fix_installs_and_reports_only_its_summary() {
     remove(root.as_path());
 }
 
-/// A last pass that refuses installs nothing and reports that pass.
-///  Only `final-newline`,
-/// `markdown/autofix` and `mono/dependent-version-bump` run on a direct fix,
-///  as in the
-/// installed wrapper,
-///  so a refusal is the one unclean last pass real policies can reach.
+/// A fix with the dependent-version policy listed at warn completes its last pass and installs the
+///  final-newline correction,
+///  because the wired policy plans nothing for a fix with no manifest to raise.
 #[test]
-fn a_fix_whose_last_pass_refuses_installs_nothing() {
-    let root: PathBuf = fixture("direct-fix-blocked");
+fn a_fix_with_the_wired_policy_listed_completes_and_installs() {
+    let root: PathBuf = fixture("direct-fix-listed");
     let repo: PathBuf = untidy_repository(root.as_path());
-    // The unported policy refuses in the second pass: blocked, nothing installed.
-    let refused: StageRequest = fix_request(with_severity(
+    let listed: StageRequest = fix_request(with_severity(
         &PolicyConfig::defaults(),
-        PolicyId::MarkdownAutofix,
+        PolicyId::DependentVersionBump,
         Severity::Warn,
     ));
-    let mut refusing: ShippedChecks<ScriptedFacts> = fix_checks(repo.as_path());
-    assert_eq!(
-        run_direct_fix(&refused, &mut refusing, Some(repo.as_path())),
-        pass_with(
-            Vec::new(),
-            StageEnd::Unavailable(Unavailable::Policy {
-                policy: PolicyId::MarkdownAutofix,
-                needs: MARKDOWN_AUTOFIX_NEEDS,
-            })
-        )
-    );
-    assert_eq!(std::fs::read(repo.join("a.txt")).expect("a"), b"a");
+    let mut checks: ShippedChecks<ScriptedFacts> = fix_checks(repo.as_path());
+    let result: PassResult = run_direct_fix(&listed, &mut checks, Some(repo.as_path()));
+    assert_eq!(result.end, StageEnd::Completed);
+    assert_eq!(std::fs::read(repo.join("a.txt")).expect("a"), b"a\n");
     remove(root.as_path());
 }
 
@@ -377,7 +367,7 @@ fn every_ending_reports_what_the_installed_wrapper_reports() {
             severity: Severity::Error,
             code: "noncanonical-final-newline",
             message: String::from("message"),
-            path: Some(String::from("a.txt")),
+            path: Some(EventPath::from_git_bytes("a.txt".as_bytes())),
             location: None,
             fix_available: false,
         })],

@@ -14,8 +14,9 @@
 //! // expect(await checks.check('require-root', 'pre-forward')).toEqual({ kind: 'findings', findings: [] });
 //! ```
 
-/// The adapter under test, the engine types it returns and the scripted facts.
-use super::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+/// The adapter under test,
+///  the engine types it returns and the scripted facts.
+use super::{ShippedChecks, shipped_checks};
 use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::diagnostics::EngineFailureCode;
@@ -154,6 +155,7 @@ fn require_root_rejects_a_directory_below_the_top_level() {
             PolicyOutcome::Failed {
                 code: EngineFailureCode::ContentUnavailable,
                 message: String::from("git could not be asked"),
+                path: None,
             },
             location_only()
         )
@@ -243,6 +245,7 @@ fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
             PolicyOutcome::Failed {
                 code: EngineFailureCode::ContentUnavailable,
                 message: String::from("git could not be asked"),
+                path: None,
             },
             location_only()
         )
@@ -346,6 +349,7 @@ fn branch_worktree_rejects_creation_and_guessed_creation() {
             PolicyOutcome::Failed {
                 code: EngineFailureCode::ContentUnavailable,
                 message: String::from("no git"),
+                path: None,
             },
             asked
         )
@@ -379,12 +383,17 @@ fn unprepared() -> PolicyOutcome {
     return PolicyOutcome::Failed {
         code: EngineFailureCode::ContentUnavailable,
         message: String::from("the scripted facts prepare no candidates"),
+        path: None,
     };
 }
 
-/// Content policies report nothing without candidates; with candidates the ported ones
-/// read them and the unported one refuses without reading. The dependent-version policy
-/// reads nothing for `git add`, the one forwarded command with candidates, as the installed
+/// Content policies report nothing without candidates;
+///  with candidates the ported ones
+/// read them and the unported one refuses without reading.
+///  The dependent-version policy
+/// reads nothing for `git add`,
+///  the one forwarded command with candidates,
+///  as the installed
 /// wrapper's policy plans only for a forwarded `commit`.
 #[test]
 fn content_policies_follow_the_lifecycle_content() {
@@ -408,16 +417,13 @@ fn content_policies_follow_the_lifecycle_content() {
     let mut with: ShippedChecks<ScriptedFacts> = checks(&["add", "file"], unlocatable());
     with.candidates = add_candidates();
     assert_eq!(
-        with.check(PolicyId::MarkdownAutofix, Trigger::PreForward),
-        PolicyOutcome::Unavailable(MARKDOWN_AUTOFIX_NEEDS)
-    );
-    assert_eq!(
         with.check(PolicyId::DependentVersionBump, Trigger::PreForward),
         clean()
     );
     assert_eq!(with.facts.asked, Vec::<String>::new());
     for policy in [
         PolicyId::FinalNewline,
+        PolicyId::MarkdownAutofix,
         PolicyId::ForbiddenRootContext,
         PolicyId::ForbiddenStrings,
         PolicyId::DependentVersionBump,

@@ -18,7 +18,7 @@ package dev.monochromatic.musicplayer
 // import { clickable, LazyColumn } from "compose/foundation";
 // ```
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +40,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.staticCompositionLocalOf
 
 // What:     Imports from `androidx.compose.ui` bring in the modifier, color, font weight, semantics, and dp units.
 // Why:      The current row is bold, uses the surface role as its background, and publishes its selected state.
@@ -50,6 +52,15 @@ import androidx.compose.runtime.LaunchedEffect
 // ```
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
@@ -118,6 +129,17 @@ private val TEXT_SPACING: Dp = 2.dp
 /** Space above a subfolder header, which sets it apart from the track rows above it. */
 private val HEADER_TOP_PADDING: Dp = 16.dp
 
+// What:     `internal val LocalTrackRowMenuOpener` carries the menu opener from the player host to every track row.
+// Why:      The track list is drawn through the player content, which takes no menu parameter, so the host provides the
+//           opener through this local instead of threading a new parameter through every screen.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LocalTrackRowMenuOpener = createContext<((index: number) => void) | null>(null);
+// ```
+/** Composition local holding the track menu opener, or null when no host provides one. */
+internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int) -> Unit)?> = staticCompositionLocalOf { null }
+
 // What:     `fun trackListPane(...)` draws the folder's flat list and keeps the playing row in view.
 // Why:      The caller owns the entries and the playback action, so the pane keeps only its scroll state.
 //
@@ -125,11 +147,17 @@ private val HEADER_TOP_PADDING: Dp = 16.dp
 // ```ts
 // function TrackListPane(props: { entries: TrackListEntry[]; onPlay: (indexInLibrary: number) => void }): UIElement;
 // ```
-/** Draws track rows and subfolder headers in one scrolling list, playing a row by its library index when tapped. */
+/**
+ * Draws track rows and subfolder headers in one scrolling list, playing a row by its library index when tapped.
+ *
+ * @param onOpenMenu Opens the track context menu for a row's library index on long press, secondary click, or the
+ *     menu key; defaults to the opener the host provides through [LocalTrackRowMenuOpener], and null disables it.
+ */
 @Composable
 fun trackListPane(
     entries: List<TrackListEntry>,
     onPlay: (Int) -> Unit,
+    onOpenMenu: ((Int) -> Unit)? = LocalTrackRowMenuOpener.current,
     modifier: Modifier = Modifier,
 ) {
     /** Scroll state of the list, which the current-row effect moves. */
@@ -144,7 +172,7 @@ fun trackListPane(
     LazyColumn(state = listState, modifier = modifier) {
         items(items = entries, key = { entry -> keyOf(entry) }) { entry ->
             when (entry) {
-                is TrackListEntry.RowEntry -> trackRow(row = entry.row, onPlay = onPlay)
+                is TrackListEntry.RowEntry -> trackRow(row = entry.row, onPlay = onPlay, onOpenMenu = onOpenMenu)
                 is TrackListEntry.HeaderEntry -> subfolderHeader(name = entry.name, trackCount = entry.trackCount)
             }
         }
@@ -194,9 +222,12 @@ private fun keyOf(entry: TrackListEntry): String = when (entry) {
 // ```ts
 // function TrackRow(props: { row: TrackRowModel; onPlay: (index: number) => void }): UIElement;
 // ```
-/** Draws one track row with its title, optional supporting line, and current-row treatment. */
+/**
+ * Draws one track row with its title, optional supporting line, and current-row treatment.
+ * Tap plays the row; long press, a secondary-button press, or the menu key opens its context menu.
+ */
 @Composable
-private fun trackRow(row: TrackRowModel, onPlay: (Int) -> Unit) {
+private fun trackRow(row: TrackRowModel, onPlay: (Int) -> Unit, onOpenMenu: ((Int) -> Unit)?) {
     /** Surface role behind the current row (D42), and transparent behind every other row. */
     val rowBackground: Color = if (row.isCurrent) {
         MaterialTheme.colorScheme.surfaceContainerLow
@@ -205,12 +236,37 @@ private fun trackRow(row: TrackRowModel, onPlay: (Int) -> Unit) {
     }
     /** Weight of the title, bold for the current row and the body default for the rest. */
     val titleWeight: FontWeight? = if (row.isCurrent) FontWeight.Bold else null
+    /** Long-press action that opens this row's menu, or null when no menu opener is provided. */
+    val openMenuForRow: (() -> Unit)? = onOpenMenu?.let { open -> { open(row.indexInLibrary) } }
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = ROW_MIN_HEIGHT)
             .background(rowBackground)
-            .clickable(role = Role.Button, onClick = { onPlay(row.indexInLibrary) })
+            .combinedClickable(
+                role = Role.Button,
+                onClick = { onPlay(row.indexInLibrary) },
+                onLongClick = openMenuForRow,
+            )
+            .pointerInput(row.indexInLibrary, onOpenMenu) {
+                awaitPointerEventScope {
+                    while (true) {
+                        /** Next pointer event on this row, read before the row's own tap handling sees it. */
+                        val event: PointerEvent = awaitPointerEvent()
+                        if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed) {
+                            openMenuForRow?.invoke()
+                        }
+                    }
+                }
+            }
+            .onKeyEvent { event ->
+                if (event.key == Key.Menu && event.type == KeyEventType.KeyUp && openMenuForRow != null) {
+                    openMenuForRow.invoke()
+                    true
+                } else {
+                    false
+                }
+            }
             .semantics { selected = row.isCurrent }
             .padding(horizontal = ROW_HORIZONTAL_PADDING, vertical = ROW_VERTICAL_PADDING),
         verticalArrangement = Arrangement.spacedBy(TEXT_SPACING),

@@ -1,24 +1,37 @@
-//! What: The `mono/dependent-version-bump` check: the native planner over the lifecycle's
-//!       prepared candidate state, its findings, and the corrections a direct fix applies.
-//! Why: The installed wrapper's policy (`dependent-version-bump-policy.ts`) reports one
-//!      finding per publishable dependent of a raised manifest, each with a full-content
-//!      patch, on `direct-check` and `direct-fix`; on `pre-forward` it plans only for a
-//!      forwarded `commit`. `git commit` is refused before policies run in this executable
-//!      (`refusal_frontier::command_frontier`), so `pre-forward` reaches this check only
-//!      for `git add`, where the policy finds nothing.
+//! What:
+//!  The `mono/dependent-version-bump` check:
+//!  the native planner over the lifecycle's
+//!       prepared candidate state,
+//!  its findings,
+//!  and the corrections a direct fix applies.
+//! Why:
+//!  The installed wrapper's policy (`dependent-version-bump-policy.ts`) reports one
+//!      finding per publishable dependent of a raised manifest,
+//!  each with a full-content
+//!      patch,
+//!  on `direct-check` and `direct-fix`;
+//!  on `pre-forward` it plans only for a
+//!      forwarded `commit`.
+//!  `git commit` is refused before policies run in this executable
+//!      (`refusal_frontier::command_frontier`),
+//!  so `pre-forward` reaches this check only
+//!      for `git add`,
+//!  where the policy finds nothing.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! // const findings = await findDependentBumps(context); // patches applied by a direct fix
 //! ```
 
-/// The candidate's mode, which a correction keeps.
+/// The candidate's mode,
+///  which a correction keeps.
 use super::candidate_object::CandidateMode;
 /// The candidate's change kinds.
 use super::candidate_record::CandidateChange as RecordChange;
 /// The candidate and version types.
 use super::candidate_version::{Candidate as LayerCandidate, CandidateVersion};
-/// The planner's failures, modes and messages.
+/// The planner's failures,
+///  modes and messages.
 use super::dependent_version_content::{
     ContentUnavailable, PlanError, TrackedMode, display_path, plan_error_message,
 };
@@ -26,12 +39,15 @@ use super::dependent_version_content::{
 use super::dependent_version_lifecycle::{LifecycleWorkspace, lifecycle_workspace};
 /// The planner's bump of one manifest.
 use super::dependent_version_plan::ManifestBump;
-/// The planner's request, decision and findings.
+/// The planner's request,
+///  decision and findings.
 use super::dependent_version_policy::{
     Candidate, CandidateChange, DependentFinding, DependentRequest, find_dependent_bumps,
     should_plan,
 };
 /// The engine's failure codes.
+/// The event pathname type the outcome and finding carry.
+use super::event_path::EventPath;
 use super::diagnostics::EngineFailureCode;
 /// The pathname conversion every worktree read uses.
 use super::git_metadata::path_from_git_bytes;
@@ -51,11 +67,14 @@ use super::repository_facts::RepositoryFacts;
 use super::worktree_identity::worktree_root;
 /// Borrowed and owned filesystem paths.
 use std::path::{Path, PathBuf};
-/// `Rc<T>` is a shared, read-only handle.
+/// `Rc<T>` is a shared,
+///  read-only handle.
 use std::rc::Rc;
 
-/// What: The outcome "nothing found".
-/// Why:  Most lifecycles end this way.
+/// What:
+///  The outcome "nothing found".
+/// Why:
+///   Most lifecycles end this way.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -65,19 +84,28 @@ fn clean() -> PolicyOutcome {
     return PolicyOutcome::Findings(Vec::new());
 }
 
-/// What: The outcome of a check that could not finish, with its code.
-/// Why:  Unreadable content and a refused correction each have their own code.
+/// What:
+///  The outcome of a check that could not finish,
+///  with its code.
+/// Why:
+///   Unreadable content and a refused correction each have their own code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const failed = (code, message): PolicyOutcome => ({ kind: 'failed', code, message });
 /// ```
 fn failed(code: EngineFailureCode, message: String) -> PolicyOutcome {
-    return PolicyOutcome::Failed { code, message };
+    return PolicyOutcome::Failed {
+        code,
+        message,
+        path: None,
+    };
 }
 
-/// What: The planner's candidate for a layer candidate.
-/// Why:  The planner names only the path and the change.
+/// What:
+///  The planner's candidate for a layer candidate.
+/// Why:
+///   The planner names only the path and the change.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -95,8 +123,12 @@ fn planner_candidate(candidate: &LayerCandidate) -> Candidate {
     };
 }
 
-/// What: The outcome for a planner failure, coded by its cause.
-/// Why:  Content that could not be read is `content-unavailable`; content the planner
+/// What:
+///  The outcome for a planner failure,
+///  coded by its cause.
+/// Why:
+///   Content that could not be read is `content-unavailable`;
+///  content the planner
 ///       cannot use is `policy-incomplete`.
 ///
 /// In TS you'd write (pseudocode):
@@ -111,9 +143,15 @@ fn plan_failure(error: &PlanError) -> PolicyOutcome {
     return failed(code, plan_error_message(error));
 }
 
-/// What: The engine's finding for a planner finding. A finding with a patch says a fix is
-///       available on every lifecycle, as the installed wrapper's stage says.
-/// Why:  The person sees the dependent, the versions, and that `git cli-git fix` applies it.
+/// What:
+///  The engine's finding for a planner finding.
+///  A finding with a patch says a fix is
+///       available on every lifecycle,
+///  as the installed wrapper's stage says.
+/// Why:
+///   The person sees the dependent,
+///  the versions,
+///  and that `git cli-git fix` applies it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -123,14 +161,18 @@ fn policy_finding(finding: &DependentFinding) -> PolicyFinding {
     return PolicyFinding {
         code: finding.code,
         message: finding.message.clone(),
-        path: finding.path.as_deref().map(display_path),
+        path: finding.path.as_deref().map(EventPath::from_git_bytes),
         location: None,
         fix_available: finding.patch.is_some(),
     };
 }
 
-/// What: The `patch-conflict` outcome for a file the fix did not select.
-/// Why:  The message names the file, the reason, and both remedies.
+/// What:
+///  The `patch-conflict` outcome for a file the fix did not select.
+/// Why:
+///   The message names the file,
+///  the reason,
+///  and both remedies.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -143,10 +185,16 @@ fn conflict(path: &str, reason: &str) -> PolicyOutcome {
     );
 }
 
-/// What: The correction a direct fix applies for one bump, after checking a file the fix
-///       did not select. `Err` is the outcome that ends the check instead.
-/// Why:  A selected file is corrected from its candidate bytes. An unselected one must hold
-///       `HEAD`'s blob in the index and the worktree; then its candidate bytes are `HEAD`'s,
+/// What:
+///  The correction a direct fix applies for one bump,
+///  after checking a file the fix
+///       did not select.
+///  `Err` is the outcome that ends the check instead.
+/// Why:
+///   A selected file is corrected from its candidate bytes.
+///  An unselected one must hold
+///       `HEAD`'s blob in the index and the worktree;
+///  then its candidate bytes are `HEAD`'s,
 ///       and the installer's check that the worktree still holds them repeats the
 ///       precondition at install time.
 ///
@@ -209,11 +257,19 @@ fn correction_of(
     }
 }
 
-/// What: Check the lifecycle's candidate state. `<F: RepositoryFacts>` accepts any facts
-///       provider; `&mut ContentState` lends the shared candidates and takes corrections.
-/// Why:  See the module comment. Corrections are proposed only on `direct-fix`, the one
-///       lifecycle that applies them; every proposal of the pass is checked before any
-///       is recorded, so a refused one leaves the pass without partial corrections.
+/// What:
+///  Check the lifecycle's candidate state.
+///  `<F: RepositoryFacts>` accepts any facts
+///       provider;
+///  `&mut ContentState` lends the shared candidates and takes corrections.
+/// Why:
+///   See the module comment.
+///  Corrections are proposed only on `direct-fix`,
+///  the one
+///       lifecycle that applies them;
+///  every proposal of the pass is checked before any
+///       is recorded,
+///  so a refused one leaves the pass without partial corrections.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
