@@ -477,6 +477,12 @@ pub mod shadow_links;
 /// The shadow ref store: snapshot, private target, symbolic refs and `HEAD`.
 pub mod shadow_refs;
 
+/// The shadow conclusion copies at preparation.
+pub mod conclusion_copy;
+
+/// Creation of the shadow repository of one transaction.
+pub mod shadow_create;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
