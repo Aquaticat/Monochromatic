@@ -27,17 +27,14 @@ const config: CliGitConfig = defineConfig({
   policies: {
     // Rewrites Markdown image links that point at LFS-tracked files to the
     // LFS server's immutable object URLs inside the commit transaction, so
-    // GitHub renders the image instead of the pointer (issue #476). Only the
-    // lfs-image-url rule runs; package/ssg/ is excluded because those MDX
-    // pages resolve images through the site build, not GitHub.
+    // GitHub renders the image instead of the pointer (issue #476). The policy
+    // runs the monochromatic-lint executable from PATH with only the
+    // markdown/lfs-image-url rule (both are the policy's defaults); package/ssg/
+    // is excluded because those MDX pages resolve images through the site
+    // build, not GitHub.
     'markdown/autofix': [
       'warn',
       {
-        command: [
-          'node',
-          'package/cli/markdown-lint/src/cli.ts',
-        ],
-        rules: ['lfs-image-url',],
         exclude: ['package/ssg/',],
       },
     ],
