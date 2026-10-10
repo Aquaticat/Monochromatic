@@ -42,6 +42,8 @@ use super::commit_recovery::recovery_directories;
 use super::forwarded_command::ResolvedCommand;
 /// The repository shape the invocation selects.
 use super::worktree_identity::WorktreeIdentity;
+/// The once-per-process Git version check.
+use super::git_version::{GitRelease, check_git_version};
 /// `OsString` is owned operating-system text of raw bytes.
 use std::ffi::OsString;
 /// `Instant` starts the wait's clock.
@@ -243,6 +245,23 @@ pub fn wait_for_lock(
 /// async function coordinateIndexWriter({ command, gitPath, timeoutMs, environment }): Promise<IndexWriterCoordination>;
 /// ```
 pub fn coordinate_index_writer(input: &CoordinationInput<'_>) -> Result<Option<Coordination>, CoordinationFailure> {
+    return coordinate_index_writer_checked(input, check_git_version);
+}
+
+/// What:
+///  The coordination with the Git version answer supplied,
+///  so the controls can refuse an old Git.
+/// Why:
+///   The process-wide check answers once per process and cannot be made to refuse inside a test.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// coordinateIndexWriter({ ..., requireGit: checkGitVersion })
+/// ```
+pub fn coordinate_index_writer_checked(
+    input: &CoordinationInput<'_>,
+    version: fn(&GitContext) -> Result<GitRelease, String>,
+) -> Result<Option<Coordination>, CoordinationFailure> {
     if !is_index_writer(input.command) {
         return Ok(None);
     }
@@ -250,6 +269,10 @@ pub fn coordinate_index_writer(input: &CoordinationInput<'_>) -> Result<Option<C
         Some(found) => found,
         None => return Ok(None),
     };
+    // The version check runs once per process, before the first work that depends on Git's behavior.
+    if let Err(reason) = version(input.context) {
+        return Err(CoordinationFailure::Stop(reason));
+    }
     let lock: OwnerLock = acquire_landing(input.context, input.identity, &location)?;
     let consequence: String = format!("did not run git {}", command_name(input.command));
     match wait_for_lock(location.real_index_path.as_path(), input.timeout_ms, consequence.as_str()) {

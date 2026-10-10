@@ -12,6 +12,7 @@ use crate::test_support::{REAL_GIT, fixture, git_context, isolated_overlay, remo
 use crate::transaction_git::GitContext;
 use crate::transaction_lease::LANDING_LEASE_VARIABLE;
 use crate::worktree_identity::resolve_worktree_identity;
+use crate::transaction_registry::ensure_transaction_root;
 use std::path::PathBuf;
 
 /// A resolved command `-C <repo> <words…>` whose subcommand is the first word.
@@ -262,4 +263,68 @@ fn a_read_failure_renders_as_content_unavailable() {
     let failure: CoordinationFailure = CoordinationFailure::Stop(String::from("registry unsafe"));
     assert!(failure.stderr().contains("\"code\":\"content-unavailable\""));
     assert!(failure.stderr().contains("registry unsafe"));
+}
+
+/// A Git that reports a release before 2.55.0,
+///  as the version answer.
+fn old_git(_context: &GitContext) -> Result<crate::git_version::GitRelease, String> {
+    return Err(String::from("real Git reports version 2.54.0; cli-git needs Git 2.55.0 or newer"));
+}
+
+/// A Git that reports the minimum release,
+///  as the version answer.
+fn minimum_git(_context: &GitContext) -> Result<crate::git_version::GitRelease, String> {
+    return Ok((2, 55, 0));
+}
+
+/// An index writer on an older Git is refused before the landing lock is taken:
+///  the lock is free
+/// afterwards and nothing is coordinated.
+///  The minimum release goes through to the lock.
+#[test]
+fn an_older_git_refuses_an_index_writer_before_the_landing_lock() {
+    let (root, repo): (PathBuf, PathBuf) = scene("coordination-old-git");
+    let command: ResolvedCommand = command_in(repo.as_path(), &["add", "a.txt"]);
+    let input: CoordinationInput<'_> = CoordinationInput {
+        context: &context(),
+        identity: &identity_of(repo.as_path()),
+        command: &command,
+        environment: &[],
+        timeout_ms: 100,
+    };
+    let refused: CoordinationFailure = match coordinate_index_writer_checked(&input, old_git) {
+        Err(found) => found,
+        Ok(_) => panic!("an older Git must refuse the index writer"),
+    };
+    assert!(refused.stderr().contains("2.55.0 or newer"), "{}", refused.stderr());
+    ensure_transaction_root(repo.join(".git/cli-git-transactions").as_path()).expect("registry");
+    let free: Option<OwnerLock> = try_acquire_owner_lock(
+        repo.join(".git/cli-git-transactions/landing.lock").as_path(),
+        None,
+    )
+    .expect("a readable lock");
+    assert!(free.is_some(), "the refused writer never took the landing lock");
+    remove(root.as_path());
+}
+
+/// The minimum release goes through to the landing lock,
+///  which the coordination then holds.
+#[test]
+fn the_minimum_release_is_accepted_and_locks() {
+    let (root, repo): (PathBuf, PathBuf) = scene("coordination-minimum-git");
+    let command: ResolvedCommand = command_in(repo.as_path(), &["add", "a.txt"]);
+    let input: CoordinationInput<'_> = CoordinationInput {
+        context: &context(),
+        identity: &identity_of(repo.as_path()),
+        command: &command,
+        environment: &[],
+        timeout_ms: 100,
+    };
+    let held: Coordination = match coordinate_index_writer_checked(&input, minimum_git) {
+        Ok(Some(found)) => found,
+        Ok(None) => panic!("an index writer coordinates"),
+        Err(failure) => panic!("the minimum release is accepted: {}", failure.stderr()),
+    };
+    held.release().expect("release");
+    remove(root.as_path());
 }

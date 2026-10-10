@@ -36,17 +36,17 @@ fn unreadable_version_output_is_refused() {
     assert_eq!(parse_git_version(&[0xff, 0xfe, 0x00]), None);
 }
 
-/// The minimum is 2.56.0 itself,
+/// The minimum is 2.55.0 itself,
 ///  which is supported,
 ///  and every release before it is not.
 #[test]
 fn the_minimum_is_inclusive() {
-    assert_eq!(MINIMUM_GIT_VERSION, (2, 56, 0));
+    assert_eq!(MINIMUM_GIT_VERSION, (2, 55, 0));
+    assert!((2, 55, 0) >= MINIMUM_GIT_VERSION);
     assert!((2, 56, 0) >= MINIMUM_GIT_VERSION);
-    assert!((2, 56, 1) >= MINIMUM_GIT_VERSION);
     assert!((3, 0, 0) >= MINIMUM_GIT_VERSION);
-    assert!((2, 55, 9) < MINIMUM_GIT_VERSION);
-    assert!((2, 55, 0) < MINIMUM_GIT_VERSION);
+    assert!((2, 54, 9) < MINIMUM_GIT_VERSION);
+    assert!((2, 50, 0) < MINIMUM_GIT_VERSION);
 }
 
 /// The unsupported message names the Git that was asked,
@@ -58,7 +58,7 @@ fn the_unsupported_message_names_the_git_and_the_remedy() {
     let message: String = unsupported_message(&context, "version 2.55.0");
     assert!(message.contains("/usr/bin/git"));
     assert!(message.contains("version 2.55.0"));
-    assert!(message.contains("2.56.0 or newer"));
+    assert!(message.contains("2.55.0 or newer"));
     assert!(message.contains("Upgrade Git"));
 }
 
@@ -83,19 +83,19 @@ fn fake_git(name: &str, line: &str) -> (PathBuf, GitContext) {
 #[test]
 #[cfg(unix)]
 fn a_supported_release_is_accepted() {
-    let (root, context): (PathBuf, GitContext) = fake_git("git-version-supported", "git version 2.56.0");
-    assert_eq!(ask_git_version(&context), Ok((2, 56, 0)));
+    let (root, context): (PathBuf, GitContext) = fake_git("git-version-supported", "git version 2.55.0");
+    assert_eq!(ask_git_version(&context), Ok((2, 55, 0)));
     remove(root.as_path());
 }
 
-/// A release before 2.56.0 is refused with the reported release and the remedy.
+/// A release before 2.55.0 is refused with the reported release and the remedy.
 #[test]
 #[cfg(unix)]
 fn an_older_release_is_refused() {
-    let (root, context): (PathBuf, GitContext) = fake_git("git-version-older", "git version 2.55.0");
-    let refusal: String = ask_git_version(&context).expect_err("2.55.0 must be refused");
-    assert!(refusal.contains("version 2.55.0"));
-    assert!(refusal.contains("2.56.0 or newer"));
+    let (root, context): (PathBuf, GitContext) = fake_git("git-version-older", "git version 2.54.0");
+    let refusal: String = ask_git_version(&context).expect_err("2.54.0 must be refused");
+    assert!(refusal.contains("version 2.54.0"));
+    assert!(refusal.contains("2.55.0 or newer"));
     remove(root.as_path());
 }
 
@@ -133,7 +133,7 @@ static ASKS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::ne
 /// A version answer that counts its calls and reports a supported release.
 fn counting_supported(_context: &GitContext) -> Result<(u64, u64, u64), String> {
     ASKS.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-    return Ok((2, 56, 0));
+    return Ok((2, 55, 0));
 }
 
 /// The first answer is kept,
@@ -143,8 +143,8 @@ fn the_answer_is_asked_once_and_then_reused() {
     let cell: OnceLock<Result<(u64, u64, u64), String>> = OnceLock::new();
     let context: GitContext = git_context();
     let before: usize = ASKS.load(std::sync::atomic::Ordering::SeqCst);
-    assert_eq!(check_once(&cell, &context, counting_supported), Ok((2, 56, 0)));
-    assert_eq!(check_once(&cell, &context, counting_supported), Ok((2, 56, 0)));
+    assert_eq!(check_once(&cell, &context, counting_supported), Ok((2, 55, 0)));
+    assert_eq!(check_once(&cell, &context, counting_supported), Ok((2, 55, 0)));
     assert_eq!(ASKS.load(std::sync::atomic::Ordering::SeqCst) - before, 1);
 }
 

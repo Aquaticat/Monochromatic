@@ -550,6 +550,40 @@ Not started: the wait with its unproven-owner budget, the real index lock with i
 the landing lock, the forwarding coordination with `CLI_GIT_LANDING_LEASE`, the direct fix under the landing lock,
 the lifted `Unported::TransactionRecovery`, the binary and interoperability tests, and the rebase deadlock test.
 
+### Git 2.55.0 evidence
+
+The owner accepted Git 2.55.0 on 2026-10-10, so `MINIMUM_GIT_VERSION` in
+`package/git-policy/cli/src/native/git_version.rs` is now 2.55.0.
+The version check runs once per process on the index-writer coordination path,
+before any landing lock is taken.
+
+Probes on the host Git 2.55.0 (`/usr/bin/git`) and the Git 2.56.0 gate image,
+run as real invocations:
+
+- `index.lock` during a slow clean filter (`git add` of a filtered file):
+  both versions hold `index.lock` and write `index~pid.lock` containing `pid <n>\n`.
+  The format is the same.
+- Commit waiting in its editor (`GIT_EDITOR` sleeping 3 seconds):
+  neither version holds `index.lock` while the editor runs.
+  The slice 3 plan's premise that a native commit waiting in its editor holds `index.lock` is wrong on both.
+  The binary control for the wait uses a live holder that keeps the lock file open instead.
+- A busy `index.lock`: both print `fatal: Unable to create '...index.lock': File exists.`
+  followed by the same "Another git process" line, and both exit 128.
+- `git merge-tree --help`: exit 128 on 2.56.0 and 0 on 2.55.0.
+  No slice 3 path depends on it; slice 8 replay does, and must recheck it.
+
+Differences the existing tables expose on 2.55.0 (the 2.56.0-derived tables are unchanged):
+
+- `git add` table: 2.56.0 adds `--resolved` and `--no-resolved`, which 2.55.0 does not know.
+- `git branch` table: 2.56.0 adds `--delete-merged=`, `--dry-run`, `--forked=` and `--no-dry-run`.
+  Git 2.55.0 refuses these options, so the outcome of forwarding is the same,
+  but the native classification of a command with them is 2.56.0's.
+- Parse-options help controls (`command_options::git_tests`) assert the 2.56.0 `-h` result.
+- Version strings in the binary forwarding, resolution and global-argument controls assert `2.56.0`.
+
+Open: making the option tables version-aware for 2.55.0 is not done.
+Until it is, a command that uses one of the 2.56.0-only options on 2.55.0 is classified as 2.56.0 would classify it.
+
 ## Dependencies
 
 Added to `package/git-policy/cli/Cargo.toml`, all already in the lockfile:

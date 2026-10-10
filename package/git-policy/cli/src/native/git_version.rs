@@ -5,9 +5,10 @@
 //!  a commit,
 //!  hooks and locks.
 //! Why:
-//!  The native tables and protocols follow Git 2.56.0;
-//!  the owner settled that 2.56.0 or newer
-//!      counts as supported and that read-only commands are never checked
+//!  The native tables and protocols follow Git 2.56.0,
+//!  and the
+//!  owner settled on 2.55.0 as the oldest release that runs the swap,
+//!  so 2.55.0 or newer counts as supported and that read-only commands are never checked
 //!      (`doc/handover/cli-git-rust-implementation.md`,
 //!  "Adopted without a question").
 //!
@@ -22,7 +23,7 @@ use super::transaction_git::{GitContext, GitOutput, GitRequest, run_git};
 use std::sync::OnceLock;
 
 /// The oldest supported Git release.
-pub const MINIMUM_GIT_VERSION: (u64, u64, u64) = (2, 56, 0);
+pub const MINIMUM_GIT_VERSION: (u64, u64, u64) = (2, 55, 0);
 
 /// A Git release as its major,
 ///  minor and patch numbers.
@@ -75,12 +76,12 @@ fn not_digit(character: char) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// `cli-git: ... needs Git 2.56.0 or newer ...`
+/// `cli-git: ... needs Git 2.55.0 or newer ...`
 /// ```
 pub fn unsupported_message(context: &GitContext, found: &str) -> String {
     return format!(
         "cli-git: real Git at {} reports {found}; commits, hooks and the locks that coordinate \
-         with them need Git 2.56.0 or newer. Nothing was run. Upgrade Git, then run the command \
+         with them need Git 2.55.0 or newer. Nothing was run. Upgrade Git, then run the command \
          again.",
         context.real_git.display()
     );
