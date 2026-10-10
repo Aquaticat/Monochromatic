@@ -105,7 +105,7 @@ pub fn write_hook_dispatch(
     executable: &Path,
 ) -> Result<(), HookEntryError> {
     create_private_directory(hooks_directory).map_err(|error| {
-        HookEntryError(format!(
+        return HookEntryError(format!(
             "cannot create the hook directory {}: {error}",
             hooks_directory.display()
         ))
@@ -113,7 +113,7 @@ pub fn write_hook_dispatch(
     let plan_path: PathBuf = hooks_directory.join(PLAN_FILENAME);
     let plan_bytes: String = format!("{}\n", encode_hook_dispatch_plan(plan));
     write_private_file(plan_path.as_path(), plan_bytes.as_bytes()).map_err(|error| {
-        HookEntryError(format!(
+        return HookEntryError(format!(
             "cannot write the hook plan {}: {error}",
             plan_path.display()
         ))
@@ -121,7 +121,7 @@ pub fn write_hook_dispatch(
     for event in PREPARATION_HOOK_EVENTS {
         let entry: PathBuf = hooks_directory.join(hook_entry_name(event));
         write_entry(executable, entry.as_path()).map_err(|error| {
-            HookEntryError(format!(
+            return HookEntryError(format!(
                 "cannot write the hook entry {}: {error}",
                 entry.display()
             ))

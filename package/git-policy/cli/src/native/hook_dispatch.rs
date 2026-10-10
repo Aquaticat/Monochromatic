@@ -182,13 +182,13 @@ pub fn run_hook_dispatch(
     };
     let Some(plan) = String::from_utf8(bytes)
         .ok()
-        .and_then(|text| parse_hook_dispatch_plan(text.as_str()))
+        .and_then(|text| { return parse_hook_dispatch_plan(text.as_str()); })
     else {
         return dispatch_failure(
             format!("the plan {} is malformed", plan_path.display()).as_str(),
         );
     };
-    if plan.disabled_events.iter().any(|name| name == target.event) {
+    if plan.disabled_events.iter().any(|name| { return name == target.event; }) {
         return 0;
     }
     let child_environment: Vec<(OsString, OsString)> = dispatch_environment(environment, &plan);
@@ -234,7 +234,7 @@ fn run_git_hook(
         .args(["-c", enabled.as_str(), "-c", hooks_path.as_str(), "hook", "run", "--ignore-missing", event, "--"])
         .args(arguments)
         .env_clear()
-        .envs(environment.iter().map(|(name, value)| (name.clone(), value.clone())))
+        .envs(environment.iter().map(|(name, value)| { return (name.clone(), value.clone()); }))
         .status();
     let Ok(finished) = status else {
         return dispatch_failure(

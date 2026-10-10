@@ -127,13 +127,13 @@ fn the_dispatched_environment_carries_the_plan() {
     ];
     let absent: Vec<(OsString, OsString)> = dispatch_environment(inherited.as_slice(), &plan);
     assert!(absent.contains(&pair("PATH", "/bin")));
-    assert!(!absent.iter().any(|(name, _)| name == "GIT_CONFIG_PARAMETERS"));
+    assert!(!absent.iter().any(|(name, _)| { return name == "GIT_CONFIG_PARAMETERS"; }));
     assert!(absent.contains(&pair("GIT_WORK_TREE", "/repo")));
     assert!(absent.contains(&pair("CLI_GIT_PREPARATION_LEASE", "lease")));
     plan.config_parameters = ConfigParameters::Present(String::from("'a.b=1'"));
     let present: Vec<(OsString, OsString)> = dispatch_environment(inherited.as_slice(), &plan);
     assert!(present.contains(&pair("GIT_CONFIG_PARAMETERS", "'a.b=1'")));
-    assert_eq!(present.iter().filter(|(name, _)| name == "GIT_CONFIG_PARAMETERS").count(), 1);
+    assert_eq!(present.iter().filter(|(name, _)| { return name == "GIT_CONFIG_PARAMETERS"; }).count(), 1);
 }
 
 /// A disabled event returns success without starting Git or taking the lock.
@@ -210,7 +210,7 @@ fn written_entries_are_recognized_by_the_dispatcher() {
     write_hook_dispatch(hooks.as_path(), &plan, Path::new("/opt/native/bin/git")).expect("write");
     let target: Option<DispatchTarget> =
         dispatch_target_for_start_name(hooks.join("commit-msg").as_path());
-    assert_eq!(target.map(|found| found.event), Some("commit-msg"));
+    assert_eq!(target.map(|found| { return found.event; }), Some("commit-msg"));
     remove(root.as_path());
 }
 

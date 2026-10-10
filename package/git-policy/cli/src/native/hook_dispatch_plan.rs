@@ -592,7 +592,7 @@ pub fn parse_hook_dispatch_plan(text: &str) -> Option<HookDispatchPlan> {
 /// ```
 pub fn new_preparation_lease(transaction_directory: &Path) -> Result<String, HookPlanError> {
     let directory: String = path_text(transaction_directory, "transaction directory")?;
-    let token: String = random_uuid().map_err(|error| HookPlanError::Random(format!("{error:?}")))?;
+    let token: String = random_uuid().map_err(|error| { return HookPlanError::Random(format!("{error:?}")); })?;
     return Ok(format_preparation_lease(directory.as_str(), token.as_str()));
 }
 
