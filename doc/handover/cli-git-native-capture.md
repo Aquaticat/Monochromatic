@@ -188,4 +188,18 @@ over the ten source files this lane added or changed:
 `--list` counted 263 mutants.
 The run was started as systemd user unit `cli-git-capture-mutation` with `MemoryMax=12G`,
 through the slot limiter.
-Results are recorded below once the run finishes.
+Result: blocked, zero mutants tested.
+The first attempt used no `GIT_POLICY_NATIVE_IMAGE_TAG` and picked another lane's image, so it was stopped.
+The second run (`systemd-run --user --unit=cli-git-capture-mutation3`, working directory set to this worktree,
+`env GIT_POLICY_NATIVE_IMAGE_TAG=capture`) ran all nine planted controls, and each was noticed.
+Its unmutated baseline then failed, so cargo-mutants tested no mutant (`cargo test failed in an unmutated tree`).
+The baseline run timed out at 101 seconds against the script's 90-second `--timeout`,
+and the test `index_lock_holders::tests::a_real_child_holding_the_lock_is_found_on_linux` failed in the same run.
+That test belongs to another lane, and it waits ten seconds for a child's `/proc` descriptor,
+so it is sensitive to host load. The host load average was 59 on 16 CPUs at the time.
+The gate itself passed its library tests under the same image.
+
+To rerun when the host is idle:
+`systemd-run --user --unit=<name> --collect --property=MemoryMax=12G --working-directory=<worktree>`
+`node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/<file>.rs ...`
+with the ten files listed above. The mutation run has not produced any caught, missed, unviable or timed-out result yet.
