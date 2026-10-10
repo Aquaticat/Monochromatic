@@ -10,7 +10,14 @@ Production source had been reverted to design-only on 2026-09-09 (`6d2d06e41`: "
 so the production app is the older player and differs from the design in many places.
 
 The work happens on the branch `feat/music-player-production`, in the worktree `~/temp/agent/music-player-production`.
-Nothing is merged to `main` without a verified work package.
+
+## Answers of 2026-10-10
+
+- Target: Android first and desktop second, and the human said not to stop between them.
+- Order: the human left it to the agent; it is foundation up, as the numbered packages below.
+- Landing: each verified package merges to `main`.
+  A package is verified when its unit tests pass in the capped container, detekt is clean,
+  and, for a screen, its native captures match the design's captures.
 
 ## Method
 
