@@ -460,6 +460,10 @@ pub mod capture_store;
 ///  their recording and pruning.
 pub mod capture_records;
 
+/// The invocation capture:
+///  repository layout, symbolic `HEAD`, conclusion kind, ref backend and base.
+pub mod capture_invocation;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
