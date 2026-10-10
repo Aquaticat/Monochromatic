@@ -11,19 +11,26 @@
 /// Import typed setup failures,
 ///  session ownership and validated toolchain discovery.
 use crate::rust_semantic_error::SemanticError;
+/// Import the semantic session that the workspace loader fills in.
 use crate::rust_semantic_session::RustSemanticSession;
+/// Import the toolchain model and discovery that choose which compiler loads the workspace.
 use crate::rust_toolchain::{RustToolchain, absolute_utf8, discover_toolchain};
 /// Import the exact inspected backend loaders and their owned result types.
 use ra_ap_ide_db::RootDatabase;
+/// Import the rust-analyzer workspace loader and its configuration types.
 use ra_ap_load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
+/// Import the procedural-macro client type that workspace loading produces.
 use ra_ap_proc_macro_api::ProcMacroClient;
+/// Import the project-model types that describe the manifest and build settings.
 use ra_ap_project_model::{
     CargoConfig, ProjectManifest, ProjectWorkspace, RustLibSource, TargetDirectoryConfig,
     WorkspaceBuildScripts,
 };
+/// Import the virtual file system types that the workspace loader populates.
 use ra_ap_vfs::{AbsPathBuf, Vfs};
 /// Import native manifest discovery and explicit I/O failure kinds.
 use std::io::ErrorKind;
+/// Import the path types used to name the manifest and the workspace root.
 use std::path::{Path, PathBuf};
 
 /// Preparation is fixed by the host workflow,

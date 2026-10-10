@@ -22,6 +22,7 @@
 /// ```
 pub(crate) fn trim_space(character: char) -> bool {
     // These scalar values are the ECMAScript trim characters; u32 conversion is unnecessary for membership.
+    /// Scalar values that ECMAScript treats as whitespace when trimming table cell text.
     const CHARACTERS: &[char] = &[
         '\u{0009}', '\u{000a}', '\u{000b}', '\u{000c}', '\u{000d}', '\u{0020}', '\u{00a0}',
         '\u{1680}', '\u{2000}', '\u{2001}', '\u{2002}', '\u{2003}', '\u{2004}', '\u{2005}',

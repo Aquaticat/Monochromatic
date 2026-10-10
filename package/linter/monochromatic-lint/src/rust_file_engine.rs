@@ -12,15 +12,21 @@
 /// Import actual rule results,
 ///  typed selection and syntax-only execution.
 use crate::diagnostic::Diagnostic;
+/// Import the syntax-rule dispatcher that runs the enabled checks on one Rust source.
 use crate::rust_dispatch::check_syntax_rules;
+/// Import the resolved settings that tell the dispatcher which rules are enabled.
 use crate::rust_rule_settings::RustRuleSettings;
 /// Import the semantic workspace ownership and its typed failures.
 use crate::rust_semantic_error::SemanticError;
+/// Import the semantic session that owns the loaded workspace for type-aware checks.
 use crate::rust_semantic_session::RustSemanticSession;
+/// Import the parsed Rust source model that each check reads.
 use crate::rust_source::RustSource;
+/// Import the workspace discovery and loading steps that prepare the semantic session.
 use crate::rust_workspace::{WorkspacePreparation, discover_manifest, load_cargo_workspace};
 /// Import native path keys and a deterministic owned workspace map.
 use std::collections::BTreeMap;
+/// Import the path types used to name each Rust file and its manifest.
 use std::path::{Path, PathBuf};
 
 /// What:

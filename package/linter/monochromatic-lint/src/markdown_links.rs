@@ -9,9 +9,13 @@
 //! // MD034 and MD054 over parser-owned links and references.
 //! ```
 
+/// Import the diagnostic and severity types that broken-link findings are reported with.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the edit type that a link repair is written as.
 use crate::edits::Edit;
+/// Import the finding constructor that wraps a link problem as a located diagnostic.
 use crate::markdown_finding::finding;
+/// Import the parsed Markdown source whose links are inspected.
 use crate::markdown_source::MarkdownSource;
 /// Import typed link/reference data and the common result models.
 use satteri_ast::mdast::{MdastNodeType, decode_link_data, decode_reference_data};

@@ -11,10 +11,13 @@
 
 /// Import shared diagnostic and edit contracts.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the edit and fix types that a table repair is expressed as.
 use crate::edits::{Edit, Fix};
+/// Import the finding constructor that wraps a table problem as a located diagnostic.
 use crate::markdown_finding::finding;
 /// Import the native source and final-context text encoder.
 use crate::markdown_source::MarkdownSource;
+/// Import the helper that reads the visible text of an HTML table cell.
 use crate::markdown_table_text::html_table_cell_text;
 /// Import installed table payload decoders rather than interpreting bytes manually.
 use satteri_ast::mdast::{ColumnAlign, MdastNodeType, decode_table_alignments};

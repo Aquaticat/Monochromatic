@@ -10,6 +10,7 @@
 //! // JSONL carries diagnostic fields; Fix stays internal to the fixing pipeline.
 //! ```
 
+/// Import the fix type so each diagnostic can carry the automatic repair it proposes.
 use crate::edits::Fix;
 /// What:
 ///  Import Serde's field encoder and the internal atomic-fix model.

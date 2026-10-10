@@ -10,6 +10,7 @@
 
 /// Import only the native source interface and its typed node catalog.
 use crate::markdown_source::MarkdownSource;
+/// Import the node kind enum that prose-context checks branch on while walking ancestors.
 use satteri_ast::mdast::MdastNodeType;
 
 /// What:
@@ -26,6 +27,7 @@ use satteri_ast::mdast::MdastNodeType;
 /// ```
 pub(crate) fn paragraph_for(context: &MarkdownSource, ancestors: &[u32]) -> Option<u32> {
     // These ancestors represent content with another syntax or a single-line contract.
+    /// Ancestor kinds whose content uses another syntax or a single-line contract.
     const SKIP: &[MdastNodeType] = &[
         MdastNodeType::Heading,
         MdastNodeType::Table,

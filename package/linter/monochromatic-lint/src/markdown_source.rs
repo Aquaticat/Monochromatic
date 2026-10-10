@@ -10,11 +10,15 @@
 //! // Parse once and expose node ids, decoded data, source slices and diagnostic positions.
 //! ```
 
+/// Import the byte span type that source positions are reported in.
 use crate::diagnostic::Span;
+/// Import the position map that translates parser offsets back to source offsets.
 use crate::markdown_positions::MarkdownPositions;
 /// Import the approved parser and arena types.
 use satteri_arena::{Arena, ArenaNode, Mdast};
+/// Import the node kind enum and string decoder used by the parsed syntax tree.
 use satteri_ast::mdast::{MdastNodeType, decode_string_ref_data};
+/// Import the CommonMark parser and its options that build the syntax tree.
 use satteri_pulldown_cmark::{Options, parse};
 /// Import panic containment and the common diagnostic span.
 use std::panic::catch_unwind;

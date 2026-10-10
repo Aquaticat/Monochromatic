@@ -11,6 +11,7 @@
 
 /// Import production findings and session ownership.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the session type that these fixtures construct for the semantic tests.
 use crate::rust_semantic_session::RustSemanticSession;
 /// Import the actual Cargo loader and its fixed preparation choices.
 use crate::rust_workspace::{WorkspacePreparation, load_cargo_workspace};
@@ -18,6 +19,7 @@ use crate::rust_workspace::{WorkspacePreparation, load_cargo_workspace};
 use crate::test_fs::Fixture;
 /// Import native paths and captured fixture-preparation commands.
 use std::path::{Path, PathBuf};
+/// Import the process types that run Cargo or the toolchain for the fixtures.
 use std::process::{Command, Output};
 
 /// Keep loader progress in the test harness's captured diagnostics.

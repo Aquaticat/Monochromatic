@@ -9,10 +9,15 @@
 //! // Check decoded code content, then remove only actual authored '$ ' prefixes using byte edits.
 //! ```
 
+/// Import the diagnostic and severity types that command-example checks report through.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the edit and fix types that a command-example repair is expressed as.
 use crate::edits::{Edit, Fix};
+/// Import the fence lookup that finds where a command block's closing marker ends.
 use crate::markdown_code::fence_marker_end;
+/// Import the finding constructor that wraps a command-example problem as a diagnostic.
 use crate::markdown_finding::finding;
+/// Import the parsed Markdown source that command blocks are read from.
 use crate::markdown_source::MarkdownSource;
 /// Import native code payloads and shared diagnostics/fixes.
 use satteri_ast::mdast::{MdastNodeType, decode_code_data};

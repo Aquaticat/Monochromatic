@@ -11,8 +11,11 @@
 
 /// Import the existing diagnostic and localized edit boundaries.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the edit type that a punctuation repair is written as.
 use crate::edits::Edit;
+/// Import the finding constructors for punctuation problems and unreadable documents.
 use crate::markdown_finding::{finding, structure_failure};
+/// Import the parsed Markdown source whose punctuation is inspected.
 use crate::markdown_source::MarkdownSource;
 /// Import native text decoding and heading kinds.
 use satteri_ast::mdast::{MdastNodeType, decode_string_ref_data};

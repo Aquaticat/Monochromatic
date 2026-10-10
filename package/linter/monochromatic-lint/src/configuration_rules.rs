@@ -10,6 +10,7 @@
 
 /// Import shared schema readers and typed errors.
 use crate::config_data::{key_text, strings, text};
+/// Import the configuration error type returned when a rule value fails validation.
 use crate::config_error::ConfigError;
 /// Import the JSONC model so numbers stay exact until their rule-specific conversion.
 use monochromatic_jsonc_edit::{JsoncKind, JsoncValue};

@@ -15,6 +15,7 @@ use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::Edit;
 /// Import the common diagnostic builder and original-source view.
 use crate::markdown_finding::finding;
+/// Import the parsed Markdown source in which link definitions are located.
 use crate::markdown_source::MarkdownSource;
 /// Import typed payload decoders;
 ///  identifiers are already normalized by the parser.

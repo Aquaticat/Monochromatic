@@ -10,6 +10,7 @@
 
 /// Import typed parsing and setup failures.
 use crate::config_error::ConfigError;
+/// Import the block model and parser that turn each configuration file into rules.
 use crate::configuration::{ConfigBlock, parse_configuration};
 /// Import native path values rather than requiring filesystem names to be UTF-8 strings.
 use std::path::{Path, PathBuf};

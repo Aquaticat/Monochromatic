@@ -9,9 +9,13 @@
 //! // MD040 inserts text normally, rust inside rustdoc.
 //! ```
 
+/// Import the diagnostic and severity types that code-fence checks report through.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the edit type that a code-fence repair is written as.
 use crate::edits::Edit;
+/// Import the finding constructor that turns a located problem into a diagnostic.
 use crate::markdown_finding::finding;
+/// Import the parsed Markdown source that fence positions are read from.
 use crate::markdown_source::MarkdownSource;
 /// Import native code data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_code_data};

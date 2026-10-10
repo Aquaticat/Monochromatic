@@ -11,6 +11,7 @@
 
 /// Import the established diagnostics and grouped edit boundary.
 use crate::diagnostic::Diagnostic;
+/// Import the fix applier and its error type that each repair pass depends on.
 use crate::edits::{Fix, FixError, apply_fixes};
 
 /// Maximum changed-source passes required by the unified-linter contract.

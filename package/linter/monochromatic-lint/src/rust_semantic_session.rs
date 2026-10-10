@@ -11,6 +11,7 @@
 
 /// Import shared findings and selected severity.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the syntax-rule dispatcher used by the same per-file checks.
 use crate::rust_dispatch::check_syntax_rules;
 /// Import the complete rule rather than duplicating checks in the workspace adapter.
 use crate::rust_explicit_types::check_explicit_types;
@@ -30,6 +31,7 @@ use ra_ap_ide_db::RootDatabase;
 use ra_ap_proc_macro_api::ProcMacroClient;
 /// Import exact syntax roots and file identities.
 use ra_ap_syntax::{AstNode, ast};
+/// Import the virtual file system types that record which files the loader includes.
 use ra_ap_vfs::{FileExcluded, FileId, Vfs, VfsPath};
 /// Import setters for typed per-database request data.
 use salsa::Setter;

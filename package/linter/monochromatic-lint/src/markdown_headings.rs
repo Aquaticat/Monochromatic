@@ -10,9 +10,11 @@
 //! // Port the existing report-only heading checks without a new rule configuration surface.
 //! ```
 
+/// Import the diagnostic and severity types that heading findings are reported with.
 use crate::diagnostic::{Diagnostic, Severity};
 /// Import node findings and the processing failure reported when the document's structure cannot be walked.
 use crate::markdown_finding::{finding, structure_failure};
+/// Import the parsed Markdown source whose heading structure is inspected.
 use crate::markdown_source::MarkdownSource;
 /// Import native heading data and shared finding construction.
 use satteri_ast::mdast::{MdastNodeType, decode_heading_data};

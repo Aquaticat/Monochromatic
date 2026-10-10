@@ -11,6 +11,7 @@
 
 /// Import the incumbent CLI parser's trait and declaration macro.
 use clap::Parser;
+/// Import the non-zero count type so a worker limit of zero cannot be expressed.
 use std::num::NonZeroUsize;
 /// Import native path storage and a strictly positive worker-count type.
 use std::path::PathBuf;

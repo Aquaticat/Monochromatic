@@ -15,7 +15,9 @@ use crate::file_discovery::{DiscoveryOptions, FileDiscoveryError, discover_liter
 use globset::{GlobBuilder, GlobMatcher};
 /// Import native path collection and I/O error classification.
 use std::collections::BTreeSet;
+/// Import the I/O error kind so a missing path can be told apart from other failures.
 use std::io::ErrorKind;
+/// Import the path component and path types used to normalise caller-supplied paths.
 use std::path::{Component, Path, PathBuf};
 
 /// Determine whether a path token contains glob punctuation;

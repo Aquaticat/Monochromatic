@@ -11,6 +11,7 @@
 
 /// Import schema readers and typed setup failures.
 use crate::config_data::{key_text, text};
+/// Import the configuration error type returned when completed rules fail validation.
 use crate::config_error::ConfigError;
 /// Import the same exact JSONC representation used by parsing and merging.
 use monochromatic_jsonc_edit::{JsoncEntry, JsoncKey, JsoncKind, JsoncValue};

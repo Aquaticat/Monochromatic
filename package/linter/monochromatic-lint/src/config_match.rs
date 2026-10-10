@@ -10,13 +10,18 @@
 
 /// Import ordered merging and validated source blocks.
 use crate::config_error::ConfigError;
+/// Import the discovered configuration record that each candidate path is matched against.
 use crate::config_lookup::ConfigurationSource;
+/// Import the value merge that layers matching configuration blocks into one effective value.
 use crate::config_merge::merge_values;
+/// Import the block type whose path globs decide which files a configuration covers.
 use crate::configuration::ConfigBlock;
+/// Import the rule completion step that fills in defaults after merging.
 use crate::resolved_rules::complete_rules;
 /// Import the incumbent Rust glob compiler;
 ///  it matches native path bytes.
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
+/// Import the JSONC value type that matched configuration is held in before merging.
 use monochromatic_jsonc_edit::JsoncValue;
 /// Import native paths and the configuration value model.
 use std::path::{Path, PathBuf};

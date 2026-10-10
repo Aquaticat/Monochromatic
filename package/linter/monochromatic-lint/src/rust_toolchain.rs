@@ -14,6 +14,7 @@ use crate::rust_semantic_error::SemanticError;
 use ra_ap_vfs::AbsPathBuf;
 /// Import native paths and captured compiler-query output.
 use std::path::Path;
+/// Import the process types that query the selected toolchain for its compiler paths.
 use std::process::{Command, Output};
 
 /// Validated compiler/source paths,

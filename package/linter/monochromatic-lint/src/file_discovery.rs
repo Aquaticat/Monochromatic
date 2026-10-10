@@ -9,12 +9,15 @@
 //! // Walk one literal input root; glob expansion and per-file configuration matching are separate boundaries.
 //! ```
 
+/// Import the glob override builder that layers the crate's exclusions over ignore files.
 use ignore::overrides::{Override, OverrideBuilder};
 /// Import gitignore-aware traversal and its override-pattern compiler.
 use ignore::{DirEntry, WalkBuilder};
 /// Import deterministic path deduplication and native filesystem types.
 use std::collections::BTreeSet;
+/// Import the OS string type for file names that may not be valid UTF-8.
 use std::ffi::OsStr;
+/// Import the path types used to walk and compare filesystem locations.
 use std::path::{Path, PathBuf};
 
 /// Owned discovery failure rather than an unreadable path silently disappearing from the result.

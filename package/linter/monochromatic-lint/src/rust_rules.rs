@@ -11,9 +11,11 @@
 
 /// Import the new core's source and diagnostic interfaces.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Import the Rust source model that rule checks read syntax and spans from.
 use crate::rust_source::RustSource;
 /// Import the syntax kinds and typed impl/doc-comment views used by the incumbent.
 use ra_ap_syntax::ast::{DocCommentIter, Impl};
+/// Import the syntax node and doc-comment types that the documentation rule walks.
 use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode};
 
 /// What:

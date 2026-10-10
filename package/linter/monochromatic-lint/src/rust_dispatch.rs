@@ -13,7 +13,9 @@
 use crate::diagnostic::Diagnostic;
 /// Import the actual shipped syntax checks.
 use crate::rust_no_anonymous_functions::check_no_anonymous_functions;
+/// Import the anonymous-function check that runs over each Rust file's syntax tree.
 use crate::rust_rule_settings::{LineBudget, RustRuleSettings};
+/// Import the line budget and per-rule settings that decide which checks run.
 use crate::rust_rules::{check_max_lines, check_rustdoc};
 /// Borrow the already parsed source rather than reparsing per rule.
 use crate::rust_source::RustSource;

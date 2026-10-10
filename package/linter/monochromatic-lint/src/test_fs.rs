@@ -10,6 +10,7 @@
 
 /// Import native paths and the atomic counter used only for unique fixture names.
 use std::path::PathBuf;
+/// Import the atomic counter that gives every fixture directory a unique name.
 use std::sync::atomic::{AtomicU64, Ordering};
 
 /// What:
