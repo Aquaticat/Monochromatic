@@ -522,3 +522,21 @@ and the frames under `package/desktop-app/ide/design/screenshots/2026-10-06-ui-b
   (answered 2026-10-10, "Add the check").
   Reason: formatter drift had surfaced only as separate cleanup commits.
   Cost: a few seconds in `lint`.
+
+### Tree order, wrapping, and renderer (user requests of 2026-10-10)
+
+- The file tree sorts mixed (folders and files together), case folded, with digit runs compared as numbers
+  (answered "Mixed, natural order").
+  Until then it showed the file system's enumeration order, which on btrfs is arbitrary.
+  The earlier survey of editord had missed that editord sorts through the CSS `order` property
+  (the first four lowercased characters as a base-128 number, folders and files alike);
+  the IDE sorts the whole name.
+- Source lines always wrap to the view with a wrap indicator in the gutter for each wrapped line;
+  there is no horizontal scrolling at all.
+  This reverses the 0.x choice of unwrapped lines with a horizontal scroll range.
+  The look of the indicator is not decided yet.
+- The user suspects Slint's new Vello renderer (experimental in Slint 1.18, feature `renderer-vello`)
+  would fix the choppy scrolling, asked for that lead to be pursued first,
+  and approved the new `wgpu` and `vello` dependencies as they come.
+  If the nested compositor cannot host a GPU renderer, the nested compositor changes.
+- The user approved running `git cli-git trust --yes` in worktrees created for this work.
