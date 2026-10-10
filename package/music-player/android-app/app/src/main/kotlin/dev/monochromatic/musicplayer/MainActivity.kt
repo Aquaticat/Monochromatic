@@ -24,15 +24,16 @@
 //     picker round-trip stops the activity.
 //
 // The composables, folded from their old KDocs:
-//   - `appRoot`: the audio-permission gate + library trigger over a bound
-//     controller. Requests audio access once, shows `permissionGate` until
-//     granted, then signals the service to load and shows `playerScreen`.
+//   - `appRoot`: the first-run decision + library trigger over a bound
+//     controller. Requests audio access once when no folder is held, signals the
+//     service to load once a source can be read, and shows `playerScreen`, which
+//     draws the first-run pane over the player when the open source needs it.
 //   - `playerScreen`: the desktop's narrow layout with responsive progress/transport
 //     and volume/end-of-track pairs, source actions, settings, page controls, and tracks.
 //     Each playback pair shares one line when it fits and wraps as a complete group when
 //     the window narrows. Page controls can switch among the supported visual styles.
 //     Tap a track to play; tap the playing track to pause/resume.
-//   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
+//   - `startingGate`/`loadingNotice`: small placeholder/notice
 //     screens. `seekRow`/`volumeRow`/`sourceActionRow`/`radioOption`/`pageTabs`/
 //     `settingsPage`/`trackPager`/`trackRow`: pieces of the player screen.
 //   - `formatTime`: format a seconds value as `m:ss`.
@@ -697,6 +698,34 @@ import androidx.compose.runtime.Composable
 // ```
 import androidx.compose.runtime.LaunchedEffect
 
+// What:     `import androidx.compose.runtime.DisposableEffect` runs the resume observer for the screen's lifetime.
+// Why:      The observer is added when the screen appears and removed when it leaves, so no stale callback remains.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { useEffect } from "react";
+// ```
+import androidx.compose.runtime.DisposableEffect
+
+// What:     `import androidx.lifecycle.Lifecycle` names the resume event that rechecks the audio permission.
+// Why:      Android's settings page can grant access while the app is in the background, so the screen rechecks on
+//           resume.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Lifecycle } from "androidx/lifecycle";
+// ```
+import androidx.lifecycle.Lifecycle
+
+// What:     `import androidx.lifecycle.LifecycleEventObserver` is the observer type that receives lifecycle events.
+// Why:      The observer is registered on the activity's lifecycle to recheck access on resume.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { LifecycleEventObserver } from "androidx/lifecycle";
+// ```
+import androidx.lifecycle.LifecycleEventObserver
+
 // What:     `import androidx.compose.runtime.getValue` imports the `getValue` OPERATOR
 //           used to READ a `by`-delegated state property (the `var x by remember { ... }`
 //           lines).
@@ -937,6 +966,18 @@ import androidx.compose.ui.unit.dp
 // ```
 import dev.monochromatic.musicplayer.core.PageEntry
 
+// What:     `import dev.monochromatic.musicplayer.core.AllowAccessAction` and the first-run decision types.
+// Why:      The first-run decision picks the screen and the Allow access action from the facts this screen reads.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { AllowAccessAction, FirstRunDecision, FirstRunInputs, firstRunDecisionFor } from "./core/FirstRunDecision";
+// ```
+import dev.monochromatic.musicplayer.core.AllowAccessAction
+import dev.monochromatic.musicplayer.core.FirstRunDecision
+import dev.monochromatic.musicplayer.core.FirstRunInputs
+import dev.monochromatic.musicplayer.core.firstRunDecisionFor
+
 // What:     `import dev.monochromatic.musicplayer.core.PlaybackMode` imports the
 //           three-value enum `PlaybackMode` (`OFF`/`WITHIN_PAGE`/`ALL`).
 // Why:      `controlRow` compares and sets shuffle modes.
@@ -1077,6 +1118,27 @@ class MainActivity : ComponentActivity() {
      * its source and use.
      */
     private var pendingRoot: Uri? = null
+
+    // What:     `private val feedback: FeedbackHostState = FeedbackHostState()` is the activity's feedback queue.
+    // Why:      The folder result runs outside composition, so the activity owns the queue that the player host draws
+    //           and that this activity's producers post to.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private readonly feedback = new FeedbackHostState();
+    // ```
+    /** Feedback queue that the player host draws, and that activity code posts messages to. */
+    private val feedback: FeedbackHostState = FeedbackHostState()
+
+    // What:     `private var heldFolderName: String? by mutableStateOf(null)` is the held folder's display name.
+    // Why:      The first-run copy names the folder, and composition must redraw when the held folder changes.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private heldFolderName: string | null = null; // observable
+    // ```
+    /** Display name of the folder whose grant is held, or null when no folder grant is held. */
+    private var heldFolderName: String? by mutableStateOf(null)
 
     // What:     `private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
     //           tree -> ... }`
@@ -1323,6 +1385,14 @@ class MainActivity : ComponentActivity() {
         // super.onCreate(savedInstanceState);
         // ```
         super.onCreate(savedInstanceState)
+        // What:     `heldFolderName = LibraryRoot.heldRoot(this)?.let { ... }` reads the remembered folder's name.
+        // Why:      The first-run copy names the held folder on the first frame, before any folder is picked again.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.heldFolderName = heldRoot(this)?.name ?? null;
+        // ```
+        heldFolderName = LibraryRoot.heldRoot(this)?.let { treeUri -> heldFolderNameOf(treeUri) }
         // What:     `Log.i(LOG_TAG, "MainActivity.onCreate")` logs an info line at activity
         //           creation. There is no variant suffix because the current build has one engine
         //           and no `BuildConfig.FLAVOR` constant.
@@ -1489,6 +1559,8 @@ class MainActivity : ComponentActivity() {
                             controller = controller,
                             onAudioGranted = { binder?.ensureLibraryLoaded() },
                             onChooseFolder = { folderPicker.launch(null) },
+                            feedback = feedback,
+                            folderName = heldFolderName,
                         )
                     }
                 }
@@ -1649,7 +1721,21 @@ class MainActivity : ComponentActivity() {
         // ```ts
         // this.contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         // ```
-        contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        try {
+            contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (grantFailure: SecurityException) {
+            // What:     `feedback.showFeedback(feedbackFolderOpenFailed())` posts a two-line error and returns.
+            // Why:      The provider refused a lasting grant, so the folder is not saved and the user is told to choose
+            //           it again; the saved root and the library stay as they were.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // catch (grantFailure) { feedback.showFeedback(feedbackFolderOpenFailed()); return; }
+            // ```
+            Log.w(LOG_TAG, "folder grant could not be kept for $treeUri", grantFailure)
+            feedback.showFeedback(feedbackFolderOpenFailed())
+            return
+        }
         // What:     `LibraryRoot.save(this, treeUri)` persists the chosen folder URI so a
         //           restart remembers it.
         // Why:      Remembering the choice backs a later restart.
@@ -1659,6 +1745,14 @@ class MainActivity : ComponentActivity() {
         // LibraryRoot.save(this, treeUri);
         // ```
         LibraryRoot.save(this, treeUri)
+        // What:     `heldFolderName = heldFolderNameOf(treeUri)` updates the name the first-run copy shows.
+        // Why:      A new folder replaces the old one, so the first-run decision reads the new name on the next frame.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.heldFolderName = heldFolderNameOf(treeUri);
+        // ```
+        heldFolderName = heldFolderNameOf(treeUri)
         // What:     `val bound = binder` declares a local `bound` (inferred nullable
         //           `PlaybackService.LocalBinder?`) snapshotting the current binder.
         // Why:      Snapshot lets us branch on bound-vs-unbound and smart-cast below.
@@ -1725,14 +1819,9 @@ class MainActivity : ComponentActivity() {
 // // (no annotation; a function returning UI is a component)
 // ```
 @Composable
-// What:     `private fun appRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit)
-//           { ... }`
-//           declares a private composable taking the bound brain plus two FUNCTION-TYPE
-//           callbacks (`() -> Unit` = a no-arg void function; TS `() => void`).
-// Why:      The audio-permission gate and library trigger over a bound `controller`:
-//           request audio access once, show `permissionGate` until granted, and on grant
-//           signal the service to load the library; once access is held show
-//           `playerScreen`.
+// What:     `private fun appRoot(...)` declares the composable that draws the player over the bound controller.
+// Why:      The first-run decision, the audio permission, and the library trigger share one set of states here, so
+//           the pane and the load agree on which source is open.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1740,186 +1829,215 @@ class MainActivity : ComponentActivity() {
 //   controller: PlayerController;
 //   onAudioGranted: () => void;
 //   onChooseFolder: () => void;
+//   feedback: FeedbackHostState;
+//   folderName: string | null;
 // }) { ... }
 // ```
 /**
- * Defines app root behavior for this music-player component; the TypeScript-oriented notes above explain its
- * call shape and effects.
+ * Draws the player over the bound controller, asks for audio access when no folder is held, starts the library
+ * load once a source can be read, and draws the first-run pane when the open source needs it.
+ *
+ * @param controller bound controller that owns the library and playback
+ * @param onAudioGranted starts the library load once a source can be read
+ * @param onChooseFolder opens the folder picker
+ * @param feedback feedback queue that the player host draws
+ * @param folderName display name of the held folder, or null when no folder grant is held
  */
-private fun appRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit) {
-    // What:     `val context = LocalContext.current` reads the current Android `Context`
-    //           from the `LocalContext` CompositionLocal (`.current` is the in-scope value).
-    // Why:      Needed to check the audio permission.
+private fun appRoot(
+    controller: PlayerController,
+    onAudioGranted: () -> Unit,
+    onChooseFolder: () -> Unit,
+    feedback: FeedbackHostState,
+    folderName: String?,
+) {
+    // What:     `val context = LocalContext.current` reads the Android context from the composition.
+    // Why:      The permission check, the saved request flag, and the settings intent all need it.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const context = useContext(LocalContext);
     // ```
-    /**
-     * Defines context value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
+    /** Android context that the permission check, the saved request flag, and the settings intent use. */
     val context = LocalContext.current
-    // What:     `var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }`
-    //           declares a STATE-BACKED local. `remember { ... }` computes the value once and
-    //           keeps it across recompositions; `mutableStateOf(...)` is the observable
-    //           holder seeded from the current permission; `by` DELEGATES the `hasAudioAccess`
-    //           property's get/set to that holder, so reading it subscribes and assigning it
-    //           triggers recomposition. (`getValue`/`setValue` are imported for this `by`.)
-    // Why:      Track whether audio access is held; flipping it re-renders the gate.
-    // Gotcha:   `by remember { mutableStateOf(...) }` is the read/write `useState` idiom; the
-    //           `by` hides the `.value` so `hasAudioAccess` reads/writes like a plain var.
+    // What:     `checkNotNull(context as? ComponentActivity)` narrows the context to the activity.
+    // Why:      The rationale rule and the lifecycle observer exist only on an activity, and the screen always runs
+    //           inside one, so anything else is a programming error that fails loudly.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const activity = context instanceof ComponentActivity ? context : throwUnreachable();
+    // ```
+    /** Activity that hosts this screen, which reports the permission rationale and the lifecycle. */
+    val activity: ComponentActivity = checkNotNull(context as? ComponentActivity) {
+        "The first-run screen must run inside a ComponentActivity."
+    }
+    // What:     `var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }` holds the grant.
+    // Why:      It is seeded from the system and rechecked when the screen resumes, so a grant made in Android's
+    //           settings takes effect without a restart.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const [hasAudioAccess, setHasAudioAccess] = useState(hasAudioPermission(context));
     // ```
-    /**
-     * Defines has audio access value for this music-player component; the TypeScript-oriented notes above
-     * explain its source and use.
-     */
+    /** Whether Android grants access to music on this device, rechecked when the screen resumes. */
     var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }
-    // What:     `val permissionLauncher =
-    //           rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission(),) { granted -> ... }`
-    //           registers a permission-request launcher inside the composition, with the
-    //           `RequestPermission()` contract and a trailing-lambda result callback whose
-    //           `granted` parameter is the `Boolean` result.
-    // Why:      Lets the gate ask for the audio permission and react to the answer.
+    // What:     `var canPrompt by remember { mutableStateOf(canPromptAudioAccess(activity)) }` holds the prompt rule.
+    // Why:      Once Android stops showing its prompt, the Allow access button can only open the app's settings page.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const permissionLauncher = useActivityResultLauncher(
-    //   new ActivityResultContracts.RequestPermission(),
-    //   (granted) => { setHasAudioAccess(granted); },
-    // );
+    // const [canPrompt, setCanPrompt] = useState(canPromptAudioAccess(activity));
     // ```
-    /**
-     * Defines permission launcher value for this music-player component; the TypeScript-oriented notes above
-     * explain its source and use.
-     */
+    /** Whether Android still shows its permission prompt, recomputed after each answer and each resume. */
+    var canPrompt by remember { mutableStateOf(canPromptAudioAccess(activity)) }
+    // What:     `val permissionLauncher = rememberLauncherForActivityResult(...)` registers the permission prompt.
+    // Why:      The answer updates the grant and the prompt rule, so the first-run decision follows the user's choice.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const permissionLauncher = useActivityResult(RequestPermission, (granted) => { ... });
+    // ```
+    /** Launcher for the audio permission prompt, whose answer updates the grant and the prompt rule. */
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        // What:     `Log.i(LOG_TAG, "audio permission granted=$granted")` logs the result.
-        // Why:      Trace the permission outcome for verification.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // console.info(`[${LOG_TAG}] audio permission granted=${granted}`);
-        // ```
         Log.i(LOG_TAG, "audio permission granted=$granted")
-        // What:     `hasAudioAccess = granted` writes the new access state through the `by`
-        //           delegate (triggers recomposition).
-        // Why:      Update the gate to the granted/denied result.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // setHasAudioAccess(granted);
-        // ```
         hasAudioAccess = granted
+        canPrompt = canPromptAudioAccess(activity)
     }
-    // What:     `LaunchedEffect(Unit) { ... }` runs the trailing `suspend` block once when
-    //           this composable first enters (the key `Unit` never changes). (Folds in the
-    //           old inline note: ask once on first launch; the gate's button re-asks if the
-    //           user declined.)
-    // Why:      Prompt for audio access automatically on first show.
+    // What:     `fun requestAudioAccess()` records the request and then opens the permission prompt.
+    // Why:      The request flag is saved first, so the rule can tell a first refusal from a permanent one later.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // useEffect(() => {
-    //   if (!hasAudioAccess) permissionLauncher.launch(audioPermission());
-    // }, []);
+    // const requestAudioAccess = () => { saveRequested(); permissionLauncher.launch(AUDIO_PERMISSION); };
     // ```
-    LaunchedEffect(Unit) {
-        // What:     `if (!hasAudioAccess) { permissionLauncher.launch(audioPermission()) }`
-        //           prompts only when access is not already held. `!` negates the flag;
-        //           `audioPermission()` returns the platform permission string.
-        // Why:      Don't re-prompt if access is already granted.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (!hasAudioAccess) permissionLauncher.launch(audioPermission());
-        // ```
-        if (!hasAudioAccess) {
-            // What:     `permissionLauncher.launch(audioPermission())` fires the system
-            //           permission prompt for the platform's audio permission.
-            // Why:      Ask the user for audio access.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // permissionLauncher.launch(audioPermission());
-            // ```
-            permissionLauncher.launch(audioPermission())
+    /** Records that this app asked for music access, then opens Android's permission prompt. */
+    fun requestAudioAccess() {
+        SessionStore.saveAudioAccessRequested(context, requested = true)
+        permissionLauncher.launch(audioPermission())
+    }
+    // What:     `fun runAllowAccess(action: AllowAccessAction)` performs the action that the decision chose.
+    // Why:      The decision picks the prompt while Android still shows it and the app's settings page after that.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const runAllowAccess = (action) => action === "requestPermission" ? requestAudioAccess() : openSettings();
+    // ```
+    /** Performs the Allow access action: the permission prompt, or the app's page in Android's settings. */
+    fun runAllowAccess(action: AllowAccessAction) {
+        when (action) {
+            AllowAccessAction.RequestPermission -> requestAudioAccess()
+            AllowAccessAction.OpenAppSettings -> {
+                Log.i(LOG_TAG, "opening app settings for audio access")
+                context.startActivity(appDetailsSettingsIntent(context.packageName))
+            }
         }
     }
-    // What:     `LaunchedEffect(hasAudioAccess) { ... }` runs the block whenever
-    //           `hasAudioAccess` CHANGES (the key is that state). (Folds in the old inline
-    //           note: on (re)confirmed access, tell the service to load the library, it owns
-    //           the brain + query.)
-    // Why:      Trigger the service-side load when access becomes (re)confirmed.
+    // What:     `DisposableEffect(activity) { ... }` observes the lifecycle while this screen is shown.
+    // Why:      On each resume the grant and the prompt rule are read again, because Android's settings page can
+    //           change them while the app is in the background.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // useEffect(() => {
-    //   if (hasAudioAccess) onAudioGranted();
-    // }, [hasAudioAccess]);
+    // useEffect(() => { const off = onResume(recheck); return off; }, [activity]);
     // ```
-    LaunchedEffect(hasAudioAccess) {
-        // What:     `if (hasAudioAccess) { onAudioGranted() }` signals the service only when
-        //           access is held.
-        // Why:      Load the library once access is confirmed.
+    DisposableEffect(activity) {
+        // What:     `val observer = LifecycleEventObserver { ... }` reacts to lifecycle events.
+        // Why:      Only the resume event needs a recheck, so other events are ignored.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (hasAudioAccess) onAudioGranted();
+        // const observer = (event) => { if (event === "resume") recheck(); };
         // ```
-        if (hasAudioAccess) {
-            // What:     `onAudioGranted()` invokes the callback passed by the caller (which
-            //           tells the service to load the library).
-            // Why:      Kick off the service-side load.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // onAudioGranted();
-            // ```
+        /** Observer that rechecks the grant and the prompt rule when the activity resumes. */
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                Log.i(LOG_TAG, "audio access rechecked after resume")
+                hasAudioAccess = hasAudioPermission(context)
+                canPrompt = canPromptAudioAccess(activity)
+            }
+        }
+        activity.lifecycle.addObserver(observer)
+        onDispose {
+            activity.lifecycle.removeObserver(observer)
+        }
+    }
+    // What:     `LaunchedEffect(Unit)` asks for access once when the screen first appears.
+    // Why:      The first launch asks as before, but not when a folder is held (no permission is needed to read it) or
+    //           when Android no longer shows the prompt.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { if (!hasAudioAccess && !folderName && canPrompt) requestAudioAccess(); }, []);
+    // ```
+    LaunchedEffect(Unit) {
+        if (!hasAudioAccess && folderName == null && canPrompt) {
+            requestAudioAccess()
+        }
+    }
+    // What:     `LaunchedEffect(hasAudioAccess, folderName)` starts the library load once a source can be read.
+    // Why:      A grant or a held folder makes the device library or the folder readable, and the load is idempotent.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { if (hasAudioAccess || folderName) onAudioGranted(); }, [hasAudioAccess, folderName]);
+    // ```
+    LaunchedEffect(hasAudioAccess, folderName) {
+        if (hasAudioAccess || folderName != null) {
             onAudioGranted()
         }
     }
-    // What:     `if (hasAudioAccess) { playerScreen(...) } else { permissionGate(...) }`
-    //           chooses the screen: the player when access is held, otherwise the permission
-    //           gate. `playerScreen(controller = controller, onChooseFolder = onChooseFolder)`
-    //           and `permissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })`
-    //           are composable calls with named args (the gate's `onGrant` is a lambda that
-    //           re-asks).
-    // Why:      Show the right UI for the access state.
+    // What:     `val inputs = FirstRunInputs(...)` gathers the facts that the first-run decision reads this frame.
+    // Why:      The controller snapshot supplies the load state and the track count, and the access states supply the
+    //           rest.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (hasAudioAccess) return <playerScreen controller={controller} onChooseFolder={onChooseFolder}/>;
-    // return <permissionGate onGrant={() => permissionLauncher.launch(audioPermission())}/>;
+    // const inputs = { permissionGranted: hasAudioAccess, heldFolderName: folderName, ... };
     // ```
-    if (hasAudioAccess) {
-        // What:     `playerScreen(controller = controller, onChooseFolder = onChooseFolder)`
-        //           renders the main player with named args.
-        // Why:      Access held -> show the player.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <playerScreen controller={controller} onChooseFolder={onChooseFolder}/>
-        // ```
-        playerScreen(controller = controller, onChooseFolder = onChooseFolder)
-    } else {
-        // What:     `permissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })`
-        //           renders the gate, passing an `onGrant` lambda that re-launches the
-        //           permission request.
-        // Why:      Access not held -> show the gate with a re-ask button.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <permissionGate onGrant={() => permissionLauncher.launch(audioPermission())}/>
-        // ```
-        permissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })
+    /** Facts the first-run decision reads this frame, taken from the controller snapshot and the access states. */
+    val inputs: FirstRunInputs = FirstRunInputs(
+        permissionGranted = hasAudioAccess,
+        heldFolderName = folderName,
+        loading = controller.uiState.loading,
+        trackCount = controller.uiState.queueSize,
+        canPromptForPermission = canPrompt,
+    )
+    /** First-run screen to draw, or null when the player shows, with the Allow access action. */
+    val decision: FirstRunDecision = firstRunDecisionFor(inputs)
+    // What:     `LaunchedEffect(decision)` logs each change of the decided screen.
+    // Why:      A device run shows which screen was reached and which action the Allow access button performs.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => console.log("first run", decision), [decision]);
+    // ```
+    LaunchedEffect(decision) {
+        Log.i(LOG_TAG, "first-run state=${decision.state?.name ?: "PLAYER"} allowAccess=${decision.allowAccess}")
     }
+    // What:     `val firstRunContent = ...` builds the pane content for the decided state, or null for the player.
+    // Why:      The host draws the pane in its own layout so the Settings route stays reachable from it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const firstRunContent = decision.state ? firstRunPaneContent(decision.state, ...) : null;
+    // ```
+    /** Pane content for the decided state, or null when the player shows. */
+    val firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)? = decision.state?.let { shown ->
+        firstRunPaneContent(
+            state = shown,
+            folderName = folderName,
+            onAllowAccess = { runAllowAccess(decision.allowAccess) },
+            onOpenFolder = onChooseFolder,
+        )
+    }
+    playerScreen(
+        controller = controller,
+        onChooseFolder = onChooseFolder,
+        feedback = feedback,
+        firstRunContent = firstRunContent,
+    )
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
@@ -2040,14 +2158,26 @@ internal fun rememberPlaybackProgress(controller: PlayerController): PlaybackPro
 // ```ts
 // function playerScreen(props: { controller: PlayerController; onChooseFolder: () => void }): UIElement { /* ... */ }
 // ```
-/** Draws the production player screen from the controller state and routes each action to the controller. */
+/**
+ * Draws the production player screen from the controller state and routes each action to the controller.
+ *
+ * @param feedback feedback queue that the player host draws and expires
+ * @param firstRunContent first-run pane to draw over the player, or null when the player shows
+ */
 @Composable
-fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
+fun playerScreen(
+    controller: PlayerController,
+    onChooseFolder: () -> Unit,
+    feedback: FeedbackHostState,
+    firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)?,
+) {
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0)) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             playerHost(
                 controller = controller,
+                feedback = feedback,
                 onChooseFolder = onChooseFolder,
+                firstRunContent = firstRunContent,
                 emptyNotice = { state ->
                     if (state.queueSize == 0) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -2749,71 +2879,5 @@ private fun loadingNotice() {
         // <Text>Loading your library…</Text>
         // ```
         Text("Loading your library…")
-    }
-}
-
-// What:     `@Composable` marks the next function as a Compose component.
-// Why:      `permissionGate` is a UI component.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // (component function)
-// ```
-@Composable
-// What:     `private fun permissionGate(onGrant: () -> Unit) { ... }` declares a private
-//           composable taking an `onGrant` callback (`() -> Unit`).
-// Why:      Shown until audio access is granted: a one-line rationale and a button that
-//           re-requests the permission, so a user who declined the first prompt still has a
-//           way back in.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function permissionGate(props: { onGrant: () => void; }) { ... }
-// ```
-/**
- * Defines permission gate behavior for this music-player component; the TypeScript-oriented notes above explain
- * its call shape and effects.
- */
-private fun permissionGate(onGrant: () -> Unit) {
-    // What:     `Column( modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement =
-    //           Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment =
-    //           Alignment.CenterHorizontally, ) { ... }`
-    //           centers the rationale and button (same layout shape as `startingGate`).
-    // Why:      Present the access rationale and grant button centered on screen.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <Column
-    //   modifier={Modifier.fillMaxSize().padding(dp(24))}
-    //   verticalArrangement={Arrangement.spacedBy(dp(12), Alignment.CenterVertically)}
-    //   horizontalAlignment={Alignment.CenterHorizontally}
-    // > ... </Column>
-    // ```
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        // What:     `Text("Music Player needs access to your audio library to list your music.")`
-        //           shows the rationale.
-        // Why:      Explain why access is needed.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Text>Music Player needs access to your audio library to list your music.</Text>
-        // ```
-        Text("Music Player needs access to your audio library to list your music.")
-        // What:     `Button(onClick = onGrant) { Text("Grant access") }` renders the re-ask
-        //           button; `onClick = onGrant` re-launches the permission request; the trailing
-        //           lambda is the label.
-        // Why:      Give a declined user a way to re-request access.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Button onClick={onGrant}><Text>Grant access</Text></Button>
-        // ```
-        Button(onClick = onGrant) { Text("Grant access") }
     }
 }

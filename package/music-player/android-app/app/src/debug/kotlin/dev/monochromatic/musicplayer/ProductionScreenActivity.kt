@@ -80,7 +80,11 @@ import androidx.activity.compose.setContent
 // ```ts
 // import { BoxWithConstraints } from "compose/foundation/layout";
 // ```
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 
 // What:     `import androidx.compose.foundation.layout.fillMaxSize` makes the host fill the screen.
 // Why:      The production screen expects the full window as its space.
@@ -177,7 +181,10 @@ import androidx.compose.ui.graphics.Color
 // ```ts
 // import type { Modifier } from "compose/ui";
 // ```
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 // What:     `import androidx.compose.ui.platform.LocalContext` supplies the Android context to the scheme helper.
 // Why:      The dynamic color APIs need a Context, and the composition provides one.
@@ -210,7 +217,13 @@ import dev.monochromatic.musicplayer.core.paginate
 // ```
 import dev.monochromatic.musicplayer.core.SearchState
 import dev.monochromatic.musicplayer.core.TemplateEditorState
+import dev.monochromatic.musicplayer.core.FeedbackKind
+import dev.monochromatic.musicplayer.core.FeedbackMessage
+import dev.monochromatic.musicplayer.core.FeedbackQueue
+import dev.monochromatic.musicplayer.core.FirstRunState
+import dev.monochromatic.musicplayer.core.ScanIndicatorModel
 import dev.monochromatic.musicplayer.core.TemplateKind
+import dev.monochromatic.musicplayer.core.scanIndicatorFor
 import dev.monochromatic.musicplayer.core.searchLibrary
 
 // What:     `const val EXTRA_PICKER: String = "picker"` is the intent extra that starts the cover picker open.
@@ -292,6 +305,97 @@ private const val SCENE_SETTINGS: String = "settings"
 // ```
 /** Scene name of the template editor opened on the Track rows template. */
 private const val SCENE_TEMPLATE_EDITOR: String = "template-editor"
+
+// What:     `private const val SCENE_FIRST_RUN_DECLINED: String = "first-run-declined"` draws the declined pane.
+// Why:      The captures need each first-run state reachable by name from the intent extra.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_FIRST_RUN_DECLINED = "first-run-declined";
+// ```
+/** Scene name of the first-run pane in the declined state. */
+private const val SCENE_FIRST_RUN_DECLINED: String = "first-run-declined"
+
+// What:     `private const val SCENE_FIRST_RUN_SYSTEM_EMPTY: String = "first-run-system-empty"` draws the no-audio
+//           pane.
+// Why:      The captures need the device-library no-audio state reachable by name.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_FIRST_RUN_SYSTEM_EMPTY = "first-run-system-empty";
+// ```
+/** Scene name of the first-run pane for a device library with no audio. */
+private const val SCENE_FIRST_RUN_SYSTEM_EMPTY: String = "first-run-system-empty"
+
+// What:     `private const val SCENE_FIRST_RUN_FOLDER_EMPTY: String = "first-run-folder-empty"` draws the folder pane.
+// Why:      The captures need the chosen-folder no-audio state reachable by name.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_FIRST_RUN_FOLDER_EMPTY = "first-run-folder-empty";
+// ```
+/** Scene name of the first-run pane for a chosen folder with no audio. */
+private const val SCENE_FIRST_RUN_FOLDER_EMPTY: String = "first-run-folder-empty"
+
+// What:     `private const val SCENE_SCAN_MEASURING: String = "scan-measuring"` draws the scan bar mid-sweep.
+// Why:      The captures need the bar at a fixed count to check its layout.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_SCAN_MEASURING = "scan-measuring";
+// ```
+/** Scene name of the player with the scan bar at a fixed count. */
+private const val SCENE_SCAN_MEASURING: String = "scan-measuring"
+
+// What:     `private const val SCENE_FEEDBACK_BOTH: String = "feedback-both"` draws Undo and Error together.
+// Why:      The captures need both overlay messages visible to check their order and stacking.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SCENE_FEEDBACK_BOTH = "feedback-both";
+// ```
+/** Scene name of the player with an Undo message above an Error message. */
+private const val SCENE_FEEDBACK_BOTH: String = "feedback-both"
+
+// What:     `private const val SAMPLE_FOLDER_NAME: String = "Camellia"` is the folder the folder pane names.
+// Why:      The headline names a real folder, so the capture reads like a user's folder.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SAMPLE_FOLDER_NAME = "Camellia";
+// ```
+/** Folder name that the folder no-audio scene shows in its headline. */
+private const val SAMPLE_FOLDER_NAME: String = "Camellia"
+
+// What:     `private const val SAMPLE_SCAN_DONE: Int = 412` is the visited count of the scan scene.
+// Why:      The design record fixes the bar at 412 of 1,218, so the capture matches the record.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SAMPLE_SCAN_DONE = 412;
+// ```
+/** Tracks visited in the scan scene, matching the count in the design record. */
+private const val SAMPLE_SCAN_DONE: Int = 412
+
+// What:     `private const val SAMPLE_SCAN_TOTAL: Int = 1218` is the total of the scan scene.
+// Why:      The design record fixes the bar at 412 of 1,218, so the capture matches the record.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SAMPLE_SCAN_TOTAL = 1218;
+// ```
+/** Tracks in the scan scene, matching the total in the design record. */
+private const val SAMPLE_SCAN_TOTAL: Int = 1218
+
+// What:     `private val SAMPLE_OVERLAY_INSET: Dp = 16.dp` is the overlay inset the player host uses.
+// Why:      The debug overlay scenes place messages at the same inset as the production host.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SAMPLE_OVERLAY_INSET = 16; // dp
+// ```
+/** Inset between the overlay messages and the screen edges, matching the player host. */
+private val SAMPLE_OVERLAY_INSET: Dp = 16.dp
 
 // What:     `private const val SEARCH_NONE_QUERY: String = "zqxvj"` is a query no sample name contains.
 // Why:      The NoMatch scene must search a query that no folder or track name matches, so the letters are unlikely
@@ -606,6 +710,70 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
                     onBack = {},
                 ),
             )
+            // What:     `SCENE_FIRST_RUN_DECLINED` draws the declined first-run pane with its actions unwired.
+            // Why:      The capture shows the approved declined copy and its three buttons over the same layout.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // case "first-run-declined": return <FirstRunPane state="DECLINED" />;
+            // ```
+            SCENE_FIRST_RUN_DECLINED -> firstRunPane(
+                state = FirstRunState.DECLINED,
+                folderName = null,
+                actions = sampleFirstRunActions(),
+            )
+            // What:     `SCENE_FIRST_RUN_SYSTEM_EMPTY` draws the no-audio pane for the device library.
+            // Why:      The capture shows the device-library copy with Open a folder as the filled action.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // case "first-run-system-empty": return <FirstRunPane state="SYSTEM_NO_AUDIO" />;
+            // ```
+            SCENE_FIRST_RUN_SYSTEM_EMPTY -> firstRunPane(
+                state = FirstRunState.SYSTEM_NO_AUDIO,
+                folderName = null,
+                actions = sampleFirstRunActions(),
+            )
+            // What:     `SCENE_FIRST_RUN_FOLDER_EMPTY` draws the no-audio pane for a chosen folder.
+            // Why:      The capture shows the folder's display name in the headline.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // case "first-run-folder-empty": return <FirstRunPane state="FOLDER_NO_AUDIO" folderName="Camellia" />;
+            // ```
+            SCENE_FIRST_RUN_FOLDER_EMPTY -> firstRunPane(
+                state = FirstRunState.FOLDER_NO_AUDIO,
+                folderName = SAMPLE_FOLDER_NAME,
+                actions = sampleFirstRunActions(),
+            )
+            // What:     `SCENE_SCAN_MEASURING` draws the scan bar over the player at 412 of 1218 tracks.
+            // Why:      The capture shows the bar's fixed layout at the count named in the decision record.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // case "scan-measuring": return <Player overlay={<ScanIndicator done={412} total={1218} />} />;
+            // ```
+            SCENE_SCAN_MEASURING -> sampleOverlayScene(
+                model = model,
+                actions = actions,
+                pickerOpen = pickerOpen,
+                messages = emptyList(),
+                scanModel = scanIndicatorFor(loading = false, measured = SAMPLE_SCAN_DONE, total = SAMPLE_SCAN_TOTAL),
+            )
+            // What:     `SCENE_FEEDBACK_BOTH` draws the Undo message above the Error message over the player.
+            // Why:      The capture shows both overlay messages at once, Undo above Error, at their content width.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // case "feedback-both": return <Player overlay={<FeedbackOverlay messages={[undo, error]} />} />;
+            // ```
+            SCENE_FEEDBACK_BOTH -> sampleOverlayScene(
+                model = model,
+                actions = actions,
+                pickerOpen = pickerOpen,
+                messages = sampleFeedbackMessages(),
+                scanModel = scanIndicatorFor(loading = false, measured = 0, total = 0),
+            )
             else -> throw IllegalArgumentException("Unknown ProductionScreenActivity scene: $scene")
         }
     }
@@ -618,6 +786,83 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
 // ```ts
 // function SampleSearchPage(props: { query: string; model: Model; actions: Actions }): UIElement { /* ... */ }
 // ```
+// What:     `private fun sampleFirstRunActions(): FirstRunActions` gives the first-run scenes callbacks that do
+//           nothing.
+// Why:      The scenes draw the pane for a capture, and nothing in them should act on the sample library.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const sampleFirstRunActions = (): FirstRunActions => ({ onAllowAccess: () => {}, onOpenFolder: () => {}, onSettings:
+//           () => {} });
+// ```
+/** Returns first-run actions that draw the pane without acting on anything. */
+private fun sampleFirstRunActions(): FirstRunActions = FirstRunActions(
+    onAllowAccess = {},
+    onOpenFolder = {},
+    onSettings = {},
+)
+
+// What:     `private fun sampleFeedbackMessages(): List<FeedbackMessage>` builds the Undo and Error messages.
+// Why:      The feedback scene shows both kinds at once, and the queue orders them Undo above Error as production does.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const sampleFeedbackMessages = (): FeedbackMessage[] => [undo, error];
+// ```
+/** Returns the Undo and Error messages that the feedback scene shows together. */
+private fun sampleFeedbackMessages(): List<FeedbackMessage> {
+    /** Undo message that offers to reverse the last removal from the library. */
+    val undo = FeedbackMessage(
+        id = "sample-undo",
+        text = "Track moved to trash",
+        kind = FeedbackKind.UNDO,
+        actionLabel = "Undo",
+    )
+    /** Error message with the two-line folder text that production shows for a folder it cannot keep. */
+    val error = FeedbackMessage(
+        id = "sample-error",
+        text = "That folder can't be kept open. Choose it again, or pick another folder.",
+        kind = FeedbackKind.ERROR,
+        actionLabel = null,
+    )
+    return FeedbackQueue.EMPTY.show(message = error, nowMs = 0L).show(message = undo, nowMs = 0L).visible()
+}
+
+// What:     `private fun sampleOverlayScene(...)` draws the player with the feedback overlay and the scan bar at the
+//           bottom.
+// Why:      The overlay and the bar share one bottom column, so the capture shows the same stacking as the production
+//           host.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SampleOverlayScene(props): UIElement { return
+//           <Player><BottomColumn>{feedback}{scan}</BottomColumn></Player>; }
+// ```
+/** Draws the player over the sample library with the feedback overlay and the scan bar stacked at the bottom. */
+@Composable
+private fun sampleOverlayScene(
+    model: PlayerContentModel,
+    actions: PlayerContentActions,
+    pickerOpen: Boolean,
+    messages: List<FeedbackMessage>,
+    scanModel: ScanIndicatorModel,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        playerContent(model = model, pickerOpen = pickerOpen, actions = actions)
+        Column(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()) {
+            if (messages.isNotEmpty()) {
+                feedbackOverlay(
+                    messages = messages,
+                    onDismiss = {},
+                    onAction = {},
+                    modifier = Modifier.padding(SAMPLE_OVERLAY_INSET),
+                )
+            }
+            scanIndicator(model = scanModel, modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
 /** Draws Search for one query over the sample library, with the deck and folder browser of the inner layout. */
 @Composable
 private fun sampleSearchPage(query: String, model: PlayerContentModel, actions: PlayerContentActions) {

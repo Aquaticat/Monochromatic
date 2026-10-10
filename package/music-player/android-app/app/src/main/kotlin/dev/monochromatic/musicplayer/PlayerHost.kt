@@ -46,7 +46,19 @@ import androidx.activity.compose.BackHandler
 // import { Box } from "compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+
+// What:     `import androidx.compose.runtime.LaunchedEffect` runs the feedback expiry keyed on the next expiry.
+// Why:      Expiry must wait for the next due message and restart when a message is shown or dismissed.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { useEffect } from "react";
+// ```
+import androidx.compose.runtime.LaunchedEffect
 
 // What:     `import androidx.compose.runtime.Composable` marks the host as a function that emits UI.
 // Why:      The host emits the screens for the current route.
@@ -86,6 +98,25 @@ import androidx.compose.runtime.remember
 // ```
 import androidx.compose.runtime.saveable.rememberSaveable
 
+// What:     `import androidx.compose.ui.Alignment` aligns the feedback overlay and scan bar to the bottom start edge.
+// Why:      The overlay stacks above the scan bar at the bottom of the player, and it never reflows the content.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Alignment } from "compose/ui";
+// ```
+import androidx.compose.ui.Alignment
+
+// What:     `import androidx.compose.ui.unit.Dp` and `dp` size the feedback overlay inset.
+// Why:      The overlay sits 16dp from the edges and from the scan bar, and the inset is a named constant.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Dp } from "compose/ui/unit";
+// ```
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
 // What:     `import androidx.compose.ui.Modifier` sizes the player box.
 // Why:      The box fills the screen so the player content lays out in full.
 //
@@ -118,7 +149,10 @@ import dev.monochromatic.musicplayer.core.SearchResult
 import dev.monochromatic.musicplayer.core.SearchState
 import dev.monochromatic.musicplayer.core.TemplateEditorState
 import dev.monochromatic.musicplayer.core.TemplateKind
+import dev.monochromatic.musicplayer.core.FeedbackMessage
+import dev.monochromatic.musicplayer.core.ScanIndicatorModel
 import dev.monochromatic.musicplayer.core.buildPlayerContent
+import dev.monochromatic.musicplayer.core.scanIndicatorFor
 import dev.monochromatic.musicplayer.core.searchLibrary
 
 // What:     `sealed interface PlayerRoute` names the four destinations the host can show.
@@ -302,6 +336,16 @@ internal object PlayerRouteRules {
 private fun loadStoredTemplates(context: Context): Map<TemplateKind, String> =
     TemplateKind.entries.associateWith { kind -> SessionStore.loadTemplate(context, kind) }
 
+// What:     `private val PLAYER_HOST_FEEDBACK_INSET: Dp = 16.dp` is the gap between the overlay and the screen edges.
+// Why:      The feedback overlay keeps this inset from the start, end, and bottom edges, and from the scan bar.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const PLAYER_HOST_FEEDBACK_INSET = 16; // dp
+// ```
+/** Inset between the feedback overlay and the start, end, and bottom edges of the player, and above the scan bar. */
+private val PLAYER_HOST_FEEDBACK_INSET: Dp = 16.dp
+
 // What:     `@Composable fun playerHost(...)` draws the destination of the current route over the controller state.
 // Why:      The player, Search, Settings, and the editor share one route and one set of template texts, so the host
 //           holds them together and routes each action to the controller or to its own state.
@@ -311,15 +355,21 @@ private fun loadStoredTemplates(context: Context): Map<TemplateKind, String> =
 // function PlayerHost(props: { controller: PlayerController; onChooseFolder: () => void }): UIElement { /* ... */ }
 // ```
 /**
- * Draws the player host: the route, the Search query, the folder picker flag, and the template texts.
+ * Draws the player host: the route, the Search query, the folder picker flag, the template texts, the scan
+ * indicator, and the feedback overlay.
  *
+ * @param feedback Feedback queue that the host draws above the player and expires on time.
  * @param emptyNotice Draws the notice over the player while the library is loading or holds no track.
+ * @param firstRunContent Draws the first-run pane over the player when the open source needs it, given the
+ *     callback that opens the Settings route; null when the player shows.
  */
 @Composable
 fun playerHost(
     controller: PlayerController,
+    feedback: FeedbackHostState,
     onChooseFolder: () -> Unit,
     emptyNotice: @Composable (PlayerUiState) -> Unit = {},
+    firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)? = null,
 ) {
     /** Android context that the template preferences are read and written through. */
     val context: Context = LocalContext.current
@@ -496,10 +546,59 @@ fun playerHost(
         go(PlayerRouteRules.backFrom(route))
     }
 
+    // What:     `LaunchedEffect(nextExpiry)` waits until the earliest visible message is due and then expires it.
+    // Why:      The effect restarts whenever the earliest expiry changes, so a shown or dismissed message is timed
+    //           again.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { if (nextExpiry != null) feedback.expireAt(nextExpiry); }, [nextExpiry]);
+    // ```
+    /** Clock value at which the earliest visible message expires, or null when no message is visible. */
+    val nextExpiry: Long? = feedback.queue.nextExpiryMs()
+    LaunchedEffect(nextExpiry) {
+        if (nextExpiry != null) {
+            feedback.expireAt(nextExpiry)
+        }
+    }
+
     when (route) {
-        PlayerRoute.Player -> Box(modifier = Modifier.fillMaxSize()) {
-            playerContent(model = model, pickerOpen = pickerOpen, actions = playerActions)
-            emptyNotice(state)
+        PlayerRoute.Player -> {
+            /**
+             * Scan indicator for this frame, idle while the first-run pane holds the screen because no sweep runs then.
+             */
+            val scanModel: ScanIndicatorModel = scanIndicatorFor(
+                loading = state.loading && firstRunContent == null,
+                measured = SweepProgress.snapshot.done,
+                total = SweepProgress.snapshot.total,
+            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (firstRunContent != null) {
+                    firstRunContent { go(PlayerRoute.Settings) }
+                } else {
+                    playerContent(model = model, pickerOpen = pickerOpen, actions = playerActions)
+                    emptyNotice(state)
+                }
+                // The overlay and the scan bar share one bottom column, so the overlay sits above the bar and
+                // neither one changes the layout of the player beneath.
+                Column(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()) {
+                    /** Messages in display order, Undo above Error, drawn only while at least one is visible. */
+                    val messages: List<FeedbackMessage> = feedback.queue.visible()
+                    if (messages.isNotEmpty()) {
+                        feedbackOverlay(
+                            messages = messages,
+                            onDismiss = { id -> feedback.dismiss(id) },
+                            onAction = { id -> Log.i(LOG_TAG, "feedback action id=$id") },
+                            modifier = Modifier.padding(
+                                start = PLAYER_HOST_FEEDBACK_INSET,
+                                end = PLAYER_HOST_FEEDBACK_INSET,
+                                bottom = PLAYER_HOST_FEEDBACK_INSET,
+                            ),
+                        )
+                    }
+                    scanIndicator(model = scanModel, modifier = Modifier.fillMaxWidth())
+                }
+            }
         }
         PlayerRoute.Search -> {
             /** Library tracks in load order, rebuilt once per controller snapshot so each index is a load index. */

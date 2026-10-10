@@ -114,6 +114,18 @@ object SessionStore {
     /** Persisted page-control style key. */
     private const val KEY_PAGE_CONTROL_STYLE: String = "page_control_style"
 
+    // What:     `private const val KEY_AUDIO_ACCESS_REQUESTED: String = "audio_access_requested"` names the request
+    //           flag.
+    // Why:      The first-run decision needs to know whether this app already asked Android for music access, because
+    //           Android stops showing its prompt after repeated refusals and the flag tells the two cases apart.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const KEY_AUDIO_ACCESS_REQUESTED = "audio_access_requested";
+    // ```
+    /** Persisted flag that this app has already asked Android for music access. */
+    private const val KEY_AUDIO_ACCESS_REQUESTED: String = "audio_access_requested"
+
     // What:     `private const val KEY_TEMPLATE_PREFIX: String = "template_"` starts each template's preference key.
     // Why:      Each template kind keeps its own text, so its key is this prefix followed by the kind's name.
     //
@@ -225,6 +237,33 @@ object SessionStore {
     internal fun savePageControlStyle(context: Context, style: PageControlStyle) {
         prefs(context).edit {
             putString(KEY_PAGE_CONTROL_STYLE, style.name)
+        }
+    }
+
+    // What:     `fun loadAudioAccessRequested(context: Context): Boolean` reads the request flag.
+    // Why:      The first-run decision reads it on every composition, and a missing flag means no request was made yet.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function loadAudioAccessRequested(context: Context): boolean { return storage.getBoolean(KEY, false); }
+    // ```
+    /** Returns whether this app has already asked Android for music access, or false when nothing was saved. */
+    fun loadAudioAccessRequested(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_AUDIO_ACCESS_REQUESTED, false)
+
+    // What:     `fun saveAudioAccessRequested(context: Context, requested: Boolean)` writes the request flag.
+    // Why:      The flag is written before the permission prompt opens, so a process death during the prompt still
+    //           leaves the request on record.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function saveAudioAccessRequested(context: Context, requested: boolean): void { storage.setBoolean(KEY,
+    //           requested); }
+    // ```
+    /** Records whether this app has asked Android for music access. */
+    fun saveAudioAccessRequested(context: Context, requested: Boolean) {
+        prefs(context).edit {
+            putBoolean(KEY_AUDIO_ACCESS_REQUESTED, requested)
         }
     }
 
