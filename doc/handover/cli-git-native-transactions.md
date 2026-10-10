@@ -44,8 +44,11 @@ and by vetoing any item under `Choices open to veto`.
 
 ## Status
 
-Slices 0 to 2 are done, apart from the slice 2 fuzz smoke campaign;
-slice 3 is next.
+Slices 0 to 2 are done, apart from the slice 2 fuzz smoke campaign.
+Slice 3 is partly done: its leaf modules are committed at `48cb7d2d3`
+(process start times, the Git version check, open-holder scans, foreign-lock evidence,
+forwarded-command alias expansion and index-writer classification);
+the wait, the real index lock, the landing lock and the forwarding coordination are not started.
 A real commit is still refused.
 
 ## Slice plan
@@ -501,7 +504,51 @@ Fuzz (`package/git-policy/cli.fuzz`):
 targets `owner_records` and `transaction_records`,
 with generator controls (26 sidecar controls pass on the host)
 and five planted defects.
-The planted-defect run and the 30-second smoke campaign are recorded once they finish.
+The planted-defect run and the 30-second smoke campaign are recorded under Slice 3 (partial).
+
+### Slice 3 (partial)
+
+Commit `48cb7d2d3`, which auto-pushed to `origin/feat/cli-git-native-transactions` on commit
+(`AGENTS.md` `APG`); the coordinator confirmed on 2026-10-10 that pushing this feature branch is expected.
+Modules: `process_start.rs`, `git_version.rs` (with `check_once`, the seam its controls use),
+`index_lock_holders.rs`, `index_lock_holder_parsers.rs` (the `lsof -F` and Restart Manager parsers, split
+off to stay under the 300-code-line limit), `index_lock_evidence.rs`, `forwarded_command.rs`,
+`index_writer_commands.rs`, `index_lock_restart_manager.ps1`, and `js_text::trim_javascript_end`.
+
+Corrections made against the incumbent source before the gate:
+
+- `splitAliasCommand` starts with `started: true`, so an empty value is one empty word and untrimmed
+  leading whitespace yields an empty first word; the native splitter now does the same.
+  The incumbent trims the value before splitting, so the native path trims too.
+- `parsePidFileText` uses `text.trimEnd()`, so `trim_javascript_end` (not `trim`) reads the PID file.
+  `pid 0` is refused by both.
+- `Number('')` is zero, so an empty first field of `/proc/uptime` reads as zero seconds since boot.
+
+Checked: `native:clippy` and `native:clippy:windows` pass with the Windows-only helpers gated;
+`native:lint:rust` still reports 307 findings repository-wide, none of them new in this slice's files
+after the fixes (the remainder sit in modules from slices 0 to 2 and `main`).
+
+Gate (`GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:test:container`, exit 0,
+the run's log stayed in the agent scratch directory, not the repository):
+829 library tests passed with 2 ignored, 39 binary-level tests, the candidate consumer, and Clippy.
+Phase 1 of the mutation campaign (planted guard removals, `bin/native-planted-controls.mjs`) ran against the
+gate image and every planted removal was noticed, including the four added here.
+
+Fuzz: `package/git-policy/cli.fuzz` gained the `index_lock_records` target over the PID file and stat readers.
+Its generator controls pass on the host (29 controls in the helper library).
+`test:planted` noticed all 21 planted defects, the two new ones among them.
+The 30-second ASAN smoke campaign (`mise run //package/git-policy/cli.fuzz:smoke`) exited 0 for all eleven
+targets, including `index_lock_records` (2,532,981 executions) and the slice 2 targets `owner_records`
+(265,109) and `transaction_records` (62,739); this closes the slice 2 fuzz item.
+The first smoke run failed on `index_lock_records` because libFuzzer dictionaries take `\xNN` escapes, not `\n`.
+Planted defects added to the fuzz registry (`PID file text keeps trailing whitespace` and
+`start ticks past the safe integers`) and to the subject's control registry
+(`git version minimum`, `PID file proof skips the holder scan`, `open descriptor precedence over the PID file`,
+`safe-integer bound on process start ticks`).
+
+Not started: the wait with its unproven-owner budget, the real index lock with its journaled identity,
+the landing lock, the forwarding coordination with `CLI_GIT_LANDING_LEASE`, the direct fix under the landing lock,
+the lifted `Unported::TransactionRecovery`, the binary and interoperability tests, and the rebase deadlock test.
 
 ## Dependencies
 
