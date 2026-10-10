@@ -20,12 +20,12 @@ and by vetoing any item under "Choices open to veto".
 
 ## Status
 
-The implementation is complete on this branch at merge commit `db2857189`,
-and the gate, the differential and the fuzz smoke run pass on that commit.
-The mutation campaign does not yet pass its acceptance:
-one mutant survives that a test should kill (`markdown_exclude.rs:95:39`, see "Mutation testing"),
-so the branch is not ready to merge until that survivor is killed or the owner accepts it.
-The gate, the mutation campaign and the fuzz campaign are recorded in their own sections.
+The implementation is complete on this branch.
+The final gated commit is recorded in "Final gated commit";
+the gate, the scoped mutation campaign and the fuzz smoke run pass on it.
+The earlier records (merge commit `db2857189` and the first campaigns) are kept below for history.
+The one surviving mutant that a test should kill (`markdown_exclude.rs:95:39`) is killed by commit `2e10ab6fb2`,
+and the two base64 `|` to `^` survivors are equivalent mutants.
 `main` changed `package/git-policy/cli/Cargo.lock` and `package/git-policy/cli.fuzz/Cargo.lock`
 (the `monochromatic-jsonc-edit` 0.1.1 release, `f313a8933`) after the branch point `6ed268522`,
 so `main` was merged in as `b89b38252`;
@@ -483,11 +483,11 @@ Surviving mutants:
   a real survivor.
   The mutant makes `is_file` always false, so the last path segment is matched as a directory,
   which changes only the result for a directory-only pattern (one ending in `/`) that names a file.
-  It survived both passes, so no test checks that such a pattern does not exclude a file of the same name.
-  This is an inference from the survival, not yet confirmed by writing that test.
-  Killing it needs a test in `src/native/markdown_exclude_tests.rs`,
-  committed and then shown to fail with the mutant, as the guard-test rule requires.
-  Not done in this run, because the gate was defined on the committed tree and a new test changes it.
+  It survived both passes, so no test checked that such a pattern does not exclude a file of the same name.
+  Killed by the test `a_directory_only_pattern_never_excludes_a_file_of_that_name` in
+  `src/native/markdown_exclude_tests.rs`, committed as `2e10ab6fb2`.
+  Shown by hand: with the mutant applied the test fails (exit 101);
+  restored, the file is identical to the commit.
 
 Evidence:
 
@@ -518,6 +518,107 @@ No crash artifact was written: the run reported no failure.
 
 Not run: `test:planted`, the planted-defect controls for the fuzz generators,
 is not part of the smoke task and was not run here.
+
+## Final gated commit
+
+Gated commit: `2e10ab6fb2`, the test commit on top of the merge `2e3fe1e91a`
+(main's tip `8e0fc1252a`, the linter cutover).
+The gate, the mutation campaign and the fuzz smoke run all read the clean working tree at `2e10ab6fb2`.
+
+### Merge
+
+- Nine native source files conflicted, because main restyled rustdoc comments (`928c633874`).
+  Each conflict hunk was resolved to the branch side;
+  then `mise run format:monochromatic-lint -- package/git-policy/cli/src/native` (the fixer main's commit used)
+  rewrapped the branch's doc comments.
+  `git diff HEAD` against the branch's previous commit shows only comment lines changed.
+- The installed `git` wrapper refused `git add` with `config-changed`
+  ("Tracked TypeScript source bytes changed") until `git cli-git trust --yes` ran in this worktree
+  (`doc/troubleshooting/cli-git-trusted-snapshot-stale-policy-code.md`).
+  The trust output said its authority covers "current and future descendant repositories beneath this exact
+  canonical root", and that new descendant configs "auto-enroll exact bundles without another prompt and run
+  with full account permissions".
+  This is a broader grant than this worktree; the owner should review it.
+
+### Gate
+
+- `mise run //package/git-policy/cli:native:test:container` exits 0.
+- Gate image `localhost/git-policy-native-test:development`,
+  ID `1a0dcbafb56d3edb7225d2cd8f7f0964525b73285c24278df7193149e2374888`.
+- Evidence: `package/git-policy/cli/target/verification/native-FQBB9J` (`passed.json`: tests true, Clippy true).
+- Unit tests: 634 passed, 0 failed (633 before the new test).
+- Binary tests (`native_binary`): 43 passed, 0 failed.
+- Candidate consumer test (`native_candidates`): 1 passed, 0 failed.
+- Clippy `-D warnings` in the same image: exit 0.
+- Log: `${HOME}/temp/agent/native-gate-20261010/gate-2.log`.
+
+### Mutation
+
+Scoped campaign over the twenty changed non-test modules, in four lanes
+(`lanes2.ts` in `${HOME}/temp/agent/native-gate-20261010`); the modules are those of the earlier lanes.
+
+First pass, per lane:
+
+- Lane a (7 modules): 105 mutants; 70 caught, 29 unviable, 6 timed out.
+- Lane b (5 modules): the four-lane run failed its unmutated baseline
+  (`forwarding::version_is_identical_to_native_git` hit its 5-second bound, the flake recorded above).
+  Rerun alone, the lane tested 95 mutants: 81 caught, 11 unviable, 1 timed out, 2 missed.
+- Lane c (4 modules): 96 mutants; 48 caught, 42 unviable, 6 timed out.
+- Lane d (4 modules): 98 mutants; 74 caught, 16 unviable, 8 timed out.
+
+Total first pass: 394 mutants; 273 caught, 98 unviable, 21 timed out, 2 missed.
+The 21 timeouts are 11 more than the earlier pass's 10, under the same bounds;
+the parallel load plausibly caused them, which was not measured.
+
+Rerun of each timed-out file once, alone, scoped to the timed-out positions (`rerun3.ts`, `rerun4.ts`):
+all 21 timed-out mutants were caught on the rerun.
+The reruns are in `${HOME}/temp/agent/native-gate-20261010/rerun3/` and `rerun4/`.
+
+Final: 394 mutants; 294 caught, 98 unviable, 2 missed, 0 timed out.
+
+The two missed mutants are equivalent.
+They are now at `event_path.rs:237`, earlier at line 173, because the merge's rustdoc rewrap moved the lines:
+
+- `event_path.rs:237:33` (`|` to `^` in `base64_standard`):
+  the OR joins operands in disjoint bit ranges, so XOR gives the same value.
+- `event_path.rs:237:42` (the other `|` to `^` in the same expression): the same disjoint bit ranges make XOR equal OR.
+
+The earlier real survivor, `markdown_exclude.rs:95:39`, is no longer missed: it is among the 70 caught in lane a,
+and it is killed by the new test, as recorded under "Mutation testing".
+
+Images, merge result:
+
+- `localhost/git-policy-native-mutation:merge-2e10ab-a`,
+  ID `279de82a8b91a9dbd7684cdeda179d5e4873de66bba3c52535a36a13ad10a195`.
+- `localhost/git-policy-native-mutation:merge-2e10ab-b`,
+  ID `659bf965d08643e98bc373edb14aaa3b5f9ca85af230587acf5bfa15abe55b18`.
+- `localhost/git-policy-native-mutation:merge-2e10ab-c`,
+  ID `5c3af7c561bcfb037267db2123bfd5e43d74b0b6af8fc15e1af1b73419d33249`.
+- `localhost/git-policy-native-mutation:merge-2e10ab-d`,
+  ID `8cc1cb87661107ea05fc22a17ce96eb0ac824a10c9a960c43fb60385d950adad`.
+
+### Fuzz
+
+- `mise run //package/git-policy/cli.fuzz:smoke` exits 0 on `2e10ab6fb2`.
+- Image `localhost/git-policy-cli-fuzz-run:development`,
+  ID `f201194efa0fafa2f092068ae57d1ef8bbf02ed639ded8fb0fe1653bed9d05a0`.
+- Generator controls: 26 passed, 0 failed.
+- Targets, all exit 0, 0 artifacts written:
+  `global_arguments` 865,699; `config_loading` 338,746; `config_schema` 41,823;
+  `wrapper_controls` 43,324; `batch_reply` 191,286; `stage_listing` 122,450;
+  `rules_file` 1,036,677; `final_newline` 7,971,020; `linter_output` 27,024;
+  `event_path` 36,222; `linter_config` 187,080 executions.
+- Log: `${HOME}/temp/agent/native-gate-20261010/fuzz-smoke-2.log`.
+
+### Not rerun on the merge result
+
+- The differential was not rerun. Main's cutover changed the incumbent's configuration and wrapper,
+  so the harness needs a check against the new incumbent before its counts mean anything;
+  its last record is the pre-merge one above.
+- The `forwarding::version_is_identical_to_native_git` 5-second bound failed its unmutated baseline twice:
+  in lane b of the four-lane run on the merge result,
+  and in an isolated rerun of `markdown_exclude.rs` before the merge.
+  Each passed on the next isolated run. It is a timing test under a bound and is not fixed here.
 
 ## Choices open to veto
 
