@@ -84,8 +84,19 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
   Native captures of the player screen found one defect (text and icons drawn black on the dark canvas because no content
   color was provided); it is fixed and a recapture is running.
 - Decision D105 (trash): folder grants delete immediately with a copy-back Undo; the system library uses Android's trash request.
-- Open and next: wiring first-run, scan, feedback and the track menu into the host, the real trash and Undo implementations,
-  keyboard wiring, then the desktop app.
+- Host wiring on the production branch (2026-10-10): routes (Player, Search, Settings, template editor), the first-run pane in
+  place of the permission gate, the scan indicator driven by a process-wide sweep progress holder, the feedback overlay with a
+  host-owned queue, the track menu with real actions and the D105 trash flows. Unit tests and detekt were green for each step;
+  trash, the file-manager intent, the clipboard and the popup position are not yet exercised on a device.
+  Native captures of the Search, Settings and template editor routes (40 views) found one more content-color gap in the debug
+  host only (the production root has a Surface); the Search result title now sets its own color.
+- Known gaps: per-row duration and peak (no JNI accessor yet, so template lines show without them), Re-analyse and file details
+  (no per-track cache invalidation or peak read-back from Kotlin), keyboard wiring, a folder-scan failure that the library source
+  swallows (it reports an empty folder), and the Settings page on the inner screen spanning the full width.
+- Desktop: the template, search, folder, keymap and overlay logic is ported to Rust and integrated into `desktop-app/src`
+  (485 tests pass, clippy clean on the host; the container clippy task fails on the existing `truepeak-core` path dependency,
+  which the container does not mount). The Slint components are being built next to the Android captures.
+- Open and next: keyboard wiring, the per-row peak source, the Slint UI composition for the desktop, then the final verification.
 
 ## Queue
 
