@@ -35,7 +35,10 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { writeSettledArtifact, } from './settled-v1-pool.test-fixture.ts';
-import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
+import {
+  NO_POOL_POLICY,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 /**
  Seed the gate draw's files are named after.
@@ -82,6 +85,7 @@ async function refusalOfFinalDraw(
   return await rejectionOf(async function drawFinal(): Promise<void> {
     await drawGradingSample({
       policy: NO_POOL_POLICY,
+      repository: UNASKED_REPOSITORY,
       line: lineOf({
         command: 'draw-sample',
         typed: ['--final',],
@@ -143,6 +147,7 @@ await describe({
 
         await drawGradingSample({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           line: lineOf({
             command: 'draw-sample',
             typed: [],
@@ -184,6 +189,7 @@ await describe({
 
         await drawGradingSample({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           line: lineOf({
             command: 'draw-sample',
             typed: [],
@@ -223,6 +229,7 @@ await describe({
 
         await drawGradingSample({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           line: lineOf({
             command: 'draw-sample',
             typed: ['--final',],
@@ -297,6 +304,7 @@ await describe({
 
         await drawGradingSample({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           line: lineOf({
             command: 'draw-sample',
             typed: [],
@@ -320,6 +328,7 @@ await describe({
         const refusal = await rejectionOf(async function drawAbsent(): Promise<void> {
           await drawGradingSample({
             policy: NO_POOL_POLICY,
+            repository: UNASKED_REPOSITORY,
             line: lineOf({
               command: 'draw-sample',
               typed: [],
@@ -371,6 +380,7 @@ await describe({
 
         await drawGradingSample({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           line: lineOf({
             command: 'draw-sample',
             typed: [],

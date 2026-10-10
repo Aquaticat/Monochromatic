@@ -40,6 +40,7 @@ import {
   selectEligible,
 } from '../../dist/final/node/index.mjs';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import { UNASKED_REPOSITORY, } from './pool-policy.test-fixture.ts';
 
 /**
  One built pipeline, as a digest-shaped invention.
@@ -60,6 +61,12 @@ const TIP_A = '1'.repeat(40,);
  A second repo commit, for the case where one pipeline carries two of them.
  */
 const TIP_B = '2'.repeat(40,);
+
+/**
+ The checkout `gitBounds` reads its two commits from, which a case requiring
+ one of them hands the selection to place every recorded commit against.
+ */
+const THIS_CHECKOUT = import.meta.dirname;
 
 /**
  The two commits of this repository ancestry can be asked about safely.
@@ -243,7 +250,7 @@ await describe({
             expect(census.tipByEntry.get('Mittens',),).toBe(TIP_A,);
             expect(census.tipByEntry.get('Pepper',),).toBe(TIP_B,);
 
-            const eligible = await selectEligible({ census, },);
+            const eligible = await selectEligible({ census, repository: UNASKED_REPOSITORY, },);
 
             expect(eligible.entryIds,).toEqual(['Mittens', 'Pepper',],);
             expect(eligible.selection.kind,).toBe('single-generation',);
@@ -276,7 +283,7 @@ await describe({
             expect(census.untaggedIds,).toEqual(['Biscuit',],);
             expect(census.malformedIds.length,).toBe(0,);
 
-            const eligible = await selectEligible({ census, },);
+            const eligible = await selectEligible({ census, repository: UNASKED_REPOSITORY, },);
 
             expect(eligible.entryIds,).toEqual(['Mittens',],);
             expect(
@@ -317,7 +324,7 @@ await describe({
             expect(census.untaggedIds.length,).toBe(0,);
             expect(census.malformedIds.length,).toBe(0,);
 
-            const eligible = await selectEligible({ census, },);
+            const eligible = await selectEligible({ census, repository: UNASKED_REPOSITORY, },);
 
             expect(eligible.entryIds,).toEqual(['Mittens',],);
             expect(
@@ -462,6 +469,7 @@ await describe({
              */
             const refusalOfSelectEligible = selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
+              repository: UNASKED_REPOSITORY,
             },);
 
             await expect(refusalOfSelectEligible,).rejects.toBeInstanceOf(EmptyPoolError,);
@@ -514,6 +522,7 @@ await describe({
              */
             const refusalOfSelectEligible = selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
+              repository: UNASKED_REPOSITORY,
             },);
 
             await expect(refusalOfSelectEligible,).rejects.toBeInstanceOf(MixedGenerationError,);
@@ -544,6 +553,7 @@ await describe({
 
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
+              repository: UNASKED_REPOSITORY,
             },);
 
             expect(eligible.entryIds,).toEqual(['Mittens', 'Pepper',],);
@@ -576,6 +586,7 @@ await describe({
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
               pooledDeliberately: true,
+              repository: UNASKED_REPOSITORY,
             },);
 
             expect(eligible.entryIds.length,).toBe(2,);
@@ -616,6 +627,7 @@ await describe({
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
               requiredCommit: head,
+              repository: THIS_CHECKOUT,
             },);
 
             expect(eligible.entryIds,).toEqual(['Mittens',],);
@@ -654,6 +666,7 @@ await describe({
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
               requiredCommit: head,
+              repository: THIS_CHECKOUT,
             },);
 
             /**
@@ -702,6 +715,7 @@ await describe({
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
               requiredCommit: root,
+              repository: THIS_CHECKOUT,
             },);
 
             expect(eligible.entryIds,).toEqual(['Biscuit', 'Mittens',],);
@@ -741,6 +755,7 @@ await describe({
             const refusalOfSelectEligible = selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
               requiredCommit: head,
+              repository: THIS_CHECKOUT,
             },);
 
             await expect(refusalOfSelectEligible,).rejects.toBeInstanceOf(EmptyPoolError,);
@@ -760,6 +775,7 @@ await describe({
              */
             const refusalOfSelectEligible = selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
+              repository: UNASKED_REPOSITORY,
             },);
 
             await expect(refusalOfSelectEligible,).rejects.toBeInstanceOf(EmptyPoolError,);

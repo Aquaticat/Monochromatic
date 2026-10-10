@@ -1,9 +1,13 @@
 /**
- Tests for which files `editor-standing-read` counts as artifacts.
+ Tests for the `editor-standing-read` command as built: which files it counts
+ as artifacts, and the whole of what it prints and the code it exits with.
 
- RUN AS AN OPERATOR RUNS IT, since the module exports nothing to call
- directly: every case writes a throwaway archive, runs the built command over
- it, and reads the summary line.
+ RUN AS AN OPERATOR RUNS IT: every case writes a throwaway archive, runs the
+ built command over it in a child, and reads both streams and the exit code.
+ The child's environment carries no provider key and no setting of the
+ package (`environmentWithoutKeys` of `child-environment.test-fixture.ts`,
+ through `runBuiltCommand`), though the command asks no model. The procedure's
+ own cases are in `editor-standing-read-run.unit.test.ts`.
 
  AN ARTIFACT IS A REGULAR FILE. The census and the scheduler list only regular
  files named `*.json`, and this reader took every such NAME, so a directory
@@ -33,9 +37,18 @@ import {
 import { runBuiltCommand, } from '../child-environment.test-fixture.ts';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 import {
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../roster-seats.test-fixture.ts';
+  carrying,
+  JUDGED_SEATED_ROUND,
+  JUDGED_STANDING,
+  NO_ROUNDS,
+  OBSERVATIONAL,
+  OFF_ROSTER_ROUND,
+  refusedEmpty,
+  SEATED_ROUND,
+  standingRun,
+  summaryOf,
+  WITHOUT_ROUNDS,
+} from './editor-standing-read.test-fixture.ts';
 
 //region Editor standing read listing tests
 
@@ -182,28 +195,10 @@ async function standingOverArtifacts(
   { artifacts, }: { readonly artifacts: Readonly<Record<string, unknown>>; },
 ): Promise<StandingStreams> {
   /**
-   The run directory and what the command left, the directory removed when
-   this returns.
+   The run directory, removed when this returns.
    */
-  await using run = await scratchDirWith({
-    prefix: 'editor-standing-read-',
-    setup: async function seeded({ path, },): Promise<StandingStreams> {
-      await mkdir(join(path, 'artifacts',), { recursive: true, },);
-      await Promise.all(Object.entries(artifacts,).map(async function written([name, artifact,],): Promise<void> {
-        await writeFile(
-          join(path, 'artifacts', name,),
-          JSON.stringify(artifact,),
-          'utf8',
-        );
-      },),);
-      return await standingOver({ archive: path, },);
-    },
-  },);
-  return {
-    code: run.code,
-    stdout: run.stdout,
-    stderr: run.stderr,
-  };
+  await using run = await standingRun({ artifacts, },);
+  return await standingOver({ archive: run.dir, },);
 }
 
 /**
@@ -227,227 +222,39 @@ async function standingOverArtifact(
   return await standingOverArtifacts({ artifacts: { 'Mittens.json': artifact, }, },);
 }
 
-/**
- The settled artifact the schema walk of 2026-10-04 mapped, recording no
- rounds; `carrying` adds the rounds the repair lane records under its result.
- */
-const WITHOUT_ROUNDS = {
-  artifactSchemaVersion: 3,
-  id: 'Mittens',
-  tip: 'abc',
-  pipelineDigest: `sha256-tree-v1:${'0'.repeat(64,)}`,
-  corpusSha: 'feedfacefeedfacefeedfacefeedfacefeedface',
-  callConfig: {},
-  durationMs: 1,
-  timestamp: '2026-09-28T10:00:00.000Z',
-  preparation: {
-    alignmentPairCount: 1,
-    identity: `sha256-preparation-v2:${'0'.repeat(64,)}`,
-    sliceCount: 1,
-    sourceChars: 1,
-    targetChars: 1,
-    sourceBytes: 1,
-    alignmentFindings: [],
-  },
-  lanes: {
-    repair: {
-      result: {
-        status: 'repaired',
-        sliceCount: 1,
-        changedSliceIndices: [0,],
-        withdrawnSliceIndices: [],
-        sliceTexts: [{
-          chunkIndex: 0,
-          incumbentKind: 'present',
-          incumbentText: 'x',
-          outcome: { kind: 'decided', acceptedText: 'y', },
-          text: 'y',
-        },],
-      },
-      delivery: [{
-        chunkIndex: 0,
-        sourceText: 'x',
-        incumbentKind: 'present',
-        incumbentText: 'x',
-        outcome: { kind: 'decided', acceptedText: 'y', },
-        shippedText: 'y',
-        delivery: { kind: 'replacement-shipped', },
-      },],
-    },
-    translate: {
-      result: {
-        status: 'complete',
-        sliceCount: 1,
-        changedSliceCount: 1,
-        withdrawnSliceCount: 0,
-        changedSliceIndices: [0,],
-        withdrawnSliceIndices: [],
-        sliceTexts: [{
-          chunkIndex: 0,
-          incumbentKind: 'present',
-          incumbentText: 'x',
-          outcome: { kind: 'decided', acceptedText: 'y', },
-          text: 'y',
-        },],
-      },
-      delivery: [{
-        chunkIndex: 0,
-        sourceText: 'x',
-        incumbentKind: 'present',
-        incumbentText: 'x',
-        outcome: { kind: 'decided', acceptedText: 'y', },
-        shippedText: 'y',
-        delivery: { kind: 'replacement-shipped', },
-      },],
-    },
-  },
-  comparison: [{
-    chunkIndex: 0,
-    incumbentKind: 'present',
-    incumbentText: 'x',
-    repairText: 'y',
-    translateText: 'y',
-    laneRelation: 'both-agree',
-    repairOutcome: { kind: 'decided', acceptedText: 'y', },
-    translateOutcome: { kind: 'decided', acceptedText: 'y', },
-    decisionComparison: { kind: 'comparable', verdict: 'same', },
-    repairDelivery: { kind: 'replacement-shipped', },
-    translateDelivery: { kind: 'replacement-shipped', },
-  },],
-  laneSelection: { kind: 'pending-human-decision', },
-  consolidation: { kind: 'not-run', },
-};
-
-/**
- A round naming a model the roster no longer seats, no ballot cast over its
- one candidate.
- */
-const OFF_ROSTER_ROUND = {
-  stage: 'chunk-patch',
-  modelId: 'not-on-roster',
-  kind: 'selected',
-  envelopeId: 'env/1',
-  slate: [{
-    index: 1,
-    producer: { kind: 'model', modelId: 'not-on-roster', },
-    rendered: 'y',
-    hash: 'h',
-  },],
-  ballots: [],
-  tally: {
-    judgesAvailable: 1,
-    heard: 1,
-    quorum: 1,
-    probe: 1,
-    ballots: 1,
-    abstentions: 0,
-    selfVotes: 0,
-  },
-  perCandidate: [],
-  selectionReason: 'x',
-  selectedIndex: 1,
-  selectedText: 'y',
-  judgeStatements: [],
-  voteWeight: 1,
-};
-
-/**
- The seated model's round as the repair lane records it, no ballot cast over
- its one candidate.
- */
-const SEATED_ROUND = {
-  ...OFF_ROSTER_ROUND,
-  modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-  slate: [{
-    index: 1,
-    producer: { kind: 'model', modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },
-    rendered: 'y',
-    hash: 'h',
-  },],
-};
-
-/**
- The seated model's round with a ballot cast on it.
- */
-const JUDGED_SEATED_ROUND = {
-  ...SEATED_ROUND,
-  ballots: [{
-    modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-    best: 1,
-    reason: 'x',
-    weight: 1,
-    selfVote: false,
-  },],
-};
-
-/**
- The settled artifact whose one chunk records the rounds given.
-
- @param rounds - rounds the artifact's one chunk records, with or without a
- ballot as the comparison needs
-
- @returns Artifact value written as one of the run's artifacts
-
- @example
- ```ts
- const artifact = carrying({ rounds: [SEATED_ROUND,], },);
- ```
- */
-function carrying({ rounds, }: { readonly rounds: readonly unknown[]; },): Readonly<Record<string, unknown>> {
-  return {
-    ...WITHOUT_ROUNDS,
-    lanes: {
-      ...WITHOUT_ROUNDS.lanes,
-      repair: {
-        ...WITHOUT_ROUNDS.lanes.repair,
-        result: {
-          ...WITHOUT_ROUNDS.lanes.repair.result,
-          chunks: [{ rounds, },],
-        },
-      },
-    },
-  };
-}
-
-/**
- The note every report prints under its summary line.
- */
-const OBSERVATIONAL = '  OBSERVATIONAL. Only models that held a seat ever wrote a candidate, so an absent model is '
-  + 'unmeasured rather than last. Rounds inside one entry are correlated, so read the entry count, '
-  + 'not the round count. Digests are never pooled.\n';
-
-/**
- The standing line of the seated model over the one round a ballot was cast on.
- */
-const JUDGED_STANDING = `      ${SEAT_SYNTHETIC_VISION_WITHHELD}: 100.0% (1 of 1 disinterested ballot, over 1 candidate)\n`;
-
 await describe({
-  name: STANDING_COMMAND,
+  name: `${STANDING_COMMAND} as built`,
   children: [
     it({
       name: 'COUNTS only the regular file in an archive\'s artifacts directory, skipping a directory and a '
-        + 'symlink named like an artifact (ledger B64)',
+        + 'symlink named like an artifact (ledger B64), names the one file it refused, and exits 1 with no round '
+        + 'read',
       fn: async () => {
         await using fixture = await throwawayArchive({ nested: true, },);
-        const { stdout, stderr, } = await standingOver({ archive: fixture.archive, },);
-        expect(stdout.includes('archives=1 artifacts=1 ',),).toBe(true,);
-        expect(stderr.includes('Tabby.json',),).toBe(false,);
+        expect(await standingOver({ archive: fixture.archive, },),).toEqual({
+          code: 1,
+          stdout: `${summaryOf({ archives: 1, artifacts: 1, },)}${OBSERVATIONAL}${NO_ROUNDS}`,
+          stderr: refusedEmpty({ path: join(fixture.archive, 'artifacts', 'Mittens.json',), },),
+        },);
       },
     },),
 
     it({
-      name: 'COUNTS only the regular file in an archive that is itself the artifacts directory (ledger B64)',
+      name: 'COUNTS only the regular file in an archive that is itself the artifacts directory (ledger B64), '
+        + 'names the one file it refused, and exits 1 with no round read',
       fn: async () => {
         await using fixture = await throwawayArchive({ nested: false, },);
-        const { stdout, stderr, } = await standingOver({ archive: fixture.archive, },);
-        expect(stdout.includes('archives=1 artifacts=1 ',),).toBe(true,);
-        expect(stderr.includes('Tabby.json',),).toBe(false,);
+        expect(await standingOver({ archive: fixture.archive, },),).toEqual({
+          code: 1,
+          stdout: `${summaryOf({ archives: 1, artifacts: 1, },)}${OBSERVATIONAL}${NO_ROUNDS}`,
+          stderr: refusedEmpty({ path: join(fixture.archive, 'Mittens.json',), },),
+        },);
       },
     },),
 
     it({
-      name: 'SAYS NOTHING WAS FOUND where the run directory will not read at all, rather than reading an '
-        + 'empty standing',
+      name: 'SAYS NOTHING WAS FOUND where the run directory will not read at all, naming why for both layouts, '
+        + 'rather than reading an empty standing, and exits 1',
       fn: async () => {
         await using fixture = await scratchDirWith({
           prefix: 'editor-standing-read-',
@@ -455,8 +262,43 @@ await describe({
             return { archive: join(path, 'never-written',), };
           },
         },);
-        const { stderr, } = await standingOver({ archive: fixture.archive, },);
-        expect(stderr.includes('no artifacts under',),).toBe(true,);
+        expect(await standingOver({ archive: fixture.archive, },),).toEqual({
+          code: 1,
+          stdout: `${summaryOf({ archives: 1, artifacts: 0, },)}${OBSERVATIONAL}${NO_ROUNDS}`,
+          stderr: `editor-standing-read: no artifacts under ${fixture.archive} (ENOENT on artifacts/, ENOENT on the `
+            + 'directory itself)\n',
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS EVERY ARCHIVE NAMED, counting two archives and the artifact of each, and refuses each '
+        + 'unreadable file by its own path, in the order the archives were named',
+      fn: async () => {
+        await using first = await throwawayArchive({ nested: true, },);
+        await using second = await throwawayArchive({ nested: false, },);
+
+        /**
+         What the command left over both archives at once.
+         */
+        const finished = await runBuiltCommand({
+          command: STANDING_COMMAND,
+          args: [
+            first.archive,
+            second.archive,
+          ],
+        },);
+
+        expect({
+          code: finished.code,
+          stdout: finished.stdout,
+          stderr: finished.stderr,
+        },).toEqual({
+          code: 1,
+          stdout: `${summaryOf({ archives: 2, artifacts: 2, },)}${OBSERVATIONAL}${NO_ROUNDS}`,
+          stderr: refusedEmpty({ path: join(first.archive, 'artifacts', 'Mittens.json',), },)
+            + refusedEmpty({ path: join(second.archive, 'Mittens.json',), },),
+        },);
       },
     },),
 

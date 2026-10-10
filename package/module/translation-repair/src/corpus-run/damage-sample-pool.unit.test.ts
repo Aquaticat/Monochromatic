@@ -31,7 +31,10 @@ import {
   SHIPPED_ADDITION,
   writeSettledV2,
 } from './settled-v2-pool.test-fixture.ts';
-import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
+import {
+  NO_POOL_POLICY,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 await describe({
   name: collectShippedRegions.name,
@@ -49,7 +52,7 @@ await describe({
         },);
         using _capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
-        const census = await collectShippedRegions({ runsDir: scratch.path, policy: NO_POOL_POLICY, },);
+        const census = await collectShippedRegions({ runsDir: scratch.path, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
 
         expect(census,).toEqual({
           regions: [
@@ -79,7 +82,7 @@ await describe({
         },);
         using _capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
-        expect(await collectShippedRegions({ runsDir: scratch.path, policy: NO_POOL_POLICY, },),).toEqual({
+        expect(await collectShippedRegions({ runsDir: scratch.path, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },),).toEqual({
           regions: [],
           filledWithoutIncumbent: 0,
         },);
@@ -92,7 +95,7 @@ await describe({
         using _capture = divertingConsoleLog({ sinon: ctx.sinon, },);
 
         const refusal = await rejectionOf(async function collectAbsent(): Promise<void> {
-          await collectShippedRegions({ runsDir: scratch.path, policy: NO_POOL_POLICY, },);
+          await collectShippedRegions({ runsDir: scratch.path, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
         },);
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);

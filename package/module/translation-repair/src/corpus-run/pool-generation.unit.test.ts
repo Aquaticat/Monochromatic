@@ -48,6 +48,7 @@ import {
   selectEligible,
 } from '../../dist/final/node/index.mjs';
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import { UNASKED_REPOSITORY, } from './pool-policy.test-fixture.ts';
 
 //region Pool generation tests
 
@@ -410,6 +411,7 @@ await describe({
                 names: listed,
               },),
               pooledDeliberately: false,
+              repository: UNASKED_REPOSITORY,
             },);
 
             expect(poolGeneration({

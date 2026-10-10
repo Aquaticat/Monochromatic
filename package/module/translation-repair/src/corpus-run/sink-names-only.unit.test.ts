@@ -54,7 +54,10 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from '../roster-seats.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
+import {
+  NO_POOL_POLICY,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 //region Sink naming tests
 
@@ -369,6 +372,7 @@ await describe({
          */
         const { malformed, } = await gatherAttributionEntries({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           artifactsDir: scratch.path,
         },);
 
@@ -405,6 +409,7 @@ await describe({
          */
         const { malformed, } = await gatherAttributionEntries({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           artifactsDir: scratch.path,
         },);
 

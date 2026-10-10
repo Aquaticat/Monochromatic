@@ -7,6 +7,10 @@ import type { PoolPolicy, } from '../../dist/final/node/index.mjs';
 // so a case says which policy it pools under rather than inheriting whatever
 // the shell running the suite exported.
 //
+// AND THE REPOSITORY A POOL ASKED FOR NO COMMIT IS HANDED: a path that holds
+// none, since such a pool never asks git anything, so a case that comes to need
+// a repository fails loudly rather than reading the checkout it runs in.
+//
 // AND THE TWO REQUESTS THAT CONTRADICT EACH OTHER, as a built command's child
 // is handed them and as the pool refuses them, for the as-built case of each
 // command that pools.
@@ -16,13 +20,24 @@ import type { PoolPolicy, } from '../../dist/final/node/index.mjs';
 
  @example
  ```ts
- const pool = await resolvePool({ artifactsDir, policy: NO_POOL_POLICY, },);
+ const pool = await resolvePool({ artifactsDir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
  ```
  */
 export const NO_POOL_POLICY: PoolPolicy = {
   requiredCommit: '',
   poolAll: false,
 };
+
+/**
+ Repository handed to a pool that requires no commit, which asks it nothing: a
+ path no directory stands at, so a git call made there refuses.
+
+ @example
+ ```ts
+ const pool = await resolvePool({ artifactsDir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
+ ```
+ */
+export const UNASKED_REPOSITORY: string = '/nonexistent/cattery/no-repository-here';
 
 /**
  A required commit and a mixed pool asked for together, as variables a built

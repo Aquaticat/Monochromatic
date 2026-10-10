@@ -2244,20 +2244,20 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'as data, and the names the members are made from come from that same read',
   },
   {
-    site: 'corpus-run/editor-standing-read.ts#reportStandings',
+    site: 'corpus-run/editor-standing-read-run.ts#reportStandings',
     combinator: 'all',
     reason: 'cannot-reject',
-    restsOn: ['artifactPaths',],
-    note: 'artifactPaths lists through artifactFilesIn, which answers an unlistable directory as data, then only '
-      + 'joins names and prints',
+    restsOn: ['standingArtifactPaths',],
+    note: 'standingArtifactPaths lists through artifactFilesIn, which answers an unlistable directory as data, then '
+      + 'only joins names; the procedure prints what each listing says once all are listed',
   },
   {
-    site: 'corpus-run/editor-standing-read.ts#reportStandings',
+    site: 'corpus-run/editor-standing-read-run.ts#reportStandings',
     combinator: 'all',
     reason: 'catches-own',
-    restsOn: ['readOne',],
-    note: 'readOne holds the read, the parse and the round check in a try whose catch prints a named outcome and '
-      + 'rethrows nothing',
+    restsOn: ['readStandingArtifact',],
+    note: 'readStandingArtifact holds the read, the parse and the round check in a try whose catch returns a named '
+      + 'outcome with the line it says and rethrows nothing',
   },
   {
     site: 'corpus-run/ledger-directory.ts#readLedgerDirectory',

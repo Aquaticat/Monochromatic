@@ -27,7 +27,9 @@ import {
   runEditorWidthProbe,
   RUN_MODELS,
   RUN_ROSTER,
+  RunConfigError,
   StatedRefusalError,
+  type SyntheticClient,
   type WidthInputOutcome,
   type WidthRow,
 } from '../../dist/final/node/index.mjs';
@@ -119,13 +121,16 @@ function noReaches(): Reaches {
 
  @param controlHeld - whether the scripted control holds
 
+ @param keyless - whether building the client refuses as a process holding
+ no provider key does
+
  @param reaches - record of what the run reached for, in order
 
  @throws whatever the run refuses with
 
  @example
  ```ts
- await probeWith({ typed: [], size: 4, controlHeld: true, reaches, },);
+ await probeWith({ typed: [], size: 4, controlHeld: true, keyless: false, reaches, },);
  ```
  */
 async function probeWith(
@@ -133,11 +138,13 @@ async function probeWith(
     typed,
     size,
     controlHeld,
+    keyless,
     reaches,
   }: {
     readonly typed: readonly string[];
     readonly size: number;
     readonly controlHeld: boolean;
+    readonly keyless: boolean;
     readonly reaches: Reaches;
   },
 ): Promise<void> {
@@ -147,7 +154,12 @@ async function probeWith(
       typed,
     },),
     runsDir: '/cattery/runs',
-    client: scriptedClient({ script: {}, },),
+    newClient: function built(): SyntheticClient {
+      reaches.events.push('client',);
+      if (keyless)
+        throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_CATNIP_API_KEY', },);
+      return scriptedClient({ script: {}, },);
+    },
     drawSample: function drawn({
       count,
       pin,
@@ -215,7 +227,7 @@ await describe({
              */
             const reaches = noReaches();
 
-            await probeWith({ typed: ['4',], size: 4, controlHeld: true, reaches, },);
+            await probeWith({ typed: ['4',], size: 4, controlHeld: true, keyless: false, reaches, },);
 
             expect(printed.lines,).toEqual([
               HEADER,
@@ -227,6 +239,7 @@ await describe({
             ],);
             expect(reaches.events,).toEqual([
               'draw',
+              'client',
               'control',
               'head',
               'gather',
@@ -256,8 +269,8 @@ await describe({
              */
             const reaches = noReaches();
 
-            await probeWith({ typed: ['18', 'b',], size: 3, controlHeld: true, reaches, },);
-            await probeWith({ typed: [], size: 2, controlHeld: true, reaches, },);
+            await probeWith({ typed: ['18', 'b',], size: 3, controlHeld: true, keyless: false, reaches, },);
+            await probeWith({ typed: [], size: 2, controlHeld: true, keyless: false, reaches, },);
 
             expect(reaches.counts,).toEqual([18, 18,],);
             expect(printed.lines.filter(function drawLine(line,): boolean {
@@ -284,7 +297,7 @@ await describe({
              What the run refused with.
              */
             const refusal = await rejectionOf(async function drawC() {
-              await probeWith({ typed: ['4', 'c',], size: 4, controlHeld: true, reaches, },);
+              await probeWith({ typed: ['4', 'c',], size: 4, controlHeld: true, keyless: false, reaches, },);
             },);
 
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
@@ -310,7 +323,7 @@ await describe({
              What the run refused with when the control fails.
              */
             const refusal = await rejectionOf(async function controlFails() {
-              await probeWith({ typed: ['4',], size: 4, controlHeld: false, reaches, },);
+              await probeWith({ typed: ['4',], size: 4, controlHeld: false, keyless: false, reaches, },);
             },);
 
             expect(String(refusal,),).toBe(
@@ -318,7 +331,7 @@ await describe({
                 + 'text with a sentence removed, so it cannot read the finer difference this draw asks about and '
                 + 'the draw was not spent',
             );
-            expect(reaches.events,).toEqual(['draw', 'control',],);
+            expect(reaches.events,).toEqual(['draw', 'client', 'control',],);
             expect(printed.lines,).toEqual([
               HEADER,
               'WIDTH sample 4, draw A 2, other half held back',
@@ -339,7 +352,7 @@ await describe({
              What the run refused with.
              */
             const refusal = await rejectionOf(async function emptyDrawB() {
-              await probeWith({ typed: ['1', 'b',], size: 1, controlHeld: true, reaches, },);
+              await probeWith({ typed: ['1', 'b',], size: 1, controlHeld: true, keyless: false, reaches, },);
             },);
 
             expect(String(refusal,),).toBe(
@@ -367,7 +380,7 @@ await describe({
              What the run refused with.
              */
             const refusal = await rejectionOf(async function emptySample() {
-              await probeWith({ typed: [], size: 0, controlHeld: true, reaches, },);
+              await probeWith({ typed: [], size: 0, controlHeld: true, keyless: false, reaches, },);
             },);
 
             expect(String(refusal,),).toBe(
@@ -379,6 +392,58 @@ await describe({
               HEADER,
               'WIDTH sample 0, draw A 0, other half held back',
             ],);
+          },
+        },),
+
+        it({
+          name: 'BUILDS THE CLIENT ONLY ONCE THE DRAW HOLDS A SLICE, so a process holding no key prints the header '
+            + 'and the draw and then refuses with what building the client said, asking the panel nothing',
+          fn: async (ctx,) => {
+            using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             What the run reached for.
+             */
+            const reaches = noReaches();
+
+            /**
+             What the run refused with when the client cannot be built.
+             */
+            const refusal = await rejectionOf(async function keylessProcess() {
+              await probeWith({ typed: ['4',], size: 4, controlHeld: true, keyless: true, reaches, },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(RunConfigError,);
+            expect(String(refusal,),).toBe(
+              'RunConfigError: TRANSLATION_REPAIR_CATNIP_API_KEY is not set; run under mise so sops injects it',
+            );
+            expect(reaches.events,).toEqual(['draw', 'client',],);
+            expect(printed.lines,).toEqual([
+              HEADER,
+              'WIDTH sample 4, draw A 2, other half held back',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a slice count below one before the header, drawing nothing and building no client',
+          fn: async (ctx,) => {
+            using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             What the run reached for.
+             */
+            const reaches = noReaches();
+
+            /**
+             What the run refused with.
+             */
+            const refusal = await rejectionOf(async function noSlices() {
+              await probeWith({ typed: ['0',], size: 4, controlHeld: true, keyless: false, reaches, },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(refusal,),).toBe('StatedRefusalError: slices must be at least 1, and 0 is not',);
+            expect(reaches.events,).toEqual([],);
+            expect(printed.lines,).toEqual([],);
           },
         },),
       ],

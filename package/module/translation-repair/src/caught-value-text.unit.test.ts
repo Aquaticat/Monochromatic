@@ -125,7 +125,7 @@ const HELD: Readonly<Record<string, string>> = {
     + 'output going to a log file; no provider is called',
   'corpus-run/coverage-probe-pair.ts#readPair':
     'a corpus read failure on the probe\'s own command; the corpus is public and no provider is called',
-  'corpus-run/editor-standing-read.ts#readOne':
+  'corpus-run/editor-standing-read-artifact.ts#readStandingArtifact':
     'reads the message of an OffRosterModelError, which declares it safe and names a path and a model id',
   'corpus-run/entry-pictures.ts#gather':
     'reads the message of a CorpusReadError that isMissingCorpusObject narrowed, a marked class',

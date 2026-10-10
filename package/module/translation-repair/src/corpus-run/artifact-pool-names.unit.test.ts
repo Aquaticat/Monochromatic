@@ -35,7 +35,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { resolvePool, } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
+import {
+  NO_POOL_POLICY,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 //region Fixtures
 
@@ -122,6 +125,7 @@ await describe({
           artifactsDir,
           names: [`${ASKED}.json`,],
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
         },);
 
         // The unasked entry is on disk and would be pooled by a census that

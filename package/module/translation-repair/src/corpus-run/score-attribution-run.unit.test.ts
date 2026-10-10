@@ -32,7 +32,10 @@ import {
   writeScoreArtifacts,
 } from './score-artifacts.test-fixture.ts';
 import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
-import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
+import {
+  NO_POOL_POLICY,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 /**
  What the pool prints as the pipeline that read it.
@@ -74,7 +77,7 @@ await describe({
           artifacts: ATTRIBUTED_CAT_ARTIFACTS,
         },);
 
-        await printAttribution({ runsDir: scratch.path, policy: NO_POOL_POLICY, },);
+        await printAttribution({ runsDir: scratch.path, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
 
         expect(printed.lines,).toStrictEqual([
           `SOURCE ${scratch.path}/artifacts`,
@@ -99,7 +102,7 @@ await describe({
           artifacts: { 'Mittens.json': MITTENS_ARTIFACT, },
         },);
 
-        await printAttribution({ runsDir: scratch.path, policy: NO_POOL_POLICY, },);
+        await printAttribution({ runsDir: scratch.path, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
 
         expect(printed.lines,).toStrictEqual([
           `SOURCE ${scratch.path}/artifacts`,
@@ -125,7 +128,7 @@ await describe({
           },
         },);
 
-        await printAttribution({ runsDir: scratch.path, policy: NO_POOL_POLICY, },);
+        await printAttribution({ runsDir: scratch.path, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
 
         expect(printed.lines.slice(0, 8,),).toStrictEqual([
           `SOURCE ${scratch.path}/artifacts`,
@@ -188,7 +191,7 @@ await describe({
           },
         },);
 
-        await printAttribution({ runsDir: scratch.path, policy: NO_POOL_POLICY, },);
+        await printAttribution({ runsDir: scratch.path, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
 
         expect(printed.lines.slice(3,),).toStrictEqual([
           'POPULATION eligible=1 ineligible=0 chunks=1',
@@ -224,7 +227,7 @@ await describe({
          What the report raised.
          */
         const refusal = await rejectionOf(async function printsAbsentRun(): Promise<void> {
-          await printAttribution({ runsDir, policy: NO_POOL_POLICY, },);
+          await printAttribution({ runsDir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
         },);
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);

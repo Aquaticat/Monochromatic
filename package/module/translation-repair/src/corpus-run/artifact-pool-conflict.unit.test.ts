@@ -24,12 +24,13 @@
  NO NETWORK, and no shared state: no case writes the process's environment,
  and the refused pool names a directory nothing reads.
 
- ONE CASE READS THIS CHECKOUT'S OWN HISTORY, read-only. A required commit is
- resolved, and every recorded commit asked whether it contains it, in the
- checkout the built pool stands in (`resolveCommit` and `tipContains` take no
- other repository from the pool), so the case names that checkout's head and
- the head's parent, read through git with no user or system configuration,
- and writes throwaway artifacts recording them.
+ THE REQUIRED COMMIT IS RESOLVED IN THE REPOSITORY THE POOL IS HANDED, and
+ every recorded commit asked there whether it contains it. The case builds
+ that repository, two invented commits in a throwaway directory
+ (`makeNamingArchive`), and writes throwaway artifacts recording its head and
+ the head's parent, so it reads no history of the checkout it runs in. Until
+ 2026-10-10 the pool took no repository and asked this checkout, so the case
+ read this checkout's head and parent and failed on a checkout of one commit.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -51,11 +52,14 @@ import {
   resolvePool,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
-import { fixtureGit, } from '../hermetic-git-run.test-fixture.ts';
+import { makeNamingArchive, } from '../archive-naming.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
-import { CONFLICTING_POOL_SAYS, } from './pool-policy.test-fixture.ts';
+import {
+  CONFLICTING_POOL_SAYS,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 //region Fixtures
 
@@ -159,6 +163,7 @@ await describe({
                   requiredCommit: 'tabby-tip',
                   poolAll: true,
                 },
+                repository: UNASKED_REPOSITORY,
               },);
             },);
 
@@ -168,38 +173,25 @@ await describe({
         },),
 
         it({
-          name: 'RESOLVES A REQUIRED COMMIT NAMED BY A REVISION TO ITS FULL ID, says so first, and pools the entries '
-            + 'whose recorded commit contains it, censusing the whole directory where the caller hands no listing; '
-            + 'one named by its full id is pooled the same without that line',
+          name: 'RESOLVES A REQUIRED COMMIT NAMED BY A REVISION TO ITS FULL ID IN THE REPOSITORY IT IS HANDED, says so '
+            + 'first, and pools the entries whose recorded commit contains it there, censusing the whole directory '
+            + 'where the caller hands no listing; one named by its full id is pooled the same without that line',
           fn: async (ctx,) => {
             await using scratch = await scratchDir({ prefix: 'pool-required-', },);
             const artifactsDir = scratch.path;
             /**
-             The checkout the built pool asks git about: the one its own
-             build stands in, whose head and that head's parent this case reads.
+             The repository the pool is handed: two invented commits in a
+             throwaway directory, the second the head.
              */
-            const checkout = join(
-              import.meta.dirname,
-              '..',
-              '..',
-              'dist',
-              'final',
-              'node',
-            );
+            await using repository = await makeNamingArchive({},);
             /**
-             The head's full id and its parent's, which does not contain it.
+             The head's full id.
              */
-            const [
-              head = '',
-              parent = '',
-            ] = (await fixtureGit({
-              cloneDir: checkout,
-              args: [
-                'rev-parse',
-                'HEAD',
-                'HEAD~1',
-              ],
-            },)).split('\n',);
+            const head = repository.pin.commitSha;
+            /**
+             The head's parent's full id, which does not contain the head.
+             */
+            const parent = repository.parentCommit;
             await Promise.all([
               ['mittens', head,],
               ['whiskers', parent,],
@@ -240,6 +232,7 @@ await describe({
                   requiredCommit,
                   poolAll: false,
                 },
+                repository: repository.pin.cloneDir,
               },);
               return {
                 selection: eligible.selection,
@@ -250,9 +243,18 @@ await describe({
             }
 
             /**
-             Pipeline the built pool reports reading by.
+             Pipeline the built pool reports reading by: the build it stands in.
              */
-            const { digest, } = await digestPipeline({ dir: checkout, },);
+            const { digest, } = await digestPipeline({
+              dir: join(
+                import.meta.dirname,
+                '..',
+                '..',
+                'dist',
+                'final',
+                'node',
+              ),
+            },);
             expect({
               byRevision: await pooledRequiring({ requiredCommit: 'HEAD', },),
               byFullId: await pooledRequiring({ requiredCommit: head, },),

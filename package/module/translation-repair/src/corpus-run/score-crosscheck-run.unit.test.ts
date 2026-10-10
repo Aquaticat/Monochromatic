@@ -39,7 +39,10 @@ import {
   writeScoreArtifacts,
 } from './score-artifacts.test-fixture.ts';
 import { builtPipelineDigest, } from './built-pipeline-digest.test-fixture.ts';
-import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
+import {
+  NO_POOL_POLICY,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 /**
  What the pool prints as the pipeline that read it.
@@ -141,6 +144,7 @@ await describe({
 
         await printCrosscheck({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           roster: ROSTER,
         },);
@@ -176,6 +180,7 @@ await describe({
 
         await printCrosscheck({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           roster: ROSTER,
         },);
@@ -223,6 +228,7 @@ await describe({
 
         await printCrosscheck({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           roster: ROSTER,
         },);
@@ -271,6 +277,7 @@ await describe({
 
         await printCrosscheck({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           roster: ROSTER,
         },);
@@ -309,6 +316,7 @@ await describe({
 
         await printCrosscheck({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           roster: ROSTER,
         },);
@@ -339,6 +347,7 @@ await describe({
 
         await printCrosscheck({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           roster: ROSTER,
         },);
@@ -377,6 +386,7 @@ await describe({
         const refusal = await rejectionOf(async function reportsAbsentRun(): Promise<void> {
           await printCrosscheck({
             policy: NO_POOL_POLICY,
+            repository: UNASKED_REPOSITORY,
             runsDir,
             roster: ROSTER,
           },);

@@ -9,7 +9,7 @@ import type { DisposableSandbox, } from '@monochromatic-dev/module-test/ts';
 // the capture restores it sooner. The stub records each call's arguments, and
 // a line is read off them the way console.log itself prints them
 // (`util.format`), so no fake stands in for console.log and no part of a
-// call is dropped.
+// call is dropped. `divertingConsoleError` reads console.error the same way.
 //
 // TEST SUPPORT, NOT PACKAGE SOURCE. artifact-placement,
 // rendering-audit-settled and rendering-audit-settled-report kept their own
@@ -118,6 +118,30 @@ export function divertingConsoleLog({ sinon, }: { readonly sinon: DisposableSand
   const stub = sinon.stub(
     console,
     'log',
+  );
+  return captureOver({ stub, },);
+}
+
+/**
+ Captures what `console.error` would print, printing nothing meanwhile, for a
+ runner whose refusal lines go to stderr.
+
+ @param sinon - calling case's own sandbox (`ctx.sinon`)
+
+ @returns Capture of the diverted lines, restoring console.error on disposal
+
+ @example
+ ```ts
+ using said = divertingConsoleError({ sinon: ctx.sinon, },);
+ ```
+ */
+export function divertingConsoleError({ sinon, }: { readonly sinon: DisposableSandbox; },): ConsoleLogCapture {
+  /**
+   Stub swallowing every call to console.error, recording its arguments.
+   */
+  const stub = sinon.stub(
+    console,
+    'error',
   );
   return captureOver({ stub, },);
 }

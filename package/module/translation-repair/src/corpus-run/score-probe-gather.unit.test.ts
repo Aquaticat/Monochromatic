@@ -29,7 +29,10 @@ import {
   probedRecord,
   probeRegion,
 } from './score-probe-artifacts.test-fixture.ts';
-import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
+import {
+  NO_POOL_POLICY,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 /**
  A shipped record of an issue with one flagged region.
@@ -110,7 +113,7 @@ await describe({
         /**
          What the gather made of the directory.
          */
-        const gathered = await gatherProbeReadings({ artifactsDir: `${scratch.path}/artifacts`, policy: NO_POOL_POLICY, },);
+        const gathered = await gatherProbeReadings({ artifactsDir: `${scratch.path}/artifacts`, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
 
         expect(gathered.entries,).toBe(2,);
         expect(gathered.readings.map(function toName({ entryId, },): string {
@@ -172,7 +175,7 @@ await describe({
          What gathering raised.
          */
         const refusal = await rejectionOf(async function gathersMalformedProbe(): Promise<void> {
-          await gatherProbeReadings({ artifactsDir: `${scratch.path}/artifacts`, policy: NO_POOL_POLICY, },);
+          await gatherProbeReadings({ artifactsDir: `${scratch.path}/artifacts`, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },);
         },);
 
         expect(refusal,).toBeInstanceOf(ArtifactParseError,);

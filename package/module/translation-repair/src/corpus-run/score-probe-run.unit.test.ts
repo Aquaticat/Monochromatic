@@ -41,7 +41,10 @@ import {
   catRepairSheetText,
   catSampleManifestText,
 } from './score-sheets.test-fixture.ts';
-import { NO_POOL_POLICY, } from './pool-policy.test-fixture.ts';
+import {
+  NO_POOL_POLICY,
+  UNASKED_REPOSITORY,
+} from './pool-policy.test-fixture.ts';
 
 /**
  What the pool prints as the pipeline that read it.
@@ -209,6 +212,7 @@ await describe({
 
         await printProbeScore({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           line: lineOf({ command: 'score-probe', typed: [], },),
         },);
@@ -239,6 +243,7 @@ await describe({
 
         await printProbeScore({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           line: lineOf({
             command: 'score-probe',
@@ -298,6 +303,7 @@ await describe({
 
         await printProbeScore({
           policy: NO_POOL_POLICY,
+          repository: UNASKED_REPOSITORY,
           runsDir: scratch.path,
           line: lineOf({
             command: 'score-probe',
@@ -331,6 +337,7 @@ await describe({
         const refusal = await rejectionOf(async function reportsSheetAlone(): Promise<void> {
           await printProbeScore({
             policy: NO_POOL_POLICY,
+            repository: UNASKED_REPOSITORY,
             runsDir: scratch.path,
             line: lineOf({ command: 'score-probe', typed: ['--repair-sheet', 'sheet.md',], },),
           },);
@@ -357,6 +364,7 @@ await describe({
         const refusal = await rejectionOf(async function reportsManifestAlone(): Promise<void> {
           await printProbeScore({
             policy: NO_POOL_POLICY,
+            repository: UNASKED_REPOSITORY,
             runsDir: scratch.path,
             line: lineOf({ command: 'score-probe', typed: ['--manifest', 'manifest.json',], },),
           },);
@@ -391,6 +399,7 @@ await describe({
         const refusal = await rejectionOf(async function reportsAbsentRun(): Promise<void> {
           await printProbeScore({
             policy: NO_POOL_POLICY,
+            repository: UNASKED_REPOSITORY,
             runsDir,
             line: lineOf({ command: 'score-probe', typed: [], },),
           },);
@@ -431,6 +440,7 @@ await describe({
         const refusal = await rejectionOf(async function reportsAbsentSheet(): Promise<void> {
           await printProbeScore({
             policy: NO_POOL_POLICY,
+            repository: UNASKED_REPOSITORY,
             runsDir: scratch.path,
             line: lineOf({
               command: 'score-probe',
@@ -471,6 +481,7 @@ await describe({
         const refusal = await rejectionOf(async function reportsAbsentManifest(): Promise<void> {
           await printProbeScore({
             policy: NO_POOL_POLICY,
+            repository: UNASKED_REPOSITORY,
             runsDir: scratch.path,
             line: lineOf({
               command: 'score-probe',
@@ -511,6 +522,7 @@ await describe({
         const refusal = await rejectionOf(async function reportsShortSheet(): Promise<void> {
           await printProbeScore({
             policy: NO_POOL_POLICY,
+            repository: UNASKED_REPOSITORY,
             runsDir: scratch.path,
             line: lineOf({
               command: 'score-probe',
