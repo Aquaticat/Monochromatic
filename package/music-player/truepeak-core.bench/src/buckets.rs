@@ -95,11 +95,11 @@ pub fn load_buckets(path: &Path) -> Result<HashMap<String, Bucket>> {
     let reader = BufReader::new(file);
     let mut map = HashMap::new();
     for line in reader.lines() {
-        let line = line?;
-        if line.trim().is_empty() {
+        let text = line?;
+        if text.trim().is_empty() {
             continue;
         }
-        let row: TagRow = serde_json::from_str(&line)?;
+        let row: TagRow = serde_json::from_str(&text)?;
         let bucket = if row.codec.as_deref() == Some("flac") {
             Bucket::Flac
         } else if row.has_store_ids || row.has_itun_norm {
@@ -133,11 +133,11 @@ pub fn load_bones(path: &Path, top: usize) -> Result<HashMap<String, Vec<usize>>
     let reader = BufReader::new(file);
     let mut map = HashMap::new();
     for line in reader.lines() {
-        let line = line?;
-        if line.trim().is_empty() {
+        let text = line?;
+        if text.trim().is_empty() {
             continue;
         }
-        let row: ProfileRow = serde_json::from_str(&line)?;
+        let row: ProfileRow = serde_json::from_str(&text)?;
         let mut order: Vec<usize> = (0..row.bytes.len()).collect();
         order.sort_by(|&a, &b| return row.bytes[b].cmp(&row.bytes[a]));
         order.truncate(top);
@@ -171,16 +171,16 @@ fn hybrid_probe(track: &Track, coverage: f64, even_coverage: f64, bones: Option<
     let mut used = 0usize;
     let mut peak = 0.0f32;
     let decode = |index: usize,
-                  decoded: &mut Vec<bool>,
-                  heap: &mut BinaryHeap<(u32, usize)>,
-                  used: &mut usize,
-                  peak: &mut f32| {
-        decoded[index] = true;
-        *used += 1;
-        if bins[index] > *peak {
-            *peak = bins[index];
+                  decoded_flags: &mut Vec<bool>,
+                  loud_heap: &mut BinaryHeap<(u32, usize)>,
+                  used_count: &mut usize,
+                  peak_value: &mut f32| {
+        decoded_flags[index] = true;
+        *used_count += 1;
+        if bins[index] > *peak_value {
+            *peak_value = bins[index];
         }
-        heap.push((bins[index].to_bits(), index));
+        loud_heap.push((bins[index].to_bits(), index));
     };
     if let Some(slots) = bones {
         for &slot in slots {

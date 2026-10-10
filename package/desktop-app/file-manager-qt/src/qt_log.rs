@@ -29,26 +29,28 @@ pub fn install() {
 ///      and emits the event under target "qt" with the Qt logging category as a field.
 ///
 /// # Safety
-/// `category` and `message` must each be null or a valid nul-terminated C string that
+/// `category_ptr` and `message_ptr` must each be null or a valid nul-terminated C string that
 /// outlives this call. The Qt handler passes borrowed `QByteArray::constData` and the Qt
 /// category pointer, which satisfy this.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn fmqt_forward_log(
     kind: c_int,
-    category: *const c_char,
-    message: *const c_char,
+    category_ptr: *const c_char,
+    message_ptr: *const c_char,
 ) {
     // SAFETY: the C++ handler passes nul-terminated UTF-8 (from QByteArray::constData) and the
     // Qt category pointer or a fallback literal; both outlive this synchronous call.
-    let category = if category.is_null() {
+    // The decoded strings take the plain names; the pointer parameters keep `_ptr` so
+    // neither decoded binding shadows its input.
+    let category = if category_ptr.is_null() {
         "qt"
     } else {
-        unsafe { CStr::from_ptr(category) }.to_str().unwrap_or("qt")
+        unsafe { CStr::from_ptr(category_ptr) }.to_str().unwrap_or("qt")
     };
-    let message = if message.is_null() {
+    let message = if message_ptr.is_null() {
         ""
     } else {
-        unsafe { CStr::from_ptr(message) }
+        unsafe { CStr::from_ptr(message_ptr) }
             .to_str()
             .unwrap_or("<non-utf8 qt message>")
     };

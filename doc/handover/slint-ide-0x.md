@@ -187,18 +187,28 @@ the items after it are the record of 2026-10-05 and older.
   taking every background shell of this session and its agents;
   long runs now go through `systemd-run --user` as described in
   `doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md`.
-- Agents at work,
-  each in its own worktree on a branch not yet merged:
-  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`, head `f861a936c` before this round):
-    the user's 60 s start allowance, both Language defects, fixtures off btrfs,
+- Landed on `main` as merge `4ee4171b5`:
+  element-handle accessibility tests with the batch 3b and accessibility answers applied
+  (`feat/ide-accessibility-tests` through `5335dddce`)
+  and cargo-about collecting every Rust crate's license text into the executable and `--licenses`
+  (`feat/ide-crate-notices` through `72e34e0ae`).
+  Gate at `6a4095f99` (IDE tree `65e7fed6f689088b645411ec5e7bfb0da817d46b`), run as a user unit:
+  lint, lint:release, test, test:cli, test:native 124 of 124, bundle,
+  inspect:bundle 10 of 10, inspect:bundle-guards 8 of 8.
+  The batch 3b page gave the whole-cell plate a wrong cost (covering the focus line);
+  the user was shown the correction with the applied frames and kept the plate.
+  The shared image `localhost/monochromatic/ide` now contains cargo-about 0.9.2.
+- Agents at work:
+  - `fix/ide-test-flakes` (`.claude/worktrees/ide-test-flakes`), the last feature branch outstanding:
     merging `main`, the remaining native external-reload flakes, lazy server lookup, and five gate rounds.
-  - `feat/ide-accessibility-tests` (`.claude/worktrees/ide-a11y`, head `1cf8447bc` before this round):
-    element-handle accessibility tests, the batch 3b frames and page,
-    and now the batch 3b and accessibility answers
-    (white selected ink in the boxes, a 96 px divider focus handle, a translucent whole-cell clear plate,
-    row names exposed once, the search box's result count).
-  - `feat/ide-crate-notices` (new worktree from `main`):
-    cargo-about collecting the Rust crate notices into the executable and `--licenses`.
+  - `fix/ide-guard-anchors` (new worktree from `main`):
+    the stale `frame-stamp` guard anchor, a static check of every guard script's anchors,
+    and the three files `:format:rust` rewrites on `main`.
+- Still owed after those:
+  rerun every `inspect:*-guards` script on final `main`,
+  repeated gate runs,
+  a consumer check of the installed single file,
+  and removing finished worktrees whose branches are pushed.
 - Inotify:
   on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
   about 462000 of them by `git fsmonitor--daemon` processes

@@ -177,7 +177,7 @@ pub fn parse_escape(cur: &mut Cursor, in_class: bool) -> Result<EscapeResult, Co
         // ```ts
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
-        e if e.is_ascii_whitespace() => return Ok(EscapeResult::Byte(e)),
+        byte if byte.is_ascii_whitespace() => return Ok(EscapeResult::Byte(byte)),
         _ => return Err(CompileError::Syntax {
             pos,
             message: format!("unsupported escape \\{}", e as char),

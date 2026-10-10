@@ -18,7 +18,8 @@ Every Gradle build launched from an exempted application cgroup under the watche
  Pale Moon,
  Firefox Nightly,
  ChatGPT,
- and Interpreter)
+ Interpreter,
+ and Qure)
 fails with:
 
 ```text

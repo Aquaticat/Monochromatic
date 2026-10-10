@@ -99,7 +99,7 @@ pub fn derivative(node: &Node, byte: u8, ctx: Ctx) -> Node {
         Node::Inter(parts) => return inter(parts.iter().map(|p| return derivative(p, byte, ctx)).collect()),
         Node::Comp(inner) => return comp(derivative(inner, byte, ctx)),
         Node::Concat(parts) => return derivative_concat(parts, byte, ctx),
-        Node::Repeat { node, min, max } => return derivative_repeat(node, *min, *max, byte, ctx),
+        Node::Repeat { node: body, min, max } => return derivative_repeat(body, *min, *max, byte, ctx),
     }
 }
 

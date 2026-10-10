@@ -69,10 +69,12 @@ pub(crate) fn apply_os_font_scale(app: &AppWindow) {
             return;
         }
         applied.set(true);
-        if let Some(app) = weak_font.upgrade() {
+        // The upgraded window binds as `window` so it never shadows the borrowed
+        // `app` parameter this weak handle came from.
+        if let Some(window) = weak_font.upgrade() {
             let scaled = os_px * 0.9;
             tracing::info!(os_font_px = os_px, base_font_px = scaled, "scaling every UI font to 0.9x the OS font");
-            app.set_base_font_size(scaled);
+            window.set_base_font_size(scaled);
         }
     });
 }

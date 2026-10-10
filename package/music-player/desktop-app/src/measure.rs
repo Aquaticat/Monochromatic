@@ -287,15 +287,16 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
     // const known = cache.knownFingerprints();
     // ```
     let known = Arc::new(cache.known_fingerprints());
-    // What:     `let tracks: Arc<[PathBuf]> = tracks.into();`. Move the list into a shared,
-    //           immutable slice the workers index by position.
+    // What:     `let shared_tracks: Arc<[PathBuf]> = tracks.into();`. Move the list into a
+    //           shared, immutable slice the workers index by position. The shared slice gets
+    //           its own name so the worker clones below never shadow the parameter.
     // Why:      Share the paths without cloning the whole vec per worker.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const tracks = Object.freeze(tracksArray);
     // ```
-    let tracks: Arc<[PathBuf]> = tracks.into();
+    let shared_tracks: Arc<[PathBuf]> = tracks.into();
     // What:     `let cursor = Arc::new(AtomicUsize::new(0));`. The shared next-index counter.
     // Why:      Workers `fetch_add` it to claim the next track, lock-free and load-balanced.
     //
@@ -311,9 +312,9 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
     // ```ts
     // const workers = workerCount(tracks.length);
     // ```
-    let workers = worker_count(tracks.len());
+    let workers = worker_count(shared_tracks.len());
     // The sweep is fanning out; log its size and worker count.
-    tracing::info!(tracks = tracks.len(), workers, "warming sweep started");
+    tracing::info!(tracks = shared_tracks.len(), workers, "warming sweep started");
     // What:     `let handles: Vec<_> = (0..workers).map(|_| { ... }).collect();`. Spawn the
     //           workers, each with its own clones of the shared handles.
     // Why:      Run decodes in parallel across every core.
@@ -324,17 +325,18 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
     // ```
     let handles: Vec<_> = (0..workers)
         .map(|_| {
-            // What:     Clone the four shared handles for this worker's closure.
+            // What:     Clone the four shared handles for this worker's closure. Each clone
+            //           gets a `worker_` name so none shadows the shared handle it clones.
             // Why:      Each `Arc::clone` bumps a refcount; `cache.clone()` copies the senders.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // const [t, c, ca, k] = [tracks, cursor, cache, known];
             // ```
-            let tracks = Arc::clone(&tracks);
-            let cursor = Arc::clone(&cursor);
-            let cache = cache.clone();
-            let known = Arc::clone(&known);
+            let worker_tracks = Arc::clone(&shared_tracks);
+            let worker_cursor = Arc::clone(&cursor);
+            let worker_cache = cache.clone();
+            let worker_known = Arc::clone(&known);
             // What:     Spawn the worker thread. Tail of the closure -> its `JoinHandle`.
             // Why:      Collected so the coordinator can join them.
             //
@@ -342,7 +344,7 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
             // ```ts
             // return startWorker(() => runWorker(t, c, ca, k));
             // ```
-            return thread::spawn(move || run_worker(tracks, cursor, cache, known))
+            return thread::spawn(move || run_worker(worker_tracks, worker_cursor, worker_cache, worker_known))
         })
         .collect();
     // What:     `for handle in handles { let _ = handle.join(); }`. Wait for every worker;

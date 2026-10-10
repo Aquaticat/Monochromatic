@@ -210,7 +210,9 @@ pub fn discover(start: &Path, root: Option<&Path>) -> Vec<PathBuf> {
     let absolute = start
         .canonicalize()
         .unwrap_or_else(|_| return start.to_path_buf());
-    let start = absolute.as_path();
+    // The canonical path keeps its own name so the walk below never shadows the
+    // caller's `start` argument.
+    let canonical_start = absolute.as_path();
 
     // The boundary has to be canonical too, or comparing it against the
     // canonical walk would never match.
@@ -220,12 +222,12 @@ pub fn discover(start: &Path, root: Option<&Path>) -> Vec<PathBuf> {
             .unwrap_or_else(|_| return path.to_path_buf());
     });
 
-    // What:     `let mut current = Some(start);` then a `while let` loop. `while
+    // What:     `let mut current = Some(canonical_start);` then a `while let` loop. `while
     //           let Some(directory) = current` runs as long as the binding
     //           matches, which walks the ancestor chain until `parent()` runs out.
     // Why:      A plain `for` has nothing to iterate here; the chain is produced
     //           one step at a time.
-    let mut current = Some(start);
+    let mut current = Some(canonical_start);
     while let Some(directory) = current {
         let candidate = directory.join(CONFIG_FILE_NAME);
         if candidate.is_file() {

@@ -2,6 +2,8 @@
 // It reproduces the toolkit's fluent `LineEdit` (Slint 1.18.1 `widgets/fluent/lineedit.slint` on
 // `widgets/common/lineedit-base.slint`): placeholder, selection colors, scrolling of long text, input-method
 // preedit, the context menu, the focus mark, and the accessible text input.
+// Selected text takes the ink its owner passes, the one native code chooses from the selection fill for every
+// selection, instead of the toolkit's accent ink, which is black in the dark scheme.
 // It differs in the clear control. The toolkit's is a 16px wide cell whose width cannot be set from outside;
 // here it is a 48px by 48px layout cell of this box, so its click target meets the minimum on its own
 // and never overlaps the text.
@@ -12,6 +14,9 @@ export component QueryInput inherits Rectangle {
     in property <bool> enabled: true;
     // Accessible name of the clear control, which says what it clears.
     in property <string> clear-label: "Clear text";
+    // Ink of selected text. The owner passes the ink native code chooses from the selection fill, so the boxes
+    // draw selections like the source view and the selected rows; the toolkit's accent ink is the fallback.
+    in property <brush> selected-ink: Palette.accent-foreground;
     in-out property <string> text <=> input.text;
     out property <bool> has-focus: input.has-focus;
     // The toolkit's rule for its clear control: text is present, the box is enabled, and it has keyboard focus.
@@ -128,8 +133,8 @@ export component QueryInput inherits Rectangle {
                     enabled: root.enabled;
                     color: root.ink;
                     selection-background-color: Palette.selection-background;
-                    // The toolkit box draws selected text in the accent ink, which follows the scheme.
-                    selection-foreground-color: root.enabled ? Palette.accent-foreground
+                    // The user chose on 2026-10-06 the same ink as every other selection on this fill.
+                    selection-foreground-color: root.enabled ? root.selected-ink
                         : (root.dark ? #FFFFFF87 : #FFFFFF);
                     // The box is the accessible text input; this inner item must not appear a second time.
                     accessible-role: none;
@@ -156,15 +161,16 @@ export component QueryInput inherits Rectangle {
                 accessible-label: root.clear-label;
                 accessible-action-default => { root.clear(); }
                 // Hover shows a filled plate with a boundary; a press makes the fill and the boundary heavier.
+                // The plate covers the whole 48px cell, the whole click target (the user's choice of 2026-10-06).
+                // Fill and boundary are translucent, so the box's border under the plate shows through it;
+                // the focus line is drawn after the plate and stays whole above it.
                 Rectangle {
-                    x: (parent.width - self.width) / 2;
-                    y: (parent.height - self.height) / 2;
-                    width: 32px;
-                    height: 32px;
+                    width: 100%;
+                    height: 100%;
                     border-radius: 4px;
                     background: Palette.foreground.with-alpha(clear-touch.pressed ? 0.24 : (clear-touch.has-hover ? 0.1 : 0));
                     border-width: clear-touch.pressed ? 2px : (clear-touch.has-hover ? 1px : 0px);
-                    border-color: Palette.foreground.with-alpha(clear-touch.pressed ? 1 : 0.5);
+                    border-color: Palette.foreground.with-alpha(clear-touch.pressed ? 0.8 : 0.5);
                 }
                 Image {
                     x: (parent.width - self.width) / 2;

@@ -304,6 +304,100 @@ and a damaged embedded part.
 [Its production section](#how-the-2026-10-06-single-file-check-screenshots-were-produced)
 gives the build, the sessions, and what each frame shows.
 
+### 2026-10-06 UI batch 3b
+
+- Page: [`questions/2026-10-06-ui-batch-3b.html`](questions/2026-10-06-ui-batch-3b.html)
+- Screenshots: `screenshots/2026-10-06-ui-batch-3b/`
+- Status: answered by the user on 2026-10-06 and applied.
+  The applied frames are in `screenshots/2026-10-06-ui-batch-3b-applied/`;
+  see [Applied frames of the 2026-10-06 UI batch 3b](#applied-frames-of-the-2026-10-06-ui-batch-3b).
+  The comparison frames and builds are described in the
+  [production notes](#how-the-2026-10-06-ui-batch-3b-screenshots-were-produced).
+
+The open choices of the applied UI batch 2 and one new question, with the slug used in file names.
+Option `a` is what the application does now.
+
+- `zone-width`: the divider's pointer zone,
+  5 px (`a`), 7 px (`b`), 4 px (`c`), or 13 px (`d`).
+- `query-selection-ink`: selected text inside the find and search boxes
+  in the toolkit's colors (`a`) or in the ink chosen from the selection fill (`b`).
+- `selected-row-tint`: a hovered or keyboard-focused selected tree row
+  tinted away from its ink (`a`) or not tinted (`b`).
+- `trailing-cell`: the box's trailing cell
+  shrinks to 12 px of padding while the clear control is hidden (`a`) or always keeps 48 px (`b`).
+- `divider-focus`: the keyboard-focused divider
+  with three accent columns and a 5 px by 48 px handle (`a`),
+  a 5 px by 96 px handle (`b`),
+  or five accent columns over the whole height and no handle (`c`).
+- `clear-plate`: the clear control's hover and press
+  on a 32 px plate inside the 48 px cell (`a`) or on the whole cell (`b`).
+- `padding-click`: a click on the search panel's padding
+  keeps keyboard focus in the query box (`a`) or moves it to the panel and hides the clear control (`b`).
+- `watch-limit`: when the system's inotify watch limit is reached,
+  the application only logs it (`a`) or also shows a one-line message (`b`).
+
+#### Answers of 2026-10-06
+
+- `zone-width`:
+  option `a`,
+  the 5 px zone,
+  as built.
+- `query-selection-ink`:
+  option `b`,
+  "white, like the rest".
+  Selected text in the find and search boxes takes the ink chosen from the selection fill,
+  white on the fluent fill in both schemes.
+- `selected-row-tint`:
+  option `a`,
+  the darker tint,
+  as built.
+- `trailing-cell`:
+  option `a`,
+  as built:
+  the cell shrinks to its 12 px of padding while the clear control is hidden,
+  so text without focus uses that room.
+- `divider-focus`:
+  option `b`,
+  "Line + 96 px handle":
+  three accent columns and a 5 px by 96 px handle,
+  centered and never taller than the divider.
+- `clear-plate`:
+  option `b` with a change,
+  "Whole cell, it's more honest. And you don't have to compromise here: Use transparency."
+  The plate covers the whole cell,
+  and its fill and boundary are the foreground ink at reduced opacity.
+- `padding-click`:
+  option `a`,
+  keyboard focus stays in the query box,
+  as built.
+- `watch-limit`:
+  option `a`,
+  the limit is only logged,
+  as built;
+  the prototype commits stay unmerged.
+
+The same reply answered two accessibility questions outside the page;
+the package `README.md` describes both under "Accessibility checks":
+
+- Duplicated row names,
+  "Hide the inner text":
+  the texts inside tree,
+  search,
+  and location rows,
+  and the location list's title,
+  are not accessibility elements.
+- The search box's description,
+  "Add the count":
+  it counts the results in the words of the find box's match count.
+
+The page's costs for `clear-plate` `b` said that the plate covers the box's focus line under the cell.
+The comparison frames show otherwise:
+the focus line is drawn after the plate and stays whole in `b`;
+`b`'s opaque boundary covers the box's border along the cell's top,
+right,
+and bottom edges instead.
+The page was answered with that wrong cost on it.
+
 ## How the 2026-10-05 UI batch 2 screenshots were produced
 
 ### File names
@@ -938,3 +1032,287 @@ The other frames:
 - The emoji in the first file's string under the host's own font configuration:
   as on 2026-10-05,
   its place is blank in the Rust frames and an outline glyph in the TypeScript frames.
+
+## How the 2026-10-06 UI batch 3b screenshots were produced
+
+### File names
+
+`<question>-<option>-<scheme>-<state>.png` is a full 1100 by 660 frame;
+`divider-focus` and `watch-limit` have one state each and no `-<state>` part.
+`-2x` follows the scheme or state for a frame at scale factor 2 (2200 by 1320 pixels).
+`-crop.png` is the same frame cut at the rectangle listed for its question under
+[Crop rectangles](#crop-rectangles-of-the-2026-10-06-ui-batch-3b),
+the same rectangle for every option,
+and enlarged by a whole factor without smoothing, so each screen pixel stays a square block.
+
+### Builds
+
+Every option is a real build of the application.
+The base is `main` at `22de770b8`;
+its `package/desktop-app/ide` is identical to `066b14ec5`,
+where the branch `feat/ide-accessibility-tests` starts.
+Option `a` of a question is the base build,
+except for `zone-width`:
+there every option, `a` included, is a prototype commit,
+because the zone is invisible and only the prototype draws it.
+Every other option is one commit on the branch `prototype/ide-batch-2-choices`.
+The tree of each commit is the base plus only that option
+(each commit restores the files of the previous option to the base),
+so checking one commit out builds that option alone.
+The branch is throwaway prototype code and is never merged.
+
+- `zone-width` `a`, `3dfe71e4e`:
+  the current 5 px zone, two columns on each side of the line, drawn as a translucent magenta overlay.
+- `zone-width` `b`, `9655769d8`:
+  a 7 px zone, three columns on each side.
+- `zone-width` `c`, `f1c4c4d48`:
+  a 4 px zone, one column on the tree side and two on the source side.
+  4 px cannot be centered on a 1 px line;
+  the tree side gets the single column because the tree's scroll bar lies on that side.
+- `zone-width` `d`, `f05226ea6`:
+  a 13 px zone, six columns on each side.
+- `query-selection-ink` `b`, `bf446cf9c`:
+  selected text in both boxes in the ink chosen from the selection fill,
+  the ink of selected rows and of selected source text.
+- `selected-row-tint` `b`, `3e5c35d38`:
+  a selected tree row is never tinted.
+- `trailing-cell` `b`, `5c4493fb6`:
+  the clear cell keeps its 48 px while the clear control is hidden.
+- `divider-focus` `b`, `d74bc6728`:
+  a 5 px by 96 px focus handle.
+- `divider-focus` `c`, `2f74ed887`:
+  keyboard focus draws five accent columns over the whole height and no handle.
+- `clear-plate` `b`, `061bcdf5d`:
+  the hover and press plate fills the whole 48 px cell.
+- `padding-click` `b`, `e393926fe`:
+  the search panel's key scope is a focus owner again, as before 2026-10-05.
+- `watch-limit` `b`, `a7ff27343`:
+  a row along the bottom edge with the warning letter `W`,
+  `File-watch limit reached:` in bold,
+  and `changes may show up to 1 s late. Raise it with sudo sysctl fs.inotify.max_user_watches=1048576`.
+  The environment variable `IDE_PROTOTYPE_WATCH_LIMIT` stands in for the watch thread reporting the limit.
+  The option's first commit, `587b1475a`, centered the shortened main layout and so moved it 16 px down;
+  `a7ff27343` on top of it keeps the layout at the top edge, and only that build is in the frames.
+
+In the zone-width prototypes the focus handle keeps its 5 px width centered on the line at every zone width.
+
+### Command, fixture, and window size
+
+Each frame set comes from a fresh session of the package's native inspection task,
+run in the worktree that holds the prototype branch with the option's `ui` and `src` checked out:
+
+```sh
+# package/desktop-app/ide/mise.toml, task inspect:native
+IDE_NATIVE_MCP_PORT=9394 mise run //package/desktop-app/ide:inspect:native dark scroll
+IDE_NATIVE_MCP_PORT=9395 mise run //package/desktop-app/ide:inspect:native light scroll
+```
+
+The `watch-limit` sessions add `IDE_PROTOTYPE_WATCH_LIMIT=1`, which the base build ignores.
+Fixture, window size, project contents, seat input, pointer hover, settled frames, caret phase,
+held presses, scale switches, and lossless re-encoding are those of
+[How the 2026-10-05 UI batch 2 screenshots were produced](#how-the-2026-10-05-ui-batch-2-screenshots-were-produced)
+and [How the applied frames were produced](#how-the-applied-frames-were-produced).
+The `zone-width` sessions add 20 files to the project,
+so the tree overflows and shows its scroll bar beside the zone.
+`capture-record.json` holds what each session read from the running application.
+
+### Scenes
+
+Every scene starts from the state right after launch: `fixture.ts` open and selected in the tree,
+the source focused, the sidebar 256 px wide, so the divider's line is pixel column 256.
+
+- `zone-width`:
+  `idle` with the pointer parked over the source;
+  `hovered` with the pointer on the zone's outermost source-side column.
+  Each session also checked that the pointer one column further out leaves the line at rest.
+- `query-selection-ink`:
+  `find-selected` after Ctrl+F, typing `Latin`, and Ctrl+A;
+  `search-selected` after Escape, two Shift taps, typing `fixture`, and Ctrl+A.
+- `selected-row-tint`:
+  `hovered` with the pointer on the selected row;
+  `focused` after Tab from the source and Home and Down onto the selected row.
+- `trailing-cell`:
+  `focused-empty` after Ctrl+F;
+  `typing` after typing `Latin`;
+  `unfocused-text` after a seat click in the source;
+  `empty` after Ctrl+F, Delete, and another click in the source;
+  `long-typing` after Ctrl+F and typing 130 letters, longer than the box;
+  `long-unfocused` after another click in the source.
+- `divider-focus`:
+  after Tab twice from the source, at scale 1 and at scale 2.
+- `clear-plate`:
+  `hovered` with the pointer on the find box's clear control after typing `Latin`
+  and waiting for the count, which decides where the cell is;
+  `pressed` during a held press that is released outside the cell.
+- `padding-click`:
+  `before` after two Shift taps,
+  typing `fixture`,
+  and waiting for the results;
+  `after` a seat click at 156, 122, in the search panel's left padding beside the query box.
+- `watch-limit`:
+  the window after start.
+
+### Crop rectangles of the 2026-10-06 UI batch 3b
+
+Rectangles are left, top, width, and height in logical pixels;
+a `-2x` frame is cut at the doubled rectangle and enlarged by half the factor.
+
+- `zone-width`: 196, 32, 120 by 240, enlarged 4 times.
+- `query-selection-ink` `find-selected`: 257, 604, 843 by 56, enlarged twice.
+- `query-selection-ink` `search-selected`: 150, 50, 800 by 110, enlarged twice.
+- `selected-row-tint`: 0, 32, 257 by 248, enlarged twice.
+- `trailing-cell`: 600, 604, 500 by 56, enlarged twice.
+- `divider-focus`: 216, 200, 80 by 260, enlarged 4 times.
+- `clear-plate`: 940, 600, 160 by 60, enlarged 4 times.
+- `padding-click`: 150, 50, 800 by 110, enlarged twice.
+- `watch-limit`: 0, 560, 1100 by 100, not enlarged.
+
+### What the frames do not show
+
+- The mouse cursor and therefore the column-resize cursor over the zone:
+  the screenshot holds the application surface only.
+- The zone overlay in the application:
+  it exists only in the `zone-width` prototype commits.
+- `watch-limit` `a` beyond the unchanged window:
+  its only effect is the log line
+  `Cannot watch <directory>: the inotify watch limit is reached; raise fs.inotify.max_user_watches`
+  (`src/change_watch/watch_thread.rs`).
+- A real watch limit:
+  `b` shows the message from the injected trigger, not from exhausted inotify watches.
+
+### What the frames show
+
+- `zone-width`:
+  the magenta band is the zone.
+  With 25 rows the tree shows its scroll bar,
+  whose thumb is drawn in columns 250 and 251 at rest.
+  Options `a`, `b`, and `c` end left of the thumb;
+  `d`'s band covers it (`zone-width-d-light-idle-crop.png` shows the thumb inside the band).
+  The `hovered` frames show the line's three hover columns lit inside the band.
+- `query-selection-ink`:
+  the options differ in the dark scheme only.
+  `a` draws the selected text black on the selection fill,
+  `b` white;
+  in the light scheme both draw it white.
+  Sampled in the find box's selection,
+  the darkest pixel of `a` dark is 0 and the lightest of `b` dark is 255 (gray levels).
+- `selected-row-tint`:
+  in `a` the hovered and the focused selected row have the darker fill `#006EC3`,
+  the focused one also its boundary;
+  in `b` the hovered row looks like the row at rest,
+  and keyboard focus is marked by the boundary alone.
+- `trailing-cell`:
+  the short-text states (`focused-empty`, `typing`, `unfocused-text`, `empty`) are identical in both options,
+  because the trailing cell is empty space whenever the clear control is hidden.
+  The options differ only for a text longer than the box without focus:
+  in `long-unfocused` the text of `a` runs to 12 px from the box's end
+  and the text of `b` stops 48 px from it.
+- `divider-focus`:
+  the handle is 48 px tall in `a` and 96 px tall in `b`;
+  `c` is a five-column accent line over the whole height,
+  which also overlaps the two last columns of the selected tree row.
+- `clear-plate`:
+  `a`'s 32 px plate leaves 8 px of the cell around it;
+  `b`'s plate fills the cell,
+  so its boundary lies on the box's border.
+  The focus line is drawn after the plate and stays whole
+  (corrected on 2026-10-06; this entry first said the plate covers the focus line).
+- `padding-click`:
+  in `a` the `after` frame still shows the caret,
+  the clear control,
+  and the focus line;
+  in `b` all three are gone and the box has its unfocused fill.
+- `watch-limit`:
+  `a` shows the window unchanged;
+  `b` shows the 32 px row along the bottom edge,
+  with the main layout shortened by that height.
+  Its accessible label is the whole sentence,
+  read from the running application.
+
+## Applied frames of the 2026-10-06 UI batch 3b
+
+`screenshots/2026-10-06-ui-batch-3b-applied/` holds frames of the application built at commit `3ca955f7c`
+of the branch `feat/ide-accessibility-tests`,
+in the dark and the light scheme,
+for the three answers that change what is drawn.
+
+### File names of the 2026-10-06 applied frames
+
+`<question>-<scheme>-<state>.png` is a full 1100 by 660 frame;
+the names have no option part.
+`-2x` follows the state for a frame at scale factor 2 (2200 by 1320 pixels).
+`-crop.png` is the same frame cut at the rectangle the comparison frames use for that question,
+listed under [Crop rectangles](#crop-rectangles-of-the-2026-10-06-ui-batch-3b),
+and enlarged by the same whole factor without smoothing.
+
+### How the 2026-10-06 applied frames were produced
+
+Command,
+fixture,
+window size,
+project contents,
+settled frames,
+caret phase,
+held presses,
+scale switches,
+and lossless re-encoding are those of the comparison frames,
+described in [the comparison's production notes](#how-the-2026-10-06-ui-batch-3b-screenshots-were-produced).
+The sessions ran in the feature branch's worktree at that commit,
+with nothing checked out,
+one fresh session per question and scheme.
+`capture-record.json` holds what each session read from the running application.
+
+- `query-selection-ink`:
+  `find-selected` after Ctrl+F,
+  typing `Latin`,
+  and Ctrl+A;
+  `search-selected` after Escape,
+  two Shift taps,
+  typing `fixture`,
+  and Ctrl+A.
+- `divider-focus`:
+  `focused` after Tab twice from the source,
+  at scale 1 and at scale 2.
+- `clear-plate`:
+  `rest` after Ctrl+F,
+  typing `Latin`,
+  and waiting for the count,
+  with the pointer over the source;
+  `hovered` with the pointer on the find box's clear control;
+  `pressed` during a held press that is released outside the cell.
+
+### What the 2026-10-06 applied frames show
+
+- `query-selection-ink`:
+  in both boxes and both schemes the selected text is white on the selection fill `#0078D4`.
+- `divider-focus`:
+  the handle covers columns 254 to 258 and rows 282 to 377 at scale 1,
+  96 px centered on the 660 px tall divider;
+  the `-2x` frames show the same handle at twice the pixels.
+- `clear-plate`:
+  the plate covers the whole 48 px cell in both states.
+  Sampled 10 px inside the cell's left edge,
+  the fill is `#1D1D1D` at rest,
+  `#333333` hovered,
+  and `#535353` pressed in the dark scheme,
+  and `#FFFFFF`,
+  `#E6E6E6`,
+  and `#C2C2C2` in the light one.
+  The boundary is 1 px of `#999999` hovered and 2 px of `#DDDDDD` pressed in the dark scheme,
+  1 px of `#737373` and 2 px of `#272727` in the light one,
+  so a press differs from hover by the boundary's weight and ink and by a stronger fill.
+  Over the box's border the boundary is 2 to 8 gray levels away from its color elsewhere,
+  so the border does not read separately while the plate shows.
+- The focus line under the cell keeps its color in all three states,
+  `#60CDFF` in the dark scheme and `#005FB8` in the light one,
+  because it is drawn after the plate.
+  Its WCAG contrast ratio against the fill right above it is
+  9.37 at rest,
+  7.02 hovered,
+  and 4.28 pressed in the dark scheme,
+  and 6.31,
+  5.05,
+  and 3.54 in the light one.
+  Against the box's fill beside the cell,
+  the plate's boundary measures 5.92 hovered and 12.41 pressed in the dark scheme,
+  and 4.74 and 14.94 in the light one.

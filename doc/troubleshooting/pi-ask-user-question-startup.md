@@ -37,7 +37,238 @@ and 2026-10-01.
 Those agree with the startup deadline but do not identify why the helper failed to connect.
 The reproduced cases in this document remain separate from those historical incidents.
 
-## Reproduced causes and changes
+## Follow-up incident on 2026-10-08
+
+The reporter supplied `Screenshot_20261008_064047.png`.
+Node 26.10.0 reports `MODULE_NOT_FOUND` for the request-private helper,
+not the installed bundle:
+
+```text
+Error: Cannot find module '/tmp/pi-ask-user-question-Vh8iRc/answer-helper.mjs'
+```
+
+The matching local log is `node_modules/.monochromatic/2026-10-08T02-36-56.899Z.log.jsonl`:
+
+- Line 31 creates the workspace at timestamp `1791447393573`.
+- Line 32 prepares the helper at `1791447393574`.
+- Lines 60 and 61 dispatch the terminal command at `1791447393579`.
+- Line 62 closes the channel at `1791447423577`.
+- Line 63 removes the workspace at `1791447423579`.
+
+The removal occurs exactly 30 seconds after launch dispatch.
+The matching Pi session's `ask_user_question` tool result at `2026-10-08T08:17:03.579Z`
+reports `The answer helper did not connect within 30 seconds.`
+Its timestamp is also `1791447423579`,
+confirming deadline expiry rather than an inferred user cancellation.
+The screenshot establishes that Node subsequently attempted the deleted path.
+This is evidence for the lifetime gap explicitly left open by the previous fix.
+It is not evidence that a package rebuild removed this helper.
+
+A separate confirmed defect was in the pre-fix `package/cli/terminal-exec/src/build-command.ts`:
+it filtered every token beginning with `--gtk-single-instance`,
+including the user's explicit `--gtk-single-instance=false`.
+The log retains that flag through tokenization but omits it from the final launch vector.
+The user explicitly authorized preserving the flag and changing the launcher on 2026-10-08.
+Its contribution to the delayed startup is not established.
+
+The existing [locked-session investigation](ghostty-locked-session-no-command.md)
+documents why elapsed wall time is not a reliable terminal-start failure signal.
+The source at Ghostty `v1.3.1`,
+`src/apprt/gtk/class/surface.zig:3224`,
+still says initialization waits for the first resize;
+line 3344 calls `self.initSurface()` from that path.
+No contemporaneous screen-lock state was captured for the screenshot incident.
+Do not assign the historical delay to the screen locker without that evidence.
+
+### Current request lifetime
+
+The fix preserves the separate default-terminal editor workflow and model blocking.
+It does not replace the editor with a modal dialog or add a persistent broker.
+
+`package/pi-plugin/ask-user-question/src/answer-channel-auth.ts:114`
+uses a disposable notice timer rather than a cancellation deadline:
+
+```ts
+// package/pi-plugin/ask-user-question/src/answer-channel-auth.ts
+using notice = setTimeout(
+  function reportPendingStartup(): void {
+    l.warn('The answer terminal has not connected yet. The question remains active; unlock or reveal the desktop, inspect the terminal, or cancel the tool in Pi.');
+  },
+  HELPER_START_NOTICE_MS,
+);
+```
+
+The startup listener remains referenced.
+The 30-second notice neither deletes the workspace nor lets the model continue.
+A terminal that never executes its command now requires cancellation in Pi.
+This is intentional:
+wall-clock delay does not establish that a desktop launch failed.
+The separate 5-second authentication deadline begins only after a candidate socket connects.
+A regression exposed Node's `ERR_STREAM_PREMATURE_CLOSE` when that deadline destroyed an idle candidate;
+commit `724fb299a` contains that failure within the candidate and continues accepting helpers.
+Independent review identified the corresponding reset case;
+its new regression reproduced `ECONNRESET` expiring the question.
+Commit `c7b16bd39` rejects all failed unauthenticated candidates while preserving caller cancellation.
+
+`package/pi-plugin/ask-user-question/src/request-external-answer.ts:249`
+launches inline JavaScript with paths as separate argument tokens:
+
+```ts
+// package/pi-plugin/ask-user-question/src/request-external-answer.ts
+'--input-type=module',
+'--eval',
+ANSWER_BOOTSTRAP,
+helperPath,
+'--request',
+workspace.requestPath,
+```
+
+`package/pi-plugin/ask-user-question/src/helper-bootstrap.ts:15`
+loads the self-contained snapshot into memory before importing it:
+
+```js
+// package/pi-plugin/ask-user-question/src/helper-bootstrap.ts, embedded bootstrap
+const source = await readFile(helperPath);
+await import('data:text/javascript;base64,' + source.toString('base64'));
+```
+
+Only `ENOENT` naming the exact helper or request path means that the request ended.
+Malformed request JSON and other loading failures remain errors.
+No token or answer enters argv.
+Reading the bundle also avoids interpreting a valid filesystem name as a module URL.
+The quoted-path fixture exposed `ERR_INVALID_MODULE_SPECIFIER` with a backslash filename;
+commit `2e0df35a7` changed the bootstrap from file-URL import to byte loading.
+The fixture additionally exercises quotes,
+a newline,
+percent and hash characters,
+and shell separators.
+The final `answer-helper.mjs` was inspected for module-location dependencies:
+its imports name only Node built-ins and it contains no `import.meta` references.
+The imported module therefore does not need its former filesystem location.
+
+`package/pi-plugin/ask-user-question/src/answer-channel.ts:157`
+sends `HELPER_READY` only after authentication and a cancellation check.
+`package/pi-plugin/ask-user-question/src/helper-connection.ts:156`
+requires the complete acknowledgement before returning to editor startup:
+
+```ts
+// package/pi-plugin/ask-user-question/src/helper-connection.ts
+if (state.acknowledgement === HELPER_READY) {
+  signal.throwIfAborted();
+  rl.debug('requester accepted answer helper');
+  socket.resume();
+  return;
+}
+```
+
+The channel owns every connected socket,
+including unauthenticated candidates.
+The helper owns its connection and terminates the editor when the requester disconnects.
+Expected cancellation exits without a raw shutdown stack trace.
+`request-external-answer.ts:268` observes launcher and channel together:
+
+```ts
+// package/pi-plugin/ask-user-question/src/request-external-answer.ts
+const [, completion,] = await Promise.all([
+  launchAnswerTerminal(),
+  completionTask,
+]);
+```
+
+Cancellation therefore settles the tool even if the launcher has not returned yet.
+A later launcher rejection remains observed.
+A later successful launch receives the cancellation-aware bootstrap.
+Commit `269d21002` additionally opens the cancellation registry scope before terminal resolution.
+A regression demonstrated that shutdown during that first asynchronous operation could otherwise be forgotten,
+allowing an already-cancelled request to open a terminal.
+
+`package/cli/terminal-exec/src/build-command.ts:122`
+now retains the parsed desktop-entry arguments directly:
+
+```ts
+// package/cli/terminal-exec/src/build-command.ts
+...terminal.execTokens,
+```
+
+This preserves both explicit `false` and explicit `true` values.
+The terminal's single-instance behavior belongs to its configuration,
+not a silent policy override in this library.
+Preserving the flag is verified independently of the cause of the historical startup delay.
+
+### Follow-up verification evidence
+
+Commit `668d2781d` introduced delayed-start,
+late-after-cancellation,
+and terminal-flag regressions before the implementation.
+The initial harness attempt failed at setup because a test dependency was unavailable and only one package had rebuilt.
+After correcting the fixture and rebuilding each package,
+the old implementation failed as intended:
+
+- At 31 seconds the request had already settled instead of remaining answerable.
+- Both caller and session cancellation followed by late execution reproduced the screenshot's `MODULE_NOT_FOUND`.
+- The command builder removed `--gtk-single-instance=false`,
+  `--gtk-single-instance=true`,
+  the bare flag,
+  and even an unrelated longer prefix.
+- An unrelated terminal option remained present as the positive control.
+
+The implemented path passes the real delayed-start test:
+a helper launched after 31 seconds returns the exact multiline answer.
+This test delays execution at the injected launcher boundary and then runs the production argv directly.
+It reproduces the requester's delayed-execution boundary,
+not an actual locked-desktop launch.
+The real Ghostty verifiers separately cover ordinary desktop startup.
+Lifecycle tests exercise cancellation during a pending launcher,
+active editor termination with captured stderr,
+an unavailable editor,
+missing versus malformed request files,
+and idle authentication candidate cleanup.
+Acknowledgement tests exercise complete,
+fragmented,
+missing,
+and invalid replies from a fixture requester.
+
+A fresh Pi 1.0.4 TUI process was also exercised under a private PTY,
+with isolated `PI_CODING_AGENT_DIR`,
+no discovered extensions,
+offline mode,
+no model request,
+and an explicitly guarded test extension.
+That extension captures and registers the production tool,
+then invokes its real `execute` callback with the host's TUI context and a scripted editor.
+It verifies multiline answer details and empty-answer cancellation through the actual default Ghostty terminal.
+It does not simulate a model response or human keyboard entry.
+The disposable driver and extension are retained under `${HOME}/temp/agent/ask-host-*.ts`.
+No user editor configuration or existing session was modified.
+
+The package `verify:terminal` and `verify:extension` tasks also passed after the lifecycle change.
+The acknowledgement guard was also removed in a disposable copied bundle.
+The silent-requester regression then failed because an editor started without acknowledgement;
+restoring the original bundle made the same tests pass.
+Neither the installed artifact nor the working source was mutated by this guard test.
+
+Final post-bootstrap validation is recorded in [Completion on 2026-10-08](#completion-on-2026-10-08).
+
+### Follow-up limits and rejected approaches
+
+- Increasing the destructive timeout would only move the same race.
+- Retaining every cancelled workspace would accumulate private request data without preserving a live consumer.
+- A permanent broker is unnecessary while the answer belongs to one live Pi tool call.
+- A cancelled late terminal exits cleanly;
+  its message can disappear as the terminal closes and is not promised as a persistent notification.
+- Killing Pi before the terminal executes can invalidate Linux's `/proc/<pid>/exe` runtime path.
+  This change preserves the existing protection against runtime unlink while Pi is alive;
+  it does not make questions survive requester process death.
+- No screen-lock state was captured for the reported request,
+  and no test deliberately locked the user's desktop.
+- Real desktop verification covers Linux with Ghostty,
+  not Windows or macOS.
+
+## Historical fixes from 2026-10-04
+
+The source excerpts and line numbers in this section describe the earlier implementation.
+The 2026-10-08 follow-up supersedes its startup deadline and `AnswerHelperStartupTimeoutError` export.
+The runtime-retention and private helper-snapshot protections remain in place.
 
 ### Installed runtime disappears while requester remains alive
 
@@ -300,5 +531,63 @@ On 2026-10-04,
 This supersedes the investigation's initial recommendation to keep it open.
 No historical timeout was retroactively attributed to a particular missing file.
 Use a fresh Pi process to exercise the rebuilt extension rather than an already loaded bundle.
+
+## Completion on 2026-10-08
+
+The final implementation includes `5596ad743`,
+`724fb299a`,
+`2e0df35a7`,
+`269d21002`,
+and `c7b16bd39`.
+Both affected packages were rebuilt locally.
+Their type checks,
+Oxlint checks,
+and complete package test suites passed;
+Oxlint reported `Found 0 warnings and 0 errors.` for each package.
+
+```sh
+# Repository root, reproducible package checks.
+mise run //package/cli/terminal-exec:build
+mise run //package/cli/terminal-exec:lint
+mise run //package/cli/terminal-exec:test:unit
+mise run //package/pi-plugin/ask-user-question:build
+mise run //package/pi-plugin/ask-user-question:lint
+mise run //package/pi-plugin/ask-user-question:test:unit
+mise run //package/pi-plugin/ask-user-question:verify:terminal
+mise run //package/pi-plugin/ask-user-question:verify:extension
+```
+
+The final real-terminal launch log contains the user's exact `--gtk-single-instance=false` token.
+Consumer-boundary results after the final implementation were:
+
+```text
+Detached terminal verified: answered
+Detached terminal verified: cancelled
+ask-user-question extension verified: sequential question tool, shutdown cleanup, and detached helper artifact
+Real Pi TUI host verified: answered
+Real Pi TUI host verified: cancelled
+```
+
+The final package suite includes the 31-second delayed-start regression,
+late-after-caller and session cancellation,
+shutdown during terminal resolution,
+idle and reset candidates,
+active-editor cancellation with empty stderr,
+acknowledgement framing,
+and quoted launch paths.
+Tests deliberately exercising operational failures still emit their expected tagged diagnostics.
+No claim is made that the whole test runner's stderr is empty.
+
+The updated package READMEs and this investigation were rendered with Marked `18.0.11` and inspected.
+The terminal README's pre-existing broken fences were repaired so its configuration section renders as prose.
+Independent review informed the reset-candidate regression and the helper's module-location inspection.
+
+Existing Pi processes retain their already-loaded extension module.
+A fresh Pi process loads the rebuilt implementation.
+No editor setting,
+terminal preference,
+provider configuration,
+or existing user session was changed.
+Unrelated concurrent working-tree changes were left untouched.
 
 [issue]: https://github.com/Aquaticat/Monochromatic/issues/581

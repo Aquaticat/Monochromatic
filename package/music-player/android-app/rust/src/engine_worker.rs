@@ -1767,21 +1767,23 @@ fn audio_callback(
             control.ended.store(true, Ordering::Release);
         }
     }
-    // What:     `if let Some(frames) = popped.checked_div(channels) { ... }`. `checked_div`
-    //           divides `popped` (a SAMPLE count) by `channels`, returning `None` when
-    //           `channels == 0` (a checked divide that cannot divide-by-zero) and
-    //           `Some(frames)` otherwise, where `frames` is the FRAME count (samples per
-    //           frame equals channels). The `if let` runs the body only on `Some`.
+    // What:     `if let Some(played_frames) = popped.checked_div(channels) { ... }`.
+    //           `checked_div` divides `popped` (a SAMPLE count) by `channels`, returning
+    //           `None` when `channels == 0` (a checked divide that cannot divide-by-zero)
+    //           and `Some(played_frames)` otherwise, where `played_frames` is the FRAME
+    //           count (samples per frame equals channels). The `if let` runs the body only
+    //           on `Some`. The name differs from the `frames` callback parameter so the
+    //           played count never shadows the requested one.
     // Why:      Only advance the played-frame counter when channels is valid; `checked_div`
     //           folds the zero-guard and the divide into one call (no separate `> 0` check).
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const frames = channels > 0 ? Math.floor(popped / channels) : null;
-    // if (frames !== null) { ... }
+    // const playedFrames = channels > 0 ? Math.floor(popped / channels) : null;
+    // if (playedFrames !== null) { ... }
     // ```
-    if let Some(frames) = popped.checked_div(channels) {
-        // What:     `control.frames_played.fetch_add(frames as u64, Ordering::AcqRel);`.
+    if let Some(played_frames) = popped.checked_div(channels) {
+        // What:     `control.frames_played.fetch_add(played_frames as u64, Ordering::AcqRel);`.
         //           `as u64` CASTS the `usize` frame count to the atomic's 64-bit width.
         //           `.fetch_add(delta, ordering)` atomically ADDS the delta to the counter
         //           (a read-modify-write). `Ordering::AcqRel` is both Acquire and Release at
@@ -1793,11 +1795,11 @@ fn audio_callback(
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // Atomics.add(control.framesPlayed, 0, frames);
+        // Atomics.add(control.framesPlayed, 0, playedFrames);
         // ```
         control
             .frames_played
-            .fetch_add(frames as u64, Ordering::AcqRel);
+            .fetch_add(played_frames as u64, Ordering::AcqRel);
     }
     // What:     `AudioCallbackResult::Continue`. The `Continue` variant as the function's
     //           TAIL EXPRESSION (no trailing `;`), so it is what the callback returns,

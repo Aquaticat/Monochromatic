@@ -779,8 +779,8 @@ this behaviour is Android-only by nature.
 
 ## F. Input
 
-### F1. Keyboard map — DRAFT ONLY (candidate keys-a)
-Not reviewed by the user.
+### F1. Keyboard map — DRAFT ONLY (candidate keys-a), superseded by D102
+Not reviewed by the user; the map the human accepted in D102 replaces it.
  Current draft:
 ```text
 Space        play / pause
@@ -2881,6 +2881,43 @@ The question stated that once Android stops showing its permission prompt after 
 and that at 200% text the state now scrolls slightly on both panels.
 `evidence/first-run-access-boundaries.md` holds the study.
 
+No production implementation is authorized by this record.
+
+### D102. The keyboard map is accepted as built (2026-10-10)
+
+Asked whether to accept the whole IntelliJ-aligned keyboard map shown at `questions/keyboard-map.prototype.html`,
+the human answered `Accept as built`.
+This closes D25's request for one whole-map pass and replaces the F1 draft.
+On Windows and Linux, then macOS:
+
+- Search `Ctrl+F` and `Command+F`;
+  the folder picker `Ctrl+O` and `Command+O` (both from D25).
+- Settings `Ctrl+Alt+S` and `Command+Comma`.
+- Jump to the playing track `Ctrl+G` and `Command+L`.
+- Previous and next track `Ctrl+Left` and `Ctrl+Right`, and `Command+Shift+[` and `Command+Shift+]`.
+- Space toggles play and pause, and `Ctrl+M` cycles the end-of-track mode;
+  these and previous and next work only while the playback area has focus,
+  so editing fields and focused controls keep their own keys.
+- Bare arrows keep their native behavior.
+  There is no seek or volume on them,
+  so Up and Down have no special meaning after D43 removed in-app volume.
+- Escape closes the innermost popup, otherwise leaves Search.
+- Media and volume keys stay with the operating system.
+
+Which keys Linux compositors and macOS actually deliver, media-key delivery,
+accessibility traversal and IME behavior were not exercised;
+the implementation has to verify them with their real owners.
+Implementing the map is developer work.
+No production implementation is authorized by this record.
+
+### D103. Remaining Search behavior is closed as a design item (2026-10-10)
+
+Asked whether to close the open-questions entry on Search behavior left after D51 and D52,
+the human chose to close it and keep the verification notes.
+Every design choice in it is decided (D58 to D74).
+Native focus restoration, system Back, IME and TalkBack behavior stay listed as implementation gates
+in `open-questions.md` and the Search evidence records,
+and need verification when an implementation is authorized.
 No production implementation is authorized by this record.
 
 ## Pending after the theme picks (2026-09-04)

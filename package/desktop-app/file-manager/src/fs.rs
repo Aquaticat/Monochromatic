@@ -25,7 +25,7 @@ pub fn read_directory(path: &Path, generation: u64) -> io::Result<DirectorySnaps
     let mut entries = Vec::new();
     for entry in fs::read_dir(path)? {
         match entry {
-            Ok(entry) => entries.push(to_file_entry(&entry)),
+            Ok(dir_entry) => entries.push(to_file_entry(&dir_entry)),
             Err(error) => tracing::warn!(%error, "skipping unreadable directory entry"),
         }
     }

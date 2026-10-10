@@ -45,13 +45,13 @@ fn main() {
     let mut app = QGuiApplication::new();
     let mut engine = QQmlApplicationEngine::new();
 
-    if let Some(engine) = engine.as_mut() {
-        engine.load(&QUrl::from(
+    if let Some(qml_engine) = engine.as_mut() {
+        qml_engine.load(&QUrl::from(
             "qrc:/qt/qml/dev/monochromatic/file_manager/qml/main.qml",
         ));
     }
 
-    if let Some(app) = app.as_mut() {
-        app.exec();
+    if let Some(gui_app) = app.as_mut() {
+        gui_app.exec();
     }
 }

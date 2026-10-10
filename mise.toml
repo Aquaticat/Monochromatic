@@ -934,9 +934,12 @@ run = "{{vars.fanout_packages}}"
 
 # Applies cli-markdown-lint autofixes (e.g. no-pipe-tables converting pipe
 # tables to HTML, semantic-line-breaks inserting breaks) over the whole tree or
-# the given file paths. dprint handles markdown *formatting*; this is for lint
-# fixes dprint cannot do. In the root `format` task it runs after dprint
-# (sequential), so it sees already-formatted files.
+# the given file paths. This is the only markdown gate: dprint's markdown
+# plugin is disabled in package/config/dprint/index.json ("Formats ordered list
+# markers wrongly"), so `dprint fmt` leaves .md files untouched and no separate
+# markdown formatting pass exists. In the root `format` task it still runs after
+# dprint (sequential), which matters only for the file types dprint does
+# format.
 [tasks."format:markdown"]
 hide = true
 description = "Apply cli-markdown-lint autofixes, optionally restricted to specific files"
@@ -1251,6 +1254,8 @@ _.file = [{ path = ".env.local.json", redact = true }]
 # instead, which would make it stable across environments.
 _.path = [
   "node_modules/.bin",
+  "package/agent-harness-shared/search-fetch/node_modules/.bin",
+  "package/agent-harness-shared/truncate/node_modules/.bin",
   "package/claude-code-plugin/bash-output-filter/node_modules/.bin",
   "package/claude-code-plugin/claude-spawn/node_modules/.bin",
   "package/claude-code-plugin/correction-reminder/node_modules/.bin",

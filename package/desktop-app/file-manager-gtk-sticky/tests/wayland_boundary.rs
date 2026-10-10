@@ -123,7 +123,7 @@ fn sticky_layout_boundary() {
     let state = run_dir.join("state.json");
     let screenshot = run_dir.join("sticky-rails.png");
 
-    let child = Command::new(compositor_binary())
+    let spawned = Command::new(compositor_binary())
         .arg("--socket")
         .arg(&socket)
         .arg("--size")
@@ -139,7 +139,7 @@ fn sticky_layout_boundary() {
         .stderr(Stdio::inherit())
         .spawn()
         .expect("spawn nested compositor hosting the app");
-    let mut child = KillOnDrop(child);
+    let mut child = KillOnDrop(spawned);
 
     let mut control = ControlSocket::connect(&socket);
     control.expect_ok("ping");

@@ -25,7 +25,7 @@ Candidate descriptions are historical unless a named decision explicitly
 makes them the current baseline.
 MD3-on-Slint feasibility and implementing the keyboard map are
 developer-owned;
-the single revised keyboard-map design remains open.
+the keyboard-map design is settled by D102.
 
 ## Historical inventory
 
@@ -1130,7 +1130,7 @@ flow was exercised,
  but it neither proves the native TouchAreas were activated nor
 measures the target phone geometry.
 D21's global hotkey and Settings row are not inherited by the Search page.
-D25's Ctrl+F reservation remains open with the whole keyboard map.
+D25's Ctrl+F reservation is part of the keyboard map D102 accepted.
  At that retired round,
  Search targets and result effects/ranking were still design questions;
  D58 to D61 and D63 to D80 now settle the visible and interaction goals.

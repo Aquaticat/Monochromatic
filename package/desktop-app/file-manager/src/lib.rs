@@ -98,10 +98,10 @@ pub fn run() -> glib::ExitCode {
     // closures hold only a weak reference, so without this the strip state would drop at the end
     // of `build_window` and spawning would stop working.
     let controllers = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
-    app.connect_activate(move |app| {
+    app.connect_activate(move |activated| {
         style::install();
-        controllers.borrow_mut().push(window::build_window(app));
-        schedule_self_quit(app);
+        controllers.borrow_mut().push(window::build_window(activated));
+        schedule_self_quit(activated);
     });
     return app.run()
 }
@@ -138,9 +138,9 @@ fn schedule_self_quit(app: &Application) {
     let Some(ms) = raw.to_str().and_then(|value| return value.parse::<u64>().ok()) else {
         return;
     };
-    let app = app.clone();
+    let owned_app = app.clone();
     glib::timeout_add_local_once(std::time::Duration::from_millis(ms), move || {
         tracing::info!(ms, "self-quit timer elapsed, quitting");
-        app.quit();
+        owned_app.quit();
     });
 }

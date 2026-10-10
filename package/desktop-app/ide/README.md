@@ -100,7 +100,9 @@ Each state is marked by more than color:
   the cursor and three columns in full ink;
 - with keyboard focus,
   three columns in the accent color
-  and a 5 px by 48 px handle in the same color in the middle of the line.
+  and a 5 px by 96 px handle in the same color in the middle of the line,
+  never taller than the divider
+  (the user chose the 96 px handle on 2026-10-06).
 
 ### Divider hit area
 
@@ -209,6 +211,7 @@ and the rendered columns of every state.
 each edge of the zone,
 and each keyboard-focus mark in a disposable copy
 and checks that its named test fails.
+The divider's accessible slider is tested under [Accessibility checks](#accessibility-checks).
 
 ## Combined search
 
@@ -436,6 +439,14 @@ a cell 16 px wide whose width cannot be set from outside
 `widgets/common/lineedit-base.slint` lines 189 to 196).
 The user decided on 2026-10-05 to keep the control and give it a click target of at least 48 px by 48 px.
 
+The box also differs in the ink of selected text.
+The toolkit box draws the palette's accent ink,
+which is black in the dark scheme and white in the light one.
+Both boxes here take the ink of every other selection,
+which native code chooses from the selection fill
+(the user's choice of 2026-10-06);
+see [Selected text ink](#selected-text-ink).
+
 ### Clear control
 
 The x at the trailing end of the box empties the text.
@@ -470,6 +481,24 @@ Each pointer state has two marks:
 - pressed,
   a stronger fill and a 2 px boundary.
 
+The plate covers the whole 48 px cell,
+so it shows the click target's real extent
+(the user's choice of 2026-10-06).
+Its fill and boundary are the foreground ink at reduced opacity:
+the fill at 10 percent under the pointer and 24 percent pressed,
+the boundary at 50 percent and 80 percent.
+On the cell's top,
+right,
+and bottom edges the boundary lies on the box's border.
+The border is composited under it but shifts its color by only 2 to 8 gray levels,
+so while the plate shows,
+the boundary takes the border's place there.
+The focus line is drawn after the plate,
+so it keeps its color in every state;
+its contrast against the plate's fill is at least 3.5:1 in both schemes.
+The measured colors are in `design/README.md`,
+under "Applied frames of the 2026-10-06 UI batch 3b".
+
 Accessibility tools see a `button` named `Clear find text` or `Clear search query`
 whose default action clears.
 The toolkit's control is not exposed to them at all.
@@ -479,10 +508,9 @@ The toolkit's control is not exposed to them at all.
 Read from `widgets/common/lineedit-base.slint` and `widgets/fluent/lineedit.slint` of Slint 1.18.1:
 
 - The placeholder shows while the text and any input-method composition are both empty.
-- Selected text has the palette's selection fill and the palette's accent ink,
-  which is black in the dark scheme and white in the light one.
-  The source view and selected rows choose their ink from the fill instead;
-  see [Selected text ink](#selected-text-ink).
+- Selected text has the palette's selection fill;
+  its ink is not the toolkit's,
+  as described under [Find and search text box](#find-and-search-text-box).
 - A text wider than the box scrolls with the caret:
   while the caret moves through the text it stays 24 px inside the text area,
   and the end of the text reaches the area's edge.
@@ -538,12 +566,124 @@ its whole-cell click target,
 its edit report,
 and each half of its shown rule in a disposable copy
 and check that the named tests fail.
+They also put the toolkit's accent ink back on selected text
+(`box-selected-ink`)
+or drop it where the window and the panels pass the chosen ink on
+(`find-box-ink-passed`,
+`find-bar-ink-passed`,
+`search-box-ink-passed`),
+shrink the plate to 32 px
+(`plate-whole-cell`),
+and make its boundary opaque
+(`plate-translucent`).
 Input-method composition was not exercised:
 the toolkit's public window events carry no composition event,
 and the nested compositor provides no input method.
-Accessible properties were read from the running application
-through the toolkit's inspection server during the native frame captures;
-see `design/README.md`.
+The role,
+label,
+value,
+placeholder,
+and actions of both boxes and both clear controls are tested under [Accessibility checks](#accessibility-checks).
+
+## Accessibility checks
+
+`test:native` reads what assistive tools are given through Slint's element handles
+(`ElementHandle` of the test-only dependency `i-slint-backend-testing`),
+the same accessible properties and actions the toolkit hands to the platform accessibility bridge.
+The user allowed the dependency on 2026-10-06.
+It is internal to Slint and has no semver guarantee,
+so `Cargo.toml` requires exactly `=1.18.1`,
+the resolved `slint` version;
+both must be raised together.
+It was already in `Cargo.lock` through `slint`,
+so adding it added no package.
+
+An element is found by its accessible label,
+and exactly one element may carry it.
+A row is found by its role and label inside its own list,
+because the tree and the search results can list the same file name.
+The texts inside tree,
+search,
+and location rows,
+and the location list's title,
+are not accessibility elements
+(the user's choice of 2026-10-06):
+the row or the list carries the name,
+so a screen reader reads it once.
+A tree row's slot badge is one of those texts,
+so the row's description names its shortcut,
+as in `Source file, Ctrl+3`.
+A handle does not keep its element alive,
+so a row is looked up again after the list changes.
+
+- `src/native/accessible_box_tests.rs`:
+  the find box and the search box are `text-input` elements with their label,
+  placeholder,
+  and value,
+  and the find box's description is the match count (`Match 1 of 2`);
+  setting the value runs find or search as typing does.
+  The search box's description counts the results in the same words:
+  empty without a query,
+  `Searching` while a search runs,
+  `Result 1 of 2` for the selected row,
+  `No results` when nothing matches,
+  the error text when the search failed,
+  and `2 results, none selected` while no row is selected.
+  Each clear control is a `button` of at least 48 px by 48 px that is offered only while the box has text,
+  and its default action empties the box,
+  removes the count or the results,
+  and keeps keyboard focus in the box.
+- `src/native/accessible_divider_tests.rs`:
+  the divider is a horizontal `slider` named `Sidebar width`
+  that reports the width,
+  160 px and the widest width as its bounds,
+  and a 16 px step.
+  The increment,
+  decrement,
+  and set-value actions,
+  and Left,
+  Right,
+  Home,
+  and End with keyboard focus,
+  change the value it reports;
+  a set value above the widest width reports the widest.
+- `src/native/accessible_list_tests.rs`:
+  the tree,
+  the search results,
+  and the location list report their role,
+  name,
+  and row count.
+  Every row is a selectable `list-item` with its name and position.
+  In the tree the open file's row is the selected one,
+  and opening another file through its row's default action moves the selection;
+  a directory row is expandable,
+  and its expand action expands it.
+  In the search results and the location list the selected row follows Down and Up,
+  and a location row's default action chooses it.
+  In every list exactly one element carries a row's name,
+  and only the location list carries its title;
+  a tree row's description is `Directory`,
+  or `Source file` followed by the shortcut of its slot badge.
+
+Each test has a guard-removal control,
+run in a disposable copy,
+that was observed to fail with its guard removed:
+`a11y-set-value-edits` and `a11y-clear-role` in `inspect:find-guards`,
+`a11y-clear-default-action` and `a11y-result-selected` in `inspect:search-guards`,
+`a11y-divider-increment` and `a11y-tree-row-selected` in `inspect:sidebar-guards`,
+and `a11y-location-selected` in `inspect:language-navigation-guards`.
+The hidden texts and the search count have their own:
+`a11y-result-text-hidden` and `a11y-search-count` in `inspect:search-guards`,
+`a11y-tree-row-text-hidden` and `a11y-tree-badge-shortcut` in `inspect:sidebar-guards`,
+and `a11y-location-text-hidden` and `a11y-location-title-hidden` in `inspect:language-navigation-guards`.
+
+What these checks do not cover:
+
+- The platform bridge itself (AT-SPI on Linux) and a screen reader's speech:
+  element handles read the toolkit's side of the bridge.
+- Whether a screen reader announces the search box's new description as results arrive:
+  element handles read the property,
+  not the change events the bridge sends.
 
 ## Language module
 
@@ -1562,6 +1702,9 @@ The last line needs no terminator.
 
 Selected text is drawn in white while white reaches a contrast ratio of 3:1 against the selection fill,
 and in black on a lighter fill.
+The same ink is used in the source view,
+on selected rows,
+and for selected text in the find and search boxes.
 The toolkit's fluent palette keeps the fill `#0078D4` in both color schemes
 but pairs it with black ink in the dark scheme.
 Black on that fill has a WCAG 2 ratio of 4.64 and white of 4.53,
@@ -2353,6 +2496,7 @@ runtime/licenses/<grammar>/      license notice of each bundled grammar
 runtime/Helix-LICENSE            MPL-2.0 text for the Helix query files and the Helix crates in the binary
 LICENSES/                        LGPL-3.0-or-later and GPL-3.0-or-later texts of the application
 LICENSES/font/                   SIL Open Font License notices of Inter and JetBrains Mono
+LICENSES/crates.json             license texts of the Rust crates, collected by cargo-about
 ```
 
 On 2026-10-06 that was 1,254 files and 34,659,293 bytes:
@@ -2369,7 +2513,7 @@ Inter and JetBrains Mono themselves are compiled in through Slint, as before.
 every file below `LICENSES/` and `runtime/licenses/`,
 and every other file whose name contains `LICENSE` or `LICENCE` or starts with `COPYING` or `NOTICE`,
 which adds `runtime/Helix-LICENSE` and `runtime/queries/snakemake/LICENSE`;
-34 texts and 117,354 bytes of output on 2026-10-06.
+34 files on 2026-10-06.
 The two read-me files among the queries (`ecma/README.md`, a description of query inheritance,
 and `ripple/readme.md`, a source link) are not license terms and are left out.
 Each text comes in full under a framed heading that names its component and its embedded path,
@@ -2377,10 +2521,131 @@ for example `Language grammar rust: LICENSE` above `Embedded as runtime/licenses
 Every text is digest-checked before anything is printed,
 so a damaged executable prints the damage message and exits with status 1 instead of a partial list;
 a reader that closes the pipe early (`| head`) ends the listing with status 0.
-The executable still holds no collected license notices of the Rust crates compiled into it,
-which the listing's second line says;
-that remains an open question for the user.
+After these files the listing prints the license texts of the Rust crates,
+one entry per distinct text
+(see [Rust crate license texts](#rust-crate-license-texts));
+with them it counted 231 texts and 581,919 bytes on 2026-10-06.
 The table's key (`c47e913b79bf6a42` for that runtime) is a digest of every path and file digest.
+
+### Rust crate license texts
+
+The user decided on 2026-10-06 to collect every Rust crate's license text with a notice generator,
+and narrowed the choice the same day: "No need to consider any alternatives. Just it." (cargo-about).
+
+#### What was established before wiring it in
+
+- Version:
+  cargo-about 0.9.2, the latest release (2026-08-18).
+  Its crates.io archive (sha256 `0cd19d99696eb83f0a2d6ab7a347b14968d2980416c8cca827ded220e6e9c4bb`)
+  names commit `f7394d5c8f618623573072caadf6594821c789b6` in `.cargo_vcs_info.json`,
+  and its files equal that tag's apart from Cargo's normalized manifest.
+  The command needs the `cli` feature:
+  `cargo install --locked --features cli --version 0.9.2 cargo-about`
+  (without `--features cli` the install compiles for minutes and then installs nothing).
+  Its book documents `-L, --log-level`; 0.9.2 accepts only `-L`.
+- License:
+  cargo-about is MIT OR Apache-2.0 and runs only while building;
+  none of its code is compiled into the executable.
+  What the executable gains is each crate's own license file,
+  or, when a crate ships none that cargo-about recognizes,
+  the standard text of the chosen license from the SPDX License List data compiled into cargo-about
+  (`spdx` 0.13.4).
+- Offline:
+  with `--frozen` (`--locked` plus `--offline`) cargo-about creates no HTTP client
+  (`src/cargo-about/generate.rs`, the `client` binding after "gathered {} crates"),
+  so license files that a configuration would fetch from a crate's git repository are not used,
+  and Cargo resolves the graph from the local registry.
+  Its license store is compiled in (`Store::load_inline` in `src/licenses.rs`).
+  The crate sources come from the `ide-cargo` volume that the `fetch` task fills.
+  Installing the tool is the one step that needs the network,
+  so it belongs to the image build (`Containerfile`), as `rustfmt` already does.
+  The trial ran with `--network=none`,
+  the package and `ide-cargo` mounted read-only,
+  and exited with status 0.
+- Trial against the IDE at commit `4b8b03663`
+  (target `x86_64-unknown-linux-gnu`, build and dev dependencies ignored, the unpublished package itself ignored):
+  - 424 crates, 6 of them Helix crates from git.
+    `cargo tree --edges normal,no-proc-macro` names 369 crates besides the IDE linked into the executable,
+    all among them;
+    the other 55 are procedural-macro crates and their dependencies, which run only while compiling.
+    The 187 registry crates whose source paths appear inside that release executable are all among them too.
+  - 29 distinct license expressions.
+    The most common: `MIT OR Apache-2.0` (188 crates), `MIT` (82), `Apache-2.0 OR MIT` (47),
+    `Unicode-3.0` (25), `Apache-2.0` (15),
+    Slint's `GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0` (10),
+    and `MPL-2.0` (9).
+    Unusual spellings parse as well:
+    fnv's `Apache-2.0  OR  MIT`,
+    smartstring's deprecated `MPL-2.0+`,
+    and unicode-ident's `(MIT OR Apache-2.0) AND Unicode-3.0`.
+  - No crate it could not resolve:
+    `--fail` exited with status 0.
+    As a positive control,
+    the same run without `GPL-3.0-only` among the accepted licenses failed with status 1,
+    naming all ten Slint crates.
+  - Two runs gave byte-identical output; one took 55.7 s on 2 CPUs.
+  - cargo-about reads no NOTICE files.
+    In the fetched registry only `cfg_aliases` ships one (`NOTICES.md`),
+    and it is a build dependency outside the graph.
+
+#### How the build carries them
+
+- `Containerfile` installs cargo-about 0.9.2 into the build image
+  (`mise run //package/desktop-app/ide:image`).
+  The `notices` task first checks `cargo-about --version` and,
+  in an image built before this change,
+  stops and names the `image` task.
+- `notices` runs after `fetch`:
+  cargo-about's `generate` with `--frozen`, `--fail`, `--config about.toml`,
+  and `--output-file target/crate-licenses.json`, on the template `about.json.hbs`.
+  It keeps the file while a SHA-256 over `Cargo.lock`, `Cargo.toml`, `about.toml`, `about.json.hbs`,
+  and the cargo-about version is unchanged (`target/crate-licenses.inputs`).
+  Every task that builds the application binary with the `gui` feature depends on it;
+  `build.rs` embeds the file as `LICENSES/crates.json`
+  and stops with a message naming the task when it is missing.
+- `about.json.hbs` writes one entry per distinct license text:
+  its SPDX identifier,
+  its name,
+  the crate file it came from (null for a standard text),
+  the crates it covers,
+  and the text.
+  `src/runtime/crate_licenses.rs` reads the list,
+  and `--licenses` prints every entry after the license files,
+  under a framed heading such as `Rust crates under MIT License (MIT): 18 crates`,
+  then the crates by name and version wrapped to 78 columns,
+  then `Text from the crate file annotate-snippets-0.12.16/LICENSE-MIT`
+  or `Text: the standard text of this license (no crate file was recognized)`.
+- `about.toml` accepts, in this order of preference for crates offered under several licenses:
+  MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause, Zlib, Unicode-3.0, MPL-2.0, CC0-1.0, Unlicense, GPL-3.0-only.
+  A dependency under any other license stops the task until it is reviewed.
+- On 2026-10-06 the list held 197 texts for 424 crates,
+  193 of them read from the crates' own files,
+  402,423 bytes of text in a 461,974-byte file.
+  Standard texts cover 12 MIT crates, 5 Apache-2.0 crates,
+  the ten Slint crates (GPL-3.0-only; the `slint` crate keeps that text in a `LICENSES/` folder,
+  which cargo-about did not pick),
+  and five Helix crates (MPL-2.0; Helix keeps its license file only at its repository root,
+  which `runtime/Helix-LICENSE` already carries).
+  Preferring Apache-2.0 over MIT gave 117 texts of 621,736 bytes, 66 crates on the standard Apache-2.0 text;
+  preferring BSD-3-Clause over Apache-2.0 gave 224 texts,
+  because cargo-about then took every BSD header among the source files of moxcms and pxfm as its own text.
+  The task took 99 s with its `fetch` step.
+  On the release executable of commit `9d476f838` (83,362,368 bytes),
+  the `crate-licenses` bundle check found all 369 linked crates
+  and all 291 registry crates whose source paths the executable contains among the crates printed.
+- The `linked-crates` task writes `target/linked-crates.txt`
+  from `cargo tree --frozen --edges normal,no-proc-macro --target x86_64-unknown-linux-gnu`
+  for the bundle checks.
+
+#### Choices made by default and open to veto
+
+- MIT ahead of Apache-2.0 in the accepted list,
+  because the crates' MIT files carry the copyright lines that license asks to reproduce,
+  and the list is smaller.
+- Slint under `GPL-3.0-only`,
+  whose text the executable already carries,
+  rather than the royalty-free license,
+  which asks for Slint's attribution (the `AboutSlint` widget in an About screen, or a badge on a public page).
 
 ### Where language files come from
 
@@ -2643,6 +2908,11 @@ without changing either:
   keeps the second,
   and renews its own folder's marker,
   before its display connection fails on purpose.
+- `crate-licenses`:
+  `--licenses` prints one section per entry of `target/crate-licenses.json`,
+  with the same license, the same crates in the same order, and the text in full;
+  every crate in `target/linked-crates.txt` (the `linked-crates` task, which both bundle tasks run first)
+  and every registry crate whose source path the executable itself contains is among the crates printed.
 
 The other startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`;
 SQL is the sample because it has a bundled grammar and no configured language server.
@@ -2663,10 +2933,21 @@ the SQL parser,
 a grammar notice,
 a font notice,
 an application license,
-and Helix's license.
+Helix's license,
+and the Rust crate license list.
 `license-texts` fails on every one of these but the SQL cases:
 a copy without its executable bit cannot run `--licenses`,
-and a copy with a damaged text exits with status 1 and the damage message naming that text.
+and a copy with a damaged text exits with status 1 and the damage message naming that text;
+on the damaged crate list `crate-licenses` fails the same way.
+A damaged file cannot show that `crate-licenses` notices a crate missing from an intact list,
+so that was checked on an altered build (on 2026-10-06):
+with `ignore-transitive-dependencies = true` added to `about.toml`,
+the list held 21 crates,
+and `crate-licenses` failed on the rebuilt debug executable
+("348 of 369 linked crates have no license text").
+In the same disposable copy,
+a debug build without `target/crate-licenses.json` stopped with status 101
+and the message naming the `notices` task.
 
 Behavior cannot be removed from a finished file,
 so the run-time checks were also run on an altered debug build (on 2026-10-06):

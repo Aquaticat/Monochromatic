@@ -173,7 +173,7 @@ fn residual_too_large(node: &Node) -> bool {
                 return parts.iter().any(|child| return spend(child, budget))
             }
             Node::Comp(inner) => return spend(inner, budget),
-            Node::Repeat { node, .. } => return spend(node, budget),
+            Node::Repeat { node: body, .. } => return spend(body, budget),
             _ => return false,
         }
     }
@@ -219,7 +219,9 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     // const MAX_U16_STATES: number = 65_534;
     // ```
     const MAX_U16_STATES: usize = 65_534;
-    let cap = cap.min(MAX_U16_STATES);
+    // The clamped budget gets its own name so it never shadows the caller's `cap`
+    // parameter; every enforcement below spends the clamped value.
+    let state_cap = cap.min(MAX_U16_STATES);
     let classes = compute_classes(&root);
     let nc = classes.nclasses;
     let mut index: HashMap<StateKey, u32> = HashMap::new();
@@ -264,7 +266,7 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
         if residual_too_large(&node) {
-            return Err(CompileError::StateCap { limit: cap });
+            return Err(CompileError::StateCap { limit: state_cap });
         }
         let at_ls = states[i].at_line_start;
         let pw = states[i].prev_word;
@@ -291,8 +293,8 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
             );
             trans.push(next);
         }
-        if states.len() > cap {
-            return Err(CompileError::StateCap { limit: cap });
+        if states.len() > state_cap {
+            return Err(CompileError::StateCap { limit: state_cap });
         }
         i += 1;
     }
@@ -306,13 +308,13 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let trans: Vec<u16> = trans.into_iter().map(|target| return target as u16).collect();
+    let trans_u16: Vec<u16> = trans.into_iter().map(|target| return target as u16).collect();
     return Ok(Dfa::from_parts(
         nc as u32,
         classes.class_map,
         classes.class_word,
         classes.class_newline,
-        trans,
+        trans_u16,
         accept,
         start as u16,
         states.len() as u16,

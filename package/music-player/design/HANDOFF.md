@@ -169,15 +169,14 @@ so long runs now go in their own user unit:
 `systemd-run --user --unit=<name> --collect --wait --property=MemoryMax=2G <command>`,
 with `wait-for-unit.ts <unit> <pattern>` to wait for it.
 
+The human approved the declined state as built (D101) and added the rule on long runs to the `CLAUDE.md` preamble in `file-enforcer.config.ts`.
+The first-run page shows the declined state as approved.
+The human then accepted the whole keyboard map as built (D102).
+
 Next:
-ask the human,
-through the question tool,
-to approve the declined state's version
-(title,
-body,
-button order,
-blank left half,
-and that `Allow access` can only open Android's settings once Android stops showing its prompt).
+the remaining open questions in `open-questions.md`,
+namely the folded-cover picker revisit before 1.x (D46) and Search behavior left after D51 and D52;
+nothing from this round waits on the human.
 
 To capture again,
 from `~/temp/agent`:
@@ -416,7 +415,7 @@ The single whole-map keyboard proposal is now built and browser-verified.
 control and popup ownership without files or audio;
 `evidence/keyboard-map-boundaries.md` preserves the new-binding proposal
 and OS-delivery limits.
-The map is not an accepted default or production implementation.
+The human accepted the map as built (D102); it is not a production implementation.
 No per-key questionnaire is queued.
 `doc/planning/music-player-light-error-undo.md` records the completed
 source/fit/publication queue under D83's current overlay treatment.
@@ -773,7 +772,7 @@ D17's rejected prefix buckets and row/fast-scroll candidates are history.
 D34/D35 and D45 settle their named light treatments,
 not every undrawn light diagnostic surface.
 D46's cover picker P4 stays provisional with a before-1.x revisit.
-The whole revised keyboard map is still a design question;
+The whole revised keyboard map is settled by D102;
 implementing it and MD3-on-Slint feasibility are developer-owned work.
 The old cover-active and build-next paragraphs in this chronological
 handoff are historical,

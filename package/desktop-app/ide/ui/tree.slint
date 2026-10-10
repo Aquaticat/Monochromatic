@@ -90,7 +90,9 @@ export component ProjectTree inherits Rectangle {
                 border-color: Palette.foreground;
                 accessible-role: list-item;
                 accessible-label: entry.label;
-                accessible-description: entry.directory ? "Directory" : "Source file";
+                // The row's texts are not read on their own, so the slot badge's shortcut is part of the description.
+                accessible-description: entry.directory ? "Directory"
+                    : (entry.recency == "" ? "Source file" : "Source file, Ctrl+" + entry.recency);
                 accessible-expandable: entry.directory;
                 accessible-expanded: entry.expanded;
                 accessible-item-selectable: true;
@@ -114,6 +116,8 @@ export component ProjectTree inherits Rectangle {
                     horizontal-alignment: center;
                     vertical-alignment: center;
                     color: entry.selected ? root.selected-ink : Palette.foreground;
+                    // The arrow repeats the expanded state and the badge the shortcut in the description.
+                    accessible-role: none;
                 }
                 Text {
                     x: 32px + entry.depth * 16px;
@@ -125,6 +129,8 @@ export component ProjectTree inherits Rectangle {
                     color: entry.selected ? root.selected-ink : Palette.foreground;
                     vertical-alignment: center;
                     overflow: elide;
+                    // The row carries the name; its text is not read a second time.
+                    accessible-role: none;
                 }
                 // The layout row enforces 48px minima; input stays exactly inside those same bounds.
                 row-touch := TouchArea {
