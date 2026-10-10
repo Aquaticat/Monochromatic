@@ -25,7 +25,7 @@ import { spendCeilingOverrideNote, } from './spend-ceiling.ts';
  runs every pending pair at the pin; restricted, it runs the entries the
  operator named (`corpus-pass-select.ts`), and those still pending run in the
  pass's own order, cached progress first and then the size bands by rank
- (`corpus-pass-order.ts`). Until 2026-10-06 the line said the ordering was
+ (`corpus-pass-order.ts`). Until 2026-10-10 the line said the ordering was
  bypassed.
 
  A NAMED ENTRY FINISHED BEFORE DOES NOT RUN, so the line says the named
@@ -298,7 +298,7 @@ export function passPlanLine(
  The complete pairs the pass's own walk found, which its closing line counts
  the artifacts and the declined entries over.
 
- COUNTED, NEVER WRITTEN DOWN, AND ONE POPULATION. Until 2026-10-06 the closing
+ COUNTED, NEVER WRITTEN DOWN, AND ONE POPULATION. Until 2026-10-10 the closing
  line read against a literal 92, the pairs at the commit the milestone pinned,
  on any clone and any pin; then for a while it divided every artifact file in
  the runs directory, whatever pin it came from, by a count that took in

@@ -431,12 +431,15 @@ Record each pipeline digest and corpus commit separately.
 ## Which corpus a run reads
 
 Every corpus read resolves through one pin,
-a clone directory and a commit (`RUN_CORPUS_PIN` in `src/corpus-run/run-config.ts`).
+a clone directory and a commit (`readRunCorpusPinSetting` in `src/corpus-run/run-config.ts`).
 Either half can be overridden without editing source,
 which is what a fixture run against an unmerged corpus pull request needs.
-Both are read once,
-when `src/corpus-run/run-config.ts` loads,
-by `readCorpusPinSetting` in `src/corpus-run/corpus-pin-override.ts`.
+Both are read once per command,
+at the start of its run and inside its refusal boundary,
+by `readRunCorpusPinSetting`,
+which reads the environment it is handed through `readCorpusPinSetting` in `src/corpus-run/corpus-pin-override.ts`,
+and the command hands the pin on as a value.
+Until 2026-10-10 both were read when `src/corpus-run/run-config.ts` loaded.
 Unset and blank both mean the built-in half;
 anything else that is not valid is refused as a stated refusal rather than replaced by the built-in,
 because a run against the wrong corpus would record its conclusions as the pinned corpus's.
