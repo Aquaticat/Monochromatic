@@ -371,7 +371,16 @@ Attachment-phase omission `proc_2dbc` reproduced the diagnosed pre-review snapsh
 Content-profile omission `proc_a769` admitted an unsupported block.
 Every omission is restored;
 runtime diff against `9c9885b` is empty.
-Complete native/action/source regressions and final outcome documentation remain pending.
+Complete one-shot native parent `proc_9e75` passed in 624 seconds:
+81 successful JSON outputs,
+the 128-output constructed-input matrix,
+all six full-policy profiles,
+and empty reported child stderr.
+Complete action-policy and policy-source suites passed `proc_3bea`.
+Only documentation changed during these regressions.
+This verifies the bounded pre-attachment checkpoint,
+not later manager-input accounting.
+Final outcome documentation lint/render is pending.
 The incumbent private manager copy performs `structuredClone`;
 the installed native manager does not.
 Parity claims must distinguish those baselines.

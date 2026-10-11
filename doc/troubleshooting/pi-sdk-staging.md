@@ -306,7 +306,11 @@ All four deliberate omissions failed their intended controls:
 and `proc_a769` admitted an unsupported content block.
 All guards are restored,
 with empty runtime diff against `9c9885b`.
-Complete regressions and final outcome documentation remain pending.
+Complete one-shot native `proc_9e75` passed in 624 seconds,
+with the 128-output constructed-input matrix and all six full-policy profiles.
+Complete action-policy and policy-source suites passed `proc_3bea`.
+Only documentation changed during those runs.
+Final outcome documentation lint/render is pending.
 
 This does not account for post-attachment manager appends.
 Those potentially governing inputs remain unresolved.
