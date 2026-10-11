@@ -36,7 +36,30 @@ fn open(text: &str) -> (AppWindow, Rc<RefCell<State>>) {
     window.show().expect("show headless source window");
     render(&window, &state);
     update_timers_and_animations();
+    await_worker_ready(&state);
     return (window, state);
+}
+
+/// Advance timers until the tile worker has started and reported ready, failing after `PATIENCE`.
+/// The first shown tile starts the worker, so every scroll in these tests finds it warm.
+fn await_worker_ready(state: &Rc<RefCell<State>>) {
+    let start = Instant::now();
+    loop {
+        update_timers_and_animations();
+        if state
+            .borrow()
+            .tile_worker
+            .as_ref()
+            .is_some_and(|worker| return worker.is_ready())
+        {
+            return;
+        }
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the source tile worker did not report ready within {PATIENCE:?}, after the first tile was shown"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
 }
 
 /// Scroll to `offset` and let the toolkit deliver the viewport-changed callback.
@@ -317,7 +340,8 @@ fn a_stopped_tile_worker_is_reported_once_and_replaced_on_the_next_re_center() {
         .close_for_test();
     let start = Instant::now();
     loop {
-        update_timers_and_animations();
+        // Poll directly: an idle poll timer stops, and the dead worker is then seen by the next poll or submission.
+        super::tile::poll(&window, &state);
         if state.borrow().tile_worker.is_none() {
             break;
         }
@@ -355,6 +379,86 @@ fn a_stopped_tile_worker_is_reported_once_and_replaced_on_the_next_re_center() {
     assert!(
         state.borrow().tile_worker.is_some(),
         "the re-center started a new worker"
+    );
+    window.hide().expect("close headless source window");
+}
+
+/// Measures what a cold tile worker costs, printing one line per process for the measurement log.
+/// Each run is a new process, so the first worker and its first font discovery are cold.
+#[test]
+fn measure_worker_cold_start() {
+    let shaper_start = Instant::now();
+    let shaper = ide_app::shaped_text::TextShaper::new();
+    let shaper_ms = shaper_start.elapsed().as_secs_f64() * 1000.0;
+    let fork_start = Instant::now();
+    let forked = shaper.fork();
+    let fork_ms = fork_start.elapsed().as_secs_f64() * 1000.0;
+    drop(forked);
+    drop(shaper);
+    let open_start = Instant::now();
+    let (window, state) = open(&document());
+    let ready_ms = open_start.elapsed().as_secs_f64() * 1000.0;
+    let height = window.get_viewport_height();
+    let first_start = Instant::now();
+    scroll_to(&window, START);
+    settle_tile(&state);
+    let first_ms = first_start.elapsed().as_secs_f64() * 1000.0;
+    let warm_start = Instant::now();
+    scroll_to(&window, START + height);
+    settle_tile(&state);
+    let warm_ms = warm_start.elapsed().as_secs_f64() * 1000.0;
+    eprintln!(
+        "COLD-START shaper_new_ms={shaper_ms:.1} fork_ms={fork_ms:.1} open_ready_ms={ready_ms:.1} first_reply_ms={first_ms:.1} warm_reply_ms={warm_ms:.1}"
+    );
+    window.hide().expect("close headless source window");
+}
+
+/// Dropping a worker whose build is in flight returns at once; the build is held on a channel the test controls,
+/// so the bound measures the drop alone and not the build.
+#[test]
+fn dropping_a_worker_with_a_build_in_flight_does_not_wait_for_it() {
+    let (window, state) = open(&document());
+    let height = window.get_viewport_height();
+    scroll_to(&window, START);
+    settle_tile(&state);
+    let (release, gate) = std::sync::mpsc::channel();
+    *super::tile_build::BUILD_GATE
+        .lock()
+        .expect("the test build gate is free") = Some(gate);
+    scroll_to(&window, START + height);
+    // The build starts once the worker takes the job from the gate slot; wait until it has.
+    let start = Instant::now();
+    while super::tile_build::BUILD_GATE
+        .lock()
+        .expect("the test build gate is free")
+        .is_some()
+    {
+        update_timers_and_animations();
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the tile worker did not start the held build within {PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    let worker = state
+        .borrow_mut()
+        .tile_worker
+        .take()
+        .expect("the worker of the held build");
+    // The drop runs on its own thread, so a drop that waits fails the bound below instead of hanging the test.
+    let (dropped_sender, dropped_receiver) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        drop(worker);
+        let _ = dropped_sender.send(());
+    });
+    let dropped = dropped_receiver.recv_timeout(Duration::from_millis(250));
+    // Release the held build so the worker thread ends its loop whatever the outcome.
+    release
+        .send(())
+        .expect("the held build is still waiting for its release");
+    assert!(
+        dropped.is_ok(),
+        "dropping the worker waited for a build that is still in flight"
     );
     window.hide().expect("close headless source window");
 }

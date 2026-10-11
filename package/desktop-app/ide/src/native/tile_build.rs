@@ -31,6 +31,7 @@ use ide_app::text_raster::{CodeColors, TextRaster};
 use slint::{Rgba8Pixel, SharedPixelBuffer};
 /// Owned snapshots are shared between the UI and worker threads.
 use std::{
+    panic::{AssertUnwindSafe, catch_unwind},
     sync::{
         Arc,
         mpsc::{Receiver, SyncSender, TryRecvError, sync_channel},
@@ -182,12 +183,13 @@ struct Tiler {
 
 /// Build one job with the worker's resources, clearing its row cache when styles or typography changed.
 impl Tiler {
-    /// Start with the default typography, which is what a window starts with.
-    fn new() -> Self {
+    /// Start from a shaper forked from the window's own, so the worker shares its fonts and typography.
+    fn new(shaper: TextShaper) -> Self {
+        let typography = shaper.typography().clone();
         return Self {
-            shaper: TextShaper::new(),
+            shaper,
             raster: TextRaster::new(),
-            typography: SourceTypography::default(),
+            typography,
             styles: None,
         };
     }
@@ -212,10 +214,41 @@ impl Tiler {
     }
 }
 
+/// What a worker sends back: once its shaper is ready, then one result per job.
+/// Why: The window thread can tell a warm worker from a cold one without waiting for a job.
+enum WorkerReply {
+    /// The worker's shaper and raster are ready to build.
+    Ready,
+    /// The finished tile or its failure.
+    Built(Box<Result<TileBuilt>>),
+}
+
+/// Test-only gate: the next build waits for one message before it starts, so a test can hold a job in flight.
+#[cfg(test)]
+pub(super) static BUILD_GATE: std::sync::Mutex<Option<Receiver<()>>> = std::sync::Mutex::new(None);
+
+/// Wait on the test gate once, if a test installed one; the sender stays with the test.
+#[cfg(test)]
+fn hold_at_test_gate() {
+    let gate = BUILD_GATE
+        .lock()
+        .ok()
+        .and_then(|mut slot| return slot.take());
+    if let Some(pending) = gate
+        && let Err(error) = pending.recv()
+    {
+        tracing::debug!(%error, "test build gate closed");
+    }
+}
+
 /// Own the blocking receive loop entirely outside native state.
-fn run(requests: Receiver<TileJob>, replies: SyncSender<Result<TileBuilt>>) {
+fn run(shaper: TextShaper, requests: Receiver<TileJob>, replies: SyncSender<WorkerReply>) {
     tracing::debug!("source tile worker started");
-    let mut tiler = Tiler::new();
+    let mut tiler = Tiler::new(shaper);
+    if let Err(error) = replies.send(WorkerReply::Ready) {
+        tracing::debug!(%error, "source tile reply receiver closed before the worker was ready");
+        return;
+    }
     loop {
         // What: `match` extracts either an owned job or the closed-channel condition.
         // Why: Closing the owner ends this thread without an unhandled channel error.
@@ -226,9 +259,11 @@ fn run(requests: Receiver<TileJob>, replies: SyncSender<Result<TileBuilt>>) {
                 return;
             }
         };
+        #[cfg(test)]
+        hold_at_test_gate();
         let result = tiler.build(job);
         // A closed receiver means the window is gone; the thread stops instead of retrying.
-        if let Err(error) = replies.send(result) {
+        if let Err(error) = replies.send(WorkerReply::Built(Box::new(result))) {
             tracing::debug!(%error, "source tile reply receiver closed");
             return;
         }
@@ -240,6 +275,7 @@ const _: fn() = || {
     fn assert_send<T: Send>() {}
     assert_send::<TileJob>();
     assert_send::<Result<TileBuilt>>();
+    assert_send::<TextShaper>();
 };
 
 /// What:
@@ -255,7 +291,10 @@ pub(super) struct TileWorker {
     /// Taking this sender closes the request channel before joining during Drop.
     requests: Option<SyncSender<TileJob>>,
     /// The window thread polls this receiver without blocking.
-    replies: Receiver<Result<TileBuilt>>,
+    replies: Receiver<WorkerReply>,
+    /// The worker has reported that its shaper is ready.
+    #[cfg(test)]
+    ready: bool,
     /// A job is running or its reply is unread.
     busy: bool,
     /// Newest job not yet sent; an older waiting job is dropped unbuilt.
@@ -266,19 +305,30 @@ pub(super) struct TileWorker {
 
 /// Requests replace each other; polling returns each finished tile in turn.
 impl TileWorker {
-    /// Start a named worker with one request slot and one reply slot.
-    pub(super) fn new() -> Result<Self> {
+    /// Start a named worker with one request slot and one reply slot, building with `shaper`.
+    pub(super) fn new(shaper: TextShaper) -> Result<Self> {
         let (request_sender, request_receiver) = sync_channel(1);
         let (reply_sender, reply_receiver) = sync_channel(1);
         let worker = thread::Builder::new()
             .name("ide-source-tile".to_string())
             .spawn(move || {
-                run(request_receiver, reply_sender);
+                // What: `catch_unwind` (std::panic) stops an unwinding build at the thread boundary.
+                // Why: A detached thread has no join to report a panic, so the panic is logged here instead.
+                let outcome = catch_unwind(AssertUnwindSafe(|| {
+                    run(shaper, request_receiver, reply_sender);
+                }));
+                if outcome.is_err() {
+                    tracing::error!(
+                        "source tile worker panicked; the next scroll re-center starts a new worker"
+                    );
+                }
             })
             .context("Cannot start the source tile worker")?;
         return Ok(Self {
             requests: Some(request_sender),
             replies: reply_receiver,
+            #[cfg(test)]
+            ready: false,
             busy: false,
             waiting: None,
             thread: Some(worker),
@@ -289,6 +339,17 @@ impl TileWorker {
     pub(super) fn request(&mut self, job: TileJob) -> Result<()> {
         self.waiting = Some(job);
         return self.dispatch();
+    }
+
+    /// True once the worker has reported that its shaper is ready to build.
+    #[cfg(test)]
+    pub(super) fn is_ready(&self) -> bool {
+        return self.ready;
+    }
+
+    /// True while a job is running, its reply is unread, or a job waits; the poll must continue while this holds.
+    pub(super) fn is_busy(&self) -> bool {
+        return self.busy || self.waiting.is_some();
     }
 
     /// Close the request channel so the idle worker thread ends, as a crashed worker would; test-only.
@@ -323,38 +384,44 @@ impl TileWorker {
 
     /// Poll without blocking; the inner result is the build's own success or failure.
     pub(super) fn poll(&mut self) -> Result<Option<Result<TileBuilt>>> {
-        let reply = match self.replies.try_recv() {
-            Ok(reply) => reply,
-            Err(TryRecvError::Empty) => {
-                return Ok(None);
+        loop {
+            match self.replies.try_recv() {
+                Ok(WorkerReply::Ready) => {
+                    #[cfg(test)]
+                    {
+                        self.ready = true;
+                    }
+                }
+                Ok(WorkerReply::Built(reply)) => {
+                    self.busy = false;
+                    self.dispatch()?;
+                    return Ok(Some(*reply));
+                }
+                Err(TryRecvError::Empty) => {
+                    return Ok(None);
+                }
+                Err(TryRecvError::Disconnected) => {
+                    self.busy = false;
+                    self.waiting = None;
+                    self.requests.take();
+                    bail!(
+                        "The source tile worker stopped unexpectedly; restart the application to scroll the source"
+                    );
+                }
             }
-            Err(TryRecvError::Disconnected) => {
-                self.busy = false;
-                self.waiting = None;
-                self.requests.take();
-                bail!(
-                    "The source tile worker stopped unexpectedly; restart the application to scroll the source"
-                );
-            }
-        };
-        self.busy = false;
-        self.dispatch()?;
-        return Ok(Some(reply));
+        }
     }
 }
 
 /// Close input before joining so the last bounded reply can complete.
 impl Drop for TileWorker {
-    /// End the owned thread and log an unexpected panic instead of detaching it.
+    /// Close the request channel and detach the thread, so closing the window never waits for a build in flight.
+    /// The detached thread ends after its current build, when the closed channel ends its loop.
     fn drop(&mut self) {
         self.requests.take();
-        let Some(worker) = self.thread.take() else {
-            return;
-        };
-        if let Err(error) = worker.join() {
-            tracing::error!(?error, "source tile worker panicked during shutdown");
-        } else {
-            tracing::debug!("source tile worker joined");
+        // Dropping the join handle detaches the thread; there is no cancellation point inside a build to stop it earlier.
+        if self.thread.take().is_some() {
+            tracing::debug!("source tile worker detached");
         }
     }
 }

@@ -64,31 +64,54 @@ pub(super) fn submit(
     job: TileJob,
 ) -> anyhow::Result<()> {
     let bounds = job.bounds;
+    warm(window, state, current)?;
     // What: `take` moves the worker out so `request` can run without a second borrow of the state.
     // Why: The worker is put back on every path, including a failed request.
-    let mut worker = match current.tile_worker.take() {
-        Some(worker) => worker,
-        None => TileWorker::new()?,
+    let Some(mut worker) = current.tile_worker.take() else {
+        anyhow::bail!(
+            "The source tile worker was not started; restart the application to scroll the source"
+        );
     };
     let sent = worker.request(job);
     current.tile_worker = Some(worker);
     sent?;
     current.tile_job = Some(bounds);
-    if !current.tile_poll.running() {
-        let weak_window = window.as_weak();
-        let weak_state = Rc::downgrade(state);
-        // The poll holds weak handles only, so the timer never keeps the window or its state alive.
-        current
-            .tile_poll
-            .start(TimerMode::Repeated, Duration::from_millis(20), move || {
-                let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade())
-                else {
-                    return;
-                };
-                poll(&active, &shared);
-            });
+    start_poll(window, state, current);
+    return Ok(());
+}
+
+/// Start the tile worker with a shaper forked from the window's own, if none is running.
+/// What: The fork shares the font registry the window already scanned, so no font discovery runs on the worker.
+/// Why: Starting the worker when the first tile is shown keeps its start-up off the scroll path.
+pub(super) fn warm(
+    window: &AppWindow,
+    state: &Rc<RefCell<State>>,
+    current: &mut State,
+) -> anyhow::Result<()> {
+    if current.tile_worker.is_none() {
+        let worker = TileWorker::new(current.shaper.fork())?;
+        current.tile_worker = Some(worker);
+        start_poll(window, state, current);
     }
     return Ok(());
+}
+
+/// Start the repeated poll of the worker's replies unless it is already running.
+fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut State) {
+    if current.tile_poll.running() {
+        return;
+    }
+    let weak_window = window.as_weak();
+    let weak_state = Rc::downgrade(state);
+    // The poll holds weak handles only, so the timer never keeps the window or its state alive.
+    current
+        .tile_poll
+        .start(TimerMode::Repeated, Duration::from_millis(20), move || {
+            let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
+                return;
+            };
+            poll(&active, &shared);
+        });
 }
 
 /// Whether a finished tile still describes what is displayed, wanted, and the current view.
@@ -134,11 +157,15 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
     apply(window, state, reply);
 }
 
-/// Stop the poll timer when no re-center is queued; `submit` starts it again.
+/// Stop the poll timer when no re-center is queued and the worker has nothing in flight; `submit` starts it again.
 /// What: `Timer::stop` ends the repeated callback; the timer is restarted on the next submission.
-/// Why: A stopped worker or an idle queue must not report the same error on every 20 ms tick.
+/// Why: A cancelled job's reply is still unread while the worker is busy, so the timer must keep polling until it is taken.
 fn stop_when_idle(current: &mut State) {
-    if current.tile_job.is_none() {
+    let in_flight = current
+        .tile_worker
+        .as_ref()
+        .is_some_and(TileWorker::is_busy);
+    if current.tile_job.is_none() && !in_flight {
         current.tile_poll.stop();
     }
 }
