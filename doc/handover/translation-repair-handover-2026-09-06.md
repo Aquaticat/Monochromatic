@@ -96,12 +96,23 @@ this one says what changed after it.
   Open work is every ledger entry whose status reads open or recurring;
   L6 waits for the next launch by its own entry.
 - THE LAST PASS.
-  `TianqiChen66621` on `.frozen-dist-9a3f28b30` settled on 2026-09-28 in 3,169,499 ms
+  `TianqiChen66622` at `f58e30822`,
+  launched through the runbook's task on the owner's go-ahead of 2026-10-11,
+  settled that day in 7,377,286 ms
   and was read the same day
   (pass log,
-  "TianqiChen66621 read,
-  2026-09-28").
-  No pass has launched since.
+  "TianqiChen66622 read,
+  2026-10-11"):
+  two Bedrock seats answered none of their 536 calls,
+  slice 4 shipped the archive's present-tense sentence,
+  and the launch lost every stderr line,
+  `warn` lines among them (ledger M147).
+  The owner's answers that followed are in the package's
+  [design commitments](../../package/module/translation-repair/doc/design-commitments.md)
+  under 2026-10-11.
+  The pass before it,
+  `TianqiChen66621` on `.frozen-dist-9a3f28b30`,
+  settled on 2026-09-28 in 3,169,499 ms.
 - ROSTER.
   The checker seats were measured on 2026-09-27 and Mimo v2.6 Flash joined them;
   [`roster-changes.md`](../../package/module/translation-repair/doc/roster-changes.md)

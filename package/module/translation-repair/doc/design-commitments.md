@@ -495,3 +495,56 @@ Part of [the package README](../README.md).
   code size and wall clock are not reasons to take the lesser option.
   A question goes to the owner only when a quality choice conflicts with an earlier ruling
   or the options differ in something other than quality.
+- **A slate over an archive most of the contest condemned is run off.**
+  Owner,
+  2026-10-11,
+  answering what should trigger the run-off after TianqiChen66622 slice 4 shipped the archive's present-tense
+  sentence over a contest whose ballots called it flawed 4 to 1:
+  "Majority flawed yes".
+  This replaces the 2026-09-24 rule ("Run-off only when every contest ballot called the archive flawed")
+  for the run-off only;
+  the forfeit of an undecided gate
+  (2026-09-27,
+  "Slate's choice")
+  still asks every ballot,
+  an open question for the owner until answered.
+- **A tie the standing drew no ballot in is run off among the tied.**
+  Owner,
+  2026-10-11,
+  same slice,
+  where the slate tied three ways at weight 1 and no judge chose the archive:
+  "Run off the tied finalists".
+  The standing still ships if that run-off ties again.
+- **Repeated source lines are rendered one way on a page.**
+  Owner,
+  2026-10-11,
+  after the refrain 所以她是个……女孩吧 rendered four ways on TianqiChen666 twice:
+  "Page-level consistency pass",
+  the option reading:
+  after assembly,
+  find source sentences or refrains that repeat,
+  and if their renderings differ,
+  have the judges pick one rendering
+  (or a refrain pattern)
+  and apply it to all,
+  respecting slices where context calls for different wording.
+- **The past-tense rule gets a deterministic aid, never a deterministic verdict.**
+  Owner,
+  2026-10-11:
+  "as for tense I suppose some deterministic code can mitigate the problem to some extent."
+  Measured over 92 archive pages and 274 settled pages,
+  a line-level detector was right about two in three when traits of the person count
+  (they do:
+  a trait of someone who has died is not still true as the page is read),
+  and one in four when only narrated acts count,
+  so its hits are shown to judges as labelled candidates on the texts they choose among,
+  never used to refuse a wording or to call a text flawed;
+  pages that record no death are skipped.
+  Decided for quality,
+  open to the owner's veto.
+- **A dictionary entry for 扑面而来.**
+  Owner,
+  2026-10-11:
+  "Add a dictionary entry".
+  The entry says the target is whoever faces it and refuses no form,
+  since three of the idiom's four occurrences in the corpus wash over the person herself (ledger M148).

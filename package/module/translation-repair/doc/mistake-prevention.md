@@ -61,6 +61,15 @@ not a memory of having done it.
 7.  The current handover says what is launching and why (M55):
     the snapshot's "What to do next" and its newest checkpoint name this launch,
     and the document map's "Current status" names the last pass read.
+8.  Both output streams reach the log through one descriptor (M147):
+    the runbook's `> "${RUNDIR}.log" 2>&1`,
+    or a systemd unit given `StandardOutput=truncate:<log>` and no `StandardError` property,
+    which then inherits stdout's file;
+    never `StandardOutput=truncate:` beside `StandardError=append:` on the same file,
+    whose stdout overwrites every stderr line,
+    every `warn` among them.
+    A minute after the launch the log holds a line only stderr writes
+    (mise's `[//package/module/translation-repair:corpus-pass] $` line).
 
 ## Shell commands
 
@@ -2255,9 +2264,14 @@ which collects paragraphs by a marker phrase,
 did not read their closing notes,
 so the old veto paragraphs stayed on that page as live cards,
 asking the owner to keep or veto behaviour that no longer existed (ledger M146).
+A question described an idiom's sense that three of its four occurrences in the corpus contradict,
+and the owner chose an option on that description (ledger M148).
 
 The rule:
 measure what can be measured before asking.
+A sense,
+count or reading an option rests on is measured over the pinned corpus before the question is asked,
+every occurrence read.
 A choice that differs only in the quality of the result is decided for quality,
 built,
 recorded,

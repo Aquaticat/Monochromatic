@@ -38037,6 +38037,58 @@ then drives the page again.
 `mistake-prevention.md`,
 "Questions to the owner".
 
+### M147: a launch whose stdout overwrote every line its stderr wrote
+
+Status:
+happened on 2026-10-11 (UTC),
+by the lead's launch of TianqiChen66622;
+the lines it lost cannot be recovered.
+The pass ran as a systemd user unit given `StandardOutput=truncate:` and `StandardError=append:` on one file:
+two descriptors,
+stdout's writing at its own offset,
+so every line stderr appended was overwritten.
+The log kept 9,942 `info` lines and 2 `warn` lines
+(the last two,
+written after stdout's final write),
+against TianqiChen66621's 101 `warn` lines written through a shell redirect;
+every retry,
+lost voice and failure message went with the rest,
+among them whatever Bedrock answered the two Gemma seats on all 536 of their calls.
+A read-only agent then read the silence as a pipeline defect ("no log line names the thrown message").
+A control unit writing three lines to stdout and two to stderr kept only the three that way,
+and all five in order with stderr left to inherit stdout's file.
+
+Prevention:
+`mistake-prevention.md`,
+"Before a run launches",
+step 8:
+one descriptor for both streams,
+and a stderr-only line read in the log a minute after launch.
+The lead's named-test units drop their `StandardError=append:` part the same way.
+
+### M148: an option put to the owner described a sense the corpus contradicts
+
+Status:
+happened on 2026-10-11 (UTC),
+in the lead's question about 扑面而来;
+caught before any change shipped.
+The question said the idiom means coming straight at the onlooker,
+not at the subject of the sentence,
+and the owner chose a dictionary entry on that reading.
+The pinned corpus carries the idiom on four pages,
+and on three of them (MocaKawai,
+lin10104,
+republic_o85611) pressure or loneliness washes over the person herself,
+so an entry refusing "toward her" would have refused three correct renderings.
+The entry (`6bc235960`) says the target is whoever faces it and refuses no form.
+
+Prevention:
+a glossary sense put to the owner is measured over the pinned corpus first,
+every occurrence read,
+before the question is asked.
+`mistake-prevention.md`,
+"Questions to the owner".
+
 ### M79: a coverage census measuring compressed code
 
 Status:

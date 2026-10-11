@@ -8084,6 +8084,139 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen66622 read, 2026-10-11: SETTLED, two Bedrock seats dark all run
+
+TianqiChen66622 launched on 2026-10-11 at 18:31 UTC at `f58e30822`
+through the runbook's task (`mise run //package/module/translation-repair:corpus-pass -- --only TianqiChen666`,
+a systemd user unit,
+the owner's go-ahead of that day)
+into a throwaway runs directory,
+and settled in 7,377,286 ms
+(`TALLY TianqiChen666 status=SETTLED slices=24`):
+159 repair issues,
+104 accepted,
+101 resolved,
+every slice changed.
+`verify-published` read the page back:
+24 of 24 wordings present at the length the artifact implies.
+`DESTINATIONS` dropped none,
+no `DEFECTS` line printed,
+and the log holds no `[error]` line.
+An empty `DEFECTS` grep did not mean a clean page here:
+slice 4 shipped the archive's present-tense sentence,
+which the page read found and no check reports.
+
+### Two seats dark all run
+
+The pass's own closing lines:
+`SEAT gemma-4-26b-a4b-it asked=270 usable=0 unusable=0 threw=270`,
+`SEAT google.gemma-4-e2b asked=266 usable=0 unusable=0 threw=266`
+and `SEATS DARK: 2 of 11 seats`.
+Kimi-K3 threw 213 of 366.
+Every Bedrock Gemma stream ended in under a second with 150 raw characters and no content,
+the Bedrock meter read `wet` with no spend all run,
+and no seat was withheld (`withheld=none` on every `JUDGE SEATS` line).
+The run log names no thrown message,
+and no failure at all:
+it holds 2 `warn` lines against TianqiChen66621's 101.
+That is the launch's fault,
+not the pipeline's.
+The unit was started with `StandardOutput=truncate:` and `StandardError=append:` on the same file,
+two descriptors on one file,
+so stdout,
+writing at its own offset,
+overwrote every line stderr appended:
+every `warn` (`console.warn` writes to stderr) and every line mise prints for its tasks.
+A control unit writing three lines to stdout and two to stderr kept only the three stdout lines that way,
+and all five in order with stderr left to inherit stdout's file.
+The lost lines cannot be recovered,
+so why Bedrock answered every Gemma call with 150 characters and no content is not known;
+the source the two seats send has not changed since TianqiChen66621 (read-only diff of the request body,
+route,
+headers and served ids).
+The next launch writes one file through stdout alone.
+
+Rounds without quorum were 212 of 696
+(TianqiChen66621 had 0 of 523),
+voices never heard 753
+(TianqiChen66621 had 14);
+the artifact's `stage-voice-lost` findings name the two Gemma seats and Kimi-K3 for all but two.
+A round over six seats that needs five cannot reach quorum with two seats that never answer,
+so it waits for every ask to settle and buys a top-up round.
+
+### Where the time went
+
+7,377,286 ms for the entry against TianqiChen66621's 3,169,499 ms.
+This run kept four slices in flight (the production default since 2026-09-06),
+TianqiChen66621 eight (a dialled arm);
+calls in flight averaged 5.40 against 11.93,
+over about the same total call time (11.07 h against 10.50 h).
+The dark seats' full-settle waits and top-up rounds come on top.
+The share each cause holds is inferred,
+not measured:
+concurrent elapsed times are not a matched comparison.
+
+### Spend
+
+Hyper's balance fell from 250 to 140 credits.
+`spend-report` priced 136.07 from a table read on 2026-09-11,
+which disagrees with the balance by 26,
+so 136 is not quoted as the run's cost.
+The table was read again keyless from Hyper's public list the same day (`d02c0cfc3`):
+three rows had moved,
+`deepseek-v4.1-flash` up among them,
+so at today's rates the estimate rises by about 4 credits and the gap to the balance stays;
+prompt-cache pricing fits it,
+which the estimator cannot see (inferred).
+OpenRouter billed 0.2427 USD;
+Bedrock billed nothing;
+Synthetic's weekly meter went from 99.57% to 92.21%.
+
+### Slice 4: the archive's present tense ships
+
+Page line 59 is the archive's sentence word for word,
+in the present tense the owner's rule forbids for a life that has ended.
+The lane contest went 5 of 7 usable:
+repair 2,
+translate 2,
+neither 1,
+with 4 of 5 ballots calling the archive flawed;
+the fifth called it publishable for a reason that spoke only of the candidates.
+The owner's rule of 2026-09-24 runs the consolidation slate off only when every contest ballot calls the archive
+flawed,
+so the slate had its single round:
+three candidates tied at weight 1,
+the archive drew no ballot
+(one judge named its tense a critical failure),
+and the tie kept it.
+The owner answered on 2026-10-11:
+a majority of flawed ballots now runs the slate off
+("Majority flawed yes"),
+a tie the standing drew no ballot in is run off among the tied
+("Run off the tied finalists"),
+and a deterministic check may help on tense
+("as for tense I suppose some deterministic code can mitigate the problem to some extent");
+measured,
+it is shown to judges as candidates only
+(the package's `design-commitments.md`).
+
+### Seen again
+
+- Line 52,
+  "sweeping toward her":
+  扑面而来 aimed at her again,
+  where the original has the glow coming at everyone she knew;
+  TianqiChen66621 read the same.
+  The owner asked for a dictionary entry (2026-10-11),
+  added in `6bc235960`;
+  the corpus carries the idiom on four pages,
+  three of them a feeling washing over the person herself,
+  so the entry refuses no form and says the target is whoever faces it.
+- The refrain 所以她是个……女孩吧 renders four ways,
+  one of them slice 4's archive sentence,
+  and the repeated sentence 她想以可爱的样子陪伴在更多人的身边 two ways (page lines 101 and 161).
+  The owner chose a page-level consistency pass (2026-10-11).
+
 ## TianqiChen66621 read, 2026-09-28: SETTLED, class one hundred eighty-seven
 
 TianqiChen66621 ran on `.frozen-dist-9a3f28b30` and settled in 3,169,499 ms

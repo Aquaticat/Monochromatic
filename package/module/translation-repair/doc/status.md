@@ -11,9 +11,15 @@ the findings,
 their fixes and the process mistakes (M entries) are in
 [the audit ledger](audit-ledger.md),
 and the owner's rulings in [the design commitments](design-commitments.md).
-No corpus run has been launched since the audit began:
-the next is TianqiChen666,
-started only once no fix is still owed before it.
+Two passes have run since the audit began,
+both of TianqiChen666:
+TianqiChen66621 on 2026-09-28 and TianqiChen66622 on 2026-10-11
+(the repository's pass log,
+`doc/planning/translation-repair-openrouter-2026-09-03.md`,
+reads each).
+The next waits for the fixes the owner's answers of 2026-10-11 call for
+([the design commitments](design-commitments.md)),
+and its launch writes stdout and stderr through one descriptor (ledger M147).
 
 Landed late on 2026-09-27,
 each with a guard shown red first and the full suite green after:
@@ -61,6 +67,19 @@ read from TianqiChen66620's slice cache (it settled no artifact):
 58.2%,
 over 110 issues in 36 of its 110 cached slices.
 A drop of the size that change caused (72% to 65% on one entry) is reported to the owner with the reasons it cites.
+Measured on 2026-10-11 from each run log's ballot lines
+(one line per ballot,
+every line matched,
+1,115 and 1,025):
+TianqiChen66621 791 of 1,115 supported,
+70.9%,
+and TianqiChen66622 789 of 1,025,
+77.0%.
+Support rose rather than fell.
+The baseline was read from a slice cache and these from logs,
+over different slices of one entry,
+so only the direction is evidence,
+and it is not the drop the measurement was set to catch.
 
 Still open in the ledger on 2026-09-30 (UTC),
 read off each entry's status line:
