@@ -54,9 +54,9 @@ await describe({
           fn: async function testRedirectDescriptors() {
             const result = analyzeShellCommand('exec {output}> out.txt 2>&1',);
             expect(result.parsed,).toBe(true,);
-            expect(result.commands[0]?.redirects,).toMatchObject([
-              { operator: '>', fileDescriptorVariable: 'output', target: 'out.txt', writesFile: true, },
-              { operator: '>&', fileDescriptor: 2, target: '1', kind: 'fileDescriptor', writesFile: false, },
+            expect(result.commands[0]?.redirects,).toEqual([
+              { operator: '>', fileDescriptorVariable: 'output', target: 'out.txt', targetSourceText: 'out.txt', kind: 'file', writesFile: true, readsFile: false, },
+              { operator: '>&', fileDescriptor: 2, target: '1', targetSourceText: '1', kind: 'fileDescriptor', writesFile: false, readsFile: false, },
             ],);
           },
         },),

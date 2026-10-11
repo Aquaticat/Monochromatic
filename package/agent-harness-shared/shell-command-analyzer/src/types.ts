@@ -4,7 +4,7 @@
  @module
  */
 
-import type { RedirectOperator as UnbashRedirectOperator, } from 'unbash';
+import type { Redirection as UnbashRedirection, } from 'unbash';
 
 //region Command context
 
@@ -101,7 +101,7 @@ type ShellRedirect = {
   /**
    Bash redirect operator reported by `unbash`.
    */
-  readonly operator: UnbashRedirectOperator;
+  readonly operator: UnbashRedirection['operator'];
   /**
    Parsed target word value, when present.
    */
@@ -114,6 +114,10 @@ type ShellRedirect = {
    Explicit file descriptor before redirect operator, when present.
    */
   readonly fileDescriptor?: number;
+  /**
+   Variable receiving a dynamically allocated descriptor, distinct from a numeric descriptor.
+   */
+  readonly fileDescriptorVariable?: string;
   /**
    Destination category useful for callers deciding whether redirects touch files.
    */

@@ -7,9 +7,9 @@
 import type {
   ArithmeticExpression as UnbashArithmeticExpression,
   DoubleQuotedChild as UnbashDoubleQuotedChild,
-  Node as UnbashNode,
+  SyntaxNode as UnbashNode,
   ParseError as UnbashParseError,
-  Redirect as UnbashRedirect,
+  Redirection as UnbashRedirect,
   Script as UnbashScript,
   TestExpression as UnbashTestExpression,
   Word as UnbashWord,

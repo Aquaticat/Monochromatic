@@ -5,7 +5,6 @@
  */
 
 import {
-  parse,
   type ArithmeticCommandExpansion as UnbashArithmeticCommandExpansion,
   type CommandExpansionPart as UnbashCommandExpansionPart,
   type ProcessSubstitutionPart as UnbashProcessSubstitutionPart,
@@ -67,23 +66,6 @@ function parseErrorsFromScript(script: ForeignBorrowed<UnbashScript>,): ShellPar
 }
 
 /**
- Build synthetic failed parse diagnostics for unexpected parser throws.
- 
- @returns parse diagnostics containing one generic error
- 
- @example
- ```ts
- failedParseErrors();
- ```
- */
-function failedParseErrors(): ShellParseError[] {
-  return [{
-    message: 'nested parse failed',
-    pos: 0,
-  },];
-}
-
-/**
  Resolve nested script from expansion node.
  
  @param expansion - expansion containing nested shell source
@@ -104,45 +86,17 @@ function scriptFromExpansion(
   readonly script: ParsedUnbashScript;
   readonly parseErrors: readonly ShellParseError[]
 } | typeof NO_SCRIPT {
-  if (expansion.script !== undefined) {
-    return {
-      script: expansion.script as ParsedUnbashScript,
-      parseErrors: parseErrorsFromScript(expansion.script,),
-    };
-  }
-  if (expansion.inner === undefined)
+  /** The parser owns nested-script parsing and its source positions in unbash 5. */
+  const innerLogger = tagged({ tag: scriptFromExpansion.name, l: moduleLogger, },);
+  if (expansion.script === undefined) {
+    innerLogger.debug('unbash supplied no parsed nested script; retaining the substitution flag',);
     return NO_SCRIPT;
-  try {
-    /**
-     Parsed nested source from expansion.
-     */
-    const script = parse(expansion.inner,) as ParsedUnbashScript;
-    return {
-      script,
-      parseErrors: parseErrorsFromScript(script,),
-    };
   }
-  catch (error) {
-    /**
-     Sub-logger tagged with helper name so handled parser throws stay traceable.
-     */
-    const innerLogger = tagged({
-      tag: scriptFromExpansion.name,
-      l: moduleLogger,
-    },);
-    innerLogger.debug(`unbash parse threw for nested expansion: ${String(error,)}`,);
-    return {
-      script: {
-        type: 'Script',
-        pos: 0,
-        end: 0,
-        shebang: undefined,
-        commands: [],
-        errors: failedParseErrors(),
-      },
-      parseErrors: failedParseErrors(),
-    };
-  }
+  innerLogger.debug('Using the original unbash nested script and diagnostics',);
+  return {
+    script: expansion.script as ParsedUnbashScript,
+    parseErrors: parseErrorsFromScript(expansion.script,),
+  };
 }
 
 /**
