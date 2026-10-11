@@ -108,8 +108,8 @@ export component SettingsPage inherits Rectangle {
         y: root.header-height;
         width: root.width;
         height: root.height - root.header-height;
-        viewport-width: root.width;
-        viewport-height: body.preferred-height;
+        content-width: root.width;
+        content-height: body.preferred-height;
 
         body := VerticalLayout {
             x: root.column-x;

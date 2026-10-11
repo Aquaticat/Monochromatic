@@ -70,8 +70,8 @@ export component FolderPickerPane inherits Rectangle {
         x: 0px;
         width: 48px;
         height: root.height;
-        viewport-width: self.width;
-        viewport-height: rail-column.preferred-height;
+        content-width: self.width;
+        content-height: rail-column.preferred-height;
         rail-column := VerticalLayout {
             for cell in root.cells: Rectangle {
                 height: 48px;
@@ -134,8 +134,8 @@ export component FolderPickerPane inherits Rectangle {
         x: 48px;
         width: max(0px, root.width - 48px);
         height: root.height;
-        viewport-width: self.width;
-        viewport-height: names-column.preferred-height;
+        content-width: self.width;
+        content-height: names-column.preferred-height;
         names-column := VerticalLayout {
             names-flow := FlexboxLayout {
                 // Left edge sits at the NAMES_START inset of 12 px; right inset is 16 px.
@@ -155,7 +155,7 @@ export component FolderPickerPane inherits Rectangle {
                     changed tick => {
                         // Heading rows of the requested cell scroll the names so the heading sits at the top.
                         if (row.section-start && row.heading == root.scroll-key) {
-                            names-flick.viewport-y = max(
+                            names-flick.content-y = max(
                                 names-flick.height - names-column.preferred-height,
                                 min(0px, -(names-flow.y + self.y + self.section-gap)));
                         }

@@ -55,7 +55,7 @@ export component TrackListPane inherits Rectangle {
 
     // Moves the list so the entry whose top is at the given offset sits at the top, clamped to the scrollable range.
     function reveal(top: length) {
-        flick.viewport-y = max(min(0px, flick.height - flick.viewport-height), min(0px, -top));
+        flick.content-y = max(min(0px, flick.height - flick.content-height), min(0px, -top));
     }
 
     // Scrolls to the requested offset each time the Rust side bumps scroll-tick, and is the only place the list scrolls.
