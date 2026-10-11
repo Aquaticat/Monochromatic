@@ -63,21 +63,12 @@ export component SettingsPage inherits Rectangle {
         }
     }
 
-    // Divider under the header, one logical pixel in the outline role.
-    Rectangle {
-        x: 0px;
-        y: 72px;
-        width: root.width;
-        height: 1px;
-        background: Theme.outline;
-    }
-
     // Body below the header. The rows scroll when the text grows past the window.
     Flickable {
         x: 0px;
-        y: 73px;
+        y: 72px;
         width: root.width;
-        height: root.height - 73px;
+        height: root.height - 72px;
         viewport-width: root.width;
         viewport-height: body.preferred-height;
 
@@ -102,9 +93,10 @@ export component SettingsPage inherits Rectangle {
                 }
             }
 
-            // One template row: heading on top, the line it yields below, and a divider under it.
+            // One template row: heading on top and the line it yields below. No dividers: the header band and the spacing
+            // between rows already separate the parts.
             for row[index] in root.rows : Rectangle {
-                height: 65px;
+                height: 64px;
                 Text {
                     x: 16px;
                     y: 10px;
@@ -124,13 +116,6 @@ export component SettingsPage inherits Rectangle {
                     font-size: Theme.body-medium;
                     color: Theme.on-surface-variant;
                     overflow: elide;
-                }
-                Rectangle {
-                    x: 0px;
-                    y: 64px;
-                    width: parent.width;
-                    height: 1px;
-                    background: Theme.outline-variant;
                 }
                 TouchArea {
                     x: 0px;
