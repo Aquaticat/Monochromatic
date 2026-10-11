@@ -38070,7 +38070,11 @@ Prevention:
 "Before a run launches",
 step 8:
 one descriptor for both streams,
-and a stderr-only line read in the log a minute after launch.
+read back from systemd right after the launch
+(`StandardError=inherit`,
+where the faulty form shows `StandardError=append`;
+both shown on throwaway units the same day).
+The runbook's launch step now gives the unit form.
 The lead's named-test units drop their `StandardError=append:` part the same way.
 
 ### M148: an option put to the owner described a sense the corpus contradicts

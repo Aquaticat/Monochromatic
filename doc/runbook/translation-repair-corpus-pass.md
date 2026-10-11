@@ -273,6 +273,47 @@ TODO | DONE
     the shell prints a job number and a pid,
     and returns immediately.
 
+    The repository's `CLAUDE.md` asks that long runs start as their own systemd user unit,
+    out of the cgroup every session's shell commands share,
+    which `systemd-oomd` may kill whole.
+    The same launch as a unit:
+
+    ```sh
+    systemd-run --user --unit="corpus-pass-$(basename -- "${RUNDIR}")" --collect \
+      --property=MemoryMax=12G \
+      --working-directory=/var/home/user/worktrees/translation-repair \
+      --setenv=TRANSLATION_REPAIR_RUNS_DIR="${RUNDIR}" \
+      --property=StandardOutput=truncate:"${RUNDIR}.log" \
+      "$(command -v mise)" run //package/module/translation-repair:corpus-pass
+    ```
+
+    Give the unit no `StandardError` property:
+    stderr then inherits stdout's file through the same descriptor.
+    `StandardError=append:` on the same file opens a second descriptor,
+    and stdout,
+    writing at its own offset,
+    overwrites every line stderr wrote,
+    every `warn` among them;
+    the TianqiChen66622 launch lost all of them that way
+    (the package's audit ledger,
+    M147).
+    Right after the launch,
+    read how systemd wired the unit's two streams:
+
+    ```sh
+    systemctl --user show --property=StandardOutput --property=StandardError "corpus-pass-$(basename -- "${RUNDIR}")"
+    ```
+
+    Expected:
+    `StandardOutput=truncate` and `StandardError=inherit`.
+    `StandardError=append` is the form that loses stderr;
+    stop the unit and launch again.
+    (Measured 2026-10-11 on two throwaway units,
+    one launched each way.)
+    Under a unit,
+    stop the pass with `systemctl --user stop corpus-pass-<name>`,
+    where the steps that follow say to kill it by pid.
+
     Launch-time dials,
     each printed above the work so the log says which run this was:
     `TRANSLATION_REPAIR_SLICE_OVERLAP=<n>` (prints `OVERLAP <entry> value=<n> source=...` per entry),

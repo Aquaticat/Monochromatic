@@ -68,8 +68,9 @@ not a memory of having done it.
     never `StandardOutput=truncate:` beside `StandardError=append:` on the same file,
     whose stdout overwrites every stderr line,
     every `warn` among them.
-    A minute after the launch the log holds a line only stderr writes
-    (mise's `[//package/module/translation-repair:corpus-pass] $` line).
+    Right after the launch,
+    `systemctl --user show --property=StandardError <unit>` prints `StandardError=inherit`
+    (the runbook's launch step).
 
 ## Shell commands
 
