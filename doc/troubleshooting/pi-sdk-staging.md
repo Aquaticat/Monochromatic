@@ -297,9 +297,16 @@ original unexpected errors,
 and attachment/reset lifetime controls.
 Its comparison removes only the new hook from a disposable private generated manager.
 It does not claim installed-SDK cloning parity.
-Integration,
-sensitivity,
-and complete regression checks remain pending.
+Integrated `proc_4882` passed 128 constructed-input outputs with empty child stderr.
+
+All four deliberate omissions failed their intended controls:
+`proc_d58c` lost original input,
+`proc_1c79` lost clone-rejected input,
+`proc_2dbc` reproduced the pre-review snapshot failure,
+and `proc_a769` admitted an unsupported content block.
+All guards are restored,
+with empty runtime diff against `9c9885b`.
+Complete regressions and final outcome documentation remain pending.
 
 This does not account for post-attachment manager appends.
 Those potentially governing inputs remain unresolved.

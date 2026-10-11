@@ -363,9 +363,15 @@ Its baseline is a disposable private generated manager with only the new observa
 not the installed manager's different aliasing behavior.
 Post-attachment coverage and qualified continuation are not claimed.
 
-Integrated,
-sensitivity,
-and complete regression checks remain pending.
+Integrated `b62201f` / `proc_4882` passed 128 constructed-input outputs with empty child stderr,
+including the hidden assistant block consumer.
+Observation omission `proc_d58c` lost the original source.
+Post-clone placement `proc_1c79` preserved successful appends but lost rejected input.
+Attachment-phase omission `proc_2dbc` reproduced the diagnosed pre-review snapshot failure.
+Content-profile omission `proc_a769` admitted an unsupported block.
+Every omission is restored;
+runtime diff against `9c9885b` is empty.
+Complete native/action/source regressions and final outcome documentation remain pending.
 The incumbent private manager copy performs `structuredClone`;
 the installed native manager does not.
 Parity claims must distinguish those baselines.
