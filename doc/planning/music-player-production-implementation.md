@@ -120,6 +120,60 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
   first-run copy, dead shortcuts after leaving Search, and a menu clipped at the window edge; all were fixed.
 - Final state on `main` (2026-10-11): Android unit tests and detekt pass; desktop 577 tests pass and clippy is clean on the host.
   What is not exercised is listed in `package/music-player/design/HANDOFF.md` under the production handoff.
+- Correction (2026-10-11 evening): the "final state" above overstated what was checked. Tests, lints and static renders
+  passed, but nobody had used the apps the way a person does. The human then found, in a few hours of use, missing hover and
+  pressed feedback on every desktop control, a wrong Settings page, a jumping taskbar progress indicator, audio stutters
+  under load, the list scrolling on every track click, a deck that wasted a line, and copy problems. The product was not
+  finished. A change is now done only after it has been driven in the running window (hover, press, keyboard, both color
+  schemes, every screen), not when tests pass.
+
+## Handover: open work queue (2026-10-11 evening)
+
+Work one item at a time, verify each in the running app, commit, then take the next. Agents (Haiku unless noted) do the
+bounded edits; the orchestrator builds, tests, reads diffs and drives the apps. The human said the plan does not have to
+run all at once.
+
+### Landed on `main`
+
+- Inter Variable bundled as the desktop font; thin LTO for the release build; `run-quick` task; Settings divider lines
+  removed; Folders panel layout no longer re-wraps (names sized by the heavier weight, panes at exactly half); the tapped
+  rail letter is circled; the deck title click jumps to the track; Search covers only the right pane when unfolded; the
+  Open action reads "Open dir"; the unfolded folder pane is headed by the opened folder's name (Android: "MediaStore" for
+  the system library).
+
+### Committed on the branch, not yet merged to `main`
+
+- Desktop: the StateLayer component and hover, pressed and pointer-cursor feedback on every TouchArea; the deck heading
+  `folder / title` with two click targets. Slint lint, 577 tests and clippy passed; the hover states are not yet checked
+  by hovering in the running window.
+- Android: the deck heading `folder / title` (detekt and unit tests passed).
+
+### In the worktree, uncommitted or in flight
+
+- Android deck: transport buttons and mode control on one line when everything fits at natural width, plus a 48dp minimum
+  width for the heading parts. Written by an agent, not yet compiled or run.
+- Desktop deck: the same one-line rule in `ui/deck.slint` (agent running).
+- List scrolling: the list must scroll only on a folder change, at startup, and on explicit reveal requests, never when
+  the playing track changes (agents running for desktop `tracks.slint` and Android `TrackListPane.kt`).
+- Stock Android Settings reference: an agent captures the stock Settings app with the display size set through the
+  Settings UI itself (never `wm density`), restores it, and writes measurements. Next: redesign the Settings page on both
+  platforms from those measurements.
+- A Sonnet agent reviews the committed desktop app as a user and lists everything lacking polish. Next: triage, fix by
+  area, re-check.
+
+### Not started
+
+- Taskbar progress jumps (KDE LauncherEntry). A private-bus recording harness is in `~/temp/agent/taskbar-check`; the first
+  run never produced playing signals (the app was killed and playback did not start in that environment), so the cause
+  is not found yet. Suspects: progress emitted with the old position over the new duration at a track change, and the
+  debounce dropping the visible-true signal.
+- Audio stutters under load: decode and output threads should not compete with the 16-worker peak analysis; look at thread
+  priorities, ring buffer depth, and the output buffer size. Needs measurement under load, not guesses.
+- Android clickable audit leftovers: four target-width findings in `MainActivity.kt` legacy page-tab variants (check
+  whether production uses them).
+- The unexplained intermittent first-click miss on a rail cell seen once by the checking agent.
+- Run the same user-eyes review on Android after the desktop pass.
+- Propose to the human: tighten `VUB` in `AGENTS.md` to require a user-style pass before calling a UI done.
 - Desktop polish after live use (2026-10-11): the window font is Inter Variable, bundled from `ui/fonts/InterVariable.ttf`
   (the app had fallen back to Noto Sans; sizes were already 16, 14 and 12 logical pixels, measured against a 16px
   browser reference); the Settings page lost its header line and row lines on both platforms; the Folders panel no longer
