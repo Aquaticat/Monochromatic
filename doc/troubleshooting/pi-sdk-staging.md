@@ -1,5 +1,67 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Private document verification still imported the deleted Markdown CLI
+
+### Symptom and owner change
+
+`proc_e70c` failed before linting or rendering:
+Node reported `MODULE_NOT_FOUND` for
+`@monochromatic-dev/cli-markdown-lint/ts/rule/index.ts`.
+Private `contract/native-docs/native-lint.mjs:17` still imported the former rule API.
+
+Main commit `5bc05682ec` deleted that package.
+The replacement is the installed `monochromatic-lint` 0.1.1 executable,
+not another location for the old TypeScript exports.
+The [unified-linter cutover](../handover/unified-linter-cutover.md) records the landing on 2026-10-10.
+
+### Correction and verification boundary
+
+The maintained `native-guidance-resumption-2026-10-07/documents.mjs` runner
+now invokes the current executable in stdin mode,
+with the actual document filename,
+current repository configuration,
+and concurrency one:
+
+```javascript
+// Private document runner, current CLI arguments
+['--config', join(main, 'monochromatic-lint.config.jsonc'),
+ '--stdin', '--stdin-filename', path, '--concurrency', '1']
+```
+
+Every document path first receives a clean heading control
+and a deliberately punctuated heading that must report `markdown/no-trailing-punctuation`.
+Actual source must produce zero findings and remain unchanged.
+Micromark still renders every checked document and verifies the written HTML.
+The qualified runtime policy parser is unchanged;
+this is only document verification.
+
+First current-linter run `proc_9685` reached the troubleshooting document
+and found `rust/require-rustdoc` warnings on its Mise source excerpts.
+The current executable also checks embedded Rust.
+The existing authored file-citation comments now use Rust file-documentation syntax;
+the quoted executable code is unchanged.
+No warning filtering,
+rule suppression,
+or configuration weakening was added.
+The corrected complete document run remains pending.
+
+### Rejected remedies and filing decision
+
+Do not restore the deleted package,
+silently omit linting,
+or rewrite the runtime parser to solve this document-runner failure.
+The old adapter is retained for historical consumers,
+not represented as working against the current repository.
+
+Nothing is proposed upstream.
+This was an owned stale consumer after an accepted repository cutover,
+so the upstream-fault condition fails.
+Upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed.
+
 ## Private native build rejects retained imports after a filesystem move
 
 ### Symptom and source trace
@@ -4465,14 +4527,14 @@ The deciding published `v2026.9.12` sources were inspected read-only.
 `src/cli/run.rs:1284` obtains the dependency graph's linearity:
 
 ```rust
-// Mise v2026.9.12, src/cli/run.rs:1284
+//! Mise v2026.9.12, src/cli/run.rs:1284
 self.is_linear = tasks.is_linear();
 ```
 
 `src/task/task_output_handler.rs:554` permits interleaved output for a linear graph without raw mode:
 
 ```rust
-// Mise v2026.9.12, src/task/task_output_handler.rs:554 to 558
+//! Mise v2026.9.12, src/task/task_output_handler.rs:554 to 558
 if self.raw(task) || self.jobs() == 1 || self.is_linear {
     TaskOutput::Interleave
 } else {
@@ -4483,7 +4545,7 @@ if self.raw(task) || self.jobs() == 1 || self.is_linear {
 `src/task/task_executor.rs:1790` permits inherited descriptors when raw mode is false but redactions are empty:
 
 ```rust
-// Mise v2026.9.12, src/task/task_executor.rs:1790 to 1797
+//! Mise v2026.9.12, src/task/task_executor.rs:1790 to 1797
 } else if raw || redactions.is_empty() {
     if !task.silent.suppresses_stdout() {
         cmd = cmd.stdout(Stdio::inherit());
