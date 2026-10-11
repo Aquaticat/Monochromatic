@@ -26,6 +26,7 @@ use std::path::Path;
 /// ```ts
 /// type PrivateStage = { indexPath: string; objectDirectory?: string; cwd: string };
 /// ```
+#[derive(Clone, Copy)]
 pub struct PrivateStage<'a> {
     /// Real Git executable and the invocation's overlay.
     pub context: &'a GitContext,

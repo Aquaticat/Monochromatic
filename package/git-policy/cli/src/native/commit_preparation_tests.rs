@@ -29,6 +29,9 @@ use crate::wrapper_controls::no_controls;
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::rc::Rc;
+use crate::policy_events::PolicyEvent;
+use crate::commit_policy_preparation::{CommitPreparationInput, CommitPreparationOutcome, NativeCommit, NO_CHANGE_CODE, NO_CHANGE_CORE_ID, NO_CHANGE_MESSAGE, prepare_commit_policies};
+use crate::transaction_git::{GitRequest, run_git};
 
 /// A fixed transaction ID of the shape the registry accepts.
 const TRANSACTION: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
@@ -413,4 +416,116 @@ fn a_pre_commit_hook_restaging_a_selected_file_is_kept_in_the_prepared_commit() 
     let prepared: PreparedCommit = prepare(&hooked, &["--quiet", "-m", "hooked"]).expect("the hooked commit prepares");
     assert_eq!(shadow_text(&hooked, prepared.oid.as_str(), "a.txt"), "reformatted\n");
     remove(root.as_path());
+}
+
+/// Corrections that leave the intended tree equal to `HEAD` report a no-change normalization:
+///  the worktree and real index copies are reconciled to the corrected bytes, and no commit is prepared.
+#[test]
+fn a_correction_that_restores_head_is_a_no_change_normalization() {
+    let root: PathBuf = fixture("preparation-no-change");
+    let prepared_for: Fixture = prepared_fixture(root.as_path(), None);
+    let repo: PathBuf = prepared_for.repo.clone();
+    let objects: PathBuf = shadow_objects(&prepared_for);
+    let real_index: PathBuf = prepared_for.capture.layout.real_index_path.clone();
+    let uncorrected: PathBuf = root.join("uncorrected.txt");
+    std::fs::write(&uncorrected, b"a").expect("uncorrected bytes");
+    let blob: String = git_text(repo.as_path(), &["hash-object", "-w", uncorrected.to_str().expect("UTF-8 path")]);
+    std::fs::write(repo.join("a.txt"), b"a").expect("worktree holds the uncorrected text");
+    let mut stage_real: GitRequest = GitRequest::new(repo.as_path(), &["update-index", "--cacheinfo", &format!("100644,{blob},a.txt")]);
+    stage_real.without_prefix = true;
+    stage_real.index = Some(real_index.clone());
+    assert!(run_git(&git_context(), &stage_real).expect("real index update starts").succeeded());
+    let staged: Correction = Correction {
+        path: b"a.txt".to_vec(),
+        mode: CandidateMode::Regular,
+        before: Rc::from(b"a".as_slice()),
+        after: Rc::from(b"a".as_slice()),
+    };
+    let stage: PrivateStage<'_> = PrivateStage {
+        context: &git_context(),
+        cwd: repo.as_path(),
+        index: prepared_for.commit_index.as_path(),
+        object_directory: Some(objects.as_path()),
+    };
+    assert_eq!(stage_correction(&stage, &staged), Ok(()), "the uncorrected entry is staged");
+    let overlay: Vec<(OsString, OsString)> = vec![
+        (OsString::from("GIT_DIR"), repo.join(".git").into_os_string()),
+        (OsString::from("GIT_WORK_TREE"), repo.as_os_str().to_os_string()),
+        (OsString::from("GIT_INDEX_FILE"), prepared_for.commit_index.as_os_str().to_os_string()),
+        (OsString::from("GIT_OBJECT_DIRECTORY"), objects.as_os_str().to_os_string()),
+    ];
+    let facts = git_facts(std::path::Path::new(REAL_GIT), &[], overlay.as_slice());
+    let mut checks = shipped_checks(
+        facts,
+        os_arguments(&[]),
+        LifecycleContent::Requested(CandidateRequest::Staged(vec![OsString::from("a.txt")])),
+        Vec::<PathBuf>::new(),
+    );
+    let request: StageRequest = StageRequest {
+        trigger: Trigger::PreForward,
+        config: PolicyConfig::defaults(),
+        controls: no_controls(),
+        selected: Vec::new(),
+    };
+    let hooks: PreparationHooks = PreparationHooks {
+        directory: prepared_for.transaction.join("hooks"),
+        silenced_events: INCUMBENT_SILENCED_EVENTS.iter().map(|event| { return String::from(*event); }).collect(),
+    };
+    let commit_args: Vec<String> = vec![String::from("-m"), String::from("unchanged")];
+    let outcome: CommitPreparationOutcome = prepare_commit_policies(CommitPreparationInput {
+        request: &request,
+        checks: &mut checks,
+        context: &git_context(),
+        cwd: repo.as_path(),
+        index: prepared_for.commit_index.as_path(),
+        object_directory: objects.as_path(),
+        native: NativeCommit {
+            capture: &prepared_for.capture,
+            shadow: prepared_for.shadow.as_path(),
+            hooks: &hooks,
+            global_args: &[],
+            commit_args: commit_args.as_slice(),
+        },
+        journal_directory: prepared_for.transaction.as_path(),
+        committed_paths: vec![String::from("a.txt")],
+    })
+    .expect("the normalization completes");
+    let CommitPreparationOutcome::NoChange { events, reconciled } = outcome else {
+        panic!("the corrections restore HEAD, so no commit is prepared");
+    };
+    assert_eq!(reconciled, vec![String::from("a.txt")]);
+    assert!(names_no_change(events.as_slice()), "{events:?}");
+    assert_eq!(std::fs::read(repo.join("a.txt")).expect("worktree copy"), b"a\n".to_vec());
+    let corrected: PathBuf = root.join("corrected.txt");
+    std::fs::write(&corrected, b"a\n").expect("corrected bytes");
+    let corrected_blob: String = git_text(repo.as_path(), &["hash-object", "-w", corrected.to_str().expect("UTF-8 path")]);
+    assert_eq!(real_index_blob(repo.as_path(), real_index.as_path()), corrected_blob, "the real index names the corrected blob");
+    remove(root.as_path());
+}
+
+/// Whether the events name the no-change core finding with its exact message.
+fn names_no_change(events: &[PolicyEvent]) -> bool {
+    for event in events {
+        if let PolicyEvent::CoreFinding { core_id, code, message } = event
+            && *core_id == NO_CHANGE_CORE_ID
+            && *code == NO_CHANGE_CODE
+            && message.as_str() == NO_CHANGE_MESSAGE
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// The blob the given index holds for `a.txt`.
+fn real_index_blob(repo: &Path, index: &Path) -> String {
+    let mut list: GitRequest = GitRequest::new(repo, &["ls-files", "-s", "--", "a.txt"]);
+    list.without_prefix = true;
+    list.index = Some(index.to_path_buf());
+    let output = run_git(&git_context(), &list).expect("ls-files starts");
+    assert!(output.succeeded(), "{}", output.error_text());
+    let text: String = String::from_utf8_lossy(output.stdout.as_slice()).into_owned();
+    let mut fields = text.split_whitespace();
+    let _mode = fields.next();
+    return fields.next().expect("the index names a blob").to_string();
 }
