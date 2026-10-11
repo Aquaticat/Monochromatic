@@ -24,6 +24,78 @@ and the reason is recorded in
 
 ## Where the work stands
 
+### 2026-10-11: TianqiChen66622 read, the owner's answers, and the fixes before the next launch
+
+The checkpoint of 2026-10-03 handed the package to a trial model;
+this one says what changed after it.
+Times are UTC.
+
+- THE AUDIT.
+  The trial branch merged by fast-forward on 2026-10-05
+  ([the trial log](translation-repair-mimo-trial-2026-10-03.md),
+  "Outcome:
+  merged on 2026-10-05"),
+  and the audit went on through ledger entry B416:
+  T8 closed on the final whole-suite census
+  (2,047 passes;
+  4 library files with 10 stretches no case runs,
+  each classified in the ledger).
+- THE LAST PASS.
+  `TianqiChen66622` at `f58e30822`,
+  launched through the runbook's task on the owner's go-ahead,
+  settled in 7,377,286 ms and was read the same day
+  (the pass log's "TianqiChen66622 read,
+  2026-10-11"):
+  both Bedrock Gemma seats answered none of their 536 calls,
+  rounds over six seats needing five then waited for every ask and bought top-up rounds,
+  and slice 4 shipped the archive's present-tense sentence over a contest that called it flawed 4 to 1.
+  The launch lost every stderr line,
+  `warn` lines among them,
+  so why the Gemma seats failed is not known (ledger M147);
+  the runbook's launch step now gives a systemd unit form that keeps both streams,
+  with a check read back from systemd right after launch.
+- THE OWNER'S ANSWERS.
+  Two batches,
+  each in the package's
+  [design commitments](../../package/module/translation-repair/doc/design-commitments.md)
+  under 2026-10-11:
+  a majority of flawed contest ballots runs the slate off and forfeits an eligible standing past an undecided gate;
+  a tie the standing drew no ballot in is run off among the tied;
+  repeated source lines are rendered one way on a page,
+  a slice where the archive stands included;
+  the past-tense rule gets candidates shown to judges,
+  never a refusal;
+  and a dictionary entry for 扑面而来,
+  whose sense the corpus corrected (ledger M148).
+- LANDED.
+  The run-off rules (`52a38dc6c`,
+  `c66cb5e47`)
+  and the majority forfeit (`46fe30664`,
+  `b640f2392`),
+  with the consolidation cache at version 21;
+  the 扑面而来 entry and Hyper's price rows read again that day (`6bc235960`,
+  `d02c0cfc3`).
+- IN FLIGHT.
+  Agent patches not yet merged,
+  each in its own worktree:
+  L6's sole-lane verdict for insertion slices;
+  the tense candidates shown to judges;
+  withholding a seat that throws on every call,
+  and the error text of every throw reaching the log;
+  and the first half of the consistency pass,
+  which finds repeated source lines and maps them to slices.
+  The second half,
+  which asks the judges and applies their choice,
+  is designed (choices adopted open to veto) and starts once the first merges.
+- NEXT.
+  Merge each patch as it is handed back,
+  red commit before fix,
+  run the full gate on the merged head,
+  write the docs batch (ledger B417 onward,
+  the M134 recurrence of 2026-10-11),
+  then walk "Before a run launches" in `mistake-prevention.md` and relaunch `TianqiChen666`
+  into a fresh runs directory through the runbook's unit form.
+
 ### 2026-10-03: handover to a trial model, one case failing
 
 The checkpoint of 2026-09-29 left T8 with its bundle agents at work;
@@ -96,23 +168,12 @@ this one says what changed after it.
   Open work is every ledger entry whose status reads open or recurring;
   L6 waits for the next launch by its own entry.
 - THE LAST PASS.
-  `TianqiChen66622` at `f58e30822`,
-  launched through the runbook's task on the owner's go-ahead of 2026-10-11,
-  settled that day in 7,377,286 ms
+  `TianqiChen66621` on `.frozen-dist-9a3f28b30` settled on 2026-09-28 in 3,169,499 ms
   and was read the same day
   (pass log,
-  "TianqiChen66622 read,
-  2026-10-11"):
-  two Bedrock seats answered none of their 536 calls,
-  slice 4 shipped the archive's present-tense sentence,
-  and the launch lost every stderr line,
-  `warn` lines among them (ledger M147).
-  The owner's answers that followed are in the package's
-  [design commitments](../../package/module/translation-repair/doc/design-commitments.md)
-  under 2026-10-11.
-  The pass before it,
-  `TianqiChen66621` on `.frozen-dist-9a3f28b30`,
-  settled on 2026-09-28 in 3,169,499 ms.
+  "TianqiChen66621 read,
+  2026-09-28").
+  No pass has launched since.
 - ROSTER.
   The checker seats were measured on 2026-09-27 and Mimo v2.6 Flash joined them;
   [`roster-changes.md`](../../package/module/translation-repair/doc/roster-changes.md)
@@ -5361,6 +5422,15 @@ each read off the pass log and the shipped page:
     which is the healthy reading.
 
 ## What to do next
+
+As of 2026-10-11 (UTC),
+the next action is the newest checkpoint's "NEXT":
+merge the four agent patches in flight,
+gate the merged head,
+write the docs batch,
+walk "Before a run launches" and relaunch `TianqiChen666` through the runbook's unit form.
+The numbered items keep the queue as the sessions of 2026-09-08 to 2026-09-26 left it;
+read each against its date.
 
 1.  TIANQICHEN6663 READ (2026-09-26,
     `.frozen-dist-7b87c5a4e`):
