@@ -1,5 +1,91 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Private native build rejects retained imports after a filesystem move
+
+### Symptom and source trace
+
+Restoration `b6943a8` / `proc_931a` failed before tests in private `native-batch/prepare.mjs`:
+`NativeBatchBuildError: Native SDK edit does not have one matching location`.
+The missing literal named `native-script-value.mjs` under `/var/mnt/encrypted/temp/agent/`;
+the retained generated import used `/var/home/user/temp/agent/`.
+
+Both spellings still resolve to the same file,
+as checked with `realpath`.
+This is a build-time path-comparison failure,
+not a result from the restored prompt observation or the earlier full-policy incident.
+
+Private `contract/integration/native-batch/prepare.mjs:32` required exactly one textual match:
+
+```javascript
+// Private prepare.mjs, replaceOnce
+if(at<0||source.indexOf(from,at+from.length)!==-1)
+ throw new NativeBatchBuildError('Native SDK edit does not have one matching location: '+from);
+```
+
+The historical `native-return-consumer.mjs:2` import was generated from its original location.
+The fresh expected URL came from `import.meta.url` at the new canonical location.
+No native SDK source change was needed to reproduce the mismatch.
+
+### Consumer correction and verification
+
+Private `staged-import.mjs:7` selects exactly one generated named-import line.
+It decodes only that build-time module specifier,
+rejects query/fragment variants,
+and requires the existing file to resolve to the expected incumbent build input:
+
+```javascript
+// Private staged-import.mjs, expected target check
+if(realpathSync(fileURLToPath(observed))!==realpathSync(fileURLToPath(expected)))
+ throw new StagedImportError('Generated import differs from its expected local build input');
+```
+
+Only the fresh output buffer is rewritten.
+Historical artifacts,
+installed modules,
+request parsing,
+source capture,
+and runtime authority are unchanged.
+This check does not authenticate module contents or establish policy authority.
+
+`b60415d` / `proc_0064` passed `test:staged-import`:
+original and symlinked paths work;
+equal bytes in another file,
+duplicate declarations,
+missing files,
+query/fragment URLs,
+non-file URLs,
+and malformed declarations reject.
+The subsequent actual `prepare` passed with SDK 1.1.0 and unchanged installed sources.
+The task runs through `mise --no-env --no-hooks run test:staged-import`
+in private `contract/integration/native-batch`.
+
+### Tradeoffs and rejected approaches
+
+The retained alias must remain accessible for its untouched historical imports.
+This is not migration of the historical artifact graph.
+Fresh preparation adds filesystem checks and fails if either target cannot be resolved.
+Disposable aliases exercise both accepted spellings without replacing the real mount.
+
+Hardcoded alternatives for the old and new roots were not adopted:
+they would encode environment-specific path spelling without verifying the current target.
+Regenerating old hash-locked chains,
+rewriting historical files in place,
+or enabling symlink-preserving module loading was unnecessary.
+The exact file-target guard is undergoing omission sensitivity before complete regressions.
+
+### Upstream filing decision
+
+Nothing to file.
+The failure belongs to this private build generator,
+not Pi or Node.
+The upstream-fault condition fails;
+upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed or investigated.
+The consumer correction remains private.
+
 ## Pi 1.1.0 direct Agent string prompts bypass session text input capture
 
 ### Symptom and native boundary
