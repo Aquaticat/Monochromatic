@@ -1,5 +1,6 @@
 // Track list pane for one folder's flat list (D5, D6, D31, D42). It draws track rows and subfolder headers
-// from the entries the core layer builds, and keeps the playing row in view as it changes.
+// from the entries the core layer builds. The list moves only on entry, on a page change, and on a reveal request,
+// never because the playing track changed.
 
 // What:     `package dev.monochromatic.musicplayer` places the track list pane beside the other player composables.
 // Why:      The pane is a stateless composable that screens import without reaching into MainActivity.
@@ -92,6 +93,11 @@ import androidx.compose.ui.unit.dp
 // ```
 import dev.monochromatic.musicplayer.core.TrackListEntry
 import dev.monochromatic.musicplayer.core.TrackRowModel
+import dev.monochromatic.musicplayer.core.currentPositionOf
+import dev.monochromatic.musicplayer.core.entryKeyOf
+import dev.monochromatic.musicplayer.core.isSamePageUpdate
+import dev.monochromatic.musicplayer.core.pageEntryScrollTarget
+import dev.monochromatic.musicplayer.core.pageIdentityOf
 
 // What:     `private val ROW_MIN_HEIGHT: Dp = 48.dp` is the smallest height of a track row and a header.
 // Why:      The row meets the 48dp touch target, and a row with a supporting line grows past it.
@@ -166,8 +172,9 @@ internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int, MenuAnch
 /** Count of folder reveal requests, read by the track list to scroll to the playing track's folder header. */
 val HostKeyLocalRevealFolder: ProvidableCompositionLocal<Int> = compositionLocalOf { 0 }
 
-// What:     `fun trackListPane(...)` draws the folder's flat list and keeps the playing row in view.
-// Why:      The caller owns the entries and the playback action, so the pane keeps only its scroll state.
+// What:     `fun trackListPane(...)` draws the folder's flat list and moves it only on entry, page change, or reveal.
+// Why:      The caller owns the entries and the playback action, so the pane keeps only its scroll state. A play, next,
+//           previous, or measure update must not move the list, so the page effect is keyed on the page identity.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -186,13 +193,22 @@ fun trackListPane(
     onOpenMenu: ((Int, MenuAnchorRect) -> Unit)? = LocalTrackRowMenuOpener.current,
     modifier: Modifier = Modifier,
 ) {
-    /** Scroll state of the list, which the current-row effect moves. */
+    /** Scroll state of the list, which the page and reveal effects move. */
     val listState = rememberLazyListState()
     /** Position of the playing row among the entries, or null when no row in this list is playing. */
     val currentPosition: Int? = currentPositionOf(entries)
-    LaunchedEffect(currentPosition) {
-        if (currentPosition != null) {
-            listState.animateScrollToItem(currentPosition)
+    /** Page identity the page effect last handled, or null before its first run. */
+    var shownPage: List<String>? by remember { mutableStateOf<List<String>?>(null) }
+    /** Identity of the shown page, which follows the folder's tracks and not the playing row, measures, or indexes. */
+    val pageIdentity: List<String> = remember(entries) { pageIdentityOf(entries) }
+    // Declared before the reveal effects, so when a reveal and a page change launch in the same composition,
+    // the reveal's scroll is the one launched last. Keyed on the identity, so a play or measure change never runs it.
+    LaunchedEffect(pageIdentity) {
+        /** Whether this identity is the page already handled, so the list keeps its position. */
+        val sameAsHandled: Boolean = isSamePageUpdate(previous = shownPage, next = pageIdentity)
+        shownPage = pageIdentity
+        if (!sameAsHandled) {
+            listState.scrollToItem(pageEntryScrollTarget(entries))
         }
     }
     /** Count of reveal requests from the host, each of which scrolls to and focuses the playing row. */
@@ -221,7 +237,7 @@ fun trackListPane(
         }
     }
     LazyColumn(state = listState, modifier = modifier) {
-        items(items = entries, key = { entry -> keyOf(entry) }) { entry ->
+        items(items = entries, key = { entry -> entryKeyOf(entry) }) { entry ->
             when (entry) {
                 is TrackListEntry.RowEntry -> trackRow(
                     row = entry.row,
@@ -233,28 +249,6 @@ fun trackListPane(
             }
         }
     }
-}
-
-// What:     `private fun currentPositionOf(entries: List<TrackListEntry>): Int?` finds the playing row's position.
-// Why:      The scroll effect needs the list position of the current row, and a list with no current row has none.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const currentPositionOf = (entries: TrackListEntry[]): number | null => {
-//   const position = entries.findIndex((e) => e.kind === "row" && e.row.isCurrent);
-//   return position < 0 ? null : position;
-// };
-// ```
-/** Position of the current track row among the entries, or null when no row is current. */
-private fun currentPositionOf(entries: List<TrackListEntry>): Int? {
-    /** Index of the first current row, or a negative value when no row is current. */
-    val position: Int = entries.indexOfFirst { entry ->
-        entry is TrackListEntry.RowEntry && entry.row.isCurrent
-    }
-    if (position < 0) {
-        return null
-    }
-    return position
 }
 
 // What:     `internal fun folderScrollIndexFor(entries: List<TrackListEntry>): Int` finds the item the folder reveal
@@ -300,20 +294,6 @@ private fun menuAnchorOfRect(bounds: Rect): MenuAnchorRect = MenuAnchorRect(
     right = bounds.right.roundToInt(),
     bottom = bounds.bottom.roundToInt(),
 )
-
-// What:     `private fun keyOf(entry: TrackListEntry): String` gives each entry a stable list key.
-// Why:      Keys keep row state with its track as the list changes, and the prefixes keep rows and headers apart.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const keyOf = (entry: TrackListEntry): string =>
-//   entry.kind === "row" ? `row-${entry.row.indexInLibrary}` : `header-${entry.name}`;
-// ```
-/** Stable key for one entry, built from the library index for rows and the subfolder name for headers. */
-private fun keyOf(entry: TrackListEntry): String = when (entry) {
-    is TrackListEntry.RowEntry -> "row-" + entry.row.indexInLibrary
-    is TrackListEntry.HeaderEntry -> "header-" + entry.name
-}
 
 // What:     `@Composable private fun trackRow(...)` draws one playable track row.
 // Why:      The current row gets the D42 surface background and a bold title, and every row plays on tap.

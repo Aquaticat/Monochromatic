@@ -93,6 +93,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -106,6 +107,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -147,8 +149,18 @@ private val CONTROL_SPACING: Dp = 8.dp
 // ```ts
 // const MIN_TARGET = 48;
 // ```
-/** Minimum width and height of one mode segment touch target. */
+/** Minimum width and height of one tappable target, such as a mode segment or a heading part. */
 private val MIN_TARGET: Dp = 48.dp
+
+// What:     `private val ONE_LINE_CONTROL_GAP: Dp = 16.dp` is the gap between transport and mode when they share a row.
+// Why:      Sixteen dp separates the two groups clearly, and it is counted once in the one-line width check.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const ONE_LINE_CONTROL_GAP = 16;
+// ```
+/** Minimum horizontal gap between the transport buttons and the mode control when they share one row. */
+private val ONE_LINE_CONTROL_GAP: Dp = 16.dp
 
 // What:     `private const val FOLDER_MAX_WIDTH_FRACTION: Float = 0.4f` caps the folder part of the heading.
 // Why:      The folder name may take at most 40 percent of the heading width, so the track title keeps the rest.
@@ -554,6 +566,34 @@ internal fun modeControlLayoutFor(
     return ModeControlLayout.FOUR_ROW
 }
 
+// What:     `internal fun deckControlsFitOneLine(...)` decides whether transport and mode share one row.
+// Why:      The check is pure pixel arithmetic, so the exact boundary is testable without a Compose runtime.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function deckControlsFitOneLine(availableWidthPx: number, transportWidthPx: number,
+//   modeWidthPx: number, gapPx: number): boolean { ... }
+// ```
+/**
+ * Reports whether the transport buttons, one gap, and the one-row mode control fit in the available width.
+ *
+ * @param availableWidthPx usable width of the controls group in pixels
+ * @param transportWidthPx natural width of transport buttons in pixels
+ * @param modeWidthPx natural width of one-row mode control in pixels
+ * @param gapPx gap between the two groups in pixels, counted once
+ * @return true when transport, gap, and mode together fit within availableWidthPx
+ */
+internal fun deckControlsFitOneLine(
+    availableWidthPx: Int,
+    transportWidthPx: Int,
+    modeWidthPx: Int,
+    gapPx: Int,
+): Boolean {
+    /** Sum in Long so extreme widths cannot wrap around and report a false fit. */
+    val requiredWidthPx: Long = transportWidthPx.toLong() + gapPx.toLong() + modeWidthPx.toLong()
+    return availableWidthPx.toLong() >= requiredWidthPx
+}
+
 // What:     `private val MODE_SEGMENT_ORDER: List<PlaybackMode>` fixes the left-to-right segment order.
 // Why:      Segment position drives the connected corner shapes and the traversal order.
 //
@@ -736,9 +776,9 @@ private fun deckContainerColor(): Color {
 }
 
 // What:     `@Composable private fun deckHeading(...)` draws the centered `folder / title` line and the subtitle.
-// Why:      The line names the folder and the playing track, and the subtitle holds the caller's status text. Each
-//           part with a tap action is its own 48dp-high button, and a part without one is plain text. The folder
-//           takes at most 40 percent of the width, so the title keeps the rest.
+// Why:      The line names the folder and the playing track, and the subtitle holds the caller's status text.
+//           Each part with a tap action is its own button with a 48dp minimum size, and a part without one is
+//           plain text. The folder takes at most 40 percent of the width, so the title keeps the rest.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -801,8 +841,8 @@ private fun deckHeading(
 }
 
 // What:     `@Composable private fun deckHeadingPart(...)` draws one single-line part of the heading.
-// Why:      The folder and the title share the same button rules, a 48dp minimum height with the Button role, so one
-//           helper draws both and each part stays its own tap target.
+// Why:      The folder and the title share the same button rules, a 48dp minimum width and height with the Button
+//           role, so one helper draws both and each part stays its own tap target.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -819,12 +859,12 @@ private fun deckHeadingPart(
     clickLabel: String,
     modifier: Modifier,
 ) {
-    /** Part modifier: a button with a 48dp minimum height when tappable, unchanged otherwise. */
+    /** Part modifier: a button with a 48dp minimum width and height when tappable, unchanged otherwise. */
     val partModifier: Modifier = if (onClick == null) {
         modifier
     } else {
         modifier
-            .defaultMinSize(minHeight = MIN_TARGET)
+            .defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
             .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
     }
     Box(modifier = partModifier, contentAlignment = Alignment.Center) {
@@ -900,35 +940,46 @@ private fun secondaryTransportButton(
 // function transportControls(props: { playing: boolean; onPrevious(): void;
 //   onTogglePlay(): void; onNext(): void }): UIElement;
 // ```
-/** Draws the three transport buttons centered in one row. */
+/**
+ * Draws the three transport buttons centered in one row, always laid out left to right.
+ *
+ * @param playing true while playback runs, which selects the pause glyph
+ * @param onPrevious invoked by previous-track button
+ * @param onTogglePlay invoked by center play or pause button
+ * @param onNext invoked by next-track button
+ * @param modifier outer modifier of row, so callers choose its width
+ */
 @Composable
 private fun transportControls(
     playing: Boolean,
     onPrevious: () -> Unit,
     onTogglePlay: () -> Unit,
     onNext: () -> Unit,
+    modifier: Modifier,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(CONTROL_SPACING, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        secondaryTransportButton(
-            imageVector = SKIP_PREVIOUS_ICON,
-            contentDescription = "Previous track",
-            onClick = onPrevious,
-        )
-        FilledIconButton(onClick = onTogglePlay) {
-            Icon(
-                imageVector = if (playing) PAUSE_ICON else PLAY_ICON,
-                contentDescription = if (playing) "Pause" else "Play",
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(CONTROL_SPACING, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            secondaryTransportButton(
+                imageVector = SKIP_PREVIOUS_ICON,
+                contentDescription = "Previous track",
+                onClick = onPrevious,
+            )
+            FilledIconButton(onClick = onTogglePlay) {
+                Icon(
+                    imageVector = if (playing) PAUSE_ICON else PLAY_ICON,
+                    contentDescription = if (playing) "Pause" else "Play",
+                )
+            }
+            secondaryTransportButton(
+                imageVector = SKIP_NEXT_ICON,
+                contentDescription = "Next track",
+                onClick = onNext,
             )
         }
-        secondaryTransportButton(
-            imageVector = SKIP_NEXT_ICON,
-            contentDescription = "Next track",
-            onClick = onNext,
-        )
     }
 }
 
@@ -1266,6 +1317,171 @@ private fun modeControl(
     }
 }
 
+// What:     `private enum class DeckControlsSlot` names the subcomposition slots of the transport and mode group.
+// Why:      Named slots let the group measure its probes and compose only the arrangement it chose.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type DeckControlsSlot = "transportProbe" | "modeProbe" | "oneLine" | "stacked";
+// ```
+/** Subcomposition slots used by the transport and mode group. */
+private enum class DeckControlsSlot {
+    // What:     `TRANSPORT_PROBE` is the hidden measurement of the transport buttons.
+    // Why:      Its natural width is needed before the arrangement is chosen, and it is never placed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const transportProbe = "transportProbe";
+    // ```
+    /** Hidden measurement of the transport buttons at their natural width. */
+    TRANSPORT_PROBE,
+
+    // What:     `MODE_PROBE` is the hidden measurement of the one-row mode control.
+    // Why:      Its natural width decides whether both groups fit side by side, and it is never placed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const modeProbe = "modeProbe";
+    // ```
+    /** Hidden measurement of the one-row mode control at its natural width. */
+    MODE_PROBE,
+
+    // What:     `ONE_LINE` is the single row that holds the transport buttons, the gap, and the mode control.
+    // Why:      It is drawn only when the measured groups fit side by side at the current width and font scale.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const oneLine = "oneLine";
+    // ```
+    /** Transport buttons and the mode control side by side in one centered row. */
+    ONE_LINE,
+
+    // What:     `STACKED` is the column that holds the transport buttons and then the mode control.
+    // Why:      It is the arrangement the deck has always drawn, and it is the fallback when the row does not fit.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const stacked = "stacked";
+    // ```
+    /** Transport buttons and the mode control in one column, each on its own line. */
+    STACKED,
+}
+
+// What:     `@Composable private fun deckControlsGroup(...)` draws transport and mode in one row or in a column.
+// Why:      Only a measurement made before composition knows whether both groups fit side by side at this width
+//           and font scale, so the group measures natural widths first and then composes the chosen arrangement.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function deckControlsGroup(props: DeckControlsProps): UIElement {
+//   const transportWidth = measureNatural(transportControls);
+//   const modeWidth = measureNatural(oneRowModeControl);
+//   return deckControlsFitOneLine(availableWidth(), transportWidth, modeWidth, GAP)
+//     ? oneLine(props) : stacked(props);
+// }
+// ```
+/** Draws transport and mode side by side when both fit the width, and in a column otherwise. */
+@Composable
+private fun deckControlsGroup(
+    playing: Boolean,
+    selectedMode: PlaybackMode,
+    shuffleFolderLabel: String,
+    actions: TransportDeckActions,
+) {
+    /** Density whose font scale resets the one-line overflow flag when the user changes text size. */
+    val density = LocalDensity.current
+    /** Standard padding that keeps each segment at its minimum horizontal content width. */
+    val contentPadding: PaddingValues = SegmentedButtonDefaults.ContentPadding
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        /** True when the one-line row clipped a label at this width and font scale, which forces the column. */
+        val oneLineOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
+        SubcomposeLayout(modifier = Modifier.fillMaxWidth()) { constraints ->
+            /** Natural width of the transport buttons in pixels, measured without a width cap. */
+            val transportWidthPx: Int = subcompose(DeckControlsSlot.TRANSPORT_PROBE) {
+                transportControls(
+                    playing = playing,
+                    onPrevious = actions.onPrevious,
+                    onTogglePlay = actions.onTogglePlay,
+                    onNext = actions.onNext,
+                    modifier = Modifier,
+                )
+            }.first().measure(Constraints()).width
+            /** Natural width of the one-row mode control in pixels, measured without a width cap. */
+            val modeWidthPx: Int = subcompose(DeckControlsSlot.MODE_PROBE) {
+                oneRowModeControl(
+                    selectedMode = selectedMode,
+                    shuffleFolderLabel = shuffleFolderLabel,
+                    contentPadding = contentPadding,
+                    onSelectMode = actions.onSelectMode,
+                    onOverflow = {},
+                )
+            }.first().measure(Constraints()).width
+            /** Gap between the two groups converted to pixels for the width check. */
+            val gapPx: Int = ONE_LINE_CONTROL_GAP.roundToPx()
+            /** True when both groups fit side by side and the one-line row has not clipped at this width. */
+            val oneLine: Boolean = !oneLineOverflow.value && deckControlsFitOneLine(
+                availableWidthPx = constraints.maxWidth,
+                transportWidthPx = transportWidthPx,
+                modeWidthPx = modeWidthPx,
+                gapPx = gapPx,
+            )
+            /** Arrangement drawn for this pass, measured to the available width. */
+            val placed = subcompose(
+                if (oneLine) DeckControlsSlot.ONE_LINE else DeckControlsSlot.STACKED,
+            ) {
+                if (oneLine) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            ONE_LINE_CONTROL_GAP,
+                            Alignment.CenterHorizontally,
+                        ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        transportControls(
+                            playing = playing,
+                            onPrevious = actions.onPrevious,
+                            onTogglePlay = actions.onTogglePlay,
+                            onNext = actions.onNext,
+                            modifier = Modifier,
+                        )
+                        oneRowModeControl(
+                            selectedMode = selectedMode,
+                            shuffleFolderLabel = shuffleFolderLabel,
+                            contentPadding = contentPadding,
+                            onSelectMode = actions.onSelectMode,
+                            onOverflow = { oneLineOverflow.value = true },
+                        )
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(DECK_GROUP_SPACING),
+                    ) {
+                        transportControls(
+                            playing = playing,
+                            onPrevious = actions.onPrevious,
+                            onTogglePlay = actions.onTogglePlay,
+                            onNext = actions.onNext,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        modeControl(
+                            selectedMode = selectedMode,
+                            shuffleFolderLabel = shuffleFolderLabel,
+                            onSelectMode = actions.onSelectMode,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }.first().measure(Constraints(maxWidth = constraints.maxWidth))
+            layout(width = placed.width, height = placed.height) {
+                placed.place(0, 0)
+            }
+        }
+    }
+}
+
 // What:     `fun transportDeck(...)` draws the playback deck from a state snapshot and callbacks.
 // Why:      The caller owns playback, so the deck stays stateless and previewable.
 //
@@ -1315,18 +1531,12 @@ fun transportDeck(
                 durationSec = model.durationSec,
                 onSeek = actions.onSeek,
             )
-            transportControls(
-                playing = model.playing,
-                onPrevious = actions.onPrevious,
-                onTogglePlay = actions.onTogglePlay,
-                onNext = actions.onNext,
-            )
         }
-        modeControl(
+        deckControlsGroup(
+            playing = model.playing,
             selectedMode = model.mode,
             shuffleFolderLabel = model.shuffleFolderLabel,
-            onSelectMode = actions.onSelectMode,
-            modifier = Modifier.fillMaxWidth(),
+            actions = actions,
         )
     }
 }
