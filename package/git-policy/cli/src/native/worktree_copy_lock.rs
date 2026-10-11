@@ -559,9 +559,9 @@ pub fn acquire_worktree_copy_lock(
             Attempt::Unproven(evidence) => Some(evidence),
         };
         let started: Instant = *unproven_since.get_or_insert_with(Instant::now);
-        if let Some(evidence) = unproven
-            .filter(|_| started.elapsed() >= Duration::from_millis(UNPROVEN_OWNER_TIMEOUT_MS))
-        {
+        if let Some(evidence) = unproven.filter(|_| {
+            return started.elapsed() >= Duration::from_millis(UNPROVEN_OWNER_TIMEOUT_MS);
+        }) {
             {
                 let message: String = format!(
                     "cli-git: worktree-copy settlement lock {} stayed in place for {} ms and cli-git could not prove whether its owner is alive. Evidence: {}. cli-git left the lock in place; remove it only after confirming no cli-git process is using this repository.",

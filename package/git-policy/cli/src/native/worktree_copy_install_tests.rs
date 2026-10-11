@@ -30,7 +30,7 @@ impl InstallRecorder for CountingRecorder {
         if let Some((_, path)) = self
             .tamper
             .as_ref()
-            .filter(|(call, _)| *call == self.creations.len())
+            .filter(|(call, _)| return *call == self.creations.len())
         {
             {
                 // Replacing the file gives it a new identity, as an editor's save or a foreign write would.
