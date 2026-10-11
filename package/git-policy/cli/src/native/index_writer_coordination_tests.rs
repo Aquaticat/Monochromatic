@@ -328,3 +328,17 @@ fn the_minimum_release_is_accepted_and_locks() {
     held.release().expect("release");
     remove(root.as_path());
 }
+
+/// A quiet release frees the landing lock, so the next owner acquires it at once.
+#[test]
+fn a_quiet_release_frees_the_landing_lock() {
+    let root: PathBuf = fixture("landing-quiet-release");
+    let lock_directory: PathBuf = root.join("landing.lock");
+    let mut silent: SilentWait = SilentWait;
+    let lock: OwnerLock = acquire_owner_lock(lock_directory.as_path(), std::time::Duration::from_millis(5), &mut silent)
+        .expect("the first owner acquires the landing lock");
+    release_quietly(lock);
+    let again: Option<OwnerLock> = try_acquire_owner_lock(lock_directory.as_path(), None).expect("the probe runs");
+    assert!(again.is_some(), "the quiet release freed the landing lock");
+    remove(root.as_path());
+}

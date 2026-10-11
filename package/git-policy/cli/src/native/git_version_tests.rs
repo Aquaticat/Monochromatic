@@ -162,3 +162,13 @@ fn a_refusal_is_reused_without_asking_again() {
     assert_eq!(first, second);
     assert!(first.expect_err("refused").contains("version 2.55.0"));
 }
+
+/// The process-wide check answers what Git reports, not a constant: it equals a direct query of the same Git.
+#[test]
+fn the_process_check_answers_what_git_reports() {
+    let context: GitContext = git_context();
+    let direct: Result<GitRelease, String> = ask_git_version(&context);
+    let checked: Result<GitRelease, String> = check_git_version(&context);
+    assert_eq!(checked, direct);
+    assert!(checked.expect("the host Git is supported") >= MINIMUM_GIT_VERSION);
+}

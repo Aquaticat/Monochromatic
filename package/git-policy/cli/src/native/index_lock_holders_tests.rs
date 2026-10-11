@@ -241,3 +241,21 @@ fn an_unheld_lock_has_no_holders() {
     assert!(evidence.holders.is_empty());
     remove(root.as_path());
 }
+
+/// Only ASCII digit names are process identifiers,
+///  so the proc scan skips `self`, empty names and names with other bytes.
+#[test]
+#[cfg(unix)]
+fn only_digit_names_are_process_identifiers() {
+    assert!(is_pid_name("1"));
+    assert!(is_pid_name("4242"));
+    assert!(!is_pid_name(""));
+    assert!(!is_pid_name("self"));
+    assert!(!is_pid_name("12a"));
+    assert!(!is_pid_name("1 "));
+    assert!(is_digit(b'0'));
+    assert!(is_digit(b'9'));
+    assert!(!is_digit(b'/'));
+    assert!(!is_digit(b':'));
+    assert!(!is_digit(b'a'));
+}

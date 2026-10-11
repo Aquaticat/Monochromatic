@@ -108,3 +108,7 @@ impl WaitEffects for HostWaitEffects {
         let _ = std::io::stderr().write_all(line.as_bytes());
     }
 }
+
+#[cfg(test)]
+#[path = "index_lock_wait_host_tests.rs"]
+mod tests;

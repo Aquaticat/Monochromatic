@@ -74,3 +74,32 @@ fn a_dead_foreign_owner_exhausts_the_budget() {
     assert!(real_lock_path(index.as_path()).exists());
     remove(root.as_path());
 }
+
+/// A recorded identity that differs in only the device or only the inode is refused,
+///  and the lock's own identity is accepted.
+#[test]
+#[cfg(unix)]
+fn a_lock_with_one_mismatched_identity_field_is_refused() {
+    use std::os::unix::fs::MetadataExt;
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-fields");
+    let lock: RealIndexLock = match acquire_real_index_lock(index.as_path(), 100, "did nothing") {
+        Ok(found) => found,
+        Err(failure) => panic!("a free index is lockable: {failure:?}"),
+    };
+    let path: PathBuf = real_lock_path(index.as_path());
+    let metadata: std::fs::Metadata = std::fs::symlink_metadata(&path).expect("the lock is stat-ed");
+    let fs_id: String = lock.identity().fs_id.clone();
+    let wrong_device: LockIdentity = LockIdentity {
+        file: FileIdentity { device: (metadata.dev() + 1).to_string(), inode: metadata.ino().to_string() },
+        fs_id: fs_id.clone(),
+    };
+    let wrong_inode: LockIdentity = LockIdentity {
+        file: FileIdentity { device: metadata.dev().to_string(), inode: (metadata.ino() + 1).to_string() },
+        fs_id,
+    };
+    assert!(same_file_identity(path.as_path(), &wrong_device).is_err(), "a wrong device is refused");
+    assert!(same_file_identity(path.as_path(), &wrong_inode).is_err(), "a wrong inode is refused");
+    assert!(same_file_identity(path.as_path(), lock.identity()).is_ok(), "the own identity is accepted");
+    lock.release().expect("the real lock releases");
+    remove(root.as_path());
+}
