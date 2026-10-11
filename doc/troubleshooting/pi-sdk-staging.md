@@ -223,7 +223,7 @@ but review failed
 The original append API has a pre-body observation point:
 
 ```javascript
-// Pi 1.1.0 dist/core/session-manager.js:827 to 836
+// Pi 1.1.0 dist/core/session-manager.js:827 to 837
 appendMessage(message) {
     const entry = {
         type: "message",
@@ -233,6 +233,8 @@ appendMessage(message) {
         message,
     };
     this._appendEntry(entry);
+    return entry.id;
+}
 ```
 
 The selected fields must be captured before the incumbent private copy can reject the input.
@@ -279,10 +281,25 @@ the `managerInput` location has method metadata and no fabricated ordinal.
 
 Narrowed `740ffae` / `proc_22d7` passed the canonical pre-attachment consumer.
 Run private `test:manager-append-source` through `mise --no-env --no-hooks run`.
-The original hidden input remained available without transport,
-authority,
-or payload eligibility.
-Private clone-rejection and broader controls remain pending.
+The original hidden input remained available without appearing in the original model-request body
+or gaining authority or payload eligibility.
+`ffa4e19` / `proc_f1e3` also passed private clone rejection:
+no entry was inserted,
+but the original input still reached review.
+
+Owner `9c9885b` / `proc_0d67` passed profile and shared-bound controls.
+Its negative-zero red exposed argument normalization by JSON serialization;
+the profile now rejects negative zero and undefined argument values,
+while a positive-zero control passes.
+Native `3e4dfd2` / `proc_7543` passed actual strict frames,
+private-copy/reentry/getter/proxy parity,
+original unexpected errors,
+and attachment/reset lifetime controls.
+Its comparison removes only the new hook from a disposable private generated manager.
+It does not claim installed-SDK cloning parity.
+Integration,
+sensitivity,
+and complete regression checks remain pending.
 
 This does not account for post-attachment manager appends.
 Those potentially governing inputs remain unresolved.

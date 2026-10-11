@@ -342,11 +342,30 @@ and no protected execution/provider calls.
 Post-attachment direct and native appends remain unresolved.
 No request freshness or source-binding rule was relaxed.
 
-Private clone-rejection,
-block-profile,
-lifetime,
+Canonical `ffa4e19` / `proc_f1e3` passed both hidden-input and private clone-rejection cases.
+A rejected append inserts no entry,
+but its original selected text still reaches review.
+Owner `9c9885b` / `proc_0d67` passed block/companion selection,
+opaque-getter exclusion,
+malformed inputs,
+shared bounds,
+original errors,
+and JSON-value preservation.
+The negative-zero red required rejection of an argument that serialization would change to zero.
+
+Native `3e4dfd2` / `proc_7543` passed actual unmapped frames,
+private owned-copy preservation,
+clone reentry,
+getter/proxy error parity,
+unexpected falsy observer errors,
+and root-reset/one-way attachment controls.
+Its baseline is a disposable private generated manager with only the new observation hook removed,
+not the installed manager's different aliasing behavior.
+Post-attachment coverage and qualified continuation are not claimed.
+
+Integrated,
 sensitivity,
-and complete regression checks are pending.
+and complete regression checks remain pending.
 The incumbent private manager copy performs `structuredClone`;
 the installed native manager does not.
 Parity claims must distinguish those baselines.
