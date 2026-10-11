@@ -358,3 +358,27 @@ fn a_stopped_tile_worker_is_reported_once_and_replaced_on_the_next_re_center() {
     );
     window.hide().expect("close headless source window");
 }
+
+/// Measures what a cold tile worker costs, printing one line per process for the measurement log.
+/// Each run is a new process, so the first worker and its first font discovery are cold.
+#[test]
+fn measure_worker_cold_start() {
+    let started = Instant::now();
+    let shaper = ide_app::shaped_text::TextShaper::new();
+    let shaper_ms = started.elapsed().as_secs_f64() * 1000.0;
+    drop(shaper);
+    let (window, state) = open(&document());
+    let height = window.get_viewport_height();
+    let started = Instant::now();
+    scroll_to(&window, START);
+    settle_tile(&state);
+    let first_ms = started.elapsed().as_secs_f64() * 1000.0;
+    let started = Instant::now();
+    scroll_to(&window, START + height);
+    settle_tile(&state);
+    let warm_ms = started.elapsed().as_secs_f64() * 1000.0;
+    eprintln!(
+        "COLD-START shaper_new_ms={shaper_ms:.1} first_reply_ms={first_ms:.1} warm_reply_ms={warm_ms:.1}"
+    );
+    window.hide().expect("close headless source window");
+}
