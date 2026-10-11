@@ -26,7 +26,7 @@ export component FolderPickerPane inherits Rectangle {
     in property <[FolderName]> names;
     // Name of the current folder; drawn in primary with a 2 px indicator on its bottom edge.
     in property <string> current-folder;
-    // Key of the current rail cell; highlighted with a circle and the names open at its heading.
+    // Key of the current folder's rail cell; circled unless a tapped cell overrides it, and the names open at its heading.
     in property <string> current-cell;
     // Invoked with the folder name when a name is tapped.
     callback select-folder(string);
@@ -37,6 +37,15 @@ export component FolderPickerPane inherits Rectangle {
     property <string> scroll-key;
     // Counts scroll requests so a repeated request for the same cell still re-runs the handlers.
     property <int> scroll-tick: 0;
+
+    // Cell the user last tapped on the rail; empty until a tap and cleared when the current folder changes.
+    property <string> tapped-cell: "";
+    // Cell the rail circles: a pending tap wins, otherwise the current folder's cell, so a tapped letter shows as
+    // selected at once even though the current folder is still listed under another letter.
+    property <string> shown-cell: root.tapped-cell != "" ? root.tapped-cell : root.current-cell;
+    changed current-folder => {
+        root.tapped-cell = "";
+    }
 
     // Records the cell to scroll to and bumps the tick so every heading row re-checks it.
     function request-scroll(key: string) {
@@ -72,7 +81,7 @@ export component FolderPickerPane inherits Rectangle {
                     width: 32px;
                     height: 32px;
                     border-radius: 16px;
-                    background: cell.key == root.current-cell ? Theme.secondary-container : transparent;
+                    background: cell.key == root.shown-cell ? Theme.secondary-container : transparent;
                 }
                 Text {
                     width: parent.width;
@@ -81,14 +90,15 @@ export component FolderPickerPane inherits Rectangle {
                     horizontal-alignment: center;
                     vertical-alignment: center;
                     font-size: Theme.label-large;
-                    color: cell.key == root.current-cell ? Theme.primary : Theme.on-surface-variant;
+                    color: cell.key == root.shown-cell ? Theme.primary : Theme.on-surface-variant;
                 }
                 TouchArea {
                     accessible-role: radio-button;
                     accessible-label: cell.label;
                     accessible-checkable: true;
-                    accessible-checked: cell.key == root.current-cell;
+                    accessible-checked: cell.key == root.shown-cell;
                     clicked => {
+                        root.tapped-cell = cell.key;
                         root.request-scroll(cell.key);
                         root.select-cell(cell.key);
                     }
