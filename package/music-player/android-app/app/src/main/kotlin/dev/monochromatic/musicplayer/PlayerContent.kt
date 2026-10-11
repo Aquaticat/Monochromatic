@@ -323,7 +323,7 @@ private fun unfoldedLayout(
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            unfoldedFoldersHeader(onOpen = actions.onOpen)
+            unfoldedFoldersHeader(title = model.libraryName, onOpen = actions.onOpen)
             folderPickerPane(
                 sections = model.sections,
                 currentFolder = model.currentFolder,

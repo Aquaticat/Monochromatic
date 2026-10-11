@@ -107,3 +107,18 @@ fn select_folder_label_with_unknown_label_changes_nothing() {
     assert_eq!(select_folder_label(&mut state, "Missing"), None);
     assert_eq!(state, before);
 }
+
+#[test]
+fn library_heading_names_the_opened_folder() {
+    let mut state = state_with(&[], None);
+    state.source_root_name = Some("Albums".to_string());
+    assert_eq!(state.library_heading(), "Albums");
+}
+
+#[test]
+fn library_heading_falls_back_to_folders_without_an_opened_folder() {
+    let mut state = state_with(&[], None);
+    assert_eq!(state.library_heading(), "Folders");
+    state.source_root_name = Some("  ".to_string());
+    assert_eq!(state.library_heading(), "Folders");
+}

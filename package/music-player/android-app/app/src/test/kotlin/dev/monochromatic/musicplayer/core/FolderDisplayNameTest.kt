@@ -137,4 +137,32 @@ class FolderDisplayNameTest {
             assertTrue("blank name for id '$shape'", name.isNotBlank())
         }
     }
+
+    // What:     `fun libraryNameIsTheHeldFolder` checks that a held folder names the library.
+    // Why:      The unfolded folder pane is headed by the opened folder's own name.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("held folder names the library", () => expect(libraryDisplayName("Music")).toBe("Music"));
+    // ```
+    /** Confirms that a held folder's name is used as it is, apart from surrounding blanks. */
+    @Test
+    fun libraryNameIsTheHeldFolder() {
+        assertEquals("Music", libraryDisplayName("Music"))
+        assertEquals("Music", libraryDisplayName("  Music "))
+    }
+
+    // What:     `fun libraryNameFallsBackToMediaStore` checks the name without a held folder.
+    // Why:      The whole-device library has no folder name, so the platform's name for it heads the pane.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("no folder uses the MediaStore name", () => expect(libraryDisplayName(null)).toBe("MediaStore"));
+    // ```
+    /** Confirms that a missing or blank folder name gives the MediaStore name. */
+    @Test
+    fun libraryNameFallsBackToMediaStore() {
+        assertEquals("MediaStore", libraryDisplayName(null))
+        assertEquals("MediaStore", libraryDisplayName("   "))
+    }
 }

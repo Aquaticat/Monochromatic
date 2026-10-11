@@ -284,11 +284,11 @@ fun coverTopRow(
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function unfoldedFoldersHeader(props: { onOpen(): void; modifier?: Modifier }): UIElement;
+// function unfoldedFoldersHeader(props: { title: string; onOpen(): void; modifier?: Modifier }): UIElement;
 // ```
-/** Draws the unfolded left pane header: the Folders title on the left and the Open button on the right. */
+/** Draws the unfolded left pane header: the opened folder's name [title] on the left, the Open button on the right. */
 @Composable
-fun unfoldedFoldersHeader(onOpen: () -> Unit, modifier: Modifier = Modifier) {
+fun unfoldedFoldersHeader(title: String, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -299,11 +299,13 @@ fun unfoldedFoldersHeader(onOpen: () -> Unit, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(ACTION_SPACING),
     ) {
         Text(
-            text = "Folders",
+            text = title,
             modifier = Modifier
                 .weight(1f)
                 .semantics { heading() },
             style = MaterialTheme.typography.titleLarge,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         openButton(onOpen = onOpen)
     }

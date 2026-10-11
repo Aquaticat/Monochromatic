@@ -91,3 +91,28 @@ fun folderNameFromDocumentId(documentId: String): String {
     }
     return UNNAMED_FOLDER_NAME
 }
+
+// What:     `private const val MEDIA_STORE_NAME: String = "MediaStore"` is the name of the system audio library.
+// Why:      Without a held folder the library is whatever Android's MediaStore indexes, which has no folder name, and
+//           "MediaStore" is the platform's own name for that source.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const MEDIA_STORE_NAME = "MediaStore";
+// ```
+/** Name of the library that Android's MediaStore provides when no folder is held. */
+private const val MEDIA_STORE_NAME: String = "MediaStore"
+
+// What:     `fun libraryDisplayName(heldFolderName: String?): String` names the source the library was read from.
+// Why:      The unfolded left pane is headed by the name of the opened folder; when no folder is held the library is
+//           the system audio library, which has no folder name, so the platform's name for it is used.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function libraryDisplayName(heldFolderName: string | null): string {
+//   return heldFolderName?.trim() || "MediaStore";
+// }
+// ```
+/** Returns the held folder's name, or the platform's name for the system audio library when no folder is held. */
+fun libraryDisplayName(heldFolderName: String?): String =
+    heldFolderName?.trim().orEmpty().ifEmpty { MEDIA_STORE_NAME }

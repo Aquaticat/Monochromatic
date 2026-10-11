@@ -112,6 +112,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import dev.monochromatic.musicplayer.core.TrackActionFailure
+import dev.monochromatic.musicplayer.core.libraryDisplayName
 import dev.monochromatic.musicplayer.core.TrackMenuAction
 import dev.monochromatic.musicplayer.core.TrashRecord
 import dev.monochromatic.musicplayer.core.TrashRoute
@@ -431,6 +432,7 @@ private fun hostKeyRouteOf(route: PlayerRoute): HostKeyRoute = when (route) {
  * @param emptyNotice Draws the notice over the player while the library is loading or holds no track.
  * @param firstRunContent Draws the first-run pane over the player when the open source needs it, given the
  *     callback that opens the Settings route; null when the player shows.
+ * @param libraryName Name of the opened folder, or of the MediaStore library, shown above the unfolded folders.
  */
 @Composable
 fun playerHost(
@@ -439,6 +441,7 @@ fun playerHost(
     onChooseFolder: () -> Unit,
     emptyNotice: @Composable (PlayerUiState) -> Unit = {},
     firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)? = null,
+    libraryName: String = libraryDisplayName(null),
 ) {
     /** Android context that the template preferences are read and written through. */
     val context: Context = LocalContext.current
@@ -484,6 +487,7 @@ fun playerHost(
         mode = state.playbackMode,
         positionSec = playbackProgress.position,
         durationSec = playbackProgress.duration,
+        libraryName = libraryName,
     )
     /** Library tracks of the selected page, each keyed by the URI that its measure is stored under. */
     val pageTracks: List<Track> = state.pageItems.mapNotNull { entry ->
@@ -655,7 +659,9 @@ fun playerHost(
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const revealPlayingTrack = () => { setPickerOpen(false); if (page changed) selectPage(playing); bumpRevealToken(); };
+    // const revealPlayingTrack = () => {
+    //   setPickerOpen(false); if (page changed) selectPage(playing); bumpRevealToken();
+    // };
     // ```
     /** Shows the playing track's folder, then focuses the playing row without starting a track. */
     val revealPlayingTrack: () -> Unit = {
@@ -1517,7 +1523,9 @@ fun playerHost(
                         onClear = { query = "" },
                         onOpenResult = { result -> openSearchResult(result) },
                         currentTrackIndex = state.currentIndex,
-                        deck = { transportDeck(model = model.deck, actions = deckActions.copy(onRevealPlaying = null)) },
+                        deck = {
+                            transportDeck(model = model.deck, actions = deckActions.copy(onRevealPlaying = null))
+                        },
                         isPlaying = state.playing,
                         folderBrowser = { browserModifier ->
                             folderPickerPane(

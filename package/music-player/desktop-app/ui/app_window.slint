@@ -66,6 +66,8 @@ export component AppWindow inherits Window {
     in property <[FolderName]> folder-names: [];
     in property <string> current-folder: "";
     in property <string> current-cell: "";
+    // Name of the opened folder, which heads the unfolded folder pane.
+    in property <string> library-name: "Folders";
     in property <[TrackListRow]> track-rows: [];
     in property <int> scroll-to-row: -1;
     // Bumped by the Rust side on each request to show the playing track, so a repeated request scrolls again.
@@ -279,6 +281,7 @@ export component AppWindow inherits Window {
             width: root.width / 2;
             height: root.height;
             UnfoldedFoldersHeader {
+                title: root.library-name;
                 open => { root.open-files(); }
             }
             FolderPickerPane {

@@ -111,6 +111,21 @@ pub struct ScreenState {
 
 /// Methods of `ScreenState`.
 impl ScreenState {
+    /// What: `library_heading` names the opened folder for the heading above the unfolded folder pane.
+    /// Why: the pane is headed by the folder it lists; before any folder is open, or when the engine reports none,
+    /// the generic word "Folders" stands in so the heading is never blank.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const libraryHeading = (s: ScreenState): string => s.sourceRootName?.trim() || "Folders";
+    /// ```
+    pub fn library_heading(&self) -> String {
+        return match self.source_root_name.as_deref().map(str::trim) {
+            Some(name) if !name.is_empty() => name.to_string(),
+            _ => "Folders".to_string(),
+        };
+    }
+
     /// What: `menu_target` gives the open track menu's queue index, display name and absolute path.
     /// Why: a menu action runs on the row the menu was opened for, and that row can leave the queue meanwhile.
     pub fn menu_target(&self) -> Option<(usize, String, std::path::PathBuf)> {

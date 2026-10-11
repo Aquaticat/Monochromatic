@@ -201,8 +201,10 @@ export component CoverTopRow inherits Rectangle {
     }
 }
 
-// Unfolded left pane header: the Folders heading on the left and the Open pill on the right.
+// Unfolded left pane header: the opened folder's name on the left and the Open pill on the right.
 export component UnfoldedFoldersHeader inherits Rectangle {
+    // Name of the opened folder; elided before it would run under the Open pill.
+    in property <string> title: "Folders";
     // Invoked when the Open pill is tapped.
     callback open();
 
@@ -210,13 +212,17 @@ export component UnfoldedFoldersHeader inherits Rectangle {
     Text {
         x: 16px;
         y: 0px;
+        width: max(0px, root.width - 16px - 8px - open-pill.width - 8px);
         height: parent.height;
-        text: "Folders";
+        text: root.title;
         font-size: Theme.title-large;
         color: Theme.on-surface;
         vertical-alignment: center;
+        wrap: no-wrap;
+        overflow: elide;
+        accessible-role: text;
     }
-    OpenPill {
+    open-pill := OpenPill {
         x: root.width - 8px - self.width;
         y: 4px;
         clicked => {

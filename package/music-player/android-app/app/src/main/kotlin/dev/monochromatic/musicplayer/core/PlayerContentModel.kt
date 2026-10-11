@@ -51,6 +51,8 @@ data class PlayerContentModel(
     val entries: List<TrackListEntry>,
     /** Snapshot the transport deck draws. */
     val deck: TransportDeckModel,
+    /** Name of the opened folder, or the name of the MediaStore library, which heads the unfolded folder pane. */
+    val libraryName: String = libraryDisplayName(null),
 )
 
 // What:     `fun buildPlayerContent(...)` turns the controller's page and playback values into the screen model.
@@ -72,6 +74,7 @@ fun buildPlayerContent(
     mode: PlaybackMode,
     positionSec: Double,
     durationSec: Double,
+    libraryName: String = libraryDisplayName(null),
 ): PlayerContentModel {
     /** Rail sections built from every page name, so the picker can list each page. */
     val sections: List<RailSection> = railFor(pageLabels)
@@ -108,6 +111,7 @@ fun buildPlayerContent(
         folderTitle = folderTitle,
         entries = entries,
         deck = deck,
+        libraryName = libraryName,
     )
 }
 
