@@ -380,6 +380,15 @@ import androidx.compose.ui.focus.FocusRequester
 // ```
 import androidx.compose.ui.focus.focusRequester
 
+// What:     `import androidx.compose.ui.focus.onFocusChanged` reports the query field's focus state.
+// Why:      The host needs to know whether the field holds focus, because the field owns the keys it types.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// input.addEventListener("focus", ...); input.addEventListener("blur", ...);
+// ```
+import androidx.compose.ui.focus.onFocusChanged
+
 // What:     `import androidx.compose.ui.graphics.Color` supplies the canvas, fill, and ink colors.
 // Why:      The page paints its canvas and the emphasis fill with explicit colors.
 //
@@ -1110,9 +1119,13 @@ private fun searchHeader(
 ) {
     /** Focus requester attached to the query field so the page can focus it on entry. */
     val focusRequester = remember { FocusRequester() }
+    /** Count of same-visit refocus requests from the Search shortcut, which refocus the field without clearing it. */
+    val focusToken: Int = HostKeyLocalSearchFocus.current
+    /** Callback that reports the query field's focus to the host, which needs it to know the key owner. */
+    val reportFieldFocus: (Boolean) -> Unit = HostKeyLocalSearchField.current
     /** Software keyboard controller, or null when the platform offers none. */
     val keyboard = LocalSoftwareKeyboardController.current
-    LaunchedEffect(Unit) {
+    LaunchedEffect(focusToken) {
         focusRequester.requestFocus()
         keyboard?.show()
     }
@@ -1134,6 +1147,7 @@ private fun searchHeader(
                 .weight(1f)
                 .height(SEARCH_TOUCH_TARGET)
                 .focusRequester(focusRequester)
+                .onFocusChanged { focusState -> reportFieldFocus(focusState.isFocused) }
                 .semantics { contentDescription = SEARCH_FIELD_LABEL },
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),

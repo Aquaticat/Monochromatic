@@ -41,6 +41,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 
 // What:     Imports from `androidx.compose.ui` bring in the modifier, color, font weight, semantics, and dp units.
@@ -51,6 +53,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 // import { Modifier, Color, FontWeight, Role, Dp } from "compose/ui";
 // ```
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -65,6 +69,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import kotlinx.coroutines.flow.first
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -169,10 +174,29 @@ fun trackListPane(
             listState.animateScrollToItem(currentPosition)
         }
     }
+    /** Count of reveal requests from the host, each of which scrolls to and focuses the playing row. */
+    val revealToken: Int = HostKeyLocalReveal.current
+    /** Reveal count when this list entered composition, so that entering the list never reveals by itself. */
+    val revealAtEntry: Int = remember { revealToken }
+    /** Focus requester attached to the playing row, so a reveal can focus it once the row is composed. */
+    val currentRowFocus: FocusRequester = remember { FocusRequester() }
+    LaunchedEffect(revealToken) {
+        if (revealToken != revealAtEntry && currentPosition != null) {
+            listState.scrollToItem(currentPosition)
+            snapshotFlow { listState.layoutInfo.visibleItemsInfo.any { item -> item.index == currentPosition } }
+                .first { visible -> visible }
+            currentRowFocus.requestFocus()
+        }
+    }
     LazyColumn(state = listState, modifier = modifier) {
         items(items = entries, key = { entry -> keyOf(entry) }) { entry ->
             when (entry) {
-                is TrackListEntry.RowEntry -> trackRow(row = entry.row, onPlay = onPlay, onOpenMenu = onOpenMenu)
+                is TrackListEntry.RowEntry -> trackRow(
+                    row = entry.row,
+                    onPlay = onPlay,
+                    onOpenMenu = onOpenMenu,
+                    focus = if (entry.row.isCurrent) currentRowFocus else null,
+                )
                 is TrackListEntry.HeaderEntry -> subfolderHeader(name = entry.name, trackCount = entry.trackCount)
             }
         }
@@ -227,7 +251,12 @@ private fun keyOf(entry: TrackListEntry): String = when (entry) {
  * Tap plays the row; long press, a secondary-button press, or the menu key opens its context menu.
  */
 @Composable
-private fun trackRow(row: TrackRowModel, onPlay: (Int) -> Unit, onOpenMenu: ((Int) -> Unit)?) {
+private fun trackRow(
+    row: TrackRowModel,
+    onPlay: (Int) -> Unit,
+    onOpenMenu: ((Int) -> Unit)?,
+    focus: FocusRequester?,
+) {
     /** Surface role behind the current row (D42), and transparent behind every other row. */
     val rowBackground: Color = if (row.isCurrent) {
         MaterialTheme.colorScheme.surfaceContainerLow
@@ -238,11 +267,14 @@ private fun trackRow(row: TrackRowModel, onPlay: (Int) -> Unit, onOpenMenu: ((In
     val titleWeight: FontWeight? = if (row.isCurrent) FontWeight.Bold else null
     /** Long-press action that opens this row's menu, or null when no menu opener is provided. */
     val openMenuForRow: (() -> Unit)? = onOpenMenu?.let { open -> { open(row.indexInLibrary) } }
+    /** Focus modifier that lets a reveal focus this row, or an empty modifier when no reveal targets it. */
+    val focusModifier: Modifier = focus?.let { requester -> Modifier.focusRequester(requester) } ?: Modifier
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = ROW_MIN_HEIGHT)
             .background(rowBackground)
+            .then(focusModifier)
             .combinedClickable(
                 role = Role.Button,
                 onClick = { onPlay(row.indexInLibrary) },
