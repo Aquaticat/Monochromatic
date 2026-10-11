@@ -284,3 +284,47 @@ This lane has not changed that test or the harness.
 Commands to finish once the baseline passes:
 `systemd-run --user --unit=<name> --collect --property=MemoryMax=12G --working-directory=<worktree> node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/shadow_create.rs --file src/native/shadow_links.rs`,
 then the same with `--file src/native/capture_order.rs` alone, then `--file src/native/commit_args.rs` alone.
+
+## Trailing gates
+
+The coordinator moved lane mutation campaigns behind the cutover.
+What ran, and what is still open:
+
+- Final container gate on `437837d82b` (image id `67961f3e8041`): library suite 942 passed, 0 failed.
+  No Rust source changed after that commit. Later commits change only `bin/mutate-native-container.mjs`
+  and this document, so the gate was not rerun.
+- Mutation run 1, all ten files (`capture_invocation.rs`, `capture_order.rs`, `shadow_config.rs`,
+  `shadow_links.rs`, `shadow_refs.rs`, `conclusion_copy.rs`, `shadow_create.rs`, `commit_args.rs`,
+  `commit_index.rs`, `commit_preparation.rs`), 254 mutants at `53d159159a`:
+  caught 225, missed 7, timeout 5, unviable 17.
+- Mutation run 2, `shadow_create.rs` and `shadow_links.rs`, 67 mutants at `ee4f8614f1`:
+  caught 60, missed 6, unviable 1, timeout 0.
+- Tests added at `437837d82b` for the non-equivalent misses of both runs:
+  `existing_shadow_entries_are_replaced_by_links`, `an_unreadable_sparse_location_is_an_error`,
+  `a_shared_info_that_is_not_a_directory_is_an_error`, `private_info_directory_is_private`,
+  `overwritten_shadow_files_are_private`, `shadow_and_its_parents_are_private`,
+  `interactive_selection_reports_a_failed_git_add`, `interactive_selection_succeeds_without_changes`.
+  These tests have not been run under mutation.
+- Equivalent mutant, justified: `shadow_links.rs` `set_private_directory` in the `#[cfg(windows)]` branch.
+  Replacing `return Ok(())` with `return Ok(())` changes nothing, and Linux never compiles the branch.
+- Timeouts, not rerun: `capture_order.rs:339` (two `staged_entries` mutants returning a fixed map,
+  which loop in the list functions) and `commit_args.rs` (`+=` to `-=` in `split_commit_invocation`,
+  `==` to `!=` and `&&` to `||` in `private_explicit_commit_args`).
+- Baseline blocker: every mutation baseline since image `67961f3e8041` fails before any mutant runs.
+  The failing test is `index_lock_holders::tests::a_real_child_holding_the_lock_is_found_on_linux`,
+  which belongs to the transactions lane. Its scan returns `holders: []` inside the mutation container
+  and passes in the test gate. That lane is investigating it.
+- Baseline skip (committed in `fb10924147`): `bin/mutate-native-container.mjs` appends
+  `-- --skip <name>` when `NATIVE_MUTATION_BASELINE_SKIP` names a test path. Unset, nothing changes.
+  The skipped test is referenced only in `src/native/index_lock_holders_tests.rs`.
+  No file in the ten mutated set uses `index_lock_holders`; only `index_lock_evidence.rs` does.
+  Run C (`shadow_create` and `shadow_links` with that skip) was stopped by the coordinator before any outcome.
+
+Rerun commands once the blocker is cleared or the skip is used:
+
+```
+systemd-run --user --unit=<name> --collect --property=MemoryMax=12G --working-directory=<worktree> node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture NATIVE_MUTATION_BASELINE_SKIP=index_lock_holders::tests::a_real_child_holding_the_lock_is_found_on_linux mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/shadow_create.rs --file src/native/shadow_links.rs
+```
+
+Then the same with `--file src/native/capture_order.rs` alone, then `--file src/native/commit_args.rs` alone,
+each with the same environment variable. Each run's timeouts are rerun once, alone.
