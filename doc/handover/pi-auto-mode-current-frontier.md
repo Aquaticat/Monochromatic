@@ -342,7 +342,10 @@ including the current 103-output input matrix with empty child stderr.
 Complete action-policy `proc_379b` and policy-source `proc_580e` passed.
 The separate earlier full-policy failure remains unattributed;
 these later passes establish no cause or fix.
-The remaining closeout check is final document rendering.
+Fourteen-document lint and rendering passed `proc_4b01` with zero diagnostics
+using the current repository linter and per-path clean/error controls.
+The document runner was adapted after the old Markdown CLI was removed;
+that verification-only change does not replace the qualified runtime parser.
 All source limits,
 budgets,
 and installed files remain unchanged.

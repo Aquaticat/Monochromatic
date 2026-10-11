@@ -46,7 +46,10 @@ The documentation sentence avoids that punctuation while retaining the exact cit
 No warning filtering,
 rule suppression,
 or configuration weakening was added.
-The corrected complete document run remains pending.
+Corrected `proc_4b01` passed all 14 documents with zero diagnostics,
+including per-path clean/error controls and written Micromark output.
+The command remains `mise --no-env --no-hooks run documents`
+in private `contract/collector/native-guidance-resumption-2026-10-07`.
 
 ### Rejected remedies and filing decision
 
