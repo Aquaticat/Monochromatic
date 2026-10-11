@@ -336,10 +336,18 @@ export type ConsolidationSettlement = {
  eligible (`consolidate-lane-offer.ts`, class forty, 2026-09-17)
 
  @param runoffOverStanding - whether a tied slate over an ELIGIBLE standing is
- run off rather than left to its single round, which the driver sets when
- every contest ballot called the archive flawed (`consolidate-archive-flawed.ts`,
- class one hundred six, 2026-09-24); the standing still ships where the
- run-off ends undecided
+ run off rather than left to its single round, which the driver sets when a
+ strict majority of the usable contest ballots called the archive flawed
+ (`archiveFlawedByMajority` in `consolidate-archive-flawed.ts`, class one
+ hundred six, 2026-09-24, widened to a majority by the owner on 2026-10-11,
+ "Majority flawed yes"); the standing still ships where the run-off ends
+ undecided
+
+ @param standingFlawedByAll - whether every usable contest ballot called the
+ archive flawed, which the driver sets from `archiveFlawedByEveryBallot`; an
+ undecided gate over an eligible standing so condemned ships the slate's
+ choice (owner answer 2026-09-27, "Slate's choice"). Read by the forfeit only,
+ never by the run-off
 
  @param signal - cancellation for the whole settlement
 
@@ -377,6 +385,7 @@ export async function settleConsolidation(
     standingRefusal,
     laneTexts = [],
     runoffOverStanding = false,
+    standingFlawedByAll = false,
     signal,
     perCallTimeoutMs,
     l,
@@ -398,6 +407,7 @@ export async function settleConsolidation(
     readonly standingRefusal?: string;
     readonly laneTexts?: readonly LaneText[];
     readonly runoffOverStanding?: boolean;
+    readonly standingFlawedByAll?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -581,13 +591,16 @@ export async function settleConsolidation(
     sl.warn(`slice ${String(sliceIndex,)}: ${INELIGIBLE_STANDING_WITHHELD_FINDING}`,);
   /**
    Whether a tie is challenged: always over a withheld standing (class
-   fifty-five), and over an eligible one only where every contest ballot
-   called the archive flawed (class one hundred six).
+   fifty-five), and over an eligible one only where a strict majority of the
+   contest ballots called the archive flawed (class one hundred six, owner
+   answer 2026-10-11). An eligible standing that no majority condemns still
+   gets the run-off of its tied finalists when it drew no ballot, inside
+   `judgeConsolidationSlate`.
    */
   const challenged = (!standingEligible) || runoffOverStanding;
   if (standingEligible && runoffOverStanding) {
     sl.info(
-      `slice ${String(sliceIndex,)}: every contest ballot called the archive flawed; a tied slate is run off rather than left to the standing (class one hundred six)`,
+      `slice ${String(sliceIndex,)}: a strict majority of contest ballots called the archive flawed; a tied slate is run off rather than left to the standing (class one hundred six)`,
     );
   }
 
@@ -699,7 +712,7 @@ export async function settleConsolidation(
     standingMayShip,
     standingEligible,
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
-    standingFlawedByAll: runoffOverStanding,
+    standingFlawedByAll,
     identity,
     signal,
     perCallTimeoutMs,

@@ -109,6 +109,17 @@ import type { LaneText, } from './translate-candidates.ts';
  which a proposal is held to, now look past a JSX comment, a stray quote mark
  and a lone backtick (ledger K7, `1873b23dc` and `dc325d847`).
 
+ VERSION 21 (owner answers of 2026-10-11, "Majority flawed yes" and "Run off
+ the tied finalists") changes two things a settlement records. A tied slate
+ over an eligible standing is run off once over its tied finalists when the
+ standing drew no ballot, where version 20 kept the standing unchallenged. The
+ run-off over an eligible standing is also triggered by a strict majority of
+ the contest ballots calling the archive flawed, where version 20 required
+ every ballot. A settlement written under version 20 kept a standing no judge
+ chose, and kept an archive a majority condemned, so it cannot resume as
+ though it still answered the question. The forfeit past an undecided gate
+ still reads every ballot, so its stored outcomes keep their meaning.
+
  The glossary audit's corrections ride inside 20 too (ledger C3 to R16,
  `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
  the agent runs, still 04:26 UTC on 2026-09-27 (eighteen files after 04:20 UTC that
@@ -276,7 +287,7 @@ import type { LaneText, } from './translate-candidates.ts';
  this number. Every source commit since then rides inside it, those the
  accounts in this TSDoc name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
  */
-export const CONSOLIDATE_CACHE_VERSION = 20;
+export const CONSOLIDATE_CACHE_VERSION = 21;
 
 /**
  What a line-structured slice appends to its key material.

@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { INELIGIBLE_STANDING_WITHHELD_FINDING, } from './consolidate-ineligible-standing.ts';
@@ -12,7 +13,10 @@ import {
 } from './translate-absence.ts';
 import type { TranslateCandidateSet, } from './translate-candidates.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
-import { judgeSlateWithRetry, } from './translate-retry.ts';
+import {
+  judgeSlateWithRetry,
+  runoffTiedFinalists,
+} from './translate-retry.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 import type { StageSettings, } from './stage-settings.ts';
 
@@ -131,6 +135,96 @@ export async function requireWithheldSlateDecided<const DecidedT,>(
 }
 
 /**
+ Whether the standing a tied slate kept drew no ballot in that tie.
+
+ A standing that drew a ballot was ranked against the proposals, so its tie is
+ the single round's own answer and stands. A standing that drew none was not
+ chosen by any judge, so the tied finalists are asked again instead
+ (`judgeSingleRoundOverStanding`).
+
+ A STANDING NOT ON THE SLATE HAS NO BALLOT TO READ, and answers false, so the
+ tie is left as the single round left it. An eligible standing with wording is
+ always on the slate, since `buildTranslateCandidates` offers the incumbent
+ first and a dedup keeps the first text it sees. A standing that is on the
+ slate has a row in `perCandidate` for its position, since
+ `countCandidateWeights` gives every candidate one.
+
+ @param result - the single round's decline, which kept the incumbent
+
+ @returns Whether the standing is on the slate and no ballot named it
+
+ @throws Error when the round has no `perCandidate` row for the standing's position
+
+ @example
+ ```ts
+ const undrawn = standingDrewNoBallot({ result, },);
+ ```
+ */
+function standingDrewNoBallot(
+  { result, }: { readonly result: TranslateStageResult; },
+): boolean {
+  /**
+   The standing's entry on the slate the round judged, absent when it is not on it.
+   */
+  const standing = result.slate
+    .find(function isStanding(entry,): boolean {
+      return entry.origin === 'incumbent';
+    },);
+  if (standing === undefined)
+    return false;
+  /**
+   The round's count for the standing's position.
+   */
+  const drawn = nonNullishOrThrow(
+    result.perCandidate
+      .find(function namesStanding(row,): boolean {
+        return row.index === standing.index;
+      },),
+  );
+  return drawn.ballots === 0;
+}
+
+/**
+ Asks the slate judges once over an eligible standing, and asks the tied
+ finalists once more when the tie left the standing without a ballot (owner
+ answer 2026-10-11, "Run off the tied finalists"). A decision in the single
+ round, or a tie that drew a ballot for the standing, is returned as the
+ single round left it.
+
+ @param judging - everything {@link judgeTranslateSlate} needs
+
+ @returns The judges' decision, from whichever round decided it
+
+ @throws Whatever the judging raises, unchanged
+
+ @example
+ ```ts
+ const decided = await judgeSingleRoundOverStanding({ judging, },);
+ ```
+ */
+async function judgeSingleRoundOverStanding(
+  { judging, }: { readonly judging: Parameters<typeof judgeTranslateSlate>[0]; },
+): Promise<TranslateStageResult> {
+  /**
+   What the single round decided.
+   */
+  const single = await judgeTranslateSlate(judging,);
+  /**
+   Finalists the tie backed, absent where the round did not tie with the incumbent kept.
+   */
+  const finalists = single.runoffFinalists;
+  if ((single.decision !== 'declined-indecision') || (finalists === undefined))
+    return single;
+  if (!standingDrewNoBallot({ result: single, },))
+    return single;
+  return await runoffTiedFinalists({
+    judging,
+    first: single,
+    finalists,
+  },);
+}
+
+/**
  Asks the slate judges over one consolidation slate.
 
  A WITHHELD SLATE IS ALWAYS DECIDED (ledger B51). It used to return the
@@ -151,10 +245,13 @@ export async function requireWithheldSlateDecided<const DecidedT,>(
  declines with nothing left to narrow ships the judges' preference (owner,
  2026-09-27, "Preference + polish"). An eligible standing keeps the single
  round, because there a decline keeps text the contest already endorsed,
- except where every contest ballot called the archive flawed
- (`runoffOverStanding`, class one hundred six), where a tie is run off too.
- This said the eligible standing always kept the single round until ledger
- H10.
+ except where a strict majority of the contest ballots called the archive
+ flawed (`runoffOverStanding`, class one hundred six, owner answer
+ 2026-10-11), where a tie is run off too. An eligible standing that the single
+ round ties while drawing no ballot gets one run-off over the tied finalists
+ (owner answer 2026-10-11, "Run off the tied finalists"), because a standing
+ no judge chose is no endorsement to keep. This said the eligible standing
+ always kept the single round until ledger H10.
 
  @param client - provider client the round borrows
 
@@ -307,9 +404,10 @@ export async function judgeConsolidationSlate(
   return await requireWithheldSlateDecided({
     judged: challenged
       ? judgeSlateWithRetry({ judging, },)
-      : judgeTranslateSlate(judging,),
+      : judgeSingleRoundOverStanding({ judging, },),
     standingEligible,
   },);
 }
+
 
 //endregion Consolidate settle judging

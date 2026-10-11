@@ -11,7 +11,7 @@ import {
   consolidateRunShape,
   consolidateSliceKey,
 } from './consolidate-key.ts';
-import { archiveFlawedByAll, } from './consolidate-archive-flawed.ts';
+import { archiveFlagsOf, } from './consolidate-archive-flawed.ts';
 import { laneTextsForSlate, } from './consolidate-lane-offer.ts';
 import { persistConsolidationSettlement, } from './consolidate-persistence.ts';
 import type { ConsolidationSettlement, } from './consolidate-settle.ts';
@@ -528,10 +528,12 @@ export async function consolidateDocument(
                 ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
                 standingFindings,
                 laneTexts,
-                // A tied slate over this eligible standing is run off where every
-                // contest ballot called the archive flawed (class one hundred
-                // six). Derived from the ballots the key already carries.
-                runoffOverStanding: archiveFlawedByAll({
+                // The run-off over this eligible standing reads a strict majority
+                // of the contest ballots (owner answer 2026-10-11, "Majority flawed
+                // yes"); the forfeit past an undecided gate reads every ballot
+                // (owner answer 2026-09-27, "Slate's choice"). Both derive from
+                // the ballots the key already carries.
+                ...archiveFlagsOf({
                   verdict: contest.verdict,
                   ballots: contest.ballots,
                 },),

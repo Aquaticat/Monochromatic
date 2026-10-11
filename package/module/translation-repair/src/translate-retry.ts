@@ -461,4 +461,98 @@ export async function judgeSlateWithRetry(
   }
 }
 
+/**
+ Asks the panel once more over the finalists a tied single round backed, when
+ the eligible standing it would keep drew no ballot in that tie (owner answer
+ 2026-10-11, "Run off the tied finalists"). A run-off that decides ships its
+ choice; a run-off that ties again keeps the first round's decline, so the
+ standing ships as it did before this run-off existed.
+
+ The run-off is one ask. A further tie is not narrowed again here, because the
+ owner's decision named one run-off over the tied finalists.
+
+ @param judging - everything {@link judgeTranslateSlate} needs, forwarded
+ unchanged except for the slate it is asked over
+
+ @param first - the single round's decline, which kept the incumbent
+
+ @param finalists - candidates the tie backed, fewer than the whole slate
+
+ @returns The run-off's decision, or the first round's decline, with the
+ findings of both rounds
+
+ @example
+ ```ts
+ const decided = await runoffTiedFinalists({ judging, first, finalists, },);
+ ```
+ */
+export async function runoffTiedFinalists(
+  {
+    judging,
+    first,
+    finalists,
+  }: {
+    readonly judging: Parameters<typeof judgeTranslateSlate>[0];
+    readonly first: TranslateStageResult;
+    readonly finalists: NonNullable<TranslateStageResult['runoffFinalists']>;
+  },
+): Promise<TranslateStageResult> {
+  /**
+   Logger the caller already tagged.
+   */
+  const { l, } = judging;
+
+  l.info(
+    `translate stage: ${first.decision}; the standing drew no ballot, so the same panel is asked again over the ${
+      String(finalists.length,)
+    } tied ${
+      wordForCount({
+        count: finalists.length,
+        one: 'finalist',
+        many: 'finalists',
+      },)
+    }`,
+  );
+
+  /**
+   What the same panel said over the tied finalists.
+   */
+  const again = await judgeTranslateSlate({
+    ...judging,
+    produced: {
+      ...judging.produced,
+      candidates: finalists,
+    },
+    // The ballot floor decides a run-off between valid finalists (class
+    // seventy-three), as the translate lane's run-off does.
+    runoff: true,
+    responsibility: 'decline-challenge',
+  },);
+
+  /**
+   Findings of both rounds, with the retry marker and the run-off named
+   between them, so the record shows each ask.
+   */
+  const findings = [
+    ...first.findings,
+    RETRY_FINDING,
+    runoffFinding({
+      finalists: finalists.length,
+      offered: judging.produced
+        .candidates
+        .length,
+    },),
+    ...again.findings,
+  ];
+  if (isRetriedDecline({ reason: again.decision, },))
+    return {
+      ...first,
+      findings,
+    };
+  return {
+    ...again,
+    findings,
+  };
+}
+
 //endregion Translate retry
