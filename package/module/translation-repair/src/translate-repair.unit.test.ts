@@ -13,6 +13,8 @@
  @module
  */
 
+import { setImmediate as turnOfTheLoop, } from 'node:timers/promises';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -27,6 +29,7 @@ import {
   FloorGroundDisagreementError,
   messageText,
   repairInvalidCandidates,
+  SyntheticHttpError,
   validateTranslatedSlice,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -35,11 +38,14 @@ import {
 } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import { rejectionOf, } from './corpus-run/rejection-of.test-fixture.ts';
+import { refusalOrder, } from './refusal-order.test-fixture.ts';
 import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { untilAborted, } from './stage-trivial-reply.test-fixture.ts';
 
 /**
  Logger for the repairs under test.
@@ -319,6 +325,121 @@ await describe({
           },),
         },);
         expect(String(refusal,),).toBe('Error: the first voice was refused',);
+      },
+    },),
+
+    it({
+      name: 'LOGS EACH RE-ASK\'S OWN FAILURE AS THE CALLER STOPS THE REPAIR, on a line naming its seat with the '
+        + 'provider\'s words, the later-listed seat\'s first as it ends first, writes none for a re-ask ending in '
+        + 'the caller\'s own reason, and refuses with the first failure in input order',
+      fn: async () => {
+        /**
+         Every message the repair logged.
+         */
+        const said: string[] = [];
+        /**
+         Why the caller stopped the repair.
+         */
+        const reason = new Error('the owner called the cats in',);
+        /**
+         The caller's steering.
+         */
+        const steering = new AbortController();
+        /**
+         What the first-listed seat's re-ask ends in, once the later-listed seat's has ended.
+         */
+        const firstRefusal = new SyntheticHttpError({
+          status: 429,
+          bodyText: 'the first cat is out of treats',
+        },);
+        /**
+         What the later-listed seat's re-ask ends in, first.
+         */
+        const laterRefusal = new SyntheticHttpError({
+          status: 503,
+          bodyText: 'the later cat is napping in the sun',
+        },);
+        /**
+         The later-listed seat's failure at once, the first-listed seat's after it.
+         */
+        const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+        /**
+         Seats whose candidates are sent back, in input order: the first-listed, the one whose re-ask ends in
+         the caller's own reason, and the later-listed.
+         */
+        const seats = [
+          TRANSLATOR,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+        ] as const;
+        /**
+         The repair, started and left waiting on every re-ask.
+         */
+        const repair = repairInvalidCandidates({
+          client: {
+            chatText: async () => {
+              throw new Error('chatText unused',);
+            },
+            chatJson: async <ValueT,>(
+              request: ChatJsonRequest<ValueT>,
+            ): Promise<ChatJsonOutcome<ValueT>> => {
+              await untilAborted({ signal: request.signal, },);
+              if (request.modelId === TRANSLATOR)
+                return await refuseAfterThat(firstRefusal,);
+              if (request.modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER)
+                return await refuseAtOnce(laterRefusal,);
+              request.signal.throwIfAborted();
+              throw new Error('unreachable: a re-ask that waited for its abort was handed a signal that had not aborted',);
+            },
+            quotas: async () => {
+              throw new Error('quotas unused',);
+            },
+          },
+          voices: seats.map(function voice(modelId,) {
+            return {
+              modelId,
+              value: { translation: MERGED_TEXT, },
+            };
+          },),
+          sourceText: SOURCE_TEXT,
+          incumbentText: '',
+          pageText: HEADED_PAGE,
+          priorMessages: PRIOR_MESSAGES,
+          signal: steering.signal,
+          perCallTimeoutMs: HANG_STOP_MS,
+          l: capturingLogger({ messages: said, },),
+        },);
+        steering.abort(reason,);
+        /**
+         What the repair refused with.
+         */
+        const refusal = await rejectionOf({ promise: repair, },);
+        // A re-ask ending after the one the repair refused on would write its
+        // line as it ends. No scripted failure waits on anything but a
+        // microtask, so a turn of the event loop later every re-ask has ended.
+        await turnOfTheLoop();
+        /**
+         What the publication rule finds in each sent-back candidate.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: MERGED_TEXT,
+          pageText: HEADED_PAGE,
+        },);
+        if (verdict.kind !== 'invalid')
+          throw new Error(`the fixture's candidate must fail the publication rule, and the floor said ${verdict.kind}`,);
+        expect(refusal,).toBe(firstRefusal,);
+        expect(said,).toEqual([
+          ...seats.map(function askedLine(seat,): string {
+            return `[repairOneCandidate] ${seat}: candidate fails the publication rule, so its author is asked about `
+              + `it: ${verdict.findings.join(' ',)}`;
+          },),
+          `[repairOneCandidate] translate-repair ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}: refused by `
+          + 'SyntheticHttpError with HTTP 503 (the provider said: "the later cat is napping in the sun"), as the '
+          + 'caller stopped the repair',
+          `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by SyntheticHttpError with HTTP 429 (the `
+          + 'provider said: "the first cat is out of treats"), as the caller stopped the repair',
+        ],);
       },
     },),
 
