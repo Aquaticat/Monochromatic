@@ -2,7 +2,10 @@
  Tests for what buying one repair slice does when the caller stops the run
  while the provider is refusing: the abort wins, the seat's line says what the
  provider refused with, the slice's line says the caller abandoned it, and the
- key the refusal echoed is in neither.
+ key the refusal echoed is in neither. And when the stop lands as the checker
+ stage re-seats through the pass's own hook, whose seat reading writes and
+ marks the refusal it stops the entry with, that refusal is written once, on
+ the reading's line (ledger B413, B415).
 
  Fixtures are cat-themed invention.
 
@@ -20,8 +23,10 @@ import {
   buyRepairSlice,
   prepareDocumentPair,
   type RepairModels,
+  type RepairSliceSeating,
 } from '../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
+import { shippingLaneClient, } from './corpus-run/editor-lane-script.test-fixture.ts';
 import {
   statusFailureLogText,
   statusFailureOf,
@@ -36,6 +41,10 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import {
+  BEDROCK_ALONE_STOP_LINE,
+  stopLandingSeatReading,
+} from './stop-landing-hook.test-fixture.ts';
 
 /**
  Roster with the naturalness lane off, checkers apart from the editors.
@@ -57,6 +66,25 @@ const MODELS: RepairModels = {
     SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
     SEAT_SYNTHETIC_VISION_WITHHELD,
     SEAT_HYPER_OPENROUTER_UNMEASURED,
+  ],
+};
+
+/**
+ Roster with three critics and three panelists, so the claim every critic of
+ the shipping script raises is accepted and the editors' edit reaches the
+ checker stage.
+ */
+const SHIPPING_MODELS: RepairModels = {
+  ...MODELS,
+  criticModelIds: [
+    SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+  ],
+  panelModelIds: [
+    SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
   ],
 };
 
@@ -130,6 +158,77 @@ await describe({
           }, as the caller stopped the round`,
           'warn [repair-slice-buy-test] chunk 0: abandoned by the caller\'s abort (refused by AbortError)',
         ],);
+      },
+    },),
+    it({
+      name: 'WRITES THE SEAT READING\'S REFUSAL ONCE when the caller stops the slice as the checker stage re-seats: '
+        + 'on the reading\'s own line, and the slice\'s abandoned line without its words, and raises the caller\'s '
+        + 'reason',
+      fn: async () => {
+        /**
+         Why the caller stopped the slice.
+         */
+        const reason = new Error('the owner called the cats in',);
+        /**
+         The caller's steering, which the re-seat's dryness read stops.
+         */
+        const steering = new AbortController();
+        /**
+         Pair whose one sentence every critic of the shipping script claims.
+         */
+        const prepared = prepareDocumentPair({
+          sourceText: '小猫在窗台上打盹。',
+          targetText: 'The kitten dozes on the windowsill.',
+        },);
+        const [slice,] = prepared.slices;
+        if (slice === undefined)
+          throw new Error('the fixture pair carries no slice',);
+        /**
+         Every line the buy and the reading wrote, by level.
+         */
+        const lines: string[] = [];
+        /**
+         Logger both write to.
+         */
+        const l = levelCapturingLogger({ lines, },);
+
+        const refusal = await rejectionOf(async function buyAsTheReadingStops() {
+          return buyRepairSlice({
+            client: shippingLaneClient(),
+            prepared,
+            models: SHIPPING_MODELS,
+            reseat: stopLandingSeatReading<RepairSliceSeating>({
+              steering,
+              reason,
+              unseated: {},
+              l,
+            },),
+            slice,
+            key: 'nap-key',
+            neighbouringIncumbentText: '',
+            neighbouringSourceText: '',
+            documentSourceText: '',
+            signal: steering.signal,
+            perCallTimeoutMs: HANG_STOP_MS,
+            l,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
+          },);
+        },);
+
+        expect(refusal,).toBe(reason,);
+        // The chunk's stage lines are information; what a reader of a stopped
+        // run looks for is written at warn and error.
+        expect(lines.filter(function warnedOrWorse(line,): boolean {
+          return line.startsWith('warn ',) || line.startsWith('error ',);
+        },),).toEqual([
+          `error ${BEDROCK_ALONE_STOP_LINE}`,
+          'warn chunk 0: abandoned by the caller\'s abort',
+        ],);
+        // The refusal's own words, at any level, stand on the reading's line
+        // alone.
+        expect(lines.filter(function namesTheRefusal(line,): boolean {
+          return line.includes('editors 0 of 3 reachable',);
+        },),).toEqual([`error ${BEDROCK_ALONE_STOP_LINE}`,],);
       },
     },),
   ],

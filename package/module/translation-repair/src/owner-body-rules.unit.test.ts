@@ -200,7 +200,15 @@ function providerRows(
     {
       provider: 'bedrock',
       modelId: SEAT_BEDROCK_ONLY_TEXT,
-      client: createBedrockClient({ apiKey: 'whiskers', ledger: EMPTY_LEDGER, transport, retryPolicy: ONE_ATTEMPT, },),
+      // No stream bound: the card's own would be armed on the real clock
+      // around every attempt (ledger B416).
+      client: createBedrockClient({
+        apiKey: 'whiskers',
+        ledger: EMPTY_LEDGER,
+        transport,
+        retryPolicy: ONE_ATTEMPT,
+        streamBoundMsOverride: 'unbounded',
+      },),
     },
   ];
 }

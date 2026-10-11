@@ -89,6 +89,9 @@ await describe({
           },
           baseUrl: 'https://mantle.invalid',
           perModelConcurrency: 1,
+          // No stream bound: the card's own would be armed on the real clock
+          // around every attempt (ledger B416).
+          streamBoundMsOverride: 'unbounded',
           transport: async function transport() {
             // A timer turn, so the queued calls wait behind a live one.
             await wait(0,);

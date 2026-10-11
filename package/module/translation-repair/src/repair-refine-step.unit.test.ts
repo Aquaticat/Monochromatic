@@ -6,7 +6,10 @@
  of its slice, so an outcome naming a slice preparation never made is refused
  there, even with the lane off, where the phase hands its input back
  untouched. A refusal the phase makes under a live signal is a fault, not an
- abort, and keeps its own identity. Fixtures are cat-themed invention.
+ abort, and keeps its own identity. A refusal the seat reading wrote and
+ marked as the recheck re-seated is written once, on the reading's line, when
+ the caller stops the lane (ledger B413, B415). Fixtures are cat-themed
+ invention.
 
  @module
  */
@@ -18,11 +21,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   CheckerIndependenceError,
   frontMatterRepairOutcome,
   prepareDocumentPair,
   refineSettledSlices,
   type RepairModels,
+  type RepairSliceSeating,
   type SyntheticClient,
   UnpreparedSliceError,
 } from '../dist/final/node/index.mjs';
@@ -43,11 +49,16 @@ import {
 } from './roster-seats.test-fixture.ts';
 import {
   REPAIRED_TEXT,
+  REWRITTEN_TEXT,
   SOURCE_TEXT,
   sunbathingOutcome,
 } from './sunbathing-recheck.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import {
+  BEDROCK_ALONE_STOP_LINE,
+  stopLandingSeatReading,
+} from './stop-landing-hook.test-fixture.ts';
 
 /**
  Logger for the step under test.
@@ -120,6 +131,63 @@ const SILENT_CLIENT: SyntheticClient = {
     throw new Error('no call expected',);
   },
 };
+
+/**
+ Answers the naturalness lane's rewriter with the sunbathing rewrite and its
+ judges with a ballot for it, so the rewrite ships and the recheck re-seats;
+ refuses any other stage, which no case here reaches before the re-seat.
+
+ @param request - exchange as the lane sent it
+
+ @returns The scripted reply, which the stage's own guard has accepted
+
+ @throws Error naming a stage this script does not answer, or a reply its
+ guard refused
+
+ @example
+ ```ts
+ const client = { chatText, chatJson: rewritingChatJson, quotas, };
+ ```
+ */
+async function rewritingChatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {
+  /**
+   Schema the stage asked for.
+   */
+  const stage = request.responseFormat
+    ?.json_schema
+    .name
+    ?? '';
+  /**
+   Reply by stage: the one paragraph rewritten, and every judge picking it.
+   */
+  const replies: Readonly<Record<string, unknown>> = {
+    refine_report: {
+      rewrites: [
+        {
+          paragraph: 1,
+          newText: REWRITTEN_TEXT,
+        },
+      ],
+    },
+    candidate_ballot: {
+      best: 1,
+      reason: 'the rewrite purrs',
+    },
+  };
+  if (!Object.hasOwn(replies, stage,))
+    throw new Error(`the rewriting script holds no answer for the ${stage} stage`,);
+  /**
+   Reply this stage gets.
+   */
+  const reply = replies[stage];
+  if (!request.validate(reply,))
+    throw new Error(`the rewriting script's ${stage} reply failed the stage's own guard`,);
+  return {
+    kind: 'ok',
+    value: reply,
+    rawText: JSON.stringify(reply,),
+  };
+}
 
 await describe({
   name: refineSettledSlices.name,
@@ -225,6 +293,78 @@ await describe({
           }, as the caller stopped the round`,
           'warn refinement abandoned by the caller\'s abort (refused by AbortError)',
         ],);
+      },
+    },),
+    it({
+      name: 'WRITES THE SEAT READING\'S REFUSAL ONCE when the caller stops the lane as the recheck re-seats: on the '
+        + 'reading\'s own line, and the refinement\'s abandoned line without its words, and raises the caller\'s reason',
+      fn: async () => {
+        /**
+         Why the caller stopped the lane.
+         */
+        const reason = new Error('the owner called the cats in',);
+        /**
+         The caller's steering, which the re-seat's dryness read stops.
+         */
+        const steering = new AbortController();
+        /**
+         Every line the step and the reading wrote, by level.
+         */
+        const lines: string[] = [];
+        /**
+         Logger both write to.
+         */
+        const capturing = levelCapturingLogger({ lines, },);
+
+        const refusal = await rejectionOf(async function refineAsTheReadingStops() {
+          return refineSettledSlices({
+            client: {
+              chatText: async () => {
+                throw new Error('chatText unused by the naturalness lane',);
+              },
+              chatJson: rewritingChatJson,
+              quotas: async () => {
+                throw new Error('quotas unused by the naturalness lane',);
+              },
+            },
+            targetText: REPAIRED_TEXT,
+            slices: [
+              slicePairOf({
+                sliceIndex: 0,
+                source: SOURCE_TEXT,
+                target: REPAIRED_TEXT,
+              },),
+            ],
+            outcomes: [sunbathingOutcome({ nonTranslationStanding: false, },),],
+            models: LANE_ON,
+            reseat: stopLandingSeatReading<RepairSliceSeating>({
+              steering,
+              reason,
+              unseated: {},
+              l: capturing,
+            },),
+            declaredNames: [],
+            signal: steering.signal,
+            perCallTimeoutMs: HANG_STOP_MS,
+            l: capturing,
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
+          },);
+        },);
+
+        expect(refusal,).toBe(reason,);
+        // The lane's round and stage lines are information; what a reader of
+        // a stopped run looks for is written at warn and error.
+        expect(lines.filter(function warnedOrWorse(line,): boolean {
+          return line.startsWith('warn ',) || line.startsWith('error ',);
+        },),).toEqual([
+          `error ${BEDROCK_ALONE_STOP_LINE}`,
+          'warn refinement abandoned by the caller\'s abort',
+        ],);
+        // The refusal's own words, at any level, stand on the reading's line
+        // alone.
+        expect(lines.filter(function namesTheRefusal(line,): boolean {
+          return line.includes('editors 0 of 3 reachable',);
+        },),).toEqual([`error ${BEDROCK_ALONE_STOP_LINE}`,],);
       },
     },),
   ],

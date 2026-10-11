@@ -1,4 +1,10 @@
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+
 import {
+  type BudgetView,
+  type ProviderRecord,
+  type Reseated,
+  reseatHookFor,
   type SyntheticClient,
   WritingBenchUnreachableError,
 } from '../dist/final/node/index.mjs';
@@ -119,3 +125,130 @@ export const UNASKED_CLIENT: SyntheticClient = {
 };
 
 //endregion Stop-landing hook
+
+//region Stop-landing seat reading
+// THE PASS'S OWN RE-SEAT (`reseatHookFor`, over `readJudgeSeats`) WITH THE
+// STOP LANDING WHILE ITS DRYNESS READ IS IN FLIGHT, for cases that hand a
+// module the hook a run hands it and read what is written once the reading
+// stops the entry.
+//
+// The hook's own gate sees a hold, so it reads; by the time the reading asks
+// for the holds again the hold has ended, so it waits for nothing. The
+// dryness read stops the caller and then answers, as the run's budget view
+// does from a reading already taken: Synthetic, Hyper and OpenRouter dry,
+// Bedrock alone wet. So the reading finds the editors below their floor with
+// nothing to wait for, writes its own line, and throws the refusal it marks
+// written, while the caller's signal has aborted.
+//
+// TEST SUPPORT, NOT PACKAGE SOURCE. The holds and the view are invented.
+
+/**
+ Dryness the reading answers with: Bedrock alone wet.
+ */
+const BEDROCK_ALONE: BudgetView = {
+  synthetic: true,
+  bedrock: false,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
+ Holds as the hook's gate reads them: Hyper held out a minute.
+ */
+const HYPER_HELD: ProviderRecord<number> = {
+  synthetic: 0,
+  bedrock: 0,
+  hyper: 60_000,
+  openrouter: 0,
+};
+
+/**
+ Holds as the reading reads them, the minute having passed.
+ */
+const NONE_HELD: ProviderRecord<number> = {
+  synthetic: 0,
+  bedrock: 0,
+  hyper: 0,
+  openrouter: 0,
+};
+
+/**
+ Line the reading writes as it stops the entry over {@link BEDROCK_ALONE}.
+ */
+export const BEDROCK_ALONE_STOP_LINE: string = 'JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 3 reachable, '
+  + 'floor 2; refiners 0 of 3 reachable, floor 2; stopping the entry';
+
+/**
+ Refuses to seat anything, since the reading this fixture scripts stops the
+ entry before any seating is taken from it.
+
+ @returns Never
+
+ @throws Error on any call
+
+ @example
+ ```ts
+ const hook = reseatHookFor({ client, signal, phase: 'lanes', unseated: {}, seatingOf: refuseSeating, l, },);
+ ```
+ */
+function refuseSeating<SeatingT,>(): Reseated<SeatingT> {
+  throw new Error('unreachable: a reading that stopped the entry was asked for a seating',);
+}
+
+/**
+ Builds the pass's re-seat for the repair lane over a client whose dryness
+ read stops the caller and then reports the editors unreachable.
+
+ @param steering - caller's controller, which the dryness read aborts
+
+ @param reason - why the caller stops
+
+ @param unseated - seating the hook would hand on before any hold
+
+ @param l - logger the reading writes its line to
+
+ @returns Hook a module calls as its re-seat; its first call throws the
+ reading's marked refusal with the caller stopped
+
+ @example
+ ```ts
+ const reseat = stopLandingSeatReading<RepairSliceSeating>({ steering, reason, unseated: {}, l, },);
+ ```
+ */
+export function stopLandingSeatReading<SeatingT,>(
+  {
+    steering,
+    reason,
+    unseated,
+    l,
+  }: {
+    readonly steering: AbortController;
+    readonly reason: Error;
+    readonly unseated: SeatingT;
+    readonly l: Logger;
+  },
+): () => Promise<SeatingT> {
+  /**
+   Holds read so far.
+   */
+  const holdReads = { count: 0, };
+  return reseatHookFor<SeatingT>({
+    client: {
+      providerHolds: function holdsAsRead(): ProviderRecord<number> {
+        holdReads.count += 1;
+        return (holdReads.count === 1) ? HYPER_HELD : NONE_HELD;
+      },
+      providerDryness: function drynessAsTheStopLands(): Promise<BudgetView> {
+        steering.abort(reason,);
+        return Promise.resolve(BEDROCK_ALONE,);
+      },
+    },
+    signal: steering.signal,
+    phase: 'lanes',
+    unseated,
+    seatingOf: refuseSeating,
+    l,
+  },);
+}
+
+//endregion Stop-landing seat reading

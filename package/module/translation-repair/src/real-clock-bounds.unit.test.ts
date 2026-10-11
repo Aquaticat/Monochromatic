@@ -16,18 +16,26 @@
  of `wait` imported from `@monochromatic-dev/module-async-time/ts`, under any
  local name; and the value of an object literal's key, or the default of a
  destructured parameter, named in `BOUND_KEYS`: the per-call deadlines, grace
- windows (the two of a `WriterGrace` among them), stream bounds, caps,
- budgets, holds and the runner's own `timeout` that production arms a timer
- with or compares elapsed time against. A read
+ windows (the two of a `WriterGrace` among them), stream bounds (a model
+ card's among them), caps, budgets, holds and the runner's own `timeout` that
+ production arms a timer with or compares elapsed time against; and a
+ `createBedrockClient` imported from the built package under any local name
+ whose options name no `streamBoundMsOverride`, since the client then arms
+ each card's own bound around every attempt (ledger B416), keyed with the
+ value `(none)`. A read
  whose value is the shared constant, imported from its fixture under any
- local name, is left alone; every other value, a number, another constant,
+ local name, is left alone, and so is a stream bound of `'unbounded'`, which
+ arms nothing; every other value, a number, another constant,
  a parameter handed on or an expression, is a finding, keyed
  `path#site: form value`, where the site is the nearest enclosing named
  function, `<module>` outside one.
 
  OUT OF ITS REACH: a timer reached through `globalThis` or another object,
  a key outside `BOUND_KEYS` (a retry backoff, a poll interval, a field a
- report reads), a duration handed through an environment variable as text,
+ report reads), a Bedrock client a production function builds for a test
+ (`configureProviders` handed a Bedrock key, which takes no override; none
+ does so, by the census of B416), a duration handed through an environment
+ variable as text,
  an elapsed time a case measures with `performance.now` and compares, and a
  sleep inside a child process's script text. Waits a case's work takes, such
  as `baseMs` or `pollMs`, are left out on purpose: load only lengthens them,
@@ -87,6 +95,36 @@ const HANG_STOP_PATH = 'hang-stop.test-fixture.ts';
 const HANG_STOP_NAME = 'HANG_STOP_MS';
 
 /**
+ End of the specifier every test imports the built package by, from `src`
+ or a directory under it.
+ */
+const BUILT_INDEX_SUFFIX = 'dist/final/node/index.mjs';
+
+/**
+ Name the built package exports the Bedrock client's builder under, which
+ arms each model card's own stream bound (`streamBoundMs`) around every
+ attempt unless it is handed `streamBoundMsOverride` (`bedrock-client.ts`).
+ */
+const BEDROCK_CLIENT_NAME = 'createBedrockClient';
+
+/**
+ Forms of the stream bound keys, as a value and as a destructured default,
+ whose value `'unbounded'` arms no timer: the Bedrock client hands an
+ unbounded model's attempts to the transport as they are.
+ */
+const UNBOUNDED_FORMS: ReadonlySet<string> = new Set([
+  'streamBoundMs:',
+  'streamBoundMs =',
+  'streamBoundMsOverride:',
+  'streamBoundMsOverride =',
+],);
+
+/**
+ The value that sets no stream bound.
+ */
+const UNBOUNDED = 'unbounded';
+
+/**
  Option keys production arms a timer with, or compares elapsed time against.
 
  THE STRAGGLER WINDOWS UNDER EVERY NAME THEY TRAVEL BY: `graceMs` where a
@@ -96,6 +134,11 @@ const HANG_STOP_NAME = 'HANG_STOP_MS';
  `graceMs` (ledger B398). A calibration grace's `effectiveMs` and a note's
  `builtInMs` are left out: production only prints them, and the calibration's
  rounds take their window from a `WriterGrace`.
+
+ THE STREAM BOUND UNDER BOTH ITS NAMES: `streamBoundMsOverride` where a test
+ hands one to the Bedrock client (`bedrock-client.ts`), and `streamBoundMs`
+ where a model card carries it (`model-card.ts`), which the client arms around
+ every attempt to that model when no override is given (ledger B401, B416).
  */
 const BOUND_KEYS: ReadonlySet<string> = new Set([
   'boundMs',
@@ -113,6 +156,7 @@ const BOUND_KEYS: ReadonlySet<string> = new Set([
   'runBudgetMs',
   'softBudgetMs',
   'statedWaitMs',
+  'streamBoundMs',
   'streamBoundMsOverride',
   'streamFirstByteMs',
   'streamIdleMs',
@@ -276,6 +320,12 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: HANDED_ON,
   },
   'all-in-input-order.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
+  'bedrock-client.unit.test.ts#<module>: createBedrockClient of the built package (none)': {
+    count: 1,
+    bound: 'other',
+    reason: 'a client that reads the catalog\'s own bound and is asked only for the gpt-oss card, which carries '
+      + 'none (unbounded), so no timer is armed; the case shows the transport handed the caller\'s own signal',
+  },
   'bedrock-client.unit.test.ts#<module>: exchangeTimeoutMs: 50': {
     count: 1,
     bound: 'reached',
@@ -834,6 +884,11 @@ type TimerNames = {
    Local names of the shared hang stop.
    */
   readonly hangStops: ReadonlySet<string>;
+
+  /**
+   Local names of `createBedrockClient` from the built package.
+   */
+  readonly bedrockClients: ReadonlySet<string>;
 };
 
 /**
@@ -872,6 +927,10 @@ function timerNamesOf(
    Local names of the shared hang stop.
    */
   const hangStops = new Set<string>();
+  /**
+   Local names of the Bedrock client's builder.
+   */
+  const bedrockClients = new Set<string>();
   for (const statement of (program.body as readonly TreeNode[])) {
     if (statement.type !== 'ImportDeclaration')
       continue;
@@ -905,12 +964,15 @@ function timerNamesOf(
         waits.add(local,);
       if ((landsAt === HANG_STOP_PATH) && (exported === HANG_STOP_NAME))
         hangStops.add(local,);
+      if (from.endsWith(BUILT_INDEX_SUFFIX,) && (exported === BEDROCK_CLIENT_NAME))
+        bedrockClients.add(local,);
     }
   }
   return {
     promiseSleeps,
     waits,
     hangStops,
+    bedrockClients,
   };
 }
 
@@ -929,6 +991,34 @@ type BoundRead = {
    */
   readonly value: unknown;
 };
+
+/**
+ Whether the options a Bedrock client is built with name its stream bound
+ override, whose value the object walk then reads; options that are no
+ object literal, or carry it only through a spread, do not.
+
+ @param options - first argument of the call
+
+ @returns Whether the literal names `streamBoundMsOverride` as a key of its own
+
+ @example
+ ```ts
+ const named = namesStreamBoundOverride({ options: args[0], },);
+ ```
+ */
+function namesStreamBoundOverride({ options, }: { readonly options: unknown; },): boolean {
+  /**
+   The options inside any parentheses and casts.
+   */
+  const { inner, } = unwrapped({ node: options, },);
+  if ((!isTreeNode(inner,)) || (inner.type !== 'ObjectExpression'))
+    return false;
+  return (inner.properties as readonly TreeNode[]).some(function namesOverride(property,): boolean {
+    return (property.type === 'Property')
+      && (property.computed !== true)
+      && ((identifierName({ node: property.key, },) || literalText({ node: property.key, },)) === 'streamBoundMsOverride');
+  },);
+}
 
 /**
  The bounds a call node sets.
@@ -973,6 +1063,14 @@ function callBounds(
    The callee's name, empty for anything but a plain identifier.
    */
   const name = identifierName({ node: callee, },);
+  if (names.bedrockClients.has(name,)) {
+    return namesStreamBoundOverride({ options: args[0], },)
+      ? []
+      : [{
+        form: `${name} of the built package`,
+        value: undefined,
+      },];
+  }
   if (names.promiseSleeps.has(name,)) {
     return [{
       form: `${name} of node:timers/promises`,
@@ -1145,7 +1243,12 @@ function unsharedBounds({ files, }: { readonly files: readonly SourceText[]; },)
          The value inside any parentheses and casts.
          */
         const { inner, } = unwrapped({ node: read.value, },);
-        if (!names.hangStops.has(identifierName({ node: inner, },),)) {
+        /**
+         Whether the read sets a stream bound of `'unbounded'`, which arms
+         nothing.
+         */
+        const unbounded = UNBOUNDED_FORMS.has(read.form,) && (literalText({ node: inner, },) === UNBOUNDED);
+        if ((!names.hangStops.has(identifierName({ node: inner, },),)) && (!unbounded)) {
           found.push(`${file.path}#${here}: ${read.form} ${
             valueText({
               file,
@@ -1351,6 +1454,74 @@ await describe({
           ],
           expected: ['litter.unit.test.ts#purr: setTimeout 20',],
         },);
+      },
+    },),
+    it({
+      name: 'FINDS A MODEL CARD\'S STREAM BOUND written in a test, which the Bedrock client arms around every attempt, '
+        + 'and leaves the card\'s bound at the imported hang stop and a card that writes none',
+      fn: async () => {
+        /**
+         A test card with a bound of its own, one at the hang stop, and one
+         with no bound at all.
+         */
+        const files: readonly SourceText[] = [
+          {
+            path: 'tabby-cards.unit.test.ts',
+            text: [
+              'import { HANG_STOP_MS, } from \'./hang-stop.test-fixture.ts\';',
+              'export const napper = { id: \'tabby.nap-1\', route: \'openai-v1\', streamBoundMs: 60_000, };',
+              'export const sleeper = { id: \'tabby.sleep-1\', route: \'v1\', streamBoundMs: HANG_STOP_MS, };',
+            ].join('\n',),
+            isTest: true,
+          },
+          {
+            path: 'calico-cards.unit.test.ts',
+            text: 'export const purrer = { id: \'calico.purr-1\', route: \'v1\', streamEnd: \'usage-chunk\', };',
+            isTest: true,
+          },
+        ];
+        expect(unsharedBounds({ files, },),).toEqual(['tabby-cards.unit.test.ts#<module>: streamBoundMs: 60_000',],);
+      },
+    },),
+    it({
+      name: 'FINDS A BEDROCK CLIENT A TEST BUILDS WITH NO STREAM BOUND OVERRIDE under any local name, which arms each '
+        + 'model card\'s own bound on the real clock, and an override of its own, and leaves an override at the '
+        + 'hang stop, an override or a card at unbounded, and a function of the same name the test declares itself',
+      fn: async () => {
+        /**
+         Clients built from the package, and one look-alike built locally.
+         */
+        const files: readonly SourceText[] = [
+          {
+            path: 'tabby-clients.unit.test.ts',
+            text: [
+              'import { createBedrockClient as bedrockFor, createBedrockClient, } from \'../dist/final/node/index.mjs\';',
+              'import { HANG_STOP_MS, } from \'./hang-stop.test-fixture.ts\';',
+              'export function napClients(transport: unknown,): unknown {',
+              '  createBedrockClient({ apiKey: \'tabby\', transport, },);',
+              '  bedrockFor({ apiKey: \'tabby\', transport, },);',
+              '  createBedrockClient({ apiKey: \'tabby\', transport, streamBoundMsOverride: HANG_STOP_MS, },);',
+              '  createBedrockClient({ apiKey: \'tabby\', transport, streamBoundMsOverride: \'unbounded\', },);',
+              '  createBedrockClient({ apiKey: \'tabby\', transport, streamBoundMsOverride: 300, },);',
+              '  return { id: \'tabby.nap-1\', streamBoundMs: \'unbounded\', };',
+              '}',
+            ].join('\n',),
+            isTest: true,
+          },
+          {
+            path: 'calico-clients.unit.test.ts',
+            text: [
+              'function createBedrockClient(options: unknown,): unknown { return options; }',
+              'export const purrer = createBedrockClient({ apiKey: \'calico\', },);',
+            ].join('\n',),
+            isTest: true,
+          },
+        ];
+        expect(unsharedBounds({ files, },),).toEqual([
+          'tabby-clients.unit.test.ts#napClients: bedrockFor of the built package (none)',
+          'tabby-clients.unit.test.ts#napClients: createBedrockClient of the built package (none)',
+          'tabby-clients.unit.test.ts#napClients: streamBoundMsOverride: 300',
+        ],);
       },
     },),
     it({

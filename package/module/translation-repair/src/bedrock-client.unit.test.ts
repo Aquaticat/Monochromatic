@@ -293,6 +293,9 @@ function recordedClient(
         limit: 0,
         baseMs: 1,
       },
+      // NO STREAM BOUND: a card's own is armed on the real clock around every
+      // attempt (ledger B416), and these cases read what was sent.
+      streamBoundMsOverride: 'unbounded',
     },),
   };
 }
@@ -540,6 +543,59 @@ await describe({
         },),
 
         it({
+          name: 'ARMS NO STREAM BOUND when the override is unbounded, though the Gemma card carries one: the transport '
+            + 'is handed the caller\'s own signal',
+          fn: async () => {
+            const { client, exchanges, } = recordedClient({},);
+            await client.chatText({
+              modelId: SEAT_HYPER_TEXT_BEDROCK,
+              messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+              signal: SIGNAL,
+            },);
+            expect(BEDROCK_MODELS['google.gemma-4-26b-a4b'].streamBoundMs,).not.toBe('unbounded',);
+            expect(exchanges,).toHaveLength(1,);
+            // By identity: a bound's own signal is another AbortSignal, which a
+            // deep comparison could not tell from the caller's.
+            expect(exchanges[0]?.signal,).toBe(SIGNAL,);
+          },
+        },),
+
+        it({
+          name: 'READS THE CARD\'S OWN STREAM BOUND where no override is given: the gpt-oss card carries none, so the '
+            + 'transport is handed the caller\'s own signal',
+          fn: async () => {
+            /**
+             Every exchange the transport was handed.
+             */
+            const exchanges: TransportExchange[] = [];
+            const client = createBedrockClient({
+              apiKey: 'test-key',
+              ledger: memoryLedger({},).ledger,
+              baseUrl: 'https://mantle.invalid',
+              transport: async function transport(exchange,) {
+                exchanges.push(exchange,);
+                return {
+                  status: 200,
+                  bodyText: GPT_OSS_STREAM,
+                };
+              },
+              retryPolicy: {
+                limit: 0,
+                baseMs: 1,
+              },
+            },);
+            await client.chatText({
+              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              messages: [{ role: 'user', content: 'Where does the cat nap?', },],
+              signal: SIGNAL,
+            },);
+            expect(BEDROCK_MODELS['openai.gpt-oss-120b'].streamBoundMs,).toBe('unbounded',);
+            expect(exchanges,).toHaveLength(1,);
+            expect(exchanges[0]?.signal,).toBe(SIGNAL,);
+          },
+        },),
+
+        it({
           name: 'SENDS A CALLER\'S OWN CEILING under the measured cap and HANDS ITS ANSWER BOUND to the transport, '
             + 'under a deadline signal of its own rather than the caller\'s',
           fn: async () => {
@@ -586,6 +642,9 @@ await describe({
                 limit: 0,
                 baseMs: 1,
               },
+              // No stream bound, so the deadline is the one timer this call
+              // races (ledger B416).
+              streamBoundMsOverride: 'unbounded',
             },);
 
             /**
@@ -736,6 +795,8 @@ await describe({
                 limit: 2,
                 baseMs: 1,
               },
+              // No stream bound on the real clock (ledger B416).
+              streamBoundMsOverride: 'unbounded',
             },);
             await expect(client.chatText({
               modelId: SEAT_BEDROCK_ONLY_TEXT,
@@ -775,6 +836,8 @@ await describe({
                 limit: 1,
                 baseMs: 1,
               },
+              // No stream bound on the real clock (ledger B416).
+              streamBoundMsOverride: 'unbounded',
             },);
             await client.chatText({
               modelId: SEAT_BEDROCK_ONLY_TEXT,
