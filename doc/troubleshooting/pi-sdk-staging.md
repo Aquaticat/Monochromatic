@@ -38,8 +38,11 @@ this is only document verification.
 First current-linter run `proc_9685` reached the troubleshooting document
 and found `rust/require-rustdoc` warnings on its Mise source excerpts.
 The current executable also checks embedded Rust.
-The existing authored file-citation comments now use Rust file-documentation syntax;
+Each excerpt now has a file-documentation sentence and its original authored file citation;
 the quoted executable code is unchanged.
+An intermediate run `proc_8c6e` reported `markdown/semantic-line-breaks`
+on commas in the citations when they were used directly as Rust documentation.
+The documentation sentence avoids that punctuation while retaining the exact citations.
 No warning filtering,
 rule suppression,
 or configuration weakening was added.
@@ -4527,14 +4530,16 @@ The deciding published `v2026.9.12` sources were inspected read-only.
 `src/cli/run.rs:1284` obtains the dependency graph's linearity:
 
 ```rust
-//! Mise v2026.9.12, src/cli/run.rs:1284
+//! Source excerpt from Mise v2026.9.12.
+// Mise v2026.9.12, src/cli/run.rs:1284
 self.is_linear = tasks.is_linear();
 ```
 
 `src/task/task_output_handler.rs:554` permits interleaved output for a linear graph without raw mode:
 
 ```rust
-//! Mise v2026.9.12, src/task/task_output_handler.rs:554 to 558
+//! Source excerpt from Mise v2026.9.12.
+// Mise v2026.9.12, src/task/task_output_handler.rs:554 to 558
 if self.raw(task) || self.jobs() == 1 || self.is_linear {
     TaskOutput::Interleave
 } else {
@@ -4545,7 +4550,8 @@ if self.raw(task) || self.jobs() == 1 || self.is_linear {
 `src/task/task_executor.rs:1790` permits inherited descriptors when raw mode is false but redactions are empty:
 
 ```rust
-//! Mise v2026.9.12, src/task/task_executor.rs:1790 to 1797
+//! Source excerpt from Mise v2026.9.12.
+// Mise v2026.9.12, src/task/task_executor.rs:1790 to 1797
 } else if raw || redactions.is_empty() {
     if !task.silent.suppresses_stdout() {
         cmd = cmd.stdout(Stdio::inherit());
