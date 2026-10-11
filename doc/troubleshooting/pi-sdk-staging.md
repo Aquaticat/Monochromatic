@@ -373,6 +373,47 @@ and the narrow profile's refusal.
 Its non-native reader and producer adapters are explicit;
 those controls are not additional native Session executions.
 
+### Handoff lifecycle and wiring sensitivity
+
+Native lifecycle `12ea892b` / `proc_83f6` passed the handoff clock positive control,
+expiry during source comparison before judgment publication,
+unchanged-view capture failure,
+shared occurrence exhaustion,
+and late reset,
+disposal,
+reload,
+and oversized input.
+The clock is an explicit fixture;
+the Session and judgment paths are native.
+The positive control retains the original 5000-millisecond deadline.
+Expired handoff work sends no assessment and publishes no judgment.
+`7e7edd94` / `proc_2872` also retained a post-emission append rejected by the private clone.
+No entry insertion,
+authority,
+or successful persistence is inferred from capturing that input.
+
+Constructed-input regression `e32496ec` / `proc_a9e3` passed 133 outputs with empty child stderr.
+The newly integrated lifecycle and clone cases still need the full native parent.
+Indexed-question positive control `fb444692` / `proc_4150` passed.
+Omitting observation or current message-source binding lost the original input.
+Omitting the handoff or current governing-source binding caused stale-snapshot failure.
+Omitting current indexing failed wire source/ordinal coherence.
+Omitting copied-material equality admitted changed adapter material.
+All omissions are restored in `54575a9a`,
+with an empty scoped runtime diff against `7e7edd94`.
+The complete action-policy and policy-source suites passed `proc_417a`,
+with 29 successful result records.
+The full native suite is running as `proc_a3df`.
+
+The governing-source omission first exposed no original reviewer error in judgment finalization.
+An `evidence-closed` record is not a completed policy review.
+A fixture-only batch wrapper retained the propagated exception:
+`PreparedBatchExecutionError` contains
+`SourceCollectionError: Native run prompt was replaced after this source snapshot`.
+The indexing omission separately retained
+`RuleAssessmentWireError: Selected clause differs from its complete source`.
+Do not merge these with capture-profile failures or infer causes from an empty failure field.
+
 ### Preserve received system tool records
 
 Source review identified a separate omission:
@@ -414,7 +455,8 @@ and setter profiles are unchanged.
 `proc_88a2` passed the owner red after correction,
 and the real post-emission declaration/removal consumer passed `proc_9b65`.
 
-Full integrated regressions and final-wiring sensitivity remain pending.
+The complete native parent remains pending;
+action/source regressions and the wiring sensitivity in "Handoff lifecycle and wiring sensitivity" passed.
 Additional original fields can exhaust the unchanged source and aggregate bounds sooner.
 Upstream tool-definition inputs before declaration production,
 images,
